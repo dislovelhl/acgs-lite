@@ -18,47 +18,6 @@ Explainability tells you what happened. **Governance ensures it doesn't happen w
 
 ---
 
-## What It Does
-
-ACGS-Lite brings constitutional governance directly into GitLab's software development lifecycle. It is a governance engine -- built in Python and Rust -- that validates every AI-assisted action against constitutional principles before that action takes effect.
-
-Three principles from democratic governance, applied to AI systems:
-
-**Separation of Powers.** The entity that proposes a change cannot approve it. ACGS-Lite enforces MACI (Multi-Agent Constitutional Infrastructure) roles -- Proposer, Validator, Executor -- so an MR author can never approve their own merge request when AI agents are involved.
-
-**Checks and Balances.** Every AI decision passes through constitutional validation. 97% of decisions are verified in under a millisecond. 3% are escalated to humans. The 97% saves millions in operational cost. The 3% is where governance actually happens.
-
-**Due Process.** Every validation produces a tamper-evident SHA-256 audit record. Every escalation carries a recommended SLA. Every decision can be reviewed, challenged, and reversed.
-
-### GitLab Integration (Four Layers)
-
-1. **GitLab Duo Agent Flow** -- External agent triggered on MR events (@mentions, reviewer assignment). Validates diffs, commit messages, and code changes against the constitution. Posts inline violation comments on MR diffs.
-
-2. **CI/CD Pipeline** -- Four governance jobs: constitutional validation, MACI separation check, hash verification, EU AI Act compliance report (Articles 12-14).
-
-3. **MCP Server for Duo Chat** -- Five governance tools so developers can query posture directly: "What's our compliance status?" "Which rules apply here?"
-
-4. **Webhook Handler** -- Real-time governance on GitLab events with context-aware risk scoring (production vs staging vs test).
-
-### The Engine
-
-- **560ns P50** validation latency (Rust/PyO3)
-- **9 regulatory frameworks** -- EU AI Act, NIST AI RMF, ISO 42001, GDPR, SOC 2, HIPAA, ECOA/FCRA, NYC LL144, OECD AI Principles
-- **125 compliance checklist items**, 72 auto-populated by ACGS-Lite
-- **5-tier escalation** with SLA recommendations
-- **Context risk scoring** that modulates strictness by environment
-- **Constitutional hash** -- tampering is detectable
-- **11 platform integrations** -- Anthropic, OpenAI, LangChain, LiteLLM, Google GenAI, and more
-- **286 tests** across unit, integration, compliance, and constitutional suites
-- **MultiFrameworkAssessor** -- jurisdiction-aware cross-framework gap analysis
-- **5 governance templates** -- `Constitution.from_template("gitlab")` for instant domain governance
-- **ConstitutionBuilder** -- fluent API for code-first governance without YAML
-- **Batch governance** -- `validate_batch_report()` for orchestrator-ready compliance assessment
-- **Rule versioning** -- immutable change history with `RuleSnapshot` for audit trails
-- **Constitution composition** -- `merge()` with conflict resolution for layered governance
-
----
-
 ## How We Built It
 
 Here is the part that matters most.
@@ -79,7 +38,50 @@ AI governance should not be the exclusive domain of the companies deploying AI. 
 
 The system that constrains the machines was built by the machines. And that is exactly why we need constitutional governance -- because if AI can build its own governance engine, it can certainly build systems without one.
 
-**Development stack:** Claude (Anthropic) as primary development partner via Claude Code CLI. Test-driven development -- tests written before implementation. 97 optimization experiments achieving 37x latency improvement. Rust for performance-critical paths. The autoresearch loop runs 532 benchmark scenarios at 100% constitutional compliance.
+**Development stack:** Claude (Anthropic) as the sole development partner via Claude Code CLI. Test-driven development -- tests written before implementation. 112 optimization experiments achieving 37x latency improvement. Rust for performance-critical paths via PyO3 bindings. The autoresearch loop runs 532 benchmark scenarios at 100% compliance with zero false negatives.
+
+---
+
+## What It Does
+
+Constitutional governance that validates every AI action in 560 nanoseconds. Five lines of code. Nine regulatory frameworks. Zero false negatives across 532 benchmark scenarios.
+
+ACGS-Lite brings constitutional governance directly into GitLab's software development lifecycle. It is a governance engine -- built in Python and Rust -- that validates every AI-assisted action against constitutional principles before that action takes effect.
+
+Three principles from democratic governance, applied to AI systems:
+
+**Separation of Powers.** The entity that proposes a change cannot approve it. ACGS-Lite enforces MACI (Multi-Agent Constitutional Infrastructure) roles -- Proposer, Validator, Executor -- so an MR author can never approve their own merge request when AI agents are involved.
+
+**Checks and Balances.** Every AI decision passes through constitutional validation. 97% of decisions are verified in under a millisecond. 3% are escalated to humans. The 97% saves millions in operational cost. The 3% is where governance actually happens.
+
+**Due Process.** Every validation produces a tamper-evident SHA-256 audit record. Every escalation carries a recommended SLA. Every decision can be reviewed, challenged, and reversed.
+
+### GitLab Duo Integration (Four Layers)
+
+1. **GitLab Duo Agent Flow** -- External agent triggered on MR events. Validates diffs, commit messages, and code changes against the constitution. Posts inline violation comments on MR diffs.
+
+2. **CI/CD Pipeline** -- Four governance jobs: constitutional validation, MACI separation check, hash verification, EU AI Act compliance report (Articles 12-14).
+
+3. **MCP Server for Duo Chat** -- Five governance tools so developers can query posture directly from GitLab Duo Chat: "What's our compliance status?" "Which rules apply here?"
+
+4. **Webhook Handler** -- Real-time governance on GitLab events with context-aware risk scoring (production vs staging vs test).
+
+### The Engine
+
+- **560ns P50** validation latency (Rust/PyO3) -- governance that is invisible to the developer
+- **9 regulatory frameworks** -- EU AI Act, NIST AI RMF, ISO 42001, GDPR, SOC 2, HIPAA, ECOA/FCRA, NYC LL144, OECD AI Principles
+- **125 compliance checklist items**, 72 auto-populated by ACGS-Lite
+- **100% compliance** across 532 benchmark scenarios with **zero false negatives**
+- **5-tier escalation** with SLA recommendations
+- **Context risk scoring** that modulates strictness by environment
+- **Constitutional hash** -- any tampering is detectable
+- **11 platform integrations** -- Anthropic Claude, OpenAI, LangChain, LiteLLM, Google GenAI, and more
+- **286 tests** across unit, integration, compliance, and constitutional suites
+- **5 governance templates** -- `Constitution.from_template("gitlab")` for instant domain governance
+- **ConstitutionBuilder** -- fluent API for code-first governance without YAML
+- **Batch governance** -- assess an entire pipeline in a single call
+- **Rule versioning** -- immutable change history with cryptographic audit trails
+- **Constitution composition** -- compose base compliance + domain overlay with conflict resolution
 
 ---
 
@@ -87,9 +89,9 @@ The system that constrains the machines was built by the machines. And that is e
 
 **The governance paradox.** Building a system that constrains AI using AI creates a bootstrapping problem. The answer is the same as democratic constitutions: the constitution is separate from the governed entity, with its own integrity verification (hash), separation of powers (MACI), and audit trail.
 
-**Nanosecond-scale validation.** Governance that slows workflows will be disabled. Sub-microsecond validation required Rust for the hot path and careful PyO3 optimization.
+**Nanosecond-scale validation.** Governance that slows workflows will be disabled. We needed validation so fast developers would never notice it. Sub-microsecond validation required Rust for the hot path and 112 optimization experiments tracked in an append-only research log.
 
-**EU AI Act interpretation.** The Act is law, not a technical specification. Translating Articles 12-14 into executable validation rules required legal research through hundreds of conversations with Claude about regulatory intent.
+**EU AI Act interpretation.** The Act is law, not a technical specification. Translating Articles 12-14 into executable validation rules required legal research through hundreds of conversations with Claude about regulatory intent, cross-referenced with NIST AI RMF, ISO 42001, GDPR, and six other frameworks.
 
 ---
 
@@ -105,16 +107,22 @@ AI-assisted development, combined with rigorous testing, can produce systems exc
 
 ## What's Next
 
-**August 2026 is the EU AI Act enforcement deadline.** Organizations deploying high-risk AI need governance infrastructure before that date.
+**August 2026 is the EU AI Act enforcement deadline -- five months from today.** Every organization deploying high-risk AI needs governance infrastructure before that date. Most have none.
 
-- GitLab-native package installable from marketplace
-- Multi-repository governance spanning GitLab groups
-- Governance-as-Code -- constitutions in YAML, version-controlled alongside code
-- Real-time compliance dashboard in GitLab
-- Blockchain-anchored audit for independently verifiable evidence
+Our commitment: **By August 2026, ACGS-Lite will be the default constitutional governance layer for AI agents in the GitLab ecosystem**, with pre-built compliance templates for every regulated industry and every major AI framework.
+
+The roadmap:
+
+- **GitLab Marketplace package** -- one-click install for any GitLab project
+- **Multi-repository governance** -- constitutional rules spanning GitLab groups and organizations
+- **Community constitution registry** -- open-source governance templates contributed by compliance teams, legal departments, and affected communities
+- **Real-time compliance dashboard** -- live governance posture visible in GitLab
+- **Federated governance** -- multiple validators, distributed constitutions, no single point of failure
+
+The people affected by algorithmic decisions deserve governance infrastructure they can inspect, understand, and hold accountable. We are building it.
 
 ---
 
 ## Built With
 
-Python, Rust, PyO3, GitLab Duo Agent Platform, GitLab CI/CD, Model Context Protocol (MCP), Claude (Anthropic), SHA-256 cryptographic audit, EU AI Act Articles 12-14
+Python, Rust, PyO3, GitLab Duo Agent Platform, GitLab CI/CD, Model Context Protocol (MCP), Claude (Anthropic) via Claude Code CLI, SHA-256 cryptographic audit, EU AI Act Articles 12-14, NIST AI RMF, ISO/IEC 42001
