@@ -6,7 +6,7 @@
 
 ---
 
-**560ns** P50 latency | **100%** compliance | **9** regulatory frameworks | **11** integrations | **240 tests** | **125** checklist items | **MIT License**
+**560ns** P50 latency | **100%** compliance | **9** regulatory frameworks | **11** integrations | **282 tests** | **125** checklist items | **MIT License**
 
 ---
 
