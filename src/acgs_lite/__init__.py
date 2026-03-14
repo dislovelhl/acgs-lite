@@ -12,8 +12,8 @@ Usage::
 """
 
 from acgs_lite.audit import AuditEntry, AuditLog
-from acgs_lite.constitution import Constitution, Rule, Severity
-from acgs_lite.engine import GovernanceEngine, ValidationResult
+from acgs_lite.constitution import Constitution, ConstitutionBuilder, Rule, RuleSnapshot, Severity
+from acgs_lite.engine import BatchValidationResult, GovernanceEngine, ValidationResult
 from acgs_lite.errors import (
     ConstitutionalViolationError,
     GovernanceError,
@@ -48,11 +48,14 @@ __constitutional_hash__ = "cdd01ef066bc6cf2"
 __all__ = [
     # Core
     "Constitution",
+    "ConstitutionBuilder",
     "Rule",
+    "RuleSnapshot",
     "Severity",
     # Engine
     "GovernanceEngine",
     "ValidationResult",
+    "BatchValidationResult",
     # Wrappers
     "GovernedAgent",
     "GovernedCallable",
