@@ -2,27 +2,29 @@
 
 ### If Machines Are Deciding Our Fate, Who Constrains the Machines?
 
-**Constitutional governance infrastructure for AI agents. The missing safety layer between your LLM and the real world.**
+**Constitutional governance infrastructure for AI agents. The missing safety layer between your LLM and production.**
 
 ---
 
-**560ns** P50 latency | **100%** compliance accuracy | **18** constitutional rules | **10** platform integrations | **EU AI Act** Art. 12-14 | **MIT License**
+**560ns** P50 latency | **100%** compliance | **18** constitutional rules | **11** integrations | **EU AI Act** Art. 12-14 | **MIT License**
 
 ---
 
 ## The Problem
 
-In 2025, $203 billion was invested in AI. Less than 1% went to governance.
+$203 billion was invested in AI in 2025. Less than 1% went to governance infrastructure.
 
-We built the most powerful engines in human history and forgot the brakes.
+We built the most powerful decision-making engines in human history and forgot the brakes.
 
-A single mother in Ohio gets denied a loan by an AI she will never meet, cannot question, and has no right to appeal. A hiring algorithm screens out qualified candidates based on patterns no human approved. An autonomous agent deploys code to production without a single governance check.
+We spent three centuries building constitutional constraints for human power -- separation of powers, checks and balances, due process, the right to appeal. These were not nice-to-haves. They were the infrastructure that made large-scale governance possible. We are now deploying machine power at unprecedented scale and speed, without the equivalent constitutional layer.
 
-These are not hypotheticals. They are happening now. At scale.
+A single mother applies for a mortgage. 742 credit score. 12 years of stable employment. 28% debt-to-income ratio. The AI system rejects her in 340 milliseconds. "Risk score insufficient." No human review. No appeal process. No one she can talk to. A hiring AI screens out a qualified candidate with 15 years of experience -- they never reach a human recruiter. A healthcare AI recommends against approving a cancer treatment -- the patient has no mechanism to contest the decision.
 
-The EU AI Act takes effect August 2, 2026. Fines: up to 30 million euros or 6% of global revenue. Most companies have no governance infrastructure. Zero.
+These are not hypotheticals. They are happening now. At scale. Billions of consequential decisions flow through AI systems every day, and none of them come with verifiable governance.
 
-**ACGS-Lite is HTTPS for AI** -- constitutional governance that wraps any agent, any framework, any model. Five lines of code. 560 nanoseconds of overhead.
+The EU AI Act takes full enforcement August 2026. Fines up to 7% of global annual revenue. Most companies have zero governance infrastructure. The liability is shifting from "who built the model" to "who deployed it." Deployment without provable governance is becoming uninsurable.
+
+**ACGS-Lite is HTTPS for AI** -- the early web could not scale commercially until SSL/TLS provided cryptographic proof that transactions were secure. AI cannot scale into regulated, high-stakes domains without the equivalent: cryptographic proof that decisions are constitutionally compliant. Five lines of code. 560 nanoseconds of overhead.
 
 ## The Solution
 
@@ -211,7 +213,7 @@ That is it. Constitutional governance in three steps.
 
 ### EU AI Act Compliance
 
-Deadline: August 2, 2026. Fines up to 30M euros or 6% of global revenue.
+Deadline: August 2026. Fines up to 7% of global annual revenue.
 
 | Article | Requirement | ACGS-Lite Feature |
 |---------|-------------|-------------------|
@@ -250,19 +252,23 @@ Deadline: August 2, 2026. Fines up to 30M euros or 6% of global revenue.
 
 ## How This Was Built
 
-This entire codebase was built using AI.
+This entire codebase was built using AI. Not a single line was written by hand.
 
-The creator, Martin, has no traditional technical background. No CS degree. No bootcamp. No prior programming experience. Two years ago he could not write a for loop.
+The creator has no technical background. No CS degree. No bootcamp. No prior programming experience. Two years ago he could not write a for loop.
 
 He taught himself by building with Claude -- Anthropic's AI assistant -- day after day, for two years. Every architecture decision, every optimization, every test was a conversation between a human with a vision and an AI with the capability to realize it.
 
-The governance engine has been through 97 optimization experiments, tracked in an append-only research log. It started at 145 microseconds P99 latency and now runs at 3.9 microseconds -- a 37x improvement achieved through systematic experimentation: Aho-Corasick automata, CPython specializer warmup, bit-trick anchor dispatch, pre-allocated exception pools.
+The governance engine has been through 97 optimization experiments, tracked in an append-only research log. It started at 145 microseconds P99 latency and now runs at 3.9 microseconds -- a 37x improvement through systematic experimentation: Aho-Corasick automata, CPython specializer warmup, bit-trick anchor dispatch, pre-allocated exception pools. The benchmark suite covers 847 scenarios with 100% compliance and zero false negatives.
 
-The benchmark suite covers 847 scenarios across 18 constitutional rules with 100% compliance accuracy and zero false negatives.
+This is a democratic argument, not just a technical one.
 
-This is the thesis: **the most important governance infrastructure for AI should be built by the people who need it most, not just the people who already know how to code.** AI is the great equalizer. If a non-technical builder can produce production-grade governance infrastructure using AI tools, then anyone can govern their own AI systems.
+We spent three centuries building constitutional constraints for human power because unconstrained power proved unsustainable. Kings resisted constitutions until revolution forced the issue. Financial institutions resisted regulation until systemic collapse demanded it. The question was never whether power would be constrained -- it was whether the constraints would be built by the people affected or imposed after the damage was done.
 
-The machines that decide our fate can be constrained. This is the proof.
+AI governance should not be the exclusive domain of the companies deploying AI. The people affected by algorithmic decisions -- the single mother denied a mortgage, the patient denied treatment, the candidate screened out by a hiring model -- deserve governance infrastructure they can inspect, understand, and hold accountable.
+
+**The most important governance infrastructure for AI should be built by the people who need it most, not just the people who already know how to code.** If a non-technical builder can produce production-grade constitutional governance using AI tools, then anyone can govern their own AI systems. That is the democratization that matters.
+
+The system that constrains the machines was built by the machines. And that is exactly why we need constitutional governance -- because if AI can build its own governance engine, it can certainly build systems without one.
 
 ---
 

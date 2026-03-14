@@ -58,11 +58,17 @@ Here is the part that matters most.
 
 **I have zero technical background.** No CS degree, no bootcamp, no years writing code. Two years ago I could not have told you what a function signature was.
 
-**I built the entire ACGS-2 platform using Claude.**
+**I built the entire ACGS-2 platform using Claude.** Not a single line was written by hand.
 
 Every line of Python. Every line of Rust. The PyO3 bindings. The MCP server. The CI/CD pipeline. The 166 tests. The constitutional hash verification. The MACI enforcement layer. All of it -- through conversation with an AI that could write code I could not.
 
-I am not a developer who used AI to go faster. I am a non-developer who used AI to go from zero to a production governance engine. That distinction matters because it is the strongest possible argument for why AI governance is urgent: **the tool is so powerful that someone with no programming background can build enterprise-grade infrastructure with it.** That power needs constitutional constraints.
+I am not a developer who used AI to go faster. I am a non-developer who used AI to go from zero to a production governance engine.
+
+That distinction matters because it is the strongest possible argument for why AI governance is urgent: **the tool is so powerful that someone with no programming background can build enterprise-grade infrastructure with it.** That power needs constitutional constraints.
+
+But it is also a democratic argument. We spent three centuries building constitutional constraints for human power because unconstrained power proved unsustainable. Kings resisted constitutions until revolution forced the issue. Financial institutions resisted regulation until systemic collapse demanded it. The question was never whether power would be constrained -- it was whether the constraints would be built by the people affected or imposed after the damage was done.
+
+AI governance should not be the exclusive domain of the companies deploying AI. The people affected by algorithmic decisions -- the single mother denied a mortgage, the patient denied treatment, the candidate screened out -- deserve governance infrastructure they can inspect, understand, and hold accountable. **The most important governance infrastructure for AI should be built by the people who need it most, not just the people who already know how to code.**
 
 The system that constrains the machines was built by the machines. And that is exactly why we need constitutional governance -- because if AI can build its own governance engine, it can certainly build systems without one.
 
