@@ -6,7 +6,7 @@
 
 ---
 
-**560ns** P50 latency | **100%** compliance | **18** constitutional rules | **11** integrations | **EU AI Act** Art. 12-14 | **MIT License**
+**560ns** P50 latency | **100%** compliance | **18** constitutional rules | **11** integrations | **186 tests** | **EU AI Act** Art. 12-14 | **MIT License**
 
 ---
 
