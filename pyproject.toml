@@ -50,6 +50,7 @@ llamaindex = ["llama-index-core>=0.10"]
 autogen = ["autogen-core>=0.4", "autogen-agentchat>=0.4"]
 mcp = ["mcp>=1.0"]
 crewai = ["crewai>=0.30"]
+google-cloud = ["google-cloud-logging>=3.0"]
 all = ["acgs-lite[a2a,openai,anthropic,langchain,litellm,google,llamaindex,autogen,mcp]"]
 dev = [
     "pytest>=8.0",
