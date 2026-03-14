@@ -43,12 +43,14 @@ Three principles from democratic governance, applied to AI systems:
 ### The Engine
 
 - **560ns P50** validation latency (Rust/PyO3)
-- **18 governance rules** across security, compliance, and operational safety
+- **9 regulatory frameworks** -- EU AI Act, NIST AI RMF, ISO 42001, GDPR, SOC 2, HIPAA, ECOA/FCRA, NYC LL144, OECD AI Principles
+- **125 compliance checklist items**, 72 auto-populated by ACGS-Lite
 - **5-tier escalation** with SLA recommendations
 - **Context risk scoring** that modulates strictness by environment
-- **Constitutional hash** (cdd01ef066bc6cf2) -- tampering is detectable
+- **Constitutional hash** -- tampering is detectable
 - **11 platform integrations** -- Anthropic, OpenAI, LangChain, LiteLLM, Google GenAI, and more
-- **186 tests** across unit, integration, and constitutional compliance suites
+- **240 tests** across unit, integration, compliance, and constitutional suites
+- **MultiFrameworkAssessor** -- jurisdiction-aware cross-framework gap analysis
 
 ---
 

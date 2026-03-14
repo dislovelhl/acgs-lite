@@ -6,7 +6,7 @@
 
 ---
 
-**560ns** P50 latency | **100%** compliance | **18** constitutional rules | **11** integrations | **186 tests** | **EU AI Act** Art. 12-14 | **MIT License**
+**560ns** P50 latency | **100%** compliance | **9** regulatory frameworks | **11** integrations | **240 tests** | **125** checklist items | **MIT License**
 
 ---
 
@@ -211,17 +211,33 @@ That is it. Constitutional governance in three steps.
 - Escalation tiers with SLA recommendations
 - Full audit trail of every role assignment and boundary check
 
-### EU AI Act Compliance
+### Global Regulatory Compliance (9 Frameworks)
 
-Deadline: August 2026. Fines up to 7% of global annual revenue.
+Not just EU AI Act. The most comprehensive AI compliance coverage in a single library.
 
-| Article | Requirement | ACGS-Lite Feature |
-|---------|-------------|-------------------|
-| Art. 12 | Tamper-evident record-keeping | `Article12Logger` -- automatic, chain-verified |
-| Art. 13 | Transparency for deployers | `TransparencyDisclosure` -- system cards |
-| Art. 14 | Human oversight mechanisms | `HumanOversightGateway` -- HITL approval |
-| Art. 6 | Risk classification | `RiskClassifier` -- high/limited/minimal |
-| Art. 72 | Conformity assessment | `ComplianceChecklist` -- Annex IV docs |
+| Framework | Jurisdiction | Status | Penalty | ACGS-Lite Coverage |
+|---|---|---|---|---|
+| **EU AI Act** | EU (27 states) | Enacted, Aug 2026 | 7% global revenue | 5/9 items auto |
+| **NIST AI RMF** | US (federal) | Voluntary | Procurement gate | 7/16 items auto |
+| **ISO/IEC 42001** | International | Certification | Audit failure | 9/18 items auto |
+| **GDPR Art. 22** | EU | Enacted (2018) | 4% global revenue | 10/12 items auto |
+| **SOC 2 + AI** | International | Enterprise gate | Lost contracts | 10/16 items auto |
+| **HIPAA + AI** | US (healthcare) | Enacted | $1.5M/violation | 9/15 items auto |
+| **ECOA/FCRA** | US (finance) | Enacted | Unlimited damages | 6/12 items auto |
+| **NYC LL 144** | New York City | Enacted (2023) | $1,500/day | 6/12 items auto |
+| **OECD AI** | 46 countries | Adopted | Baseline standard | 10/15 items auto |
+
+**125 compliance checklist items. 72 auto-populated by ACGS-Lite.**
+
+```python
+from acgs_lite.compliance import MultiFrameworkAssessor
+
+assessor = MultiFrameworkAssessor()
+report = assessor.assess({"jurisdiction": "EU", "domain": "healthcare"})
+# Runs: EU AI Act + GDPR + HIPAA + ISO 42001 + OECD + SOC 2
+print(report.overall_score)        # 0.62 (auto-populated)
+print(report.cross_framework_gaps) # Items needing manual evidence
+```
 
 ### GitLab Integration
 
