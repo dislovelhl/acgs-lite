@@ -137,9 +137,7 @@ def recommend_escalation(
             - ``rationale``: brief explanation of why this tier was selected
     """
     # Compute a combined risk score (0–3 scale)
-    severity_weight = {"critical": 3, "high": 2, "medium": 1, "low": 0}.get(
-        severity.lower(), 0
-    )
+    severity_weight = {"critical": 3, "high": 2, "medium": 1, "low": 0}.get(severity.lower(), 0)
     action_weight = {"critical": 3, "high": 2, "medium": 1, "low": 0}.get(
         action_risk_tier.lower(), 0
     )

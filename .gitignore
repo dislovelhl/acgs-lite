@@ -6,3 +6,5 @@ __pycache__/
 *.egg-info/
 .mypy_cache/
 *.so
+src/fix_imports.py
+src/split_engine.py

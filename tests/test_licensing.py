@@ -64,6 +64,7 @@ def free_key():
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.unit
 class TestGenerateLicenseKey:
     def test_format_pro(self, pro_key: str) -> None:
         assert pro_key.startswith("ACGS-PRO-")
@@ -112,6 +113,7 @@ class TestGenerateLicenseKey:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.unit
 class TestValidateLicenseKey:
     def test_validate_pro(self, pro_key: str) -> None:
         info = validate_license_key(pro_key, SECRET)

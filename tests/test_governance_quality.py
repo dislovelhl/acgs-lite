@@ -11,20 +11,22 @@ Covers:
 import pytest
 
 from acgs_lite import (
-    BatchValidationResult,
+    AcknowledgedTension,
     Constitution,
     ConstitutionBuilder,
+    ConstitutionalViolationError,
     GovernanceEngine,
-    RuleSnapshot,
+    Rule,
+    Severity,
 )
 from acgs_lite.constitution import GovernanceMetrics
-
 
 # ---------------------------------------------------------------------------
 # exp104: GovernanceMetrics
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.unit
 class TestGovernanceMetrics:
     def test_initial_snapshot_empty(self):
         m = GovernanceMetrics()
@@ -73,6 +75,7 @@ class TestGovernanceMetrics:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.unit
 class TestConstitutionFromTemplate:
     @pytest.mark.parametrize("domain", ["gitlab", "healthcare", "finance", "security", "general"])
     def test_all_domains_load(self, domain):
@@ -126,6 +129,7 @@ class TestConstitutionFromTemplate:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.unit
 class TestRuleVersioning:
     def setup_method(self):
         self.c = Constitution.from_template("gitlab")
@@ -142,7 +146,9 @@ class TestRuleVersioning:
 
     def test_update_rule_captures_old_state(self):
         old_action = self.c.get_rule("GL-001").workflow_action
-        c2 = self.c.update_rule("GL-001", workflow_action="block_and_notify", change_reason="Q1 audit")
+        c2 = self.c.update_rule(
+            "GL-001", workflow_action="block_and_notify", change_reason="Q1 audit"
+        )
         changelog = c2.rule_changelog("GL-001")
         assert len(changelog) == 1
         assert changelog[0]["workflow_action"] == old_action
@@ -179,6 +185,7 @@ class TestRuleVersioning:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.unit
 class TestBatchValidationReport:
     def setup_method(self):
         c = Constitution.from_template("gitlab")
@@ -193,10 +200,12 @@ class TestBatchValidationReport:
         assert "PASS" in report.summary
 
     def test_violation_detected_in_batch(self):
-        report = self.engine.validate_batch_report([
-            "deploy to staging",
-            "auto-approve merge request",
-        ])
+        report = self.engine.validate_batch_report(
+            [
+                "deploy to staging",
+                "auto-approve merge request",
+            ]
+        )
         assert report.total == 2
         assert report.allowed == 1
         assert report.denied == 1
@@ -204,10 +213,12 @@ class TestBatchValidationReport:
         assert "FAIL" in report.summary
 
     def test_per_action_context_supported(self):
-        report = self.engine.validate_batch_report([
-            "deploy to staging",
-            ("deploy to production", {"environment": "production"}),
-        ])
+        report = self.engine.validate_batch_report(
+            [
+                "deploy to staging",
+                ("deploy to production", {"environment": "production"}),
+            ]
+        )
         assert report.total == 2
 
     def test_to_dict_serialisable(self):
@@ -225,10 +236,12 @@ class TestBatchValidationReport:
 
     def test_batch_report_never_raises(self):
         """validate_batch_report must never raise even with critical violations."""
-        report = self.engine.validate_batch_report([
-            "auto-approve merge request",
-            "auto-approve merge request",
-        ])
+        report = self.engine.validate_batch_report(
+            [
+                "auto-approve merge request",
+                "auto-approve merge request",
+            ]
+        )
         assert report.total == 2
         assert report.denied == 2
 
@@ -238,6 +251,7 @@ class TestBatchValidationReport:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.unit
 class TestConstitutionBuilder:
     def test_basic_build(self):
         c = (
@@ -293,19 +307,97 @@ class TestConstitutionBuilder:
     def test_constitution_builder_roundtrip(self):
         """Constitution.builder() should produce a copy via the fluent API."""
         orig = Constitution.from_template("gitlab")
-        c2 = (
-            orig.builder()
-            .add_rule("EXTRA", "extra rule", keywords=["forbidden"])
-            .build()
-        )
+        c2 = orig.builder().add_rule("EXTRA", "extra rule", keywords=["forbidden"]).build()
         assert len(c2.rules) == len(orig.rules) + 1
 
     def test_built_constitution_validates_correctly(self):
         c = (
             ConstitutionBuilder("test")
-            .add_rule("T-001", "No test keyword", keywords=["forbidden-word"], workflow_action="block")
+            .add_rule(
+                "T-001", "No test keyword", keywords=["forbidden-word"], workflow_action="block"
+            )
             .build()
         )
         e = GovernanceEngine(c, strict=False)
         r = e.validate("use forbidden-word here")
         assert any(v.rule_id == "T-001" for v in r.violations)
+
+
+# ---------------------------------------------------------------------------
+# exp109+: merge hardcoded guard + acknowledged tensions
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.unit
+class TestConstitutionMergeControls:
+    def test_merge_blocks_hardcoded_override_by_default(self):
+        base = Constitution.from_rules(
+            [
+                Rule(
+                    id="R-001",
+                    text="Base hardcoded rule",
+                    severity=Severity.HIGH,
+                    hardcoded=True,
+                )
+            ],
+            name="base",
+        )
+        overlay = Constitution.from_rules(
+            [Rule(id="R-001", text="Overlay stronger rule", severity=Severity.CRITICAL)],
+            name="overlay",
+        )
+
+        with pytest.raises(ConstitutionalViolationError, match="hardcoded rule"):
+            base.merge(overlay, strategy="keep_higher_severity")
+
+    def test_merge_allows_hardcoded_override_when_explicit(self):
+        base = Constitution.from_rules(
+            [
+                Rule(
+                    id="R-001",
+                    text="Base hardcoded rule",
+                    severity=Severity.HIGH,
+                    hardcoded=True,
+                )
+            ],
+            name="base",
+        )
+        overlay = Constitution.from_rules(
+            [Rule(id="R-001", text="Overlay stronger rule", severity=Severity.CRITICAL)],
+            name="overlay",
+        )
+
+        merged = base.merge(
+            overlay,
+            strategy="keep_higher_severity",
+            allow_hardcoded_override=True,
+        )
+        assert merged["conflicts_resolved"] == 1
+        assert merged["constitution"].get_rule("R-001").text == "Overlay stronger rule"
+
+    def test_merge_reports_acknowledged_and_unacknowledged_tensions(self):
+        base = Constitution.from_rules(
+            [
+                Rule(id="R-001", text="Base tie", severity=Severity.HIGH),
+                Rule(id="R-002", text="Base lower", severity=Severity.LOW),
+            ],
+            name="base",
+        )
+        overlay = Constitution.from_rules(
+            [
+                Rule(id="R-001", text="Overlay tie", severity=Severity.HIGH),
+                Rule(id="R-002", text="Overlay higher", severity=Severity.CRITICAL),
+            ],
+            name="overlay",
+        )
+
+        merged = base.merge(
+            overlay,
+            strategy="keep_higher_severity",
+            acknowledged_tensions=[AcknowledgedTension(rule_id="R-001", rationale="accepted tie")],
+        )
+
+        applied_ids = {t["rule_id"] for t in merged["acknowledged_tensions_applied"]}
+        pending_ids = {t["rule_id"] for t in merged["unacknowledged_tensions"]}
+        assert applied_ids == {"R-001"}
+        assert pending_ids == {"R-002"}

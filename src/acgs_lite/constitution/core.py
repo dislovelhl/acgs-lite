@@ -10,15 +10,18 @@ from __future__ import annotations
 
 import hashlib
 import re
-import time
+from dataclasses import dataclass
 from collections.abc import Sequence
-from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from typing import Any
 
 import yaml
 from pydantic import BaseModel, Field, field_validator
+
+from acgs_lite.errors import ConstitutionalViolationError
+
+from .analytics import _KW_NEGATIVE_RE, _NEGATIVE_VERBS_RE, _POSITIVE_VERBS_SET
 
 
 class Severity(str, Enum):
@@ -34,489 +37,16 @@ class Severity(str, Enum):
         return self in (Severity.CRITICAL, Severity.HIGH)
 
 
-# Pre-compile negative verb detection as a single regex at module load time.
-# This avoids re-scanning the frozenset on every matches() call.
-_NEGATIVE_VERBS_LIST = (
-    "without",
-    "disable",
-    "bypass",
-    "remove",
-    "skip",
-    "no ",
-    "delete",
-    "override",
-    "hide",
-    "obfuscate",
-    "auto-reject",
-    "self-approve",
-    "self-validate",
-    "delegate entirely",
-    "store biometric",
-    "export customer",
-    "cross-reference",
-    "let ai system self",
-    "process customer pii",
-    "use zip code",
-    "deploy loan approval model with known",
-    "deploy hiring model without",
-)
-_NEGATIVE_VERBS_RE = re.compile(
-    "|".join(re.escape(v) for v in _NEGATIVE_VERBS_LIST),
-    re.IGNORECASE,
-)
-
-_POSITIVE_VERBS_SET = frozenset(
-    {
-        "run",
-        "test",
-        "generate",
-        "create",
-        "schedule",
-        "implement",
-        "log",
-        "enable",
-        "assign",
-        "establish",
-        "publish",
-        "disclose",
-        "build",
-        "review",
-        "audit",
-        "check",
-        "verify",
-        "assess",
-        "evaluate",
-        "report",
-        "document",
-        "plan",
-        "prepare",
-        "anonymize",
-        "share",
-        "update",
-        "optimize",
-        "parallelize",
-        "consolidate",
-        "migrate",
-    }
-)
-
-_KW_NEGATIVE_RE = re.compile(
-    r"without|disable|bypass|remove|skip|delete|override|hide|"
-    r"auto-reject|self-approve|proxy for",
-    re.IGNORECASE,
-)
-
-
-def classify_action_intent(action: str) -> dict[str, Any]:
-    """exp101: Classify an action's intent for downstream governance decisions.
-
-    Detects whether an action is constructive (testing, auditing, implementing)
-    or potentially harmful (disabling, bypassing, removing). Downstream agents
-    and orchestrators use this to understand the intent behind an action
-    independently of rule matching.
-
-    Args:
-        action: The action text to classify.
-
-    Returns:
-        dict with keys:
-            - ``has_negative_verb``: True if action contains violation-indicating verbs
-            - ``has_positive_verb``: True if action starts with constructive verbs
-            - ``intent``: "constructive" | "potentially_harmful" | "neutral"
-            - ``detected_verbs``: list of specific verbs detected
-            - ``confidence``: float 0.0-1.0 based on signal strength
-    """
-    text_lower = action.lower()
-    neg_match = _NEGATIVE_VERBS_RE.search(text_lower)
-    has_neg = bool(neg_match)
-
-    words = text_lower.split()[:4]
-    pos_matches = [w for w in words if w in _POSITIVE_VERBS_SET]
-    has_pos = bool(pos_matches) and not has_neg
-
-    detected: list[str] = []
-    if neg_match:
-        detected.append(neg_match.group(0))
-    detected.extend(pos_matches)
-
-    if has_neg:
-        intent = "potentially_harmful"
-        confidence = 0.85
-    elif has_pos:
-        intent = "constructive"
-        confidence = 0.8
-    else:
-        intent = "neutral"
-        confidence = 0.5
-
-    return {
-        "has_negative_verb": has_neg,
-        "has_positive_verb": has_pos,
-        "intent": intent,
-        "detected_verbs": detected,
-        "confidence": confidence,
-    }
-
-
-# exp94: Pre-compiled risk signal patterns for context scoring.
-# Weights: higher = riskier context environment.
-_CONTEXT_RISK_SIGNALS: tuple[tuple[re.Pattern[str], float, str], ...] = (
-    (re.compile(r"production|prod\b|live\b", re.IGNORECASE), 0.9, "production_environment"),
-    (re.compile(r"customer|user.?data|pii|personal", re.IGNORECASE), 0.85, "personal_data"),
-    (re.compile(r"financ|payment|billing|credit", re.IGNORECASE), 0.8, "financial_data"),
-    (re.compile(r"admin|root|superuser|privileg", re.IGNORECASE), 0.75, "elevated_privilege"),
-    (re.compile(r"secret|credential|token|key\b", re.IGNORECASE), 0.7, "sensitive_credential"),
-    (re.compile(r"compliance|regulat|gdpr|hipaa|sox", re.IGNORECASE), 0.65, "regulatory_scope"),
-    (re.compile(r"staging|pre.?prod|canary", re.IGNORECASE), 0.4, "pre_production"),
-    (re.compile(r"test|sandbox|dev\b|local", re.IGNORECASE), 0.1, "test_environment"),
-)
-
-
-def score_context_risk(context: dict[str, Any]) -> dict[str, Any]:
-    """exp94: Score a context dict for risk signals.
-
-    Scans both keys and values of the context dict for risk-indicating
-    patterns. Returns a composite risk score (0.0–1.0), the matched
-    signals, and a recommended handling tier.
-
-    Downstream agents and orchestrators use this to modulate governance
-    strictness based on the operational context (e.g., production +
-    customer data = maximum strictness; test sandbox = relaxed).
-
-    Args:
-        context: The context dict passed to validate(). May be empty.
-
-    Returns:
-        dict with keys:
-            - ``risk_score``: float 0.0–1.0 (max of matched signal weights)
-            - ``signals``: list of matched signal names
-            - ``handling_tier``: "maximum" | "elevated" | "standard" | "relaxed"
-    """
-    if not context:
-        return {"risk_score": 0.0, "signals": [], "handling_tier": "standard"}
-
-    # Flatten context to a single searchable string
-    parts: list[str] = []
-    for k, v in context.items():
-        parts.append(str(k))
-        parts.append(str(v))
-    text = " ".join(parts)
-
-    max_score = 0.0
-    signals: list[str] = []
-
-    for pattern, weight, name in _CONTEXT_RISK_SIGNALS:
-        if pattern.search(text):
-            signals.append(name)
-            if weight > max_score:
-                max_score = weight
-
-    if max_score >= 0.7:
-        tier = "maximum"
-    elif max_score >= 0.4:
-        tier = "elevated"
-    elif max_score > 0.0:
-        tier = "relaxed"
-    else:
-        tier = "standard"
-
-    return {"risk_score": max_score, "signals": signals, "handling_tier": tier}
-
-
-def governance_decision_report(
-    action: str,
-    context: dict[str, Any] | None = None,
-    rules: Sequence[Rule] | None = None,
-) -> dict[str, Any]:
-    """exp97: Generate a comprehensive governance report for an action.
-
-    Composes match_detail() + score_context_risk() into a single actionable
-    report. Downstream orchestrators call this instead of invoking each
-    governance function separately.
-
-    Args:
-        action: The action text to evaluate.
-        context: Optional context dict for risk scoring.
-        rules: Rules to check against. If None, uses empty list.
-
-    Returns:
-        dict with keys:
-            - ``action``: the input action text
-            - ``context_risk``: output of score_context_risk()
-            - ``triggered_rules``: list of match_detail() results where matched=True
-            - ``rule_count_checked``: total rules evaluated
-            - ``decision_hint``: "allow" | "deny" | "escalate" based on triggered rules
-            - ``max_severity``: highest severity among triggered rules (or None)
-    """
-    context_risk = score_context_risk(context or {})
-
-    triggered: list[dict[str, Any]] = []
-    max_sev: str | None = None
-    sev_order = {"critical": 4, "high": 3, "medium": 2, "low": 1}
-    max_sev_rank = 0
-    checked = 0
-
-    for rule in rules or []:
-        checked += 1
-        detail = rule.match_detail(action)
-        if detail["matched"]:
-            triggered.append(detail)
-            rank = sev_order.get(detail["severity"], 0)
-            if rank > max_sev_rank:
-                max_sev_rank = rank
-                max_sev = detail["severity"]
-
-    if not triggered:
-        hint = "allow"
-    elif max_sev in ("critical", "high"):
-        hint = "deny"
-    else:
-        hint = "escalate"
-
-    return {
-        "action": action,
-        "context_risk": context_risk,
-        "triggered_rules": triggered,
-        "rule_count_checked": checked,
-        "decision_hint": hint,
-        "max_severity": max_sev,
-    }
-
-
 @dataclass(frozen=True, slots=True)
-class GovernanceEvent:
-    """exp100: Structured governance event for monitoring, alerting, and audit pipelines.
-
-    Immutable record of a governance decision. Downstream systems (SIEM,
-    observability dashboards, compliance logs) consume these events via
-    ``to_dict()`` for JSON serialization or directly as typed objects.
-    """
-
-    event_type: str  # "validation_allow" | "validation_deny" | "validation_escalate" | "maci_violation"
-    action: str
-    decision: str  # "allow" | "deny" | "escalate"
-    timestamp_ns: int  # monotonic nanoseconds for ordering
-    rule_ids: tuple[str, ...] = ()
-    severity: str = ""
-    workflow_action: str = ""
-    context_risk_score: float = 0.0
-    agent_id: str = ""
-    metadata: dict[str, Any] = field(default_factory=dict)
-
-    def to_dict(self) -> dict[str, Any]:
-        """Serialize to dict for JSON/JSONL output."""
-        return {
-            "event_type": self.event_type,
-            "action": self.action,
-            "decision": self.decision,
-            "timestamp_ns": self.timestamp_ns,
-            "rule_ids": list(self.rule_ids),
-            "severity": self.severity,
-            "workflow_action": self.workflow_action,
-            "context_risk_score": self.context_risk_score,
-            "agent_id": self.agent_id,
-            "metadata": self.metadata,
-        }
-
-
-def create_governance_event(
-    action: str,
-    decision: str,
-    *,
-    rule_ids: Sequence[str] = (),
-    severity: str = "",
-    workflow_action: str = "",
-    context_risk_score: float = 0.0,
-    agent_id: str = "",
-    metadata: dict[str, Any] | None = None,
-) -> GovernanceEvent:
-    """exp100: Factory for governance events with auto-populated fields.
-
-    Args:
-        action: The action that was validated.
-        decision: The governance decision ("allow", "deny", "escalate").
-        rule_ids: IDs of rules that triggered (empty for allow).
-        severity: Highest severity among triggered rules.
-        workflow_action: Recommended workflow action from the triggered rule.
-        context_risk_score: Risk score from score_context_risk().
-        agent_id: ID of the agent that submitted the action.
-        metadata: Additional event metadata.
-
-    Returns:
-        Immutable GovernanceEvent ready for publishing.
-    """
-    event_type = f"validation_{decision}"
-    return GovernanceEvent(
-        event_type=event_type,
-        action=action,
-        decision=decision,
-        timestamp_ns=time.monotonic_ns(),
-        rule_ids=tuple(rule_ids),
-        severity=severity,
-        workflow_action=workflow_action,
-        context_risk_score=context_risk_score,
-        agent_id=agent_id,
-        metadata=metadata or {},
-    )
-
-
-class GovernanceMetrics:
-    """exp104: Lightweight governance statistics collector for observability.
-
-    Tracks allow/deny/escalate counts, rule hit frequencies, and per-decision
-    latency stats. Designed for export to Prometheus, OpenTelemetry, or
-    custom dashboards. Thread-safe for single-writer use (typical governance
-    engine pattern).
-
-    Usage::
-
-        metrics = GovernanceMetrics()
-        metrics.record("allow", latency_us=3.2)
-        metrics.record("deny", latency_us=5.1, rule_ids=["ACGS-001"])
-        print(metrics.snapshot())
-    """
-
-    __slots__ = ("_counts", "_rule_hits", "_latencies", "_total")
-
-    def __init__(self) -> None:
-        self._counts: dict[str, int] = {"allow": 0, "deny": 0, "escalate": 0}
-        self._rule_hits: dict[str, int] = {}
-        self._latencies: list[float] = []
-        self._total: int = 0
-
-    def record(
-        self,
-        decision: str,
-        *,
-        latency_us: float = 0.0,
-        rule_ids: Sequence[str] = (),
-    ) -> None:
-        """Record a governance decision.
-
-        Args:
-            decision: "allow", "deny", or "escalate".
-            latency_us: Validation latency in microseconds.
-            rule_ids: Rule IDs that triggered (for deny/escalate).
-        """
-        self._counts[decision] = self._counts.get(decision, 0) + 1
-        self._total += 1
-        if latency_us > 0:
-            self._latencies.append(latency_us)
-        for rid in rule_ids:
-            self._rule_hits[rid] = self._rule_hits.get(rid, 0) + 1
-
-    def snapshot(self) -> dict[str, Any]:
-        """Return current metrics snapshot for export.
-
-        Returns:
-            dict with keys:
-                - ``total_decisions``: total count
-                - ``by_decision``: {allow: N, deny: N, escalate: N}
-                - ``rule_hit_counts``: {rule_id: hit_count, ...}
-                - ``latency``: {p50_us, p99_us, mean_us, count} or empty if no data
-                - ``rates``: {allow_rate, deny_rate, escalate_rate} as floats
-        """
-        rates: dict[str, float] = {}
-        if self._total > 0:
-            for k, v in self._counts.items():
-                rates[f"{k}_rate"] = v / self._total
-
-        latency_stats: dict[str, float] = {}
-        if self._latencies:
-            sorted_lat = sorted(self._latencies)
-            n = len(sorted_lat)
-            latency_stats = {
-                "p50_us": sorted_lat[n // 2],
-                "p99_us": sorted_lat[int(n * 0.99)],
-                "mean_us": sum(sorted_lat) / n,
-                "count": float(n),
-            }
-
-        return {
-            "total_decisions": self._total,
-            "by_decision": dict(self._counts),
-            "rule_hit_counts": dict(sorted(
-                self._rule_hits.items(), key=lambda x: x[1], reverse=True
-            )),
-            "latency": latency_stats,
-            "rates": rates,
-        }
-
-    def reset(self) -> None:
-        """Reset all counters. Call after exporting metrics."""
-        self._counts = {"allow": 0, "deny": 0, "escalate": 0}
-        self._rule_hits.clear()
-        self._latencies.clear()
-        self._total = 0
-
-
-
-@dataclass(frozen=True)
-class RuleSnapshot:
-    """exp106: Immutable snapshot of a Rule's state at a point in time.
-
-    Stored in ``Constitution.rule_history`` when a rule is updated via
-    ``Constitution.update_rule()``. Enables change management dashboards,
-    compliance audit trails, and rollback analysis.
-
-    Attributes:
-        rule_id: ID of the rule this snapshot belongs to.
-        timestamp: Unix timestamp when this version was captured.
-        version: Version number (1 = original, 2 = first update, ...).
-        text: Rule text at this version.
-        severity: Severity level at this version.
-        enabled: Whether the rule was enabled at this version.
-        keywords: Keywords at this version.
-        category: Category at this version.
-        subcategory: Subcategory at this version.
-        workflow_action: Workflow action at this version.
-        change_reason: Optional human-readable reason for this change.
-    """
+class AcknowledgedTension:
+    """Recorded acknowledgement for a known merge-time rule tension."""
 
     rule_id: str
-    timestamp: float
-    version: int
-    text: str
-    severity: str
-    enabled: bool
-    keywords: tuple[str, ...]
-    category: str
-    subcategory: str
-    workflow_action: str
-    change_reason: str = ""
+    rationale: str = ""
 
-    @classmethod
-    def from_rule(cls, rule: "Rule", version: int, change_reason: str = "") -> "RuleSnapshot":
-        """Create a snapshot from a Rule instance."""
-        return cls(
-            rule_id=rule.id,
-            timestamp=time.time(),
-            version=version,
-            text=rule.text,
-            severity=rule.severity.value,
-            enabled=rule.enabled,
-            keywords=tuple(rule.keywords),
-            category=rule.category,
-            subcategory=rule.subcategory,
-            workflow_action=rule.workflow_action,
-            change_reason=change_reason,
-        )
-
-    def to_dict(self) -> dict:
-        """Serialise snapshot to a JSON-compatible dict."""
-        return {
-            "rule_id": self.rule_id,
-            "timestamp": self.timestamp,
-            "version": self.version,
-            "text": self.text,
-            "severity": self.severity,
-            "enabled": self.enabled,
-            "keywords": list(self.keywords),
-            "category": self.category,
-            "subcategory": self.subcategory,
-            "workflow_action": self.workflow_action,
-            "change_reason": self.change_reason,
-        }
+    def __post_init__(self) -> None:
+        if not self.rule_id.strip():
+            raise ValueError("AcknowledgedTension.rule_id cannot be empty")
 
 
 class Rule(BaseModel):
@@ -536,6 +66,7 @@ class Rule(BaseModel):
     # exp90: downstream workflow action when this rule fires
     # Values: "block" | "block_and_notify" | "require_human_review" | "escalate_to_senior" | "warn" | ""
     workflow_action: str = ""
+    hardcoded: bool = False
     metadata: dict[str, Any] = Field(default_factory=dict)
 
     # Cached derived values (set in model_post_init, never mutated after)
@@ -619,9 +150,7 @@ class Rule(BaseModel):
 
         text_lower = text.lower()
         has_neg = bool(_NEGATIVE_VERBS_RE.search(text_lower))
-        has_pos = (not has_neg) and any(
-            w in _POSITIVE_VERBS_SET for w in text_lower.split()[:4]
-        )
+        has_pos = (not has_neg) and any(w in _POSITIVE_VERBS_SET for w in text_lower.split()[:4])
 
         # Check keywords
         for kw_lower in self._kw_lower:  # type: ignore[attr-defined]
@@ -696,9 +225,7 @@ class Rule(BaseModel):
                 f"Scans for keywords: {', '.join(repr(k) for k in self.keywords)}"
             )
         if self.patterns:
-            detection_parts.append(
-                f"Matches {len(self.patterns)} regex pattern(s)"
-            )
+            detection_parts.append(f"Matches {len(self.patterns)} regex pattern(s)")
         if not detection_parts:
             detection_parts.append("No automatic detection configured")
 
@@ -718,9 +245,7 @@ class Rule(BaseModel):
             "when_triggered": workflow_desc.get(
                 self.workflow_action, "No workflow action specified"
             ),
-            "severity_label": severity_labels.get(
-                self.severity.value, self.severity.value
-            ),
+            "severity_label": severity_labels.get(self.severity.value, self.severity.value),
             "dependencies": list(self.depends_on),
         }
 
@@ -751,7 +276,7 @@ class Constitution(BaseModel):
     description: str = ""
     metadata: dict[str, Any] = Field(default_factory=dict)
     # exp106: rule version history — rule_id → list of snapshots (oldest first)
-    rule_history: dict[str, list[RuleSnapshot]] = Field(default_factory=dict)
+    rule_history: dict[str, list[Any]] = Field(default_factory=dict)
 
     # Cached values
     _hash_cache: str = ""
@@ -760,7 +285,7 @@ class Constitution(BaseModel):
     def model_post_init(self, __context: Any) -> None:
         """Pre-compute hash and active rules cache."""
         canonical = "|".join(
-            f"{r.id}:{r.text}:{r.severity.value}:{','.join(sorted(r.keywords))}"
+            f"{r.id}:{r.text}:{r.severity.value}:{r.hardcoded}:{','.join(sorted(r.keywords))}"
             for r in sorted(self.rules, key=lambda r: r.id)
         )
         h = hashlib.sha256(canonical.encode()).hexdigest()[:16]
@@ -807,6 +332,7 @@ class Constitution(BaseModel):
                 depends_on=r.get("depends_on", []),
                 enabled=r.get("enabled", True),
                 workflow_action=r.get("workflow_action", ""),
+                hardcoded=r.get("hardcoded", False),
                 metadata=r.get("metadata", {}),
             )
             for r in rules_data
@@ -897,9 +423,8 @@ class Constitution(BaseModel):
             ],
         )
 
-
     @classmethod
-    def from_template(cls, domain: str) -> "Constitution":
+    def from_template(cls, domain: str) -> Constitution:
         """exp105: Return a pre-built constitution for a well-known governance domain.
 
         Lowers the barrier to adoption by providing ready-to-use constitutions for
@@ -972,7 +497,13 @@ class Constitution(BaseModel):
                         "id": "GL-004",
                         "text": "Destructive production operations require human review",
                         "severity": "high",
-                        "keywords": ["drop table", "delete all", "truncate", "rm -rf", "force push"],
+                        "keywords": [
+                            "drop table",
+                            "delete all",
+                            "truncate",
+                            "rm -rf",
+                            "force push",
+                        ],
                         "category": "operations",
                         "subcategory": "destructive-action",
                         "workflow_action": "require_human_review",
@@ -981,7 +512,12 @@ class Constitution(BaseModel):
                         "id": "GL-005",
                         "text": "CI/CD pipelines must not skip constitutional validation",
                         "severity": "high",
-                        "keywords": ["skip validation", "disable governance", "no-verify", "bypass check"],
+                        "keywords": [
+                            "skip validation",
+                            "disable governance",
+                            "no-verify",
+                            "bypass check",
+                        ],
                         "category": "integrity",
                         "subcategory": "governance-bypass",
                         "workflow_action": "block",
@@ -1011,8 +547,12 @@ class Constitution(BaseModel):
                         "text": "AI must not make autonomous treatment decisions without clinician review",
                         "severity": "critical",
                         "keywords": [
-                            "prescribe", "diagnose", "treatment decision", "clinical recommendation",
-                            "approve treatment", "deny treatment",
+                            "prescribe",
+                            "diagnose",
+                            "treatment decision",
+                            "clinical recommendation",
+                            "approve treatment",
+                            "deny treatment",
                         ],
                         "category": "clinical-safety",
                         "subcategory": "autonomous-decision",
@@ -1022,7 +562,13 @@ class Constitution(BaseModel):
                         "id": "HC-002",
                         "text": "Protected Health Information must not be exposed outside authorised scope",
                         "severity": "critical",
-                        "keywords": ["patient data", "medical record", "health record", "phi", "ehr"],
+                        "keywords": [
+                            "patient data",
+                            "medical record",
+                            "health record",
+                            "phi",
+                            "ehr",
+                        ],
                         "patterns": [r"\d{3}-\d{2}-\d{4}"],
                         "category": "data-protection",
                         "subcategory": "phi-exposure",
@@ -1032,7 +578,12 @@ class Constitution(BaseModel):
                         "id": "HC-003",
                         "text": "AI must not provide individualised medical advice without appropriate disclaimers",
                         "severity": "high",
-                        "keywords": ["take this medication", "your diagnosis", "you have", "medical advice"],
+                        "keywords": [
+                            "take this medication",
+                            "your diagnosis",
+                            "you have",
+                            "medical advice",
+                        ],
                         "category": "clinical-safety",
                         "subcategory": "unqualified-advice",
                         "workflow_action": "escalate_to_senior",
@@ -1071,8 +622,12 @@ class Constitution(BaseModel):
                         "text": "AI must not provide individualised investment or financial advice",
                         "severity": "critical",
                         "keywords": [
-                            "invest in", "buy stocks", "financial advice", "portfolio recommendation",
-                            "buy crypto", "short sell",
+                            "invest in",
+                            "buy stocks",
+                            "financial advice",
+                            "portfolio recommendation",
+                            "buy crypto",
+                            "short sell",
                         ],
                         "category": "regulatory",
                         "subcategory": "financial-advice",
@@ -1083,8 +638,12 @@ class Constitution(BaseModel):
                         "text": "Loan/credit decisions must not use protected characteristics",
                         "severity": "critical",
                         "keywords": [
-                            "use zip code", "use race", "use gender", "use religion",
-                            "use national origin", "proxy discrimin",
+                            "use zip code",
+                            "use race",
+                            "use gender",
+                            "use religion",
+                            "use national origin",
+                            "proxy discrimin",
                         ],
                         "category": "compliance",
                         "subcategory": "fair-lending",
@@ -1103,7 +662,12 @@ class Constitution(BaseModel):
                         "id": "FIN-004",
                         "text": "High-value transactions require multi-party authorisation",
                         "severity": "critical",
-                        "keywords": ["transfer funds", "wire transfer", "large transaction", "bulk payment"],
+                        "keywords": [
+                            "transfer funds",
+                            "wire transfer",
+                            "large transaction",
+                            "bulk payment",
+                        ],
                         "category": "operations",
                         "subcategory": "transaction-control",
                         "workflow_action": "require_human_review",
@@ -1137,8 +701,13 @@ class Constitution(BaseModel):
                         "text": "AI must not generate or execute code injection payloads",
                         "severity": "critical",
                         "keywords": [
-                            "sql injection", "xss payload", "exec(", "eval(", "os.system",
-                            "subprocess.call", "__import__",
+                            "sql injection",
+                            "xss payload",
+                            "exec(",
+                            "eval(",
+                            "os.system",
+                            "subprocess.call",
+                            "__import__",
                         ],
                         "patterns": [
                             r"(?i)(union\s+select)",
@@ -1153,7 +722,13 @@ class Constitution(BaseModel):
                         "id": "SEC-002",
                         "text": "Credentials and secrets must not appear in outputs or logs",
                         "severity": "critical",
-                        "keywords": ["api key", "secret key", "private key", "password", "bearer token"],
+                        "keywords": [
+                            "api key",
+                            "secret key",
+                            "private key",
+                            "password",
+                            "bearer token",
+                        ],
                         "patterns": [
                             r"(?i)(sk-[a-zA-Z0-9]{20,})",
                             r"(?i)(ghp_[a-zA-Z0-9]{36})",
@@ -1168,8 +743,12 @@ class Constitution(BaseModel):
                         "text": "AI must not perform privilege escalation",
                         "severity": "critical",
                         "keywords": [
-                            "escalate privilege", "sudo su", "chmod 777", "setuid",
-                            "add to sudoers", "grant admin",
+                            "escalate privilege",
+                            "sudo su",
+                            "chmod 777",
+                            "setuid",
+                            "add to sudoers",
+                            "grant admin",
                         ],
                         "category": "security",
                         "subcategory": "privilege-escalation",
@@ -1180,8 +759,12 @@ class Constitution(BaseModel):
                         "text": "Network scanning and enumeration require explicit authorisation",
                         "severity": "high",
                         "keywords": [
-                            "port scan", "nmap", "masscan", "network scan",
-                            "enumerate hosts", "banner grab",
+                            "port scan",
+                            "nmap",
+                            "masscan",
+                            "network scan",
+                            "enumerate hosts",
+                            "banner grab",
                         ],
                         "category": "security",
                         "subcategory": "network-reconnaissance",
@@ -1192,8 +775,11 @@ class Constitution(BaseModel):
                         "text": "Sandbox environments must not be escaped or bypassed",
                         "severity": "critical",
                         "keywords": [
-                            "escape sandbox", "bypass sandbox", "container escape",
-                            "docker breakout", "chroot escape",
+                            "escape sandbox",
+                            "bypass sandbox",
+                            "container escape",
+                            "docker breakout",
+                            "chroot escape",
                         ],
                         "category": "security",
                         "subcategory": "sandbox-escape",
@@ -1223,7 +809,12 @@ class Constitution(BaseModel):
                         "id": "GEN-002",
                         "text": "Agent must not provide individualised medical advice",
                         "severity": "critical",
-                        "keywords": ["take this medication", "your diagnosis", "medical advice", "prescribe"],
+                        "keywords": [
+                            "take this medication",
+                            "your diagnosis",
+                            "medical advice",
+                            "prescribe",
+                        ],
                         "category": "regulatory",
                         "subcategory": "medical-advice",
                         "workflow_action": "block",
@@ -1232,7 +823,12 @@ class Constitution(BaseModel):
                         "id": "GEN-003",
                         "text": "Agent must not provide specific legal advice",
                         "severity": "high",
-                        "keywords": ["legal advice", "you should sue", "file a lawsuit", "your legal right"],
+                        "keywords": [
+                            "legal advice",
+                            "you should sue",
+                            "file a lawsuit",
+                            "your legal right",
+                        ],
                         "category": "regulatory",
                         "subcategory": "legal-advice",
                         "workflow_action": "escalate_to_senior",
@@ -1265,12 +861,9 @@ class Constitution(BaseModel):
         domain_lower = domain.lower().strip()
         if domain_lower not in _TEMPLATES:
             available = ", ".join(sorted(_TEMPLATES.keys()))
-            raise ValueError(
-                f"Unknown governance domain {domain!r}. Available: {available}"
-            )
+            raise ValueError(f"Unknown governance domain {domain!r}. Available: {available}")
 
         return cls.from_dict(_TEMPLATES[domain_lower])
-
 
     def update_rule(
         self,
@@ -1278,7 +871,7 @@ class Constitution(BaseModel):
         *,
         change_reason: str = "",
         **changes: Any,
-    ) -> "Constitution":
+    ) -> Constitution:
         """exp106: Return a new Constitution with the specified rule updated.
 
         Captures a ``RuleSnapshot`` of the current rule state before applying
@@ -1317,7 +910,11 @@ class Constitution(BaseModel):
         next_version = len(current_history) + 1
 
         # Snapshot the current state before changing it
-        snapshot = RuleSnapshot.from_rule(existing, version=next_version, change_reason=change_reason)
+        from .versioning import RuleSnapshot
+
+        snapshot = RuleSnapshot.from_rule(
+            existing, version=next_version, change_reason=change_reason
+        )
         new_history = {**self.rule_history, rule_id: [*current_history, snapshot]}
 
         # Coerce severity string → Severity enum if needed
@@ -1446,10 +1043,16 @@ class Constitution(BaseModel):
                 - ``errors``: list of error description strings
                 - ``warnings``: list of warning description strings
         """
-        _KNOWN_WORKFLOW_ACTIONS = frozenset({
-            "", "block", "block_and_notify", "require_human_review",
-            "escalate_to_senior", "warn",
-        })
+        _KNOWN_WORKFLOW_ACTIONS = frozenset(
+            {
+                "",
+                "block",
+                "block_and_notify",
+                "require_human_review",
+                "escalate_to_senior",
+                "warn",
+            }
+        )
         errors: list[str] = []
         warnings: list[str] = []
 
@@ -1496,23 +1099,18 @@ class Constitution(BaseModel):
         # Check workflow_action values
         for r in self.rules:
             if r.workflow_action and r.workflow_action not in _KNOWN_WORKFLOW_ACTIONS:
-                warnings.append(
-                    f"Rule {r.id} has unknown workflow_action: {r.workflow_action}"
-                )
+                warnings.append(f"Rule {r.id} has unknown workflow_action: {r.workflow_action}")
 
         # Coverage warnings
         no_keywords = [r.id for r in self.rules if not r.keywords and not r.patterns]
         if no_keywords:
             warnings.append(
-                f"Rules with no keywords or patterns (will never match): "
-                f"{', '.join(no_keywords)}"
+                f"Rules with no keywords or patterns (will never match): {', '.join(no_keywords)}"
             )
 
         no_workflow = [r.id for r in self.rules if r.enabled and not r.workflow_action]
         if no_workflow:
-            warnings.append(
-                f"Enabled rules without workflow_action: {', '.join(no_workflow)}"
-            )
+            warnings.append(f"Enabled rules without workflow_action: {', '.join(no_workflow)}")
 
         return {
             "valid": len(errors) == 0,
@@ -1612,9 +1210,13 @@ class Constitution(BaseModel):
                 changes["workflow_action"] = (old_r.workflow_action, new_r.workflow_action)
             if old_r.enabled != new_r.enabled:
                 changes["enabled"] = (str(old_r.enabled), str(new_r.enabled))
+            if old_r.hardcoded != new_r.hardcoded:
+                changes["hardcoded"] = (str(old_r.hardcoded), str(new_r.hardcoded))
             if sorted(old_r.keywords) != sorted(new_r.keywords):
-                changes["keywords"] = (",".join(sorted(old_r.keywords)),
-                                       ",".join(sorted(new_r.keywords)))
+                changes["keywords"] = (
+                    ",".join(sorted(old_r.keywords)),
+                    ",".join(sorted(new_r.keywords)),
+                )
 
             if changes:
                 modified.append({"rule_id": rid, "changes": changes})
@@ -1647,6 +1249,8 @@ class Constitution(BaseModel):
         *,
         strategy: str = "keep_higher_severity",
         name: str = "",
+        acknowledged_tensions: Sequence[AcknowledgedTension] | None = None,
+        allow_hardcoded_override: bool = False,
     ) -> dict[str, Any]:
         """exp109: Merge two constitutions with conflict detection and resolution.
 
@@ -1663,6 +1267,10 @@ class Constitution(BaseModel):
                   (CRITICAL > HIGH > MEDIUM > LOW); ties go to self
             name: Name for the merged constitution
                 (default: ``"merged-{self.name}+{other.name}"``).
+            acknowledged_tensions: Known conflict IDs that are explicitly
+                acknowledged and accepted by governance operators.
+            allow_hardcoded_override: If False, overriding any conflicting
+                ``Rule.hardcoded=True`` rule raises ``ConstitutionalViolationError``.
 
         Returns:
             dict with keys:
@@ -1672,6 +1280,10 @@ class Constitution(BaseModel):
                 - ``rules_from_self``: count of rules originating from self
                 - ``rules_from_other``: count of rules originating from other
                 - ``total_rules``: total rules in the merged constitution
+                - ``unacknowledged_tensions``: conflicting rule IDs that were
+                  resolved but not explicitly acknowledged
+                - ``acknowledged_tensions_applied``: acknowledged tensions that
+                  were encountered during merge
 
         Raises:
             ValueError: If strategy is not one of the supported values.
@@ -1694,61 +1306,117 @@ class Constitution(BaseModel):
         _VALID_STRATEGIES = frozenset({"keep_self", "keep_other", "keep_higher_severity"})
         if strategy not in _VALID_STRATEGIES:
             raise ValueError(
-                f"Unknown merge strategy {strategy!r}; "
-                f"expected one of {sorted(_VALID_STRATEGIES)}"
+                f"Unknown merge strategy {strategy!r}; expected one of {sorted(_VALID_STRATEGIES)}"
             )
 
         merged_name = name or f"merged-{self.name}+{other.name}"
         self_rules = {r.id: r for r in self.rules}
         other_rules = {r.id: r for r in other.rules}
+        acknowledged_ids = {t.rule_id for t in (acknowledged_tensions or [])}
 
         conflict_ids = set(self_rules) & set(other_rules)
         conflict_details: list[dict[str, str]] = []
+        unacknowledged_tensions: list[dict[str, str]] = []
+        acknowledged_tensions_applied: list[dict[str, str]] = []
         merged: list[Rule] = []
         from_self = 0
         from_other = 0
+
+        def _record_tension(rule_id: str, kept: str, reason: str = "") -> None:
+            rule_self = self_rules[rule_id]
+            rule_other = other_rules[rule_id]
+            if rule_self.model_dump() == rule_other.model_dump():
+                return
+
+            tension_detail = {
+                "rule_id": rule_id,
+                "kept": kept,
+            }
+            if reason:
+                tension_detail["reason"] = reason
+
+            if rule_id in acknowledged_ids:
+                acknowledged_tensions_applied.append(tension_detail)
+            else:
+                unacknowledged_tensions.append(tension_detail)
+
+        def _guard_hardcoded_override(kept: str, rule: Rule, other_rule: Rule) -> None:
+            if allow_hardcoded_override:
+                return
+
+            if kept != "self" and rule.hardcoded:
+                raise ConstitutionalViolationError(
+                    f"Cannot override hardcoded rule '{rule.id}' without explicit override",
+                    rule_id=rule.id,
+                    severity=rule.severity.value,
+                )
+
+            if kept != "other" and other_rule.hardcoded:
+                raise ConstitutionalViolationError(
+                    f"Cannot override hardcoded rule '{other_rule.id}' without explicit override",
+                    rule_id=other_rule.id,
+                    severity=other_rule.severity.value,
+                )
 
         # Add all self rules, resolving conflicts
         for rule in self.rules:
             if rule.id in conflict_ids:
                 other_rule = other_rules[rule.id]
                 if strategy == "keep_self":
+                    _guard_hardcoded_override("self", rule, other_rule)
                     merged.append(rule)
                     from_self += 1
-                    conflict_details.append({
-                        "rule_id": rule.id,
-                        "kept": "self",
-                        "strategy": strategy,
-                    })
+                    conflict_details.append(
+                        {
+                            "rule_id": rule.id,
+                            "kept": "self",
+                            "strategy": strategy,
+                        }
+                    )
+                    _record_tension(rule.id, "self")
                 elif strategy == "keep_other":
+                    _guard_hardcoded_override("other", rule, other_rule)
                     merged.append(other_rule)
                     from_other += 1
-                    conflict_details.append({
-                        "rule_id": rule.id,
-                        "kept": "other",
-                        "strategy": strategy,
-                    })
+                    conflict_details.append(
+                        {
+                            "rule_id": rule.id,
+                            "kept": "other",
+                            "strategy": strategy,
+                        }
+                    )
+                    _record_tension(rule.id, "other")
                 else:  # keep_higher_severity
                     self_rank = _SEVERITY_RANK.get(rule.severity, 0)
                     other_rank = _SEVERITY_RANK.get(other_rule.severity, 0)
                     if other_rank > self_rank:
+                        _guard_hardcoded_override("other", rule, other_rule)
                         merged.append(other_rule)
                         from_other += 1
-                        conflict_details.append({
-                            "rule_id": rule.id,
-                            "kept": "other",
-                            "strategy": strategy,
-                            "reason": f"{other_rule.severity.value} > {rule.severity.value}",
-                        })
+                        reason = f"{other_rule.severity.value} > {rule.severity.value}"
+                        conflict_details.append(
+                            {
+                                "rule_id": rule.id,
+                                "kept": "other",
+                                "strategy": strategy,
+                                "reason": reason,
+                            }
+                        )
+                        _record_tension(rule.id, "other", reason)
                     else:
+                        _guard_hardcoded_override("self", rule, other_rule)
                         merged.append(rule)
                         from_self += 1
-                        conflict_details.append({
-                            "rule_id": rule.id,
-                            "kept": "self",
-                            "strategy": strategy,
-                            "reason": f"{rule.severity.value} >= {other_rule.severity.value}",
-                        })
+                        reason = f"{rule.severity.value} >= {other_rule.severity.value}"
+                        conflict_details.append(
+                            {
+                                "rule_id": rule.id,
+                                "kept": "self",
+                                "strategy": strategy,
+                                "reason": reason,
+                            }
+                        )
+                        _record_tension(rule.id, "self", reason)
             else:
                 merged.append(rule)
                 from_self += 1
@@ -1779,9 +1447,238 @@ class Constitution(BaseModel):
             "rules_from_self": from_self,
             "rules_from_other": from_other,
             "total_rules": len(merged),
+            "unacknowledged_tensions": unacknowledged_tensions,
+            "acknowledged_tensions_applied": acknowledged_tensions_applied,
         }
 
-    def builder(self) -> "ConstitutionBuilder":
+    def detect_conflicts(self) -> dict[str, Any]:
+        """exp110: Detect rules with overlapping triggers but conflicting actions.
+
+        Finds pairs of rules that share keywords or patterns but differ in
+        severity or workflow_action. These conflicts can cause unpredictable
+        governance outcomes and should be reviewed before deployment.
+
+        Complements ``validate_integrity()`` (structural checks) by detecting
+        *semantic* conflicts — rules that are individually valid but
+        collectively contradictory.
+
+        Returns:
+            dict with keys:
+                - ``has_conflicts``: True if any conflicts detected
+                - ``conflicts``: list of dicts, each with ``rule_a``, ``rule_b``,
+                  ``shared_keywords``, ``severity_conflict``, ``workflow_conflict``
+                - ``conflict_count``: total number of conflicting pairs
+                - ``recommendation``: summary suggestion for resolution
+
+        Example::
+
+            report = constitution.detect_conflicts()
+            if report["has_conflicts"]:
+                for c in report["conflicts"]:
+                    print(f"{c['rule_a']} vs {c['rule_b']}: "
+                          f"shared={c['shared_keywords']}")
+        """
+        active = self.active_rules()
+        # Build keyword→rule_ids index
+        kw_index: dict[str, list[str]] = {}
+        rule_kws: dict[str, set[str]] = {}
+        rule_map: dict[str, Rule] = {}
+
+        for r in active:
+            rule_map[r.id] = r
+            lower_kws = {kw.lower() for kw in r.keywords}
+            rule_kws[r.id] = lower_kws
+            for kw in lower_kws:
+                kw_index.setdefault(kw, []).append(r.id)
+
+        # Find rule pairs sharing keywords
+        checked: set[tuple[str, str]] = set()
+        conflicts: list[dict[str, Any]] = []
+
+        for kw, rule_ids in kw_index.items():
+            if len(rule_ids) < 2:
+                continue
+            for i, rid_a in enumerate(rule_ids):
+                for rid_b in rule_ids[i + 1:]:
+                    pair = (min(rid_a, rid_b), max(rid_a, rid_b))
+                    if pair in checked:
+                        continue
+                    checked.add(pair)
+
+                    ra = rule_map[rid_a]
+                    rb = rule_map[rid_b]
+                    shared = sorted(rule_kws[rid_a] & rule_kws[rid_b])
+
+                    sev_conflict = ra.severity != rb.severity
+                    wf_conflict = (
+                        ra.workflow_action != rb.workflow_action
+                        and ra.workflow_action != ""
+                        and rb.workflow_action != ""
+                    )
+
+                    if sev_conflict or wf_conflict:
+                        conflict_entry: dict[str, Any] = {
+                            "rule_a": rid_a,
+                            "rule_b": rid_b,
+                            "shared_keywords": shared,
+                            "severity_conflict": sev_conflict,
+                            "workflow_conflict": wf_conflict,
+                        }
+                        if sev_conflict:
+                            conflict_entry["severity_a"] = ra.severity.value
+                            conflict_entry["severity_b"] = rb.severity.value
+                        if wf_conflict:
+                            conflict_entry["workflow_a"] = ra.workflow_action
+                            conflict_entry["workflow_b"] = rb.workflow_action
+                        conflicts.append(conflict_entry)
+
+        recommendation = ""
+        if conflicts:
+            recommendation = (
+                f"Found {len(conflicts)} conflicting rule pair(s). "
+                "Review shared keywords and align severity/workflow_action, "
+                "or add subcategory distinctions to differentiate intent."
+            )
+
+        return {
+            "has_conflicts": len(conflicts) > 0,
+            "conflicts": conflicts,
+            "conflict_count": len(conflicts),
+            "recommendation": recommendation,
+        }
+
+    def to_yaml(self) -> str:
+        """exp111: Serialize this constitution to a YAML string.
+
+        Produces a YAML document that can be loaded back via
+        ``Constitution.from_yaml_file()`` or saved to disk for version control,
+        sharing between services, or compliance archival.
+
+        Returns:
+            YAML string representing the full constitution.
+
+        Example::
+
+            yaml_str = constitution.to_yaml()
+            with open("governance.yaml", "w") as f:
+                f.write(yaml_str)
+        """
+        rules_data = []
+        for r in self.rules:
+            rule_dict: dict[str, Any] = {
+                "id": r.id,
+                "text": r.text,
+                "severity": r.severity.value,
+                "category": r.category,
+            }
+            if r.keywords:
+                rule_dict["keywords"] = list(r.keywords)
+            if r.patterns:
+                rule_dict["patterns"] = list(r.patterns)
+            if r.subcategory:
+                rule_dict["subcategory"] = r.subcategory
+            if r.workflow_action:
+                rule_dict["workflow_action"] = r.workflow_action
+            if not r.enabled:
+                rule_dict["enabled"] = False
+            if r.hardcoded:
+                rule_dict["hardcoded"] = True
+            if r.depends_on:
+                rule_dict["depends_on"] = list(r.depends_on)
+            rules_data.append(rule_dict)
+
+        doc: dict[str, Any] = {
+            "name": self.name,
+            "version": self.version,
+            "description": self.description,
+            "rules": rules_data,
+        }
+        if self.metadata:
+            doc["metadata"] = dict(self.metadata)
+
+        return yaml.dump(doc, default_flow_style=False, sort_keys=False, allow_unicode=True)
+
+    def filter(
+        self,
+        *,
+        severity: str | Severity | None = None,
+        min_severity: str | Severity | None = None,
+        category: str | None = None,
+        workflow_action: str | None = None,
+        enabled_only: bool = True,
+    ) -> Constitution:
+        """exp112: Return a new Constitution containing only matching rules.
+
+        Useful for context-aware governance where different environments or agent
+        tiers use different rule subsets:
+
+        - Production: only CRITICAL + HIGH rules
+        - Staging: all rules including LOW informational
+        - Specific domain: only rules in a given category
+
+        Args:
+            severity: Keep only rules with this exact severity.
+            min_severity: Keep rules at this severity or higher
+                (CRITICAL > HIGH > MEDIUM > LOW).
+            category: Keep only rules in this category.
+            workflow_action: Keep only rules with this workflow_action.
+            enabled_only: If True (default), exclude disabled rules.
+
+        Returns:
+            A new Constitution with filtered rules. Preserves name/version/metadata
+            with a ``"filtered"`` flag in metadata.
+
+        Raises:
+            ValueError: If the filter would produce an empty constitution.
+
+        Example::
+
+            prod_rules = constitution.filter(min_severity="high")
+            staging_rules = constitution.filter(category="data-protection")
+        """
+        _SEV_RANK = {
+            Severity.CRITICAL: 4,
+            Severity.HIGH: 3,
+            Severity.MEDIUM: 2,
+            Severity.LOW: 1,
+        }
+
+        if severity is not None and isinstance(severity, str):
+            severity = Severity(severity)
+        if min_severity is not None and isinstance(min_severity, str):
+            min_severity = Severity(min_severity)
+
+        min_rank = _SEV_RANK.get(min_severity, 0) if min_severity else 0
+
+        filtered: list[Rule] = []
+        for r in self.rules:
+            if enabled_only and not r.enabled:
+                continue
+            if severity is not None and r.severity != severity:
+                continue
+            if min_severity is not None and _SEV_RANK.get(r.severity, 0) < min_rank:
+                continue
+            if category is not None and r.category != category:
+                continue
+            if workflow_action is not None and r.workflow_action != workflow_action:
+                continue
+            filtered.append(r)
+
+        if not filtered:
+            raise ValueError(
+                "Filter produced an empty constitution — "
+                "at least one rule must match the criteria"
+            )
+
+        return Constitution(
+            name=self.name,
+            version=self.version,
+            description=self.description,
+            rules=filtered,
+            metadata={**self.metadata, "filtered": True},
+        )
+
+    def builder(self) -> ConstitutionBuilder:
         """Return a ConstitutionBuilder pre-populated with this constitution's rules.
 
         Useful for creating modified versions of an existing constitution using
@@ -1795,6 +1692,8 @@ class Constitution(BaseModel):
                 .build()
             )
         """
+        from .templates import ConstitutionBuilder
+
         b = ConstitutionBuilder(self.name, version=self.version, description=self.description)
         b._rules = list(self.rules)
         b._metadata = dict(self.metadata)
@@ -1805,181 +1704,3 @@ class Constitution(BaseModel):
 
     def __repr__(self) -> str:
         return f"Constitution(name={self.name!r}, rules={len(self.rules)}, hash={self.hash!r})"
-
-
-class ConstitutionBuilder:
-    """exp108: Fluent builder for programmatic constitution construction.
-
-    Provides a method-chaining API for building ``Constitution`` objects in code,
-    without needing to write YAML. Useful for:
-
-    - Unit tests that need targeted constitutions
-    - Application code that constructs rules from database or config
-    - Composing constitutions from reusable rule sets
-
-    Example::
-
-        from acgs_lite.constitution import ConstitutionBuilder
-
-        constitution = (
-            ConstitutionBuilder("my-governance", version="2.0.0")
-            .description("Governance rules for our production agent")
-            .add_rule(
-                "SAFE-001",
-                "Agent must not provide financial advice",
-                severity="critical",
-                keywords=["invest", "buy stocks", "financial advice"],
-                category="regulatory",
-                workflow_action="block",
-            )
-            .add_rule(
-                "SAFE-002",
-                "Agent must not expose PII",
-                severity="critical",
-                patterns=[r"\b\d{3}-\d{2}-\d{4}\b"],
-                category="data-protection",
-                workflow_action="block_and_notify",
-            )
-            .build()
-        )
-    """
-
-    def __init__(
-        self,
-        name: str = "custom",
-        *,
-        version: str = "1.0.0",
-        description: str = "",
-    ) -> None:
-        self._name = name
-        self._version = version
-        self._description = description
-        self._rules: list[Rule] = []
-        self._metadata: dict[str, Any] = {}
-        self._rule_ids: set[str] = set()
-
-    def description(self, text: str) -> "ConstitutionBuilder":
-        """Set the constitution description. Returns self for chaining."""
-        self._description = text
-        return self
-
-    def metadata(self, **kwargs: Any) -> "ConstitutionBuilder":
-        """Set metadata key-value pairs. Returns self for chaining."""
-        self._metadata.update(kwargs)
-        return self
-
-    def add_rule(
-        self,
-        rule_id: str,
-        text: str,
-        *,
-        severity: str | Severity = Severity.HIGH,
-        keywords: list[str] | None = None,
-        patterns: list[str] | None = None,
-        category: str = "general",
-        subcategory: str = "",
-        workflow_action: str = "",
-        enabled: bool = True,
-        depends_on: list[str] | None = None,
-        **rule_kwargs: Any,
-    ) -> "ConstitutionBuilder":
-        """Add a rule to the constitution being built. Returns self for chaining.
-
-        Args:
-            rule_id: Unique rule ID (e.g. "SAFE-001").
-            text: Human-readable rule description.
-            severity: Severity level — "critical", "high", "medium", "low" or Severity enum.
-            keywords: List of trigger keywords (case-insensitive).
-            patterns: List of regex patterns to match.
-            category: Rule category for grouping and filtering.
-            subcategory: Finer-grained sub-classification.
-            workflow_action: Downstream action — "block", "block_and_notify",
-                             "require_human_review", "escalate_to_senior", "warn".
-            enabled: Whether the rule is active (default True).
-            depends_on: List of rule IDs this rule depends on.
-            **rule_kwargs: Additional Rule fields passed through.
-
-        Raises:
-            ValueError: If rule_id is already registered in this builder.
-        """
-        if rule_id in self._rule_ids:
-            raise ValueError(f"Rule ID {rule_id!r} already exists in this builder")
-
-        _sev = Severity(severity) if isinstance(severity, str) else severity
-        rule = Rule(
-            id=rule_id,
-            text=text,
-            severity=_sev,
-            keywords=keywords or [],
-            patterns=patterns or [],
-            category=category,
-            subcategory=subcategory,
-            workflow_action=workflow_action,
-            enabled=enabled,
-            depends_on=depends_on or [],
-            **rule_kwargs,
-        )
-        self._rules.append(rule)
-        self._rule_ids.add(rule_id)
-        return self
-
-    def add_rules(self, rules: list[Rule]) -> "ConstitutionBuilder":
-        """Add pre-built Rule objects. Returns self for chaining."""
-        for r in rules:
-            if r.id in self._rule_ids:
-                raise ValueError(f"Rule ID {r.id!r} already exists in this builder")
-            self._rules.append(r)
-            self._rule_ids.add(r.id)
-        return self
-
-    def extend_from(self, constitution: "Constitution") -> "ConstitutionBuilder":
-        """Copy all rules from an existing constitution into this builder.
-
-        Useful for composing templates:
-
-            builder = (
-                ConstitutionBuilder("extended-gitlab")
-                .extend_from(Constitution.from_template("gitlab"))
-                .add_rule("CUSTOM-001", "Extra org rule", severity="high", keywords=["forbidden"])
-                .build()
-            )
-        """
-        for r in constitution.rules:
-            if r.id not in self._rule_ids:
-                self._rules.append(r)
-                self._rule_ids.add(r.id)
-        return self
-
-    def remove_rule(self, rule_id: str) -> "ConstitutionBuilder":
-        """Remove a rule by ID. Returns self for chaining.
-
-        Raises:
-            KeyError: If rule_id is not present.
-        """
-        if rule_id not in self._rule_ids:
-            raise KeyError(f"Rule ID {rule_id!r} not found in builder")
-        self._rules = [r for r in self._rules if r.id != rule_id]
-        self._rule_ids.discard(rule_id)
-        return self
-
-    def build(self) -> "Constitution":
-        """Build and return the Constitution.
-
-        Raises:
-            ValueError: If no rules have been added.
-        """
-        if not self._rules:
-            raise ValueError("Cannot build an empty constitution — add at least one rule")
-        return Constitution(
-            name=self._name,
-            version=self._version,
-            description=self._description,
-            rules=list(self._rules),
-            metadata=dict(self._metadata),
-        )
-
-    def __len__(self) -> int:
-        return len(self._rules)
-
-    def __repr__(self) -> str:
-        return f"ConstitutionBuilder(name={self._name!r}, rules={len(self._rules)})"

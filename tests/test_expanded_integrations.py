@@ -38,6 +38,7 @@ class MockCompletion:
 # ─── LiteLLM Integration Tests ────────────────────────────────────────────
 
 
+@pytest.mark.integration
 class TestGovernedLiteLLM:
     @pytest.fixture(autouse=True)
     def _patch_litellm_available(self):
@@ -166,6 +167,7 @@ class TestGovernedLiteLLM:
 # ─── Google GenAI Integration Tests ───────────────────────────────────────
 
 
+@pytest.mark.integration
 class TestGovernedGenAI:
     def test_safe_generate(self):
         with patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_cls:
@@ -246,6 +248,7 @@ class TestGovernedGenAI:
 # ─── MCP Server Tests ────────────────────────────────────────────────────
 
 
+@pytest.mark.integration
 class TestMCPServer:
     def test_create_server(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
@@ -373,6 +376,7 @@ class TestMCPServer:
 # ─── AutoGen Integration Tests ────────────────────────────────────────────
 
 
+@pytest.mark.integration
 class TestGovernedModelClient:
     def test_safe_create(self):
         with patch("acgs_lite.integrations.autogen.AUTOGEN_AVAILABLE", True):
@@ -452,6 +456,7 @@ class TestGovernedModelClient:
 # ─── LlamaIndex Integration Tests ─────────────────────────────────────────
 
 
+@pytest.mark.integration
 class TestGovernedQueryEngine:
     def test_safe_query(self):
         with patch("acgs_lite.integrations.llamaindex.LLAMAINDEX_AVAILABLE", True):
@@ -504,6 +509,7 @@ class TestGovernedQueryEngine:
             assert governed.stats["total_validations"] >= 1
 
 
+@pytest.mark.integration
 class TestGovernedChatEngine:
     def test_safe_chat(self):
         with patch("acgs_lite.integrations.llamaindex.LLAMAINDEX_AVAILABLE", True):
@@ -552,6 +558,7 @@ class TestGovernedChatEngine:
 # ─── Middleware Tests ──────────────────────────────────────────────────────
 
 
+@pytest.mark.integration
 class TestGovernanceASGIMiddleware:
     def _make_test_app(self):
         """Create a simple ASGI app for testing."""
@@ -646,6 +653,7 @@ class TestGovernanceASGIMiddleware:
         assert mw.stats["total_validations"] == 0
 
 
+@pytest.mark.integration
 class TestGovernanceWSGIMiddleware:
     def test_get_request(self):
         from acgs_lite.middleware import GovernanceWSGIMiddleware

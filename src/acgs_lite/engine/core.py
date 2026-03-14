@@ -16,29 +16,15 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any, NamedTuple
 
+from .rust import _HAS_AHO, _HAS_RUST, _RUST_ALLOW, _RUST_DENY, _RUST_DENY_CRITICAL
+
 # Optional Aho-Corasick C extension for O(n) keyword scanning
-try:
+if _HAS_AHO:
     import ahocorasick as _ac
 
-    _HAS_AHO = True
-except ImportError:
-    _HAS_AHO = False
-
-# Optional Rust hot-path extension (exp79/80: PyO3 native validate loop)
-try:
+if _HAS_RUST:
     import acgs_lite_rust as _rust
 
-    _HAS_RUST = True
-    _RUST_ALLOW = _rust.ALLOW
-    _RUST_DENY_CRITICAL = _rust.DENY_CRITICAL
-    _RUST_DENY = _rust.DENY
-except ImportError:
-    _HAS_RUST = False
-    _RUST_ALLOW = 0
-    _RUST_DENY_CRITICAL = 1
-    _RUST_DENY = 2
-
-# Module-level counter for request IDs — avoids os.urandom syscall per call
 _request_counter = itertools.count(1)
 
 from acgs_lite.audit import AuditEntry, AuditLog
@@ -232,61 +218,10 @@ class _FastAuditLog:
         return len(self._records)
 
 
-@dataclass(frozen=True)
-class BatchValidationResult:
-    """exp107: Aggregate result of a batch governance validation.
-
-    Returned by ``GovernanceEngine.validate_batch_report()``. Provides per-action
-    results alongside aggregate statistics for orchestrators that need to assess
-    the overall compliance posture of a batch of agent actions — e.g., before
-    committing a pipeline stage, processing a queue of messages, or running a
-    multi-step workflow.
-
-    Attributes:
-        results: Individual ``ValidationResult`` for each action (same order as input).
-        total: Total number of actions validated.
-        allowed: Count of actions that passed all rules.
-        denied: Count of actions that were blocked (had critical/high violations).
-        escalated: Count of actions that have medium/low violations (warn only).
-        compliance_rate: Fraction of clean actions (allowed / total).
-        critical_rule_ids: Rule IDs that triggered at least one critical violation.
-        summary: Human-readable one-line summary of the batch result.
-    """
-
-    results: tuple  # tuple[ValidationResult, ...] — frozen
-    total: int
-    allowed: int
-    denied: int
-    escalated: int
-    compliance_rate: float
-    critical_rule_ids: tuple  # tuple[str, ...]
-    summary: str
-
-    def to_dict(self) -> dict:
-        """Serialise batch result to a JSON-compatible dict."""
-        return {
-            "total": self.total,
-            "allowed": self.allowed,
-            "denied": self.denied,
-            "escalated": self.escalated,
-            "compliance_rate": self.compliance_rate,
-            "critical_rule_ids": list(self.critical_rule_ids),
-            "summary": self.summary,
-            "results": [
-                {
-                    "action": r.action,
-                    "valid": r.valid,
-                    "violations": [
-                        {"rule_id": v.rule_id, "severity": v.severity.value}
-                        for v in r.violations
-                    ],
-                }
-                for r in self.results
-            ],
-        }
+from .batch import BatchValidationMixin
 
 
-class GovernanceEngine:
+class GovernanceEngine(BatchValidationMixin):
     """Core governance validation engine."""
 
     __slots__ = (
@@ -562,10 +497,10 @@ class GovernanceEngine:
             self._rule_excs,  # [4]
             self._has_high_rules,  # [5]
             self._fast_records,  # [6]
-            self.strict,  # [7]
-            _POSITIVE_VERBS_SET,  # [8] exp73: LOAD_GLOBAL→LOAD_FAST
-            self._ac_iter is not None,  # [9] exp75: precomputed bool — IS_OP→LOAD_FAST
+            _POSITIVE_VERBS_SET,  # [7] exp73: LOAD_GLOBAL→LOAD_FAST
+            self._ac_iter is not None,  # [8] exp75: precomputed bool — IS_OP→LOAD_FAST
         )
+        self._rust_strict = self.strict
         # exp80: Build Rust hot-path validator (full coverage: ALLOW + DENY_CRITICAL + DENY bitmask).
         # Rust handles ALL non-context scenarios: allow (~350ns), critical deny (~350ns), and
         # escalate/non-critical deny (~400ns via bitmask) — eliminating Python AC scan overhead.
@@ -612,6 +547,15 @@ class GovernanceEngine:
         # appeal, age-, third). Without this, first-pass p99 is ~11µs vs ~2µs
         # warmed — the benchmark runs one pass per process.
         if self._rust_validator is not None:
+            # Temporarily disable logging for warmup by replacing _hot
+            _real_hot = self._hot
+            _real_audit = self.audit_log
+            
+            self.audit_log = _FastAuditLog(constitution.hash)
+            _temp_hot = list(_real_hot)
+            _temp_hot[6] = _NoopRecorder()  # _fast_records is at index 6
+            self._hot = tuple(_temp_hot)
+            
             for _wa in (
                 "run safety test",  # allow (pos-verb)
                 "deploy model without safety review",  # deny-crit + deploy anchor
@@ -630,6 +574,10 @@ class GovernanceEngine:
                     self.validate(_wa)
                 except ConstitutionalViolationError:
                     pass
+            
+            # Restore logging
+            self._hot = _real_hot
+            self.audit_log = _real_audit
         # exp72: freeze all long-lived objects into the permanent generation.
         # gc.freeze() moves current heap objects to a special permanent set that is
         # never collected nor traversed during generation-0/1/2 collections.
@@ -649,7 +597,8 @@ class GovernanceEngine:
         context: dict[str, Any] | None = None,
     ) -> ValidationResult:
         """Validate an action against the constitution."""
-        # exp75: UNPACK_SEQUENCE(10) — add _has_ac bool to convert IS_OP checks→LOAD_FAST.
+        strict = self.strict
+        # exp75: UNPACK_SEQUENCE(9) — add _has_ac bool to convert IS_OP checks→LOAD_FAST.
         (
             _ac_iter,
             _anchor_dispatch,
@@ -658,7 +607,6 @@ class GovernanceEngine:
             _rule_excs,
             _has_high,
             _fast_records,
-            strict,
             _pos_verbs,
             _has_ac,
         ) = self._hot
@@ -666,10 +614,12 @@ class GovernanceEngine:
         # Rust hot-path: validate_hot() for no-context (bitmask, minimal PyO3 overhead).
         # validate_full() for context-bearing calls (structured violations + context processing).
         # Both call the same Rust scan() — IP protection is identical.
-        _rv = self._rust_validator
-        if _rv is not None and _fast_records is not None and context is None:
+        _rv = self._rust_validator if strict == self._rust_strict else None
+        if _rv is not None and _fast_records is not None and context is None and strict:
             _decision, _data = _rv.validate_hot(action.lower())
             if _decision == _RUST_ALLOW:
+                if isinstance(_fast_records, _NoopRecorder):
+                    _fast_records.append(None)
                 return self._pooled_result
             elif _decision == _RUST_DENY_CRITICAL:
                 _idx = int(_data)
@@ -682,6 +632,8 @@ class GovernanceEngine:
                     )
                 _e = _rule_excs[_idx]
                 _e.action = action[:200]
+                if isinstance(_fast_records, _NoopRecorder):
+                    _fast_records.append(None)
                 raise _e
             elif _decision == _RUST_DENY:
                 _bm = int(_data)
@@ -695,12 +647,12 @@ class GovernanceEngine:
                 _pool_e = self._pooled_escalate
                 _pool_e.violations = _vlist
                 _pool_e.action = action[:500]
+                if isinstance(_fast_records, _NoopRecorder):
+                    _fast_records.append(None)
                 return _pool_e
-        elif _rv is not None and context:
+        elif _rv is not None and context and strict:
             # Context-bearing path: Rust handles both action scan + context processing.
-            _ctx_pairs = [
-                (k, v) for k, v in context.items() if isinstance(v, str)
-            ]
+            _ctx_pairs = [(k, v) for k, v in context.items() if isinstance(v, str)]
             _decision, _violations, _blocking = _rv.validate_full(
                 action.lower(), _ctx_pairs if _ctx_pairs else None
             )
@@ -724,9 +676,7 @@ class GovernanceEngine:
                     for rid, rtxt, sev, _, cat in _violations
                 ]
                 if _blocking and strict:
-                    _bv = next(
-                        (v for v in _vlist if v.severity.blocks()), _vlist[0]
-                    )
+                    _bv = next((v for v in _vlist if v.severity.blocks()), _vlist[0])
                     raise ConstitutionalViolationError(
                         f"Action blocked by rule {_bv.rule_id}: {_bv.rule_text}",
                         rule_id=_bv.rule_id,
@@ -1023,7 +973,7 @@ class GovernanceEngine:
 
         # Run custom validators only when present (and not already critical)
         if self.custom_validators:
-            if not any(v.severity == Severity.CRITICAL for v in violations):
+            if not violations or not any(v.severity == Severity.CRITICAL for v in violations):
                 ctx = context or {}
                 for validator in self.custom_validators:
                     try:
@@ -1052,6 +1002,8 @@ class GovernanceEngine:
                 # exp62: skip append + all pool mutations — benchmark reads only .valid/.violations.
                 # NoopRecorder._count unincremented (never read); pooled result has valid=True,
                 # violations=_EMPTY_VIOLATIONS which is all the benchmark needs.
+                if isinstance(_fast_records, _NoopRecorder):
+                    _fast_records.append(None)
                 return self._pooled_result
             # Slow path (real AuditLog) — rare
             # exp62: request_id/latency_ms deferred from allow fast-path; compute here.
@@ -1061,7 +1013,7 @@ class GovernanceEngine:
             result = ValidationResult(
                 True,
                 self._const_hash,
-                violations,
+                [],
                 self._rules_count,
                 latency_ms,
                 request_id,
@@ -1089,7 +1041,7 @@ class GovernanceEngine:
         # exp61: Skip blocking list comp when no HIGH-severity rules exist.
         # All blocking rules are CRITICAL → early-raised in AC loop → never reach here.
         # For constitutions with HIGH rules, compute blocking normally.
-        if _has_high:
+        if _has_high or not strict:
             blocking = [v for v in unique_violations if v.severity.blocks()]
             if strict and blocking:
                 violation = blocking[0]
@@ -1099,17 +1051,20 @@ class GovernanceEngine:
                     severity=violation.severity.value,
                     action=action_200,
                 )
-            valid = not blocking
+            valid = not bool(blocking)
         else:
             # No HIGH rules: all blocking violations (CRITICAL) already raised in AC loop.
             valid = True
 
         if _fast_records is not None:
-            # exp62: pooled escalate result — mutate 2 fields, skip 9-field construction
+            # exp62: pooled escalate result — mutate fields, skip 9-field construction
             # (~125ns saved) + skip request_id/latency_ms computation (~60ns saved).
+            if isinstance(_fast_records, _NoopRecorder):
+                _fast_records.append(None)
             _pool_e = self._pooled_escalate
             _pool_e.violations = unique_violations
             _pool_e.action = action_trimmed
+            _pool_e.valid = valid
             return _pool_e
 
         # Slow path: real AuditLog — compute deferred fields.
@@ -1145,127 +1100,6 @@ class GovernanceEngine:
 
         return result
 
-    def validate_batch(
-        self,
-        actions: list[str],
-        *,
-        agent_id: str = "anonymous",
-    ) -> list[ValidationResult]:
-        """Validate multiple actions. Does not raise in strict mode."""
-        old_strict = self.strict
-        self.strict = False
-        try:
-            return [self.validate(a, agent_id=agent_id) for a in actions]
-        finally:
-            self.strict = old_strict
-
-    def validate_batch_report(
-        self,
-        actions: "list[str | tuple[str, dict]]",
-        *,
-        agent_id: str = "anonymous",
-    ) -> BatchValidationResult:
-        """exp107: Validate a batch of actions and return aggregate statistics.
-
-        Accepts plain action strings or (action, context) pairs. Never raises
-        in strict mode — all violations are captured in the returned result.
-        Useful for orchestrators that need to assess a batch of agent outputs
-        before routing them to downstream systems.
-
-        Args:
-            actions: List of action strings OR (action, context_dict) tuples.
-                     Plain strings use empty context ``{}``.
-            agent_id: Agent performing the actions.
-
-        Returns:
-            ``BatchValidationResult`` with per-action results and aggregate stats.
-
-        Example::
-
-            report = engine.validate_batch_report([
-                "deploy to staging",
-                ("deploy to production", {"environment": "prod"}),
-                "auto-approve merge request",
-            ])
-            print(report.compliance_rate)   # 0.666...
-            print(report.critical_rule_ids) # ('ACGS-004',)
-            print(report.summary)
-        """
-        individual: list = []
-        for item in actions:
-            if isinstance(item, tuple):
-                action, ctx = item[0], item[1]
-            else:
-                action, ctx = item, {}
-            try:
-                individual.append(self.validate(action, agent_id=agent_id, context=ctx))
-            except ConstitutionalViolationError as exc:
-                # Rust hot-path raises for CRITICAL regardless of strict mode;
-                # construct a synthetic ValidationResult so the batch never raises.
-                _sev = Severity(exc.severity) if exc.severity in {s.value for s in Severity} else Severity.CRITICAL
-                _viol = Violation(
-                    rule_id=exc.rule_id,
-                    rule_text=str(exc),
-                    severity=_sev,
-                    matched_content=action[:200],
-                    category="constitutional",
-                )
-                individual.append(ValidationResult(
-                    valid=False,
-                    constitutional_hash=self._const_hash,
-                    violations=[_viol],
-                    action=action,
-                    agent_id=agent_id,
-                ))
-
-        total = len(individual)
-        allowed = 0
-        denied = 0
-        escalated = 0
-        critical_ids: set = set()
-
-        for r in individual:
-            if not r.violations:
-                allowed += 1
-            else:
-                has_blocking = any(
-                    v.severity.blocks() for v in r.violations
-                )
-                if has_blocking:
-                    denied += 1
-                    for v in r.violations:
-                        if v.severity.blocks():
-                            critical_ids.add(v.rule_id)
-                else:
-                    escalated += 1
-
-        compliance_rate = allowed / total if total > 0 else 1.0
-
-        if denied == 0 and escalated == 0:
-            summary = f"PASS: all {total} actions compliant"
-        elif denied > 0:
-            summary = (
-                f"FAIL: {denied}/{total} actions blocked, "
-                f"{escalated} warnings, "
-                f"compliance={compliance_rate:.1%}"
-            )
-        else:
-            summary = (
-                f"WARN: {escalated}/{total} actions have warnings, "
-                f"compliance={compliance_rate:.1%}"
-            )
-
-        return BatchValidationResult(
-            results=tuple(individual),
-            total=total,
-            allowed=allowed,
-            denied=denied,
-            escalated=escalated,
-            compliance_rate=compliance_rate,
-            critical_rule_ids=tuple(sorted(critical_ids)),
-            summary=summary,
-        )
-
     def add_validator(self, validator: CustomValidator) -> None:
         """Register a custom validator function."""
         self.custom_validators.append(validator)
@@ -1273,6 +1107,15 @@ class GovernanceEngine:
     @property
     def stats(self) -> dict[str, Any]:
         """Return engine statistics."""
+        if isinstance(self._fast_records, _NoopRecorder):
+            total = len(self._fast_records)
+            return {
+                "total_validations": total,
+                "compliance_rate": 1.0,  # NoopRecorder doesn't track compliance rate accurately
+                "rules_count": len(self.constitution.rules),
+                "constitutional_hash": self._const_hash,
+                "avg_latency_ms": 0.0,
+            }
         entries = self.audit_log.entries
         total = len(entries)
         valid_count = sum(1 for e in entries if e.valid)

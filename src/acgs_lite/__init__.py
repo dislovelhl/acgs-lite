@@ -12,7 +12,14 @@ Usage::
 """
 
 from acgs_lite.audit import AuditEntry, AuditLog
-from acgs_lite.constitution import Constitution, ConstitutionBuilder, Rule, RuleSnapshot, Severity
+from acgs_lite.constitution import (
+    AcknowledgedTension,
+    Constitution,
+    ConstitutionBuilder,
+    Rule,
+    RuleSnapshot,
+    Severity,
+)
 from acgs_lite.engine import BatchValidationResult, GovernanceEngine, ValidationResult
 from acgs_lite.errors import (
     ConstitutionalViolationError,
@@ -50,6 +57,7 @@ __all__ = [
     "Constitution",
     "ConstitutionBuilder",
     "Rule",
+    "AcknowledgedTension",
     "RuleSnapshot",
     "Severity",
     # Engine

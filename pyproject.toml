@@ -85,6 +85,13 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+markers = [
+    "unit: Fast tests with no I/O and no external services",
+    "integration: Tests requiring mocked external services",
+    "compliance: Regulatory framework tests",
+    "constitutional: Governance engine validation tests",
+    "benchmark: Performance tests",
+]
 
 [tool.mypy]
 python_version = "3.10"

@@ -50,6 +50,7 @@ def system_desc() -> dict:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.compliance
 class TestChecklistItem:
     def test_default_status_is_pending(self) -> None:
         item = ChecklistItem(ref="TEST.1", requirement="Test requirement")
@@ -90,6 +91,7 @@ class TestChecklistItem:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.compliance
 class TestNISTAIRMF:
     def test_checklist_has_all_four_functions(self, system_desc: dict) -> None:
         fw = NISTAIRMFFramework()
@@ -120,6 +122,7 @@ class TestNISTAIRMF:
         assert fw.status == "voluntary"
 
 
+@pytest.mark.compliance
 class TestISO42001:
     def test_checklist_has_clauses_and_annex(self, system_desc: dict) -> None:
         fw = ISO42001Framework()
@@ -144,6 +147,7 @@ class TestISO42001:
         assert len(result.gaps) > 0
 
 
+@pytest.mark.compliance
 class TestGDPR:
     def test_checklist_covers_key_articles(self, system_desc: dict) -> None:
         fw = GDPRFramework()
@@ -166,6 +170,7 @@ class TestGDPR:
         assert fw.status == "enacted"
 
 
+@pytest.mark.compliance
 class TestSOC2AI:
     def test_checklist_covers_trust_criteria(self, system_desc: dict) -> None:
         fw = SOC2AIFramework()
@@ -183,6 +188,7 @@ class TestSOC2AI:
         assert len(compliant) >= 8
 
 
+@pytest.mark.compliance
 class TestHIPAAAI:
     def test_checklist_covers_hipaa_rules(self, system_desc: dict) -> None:
         fw = HIPAAAIFramework()
@@ -200,6 +206,7 @@ class TestHIPAAAI:
         assert len(compliant) >= 7
 
 
+@pytest.mark.compliance
 class TestUSFairLending:
     def test_checklist_covers_ecoa_and_fcra(self, system_desc: dict) -> None:
         fw = USFairLendingFramework()
@@ -216,6 +223,7 @@ class TestUSFairLending:
         assert len(result.recommendations) > 0
 
 
+@pytest.mark.compliance
 class TestNYCLL144:
     def test_checklist_covers_audit_and_notice(self, system_desc: dict) -> None:
         fw = NYCLL144Framework()
@@ -231,6 +239,7 @@ class TestNYCLL144:
         assert fw.jurisdiction == "New York City"
 
 
+@pytest.mark.compliance
 class TestOECDAI:
     def test_checklist_covers_five_principles(self, system_desc: dict) -> None:
         fw = OECDAIFramework()
@@ -257,6 +266,7 @@ class TestOECDAI:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.compliance
 class TestProtocolConformance:
     @pytest.mark.parametrize(
         "framework_cls",
@@ -288,6 +298,7 @@ class TestProtocolConformance:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.compliance
 class TestMultiFrameworkAssessor:
     def test_assess_all_frameworks(self) -> None:
         # Use unrecognized jurisdiction/domain so all frameworks are selected
@@ -349,6 +360,7 @@ class TestMultiFrameworkAssessor:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.compliance
 class TestJurisdictionSelection:
     def test_eu_jurisdiction_includes_gdpr(self) -> None:
         assessor = MultiFrameworkAssessor()
@@ -402,6 +414,7 @@ class TestJurisdictionSelection:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.compliance
 class TestCrossFrameworkGaps:
     def test_cross_gaps_identified(self, system_desc: dict) -> None:
         assessor = MultiFrameworkAssessor()
@@ -422,6 +435,7 @@ class TestCrossFrameworkGaps:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.compliance
 class TestComplianceScoring:
     def test_empty_checklist_scores_one(self) -> None:
         assessment = FrameworkAssessment(

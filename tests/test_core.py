@@ -25,6 +25,7 @@ from acgs_lite import (
 # ─── Constitution Tests ───────────────────────────────────────────────────
 
 
+@pytest.mark.unit
 class TestConstitution:
     def test_default_constitution(self):
         c = Constitution.default()
@@ -50,6 +51,11 @@ class TestConstitution:
     def test_hash_changes_with_rules(self):
         c1 = Constitution.from_rules([Rule(id="R1", text="Rule A")])
         c2 = Constitution.from_rules([Rule(id="R1", text="Rule B")])
+        assert c1.hash != c2.hash
+
+    def test_hash_changes_with_hardcoded_flag(self):
+        c1 = Constitution.from_rules([Rule(id="R1", text="Rule A", hardcoded=False)])
+        c2 = Constitution.from_rules([Rule(id="R1", text="Rule A", hardcoded=True)])
         assert c1.hash != c2.hash
 
     def test_versioned_hash(self):
@@ -106,6 +112,7 @@ rules:
         assert len(c.active_rules()) == 1
 
 
+@pytest.mark.unit
 class TestRule:
     def test_keyword_matching(self):
         rule = Rule(id="R1", text="No PII", keywords=["ssn", "credit card"])
@@ -134,6 +141,7 @@ class TestRule:
 # ─── Engine Tests ──────────────────────────────────────────────────────────
 
 
+@pytest.mark.constitutional
 class TestGovernanceEngine:
     def test_valid_action_passes(self):
         c = Constitution.default()
@@ -238,6 +246,7 @@ class TestGovernanceEngine:
 # ─── Audit Tests ───────────────────────────────────────────────────────────
 
 
+@pytest.mark.unit
 class TestAuditLog:
     def test_record_and_query(self):
         log = AuditLog()
@@ -283,6 +292,7 @@ class TestAuditLog:
 # ─── MACI Tests ────────────────────────────────────────────────────────────
 
 
+@pytest.mark.constitutional
 class TestMACIEnforcer:
     def test_role_assignment(self):
         enforcer = MACIEnforcer()
@@ -337,6 +347,7 @@ class TestMACIEnforcer:
 # ─── GovernedAgent Tests ──────────────────────────────────────────────────
 
 
+@pytest.mark.constitutional
 class TestGovernedAgent:
     def test_wrap_callable(self):
         def my_agent(input: str) -> str:
@@ -401,6 +412,7 @@ class TestGovernedAgent:
         assert "test" in r
 
 
+@pytest.mark.constitutional
 class TestGovernedCallable:
     def test_decorator(self):
         @GovernedCallable()
@@ -430,6 +442,7 @@ class TestGovernedCallable:
 # ─── Async Tests ──────────────────────────────────────────────────────────
 
 
+@pytest.mark.constitutional
 class TestAsyncGovernedAgent:
     @pytest.mark.asyncio
     async def test_async_run(self):
@@ -453,6 +466,7 @@ class TestAsyncGovernedAgent:
 # ─── Integration Tests ────────────────────────────────────────────────────
 
 
+@pytest.mark.constitutional
 class TestIntegration:
     def test_full_governance_pipeline(self):
         """End-to-end: constitution → engine → agent → audit."""

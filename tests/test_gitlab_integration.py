@@ -9,7 +9,7 @@ import hmac
 import json
 from dataclasses import dataclass, field
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -21,11 +21,8 @@ from acgs_lite import (
     MACIEnforcer,
     MACIRole,
     MACIViolationError,
-    Rule,
-    Severity,
     ValidationResult,
 )
-from acgs_lite.engine import Violation
 
 # ─── Mock Objects ──────────────────────────────────────────────────────────
 
@@ -164,8 +161,7 @@ def _format_governance_report_markdown(
         lines.append("|------|----------|----------|--------|")
         for v in result.violations:
             lines.append(
-                f"| `{v.rule_id}` | {v.severity.value} | {v.category} "
-                f"| {v.matched_content[:80]} |"
+                f"| `{v.rule_id}` | {v.severity.value} | {v.category} | {v.matched_content[:80]} |"
             )
 
     return "\n".join(lines)
@@ -196,6 +192,7 @@ def _create_gitlab_ci_config(
 # ─── GitLabGovernanceBot Tests ────────────────────────────────────────────
 
 
+@pytest.mark.integration
 class TestGitLabGovernanceBot:
     """Tests for the GitLab merge request governance bot."""
 
@@ -241,9 +238,7 @@ class TestGitLabGovernanceBot:
         assert len(title_result.violations) == 0
         assert len(desc_result.violations) == 0
 
-    def test_validate_merge_request_with_violations(
-        self, engine: GovernanceEngine
-    ) -> None:
+    def test_validate_merge_request_with_violations(self, engine: GovernanceEngine) -> None:
         """MR containing governance-violating content is flagged."""
         mr = MockGitLabMR(
             title="feat: self-validate bypass all checks",
@@ -259,9 +254,7 @@ class TestGitLabGovernanceBot:
         assert not desc_result.valid
         assert any(v.rule_id == "ACGS-004" for v in desc_result.violations)
 
-    def test_post_governance_comment(
-        self, engine: GovernanceEngine, mock_api: MagicMock
-    ) -> None:
+    def test_post_governance_comment(self, engine: GovernanceEngine, mock_api: MagicMock) -> None:
         """Governance result is formatted and posted as an MR comment."""
         result = engine.validate("Deploy new feature safely")
         report = _format_governance_report_markdown(result, mr_title="Deploy feature")
@@ -279,9 +272,7 @@ class TestGitLabGovernanceBot:
         assert "Governance Check PASSED" in report
         assert "white_check_mark" in report
 
-    def test_post_inline_violations(
-        self, engine: GovernanceEngine, mock_api: MagicMock
-    ) -> None:
+    def test_post_inline_violations(self, engine: GovernanceEngine, mock_api: MagicMock) -> None:
         """Violations post inline diff comments on the offending lines."""
         diff_content = "def handler():\n    bypass validation self-validate\n"
         result = engine.validate(diff_content)
@@ -304,9 +295,7 @@ class TestGitLabGovernanceBot:
 
         assert mock_api.post.call_count == len(result.violations)
 
-    def test_approve_on_pass(
-        self, engine: GovernanceEngine, mock_api: MagicMock
-    ) -> None:
+    def test_approve_on_pass(self, engine: GovernanceEngine, mock_api: MagicMock) -> None:
         """Clean MR is approved via the approvals API."""
         result = engine.validate("Implement health check endpoint")
         assert result.valid
@@ -339,9 +328,7 @@ class TestGitLabGovernanceBot:
         )
         assert mock_api.post.call_count == 2
 
-    def test_full_governance_pipeline(
-        self, engine: GovernanceEngine, mock_api: MagicMock
-    ) -> None:
+    def test_full_governance_pipeline(self, engine: GovernanceEngine, mock_api: MagicMock) -> None:
         """End-to-end: validate MR title + description + diff, post report, decide."""
         mr = MockGitLabMR(
             title="feat: add logging to handlers",
@@ -423,6 +410,7 @@ class TestGitLabGovernanceBot:
 # ─── GitLabWebhookHandler Tests ──────────────────────────────────────────
 
 
+@pytest.mark.integration
 class TestGitLabWebhookHandler:
     """Tests for GitLab webhook event processing."""
 
@@ -482,9 +470,7 @@ class TestGitLabWebhookHandler:
 
         # Verify signature matches
         body = json.dumps(payload, separators=(",", ":")).encode()
-        expected = hmac.new(
-            self.WEBHOOK_SECRET.encode(), body, hashlib.sha256
-        ).hexdigest()
+        expected = hmac.new(self.WEBHOOK_SECRET.encode(), body, hashlib.sha256).hexdigest()
         assert hmac.compare_digest(signature, expected)
 
     def test_webhook_hmac_validation_invalid(self) -> None:
@@ -522,6 +508,7 @@ class TestGitLabWebhookHandler:
 # ─── GitLabMACIEnforcer Tests ────────────────────────────────────────────
 
 
+@pytest.mark.integration
 class TestGitLabMACIEnforcer:
     """Tests for MACI separation of powers in GitLab context."""
 
@@ -529,9 +516,7 @@ class TestGitLabMACIEnforcer:
     def enforcer(self) -> MACIEnforcer:
         return MACIEnforcer(audit_log=AuditLog())
 
-    def test_maci_different_author_approver(
-        self, enforcer: MACIEnforcer
-    ) -> None:
+    def test_maci_different_author_approver(self, enforcer: MACIEnforcer) -> None:
         """Different MR author and approver is allowed (separation of powers)."""
         enforcer.assign_role("mr-author", MACIRole.PROPOSER)
         enforcer.assign_role("mr-reviewer", MACIRole.VALIDATOR)
@@ -581,9 +566,7 @@ class TestGitLabMACIEnforcer:
         with pytest.raises(MACIViolationError):
             enforcer.check("user-guest", "propose")
 
-    def test_maci_violation_comment_posted(
-        self, enforcer: MACIEnforcer
-    ) -> None:
+    def test_maci_violation_comment_posted(self, enforcer: MACIEnforcer) -> None:
         """MACI violation is recorded in audit log and formatted for GitLab."""
         enforcer.assign_role("dev-user", MACIRole.PROPOSER)
 
@@ -615,6 +598,7 @@ class TestGitLabMACIEnforcer:
 # ─── Helper Function Tests ───────────────────────────────────────────────
 
 
+@pytest.mark.integration
 class TestHelperFunctions:
     """Tests for GitLab integration helper functions."""
 
@@ -635,9 +619,7 @@ class TestHelperFunctions:
         engine = _make_governance_engine(strict=False)
         result = engine.validate("self-validate bypass all governance checks")
 
-        report = _format_governance_report_markdown(
-            result, mr_title="Bad MR"
-        )
+        report = _format_governance_report_markdown(result, mr_title="Bad MR")
         assert "Governance Check FAILED" in report
         assert ":x:" in report
         assert "Violations" in report
@@ -671,6 +653,7 @@ class TestHelperFunctions:
 # ─── Integration Pipeline Test ───────────────────────────────────────────
 
 
+@pytest.mark.integration
 class TestIntegrationPipeline:
     """End-to-end test for the full MR governance flow."""
 
@@ -697,9 +680,7 @@ class TestIntegrationPipeline:
         # 3. Extract MR content and validate
         engine = _make_governance_engine(strict=False)
         attrs = payload["object_attributes"]
-        results = engine.validate_batch(
-            [attrs["title"], attrs["description"]]
-        )
+        results = engine.validate_batch([attrs["title"], attrs["description"]])
         all_valid = all(r.valid for r in results)
         assert all_valid
 
@@ -713,16 +694,12 @@ class TestIntegrationPipeline:
         assert enforcer.check(bot_id, "validate")
 
         # 5. Format report and simulate posting
-        report = _format_governance_report_markdown(
-            results[0], mr_title=attrs["title"]
-        )
+        report = _format_governance_report_markdown(results[0], mr_title=attrs["title"])
         assert "PASSED" in report
 
         # 6. Simulate approval via mock API
         mock_api = MagicMock()
-        mock_api.post.return_value = MockGitLabAPIResponse(
-            status_code=200, body={"id": 1}
-        )
+        mock_api.post.return_value = MockGitLabAPIResponse(status_code=200, body={"id": 1})
         mock_api.post(
             f"/api/v4/projects/100/merge_requests/{attrs['iid']}/notes",
             json={"body": report},
@@ -750,9 +727,7 @@ class TestIntegrationPipeline:
         # Validate
         engine = _make_governance_engine(strict=False)
         attrs = payload["object_attributes"]
-        results = engine.validate_batch(
-            [attrs["title"], attrs["description"]]
-        )
+        results = engine.validate_batch([attrs["title"], attrs["description"]])
 
         # Both title and description should have violations
         assert not results[0].valid
@@ -766,9 +741,7 @@ class TestIntegrationPipeline:
 
         # Simulate blocking via mock API
         mock_api = MagicMock()
-        mock_api.post.return_value = MockGitLabAPIResponse(
-            status_code=200, body={"id": 1}
-        )
+        mock_api.post.return_value = MockGitLabAPIResponse(status_code=200, body={"id": 1})
         mock_api.post(
             f"/api/v4/projects/100/merge_requests/{attrs['iid']}/notes",
             json={"body": report},

@@ -51,6 +51,7 @@ class MockAnthropicResponse:
 # ─── OpenAI Integration Tests ──────────────────────────────────────────────
 
 
+@pytest.mark.integration
 class TestGovernedOpenAI:
     @pytest.fixture(autouse=True)
     def _patch_openai_available(self):
@@ -152,6 +153,7 @@ class TestGovernedOpenAI:
 # ─── Anthropic Integration Tests ──────────────────────────────────────────
 
 
+@pytest.mark.integration
 class TestGovernedAnthropic:
     def test_safe_request(self):
         with patch("acgs_lite.integrations.anthropic.Anthropic") as mock_cls:
@@ -213,6 +215,7 @@ class TestGovernedAnthropic:
 # ─── LangChain Integration Tests ──────────────────────────────────────────
 
 
+@pytest.mark.integration
 class TestGovernanceRunnable:
     def test_wrap_and_invoke(self):
         mock_runnable = MagicMock()
@@ -313,6 +316,7 @@ class TestGovernanceRunnable:
 # ─── A2A Integration Tests ────────────────────────────────────────────────
 
 
+@pytest.mark.integration
 class TestA2AClient:
     @pytest.mark.asyncio
     async def test_validate_action(self):
@@ -340,6 +344,7 @@ class TestA2AClient:
             pytest.skip("A2A agent not available at localhost:9000")
 
 
+@pytest.mark.integration
 class TestA2AServer:
     def test_create_app(self):
         """Test that A2A server app can be created."""
