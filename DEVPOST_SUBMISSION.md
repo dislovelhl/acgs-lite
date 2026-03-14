@@ -38,7 +38,7 @@ AI governance should not be the exclusive domain of the companies deploying AI. 
 
 The system that constrains the machines was built by the machines. And that is exactly why we need constitutional governance -- because if AI can build its own governance engine, it can certainly build systems without one.
 
-**Development stack:** Claude (Anthropic) as the sole development partner via Claude Code CLI. Test-driven development -- tests written before implementation. 112 optimization experiments achieving 37x latency improvement. Rust for performance-critical paths via PyO3 bindings. The autoresearch loop runs 532 benchmark scenarios at 100% compliance with zero false negatives.
+**Development stack:** Claude (Anthropic) and Gemini (Google) as AI development partners -- Claude via Claude Code CLI for primary development, Gemini for research and cross-validation. Test-driven development -- tests written before implementation. 112 optimization experiments achieving 37x latency improvement. Rust for performance-critical paths via PyO3 bindings. The autoresearch loop runs 532 benchmark scenarios at 100% compliance with zero false negatives. Deployed on Google Cloud Run with audit trail export to Cloud Logging.
 
 ---
 
@@ -64,7 +64,9 @@ Three principles from democratic governance, applied to AI systems:
 
 3. **MCP Server for Duo Chat** -- Five governance tools so developers can query posture directly from GitLab Duo Chat: "What's our compliance status?" "Which rules apply here?"
 
-4. **Webhook Handler** -- Real-time governance on GitLab events with context-aware risk scoring (production vs staging vs test).
+4. **Webhook Handler** -- Real-time governance on GitLab events with context-aware risk scoring (production vs staging vs test). Deployable to Google Cloud Run with one command.
+
+5. **Google Cloud Integration** -- Governance webhook on Cloud Run, audit trail export to Cloud Logging, governed Gemini client for Vertex AI workloads. One constitution governs Claude, Gemini, and GPT equally.
 
 ### The Engine
 
@@ -125,4 +127,4 @@ The people affected by algorithmic decisions deserve governance infrastructure t
 
 ## Built With
 
-Python, Rust, PyO3, GitLab Duo Agent Platform, GitLab CI/CD, Model Context Protocol (MCP), Claude (Anthropic) via Claude Code CLI, SHA-256 cryptographic audit, EU AI Act Articles 12-14, NIST AI RMF, ISO/IEC 42001
+Python, Rust, PyO3, GitLab Duo Agent Platform, GitLab CI/CD, Model Context Protocol (MCP), Claude (Anthropic) via Claude Code CLI, Gemini (Google), Google Cloud Run, Google Cloud Logging, SHA-256 cryptographic audit, EU AI Act Articles 12-14, NIST AI RMF, ISO/IEC 42001
