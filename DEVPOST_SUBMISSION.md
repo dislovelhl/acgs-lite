@@ -49,8 +49,13 @@ Three principles from democratic governance, applied to AI systems:
 - **Context risk scoring** that modulates strictness by environment
 - **Constitutional hash** -- tampering is detectable
 - **11 platform integrations** -- Anthropic, OpenAI, LangChain, LiteLLM, Google GenAI, and more
-- **282 tests** across unit, integration, compliance, and constitutional suites
+- **286 tests** across unit, integration, compliance, and constitutional suites
 - **MultiFrameworkAssessor** -- jurisdiction-aware cross-framework gap analysis
+- **5 governance templates** -- `Constitution.from_template("gitlab")` for instant domain governance
+- **ConstitutionBuilder** -- fluent API for code-first governance without YAML
+- **Batch governance** -- `validate_batch_report()` for orchestrator-ready compliance assessment
+- **Rule versioning** -- immutable change history with `RuleSnapshot` for audit trails
+- **Constitution composition** -- `merge()` with conflict resolution for layered governance
 
 ---
 
@@ -62,7 +67,7 @@ Here is the part that matters most.
 
 **I built the entire ACGS-2 platform using Claude.** Not a single line was written by hand.
 
-Every line of Python. Every line of Rust. The PyO3 bindings. The MCP server. The CI/CD pipeline. The 282 tests. The constitutional hash verification. The MACI enforcement layer. All of it -- through conversation with an AI that could write code I could not.
+Every line of Python. Every line of Rust. The PyO3 bindings. The MCP server. The CI/CD pipeline. The 286 tests. The constitutional hash verification. The MACI enforcement layer. All of it -- through conversation with an AI that could write code I could not.
 
 I am not a developer who used AI to go faster. I am a non-developer who used AI to go from zero to a production governance engine.
 
@@ -94,7 +99,7 @@ Governance is not a feature. It is infrastructure. You do not add HTTPS to a web
 
 The 97/3 split is real. Almost all AI decisions are routine. The small percentage needing human judgment is where governance value lives. The engine's job is ensuring human judgment is applied where it matters.
 
-AI-assisted development, combined with rigorous testing, can produce systems exceeding what a solo developer builds manually. The 282 tests exist because Claude and I had long conversations about edge cases and attack vectors I would never have considered alone.
+AI-assisted development, combined with rigorous testing, can produce systems exceeding what a solo developer builds manually. The 286 tests exist because Claude and I had long conversations about edge cases and attack vectors I would never have considered alone.
 
 ---
 

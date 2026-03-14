@@ -188,6 +188,39 @@ agent.run("Should I invest in crypto?")     # Blocked: SAFE-001
 
 That is it. Constitutional governance in three steps.
 
+**Or use a pre-built template (zero YAML required):**
+
+```python
+from acgs_lite import Constitution, GovernanceEngine
+
+# Instant governance for GitLab, healthcare, finance, security, or general AI
+constitution = Constitution.from_template("gitlab")
+engine = GovernanceEngine(constitution)
+
+# Batch-validate an entire pipeline
+report = engine.validate_batch_report([
+    "deploy to staging",
+    "auto-approve merge request",   # Blocked: GL-001 (MACI)
+    "commit clean code",
+])
+print(report.summary)  # "FAIL: 1/3 actions blocked, compliance=66.7%"
+```
+
+**Or build programmatically:**
+
+```python
+from acgs_lite import ConstitutionBuilder
+
+constitution = (
+    ConstitutionBuilder("my-governance", version="2.0.0")
+    .add_rule("SAFE-001", "No financial advice", severity="critical",
+              keywords=["invest", "buy stocks"], workflow_action="block")
+    .add_rule("SAFE-002", "No PII exposure", severity="critical",
+              patterns=[r"\b\d{3}-\d{2}-\d{4}\b"], workflow_action="block_and_notify")
+    .build()
+)
+```
+
 ---
 
 ## Features
@@ -201,6 +234,14 @@ That is it. Constitutional governance in three steps.
 - Custom validators for domain-specific checks (SQL injection, content policies)
 - Constitutional diff for change auditing between versions
 - Inter-rule dependency graphs for impact analysis
+- Rule versioning with immutable `RuleSnapshot` history
+- `ConstitutionBuilder` fluent API for code-first governance
+- 5 domain templates: `Constitution.from_template("gitlab")`
+- `Constitution.merge()` for composable, layered governance
+- `Constitution.filter()` for environment-specific rule subsets
+- `Constitution.to_yaml()` for round-trip serialization
+- Batch validation: `validate_batch_report()` with aggregate compliance stats
+- Governance metrics collector for Prometheus/OpenTelemetry export
 
 ### MACI Separation of Powers
 
