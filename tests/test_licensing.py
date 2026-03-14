@@ -159,6 +159,7 @@ class TestValidateLicenseKey:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.unit
 class TestExpiredKeys:
     def test_expired_key_raises(self) -> None:
         # Generate a key that expired 1 second ago
@@ -212,6 +213,7 @@ class TestExpiredKeys:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.unit
 class TestTamperedKeys:
     def test_wrong_secret_fails(self, pro_key: str) -> None:
         with pytest.raises(LicenseError, match="invalid signature"):
@@ -262,6 +264,7 @@ class TestTamperedKeys:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.unit
 class TestLicenseManager:
     def test_default_is_free(self) -> None:
         with patch.dict(os.environ, {}, clear=False):
@@ -329,6 +332,7 @@ class TestLicenseManager:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.unit
 class TestEuAiActGating:
     def test_article12_blocked_on_free(self) -> None:
         from acgs_lite.eu_ai_act import Article12Logger
@@ -435,6 +439,7 @@ class TestEuAiActGating:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.unit
 class TestLicenseInfo:
     def test_has_tier_hierarchy(self, enterprise_key: str) -> None:
         info = validate_license_key(enterprise_key, SECRET)

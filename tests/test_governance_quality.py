@@ -401,3 +401,75 @@ class TestConstitutionMergeControls:
         pending_ids = {t["rule_id"] for t in merged["unacknowledged_tensions"]}
         assert applied_ids == {"R-001"}
         assert pending_ids == {"R-002"}
+
+
+@pytest.mark.unit
+class TestConstitutionYamlRoundTrip:
+    def test_from_yaml_str_parses_to_yaml_output(self):
+        original = Constitution.from_template("security")
+        yaml_content = original.to_yaml()
+        reconstructed = Constitution.from_yaml_str(yaml_content)
+
+        assert reconstructed.name == original.name
+        assert reconstructed.version == original.version
+        assert len(reconstructed.rules) == len(original.rules)
+        assert reconstructed.hash == original.hash
+
+
+@pytest.mark.unit
+class TestConstitutionCascade:
+    def test_cascade_preserves_parent_hardcoded_rule(self):
+        parent = Constitution.from_rules(
+            [
+                Rule(
+                    id="FED-001",
+                    text="Parent guardrail",
+                    severity=Severity.CRITICAL,
+                    hardcoded=True,
+                    workflow_action="block",
+                )
+            ],
+            name="parent",
+        )
+        child = Constitution.from_rules(
+            [
+                Rule(
+                    id="FED-001",
+                    text="Child attempts override",
+                    severity=Severity.LOW,
+                    workflow_action="warn",
+                )
+            ],
+            name="child",
+        )
+
+        federated = parent.cascade(child)
+        rule = federated.get_rule("FED-001")
+
+        assert rule is not None
+        assert rule.text == "Parent guardrail"
+        assert rule.hardcoded is True
+
+    def test_cascade_allows_child_override_for_non_hardcoded_rule(self):
+        parent = Constitution.from_rules(
+            [Rule(id="FED-002", text="Parent default", severity=Severity.HIGH)],
+            name="parent",
+        )
+        child = Constitution.from_rules(
+            [Rule(id="FED-002", text="Child overlay", severity=Severity.MEDIUM)],
+            name="child",
+        )
+
+        federated = parent.cascade(child)
+        rule = federated.get_rule("FED-002")
+
+        assert rule is not None
+        assert rule.text == "Child overlay"
+
+    def test_cascade_includes_child_only_rules(self):
+        parent = Constitution.from_rules([Rule(id="P-001", text="Parent", severity=Severity.HIGH)])
+        child = Constitution.from_rules([Rule(id="C-001", text="Child", severity=Severity.HIGH)])
+
+        federated = parent.cascade(child)
+        assert federated.get_rule("P-001") is not None
+        assert federated.get_rule("C-001") is not None
