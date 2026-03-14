@@ -1,0 +1,91 @@
+# Constitutional Hash: cdd01ef066bc6cf2
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "acgs-lite"
+version = "0.2.0"
+description = "Constitutional AI governance for any agent. Wrap any LLM agent in enforceable rules, audit trails, and separation of powers — in 5 lines of code."
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.10"
+authors = [
+    {name = "ACGS Team", email = "hello@acgs.dev"},
+]
+keywords = ["ai", "governance", "constitutional", "agents", "safety", "guardrails", "maci", "audit", "eu-ai-act", "ai-governance", "compliance", "constitutional-ai"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Legal Industry",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Security",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "pydantic>=2.0",
+    "pyyaml>=6.0",
+    "click>=8.0",
+]
+
+[project.optional-dependencies]
+a2a = ["a2a-sdk>=0.2", "httpx>=0.27"]
+openai = ["openai>=1.0"]
+anthropic = ["anthropic>=0.30"]
+langchain = ["langchain-core>=0.2"]
+litellm = ["litellm>=1.0"]
+google = ["google-genai>=1.0"]
+llamaindex = ["llama-index-core>=0.10"]
+autogen = ["autogen-core>=0.4", "autogen-agentchat>=0.4"]
+mcp = ["mcp>=1.0"]
+crewai = ["crewai>=0.30"]
+all = ["acgs-lite[a2a,openai,anthropic,langchain,litellm,google,llamaindex,autogen,mcp]"]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "pytest-cov>=4.1",
+    "ruff>=0.8",
+    "mypy>=1.13",
+]
+
+[project.scripts]
+"acgs-lite" = "acgs_lite.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/acgs-ai/acgs-lite"
+Documentation = "https://acgs.dev/docs/lite"
+Repository = "https://github.com/acgs-ai/acgs-lite"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+# Autoresearch-optimized hot path: semicolons, import order, and line length are deliberate
+"src/acgs_lite/engine.py" = ["E702", "E402", "E501", "SIM102"]
+"src/acgs_lite/constitution.py" = ["SIM102"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
