@@ -17,6 +17,7 @@ from acgs_lite.constitution import (
     Constitution,
     ConstitutionBuilder,
     Rule,
+    RuleSynthesisProvider,
     RuleSnapshot,
     Severity,
 )
@@ -57,6 +58,7 @@ __all__ = [
     "Constitution",
     "ConstitutionBuilder",
     "Rule",
+    "RuleSynthesisProvider",
     "AcknowledgedTension",
     "RuleSnapshot",
     "Severity",

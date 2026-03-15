@@ -315,7 +315,7 @@ The creator has no technical background. No CS degree. No bootcamp. No prior pro
 
 He taught himself by building with Claude -- Anthropic's AI assistant -- day after day, for two years. Every architecture decision, every optimization, every test was a conversation between a human with a vision and an AI with the capability to realize it.
 
-The governance engine has been through 97 optimization experiments, tracked in an append-only research log. It started at 145 microseconds P99 latency and now runs at 3.9 microseconds -- a 37x improvement through systematic experimentation: Aho-Corasick automata, CPython specializer warmup, bit-trick anchor dispatch, pre-allocated exception pools. The benchmark suite covers 847 scenarios with 100% compliance and zero false negatives.
+The governance engine has been through 118 optimization experiments, tracked in an append-only research log. It started at 145 microseconds P99 latency and now runs at 3.9 microseconds -- a 37x improvement through systematic experimentation: Aho-Corasick automata, CPython specializer warmup, bit-trick anchor dispatch, pre-allocated exception pools. The benchmark suite covers 847 scenarios with 100% compliance and zero false negatives.
 
 This is a democratic argument, not just a technical one.
 

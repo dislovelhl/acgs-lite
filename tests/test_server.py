@@ -8,7 +8,7 @@ import pytest
 from fastapi.routing import APIRoute
 
 from acgs_lite import Constitution, Rule, Severity
-from acgs_lite.server import ValidateRequest, create_governance_app
+from acgs_lite.server import create_governance_app
 
 
 @pytest.mark.unit
@@ -23,7 +23,7 @@ class TestGovernanceServer:
     def test_validate_endpoint_allows_safe_action(self) -> None:
         app = create_governance_app(Constitution.default())
         validate = self._route_endpoint(app, "/validate")
-        data = validate(ValidateRequest(action="deploy to staging"))
+        data = validate({"action": "deploy to staging"})
         assert data["valid"] is True
         assert data["rules_checked"] >= 1
 
@@ -40,7 +40,7 @@ class TestGovernanceServer:
         )
         app = create_governance_app(constitution)
         validate = self._route_endpoint(app, "/validate")
-        data = validate(ValidateRequest(action="self-approve merge"))
+        data = validate({"action": "self-approve merge"})
         assert data["valid"] is False
         assert any(v["rule_id"] == "S-001" for v in data["violations"])
 
@@ -49,8 +49,8 @@ class TestGovernanceServer:
         validate = self._route_endpoint(app, "/validate")
         get_stats = self._route_endpoint(app, "/stats")
 
-        validate(ValidateRequest(action="safe action one"))
-        validate(ValidateRequest(action="safe action two"))
+        validate({"action": "safe action one"})
+        validate({"action": "safe action two"})
 
         stats = get_stats()
         assert stats["total_validations"] >= 2

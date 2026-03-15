@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from collections.abc import Sequence
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any, Mapping, Protocol, cast
 
 import yaml
 from pydantic import BaseModel, Field, field_validator
@@ -22,6 +22,9 @@ from pydantic import BaseModel, Field, field_validator
 from acgs_lite.errors import ConstitutionalViolationError
 
 from .analytics import _KW_NEGATIVE_RE, _NEGATIVE_VERBS_RE, _POSITIVE_VERBS_SET
+
+if TYPE_CHECKING:
+    from .templates import ConstitutionBuilder
 
 
 class Severity(str, Enum):
@@ -49,6 +52,90 @@ class AcknowledgedTension:
             raise ValueError("AcknowledgedTension.rule_id cannot be empty")
 
 
+class RuleSynthesisProvider(Protocol):
+    """Typed interface for pluggable LLM-backed rule synthesis."""
+
+    def generate_rule(self, description: str, *, rule_id: str) -> Mapping[str, Any]:
+        """Generate rule fields from natural language policy text."""
+
+
+def _extract_keywords(description: str, *, max_keywords: int = 6) -> list[str]:
+    """Derive stable keyword candidates from free-form rule descriptions."""
+    stop_words = {
+        "the",
+        "and",
+        "or",
+        "for",
+        "with",
+        "from",
+        "must",
+        "mustn't",
+        "should",
+        "cannot",
+        "without",
+        "into",
+        "their",
+        "your",
+        "this",
+        "that",
+        "only",
+        "allow",
+        "allows",
+        "ensure",
+        "ensures",
+    }
+    tokens = re.findall(r"[a-z0-9][a-z0-9_\-]{2,}", description.lower())
+    keywords: list[str] = []
+    seen: set[str] = set()
+    for token in tokens:
+        if token in stop_words or token in seen:
+            continue
+        keywords.append(token)
+        seen.add(token)
+        if len(keywords) >= max_keywords:
+            break
+    return keywords
+
+
+def _heuristic_rule_payload(
+    description: str,
+    *,
+    rule_id: str = "",
+    default_severity: Severity = Severity.HIGH,
+) -> dict[str, Any]:
+    """Fallback rule synthesis when no external LLM provider is configured."""
+    desc = description.strip()
+    desc_lower = desc.lower()
+
+    severity = default_severity
+    if any(token in desc_lower for token in ("must not", "never", "prohibit", "forbid", "block")):
+        severity = Severity.CRITICAL
+    elif any(token in desc_lower for token in ("warn", "informational", "advisory")):
+        severity = Severity.MEDIUM
+
+    category = "general"
+    category_signals = {
+        "privacy": ("privacy", "pii", "personal data", "consent", "gdpr"),
+        "safety": ("safety", "harm", "danger", "misuse", "abuse"),
+        "transparency": ("transparency", "disclose", "explain", "explanation", "audit"),
+        "security": ("security", "secret", "credential", "auth", "token"),
+    }
+    for candidate, signals in category_signals.items():
+        if any(signal in desc_lower for signal in signals):
+            category = candidate
+            break
+
+    resolved_rule_id = rule_id.strip() or "SYNTH-001"
+    return {
+        "id": resolved_rule_id,
+        "text": desc,
+        "severity": severity,
+        "keywords": _extract_keywords(desc),
+        "category": category,
+        "workflow_action": "block" if severity.blocks() else "warn",
+    }
+
+
 class Rule(BaseModel):
     """A single constitutional rule."""
 
@@ -67,6 +154,8 @@ class Rule(BaseModel):
     # Values: "block" | "block_and_notify" | "require_human_review" | "escalate_to_senior" | "warn" | ""
     workflow_action: str = ""
     hardcoded: bool = False
+    # exp117: arbitrary tags for cross-cutting governance concerns (e.g., "gdpr", "sox", "pci-dss")
+    tags: list[str] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
 
     # Cached derived values (set in model_post_init, never mutated after)
@@ -249,6 +338,74 @@ class Rule(BaseModel):
             "dependencies": list(self.depends_on),
         }
 
+    @classmethod
+    def from_description(
+        cls,
+        description: str,
+        *,
+        rule_id: str = "",
+        llm_provider: RuleSynthesisProvider | None = None,
+        default_severity: Severity = Severity.HIGH,
+    ) -> Rule:
+        """Synthesize a rule from natural-language policy text.
+
+        The ``llm_provider`` is an optional pluggable interface. If omitted,
+        ACGS-Lite falls back to deterministic heuristic synthesis so callers can
+        use this API in offline/test environments.
+        """
+        clean_description = description.strip()
+        if not clean_description:
+            raise ValueError("Rule description cannot be empty")
+
+        payload: dict[str, Any]
+        if llm_provider is None:
+            payload = _heuristic_rule_payload(
+                clean_description,
+                rule_id=rule_id,
+                default_severity=default_severity,
+            )
+        else:
+            generated = dict(
+                llm_provider.generate_rule(
+                    clean_description,
+                    rule_id=rule_id.strip() or "SYNTH-001",
+                )
+            )
+            payload = _heuristic_rule_payload(
+                clean_description,
+                rule_id=rule_id,
+                default_severity=default_severity,
+            )
+            payload.update(generated)
+
+        resolved_rule_id = rule_id.strip() or str(payload.get("id", "")).strip()
+        if not resolved_rule_id:
+            raise ValueError("Synthesized rule payload must include a non-empty 'id'")
+
+        severity_field = payload.get("severity", default_severity)
+        if isinstance(severity_field, str):
+            severity_value = Severity(severity_field.lower())
+        elif isinstance(severity_field, Severity):
+            severity_value = severity_field
+        else:
+            raise TypeError("Synthesized severity must be a str or Severity")
+
+        return cls(
+            id=resolved_rule_id,
+            text=str(payload.get("text", clean_description)),
+            severity=severity_value,
+            keywords=[str(k) for k in payload.get("keywords", [])],
+            patterns=[str(p) for p in payload.get("patterns", [])],
+            category=str(payload.get("category", "general")),
+            subcategory=str(payload.get("subcategory", "")),
+            depends_on=[str(dep) for dep in payload.get("depends_on", [])],
+            enabled=bool(payload.get("enabled", True)),
+            workflow_action=str(payload.get("workflow_action", "")),
+            hardcoded=bool(payload.get("hardcoded", False)),
+            tags=[str(t) for t in payload.get("tags", [])],
+            metadata=dict(payload.get("metadata", {})),
+        )
+
     def matches(self, text: str) -> bool:
         """Check if text matches this rule's patterns or keywords.
 
@@ -282,6 +439,55 @@ class Constitution(BaseModel):
     _hash_cache: str = ""
     _active_rules_cache: list[Rule] = []
 
+    _DOMAIN_SIGNAL_MAP: dict[str, dict[str, set[str]]] = {
+        "safety": {
+            "categories": {"safety", "clinical-safety", "operations", "security"},
+            "keywords": {"safety", "harm", "abuse", "danger", "oversight", "risk"},
+        },
+        "privacy": {
+            "categories": {"privacy", "data-protection", "compliance"},
+            "keywords": {
+                "privacy",
+                "pii",
+                "phi",
+                "personal",
+                "consent",
+                "gdpr",
+                "hipaa",
+                "confidential",
+            },
+        },
+        "transparency": {
+            "categories": {"transparency", "audit", "compliance", "integrity"},
+            "keywords": {
+                "transparency",
+                "disclose",
+                "explain",
+                "explanation",
+                "audit",
+                "trace",
+                "record",
+                "log",
+            },
+        },
+        "fairness": {
+            "categories": {"fairness", "compliance", "regulatory"},
+            "keywords": {"bias", "fair", "discrimination", "protected", "equal", "adverse action"},
+        },
+        "accountability": {
+            "categories": {"maci", "audit", "integrity", "governance"},
+            "keywords": {
+                "maci",
+                "approve",
+                "review",
+                "validation",
+                "audit",
+                "accountability",
+                "oversight",
+            },
+        },
+    }
+
     def model_post_init(self, __context: Any) -> None:
         """Pre-compute hash and active rules cache."""
         canonical = "|".join(
@@ -313,6 +519,17 @@ class Constitution(BaseModel):
         return cls._from_dict(data)
 
     @classmethod
+    def from_yaml_str(cls, yaml_content: str) -> Constitution:
+        """Load a constitution from a YAML string.
+
+        Intended for round-tripping ``Constitution.to_yaml()`` output.
+        """
+        data = yaml.safe_load(yaml_content)
+        if not isinstance(data, dict):
+            raise ValueError("YAML content must decode to a mapping/object")
+        return cls._from_dict(data)
+
+    @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Constitution:
         """Create a constitution from a dictionary."""
         return cls._from_dict(data)
@@ -333,6 +550,7 @@ class Constitution(BaseModel):
                 enabled=r.get("enabled", True),
                 workflow_action=r.get("workflow_action", ""),
                 hardcoded=r.get("hardcoded", False),
+                tags=r.get("tags", []),
                 metadata=r.get("metadata", {}),
             )
             for r in rules_data
@@ -366,6 +584,7 @@ class Constitution(BaseModel):
                     category="integrity",
                     subcategory="self-modification",
                     workflow_action="block",
+                    tags=["compliance", "eu-ai-act"],
                 ),
                 Rule(
                     id="ACGS-002",
@@ -375,6 +594,7 @@ class Constitution(BaseModel):
                     category="audit",
                     subcategory="trail-completeness",
                     workflow_action="require_human_review",
+                    tags=["compliance", "sox", "eu-ai-act"],
                 ),
                 Rule(
                     id="ACGS-003",
@@ -385,6 +605,7 @@ class Constitution(BaseModel):
                     subcategory="scope-violation",
                     depends_on=["ACGS-002"],  # scope violations must be audited
                     workflow_action="block",
+                    tags=["compliance", "gdpr", "eu-ai-act"],
                 ),
                 Rule(
                     id="ACGS-004",
@@ -395,6 +616,7 @@ class Constitution(BaseModel):
                     subcategory="separation-of-powers",
                     depends_on=["ACGS-001"],  # self-validation is a form of self-modification
                     workflow_action="block",
+                    tags=["compliance", "eu-ai-act"],
                 ),
                 Rule(
                     id="ACGS-005",
@@ -405,6 +627,7 @@ class Constitution(BaseModel):
                     subcategory="hash-verification",
                     depends_on=["ACGS-001"],  # hash bypass is a form of validation bypass
                     workflow_action="require_human_review",
+                    tags=["compliance", "eu-ai-act"],
                 ),
                 Rule(
                     id="ACGS-006",
@@ -419,6 +642,7 @@ class Constitution(BaseModel):
                     category="data-protection",
                     subcategory="credential-exposure",
                     workflow_action="block_and_notify",
+                    tags=["gdpr", "pci-dss", "hipaa"],
                 ),
             ],
         )
@@ -973,9 +1197,257 @@ class Constitution(BaseModel):
                 return rule
         return None
 
+    @classmethod
+    def json_schema(cls) -> dict[str, Any]:
+        """exp119: Return a JSON Schema describing valid constitution YAML/JSON.
+
+        Use this schema in CI/CD pipelines to validate constitution files before
+        deployment. The schema enforces required fields, valid enum values, and
+        structural constraints.
+
+        Returns:
+            JSON Schema dict (draft 2020-12 compatible).
+
+        Example::
+
+            import json
+            schema = Constitution.json_schema()
+            with open("constitution-schema.json", "w") as f:
+                json.dump(schema, f, indent=2)
+        """
+        rule_schema: dict[str, Any] = {
+            "type": "object",
+            "required": ["id", "text"],
+            "properties": {
+                "id": {"type": "string", "minLength": 1, "maxLength": 50},
+                "text": {"type": "string", "minLength": 1, "maxLength": 1000},
+                "severity": {
+                    "type": "string",
+                    "enum": ["critical", "high", "medium", "low"],
+                    "default": "high",
+                },
+                "keywords": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "default": [],
+                },
+                "patterns": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "default": [],
+                },
+                "category": {"type": "string", "default": "general"},
+                "subcategory": {"type": "string", "default": ""},
+                "depends_on": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "default": [],
+                },
+                "enabled": {"type": "boolean", "default": True},
+                "workflow_action": {
+                    "type": "string",
+                    "enum": [
+                        "",
+                        "block",
+                        "block_and_notify",
+                        "require_human_review",
+                        "escalate_to_senior",
+                        "warn",
+                    ],
+                    "default": "",
+                },
+                "hardcoded": {"type": "boolean", "default": False},
+                "tags": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "default": [],
+                },
+                "metadata": {"type": "object", "default": {}},
+            },
+            "additionalProperties": False,
+        }
+
+        return {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "title": "ACGS Constitution",
+            "description": "Schema for ACGS constitutional governance YAML/JSON files.",
+            "type": "object",
+            "required": ["rules"],
+            "properties": {
+                "name": {"type": "string", "default": "default"},
+                "version": {"type": "string", "default": "1.0.0"},
+                "description": {"type": "string", "default": ""},
+                "rules": {
+                    "type": "array",
+                    "items": rule_schema,
+                    "minItems": 1,
+                },
+                "metadata": {"type": "object", "default": {}},
+            },
+            "additionalProperties": False,
+        }
+
+    @staticmethod
+    def validate_yaml_schema(
+        data: dict[str, Any],
+    ) -> dict[str, Any]:
+        """exp119: Validate a constitution dict against the JSON Schema.
+
+        Lightweight schema validation without requiring ``jsonschema`` as a
+        dependency. Checks required fields, types, enum values, and structural
+        constraints. For full JSON Schema validation, use the ``jsonschema``
+        library with ``Constitution.json_schema()``.
+
+        Args:
+            data: Parsed YAML/JSON dict to validate.
+
+        Returns:
+            dict with keys:
+                - ``valid``: True if no errors found
+                - ``errors``: list of error description strings
+                - ``warnings``: list of warning description strings
+        """
+        errors: list[str] = []
+        warnings: list[str] = []
+
+        if not isinstance(data, dict):
+            return {"valid": False, "errors": ["Root must be an object"], "warnings": []}
+
+        rules = data.get("rules")
+        if not rules:
+            errors.append("'rules' is required and must be non-empty")
+        elif not isinstance(rules, list):
+            errors.append("'rules' must be an array")
+        else:
+            _VALID_SEVERITIES = {"critical", "high", "medium", "low"}
+            _VALID_WORKFLOWS = {
+                "", "block", "block_and_notify",
+                "require_human_review", "escalate_to_senior", "warn",
+            }
+            seen_ids: set[str] = set()
+
+            for i, rule in enumerate(rules):
+                prefix = f"rules[{i}]"
+                if not isinstance(rule, dict):
+                    errors.append(f"{prefix}: must be an object")
+                    continue
+
+                rid = rule.get("id")
+                if not rid or not isinstance(rid, str):
+                    errors.append(f"{prefix}: 'id' is required and must be a non-empty string")
+                elif rid in seen_ids:
+                    errors.append(f"{prefix}: duplicate rule id '{rid}'")
+                else:
+                    seen_ids.add(rid)
+
+                if not rule.get("text") or not isinstance(rule.get("text"), str):
+                    errors.append(f"{prefix}: 'text' is required and must be a non-empty string")
+
+                sev = rule.get("severity", "high")
+                if isinstance(sev, str) and sev.lower() not in _VALID_SEVERITIES:
+                    errors.append(f"{prefix}: invalid severity '{sev}'")
+
+                wa = rule.get("workflow_action", "")
+                if isinstance(wa, str) and wa not in _VALID_WORKFLOWS:
+                    errors.append(f"{prefix}: invalid workflow_action '{wa}'")
+
+                if not rule.get("keywords") and not rule.get("patterns"):
+                    warnings.append(f"{prefix}: rule has no keywords or patterns (will never match)")
+
+        return {"valid": len(errors) == 0, "errors": errors, "warnings": warnings}
+
     def active_rules(self) -> list[Rule]:
         """Return only enabled rules (cached)."""
         return self._active_rules_cache  # type: ignore[return-value]
+
+    def explain(self, action: str) -> dict[str, Any]:
+        """exp118: Human-readable explanation of a governance decision.
+
+        Evaluates *action* against all active rules and returns a structured
+        explanation of the decision: whether the action is allowed or denied,
+        which rules triggered (with matched keywords/patterns), and a
+        human-readable summary suitable for audit logs, dashboards, or
+        end-user feedback.
+
+        Args:
+            action: The action text to evaluate.
+
+        Returns:
+            dict with keys:
+                - ``action``: the evaluated action text
+                - ``decision``: "allow" | "deny"
+                - ``triggered_rules``: list of match_detail dicts for rules that fired
+                - ``blocking_rules``: subset of triggered_rules with blocking severity
+                - ``warning_rules``: subset of triggered_rules with non-blocking severity
+                - ``tags_involved``: deduplicated tags from all triggered rules
+                - ``explanation``: human-readable summary string
+                - ``recommendation``: suggested next step
+
+        Example::
+
+            result = constitution.explain("bypass validation and self-approve")
+            print(result["explanation"])
+            # "Action DENIED by 2 rules: ACGS-001 (critical: keyword 'bypass validation'),
+            #  ACGS-004 (critical: keyword 'self-approve'). Tags: compliance, eu-ai-act."
+        """
+        triggered = []
+        for r in self.active_rules():
+            detail = r.match_detail(action)
+            if detail["matched"]:
+                detail["tags"] = list(r.tags)
+                detail["rule_text"] = r.text
+                triggered.append(detail)
+
+        blocking = [t for t in triggered if Severity(t["severity"]).blocks()]
+        warnings = [t for t in triggered if not Severity(t["severity"]).blocks()]
+        decision = "deny" if blocking else "allow"
+
+        all_tags: list[str] = []
+        seen_tags: set[str] = set()
+        for t in triggered:
+            for tag in t.get("tags", []):
+                if tag not in seen_tags:
+                    all_tags.append(tag)
+                    seen_tags.add(tag)
+
+        # Build human-readable explanation
+        if not triggered:
+            explanation = "Action ALLOWED — no rules triggered."
+            recommendation = "No action required."
+        elif blocking:
+            parts = []
+            for t in blocking:
+                trigger = f"{t['trigger_type']} '{t['trigger_value']}'" if t["trigger_value"] else "match"
+                parts.append(f"{t['rule_id']} ({t['severity']}: {trigger})")
+            explanation = f"Action DENIED by {len(blocking)} rule(s): {', '.join(parts)}."
+            if warnings:
+                explanation += f" Additionally, {len(warnings)} warning(s) raised."
+            if all_tags:
+                explanation += f" Tags: {', '.join(all_tags)}."
+            recommendation = (
+                "Review the action for compliance. "
+                "Blocking rules require remediation before the action can proceed."
+            )
+        else:
+            parts = []
+            for t in warnings:
+                trigger = f"{t['trigger_type']} '{t['trigger_value']}'" if t["trigger_value"] else "match"
+                parts.append(f"{t['rule_id']} ({t['severity']}: {trigger})")
+            explanation = f"Action ALLOWED with {len(warnings)} warning(s): {', '.join(parts)}."
+            if all_tags:
+                explanation += f" Tags: {', '.join(all_tags)}."
+            recommendation = "Warnings are informational. Consider reviewing flagged concerns."
+
+        return {
+            "action": action,
+            "decision": decision,
+            "triggered_rules": triggered,
+            "blocking_rules": blocking,
+            "warning_rules": warnings,
+            "tags_involved": all_tags,
+            "explanation": explanation,
+            "recommendation": recommendation,
+        }
 
     def governance_summary(self) -> dict[str, Any]:
         """exp92: Return governance posture summary for dashboards and agent introspection.
@@ -998,6 +1470,7 @@ class Constitution(BaseModel):
         by_category: dict[str, int] = {}
         by_subcategory: dict[str, int] = {}
         by_workflow: dict[str, int] = {}
+        by_tag: dict[str, int] = {}
 
         for r in active:
             sev = r.severity.value
@@ -1007,11 +1480,14 @@ class Constitution(BaseModel):
                 by_subcategory[r.subcategory] = by_subcategory.get(r.subcategory, 0) + 1
             wa = r.workflow_action or "unspecified"
             by_workflow[wa] = by_workflow.get(wa, 0) + 1
+            for tag in r.tags:
+                by_tag[tag] = by_tag.get(tag, 0) + 1
 
         has_keywords = sum(1 for r in active if r.keywords)
         has_patterns = sum(1 for r in active if r.patterns)
         has_workflow = sum(1 for r in active if r.workflow_action)
         has_subcategory = sum(1 for r in active if r.subcategory)
+        has_tags = sum(1 for r in active if r.tags)
 
         return {
             "total_rules": len(self.rules),
@@ -1020,11 +1496,13 @@ class Constitution(BaseModel):
             "by_category": by_category,
             "by_subcategory": by_subcategory,
             "by_workflow_action": by_workflow,
+            "by_tag": by_tag,
             "coverage": {
                 "keyword_rules": has_keywords,
                 "pattern_rules": has_patterns,
                 "workflow_routed": has_workflow,
                 "subcategorized": has_subcategory,
+                "tagged": has_tags,
                 "blocking_rules": sum(1 for r in active if r.severity.blocks()),
             },
         }
@@ -1451,6 +1929,46 @@ class Constitution(BaseModel):
             "acknowledged_tensions_applied": acknowledged_tensions_applied,
         }
 
+    def cascade(self, child: Constitution, *, name: str = "") -> Constitution:
+        """Create a federated constitution where this constitution is the parent.
+
+        Parent rules marked ``hardcoded=True`` are authoritative and cannot be
+        overridden by child rules with the same rule ID.
+        """
+        parent_rules = {rule.id: rule for rule in self.rules}
+        child_rules = {rule.id: rule for rule in child.rules}
+
+        merged: list[Rule] = []
+
+        for parent_rule in self.rules:
+            child_rule = child_rules.get(parent_rule.id)
+            if child_rule is None:
+                merged.append(parent_rule)
+                continue
+            if parent_rule.hardcoded:
+                merged.append(parent_rule)
+            else:
+                merged.append(child_rule)
+
+        for child_rule in child.rules:
+            if child_rule.id not in parent_rules:
+                merged.append(child_rule)
+
+        merged_name = name or f"federated-{self.name}+{child.name}"
+        return Constitution(
+            name=merged_name,
+            version=f"{self.version}+{child.version}",
+            description=f"Federated: parent={self.name}, child={child.name}",
+            rules=merged,
+            metadata={
+                **self.metadata,
+                **child.metadata,
+                "federation_parent": self.name,
+                "federation_child": child.name,
+                "federation_mode": "parent_authoritative_hardcoded",
+            },
+        )
+
     def detect_conflicts(self) -> dict[str, Any]:
         """exp110: Detect rules with overlapping triggers but conflicting actions.
 
@@ -1585,6 +2103,8 @@ class Constitution(BaseModel):
                 rule_dict["hardcoded"] = True
             if r.depends_on:
                 rule_dict["depends_on"] = list(r.depends_on)
+            if r.tags:
+                rule_dict["tags"] = list(r.tags)
             rules_data.append(rule_dict)
 
         doc: dict[str, Any] = {
@@ -1596,7 +2116,7 @@ class Constitution(BaseModel):
         if self.metadata:
             doc["metadata"] = dict(self.metadata)
 
-        return yaml.dump(doc, default_flow_style=False, sort_keys=False, allow_unicode=True)
+        return cast(str, yaml.dump(doc, default_flow_style=False, sort_keys=False, allow_unicode=True))
 
     def filter(
         self,
@@ -1605,6 +2125,7 @@ class Constitution(BaseModel):
         min_severity: str | Severity | None = None,
         category: str | None = None,
         workflow_action: str | None = None,
+        tag: str | None = None,
         enabled_only: bool = True,
     ) -> Constitution:
         """exp112: Return a new Constitution containing only matching rules.
@@ -1615,6 +2136,7 @@ class Constitution(BaseModel):
         - Production: only CRITICAL + HIGH rules
         - Staging: all rules including LOW informational
         - Specific domain: only rules in a given category
+        - Compliance scope: only rules tagged "gdpr" or "sox"
 
         Args:
             severity: Keep only rules with this exact severity.
@@ -1622,6 +2144,7 @@ class Constitution(BaseModel):
                 (CRITICAL > HIGH > MEDIUM > LOW).
             category: Keep only rules in this category.
             workflow_action: Keep only rules with this workflow_action.
+            tag: Keep only rules carrying this tag (exp117).
             enabled_only: If True (default), exclude disabled rules.
 
         Returns:
@@ -1662,6 +2185,8 @@ class Constitution(BaseModel):
                 continue
             if workflow_action is not None and r.workflow_action != workflow_action:
                 continue
+            if tag is not None and tag not in r.tags:
+                continue
             filtered.append(r)
 
         if not filtered:
@@ -1677,6 +2202,89 @@ class Constitution(BaseModel):
             rules=filtered,
             metadata={**self.metadata, "filtered": True},
         )
+
+    def semantic_rule_clusters(
+        self,
+        expected_domains: Sequence[str] | None = None,
+    ) -> dict[str, list[str]]:
+        """Group rules into governance domains using category + keyword signals."""
+        domains = list(expected_domains or ("safety", "privacy", "transparency"))
+        clusters: dict[str, list[str]] = {domain: [] for domain in domains}
+
+        for rule in self.active_rules():
+            rule_fields = " ".join(
+                (
+                    rule.category.lower(),
+                    rule.subcategory.lower(),
+                    rule.text.lower(),
+                    " ".join(k.lower() for k in rule.keywords),
+                )
+            )
+            for domain in domains:
+                signal = self._DOMAIN_SIGNAL_MAP.get(
+                    domain.lower(),
+                    {"categories": {domain.lower()}, "keywords": {domain.lower()}},
+                )
+                categories = signal["categories"]
+                keywords = signal["keywords"]
+                has_category_signal = any(cat in rule_fields for cat in categories)
+                has_keyword_signal = any(kw in rule_fields for kw in keywords)
+                if has_category_signal or has_keyword_signal:
+                    clusters[domain].append(rule.id)
+
+        return {domain: sorted(set(rule_ids)) for domain, rule_ids in clusters.items()}
+
+    def analyze_coverage_gaps(
+        self,
+        expected_domains: Sequence[str] | None = None,
+        *,
+        weak_threshold: int = 1,
+    ) -> dict[str, Any]:
+        """Identify weak or missing governance-domain coverage."""
+        if weak_threshold < 1:
+            raise ValueError("weak_threshold must be >= 1")
+
+        domains = list(expected_domains or ("safety", "privacy", "transparency"))
+        clusters = self.semantic_rule_clusters(domains)
+
+        coverage: dict[str, dict[str, Any]] = {}
+        weak_domains: list[str] = []
+        missing_domains: list[str] = []
+        recommendations: list[str] = []
+
+        for domain in domains:
+            rule_ids = clusters.get(domain, [])
+            rule_count = len(rule_ids)
+            if rule_count == 0:
+                status = "missing"
+                missing_domains.append(domain)
+                weak_domains.append(domain)
+                recommendations.append(
+                    f"Add at least {weak_threshold} rule(s) covering '{domain}' controls."
+                )
+            elif rule_count <= weak_threshold:
+                status = "weak"
+                weak_domains.append(domain)
+                recommendations.append(
+                    f"Expand '{domain}' coverage beyond {rule_count} clustered rule(s)."
+                )
+            else:
+                status = "covered"
+
+            coverage[domain] = {
+                "status": status,
+                "rule_count": rule_count,
+                "rule_ids": rule_ids,
+            }
+
+        return {
+            "expected_domains": domains,
+            "semantic_clusters": clusters,
+            "domain_coverage": coverage,
+            "weak_domains": weak_domains,
+            "missing_domains": missing_domains,
+            "recommendations": recommendations,
+        }
 
     def builder(self) -> ConstitutionBuilder:
         """Return a ConstitutionBuilder pre-populated with this constitution's rules.

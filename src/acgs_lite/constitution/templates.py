@@ -87,6 +87,7 @@ class ConstitutionBuilder:
         workflow_action: str = "",
         enabled: bool = True,
         depends_on: list[str] | None = None,
+        tags: list[str] | None = None,
         **rule_kwargs: Any,
     ) -> ConstitutionBuilder:
         """Add a rule to the constitution being built. Returns self for chaining.
@@ -123,6 +124,7 @@ class ConstitutionBuilder:
             workflow_action=workflow_action,
             enabled=enabled,
             depends_on=depends_on or [],
+            tags=tags or [],
             **rule_kwargs,
         )
         self._rules.append(rule)

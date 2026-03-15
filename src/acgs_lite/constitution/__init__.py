@@ -7,7 +7,7 @@ from .analytics import (
     governance_decision_report,
     score_context_risk,
 )
-from .core import AcknowledgedTension, Constitution, Rule, Severity
+from .core import AcknowledgedTension, Constitution, Rule, RuleSynthesisProvider, Severity
 from .metrics import (
     GovernanceEvent,
     GovernanceMetrics,
@@ -16,12 +16,14 @@ from .metrics import (
     create_governance_event,
 )
 from .routing import GovernanceRouter
+from .snapshot import ConstitutionSnapshot, capture_snapshot
 from .templates import ConstitutionBuilder
 from .versioning import RuleSnapshot
 
 __all__ = [
     "Severity",
     "Rule",
+    "RuleSynthesisProvider",
     "AcknowledgedTension",
     "Constitution",
     "classify_action_intent",
@@ -33,6 +35,8 @@ __all__ = [
     "GovernanceSession",
     "RuleEffectiveness",
     "GovernanceRouter",
+    "ConstitutionSnapshot",
+    "capture_snapshot",
     "RuleSnapshot",
     "ConstitutionBuilder",
     "_NEGATIVE_VERBS_LIST",

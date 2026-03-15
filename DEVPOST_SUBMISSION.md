@@ -38,7 +38,7 @@ AI governance should not be the exclusive domain of the companies deploying AI. 
 
 The system that constrains the machines was built by the machines. And that is exactly why we need constitutional governance -- because if AI can build its own governance engine, it can certainly build systems without one.
 
-**Development stack:** Claude (Anthropic) and Gemini (Google) as AI development partners -- Claude via Claude Code CLI for primary development, Gemini for research and cross-validation. Test-driven development -- tests written before implementation. 112 optimization experiments achieving 37x latency improvement. Rust for performance-critical paths via PyO3 bindings. The autoresearch loop runs 532 benchmark scenarios at 100% compliance with zero false negatives. Deployed on Google Cloud Run with audit trail export to Cloud Logging.
+**Development stack:** Claude (Anthropic) and Gemini (Google) as AI development partners -- Claude via Claude Code CLI for primary development, Gemini for research and cross-validation. Test-driven development -- tests written before implementation. 118 optimization experiments achieving 37x latency improvement. Rust for performance-critical paths via PyO3 bindings. The autoresearch loop runs 532 benchmark scenarios at 100% compliance with zero false negatives. Deployed on Google Cloud Run with audit trail export to Cloud Logging.
 
 ---
 
@@ -91,7 +91,7 @@ Three principles from democratic governance, applied to AI systems:
 
 **The governance paradox.** Building a system that constrains AI using AI creates a bootstrapping problem. The answer is the same as democratic constitutions: the constitution is separate from the governed entity, with its own integrity verification (hash), separation of powers (MACI), and audit trail.
 
-**Nanosecond-scale validation.** Governance that slows workflows will be disabled. We needed validation so fast developers would never notice it. Sub-microsecond validation required Rust for the hot path and 112 optimization experiments tracked in an append-only research log.
+**Nanosecond-scale validation.** Governance that slows workflows will be disabled. We needed validation so fast developers would never notice it. Sub-microsecond validation required Rust for the hot path and 118 optimization experiments tracked in an append-only research log.
 
 **EU AI Act interpretation.** The Act is law, not a technical specification. Translating Articles 12-14 into executable validation rules required legal research through hundreds of conversations with Claude about regulatory intent, cross-referenced with NIST AI RMF, ISO 42001, GDPR, and six other frameworks.
 

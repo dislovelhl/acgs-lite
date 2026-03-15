@@ -473,3 +473,95 @@ class TestConstitutionCascade:
         federated = parent.cascade(child)
         assert federated.get_rule("P-001") is not None
         assert federated.get_rule("C-001") is not None
+
+
+@pytest.mark.unit
+class TestTier2RuleSynthesis:
+    def test_rule_from_description_heuristic_fallback(self):
+        rule = Rule.from_description(
+            "Agents must not expose personal data without consent",
+            rule_id="SYN-001",
+        )
+        assert rule.id == "SYN-001"
+        assert rule.severity == Severity.CRITICAL
+        assert rule.category == "privacy"
+        assert "personal" in rule.keywords
+
+    def test_rule_from_description_uses_llm_provider_payload(self):
+        class MockProvider:
+            def generate_rule(self, description: str, *, rule_id: str) -> dict[str, object]:
+                return {
+                    "id": rule_id,
+                    "text": f"LLM synthesized: {description}",
+                    "severity": "low",
+                    "keywords": ["synthetic", "transparency"],
+                    "category": "transparency",
+                    "workflow_action": "warn",
+                }
+
+        rule = Rule.from_description(
+            "Disclose model limitations to users",
+            rule_id="SYN-002",
+            llm_provider=MockProvider(),
+        )
+        assert rule.id == "SYN-002"
+        assert rule.severity == Severity.LOW
+        assert rule.category == "transparency"
+        assert rule.workflow_action == "warn"
+        assert rule.text.startswith("LLM synthesized:")
+
+    def test_rule_from_description_requires_non_empty_text(self):
+        with pytest.raises(ValueError, match="cannot be empty"):
+            Rule.from_description("   ")
+
+
+@pytest.mark.unit
+class TestTier2CoverageGapAnalysis:
+    def test_semantic_clusters_group_rules_by_expected_domains(self):
+        constitution = Constitution.from_rules(
+            [
+                Rule(
+                    id="COV-001",
+                    text="Prevent harmful autonomous actions",
+                    category="safety",
+                    keywords=["harm", "oversight"],
+                ),
+                Rule(
+                    id="COV-002",
+                    text="Do not expose PII without consent",
+                    category="data-protection",
+                    keywords=["pii", "consent"],
+                ),
+            ],
+            name="coverage-test",
+        )
+
+        clusters = constitution.semantic_rule_clusters(["safety", "privacy", "transparency"])
+        assert "COV-001" in clusters["safety"]
+        assert "COV-002" in clusters["privacy"]
+        assert clusters["transparency"] == []
+
+    def test_analyze_coverage_gaps_flags_missing_domains(self):
+        constitution = Constitution.from_rules(
+            [
+                Rule(
+                    id="COV-003",
+                    text="Protect sensitive user data",
+                    category="data-protection",
+                    keywords=["privacy", "pii"],
+                )
+            ],
+            name="gap-test",
+        )
+
+        report = constitution.analyze_coverage_gaps(["safety", "privacy", "transparency"])
+        assert report["domain_coverage"]["privacy"]["status"] == "weak"
+        assert report["domain_coverage"]["safety"]["status"] == "missing"
+        assert report["domain_coverage"]["transparency"]["status"] == "missing"
+        assert set(report["missing_domains"]) == {"safety", "transparency"}
+        assert "safety" in report["weak_domains"]
+
+    def test_analyze_coverage_gaps_requires_positive_threshold(self):
+        constitution = Constitution.default()
+        with pytest.raises(ValueError, match="weak_threshold"):
+            constitution.analyze_coverage_gaps(weak_threshold=0)
