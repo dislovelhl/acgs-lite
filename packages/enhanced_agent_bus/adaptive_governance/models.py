@@ -1,0 +1,102 @@
+"""
+ACGS-2 Adaptive Governance Data Models
+Constitutional Hash: cdd01ef066bc6cf2
+
+Defines core data structures for adaptive governance including enums,
+dataclasses for governance metrics, impact features, and decisions.
+
+This module contains:
+- GovernanceMode: Enum for governance operation modes
+- ImpactLevel: Enum for impact severity levels
+- GovernanceMetrics: Metrics tracking governance performance
+- ImpactFeatures: Feature extraction for ML impact scoring
+- GovernanceDecision: Decision output from governance evaluation
+"""
+
+from collections import deque
+from dataclasses import dataclass, field
+from datetime import UTC, datetime, timezone
+from enum import Enum
+from typing import Optional
+
+
+class GovernanceMode(Enum):
+    """Adaptive governance modes."""
+
+    STRICT = "strict"  # Fixed constitutional thresholds
+    ADAPTIVE = "adaptive"  # ML-adjusted thresholds
+    EVOLVING = "evolving"  # Self-learning governance
+    DEGRADED = "degraded"  # Fallback mode
+
+
+class ImpactLevel(Enum):
+    """Impact assessment levels."""
+
+    NEGLIGIBLE = "negligible"
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
+
+
+@dataclass
+class GovernanceMetrics:
+    """Real-time governance performance metrics."""
+
+    constitutional_compliance_rate: float = 0.0
+    false_positive_rate: float = 0.0
+    false_negative_rate: float = 0.0
+    average_response_time: float = 0.0
+    throughput_rps: float = 0.0
+    human_override_rate: float = 0.0
+
+    # Historical trends
+    compliance_trend: deque[float] = field(default_factory=lambda: deque(maxlen=5000))
+    accuracy_trend: deque[float] = field(default_factory=lambda: deque(maxlen=5000))
+    performance_trend: deque[float] = field(default_factory=lambda: deque(maxlen=5000))
+
+
+@dataclass
+class ImpactFeatures:
+    """Features for ML-based impact assessment."""
+
+    message_length: int
+    agent_count: int
+    tenant_complexity: float
+    temporal_patterns: list[float]
+    semantic_similarity: float
+    historical_precedence: int
+    resource_utilization: float
+    network_isolation: float
+
+    # Derived features
+    risk_score: float = 0.0
+    confidence_level: float = 0.0
+
+
+@dataclass
+class GovernanceDecision:
+    """ML-enhanced governance decision."""
+
+    action_allowed: bool
+    impact_level: ImpactLevel
+    confidence_score: float
+    reasoning: str
+    recommended_threshold: float
+    features_used: ImpactFeatures
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
+    decision_id: str = field(
+        default_factory=lambda: f"gov-{datetime.now(UTC).strftime('%Y%m%d%H%M%S%f')}"
+    )
+    # A/B testing cohort assignment (champion or candidate)
+    cohort: str | None = None
+    model_version: int | None = None
+
+
+__all__ = [
+    "GovernanceDecision",
+    "GovernanceMetrics",
+    "GovernanceMode",
+    "ImpactFeatures",
+    "ImpactLevel",
+]

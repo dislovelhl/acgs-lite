@@ -1,0 +1,58 @@
+# Demo Dockerfile for Enhanced Agent Bus
+# Build context: repository root (to include src/core/shared/)
+FROM python:3.11-slim
+
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/acgs
+
+# Install Python dependencies and copy source preserving package hierarchy
+RUN pip install --no-cache-dir \
+    fastapi==0.115.6 \
+    "uvicorn[standard]==0.32.1" \
+    "redis>=5.0.0" \
+    "httpx>=0.27.0" \
+    "pydantic[email]>=2.12.1" \
+    "litellm>=1.61.6" \
+    "slowapi>=0.1.9" \
+    "msgpack>=1.0.0" \
+    numpy \
+    "asyncpg>=0.29.0" \
+    "prometheus-client>=0.20.0" \
+    "orjson>=3.9.0" \
+    "aiohttp>=3.9.0" \
+    "aiofiles>=23.0.0" \
+    "cryptography>=42.0.0" \
+    "python-jose[cryptography]>=3.3.0" \
+    pybreaker
+
+# hadolint ignore=DL3059
+RUN mkdir -p /opt/acgs/src/core
+COPY src/core/enhanced_agent_bus/ /opt/acgs/src/core/enhanced_agent_bus/
+COPY src/core/shared/ /opt/acgs/src/core/shared/
+
+# Create __init__.py files and symlinks for bare module imports.
+# enhanced_agent_bus code uses both "from src.core.enhanced_agent_bus.X" and bare "from X".
+# Symlink each .py file and subdirectory (excluding types.py to avoid shadowing stdlib).
+RUN touch /opt/acgs/src/__init__.py /opt/acgs/src/core/__init__.py && \
+    for f in /opt/acgs/src/core/enhanced_agent_bus/*.py; do \
+        name=$(basename "$f"); \
+        [ "$name" = "types.py" ] && continue; \
+        ln -sf "$f" "/opt/acgs/$name"; \
+    done && \
+    for d in /opt/acgs/src/core/enhanced_agent_bus/*/; do \
+        name=$(basename "$d"); \
+        [ "$name" = "__pycache__" ] && continue; \
+        [ "$name" = "tests" ] && continue; \
+        [ "$name" = "policies" ] && continue; \
+        ln -sf "$d" "/opt/acgs/$name"; \
+    done
+
+ENV PYTHONPATH="/opt/acgs"
+
+EXPOSE 8000
+CMD ["uvicorn", "src.core.enhanced_agent_bus.api.app:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "info"]

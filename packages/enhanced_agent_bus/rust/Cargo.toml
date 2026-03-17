@@ -1,0 +1,54 @@
+[package]
+name = "enhanced_agent_bus_rust"
+version = "0.2.0"
+edition = "2021"
+
+[lib]
+name = "enhanced_agent_bus_rust"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pyo3 = { version = "0.23.5", features = ["extension-module", "abi3-py38", "serde"] }
+serde = { version = "1.0.210", features = ["derive"] }
+serde_json = "1.0"
+zkp = "0.8"
+chrono = { version = "0.4", features = ["serde"] }
+dashmap = "6.0"
+atomic_float = "0.1"
+tokio = { version = "1.49", features = ["full"] }
+tracing = "0.1"
+thiserror = "1.0"
+once_cell = "1.19"
+moka = { version = "0.12", features = ["future"] }
+regex = "1.12"
+aho-corasick = "1.1"
+reqwest = { version = "0.13", features = ["json"] }
+uuid = { version = "1.21", features = ["v4"] }
+parking_lot = "0.12"
+futures = "0.3"
+rayon = "1.8"
+aws-lc-rs = "1.15"
+sha2 = "0.10"
+multiversion = "0.7"
+zeroize = { version = "1.7", features = ["derive"] }
+pyo3-async-runtimes = { version = "0.23", features = ["tokio-runtime"] }
+numpy = "0.23"
+ndarray = { version = "0.16", features = ["rayon"] }
+num_cpus = "1.16"
+
+
+[dependencies.ort]
+version = "2.0.0-rc.10"
+optional = true
+# Note: cuda feature removed for CI compatibility - enable locally for GPU acceleration
+
+[dependencies.tokenizers]
+version = "0.22"
+features = ["onig", "http", "hf-hub"]
+
+[dev-dependencies]
+criterion = "0.8"
+
+[[bench]]
+name = "kernel_benchmarks"
+harness = false

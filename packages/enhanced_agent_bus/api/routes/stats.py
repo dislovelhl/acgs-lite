@@ -1,0 +1,45 @@
+"""
+ACGS-2 Stats Endpoint
+Constitutional Hash: cdd01ef066bc6cf2
+
+GET /v1/stats — returns real aggregated validation statistics.
+Requires API key authentication.
+"""
+
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from ..api_key_auth import require_api_key
+from ..runtime_guards import require_sandbox_endpoint
+from ..validation_store import (
+    RecentValidationRecord,
+    ValidationStats,
+    get_validation_store,
+)
+
+router = APIRouter(prefix="/v1", tags=["stats"])
+
+
+class StatsResponse(BaseModel):
+    """Aggregated validation statistics."""
+
+    total_validations: int
+    compliance_rate: float
+    avg_latency_ms: float
+    unique_agents: int
+    constitutional_hash: str
+    recent_validations: list[RecentValidationRecord]
+
+
+@router.get("/stats", response_model=StatsResponse)
+async def get_stats(
+    _api_key: str = Depends(require_api_key),
+) -> StatsResponse:
+    """Return sandbox-only validation statistics from the in-memory store."""
+    require_sandbox_endpoint(
+        "Public stats endpoint",
+        "it reports non-authoritative in-memory validation history",
+    )
+    stats: ValidationStats = get_validation_store().get_stats()
+    return StatsResponse(constitutional_hash=CONSTITUTIONAL_HASH, **stats)

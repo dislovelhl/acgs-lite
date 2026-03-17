@@ -1,0 +1,415 @@
+{
+  "version": "1.0.0",
+  "description": "Baseline validation dataset for accuracy parity testing between ONNX and keyword-based scoring",
+  "created_at": "2026-01-03",
+  "test_cases": [
+    {
+      "id": "high_risk_security_001",
+      "category": "security",
+      "message": {
+        "content": "critical security breach detected in authentication module"
+      },
+      "context": {},
+      "expected_risk_level": "high",
+      "expected_min_score": 0.7,
+      "keywords_expected": ["critical", "security", "breach"],
+      "notes": "Clear high-risk security incident with multiple keywords"
+    },
+    {
+      "id": "high_risk_security_002",
+      "category": "security",
+      "message": {
+        "content": "unauthorized access attempt with exploit vulnerability detected"
+      },
+      "context": {},
+      "expected_risk_level": "high",
+      "expected_min_score": 0.7,
+      "keywords_expected": ["unauthorized", "exploit", "vulnerability"],
+      "notes": "Security threat with exploit terminology"
+    },
+    {
+      "id": "high_risk_security_003",
+      "category": "security",
+      "message": {
+        "content": "attack vector identified threat to system compromise"
+      },
+      "context": {},
+      "expected_risk_level": "high",
+      "expected_min_score": 0.7,
+      "keywords_expected": ["attack", "threat", "compromise"],
+      "notes": "Active threat scenario"
+    },
+    {
+      "id": "high_risk_financial_001",
+      "category": "financial",
+      "message": {
+        "content": "suspicious financial transaction transfer request from blockchain"
+      },
+      "context": {},
+      "expected_risk_level": "high",
+      "expected_min_score": 0.6,
+      "keywords_expected": [
+        "suspicious",
+        "financial",
+        "transaction",
+        "transfer",
+        "blockchain"
+      ],
+      "notes": "High-risk financial operation"
+    },
+    {
+      "id": "high_risk_financial_002",
+      "category": "financial",
+      "message": {
+        "content": "large payment transfer requires compliance audit"
+      },
+      "context": {},
+      "expected_risk_level": "high",
+      "expected_min_score": 0.6,
+      "keywords_expected": ["payment", "transfer", "compliance", "audit"],
+      "notes": "Financial compliance requirement"
+    },
+    {
+      "id": "high_risk_governance_001",
+      "category": "governance",
+      "message": {
+        "content": "governance policy violation requires immediate compliance review"
+      },
+      "context": {},
+      "expected_risk_level": "high",
+      "expected_min_score": 0.7,
+      "keywords_expected": ["governance", "policy", "violation", "compliance"],
+      "notes": "Governance policy violation"
+    },
+    {
+      "id": "high_risk_governance_002",
+      "category": "governance",
+      "message": {
+        "content": "legal regulation breach requires audit investigation"
+      },
+      "context": {},
+      "expected_risk_level": "high",
+      "expected_min_score": 0.6,
+      "keywords_expected": ["legal", "regulation", "audit"],
+      "notes": "Legal compliance issue"
+    },
+    {
+      "id": "high_risk_emergency_001",
+      "category": "emergency",
+      "message": {
+        "content": "emergency alert critical danger risk to system"
+      },
+      "context": {},
+      "expected_risk_level": "high",
+      "expected_min_score": 0.7,
+      "keywords_expected": ["emergency", "critical", "danger", "risk"],
+      "notes": "Emergency situation with high keywords"
+    },
+    {
+      "id": "medium_risk_001",
+      "category": "mixed",
+      "message": {
+        "content": "policy update notification for compliance team"
+      },
+      "context": {},
+      "expected_risk_level": "medium",
+      "expected_min_score": 0.3,
+      "expected_max_score": 0.7,
+      "keywords_expected": ["policy", "compliance"],
+      "notes": "Medium-risk with some keywords"
+    },
+    {
+      "id": "medium_risk_002",
+      "category": "mixed",
+      "message": {
+        "content": "security review scheduled for next week"
+      },
+      "context": {},
+      "expected_risk_level": "medium",
+      "expected_min_score": 0.3,
+      "expected_max_score": 0.6,
+      "keywords_expected": ["security"],
+      "notes": "Routine security activity"
+    },
+    {
+      "id": "low_risk_001",
+      "category": "benign",
+      "message": {
+        "content": "Hello, this is a test message"
+      },
+      "context": {},
+      "expected_risk_level": "low",
+      "expected_min_score": 0.0,
+      "expected_max_score": 0.4,
+      "keywords_expected": [],
+      "notes": "Simple greeting with no keywords"
+    },
+    {
+      "id": "low_risk_002",
+      "category": "benign",
+      "message": {
+        "content": "Status check completed successfully"
+      },
+      "context": {},
+      "expected_risk_level": "low",
+      "expected_min_score": 0.0,
+      "expected_max_score": 0.4,
+      "keywords_expected": [],
+      "notes": "Routine status message"
+    },
+    {
+      "id": "low_risk_003",
+      "category": "benign",
+      "message": {
+        "content": "Daily report generated for analytics dashboard"
+      },
+      "context": {},
+      "expected_risk_level": "low",
+      "expected_min_score": 0.0,
+      "expected_max_score": 0.4,
+      "keywords_expected": [],
+      "notes": "Routine analytics report"
+    },
+    {
+      "id": "low_risk_004",
+      "category": "benign",
+      "message": {
+        "content": "User preference updated for notification settings"
+      },
+      "context": {},
+      "expected_risk_level": "low",
+      "expected_min_score": 0.0,
+      "expected_max_score": 0.4,
+      "keywords_expected": [],
+      "notes": "User settings change"
+    },
+    {
+      "id": "context_priority_001",
+      "category": "priority",
+      "message": {
+        "content": "Normal message text"
+      },
+      "context": {
+        "priority": "critical"
+      },
+      "expected_risk_level": "high",
+      "expected_min_score": 0.9,
+      "keywords_expected": [],
+      "notes": "Critical priority should boost score to 0.9+"
+    },
+    {
+      "id": "context_priority_002",
+      "category": "priority",
+      "message": {
+        "content": "Test message",
+        "priority": "high"
+      },
+      "context": {},
+      "expected_risk_level": "medium",
+      "expected_min_score": 0.5,
+      "keywords_expected": [],
+      "notes": "High priority message"
+    },
+    {
+      "id": "tool_high_risk_001",
+      "category": "tools",
+      "message": {
+        "content": "Execute command on server",
+        "tools": [{ "name": "execute_command" }]
+      },
+      "context": {},
+      "expected_risk_level": "high",
+      "expected_min_score": 0.5,
+      "keywords_expected": [],
+      "notes": "High-risk tool execution"
+    },
+    {
+      "id": "tool_high_risk_002",
+      "category": "tools",
+      "message": {
+        "content": "Transfer funds to account",
+        "tools": [{ "name": "transfer_funds" }]
+      },
+      "context": {},
+      "expected_risk_level": "high",
+      "expected_min_score": 0.5,
+      "keywords_expected": ["transfer"],
+      "notes": "Financial transfer tool"
+    },
+    {
+      "id": "tool_low_risk_001",
+      "category": "tools",
+      "message": {
+        "content": "Read configuration file",
+        "tools": [{ "name": "read_file" }]
+      },
+      "context": {},
+      "expected_risk_level": "low",
+      "expected_min_score": 0.0,
+      "expected_max_score": 0.5,
+      "keywords_expected": [],
+      "notes": "Read-only tool usage"
+    },
+    {
+      "id": "semantic_advantage_001",
+      "category": "semantic",
+      "message": {
+        "content": "Potential intrusion detected in the network perimeter"
+      },
+      "context": {},
+      "expected_risk_level": "medium",
+      "expected_min_score": 0.3,
+      "keywords_expected": [],
+      "notes": "BERT should catch semantic security meaning without explicit keywords",
+      "bert_advantage": true
+    },
+    {
+      "id": "semantic_advantage_002",
+      "category": "semantic",
+      "message": {
+        "content": "Anomalous data exfiltration pattern observed"
+      },
+      "context": {},
+      "expected_risk_level": "medium",
+      "expected_min_score": 0.3,
+      "keywords_expected": ["abnormal"],
+      "notes": "BERT should understand data theft semantics",
+      "bert_advantage": true
+    },
+    {
+      "id": "semantic_advantage_003",
+      "category": "semantic",
+      "message": {
+        "content": "User privileges escalated without authorization workflow"
+      },
+      "context": {},
+      "expected_risk_level": "medium",
+      "expected_min_score": 0.3,
+      "keywords_expected": [],
+      "notes": "BERT should catch privilege escalation risk",
+      "bert_advantage": true
+    },
+    {
+      "id": "edge_case_empty_001",
+      "category": "edge_case",
+      "message": {
+        "content": ""
+      },
+      "context": {},
+      "expected_risk_level": "low",
+      "expected_min_score": 0.0,
+      "expected_max_score": 0.3,
+      "keywords_expected": [],
+      "notes": "Empty content should return low score"
+    },
+    {
+      "id": "edge_case_whitespace_001",
+      "category": "edge_case",
+      "message": {
+        "content": "   "
+      },
+      "context": {},
+      "expected_risk_level": "low",
+      "expected_min_score": 0.0,
+      "expected_max_score": 0.3,
+      "keywords_expected": [],
+      "notes": "Whitespace-only content"
+    },
+    {
+      "id": "edge_case_unicode_001",
+      "category": "edge_case",
+      "message": {
+        "content": "Critical emergency situation"
+      },
+      "context": {},
+      "expected_risk_level": "high",
+      "expected_min_score": 0.35,
+      "keywords_expected": ["critical", "emergency"],
+      "notes": "Simple high-risk keywords without additional context boosters"
+    },
+    {
+      "id": "mixed_context_001",
+      "category": "combined",
+      "message": {
+        "content": "security breach detected",
+        "priority": "critical"
+      },
+      "context": {},
+      "expected_risk_level": "high",
+      "expected_min_score": 0.9,
+      "keywords_expected": ["security", "breach"],
+      "notes": "High keywords plus critical priority"
+    },
+    {
+      "id": "governance_type_001",
+      "category": "message_type",
+      "message": {
+        "content": "Governance review request",
+        "message_type": "governance_request"
+      },
+      "context": {},
+      "expected_risk_level": "high",
+      "expected_min_score": 0.35,
+      "keywords_expected": ["governance"],
+      "notes": "Governance message type - keyword fallback gives lower score than ML model"
+    },
+    {
+      "id": "long_text_001",
+      "category": "length",
+      "message": {
+        "content": "This is a very long message that contains multiple paragraphs of text. The security team has identified a potential vulnerability in our authentication system. This critical breach could allow unauthorized access to sensitive financial data. We need immediate policy review and compliance audit to address this threat. The risk assessment team has flagged this as a high priority emergency situation requiring governance oversight."
+      },
+      "context": {},
+      "expected_risk_level": "high",
+      "expected_min_score": 0.8,
+      "keywords_expected": [
+        "security",
+        "vulnerability",
+        "critical",
+        "breach",
+        "unauthorized",
+        "financial",
+        "policy",
+        "compliance",
+        "audit",
+        "threat",
+        "risk",
+        "emergency",
+        "governance"
+      ],
+      "notes": "Long text with many high-impact keywords"
+    },
+    {
+      "id": "consensus_001",
+      "category": "blockchain",
+      "message": {
+        "content": "blockchain consensus protocol update required"
+      },
+      "context": {},
+      "expected_risk_level": "medium",
+      "expected_min_score": 0.3,
+      "keywords_expected": ["blockchain", "consensus"],
+      "notes": "Blockchain-related message"
+    },
+    {
+      "id": "alert_001",
+      "category": "alerts",
+      "message": {
+        "content": "suspicious alert detected abnormal activity pattern"
+      },
+      "context": {},
+      "expected_risk_level": "high",
+      "expected_min_score": 0.6,
+      "keywords_expected": ["suspicious", "alert", "abnormal"],
+      "notes": "Alert with suspicious activity"
+    }
+  ],
+  "agreement_threshold": 0.99,
+  "score_tolerance": 0.15,
+  "semantic_improvement_cases": [
+    "semantic_advantage_001",
+    "semantic_advantage_002",
+    "semantic_advantage_003"
+  ],
+  "notes": "This dataset is used to validate accuracy parity between ONNX inference and keyword-based scoring. The agreement threshold of 99% allows for small variations while ensuring consistent behavior. Cases marked with bert_advantage=true are expected to potentially score higher with BERT due to semantic understanding."
+}

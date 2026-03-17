@@ -1,0 +1,692 @@
+from __future__ import annotations
+
+from unittest.mock import AsyncMock, MagicMock
+
+import pytest
+from packages.enhanced_agent_bus import interfaces as ifaces
+from packages.enhanced_agent_bus.core_models import AgentMessage
+from packages.enhanced_agent_bus.interfaces import (
+    AgentRegistry,
+    CircuitBreakerProtocol,
+    ConstitutionalVerificationResultProtocol,
+    ConstitutionalVerifierProtocol,
+    MACIEnforcerProtocol,
+    MACIRegistryProtocol,
+    MessageHandler,
+    MessageProcessorProtocol,
+    MessageRouter,
+    MetricsCollector,
+    OPAClientProtocol,
+    OrchestratorProtocol,
+    PolicyClientProtocol,
+    PolicyValidationResultProtocol,
+    PQCValidatorProtocol,
+    ProcessingStrategy,
+    RustProcessorProtocol,
+    TransportProtocol,
+    ValidationResultProtocol,
+    ValidationStrategy,
+)
+from packages.enhanced_agent_bus.validators import ValidationResult
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+
+class ConcreteAgentRegistry:
+    """Minimal concrete implementation satisfying AgentRegistry."""
+
+    def __init__(self):
+        self._agents = {}
+
+    async def register(self, agent_id, capabilities=None, metadata=None):
+        if agent_id in self._agents:
+            return False
+        self._agents[agent_id] = {"capabilities": capabilities or [], "metadata": metadata or {}}
+        return True
+
+    async def unregister(self, agent_id):
+        if agent_id not in self._agents:
+            return False
+        del self._agents[agent_id]
+        return True
+
+    async def get(self, agent_id):
+        return self._agents.get(agent_id)
+
+    async def list_agents(self):
+        return list(self._agents.keys())
+
+    async def exists(self, agent_id):
+        return agent_id in self._agents
+
+    async def update_metadata(self, agent_id, metadata):
+        if agent_id not in self._agents:
+            return False
+        self._agents[agent_id]["metadata"].update(metadata)
+        return True
+
+
+class ConcreteMessageRouter:
+    """Minimal concrete implementation satisfying MessageRouter."""
+
+    async def route(self, message, registry):
+        return message.to_agent or None
+
+    async def broadcast(self, message, registry, exclude=None):
+        agents = await registry.list_agents()
+        if exclude:
+            agents = [a for a in agents if a not in exclude]
+        return agents
+
+
+class ConcreteValidationStrategy:
+    """Minimal concrete implementation satisfying ValidationStrategy."""
+
+    async def validate(self, message):
+        if not message.from_agent:
+            return (False, "from_agent is required")
+        return (True, None)
+
+
+class ConcreteProcessingStrategy:
+    """Minimal concrete implementation satisfying ProcessingStrategy."""
+
+    async def process(self, message, handlers):
+        return ValidationResult(is_valid=True)
+
+    def is_available(self):
+        return True
+
+    def get_name(self):
+        return "ConcreteProcessingStrategy"
+
+
+class ConcreteMessageHandler:
+    """Minimal concrete implementation satisfying MessageHandler."""
+
+    async def handle(self, message):
+        return None
+
+    def can_handle(self, message):
+        return True
+
+
+class ConcreteMetricsCollector:
+    """Minimal concrete implementation satisfying MetricsCollector."""
+
+    def __init__(self):
+        self._data = {}
+
+    def record_message_processed(self, message_type, duration_ms, success):
+        self._data[message_type] = {"duration_ms": duration_ms, "success": success}
+
+    def record_agent_registered(self, agent_id):
+        self._data[f"registered:{agent_id}"] = True
+
+    def record_agent_unregistered(self, agent_id):
+        self._data[f"unregistered:{agent_id}"] = True
+
+    def get_metrics(self):
+        return dict(self._data)
+
+
+class ConcreteMessageProcessorProtocol:
+    """Minimal concrete implementation satisfying MessageProcessorProtocol."""
+
+    async def process(self, message):
+        return ValidationResult(is_valid=True)
+
+
+class ConcreteMACIRegistry:
+    """Minimal concrete implementation satisfying MACIRegistryProtocol."""
+
+    def __init__(self):
+        self._roles = {}
+
+    def register_agent(self, agent_id, role):
+        self._roles[agent_id] = role
+        return True
+
+    def get_role(self, agent_id):
+        return self._roles.get(agent_id)
+
+    def unregister_agent(self, agent_id):
+        if agent_id not in self._roles:
+            return False
+        del self._roles[agent_id]
+        return True
+
+
+class ConcreteMACIEnforcer:
+    """Minimal concrete implementation satisfying MACIEnforcerProtocol."""
+
+    async def validate_action(self, agent_id, action, target_output_id=None):
+        return {"allowed": True, "agent_id": agent_id, "action": action}
+
+
+class ConcreteTransport:
+    """Minimal concrete implementation satisfying TransportProtocol."""
+
+    def __init__(self):
+        self._running = False
+        self._subscriptions = {}
+
+    async def start(self):
+        self._running = True
+
+    async def stop(self):
+        self._running = False
+
+    async def send(self, message, topic=None):
+        return True
+
+    async def subscribe(self, topic, handler):
+        self._subscriptions[topic] = handler
+
+
+class ConcreteOrchestrator:
+    """Minimal concrete implementation satisfying OrchestratorProtocol."""
+
+    def __init__(self):
+        self._running = False
+
+    async def start(self):
+        self._running = True
+
+    async def stop(self):
+        self._running = False
+
+    def get_status(self):
+        return {
+            "status": "running" if self._running else "stopped",
+            "constitutional_hash": CONSTITUTIONAL_HASH,
+        }
+
+
+class ConcreteCircuitBreaker:
+    """Minimal concrete implementation satisfying CircuitBreakerProtocol."""
+
+    def __init__(self):
+        self._failures = 0
+        self._open = False
+
+    async def record_success(self):
+        self._failures = 0
+        self._open = False
+
+    async def record_failure(self, error=None, error_type="unknown"):
+        self._failures += 1
+        if self._failures >= 3:
+            self._open = True
+
+    async def can_execute(self):
+        return not self._open
+
+    async def reset(self):
+        self._failures = 0
+        self._open = False
+
+
+class ConcretePolicyValidationResult:
+    """Minimal concrete implementation satisfying PolicyValidationResultProtocol."""
+
+    def __init__(self, is_valid, errors=None):
+        self._is_valid = is_valid
+        self._errors = errors or []
+
+    @property
+    def is_valid(self):
+        return self._is_valid
+
+    @property
+    def errors(self):
+        return self._errors
+
+
+class ConcretePolicyClient:
+    """Minimal concrete implementation satisfying PolicyClientProtocol."""
+
+    async def validate_message_signature(self, message):
+        return ConcretePolicyValidationResult(is_valid=True)
+
+
+class ConcreteOPAClient:
+    """Minimal concrete implementation satisfying OPAClientProtocol."""
+
+    async def validate_constitutional(self, message):
+        return ConcreteValidationResult(is_valid=True)
+
+
+class ConcreteValidationResult:
+    """Minimal concrete implementation satisfying ValidationResultProtocol."""
+
+    def __init__(self, is_valid, errors=None):
+        self._is_valid = is_valid
+        self._errors = errors or []
+
+    @property
+    def is_valid(self):
+        return self._is_valid
+
+    @property
+    def errors(self):
+        return self._errors
+
+
+class ConcreteRustProcessor:
+    """Minimal concrete implementation satisfying RustProcessorProtocol."""
+
+    def validate(self, message):
+        return True
+
+
+class ConcreteRustProcessorDict:
+    """Rust processor returning a dict."""
+
+    def validate(self, message):
+        return {"is_valid": True, "errors": []}
+
+
+class ConcretePQCValidator:
+    """Minimal concrete implementation satisfying PQCValidatorProtocol."""
+
+    def verify_governance_decision(self, decision, signature, public_key):
+        return True
+
+
+class ConcreteConstitutionalVerificationResult:
+    """Minimal concrete implementation satisfying ConstitutionalVerificationResultProtocol."""
+
+    def __init__(self, is_valid, failure_reason=None):
+        self._is_valid = is_valid
+        self._failure_reason = failure_reason
+
+    @property
+    def is_valid(self):
+        return self._is_valid
+
+    @property
+    def failure_reason(self):
+        return self._failure_reason
+
+
+class ConcreteConstitutionalVerifier:
+    """Minimal concrete implementation satisfying ConstitutionalVerifierProtocol."""
+
+    async def verify_constitutional_compliance(self, action_data, context, session_id=None):
+        return ConcreteConstitutionalVerificationResult(is_valid=True)
+
+
+class ConcreteAgentRegistry:  # noqa: F811
+    """Minimal concrete implementation satisfying AgentRegistry."""
+
+    def __init__(self):
+        self._agents = {}
+
+    async def register(self, agent_id, capabilities=None, metadata=None):
+        if agent_id in self._agents:
+            return False
+        self._agents[agent_id] = {"capabilities": capabilities or [], "metadata": metadata or {}}
+        return True
+
+    async def unregister(self, agent_id):
+        if agent_id not in self._agents:
+            return False
+        del self._agents[agent_id]
+        return True
+
+    async def get(self, agent_id):
+        return self._agents.get(agent_id)
+
+    async def list_agents(self):
+        return list(self._agents.keys())
+
+    async def exists(self, agent_id):
+        return agent_id in self._agents
+
+    async def update_metadata(self, agent_id, metadata):
+        if agent_id not in self._agents:
+            return False
+        self._agents[agent_id]["metadata"].update(metadata)
+        return True
+
+
+class ConcreteMessageRouter:  # noqa: F811
+    """Minimal concrete implementation satisfying MessageRouter."""
+
+    async def route(self, message, registry):
+        return message.to_agent or None
+
+    async def broadcast(self, message, registry, exclude=None):
+        agents = await registry.list_agents()
+        if exclude:
+            agents = [a for a in agents if a not in exclude]
+        return agents
+
+
+class ConcreteValidationStrategy:  # noqa: F811
+    """Minimal concrete implementation satisfying ValidationStrategy."""
+
+    async def validate(self, message):
+        if not message.from_agent:
+            return (False, "from_agent is required")
+        return (True, None)
+
+
+class ConcreteProcessingStrategy:  # noqa: F811
+    """Minimal concrete implementation satisfying ProcessingStrategy."""
+
+    async def process(self, message, handlers):
+        return ValidationResult(is_valid=True)
+
+    def is_available(self):
+        return True
+
+    def get_name(self):
+        return "ConcreteProcessingStrategy"
+
+
+class ConcreteMessageHandler:  # noqa: F811
+    """Minimal concrete implementation satisfying MessageHandler."""
+
+    async def handle(self, message):
+        return None
+
+    def can_handle(self, message):
+        return True
+
+
+class ConcreteMetricsCollector:  # noqa: F811
+    """Minimal concrete implementation satisfying MetricsCollector."""
+
+    def __init__(self):
+        self._data = {}
+
+    def record_message_processed(self, message_type, duration_ms, success):
+        self._data[message_type] = {"duration_ms": duration_ms, "success": success}
+
+    def record_agent_registered(self, agent_id):
+        self._data[f"registered:{agent_id}"] = True
+
+    def record_agent_unregistered(self, agent_id):
+        self._data[f"unregistered:{agent_id}"] = True
+
+    def get_metrics(self):
+        return dict(self._data)
+
+
+class ConcreteMessageProcessorProtocol:  # noqa: F811
+    """Minimal concrete implementation satisfying MessageProcessorProtocol."""
+
+    async def process(self, message):
+        return ValidationResult(is_valid=True)
+
+
+class ConcreteMACIRegistry:  # noqa: F811
+    """Minimal concrete implementation satisfying MACIRegistryProtocol."""
+
+    def __init__(self):
+        self._roles = {}
+
+    def register_agent(self, agent_id, role):
+        self._roles[agent_id] = role
+        return True
+
+    def get_role(self, agent_id):
+        return self._roles.get(agent_id)
+
+    def unregister_agent(self, agent_id):
+        if agent_id not in self._roles:
+            return False
+        del self._roles[agent_id]
+        return True
+
+
+class ConcreteMACIEnforcer:  # noqa: F811
+    """Minimal concrete implementation satisfying MACIEnforcerProtocol."""
+
+    async def validate_action(self, agent_id, action, target_output_id=None):
+        return {"allowed": True, "agent_id": agent_id, "action": action}
+
+
+class ConcreteTransport:  # noqa: F811
+    """Minimal concrete implementation satisfying TransportProtocol."""
+
+    def __init__(self):
+        self._running = False
+        self._subscriptions = {}
+
+    async def start(self):
+        self._running = True
+
+    async def stop(self):
+        self._running = False
+
+    async def send(self, message, topic=None):
+        return True
+
+    async def subscribe(self, topic, handler):
+        self._subscriptions[topic] = handler
+
+
+class ConcreteOrchestrator:  # noqa: F811
+    """Minimal concrete implementation satisfying OrchestratorProtocol."""
+
+    def __init__(self):
+        self._running = False
+
+    async def start(self):
+        self._running = True
+
+    async def stop(self):
+        self._running = False
+
+    def get_status(self):
+        return {
+            "status": "running" if self._running else "stopped",
+            "constitutional_hash": CONSTITUTIONAL_HASH,
+        }
+
+
+class ConcreteCircuitBreaker:  # noqa: F811
+    """Minimal concrete implementation satisfying CircuitBreakerProtocol."""
+
+    def __init__(self):
+        self._failures = 0
+        self._open = False
+
+    async def record_success(self):
+        self._failures = 0
+        self._open = False
+
+    async def record_failure(self, error=None, error_type="unknown"):
+        self._failures += 1
+        if self._failures >= 3:
+            self._open = True
+
+    async def can_execute(self):
+        return not self._open
+
+    async def reset(self):
+        self._failures = 0
+        self._open = False
+
+
+class ConcretePolicyValidationResult:  # noqa: F811
+    """Minimal concrete implementation satisfying PolicyValidationResultProtocol."""
+
+    def __init__(self, is_valid, errors=None):
+        self._is_valid = is_valid
+        self._errors = errors or []
+
+    @property
+    def is_valid(self):
+        return self._is_valid
+
+    @property
+    def errors(self):
+        return self._errors
+
+
+class ConcretePolicyClient:  # noqa: F811
+    """Minimal concrete implementation satisfying PolicyClientProtocol."""
+
+    async def validate_message_signature(self, message):
+        return ConcretePolicyValidationResult(is_valid=True)
+
+
+class ConcreteOPAClient:  # noqa: F811
+    """Minimal concrete implementation satisfying OPAClientProtocol."""
+
+    async def validate_constitutional(self, message):
+        return ConcreteValidationResult(is_valid=True)
+
+
+class ConcreteValidationResult:  # noqa: F811
+    """Minimal concrete implementation satisfying ValidationResultProtocol."""
+
+    def __init__(self, is_valid, errors=None):
+        self._is_valid = is_valid
+        self._errors = errors or []
+
+    @property
+    def is_valid(self):
+        return self._is_valid
+
+    @property
+    def errors(self):
+        return self._errors
+
+
+class ConcreteRustProcessor:  # noqa: F811
+    """Minimal concrete implementation satisfying RustProcessorProtocol."""
+
+    def validate(self, message):
+        return True
+
+
+class ConcreteRustProcessorDict:  # noqa: F811
+    """Rust processor returning a dict."""
+
+    def validate(self, message):
+        return {"is_valid": True, "errors": []}
+
+
+class ConcretePQCValidator:  # noqa: F811
+    """Minimal concrete implementation satisfying PQCValidatorProtocol."""
+
+    def verify_governance_decision(self, decision, signature, public_key):
+        return True
+
+
+class ConcreteConstitutionalVerificationResult:  # noqa: F811
+    """Minimal concrete implementation satisfying ConstitutionalVerificationResultProtocol."""
+
+    def __init__(self, is_valid, failure_reason=None):
+        self._is_valid = is_valid
+        self._failure_reason = failure_reason
+
+    @property
+    def is_valid(self):
+        return self._is_valid
+
+    @property
+    def failure_reason(self):
+        return self._failure_reason
+
+
+class ConcreteConstitutionalVerifier:  # noqa: F811
+    """Minimal concrete implementation satisfying ConstitutionalVerifierProtocol."""
+
+    async def verify_constitutional_compliance(self, action_data, context, session_id=None):
+        return ConcreteConstitutionalVerificationResult(is_valid=True)
+
+
+@pytest.fixture
+def agent_message():
+    """Return a basic AgentMessage for testing."""
+    return AgentMessage(
+        content={"key": "value"},
+        from_agent="agent-a",
+        to_agent="agent-b",
+    )
+
+
+@pytest.fixture
+def registry():
+    return ConcreteAgentRegistry()
+
+
+class TestMACIRegistryProtocol:
+    """Tests for MACIRegistryProtocol definition."""
+
+    def test_protocol_is_not_none(self):
+        assert MACIRegistryProtocol is not None
+
+    def test_protocol_is_runtime_checkable(self):
+        mr = ConcreteMACIRegistry()
+        assert isinstance(mr, MACIRegistryProtocol)
+
+    def test_has_register_agent(self):
+        assert hasattr(MACIRegistryProtocol, "register_agent")
+
+    def test_has_get_role(self):
+        assert hasattr(MACIRegistryProtocol, "get_role")
+
+    def test_has_unregister_agent(self):
+        assert hasattr(MACIRegistryProtocol, "unregister_agent")
+
+
+class TestMACIEnforcerProtocol:
+    """Tests for MACIEnforcerProtocol definition."""
+
+    def test_protocol_is_not_none(self):
+        assert MACIEnforcerProtocol is not None
+
+    def test_protocol_is_runtime_checkable(self):
+        me = ConcreteMACIEnforcer()
+        assert isinstance(me, MACIEnforcerProtocol)
+
+    def test_has_validate_action(self):
+        assert hasattr(MACIEnforcerProtocol, "validate_action")
+
+
+class TestOPAClientProtocol:
+    """Tests for OPAClientProtocol definition."""
+
+    def test_protocol_is_not_none(self):
+        assert OPAClientProtocol is not None
+
+    def test_protocol_is_runtime_checkable(self):
+        oc = ConcreteOPAClient()
+        assert isinstance(oc, OPAClientProtocol)
+
+    def test_has_validate_constitutional(self):
+        assert hasattr(OPAClientProtocol, "validate_constitutional")
+
+
+class TestPQCValidatorProtocol:
+    """Tests for PQCValidatorProtocol definition."""
+
+    def test_protocol_is_not_none(self):
+        assert PQCValidatorProtocol is not None
+
+    def test_protocol_is_runtime_checkable(self):
+        pv = ConcretePQCValidator()
+        assert isinstance(pv, PQCValidatorProtocol)
+
+    def test_has_verify_governance_decision(self):
+        assert hasattr(PQCValidatorProtocol, "verify_governance_decision")
+
+
+class TestConstitutionalVerifierProtocol:
+    """Tests for ConstitutionalVerifierProtocol definition."""
+
+    def test_protocol_is_not_none(self):
+        assert ConstitutionalVerifierProtocol is not None
+
+    def test_protocol_is_runtime_checkable(self):
+        cv = ConcreteConstitutionalVerifier()
+        assert isinstance(cv, ConstitutionalVerifierProtocol)
+
+    def test_has_verify_constitutional_compliance(self):
+        assert hasattr(ConstitutionalVerifierProtocol, "verify_constitutional_compliance")

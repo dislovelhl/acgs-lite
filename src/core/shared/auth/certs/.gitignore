@@ -1,0 +1,7 @@
+# SAML SP Private Key - NEVER commit to version control in production
+# The sp.key file is included for development/testing only
+# For production, generate new certificates and use a secrets manager
+
+# Uncomment the following line for production repositories:
+sp.key
+sp.crt

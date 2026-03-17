@@ -1,0 +1,19 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "enhanced_agent_bus_rust"
+version = "0.1.0"
+description = "Rust kernels for ACGS-2 Enhanced Agent Bus"
+requires-python = ">=3.11"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
+
+[tool.maturin]
+module-name = "enhanced_agent_bus_rust"
+binding = "pyo3"
+directory = "."

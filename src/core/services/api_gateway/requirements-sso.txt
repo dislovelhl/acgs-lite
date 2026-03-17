@@ -1,0 +1,35 @@
+# ACGS-2 API Gateway SSO Dependencies
+# Updated: 2025-01-02
+# Purpose: Enterprise SSO Integration (SAML 2.0 & OIDC)
+
+# OAuth 2.0 / OpenID Connect Client (Authlib)
+# Provides full OAuth2/OIDC client implementation
+authlib>=1.2.0
+
+# SAML 2.0 Service Provider (PySAML2)
+# Full SAML SP implementation with signature validation
+pysaml2>=7.0.0
+
+# JWT/JOSE Processing (python-jose)
+# Token signing, validation, and cryptographic operations
+python-jose[cryptography]>=3.4.0
+
+# Cryptography (shared dependency - CVE fixes in 46.x)
+# Required by pysaml2 and python-jose for key operations
+cryptography>=46.0.5
+
+# PyOpenSSL (SAML dependency)
+# 23.2+ required for OpenSSL 3.x compatibility on Debian slim images
+pyOpenSSL>=23.2.0
+
+# SQLAlchemy 2.0+ with async support
+# ORM for SSO user models, provider configs, and role mappings
+sqlalchemy[asyncio]>=2.0.0
+
+# Async SQLite driver for development/testing
+# Production should use asyncpg for PostgreSQL
+aiosqlite>=0.19.0
+
+# Async PostgreSQL driver for production
+# Recommended for enterprise SSO deployments
+asyncpg>=0.29.0

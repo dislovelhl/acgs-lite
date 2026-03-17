@@ -1,0 +1,233 @@
+"""
+Session Security Hardening Tests
+Constitutional Hash: cdd01ef066bc6cf2
+
+Regression tests for:
+- H1: JWT iss/aud claim enforcement (PyJWT migration)
+- M1: JTI-based revocation with optional Redis persistence
+- M3: Maximum session extension cap
+"""
+
+from datetime import datetime, timedelta, timezone
+from unittest.mock import AsyncMock, MagicMock
+
+import jwt
+import pytest
+
+pytestmark = [pytest.mark.unit, pytest.mark.constitutional]
+
+from enterprise_sso.session_governance_sdk import (  # noqa: E402
+    SESSION_JWT_AUDIENCE,
+    SESSION_JWT_ISSUER,
+    SessionConfig,
+    SessionGovernanceError,
+    SessionLifecycleManager,
+    SessionTokenManager,
+    TokenValidationError,
+)
+
+SECRET = "a-sufficiently-long-test-secret-key-32b"  # pragma: allowlist secret  # noqa: S105
+
+
+# ============================================================================
+# H1 -- JWT iss/aud/jti claim enforcement
+# ============================================================================
+
+
+class TestJWTClaimEnforcement:
+    """H1: SessionTokenManager now issues and enforces iss/aud/jti claims."""
+
+    @pytest.fixture
+    def manager(self) -> SessionTokenManager:
+        return SessionTokenManager(secret_key=SECRET)
+
+    @pytest.mark.asyncio
+    async def test_access_token_contains_iss_aud_jti(self, manager):
+        token_obj = await manager.generate_access_token("s1", "t1", "u1")
+        payload = jwt.decode(
+            token_obj.access_token,
+            SECRET,
+            algorithms=["HS256"],
+            audience=SESSION_JWT_AUDIENCE,
+            issuer=SESSION_JWT_ISSUER,
+        )
+        assert payload["iss"] == SESSION_JWT_ISSUER
+        assert payload["aud"] == SESSION_JWT_AUDIENCE
+        assert "jti" in payload and len(payload["jti"]) > 0
+        assert payload["sub"] == "u1"
+
+    @pytest.mark.asyncio
+    async def test_wrong_audience_rejected(self, manager):
+        token_obj = await manager.generate_access_token("s1", "t1", "u1")
+        with pytest.raises(jwt.InvalidAudienceError):
+            jwt.decode(
+                token_obj.access_token,
+                SECRET,
+                algorithms=["HS256"],
+                audience="wrong-audience",
+                issuer=SESSION_JWT_ISSUER,
+            )
+
+    @pytest.mark.asyncio
+    async def test_wrong_issuer_rejected(self, manager):
+        token_obj = await manager.generate_access_token("s1", "t1", "u1")
+        with pytest.raises(jwt.InvalidIssuerError):
+            jwt.decode(
+                token_obj.access_token,
+                SECRET,
+                algorithms=["HS256"],
+                audience=SESSION_JWT_AUDIENCE,
+                issuer="wrong-issuer",
+            )
+
+    @pytest.mark.asyncio
+    async def test_tampered_token_rejected(self, manager):
+        token_obj = await manager.generate_access_token("s1", "t1", "u1")
+        tampered = token_obj.access_token[:-5] + "XXXXX"
+        result = await manager.validate_token(tampered)
+        assert result.is_valid is False
+        assert result.reason == "invalid_token"
+
+    @pytest.mark.asyncio
+    async def test_validate_returns_correct_claims(self, manager):
+        token_obj = await manager.generate_access_token("sess-99", "tenant-A", "user-Z", ["admin"])
+        result = await manager.validate_token(token_obj.access_token)
+        assert result.is_valid is True
+        assert result.session_id == "sess-99"
+        assert result.tenant_id == "tenant-A"
+        assert result.user_id == "user-Z"
+        assert "admin" in result.roles
+
+
+# ============================================================================
+# M1 -- JTI-based revocation, optional Redis persistence
+# ============================================================================
+
+
+class TestJTIRevocation:
+    """M1: Revocation is JTI-based and optionally Redis-durable."""
+
+    @pytest.fixture
+    def manager(self) -> SessionTokenManager:
+        return SessionTokenManager(secret_key=SECRET)
+
+    @pytest.mark.asyncio
+    async def test_revoked_token_fails_validation(self, manager):
+        token_obj = await manager.generate_access_token("s1", "t1", "u1")
+        await manager.revoke_token(token_obj.access_token)
+        result = await manager.validate_token(token_obj.access_token)
+        assert result.is_valid is False
+        assert result.reason == "token_revoked"
+
+    @pytest.mark.asyncio
+    async def test_revocation_uses_jti_not_full_token(self, manager):
+        """Verify that revocation stores the JTI, not the raw token string."""
+        token_obj = await manager.generate_access_token("s1", "t1", "u1")
+        payload = jwt.decode(
+            token_obj.access_token,
+            SECRET,
+            algorithms=["HS256"],
+            audience=SESSION_JWT_AUDIENCE,
+            issuer=SESSION_JWT_ISSUER,
+        )
+        jti = payload["jti"]
+        await manager.revoke_token(token_obj.access_token)
+        assert jti in manager._revoked_jtis
+        assert token_obj.access_token not in manager._revoked_jtis
+
+    @pytest.mark.asyncio
+    async def test_redis_sadd_called_on_revoke(self):
+        redis_mock = MagicMock()
+        redis_mock.sadd = AsyncMock()
+        redis_mock.expire = AsyncMock()
+        manager = SessionTokenManager(secret_key=SECRET, redis_client=redis_mock)
+
+        token_obj = await manager.generate_access_token("s1", "t1", "u1")
+        await manager.revoke_token(token_obj.access_token)
+
+        redis_mock.sadd.assert_called_once()
+        redis_mock.expire.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_redis_sismember_checked_on_validate(self):
+        redis_mock = MagicMock()
+        redis_mock.sadd = AsyncMock()
+        redis_mock.expire = AsyncMock()
+        redis_mock.sismember = AsyncMock(return_value=True)
+        manager = SessionTokenManager(secret_key=SECRET, redis_client=redis_mock)
+
+        token_obj = await manager.generate_access_token("s1", "t1", "u1")
+        result = await manager.validate_token(token_obj.access_token)
+
+        redis_mock.sismember.assert_called_once()
+        assert result.is_valid is False
+        assert result.reason == "token_revoked"
+
+    @pytest.mark.asyncio
+    async def test_redis_failure_does_not_break_validation(self):
+        """Redis errors must not propagate -- fall back to in-memory set."""
+        redis_mock = MagicMock()
+        redis_mock.sismember = AsyncMock(side_effect=ConnectionError("Redis down"))
+        manager = SessionTokenManager(secret_key=SECRET, redis_client=redis_mock)
+
+        token_obj = await manager.generate_access_token("s1", "t1", "u1")
+        result = await manager.validate_token(token_obj.access_token)
+        # In-memory set is empty → token is valid (Redis failure is silently absorbed)
+        assert result.is_valid is True
+
+
+# ============================================================================
+# M3 -- Maximum session extension cap
+# ============================================================================
+
+
+class TestMaxExtensionCap:
+    """M3: extend_session must refuse extensions beyond the cap."""
+
+    @pytest.fixture
+    def manager(self) -> SessionLifecycleManager:
+        return SessionLifecycleManager()
+
+    @pytest.fixture
+    def short_config(self) -> SessionConfig:
+        return SessionConfig(
+            tenant_id="t1",
+            user_id="u1",
+            max_duration_minutes=30,  # short session for testing
+        )
+
+    @pytest.mark.asyncio
+    async def test_small_extension_accepted(self, manager, short_config):
+        session = await manager.create_session(short_config)
+        extended = await manager.extend_session(session.session_id, extension_minutes=15)
+        assert extended.extension_count == 1
+
+    @pytest.mark.asyncio
+    async def test_excessive_extension_rejected(self, manager, short_config):
+        """A single extension that would push total lifetime far beyond cap must fail."""
+        session = await manager.create_session(short_config)
+        with pytest.raises(SessionGovernanceError, match="maximum allowed session duration"):
+            # max_duration=30, cap = min(1440, 30*4) = 120; session is 30 min;
+            # request 200 min extension → 230 min total > 120 min cap
+            await manager.extend_session(session.session_id, extension_minutes=200)
+
+    @pytest.mark.asyncio
+    async def test_cumulative_extensions_capped(self, manager, short_config):
+        """Multiple small extensions should fail once they cross the cap."""
+        session = await manager.create_session(short_config)
+        # cap = 120 min; session starts at 30 min
+        # Extend 3x by 25 min each → 30 + 75 = 105 min (OK)
+        for _ in range(3):
+            session = await manager.extend_session(session.session_id, extension_minutes=25)
+        # Next 25-min extension → 130 min > 120 min cap → should fail
+        with pytest.raises(SessionGovernanceError, match="maximum allowed session duration"):
+            await manager.extend_session(session.session_id, extension_minutes=25)
+
+    @pytest.mark.asyncio
+    async def test_extension_count_incremented(self, manager, short_config):
+        session = await manager.create_session(short_config)
+        assert session.extension_count == 0
+        session = await manager.extend_session(session.session_id, extension_minutes=10)
+        assert session.extension_count == 1
+        session = await manager.extend_session(session.session_id, extension_minutes=10)
+        assert session.extension_count == 2
