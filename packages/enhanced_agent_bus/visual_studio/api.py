@@ -1,87 +1,39 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Response, status
+from pydantic import Field
 from src.core.shared.security.auth import UserClaims, get_current_user
 
 from .models import (
-    NodeType,
     WorkflowDefinition,
     WorkflowExportRequest,
     WorkflowExportResult,
     WorkflowListResponse,
-    WorkflowNode,
     WorkflowSimulationResult,
     WorkflowSummary,
     WorkflowValidationResult,
 )
+from .service import VisualStudioService, get_visual_studio_service
+
+VISUAL_STUDIO_OPERATION_ERRORS = (
+    AttributeError,
+    OSError,
+    RuntimeError,
+    TypeError,
+    ValueError,
+)
 
 router = APIRouter(
     prefix="/api/v1/visual",
-    tags=["visual-studio"],
+    tags=["Visual Studio"],
     dependencies=[Depends(get_current_user)],
 )
 
-_service: Any | None = None
 
-
-class _DefaultService:
-    async def create_workflow(self, **kwargs: Any) -> WorkflowDefinition:
-        now = datetime.now(UTC)
-        return WorkflowDefinition(
-            id="wf-default",
-            name=kwargs["name"],
-            description=kwargs.get("description", ""),
-            nodes=[
-                WorkflowNode(id="start", type=NodeType.START, position={"x": 0.0, "y": 0.0}),
-                WorkflowNode(id="end", type=NodeType.END, position={"x": 1.0, "y": 1.0}),
-            ],
-            edges=[],
-            tenant_id=kwargs.get("tenant_id"),
-            created_at=now,
-            updated_at=now,
-        )
-
-    async def get_workflow(self, _workflow_id: str) -> WorkflowDefinition | None:
-        return None
-
-    async def save_workflow(self, workflow: WorkflowDefinition) -> WorkflowDefinition:
-        return workflow
-
-    async def delete_workflow(self, _workflow_id: str) -> bool:
-        return False
-
-    async def list_workflows(
-        self, tenant_id: str | None, page: int, page_size: int
-    ) -> tuple[list[WorkflowSummary], int]:
-        return [], 0
-
-    def validate_workflow(self, _workflow: WorkflowDefinition) -> WorkflowValidationResult:
-        return WorkflowValidationResult(is_valid=True)
-
-    async def simulate_workflow(
-        self, workflow: WorkflowDefinition, input_data: dict
-    ) -> WorkflowSimulationResult:
-        return WorkflowSimulationResult(workflow_id=workflow.id, success=True, final_output=input_data)
-
-    async def export_workflow(
-        self, workflow: WorkflowDefinition, request: WorkflowExportRequest
-    ) -> WorkflowExportResult:
-        return WorkflowExportResult(
-            workflow_id=workflow.id,
-            format=request.format,
-            content=workflow.model_dump_json(),
-            filename=f"{workflow.id}.{request.format}",
-        )
-
-
-def get_service() -> Any:
-    global _service
-    if _service is None:
-        _service = _DefaultService()
-    return _service
+def get_service() -> VisualStudioService:
+    return get_visual_studio_service()
 
 
 def _resolve_tenant_id(user: UserClaims, tenant_id: str | None) -> str:
@@ -92,45 +44,30 @@ def _resolve_tenant_id(user: UserClaims, tenant_id: str | None) -> str:
     return tenant_id
 
 
-@router.post("/workflows", status_code=201)
+@router.post("/workflows", status_code=201, response_model=WorkflowDefinition)
 async def create_workflow(
-    name: str,
-    description: str | None = None,
-    tenant_id: str | None = None,
+    name: str = Query(..., min_length=1),
+    description: str | None = Query(default=None),
+    tenant_id: str | None = Query(default=None),
     user: Annotated[UserClaims, Depends(get_current_user)] = None,
     service: Annotated[Any, Depends(get_service)] = None,
 ) -> WorkflowDefinition:
     resolved_tenant = _resolve_tenant_id(user, tenant_id)
-    return await service.create_workflow(name=name, description=description, tenant_id=resolved_tenant)
+    try:
+        return await service.create_workflow(
+            name=name, description=description, tenant_id=resolved_tenant
+        )
+    except VISUAL_STUDIO_OPERATION_ERRORS as exc:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to create workflow: {exc}"
+        ) from exc
 
 
-@router.get("/workflows/{workflow_id}")
-async def get_workflow(
-    workflow_id: str,
-    service: Annotated[Any, Depends(get_service)] = None,
-) -> WorkflowDefinition:
-    workflow = await service.get_workflow(workflow_id)
-    if workflow is None:
-        raise HTTPException(status_code=404, detail="workflow not found")
-    return workflow
-
-
-@router.put("/workflows/{workflow_id}")
-async def update_workflow(
-    workflow_id: str,
-    workflow: WorkflowDefinition,
-    service: Annotated[Any, Depends(get_service)] = None,
-) -> WorkflowDefinition:
-    if workflow_id != workflow.id:
-        raise HTTPException(status_code=400, detail="workflow id mismatch")
-    return await service.save_workflow(workflow)
-
-
-@router.get("/workflows")
+@router.get("/workflows", response_model=WorkflowListResponse)
 async def list_workflows(
     tenant_id: str | None = Query(default=None),
-    page: int = 1,
-    page_size: int = 20,
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100),
     user: Annotated[UserClaims, Depends(get_current_user)] = None,
     service: Annotated[Any, Depends(get_service)] = None,
 ) -> WorkflowListResponse:
@@ -139,60 +76,108 @@ async def list_workflows(
     return WorkflowListResponse(workflows=workflows, total=total, page=page, page_size=page_size)
 
 
-@router.delete("/workflows/{workflow_id}")
+@router.get("/workflows/{workflow_id}", response_model=WorkflowDefinition)
+async def get_workflow(
+    workflow_id: str,
+    service: Annotated[Any, Depends(get_service)] = None,
+) -> WorkflowDefinition:
+    workflow = await service.get_workflow(workflow_id)
+    if workflow is None:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    return workflow
+
+
+@router.put("/workflows/{workflow_id}", response_model=WorkflowDefinition)
+async def update_workflow(
+    workflow_id: str,
+    workflow: WorkflowDefinition,
+    service: Annotated[Any, Depends(get_service)] = None,
+) -> WorkflowDefinition:
+    if workflow_id != workflow.id:
+        raise HTTPException(
+            status_code=400, detail=f"Path id {workflow_id!r} does not match body id {workflow.id!r}"
+        )
+    existing = await service.get_workflow(workflow_id)
+    if existing is None:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    try:
+        return await service.save_workflow(workflow)
+    except VISUAL_STUDIO_OPERATION_ERRORS as exc:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to update workflow: {exc}"
+        ) from exc
+
+
+@router.post("/workflows/{workflow_id}", response_model=WorkflowDefinition)
+async def save_workflow(
+    workflow_id: str,
+    workflow: WorkflowDefinition,
+    service: Annotated[Any, Depends(get_service)] = None,
+) -> WorkflowDefinition:
+    if workflow_id != workflow.id:
+        raise HTTPException(
+            status_code=400, detail=f"Path id {workflow_id!r} does not match body id {workflow.id!r}"
+        )
+    existing = await service.get_workflow(workflow_id)
+    if existing is None:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    return await service.save_workflow(workflow)
+
+
+@router.delete("/workflows/{workflow_id}", status_code=204, response_class=Response)
 async def delete_workflow(
     workflow_id: str,
     service: Annotated[Any, Depends(get_service)] = None,
-) -> dict[str, bool]:
+) -> Response:
     deleted = await service.delete_workflow(workflow_id)
     if not deleted:
-        raise HTTPException(status_code=404, detail="workflow not found")
-    return {"deleted": True}
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    return Response(status_code=204)
 
 
-@router.post("/workflows/{workflow_id}/validate")
+@router.post("/workflows/{workflow_id}/validate", response_model=WorkflowValidationResult)
 async def validate_workflow(
     workflow_id: str,
     service: Annotated[Any, Depends(get_service)] = None,
-) -> dict:
+) -> WorkflowValidationResult:
     workflow = await service.get_workflow(workflow_id)
     if workflow is None:
-        raise HTTPException(status_code=404, detail="workflow not found")
-    return service.validate_workflow(workflow).model_dump()
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    return service.validate_workflow(workflow)
 
 
-@router.post("/workflows/{workflow_id}/simulate")
+@router.post("/workflows/{workflow_id}/simulate", response_model=WorkflowSimulationResult)
 async def simulate_workflow(
     workflow_id: str,
-    input_data: dict,
+    input_data: dict = Body(default_factory=dict),
     service: Annotated[Any, Depends(get_service)] = None,
-) -> dict:
+) -> WorkflowSimulationResult:
     workflow = await service.get_workflow(workflow_id)
     if workflow is None:
-        raise HTTPException(status_code=404, detail="workflow not found")
-    return (await service.simulate_workflow(workflow, input_data)).model_dump()
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    return await service.simulate_workflow(workflow, input_data)
 
 
-@router.post("/workflows/{workflow_id}/export")
+@router.post("/workflows/{workflow_id}/export", response_model=WorkflowExportResult)
 async def export_workflow(
     workflow_id: str,
     request: WorkflowExportRequest,
     service: Annotated[Any, Depends(get_service)] = None,
-) -> dict:
+) -> WorkflowExportResult:
     workflow = await service.get_workflow(workflow_id)
     if workflow is None:
-        raise HTTPException(status_code=404, detail="workflow not found")
-    return (await service.export_workflow(workflow, request)).model_dump()
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    return await service.export_workflow(workflow, request)
 
 
-@router.get("/workflows/{workflow_id}/summary")
+@router.get("/workflows/{workflow_id}/summary", response_model=WorkflowSummary)
 async def get_workflow_summary(
     workflow_id: str,
     service: Annotated[Any, Depends(get_service)] = None,
 ) -> WorkflowSummary:
     workflow = await service.get_workflow(workflow_id)
     if workflow is None:
-        raise HTTPException(status_code=404, detail="workflow not found")
+        raise HTTPException(status_code=404, detail="Workflow not found")
     return WorkflowSummary(
         id=workflow.id,
         name=workflow.name,
@@ -203,3 +188,16 @@ async def get_workflow_summary(
         version=workflow.version,
         is_active=workflow.is_active,
     )
+
+
+__all__ = [
+    "router",
+    "create_workflow",
+    "get_workflow",
+    "update_workflow",
+    "delete_workflow",
+    "list_workflows",
+    "validate_workflow",
+    "simulate_workflow",
+    "export_workflow",
+]

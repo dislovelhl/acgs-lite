@@ -163,13 +163,13 @@ class SIEMEventFormatter:
     @staticmethod
     def _cef_severity(severity: SecuritySeverity) -> int:
         mapping = {
-            SecuritySeverity.INFO: 1,
-            SecuritySeverity.LOW: 3,
-            SecuritySeverity.MEDIUM: 5,
-            SecuritySeverity.HIGH: 8,
-            SecuritySeverity.CRITICAL: 10,
+            "info": 1,
+            "low": 3,
+            "medium": 5,
+            "high": 8,
+            "critical": 10,
         }
-        return mapping[severity]
+        return mapping.get(severity.value, 5)
 
 
 class AlertManager:
@@ -180,26 +180,27 @@ class AlertManager:
     ) -> None:
         self.thresholds = thresholds or list(DEFAULT_ALERT_THRESHOLDS)
         self.callback = callback
-        self._events: dict[SecurityEventType, deque[datetime]] = defaultdict(deque)
-        self._last_alert_at: dict[SecurityEventType, datetime] = {}
+        self._events: dict[str, deque[datetime]] = defaultdict(deque)
+        self._last_alert_at: dict[str, datetime] = {}
         self._states: dict[str, JSONDict] = {}
 
     async def process_event(self, event: SecurityEvent) -> AlertLevel | None:
         threshold = self._find_threshold(event.event_type)
-        if threshold is None and event.severity == SecuritySeverity.CRITICAL:
+        if threshold is None and event.severity.value == "critical":
             threshold = AlertThreshold(event.event_type, 1, 60, AlertLevel.CRITICAL, cooldown_seconds=0)
         if threshold is None:
             return None
 
+        key = event.event_type.value
         now = event.timestamp.astimezone(UTC)
-        events = self._events[event.event_type]
+        events = self._events[key]
         events.append(now)
         cutoff = now.timestamp() - threshold.time_window_seconds
         while events and events[0].timestamp() < cutoff:
             events.popleft()
 
         count = len(events)
-        last_alert = self._last_alert_at.get(event.event_type)
+        last_alert = self._last_alert_at.get(key)
         if last_alert is not None and threshold.cooldown_seconds > 0:
             if (now - last_alert).total_seconds() < threshold.cooldown_seconds:
                 self._record_state(event.event_type, count, None)
@@ -210,7 +211,7 @@ class AlertManager:
             return None
 
         level = self._escalate_level(threshold, count)
-        self._last_alert_at[event.event_type] = now
+        self._last_alert_at[key] = now
         context: JSONDict = {
             "event_type": event.event_type.value,
             "severity": event.severity.value,
@@ -221,20 +222,21 @@ class AlertManager:
             "event_count": count,
         }
         self._record_state(event.event_type, count, level)
-        await self._invoke_callback(level, event.message, context)
+        alert_message = f"[{event.event_type.value}] {event.message}"
+        await self._invoke_callback(level, alert_message, context)
         return level
 
     def get_alert_states(self) -> dict[str, JSONDict]:
         return {key: dict(value) for key, value in self._states.items()}
 
     def reset_alert_state(self, event_type: SecurityEventType) -> None:
-        self._events[event_type].clear()
-        self._last_alert_at.pop(event_type, None)
+        self._events[event_type.value].clear()
+        self._last_alert_at.pop(event_type.value, None)
         self._states[event_type.value] = {"event_count": 0, "current_level": None}
 
     def _find_threshold(self, event_type: SecurityEventType) -> AlertThreshold | None:
         for threshold in self.thresholds:
-            if threshold.event_type == event_type:
+            if threshold.event_type.value == event_type.value:
                 return threshold
         return None
 
@@ -279,14 +281,14 @@ class EventCorrelator:
         same_tenant = [
             item
             for item in self._events
-            if item.tenant_id and item.tenant_id == event.tenant_id and item.severity in {SecuritySeverity.HIGH, SecuritySeverity.CRITICAL}
+            if item.tenant_id and item.tenant_id == event.tenant_id and item.severity.value in {"high", "critical"}
         ]
         if event.tenant_id and len(same_tenant) >= 3:
             correlation_id = self._generate_correlation_id("tenant_attack", event.tenant_id)
             self._correlations[correlation_id] = same_tenant
             return correlation_id
 
-        matching_type = [item for item in self._events if item.event_type == event.event_type]
+        matching_type = [item for item in self._events if item.event_type.value == event.event_type.value]
         unique_agents = {item.agent_id for item in matching_type if item.agent_id}
         if len(unique_agents) >= 3:
             correlation_id = self._generate_correlation_id("distributed_attack", event.event_type.value)

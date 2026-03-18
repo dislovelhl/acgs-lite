@@ -31,6 +31,8 @@ Usage:
     await server.start()
 """
 
+import sys
+
 __version__ = "1.0.0"
 
 # Import centralized constitutional hash
@@ -40,6 +42,11 @@ except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
 __constitutional_hash__ = CONSTITUTIONAL_HASH
+
+_module = sys.modules.get(__name__)
+if _module is not None:
+    sys.modules.setdefault("enhanced_agent_bus.mcp_integration", _module)
+    sys.modules.setdefault("packages.enhanced_agent_bus.mcp_integration", _module)
 
 # MCP Client
 try:

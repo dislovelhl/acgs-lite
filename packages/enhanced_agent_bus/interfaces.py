@@ -515,8 +515,6 @@ __all__ = [
     "CircuitBreakerProtocol",
     "ConstitutionalVerificationResultProtocol",
     "ConstitutionalVerifierProtocol",
-    "ConstitutionalHashValidatorProtocol",
-    "GovernanceDecisionValidatorProtocol",
     "MACIEnforcerProtocol",
     "MACIRegistryProtocol",
     "MessageHandler",

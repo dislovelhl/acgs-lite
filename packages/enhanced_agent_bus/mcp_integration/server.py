@@ -11,6 +11,7 @@ Constitutional Hash: cdd01ef066bc6cf2
 import asyncio
 import json
 import logging as _stdlib_logging
+import sys
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -56,6 +57,11 @@ except ImportError:
     MACI_AVAILABLE = False
 
 logger = get_logger(__name__)
+
+_module = sys.modules.get(__name__)
+if _module is not None:
+    sys.modules.setdefault("enhanced_agent_bus.mcp_integration.server", _module)
+    sys.modules.setdefault("packages.enhanced_agent_bus.mcp_integration.server", _module)
 
 # Type alias for handlers
 HandlerFunc = Callable[[JSONDict], Awaitable[JSONDict]]

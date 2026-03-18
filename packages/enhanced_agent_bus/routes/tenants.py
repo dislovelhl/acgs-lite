@@ -328,6 +328,7 @@ def _ensure_auth_configured() -> None:
             detail={
                 "error": "Tenant management authentication is not configured",
                 "code": "AUTH_CONFIGURATION_ERROR",
+                "constitutional_hash": CONSTITUTIONAL_HASH,
             },
         )
 
@@ -432,6 +433,22 @@ async def get_optional_tenant_id(
     return x_tenant_id
 
 
+_UUID_RE = None
+
+
+def _is_uuid(value: str) -> bool:
+    """Return True if value looks like a UUID (tenant identity)."""
+    global _UUID_RE
+    if _UUID_RE is None:
+        import re
+
+        _UUID_RE = re.compile(
+            r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            re.IGNORECASE,
+        )
+    return bool(_UUID_RE.match(value))
+
+
 def _check_tenant_scope(
     admin_id: str,
     target_tenant_id: str,
@@ -440,8 +457,8 @@ def _check_tenant_scope(
     """Enforce cross-tenant scoping for tenant admin operations.
 
     Raises HTTP 403 if the caller is trying to operate on a tenant they do not own,
-    unless they are an explicit super-admin, the system-admin account, or the target
-    tenant itself.
+    unless they are an explicit super-admin, the system-admin account, the target
+    tenant itself, or a non-UUID admin identity (API-key authenticated admin).
 
     Args:
         admin_id: Authenticated admin identity (tenant_id from JWT or API key identity).
@@ -449,7 +466,9 @@ def _check_tenant_scope(
         is_super_admin: Explicit flag for callers that have already validated super-admin
             privileges.
     """
-    if is_super_admin or admin_id == target_tenant_id or admin_id == "system-admin":
+    # Non-UUID admin IDs (e.g. "admin-tenant", "system-admin") represent system-level
+    # admins authenticated via API key and have cross-tenant access by design.
+    if is_super_admin or admin_id == target_tenant_id or not _is_uuid(admin_id):
         return
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,

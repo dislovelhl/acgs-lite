@@ -94,7 +94,10 @@ class IFCViolation:
 
 def taint_merge(*labels: IFCLabel) -> IFCLabel:
     """Merge zero or more labels conservatively."""
-    merged = IFCLabel()
-    for label in labels:
+    if not labels:
+        return IFCLabel()
+
+    merged = labels[0]
+    for label in labels[1:]:
         merged = merged.taint_merge(label)
     return merged

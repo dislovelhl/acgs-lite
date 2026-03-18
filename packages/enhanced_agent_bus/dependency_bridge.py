@@ -22,6 +22,8 @@ Usage:
     MACI_AVAILABLE = flags["MACI"]
 """
 
+import sys
+
 from typing import TypeVar, cast
 
 try:
@@ -33,6 +35,11 @@ from src.core.shared.utilities import DependencyRegistry, FeatureFlag
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
+
+_module = sys.modules.get(__name__)
+if _module is not None:
+    sys.modules.setdefault("enhanced_agent_bus.dependency_bridge", _module)
+    sys.modules.setdefault("packages.enhanced_agent_bus.dependency_bridge", _module)
 
 T = TypeVar("T")
 
