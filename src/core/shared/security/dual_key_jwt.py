@@ -21,7 +21,8 @@ Features:
 import asyncio
 from datetime import UTC, datetime, timedelta
 
-from jose import JWTError, jwt
+import jwt
+from jwt import InvalidTokenError as JWTError
 from pydantic import BaseModel, Field
 
 from src.core.shared.structured_logging import get_logger

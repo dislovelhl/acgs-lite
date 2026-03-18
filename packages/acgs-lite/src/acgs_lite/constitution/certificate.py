@@ -10,7 +10,6 @@ from __future__ import annotations
 import hashlib
 import hmac
 import uuid
-import warnings
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from enum import Enum
@@ -103,13 +102,10 @@ class CertificateAuthority:
 
     def __init__(self, issuer: str, secret: str = "") -> None:
         if not secret:
-            warnings.warn(
-                "CertificateAuthority: 'secret' parameter will be required in a future "
-                "version. Pass an explicit secret to avoid this warning.",
-                DeprecationWarning,
-                stacklevel=2,
+            raise ValueError(
+                "CertificateAuthority requires an explicit 'secret' parameter. "
+                "A hardcoded default is not safe for certificate signing."
             )
-            secret = "acgs-default-secret"
         self._issuer = issuer
         self._secret = secret.encode()
         self._certificates: dict[str, ComplianceCertificate] = {}

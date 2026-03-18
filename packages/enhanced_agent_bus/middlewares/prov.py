@@ -116,7 +116,7 @@ class ProvMiddleware(BaseMiddleware):
                 stage_name,
                 label.entity.id,
             )
-        except Exception as exc:
+        except (OSError, ValueError, TypeError, KeyError) as exc:
             # Fail-open: provenance errors must never block governance.
             logger.warning(
                 "ProvMiddleware: failed to stamp provenance for stage=%r — continuing: %s",

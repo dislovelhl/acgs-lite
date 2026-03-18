@@ -22,9 +22,7 @@ from typing import TypeAlias
 _module = sys.modules.get(__name__)
 if _module is not None:
     sys.modules.setdefault("enhanced_agent_bus.models", _module)
-    sys.modules.setdefault("enhanced_agent_bus.models", _module)
     sys.modules.setdefault("core.enhanced_agent_bus.models", _module)
-    sys.modules.setdefault("models", _module)
 
 # Import constitutional hash
 try:

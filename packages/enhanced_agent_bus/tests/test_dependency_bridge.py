@@ -259,22 +259,22 @@ class TestStubMACIEnforcer:
         assert enforcer is not None
 
     @pytest.mark.asyncio
-    async def test_validate_action_returns_true(self) -> None:
-        """Test that validate_action always returns True."""
+    async def test_validate_action_returns_false_fail_closed(self) -> None:
+        """Test that validate_action returns False (fail-closed)."""
         from enhanced_agent_bus.dependency_bridge import StubMACIEnforcer
 
         enforcer = StubMACIEnforcer()
         result = await enforcer.validate_action(action="any", agent="agent")
-        assert result is True
+        assert result is False
 
     @pytest.mark.asyncio
-    async def test_check_permission_returns_true(self) -> None:
-        """Test that check_permission always returns True."""
+    async def test_check_permission_returns_false_fail_closed(self) -> None:
+        """Test that check_permission returns False (fail-closed)."""
         from enhanced_agent_bus.dependency_bridge import StubMACIEnforcer
 
         enforcer = StubMACIEnforcer()
         result = await enforcer.check_permission(permission="any")
-        assert result is True
+        assert result is False
 
 
 class TestStubMACIRoleRegistry:

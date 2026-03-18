@@ -17,7 +17,6 @@ dependencies = [
     "redis>=5.0.0",
     "structlog>=25.5.0",
     "prometheus-client>=0.20.0",
-    "python-jose>=3.3.0",
     "PyJWT>=2.8.0",
     "orjson>=3.10.0",
     "cachetools>=5.0.0",

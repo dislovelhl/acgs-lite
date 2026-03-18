@@ -2,15 +2,15 @@
 
 Constitutional Hash: cdd01ef066bc6cf2
 
-License key format: ACGS-{TIER}-{expiry8}-{nonce4a}-{nonce4b}-{tier4}-{hmac12}
-Example:           ACGS-PRO-67f2b400-a9c2-3d18-0001-4a8f2c9e1b3d
+License key format: ACGS-{TIER}-{expiry8}-{nonce4a}-{nonce4b}-{tier4}-{hmac32}
+Example:           ACGS-PRO-67f2b400-a9c2-3d18-0001-4a8f2c9e1b3d7e5f6a0b1c2d3e4f5a6b
 
 The UUID-style data portion encodes:
   - expiry8:  4-byte big-endian unix timestamp (0 = no expiry)
   - nonce4a:  first 2 bytes of random nonce
   - nonce4b:  last 2 bytes of random nonce
   - tier4:    2-byte big-endian tier code
-  - hmac12:   first 6 bytes of HMAC-SHA256(secret, expiry+nonce+tier)
+  - hmac32:   first 16 bytes of HMAC-SHA256(secret, expiry+nonce+tier)
 
 Offline validation only — no network calls.
 """
@@ -154,13 +154,13 @@ def generate_license_key(tier: str, days: int, secret: str) -> str:
     tier_b = struct.pack(">H", tier_code)
     msg = expiry_b + nonce + tier_b
 
-    sig = hmac.new(secret.encode(), msg, hashlib.sha256).digest()[:6]
+    sig = hmac.new(secret.encode(), msg, hashlib.sha256).digest()[:16]
 
     g1 = expiry_b.hex()  # 8 hex chars  — expiry
     g2 = nonce[:2].hex()  # 4 hex chars  — nonce high
     g3 = nonce[2:].hex()  # 4 hex chars  — nonce low
     g4 = tier_b.hex()  # 4 hex chars  — tier code
-    g5 = sig.hex()  # 12 hex chars — truncated HMAC
+    g5 = sig.hex()  # 32 hex chars — truncated HMAC
 
     return f"ACGS-{tier_upper}-{g1}-{g2}-{g3}-{g4}-{g5}"
 
@@ -184,7 +184,7 @@ def validate_license_key(key: str, secret: str | None = None) -> LicenseInfo:
     if secret is None:
         secret = _get_secret()
 
-    # Expected parts: ACGS | TIER | 8hex | 4hex | 4hex | 4hex | 12hex  (7 total)
+    # Expected parts: ACGS | TIER | 8hex | 4hex | 4hex | 4hex | 32hex  (7 total)
     parts = key.split("-")
     if len(parts) != 7 or parts[0] != "ACGS":
         raise LicenseError("Invalid license key format. Expected ACGS-{TIER}-{uuid-style-data}.")
@@ -201,7 +201,7 @@ def validate_license_key(key: str, secret: str | None = None) -> LicenseInfo:
     except ValueError as exc:
         raise LicenseError(f"Key decode error: {exc}") from exc
 
-    if len(expiry_b) != 4 or len(nonce) != 4 or len(tier_b) != 2 or len(sig) != 6:
+    if len(expiry_b) != 4 or len(nonce) != 4 or len(tier_b) != 2 or len(sig) != 16:
         raise LicenseError("Key segment lengths are invalid.")
 
     # Verify tier consistency between label and encoded tier code
@@ -216,7 +216,7 @@ def validate_license_key(key: str, secret: str | None = None) -> LicenseInfo:
 
     # Verify HMAC
     msg = expiry_b + nonce + tier_b
-    expected_sig = hmac.new(secret.encode(), msg, hashlib.sha256).digest()[:6]
+    expected_sig = hmac.new(secret.encode(), msg, hashlib.sha256).digest()[:16]
     if not hmac.compare_digest(sig, expected_sig):
         raise LicenseError(
             "Key integrity check failed (invalid signature). Ensure ACGS_LICENSE_SECRET is correct."

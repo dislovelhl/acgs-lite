@@ -529,28 +529,28 @@ class TestStubMACIEnforcer:
 
         enforcer = StubMACIEnforcer()
         result = await enforcer.validate_action("agent", "action")
-        assert result is True
+        assert result is False
 
     async def test_validate_action_no_args(self):
         from enhanced_agent_bus.dependency_bridge import StubMACIEnforcer
 
         enforcer = StubMACIEnforcer()
         result = await enforcer.validate_action()
-        assert result is True
+        assert result is False
 
     async def test_check_permission_returns_true(self):
         from enhanced_agent_bus.dependency_bridge import StubMACIEnforcer
 
         enforcer = StubMACIEnforcer()
         result = await enforcer.check_permission("agent", "resource")
-        assert result is True
+        assert result is False
 
     async def test_check_permission_no_args(self):
         from enhanced_agent_bus.dependency_bridge import StubMACIEnforcer
 
         enforcer = StubMACIEnforcer()
         result = await enforcer.check_permission()
-        assert result is True
+        assert result is False
 
 
 # ---------------------------------------------------------------------------

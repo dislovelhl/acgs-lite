@@ -185,7 +185,7 @@ class TemporalPolicyMiddleware(BaseMiddleware):
                 action_history=list(context.action_history),
                 policy_path="data.acgs.temporal.allow",
             )
-        except Exception as exc:
+        except (OSError, TimeoutError, RuntimeError, ValueError) as exc:
             logger.error(
                 "TemporalPolicyMiddleware: OPA call failed for action=%r — blocking (fail-closed): %s",  # noqa: E501
                 action,

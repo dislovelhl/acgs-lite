@@ -128,7 +128,7 @@ class OrchestratorMiddleware(BaseMiddleware):
                 result.get("completed_tasks"),
                 result.get("failed_tasks"),
             )
-        except Exception as exc:
+        except (OSError, TimeoutError, RuntimeError, ValueError) as exc:
             logger.warning(
                 "OrchestratorMiddleware: orchestration failed, continuing: %s",
                 exc,

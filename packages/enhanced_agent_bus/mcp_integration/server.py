@@ -388,7 +388,9 @@ class MCPIntegrationServer:
     def register_tool(self, tool: InternalTool) -> bool:
         """Register an internal tool."""
         if tool.name in self._tools:
-            logger.warning(f"Tool '{tool.name}' already registered, updating")
+            message = f"Tool '{tool.name}' already registered, updating"
+            logger.warning(message)
+            _stdlib_logging.warning(message)
 
         self._tools[tool.name] = tool
         self._metrics.tools_registered = len(self._tools)
@@ -407,7 +409,9 @@ class MCPIntegrationServer:
     def register_resource(self, resource: InternalResource) -> bool:
         """Register an internal resource."""
         if resource.uri in self._resources:
-            logger.warning(f"Resource '{resource.uri}' already registered, updating")
+            message = f"Resource '{resource.uri}' already registered, updating"
+            logger.warning(message)
+            _stdlib_logging.warning(message)
 
         self._resources[resource.uri] = resource
         self._metrics.resources_registered = len(self._resources)
@@ -428,7 +432,9 @@ class MCPIntegrationServer:
     async def start(self) -> None:
         """Start the MCP integration server."""
         if self._state == MCPServerState.RUNNING:
-            logger.warning("Server already running")
+            message = "Server already running"
+            logger.warning(message)
+            _stdlib_logging.warning(message)
             return
 
         self._state = MCPServerState.STARTING

@@ -254,16 +254,18 @@ class StubMACIRole:
 
 
 class StubMACIEnforcer:
-    """Stub MACI enforcer for when MACI enforcement is unavailable."""
+    """Stub MACI enforcer — fail-closed when MACI enforcement is unavailable."""
 
     def __init__(self, *args: object, **kwargs: object) -> None:
         pass
 
     async def validate_action(self, *args: object, **kwargs: object) -> bool:
-        return True
+        logger.warning("StubMACIEnforcer: MACI unavailable, blocking action (fail-closed)")
+        return False
 
     async def check_permission(self, *args: object, **kwargs: object) -> bool:
-        return True
+        logger.warning("StubMACIEnforcer: MACI unavailable, denying permission (fail-closed)")
+        return False
 
 
 class StubMACIRoleRegistry:

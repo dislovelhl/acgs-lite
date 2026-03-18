@@ -73,8 +73,7 @@ module.exports = {
         AGENT_BUS_URL: "http://localhost:8000",
         CONSTITUTIONAL_HASH: "cdd01ef066bc6cf2", // pragma: allowlist secret
         LOG_LEVEL: "INFO",
-        JWT_SECRET:
-          process.env.JWT_SECRET || "dev-jwt-secret-min-32-chars-required", // pragma: allowlist secret
+        JWT_SECRET: process.env.JWT_SECRET,
         CORS_ORIGINS: '["http://localhost:8080","http://127.0.0.1:8080"]',
       },
       env_production: {

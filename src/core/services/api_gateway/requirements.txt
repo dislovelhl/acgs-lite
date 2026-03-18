@@ -17,7 +17,6 @@ pydantic-settings==2.13.1
 
 # Authentication
 PyJWT==2.11.0
-python-jose[cryptography]==3.5.0
 itsdangerous>=2.2.0
 
 # Cache
