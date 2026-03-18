@@ -231,12 +231,14 @@ class AmendmentProposalEngine:
                 audit_config = AuditClientConfig()
                 self.audit_client = AuditClient(config=audit_config)
             except _PROPOSAL_ENGINE_OPERATION_ERRORS as e:
-                logger.warning(f"[{CONSTITUTIONAL_HASH}] Failed to initialize audit client: {e}")
+                logger.warning("audit_client_init_failed", constitutional_hash=CONSTITUTIONAL_HASH, error=str(e))
                 self.enable_audit = False
 
         logger.info(
-            f"[{CONSTITUTIONAL_HASH}] AmendmentProposalEngine initialized "
-            f"(MACI: {self.enable_maci}, Audit: {self.enable_audit})"
+            "proposal_engine_initialized",
+            constitutional_hash=CONSTITUTIONAL_HASH,
+            maci_enabled=self.enable_maci,
+            audit_enabled=self.enable_audit,
         )
 
     def _get_invariant_validator(self) -> ProposalInvariantValidator | None:  # type: ignore[valid-type]
@@ -307,7 +309,7 @@ class AmendmentProposalEngine:
                     f"MACI violation: Agent {request.proposer_agent_id} not authorized "
                     f"to propose amendments. Required role: LEGISLATIVE"
                 )
-                logger.error(f"[{CONSTITUTIONAL_HASH}] {error_msg}")
+                logger.error("maci_validation_failed", constitutional_hash=CONSTITUTIONAL_HASH, error=error_msg)
 
                 # Log MACI violation to audit
                 if self.enable_audit and self.audit_client:
@@ -456,7 +458,7 @@ class AmendmentProposalEngine:
         Raises:
             ValueError: If proposal not found or already submitted
         """
-        logger.info(f"[{CONSTITUTIONAL_HASH}] Submitting proposal {proposal_id} for review")
+        logger.info("submitting_proposal", constitutional_hash=CONSTITUTIONAL_HASH, proposal_id=proposal_id)
 
         # Get proposal
         proposal = await self.storage.get_amendment(proposal_id)
@@ -486,7 +488,7 @@ class AmendmentProposalEngine:
                 },
             )
 
-        logger.info(f"[{CONSTITUTIONAL_HASH}] Proposal {proposal_id} submitted for review")
+        logger.info("proposal_submitted", constitutional_hash=CONSTITUTIONAL_HASH, proposal_id=proposal_id)
 
         return proposal  # type: ignore[no-any-return]
 
@@ -505,7 +507,7 @@ class AmendmentProposalEngine:
         Returns:
             dict with validation results
         """
-        logger.info(f"[{CONSTITUTIONAL_HASH}] Validating proposal {proposal_id}")
+        logger.info("validating_proposal", constitutional_hash=CONSTITUTIONAL_HASH, proposal_id=proposal_id)
 
         # Get proposal
         proposal = await self.storage.get_amendment(proposal_id)
@@ -540,7 +542,7 @@ class AmendmentProposalEngine:
         Returns:
             dict with proposal and optional diff, or None if not found
         """
-        logger.info(f"[{CONSTITUTIONAL_HASH}] Retrieving proposal {proposal_id}")
+        logger.info("retrieving_proposal", constitutional_hash=CONSTITUTIONAL_HASH, proposal_id=proposal_id)
 
         # Get proposal
         proposal = await self.storage.get_amendment(proposal_id)
@@ -700,7 +702,7 @@ class AmendmentProposalEngine:
             )
 
         except _PROPOSAL_ENGINE_OPERATION_ERRORS as e:
-            logger.error(f"[{CONSTITUTIONAL_HASH}] Impact scoring failed: {e}, using fallback")
+            logger.error("impact_scoring_failed", constitutional_hash=CONSTITUTIONAL_HASH, error=str(e))
             # Fallback to conservative estimate
             return ImpactAnalysis(
                 score=0.8,  # Conservative - assume high impact
@@ -727,7 +729,7 @@ class AmendmentProposalEngine:
             )
             return diff
         except _PROPOSAL_ENGINE_OPERATION_ERRORS as e:
-            logger.error(f"[{CONSTITUTIONAL_HASH}] Diff preview generation failed: {e}")
+            logger.error("diff_preview_failed", constitutional_hash=CONSTITUTIONAL_HASH, error=str(e))
             return None
 
     def _merge_changes(self, base_content: JSONDict, proposed_changes: JSONDict) -> JSONDict:
@@ -787,4 +789,4 @@ class AmendmentProposalEngine:
                 details=details,
             )
         except _PROPOSAL_ENGINE_OPERATION_ERRORS as e:
-            logger.warning(f"[{CONSTITUTIONAL_HASH}] Failed to log audit event: {e}")
+            logger.warning("audit_event_log_failed", constitutional_hash=CONSTITUTIONAL_HASH, error=str(e))

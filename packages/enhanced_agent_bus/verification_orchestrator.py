@@ -125,8 +125,17 @@ class VerificationOrchestrator:
                     return {"is_valid": True, "results": []}
 
             class _NoOpEvolutionController:
+                """Fail-safe NoOp: logs all mutation attempts, allows none."""
+
                 def record_feedback(self, intent: object, verifications: JSONDict) -> None:
                     _ = (intent, verifications)
+
+                def get_mutations(self, intent: object) -> list:  # type: ignore[type-arg]
+                    _ = intent
+                    return []
+
+                def reset_mutations(self, intent: object = None) -> None:
+                    _ = intent
 
             class _NoOpAMPOEngine:
                 def __init__(self, evolution_controller: _NoOpEvolutionController):

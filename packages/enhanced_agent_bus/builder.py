@@ -75,7 +75,20 @@ def build_sdpc_verifiers(config: BusConfiguration) -> SDPCVerifiers:
                 return "unknown"
 
         class _NoOpEvolutionController:
-            pass
+            """Fail-safe NoOp: logs all mutation attempts, allows none."""
+
+            def record_feedback(self, intent: object, verification_results: object) -> None:
+                _ = (intent, verification_results)
+
+            def _trigger_mutation(self, intent: object) -> None:
+                _ = intent
+
+            def get_mutations(self, intent: object) -> list:  # type: ignore[type-arg]
+                _ = intent
+                return []
+
+            def reset_mutations(self, intent: object = None) -> None:
+                _ = intent
 
         class _NoOpAMPOEngine:
             def __init__(self, evolution_controller: object) -> None:

@@ -17,14 +17,19 @@ default allow_amendment := false
 # Proposer must not be the same as validator or executor.
 # ---------------------------------------------------------------------------
 invariant_maci_separation if {
+	# Role separation: all three roles must be distinct
 	input.proposer_role != input.validator_role
 	input.proposer_role != input.executor_role
 	input.validator_role != input.executor_role
+	# Agent ID separation: same agent must not fill multiple roles
+	input.proposer_id != input.validator_id
+	input.proposer_id != input.executor_id
+	input.validator_id != input.executor_id
 }
 
 violation_maci contains msg if {
 	not invariant_maci_separation
-	msg := "INVARIANT VIOLATION [HARD]: MACI separation of powers - proposer, validator, and executor must be distinct roles"
+	msg := "INVARIANT VIOLATION [HARD]: MACI separation of powers - proposer, validator, and executor must be distinct roles AND distinct agents"
 }
 
 # ---------------------------------------------------------------------------
