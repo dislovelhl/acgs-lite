@@ -25,6 +25,12 @@ except ImportError:
     MessagePayload = dict  # type: ignore[misc,assignment]
     PolicyContext = dict  # type: ignore[misc,assignment]
 
+from .amendment_recommender import (
+    AmendmentRecommendation,
+    AmendmentRecommender,
+    RecommendationPriority,
+    RecommendationTrigger,
+)
 from .dtmc_learner import DTMCFitResult, DTMCLearner
 from .governance_engine import (
     AB_TESTING_AVAILABLE,
@@ -97,6 +103,9 @@ __all__ = [
     "ONLINE_LEARNING_AVAILABLE",
     "AdaptiveGovernanceEngine",
     "AdaptiveThresholds",
+    # Amendment recommender
+    "AmendmentRecommendation",
+    "AmendmentRecommender",
     # DTMC trajectory scorer
     "DTMCFitResult",
     "DTMCLearner",
@@ -106,6 +115,8 @@ __all__ = [
     "ImpactFeatures",
     "ImpactLevel",
     "ImpactScorer",
+    "RecommendationPriority",
+    "RecommendationTrigger",
     "TraceCollector",
     "TrajectoryRecord",
     "evaluate_message_governance",
