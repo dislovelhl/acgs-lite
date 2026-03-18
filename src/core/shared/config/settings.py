@@ -11,6 +11,8 @@ import os
 import sys
 from dataclasses import dataclass, field
 
+from src.core.shared.security.key_loader import load_key_material
+
 
 def _get_runtime_environment() -> str:
     return (
@@ -48,6 +50,20 @@ def _get_secret_key() -> str:
         stacklevel=2,
     )
     return "dev-only-secret-key-not-for-production"
+
+
+def _get_jwt_private_key() -> str:
+    configured_value = (os.getenv("JWT_PRIVATE_KEY") or "").strip()
+    if not configured_value:
+        return ""
+    return load_key_material(configured_value)
+
+
+def _get_jwt_public_key() -> str:
+    configured_value = (os.getenv("JWT_PUBLIC_KEY") or "").strip()
+    if not configured_value:
+        return ""
+    return load_key_material(configured_value)
 
 
 @dataclass
@@ -107,9 +123,9 @@ class Settings:
 
     # Security
     secret_key: str = field(default_factory=_get_secret_key)
-    jwt_algorithm: str = (
-        "HS256"  # TODO(acgs-main-XXX): migrate to RS256/EdDSA for asymmetric verification
-    )
+    jwt_algorithm: str = "RS256"
+    jwt_private_key: str = field(default_factory=_get_jwt_private_key)
+    jwt_public_key: str = field(default_factory=_get_jwt_public_key)
     access_token_expire_minutes: int = 30
 
 
@@ -139,4 +155,4 @@ _config_pkg = sys.modules.get("src.core.shared.config")
 if _config_pkg is not None:
     from src.core.shared.config.unified import settings as _unified_settings
 
-    _config_pkg.settings = _unified_settings
+    setattr(_config_pkg, "settings", _unified_settings)  # noqa: B010

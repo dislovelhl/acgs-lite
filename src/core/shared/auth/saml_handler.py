@@ -77,7 +77,6 @@ from .saml_config import (
 from .saml_request_tracker import SAMLRequestTracker
 from .saml_types import (
     NAMEID_FORMAT_EMAILADDRESS,
-    SAMLAuthenticationError,
     SAMLError,
     SAMLProviderError,
     SAMLReplayError,

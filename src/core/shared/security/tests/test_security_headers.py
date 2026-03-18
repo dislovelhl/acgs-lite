@@ -1,5 +1,3 @@
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
 """
 Tests for Security Headers Middleware
 Constitutional Hash: cdd01ef066bc6cf2

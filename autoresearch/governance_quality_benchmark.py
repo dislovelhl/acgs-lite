@@ -60,7 +60,7 @@ def benchmark_registry_health() -> dict[str, float | int]:
 def benchmark_chain_detection() -> dict[str, float | int]:
     from acgs_lite.constitution import CausalChainTracker, builtin_patterns
 
-    tracker = CausalChainTracker.with_builtin_patterns()
+    CausalChainTracker.with_builtin_patterns()
     tests_passed = 0
     tests_total = 0
 
@@ -194,8 +194,7 @@ def benchmark_breach_prediction() -> dict[str, float | int]:
 
 
 def benchmark_refusal_quality() -> dict[str, float | int]:
-    from acgs_lite.constitution import Constitution, Rule, Severity
-    from acgs_lite.constitution import RefusalReasoningEngine
+    from acgs_lite.constitution import Constitution, RefusalReasoningEngine, Rule, Severity
 
     c = Constitution(
         rules=[

@@ -9,20 +9,31 @@ import os
 import uuid
 from datetime import UTC, datetime, timedelta
 
+import jwt
 from fastapi import Depends, HTTPException, Request, params
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
-from jose.exceptions import ExpiredSignatureError
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 from pydantic import BaseModel, Field
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.core.shared.config import settings
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.errors.exceptions import ConfigurationError
+from src.core.shared.security.key_loader import load_key_material
 from src.core.shared.structured_logging import get_logger
 
 logger = get_logger(__name__)
 
 _JWT_SECRET_ENV_KEYS = ("JWT_SECRET", "JWT_SECRET_KEY")
+_JWT_PRIVATE_KEY_ENV_KEY = "JWT_PRIVATE_KEY"
+_JWT_PUBLIC_KEY_ENV_KEY = "JWT_PUBLIC_KEY"
+_JWT_ALGORITHM_ENV_KEY = "JWT_ALGORITHM"
+_ALLOWED_JWT_ALGORITHMS = frozenset(
+    {"RS256", "RS384", "RS512", "ES256", "ES384", "EdDSA", "HS256"}
+)
+_JWT_ALGORITHM_CANONICAL_MAP = {
+    algorithm.lower(): algorithm for algorithm in _ALLOWED_JWT_ALGORITHMS
+}
 
 # Security schemes
 security = HTTPBearer(auto_error=False)
@@ -60,6 +71,99 @@ def _current_jwt_secret() -> str | None:
         return settings.security.jwt_secret.get_secret_value()
 
     return None
+
+
+def _current_jwt_private_key() -> str | None:
+    configured = (os.getenv(_JWT_PRIVATE_KEY_ENV_KEY) or "").strip()
+    if configured:
+        loaded = load_key_material(
+            configured, error_code="JWT_KEY_FILE_READ_FAILED"
+        )
+        return loaded if loaded else None
+
+    local_private_key = getattr(settings, "jwt_private_key", "")
+    if isinstance(local_private_key, str) and local_private_key:
+        return local_private_key
+
+    return None
+
+
+def _current_jwt_public_key() -> str | None:
+    configured = (os.getenv(_JWT_PUBLIC_KEY_ENV_KEY) or "").strip()
+    if configured:
+        loaded = load_key_material(
+            configured, error_code="JWT_KEY_FILE_READ_FAILED"
+        )
+        return loaded if loaded else None
+
+    local_public_key = getattr(settings, "jwt_public_key", "")
+    if isinstance(local_public_key, str) and local_public_key:
+        return local_public_key
+
+    if settings.security.jwt_public_key != "SYSTEM_PUBLIC_KEY_PLACEHOLDER":
+        return settings.security.jwt_public_key
+
+    return None
+
+
+def _configured_jwt_algorithm() -> str:
+    env_algorithm = (os.getenv(_JWT_ALGORITHM_ENV_KEY) or "").strip()
+    configured_algorithm = env_algorithm
+    if not configured_algorithm:
+        configured_algorithm = getattr(settings, "jwt_algorithm", "")
+        if isinstance(configured_algorithm, str):
+            configured_algorithm = configured_algorithm.strip()
+
+    if not configured_algorithm:
+        configured_algorithm = "RS256"
+
+    normalized_algorithm = _JWT_ALGORITHM_CANONICAL_MAP.get(configured_algorithm.lower())
+    if normalized_algorithm is None:
+        raise ConfigurationError(
+            message=f"Unsupported JWT algorithm: {configured_algorithm}",
+            error_code="JWT_ALGORITHM_NOT_ALLOWED",
+        )
+
+    return normalized_algorithm
+
+
+def _resolve_jwt_material(for_signing: bool) -> tuple[str, str]:
+    requested_algorithm = _configured_jwt_algorithm()
+    if requested_algorithm == "HS256":
+        secret = _current_jwt_secret()
+        if not secret:
+            raise ConfigurationError(
+                message="JWT_SECRET not configured",
+                error_code="JWT_SECRET_MISSING",
+            )
+
+        return secret, "HS256"
+
+    private_key = _current_jwt_private_key()
+    public_key = _current_jwt_public_key()
+    if private_key and public_key:
+        return (
+            (private_key, requested_algorithm)
+            if for_signing
+            else (public_key, requested_algorithm)
+        )
+
+    if requested_algorithm == "RS256":
+        raise ConfigurationError(
+            message=(
+                "RS256 requested but RSA keys (JWT_PRIVATE_KEY, JWT_PUBLIC_KEY) are not "
+                "configured. Set keys or change JWT_ALGORITHM to HS256."
+            ),
+            error_code="JWT_RSA_KEYS_MISSING",
+        )
+
+    raise ConfigurationError(
+        message=(
+            f"{requested_algorithm} requested but JWT_PRIVATE_KEY, JWT_PUBLIC_KEY are not "
+            "configured. Set keys or change JWT_ALGORITHM to HS256."
+        ),
+        error_code="JWT_ASYMMETRIC_KEYS_MISSING",
+    )
 
 
 def has_jwt_secret() -> bool:
@@ -105,14 +209,8 @@ def create_access_token(
         "constitutional_hash": CONSTITUTIONAL_HASH,  # Bind to constitutional hash
     }
 
-    secret = _current_jwt_secret()
-    if not secret:
-        raise ConfigurationError(
-            message="JWT_SECRET not configured",
-            error_code="JWT_SECRET_MISSING",
-        )
-
-    encoded_jwt = jwt.encode(to_encode, secret, algorithm="HS256")
+    key_material, algorithm = _resolve_jwt_material(for_signing=True)
+    encoded_jwt = jwt.encode(to_encode, key_material, algorithm=algorithm)
 
     return encoded_jwt
 
@@ -131,14 +229,15 @@ def verify_token(token: str) -> UserClaims:
         HTTPException: If token is invalid
     """
     try:
-        secret = _current_jwt_secret()
-        if not secret:
-            raise HTTPException(status_code=500, detail="JWT secret not configured")
+        try:
+            key_material, algorithm = _resolve_jwt_material(for_signing=False)
+        except ConfigurationError as error:
+            raise HTTPException(status_code=500, detail=error.message) from error
 
         payload = jwt.decode(
             token,
-            secret,
-            algorithms=["HS256"],
+            key_material,
+            algorithms=[algorithm],
             audience="acgs2-api",
         )
 
@@ -169,7 +268,7 @@ def verify_token(token: str) -> UserClaims:
     except ExpiredSignatureError as e:
         logger.warning("JWT verification failed: %s", e)
         raise HTTPException(status_code=401, detail="Authentication token has expired") from e
-    except JWTError as e:
+    except InvalidTokenError as e:
         logger.warning(f"JWT verification failed: {e}")
         raise HTTPException(status_code=401, detail="Invalid authentication token") from e
     except Exception as e:
@@ -286,7 +385,7 @@ def require_tenant_access(tenant_id: str | None = None):
     """
 
     async def tenant_checker(
-        user: UserClaims = Depends(get_current_user), request: Request = None
+        user: UserClaims = Depends(get_current_user), request: Request | None = None
     ) -> UserClaims:
         """Verify the current user has access to the required tenant."""
         # If specific tenant_id provided, check it
@@ -306,12 +405,6 @@ def require_tenant_access(tenant_id: str | None = None):
 # ============================================================================
 # FastAPI Middleware for Authentication
 # ============================================================================
-
-try:
-    from fastapi.middleware.base import BaseHTTPMiddleware
-except ImportError:
-    # Fallback for older FastAPI versions
-    from starlette.middleware.base import BaseHTTPMiddleware
 
 
 class AuthenticationMiddleware(BaseHTTPMiddleware):
@@ -339,44 +432,11 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         return response
 
 
-# ============================================================================
-# Utility Functions
-# ============================================================================
-
-
-def create_test_token(
-    user_id: str = "test-user",
-    tenant_id: str = "test-tenant",
-    roles: list[str] | None = None,
-    permissions: list[str] | None = None,
-) -> str:
-    """
-    Create a test JWT token for testing purposes.
-
-    Args:
-        user_id: Test user ID
-        tenant_id: Test tenant ID
-        roles: Test user roles
-        permissions: Test user permissions
-
-    Returns:
-        JWT token string
-    """
-    return create_access_token(
-        user_id=user_id,
-        tenant_id=tenant_id,
-        roles=roles or ["user"],
-        permissions=permissions or ["read"],
-        expires_delta=timedelta(hours=24),  # Longer for testing
-    )
-
-
 __all__ = [
     "AuthenticationMiddleware",
     "TokenResponse",
     "UserClaims",
     "create_access_token",
-    "create_test_token",
     "get_current_user",
     "get_current_user_optional",
     "has_jwt_secret",

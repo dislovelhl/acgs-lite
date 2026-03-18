@@ -1,12 +1,9 @@
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
 """
 ACGS-2 API Gateway Health Endpoint Tests
 Constitutional Hash: cdd01ef066bc6cf2
 
 Tests for health module per SPEC_ACGS2_ENHANCED.md Section 3.3.
 """
-
 
 # Import from parent directory
 import sys

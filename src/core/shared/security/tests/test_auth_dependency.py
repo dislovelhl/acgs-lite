@@ -10,7 +10,12 @@ from src.core.shared.config import settings
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.security import auth_dependency
 
-TEST_JWT_SECRET = "test-secret-key-that-is-at-least-32-chars"
+TEST_JWT_SECRET = "test-secret-key-that-is-at-least-32-chars"  # noqa: S105
+
+
+@pytest.fixture(autouse=True)
+def _force_hs256(monkeypatch):
+    monkeypatch.setenv("JWT_ALGORITHM", "HS256")
 
 
 def _build_token(secret: str, **overrides: object) -> str:

@@ -258,7 +258,8 @@ class TieredCacheManager:
                 self._access_records[key] = AccessRecord(key=key)
             self._access_records[key].record_access()
             # Periodic cleanup with low probability
-            if random.random() < 0.01:  # 1% chance
+            # Low-probability maintenance sampling; security properties are not required here.
+            if random.random() < 0.01:  # noqa: S311
                 self._cleanup_old_records()
 
     def _cleanup_old_records(self) -> None:

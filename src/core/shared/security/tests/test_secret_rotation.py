@@ -1,5 +1,3 @@
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
 """
 ACGS-2 Secret Rotation Lifecycle Tests
 Constitutional Hash: cdd01ef066bc6cf2

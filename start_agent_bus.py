@@ -30,6 +30,7 @@ logger.info("Starting Agent Bus...")
 logger.info(f"Python path: {sys.path[0]}")
 
 import uvicorn
+
 from enhanced_agent_bus.api.app import app
 
 if __name__ == "__main__":

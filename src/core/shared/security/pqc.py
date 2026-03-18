@@ -27,14 +27,14 @@ import os
 import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from importlib.util import find_spec
 from typing import Literal, cast
 
+from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.errors.exceptions import ACGSBaseError
 from src.core.shared.structured_logging import get_logger
 
 logger = get_logger(__name__)
-# Constitutional hash constant
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ============================================================================
 # Exception Hierarchy
@@ -366,15 +366,12 @@ class PQCWrapper:
         Raises:
             PQCConfigurationError: If liboqs is not installed
         """
-        try:
-            import oqs
-
-            logger.debug("liboqs-python is available")
-        except ImportError as e:
+        if find_spec("oqs") is None:
             logger.error("liboqs-python not installed. Install with: pip install liboqs-python")
             raise PQCConfigurationError(
                 "liboqs-python not installed. Required for PQC operations."
-            ) from e
+            )
+        logger.debug("liboqs-python is available")
 
     # ========================================================================
     # Key Generation Methods

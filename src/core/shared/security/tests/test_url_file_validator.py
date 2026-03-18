@@ -1,5 +1,3 @@
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
 """Tests for URL and File Validation Security Module.
 
 Constitutional Hash: cdd01ef066bc6cf2

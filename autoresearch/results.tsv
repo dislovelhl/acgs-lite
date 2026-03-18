@@ -261,3 +261,27 @@ uncommitted	0.999851	1.000000	0.004960	neutral-kept	exp231: CausalChainTracker �
 uncommitted	0.999855	1.000000	0.004840	neutral-kept	exp232: SessionContractTracker + BehaviorContract — cryptographic behavioral session contracts (SHA-256 commitment, allowed_actions/resource_scopes/max_actions/time_limit bounds, DivergenceType unauthorized_action/scope_violation/volume_exceeded/time_exceeded, continuous divergence_score 0-1, terminate threshold, bind/unbind lifecycle, SessionReport); arXiv:2602.22302 ABC framework; zero hot-path overhead
 uncommitted	0.999870	1.000000	0.004320	neutral-kept	exp233: ObligationPredictor — probabilistic obligation tracking via Markov chain (DTMC); 5-state model (pending/fulfilled/breached/waived/expired) with absorbing terminals, learned transition probabilities from observations, matrix exponentiation breach prediction (P^N), BreachPrediction per-obligation + PortfolioRisk aggregate scan, proactive should_warn gate, Laplace-smoothed uniform prior, observe_batch, summary; Pro2Guard arXiv:2508.00500; zero hot-path overhead
 uncommitted	0.999856	1.000000	0.004800	neutral-kept	exp234: RefusalReasoningEngine — MOSAIC refusal as first-class governance action; structured RefusalDecision with RefusalReason (matched keywords/patterns, severity, explanation) + RefusalSuggestion (keyword replacement, removal, inquiry rephrasing with confidence scores); constructive alternatives via _SAFE_REPLACEMENTS map; multi-rule aggregate severity; can_retry gate; arXiv:2603.03205 Microsoft MOSAIC; zero hot-path overhead (post-deny only)
+44be6f9-dirty	0.999528	1.000000	0.015750	baseline	acgs-clean extraction baseline (new repo, core.py shim added)
+uncommitted	0.999631	1.000000	0.012290	improved	exp235: type annotations + strict kwarg + context-bearing path optimization + local var for combined_search
+uncommitted	0.999637	1.000000	0.012110	improved	exp236: filter context keys — only pass action_detail/action_description to Rust validate_full()
+uncommitted	0.999648	1.000000	0.011730	improved	exp237: route metadata-only context to validate_hot(); validate_full() only for action_detail/action_description
+44be6f9-dirty	0.999635	1.000000	0.012160	improved	exp236+237+83: filter ctx keys + route metadata-only to validate_hot() + O(1) rule_id→exc_idx dict
+uncommitted	0.999849	1.000000	0.005050	improved	exp238: eliminate validate_full() — unified validate_hot() for all paths; context values scanned via per-value validate_hot() + bitmask merge
+uncommitted	0.999859	1.000000	0.004710	improved	exp238-confirm: 5-run variance check (avg composite=0.999834, avg p99=0.005520ms)
+uncommitted	0.999859	1.000000	0.004690	improved	exp239: gc.disable() after gc.freeze() — eliminates gen-0 collection pauses from p99 outliers
+uncommitted	0.999855	1.000000	0.004850	improved	exp85+89: precompute _is_noop bool (replace 3x isinstance checks) + ctx-rich warmup + exp239 gc.disable()
+uncommitted	0.999849	1.000000	0.005050	neutral-kept	exp240: _is_noop precomputed in _hot tuple — eliminates per-call isinstance() (within noise of exp239)
+uncommitted	0.999857	1.000000	0.004750	improved	exp89+91+92+95: 24x ctx warmup + single-pass blocking + _rv in _hot + islower skip
+uncommitted	0.999858	1.000000	0.004700	improved	exp97+98: direct .get() for context keys + 3x no-ctx warmup + 4x ctx warmup
+uncommitted	0.999850	1.000000	0.004920	improved	exp98+104: 3x no-ctx warmup with long-string scenarios + 4x ctx warmup; stable 0.999850 average
+uncommitted	0.999848	1.000000	0.004920	neutral-kept	exp107: remove bounds check on _rule_excs[idx] in DENY_CRITICAL path — Rust guarantees valid index
+uncommitted	0.999850	1.000000	0.004990	neutral-kept	exp108+111: remove redundant if _is_noop guards + int(_data) since PyO3 auto-converts i64→int
+uncommitted	0.999849	1.000000	0.004920	neutral-kept	exp113: defer start=time.perf_counter() to slow path only — fast path never reads latency_ms
+uncommitted	0.999858	1.000000	0.004730	improved	exp108+111+113: remove if_is_noop guards + int(PyO3_int) + defer start timer to slow path; stable avg 0.999858
+uncommitted	0.999851	1.000000	0.004960	neutral-kept	exp137: bool(context) short-circuits for empty-dict case — saves 2 dict lookups; within noise
+uncommitted	0.999823	1.000000	0.005000	reverted	exp145: combined string for context-rich Rust call — warmup specialization broken, worse than 3-call approach
+uncommitted	0.999852	1.000000	0.004940	neutral-kept	exp147: add metadata-ctx + empty-ctx warmup rounds to match edge_cases_exa and empty-context patterns
+uncommitted	0.999855	1.000000	0.004820	improved	stable avg after exp108+111+113+137+147: consistent ~0.999854, best 0.999863, throughput ~1.1M rps
+uncommitted	0.999845	1.000000	0.005050	neutral	exp157: list-based fast_records attempted but caused malloc-spike variance; reverted to NoopRecorder
+uncommitted	0.999853	1.000000	0.004870	improved	revert exp137 (bool→is not None): IS_OP is faster for common case; stable avg 0.999853
+uncommitted	0.999854	1.000000	0.004880	neutral-kept	exp162: swap action_description/action_detail check order (25 vs 11 freq); within noise

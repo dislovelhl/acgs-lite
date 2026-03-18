@@ -7,11 +7,14 @@ Constitutional Hash: cdd01ef066bc6cf2
 import time
 
 import jwt
+import pytest
 
+from src.core.shared.errors.exceptions import ConfigurationError
 from src.core.shared.security.service_auth import (
-    SERVICE_ALGORITHM,
     SERVICE_SECRET,
     ServiceAuth,
+    _configured_service_algorithm,
+    _get_service_secret,
 )
 
 
@@ -37,7 +40,11 @@ class TestServiceAuth:
             "iss": "acgs2-internal",
             "type": "service",
         }
-        token = jwt.encode(payload, SERVICE_SECRET, algorithm=SERVICE_ALGORITHM)
+        token = jwt.encode(
+            payload,
+            SERVICE_SECRET,
+            algorithm=_configured_service_algorithm(),
+        )
 
         assert ServiceAuth.verify_service_token(token) is None
 
@@ -50,7 +57,11 @@ class TestServiceAuth:
             "iss": "wrong-issuer",
             "type": "service",
         }
-        token = jwt.encode(payload, SERVICE_SECRET, algorithm=SERVICE_ALGORITHM)
+        token = jwt.encode(
+            payload,
+            SERVICE_SECRET,
+            algorithm=_configured_service_algorithm(),
+        )
 
         assert ServiceAuth.verify_service_token(token) is None
 
@@ -63,7 +74,11 @@ class TestServiceAuth:
             "iss": "acgs2-internal",
             "type": "user",
         }
-        token = jwt.encode(payload, SERVICE_SECRET, algorithm=SERVICE_ALGORITHM)
+        token = jwt.encode(
+            payload,
+            SERVICE_SECRET,
+            algorithm=_configured_service_algorithm(),
+        )
 
         assert ServiceAuth.verify_service_token(token) is None
 
@@ -73,3 +88,30 @@ class TestServiceAuth:
         tampered_token = token[:-5] + "aaaaa"
 
         assert ServiceAuth.verify_service_token(tampered_token) is None
+
+    def test_development_secret_fallback_is_available(self, monkeypatch):
+        monkeypatch.setenv("ACGS2_ENV", "development")
+        monkeypatch.delenv("ACGS2_SERVICE_SECRET", raising=False)
+
+        assert _get_service_secret() == "dev-service-secret-32-bytes-minimum-length"
+
+    def test_production_secret_requires_configuration(self, monkeypatch):
+        monkeypatch.setenv("ACGS2_ENV", "production")
+        monkeypatch.delenv("ACGS2_SERVICE_SECRET", raising=False)
+
+        with pytest.raises(ConfigurationError, match="ACGS2_SERVICE_SECRET not configured"):
+            _get_service_secret()
+
+    def test_rs256_without_keys_raises_configuration_error(self, monkeypatch):
+        monkeypatch.setenv("SERVICE_JWT_ALGORITHM", "RS256")
+        monkeypatch.delenv("JWT_PRIVATE_KEY", raising=False)
+        monkeypatch.delenv("JWT_PUBLIC_KEY", raising=False)
+
+        with pytest.raises(
+            ConfigurationError,
+            match=(
+                r"RS256 requested but RSA keys are not configured\. Set JWT_PRIVATE_KEY and "
+                r"JWT_PUBLIC_KEY, or set SERVICE_JWT_ALGORITHM=HS256\."
+            ),
+        ):
+            ServiceAuth.create_service_token("test-service")

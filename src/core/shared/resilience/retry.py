@@ -42,7 +42,7 @@ from __future__ import annotations
 import asyncio
 import functools
 import inspect
-import random
+import secrets
 import time
 from collections.abc import AsyncIterator, Callable
 from dataclasses import dataclass, field
@@ -52,6 +52,8 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.errors.exceptions import ACGSBaseError, ServiceUnavailableError
 from src.core.shared.structured_logging import get_logger
 from src.core.shared.types import JSONDict
+
+_secure_rng = secrets.SystemRandom()
 
 logger = get_logger(__name__)
 T = TypeVar("T")
@@ -184,7 +186,7 @@ class RetryConfig:
         # Apply jitter if enabled
         if self.jitter:
             jitter_range = delay * self.jitter_factor
-            delay = delay + random.uniform(-jitter_range, jitter_range)
+            delay = delay + _secure_rng.uniform(-jitter_range, jitter_range)
             delay = max(0.0, delay)  # Ensure non-negative
 
         return delay
@@ -426,7 +428,7 @@ async def exponential_backoff(
     delay = base_delay
     for _attempt in range(max_attempts):
         if jitter:
-            jitter_factor = 1.0 + random.uniform(-0.25, 0.25)
+            jitter_factor = 1.0 + _secure_rng.uniform(-0.25, 0.25)
             yield min(delay * jitter_factor, max_delay)
         else:
             yield min(delay, max_delay)

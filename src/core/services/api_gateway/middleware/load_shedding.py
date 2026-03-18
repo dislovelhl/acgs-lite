@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-import random
+import secrets
 import time
 from collections import deque
 from enum import StrEnum
@@ -28,6 +28,7 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.structured_logging import get_logger
 
 logger = get_logger(__name__)
+_rng = secrets.SystemRandom()
 
 # ---------------------------------------------------------------------------
 # Prometheus metrics (optional — gracefully degrade if unavailable)
@@ -139,7 +140,7 @@ class AdaptiveLoadShedder:
                 load_shed_gauge.set(self._shed_pct)
 
             threshold = _PRIORITY_THRESHOLDS.get(priority, 1.0)
-            return random.random() < (self._shed_pct * threshold)
+            return _rng.random() < (self._shed_pct * threshold)
 
     async def get_shed_percentage(self) -> float:
         """Return the current shed percentage (0.0 .. 1.0)."""

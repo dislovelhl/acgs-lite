@@ -25,7 +25,6 @@ except ImportError:
 
 # z3 is imported lazily in _verify_smt() to avoid module-level dependency
 from packages.enhanced_agent_bus.verification.z3_adapter import Z3Constraint
-from src.core.shared.z3_compat import Z3_AVAILABLE
 
 from .models import (
     CONSTITUTIONAL_HASH,
