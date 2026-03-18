@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import logging
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel, Field, field_validator
 
 try:
     from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
@@ -20,11 +22,14 @@ from .models import (
     ImproveResponse,
     PolicyResult,
     PolicyTemplate,
+    PolicyTemplateCategory,
     RiskAssessment,
     TestRequest,
     TestResult,
     ValidationResult,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/v1/policy-copilot",
@@ -36,26 +41,53 @@ _nlp_engine: Any | None = None
 _rego_generator: Any | None = None
 _policy_validator: Any | None = None
 
+API_ERRORS = (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError)
 
-class HealthResponse(ValidationResult):
+
+# ---------------------------------------------------------------------------
+# API-only models (not in models.py)
+# ---------------------------------------------------------------------------
+
+
+class HealthResponse(BaseModel):
+    valid: bool = True
     status: str = "healthy"
+    version: str = "1.0.0"
     constitutional_hash: str = CONSTITUTIONAL_HASH
+    components: dict[str, bool] = Field(default_factory=dict)
 
 
-class FeedbackRequest(ValidationResult):
+class FeedbackRequest(BaseModel):
     policy_id: str
     feedback: str
     comment: str | None = None
 
+    @field_validator("feedback")
+    @classmethod
+    def _validate_feedback(cls, value: str) -> str:
+        if value not in {"thumbs_up", "thumbs_down"}:
+            raise ValueError("feedback must be thumbs_up or thumbs_down")
+        return value
 
-class FeedbackResponse(ValidationResult):
+
+class FeedbackResponse(BaseModel):
     received: bool = True
     policy_id: str
 
 
-class TemplateListResponse(ValidationResult):
-    templates: list[PolicyTemplate] = []
+class TemplateListResponse(BaseModel):
+    valid: bool = True
+    templates: list[PolicyTemplate] = Field(default_factory=list)
     total: int = 0
+
+
+class ValidateRequest(BaseModel):
+    policy: str = Field(min_length=1)
+
+
+# ---------------------------------------------------------------------------
+# Dependency providers (singleton factories)
+# ---------------------------------------------------------------------------
 
 
 def get_nlp_engine() -> Any:
@@ -90,11 +122,13 @@ def get_rego_generator() -> Any:
             def improve(self, policy: str, *_args: Any, **_kwargs: Any) -> tuple[str, list[str]]:
                 return policy, []
 
-            def get_templates(self, category: str | None = None) -> list[PolicyTemplate]:
+            def get_templates(
+                self, category: PolicyTemplateCategory | None = None
+            ) -> list[PolicyTemplate]:
                 values = list(self.TEMPLATES.values())
                 if category is None:
                     return values
-                return [template for template in values if template.category == category]
+                return [t for t in values if t.category == category]
 
         _rego_generator = _Generator()
     return _rego_generator
@@ -114,6 +148,11 @@ def get_policy_validator() -> Any:
     return _policy_validator
 
 
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+
 def _assert_tenant_scope(user: UserClaims, tenant_id: str | None) -> str:
     if tenant_id is None:
         return user.tenant_id
@@ -122,9 +161,34 @@ def _assert_tenant_scope(user: UserClaims, tenant_id: str | None) -> str:
     return tenant_id
 
 
+def _safe_risk(raw: dict) -> RiskAssessment:
+    """Build RiskAssessment with safe defaults for missing fields."""
+    return RiskAssessment(
+        severity=raw.get("severity", "low"),
+        category=raw.get("category", "general"),
+        description=raw.get("description", ""),
+        mitigation=raw.get("mitigation"),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+
 @router.get("/health")
-async def health_check() -> HealthResponse:
-    return HealthResponse(valid=True)
+async def health_check(
+    nlp: Annotated[Any, Depends(get_nlp_engine)],
+    generator: Annotated[Any, Depends(get_rego_generator)],
+    validator: Annotated[Any, Depends(get_policy_validator)],
+) -> HealthResponse:
+    return HealthResponse(
+        components={
+            "nlp_engine": nlp is not None,
+            "rego_generator": generator is not None,
+            "policy_validator": validator is not None,
+        },
+    )
 
 
 @router.post("/generate")
@@ -140,14 +204,36 @@ async def generate_policy(
         _policy_type = nlp.detect_policy_type(request.description)
     except ValidationError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    result = generator.generate(request.description, tenant_id=tenant_id, entities=entities)
+    except API_ERRORS as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    # Use template if specified and available
+    kwargs: dict[str, Any] = {"tenant_id": tenant_id, "entities": entities}
+    if request.template_id:
+        templates = getattr(generator, "TEMPLATES", {})
+        if request.template_id in templates:
+            kwargs["policy_type"] = request.template_id
+
+    result = generator.generate(request.description, **kwargs)
+
     suggestions: list[str] = []
     risks: list[str] = []
     if result.confidence < 0.7:
         suggestions.append("Confidence is low; review the generated policy before use.")
     if "default allow = true" in result.rego_code:
         risks.append("Default allow detected; deny-by-default is safer.")
-    return CopilotResponse(result=result, suggestions=suggestions, risks=risks)
+
+    return CopilotResponse(
+        policy_id=result.policy_id,
+        policy=result.rego_code,
+        explanation=result.explanation,
+        test_cases=result.test_cases,
+        confidence=result.confidence,
+        entities=result.entities,
+        suggestions=suggestions,
+        risks=risks,
+        constitutional_hash=result.constitutional_hash,
+    )
 
 
 @router.post("/explain")
@@ -155,8 +241,11 @@ async def explain_policy(
     request: ExplainRequest,
     generator: Annotated[Any, Depends(get_rego_generator)],
 ) -> ExplainResponse:
-    response = generator.explain(request.policy, detail_level=request.detail_level)
-    risks = [RiskAssessment(**risk) for risk in response.get("risks", [])]
+    try:
+        response = generator.explain(request.policy, detail_level=request.detail_level)
+    except API_ERRORS as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    risks = [_safe_risk(r) for r in response.get("risks", [])]
     return ExplainResponse(
         explanation=response.get("explanation", ""),
         risks=risks,
@@ -170,18 +259,28 @@ async def improve_policy(
     request: ImproveRequest,
     generator: Annotated[Any, Depends(get_rego_generator)],
 ) -> ImproveResponse:
-    improved_policy, changes = generator.improve(
-        request.policy, feedback=request.feedback, instruction=request.instruction
+    try:
+        improved_policy, changes = generator.improve(
+            request.policy, feedback=request.feedback, instruction=request.instruction
+        )
+    except API_ERRORS as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return ImproveResponse(
+        improved_policy=improved_policy,
+        explanation=f"Applied {len(changes)} changes to the policy.",
+        changes_made=changes,
     )
-    return ImproveResponse(improved_policy=improved_policy, changes_made=changes)
 
 
 @router.post("/validate")
 async def validate_policy(
-    policy: str,
+    request: ValidateRequest,
     validator: Annotated[Any, Depends(get_policy_validator)],
 ) -> ValidationResult:
-    return validator.validate_syntax(policy)
+    try:
+        return validator.validate_syntax(request.policy)
+    except API_ERRORS as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @router.post("/test")
@@ -189,16 +288,22 @@ async def test_policy(
     request: TestRequest,
     validator: Annotated[Any, Depends(get_policy_validator)],
 ) -> TestResult:
-    return validator.test_policy(request.policy, request.test_input)
+    try:
+        return validator.test_policy(request.policy, request.test_input)
+    except API_ERRORS as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @router.get("/templates")
 async def get_templates(
-    category: str | None = Query(default=None),
+    category: PolicyTemplateCategory | None = Query(default=None),
     generator: Annotated[Any, Depends(get_rego_generator)] = None,
 ) -> TemplateListResponse:
-    templates = generator.get_templates(category)
-    return TemplateListResponse(valid=True, templates=templates, total=len(templates))
+    try:
+        templates = generator.get_templates(category)
+    except API_ERRORS as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return TemplateListResponse(templates=templates, total=len(templates))
 
 
 @router.get("/templates/{template_id}")
@@ -209,10 +314,16 @@ async def get_template(
     templates = getattr(generator, "TEMPLATES", {})
     template = templates.get(template_id)
     if template is None:
-        raise HTTPException(status_code=404, detail="template not found")
+        raise HTTPException(
+            status_code=404, detail=f"template not found: {template_id}"
+        )
     return template
 
 
 @router.post("/feedback")
 async def submit_feedback(request: FeedbackRequest) -> FeedbackResponse:
-    return FeedbackResponse(valid=True, policy_id=request.policy_id)
+    try:
+        logger.info("Feedback received for policy %s: %s", request.policy_id, request.feedback)
+    except API_ERRORS as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return FeedbackResponse(policy_id=request.policy_id)

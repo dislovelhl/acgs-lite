@@ -64,19 +64,20 @@ class PolicyResult(BaseModel):
 
 
 class PolicyTemplate(BaseModel):
-    id: str
-    name: str
-    description: str
+    id: str = Field(min_length=1)
+    name: str = Field(min_length=1)
+    description: str = Field(min_length=1)
     category: PolicyTemplateCategory
-    rego_template: str
+    rego_template: str = Field(min_length=1)
     placeholders: list[str] = Field(default_factory=list)
-    example_usage: str
+    example_usage: str = Field(min_length=1)
     tags: list[str] = Field(default_factory=list)
 
 
 class CopilotRequest(BaseModel):
     description: str = Field(min_length=3, max_length=5000)
     context: str | None = Field(default=None, max_length=1000)
+    template_id: str | None = None
     tenant_id: str | None = None
 
     @field_validator("description")
@@ -89,24 +90,25 @@ class CopilotRequest(BaseModel):
 
 
 class CopilotResponse(BaseModel):
-    result: PolicyResult
+    policy_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    policy: str = ""
+    explanation: str = ""
+    test_cases: list[TestCase] = Field(default_factory=list)
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+    entities: list[PolicyEntity] = Field(default_factory=list)
     suggestions: list[str] = Field(default_factory=list)
     risks: list[str] = Field(default_factory=list)
     constitutional_hash: str = CONSTITUTIONAL_HASH
 
-    @property
-    def confidence(self) -> float:
-        return self.result.confidence
-
 
 class ExplainRequest(BaseModel):
     policy: str = Field(min_length=1)
-    detail_level: str = "standard"
+    detail_level: str = "detailed"
 
     @field_validator("detail_level")
     @classmethod
     def _validate_detail_level(cls, value: str) -> str:
-        if value not in {"summary", "standard", "detailed"}:
+        if value not in {"simple", "detailed", "technical"}:
             raise ValueError("invalid detail level")
         return value
 
@@ -135,24 +137,34 @@ class ExplainResponse(BaseModel):
 class ImproveRequest(BaseModel):
     policy: str = Field(min_length=1)
     feedback: str = Field(min_length=1, max_length=2000)
-    instruction: str | None = None
+    instruction: str = "custom"
+
+    @field_validator("instruction")
+    @classmethod
+    def _validate_instruction(cls, value: str) -> str:
+        if value not in {"stricter", "permissive", "custom"}:
+            raise ValueError("invalid instruction")
+        return value
 
 
 class ImproveResponse(BaseModel):
     improved_policy: str
+    explanation: str = ""
     changes_made: list[str] = Field(default_factory=list)
 
 
 class TestRequest(BaseModel):
     policy: str = Field(min_length=1)
-    test_input: dict = Field(default_factory=dict)
+    test_input: dict
+    tenant_id: str | None = None
 
 
 class TestResult(BaseModel):
     allowed: bool
+    decision_path: list[str] = Field(default_factory=list)
     trace: dict = Field(default_factory=dict)
     errors: list[str] = Field(default_factory=list)
-    execution_time_ms: float | None = None
+    execution_time_ms: float = 0.0
 
 
 class ValidationResult(BaseModel):
@@ -181,6 +193,14 @@ class ChatHistory(BaseModel):
     session_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     messages: list[ChatMessage] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+    def add_message(
+        self, role: str, content: str, metadata: dict | None = None
+    ) -> None:
+        msg = ChatMessage(role=role, content=content, metadata=metadata or {})
+        self.messages.append(msg)
+        self.updated_at = datetime.now(UTC)
 
 
 __all__ = [
