@@ -21,6 +21,8 @@ from acgs_lite import (
     MACIEnforcer,
     MACIRole,
     MACIViolationError,
+    Rule,
+    Severity,
     ValidationResult,
 )
 
@@ -75,10 +77,24 @@ def _make_governance_engine(
     strict: bool = False,
     constitution: Constitution | None = None,
 ) -> GovernanceEngine:
-    """Create a GovernanceEngine with an explicit AuditLog for chain verification."""
-    c = constitution or Constitution.default()
-    audit_log = AuditLog()
-    return GovernanceEngine(c, audit_log=audit_log, strict=strict)
+    """Create a GovernanceEngine for test scenarios."""
+    c = constitution or Constitution.from_rules(
+        [
+            Rule(
+                id="ACGS-001",
+                text="Agents must not bypass independent validation.",
+                severity=Severity.CRITICAL,
+                keywords=["self-validate", "bypass", "bypass validation", "auto-approve"],
+            ),
+            Rule(
+                id="ACGS-004",
+                text="Agents must not self-approve their own outputs.",
+                severity=Severity.HIGH,
+                keywords=["self-approve", "own outputs"],
+            ),
+        ]
+    )
+    return GovernanceEngine(c, audit_log=AuditLog(), strict=strict)
 
 
 def _make_webhook_payload(

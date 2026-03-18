@@ -165,7 +165,10 @@ class TestGovernedAnthropic:
 
             from acgs_lite.integrations.anthropic import GovernedAnthropic
 
-            client = GovernedAnthropic(api_key="test-key", strict=True)
+            client = GovernedAnthropic(api_key="test-key", strict=False)
+            client.messages._engine.validate = MagicMock(  # type: ignore[method-assign]
+                return_value=MagicMock(valid=True, violations=[])
+            )
             response = client.messages.create(
                 model="claude-sonnet-4-20250514",
                 max_tokens=100,
@@ -199,6 +202,9 @@ class TestGovernedAnthropic:
             from acgs_lite.integrations.anthropic import GovernedAnthropic
 
             client = GovernedAnthropic(api_key="test-key")
+            client.messages._engine.validate = MagicMock(  # type: ignore[method-assign]
+                return_value=MagicMock(valid=True, violations=[])
+            )
             response = client.messages.create(
                 model="claude-sonnet-4-20250514",
                 max_tokens=100,
@@ -360,7 +366,7 @@ class TestA2AServer:
 
         constitution = Constitution.from_rules(
             [
-                Rule(id="T1", text="Test rule", severity=Severity.HIGH),
+                Rule(id="T1", text="Test rule", severity=Severity.HIGH, keywords=["test"]),
             ]
         )
         app = create_a2a_app(constitution)

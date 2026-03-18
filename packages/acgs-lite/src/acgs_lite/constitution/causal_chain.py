@@ -72,7 +72,6 @@ import time
 from dataclasses import dataclass, field
 from typing import Any
 
-
 # ── tokenisation ──────────────────────────────────────────────────────────────
 
 _WORD_RE = re.compile(r"[a-z0-9]+")

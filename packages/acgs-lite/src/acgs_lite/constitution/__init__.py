@@ -41,6 +41,12 @@ from .analytics import (
     governance_decision_report,
     score_context_risk,
 )
+from .autonomy_ratio import (
+    ActionCommitment,
+    CommitmentRatioState,
+    CommitmentRatioTracker,
+    classify_action,
+)
 from .boundaries import BoundaryViolation, PolicyBoundary, PolicyBoundarySet
 from .core import AcknowledgedTension, Constitution, Rule, RuleSynthesisProvider, Severity
 from .deduplication import (
@@ -50,6 +56,12 @@ from .deduplication import (
     SubsetRedundancy,
     deduplicate,
     find_duplicates,
+)
+from .intent_alignment import (
+    ActionAlignmentRecord,
+    IntentAlignmentState,
+    IntentAlignmentTracker,
+    IntentProfile,
 )
 from .interpolation import (
     context_coverage,
@@ -72,25 +84,12 @@ from .metrics import (
     RuleEffectiveness,
     create_governance_event,
 )
+from .obligation_engine import ObligationEngine, ObligationRecord, ObligationSpec, ObligationStatus
 from .routing import GovernanceRouter
 from .snapshot import ConstitutionSnapshot, capture_snapshot
 from .templates import ConstitutionBuilder
 from .versioning import ChangelogEntry, GovernanceChangelog, RuleSnapshot
 from .weighted_policy import RulePenalty, WeightedConstitution, WeightedEvaluationResult
-from .autonomy_ratio import (
-    ActionCommitment,
-    ActionRecord as CommitActionRecord,
-    CommitmentRatioState,
-    CommitmentRatioTracker,
-    classify_action,
-)
-from .obligation_engine import ObligationEngine, ObligationSpec, ObligationRecord, ObligationStatus
-from .intent_alignment import (
-    IntentAlignmentTracker,
-    IntentProfile,
-    ActionAlignmentRecord,
-    IntentAlignmentState,
-)
 
 # ── Declarative lazy-load registry ────────────────────────────────────────────
 # Maps symbol_name → (module_name, domain).

@@ -16,7 +16,11 @@ with open(path) as f:
 if "from .analytics import" not in content:
     content = content.replace(
         "from typing import Any",
-        "from typing import Any\nfrom .analytics import _KW_NEGATIVE_RE, _NEGATIVE_VERBS_RE, _POSITIVE_VERBS_SET\n",
+        (
+            "from typing import Any\n"
+            "from .analytics import "
+            "_KW_NEGATIVE_RE, _NEGATIVE_VERBS_RE, _POSITIVE_VERBS_SET\n"
+        ),
     )
 with open(path, "w") as f:
     f.write(content)

@@ -9,7 +9,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from .constitution import Constitution
 
 
 class ProvenanceRelation(Enum):
@@ -236,3 +239,98 @@ class RuleProvenanceGraph:
 
     def __len__(self) -> int:
         return len(self._nodes)
+
+
+def rule_provenance_graph(constitution: Constitution) -> dict[str, Any]:
+    """Directed graph of rule lineage and dependencies for a constitution."""
+    nodes = [
+        {
+            "id": r.id,
+            "deprecated": r.deprecated,
+            "enabled": r.enabled,
+            "severity": r.severity.value if hasattr(r.severity, "value") else str(r.severity),
+            "category": r.category,
+        }
+        for r in constitution.rules
+    ]
+    edges: list[dict[str, Any]] = []
+    successors: set[str] = set()
+    for r in constitution.rules:
+        if r.replaced_by:
+            edges.append({"from_id": r.id, "to_id": r.replaced_by, "kind": "replaced_by"})
+            successors.add(r.replaced_by)
+        for dep in r.depends_on:
+            if dep:
+                edges.append({"from_id": r.id, "to_id": dep, "kind": "depends_on"})
+    replaced_by_targets = {e["to_id"] for e in edges if e["kind"] == "replaced_by"}
+    roots = [n["id"] for n in nodes if n["id"] not in replaced_by_targets]
+    return {
+        "nodes": nodes,
+        "edges": edges,
+        "roots": roots,
+        "successors": list(successors),
+    }
+
+
+def provenance_graph(constitution: Constitution) -> dict[str, Any]:
+    """Build a directed graph of rule provenance and lineage."""
+    active = constitution.active_rules()
+    nodes: dict[str, dict[str, Any]] = {}
+    edges: list[dict[str, str]] = []
+    all_rules = {r.id: r for r in constitution.rules}
+
+    for rule in active:
+        nodes[rule.id] = {
+            "id": rule.id,
+            "text": rule.text[:100] + "..." if len(rule.text) > 100 else rule.text,
+            "severity": rule.severity.value,
+            "deprecated": rule.deprecated,
+            "provenance": rule.provenance.copy(),
+        }
+
+    for rule in active:
+        for provenance_ref in rule.provenance:
+            if provenance_ref in all_rules:
+                edges.append(
+                    {"from": provenance_ref, "to": rule.id, "relationship": "derived_from"}
+                )
+            else:
+                edges.append(
+                    {"from": provenance_ref, "to": rule.id, "relationship": "external_ref"}
+                )
+
+    for rule in constitution.rules:
+        if rule.deprecated and rule.replaced_by and rule.replaced_by in all_rules:
+            edges.append({"from": rule.id, "to": rule.replaced_by, "relationship": "replaced_by"})
+
+    incoming = {edge["to"] for edge in edges}
+    roots = [rule_id for rule_id in nodes if rule_id not in incoming]
+
+    deprecated_chains: list[list[str]] = []
+    for rule in constitution.rules:
+        if not rule.deprecated:
+            continue
+        chain = [rule.id]
+        current = rule.id
+        while current in all_rules:
+            predecessors = [
+                edge["from"]
+                for edge in edges
+                if edge["to"] == current and edge["relationship"] in ("derived_from", "replaced_by")
+            ]
+            if not predecessors:
+                break
+            current = predecessors[0]
+            chain.insert(0, current)
+        if len(chain) > 1:
+            deprecated_chains.append(chain)
+
+    external_refs = {edge["from"] for edge in edges if edge["relationship"] == "external_ref"}
+
+    return {
+        "nodes": nodes,
+        "edges": edges,
+        "roots": roots,
+        "deprecated_chains": deprecated_chains,
+        "external_refs": sorted(external_refs),
+    }

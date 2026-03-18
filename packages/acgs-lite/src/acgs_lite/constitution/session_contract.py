@@ -66,7 +66,6 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
-
 # ── action classification ─────────────────────────────────────────────────────
 
 _WORD_SPLIT_CHARS = frozenset(" \t\n_-/.,;:!?()[]{}\"'")
@@ -320,20 +319,21 @@ class SessionContractTracker:
         divergences: list[ContractDivergence] = []
 
         # Check 1: action type authorisation
-        if state.contract.allowed_actions:
-            if not (action_words & state.contract.allowed_actions):
-                divergences.append(
-                    ContractDivergence(
-                        divergence_type=DivergenceType.UNAUTHORIZED_ACTION,
-                        severity=_DIVERGENCE_SEVERITY[DivergenceType.UNAUTHORIZED_ACTION],
-                        details=(
-                            f"Action words {sorted(action_words)} do not overlap "
-                            f"with allowed actions {sorted(state.contract.allowed_actions)}"
-                        ),
-                        action=action,
-                        timestamp_ns=now_ns,
-                    )
+        if state.contract.allowed_actions and not (
+            action_words & state.contract.allowed_actions
+        ):
+            divergences.append(
+                ContractDivergence(
+                    divergence_type=DivergenceType.UNAUTHORIZED_ACTION,
+                    severity=_DIVERGENCE_SEVERITY[DivergenceType.UNAUTHORIZED_ACTION],
+                    details=(
+                        f"Action words {sorted(action_words)} do not overlap "
+                        f"with allowed actions {sorted(state.contract.allowed_actions)}"
+                    ),
+                    action=action,
+                    timestamp_ns=now_ns,
                 )
+            )
 
         # Check 2: volume limit
         if state.contract.max_actions > 0 and state.action_count > state.contract.max_actions:

@@ -59,7 +59,6 @@ from typing import Any
 
 from acgs_lite.constitution.core import Constitution, Rule, Severity
 
-
 _SEVERITY_ORDER: dict[str, int] = {
     "critical": 0,
     "high": 1,

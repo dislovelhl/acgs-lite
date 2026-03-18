@@ -13,6 +13,18 @@ from pydantic import BaseModel, Field
 
 from acgs_lite.errors import ConstitutionalViolationError
 
+from . import (
+    conflict_resolution,
+    coverage_analysis,
+    filtering,
+    merging,
+    permission_ceiling,
+    provenance,
+    regulatory,
+    rendering,
+    schema_validation,
+    workflow_analytics,
+)
 from .rule import AcknowledgedTension, Rule, Severity, _cosine_sim
 
 if TYPE_CHECKING:
@@ -108,43 +120,11 @@ class Constitution(BaseModel):
         object.__setattr__(self, "_active_rules_cache", [r for r in self.rules if r.enabled])
 
     def _validate_rules(self) -> list[str]:
-        """exp160: Validate rule syntax and semantics.
+        return schema_validation.validate_rules(self)
 
-        Returns list of validation error messages. Empty list means all rules are valid.
-        """
-        errors: list[str] = []
-
-        # Check for duplicate rule IDs
-        rule_ids = [r.id for r in self.rules]
-        duplicates = [rid for rid in rule_ids if rule_ids.count(rid) > 1]
-        for dup in set(duplicates):
-            errors.append(f"Duplicate rule ID: {dup}")
-
-        # Check for empty or invalid rule text
-        for rule in self.rules:
-            if not rule.text or not rule.text.strip():
-                errors.append(f"Rule {rule.id}: empty text")
-            if len(rule.text) > 1000:
-                errors.append(f"Rule {rule.id}: text too long (>1000 chars)")
-
-            # Check keywords
-            if not rule.keywords:
-                errors.append(f"Rule {rule.id}: no keywords defined")
-            if len(rule.keywords) > 50:
-                errors.append(f"Rule {rule.id}: too many keywords (>50)")
-
-            # Check severity
-            if rule.severity.value not in ["info", "low", "medium", "high", "critical"]:
-                errors.append(f"Rule {rule.id}: invalid severity {rule.severity.value}")
-
-            # Check depends_on references exist
-            for dep_id in rule.depends_on:
-                if dep_id not in rule_ids:
-                    errors.append(
-                        f"Rule {rule.id}: depends_on references non-existent rule {dep_id}"
-                    )
-
-        return errors
+    def validate_rules(self) -> list[str]:
+        """Validate rule syntax and semantics."""
+        return schema_validation.validate_rules(self)
 
     @property
     def hash(self) -> str:
@@ -369,6 +349,7 @@ class Constitution(BaseModel):
                         "id": "GL-003",
                         "text": "No PII (SSN, credit cards) in source code or commit messages",
                         "severity": "critical",
+                        "keywords": ["ssn", "social security", "credit card", "pii"],
                         "patterns": [
                             r"\d{3}-\d{2}-\d{4}",
                             r"4[0-9]{12}(?:[0-9]{3})?",
@@ -577,6 +558,7 @@ class Constitution(BaseModel):
                             " in logs or responses"
                         ),
                         "severity": "critical",
+                        "keywords": ["ssn", "account number", "credit card", "pii"],
                         "patterns": [
                             r"\d{3}-\d{2}-\d{4}",
                             r"[0-9]{13,16}",
@@ -738,6 +720,7 @@ class Constitution(BaseModel):
                         "id": "GEN-004",
                         "text": "Agent must not expose PII in responses",
                         "severity": "critical",
+                        "keywords": ["ssn", "social security", "api key", "pii"],
                         "patterns": [
                             r"\b\d{3}-\d{2}-\d{4}\b",
                             r"(?i)(sk-[a-zA-Z0-9]{20,})",
@@ -985,76 +968,7 @@ class Constitution(BaseModel):
     def validate_yaml_schema(
         data: dict[str, Any],
     ) -> dict[str, Any]:
-        """exp119: Validate a constitution dict against the JSON Schema.
-
-        Lightweight schema validation without requiring ``jsonschema`` as a
-        dependency. Checks required fields, types, enum values, and structural
-        constraints. For full JSON Schema validation, use the ``jsonschema``
-        library with ``Constitution.json_schema()``.
-
-        Args:
-            data: Parsed YAML/JSON dict to validate.
-
-        Returns:
-            dict with keys:
-                - ``valid``: True if no errors found
-                - ``errors``: list of error description strings
-                - ``warnings``: list of warning description strings
-        """
-        errors: list[str] = []
-        warnings: list[str] = []
-
-        if not isinstance(data, dict):
-            return {"valid": False, "errors": ["Root must be an object"], "warnings": []}
-
-        rules = data.get("rules")
-        if not rules:
-            errors.append("'rules' is required and must be non-empty")
-        elif not isinstance(rules, list):
-            errors.append("'rules' must be an array")
-        else:
-            _VALID_SEVERITIES = {"critical", "high", "medium", "low"}
-            _VALID_WORKFLOWS = {
-                "",
-                "block",
-                "block_and_notify",
-                "require_human_review",
-                "escalate_to_senior",
-                "warn",
-            }
-            seen_ids: set[str] = set()
-
-            for i, rule in enumerate(rules):
-                prefix = f"rules[{i}]"
-                if not isinstance(rule, dict):
-                    errors.append(f"{prefix}: must be an object")
-                    continue
-
-                rid = rule.get("id")
-                if not rid or not isinstance(rid, str):
-                    errors.append(f"{prefix}: 'id' is required and must be a non-empty string")
-                elif rid in seen_ids:
-                    errors.append(f"{prefix}: duplicate rule id '{rid}'")
-                else:
-                    seen_ids.add(rid)
-
-                if not rule.get("text") or not isinstance(rule.get("text"), str):
-                    errors.append(f"{prefix}: 'text' is required and must be a non-empty string")
-
-                sev = rule.get("severity", "high")
-                if isinstance(sev, str) and sev.lower() not in _VALID_SEVERITIES:
-                    errors.append(f"{prefix}: invalid severity '{sev}'")
-
-                wa = rule.get("workflow_action", "")
-                if isinstance(wa, str) and wa not in _VALID_WORKFLOWS:
-                    errors.append(f"{prefix}: invalid workflow_action '{wa}'")
-
-                if not rule.get("keywords") and not rule.get("patterns"):
-                    warnings.append(
-                        f"{prefix}: rule has no keywords or patterns (will never match)"
-                    )
-
-        return {"valid": len(errors) == 0, "errors": errors, "warnings": warnings}
+        return schema_validation.validate_yaml_schema(data)
 
     @classmethod
     def inherit(
@@ -1064,84 +978,11 @@ class Constitution(BaseModel):
         *,
         override_strategy: str = "child_wins",
     ) -> Constitution:
-        """exp120: Create a child constitution that inherits parent rules.
+        return merging.inherit(parent, child, override_strategy=override_strategy)
 
-        Policy inheritance allows organizations to define a base constitution
-        (e.g., company-wide) and let teams create child constitutions that
-        inherit all parent rules while selectively overriding or extending them.
-
-        When a child rule has the same ID as a parent rule, the override
-        strategy determines which version to keep.
-
-        Args:
-            parent: Base constitution providing inherited rules.
-            child: Child constitution with overrides and extensions.
-            override_strategy: How to handle ID collisions:
-                - ``"child_wins"``: child rule replaces parent (default)
-                - ``"parent_wins"``: parent rule kept, child ignored
-                - ``"higher_severity"``: keep whichever has higher severity
-
-        Returns:
-            New Constitution combining parent and child rules.
-
-        Example::
-
-            company = Constitution.from_template("general")
-            team = Constitution(name="team-data", rules=[
-                Rule(id="ACGS-006", text="Stricter PII rule", severity=Severity.CRITICAL,
-                     keywords=["email", "phone", "ssn"], tags=["gdpr"]),
-                Rule(id="TEAM-001", text="No raw SQL", severity=Severity.HIGH,
-                     keywords=["raw sql", "execute sql"], tags=["security"]),
-            ])
-            effective = Constitution.inherit(company, team)
-        """
-        _SEV_RANK = {
-            Severity.CRITICAL: 4,
-            Severity.HIGH: 3,
-            Severity.MEDIUM: 2,
-            Severity.LOW: 1,
-        }
-
-        child_by_id = {r.id: r for r in child.rules}
-
-        merged: list[Rule] = []
-        seen_ids: set[str] = set()
-
-        # Process parent rules (may be overridden by child)
-        for rule in parent.rules:
-            if rule.id in child_by_id:
-                child_rule = child_by_id[rule.id]
-                if override_strategy == "child_wins":
-                    merged.append(child_rule)
-                elif override_strategy == "parent_wins":
-                    merged.append(rule)
-                elif override_strategy == "higher_severity":
-                    p_rank = _SEV_RANK.get(rule.severity, 0)
-                    c_rank = _SEV_RANK.get(child_rule.severity, 0)
-                    merged.append(child_rule if c_rank >= p_rank else rule)
-                else:
-                    merged.append(child_rule)
-            else:
-                merged.append(rule)
-            seen_ids.add(rule.id)
-
-        # Add child-only rules (extensions)
-        for rule in child.rules:
-            if rule.id not in seen_ids:
-                merged.append(rule)
-
-        inherited_meta = dict(parent.metadata)
-        inherited_meta.update(child.metadata)
-        inherited_meta["_inherited_from"] = parent.name
-        inherited_meta["_override_strategy"] = override_strategy
-
-        return cls(
-            name=child.name,
-            version=child.version,
-            description=child.description or parent.description,
-            rules=merged,
-            metadata=inherited_meta,
-        )
+    def apply_amendments(self, amendments: Sequence[Any]) -> Constitution:
+        """Apply a sequence of amendment-like payloads to this constitution."""
+        return merging.apply_amendments(self, amendments)
 
     def active_rules(self) -> list[Rule]:
         """Return only enabled rules (cached)."""
@@ -1287,48 +1128,7 @@ class Constitution(BaseModel):
         }
 
     def rule_provenance_graph(self) -> dict[str, Any]:
-        """exp142: Directed graph of rule lineage (deprecated/replaced_by and depends_on).
-
-        Returns nodes (all rules with id, deprecated, enabled, severity, category)
-        and edges connecting deprecated rules to their successors (replaced_by)
-        and rules to their dependencies (depends_on). Enables lineage visualization,
-        migration path analysis, and dead-successor detection.
-
-        Returns:
-            dict with keys:
-                - ``nodes``: list of {id, deprecated, enabled, severity, category}
-                - ``edges``: list of {from_id, to_id, kind} where kind is
-                  ``replaced_by`` or ``depends_on``
-                - ``roots``: rule IDs with no incoming replaced_by (lineage roots)
-                - ``successors``: rule IDs that are replaced_by targets
-        """
-        nodes = [
-            {
-                "id": r.id,
-                "deprecated": r.deprecated,
-                "enabled": r.enabled,
-                "severity": r.severity.value if hasattr(r.severity, "value") else str(r.severity),
-                "category": r.category,
-            }
-            for r in self.rules
-        ]
-        edges: list[dict[str, Any]] = []
-        successors: set[str] = set()
-        for r in self.rules:
-            if r.replaced_by:
-                edges.append({"from_id": r.id, "to_id": r.replaced_by, "kind": "replaced_by"})
-                successors.add(r.replaced_by)
-            for dep in r.depends_on:
-                if dep:
-                    edges.append({"from_id": r.id, "to_id": dep, "kind": "depends_on"})
-        replaced_by_targets = {e["to_id"] for e in edges if e["kind"] == "replaced_by"}
-        roots = [n["id"] for n in nodes if n["id"] not in replaced_by_targets]
-        return {
-            "nodes": nodes,
-            "edges": edges,
-            "roots": roots,
-            "successors": list(successors),
-        }
+        return provenance.rule_provenance_graph(self)
 
     def active_rules_for_context(self, context: dict[str, Any]) -> list[Rule]:
         """exp129: Return enabled rules whose activation conditions match context.
@@ -1540,62 +1340,11 @@ class Constitution(BaseModel):
         }
 
     def governance_summary(self) -> dict[str, Any]:
-        """exp92: Return governance posture summary for dashboards and agent introspection.
+        return workflow_analytics.analyze_workflow_distribution(self)
 
-        Provides a structured overview of the constitutional ruleset without
-        exposing rule internals. Downstream agents, dashboards, and monitoring
-        systems can use this to understand the governance posture at a glance.
-
-        Returns:
-            dict with keys:
-                - ``total_rules``: total rule count
-                - ``active_rules``: enabled rule count
-                - ``by_severity``: count of rules per severity level
-                - ``by_category``: count of rules per category
-                - ``by_workflow_action``: count of rules per workflow_action
-                - ``coverage``: dict of governance coverage metrics
-        """
-        active = self.active_rules()
-        by_severity: dict[str, int] = {}
-        by_category: dict[str, int] = {}
-        by_subcategory: dict[str, int] = {}
-        by_workflow: dict[str, int] = {}
-        by_tag: dict[str, int] = {}
-
-        for r in active:
-            sev = r.severity.value
-            by_severity[sev] = by_severity.get(sev, 0) + 1
-            by_category[r.category] = by_category.get(r.category, 0) + 1
-            if r.subcategory:
-                by_subcategory[r.subcategory] = by_subcategory.get(r.subcategory, 0) + 1
-            wa = r.workflow_action or "unspecified"
-            by_workflow[wa] = by_workflow.get(wa, 0) + 1
-            for tag in r.tags:
-                by_tag[tag] = by_tag.get(tag, 0) + 1
-
-        has_keywords = sum(1 for r in active if r.keywords)
-        has_patterns = sum(1 for r in active if r.patterns)
-        has_workflow = sum(1 for r in active if r.workflow_action)
-        has_subcategory = sum(1 for r in active if r.subcategory)
-        has_tags = sum(1 for r in active if r.tags)
-
-        return {
-            "total_rules": len(self.rules),
-            "active_rules": len(active),
-            "by_severity": by_severity,
-            "by_category": by_category,
-            "by_subcategory": by_subcategory,
-            "by_workflow_action": by_workflow,
-            "by_tag": by_tag,
-            "coverage": {
-                "keyword_rules": has_keywords,
-                "pattern_rules": has_patterns,
-                "workflow_routed": has_workflow,
-                "subcategorized": has_subcategory,
-                "tagged": has_tags,
-                "blocking_rules": sum(1 for r in active if r.severity.blocks()),
-            },
-        }
+    def analyze_workflow_distribution(self) -> dict[str, Any]:
+        """Return workflow distribution analytics for this constitution."""
+        return workflow_analytics.analyze_workflow_distribution(self)
 
     def validate_integrity(self) -> dict[str, Any]:
         """exp102: Check internal consistency of this constitution.
@@ -1988,172 +1737,10 @@ class Constitution(BaseModel):
         }
 
     def resolve_conflicts(self, conflicts: list[dict[str, Any]]) -> dict[str, Any]:
-        """exp158: Automatic conflict resolution framework.
-
-        Analyzes rule conflicts and applies resolution strategies based on
-        severity precedence, specificity, and governance policies. Essential
-        for maintaining constitutional consistency when rules have overlapping
-        or contradictory conditions.
-
-        Args:
-            conflicts: List of conflict dicts from detect_semantic_conflicts()
-
-        Returns:
-            dict with keys:
-                - ``resolutions``: list of resolution actions (disable/merge/prioritize)
-                - ``unresolved``: conflicts that couldn't be automatically resolved
-                - ``policy_applied``: resolution policies used
-        """
-        resolutions: list[dict[str, Any]] = []
-        unresolved: list[dict[str, Any]] = []
-        policy_applied: list[str] = []
-
-        severity_order = {"info": 0, "low": 1, "medium": 2, "high": 3, "critical": 4}
-
-        for conflict in conflicts:
-            rule_a_id = conflict["rule_a"]
-            rule_b_id = conflict["rule_b"]
-
-            rule_a = next((r for r in self.rules if r.id == rule_a_id), None)
-            rule_b = next((r for r in self.rules if r.id == rule_b_id), None)
-
-            if not rule_a or not rule_b:
-                unresolved.append(conflict)
-                continue
-
-            # Strategy 1: Severity precedence - higher severity wins
-            sev_a = severity_order.get(rule_a.severity.value, 0)
-            sev_b = severity_order.get(rule_b.severity.value, 0)
-
-            if sev_a != sev_b:
-                winner = rule_a_id if sev_a > sev_b else rule_b_id
-                loser = rule_b_id if sev_a > sev_b else rule_a_id
-                resolutions.append(
-                    {
-                        "action": "prioritize",
-                        "winner": winner,
-                        "loser": loser,
-                        "reason": "severity_precedence",
-                        "conflict": conflict,
-                    }
-                )
-                policy_applied.append("severity_precedence")
-                continue
-
-            # Strategy 2: Specificity - more specific keywords win
-            spec_a = len(rule_a.keywords)
-            spec_b = len(rule_b.keywords)
-
-            if spec_a != spec_b:
-                winner = rule_a_id if spec_a > spec_b else rule_b_id
-                loser = rule_b_id if spec_a > spec_b else rule_a_id
-                resolutions.append(
-                    {
-                        "action": "prioritize",
-                        "winner": winner,
-                        "loser": loser,
-                        "reason": "specificity",
-                        "conflict": conflict,
-                    }
-                )
-                policy_applied.append("specificity")
-                continue
-
-            # Strategy 3: Hardcoded rules take precedence
-            if rule_a.hardcoded != rule_b.hardcoded:
-                winner = rule_a_id if rule_a.hardcoded else rule_b_id
-                loser = rule_b_id if rule_a.hardcoded else rule_a_id
-                resolutions.append(
-                    {
-                        "action": "prioritize",
-                        "winner": winner,
-                        "loser": loser,
-                        "reason": "hardcoded_precedence",
-                        "conflict": conflict,
-                    }
-                )
-                policy_applied.append("hardcoded_precedence")
-                continue
-
-            # Cannot resolve automatically
-            unresolved.append(conflict)
-
-        return {
-            "resolutions": resolutions,
-            "unresolved": unresolved,
-            "policy_applied": list(set(policy_applied)),
-        }
+        return conflict_resolution.resolve_conflicts(self, conflicts)
 
     def merge_constitutions(self, other: Constitution, strategy: str = "union") -> Constitution:
-        """exp161: Merge two constitutions with conflict resolution.
-
-        Combines rules from this constitution and another, resolving conflicts
-        according to the specified strategy. Useful for constitutional evolution
-        and multi-source governance.
-
-        Args:
-            other: Constitution to merge with
-            strategy: Merge strategy - "union" (combine all), "replace" (other wins),
-                     "conservative" (only add non-conflicting), "strict" (fail on conflicts)
-
-        Returns:
-            New merged Constitution
-
-        Raises:
-            ValueError: If strategy is "strict" and conflicts exist
-        """
-        # Build rule maps
-        self_rules = {r.id: r for r in self.rules}
-        other_rules = {r.id: r for r in other.rules}
-
-        merged_rules: list[Rule] = []
-
-        # Handle rules present in both constitutions
-        for rule_id in set(self_rules) & set(other_rules):
-            self_rule = self_rules[rule_id]
-            other_rule = other_rules[rule_id]
-
-            if self_rule == other_rule:
-                merged_rules.append(self_rule)
-            elif strategy == "replace":
-                merged_rules.append(other_rule)
-            elif strategy == "union":
-                # Keep the one with higher severity, or self if equal
-                sev_order = {"info": 0, "low": 1, "medium": 2, "high": 3, "critical": 4}
-                self_sev = sev_order.get(self_rule.severity.value, 0)
-                other_sev = sev_order.get(other_rule.severity.value, 0)
-                merged_rules.append(other_rule if other_sev > self_sev else self_rule)
-            elif strategy == "strict":
-                raise ValueError(f"Conflicting rule {rule_id} in strict merge mode")
-            else:  # conservative
-                merged_rules.append(self_rule)  # keep existing
-
-        # Add rules unique to self
-        for rule_id in set(self_rules) - set(other_rules):
-            merged_rules.append(self_rules[rule_id])
-
-        # Add rules unique to other (except in conservative mode)
-        if strategy != "conservative":
-            for rule_id in set(other_rules) - set(self_rules):
-                merged_rules.append(other_rules[rule_id])
-
-        # Merge metadata and other fields
-        merged_metadata = {**self.metadata, **other.metadata}
-        merged_description = (
-            f"{self.description} + {other.description}"
-            if self.description and other.description
-            else (self.description or other.description or "")
-        )
-
-        return Constitution(
-            name=f"{self.name}-merged-{other.name}",
-            version=max(self.version, other.version, key=lambda v: [int(x) for x in v.split(".")]),
-            rules=merged_rules,
-            description=merged_description,
-            metadata=merged_metadata,
-            permission_ceiling=self.permission_ceiling,  # keep self's ceiling
-            version_name=self.version_name or other.version_name,
-        )
+        return merging.merge_constitutions(self, other, strategy=strategy)
 
     @staticmethod
     def create_rule_from_template(
@@ -2951,191 +2538,10 @@ class Constitution(BaseModel):
         }
 
     def detect_semantic_conflicts(self, threshold: float = 0.8) -> dict[str, Any]:
-        """exp154: Detect semantically similar rules with conflicting governance.
-
-        Uses rule embeddings to find rules that are semantically similar (cosine
-        similarity > threshold) but have different severity or workflow_action.
-        Requires rules to have embeddings set (via external embedding model).
-
-        This complements keyword-based conflict detection by finding conflicts
-        that aren't obvious from shared keywords (e.g., synonyms, paraphrases).
-
-        Args:
-            threshold: Cosine similarity threshold (0-1). Higher = stricter similarity.
-
-        Returns:
-            dict with keys:
-                - ``has_conflicts``: True if any semantic conflicts detected
-                - ``conflicts``: list of dicts with ``rule_a``, ``rule_b``, ``similarity``,
-                  ``severity_conflict``, ``workflow_conflict``
-                - ``conflict_count``: total number of conflicting pairs
-                - ``rules_with_embeddings``: count of rules that have embeddings
-                - ``recommendation``: summary suggestion
-
-        Example::
-
-            report = constitution.detect_semantic_conflicts(0.85)
-            for c in report["conflicts"]:
-                print(f"Semantic conflict: {c['rule_a']} ~ {c['rule_b']} "
-                      f"(sim={c['similarity']:.2f})")
-        """
-        active = self.active_rules()
-        rules_with_emb = [r for r in active if r.embedding]
-        if len(rules_with_emb) < 2:
-            return {
-                "has_conflicts": False,
-                "conflicts": [],
-                "conflict_count": 0,
-                "rules_with_embeddings": len(rules_with_emb),
-                "recommendation": (
-                    "Need at least 2 rules with embeddings for semantic conflict detection."
-                ),
-            }
-
-        conflicts: list[dict[str, Any]] = []
-        checked: set[tuple[str, str]] = set()
-
-        for i, ra in enumerate(rules_with_emb):
-            for rb in rules_with_emb[i + 1 :]:
-                pair = (min(ra.id, rb.id), max(ra.id, rb.id))
-                if pair in checked:
-                    continue
-                checked.add(pair)
-
-                sim = _cosine_sim(ra.embedding, rb.embedding)
-                if sim is None or sim < threshold:
-                    continue
-
-                sev_conflict = ra.severity != rb.severity
-                wf_conflict = (
-                    ra.workflow_action != rb.workflow_action
-                    and ra.workflow_action != ""
-                    and rb.workflow_action != ""
-                )
-
-                if sev_conflict or wf_conflict:
-                    conflict_entry = {
-                        "rule_a": ra.id,
-                        "rule_b": rb.id,
-                        "similarity": round(sim, 3),
-                        "severity_conflict": sev_conflict,
-                        "workflow_conflict": wf_conflict,
-                    }
-                    if sev_conflict:
-                        conflict_entry["severity_a"] = ra.severity.value
-                        conflict_entry["severity_b"] = rb.severity.value
-                    if wf_conflict:
-                        conflict_entry["workflow_a"] = ra.workflow_action
-                        conflict_entry["workflow_b"] = rb.workflow_action
-                    conflicts.append(conflict_entry)
-
-        recommendation = ""
-        if conflicts:
-            recommendation = (
-                f"Found {len(conflicts)} semantic conflict(s) among "
-                f"{len(rules_with_emb)} rules with embeddings. "
-                "Review similar rules and align severity/workflow_action."
-            )
-        else:
-            recommendation = (
-                f"No semantic conflicts detected among {len(rules_with_emb)} "
-                "rules with embeddings (threshold={threshold})."
-            )
-
-        return {
-            "has_conflicts": len(conflicts) > 0,
-            "conflicts": conflicts,
-            "conflict_count": len(conflicts),
-            "rules_with_embeddings": len(rules_with_emb),
-            "recommendation": recommendation,
-        }
+        return conflict_resolution.detect_semantic_conflicts(self, threshold=threshold)
 
     def provenance_graph(self) -> dict[str, Any]:
-        """exp155: Build directed graph of rule provenance and lineage.
-
-        Constructs a graph where nodes are rule IDs and edges represent
-        provenance relationships (derived_from, replaced_by, etc.).
-        Includes deprecated rule chains and external references.
-
-        Returns:
-            dict with keys:
-                - ``nodes``: dict[rule_id] -> rule metadata
-                  (id, text, severity, deprecated, provenance)
-                - ``edges``: list of dicts with ``from``, ``to``, ``relationship``
-                  (derived_from, replaced_by, external_ref)
-                - ``roots``: list of rule IDs with no provenance (original rules)
-                - ``deprecated_chains``: list of lists, each chain from root to
-                  current deprecated rule
-                - ``external_refs``: set of external provenance references (non-rule IDs)
-
-        Example::
-
-            graph = constitution.provenance_graph()
-            for chain in graph["deprecated_chains"]:
-                print(f"Deprecation chain: {' -> '.join(chain)}")
-        """
-        active = self.active_rules()
-        nodes: dict[str, dict[str, Any]] = {}
-        edges: list[dict[str, str]] = []
-        all_rules = {r.id: r for r in self.rules}  # include inactive for chains
-
-        # Build nodes
-        for r in active:
-            nodes[r.id] = {
-                "id": r.id,
-                "text": r.text[:100] + "..." if len(r.text) > 100 else r.text,
-                "severity": r.severity.value,
-                "deprecated": r.deprecated,
-                "provenance": r.provenance.copy(),
-            }
-
-        # Build edges from provenance
-        for r in active:
-            for prov in r.provenance:
-                if prov in all_rules:  # internal rule reference
-                    edges.append({"from": prov, "to": r.id, "relationship": "derived_from"})
-                else:  # external reference
-                    edges.append({"from": prov, "to": r.id, "relationship": "external_ref"})
-
-        # Add replaced_by edges for deprecated rules
-        for r in self.rules:
-            if r.deprecated and r.replaced_by and r.replaced_by in all_rules:
-                edges.append({"from": r.id, "to": r.replaced_by, "relationship": "replaced_by"})
-
-        # Find roots (rules with no incoming edges)
-        incoming = {e["to"] for e in edges}
-        roots = [rid for rid in nodes if rid not in incoming]
-
-        # Build deprecated chains
-        deprecated_chains: list[list[str]] = []
-        for r in self.rules:
-            if r.deprecated:
-                chain = [r.id]
-                current = r.id
-                while current in all_rules:
-                    predecessors = [
-                        e["from"]
-                        for e in edges
-                        if e["to"] == current
-                        and e["relationship"] in ("derived_from", "replaced_by")
-                    ]
-                    if predecessors:
-                        current = predecessors[0]  # assume single predecessor
-                        chain.insert(0, current)
-                    else:
-                        break
-                if len(chain) > 1:
-                    deprecated_chains.append(chain)
-
-        external_refs = {e["from"] for e in edges if e["relationship"] == "external_ref"}
-
-        return {
-            "nodes": nodes,
-            "edges": edges,
-            "roots": roots,
-            "deprecated_chains": deprecated_chains,
-            "external_refs": sorted(external_refs),
-        }
+        return provenance.provenance_graph(self)
 
     def to_yaml(self) -> str:
         """exp111: Serialize this constitution to a YAML string.
@@ -3457,76 +2863,7 @@ class Constitution(BaseModel):
         self,
         framework: str = "soc2",
     ) -> dict[str, Any]:
-        """exp137: Report how well the constitution aligns to a regulatory framework.
-
-        Maps active rules to regulatory control families using category and
-        keyword signals.  Returns coverage per control family and an overall
-        alignment score.
-
-        Args:
-            framework: One of ``"soc2"``, ``"hipaa"``, ``"gdpr"``,
-                ``"iso27001"``.  Case-insensitive.
-
-        Returns:
-            dict with keys:
-
-            - ``framework``: normalised framework name
-            - ``alignment_score``: fraction of control families covered (0-1)
-            - ``covered_controls``: list of control names with ≥1 matching rule
-            - ``uncovered_controls``: list of control names with no matching rule
-            - ``control_detail``: per-control dict {name → {covered, matched_rules}}
-            - ``total_controls``: total controls in the framework
-
-        Raises:
-            ValueError: If the framework is not recognised.
-
-        Example::
-
-            report = constitution.regulatory_alignment("gdpr")
-            print(f"GDPR alignment: {report['alignment_score']:.0%}")
-        """
-        fw_key = framework.lower()
-        if fw_key not in self._REGULATORY_FRAMEWORKS:
-            available = ", ".join(sorted(self._REGULATORY_FRAMEWORKS))
-            raise ValueError(f"Unknown framework {framework!r}. Available: {available}")
-
-        controls = self._REGULATORY_FRAMEWORKS[fw_key]["controls"]
-        active = self.active_rules()
-
-        covered: list[str] = []
-        uncovered: list[str] = []
-        control_detail: dict[str, Any] = {}
-
-        for ctrl in controls:
-            ctrl_name: str = ctrl["name"]
-            ctrl_cats: list[str] = ctrl.get("categories", [])
-            ctrl_kws: list[str] = ctrl.get("keywords", [])
-
-            matched: list[str] = []
-            for r in active:
-                cat_hit = r.category in ctrl_cats
-                kw_hit = any(ck in " ".join(r.keywords).lower() for ck in ctrl_kws)
-                if cat_hit or kw_hit:
-                    matched.append(r.id)
-
-            is_covered = bool(matched)
-            control_detail[ctrl_name] = {
-                "covered": is_covered,
-                "matched_rules": matched,
-            }
-            (covered if is_covered else uncovered).append(ctrl_name)
-
-        total = len(controls)
-        alignment_score = len(covered) / total if total > 0 else 0.0
-
-        return {
-            "framework": fw_key,
-            "alignment_score": round(alignment_score, 4),
-            "covered_controls": covered,
-            "uncovered_controls": uncovered,
-            "control_detail": control_detail,
-            "total_controls": total,
-        }
+        return regulatory.regulatory_alignment(self, framework=framework)
 
     def find_similar_rules(
         self,
@@ -4009,104 +3346,10 @@ class Constitution(BaseModel):
         }
 
     def get_permission_ceiling(self) -> dict[str, Any]:
-        """exp147: Return the effective permission ceiling (policy boundary) for this constitution.
-
-        Interprets the optional ``permission_ceiling`` field so downstream
-        orchestrators can hard-limit auto-allows or require human review above
-        a severity.  Does not change validation behavior; it is advisory for
-        policy enforcement layers.
-
-        Returns:
-            dict with keys:
-
-            - ``ceiling``: raw value (standard | strict | permissive)
-            - ``allow_override_critical``: False for strict, True for standard/permissive
-            - ``require_human_above_severity``: severity above which human review
-              is recommended (critical for strict, high for standard, low for permissive)
-            - ``max_auto_allow_severity``: highest severity that may be auto-allowed
-              without escalation (high for strict, medium for standard, low for permissive)
-            - ``description``: short human-readable summary
-
-        Example::
-
-            policy = constitution.get_permission_ceiling()
-            if not policy["allow_override_critical"] and decision had critical override:
-                reject()
-        """
-        ceiling = (self.permission_ceiling or "standard").lower().strip()
-        if ceiling not in ("strict", "permissive"):
-            ceiling = "standard"
-
-        if ceiling == "strict":
-            allow_override_critical = False
-            require_human_above = "critical"
-            max_auto_allow = "high"
-            description = "Strict: no critical overrides; human required for critical."
-        elif ceiling == "permissive":
-            allow_override_critical = True
-            require_human_above = "low"
-            max_auto_allow = "low"
-            description = "Permissive: overrides allowed; human recommended for low+."
-        else:
-            allow_override_critical = True
-            require_human_above = "high"
-            max_auto_allow = "medium"
-            description = "Standard: human required for high/critical; medium may auto-allow."
-
-        return {
-            "ceiling": ceiling,
-            "allow_override_critical": allow_override_critical,
-            "require_human_above_severity": require_human_above,
-            "max_auto_allow_severity": max_auto_allow,
-            "description": description,
-        }
-
-    # exp148: tag → regulatory clause mapping for audit documentation
-    _TAG_TO_REGULATORY_CLAUSES: dict[str, list[str]] = {
-        "gdpr": ["GDPR Art. 5(1)(a) (lawfulness)", "GDPR Art. 32 (security)"],
-        "sox": ["SOX 302 (certifications)", "SOX 404 (internal controls)"],
-        "pci-dss": ["PCI-DSS Req 3.4 (storage)", "PCI-DSS Req 8.2 (authentication)"],
-        "hipaa": ["HIPAA §164.312(a)(1) (access control)", "HIPAA §164.312(e)(1) (transmission)"],
-        "soc2": ["SOC2 CC6.1 (logical access)", "SOC2 CC7.1 (system monitoring)"],
-        "iso27001": ["ISO/IEC 27001 A.9 (access control)", "ISO/IEC 27001 A.12 (operations)"],
-    }
+        return permission_ceiling.get_permission_ceiling(self)
 
     def rule_regulatory_clause_map(self) -> dict[str, Any]:
-        """exp148: Map rule tags to specific regulatory clauses for audit documentation.
-
-        Returns a per-rule and per-tag view of which regulatory clauses are
-        addressed by the constitution. Rules with tag \"gdpr\" are mapped to
-        representative GDPR articles; optional rule.metadata[\"regulatory_clauses\"]
-        overrides or extends the tag-based mapping. Does not touch the hot
-        validation path.
-
-        Returns:
-            dict with keys:
-            - by_rule: rule_id → list of clause strings (e.g. \"GDPR Art. 5(1)(a)\")
-            - by_tag: tag → list of clause strings (canonical tag→clauses)
-            - tag_to_clauses: same as by_tag (alias for backward compatibility)
-        """
-        by_rule: dict[str, list[str]] = {}
-        for r in self.active_rules():
-            clauses: list[str] = []
-            if isinstance(r.metadata.get("regulatory_clauses"), list):
-                for c in r.metadata["regulatory_clauses"]:
-                    if isinstance(c, str) and c.strip():
-                        clauses.append(c.strip())
-            for tag in r.tags or []:
-                tag_lower = str(tag).lower().strip()
-                if tag_lower in self._TAG_TO_REGULATORY_CLAUSES:
-                    for c in self._TAG_TO_REGULATORY_CLAUSES[tag_lower]:
-                        if c not in clauses:
-                            clauses.append(c)
-            if clauses:
-                by_rule[r.id] = clauses
-        by_tag = dict(self._TAG_TO_REGULATORY_CLAUSES)
-        return {
-            "by_rule": by_rule,
-            "by_tag": by_tag,
-            "tag_to_clauses": by_tag,
-        }
+        return regulatory.rule_regulatory_clause_map(self)
 
     @staticmethod
     def check_governance_slo(
@@ -4772,43 +4015,7 @@ class Constitution(BaseModel):
         }
 
     def changelog_summary(self) -> dict[str, Any]:
-        """exp128: Summarise the constitution-level change log.
-
-        Returns a high-level view of all recorded mutations for dashboards,
-        audit reports, and compliance documentation.
-
-        Returns:
-            dict with keys:
-
-            - ``total_changes``: total number of recorded changelog entries
-            - ``by_operation``: counts grouped by operation type
-            - ``recent``: up to 5 most recent entries (newest first)
-            - ``affected_rules``: sorted list of unique rule IDs that appear
-              in the changelog
-
-        Example::
-
-            c2 = constitution.update_rule("GL-001", change_reason="hardened")
-            print(c2.changelog_summary())
-        """
-        total = len(self.changelog)
-        by_op: dict[str, int] = {}
-        affected: set[str] = set()
-        for entry in self.changelog:
-            op = entry.get("operation", "unknown")
-            by_op[op] = by_op.get(op, 0) + 1
-            rid = entry.get("rule_id", "")
-            if rid:
-                affected.add(rid)
-
-        recent = list(reversed(self.changelog[-5:])) if self.changelog else []
-
-        return {
-            "total_changes": total,
-            "by_operation": by_op,
-            "recent": recent,
-            "affected_rules": sorted(affected),
-        }
+        return workflow_analytics.changelog_summary(self)
 
     def filter(
         self,
@@ -4851,79 +4058,21 @@ class Constitution(BaseModel):
             prod_rules = constitution.filter(min_severity="high")
             staging_rules = constitution.filter(category="data-protection")
         """
-        _SEV_RANK = {
-            Severity.CRITICAL: 4,
-            Severity.HIGH: 3,
-            Severity.MEDIUM: 2,
-            Severity.LOW: 1,
-        }
-
-        if severity is not None and isinstance(severity, str):
-            severity = Severity(severity)
-        if min_severity is not None and isinstance(min_severity, str):
-            min_severity = Severity(min_severity)
-
-        min_rank = _SEV_RANK.get(min_severity, 0) if min_severity else 0
-
-        filtered: list[Rule] = []
-        for r in self.rules:
-            if enabled_only and not r.enabled:
-                continue
-            if severity is not None and r.severity != severity:
-                continue
-            if min_severity is not None and _SEV_RANK.get(r.severity, 0) < min_rank:
-                continue
-            if category is not None and r.category != category:
-                continue
-            if workflow_action is not None and r.workflow_action != workflow_action:
-                continue
-            if tag is not None and tag not in r.tags:
-                continue
-            filtered.append(r)
-
-        if not filtered:
-            raise ValueError(
-                "Filter produced an empty constitution — at least one rule must match the criteria"
-            )
-
-        return Constitution(
-            name=self.name,
-            version=self.version,
-            description=self.description,
-            rules=filtered,
-            metadata={**self.metadata, "filtered": True},
+        return filtering.filter(
+            self,
+            severity=severity,
+            min_severity=min_severity,
+            category=category,
+            workflow_action=workflow_action,
+            tag=tag,
+            enabled_only=enabled_only,
         )
 
     def semantic_rule_clusters(
         self,
         expected_domains: Sequence[str] | None = None,
     ) -> dict[str, list[str]]:
-        """Group rules into governance domains using category + keyword signals."""
-        domains = list(expected_domains or ("safety", "privacy", "transparency"))
-        clusters: dict[str, list[str]] = {domain: [] for domain in domains}
-
-        for rule in self.active_rules():
-            rule_fields = " ".join(
-                (
-                    rule.category.lower(),
-                    rule.subcategory.lower(),
-                    rule.text.lower(),
-                    " ".join(k.lower() for k in rule.keywords),
-                )
-            )
-            for domain in domains:
-                signal = self._DOMAIN_SIGNAL_MAP.get(
-                    domain.lower(),
-                    {"categories": {domain.lower()}, "keywords": {domain.lower()}},
-                )
-                categories = signal["categories"]
-                keywords = signal["keywords"]
-                has_category_signal = any(cat in rule_fields for cat in categories)
-                has_keyword_signal = any(kw in rule_fields for kw in keywords)
-                if has_category_signal or has_keyword_signal:
-                    clusters[domain].append(rule.id)
-
-        return {domain: sorted(set(rule_ids)) for domain, rule_ids in clusters.items()}
+        return coverage_analysis.semantic_rule_clusters(self, expected_domains)
 
     def analyze_coverage_gaps(
         self,
@@ -4931,114 +4080,17 @@ class Constitution(BaseModel):
         *,
         weak_threshold: int = 1,
     ) -> dict[str, Any]:
-        """Identify weak or missing governance-domain coverage."""
-        if weak_threshold < 1:
-            raise ValueError("weak_threshold must be >= 1")
-
-        domains = list(expected_domains or ("safety", "privacy", "transparency"))
-        clusters = self.semantic_rule_clusters(domains)
-
-        coverage: dict[str, dict[str, Any]] = {}
-        weak_domains: list[str] = []
-        missing_domains: list[str] = []
-        recommendations: list[str] = []
-
-        for domain in domains:
-            rule_ids = clusters.get(domain, [])
-            rule_count = len(rule_ids)
-            if rule_count == 0:
-                status = "missing"
-                missing_domains.append(domain)
-                weak_domains.append(domain)
-                recommendations.append(
-                    f"Add at least {weak_threshold} rule(s) covering '{domain}' controls."
-                )
-            elif rule_count <= weak_threshold:
-                status = "weak"
-                weak_domains.append(domain)
-                recommendations.append(
-                    f"Expand '{domain}' coverage beyond {rule_count} clustered rule(s)."
-                )
-            else:
-                status = "covered"
-
-            coverage[domain] = {
-                "status": status,
-                "rule_count": rule_count,
-                "rule_ids": rule_ids,
-            }
-
-        return {
-            "expected_domains": domains,
-            "semantic_clusters": clusters,
-            "domain_coverage": coverage,
-            "weak_domains": weak_domains,
-            "missing_domains": missing_domains,
-            "recommendations": recommendations,
-        }
+        return coverage_analysis.analyze_coverage_gaps(
+            self,
+            expected_domains,
+            weak_threshold=weak_threshold,
+        )
 
     def render(self, context: dict[str, Any]) -> Constitution:
-        """exp223: Return a copy of this constitution with rule texts interpolated.
-
-        Resolves ``${key.subkey}`` placeholders in each rule's ``text`` field
-        using values from *context*.  Rules without placeholders are reused
-        unchanged.  The returned constitution is a new object with a new hash
-        reflecting the rendered rule texts.
-
-        This method is for **display and audit purposes only** — matching still
-        uses the original unrendered rule text.  Use ``explain_rendered()`` to
-        get explanation output with interpolated rule texts.
-
-        Args:
-            context: Runtime context dict, e.g.
-                ``{"agent": {"id": "alpha"}, "resource": {"type": "PII"}}``.
-
-        Returns:
-            New Constitution with rendered rule texts, or ``self`` if no rules
-            contain placeholders.
-
-        Example::
-
-            rule = Rule(
-                id="DATA-001",
-                text="Agent ${agent.id} must not access ${resource.type} data.",
-                severity=Severity.HIGH,
-                keywords=["access", "data"],
-            )
-            c = Constitution(name="demo", rules=[rule])
-            rendered = c.render({"agent": {"id": "alpha"}, "resource": {"type": "PII"}})
-            print(rendered.rules[0].text)
-            # "Agent alpha must not access PII data."
-        """
-        from .interpolation import render_constitution
-
-        return render_constitution(self, context)
+        return rendering.render(self, context)
 
     def explain_rendered(self, action: str, context: dict[str, Any]) -> dict[str, Any]:
-        """exp223: Like ``explain()``, but with rule texts interpolated from *context*.
-
-        Combines contextual variable resolution with structured decision
-        explanation.  The returned dict is identical in structure to
-        ``explain()`` but rule text snippets reference resolved context values
-        rather than raw ``${...}`` placeholders.
-
-        Args:
-            action: The agent action to evaluate.
-            context: Runtime context dict for placeholder resolution.
-
-        Returns:
-            Same structure as ``explain()`` with interpolated rule texts.
-
-        Example::
-
-            result = c.explain_rendered(
-                "access patient records",
-                {"agent": {"id": "agent-7"}, "resource": {"type": "PHI"}},
-            )
-            # result["rules_triggered"][0]["text"] contains resolved placeholder
-        """
-        rendered = self.render(context)
-        return rendered.explain(action)
+        return rendering.explain_rendered(self, action, context)
 
     def builder(self) -> ConstitutionBuilder:
         """Return a ConstitutionBuilder pre-populated with this constitution's rules.

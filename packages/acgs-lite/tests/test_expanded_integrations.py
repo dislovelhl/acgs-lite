@@ -261,7 +261,7 @@ class TestMCPServer:
 
         constitution = Constitution.from_rules(
             [
-                Rule(id="T1", text="Test rule", severity=Severity.HIGH),
+                Rule(id="T1", text="Test rule", severity=Severity.HIGH, keywords=["test"]),
             ]
         )
         server = create_mcp_server(constitution)

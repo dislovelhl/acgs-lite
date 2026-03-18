@@ -15,7 +15,10 @@ Examples::
         severity=Severity.HIGH,
         keywords=["access", "data"],
     )
-    rendered = render_text(rule.text, {"agent": {"id": "alpha"}, "resource": {"classification": "PII"}})
+    rendered = render_text(
+        rule.text,
+        {"agent": {"id": "alpha"}, "resource": {"classification": "PII"}},
+    )
     # "Agent alpha must not access PII data without consent."
 
     # Unresolved placeholders are preserved unchanged:

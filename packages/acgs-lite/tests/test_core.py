@@ -35,27 +35,31 @@ class TestConstitution:
 
     def test_from_rules(self):
         rules = [
-            Rule(id="R1", text="No PII", severity=Severity.CRITICAL),
-            Rule(id="R2", text="Log everything", severity=Severity.HIGH),
+            Rule(id="R1", text="No PII", severity=Severity.CRITICAL, keywords=["pii"]),
+            Rule(id="R2", text="Log everything", severity=Severity.HIGH, keywords=["log"]),
         ]
         c = Constitution.from_rules(rules, name="test")
         assert c.name == "test"
         assert len(c) == 2
 
     def test_hash_deterministic(self):
-        rules = [Rule(id="R1", text="Test rule", severity=Severity.HIGH)]
+        rules = [Rule(id="R1", text="Test rule", severity=Severity.HIGH, keywords=["test"])]
         c1 = Constitution.from_rules(rules)
         c2 = Constitution.from_rules(rules)
         assert c1.hash == c2.hash
 
     def test_hash_changes_with_rules(self):
-        c1 = Constitution.from_rules([Rule(id="R1", text="Rule A")])
-        c2 = Constitution.from_rules([Rule(id="R1", text="Rule B")])
+        c1 = Constitution.from_rules([Rule(id="R1", text="Rule A", keywords=["rule-a"])])
+        c2 = Constitution.from_rules([Rule(id="R1", text="Rule B", keywords=["rule-b"])])
         assert c1.hash != c2.hash
 
     def test_hash_changes_with_hardcoded_flag(self):
-        c1 = Constitution.from_rules([Rule(id="R1", text="Rule A", hardcoded=False)])
-        c2 = Constitution.from_rules([Rule(id="R1", text="Rule A", hardcoded=True)])
+        c1 = Constitution.from_rules(
+            [Rule(id="R1", text="Rule A", hardcoded=False, keywords=["rule-a"])]
+        )
+        c2 = Constitution.from_rules(
+            [Rule(id="R1", text="Rule A", hardcoded=True, keywords=["rule-a"])]
+        )
         assert c1.hash != c2.hash
 
     def test_versioned_hash(self):
@@ -74,6 +78,7 @@ rules:
   - id: R002
     text: Always log
     severity: high
+    keywords: [log]
 """
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(yaml_content)
@@ -89,7 +94,7 @@ rules:
         data = {
             "name": "dict-test",
             "rules": [
-                {"id": "R1", "text": "Test", "severity": "medium"},
+                {"id": "R1", "text": "Test", "severity": "medium", "keywords": ["test"]},
             ],
         }
         c = Constitution.from_dict(data)
@@ -105,8 +110,8 @@ rules:
 
     def test_active_rules_filters_disabled(self):
         rules = [
-            Rule(id="R1", text="Active", enabled=True),
-            Rule(id="R2", text="Disabled", enabled=False),
+            Rule(id="R1", text="Active", enabled=True, keywords=["active"]),
+            Rule(id="R2", text="Disabled", enabled=False, keywords=["disabled"]),
         ]
         c = Constitution.from_rules(rules)
         assert len(c.active_rules()) == 1

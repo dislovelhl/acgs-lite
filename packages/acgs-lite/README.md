@@ -6,7 +6,7 @@
 
 ---
 
-**560ns** P50 latency | **100%** compliance | **9** regulatory frameworks | **11** integrations | **286 tests** | **125** checklist items | **MIT License**
+**560ns** P50 latency | **100%** compliance | **9** regulatory frameworks | **11** integrations | **460+ tests** | **125** checklist items | **Apache-2.0**
 
 ---
 
@@ -65,7 +65,29 @@ governance:
   before_script:
     - pip install acgs-lite
   script:
-    - acgs-lite validate --constitution rules.yaml --mr $CI_MERGE_REQUEST_IID
+    - |
+      python3 -c "
+      import asyncio
+      import os
+      import sys
+      from acgs_lite import Constitution
+      from acgs_lite.integrations.gitlab import GitLabGovernanceBot
+
+      async def main() -> int:
+          constitution = Constitution.from_yaml('rules.yaml')
+          bot = GitLabGovernanceBot(
+              token=os.environ['GITLAB_TOKEN'],
+              project_id=int(os.environ['CI_PROJECT_ID']),
+              constitution=constitution,
+          )
+          report = await bot.run_governance_pipeline(
+              mr_iid=int(os.environ['CI_MERGE_REQUEST_IID'])
+          )
+          print(f'Violations: {len(report.violations)}')
+          return 1 if report.violations else 0
+
+      sys.exit(asyncio.run(main()))
+      "
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
 ```

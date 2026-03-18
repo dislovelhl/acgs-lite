@@ -96,7 +96,7 @@ class TestCausalChainTracker:
         assert r.completed
 
     def test_custom_pattern(self) -> None:
-        from acgs_lite.constitution import ChainPattern, ChainStep, CausalChainTracker
+        from acgs_lite.constitution import CausalChainTracker, ChainPattern, ChainStep
 
         custom = ChainPattern(
             id="CUSTOM-001",
