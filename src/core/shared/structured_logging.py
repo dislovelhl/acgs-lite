@@ -307,21 +307,10 @@ class StructuredLogger:
         # before leaving the caller's except-block context.
         if exc_info is True:
             exc_info = sys.exc_info()
-
-        record = self._logger.makeRecord(
-            name=self._logger.name,
-            level=level,
-            fn="",
-            lno=0,
-            msg=message,
-            args=(),
-            exc_info=exc_info,
-        )
-
-        # Attach extra data
-        record.extra = kwargs
-
-        self._logger.handle(record)
+        # Use the standard logging path so pytest caplog and logger propagation
+        # observe records consistently across the full suite.
+        extra = {"extra": kwargs} if kwargs else None
+        self._logger.log(level, message, exc_info=exc_info, extra=extra)
 
     def debug(self, message: str, *args: JSONValue, **kwargs: JSONValue) -> None:
         """Log debug message with extra data."""
