@@ -34,11 +34,13 @@ from .diff_engine import ConstitutionalDiffEngine, SemanticDiff
 from .storage import ConstitutionalStorageService  # type: ignore[attr-defined]
 from .version_model import ConstitutionalVersion
 
-# Import invariant validation
+# Import invariant validation — fail-closed: log ERROR if unavailable
+_INVARIANT_IMPORTS_AVAILABLE = True
 try:
     from .invariant_guard import ConstitutionalInvariantViolation, ProposalInvariantValidator
     from .invariants import get_default_manifest
 except ImportError:
+    _INVARIANT_IMPORTS_AVAILABLE = False
     ProposalInvariantValidator = None  # type: ignore[assignment,misc]
     ConstitutionalInvariantViolation = None  # type: ignore[assignment,misc]
     get_default_manifest = None  # type: ignore[assignment]
@@ -277,6 +279,12 @@ class AmendmentProposalEngine:
 
         # Step 0: Invariant validation — check before any other processing
         invariant_classification = None
+        # Fail-closed: if invariant imports are unavailable, block all proposals
+        if not _INVARIANT_IMPORTS_AVAILABLE:
+            raise ProposalValidationError(
+                "Invariant validator unavailable — fail-closed: proposals blocked until "
+                "constitutional invariant modules are properly installed"
+            )
         validator = self._get_invariant_validator()
         if validator is not None:
             affected_paths = list(request.proposed_changes.keys())

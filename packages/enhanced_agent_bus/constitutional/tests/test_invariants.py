@@ -241,14 +241,29 @@ class TestInvariantManifest:
         assert restored.invariant_hash == original.invariant_hash
         assert len(restored.invariants) == 1
 
-    def test_explicit_hash_preserved(self):
-        """If invariant_hash is provided explicitly, it should be kept."""
-        manifest = InvariantManifest(
+    def test_explicit_hash_mismatch_raises(self):
+        """If invariant_hash is provided but doesn't match content, raise ValueError."""
+        import pytest
+
+        with pytest.raises(ValueError, match="Invariant hash mismatch"):
+            InvariantManifest(
+                constitutional_hash="abc",
+                invariant_hash="wrong_hash_value",
+                invariants=[],
+            )
+
+    def test_explicit_hash_correct_accepted(self):
+        """If invariant_hash matches computed hash, it is accepted."""
+        # First compute the correct hash for empty invariants
+        m = InvariantManifest(constitutional_hash="abc", invariants=[])
+        correct_hash = m.invariant_hash
+        # Now create with explicit matching hash
+        m2 = InvariantManifest(
             constitutional_hash="abc",
-            invariant_hash="explicit_hash_value",
+            invariant_hash=correct_hash,
             invariants=[],
         )
-        assert manifest.invariant_hash == "explicit_hash_value"
+        assert m2.invariant_hash == correct_hash
 
 
 # ---------------------------------------------------------------------------
@@ -271,10 +286,11 @@ class TestMACISeparation:
         assert result.passed is True
         assert result.invariant_id == "INV-001"
 
-    def test_pass_empty_roles(self):
-        """Empty/missing roles should pass (no violation detected)."""
+    def test_fail_empty_roles(self):
+        """Empty/missing roles must fail — all three required for MACI verification."""
         result = check_maci_separation(state={}, change={})
-        assert result.passed is True
+        assert result.passed is False
+        assert "all three roles" in result.message.lower()
 
     def test_fail_proposer_equals_validator(self):
         result = check_maci_separation(

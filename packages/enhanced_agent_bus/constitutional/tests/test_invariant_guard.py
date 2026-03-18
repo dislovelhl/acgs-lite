@@ -32,7 +32,6 @@ def _make_manifest(invariants: list[InvariantDefinition] | None = None) -> Invar
     return InvariantManifest(
         manifest_version="1.0.0",
         constitutional_hash="cdd01ef066bc6cf2",
-        invariant_hash="test_hash",
         invariants=invariants or [],
     )
 

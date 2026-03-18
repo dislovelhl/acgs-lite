@@ -76,6 +76,15 @@ class EvolutionController:
         return list(self.dynamic_mutations.get(intent.value, []))
 
     def reset_mutations(self, intent: IntentType | None = None) -> None:
+        # Guard reset operations the same as write operations
+        if self._mutation_guard is not None:
+            target = "sdpc.mutations" if intent is None else f"sdpc.mutations.{intent.value}"
+            try:
+                self._mutation_guard.validate_mutation(target, "reset", "sdpc")
+            except (ConstitutionalInvariantViolation, Exception) as exc:
+                logger.warning("SDPC reset_mutations blocked by guard: %s", exc)
+                return
+
         if intent is None:
             for key in list(self.dynamic_mutations.keys()):
                 self.dynamic_mutations[key] = []

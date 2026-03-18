@@ -117,8 +117,13 @@ class InvariantManifest(BaseModel):
     invariants: list[InvariantDefinition] = Field(default_factory=list)
 
     def model_post_init(self, __context: Any) -> None:
-        if not self.invariant_hash:
-            self.invariant_hash = self._compute_hash()
+        computed = self._compute_hash()
+        if self.invariant_hash and self.invariant_hash != computed:
+            raise ValueError(
+                f"Invariant hash mismatch: provided={self.invariant_hash}, "
+                f"computed={computed}"
+            )
+        self.invariant_hash = computed
 
     def _compute_hash(self) -> str:
         content = json.dumps(
@@ -144,6 +149,17 @@ def check_maci_separation(
 
     ids = [proposer, validator, executor]
     non_empty = [i for i in ids if i]
+
+    # Require all three roles to be present for MACI to be verified
+    if len(non_empty) < 3:
+        return InvariantCheckResult(
+            passed=False,
+            invariant_id="INV-001",
+            message=(
+                "MACI separation requires all three roles (proposer, validator, "
+                "executor) to be present and non-empty"
+            ),
+        )
 
     if len(non_empty) != len(set(non_empty)):
         return InvariantCheckResult(
