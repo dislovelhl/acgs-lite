@@ -151,11 +151,14 @@ class InvariantClassifier:
 
         Matching rules:
         - Exact match: ``maci`` == ``maci``
-        - Prefix match: ``maci.role_assignment`` starts with ``maci.``
+        - Dot-prefix match: ``maci.role_assignment`` starts with ``maci.``
+        - Slash-prefix match: ``maci/enforcer.py`` starts with ``maci/``
         """
         if change_path == protected_path:
             return True
         if change_path.startswith(protected_path + "."):
+            return True
+        if change_path.startswith(protected_path + "/"):
             return True
         return False
 
@@ -175,6 +178,11 @@ class ProposalInvariantValidator:
     def __init__(self, manifest: InvariantManifest) -> None:
         self._manifest = manifest
         self._classifier = InvariantClassifier(manifest)
+
+    @property
+    def invariant_hash(self) -> str:
+        """Public accessor for the manifest's invariant hash."""
+        return self._manifest.invariant_hash
 
     async def validate_proposal(
         self,

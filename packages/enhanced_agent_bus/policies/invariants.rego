@@ -47,7 +47,7 @@ violation_fail_closed contains msg if {
 # Audit operations must be append-only (no delete, no update, no truncate).
 # OPTIMIZATION: O(1) set membership check for forbidden operations.
 # ---------------------------------------------------------------------------
-forbidden_audit_ops := {"delete", "update", "truncate"}
+forbidden_audit_ops := {"delete", "update", "truncate", "drop"}
 
 invariant_append_only_audit if {
 	not input.audit_operation in forbidden_audit_ops

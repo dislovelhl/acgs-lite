@@ -377,7 +377,7 @@ class AmendmentProposalEngine:
             impact_factors=impact_analysis.factors,
             impact_recommendation=impact_analysis.recommendation,
             requires_deliberation=impact_analysis.requires_deliberation,
-            invariant_hash=(validator._manifest.invariant_hash if validator is not None else None),
+            invariant_hash=(validator.invariant_hash if validator is not None else None),
             invariant_impact=(
                 invariant_classification.touched_invariant_ids
                 if invariant_classification is not None
