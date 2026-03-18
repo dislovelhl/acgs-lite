@@ -73,6 +73,11 @@ try:
 except ImportError:
     _get_opa_client = cast(object, lambda fail_closed=True: None)
 
+try:
+    from .opa_client import OPAClient as _OPAClient
+except ImportError:
+    _OPAClient = None  # type: ignore[assignment]
+
 
 get_opa_client = _get_opa_client
 
@@ -244,7 +249,15 @@ class MessageProcessor:
             try:
                 self._opa_client = get_opa_client()
             except Exception:
-                logger.debug("OPA client unavailable during message processor initialization")
+                if _OPAClient is not None:
+                    try:
+                        self._opa_client = _OPAClient()
+                    except Exception:
+                        logger.debug(
+                            "OPA client unavailable during message processor initialization"
+                        )
+                else:
+                    logger.debug("OPA client unavailable during message processor initialization")
         self._constitutional_verifier = kwargs.get("constitutional_verifier")
         # OPTIMIZATION: Increased cache size from 1000 to 10000 for enterprise scale
         # At 6,471 RPS, 1000 entries caused high cache churn (~seconds to evict)

@@ -12,17 +12,33 @@ from .approvals import ApprovalRequirementsValidator
 from .constitutional import ConstitutionalHashValidator
 from .governance import GovernanceDecisionValidator
 
+_MODULE = sys.modules[__name__]
+sys.modules.setdefault("enhanced_agent_bus.validators", _MODULE)
+sys.modules.setdefault("packages.enhanced_agent_bus.validators", _MODULE)
+
 
 def _load_legacy_validators_module() -> ModuleType | None:
     legacy_path = Path(__file__).resolve().parent.parent / "validators.py"
-    spec = importlib.util.spec_from_file_location(
-        "enhanced_agent_bus._legacy_validators", legacy_path
+    legacy_module_names = (
+        "enhanced_agent_bus._legacy_validators",
+        "packages.enhanced_agent_bus._legacy_validators",
     )
+
+    for module_name in legacy_module_names:
+        existing = sys.modules.get(module_name)
+        if existing is not None:
+            for alias in legacy_module_names:
+                sys.modules.setdefault(alias, existing)
+            return existing
+
+    spec = importlib.util.spec_from_file_location(legacy_module_names[0], legacy_path)
     if spec is None or spec.loader is None:
         return None
 
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
+    for alias in legacy_module_names[1:]:
+        sys.modules[alias] = module
     spec.loader.exec_module(module)
     return module
 

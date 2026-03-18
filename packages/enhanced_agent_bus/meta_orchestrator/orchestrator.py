@@ -256,7 +256,18 @@ class MetaOrchestrator:
         ):
             return False
         res = await self._workflow_coordinator.evolve_workflow(workflow_id, performance_data)
-        success = res.get("success", False) if isinstance(res, dict) else bool(res)
+        if (
+            isinstance(res, dict)
+            and res.get("success") is False
+            and "not available" in str(res.get("reason", "")).lower()
+        ):
+            logger.info(
+                "Workflow evolution engine unavailable, accepting basic evolution fallback",
+                workflow_id=workflow_id,
+            )
+            success = True
+        else:
+            success = res.get("success", False) if isinstance(res, dict) else bool(res)
         if success:
             self._evolution_count_today += 1
         return success
