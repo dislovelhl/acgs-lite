@@ -34,6 +34,15 @@ from .diff_engine import ConstitutionalDiffEngine, SemanticDiff
 from .storage import ConstitutionalStorageService  # type: ignore[attr-defined]
 from .version_model import ConstitutionalVersion
 
+# Import invariant validation
+try:
+    from .invariant_guard import ConstitutionalInvariantViolation, ProposalInvariantValidator
+    from .invariants import get_default_manifest
+except ImportError:
+    ProposalInvariantValidator = None  # type: ignore[assignment,misc]
+    ConstitutionalInvariantViolation = None  # type: ignore[assignment,misc]
+    get_default_manifest = None  # type: ignore[assignment]
+
 # Import MACI enforcement
 try:
     from ..maci_enforcement import MACIAction, MACIEnforcer, MACIRole
@@ -212,6 +221,7 @@ class AmendmentProposalEngine:
         self.audit_client = audit_client
         self.enable_maci = enable_maci
         self.enable_audit = enable_audit
+        self._invariant_validator: ProposalInvariantValidator | None = None  # type: ignore[valid-type]
 
         # Initialize audit client if enabled
         if self.enable_audit and self.audit_client is None:
@@ -226,6 +236,18 @@ class AmendmentProposalEngine:
             f"[{CONSTITUTIONAL_HASH}] AmendmentProposalEngine initialized "
             f"(MACI: {self.enable_maci}, Audit: {self.enable_audit})"
         )
+
+    def _get_invariant_validator(self) -> ProposalInvariantValidator | None:  # type: ignore[valid-type]
+        """Lazy-initialize the invariant validator."""
+        if self._invariant_validator is None and ProposalInvariantValidator is not None:
+            try:
+                manifest = get_default_manifest()
+                self._invariant_validator = ProposalInvariantValidator(manifest)
+            except _PROPOSAL_ENGINE_OPERATION_ERRORS as e:
+                logger.warning(
+                    f"[{CONSTITUTIONAL_HASH}] Failed to initialize invariant validator: {e}"
+                )
+        return self._invariant_validator
 
     async def create_proposal(self, request: ProposalRequest) -> ProposalResponse:
         """Create a new constitutional amendment proposal.
@@ -252,6 +274,18 @@ class AmendmentProposalEngine:
             f"[{CONSTITUTIONAL_HASH}] Creating amendment proposal from "
             f"agent {request.proposer_agent_id}"
         )
+
+        # Step 0: Invariant validation — check before any other processing
+        invariant_classification = None
+        validator = self._get_invariant_validator()
+        if validator is not None:
+            affected_paths = list(request.proposed_changes.keys())
+            try:
+                invariant_classification = await validator.validate_proposal(
+                    request.proposed_changes, affected_paths
+                )
+            except ConstitutionalInvariantViolation as exc:
+                raise ProposalValidationError(f"Constitutional invariant violation: {exc}") from exc
 
         # Step 1: MACI enforcement - only LEGISLATIVE role can propose amendments
         if self.enable_maci and self.maci_enforcer:
@@ -343,10 +377,28 @@ class AmendmentProposalEngine:
             impact_factors=impact_analysis.factors,
             impact_recommendation=impact_analysis.recommendation,
             requires_deliberation=impact_analysis.requires_deliberation,
+            invariant_hash=(validator._manifest.invariant_hash if validator is not None else None),
+            invariant_impact=(
+                invariant_classification.touched_invariant_ids
+                if invariant_classification is not None
+                and invariant_classification.touches_invariants
+                else []
+            ),
+            requires_refoundation=(
+                invariant_classification.requires_refoundation
+                if invariant_classification is not None
+                else False
+            ),
             metadata={
                 **request.metadata,
                 "constitutional_hash": CONSTITUTIONAL_HASH,
                 "validation_results": validation_results,
+                **(
+                    {"invariant_note": invariant_classification.reason}
+                    if invariant_classification is not None
+                    and invariant_classification.touches_invariants
+                    else {}
+                ),
             },
         )
 

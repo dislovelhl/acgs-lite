@@ -132,6 +132,19 @@ class AmendmentProposal(BaseModel):
     rejection_reason: str | None = Field(None, description="Reason for rejection (if rejected)")
     rollback_reason: str | None = Field(None, description="Reason for rollback (if rolled back)")
 
+    # Invariant tracking
+    invariant_hash: str | None = Field(
+        None, description="Hash of the invariant manifest at proposal time"
+    )
+    invariant_impact: list[str] = Field(
+        default_factory=list,
+        description="List of invariant IDs touched by this proposal",
+    )
+    requires_refoundation: bool = Field(
+        default=False,
+        description="Whether this proposal requires constitutional refoundation",
+    )
+
     # Metadata and audit trail
     metadata: JSONDict = Field(
         default_factory=lambda: {"constitutional_hash": CONSTITUTIONAL_HASH},
