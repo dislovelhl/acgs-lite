@@ -23,7 +23,6 @@ Usage:
 """
 
 import sys
-
 from typing import TypeVar, cast
 
 try:
