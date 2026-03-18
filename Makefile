@@ -1,10 +1,14 @@
-.PHONY: help setup test test-quick test-lite test-bus lint format clean
+.PHONY: help setup test test-quick test-lite test-bus test-gw lint format clean bench codex-doctor
+
+PYTHON ?= python3
+PIP ?= $(PYTHON) -m pip
 
 help:
 	@echo "ACGS — Advanced Constitutional Governance System"
 	@echo ""
 	@echo "  Setup:"
 	@echo "    make setup        Install deps + pre-commit"
+	@echo "    make codex-doctor  Run repo-local Codex readiness checks"
 	@echo ""
 	@echo "  Testing:"
 	@echo "    make test         Full test suite"
@@ -23,30 +27,30 @@ help:
 
 # === Setup ===
 setup:
-	pip install -e ".[dev,test]"
-	pip install -e packages/acgs-lite[dev]
-	pip install -e packages/enhanced_agent_bus[dev]
+	$(PIP) install -e ".[dev,test]"
+	$(PIP) install -e packages/acgs-lite[dev]
+	$(PIP) install -e packages/enhanced_agent_bus[dev]
 	pre-commit install
 
 # === Testing ===
 test:
-	python -m pytest --import-mode=importlib -v
+	$(PYTHON) -m pytest --import-mode=importlib -v
 
 test-quick:
-	python -m pytest --import-mode=importlib -m "not slow" -x -v
+	$(PYTHON) -m pytest --import-mode=importlib -m "not slow" -x -v
 
 test-lite:
-	python -m pytest packages/acgs-lite/tests/ -v --import-mode=importlib
+	$(PYTHON) -m pytest packages/acgs-lite/tests/ -v --import-mode=importlib
 
 test-bus:
-	python -m pytest packages/enhanced_agent_bus/tests/ -v --import-mode=importlib
+	$(PYTHON) -m pytest packages/enhanced_agent_bus/tests/ -v --import-mode=importlib
 
 test-gw:
-	python -m pytest src/core/services/api_gateway/tests/ -v --import-mode=importlib
+	$(PYTHON) -m pytest src/core/services/api_gateway/tests/ -v --import-mode=importlib
 
 # === Code Quality ===
 lint:
-	ruff check .
+	ruff check --exclude .codex-home .
 	mypy src/ packages/ --ignore-missing-imports
 
 format:
@@ -55,7 +59,11 @@ format:
 
 # === Benchmarks ===
 bench:
-	cd packages/acgs-lite && python -m pytest tests/ -m benchmark -v --import-mode=importlib
+	cd packages/acgs-lite && $(PYTHON) -m pytest tests/ -m benchmark -v --import-mode=importlib
+
+# === Codex Bootstrap ===
+codex-doctor:
+	bash ./.agents/skills/acgs-codex-bootstrap/scripts/codex-doctor.sh
 
 # === Cleanup ===
 clean:

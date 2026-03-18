@@ -21,18 +21,19 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH
 with contextlib.suppress(ImportError):
     import tests
     import tests.core
-    import tests.unit
+    import tests.unit  # noqa: F401
 
 # Preload pydantic modules to fix litellm compatibility
 
 # Now safe to import litellm
 # litellm optional
 
-# Avoid import-time service_auth development-secret warnings during tests.
+# Avoid import-time service_auth configuration errors during tests.
 os.environ.setdefault(
     "ACGS2_SERVICE_SECRET",
     "test-service-secret-key-that-is-at-least-32-characters-long",
 )
+os.environ.setdefault("SERVICE_JWT_ALGORITHM", "HS256")
 
 # Constitutional hash verification
 CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH

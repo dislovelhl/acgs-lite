@@ -79,7 +79,7 @@ members = ["packages/enhanced_agent_bus", "packages/acgs-lite"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-exclude = ["examples", "node_modules", "__pycache__"]
+exclude = [".codex-home", "examples", "node_modules", "__pycache__"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "BLE", "S", "RUF", "C90"]
@@ -109,7 +109,7 @@ known-first-party = ["src", "packages", "acgs_lite", "enhanced_agent_bus"]
 python_version = "3.11"
 strict = true
 ignore_missing_imports = true
-exclude = ["build", "dist", ".venv", "tests"]
+exclude = ["build", "dist", ".codex-home", ".venv", "tests"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"
