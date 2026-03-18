@@ -19,7 +19,10 @@ except ImportError:
     torch = None  # type: ignore[assignment]
     nn = None  # type: ignore[assignment]
     TORCH_AVAILABLE = False
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 try:
     from acgs2_perf import sinkhorn_knopp as rust_sinkhorn

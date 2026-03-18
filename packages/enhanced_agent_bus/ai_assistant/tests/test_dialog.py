@@ -12,11 +12,14 @@ sys.path.insert(
     0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 )
 
-from packages.enhanced_agent_bus.ai_assistant.context import (
+# Import centralized constitutional hash with fallback
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.ai_assistant.context import (
     ConversationContext,
     ConversationState,
 )
-from packages.enhanced_agent_bus.ai_assistant.dialog import (
+from enhanced_agent_bus.ai_assistant.dialog import (
     ActionType,
     ConversationFlow,
     DialogAction,
@@ -25,10 +28,7 @@ from packages.enhanced_agent_bus.ai_assistant.dialog import (
     FlowNode,
     RuleBasedDialogPolicy,
 )
-from packages.enhanced_agent_bus.ai_assistant.nlu import Entity, Intent, NLUResult
-
-# Import centralized constitutional hash with fallback
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.ai_assistant.nlu import Entity, Intent, NLUResult
 
 
 class TestDialogAction:

@@ -21,7 +21,7 @@ import pytest
 # Module-level setup: inject fake middleware classes so that legacy_wrapper.py
 # can be imported at all.
 # ---------------------------------------------------------------------------
-from packages.enhanced_agent_bus.pipeline.middleware import BaseMiddleware, MiddlewareConfig
+from enhanced_agent_bus.pipeline.middleware import BaseMiddleware, MiddlewareConfig
 
 
 class _FakeCacheMiddleware(BaseMiddleware):
@@ -98,14 +98,14 @@ _fake_verification_module.SDPCVerifier = _FakeSDPCVerifier
 
 # Inject into sys.modules BEFORE legacy_wrapper is imported
 sys.modules.setdefault(
-    "packages.enhanced_agent_bus.middlewares.verification", _fake_verification_module
+    "enhanced_agent_bus.middlewares.verification", _fake_verification_module
 )
 
 # Also inject missing AIGuardrailsConfig to prevent errors from the security middleware path
-_fake_security_module = sys.modules.get("packages.enhanced_agent_bus.middlewares.security")
+_fake_security_module = sys.modules.get("enhanced_agent_bus.middlewares.security")
 
 # Patch the middlewares package to expose the fake middleware classes
-import packages.enhanced_agent_bus.middlewares as _mw_pkg  # noqa: E402
+import enhanced_agent_bus.middlewares as _mw_pkg  # noqa: E402
 
 _mw_pkg.CacheMiddleware = _FakeCacheMiddleware  # type: ignore[attr-defined]
 _mw_pkg.MetricsMiddleware = _FakeMetricsMiddleware  # type: ignore[attr-defined]
@@ -113,7 +113,7 @@ _mw_pkg.StrategyMiddleware = _FakeStrategyMiddleware  # type: ignore[attr-define
 _mw_pkg.VerificationMiddleware = _FakeVerificationMiddleware  # type: ignore[attr-defined]
 
 # Also make sure SecurityMiddleware is available from the package
-from packages.enhanced_agent_bus.middlewares.security import (
+from enhanced_agent_bus.middlewares.security import (
     SecurityMiddleware as _RealSecurityMW,  # noqa: E402
 )
 
@@ -182,49 +182,49 @@ class TestLegacyPipelineProcessErrors:
     """Tests for the LEGACY_PIPELINE_PROCESS_ERRORS constant tuple."""
 
     def test_error_tuple_contains_runtime_error(self):
-        from packages.enhanced_agent_bus.pipeline.legacy_wrapper import (
+        from enhanced_agent_bus.pipeline.legacy_wrapper import (
             LEGACY_PIPELINE_PROCESS_ERRORS,
         )
 
         assert RuntimeError in LEGACY_PIPELINE_PROCESS_ERRORS
 
     def test_error_tuple_contains_value_error(self):
-        from packages.enhanced_agent_bus.pipeline.legacy_wrapper import (
+        from enhanced_agent_bus.pipeline.legacy_wrapper import (
             LEGACY_PIPELINE_PROCESS_ERRORS,
         )
 
         assert ValueError in LEGACY_PIPELINE_PROCESS_ERRORS
 
     def test_error_tuple_contains_type_error(self):
-        from packages.enhanced_agent_bus.pipeline.legacy_wrapper import (
+        from enhanced_agent_bus.pipeline.legacy_wrapper import (
             LEGACY_PIPELINE_PROCESS_ERRORS,
         )
 
         assert TypeError in LEGACY_PIPELINE_PROCESS_ERRORS
 
     def test_error_tuple_contains_key_error(self):
-        from packages.enhanced_agent_bus.pipeline.legacy_wrapper import (
+        from enhanced_agent_bus.pipeline.legacy_wrapper import (
             LEGACY_PIPELINE_PROCESS_ERRORS,
         )
 
         assert KeyError in LEGACY_PIPELINE_PROCESS_ERRORS
 
     def test_error_tuple_contains_attribute_error(self):
-        from packages.enhanced_agent_bus.pipeline.legacy_wrapper import (
+        from enhanced_agent_bus.pipeline.legacy_wrapper import (
             LEGACY_PIPELINE_PROCESS_ERRORS,
         )
 
         assert AttributeError in LEGACY_PIPELINE_PROCESS_ERRORS
 
     def test_error_tuple_is_tuple(self):
-        from packages.enhanced_agent_bus.pipeline.legacy_wrapper import (
+        from enhanced_agent_bus.pipeline.legacy_wrapper import (
             LEGACY_PIPELINE_PROCESS_ERRORS,
         )
 
         assert isinstance(LEGACY_PIPELINE_PROCESS_ERRORS, tuple)
 
     def test_error_tuple_length(self):
-        from packages.enhanced_agent_bus.pipeline.legacy_wrapper import (
+        from enhanced_agent_bus.pipeline.legacy_wrapper import (
             LEGACY_PIPELINE_PROCESS_ERRORS,
         )
 
@@ -245,10 +245,10 @@ def mock_router():
 def processor_isolated(mock_router):
     """MessageProcessor in isolated mode with mocked router."""
     with patch(
-        "packages.enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
+        "enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
         return_value=mock_router,
     ):
-        from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+        from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
         proc = MessageProcessor(isolated_mode=True)
     proc._router = mock_router
@@ -259,10 +259,10 @@ def processor_isolated(mock_router):
 def processor_non_isolated(mock_router):
     """MessageProcessor in non-isolated mode with mocked router."""
     with patch(
-        "packages.enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
+        "enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
         return_value=mock_router,
     ):
-        from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+        from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
         proc = MessageProcessor(isolated_mode=False)
     proc._router = mock_router
@@ -280,10 +280,10 @@ class TestMessageProcessorInit:
     def _build(self, **kwargs):
         mock_router = _make_mock_router()
         with patch(
-            "packages.enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
+            "enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
             return_value=mock_router,
         ):
-            from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+            from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
             proc = MessageProcessor(**kwargs)
         proc._router = mock_router
@@ -345,31 +345,31 @@ class TestMessageProcessorInit:
     def test_router_is_created(self):
         mock_router = _make_mock_router()
         with patch(
-            "packages.enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
+            "enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
             return_value=mock_router,
         ) as mock_cls:
-            from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+            from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
             MessageProcessor(isolated_mode=True)
         mock_cls.assert_called_once()
 
     def test_use_dynamic_policy_off_when_policy_client_unavailable(self):
         with patch(
-            "packages.enhanced_agent_bus.pipeline.legacy_wrapper.POLICY_CLIENT_AVAILABLE", False
+            "enhanced_agent_bus.pipeline.legacy_wrapper.POLICY_CLIENT_AVAILABLE", False
         ):
             proc = self._build(use_dynamic_policy=True, isolated_mode=False)
         assert proc._use_dynamic_policy is False
 
     def test_use_dynamic_policy_on_when_available_non_isolated(self):
         with patch(
-            "packages.enhanced_agent_bus.pipeline.legacy_wrapper.POLICY_CLIENT_AVAILABLE", True
+            "enhanced_agent_bus.pipeline.legacy_wrapper.POLICY_CLIENT_AVAILABLE", True
         ):
             proc = self._build(use_dynamic_policy=True, isolated_mode=False)
         assert proc._use_dynamic_policy is True
 
     def test_use_dynamic_policy_off_in_isolated_mode_even_if_available(self):
         with patch(
-            "packages.enhanced_agent_bus.pipeline.legacy_wrapper.POLICY_CLIENT_AVAILABLE", True
+            "enhanced_agent_bus.pipeline.legacy_wrapper.POLICY_CLIENT_AVAILABLE", True
         ):
             proc = self._build(use_dynamic_policy=True, isolated_mode=True)
         assert proc._use_dynamic_policy is False
@@ -390,7 +390,7 @@ class TestBuildPipelineConfig:
 
     def _build_and_get_config(self, **kwargs):
         """Build a MessageProcessor and extract the PipelineConfig passed to the router."""
-        from packages.enhanced_agent_bus.pipeline.router import PipelineConfig
+        from enhanced_agent_bus.pipeline.router import PipelineConfig
 
         captured = {}
 
@@ -407,10 +407,10 @@ class TestBuildPipelineConfig:
                 return getattr(self._router, item)
 
         with patch(
-            "packages.enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
+            "enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
             new=CapturingRouter,
         ):
-            from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+            from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
             proc = MessageProcessor(**kwargs)
 
@@ -523,7 +523,7 @@ class TestBuildPipelineConfig:
 
     def test_non_isolated_opa_verifier_set_when_dynamic_policy_on(self):
         with patch(
-            "packages.enhanced_agent_bus.pipeline.legacy_wrapper.POLICY_CLIENT_AVAILABLE", True
+            "enhanced_agent_bus.pipeline.legacy_wrapper.POLICY_CLIENT_AVAILABLE", True
         ):
             _, cfg = self._build_and_get_config(isolated_mode=False, use_dynamic_policy=True)
         ver_mws = [
@@ -548,7 +548,7 @@ class TestBuildPipelineConfig:
         assert strategy_mws[0]._strategy is None
 
     def test_is_pipeline_config_instance(self):
-        from packages.enhanced_agent_bus.pipeline.router import PipelineConfig
+        from enhanced_agent_bus.pipeline.router import PipelineConfig
 
         _, cfg = self._build_and_get_config(isolated_mode=True)
         assert isinstance(cfg, PipelineConfig)
@@ -565,10 +565,10 @@ class TestMessageProcessorProcess:
     def _build(self, **kwargs):
         mock_router = _make_mock_router()
         with patch(
-            "packages.enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
+            "enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
             return_value=mock_router,
         ):
-            from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+            from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
             proc = MessageProcessor(**kwargs)
         proc._router = mock_router
@@ -680,10 +680,10 @@ class TestHandlerRegistration:
     def _build(self):
         mock_router = _make_mock_router()
         with patch(
-            "packages.enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
+            "enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
             return_value=mock_router,
         ):
-            from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+            from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
             proc = MessageProcessor(isolated_mode=True)
         proc._router = mock_router
@@ -738,10 +738,10 @@ class TestProcessedCountProperty:
     def _build(self, router_processed=0, router_failed=0):
         mock_router = _make_mock_router(processed=router_processed, failed=router_failed)
         with patch(
-            "packages.enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
+            "enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
             return_value=mock_router,
         ):
-            from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+            from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
             proc = MessageProcessor(isolated_mode=True)
         proc._router = mock_router
@@ -783,10 +783,10 @@ class TestFailedCountProperty:
     def _build(self, router_processed=0, router_failed=0):
         mock_router = _make_mock_router(processed=router_processed, failed=router_failed)
         with patch(
-            "packages.enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
+            "enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
             return_value=mock_router,
         ):
-            from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+            from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
             proc = MessageProcessor(isolated_mode=True)
         proc._router = mock_router
@@ -827,10 +827,10 @@ class TestProcessingStrategyProperty:
     def _build(self):
         mock_router = _make_mock_router()
         with patch(
-            "packages.enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
+            "enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
             return_value=mock_router,
         ):
-            from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+            from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
             proc = MessageProcessor(isolated_mode=True)
         proc._router = mock_router
@@ -856,10 +856,10 @@ class TestOpaClientProperty:
     def _build(self, isolated_mode=True):
         mock_router = _make_mock_router()
         with patch(
-            "packages.enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
+            "enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
             return_value=mock_router,
         ):
-            from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+            from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
             proc = MessageProcessor(isolated_mode=isolated_mode)
         proc._router = mock_router
@@ -873,7 +873,7 @@ class TestOpaClientProperty:
         proc = self._build(isolated_mode=False)
         fake_client = MagicMock()
         with patch(
-            "packages.enhanced_agent_bus.pipeline.legacy_wrapper.get_opa_client",
+            "enhanced_agent_bus.pipeline.legacy_wrapper.get_opa_client",
             return_value=fake_client,
         ):
             result = proc.opa_client
@@ -888,7 +888,7 @@ class TestOpaClientProperty:
             return MagicMock()
 
         with patch(
-            "packages.enhanced_agent_bus.pipeline.legacy_wrapper.get_opa_client",
+            "enhanced_agent_bus.pipeline.legacy_wrapper.get_opa_client",
             side_effect=counting_getter,
         ):
             _ = proc.opa_client
@@ -899,7 +899,7 @@ class TestOpaClientProperty:
     def test_isolated_opa_client_never_calls_get_opa_client(self):
         proc = self._build(isolated_mode=True)
         with patch(
-            "packages.enhanced_agent_bus.pipeline.legacy_wrapper.get_opa_client"
+            "enhanced_agent_bus.pipeline.legacy_wrapper.get_opa_client"
         ) as mock_getter:
             _ = proc.opa_client
         mock_getter.assert_not_called()
@@ -918,10 +918,10 @@ class TestGetMetrics:
             processed=router_processed, failed=router_failed, avg_latency_ms=avg_latency_ms
         )
         with patch(
-            "packages.enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
+            "enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
             return_value=mock_router,
         ):
-            from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+            from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
             proc = MessageProcessor(isolated_mode=True)
         proc._router = mock_router
@@ -992,21 +992,21 @@ class TestMessageProcessorIntegration:
     """Integration tests: real MessageProcessor construction & behaviour."""
 
     def test_real_construction_isolated_mode(self):
-        from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+        from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
         proc = MessageProcessor(isolated_mode=True)
         assert proc._isolated_mode is True
         assert proc._router is not None
 
     def test_real_construction_default_args(self):
-        from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+        from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
         proc = MessageProcessor()
         assert proc._isolated_mode is False
         assert proc._router is not None
 
     def test_real_get_metrics_structure(self):
-        from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+        from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
         proc = MessageProcessor(isolated_mode=True)
         m = proc.get_metrics()
@@ -1015,45 +1015,45 @@ class TestMessageProcessorIntegration:
         assert "avg_latency_ms" in m
 
     def test_real_processed_count_initial_zero(self):
-        from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+        from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
         proc = MessageProcessor(isolated_mode=True)
         assert proc.processed_count == 0
 
     def test_real_failed_count_initial_zero(self):
-        from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+        from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
         proc = MessageProcessor(isolated_mode=True)
         assert proc.failed_count == 0
 
     def test_real_processing_strategy_is_none(self):
-        from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+        from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
         proc = MessageProcessor(isolated_mode=True)
         assert proc.processing_strategy is None
 
     def test_real_opa_client_isolated_none(self):
-        from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+        from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
         proc = MessageProcessor(isolated_mode=True)
         assert proc.opa_client is None
 
     def test_real_register_handler_noop(self):
-        from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+        from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
         proc = MessageProcessor(isolated_mode=True)
         proc.register_handler("hello", lambda x: x)
 
     def test_real_unregister_handler_noop(self):
-        from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+        from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
         proc = MessageProcessor(isolated_mode=True)
         proc.unregister_handler("hello")
 
     async def test_real_process_isolated_with_mock_router_result(self):
         """End-to-end process() call with real construction, patched router.process."""
-        from packages.enhanced_agent_bus.models import AgentMessage
-        from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+        from enhanced_agent_bus.models import AgentMessage
+        from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
         proc = MessageProcessor(isolated_mode=True)
         mock_result = _make_validation_result_mock(is_valid=True)
@@ -1065,8 +1065,8 @@ class TestMessageProcessorIntegration:
         assert proc._processed_count == 1
 
     async def test_real_process_error_increments_failed(self):
-        from packages.enhanced_agent_bus.models import AgentMessage
-        from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+        from enhanced_agent_bus.models import AgentMessage
+        from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
         proc = MessageProcessor(isolated_mode=True)
         proc._router.process = AsyncMock(side_effect=ValueError("oops"))
@@ -1089,10 +1089,10 @@ class TestEdgeCases:
     def _build(self, **kwargs):
         mock_router = _make_mock_router()
         with patch(
-            "packages.enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
+            "enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
             return_value=mock_router,
         ):
-            from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+            from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
             proc = MessageProcessor(**kwargs)
         proc._router = mock_router
@@ -1101,10 +1101,10 @@ class TestEdgeCases:
     def test_metrics_combined_state(self):
         mock_router = _make_mock_router(processed=3, failed=2)
         with patch(
-            "packages.enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
+            "enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
             return_value=mock_router,
         ):
-            from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+            from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
             proc = MessageProcessor(isolated_mode=True)
         proc._router = mock_router
@@ -1152,10 +1152,10 @@ class TestEdgeCases:
     def test_processed_count_property_and_get_metrics_agree(self):
         mock_router = _make_mock_router(processed=5, failed=0)
         with patch(
-            "packages.enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
+            "enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
             return_value=mock_router,
         ):
-            from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+            from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
             proc = MessageProcessor(isolated_mode=True)
         proc._router = mock_router
@@ -1166,10 +1166,10 @@ class TestEdgeCases:
     def test_failed_count_property_and_get_metrics_agree(self):
         mock_router = _make_mock_router(processed=0, failed=4)
         with patch(
-            "packages.enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
+            "enhanced_agent_bus.pipeline.legacy_wrapper.PipelineMessageRouter",
             return_value=mock_router,
         ):
-            from packages.enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
+            from enhanced_agent_bus.pipeline.legacy_wrapper import MessageProcessor
 
             proc = MessageProcessor(isolated_mode=True)
         proc._router = mock_router

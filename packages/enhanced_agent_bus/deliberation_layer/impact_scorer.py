@@ -10,7 +10,7 @@ Provides unified impact scoring with support for:
 """
 
 import hashlib
-from typing import Union, cast
+from typing import cast
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -22,7 +22,7 @@ except ImportError:
     np = None  # type: ignore[assignment]
     NUMPY_AVAILABLE = False
 
-from packages.enhanced_agent_bus.governance_constants import (
+from enhanced_agent_bus.governance_constants import (
     IMPACT_CRITICAL_FLOOR,
     IMPACT_HIGH_SEMANTIC_FLOOR,
     IMPACT_WEIGHT_CONTEXT,
@@ -34,19 +34,26 @@ from packages.enhanced_agent_bus.governance_constants import (
 )
 
 try:
-    from packages.enhanced_agent_bus.adaptive_governance.dtmc_learner import DTMCLearner
+    from enhanced_agent_bus.adaptive_governance.dtmc_learner import DTMCLearner
 
     DTMC_AVAILABLE = True
 except ImportError:
     DTMCLearner = None  # type: ignore[assignment,misc]
     DTMC_AVAILABLE = False
-from packages.enhanced_agent_bus.impact_scorer_infra.models import (
+from src.core.shared.cache.manager import TieredCacheConfig, TieredCacheManager
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.impact_scorer_infra.models import (
     ImpactVector,
     ScoringConfig,
     ScoringMethod,
     ScoringResult,
 )
-from packages.enhanced_agent_bus.impact_scorer_infra.service import (
+from enhanced_agent_bus.impact_scorer_infra.service import (
     CONSTITUTIONAL_HASH,
     ImpactScoringConfig,
     calculate_message_impact,
@@ -59,11 +66,9 @@ from packages.enhanced_agent_bus.impact_scorer_infra.service import (
     reset_impact_scorer,
     reset_profiling,
 )
-from src.core.shared.cache.manager import TieredCacheConfig, TieredCacheManager
-from src.core.shared.types import JSONDict
 
 try:
-    from packages.enhanced_agent_bus.deliberation_layer.tensorrt_optimizer import (
+    from enhanced_agent_bus.deliberation_layer.tensorrt_optimizer import (
         TensorRTOptimizer,
     )
 except ImportError:
@@ -138,10 +143,10 @@ class ImpactScorer:
         self._loco_client: object | None = None
         if enable_loco_operator:
             try:
-                from packages.enhanced_agent_bus.deliberation_layer.loco_operator_client import (
+                from enhanced_agent_bus.deliberation_layer.loco_operator_client import (
                     LocoOperatorGovernanceClient,
                 )
-                from packages.enhanced_agent_bus.llm_adapters.config import (
+                from enhanced_agent_bus.llm_adapters.config import (
                     LocoOperatorAdapterConfig,
                 )
 
@@ -436,7 +441,7 @@ class ImpactScorer:
         override_rate = self._overrides / self._total_evaluations
         return 1.0 - override_rate
 
-    def get_spec_to_artifact_metrics(self) -> dict[str, Union[int, float]]:
+    def get_spec_to_artifact_metrics(self) -> dict[str, int | float]:
         """Get detailed Spec-to-Artifact metrics for observability.
 
         Returns:

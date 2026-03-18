@@ -38,12 +38,12 @@ from ..rate_limiting import (
 router = APIRouter()
 
 if TYPE_CHECKING:
-    from packages.enhanced_agent_bus.models import BatchRequest, BatchResponse
+    from enhanced_agent_bus.models import BatchRequest, BatchResponse
 
     from ...batch_processor import BatchMessageProcessor
 else:
     try:
-        from packages.enhanced_agent_bus.models import BatchRequest, BatchResponse
+        from enhanced_agent_bus.models import BatchRequest, BatchResponse
     except ImportError:
         from ...fallback_stubs import BatchRequest, BatchResponse
 

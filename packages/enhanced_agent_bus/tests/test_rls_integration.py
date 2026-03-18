@@ -11,7 +11,11 @@ import tempfile
 
 import pytest
 import pytest_asyncio
-from packages.enhanced_agent_bus.multi_tenancy.rls import (
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from src.core.shared.database.session import Base
+
+from enhanced_agent_bus.multi_tenancy.rls import (
     ACGS2_RLS_TABLES,
     ALLOWED_RLS_TABLES,
     CONSTITUTIONAL_HASH,
@@ -31,9 +35,6 @@ from packages.enhanced_agent_bus.multi_tenancy.rls import (
     validate_sql_identifier,
     validate_table_name,
 )
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from src.core.shared.database.session import Base
 
 # =============================================================================
 # Test Fixtures

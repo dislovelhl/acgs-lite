@@ -9,21 +9,22 @@ and audit trail export capabilities.
 import csv
 from datetime import UTC, datetime, timezone
 from io import StringIO
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from enhanced_agent_bus.observability.structured_logging import get_logger
-
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
 except ImportError:
-    # Fallback for standalone usage
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
-
+    CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.json_utils import dumps as json_dumps
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from .storage import ConstitutionalStorageService  # type: ignore[attr-defined]
 from .version_model import ConstitutionalStatus, ConstitutionalVersion

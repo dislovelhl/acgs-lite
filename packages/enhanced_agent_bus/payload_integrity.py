@@ -13,8 +13,17 @@ import hashlib
 import hmac
 import json
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.structured_logging import get_logger
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.structured_logging import get_logger  # noqa: E402
+except ImportError:
+    import logging  # noqa: E402
+
+    def get_logger(name: str) -> logging.Logger:
+        return logging.getLogger(name)
 
 logger = get_logger(__name__)
 

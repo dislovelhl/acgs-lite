@@ -54,11 +54,21 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 logger = get_logger(__name__)
 
 # Phase 5: Supported PQC algorithms are derived from the central registry
-from src.core.services.policy_registry.app.services.pqc_algorithm_registry import (  # noqa: E402
-    APPROVED_ALGORITHMS as _APPROVED_ALGORITHMS,
-)
+try:
+    from src.core.services.policy_registry.app.services.pqc_algorithm_registry import (
+        APPROVED_ALGORITHMS as _APPROVED_ALGORITHMS,
+    )
 
-SUPPORTED_PQC_ALGORITHMS = sorted([v.value for v in _APPROVED_ALGORITHMS])
+    SUPPORTED_PQC_ALGORITHMS = sorted([v.value for v in _APPROVED_ALGORITHMS])
+except (ImportError, ModuleNotFoundError):
+    SUPPORTED_PQC_ALGORITHMS = [
+        "ML-DSA-44",
+        "ML-DSA-65",
+        "ML-DSA-87",
+        "ML-KEM-512",
+        "ML-KEM-768",
+        "ML-KEM-1024",
+    ]
 
 PQC_VALIDATION_OPERATION_ERRORS = (
     AttributeError,
@@ -80,7 +90,7 @@ async def _get_mode_safe(config: Any) -> str:
     """Get enforcement mode from config, failing safe to 'strict'."""
     try:
         return str(await config.get_mode())
-    except Exception as exc:
+    except PQC_VALIDATION_OPERATION_ERRORS as exc:
         logger.warning(
             "Failed to fetch PQC enforcement mode; failing safe to strict", error=str(exc)
         )

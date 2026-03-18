@@ -4,7 +4,10 @@ Exceptions for Batch Processing Middleware.
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from ...pipeline.exceptions import PipelineException
 

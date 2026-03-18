@@ -14,7 +14,14 @@ import sys
 from datetime import UTC, datetime, timedelta
 from typing import Protocol
 
-from src.core.shared.types import JSONDict, JSONList
+try:
+    from src.core.shared.types import (
+        JSONDict,
+        JSONList,
+    )  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+    JSONList = list  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

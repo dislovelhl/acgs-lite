@@ -23,7 +23,13 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
-from src.core.shared.structured_logging import get_logger
+try:
+    from src.core.shared.structured_logging import get_logger  # noqa: E402
+except ImportError:
+    import logging  # noqa: E402
+
+    def get_logger(name: str) -> logging.Logger:
+        return logging.getLogger(name)
 
 from enhanced_agent_bus.drift_detector import (
     DriftAlert,

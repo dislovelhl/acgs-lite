@@ -6,6 +6,11 @@ Comprehensive tests to improve z3_adapter.py coverage from 33.7% to 80%+.
 Tests cover: Z3AdapterConfig, Z3Request, Z3Response, Z3Adapter, convenience functions.
 """
 
+import pytest
+
+pytest.importorskip("acl_adapters.z3_adapter")
+
+
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 

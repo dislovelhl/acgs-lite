@@ -3,6 +3,11 @@ Tests for PACAR multi-turn support.
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
+import pytest
+
+pytest.importorskip("enhanced_agent_bus.sdpc")
+
+
 import os
 from unittest.mock import AsyncMock, MagicMock, patch
 

@@ -6,9 +6,9 @@ This package provides the FastAPI-based API for the Enhanced Agent Bus.
 All exports are maintained for backward compatibility with the original api.py module.
 
 Usage:
-    from packages.enhanced_agent_bus.api import app, create_app
+    from enhanced_agent_bus.api import app, create_app
     # or for backward compatibility:
-    from packages.enhanced_agent_bus.api import (
+    from enhanced_agent_bus.api import (
         RATE_LIMIT_REQUESTS_PER_MINUTE,
         check_batch_rate_limit,
         validate_item_sizes,

@@ -17,10 +17,11 @@ import time
 from unittest.mock import patch
 
 import pytest
-from packages.enhanced_agent_bus.observability.capacity_metrics.models import (
+
+from enhanced_agent_bus.observability.capacity_metrics.models import (
     LatencyPercentiles,
 )
-from packages.enhanced_agent_bus.observability.capacity_metrics.trackers import (
+from enhanced_agent_bus.observability.capacity_metrics.trackers import (
     LatencyTracker,
     SlidingWindowCounter,
 )
@@ -591,13 +592,13 @@ class TestLatencyTrackerThreadSafety:
 
 class TestModuleExports:
     def test_all_exports_present(self):
-        import packages.enhanced_agent_bus.observability.capacity_metrics.trackers as mod
+        import enhanced_agent_bus.observability.capacity_metrics.trackers as mod
 
         assert "SlidingWindowCounter" in mod.__all__
         assert "LatencyTracker" in mod.__all__
 
     def test_classes_importable(self):
-        from packages.enhanced_agent_bus.observability.capacity_metrics.trackers import (
+        from enhanced_agent_bus.observability.capacity_metrics.trackers import (
             LatencyTracker,
             SlidingWindowCounter,
         )

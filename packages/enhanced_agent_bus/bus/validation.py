@@ -8,15 +8,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 if TYPE_CHECKING:
     from ..components import GovernanceValidator
 
-from packages.enhanced_agent_bus.models import AgentMessage
-from packages.enhanced_agent_bus.validators import ValidationResult
+from enhanced_agent_bus.models import AgentMessage
+from enhanced_agent_bus.validators import ValidationResult
 
 from ..security.tenant_validator import TenantValidator
 from ..security_helpers import normalize_tenant_id, validate_tenant_consistency

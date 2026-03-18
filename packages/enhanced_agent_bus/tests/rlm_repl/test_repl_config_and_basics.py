@@ -10,21 +10,21 @@ import pytest
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
-REPL_MODULE = "packages.enhanced_agent_bus.rlm_repl"
+REPL_MODULE = "enhanced_agent_bus.rlm_repl"
 
 
 class TestModuleLevelConstants:
     """Verify module-level constants are defined correctly."""
 
     def test_safe_builtins_is_set(self):
-        from packages.enhanced_agent_bus.rlm_repl import SAFE_BUILTINS
+        from enhanced_agent_bus.rlm_repl import SAFE_BUILTINS
 
         assert isinstance(SAFE_BUILTINS, set)
         assert "len" in SAFE_BUILTINS
         assert "str" in SAFE_BUILTINS
 
     def test_blocked_patterns_is_list(self):
-        from packages.enhanced_agent_bus.rlm_repl import BLOCKED_PATTERNS
+        from enhanced_agent_bus.rlm_repl import BLOCKED_PATTERNS
 
         assert isinstance(BLOCKED_PATTERNS, list)
         assert len(BLOCKED_PATTERNS) > 0
@@ -32,12 +32,12 @@ class TestModuleLevelConstants:
         assert any("exec" in p for p in BLOCKED_PATTERNS)
 
     def test_hard_timeout_constant(self):
-        from packages.enhanced_agent_bus.rlm_repl import HARD_EXECUTION_TIMEOUT_SECONDS
+        from enhanced_agent_bus.rlm_repl import HARD_EXECUTION_TIMEOUT_SECONDS
 
         assert HARD_EXECUTION_TIMEOUT_SECONDS == 5.0
 
     def test_repl_execution_errors_tuple(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPL_EXECUTION_ERRORS
+        from enhanced_agent_bus.rlm_repl import REPL_EXECUTION_ERRORS
 
         assert RuntimeError in REPL_EXECUTION_ERRORS
         assert ValueError in REPL_EXECUTION_ERRORS
@@ -53,7 +53,7 @@ class TestIsReplEnabled:
             patch(f"{REPL_MODULE}.IS_PRODUCTION", True),
             patch(f"{REPL_MODULE}.ENABLE_RLM_REPL", True),
         ):
-            from packages.enhanced_agent_bus.rlm_repl import is_repl_enabled
+            from enhanced_agent_bus.rlm_repl import is_repl_enabled
 
             assert is_repl_enabled() is False
 
@@ -62,7 +62,7 @@ class TestIsReplEnabled:
             patch(f"{REPL_MODULE}.IS_PRODUCTION", True),
             patch(f"{REPL_MODULE}.ENABLE_RLM_REPL", False),
         ):
-            from packages.enhanced_agent_bus.rlm_repl import is_repl_enabled
+            from enhanced_agent_bus.rlm_repl import is_repl_enabled
 
             assert is_repl_enabled() is False
 
@@ -72,7 +72,7 @@ class TestIsReplEnabled:
             patch(f"{REPL_MODULE}.ENABLE_RLM_REPL", True),
             caplog.at_level(logging.WARNING, logger=REPL_MODULE),
         ):
-            from packages.enhanced_agent_bus.rlm_repl import is_repl_enabled
+            from enhanced_agent_bus.rlm_repl import is_repl_enabled
 
             result = is_repl_enabled()
             assert result is False
@@ -83,7 +83,7 @@ class TestIsReplEnabled:
             patch(f"{REPL_MODULE}.IS_PRODUCTION", False),
             patch(f"{REPL_MODULE}.ENABLE_RLM_REPL", True),
         ):
-            from packages.enhanced_agent_bus.rlm_repl import is_repl_enabled
+            from enhanced_agent_bus.rlm_repl import is_repl_enabled
 
             assert is_repl_enabled() is True
 
@@ -92,14 +92,14 @@ class TestIsReplEnabled:
             patch(f"{REPL_MODULE}.IS_PRODUCTION", False),
             patch(f"{REPL_MODULE}.ENABLE_RLM_REPL", False),
         ):
-            from packages.enhanced_agent_bus.rlm_repl import is_repl_enabled
+            from enhanced_agent_bus.rlm_repl import is_repl_enabled
 
             assert is_repl_enabled() is False
 
 
 class TestREPLDisabledError:
     def test_error_attributes(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLDisabledError
+        from enhanced_agent_bus.rlm_repl import REPLDisabledError
 
         err = REPLDisabledError("disabled")
         assert err.http_status_code == 403
@@ -107,29 +107,30 @@ class TestREPLDisabledError:
         assert "disabled" in str(err)
 
     def test_is_acgs_base_error(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLDisabledError
         from src.core.shared.errors.exceptions import ACGSBaseError
+
+        from enhanced_agent_bus.rlm_repl import REPLDisabledError
 
         assert issubclass(REPLDisabledError, ACGSBaseError)
 
 
 class TestREPLSecurityLevel:
     def test_enum_values(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLSecurityLevel
+        from enhanced_agent_bus.rlm_repl import REPLSecurityLevel
 
         assert REPLSecurityLevel.STRICT.value == "strict"
         assert REPLSecurityLevel.STANDARD.value == "standard"
         assert REPLSecurityLevel.PERMISSIVE.value == "permissive"
 
     def test_is_str_subclass(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLSecurityLevel
+        from enhanced_agent_bus.rlm_repl import REPLSecurityLevel
 
         assert isinstance(REPLSecurityLevel.STRICT, str)
 
 
 class TestREPLConfig:
     def test_default_values(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLConfig, REPLSecurityLevel
+        from enhanced_agent_bus.rlm_repl import REPLConfig, REPLSecurityLevel
 
         cfg = REPLConfig()
         assert cfg.security_level == REPLSecurityLevel.STANDARD
@@ -149,14 +150,15 @@ class TestREPLConfig:
         assert cfg.max_operations_per_hour == 500
 
     def test_constitutional_hash_default(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLConfig
         from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+        from enhanced_agent_bus.rlm_repl import REPLConfig
 
         cfg = REPLConfig()
         assert cfg.constitutional_hash == CONSTITUTIONAL_HASH
 
     def test_custom_values(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLConfig, REPLSecurityLevel
+        from enhanced_agent_bus.rlm_repl import REPLConfig, REPLSecurityLevel
 
         cfg = REPLConfig(
             security_level=REPLSecurityLevel.STRICT,

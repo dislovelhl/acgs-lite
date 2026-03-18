@@ -21,7 +21,7 @@ import pytest
 # Module-under-test: import with fallback for test-runner path variants
 # ---------------------------------------------------------------------------
 try:
-    from packages.enhanced_agent_bus.pqc_enforcement_config import (
+    from enhanced_agent_bus.pqc_enforcement_config import (
         EnforcementModeConfigService,
         StorageUnavailableError,
     )

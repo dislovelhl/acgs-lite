@@ -17,7 +17,7 @@ from typing import (
 if TYPE_CHECKING:
     from .validators import ValidationResult as ValidationResultType
 
-from packages.enhanced_agent_bus.bus_types import JSONDict, MetadataDict
+from enhanced_agent_bus.bus_types import JSONDict, MetadataDict
 
 try:
     from src.core.shared.types import AgentInfo
@@ -25,9 +25,9 @@ except ImportError:
     AgentInfo = JSONDict  # type: ignore[misc, assignment]
 
 try:
-    from .models import AgentMessage
+    from .core_models import AgentMessage
 except ImportError:
-    from models import AgentMessage  # type: ignore[import-untyped]
+    from enhanced_agent_bus.core_models import AgentMessage  # type: ignore[import-untyped]
 
 
 @runtime_checkable

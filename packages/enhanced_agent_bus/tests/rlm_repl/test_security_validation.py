@@ -7,11 +7,11 @@ import ast
 import logging
 
 import pytest
-from packages.enhanced_agent_bus.tests.rlm_repl.conftest import _make_repl
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.tests.rlm_repl.conftest import _make_repl
 
-REPL_MODULE = "packages.enhanced_agent_bus.rlm_repl"
+REPL_MODULE = "enhanced_agent_bus.rlm_repl"
 
 
 class TestValidateCode:
@@ -42,7 +42,7 @@ class TestValidateCode:
         assert len(issues) > 0
 
     def test_import_allowed_when_flag_set(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLConfig
+        from enhanced_agent_bus.rlm_repl import REPLConfig
 
         config = REPLConfig(allow_imports=True)
         repl = _make_repl(config)

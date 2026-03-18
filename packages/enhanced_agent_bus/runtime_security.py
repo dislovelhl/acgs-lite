@@ -21,9 +21,12 @@ from datetime import UTC, datetime
 from enum import Enum
 from typing import ClassVar
 
-from packages.enhanced_agent_bus.bus_types import JSONDict
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
+from enhanced_agent_bus.bus_types import JSONDict
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 try:

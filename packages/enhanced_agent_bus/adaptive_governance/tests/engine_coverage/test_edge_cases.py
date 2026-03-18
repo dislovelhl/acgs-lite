@@ -21,10 +21,10 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH as SHARED_CONSTITUTION
 
 _MLFLOW_PATCH = "mlflow.set_tracking_uri"
 _IMPACT_MLFLOW = (
-    "packages.enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
+    "enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
 )
 _THRESH_MLFLOW = (
-    "packages.enhanced_agent_bus.adaptive_governance.threshold_manager."
+    "enhanced_agent_bus.adaptive_governance.threshold_manager."
     "AdaptiveThresholds._initialize_mlflow"
 )
 
@@ -37,7 +37,7 @@ CONST_HASH = SHARED_CONSTITUTIONAL_HASH
 
 
 def _make_features(risk_score: float = 0.3, confidence: float = 0.9):
-    from packages.enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
+    from enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
 
     return ImpactFeatures(
         message_length=50,
@@ -54,7 +54,7 @@ def _make_features(risk_score: float = 0.3, confidence: float = 0.9):
 
 
 def _make_decision(risk_score: float = 0.3, action_allowed: bool = True):
-    from packages.enhanced_agent_bus.adaptive_governance.models import (
+    from enhanced_agent_bus.adaptive_governance.models import (
         GovernanceDecision,
         ImpactLevel,
     )
@@ -77,32 +77,32 @@ def engine():
         patch(_IMPACT_MLFLOW),
         patch(_THRESH_MLFLOW),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "FEEDBACK_HANDLER_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "DRIFT_MONITORING_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "ONLINE_LEARNING_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "AB_TESTING_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "ANOMALY_MONITORING_AVAILABLE",
             False,
         ),
     ):
-        from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+        from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
 
@@ -143,37 +143,37 @@ class TestAdditionalBranchCoverage:
             patch(_IMPACT_MLFLOW),
             patch(_THRESH_MLFLOW),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "FEEDBACK_HANDLER_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "DRIFT_MONITORING_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "get_drift_detector",
                 side_effect=RuntimeError("drift init fail"),
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ONLINE_LEARNING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "AB_TESTING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ANOMALY_MONITORING_AVAILABLE",
                 False,
             ),
         ):
-            from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+            from enhanced_agent_bus.adaptive_governance.governance_engine import (
                 AdaptiveGovernanceEngine,
             )
 
@@ -186,45 +186,45 @@ class TestAdditionalBranchCoverage:
             patch(_IMPACT_MLFLOW),
             patch(_THRESH_MLFLOW),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "FEEDBACK_HANDLER_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "DRIFT_MONITORING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ONLINE_LEARNING_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine.RIVER_AVAILABLE",
+                "enhanced_agent_bus.adaptive_governance.governance_engine.RIVER_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "get_online_learning_pipeline",
                 side_effect=RuntimeError("river init fail"),
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine.ModelType",
+                "enhanced_agent_bus.adaptive_governance.governance_engine.ModelType",
                 MagicMock(),
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "AB_TESTING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ANOMALY_MONITORING_AVAILABLE",
                 False,
             ),
         ):
-            from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+            from enhanced_agent_bus.adaptive_governance.governance_engine import (
                 AdaptiveGovernanceEngine,
             )
 
@@ -240,46 +240,46 @@ class TestAdditionalBranchCoverage:
             patch(_IMPACT_MLFLOW),
             patch(_THRESH_MLFLOW),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "FEEDBACK_HANDLER_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "DRIFT_MONITORING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ONLINE_LEARNING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "AB_TESTING_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "get_ab_test_router",
                 return_value=mock_router,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ShadowPolicyExecutor",
                 return_value=mock_shadow,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine.AB_TEST_SPLIT",
+                "enhanced_agent_bus.adaptive_governance.governance_engine.AB_TEST_SPLIT",
                 0.1,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ANOMALY_MONITORING_AVAILABLE",
                 False,
             ),
         ):
-            from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+            from enhanced_agent_bus.adaptive_governance.governance_engine import (
                 AdaptiveGovernanceEngine,
             )
 
@@ -298,7 +298,7 @@ class TestAdditionalBranchCoverage:
         # Remove __dict__ from stats so the `hasattr(stats, '__dict__')` check is False
         engine.river_model = mock_model
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.ONLINE_LEARNING_AVAILABLE
         try:
@@ -323,7 +323,7 @@ class TestAdditionalBranchCoverage:
         mock_os.FAILURE = "FAILURE"
         mock_event_cls = MagicMock()
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig_available = ge_mod.FEEDBACK_HANDLER_AVAILABLE
         orig_ft = ge_mod.FeedbackType
@@ -375,7 +375,7 @@ class TestAdditionalBranchCoverage:
         engine.impact_scorer.assess_impact = AsyncMock(return_value=features)
         engine.threshold_manager.get_adaptive_threshold = MagicMock(return_value=0.5)
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig_ab = ge_mod.AB_TESTING_AVAILABLE
         orig_cohort_type = ge_mod.CohortType
@@ -415,7 +415,7 @@ class TestAdditionalBranchCoverage:
 
     def test_run_scheduled_drift_no_drift(self, engine):
         """Branch: drift detection runs, dataset_drift=False → 'No significant drift'."""
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         mock_drift_status = MagicMock()
 
@@ -451,7 +451,7 @@ class TestAdditionalBranchCoverage:
 
     def test_run_scheduled_drift_detection_status_not_success(self, engine):
         """Branch: drift status != SUCCESS → warning logged."""
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         mock_drift_status = MagicMock()
         mock_drift_status.SUCCESS = "SUCCESS"
@@ -488,7 +488,7 @@ class TestAdditionalBranchCoverage:
     async def test_load_historical_data_exception(self, engine):
         """Branch: _load_historical_data exception is caught and warned."""
         with patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine.logger"
+            "enhanced_agent_bus.adaptive_governance.governance_engine.logger"
         ) as mock_logger:
             mock_logger.info.side_effect = [RuntimeError("load fail"), None, None]
             await engine._load_historical_data()
@@ -497,7 +497,7 @@ class TestAdditionalBranchCoverage:
     async def test_save_model_state_exception(self, engine):
         """Branch: _save_model_state exception is caught and logged as error."""
         with patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine.logger"
+            "enhanced_agent_bus.adaptive_governance.governance_engine.logger"
         ) as mock_logger:
             mock_logger.info.side_effect = [RuntimeError("save fail"), None]
             await engine._save_model_state()
@@ -508,7 +508,7 @@ class TestAdditionalBranchCoverage:
         engine.decision_history = [_make_decision() for _ in range(3)]
 
         with patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine.pd",
+            "enhanced_agent_bus.adaptive_governance.governance_engine.pd",
             None,
             create=True,
         ):

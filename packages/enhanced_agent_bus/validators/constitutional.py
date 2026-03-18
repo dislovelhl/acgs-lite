@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 try:
     constants_module = import_module("src.core.shared.constants")
     _constitutional_hash_default = str(constants_module.CONSTITUTIONAL_HASH)
-except Exception:
+except (ImportError, AttributeError):
     _constitutional_hash_default = "cdd01ef066bc6cf2"
 
 CONSTITUTIONAL_HASH: str = _constitutional_hash_default

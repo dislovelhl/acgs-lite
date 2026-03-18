@@ -14,7 +14,11 @@ from unittest.mock import MagicMock, patch
 import httpx
 import pytest
 from fastapi import FastAPI
-from packages.enhanced_agent_bus.policy_copilot.api import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+from src.core.shared.errors.exceptions import ValidationError
+from src.core.shared.security.auth import UserClaims, get_current_user
+
+from enhanced_agent_bus.policy_copilot.api import (
     FeedbackRequest,
     FeedbackResponse,
     HealthResponse,
@@ -24,7 +28,7 @@ from packages.enhanced_agent_bus.policy_copilot.api import (
     get_rego_generator,
     router,
 )
-from packages.enhanced_agent_bus.policy_copilot.models import (
+from enhanced_agent_bus.policy_copilot.models import (
     PolicyEntity,
     PolicyEntityType,
     PolicyResult,
@@ -33,9 +37,6 @@ from packages.enhanced_agent_bus.policy_copilot.models import (
     TestResult,
     ValidationResult,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.errors.exceptions import ValidationError
-from src.core.shared.security.auth import UserClaims, get_current_user
 
 # ---------------------------------------------------------------------------
 # App fixture
@@ -164,7 +165,7 @@ class TestDependencyProviders:
     """Test the get_* singleton factory functions."""
 
     def test_get_nlp_engine_creates_instance(self) -> None:
-        import packages.enhanced_agent_bus.policy_copilot.api as api_mod
+        import enhanced_agent_bus.policy_copilot.api as api_mod
 
         original = api_mod._nlp_engine
         try:
@@ -178,7 +179,7 @@ class TestDependencyProviders:
             api_mod._nlp_engine = original
 
     def test_get_rego_generator_creates_instance(self) -> None:
-        import packages.enhanced_agent_bus.policy_copilot.api as api_mod
+        import enhanced_agent_bus.policy_copilot.api as api_mod
 
         original = api_mod._rego_generator
         try:
@@ -191,7 +192,7 @@ class TestDependencyProviders:
             api_mod._rego_generator = original
 
     def test_get_policy_validator_creates_instance(self) -> None:
-        import packages.enhanced_agent_bus.policy_copilot.api as api_mod
+        import enhanced_agent_bus.policy_copilot.api as api_mod
 
         original = api_mod._policy_validator
         try:
@@ -204,7 +205,7 @@ class TestDependencyProviders:
             api_mod._policy_validator = original
 
     def test_get_nlp_engine_returns_existing(self) -> None:
-        import packages.enhanced_agent_bus.policy_copilot.api as api_mod
+        import enhanced_agent_bus.policy_copilot.api as api_mod
 
         mock_engine = MagicMock()
         original = api_mod._nlp_engine
@@ -223,11 +224,11 @@ class TestDependencyProviders:
 
 class TestHealthCheck:
     def test_health_check_returns_200(self, client) -> None:
-        response = client.get("/copilot/health")
+        response = client.get("/api/v1/policy-copilot/health")
         assert response.status_code == 200
 
     def test_health_check_body(self, client) -> None:
-        response = client.get("/copilot/health")
+        response = client.get("/api/v1/policy-copilot/health")
         data = response.json()
         assert data["status"] == "healthy"
         assert data["version"] == "1.0.0"
@@ -237,7 +238,7 @@ class TestHealthCheck:
         assert "policy_validator" in data["components"]
 
     def test_health_response_components_are_true(self, client) -> None:
-        response = client.get("/copilot/health")
+        response = client.get("/api/v1/policy-copilot/health")
         data = response.json()
         for key, val in data["components"].items():
             assert val is True, f"Component {key} should be True"
@@ -268,7 +269,7 @@ class TestGeneratePolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/generate",
+                "/api/v1/policy-copilot/generate",
                 json={"description": "Only admins can delete resources"},
             )
             assert response.status_code == 200
@@ -288,7 +289,7 @@ class TestGeneratePolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/generate",
+                "/api/v1/policy-copilot/generate",
                 json={"description": "Some policy description here"},
             )
             assert response.status_code == 200
@@ -309,7 +310,7 @@ class TestGeneratePolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/generate",
+                "/api/v1/policy-copilot/generate",
                 json={"description": "Default allow test policy here"},
             )
             assert response.status_code == 200
@@ -330,7 +331,7 @@ class TestGeneratePolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/generate",
+                "/api/v1/policy-copilot/generate",
                 json={
                     "description": "Only admins can delete resources",
                     "template_id": "ownership",
@@ -353,7 +354,7 @@ class TestGeneratePolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/generate",
+                "/api/v1/policy-copilot/generate",
                 json={
                     "description": "Only admins can delete resources",
                     "template_id": "nonexistent",
@@ -374,7 +375,7 @@ class TestGeneratePolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/generate",
+                "/api/v1/policy-copilot/generate",
                 json={"description": "Only admins can delete"},
             )
             assert response.status_code == 400
@@ -392,7 +393,7 @@ class TestGeneratePolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/generate",
+                "/api/v1/policy-copilot/generate",
                 json={"description": "Only admins can delete"},
             )
             assert response.status_code == 500
@@ -412,7 +413,7 @@ class TestGeneratePolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/generate",
+                "/api/v1/policy-copilot/generate",
                 json={
                     "description": "Only admins can view reports",
                     "context": "enterprise",
@@ -435,7 +436,7 @@ class TestGeneratePolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/generate",
+                "/api/v1/policy-copilot/generate",
                 json={
                     "description": "Only admins can view reports",
                     "tenant_id": "tenant-456",
@@ -447,12 +448,12 @@ class TestGeneratePolicy:
 
     def test_generate_invalid_body_returns_422(self, app: FastAPI) -> None:
         client = SyncASGIClient(app, raise_server_exceptions=False)
-        response = client.post("/copilot/generate", json={})
+        response = client.post("/api/v1/policy-copilot/generate", json={})
         assert response.status_code == 422
 
     def test_generate_description_too_short_returns_422(self, app: FastAPI) -> None:
         client = SyncASGIClient(app, raise_server_exceptions=False)
-        response = client.post("/copilot/generate", json={"description": "   "})
+        response = client.post("/api/v1/policy-copilot/generate", json={"description": "   "})
         assert response.status_code == 422
 
     @pytest.mark.parametrize(
@@ -472,7 +473,7 @@ class TestGeneratePolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/generate",
+                "/api/v1/policy-copilot/generate",
                 json={"description": "Only admins can delete"},
             )
             assert response.status_code == 500
@@ -509,7 +510,7 @@ class TestExplainPolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/explain",
+                "/api/v1/policy-copilot/explain",
                 json={"policy": "package authz\ndefault allow = false"},
             )
             assert response.status_code == 200
@@ -527,7 +528,7 @@ class TestExplainPolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/explain",
+                "/api/v1/policy-copilot/explain",
                 json={"policy": "package authz\ndefault allow = true", "detail_level": "simple"},
             )
             assert response.status_code == 200
@@ -545,7 +546,7 @@ class TestExplainPolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/explain",
+                "/api/v1/policy-copilot/explain",
                 json={"policy": "package authz"},
             )
             assert response.status_code == 500
@@ -566,7 +567,7 @@ class TestExplainPolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/explain",
+                "/api/v1/policy-copilot/explain",
                 json={"policy": "package authz\ndefault allow = false"},
             )
             assert response.status_code == 200
@@ -588,7 +589,7 @@ class TestExplainPolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/explain",
+                "/api/v1/policy-copilot/explain",
                 json={"policy": "package authz"},
             )
             assert response.status_code == 200
@@ -607,7 +608,7 @@ class TestExplainPolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/explain",
+                "/api/v1/policy-copilot/explain",
                 json={"policy": "package authz"},
             )
             assert response.status_code == 500
@@ -632,7 +633,7 @@ class TestImprovePolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/improve",
+                "/api/v1/policy-copilot/improve",
                 json={
                     "policy": "package authz\ndefault allow = false",
                     "feedback": "Add MFA requirement",
@@ -655,7 +656,7 @@ class TestImprovePolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/improve",
+                "/api/v1/policy-copilot/improve",
                 json={
                     "policy": "package authz\ndefault allow = false",
                     "feedback": "looks good",
@@ -676,7 +677,7 @@ class TestImprovePolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/improve",
+                "/api/v1/policy-copilot/improve",
                 json={"policy": "package authz", "feedback": "improve this"},
             )
             assert response.status_code == 500
@@ -693,7 +694,7 @@ class TestImprovePolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/improve",
+                "/api/v1/policy-copilot/improve",
                 json={"policy": "package authz", "feedback": "improve this"},
             )
             assert response.status_code == 500
@@ -702,7 +703,7 @@ class TestImprovePolicy:
 
     def test_improve_missing_fields_returns_422(self, app: FastAPI) -> None:
         client = SyncASGIClient(app, raise_server_exceptions=False)
-        response = client.post("/copilot/improve", json={"policy": "package authz"})
+        response = client.post("/api/v1/policy-copilot/improve", json={"policy": "package authz"})
         assert response.status_code == 422
 
 
@@ -722,7 +723,7 @@ class TestValidatePolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/validate",
+                "/api/v1/policy-copilot/validate",
                 json={"policy": "package authz\ndefault allow = false"},
             )
             assert response.status_code == 200
@@ -741,7 +742,7 @@ class TestValidatePolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/validate",
+                "/api/v1/policy-copilot/validate",
                 json={"policy": "allow { true }"},
             )
             assert response.status_code == 200
@@ -759,7 +760,7 @@ class TestValidatePolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/validate",
+                "/api/v1/policy-copilot/validate",
                 json={"policy": "package authz"},
             )
             assert response.status_code == 500
@@ -778,7 +779,7 @@ class TestValidatePolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/validate",
+                "/api/v1/policy-copilot/validate",
                 json={"policy": "package authz"},
             )
             assert response.status_code == 500
@@ -787,7 +788,7 @@ class TestValidatePolicy:
 
     def test_validate_missing_policy_field_returns_422(self, app: FastAPI) -> None:
         client = SyncASGIClient(app, raise_server_exceptions=False)
-        response = client.post("/copilot/validate", json={})
+        response = client.post("/api/v1/policy-copilot/validate", json={})
         assert response.status_code == 422
 
 
@@ -814,7 +815,7 @@ class TestTestPolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/test",
+                "/api/v1/policy-copilot/test",
                 json={
                     "policy": "package authz\ndefault allow = false",
                     "test_input": {"user": {"role": "admin"}, "action": "read"},
@@ -840,7 +841,7 @@ class TestTestPolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/test",
+                "/api/v1/policy-copilot/test",
                 json={
                     "policy": "package authz\ndefault allow = false",
                     "test_input": {"user": {"role": "guest"}, "action": "delete"},
@@ -859,7 +860,7 @@ class TestTestPolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/test",
+                "/api/v1/policy-copilot/test",
                 json={
                     "policy": "package authz",
                     "test_input": {"user": {}},
@@ -879,7 +880,7 @@ class TestTestPolicy:
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/test",
+                "/api/v1/policy-copilot/test",
                 json={"policy": "package authz", "test_input": {}},
             )
             assert response.status_code == 500
@@ -888,7 +889,7 @@ class TestTestPolicy:
 
     def test_test_policy_missing_fields_returns_422(self, app: FastAPI) -> None:
         client = SyncASGIClient(app, raise_server_exceptions=False)
-        response = client.post("/copilot/test", json={"policy": "package authz"})
+        response = client.post("/api/v1/policy-copilot/test", json={"policy": "package authz"})
         assert response.status_code == 422
 
 
@@ -906,7 +907,7 @@ class TestGetTemplates:
         app.dependency_overrides[get_rego_generator] = _async_override(mock_gen)
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
-            response = client.get("/copilot/templates")
+            response = client.get("/api/v1/policy-copilot/templates")
             assert response.status_code == 200
             data = response.json()
             assert data["total"] == 2
@@ -921,7 +922,7 @@ class TestGetTemplates:
         app.dependency_overrides[get_rego_generator] = _async_override(mock_gen)
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
-            response = client.get("/copilot/templates?category=access_control")
+            response = client.get("/api/v1/policy-copilot/templates?category=access_control")
             assert response.status_code == 200
             data = response.json()
             assert data["total"] == 1
@@ -936,7 +937,7 @@ class TestGetTemplates:
         app.dependency_overrides[get_rego_generator] = _async_override(mock_gen)
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
-            response = client.get("/copilot/templates")
+            response = client.get("/api/v1/policy-copilot/templates")
             assert response.status_code == 200
             assert response.json()["total"] == 0
         finally:
@@ -949,7 +950,7 @@ class TestGetTemplates:
         app.dependency_overrides[get_rego_generator] = _async_override(mock_gen)
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
-            response = client.get("/copilot/templates")
+            response = client.get("/api/v1/policy-copilot/templates")
             assert response.status_code == 500
             assert response.json()["detail"]  # sanitized error detail present
         finally:
@@ -965,14 +966,14 @@ class TestGetTemplates:
         app.dependency_overrides[get_rego_generator] = _async_override(mock_gen)
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
-            response = client.get("/copilot/templates")
+            response = client.get("/api/v1/policy-copilot/templates")
             assert response.status_code == 500
         finally:
             app.dependency_overrides.clear()
 
     def test_get_templates_invalid_category_returns_422(self, app: FastAPI) -> None:
         client = SyncASGIClient(app, raise_server_exceptions=False)
-        response = client.get("/copilot/templates?category=invalid_category")
+        response = client.get("/api/v1/policy-copilot/templates?category=invalid_category")
         assert response.status_code == 422
 
 
@@ -990,7 +991,7 @@ class TestGetTemplate:
         app.dependency_overrides[get_rego_generator] = _async_override(mock_gen)
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
-            response = client.get("/copilot/templates/ownership")
+            response = client.get("/api/v1/policy-copilot/templates/ownership")
             assert response.status_code == 200
             data = response.json()
             assert data["id"] == "ownership"
@@ -1004,7 +1005,7 @@ class TestGetTemplate:
         app.dependency_overrides[get_rego_generator] = _async_override(mock_gen)
         try:
             client = SyncASGIClient(app, raise_server_exceptions=False)
-            response = client.get("/copilot/templates/nonexistent")
+            response = client.get("/api/v1/policy-copilot/templates/nonexistent")
             assert response.status_code == 404
             assert "nonexistent" in response.json()["detail"]
         finally:
@@ -1019,7 +1020,7 @@ class TestGetTemplate:
 class TestSubmitFeedback:
     def test_feedback_thumbs_up(self, client) -> None:
         response = client.post(
-            "/copilot/feedback",
+            "/api/v1/policy-copilot/feedback",
             json={"policy_id": "policy-abc", "feedback": "thumbs_up"},
         )
         assert response.status_code == 200
@@ -1029,7 +1030,7 @@ class TestSubmitFeedback:
 
     def test_feedback_thumbs_down(self, client) -> None:
         response = client.post(
-            "/copilot/feedback",
+            "/api/v1/policy-copilot/feedback",
             json={
                 "policy_id": "policy-xyz",
                 "feedback": "thumbs_down",
@@ -1043,39 +1044,39 @@ class TestSubmitFeedback:
 
     def test_feedback_without_comment(self, client) -> None:
         response = client.post(
-            "/copilot/feedback",
+            "/api/v1/policy-copilot/feedback",
             json={"policy_id": "pol-001", "feedback": "thumbs_up"},
         )
         assert response.status_code == 200
 
     def test_feedback_invalid_type_returns_422(self, client) -> None:
         response = client.post(
-            "/copilot/feedback",
+            "/api/v1/policy-copilot/feedback",
             json={"policy_id": "pol-001", "feedback": "meh"},
         )
         assert response.status_code == 422
 
     def test_feedback_missing_policy_id_returns_422(self, client) -> None:
         response = client.post(
-            "/copilot/feedback",
+            "/api/v1/policy-copilot/feedback",
             json={"feedback": "thumbs_up"},
         )
         assert response.status_code == 422
 
     def test_feedback_missing_feedback_field_returns_422(self, client) -> None:
         response = client.post(
-            "/copilot/feedback",
+            "/api/v1/policy-copilot/feedback",
             json={"policy_id": "pol-001"},
         )
         assert response.status_code == 422
 
     def test_feedback_error_path(self, app: FastAPI) -> None:
         """Test the except block by patching logger.info to raise."""
-        with patch("packages.enhanced_agent_bus.policy_copilot.api.logger") as mock_logger:
+        with patch("enhanced_agent_bus.policy_copilot.api.logger") as mock_logger:
             mock_logger.info.side_effect = RuntimeError("log failed")
             client = SyncASGIClient(app, raise_server_exceptions=False)
             response = client.post(
-                "/copilot/feedback",
+                "/api/v1/policy-copilot/feedback",
                 json={"policy_id": "pol-001", "feedback": "thumbs_up"},
             )
             # RuntimeError is in API_ERRORS, so returns 500

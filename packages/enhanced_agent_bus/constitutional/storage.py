@@ -7,9 +7,11 @@ and PostgreSQL persistence. Supports atomic version transitions with locking.
 Delegates to specialized modules in .storage_infra.
 """
 
-from typing import Optional
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

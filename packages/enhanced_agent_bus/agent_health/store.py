@@ -13,14 +13,14 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from packages.enhanced_agent_bus.agent_health.models import (
+from redis.asyncio import Redis
+from src.core.shared.types import AgentID
+
+from enhanced_agent_bus.agent_health.models import (
     AgentHealthRecord,
     HealingAction,
     HealingOverride,
 )
-from redis.asyncio import Redis
-from src.core.shared.types import AgentID
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)

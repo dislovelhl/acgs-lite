@@ -46,18 +46,19 @@ sys.modules.setdefault("redis.asyncio", _redis_asyncio_mod)
 
 # ── Stub: httpx ──────────────────────────────────────────────────────────────
 import httpx  # noqa: E402
-from packages.enhanced_agent_bus.constitutional.amendment_model import (  # noqa: E402
+
+from enhanced_agent_bus.constitutional.amendment_model import (  # noqa: E402
     AmendmentProposal,
     AmendmentStatus,
 )
-from packages.enhanced_agent_bus.constitutional.degradation_detector import (  # noqa: E402
+from enhanced_agent_bus.constitutional.degradation_detector import (  # noqa: E402
     DegradationReport,
     DegradationSeverity,
     MetricDegradationAnalysis,
     SignificanceLevel,
     TimeWindow,
 )
-from packages.enhanced_agent_bus.constitutional.rollback_engine import (  # noqa: E402
+from enhanced_agent_bus.constitutional.rollback_engine import (  # noqa: E402
     RollbackEngineError,
     RollbackReason,
     RollbackSagaActivities,
@@ -65,7 +66,6 @@ from packages.enhanced_agent_bus.constitutional.rollback_engine import (  # noqa
     create_rollback_saga,
     rollback_amendment,
 )
-
 from enhanced_agent_bus.observability.structured_logging import get_logger  # noqa: E402
 
 # ── Import the module under test ─────────────────────────────────────────────
@@ -81,7 +81,7 @@ def _make_degradation_report(
     rollback_recommended: bool = False,
 ) -> DegradationReport:
     """Build a minimal DegradationReport for testing."""
-    from packages.enhanced_agent_bus.constitutional.metrics_collector import (
+    from enhanced_agent_bus.constitutional.metrics_collector import (
         GovernanceMetricsSnapshot,
     )
 

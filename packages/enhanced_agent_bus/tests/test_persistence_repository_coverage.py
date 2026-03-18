@@ -11,7 +11,8 @@ from datetime import UTC, datetime, timedelta, timezone
 from uuid import UUID, uuid4
 
 import pytest
-from packages.enhanced_agent_bus.persistence.models import (
+
+from enhanced_agent_bus.persistence.models import (
     CheckpointData,
     EventType,
     StepStatus,
@@ -22,7 +23,7 @@ from packages.enhanced_agent_bus.persistence.models import (
     WorkflowStatus,
     WorkflowStep,
 )
-from packages.enhanced_agent_bus.persistence.repository import (
+from enhanced_agent_bus.persistence.repository import (
     InMemoryWorkflowRepository,
     WorkflowRepository,
 )

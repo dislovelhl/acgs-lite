@@ -1,4 +1,7 @@
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 """
 ACGS-2 MCP Server - Model Context Protocol Integration for Constitutional AI Governance.

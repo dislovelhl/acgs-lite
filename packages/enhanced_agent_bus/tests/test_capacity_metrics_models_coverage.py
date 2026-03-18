@@ -16,7 +16,9 @@ from __future__ import annotations
 from datetime import UTC, datetime, timezone
 
 import pytest
-from packages.enhanced_agent_bus.observability.capacity_metrics.models import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.observability.capacity_metrics.models import (
     CapacitySnapshot,
     CapacityStatus,
     LatencyPercentiles,
@@ -24,7 +26,6 @@ from packages.enhanced_agent_bus.observability.capacity_metrics.models import (
     ResourceUtilization,
     ThroughputMetrics,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # CapacityStatus
@@ -616,13 +617,13 @@ class TestModuleExports:
     """Verify __all__ exports match what the module exposes."""
 
     def test_all_exports_importable(self):
-        from packages.enhanced_agent_bus.observability.capacity_metrics import models as m
+        from enhanced_agent_bus.observability.capacity_metrics import models as m
 
         for name in m.__all__:
             assert hasattr(m, name), f"__all__ references missing name: {name}"
 
     def test_all_contents(self):
-        from packages.enhanced_agent_bus.observability.capacity_metrics import models as m
+        from enhanced_agent_bus.observability.capacity_metrics import models as m
 
         assert set(m.__all__) == {
             "CapacityStatus",

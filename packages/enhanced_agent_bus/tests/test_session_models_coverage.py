@@ -11,13 +11,14 @@ from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import patch
 
 import pytest
-from packages.enhanced_agent_bus.session_models import (
-    SessionContext,
-    SessionGovernanceConfig,
-)
 from pydantic import ValidationError
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.enums import RiskLevel
+
+from enhanced_agent_bus.session_models import (
+    SessionContext,
+    SessionGovernanceConfig,
+)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -646,12 +647,12 @@ class TestSessionContextToAuditDict:
 
 class TestModuleExports:
     def test_session_governance_config_exported(self):
-        from packages.enhanced_agent_bus.session_models import __all__
+        from enhanced_agent_bus.session_models import __all__
 
         assert "SessionGovernanceConfig" in __all__
 
     def test_session_context_exported(self):
-        from packages.enhanced_agent_bus.session_models import __all__
+        from enhanced_agent_bus.session_models import __all__
 
         assert "SessionContext" in __all__
 

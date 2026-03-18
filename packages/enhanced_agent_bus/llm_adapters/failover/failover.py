@@ -14,14 +14,17 @@ from collections import deque
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
-from packages.enhanced_agent_bus.circuit_breaker import CONSTITUTIONAL_HASH
-from packages.enhanced_agent_bus.llm_adapters.capability_matrix import (
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.circuit_breaker import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.llm_adapters.capability_matrix import (
     CapabilityRegistry,
     CapabilityRequirement,
     get_capability_registry,
 )
-from src.core.shared.types import JSONDict
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from .health import ProviderHealthScorer

@@ -30,8 +30,12 @@ except ImportError:
         AnomalyDetector = None
         DetectedAnomaly = None
 
-from packages.enhanced_agent_bus.models import GovernanceMetrics  # type: ignore[attr-defined]
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.models import GovernanceMetrics  # type: ignore[attr-defined]
 
 from ..config import BusConfiguration
 

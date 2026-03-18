@@ -14,7 +14,10 @@ Reference: SPEC_ACGS2_ENHANCED_v2.3 Section 16 (Performance Engineering)
 """
 
 # Constitutional Hash - immutable reference
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 from .agents import (
     CONSTITUTIONAL_HASH as AGENTS_HASH,

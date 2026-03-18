@@ -10,7 +10,10 @@ import inspect
 import time
 from collections.abc import Callable
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 try:
     from src.core.shared.types import JSONDict, JSONList
@@ -18,7 +21,7 @@ except ImportError:
     JSONDict: type = JSONDict  # type: ignore[no-redef]
     JSONList: type = JSONList  # type: ignore[no-redef]
 
-from packages.enhanced_agent_bus.context_memory.models import ContextChunk
+from enhanced_agent_bus.context_memory.models import ContextChunk
 
 from .models import BatchProcessingResult
 

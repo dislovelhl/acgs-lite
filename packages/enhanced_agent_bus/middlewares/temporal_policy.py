@@ -19,10 +19,13 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass
 
-from packages.enhanced_agent_bus.validators import ValidationResult
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.validators import ValidationResult
 
 from ..opa_client import get_opa_client
 from ..pipeline.context import PipelineContext

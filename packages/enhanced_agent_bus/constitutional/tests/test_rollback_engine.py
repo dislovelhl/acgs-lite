@@ -504,7 +504,7 @@ class TestRollbackSagaFactory:
     ):
         """Test saga creation fails without ConstitutionalSagaWorkflow."""
         with patch(
-            "packages.enhanced_agent_bus.constitutional.rollback_engine.ConstitutionalSagaWorkflow",
+            "enhanced_agent_bus.constitutional.rollback_engine.ConstitutionalSagaWorkflow",
             None,
         ):
             with pytest.raises(ImportError, match="ConstitutionalSagaWorkflow not available"):

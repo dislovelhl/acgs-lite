@@ -6,21 +6,22 @@ Constitutional Hash: cdd01ef066bc6cf2
 from unittest.mock import patch
 
 import pytest
-from packages.enhanced_agent_bus.tests.rlm_repl.conftest import _make_repl
 
-REPL_MODULE = "packages.enhanced_agent_bus.rlm_repl"
+from enhanced_agent_bus.tests.rlm_repl.conftest import _make_repl
+
+REPL_MODULE = "enhanced_agent_bus.rlm_repl"
 
 
 class TestRLMREPLEnvironmentInit:
     def test_raises_when_repl_disabled(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLDisabledError, RLMREPLEnvironment
+        from enhanced_agent_bus.rlm_repl import REPLDisabledError, RLMREPLEnvironment
 
         with patch(f"{REPL_MODULE}.is_repl_enabled", return_value=False):
             with pytest.raises(REPLDisabledError):
                 RLMREPLEnvironment()
 
     def test_init_default_config(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLConfig, RLMREPLEnvironment
+        from enhanced_agent_bus.rlm_repl import REPLConfig, RLMREPLEnvironment
 
         with patch(f"{REPL_MODULE}.is_repl_enabled", return_value=True):
             repl = RLMREPLEnvironment()
@@ -31,7 +32,7 @@ class TestRLMREPLEnvironmentInit:
             assert repl._rate_limit_violations == 0
 
     def test_init_custom_config(self):
-        from packages.enhanced_agent_bus.rlm_repl import (
+        from enhanced_agent_bus.rlm_repl import (
             REPLConfig,
             REPLSecurityLevel,
             RLMREPLEnvironment,

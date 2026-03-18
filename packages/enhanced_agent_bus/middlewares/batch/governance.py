@@ -10,8 +10,12 @@ Constitutional Hash: cdd01ef066bc6cf2
 import time
 from typing import cast
 
-from packages.enhanced_agent_bus.validators import ValidationResult
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.validators import ValidationResult
 
 from ...batch_models import BatchRequestItem
 from ...maci_enforcement import MACIAction, MACIEnforcer

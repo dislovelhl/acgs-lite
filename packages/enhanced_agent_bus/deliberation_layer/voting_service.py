@@ -10,21 +10,28 @@ from datetime import UTC, datetime, timezone
 from enum import Enum
 from typing import cast
 
-from src.core.shared.types import JSONDict, JSONValue
+try:
+    from src.core.shared.types import (
+        JSONDict,
+        JSONValue,
+    )  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+    JSONValue = object  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 try:
-    from packages.enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage
+    from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage
 except ImportError:
     # Fallback for when running in isolation or different structure
-    from packages.enhanced_agent_bus.models import (  # type: ignore[import-untyped]
+    from enhanced_agent_bus.models import (  # type: ignore[import-untyped]
         CONSTITUTIONAL_HASH,
         AgentMessage,
     )
 
 try:
-    from packages.enhanced_agent_bus.deliberation_layer.redis_election_store import (
+    from enhanced_agent_bus.deliberation_layer.redis_election_store import (
         RedisElectionStore,
         get_election_store,
     )

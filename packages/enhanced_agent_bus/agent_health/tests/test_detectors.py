@@ -11,11 +11,12 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from packages.enhanced_agent_bus.agent_health.detectors import (
+
+from enhanced_agent_bus.agent_health.detectors import (
     FailureLoopDetector,
     MemoryExhaustionDetector,
 )
-from packages.enhanced_agent_bus.agent_health.models import AgentHealthThresholds
+from enhanced_agent_bus.agent_health.models import AgentHealthThresholds
 
 # ---------------------------------------------------------------------------
 # Helpers

@@ -51,13 +51,19 @@ Usage:
         result = experiment.get_result()
 """
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 __version__ = "1.0.0"
 __constitutional_hash__ = CONSTITUTIONAL_HASH
 
 # Import centralized constitutional hash
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 from .experiments import (
     ChaosExperiment,

@@ -21,7 +21,7 @@ import pytest
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 try:
-    from packages.enhanced_agent_bus.performance_optimization import (
+    from enhanced_agent_bus.performance_optimization import (
         PERFORMANCE_OPTIMIZATION_AVAILABLE,
         AsyncPipelineOptimizer,
         BatchConfig,

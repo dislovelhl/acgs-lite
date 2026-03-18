@@ -12,7 +12,8 @@ from typing import Optional
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
-from packages.enhanced_agent_bus.constitutional_classifier import (
+
+from enhanced_agent_bus.constitutional_classifier import (
     CONSTITUTIONAL_HASH,
     ClassificationResult,
     ClassifierConfig,

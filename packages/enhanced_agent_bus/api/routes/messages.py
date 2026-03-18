@@ -21,9 +21,14 @@ from fastapi import (
     Request,
     status,
 )
-from packages.enhanced_agent_bus.models import AgentMessage, MessageType, Priority
 from src.core.shared.security.auth import UserClaims, get_current_user
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.models import AgentMessage, MessageType, Priority
 
 from ...api_exceptions import correlation_id_var
 from ...api_models import (

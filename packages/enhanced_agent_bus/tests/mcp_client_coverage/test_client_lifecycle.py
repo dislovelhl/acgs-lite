@@ -9,14 +9,15 @@ from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.mcp_integration.client import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.mcp_integration.client import (
     MCPClient,
     MCPClientConfig,
     MCPClientState,
     MCPConnectionError,
     MCPServerConnection,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 from .helpers import _make_client, _make_config
 

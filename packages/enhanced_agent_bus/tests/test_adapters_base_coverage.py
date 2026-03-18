@@ -9,7 +9,8 @@ from datetime import UTC, datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.adapters.base import (
+
+from enhanced_agent_bus.adapters.base import (
     CONSTITUTIONAL_HASH,
     AdapterRegistry,
     MessageRole,
@@ -850,7 +851,7 @@ class TestAdapterRegistry:
 class TestGetAdapterRegistry:
     def test_returns_adapter_registry_instance(self):
         # Patch the global variable to None to test fresh creation
-        import packages.enhanced_agent_bus.adapters.base as base_module
+        import enhanced_agent_bus.adapters.base as base_module
 
         original = base_module._global_registry
         try:
@@ -861,7 +862,7 @@ class TestGetAdapterRegistry:
             base_module._global_registry = original
 
     def test_returns_same_instance_twice(self):
-        import packages.enhanced_agent_bus.adapters.base as base_module
+        import enhanced_agent_bus.adapters.base as base_module
 
         original = base_module._global_registry
         try:
@@ -873,7 +874,7 @@ class TestGetAdapterRegistry:
             base_module._global_registry = original
 
     def test_reuses_existing_registry(self):
-        import packages.enhanced_agent_bus.adapters.base as base_module
+        import enhanced_agent_bus.adapters.base as base_module
 
         existing = AdapterRegistry()
         original = base_module._global_registry
@@ -885,7 +886,7 @@ class TestGetAdapterRegistry:
             base_module._global_registry = original
 
     def test_global_registry_is_none_initially_after_reset(self):
-        import packages.enhanced_agent_bus.adapters.base as base_module
+        import enhanced_agent_bus.adapters.base as base_module
 
         original = base_module._global_registry
         try:
@@ -1027,48 +1028,48 @@ class TestAbstractMethodEnforcement:
 
 class TestModuleExports:
     def test_all_exports_present(self):
-        from packages.enhanced_agent_bus.adapters import base
+        from enhanced_agent_bus.adapters import base
 
         for name in base.__all__:
             assert hasattr(base, name), f"Missing export: {name}"
 
     def test_model_provider_exported(self):
-        from packages.enhanced_agent_bus.adapters.base import ModelProvider
+        from enhanced_agent_bus.adapters.base import ModelProvider
 
         assert ModelProvider is not None
 
     def test_message_role_exported(self):
-        from packages.enhanced_agent_bus.adapters.base import MessageRole
+        from enhanced_agent_bus.adapters.base import MessageRole
 
         assert MessageRole is not None
 
     def test_model_message_exported(self):
-        from packages.enhanced_agent_bus.adapters.base import ModelMessage
+        from enhanced_agent_bus.adapters.base import ModelMessage
 
         assert ModelMessage is not None
 
     def test_model_request_exported(self):
-        from packages.enhanced_agent_bus.adapters.base import ModelRequest
+        from enhanced_agent_bus.adapters.base import ModelRequest
 
         assert ModelRequest is not None
 
     def test_model_response_exported(self):
-        from packages.enhanced_agent_bus.adapters.base import ModelResponse
+        from enhanced_agent_bus.adapters.base import ModelResponse
 
         assert ModelResponse is not None
 
     def test_stream_chunk_exported(self):
-        from packages.enhanced_agent_bus.adapters.base import StreamChunk
+        from enhanced_agent_bus.adapters.base import StreamChunk
 
         assert StreamChunk is not None
 
     def test_model_adapter_exported(self):
-        from packages.enhanced_agent_bus.adapters.base import ModelAdapter
+        from enhanced_agent_bus.adapters.base import ModelAdapter
 
         assert ModelAdapter is not None
 
     def test_adapter_registry_exported(self):
-        from packages.enhanced_agent_bus.adapters.base import AdapterRegistry
+        from enhanced_agent_bus.adapters.base import AdapterRegistry
 
         assert AdapterRegistry is not None
 
@@ -1076,6 +1077,6 @@ class TestModuleExports:
         assert callable(get_adapter_registry)
 
     def test_constitutional_hash_exported(self):
-        from packages.enhanced_agent_bus.adapters.base import CONSTITUTIONAL_HASH
+        from enhanced_agent_bus.adapters.base import CONSTITUTIONAL_HASH
 
         assert CONSTITUTIONAL_HASH == CONSTITUTIONAL_HASH  # pragma: allowlist secret

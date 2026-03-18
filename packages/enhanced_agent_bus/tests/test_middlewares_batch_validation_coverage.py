@@ -10,13 +10,14 @@ Targets ≥95% coverage of:
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.batch_models import BatchRequest, BatchRequestItem
-from packages.enhanced_agent_bus.middlewares.batch.context import BatchPipelineContext
-from packages.enhanced_agent_bus.middlewares.batch.exceptions import BatchValidationException
-from packages.enhanced_agent_bus.middlewares.batch.validation import BatchValidationMiddleware
-from packages.enhanced_agent_bus.pipeline.middleware import MiddlewareConfig
-from packages.enhanced_agent_bus.validators import ValidationResult
 from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.batch_models import BatchRequest, BatchRequestItem
+from enhanced_agent_bus.middlewares.batch.context import BatchPipelineContext
+from enhanced_agent_bus.middlewares.batch.exceptions import BatchValidationException
+from enhanced_agent_bus.middlewares.batch.validation import BatchValidationMiddleware
+from enhanced_agent_bus.pipeline.middleware import MiddlewareConfig
+from enhanced_agent_bus.validators import ValidationResult
 
 CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH  # pragma: allowlist secret
 

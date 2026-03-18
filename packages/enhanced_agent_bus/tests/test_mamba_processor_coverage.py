@@ -11,7 +11,8 @@ edge cases, and backend-specific branches (torch / numpy / pure-python).
 from __future__ import annotations
 
 import pytest
-from packages.enhanced_agent_bus.context_memory.mamba_processor import (
+
+from enhanced_agent_bus.context_memory.mamba_processor import (
     CONSTITUTIONAL_HASH,
     NUMPY_AVAILABLE,
     TORCH_AVAILABLE,
@@ -20,7 +21,7 @@ from packages.enhanced_agent_bus.context_memory.mamba_processor import (
     MambaProcessorConfig,
     ProcessingResult,
 )
-from packages.enhanced_agent_bus.context_memory.models import (
+from enhanced_agent_bus.context_memory.models import (
     ContextChunk,
     ContextPriority,
     ContextType,
@@ -637,7 +638,7 @@ class TestMambaProcessorSimpleEmbed:
         proc = MambaProcessor(config=cfg)
         # patch out torch to force numpy branch
         with patch(
-            "packages.enhanced_agent_bus.context_memory.mamba_processor.TORCH_AVAILABLE", False
+            "enhanced_agent_bus.context_memory.mamba_processor.TORCH_AVAILABLE", False
         ):
             result = proc._simple_embed("hi")
             assert isinstance(result, np.ndarray)
@@ -649,10 +650,10 @@ class TestMambaProcessorSimpleEmbed:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.context_memory.mamba_processor.TORCH_AVAILABLE", False
+                "enhanced_agent_bus.context_memory.mamba_processor.TORCH_AVAILABLE", False
             ),
             patch(
-                "packages.enhanced_agent_bus.context_memory.mamba_processor.NUMPY_AVAILABLE", False
+                "enhanced_agent_bus.context_memory.mamba_processor.NUMPY_AVAILABLE", False
             ),
         ):
             cfg = MambaProcessorConfig(num_layers=1, d_model=4, d_state=2)
@@ -695,7 +696,7 @@ class TestUpdateMetrics:
 
 class TestModuleExports:
     def test_all_exports_present(self):
-        import packages.enhanced_agent_bus.context_memory.mamba_processor as mod
+        import enhanced_agent_bus.context_memory.mamba_processor as mod
 
         for name in mod.__all__:
             assert hasattr(mod, name), f"Missing export: {name}"

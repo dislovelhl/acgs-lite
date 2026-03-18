@@ -27,12 +27,12 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 # ---------------------------------------------------------------------------
 
 try:
-    from packages.enhanced_agent_bus.api.routes.pqc_admin import router as pqc_admin_router
-    from packages.enhanced_agent_bus.pqc_enforcement_config import (
+    from enhanced_agent_bus.api.routes.pqc_admin import router as pqc_admin_router
+    from enhanced_agent_bus.pqc_enforcement_config import (
         EnforcementModeConfigService,
         StorageUnavailableError,
     )
-    from packages.enhanced_agent_bus.pqc_enforcement_models import (
+    from enhanced_agent_bus.pqc_enforcement_models import (
         EnforcementModeRequest,
         EnforcementModeResponse,
     )
@@ -90,7 +90,7 @@ def _build_app(user_claims: Any, enforcement_svc: Any) -> FastAPI:
 
     # Override service dependency
     try:
-        from packages.enhanced_agent_bus.api.routes.pqc_admin import get_enforcement_service
+        from enhanced_agent_bus.api.routes.pqc_admin import get_enforcement_service
     except ImportError:
         try:
             from api.routes.pqc_admin import get_enforcement_service  # type: ignore[no-redef]

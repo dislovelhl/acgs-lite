@@ -9,6 +9,10 @@ affect event-loop internals and cause test hangs).
 
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip("fakeredis")
+
 import asyncio
 import time
 from datetime import UTC, datetime
@@ -16,14 +20,15 @@ from unittest.mock import patch
 
 import fakeredis.aioredis as fake_aioredis
 import pytest
-from packages.enhanced_agent_bus.agent_health.models import (
+
+from enhanced_agent_bus.agent_health.models import (
     AgentHealthRecord,
     AgentHealthThresholds,
     AutonomyTier,
     HealthState,
 )
-from packages.enhanced_agent_bus.agent_health.monitor import AgentHealthMonitor
-from packages.enhanced_agent_bus.agent_health.store import AgentHealthStore
+from enhanced_agent_bus.agent_health.monitor import AgentHealthMonitor
+from enhanced_agent_bus.agent_health.store import AgentHealthStore
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -94,7 +99,7 @@ async def test_metric_emission_fires_at_configured_interval(
     _, fake_sleep = _make_counter_sleep(stop_after=1)
 
     with patch(
-        "packages.enhanced_agent_bus.agent_health.monitor.emit_health_metrics",
+        "enhanced_agent_bus.agent_health.monitor.emit_health_metrics",
         side_effect=lambda rec: emitted.append(rec),
     ):
         mon = AgentHealthMonitor(
@@ -141,7 +146,7 @@ async def test_consecutive_failure_count_resets_to_zero(
     emitted: list[AgentHealthRecord] = []
 
     with patch(
-        "packages.enhanced_agent_bus.agent_health.monitor.emit_health_metrics",
+        "enhanced_agent_bus.agent_health.monitor.emit_health_metrics",
         side_effect=lambda rec: emitted.append(rec),
     ):
         mon = AgentHealthMonitor(
@@ -183,7 +188,7 @@ async def test_recovery_event_recorded_in_store(
         if poll_number >= 2:
             raise asyncio.CancelledError
 
-    with patch("packages.enhanced_agent_bus.agent_health.monitor.emit_health_metrics"):
+    with patch("enhanced_agent_bus.agent_health.monitor.emit_health_metrics"):
         mon = AgentHealthMonitor(
             agent_id=AGENT_ID,
             autonomy_tier=TIER,
@@ -221,7 +226,7 @@ async def test_monitor_continues_when_processing_loop_blocked(
     _, fake_sleep = _make_counter_sleep(stop_after=2)
 
     with patch(
-        "packages.enhanced_agent_bus.agent_health.monitor.emit_health_metrics",
+        "enhanced_agent_bus.agent_health.monitor.emit_health_metrics",
         side_effect=lambda rec: emitted.append(rec),
     ):
         mon = AgentHealthMonitor(
@@ -258,7 +263,7 @@ async def test_metric_emission_overhead_under_one_ms(
     Acceptance: Tests verify metric emission adds < 1ms overhead to a
     no-op message cycle.
     """
-    from packages.enhanced_agent_bus.agent_health.metrics import emit_health_metrics
+    from enhanced_agent_bus.agent_health.metrics import emit_health_metrics
 
     record = _make_record()
     iterations = 100
@@ -290,7 +295,7 @@ async def test_heartbeat_loss_sets_degraded_in_store(
     async def crashing_sleep(_: float) -> None:
         raise RuntimeError("Simulated monitor heartbeat crash")
 
-    with patch("packages.enhanced_agent_bus.agent_health.monitor.emit_health_metrics"):
+    with patch("enhanced_agent_bus.agent_health.monitor.emit_health_metrics"):
         mon = AgentHealthMonitor(
             agent_id=AGENT_ID,
             autonomy_tier=TIER,
@@ -325,7 +330,7 @@ async def test_monitor_stop_cancels_task(store: AgentHealthStore) -> None:
     async def blocking_sleep(_: float) -> None:
         await blocked.wait()
 
-    with patch("packages.enhanced_agent_bus.agent_health.monitor.emit_health_metrics"):
+    with patch("enhanced_agent_bus.agent_health.monitor.emit_health_metrics"):
         mon = AgentHealthMonitor(
             agent_id=AGENT_ID,
             autonomy_tier=TIER,
@@ -352,7 +357,7 @@ async def test_monitor_updates_memory_usage_from_provider(
     _, fake_sleep = _make_counter_sleep(stop_after=1)
 
     with patch(
-        "packages.enhanced_agent_bus.agent_health.monitor.emit_health_metrics",
+        "enhanced_agent_bus.agent_health.monitor.emit_health_metrics",
         side_effect=lambda rec: emitted.append(rec),
     ):
         mon = AgentHealthMonitor(
@@ -402,7 +407,7 @@ async def test_monitor_loop_survives_exceptions(
             raise asyncio.CancelledError
 
     with patch(
-        "packages.enhanced_agent_bus.agent_health.monitor.emit_health_metrics",
+        "enhanced_agent_bus.agent_health.monitor.emit_health_metrics",
         side_effect=flaky_emit,
     ):
         mon = AgentHealthMonitor(

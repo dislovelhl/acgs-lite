@@ -31,8 +31,14 @@ class _ConstitutionalBatchMetrics(TypedDict):
     created_at: str
 
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
-from src.core.shared.types import JSONDict  # noqa: E402
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 logger = get_logger(__name__)
 # Default configuration

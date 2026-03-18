@@ -17,14 +17,16 @@ from __future__ import annotations
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Union
+from typing import Any, TypeAlias
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
-_TensorLike = Union["torch.Tensor", "np.ndarray", list]
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
-from packages.enhanced_agent_bus.bus_types import JSONDict  # noqa: E402
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+from enhanced_agent_bus.bus_types import JSONDict  # noqa: E402
 
 from .models import ContextChunk  # noqa: E402
 
@@ -50,6 +52,15 @@ try:
 except ImportError:
     NUMPY_AVAILABLE = False
     np = None
+
+if TORCH_AVAILABLE and NUMPY_AVAILABLE:
+    _TensorLike: TypeAlias = torch.Tensor | np.ndarray | list[Any]
+elif TORCH_AVAILABLE:
+    _TensorLike: TypeAlias = torch.Tensor | list[Any]
+elif NUMPY_AVAILABLE:
+    _TensorLike: TypeAlias = np.ndarray | list[Any]
+else:
+    _TensorLike: TypeAlias = list[Any]
 
 
 @dataclass

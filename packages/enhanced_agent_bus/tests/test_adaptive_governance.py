@@ -40,7 +40,7 @@ class TestAdaptiveGovernance:
     @pytest.fixture(autouse=True)
     def _mock_mlflow(self):
         """Prevent MLflow and Postgres connection attempts during tests."""
-        from packages.enhanced_agent_bus.feedback_handler.handler import FeedbackHandler
+        from enhanced_agent_bus.feedback_handler.handler import FeedbackHandler
 
         with (
             patch.object(ImpactScorer, "_initialize_mlflow"),

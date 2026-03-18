@@ -14,8 +14,9 @@ from __future__ import annotations
 import asyncio
 
 import pytest
-from packages.enhanced_agent_bus.llm_adapters.cost.budget import BudgetManager
-from packages.enhanced_agent_bus.llm_adapters.cost.models import BudgetLimit
+
+from enhanced_agent_bus.llm_adapters.cost.budget import BudgetManager
+from enhanced_agent_bus.llm_adapters.cost.models import BudgetLimit
 
 # ---------------------------------------------------------------------------
 # Helpers

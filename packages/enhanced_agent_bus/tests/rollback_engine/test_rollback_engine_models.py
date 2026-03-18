@@ -7,18 +7,20 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.constitutional.amendment_model import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.constitutional.amendment_model import (
     AmendmentProposal,
     AmendmentStatus,
 )
-from packages.enhanced_agent_bus.constitutional.degradation_detector import (
+from enhanced_agent_bus.constitutional.degradation_detector import (
     DegradationReport,
     DegradationSeverity,
     MetricDegradationAnalysis,
     SignificanceLevel,
     TimeWindow,
 )
-from packages.enhanced_agent_bus.constitutional.rollback_engine import (
+from enhanced_agent_bus.constitutional.rollback_engine import (
     RollbackEngineError,
     RollbackReason,
     RollbackSagaActivities,
@@ -26,7 +28,6 @@ from packages.enhanced_agent_bus.constitutional.rollback_engine import (
     create_rollback_saga,
     rollback_amendment,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 from .conftest import _make_activities, _make_degradation_report, _make_saga_input
 

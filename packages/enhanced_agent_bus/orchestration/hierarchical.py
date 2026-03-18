@@ -23,7 +23,10 @@ class _CritiqueResult(TypedDict):
     score: float
 
 
-from src.core.shared.types import JSONDict  # noqa: E402
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 logger = get_logger(__name__)
 TASK_EXECUTION_ERRORS = (

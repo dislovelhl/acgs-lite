@@ -4,7 +4,7 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from __future__ import annotations
 
-from packages.enhanced_agent_bus.mcp_integration.client import (
+from enhanced_agent_bus.mcp_integration.client import (
     MCPClient,
     MCPClientConfig,
     MCPTransportType,

@@ -5,10 +5,16 @@ Focus: VULN-001 (Rust Validation Bypass) and VULN-002 (OPA Fail-Open)
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
+import pytest
+
+pytest.importorskip("enhanced_agent_bus.sdpc")
+
+
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from packages.enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage
+
+from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage
 
 from ..deliberation_layer.integration import DeliberationLayer
 from ..deliberation_layer.opa_guard import GuardDecision, GuardResult

@@ -6,13 +6,14 @@ Target: ≥95% coverage of all classes, methods, and branches.
 """
 
 import pytest
-from packages.enhanced_agent_bus.impact_scorer_infra.models import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.impact_scorer_infra.models import (
     ImpactVector,
     ScoringConfig,
     ScoringMethod,
     ScoringResult,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # ScoringMethod enum

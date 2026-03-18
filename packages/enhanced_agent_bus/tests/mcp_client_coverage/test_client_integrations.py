@@ -7,7 +7,8 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.mcp_integration.client import (
+
+from enhanced_agent_bus.mcp_integration.client import (
     MCPConnectionError,
 )
 
@@ -24,7 +25,7 @@ class TestMCPClientConnectWithValidator:
         validation_result.is_valid = True
         validator.validate = AsyncMock(return_value=validation_result)
 
-        with patch("packages.enhanced_agent_bus.mcp_integration.client.VALIDATORS_AVAILABLE", True):
+        with patch("enhanced_agent_bus.mcp_integration.client.VALIDATORS_AVAILABLE", True):
             client = _make_client(validator=validator)
             result = await client.connect()
         assert result is True
@@ -40,14 +41,14 @@ class TestMCPClientConnectWithValidator:
         validation_result.issues = [issue]
         validator.validate = AsyncMock(return_value=validation_result)
 
-        with patch("packages.enhanced_agent_bus.mcp_integration.client.VALIDATORS_AVAILABLE", True):
+        with patch("enhanced_agent_bus.mcp_integration.client.VALIDATORS_AVAILABLE", True):
             client = _make_client(validator=validator)
             with pytest.raises(MCPConnectionError, match="Connection validation failed"):
                 await client.connect()
 
     @pytest.mark.asyncio
     async def test_connect_no_validator_skips_validation(self):
-        with patch("packages.enhanced_agent_bus.mcp_integration.client.VALIDATORS_AVAILABLE", True):
+        with patch("enhanced_agent_bus.mcp_integration.client.VALIDATORS_AVAILABLE", True):
             client = _make_client(validator=None)
             result = await client.connect()
         assert result is True
@@ -57,7 +58,7 @@ class TestMCPClientConnectWithValidator:
         validator = MagicMock()
         validator.validate = AsyncMock()
         with patch(
-            "packages.enhanced_agent_bus.mcp_integration.client.VALIDATORS_AVAILABLE", False
+            "enhanced_agent_bus.mcp_integration.client.VALIDATORS_AVAILABLE", False
         ):
             client = _make_client(validator=validator)
             result = await client.connect()
@@ -72,7 +73,7 @@ class TestMCPClientToolRegistry:
         registry.discover_tools = AsyncMock()
 
         with patch(
-            "packages.enhanced_agent_bus.mcp_integration.client.TOOL_REGISTRY_AVAILABLE", True
+            "enhanced_agent_bus.mcp_integration.client.TOOL_REGISTRY_AVAILABLE", True
         ):
             client = _make_client(tool_registry=registry)
             await client.connect()
@@ -88,7 +89,7 @@ class TestMCPClientToolRegistry:
         registry.discover_tools = AsyncMock()
 
         with patch(
-            "packages.enhanced_agent_bus.mcp_integration.client.TOOL_REGISTRY_AVAILABLE", False
+            "enhanced_agent_bus.mcp_integration.client.TOOL_REGISTRY_AVAILABLE", False
         ):
             client = _make_client(tool_registry=registry)
             await client.connect()

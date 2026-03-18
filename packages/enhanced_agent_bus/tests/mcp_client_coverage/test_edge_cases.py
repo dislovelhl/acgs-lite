@@ -9,7 +9,8 @@ from datetime import UTC, datetime
 from unittest.mock import MagicMock
 
 import pytest
-from packages.enhanced_agent_bus.mcp_integration.client import (
+
+from enhanced_agent_bus.mcp_integration.client import (
     MCPClientConfig,
     MCPClientState,
     MCPServerConnection,

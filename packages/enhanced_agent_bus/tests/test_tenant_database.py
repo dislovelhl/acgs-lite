@@ -32,7 +32,9 @@ pytestmark = [
     ),
 ]
 
-from packages.enhanced_agent_bus.multi_tenancy.orm_models import (  # noqa: E402
+from src.core.shared.database.session import Base  # noqa: E402
+
+from enhanced_agent_bus.multi_tenancy.orm_models import (  # noqa: E402
     CONSTITUTIONAL_HASH,
     EnterpriseIntegrationORM,
     MigrationJobORM,
@@ -41,7 +43,6 @@ from packages.enhanced_agent_bus.multi_tenancy.orm_models import (  # noqa: E402
     TenantRoleMappingORM,
     TenantStatusEnum,
 )
-from src.core.shared.database.session import Base  # noqa: E402
 
 # =============================================================================
 # Test Fixtures

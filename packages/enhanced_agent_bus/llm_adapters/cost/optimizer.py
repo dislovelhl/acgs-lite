@@ -11,7 +11,12 @@ from __future__ import annotations
 import asyncio
 from datetime import UTC, datetime, timedelta
 
-from packages.enhanced_agent_bus.llm_adapters.capability_matrix import (
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.llm_adapters.capability_matrix import (
     CONSTITUTIONAL_HASH,
     CapabilityRegistry,
     CapabilityRequirement,
@@ -19,13 +24,11 @@ from packages.enhanced_agent_bus.llm_adapters.capability_matrix import (
     ProviderCapabilityProfile,
     get_capability_registry,
 )
-from packages.enhanced_agent_bus.llm_adapters.cost.models import (
+from enhanced_agent_bus.llm_adapters.cost.models import (
     CostAnomaly,
     CostEstimate,
     CostModel,
 )
-from src.core.shared.types import JSONDict
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from .anomaly import CostAnomalyDetector

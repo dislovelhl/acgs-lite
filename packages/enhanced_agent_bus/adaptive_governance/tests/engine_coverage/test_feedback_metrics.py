@@ -21,10 +21,10 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH as SHARED_CONSTITUTION
 
 _MLFLOW_PATCH = "mlflow.set_tracking_uri"
 _IMPACT_MLFLOW = (
-    "packages.enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
+    "enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
 )
 _THRESH_MLFLOW = (
-    "packages.enhanced_agent_bus.adaptive_governance.threshold_manager."
+    "enhanced_agent_bus.adaptive_governance.threshold_manager."
     "AdaptiveThresholds._initialize_mlflow"
 )
 
@@ -37,7 +37,7 @@ CONST_HASH = SHARED_CONSTITUTIONAL_HASH
 
 
 def _make_features(risk_score: float = 0.3, confidence: float = 0.9):
-    from packages.enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
+    from enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
 
     return ImpactFeatures(
         message_length=50,
@@ -54,7 +54,7 @@ def _make_features(risk_score: float = 0.3, confidence: float = 0.9):
 
 
 def _make_decision(risk_score: float = 0.3, action_allowed: bool = True):
-    from packages.enhanced_agent_bus.adaptive_governance.models import (
+    from enhanced_agent_bus.adaptive_governance.models import (
         GovernanceDecision,
         ImpactLevel,
     )
@@ -77,32 +77,32 @@ def engine():
         patch(_IMPACT_MLFLOW),
         patch(_THRESH_MLFLOW),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "FEEDBACK_HANDLER_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "DRIFT_MONITORING_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "ONLINE_LEARNING_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "AB_TESTING_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "ANOMALY_MONITORING_AVAILABLE",
             False,
         ),
     ):
-        from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+        from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
 
@@ -141,7 +141,7 @@ class TestUpdateMetrics:
         assert engine.metrics.average_response_time > 0
 
     def test_history_trimmed_when_over_max(self, engine):
-        from packages.enhanced_agent_bus.governance_constants import GOVERNANCE_HISTORY_MAX
+        from enhanced_agent_bus.governance_constants import GOVERNANCE_HISTORY_MAX
 
         # Fill exactly at max + 1; _update_metrics pops one entry
         engine.decision_history = [_make_decision() for _ in range(GOVERNANCE_HISTORY_MAX + 1)]
@@ -248,7 +248,7 @@ class TestStoreFeedbackEvent:
         engine._feedback_handler = None
         decision = _make_decision()
         # Patch FEEDBACK_HANDLER_AVAILABLE as False
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.FEEDBACK_HANDLER_AVAILABLE
         try:
@@ -273,7 +273,7 @@ class TestStoreFeedbackEvent:
 
         mock_event_cls = MagicMock()
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig_available = ge_mod.FEEDBACK_HANDLER_AVAILABLE
         orig_ft = ge_mod.FeedbackType
@@ -307,7 +307,7 @@ class TestStoreFeedbackEvent:
         mock_os.SUCCESS = "SUCCESS"
         mock_event_cls = MagicMock()
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig_available = ge_mod.FEEDBACK_HANDLER_AVAILABLE
         orig_ft = ge_mod.FeedbackType
@@ -341,7 +341,7 @@ class TestStoreFeedbackEvent:
         mock_os.SUCCESS = "SUCCESS"
         mock_event_cls = MagicMock()
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig_available = ge_mod.FEEDBACK_HANDLER_AVAILABLE
         orig_ft = ge_mod.FeedbackType

@@ -10,7 +10,7 @@ import uuid
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
-from typing import Optional, TypeAlias, Union
+from typing import TypeAlias
 
 # Policy imports
 from src.core.shared.policy.models import PolicySpecification, VerificationStatus
@@ -32,17 +32,27 @@ except ImportError:
     get_audit_ledger = None
 
 # Import centralized constitutional hash with fallback
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict, JSONValue
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import (
+        JSONDict,
+        JSONValue,
+    )  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+    JSONValue = object  # type: ignore[misc,assignment]
 
 # Import from parent package with fallback
 try:
-    from packages.enhanced_agent_bus.exceptions import (
+    from enhanced_agent_bus.exceptions import (
         ConstitutionalValidationError,
         MessageValidationError,
     )
-    from packages.enhanced_agent_bus.models import AgentMessage, MessageType, Priority
-    from packages.enhanced_agent_bus.validators import (
+    from enhanced_agent_bus.models import AgentMessage, MessageType, Priority
+    from enhanced_agent_bus.validators import (
         ValidationResult,
         validate_constitutional_hash,
     )

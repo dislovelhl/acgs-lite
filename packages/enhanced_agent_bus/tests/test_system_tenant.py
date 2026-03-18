@@ -10,8 +10,13 @@ import tempfile
 
 import pytest
 import pytest_asyncio
-from packages.enhanced_agent_bus.multi_tenancy.db_repository import DatabaseTenantRepository
-from packages.enhanced_agent_bus.multi_tenancy.system_tenant import (
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+from src.core.shared.database.session import Base
+
+from enhanced_agent_bus.multi_tenancy.db_repository import DatabaseTenantRepository
+from enhanced_agent_bus.multi_tenancy.system_tenant import (
     SYSTEM_TENANT_ID,
     SYSTEM_TENANT_NAME,
     SYSTEM_TENANT_SLUG,
@@ -22,10 +27,6 @@ from packages.enhanced_agent_bus.multi_tenancy.system_tenant import (
     is_system_tenant,
     is_system_tenant_slug,
 )
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.database.session import Base
 
 # Force all tests in this module into a single xdist group to avoid
 # SQLAlchemy Base.metadata backref conflicts across parallel workers.

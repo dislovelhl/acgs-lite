@@ -23,7 +23,10 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 StepResult = TypeVar("StepResult")
 from uuid import uuid4  # noqa: E402
 
-from src.core.shared.types import JSONDict  # noqa: E402
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 logger = get_logger(__name__)
 STEP_EXECUTION_ERRORS = (
@@ -37,7 +40,10 @@ STEP_EXECUTION_ERRORS = (
 )
 
 # Constitutional compliance
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 __all__ = [
     "CONSTITUTIONAL_HASH",

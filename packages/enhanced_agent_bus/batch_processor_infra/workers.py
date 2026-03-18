@@ -8,14 +8,13 @@ import asyncio
 import time
 from collections.abc import Awaitable, Callable
 
-from packages.enhanced_agent_bus.models import (
+from enhanced_agent_bus.models import (
     BatchItemStatus,
     BatchRequestItem,
     BatchResponseItem,
 )
-from packages.enhanced_agent_bus.validators import ValidationResult
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.validators import ValidationResult
 
 logger = get_logger(__name__)
 BATCH_PROCESSING_RETRY_ERRORS = (

@@ -5,7 +5,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 """
 
 from datetime import UTC, datetime, timezone
-from typing import Optional
 
 from sqlalchemy import JSON, Column, DateTime, String, Text
 from sqlalchemy.orm import DeclarativeBase

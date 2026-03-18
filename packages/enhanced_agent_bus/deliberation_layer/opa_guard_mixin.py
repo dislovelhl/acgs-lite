@@ -9,9 +9,12 @@ with multi-signature collection and critic agent reviews.
 """
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 if TYPE_CHECKING:
     from .opa_guard import GuardResult, OPAGuard, ReviewResult, SignatureResult
@@ -22,17 +25,17 @@ class OPAGuardMixin:
     Mixin providing OPA Guard integration methods.
 
     Expected attributes on the class using this mixin:
-    - opa_guard: Optional[OPAGuard]
+    - opa_guard: OPAGuard | None
     - deliberation_timeout: int
     """
 
     # type hints for expected attributes (set by the using class)
-    opa_guard: Optional["OPAGuard"]
+    opa_guard: "OPAGuard" | None
     deliberation_timeout: int
 
     async def verify_action(
         self, agent_id: str, action: JSONDict, context: JSONDict | None = None
-    ) -> Optional["GuardResult"]:
+    ) -> "GuardResult" | None:
         """
         Verify an action using OPA Guard (VERIFY-BEFORE-ACT pattern).
 
@@ -59,7 +62,7 @@ class OPAGuardMixin:
         required_signers: list[str],
         threshold: float = 1.0,
         timeout: int | None = None,
-    ) -> Optional["SignatureResult"]:
+    ) -> "SignatureResult" | None:
         """
         Collect multi-signatures for a decision.
 
@@ -113,7 +116,7 @@ class OPAGuardMixin:
         critic_agents: list[str],
         review_types: list[str] | None = None,
         timeout: int | None = None,
-    ) -> Optional["ReviewResult"]:
+    ) -> "ReviewResult" | None:
         """
         Submit a decision for critic agent review.
 

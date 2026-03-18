@@ -3,9 +3,12 @@ ACGS-2 Enhanced Agent Bus - Operational Exceptions
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
-from .base import AgentBusError, BusOperationError
+from .base import AgentBusError, BusOperationError, ConstitutionalError
 from .messaging import RateLimitExceeded
 
 
@@ -289,6 +292,36 @@ class ValidationError(AgentBusError):
     """Raised when validation fails (generic)."""
 
 
+class CheckpointError(ConstitutionalError):
+    """Raised when constitutional checkpoint operations fail."""
+
+    def __init__(self, message: str, details: JSONDict | None = None) -> None:
+        super().__init__(
+            message=message,
+            details=details or {},
+        )
+
+
+class InterruptError(AgentBusError):
+    """Raised when an agent bus operation is interrupted (e.g., HITL intervention)."""
+
+    def __init__(self, message: str, details: JSONDict | None = None) -> None:
+        super().__init__(
+            message=message,
+            details=details or {},
+        )
+
+
+class TimeoutError(BusOperationError):
+    """Raised when an operation times out (e.g., HITL, deliberation, node execution)."""
+
+    def __init__(self, message: str, details: JSONDict | None = None) -> None:
+        super().__init__(
+            message=message,
+            details=details or {},
+        )
+
+
 __all__ = [
     "AlignmentViolationError",
     "AuthenticationError",
@@ -296,6 +329,7 @@ __all__ = [
     "BusAlreadyStartedError",
     "BusNotStartedError",
     "BusOperationError",
+    "CheckpointError",
     "CircuitBreakerOpenError",
     "ConfigurationError",
     "DeliberationError",
@@ -304,11 +338,13 @@ __all__ = [
     "GovernanceError",
     "HandlerExecutionError",
     "ImpactAssessmentError",
+    "InterruptError",
     "RateLimitExceededError",
     "ResourceNotFoundError",
     "ReviewConsensusError",
     "ServiceUnavailableError",
     "SignatureCollectionError",
     "TenantIsolationError",
+    "TimeoutError",
     "ValidationError",
 ]

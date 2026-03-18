@@ -1428,7 +1428,7 @@ class TestCreateRollbackSaga:
         self, mock_storage, mock_metrics_collector, mock_degradation_detector
     ):
         with patch(
-            "packages.enhanced_agent_bus.constitutional.rollback_engine.ConstitutionalSagaWorkflow",
+            "enhanced_agent_bus.constitutional.rollback_engine.ConstitutionalSagaWorkflow",
             None,
         ):
             with pytest.raises(ImportError, match="ConstitutionalSagaWorkflow not available"):
@@ -1444,7 +1444,7 @@ class TestCreateRollbackSaga:
     ):
         """Saga creation fails cleanly when workflow support is explicitly disabled."""
         with patch(
-            "packages.enhanced_agent_bus.constitutional.rollback_engine.ConstitutionalSagaWorkflow",
+            "enhanced_agent_bus.constitutional.rollback_engine.ConstitutionalSagaWorkflow",
             None,
         ):
             with pytest.raises(ImportError, match="ConstitutionalSagaWorkflow not available"):
@@ -1566,7 +1566,7 @@ class TestRollbackAmendment:
     async def test_raises_when_saga_context_unavailable(
         self, mock_storage, mock_metrics_collector, mock_degradation_detector
     ):
-        with patch("packages.enhanced_agent_bus.constitutional.rollback_engine.SagaContext", None):
+        with patch("enhanced_agent_bus.constitutional.rollback_engine.SagaContext", None):
             with pytest.raises(ImportError, match="SagaContext not available"):
                 await rollback_amendment(
                     current_version_id="v-1.1.0",

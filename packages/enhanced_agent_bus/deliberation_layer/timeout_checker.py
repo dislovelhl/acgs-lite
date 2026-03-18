@@ -7,7 +7,6 @@ Background task to check election expiration and trigger escalation events.
 
 import asyncio
 from datetime import UTC, datetime, timezone
-from typing import Optional
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

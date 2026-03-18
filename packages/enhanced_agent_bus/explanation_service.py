@@ -9,7 +9,10 @@ factor attribution, governance vector analysis, and counterfactual reasoning.
 import time
 import uuid
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.event_schemas.decision_explanation import (
     CounterfactualHint,
     DecisionExplanationV1,
@@ -19,7 +22,11 @@ from src.core.shared.event_schemas.decision_explanation import (
     PredictedOutcome,
     create_decision_explanation,
 )
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -231,7 +238,7 @@ class ExplanationService:
         """Lazy load impact scorer if not provided."""
         if self.impact_scorer is None and not self._impact_scorer_loaded:
             try:
-                from packages.enhanced_agent_bus.deliberation_layer.impact_scorer import (
+                from enhanced_agent_bus.deliberation_layer.impact_scorer import (
                     ImpactScorer,
                 )
 
@@ -245,7 +252,7 @@ class ExplanationService:
         """Lazy load decision store if not provided."""
         if self.decision_store is None and not self._decision_store_loaded:
             try:
-                from packages.enhanced_agent_bus.decision_store import get_decision_store
+                from enhanced_agent_bus.decision_store import get_decision_store
 
                 self.decision_store = await get_decision_store()
                 self._decision_store_loaded = True

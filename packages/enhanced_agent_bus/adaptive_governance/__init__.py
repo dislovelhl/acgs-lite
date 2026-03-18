@@ -15,9 +15,15 @@ Public API functions and classes are re-exported from this module to maintain
 backward compatibility with the original single-file structure.
 """
 
-from typing import Optional
 
-from src.core.shared.types import MessagePayload, PolicyContext
+try:
+    from src.core.shared.types import (
+        MessagePayload,
+        PolicyContext,
+    )  # noqa: E402
+except ImportError:
+    MessagePayload = dict  # type: ignore[misc,assignment]
+    PolicyContext = dict  # type: ignore[misc,assignment]
 
 from .dtmc_learner import DTMCFitResult, DTMCLearner
 from .governance_engine import (
@@ -39,7 +45,7 @@ from .trace_collector import TraceCollector, TrajectoryRecord
 
 # Constitutional imports
 try:
-    from packages.enhanced_agent_bus.exceptions import GovernanceError
+    from enhanced_agent_bus.exceptions import GovernanceError
 except ImportError:
     from exceptions import GovernanceError  # type: ignore[no-redef]
 

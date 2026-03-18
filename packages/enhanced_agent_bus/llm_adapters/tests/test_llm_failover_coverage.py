@@ -30,13 +30,14 @@ from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.circuit_breaker import CONSTITUTIONAL_HASH
-from packages.enhanced_agent_bus.llm_adapters.capability_matrix import (
+
+from enhanced_agent_bus.circuit_breaker import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.llm_adapters.capability_matrix import (
     CapabilityRegistry,
     CapabilityRequirement,
     ProviderCapabilityProfile,
 )
-from packages.enhanced_agent_bus.llm_adapters.llm_failover import (
+from enhanced_agent_bus.llm_adapters.llm_failover import (
     FailoverEvent,
     HealthMetrics,
     HedgedRequest,

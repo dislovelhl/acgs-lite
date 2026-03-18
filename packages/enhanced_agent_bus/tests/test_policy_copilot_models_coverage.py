@@ -9,7 +9,10 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 import pytest
-from packages.enhanced_agent_bus.policy_copilot.models import (
+from pydantic import ValidationError
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.policy_copilot.models import (
     ChatHistory,
     ChatMessage,
     CopilotRequest,
@@ -30,8 +33,6 @@ from packages.enhanced_agent_bus.policy_copilot.models import (
     TestResult,
     ValidationResult,
 )
-from pydantic import ValidationError
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Enum tests
@@ -851,7 +852,7 @@ class TestChatHistory:
 
 class TestModuleExports:
     def test_all_exports_importable(self):
-        from packages.enhanced_agent_bus.policy_copilot import models as m
+        from enhanced_agent_bus.policy_copilot import models as m
 
         exported = [
             "PolicyEntityType",
@@ -878,7 +879,7 @@ class TestModuleExports:
             assert hasattr(m, name), f"Missing export: {name}"
 
     def test_all_list_complete(self):
-        from packages.enhanced_agent_bus.policy_copilot.models import __all__
+        from enhanced_agent_bus.policy_copilot.models import __all__
 
         assert len(__all__) == 19
 

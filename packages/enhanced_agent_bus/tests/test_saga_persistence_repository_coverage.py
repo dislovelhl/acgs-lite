@@ -16,8 +16,10 @@ Covers:
 from datetime import UTC, timezone
 
 import pytest
-from packages.enhanced_agent_bus.saga_persistence.models import SagaState
-from packages.enhanced_agent_bus.saga_persistence.repository import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.saga_persistence.models import SagaState
+from enhanced_agent_bus.saga_persistence.repository import (
     InvalidStateTransitionError,
     LockError,
     RepositoryError,
@@ -25,7 +27,6 @@ from packages.enhanced_agent_bus.saga_persistence.repository import (
     SagaStateRepository,
     VersionConflictError,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Concrete implementation of the abstract base for testing the property
@@ -1218,13 +1219,13 @@ class TestModuleExports:
         """All names in __all__ are importable."""
         import importlib
 
-        mod = importlib.import_module("packages.enhanced_agent_bus.saga_persistence.repository")
+        mod = importlib.import_module("enhanced_agent_bus.saga_persistence.repository")
         for name in mod.__all__:
             assert hasattr(mod, name), f"{name} not found in module"
 
     def test_all_contains_expected_names(self):
         """__all__ contains all expected names."""
-        from packages.enhanced_agent_bus.saga_persistence import repository
+        from enhanced_agent_bus.saga_persistence import repository
 
         expected = {
             "SagaStateRepository",

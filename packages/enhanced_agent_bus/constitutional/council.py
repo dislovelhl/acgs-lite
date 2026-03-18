@@ -8,9 +8,11 @@ distributed multi-signature voting process.
 
 import json
 from hashlib import sha256
-from typing import Optional
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -20,8 +22,8 @@ except ImportError:
     InvalidSignature = ValueError  # type: ignore[misc, assignment]
 
 try:
-    from packages.enhanced_agent_bus.core_models import MessageType
-    from packages.enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage
+    from enhanced_agent_bus.core_models import MessageType
+    from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage
 except ImportError:
     from src.core.shared.constants import CONSTITUTIONAL_HASH
 
@@ -29,7 +31,7 @@ except ImportError:
     MessageType = None  # type: ignore[misc, assignment]
 
 try:
-    from packages.enhanced_agent_bus.deliberation_layer.voting_service import (
+    from enhanced_agent_bus.deliberation_layer.voting_service import (
         Vote,
         VotingService,
         VotingStrategy,
@@ -40,7 +42,7 @@ except ImportError:
     Vote = None  # type: ignore[misc, assignment]
 
 try:
-    from packages.enhanced_agent_bus.constitutional.proposal_engine import (
+    from enhanced_agent_bus.constitutional.proposal_engine import (
         AmendmentProposalEngine,
         ProposalRequest,
     )
@@ -49,7 +51,7 @@ except ImportError:
     ProposalRequest = None  # type: ignore[misc, assignment]
 
 try:
-    from packages.enhanced_agent_bus.bundle_registry import BundleManifest
+    from enhanced_agent_bus.bundle_registry import BundleManifest
 except ImportError:
     BundleManifest = None  # type: ignore[misc, assignment]
 

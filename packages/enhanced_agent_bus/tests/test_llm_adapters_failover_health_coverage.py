@@ -19,12 +19,13 @@ from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.llm_adapters.failover.health import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.llm_adapters.failover.health import (
     HealthMetrics,
     ProviderHealthScore,
     ProviderHealthScorer,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH  # pragma: allowlist secret
 
@@ -894,19 +895,19 @@ class TestAllExports:
     """Ensure the __all__ list is correct."""
 
     def test_health_metrics_exported(self):
-        from packages.enhanced_agent_bus.llm_adapters.failover.health import HealthMetrics as HM
+        from enhanced_agent_bus.llm_adapters.failover.health import HealthMetrics as HM
 
         assert HM is HealthMetrics
 
     def test_provider_health_score_exported(self):
-        from packages.enhanced_agent_bus.llm_adapters.failover.health import (
+        from enhanced_agent_bus.llm_adapters.failover.health import (
             ProviderHealthScore as PHS,
         )
 
         assert PHS is ProviderHealthScore
 
     def test_provider_health_scorer_exported(self):
-        from packages.enhanced_agent_bus.llm_adapters.failover.health import (
+        from enhanced_agent_bus.llm_adapters.failover.health import (
             ProviderHealthScorer as PHScorer,
         )
 

@@ -11,15 +11,16 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.middlewares.batch.concurrency import (
+
+from enhanced_agent_bus.middlewares.batch.concurrency import (
     BatchConcurrencyMiddleware,
 )
-from packages.enhanced_agent_bus.middlewares.batch.context import BatchPipelineContext
-from packages.enhanced_agent_bus.middlewares.batch.exceptions import (
+from enhanced_agent_bus.middlewares.batch.context import BatchPipelineContext
+from enhanced_agent_bus.middlewares.batch.exceptions import (
     BatchConcurrencyException,
 )
-from packages.enhanced_agent_bus.pipeline.middleware import MiddlewareConfig
-from packages.enhanced_agent_bus.validators import ValidationResult
+from enhanced_agent_bus.pipeline.middleware import MiddlewareConfig
+from enhanced_agent_bus.validators import ValidationResult
 
 # ---------------------------------------------------------------------------
 # Helpers

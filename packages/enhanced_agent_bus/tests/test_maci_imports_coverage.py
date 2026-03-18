@@ -26,7 +26,7 @@ def _restore_maci_imports_globals():
     Without full restoration, mutations leak to subsequent test files sharing the
     same xdist worker. (PM-012, PM-014 patterns)
     """
-    import packages.enhanced_agent_bus.maci_imports as m
+    import enhanced_agent_bus.maci_imports as m
 
     # Snapshot mutable globals before test
     orig_model_cache = dict(m._model_cache)
@@ -42,13 +42,13 @@ def _restore_maci_imports_globals():
     # Snapshot sys.modules entries that _reload_maci_imports() and _reload_with_stubs()
     # may delete or replace. Without restoring these, other test files in the same
     # xdist worker see corrupted module entries.
-    _maci_mod_key = "packages.enhanced_agent_bus.maci_imports"
+    _maci_mod_key = "enhanced_agent_bus.maci_imports"
     _sysmod_keys_to_protect = [
         _maci_mod_key,
-        "packages.enhanced_agent_bus.exceptions",
-        "packages.enhanced_agent_bus.exceptions.base",
-        "packages.enhanced_agent_bus.exceptions.maci",
-        "packages.enhanced_agent_bus.utils",
+        "enhanced_agent_bus.exceptions",
+        "enhanced_agent_bus.exceptions.base",
+        "enhanced_agent_bus.exceptions.maci",
+        "enhanced_agent_bus.utils",
         "enhanced_agent_bus.utils",
         "src.core.shared.config",
     ]
@@ -96,7 +96,7 @@ def _restore_maci_imports_globals():
 
 def _reload_maci_imports() -> ModuleType:
     """Reload maci_imports fresh (clearing module-level caches)."""
-    mod_name = "packages.enhanced_agent_bus.maci_imports"
+    mod_name = "enhanced_agent_bus.maci_imports"
     if mod_name in sys.modules:
         del sys.modules[mod_name]
     return importlib.import_module(mod_name)
@@ -111,12 +111,12 @@ class TestModuleLevelImports:
     """Verify that the module imports cleanly in the test environment."""
 
     def test_module_imports_without_error(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         assert m is not None
 
     def test_feature_flags_are_booleans(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         assert isinstance(m.MACI_CORE_AVAILABLE, bool)
         assert isinstance(m.OBSERVABILITY_AVAILABLE, bool)
@@ -124,17 +124,17 @@ class TestModuleLevelImports:
 
     def test_observability_always_false(self) -> None:
         """OBSERVABILITY_AVAILABLE is never set to True in this module."""
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         assert m.OBSERVABILITY_AVAILABLE is False
 
     def test_constitutional_hash_default(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         assert m.CONSTITUTIONAL_HASH == CONSTITUTIONAL_HASH
 
     def test_exception_classes_not_none(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         assert m.MACIError is not None
         assert m.MACIRoleViolationError is not None
@@ -143,7 +143,7 @@ class TestModuleLevelImports:
         assert m.MACIRoleNotAssignedError is not None
 
     def test_exception_classes_are_exceptions(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         for cls in (
             m.MACIError,
@@ -155,18 +155,18 @@ class TestModuleLevelImports:
             assert issubclass(cls, BaseException)
 
     def test_get_iso_timestamp_callable(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         assert callable(m.get_iso_timestamp)
 
     def test_get_iso_timestamp_returns_string(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         result = m.get_iso_timestamp()
         assert isinstance(result, str)
 
     def test_all_exports_defined(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         for name in m.__all__:
             # Models are lazy; skip them here
@@ -184,7 +184,7 @@ class TestGlobalSettingsImport:
     """Test GLOBAL_SETTINGS_AVAILABLE flag behaviour."""
 
     def test_global_settings_available_when_present(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         # In the test environment the shared config can import
         assert isinstance(m.GLOBAL_SETTINGS_AVAILABLE, bool)
@@ -231,7 +231,7 @@ class TestLoadModels:
     """Test the _load_models() function directly."""
 
     def test_load_models_returns_true_when_models_available(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         # Reset cache so _load_models runs fresh
         m._model_cache.clear()
@@ -241,14 +241,14 @@ class TestLoadModels:
         assert m.MACI_CORE_AVAILABLE is True
 
     def test_load_models_early_return_when_already_loaded(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         m._model_cache["_loaded"] = True
         result = m._load_models()
         assert result is True
 
     def test_load_models_returns_false_when_all_paths_fail(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         m._model_cache.clear()
         m.MACI_CORE_AVAILABLE = False
@@ -266,7 +266,7 @@ class TestLoadModels:
             assert result is False
 
     def test_load_models_populates_cache(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         m._model_cache.clear()
         m.MACI_CORE_AVAILABLE = False
@@ -287,46 +287,46 @@ class TestLazyAccessors:
     """Test get_agent_message, get_message_type, get_enum_value_func."""
 
     def test_get_agent_message_returns_class(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         result = m.get_agent_message()
         assert result is not None
 
     def test_get_message_type_returns_class(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         result = m.get_message_type()
         assert result is not None
 
     def test_get_enum_value_func_returns_callable(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         result = m.get_enum_value_func()
         assert callable(result)
 
     def test_get_agent_message_triggers_load_when_cache_empty(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         m._model_cache.clear()
         result = m.get_agent_message()
         assert result is not None
 
     def test_get_message_type_triggers_load_when_cache_empty(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         m._model_cache.clear()
         result = m.get_message_type()
         assert result is not None
 
     def test_get_enum_value_func_triggers_load_when_cache_empty(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         m._model_cache.clear()
         result = m.get_enum_value_func()
         assert result is not None
 
     def test_accessors_return_none_when_models_unavailable(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         m._model_cache.clear()
         # _loaded stays False — no models in cache
@@ -337,7 +337,7 @@ class TestLazyAccessors:
 
     def test_get_agent_message_skips_load_when_already_cached(self) -> None:
         """Cover the 304->306 branch: _loaded True skips _load_models call."""
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         sentinel = object()
         m._model_cache["_loaded"] = True
@@ -358,25 +358,25 @@ class TestModuleGetattr:
     """Test module-level __getattr__ for lazy model attributes."""
 
     def test_getattr_agent_message(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         ag = m.__getattr__("AgentMessage")
         assert ag is not None
 
     def test_getattr_message_type(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         mt = m.__getattr__("MessageType")
         assert mt is not None
 
     def test_getattr_get_enum_value(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         ev = m.__getattr__("get_enum_value")
         assert callable(ev)
 
     def test_getattr_unknown_lazy_attr_raises_attribute_error(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         m._model_cache.clear()
         # Force _load_models to fail so value is not in cache
@@ -388,7 +388,7 @@ class TestModuleGetattr:
                 assert "MACI model" in str(exc)
 
     def test_getattr_completely_unknown_attr_raises_attribute_error(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         try:
             m.__getattr__("CompletelyNonExistent")
@@ -397,7 +397,7 @@ class TestModuleGetattr:
             assert "has no attribute" in str(exc)
 
     def test_getattr_caches_value_in_globals(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         # Remove from globals so __getattr__ is exercised
         m.__dict__.pop("AgentMessage", None)
@@ -417,7 +417,7 @@ class TestEnsureMaciModelsLoaded:
     """Test ensure_maci_models_loaded()."""
 
     def test_returns_true_when_models_loadable(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         m._model_cache.clear()
         m.MACI_CORE_AVAILABLE = False
@@ -425,14 +425,14 @@ class TestEnsureMaciModelsLoaded:
         assert result is True
 
     def test_returns_true_early_when_already_loaded(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         m._model_cache["_loaded"] = True
         result = m.ensure_maci_models_loaded()
         assert result is True
 
     def test_populates_globals_on_success(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         m._model_cache.clear()
         for attr in ("AgentMessage", "MessageType", "get_enum_value"):
@@ -445,7 +445,7 @@ class TestEnsureMaciModelsLoaded:
         assert m.__dict__.get("get_enum_value") is not None
 
     def test_returns_false_when_load_fails(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         m._model_cache.clear()
         with patch.object(m, "_load_models", return_value=False):
@@ -453,7 +453,7 @@ class TestEnsureMaciModelsLoaded:
             assert result is False
 
     def test_constitutional_hash_updated_on_success(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         m._model_cache.clear()
         m.CONSTITUTIONAL_HASH = "old_hash"
@@ -461,7 +461,7 @@ class TestEnsureMaciModelsLoaded:
         assert m.CONSTITUTIONAL_HASH == CONSTITUTIONAL_HASH
 
     def test_maci_core_available_set_on_success(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         m._model_cache.clear()
         m.MACI_CORE_AVAILABLE = False
@@ -485,9 +485,9 @@ class TestStubExceptionClasses:
     def _reload_with_stubs() -> ModuleType:
         """Reload maci_imports with all exceptions import paths blocked."""
         to_block = [
-            "packages.enhanced_agent_bus.exceptions",
-            "packages.enhanced_agent_bus.exceptions.base",
-            "packages.enhanced_agent_bus.exceptions.maci",
+            "enhanced_agent_bus.exceptions",
+            "enhanced_agent_bus.exceptions.base",
+            "enhanced_agent_bus.exceptions.maci",
             "exceptions",
         ]
         originals = {k: sys.modules.get(k) for k in to_block}
@@ -581,7 +581,7 @@ class TestStubExceptionClasses:
     def test_stub_exceptions_are_raisable(self) -> None:
         mod = self._reload_with_stubs()
         # MACIError with a plain message
-        with patch("packages.enhanced_agent_bus.maci_imports.MACIError", mod.MACIError):
+        with patch("enhanced_agent_bus.maci_imports.MACIError", mod.MACIError):
             try:
                 raise mod.MACIError("test error")
             except BaseException as exc:
@@ -599,7 +599,7 @@ class TestGetIsoTimestampFallback:
     def test_fallback_produces_iso_format_string(self) -> None:
         """Reload with all utils paths blocked to force the datetime fallback."""
         to_block = [
-            "packages.enhanced_agent_bus.utils",
+            "enhanced_agent_bus.utils",
             "enhanced_agent_bus.utils",
             "utils",
         ]
@@ -622,7 +622,7 @@ class TestGetIsoTimestampFallback:
 
     def test_fallback_returns_utc_time(self) -> None:
         to_block = [
-            "packages.enhanced_agent_bus.utils",
+            "enhanced_agent_bus.utils",
             "enhanced_agent_bus.utils",
             "utils",
         ]
@@ -653,12 +653,12 @@ class TestDunderAll:
     """Verify __all__ correctness."""
 
     def test_all_is_defined(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         assert hasattr(m, "__all__")
 
     def test_all_contains_expected_names(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         expected = {
             "MACI_CORE_AVAILABLE",
@@ -687,7 +687,7 @@ class TestDunderAll:
 
 class TestDefaultHash:
     def test_default_hash_value(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         assert m._DEFAULT_CONSTITUTIONAL_HASH == CONSTITUTIONAL_HASH
 
@@ -699,7 +699,7 @@ class TestDefaultHash:
 
 class TestLazyModelAttrs:
     def test_lazy_model_attrs_contains_expected(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         assert "AgentMessage" in m._LAZY_MODEL_ATTRS
         assert "MessageType" in m._LAZY_MODEL_ATTRS
@@ -715,7 +715,7 @@ class TestModelCacheReload:
     """Test _model_cache reset and CONSTITUTIONAL_HASH update path."""
 
     def test_constitutional_hash_updated_after_load(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         m._model_cache.clear()
         m.CONSTITUTIONAL_HASH = "placeholder"
@@ -723,7 +723,7 @@ class TestModelCacheReload:
         assert m.CONSTITUTIONAL_HASH == CONSTITUTIONAL_HASH
 
     def test_maci_core_available_after_successful_load(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         m._model_cache.clear()
         m.MACI_CORE_AVAILABLE = False
@@ -731,7 +731,7 @@ class TestModelCacheReload:
         assert m.MACI_CORE_AVAILABLE is True
 
     def test_load_models_sets_loaded_flag(self) -> None:
-        import packages.enhanced_agent_bus.maci_imports as m
+        import enhanced_agent_bus.maci_imports as m
 
         m._model_cache.clear()
         m._load_models()

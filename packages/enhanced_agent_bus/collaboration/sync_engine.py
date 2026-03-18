@@ -13,15 +13,22 @@ import asyncio
 import json
 from copy import deepcopy
 
-from packages.enhanced_agent_bus.collaboration.models import (
+try:
+    from src.core.shared.types import (
+        JSONDict,
+        JSONValue,
+    )  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+    JSONValue = object  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.collaboration.models import (
     CollaborationSession,
     CollaborationValidationError,
     ConflictError,
     EditOperation,
     EditOperationType,
 )
-from src.core.shared.types import JSONDict, JSONValue
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)

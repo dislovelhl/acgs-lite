@@ -23,9 +23,9 @@ Wraps an :class:`MCPClientPool` with a high-level API that adds:
 
 Quick start::
 
-    from packages.enhanced_agent_bus.mcp.pool import create_mcp_pool
-    from packages.enhanced_agent_bus.mcp.client import MCPClient, MCPClientConfig
-    from packages.enhanced_agent_bus.mcp.router import MCPRouter, ToolRequest
+    from enhanced_agent_bus.mcp.pool import create_mcp_pool
+    from enhanced_agent_bus.mcp.client import MCPClient, MCPClientConfig
+    from enhanced_agent_bus.mcp.router import MCPRouter, ToolRequest
 
     pool = create_mcp_pool(
         MCPClient(MCPClientConfig(server_id="neural", server_url="http://neural-mcp:4000")),
@@ -70,10 +70,14 @@ from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 
-from packages.enhanced_agent_bus.bus_types import JSONDict
 from pydantic import BaseModel, ConfigDict, Field
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+
+from enhanced_agent_bus.bus_types import JSONDict
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from .pool import MCPClientPool

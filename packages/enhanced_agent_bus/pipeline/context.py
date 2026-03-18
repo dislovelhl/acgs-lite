@@ -1,4 +1,4 @@
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from __future__ import annotations
 
 """
 Pipeline context and metrics for ACGS-2 Message Processing.
@@ -8,11 +8,20 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 import time  # noqa: E402
 from dataclasses import dataclass, field  # noqa: E402
-from typing import TYPE_CHECKING, Optional  # noqa: E402
+from typing import TYPE_CHECKING  # noqa: E402
 
-from packages.enhanced_agent_bus.models import AgentMessage  # noqa: E402
-from packages.enhanced_agent_bus.validators import ValidationResult  # noqa: E402
-from src.core.shared.types import JSONDict  # noqa: E402
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.models import AgentMessage  # noqa: E402
+from enhanced_agent_bus.validators import ValidationResult  # noqa: E402
 
 from ..ifc.labels import Confidentiality, IFCLabel, IFCViolation, Integrity  # noqa: E402
 from ..prov.labels import ProvLabel, ProvLineage  # noqa: E402
@@ -167,10 +176,10 @@ class PipelineContext:
     maci_role: str | None = None
     maci_action: str | None = None
     maci_enforced: bool = False
-    maci_result: Optional["MACIValidationResult"] = None
+    maci_result: MACIValidationResult | None = None
 
     # Adaptive Governance (populated by AdaptiveGovernanceMiddleware)
-    governance_decision: Optional["GovernanceDecision"] = None
+    governance_decision: GovernanceDecision | None = None
     governance_allowed: bool = True
     governance_reasoning: str | None = None
     impact_score: float = 0.0

@@ -8,7 +8,7 @@ All functionality is now provided by the `cost` subpackage.
 This file provides backward compatibility re-exports.
 For new code, prefer importing directly from the `cost` subpackage:
 
-    from packages.enhanced_agent_bus.llm_adapters.cost import (
+    from enhanced_agent_bus.llm_adapters.cost import (
         CostOptimizer,
         CostModel,
         BudgetManager,
@@ -16,7 +16,7 @@ For new code, prefer importing directly from the `cost` subpackage:
     )
 """
 
-from packages.enhanced_agent_bus.llm_adapters.cost import (
+from enhanced_agent_bus.llm_adapters.cost import (
     BatchOptimizer,
     BatchRequest,
     BatchResult,

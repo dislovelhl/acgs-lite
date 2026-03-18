@@ -17,15 +17,15 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from packages.enhanced_agent_bus.constitutional_classifier import (
+from enhanced_agent_bus.constitutional_classifier import (
     CONSTITUTIONAL_HASH,
     ClassifierConfig,
     ComplianceResult,
     ConstitutionalClassifier,
 )
-from packages.enhanced_agent_bus.models import RiskLevel, SessionGovernanceConfig
-from packages.enhanced_agent_bus.policy_resolver import PolicyResolutionResult, PolicyResolver
-from packages.enhanced_agent_bus.session_context import SessionContext
+from enhanced_agent_bus.models import RiskLevel, SessionGovernanceConfig
+from enhanced_agent_bus.policy_resolver import PolicyResolutionResult, PolicyResolver
+from enhanced_agent_bus.session_context import SessionContext
 
 # Mark all tests as governance tests (95% coverage required)
 # Constitutional Hash: cdd01ef066bc6cf2

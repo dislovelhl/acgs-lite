@@ -9,10 +9,14 @@ Implements index-based lookups for efficient querying.
 from datetime import datetime
 
 import redis.asyncio as redis
-from packages.enhanced_agent_bus.saga_persistence.models import PersistedSagaState, SagaState
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.saga_persistence.models import PersistedSagaState, SagaState
 
 from ..repository import RepositoryError
 from .keys import RedisKeyMixin

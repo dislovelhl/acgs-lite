@@ -19,7 +19,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import Enum
-from typing import Optional, TypeAlias, Union
+from typing import TypeAlias
 from uuid import uuid4
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
@@ -27,20 +27,15 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 try:
     from ..bus_types import JSONDict, JSONValue
 except ImportError:
-    from packages.enhanced_agent_bus.bus_types import JSONDict, JSONValue
+    from enhanced_agent_bus.bus_types import JSONDict, JSONValue
 
-from packages.enhanced_agent_bus.interfaces import ApprovalsValidatorProtocol
+from enhanced_agent_bus.interfaces import ApprovalsValidatorProtocol
 
 # Import centralized constitutional hash from shared module
 try:
     from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
-    try:
         from src.core.shared.constants import CONSTITUTIONAL_HASH
-    except ImportError:
-        # Fallback for standalone usage
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
-
 logger = get_logger(__name__)
 try:
     from acgs2_perf import fast_hash
@@ -561,7 +556,7 @@ class MultiApproverWorkflowEngine:
         self.audit_callback = audit_callback
         if approvals_validator is None:
             validators_module = __import__(
-                "packages.enhanced_agent_bus.validators",
+                "enhanced_agent_bus.validators",
                 fromlist=["ApprovalRequirementsValidator"],
             )
             approvals_validator = validators_module.ApprovalRequirementsValidator()

@@ -3,7 +3,7 @@ Test helpers for adaptive governance engine tests.
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-from packages.enhanced_agent_bus.adaptive_governance.models import (
+from enhanced_agent_bus.adaptive_governance.models import (
     GovernanceDecision,
     ImpactFeatures,
     ImpactLevel,

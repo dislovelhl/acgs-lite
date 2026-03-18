@@ -8,9 +8,12 @@ Adheres strictly to the MACI Executor role, operating on validated inputs.
 
 import os
 
-from packages.enhanced_agent_bus.core_models import AgentMessage, MessageType
-from src.core.services.enterprise.compliance import questionnaire_responder
+try:
+    from src.core.services.enterprise.compliance import questionnaire_responder
+except ImportError:
+    questionnaire_responder = None
 
+from enhanced_agent_bus.core_models import AgentMessage, MessageType
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
@@ -80,6 +83,10 @@ def _dispatch_build_fix(issue_number: int | None, author: str, command_body: str
 
 async def _dispatch_compliance_ingest(command_body: str, author: str) -> AgentMessage | None:
     """Dispatch a compliance questionnaire ingestion command."""
+    if questionnaire_responder is None:
+        logger.error("Compliance ingestion unavailable", extra={"reason": "missing dependency"})
+        return None
+
     parts = command_body.split()
     if len(parts) < 3:
         logger.warning("Invalid compliance ingest command: %s", command_body)

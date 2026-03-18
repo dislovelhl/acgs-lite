@@ -16,7 +16,8 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.ai_assistant.context import (
+
+from enhanced_agent_bus.ai_assistant.context import (
     CONSTITUTIONAL_HASH,
     MAMBA_AVAILABLE,
     MAMBA_CONTEXT_PROCESSING_ERRORS,
@@ -35,7 +36,7 @@ from packages.enhanced_agent_bus.ai_assistant.context import (
 
 class TestProcessLongContextHappyPath:
     async def test_mamba_loaded_processes_and_updates_metadata(self):
-        import packages.enhanced_agent_bus.ai_assistant.context as ctx_module
+        import enhanced_agent_bus.ai_assistant.context as ctx_module
 
         mgr = ctx_module.ContextManager()
         ctx = ctx_module.ConversationContext(user_id="u1", session_id="s1")
@@ -67,7 +68,7 @@ class TestProcessLongContextHappyPath:
         assert result.metadata["mamba_config"]["constitutional_hash"] == CONSTITUTIONAL_HASH
 
     async def test_mamba_loaded_use_attention_false(self):
-        import packages.enhanced_agent_bus.ai_assistant.context as ctx_module
+        import enhanced_agent_bus.ai_assistant.context as ctx_module
 
         mgr = ctx_module.ContextManager()
         ctx = ctx_module.ConversationContext(user_id="u1", session_id="s1")
@@ -94,7 +95,7 @@ class TestProcessLongContextHappyPath:
 
     async def test_mamba_max_tokens_capped_at_4m(self):
         """max_tokens > 4M is capped at 4M for MambaConfig."""
-        import packages.enhanced_agent_bus.ai_assistant.context as ctx_module
+        import enhanced_agent_bus.ai_assistant.context as ctx_module
 
         mgr = ctx_module.ContextManager()
         ctx = ctx_module.ConversationContext(user_id="u1", session_id="s1")
@@ -119,7 +120,7 @@ class TestProcessLongContextHappyPath:
 
     async def test_process_long_context_with_many_messages(self):
         """Test with more than 100 messages (slice [-100:])."""
-        import packages.enhanced_agent_bus.ai_assistant.context as ctx_module
+        import enhanced_agent_bus.ai_assistant.context as ctx_module
 
         mgr = ctx_module.ContextManager()
         ctx = ctx_module.ConversationContext(user_id="u1", session_id="s1", max_history=200)

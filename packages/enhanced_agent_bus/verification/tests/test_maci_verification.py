@@ -13,7 +13,9 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.verification.maci_verification import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.verification.maci_verification import (
     AgentCapabilities,
     AgentRole,
     ConstitutionalRules,
@@ -27,7 +29,6 @@ from packages.enhanced_agent_bus.verification.maci_verification import (
     get_maci_pipeline,
     verify_decision_maci,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # Constitutional validation markers
 pytestmark = [

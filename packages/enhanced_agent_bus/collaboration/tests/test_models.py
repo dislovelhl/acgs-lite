@@ -7,7 +7,8 @@ Constitutional Hash: cdd01ef066bc6cf2
 from datetime import datetime, timezone
 
 import pytest
-from packages.enhanced_agent_bus.collaboration.models import (
+
+from enhanced_agent_bus.collaboration.models import (
     CollaborationConfig,
     CollaborationSession,
     Collaborator,

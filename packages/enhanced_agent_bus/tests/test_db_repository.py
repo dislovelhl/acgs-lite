@@ -13,16 +13,17 @@ from datetime import datetime, timezone
 
 import pytest
 import pytest_asyncio
-from packages.enhanced_agent_bus.multi_tenancy.db_repository import DatabaseTenantRepository
-from packages.enhanced_agent_bus.multi_tenancy.models import (
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from src.core.shared.database.session import Base
+
+from enhanced_agent_bus.multi_tenancy.db_repository import DatabaseTenantRepository
+from enhanced_agent_bus.multi_tenancy.models import (
     TenantConfig,
     TenantQuota,
     TenantStatus,
 )
-from packages.enhanced_agent_bus.multi_tenancy.orm_models import CONSTITUTIONAL_HASH
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from src.core.shared.database.session import Base
+from enhanced_agent_bus.multi_tenancy.orm_models import CONSTITUTIONAL_HASH
 
 RUN_EAB_DB_REPOSITORY_TESTS = (
     os.environ.get("RUN_EAB_DB_REPOSITORY_TESTS", "false").strip().lower() == "true"

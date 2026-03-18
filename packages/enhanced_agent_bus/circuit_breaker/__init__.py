@@ -55,8 +55,12 @@ Usage:
 
 # Import centralized constitutional hash
 # Models
-from packages.enhanced_agent_bus.circuit_breaker.models import CircuitBreakerMetrics, QueuedRequest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+
+from enhanced_agent_bus.circuit_breaker.models import CircuitBreakerMetrics, QueuedRequest
 
 # Batch circuit breaker (rate-based, for batch processing)
 from .batch import CircuitBreaker as BatchCircuitBreaker

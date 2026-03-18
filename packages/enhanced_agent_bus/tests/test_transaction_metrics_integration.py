@@ -13,12 +13,13 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
+import pytest
+
 # ---------------------------------------------------------------------------
 # Module under test
 # ---------------------------------------------------------------------------
-import packages.enhanced_agent_bus.transaction_coordinator_metrics as tcm_module
-import pytest
-from packages.enhanced_agent_bus.transaction_coordinator_metrics import (
+import enhanced_agent_bus.transaction_coordinator_metrics as tcm_module
+from enhanced_agent_bus.transaction_coordinator_metrics import (
     _METRICS_CACHE,
     ALERT_RULES,
     PROMETHEUS_AVAILABLE,

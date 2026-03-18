@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 def verify_imports():
     """Verify all required imports work."""
     try:
-        from packages.enhanced_agent_bus.models import RiskLevel, SessionGovernanceConfig
+        from enhanced_agent_bus.models import RiskLevel, SessionGovernanceConfig
 
         from ..session_context import SessionContext, SessionContextStore
 

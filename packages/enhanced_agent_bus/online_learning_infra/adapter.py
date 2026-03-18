@@ -214,7 +214,7 @@ class RiverSklearnAdapter:
         return 0.0
 
     def _check_dependencies(self) -> None:
-        from packages.enhanced_agent_bus import online_learning
+        from enhanced_agent_bus import online_learning
 
         if not getattr(online_learning, "RIVER_AVAILABLE", RIVER_AVAILABLE):
             raise ImportError("River is required for online learning.")

@@ -8,10 +8,13 @@ Split from models.py for improved maintainability.
 
 from dataclasses import dataclass, field
 
-from packages.enhanced_agent_bus.bus_types import JSONDict
-
 # Import constitutional hash
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+
+from enhanced_agent_bus.bus_types import JSONDict
 
 from .enums import AgentCapability, TaskType
 

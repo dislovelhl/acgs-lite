@@ -16,7 +16,8 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.ai_assistant.context import (
+
+from enhanced_agent_bus.ai_assistant.context import (
     CONSTITUTIONAL_HASH,
     MAMBA_AVAILABLE,
     MAMBA_CONTEXT_PROCESSING_ERRORS,
@@ -92,7 +93,7 @@ class TestEdgeCases:
 
     async def test_process_long_context_empty_messages(self):
         """Context with no messages should still work (seq_len=0)."""
-        import packages.enhanced_agent_bus.ai_assistant.context as ctx_module
+        import enhanced_agent_bus.ai_assistant.context as ctx_module
 
         mgr = ctx_module.ContextManager()
         ctx = ctx_module.ConversationContext(user_id="u1", session_id="s1")

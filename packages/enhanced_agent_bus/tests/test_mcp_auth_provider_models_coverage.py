@@ -10,27 +10,28 @@ from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.mcp_integration.auth.mcp_auth_provider.enums import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+
+from enhanced_agent_bus.mcp_integration.auth.mcp_auth_provider.enums import (
     ProviderType,
     TokenState,
 )
-from packages.enhanced_agent_bus.mcp_integration.auth.mcp_auth_provider.models import (
+from enhanced_agent_bus.mcp_integration.auth.mcp_auth_provider.models import (
     AuthResult,
     ManagedProviderToken,
     MCPAuthProviderConfig,
     ProviderConfig,
 )
-from packages.enhanced_agent_bus.mcp_integration.auth.oauth2_provider import (
+from enhanced_agent_bus.mcp_integration.auth.oauth2_provider import (
     OAuth2Config,
     OAuth2Token,
     TokenStatus,
 )
-from packages.enhanced_agent_bus.mcp_integration.auth.oidc_provider import (
+from enhanced_agent_bus.mcp_integration.auth.oidc_provider import (
     OIDCConfig,
     OIDCTokens,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -640,13 +641,13 @@ class TestAuthResultToDict:
 
 class TestModuleAll:
     def test_all_exports_present(self):
-        import packages.enhanced_agent_bus.mcp_integration.auth.mcp_auth_provider.models as m
+        import enhanced_agent_bus.mcp_integration.auth.mcp_auth_provider.models as m
 
         for name in m.__all__:
             assert hasattr(m, name)
 
     def test_all_contains_expected_names(self):
-        import packages.enhanced_agent_bus.mcp_integration.auth.mcp_auth_provider.models as m
+        import enhanced_agent_bus.mcp_integration.auth.mcp_auth_provider.models as m
 
         expected = {"ProviderConfig", "ManagedProviderToken", "MCPAuthProviderConfig", "AuthResult"}
         assert set(m.__all__) == expected

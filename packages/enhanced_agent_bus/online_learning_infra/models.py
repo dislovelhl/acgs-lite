@@ -6,7 +6,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
-from typing import Optional
 
 from .config import LearningStatus
 

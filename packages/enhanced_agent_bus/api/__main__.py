@@ -9,7 +9,7 @@ from .config import DEFAULT_API_PORT
 
 if __name__ == "__main__":
     uvicorn.run(
-        "packages.enhanced_agent_bus.api:app",
+        "enhanced_agent_bus.api:app",
         host="127.0.0.1",
         port=int(DEFAULT_API_PORT),
         reload=False,

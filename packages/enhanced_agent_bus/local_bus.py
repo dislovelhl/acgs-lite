@@ -8,12 +8,15 @@ import asyncio
 from collections import defaultdict
 from collections.abc import Callable
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 try:
-    from packages.enhanced_agent_bus.exceptions import MessageDeliveryError
+    from enhanced_agent_bus.exceptions import MessageDeliveryError
 
     from .models import AgentMessage, MessageType
 except ImportError:
@@ -109,7 +112,7 @@ class LocalEventBus:
                 msg_data = await q.get()
                 await handler(msg_data)
                 q.task_done()
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001 - subscriber handlers are user-provided callables
                 logger.error(f"[Lite] Error in local message handler: {e}")
                 if not self._running:
                     break

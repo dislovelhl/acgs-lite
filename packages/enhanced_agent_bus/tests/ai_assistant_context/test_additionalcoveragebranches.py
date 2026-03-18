@@ -16,7 +16,8 @@ from datetime import UTC, datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.ai_assistant.context import (
+
+from enhanced_agent_bus.ai_assistant.context import (
     CONSTITUTIONAL_HASH,
     MAMBA_AVAILABLE,
     MAMBA_CONTEXT_PROCESSING_ERRORS,
@@ -167,7 +168,7 @@ class TestAdditionalCoverageBranches:
 
     async def test_process_long_context_mamba_init_succeeds_processes_tensor(self):
         """Covers line 580->586: init succeeds (True), continues to tensor processing."""
-        import packages.enhanced_agent_bus.ai_assistant.context as ctx_module
+        import enhanced_agent_bus.ai_assistant.context as ctx_module
 
         mock_tensor = MagicMock()
         mock_tensor.norm.return_value.item.return_value = 2.5

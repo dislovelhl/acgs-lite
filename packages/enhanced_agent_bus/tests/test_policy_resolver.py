@@ -29,8 +29,9 @@ if not RUN_EAB_POLICY_RESOLVER_TESTS:
     )
 
 # Constitutional hash validation
-from packages.enhanced_agent_bus.models import RiskLevel, SessionGovernanceConfig  # noqa: E402
 from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+
+from enhanced_agent_bus.models import RiskLevel, SessionGovernanceConfig  # noqa: E402
 
 from ..policy_resolver import PolicyResolutionResult, PolicyResolver  # noqa: E402
 

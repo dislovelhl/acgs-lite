@@ -14,18 +14,17 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from packages.enhanced_agent_bus.impact_scorer_infra.models import (
+from enhanced_agent_bus.impact_scorer_infra.models import (
     ImpactVector,
     ScoringMethod,
     ScoringResult,
 )
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from .base import BaseScoringAlgorithm
 
 if TYPE_CHECKING:
-    from packages.enhanced_agent_bus.embeddings.provider import BaseEmbeddingProvider
+    from enhanced_agent_bus.embeddings.provider import BaseEmbeddingProvider
 
 logger = get_logger(__name__)
 _MINICPM_SCORER_ERRORS = (
@@ -40,7 +39,10 @@ _MINICPM_SCORER_ERRORS = (
 )
 
 # Constitutional Hash for governance compliance
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 
 class GovernanceDomain(Enum):
@@ -248,7 +250,7 @@ class MiniCPMSemanticScorer(BaseScoringAlgorithm):
         self._initialization_attempted = True
 
         try:
-            from packages.enhanced_agent_bus.embeddings.provider import (
+            from enhanced_agent_bus.embeddings.provider import (
                 EmbeddingConfig,
                 EmbeddingProviderType,
                 create_embedding_provider,

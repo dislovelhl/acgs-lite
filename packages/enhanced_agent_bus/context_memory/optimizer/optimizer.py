@@ -12,7 +12,10 @@ from collections import OrderedDict
 from collections.abc import Callable
 from datetime import UTC, datetime
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -21,7 +24,7 @@ try:
 except ImportError:
     JSONDict: type = JSONDict  # type: ignore[no-redef]
 
-from packages.enhanced_agent_bus.context_memory.models import (
+from enhanced_agent_bus.context_memory.models import (
     ContextChunk,
     ContextType,
     ContextWindow,

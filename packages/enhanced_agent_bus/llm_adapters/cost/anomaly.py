@@ -12,8 +12,7 @@ import statistics
 from collections.abc import Callable
 from datetime import UTC, datetime
 
-from packages.enhanced_agent_bus.llm_adapters.cost.models import CostAnomaly
-
+from enhanced_agent_bus.llm_adapters.cost.models import CostAnomaly
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)

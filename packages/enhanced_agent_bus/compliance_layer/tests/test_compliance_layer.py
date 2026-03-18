@@ -23,7 +23,7 @@ class TestComplianceModels:
 
     def test_compliance_framework_enum(self):
         """Test ComplianceFramework enum values."""
-        from packages.enhanced_agent_bus.compliance_layer.models import ComplianceFramework
+        from enhanced_agent_bus.compliance_layer.models import ComplianceFramework
 
         assert ComplianceFramework.NIST_AI_RMF.value == "nist_ai_rmf"
         assert ComplianceFramework.SOC2_TYPE_II.value == "soc2_type_ii"
@@ -31,7 +31,7 @@ class TestComplianceModels:
 
     def test_compliance_status_enum(self):
         """Test ComplianceStatus enum values."""
-        from packages.enhanced_agent_bus.compliance_layer.models import ComplianceStatus
+        from enhanced_agent_bus.compliance_layer.models import ComplianceStatus
 
         assert ComplianceStatus.COMPLIANT.value == "compliant"
         assert ComplianceStatus.NON_COMPLIANT.value == "non_compliant"
@@ -39,7 +39,7 @@ class TestComplianceModels:
 
     def test_risk_severity_enum(self):
         """Test RiskSeverity enum values."""
-        from packages.enhanced_agent_bus.compliance_layer.models import RiskSeverity
+        from enhanced_agent_bus.compliance_layer.models import RiskSeverity
 
         assert RiskSeverity.CRITICAL.value == "critical"
         assert RiskSeverity.HIGH.value == "high"
@@ -48,14 +48,14 @@ class TestComplianceModels:
 
     def test_threat_category_enum(self):
         """Test ThreatCategory enum values."""
-        from packages.enhanced_agent_bus.compliance_layer.models import ThreatCategory
+        from enhanced_agent_bus.compliance_layer.models import ThreatCategory
 
         assert ThreatCategory.PROMPT_INJECTION.value == "prompt_injection"
         assert ThreatCategory.CONSTITUTIONAL_BYPASS.value == "constitutional_bypass"
 
     def test_data_classification_enum(self):
         """Test DataClassification enum values."""
-        from packages.enhanced_agent_bus.compliance_layer.models import DataClassification
+        from enhanced_agent_bus.compliance_layer.models import DataClassification
 
         assert DataClassification.PUBLIC.value == "public"
         assert DataClassification.PII.value == "pii"
@@ -63,14 +63,14 @@ class TestComplianceModels:
 
     def test_human_oversight_level_enum(self):
         """Test HumanOversightLevel enum values."""
-        from packages.enhanced_agent_bus.compliance_layer.models import HumanOversightLevel
+        from enhanced_agent_bus.compliance_layer.models import HumanOversightLevel
 
         assert HumanOversightLevel.HUMAN_IN_THE_LOOP.value == "human_in_the_loop"
         assert HumanOversightLevel.HUMAN_ON_THE_LOOP.value == "human_on_the_loop"
 
     def test_risk_context_creation(self):
         """Test RiskContext model creation."""
-        from packages.enhanced_agent_bus.compliance_layer.models import (
+        from enhanced_agent_bus.compliance_layer.models import (
             ComplianceFramework,
             DataClassification,
             RiskContext,
@@ -91,7 +91,7 @@ class TestComplianceModels:
 
     def test_threat_model_risk_calculation(self):
         """Test ThreatModel risk score calculation."""
-        from packages.enhanced_agent_bus.compliance_layer.models import (
+        from enhanced_agent_bus.compliance_layer.models import (
             RiskSeverity,
             ThreatCategory,
             ThreatModel,
@@ -112,7 +112,7 @@ class TestComplianceModels:
 
     def test_compliance_assessment_score_calculation(self):
         """Test ComplianceAssessment score calculation."""
-        from packages.enhanced_agent_bus.compliance_layer.models import (
+        from enhanced_agent_bus.compliance_layer.models import (
             ComplianceAssessment,
             ComplianceFramework,
             ComplianceStatus,
@@ -134,7 +134,7 @@ class TestComplianceModels:
 
     def test_compliance_report_overall_score(self):
         """Test ComplianceReport overall score calculation."""
-        from packages.enhanced_agent_bus.compliance_layer.models import (
+        from enhanced_agent_bus.compliance_layer.models import (
             ComplianceAssessment,
             ComplianceFramework,
             ComplianceReport,
@@ -171,7 +171,7 @@ class TestNISTRiskAssessor:
 
     @pytest.fixture
     def assessor(self):
-        from packages.enhanced_agent_bus.compliance_layer.nist_risk_assessor import (
+        from enhanced_agent_bus.compliance_layer.nist_risk_assessor import (
             NISTRiskAssessor,
             reset_nist_risk_assessor,
         )
@@ -226,7 +226,7 @@ class TestNISTRiskAssessor:
 
     def test_add_threat(self, assessor):
         """Test adding custom threat."""
-        from packages.enhanced_agent_bus.compliance_layer.models import (
+        from enhanced_agent_bus.compliance_layer.models import (
             RiskSeverity,
             ThreatCategory,
             ThreatModel,
@@ -256,7 +256,7 @@ class TestSOC2Auditor:
 
     @pytest.fixture
     def auditor(self):
-        from packages.enhanced_agent_bus.compliance_layer.soc2_auditor import (
+        from enhanced_agent_bus.compliance_layer.soc2_auditor import (
             SOC2Auditor,
             reset_soc2_auditor,
         )
@@ -290,7 +290,7 @@ class TestSOC2Auditor:
 
     def test_control_validator_pi(self, auditor):
         """Test Processing Integrity control validation."""
-        from packages.enhanced_agent_bus.compliance_layer.models import (
+        from enhanced_agent_bus.compliance_layer.models import (
             ComplianceStatus,
             ProcessingIntegrityControl,
         )
@@ -312,7 +312,7 @@ class TestSOC2Auditor:
 
     def test_control_validator_confidentiality(self, auditor):
         """Test Confidentiality control validation."""
-        from packages.enhanced_agent_bus.compliance_layer.models import (
+        from enhanced_agent_bus.compliance_layer.models import (
             ComplianceStatus,
             ConfidentialityControl,
         )
@@ -368,7 +368,7 @@ class TestSOC2Auditor:
 
     def test_control_validator_availability(self, auditor):
         """Test Availability control validation."""
-        from packages.enhanced_agent_bus.compliance_layer.models import (
+        from enhanced_agent_bus.compliance_layer.models import (
             AvailabilityControl,
             ComplianceStatus,
         )
@@ -393,7 +393,7 @@ class TestSOC2Auditor:
 
     def test_control_validator_availability_partial(self, auditor):
         """Test Availability control validation with partial compliance."""
-        from packages.enhanced_agent_bus.compliance_layer.models import (
+        from enhanced_agent_bus.compliance_layer.models import (
             AvailabilityControl,
             ComplianceStatus,
         )
@@ -481,7 +481,7 @@ class TestEUAIActCompliance:
 
     @pytest.fixture
     def compliance(self):
-        from packages.enhanced_agent_bus.compliance_layer.euaiact_compliance import (
+        from enhanced_agent_bus.compliance_layer.euaiact_compliance import (
             EUAIActCompliance,
             reset_euaiact_compliance,
         )
@@ -565,7 +565,7 @@ class TestDecisionExplainer:
 
     @pytest.fixture
     def explainer(self):
-        from packages.enhanced_agent_bus.compliance_layer.decision_explainer import (
+        from enhanced_agent_bus.compliance_layer.decision_explainer import (
             DecisionExplainer,
             reset_decision_explainer,
         )
@@ -594,7 +594,7 @@ class TestDecisionExplainer:
     @pytest.mark.asyncio
     async def test_explanation_with_context(self, explainer):
         """Test explanation with custom context."""
-        from packages.enhanced_agent_bus.compliance_layer.decision_explainer import (
+        from enhanced_agent_bus.compliance_layer.decision_explainer import (
             ExplanationContext,
         )
 
@@ -665,7 +665,7 @@ class TestComplianceReporter:
 
     @pytest.fixture
     def reporter(self):
-        from packages.enhanced_agent_bus.compliance_layer.compliance_reporter import (
+        from enhanced_agent_bus.compliance_layer.compliance_reporter import (
             ComplianceReporter,
             reset_compliance_reporter,
         )
@@ -736,7 +736,7 @@ class TestComplianceLayerIntegration:
     @pytest.mark.asyncio
     async def test_full_compliance_assessment(self):
         """Test full compliance assessment across all frameworks."""
-        from packages.enhanced_agent_bus.compliance_layer import (
+        from enhanced_agent_bus.compliance_layer import (
             get_compliance_reporter,
             reset_compliance_reporter,
         )
@@ -763,7 +763,7 @@ class TestComplianceLayerIntegration:
     @pytest.mark.asyncio
     async def test_constitutional_hash_enforcement(self):
         """Test constitutional hash is enforced across all components."""
-        from packages.enhanced_agent_bus.compliance_layer import (
+        from enhanced_agent_bus.compliance_layer import (
             get_decision_explainer,
             get_euaiact_compliance,
             get_nist_risk_assessor,
@@ -795,7 +795,7 @@ class TestComplianceLayerIntegration:
     @pytest.mark.asyncio
     async def test_explanation_with_compliance(self):
         """Test decision explanation integrates with compliance."""
-        from packages.enhanced_agent_bus.compliance_layer.decision_explainer import (
+        from enhanced_agent_bus.compliance_layer.decision_explainer import (
             DecisionExplainer,
             ExplanationContext,
         )
@@ -829,7 +829,7 @@ class TestConstitutionalCompliance:
 
     def test_constitutional_hash_in_models(self):
         """Test constitutional hash is in all models."""
-        from packages.enhanced_agent_bus.compliance_layer.models import (
+        from enhanced_agent_bus.compliance_layer.models import (
             ComplianceAssessment,
             ComplianceFramework,
             ComplianceReport,
@@ -866,7 +866,7 @@ class TestConstitutionalCompliance:
 
     def test_module_constitutional_hash(self):
         """Test module exports constitutional hash."""
-        from packages.enhanced_agent_bus.compliance_layer import CONSTITUTIONAL_HASH as MODULE_HASH
+        from enhanced_agent_bus.compliance_layer import CONSTITUTIONAL_HASH as MODULE_HASH
 
         assert MODULE_HASH == CONSTITUTIONAL_HASH
 
@@ -884,7 +884,7 @@ class TestPerformance:
         """Test assessment completes within performance target."""
         import time
 
-        from packages.enhanced_agent_bus.compliance_layer import (
+        from enhanced_agent_bus.compliance_layer import (
             get_compliance_reporter,
             reset_compliance_reporter,
         )
@@ -901,7 +901,7 @@ class TestPerformance:
 
     async def test_explanation_latency(self):
         """Test explanation generation latency."""
-        from packages.enhanced_agent_bus.compliance_layer.decision_explainer import (
+        from enhanced_agent_bus.compliance_layer.decision_explainer import (
             DecisionExplainer,
         )
 

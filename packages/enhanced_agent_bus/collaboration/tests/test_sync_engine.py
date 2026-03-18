@@ -7,13 +7,14 @@ Constitutional Hash: cdd01ef066bc6cf2
 import asyncio
 
 import pytest
-from packages.enhanced_agent_bus.collaboration.models import (
+
+from enhanced_agent_bus.collaboration.models import (
     CollaborationSession,
     DocumentType,
     EditOperation,
     EditOperationType,
 )
-from packages.enhanced_agent_bus.collaboration.sync_engine import (
+from enhanced_agent_bus.collaboration.sync_engine import (
     OperationalTransform,
     SyncEngine,
 )

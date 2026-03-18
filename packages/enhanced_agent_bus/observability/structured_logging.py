@@ -24,10 +24,16 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
 from enum import Enum
 from re import Pattern
-from typing import IO, Optional, Union
+from typing import IO
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 # Context variables for distributed tracing
 trace_id_var: ContextVar[str | None] = ContextVar("trace_id", default=None)
@@ -599,4 +605,10 @@ def clear_trace_context() -> None:
 
 
 # Re-export canonical get_logger so EAB modules import from within the package.
-from src.core.shared.structured_logging import get_logger  # noqa: E402
+try:
+    from src.core.shared.structured_logging import get_logger  # noqa: E402
+except ImportError:
+    import logging  # noqa: E402
+
+    def get_logger(name: str) -> logging.Logger:
+        return logging.getLogger(name)

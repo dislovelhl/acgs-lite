@@ -7,7 +7,10 @@ Backward-compatible re-export surface for all exception symbols.
 
 import sys
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 from .agent import AgentAlreadyRegisteredError, AgentCapabilityError, AgentNotRegisteredError
 from .base import (
@@ -20,6 +23,9 @@ from .base import (
     PolicyError,
 )
 from .constitutional import ConstitutionalHashMismatchError, ConstitutionalValidationError
+
+# Backward-compatible aliases for renamed exceptions
+ConstitutionalViolationError = ConstitutionalValidationError
 from .maci import (
     MACIActionDeniedError,
     MACICrossRoleValidationError,
@@ -41,6 +47,7 @@ from .operations import (
     AuthorizationError,
     BusAlreadyStartedError,
     BusNotStartedError,
+    CheckpointError,
     CircuitBreakerOpenError,
     ConfigurationError,
     DeliberationError,
@@ -49,12 +56,14 @@ from .operations import (
     GovernanceError,
     HandlerExecutionError,
     ImpactAssessmentError,
+    InterruptError,
     RateLimitExceededError,
     ResourceNotFoundError,
     ReviewConsensusError,
     ServiceUnavailableError,
     SignatureCollectionError,
     TenantIsolationError,
+    TimeoutError,
     ValidationError,
 )
 from .policy import (
@@ -84,7 +93,7 @@ _REEXPORT_ONLY = (
 _module = sys.modules.get(__name__)
 if _module is not None:
     _ = sys.modules.setdefault("enhanced_agent_bus.exceptions", _module)
-    _ = sys.modules.setdefault("packages.enhanced_agent_bus.exceptions", _module)
+    _ = sys.modules.setdefault("enhanced_agent_bus.exceptions", _module)
     _ = sys.modules.setdefault("core.enhanced_agent_bus.exceptions", _module)
 
 __all__ = [
@@ -102,6 +111,8 @@ __all__ = [
     "BusNotStartedError",
     # Bus Operations
     "BusOperationError",
+    # Checkpoint
+    "CheckpointError",
     # Configuration
     "ConfigurationError",
     # Constitutional
@@ -112,6 +123,8 @@ __all__ = [
     "DeliberationError",
     "DeliberationTimeoutError",
     "HandlerExecutionError",
+    # Interrupt
+    "InterruptError",
     "MACICrossRoleValidationError",
     # MACI Role Separation
     "MACIError",
@@ -133,4 +146,7 @@ __all__ = [
     "RateLimitExceeded",
     "ReviewConsensusError",
     "SignatureCollectionError",
+    "TimeoutError",
+    # Backward-compat alias
+    "ConstitutionalViolationError",
 ]

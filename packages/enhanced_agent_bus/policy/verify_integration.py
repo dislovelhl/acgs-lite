@@ -21,7 +21,7 @@ async def verify_proven_integration():
     """
     Verifies that the AgentBusIntegration correctly uses the proven policy generator.
     """
-    from packages.enhanced_agent_bus.ai_assistant.integration import (
+    from enhanced_agent_bus.ai_assistant.integration import (
         AgentBusIntegration,
         IntegrationConfig,
     )

@@ -8,12 +8,16 @@ and migration context bypass scenarios.
 
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip("src.core.services.policy_registry")
+
 from unittest.mock import AsyncMock
 
 import pytest
 
 try:
-    from packages.enhanced_agent_bus.pqc_validators import (
+    from enhanced_agent_bus.pqc_validators import (
         SUPPORTED_PQC_ALGORITHMS,
         check_enforcement_for_create,
         check_enforcement_for_update,
@@ -99,7 +103,7 @@ async def test_delete_classical_key_strict_succeeds():
     """
     # No enforcement function for delete exists — design decision verified
     try:
-        from packages.enhanced_agent_bus.pqc_validators import check_enforcement_for_delete
+        from enhanced_agent_bus.pqc_validators import check_enforcement_for_delete
     except ImportError:
         try:
             from pqc_validators import check_enforcement_for_delete  # type: ignore[no-redef]

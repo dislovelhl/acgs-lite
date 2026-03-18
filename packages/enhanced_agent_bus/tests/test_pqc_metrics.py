@@ -12,7 +12,7 @@ from unittest.mock import AsyncMock
 import pytest
 
 try:
-    from packages.enhanced_agent_bus.api.routes.pqc_metrics import (
+    from enhanced_agent_bus.api.routes.pqc_metrics import (
         _compute_adoption_rate,
         _read_window_counters,
     )

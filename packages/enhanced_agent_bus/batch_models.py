@@ -12,8 +12,14 @@ from datetime import UTC, datetime
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 # Import constitutional hash
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from .enums import BatchItemStatus
 

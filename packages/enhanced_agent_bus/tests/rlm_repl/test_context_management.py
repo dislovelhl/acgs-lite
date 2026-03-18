@@ -4,7 +4,8 @@ Constitutional Hash: cdd01ef066bc6cf2
 """
 
 import pytest
-from packages.enhanced_agent_bus.tests.rlm_repl.conftest import _make_repl
+
+from enhanced_agent_bus.tests.rlm_repl.conftest import _make_repl
 
 
 class TestContextManagement:
@@ -44,7 +45,7 @@ class TestContextManagement:
         assert result is False
 
     def test_set_context_too_large_raises_value_error(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLConfig
+        from enhanced_agent_bus.rlm_repl import REPLConfig
 
         config = REPLConfig(max_context_size_mb=1)
         repl = _make_repl(config)
@@ -53,7 +54,7 @@ class TestContextManagement:
             repl.set_context("big", big_content)
 
     def test_set_context_exceeds_max_variables_raises(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLConfig
+        from enhanced_agent_bus.rlm_repl import REPLConfig
 
         config = REPLConfig(max_variables=2)
         repl = _make_repl(config)

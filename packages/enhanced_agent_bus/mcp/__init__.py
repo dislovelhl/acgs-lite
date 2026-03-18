@@ -10,7 +10,7 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 Quick start::
 
-    from packages.enhanced_agent_bus.mcp import MCPClient, MCPClientConfig
+    from enhanced_agent_bus.mcp import MCPClient, MCPClientConfig
 
     config = MCPClientConfig(server_url="http://localhost:8080")
     async with MCPClient(config=config) as client:
@@ -26,7 +26,10 @@ Quick start::
 
 __version__ = "1.0.0"
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 __constitutional_hash__ = CONSTITUTIONAL_HASH
 

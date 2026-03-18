@@ -12,8 +12,14 @@ from datetime import UTC, datetime
 from enum import Enum
 
 # Constitutional Hash - immutable reference
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 
 class OptimizationDomain(Enum):

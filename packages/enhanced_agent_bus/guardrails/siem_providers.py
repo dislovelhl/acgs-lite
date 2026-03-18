@@ -15,14 +15,22 @@ from datetime import UTC, datetime
 from enum import Enum
 
 import httpx
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import (
     ServiceUnavailableError,
 )
 from src.core.shared.errors.exceptions import (
     ValidationError as ACGSValidationError,
 )
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

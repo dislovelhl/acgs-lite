@@ -12,7 +12,8 @@ from importlib import import_module  # noqa: E402
 import pybreaker  # noqa: E402
 from fastapi import APIRouter, FastAPI  # noqa: E402
 from fastapi.responses import ORJSONResponse  # noqa: E402
-from packages.enhanced_agent_bus.exceptions import (  # noqa: E402
+
+from enhanced_agent_bus.exceptions import (  # noqa: E402
     AgentBusError,
     AgentError,
     BusNotStartedError,

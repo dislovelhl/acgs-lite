@@ -11,14 +11,17 @@ from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
-from packages.enhanced_agent_bus.bus_types import JSONDict
+from enhanced_agent_bus.bus_types import JSONDict
 
 # Import types conditionally to avoid circular imports
 if TYPE_CHECKING:
     pass
 
 # Import centralized constitutional hash with fallback
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

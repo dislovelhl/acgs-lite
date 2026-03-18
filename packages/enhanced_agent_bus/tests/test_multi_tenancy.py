@@ -11,7 +11,8 @@ from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.multi_tenancy import (
+
+from enhanced_agent_bus.multi_tenancy import (
     CONSTITUTIONAL_HASH,
     RLSPolicy,
     RLSPolicyManager,
@@ -29,7 +30,7 @@ from packages.enhanced_agent_bus.multi_tenancy import (
     set_current_tenant,
     tenant_context,
 )
-from packages.enhanced_agent_bus.multi_tenancy.rls import (
+from enhanced_agent_bus.multi_tenancy.rls import (
     ACGS2_RLS_TABLES,
     RLSPolicyType,
     create_acgs2_rls_policies,
@@ -770,7 +771,7 @@ class TestTenantManager:
     @pytest.fixture
     def manager(self):
         """Create a TenantManager for testing."""
-        from packages.enhanced_agent_bus.multi_tenancy.manager import TenantManager
+        from enhanced_agent_bus.multi_tenancy.manager import TenantManager
 
         return TenantManager(cache_ttl_seconds=60, quota_warning_threshold=0.8)
 
@@ -803,7 +804,7 @@ class TestTenantManager:
     @pytest.mark.asyncio
     async def test_create_tenant_invalid_slug(self, manager):
         """Test tenant creation with invalid slug fails."""
-        from packages.enhanced_agent_bus.multi_tenancy.manager import TenantValidationError
+        from enhanced_agent_bus.multi_tenancy.manager import TenantValidationError
 
         with pytest.raises(TenantValidationError, match="Invalid slug format"):
             await manager.create_tenant(
@@ -841,7 +842,7 @@ class TestTenantManager:
     @pytest.mark.asyncio
     async def test_create_tenant_with_inactive_parent_fails(self, manager):
         """Test creating child with inactive parent fails."""
-        from packages.enhanced_agent_bus.multi_tenancy.manager import TenantValidationError
+        from enhanced_agent_bus.multi_tenancy.manager import TenantValidationError
 
         parent = await manager.create_tenant(
             name="Inactive Parent",
@@ -919,7 +920,7 @@ class TestTenantManager:
     @pytest.mark.asyncio
     async def test_delete_tenant_with_children_fails(self, manager):
         """Test deleting tenant with children fails without force."""
-        from packages.enhanced_agent_bus.multi_tenancy.manager import TenantValidationError
+        from enhanced_agent_bus.multi_tenancy.manager import TenantValidationError
 
         parent = await manager.create_tenant(
             name="Parent",
@@ -1019,7 +1020,7 @@ class TestTenantManager:
     @pytest.mark.asyncio
     async def test_quota_exceeded_error(self, manager):
         """Test quota exceeded error on increment."""
-        from packages.enhanced_agent_bus.multi_tenancy.manager import TenantQuotaExceededError
+        from enhanced_agent_bus.multi_tenancy.manager import TenantQuotaExceededError
 
         tenant = await manager.create_tenant(
             name="Quota Error",
@@ -1115,7 +1116,7 @@ class TestTenantManager:
     @pytest.mark.asyncio
     async def test_event_subscription(self, manager):
         """Test event subscription and publishing."""
-        from packages.enhanced_agent_bus.multi_tenancy.manager import TenantEvent
+        from enhanced_agent_bus.multi_tenancy.manager import TenantEvent
 
         events_received = []
 
@@ -1138,7 +1139,7 @@ class TestTenantManager:
     @pytest.mark.asyncio
     async def test_event_unsubscribe(self, manager):
         """Test event unsubscription."""
-        from packages.enhanced_agent_bus.multi_tenancy.manager import TenantEvent
+        from enhanced_agent_bus.multi_tenancy.manager import TenantEvent
 
         events_received = []
 
@@ -1277,7 +1278,7 @@ class TestTenantManagerSingleton:
 
     def test_get_tenant_manager_returns_instance(self):
         """Test get_tenant_manager returns a TenantManager."""
-        from packages.enhanced_agent_bus.multi_tenancy.manager import (
+        from enhanced_agent_bus.multi_tenancy.manager import (
             get_tenant_manager,
             set_tenant_manager,
         )
@@ -1291,7 +1292,7 @@ class TestTenantManagerSingleton:
 
     def test_get_tenant_manager_returns_same_instance(self):
         """Test get_tenant_manager returns same instance."""
-        from packages.enhanced_agent_bus.multi_tenancy.manager import get_tenant_manager
+        from enhanced_agent_bus.multi_tenancy.manager import get_tenant_manager
 
         m1 = get_tenant_manager()
         m2 = get_tenant_manager()
@@ -1299,7 +1300,7 @@ class TestTenantManagerSingleton:
 
     def test_set_tenant_manager(self):
         """Test set_tenant_manager replaces instance."""
-        from packages.enhanced_agent_bus.multi_tenancy.manager import (
+        from enhanced_agent_bus.multi_tenancy.manager import (
             TenantManager,
             get_tenant_manager,
             set_tenant_manager,
@@ -1313,7 +1314,7 @@ class TestTenantManagerSingleton:
 
 
 # Import TenantManager for fixture
-from packages.enhanced_agent_bus.multi_tenancy.manager import TenantManager  # noqa: E402
+from enhanced_agent_bus.multi_tenancy.manager import TenantManager  # noqa: E402
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

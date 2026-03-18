@@ -14,13 +14,17 @@ from datetime import UTC, datetime
 from enum import Enum
 
 import httpx
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # Import configuration - try relative first, then absolute
 try:
-    from packages.enhanced_agent_bus.exceptions import AgentBusError
+    from enhanced_agent_bus.exceptions import AgentBusError
 
     from ..config import BusConfiguration
 except (ImportError, ValueError):
@@ -29,8 +33,8 @@ except (ImportError, ValueError):
         from exceptions import AgentBusError  # type: ignore[import-untyped]
     except ImportError:
         try:
-            from packages.enhanced_agent_bus.config import BusConfiguration
-            from packages.enhanced_agent_bus.exceptions import AgentBusError
+            from enhanced_agent_bus.config import BusConfiguration
+            from enhanced_agent_bus.exceptions import AgentBusError
         except ImportError:
             # Fallback for standalone usage
             BusConfiguration = None  # type: ignore[assignment]
@@ -830,11 +834,11 @@ class MLGovernanceClient:
         return sanitize_error(error)  # type: ignore[no-any-return]
 
 
-# =============================================================================
-# Global Client Instance
-# =============================================================================
+        # =============================================================================
+        # Global Client Instance
+        # =============================================================================
 
-_ml_governance_client: MLGovernanceClient | None = None
+        _ml_governance_client: MLGovernanceClient | None = None
 
 
 def get_ml_governance_client() -> MLGovernanceClient:
@@ -864,9 +868,9 @@ async def close_ml_governance_client() -> None:
         _ml_governance_client = None
 
 
-# =============================================================================
-# Convenience Function
-# =============================================================================
+        # =============================================================================
+        # Convenience Function
+        # =============================================================================
 
 
 async def report_outcome(
@@ -910,20 +914,20 @@ __all__ = [
     # Enums
     "CircuitState",
     # Client
-    "MLGovernanceClient",
-    "MLGovernanceConfig",
-    "MLGovernanceConnectionError",
-    # Exceptions
-    "MLGovernanceError",
-    "MLGovernanceTimeoutError",
-    # Data types
-    "OutcomeReport",
-    "OutcomeReportStatus",
-    "OutcomeResult",
-    "close_ml_governance_client",
-    # Global instance functions
-    "get_ml_governance_client",
-    "initialize_ml_governance_client",
-    # Convenience function
-    "report_outcome",
-]
+        "MLGovernanceClient",
+        "MLGovernanceConfig",
+        "MLGovernanceConnectionError",
+        # Exceptions
+        "MLGovernanceError",
+        "MLGovernanceTimeoutError",
+        # Data types
+        "OutcomeReport",
+        "OutcomeReportStatus",
+        "OutcomeResult",
+        "close_ml_governance_client",
+        # Global instance functions
+        "get_ml_governance_client",
+        "initialize_ml_governance_client",
+        # Convenience function
+        "report_outcome",
+        ]

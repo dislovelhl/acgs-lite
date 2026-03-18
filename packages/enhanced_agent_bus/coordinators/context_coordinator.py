@@ -14,13 +14,20 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal, Protocol, runtime_checkable
 
 import psutil
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 if TYPE_CHECKING:
-    from packages.enhanced_agent_bus.mamba2_hybrid_processor import (
+    from enhanced_agent_bus.mamba2_hybrid_processor import (
         ConstitutionalContextManager,
     )
 
@@ -57,7 +64,7 @@ MAMBA_CONTEXT_OPERATION_ERRORS = (
 
 # Import Mamba availability flag
 try:
-    from packages.enhanced_agent_bus.mamba2_hybrid_processor import (
+    from enhanced_agent_bus.mamba2_hybrid_processor import (
         MAMBA_AVAILABLE,
         create_constitutional_context_manager,
     )

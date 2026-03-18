@@ -7,20 +7,22 @@ throughput) for constitutional amendment monitoring and automated rollback.
 """
 
 import json
+import sys
 from datetime import UTC, datetime, timezone
-from typing import Optional
 
 from pydantic import BaseModel, Field
-from src.core.shared.types import JSONDict
-
-from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
 except ImportError:
-    # Fallback for standalone usage
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.observability.structured_logging import get_logger
 
 try:
     import redis.asyncio as aioredis
@@ -48,6 +50,10 @@ except ImportError:
     settings = _FallbackSettings()  # type: ignore[assignment]
 
 logger = get_logger(__name__)
+
+_module = sys.modules[__name__]
+sys.modules.setdefault("enhanced_agent_bus.constitutional.metrics_collector", _module)
+sys.modules.setdefault("packages.enhanced_agent_bus.constitutional.metrics_collector", _module)
 
 
 class GovernanceMetricsSnapshot(BaseModel):

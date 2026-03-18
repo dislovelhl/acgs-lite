@@ -4,8 +4,8 @@ Focused tests for SpecDeltaCompressor checksum hash mode behavior.
 
 from __future__ import annotations
 
-import packages.enhanced_agent_bus.context_optimization as context_optimization_module
-from packages.enhanced_agent_bus.context_optimization import SpecDeltaCompressor
+import enhanced_agent_bus.context_optimization as context_optimization_module
+from enhanced_agent_bus.context_optimization import SpecDeltaCompressor
 
 
 def test_spec_checksum_uses_fast_kernel_when_available(monkeypatch) -> None:

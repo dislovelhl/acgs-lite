@@ -7,7 +7,11 @@ from datetime import UTC, datetime, timezone
 
 import pandas as pd
 import streamlit as st
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from .adaptive_router import get_adaptive_router
 

@@ -7,7 +7,8 @@ import time
 from unittest.mock import MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.observability.capacity_metrics import (
+
+from enhanced_agent_bus.observability.capacity_metrics import (
     CONSTITUTIONAL_HASH,
     CacheLayer,
     CacheMissReason,

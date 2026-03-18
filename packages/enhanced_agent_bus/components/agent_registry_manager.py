@@ -6,7 +6,10 @@ This component is responsible for maintaining the registry of agents
 and providing methods to query and manage agent information.
 """
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

@@ -12,7 +12,11 @@ import os
 from pathlib import Path
 
 from src.core.shared.type_guards import get_str, get_str_list, is_json_dict
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from ..maci_imports import (
     CONSTITUTIONAL_HASH,

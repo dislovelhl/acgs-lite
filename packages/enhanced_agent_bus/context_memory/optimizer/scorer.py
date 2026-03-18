@@ -7,14 +7,17 @@ Vectorized relevance scoring using numpy for batch operations.
 
 import time
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 try:
     from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict: type = JSONDict  # type: ignore[no-redef]
 
-from packages.enhanced_agent_bus.context_memory.models import ContextChunk, ContextType
+from enhanced_agent_bus.context_memory.models import ContextChunk, ContextType
 
 from .models import ScoringResult
 

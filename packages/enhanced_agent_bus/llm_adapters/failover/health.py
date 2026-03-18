@@ -13,8 +13,12 @@ from collections import deque
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
-from packages.enhanced_agent_bus.circuit_breaker import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.circuit_breaker import CONSTITUTIONAL_HASH
 
 
 @dataclass

@@ -8,7 +8,10 @@ Configuration dataclasses and enums for context window optimization.
 from dataclasses import dataclass
 from enum import Enum
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 
 class OptimizationStrategy(str, Enum):  # noqa: UP042

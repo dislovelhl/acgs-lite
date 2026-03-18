@@ -3,20 +3,19 @@ Constitutional Hash: cdd01ef066bc6cf2
 """
 
 import time
-from typing import Optional, TypeAlias, Union
+from typing import TypeAlias
 
-from packages.enhanced_agent_bus.bus_types import JSONDict, JSONValue
-
+from enhanced_agent_bus.bus_types import JSONDict, JSONValue
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 try:
-    from packages.enhanced_agent_bus.models import (
+    from enhanced_agent_bus.models import (
         CONSTITUTIONAL_HASH,
         AgentMessage,
         MessageType,
         get_enum_value,
     )
-    from packages.enhanced_agent_bus.utils import get_iso_timestamp
+    from enhanced_agent_bus.utils import get_iso_timestamp
 except ImportError:
     try:
         from enhanced_agent_bus.models import (  # type: ignore[no-redef]
@@ -28,7 +27,7 @@ except ImportError:
         from enhanced_agent_bus.utils import get_iso_timestamp  # type: ignore[no-redef]
     except ImportError:
         try:
-            from packages.enhanced_agent_bus.models import (
+            from enhanced_agent_bus.models import (
                 CONSTITUTIONAL_HASH,
                 AgentMessage,
                 MessageType,
@@ -68,7 +67,7 @@ _LLM_ASSISTANT_OPERATION_ERRORS = (
 )
 
 try:
-    from packages.enhanced_agent_bus.observability.telemetry import MetricsRegistry
+    from enhanced_agent_bus.observability.telemetry import MetricsRegistry
 except ImportError:
     try:
         from enhanced_agent_bus.observability.telemetry import MetricsRegistry

@@ -36,8 +36,14 @@ class _RedisPoolMetrics(TypedDict, total=False):
     avg_latency_ms: float
 
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
-from src.core.shared.types import JSONDict  # noqa: E402
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 try:
     import redis.asyncio as aioredis

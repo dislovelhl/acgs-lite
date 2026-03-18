@@ -8,7 +8,10 @@ Supports Llama, Mistral, and other open source models.
 
 from collections.abc import AsyncIterator
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

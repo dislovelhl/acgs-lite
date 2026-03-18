@@ -8,7 +8,11 @@ Requires API key authentication.
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 from ..api_key_auth import require_api_key
 from ..runtime_guards import require_sandbox_endpoint

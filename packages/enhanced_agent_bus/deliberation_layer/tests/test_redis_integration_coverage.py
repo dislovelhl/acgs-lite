@@ -8,7 +8,8 @@ import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.deliberation_layer.redis_integration import (
+
+from enhanced_agent_bus.deliberation_layer.redis_integration import (
     REDIS_AVAILABLE,
     RedisDeliberationQueue,
     RedisVotingSystem,
@@ -86,7 +87,7 @@ class TestRedisDeliberationQueueConnect:
     async def test_connect_redis_not_available(self):
         q = RedisDeliberationQueue()
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.redis_integration.REDIS_AVAILABLE",
+            "enhanced_agent_bus.deliberation_layer.redis_integration.REDIS_AVAILABLE",
             False,
         ):
             result = await q.connect()
@@ -100,11 +101,11 @@ class TestRedisDeliberationQueueConnect:
         mock_aioredis.from_url = MagicMock(return_value=mock_client)
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.redis_integration.REDIS_AVAILABLE",
+                "enhanced_agent_bus.deliberation_layer.redis_integration.REDIS_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.redis_integration.aioredis",
+                "enhanced_agent_bus.deliberation_layer.redis_integration.aioredis",
                 mock_aioredis,
             ),
         ):
@@ -120,11 +121,11 @@ class TestRedisDeliberationQueueConnect:
         mock_aioredis.from_url = MagicMock(return_value=mock_client)
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.redis_integration.REDIS_AVAILABLE",
+                "enhanced_agent_bus.deliberation_layer.redis_integration.REDIS_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.redis_integration.aioredis",
+                "enhanced_agent_bus.deliberation_layer.redis_integration.aioredis",
                 mock_aioredis,
             ),
         ):
@@ -140,11 +141,11 @@ class TestRedisDeliberationQueueConnect:
         mock_aioredis.from_url = MagicMock(return_value=mock_client)
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.redis_integration.REDIS_AVAILABLE",
+                "enhanced_agent_bus.deliberation_layer.redis_integration.REDIS_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.redis_integration.aioredis",
+                "enhanced_agent_bus.deliberation_layer.redis_integration.aioredis",
                 mock_aioredis,
             ),
         ):
@@ -462,7 +463,7 @@ class TestRedisVotingSystemConnect:
     async def test_connect_redis_not_available(self):
         vs = RedisVotingSystem()
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.redis_integration.REDIS_AVAILABLE",
+            "enhanced_agent_bus.deliberation_layer.redis_integration.REDIS_AVAILABLE",
             False,
         ):
             result = await vs.connect()
@@ -475,11 +476,11 @@ class TestRedisVotingSystemConnect:
         mock_aioredis.from_url = MagicMock(return_value=mock_client)
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.redis_integration.REDIS_AVAILABLE",
+                "enhanced_agent_bus.deliberation_layer.redis_integration.REDIS_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.redis_integration.aioredis",
+                "enhanced_agent_bus.deliberation_layer.redis_integration.aioredis",
                 mock_aioredis,
             ),
         ):
@@ -494,11 +495,11 @@ class TestRedisVotingSystemConnect:
         mock_aioredis.from_url = MagicMock(return_value=mock_client)
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.redis_integration.REDIS_AVAILABLE",
+                "enhanced_agent_bus.deliberation_layer.redis_integration.REDIS_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.redis_integration.aioredis",
+                "enhanced_agent_bus.deliberation_layer.redis_integration.aioredis",
                 mock_aioredis,
             ),
         ):
@@ -514,11 +515,11 @@ class TestRedisVotingSystemConnect:
         mock_aioredis.from_url = MagicMock(return_value=mock_client)
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.redis_integration.REDIS_AVAILABLE",
+                "enhanced_agent_bus.deliberation_layer.redis_integration.REDIS_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.redis_integration.aioredis",
+                "enhanced_agent_bus.deliberation_layer.redis_integration.aioredis",
                 mock_aioredis,
             ),
         ):

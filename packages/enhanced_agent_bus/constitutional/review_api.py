@@ -7,23 +7,24 @@ with MACI enforcement, governance metrics comparison, and HITL integration.
 """
 
 from datetime import UTC, datetime, timezone
-from typing import Optional
 
 from fastapi import APIRouter, Header, HTTPException, Query
 from fastapi import status as http_status
 from pydantic import BaseModel, Field
-from src.core.shared.security.error_sanitizer import safe_error_detail
-
-from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
 except ImportError:
-    # Fallback for standalone usage
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    CONSTITUTIONAL_HASH = "standalone"
+from src.core.shared.security.error_sanitizer import safe_error_detail
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from .amendment_model import AmendmentProposal, AmendmentStatus
 from .diff_engine import ConstitutionalDiffEngine, SemanticDiff

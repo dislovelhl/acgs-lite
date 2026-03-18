@@ -30,13 +30,19 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta, timezone
 from enum import Enum
 from importlib import import_module
-from typing import Optional, TypeAlias, Union, cast
+from typing import TypeAlias, cast
 
-from packages.enhanced_agent_bus.bus_types import JSONDict, JSONValue
-from packages.enhanced_agent_bus.interfaces import ConstitutionalHashValidatorProtocol
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONList
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONList  # noqa: E402
+except ImportError:
+    JSONList = list  # type: ignore[misc,assignment]
 
+from enhanced_agent_bus.bus_types import JSONDict, JSONValue
+from enhanced_agent_bus.interfaces import ConstitutionalHashValidatorProtocol
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
@@ -176,7 +182,7 @@ class DefaultDeliberationActivities:
         self._impact_scorer = None
         self._audit_client = None
         if hash_validator is None:
-            validators_module = import_module("packages.enhanced_agent_bus.validators")
+            validators_module = import_module("enhanced_agent_bus.validators")
             hash_validator = validators_module.ConstitutionalHashValidator()
         self._hash_validator = hash_validator
 

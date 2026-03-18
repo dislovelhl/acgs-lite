@@ -10,7 +10,11 @@ from datetime import UTC, datetime
 from typing import Generic, TypeVar
 
 import cachetools
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 K = TypeVar("K")
 V = TypeVar("V")

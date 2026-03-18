@@ -13,11 +13,18 @@ from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
 
 import asyncpg
-from packages.enhanced_agent_bus.saga_persistence.models import SagaState
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.saga_persistence.models import SagaState
 
 from ..repository import LockError, RepositoryError
 from .schema import DEFAULT_LOCK_TIMEOUT_SECONDS

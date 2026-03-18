@@ -9,7 +9,8 @@ helper methods, and __all__ exports to achieve ≥95% line coverage.
 from enum import Enum
 
 import pytest
-from packages.enhanced_agent_bus.enums import (
+
+from enhanced_agent_bus.enums import (
     AgentCapability,
     AutonomyTier,
     BatchItemStatus,
@@ -21,7 +22,7 @@ from packages.enhanced_agent_bus.enums import (
     TaskType,
     ValidationStatus,
 )
-from packages.enhanced_agent_bus.enums import (
+from enhanced_agent_bus.enums import (
     __all__ as enums_all,
 )
 
@@ -787,8 +788,9 @@ class TestCrossEnumConsistency:
             assert len(enum_cls) >= 1
 
     def test_risk_level_is_re_exported_from_shared(self):
-        from packages.enhanced_agent_bus.enums import RiskLevel as BusRiskLevel
         from src.core.shared.enums import RiskLevel as SharedRiskLevel
+
+        from enhanced_agent_bus.enums import RiskLevel as BusRiskLevel
 
         assert SharedRiskLevel is BusRiskLevel
 

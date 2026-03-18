@@ -62,17 +62,17 @@ _UniqueViolationError = sys.modules["asyncpg"].UniqueViolationError  # type: ign
 # Now import the module under test (deferred so coverage instruments it).
 # ---------------------------------------------------------------------------
 
-from packages.enhanced_agent_bus.saga_persistence.postgres.locking import (  # noqa: E402
+from enhanced_agent_bus.saga_persistence.postgres.locking import (  # noqa: E402
     LOCK_HEALTH_CHECK_ERRORS,
     PostgresLockManager,
 )
-from packages.enhanced_agent_bus.saga_persistence.postgres.locking import (  # noqa: E402
+from enhanced_agent_bus.saga_persistence.postgres.locking import (  # noqa: E402
     __all__ as locking_all,
 )
-from packages.enhanced_agent_bus.saga_persistence.postgres.schema import (  # noqa: E402
+from enhanced_agent_bus.saga_persistence.postgres.schema import (  # noqa: E402
     DEFAULT_LOCK_TIMEOUT_SECONDS,
 )
-from packages.enhanced_agent_bus.saga_persistence.repository import (  # noqa: E402
+from enhanced_agent_bus.saga_persistence.repository import (  # noqa: E402
     LockError,
     RepositoryError,
 )
@@ -1011,7 +1011,7 @@ class TestLoggingPaths:
 
         with caplog.at_level(
             logging.DEBUG,
-            logger="packages.enhanced_agent_bus.saga_persistence.postgres.locking",
+            logger="enhanced_agent_bus.saga_persistence.postgres.locking",
         ):
             await mgr.acquire_lock(SAGA_ID, LOCK_HOLDER)
 
@@ -1027,7 +1027,7 @@ class TestLoggingPaths:
 
         with caplog.at_level(
             logging.DEBUG,
-            logger="packages.enhanced_agent_bus.saga_persistence.postgres.locking",
+            logger="enhanced_agent_bus.saga_persistence.postgres.locking",
         ):
             await mgr.release_lock(SAGA_ID, LOCK_HOLDER)
 
@@ -1043,7 +1043,7 @@ class TestLoggingPaths:
 
         with caplog.at_level(
             logging.WARNING,
-            logger="packages.enhanced_agent_bus.saga_persistence.postgres.locking",
+            logger="enhanced_agent_bus.saga_persistence.postgres.locking",
         ):
             await mgr.release_lock(SAGA_ID, LOCK_HOLDER)
 
@@ -1059,7 +1059,7 @@ class TestLoggingPaths:
 
         with caplog.at_level(
             logging.DEBUG,
-            logger="packages.enhanced_agent_bus.saga_persistence.postgres.locking",
+            logger="enhanced_agent_bus.saga_persistence.postgres.locking",
         ):
             await mgr.extend_lock(SAGA_ID, LOCK_HOLDER, ttl_seconds=60)
 
@@ -1075,7 +1075,7 @@ class TestLoggingPaths:
 
         with caplog.at_level(
             logging.INFO,
-            logger="packages.enhanced_agent_bus.saga_persistence.postgres.locking",
+            logger="enhanced_agent_bus.saga_persistence.postgres.locking",
         ):
             await mgr.cleanup_old_sagas(datetime.now(UTC))
 
@@ -1091,7 +1091,7 @@ class TestLoggingPaths:
 
         with caplog.at_level(
             logging.ERROR,
-            logger="packages.enhanced_agent_bus.saga_persistence.postgres.locking",
+            logger="enhanced_agent_bus.saga_persistence.postgres.locking",
         ):
             with pytest.raises(LockError):
                 await mgr.acquire_lock(SAGA_ID, LOCK_HOLDER)
@@ -1108,7 +1108,7 @@ class TestLoggingPaths:
 
         with caplog.at_level(
             logging.ERROR,
-            logger="packages.enhanced_agent_bus.saga_persistence.postgres.locking",
+            logger="enhanced_agent_bus.saga_persistence.postgres.locking",
         ):
             with pytest.raises(LockError):
                 await mgr.release_lock(SAGA_ID, LOCK_HOLDER)
@@ -1125,7 +1125,7 @@ class TestLoggingPaths:
 
         with caplog.at_level(
             logging.ERROR,
-            logger="packages.enhanced_agent_bus.saga_persistence.postgres.locking",
+            logger="enhanced_agent_bus.saga_persistence.postgres.locking",
         ):
             with pytest.raises(LockError):
                 await mgr.extend_lock(SAGA_ID, LOCK_HOLDER)
@@ -1142,7 +1142,7 @@ class TestLoggingPaths:
 
         with caplog.at_level(
             logging.ERROR,
-            logger="packages.enhanced_agent_bus.saga_persistence.postgres.locking",
+            logger="enhanced_agent_bus.saga_persistence.postgres.locking",
         ):
             with pytest.raises(RepositoryError):
                 await mgr.get_statistics()
@@ -1159,7 +1159,7 @@ class TestLoggingPaths:
 
         with caplog.at_level(
             logging.ERROR,
-            logger="packages.enhanced_agent_bus.saga_persistence.postgres.locking",
+            logger="enhanced_agent_bus.saga_persistence.postgres.locking",
         ):
             with pytest.raises(RepositoryError):
                 await mgr.cleanup_old_sagas(datetime.now(UTC))

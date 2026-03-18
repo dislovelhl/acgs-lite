@@ -9,14 +9,17 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from ..utils import get_iso_timestamp
 
 if TYPE_CHECKING:
-    from packages.enhanced_agent_bus.models import AgentMessage
+    from enhanced_agent_bus.models import AgentMessage
 
     from ..components import GovernanceValidator
 

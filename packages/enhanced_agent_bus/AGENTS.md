@@ -97,8 +97,28 @@ to re-export them unconditionally.
 3. Populate `_EXT_ALL` with **all** names (flag + types) so the bus `__init__` can re-export them.
 4. Add a row to this table.
 
+## Testing
+
+- **3,534 tests** across 400+ test files.
+- `conftest.py` resets singletons via `_reset_singletons()` (autouse) — prevents state pollution.
+- Module canonicalization handles dual identity (`packages.enhanced_agent_bus.X` vs `enhanced_agent_bus.X`).
+- `TEST_WITH_RUST=1` to enable Rust backend in tests (default: Python fallback).
+- Coverage: fail_under=80.
+- `_make_*` factory functions for complex test object creation.
+
+## Subdirectory AGENTS.md Index
+
+| Path | Scope |
+| ---- | ----- |
+| [`constitutional/AGENTS.md`](constitutional/AGENTS.md) | Amendment engine (proposals → review → activate) |
+| [`deliberation_layer/AGENTS.md`](deliberation_layer/AGENTS.md) | HITL, voting, impact scoring, consensus |
+| [`mcp/AGENTS.md`](mcp/AGENTS.md) | MCP client, routing, MACI filtering |
+| [`optimization_toolkit/AGENTS.md`](optimization_toolkit/AGENTS.md) | Profiling, cost, context compression |
+| [`rust/AGENTS.md`](rust/AGENTS.md) | SIMD kernels, parallel validation |
+
 ## Anti-Patterns
 
 - Do not edit generated artifacts (`htmlcov/`, `mlruns/`, `coverage.json`, `audit_*.json`).
 - Do not bypass policy enforcement or allow fail-open paths.
 - No `eval()`/`exec()`.
+- Do not use `object` as type — prefer shared types in `src/core/shared/types.py`.

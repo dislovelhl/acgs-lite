@@ -13,7 +13,7 @@ import pytest
 # Add parent directory to path for local imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from packages.enhanced_agent_bus.exceptions import (  # Agent; Bus Operations; Configuration; Constitutional; Deliberation; Message; Policy/OPA  # noqa: E501
+from enhanced_agent_bus.exceptions import (  # Agent; Bus Operations; Configuration; Constitutional; Deliberation; Message; Policy/OPA  # noqa: E501
     CONSTITUTIONAL_HASH,
     AgentAlreadyRegisteredError,
     AgentBusError,

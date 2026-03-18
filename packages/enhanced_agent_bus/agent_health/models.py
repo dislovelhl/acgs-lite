@@ -15,7 +15,11 @@ from enum import StrEnum
 from typing import Annotated
 
 from pydantic import BaseModel, Field, field_validator, model_validator
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.types import AgentID
 
 # ---------------------------------------------------------------------------

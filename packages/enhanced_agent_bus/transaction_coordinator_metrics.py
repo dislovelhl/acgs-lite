@@ -18,14 +18,22 @@ Supports 99.9% consistency target with detailed observability.
 """
 
 import time
-from collections.abc import Generator
+from collections import deque
+from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Protocol, cast
 
 # Constitutional compliance
-from src.core.shared.types import CONSTITUTIONAL_HASH, JSONDict
+try:
+    from src.core.shared.types import (
+        CONSTITUTIONAL_HASH,
+        JSONDict,
+    )  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"  # type: ignore[misc,assignment]
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -409,9 +417,17 @@ class TransactionMetrics:
 
     # Internal state for tracking when Prometheus is not available
     _initialized: bool = field(default=False, repr=False)
-    _duration_samples: list[float] = field(default_factory=list, repr=False)
-    _compensation_samples: list[float] = field(default_factory=list, repr=False)
-    _max_samples: int = field(default=10000, repr=False)
+    # PERF FIX (2026-03): Use bounded deque instead of list+slice.  The previous
+    # implementation appended to a list and sliced when it exceeded _max_samples,
+    # which is O(n) per trim and causes memory churn.  deque(maxlen=N) is O(1)
+    # append with automatic eviction — no manual trimming needed.
+    _duration_samples: deque[float] = field(
+        default_factory=lambda: deque(maxlen=10_000), repr=False
+    )
+    _compensation_samples: deque[float] = field(
+        default_factory=lambda: deque(maxlen=10_000), repr=False
+    )
+    _max_samples: int = field(default=10_000, repr=False)
 
     # Internal counters for accurate tracking (especially in tests)
     _internal_total: int = field(default=0, repr=False)
@@ -723,9 +739,7 @@ class TransactionMetrics:
         Args:
             duration_seconds: Duration in seconds
         """
-        self._duration_samples.append(duration_seconds * 1000)  # Store in ms
-        if len(self._duration_samples) > self._max_samples:
-            self._duration_samples = self._duration_samples[-self._max_samples :]
+        self._duration_samples.append(duration_seconds * 1000)
 
     def _record_compensation_duration(self, duration_seconds: float) -> None:
         """
@@ -734,9 +748,7 @@ class TransactionMetrics:
         Args:
             duration_seconds: Duration in seconds
         """
-        self._compensation_samples.append(duration_seconds * 1000)  # Store in ms
-        if len(self._compensation_samples) > self._max_samples:
-            self._compensation_samples = self._compensation_samples[-self._max_samples :]
+        self._compensation_samples.append(duration_seconds * 1000)
 
     def _update_consistency_ratio(self) -> None:
         """Update the consistency ratio gauge based on current metrics."""
@@ -779,7 +791,7 @@ class TransactionMetrics:
             return 0.0
 
     @staticmethod
-    def _compute_percentiles_from_samples(samples: list[float]) -> dict[str, float]:
+    def _compute_percentiles_from_samples(samples: Sequence[float]) -> dict[str, float]:
         """Compute p50/p95/p99 using floor-index semantics."""
         if not samples:
             return {"p50": 0.0, "p95": 0.0, "p99": 0.0}
@@ -1022,7 +1034,7 @@ def reset_transaction_metrics() -> None:
     reset_metrics_cache()
 
 
-# Export public API
+    # Export public API
 __all__ = [
     "ALERT_RULES",
     "CHECKPOINT_LATENCY_BUCKETS",

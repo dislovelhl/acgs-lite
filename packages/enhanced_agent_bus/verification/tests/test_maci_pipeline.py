@@ -11,7 +11,9 @@ Covers:
 """
 
 import pytest
-from packages.enhanced_agent_bus.verification.maci_pipeline import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.verification.maci_pipeline import (
     AgentResponse,
     AgentRole,
     BaseMACIAgent,
@@ -25,7 +27,6 @@ from packages.enhanced_agent_bus.verification.maci_pipeline import (
     VerificationResult,
     create_maci_pipeline_with_constitution,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 pytestmark = [pytest.mark.unit, pytest.mark.constitutional]
 

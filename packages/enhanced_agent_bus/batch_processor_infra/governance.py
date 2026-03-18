@@ -4,10 +4,9 @@ Governance and Validation for Batch Processing in ACGS-2.
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-from packages.enhanced_agent_bus.models import CONSTITUTIONAL_HASH, BatchRequest, BatchRequestItem
-from packages.enhanced_agent_bus.validators import ValidationResult, validate_constitutional_hash
-
+from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, BatchRequest, BatchRequestItem
 from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.validators import ValidationResult, validate_constitutional_hash
 
 logger = get_logger(__name__)
 

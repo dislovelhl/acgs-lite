@@ -22,7 +22,10 @@ from datetime import UTC, datetime, timezone
 from enum import Enum
 from typing import ClassVar
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -40,7 +43,10 @@ INTEGRATION_CONNECTIVITY_ERRORS = (
 
 # Constitutional Hash for all operations
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 
 class IntegrationType(Enum):

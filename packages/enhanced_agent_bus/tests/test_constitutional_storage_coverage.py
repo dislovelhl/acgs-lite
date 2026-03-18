@@ -8,16 +8,17 @@ Target: ≥95% line coverage of constitutional/storage.py (57 stmts).
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.constitutional.amendment_model import AmendmentProposal
-from packages.enhanced_agent_bus.constitutional.storage import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.constitutional.amendment_model import AmendmentProposal
+from enhanced_agent_bus.constitutional.storage import (
     ConstitutionalStorageService,
     StorageConfig,
 )
-from packages.enhanced_agent_bus.constitutional.version_model import (
+from enhanced_agent_bus.constitutional.version_model import (
     ConstitutionalStatus,
     ConstitutionalVersion,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -71,7 +72,7 @@ def _make_facade(**init_kwargs) -> tuple["ConstitutionalStorageService", MagicMo
     """Return (facade, mock_modular_service)."""
     mock_svc = _make_mock_service()
     with patch(
-        "packages.enhanced_agent_bus.constitutional.storage.ModularStorageService",
+        "enhanced_agent_bus.constitutional.storage.ModularStorageService",
         return_value=mock_svc,
     ):
         facade = ConstitutionalStorageService(**init_kwargs)
@@ -145,13 +146,13 @@ class TestGetTenantId:
     def test_multi_tenancy_enabled_with_context(self):
         facade, _ = _make_facade(enable_multi_tenancy=True, default_tenant_id="system")
         with patch(
-            "packages.enhanced_agent_bus.constitutional.storage.ConstitutionalStorageService"
+            "enhanced_agent_bus.constitutional.storage.ConstitutionalStorageService"
             "._get_tenant_id"
         ):
             pass  # We test via the module import path below
 
         with patch(
-            "packages.enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
+            "enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
             return_value="ctx-tenant",
         ):
             tid = facade._get_tenant_id()
@@ -160,7 +161,7 @@ class TestGetTenantId:
     def test_multi_tenancy_enabled_no_context_falls_back(self):
         facade, _ = _make_facade(enable_multi_tenancy=True, default_tenant_id="fallback")
         with patch(
-            "packages.enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
+            "enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
             return_value=None,
         ):
             tid = facade._get_tenant_id()
@@ -170,7 +171,7 @@ class TestGetTenantId:
         facade, _ = _make_facade(enable_multi_tenancy=False, default_tenant_id="fixed")
         # Even if a context tenant exists, it should NOT be used
         with patch(
-            "packages.enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
+            "enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
             return_value="ctx-tenant",
         ):
             tid = facade._get_tenant_id()
@@ -218,7 +219,7 @@ class TestSaveVersion:
         facade, mock_svc = _make_facade(default_tenant_id="default-t")
         version = _make_version()
         with patch(
-            "packages.enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
+            "enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
             return_value=None,
         ):
             result = await facade.save_version(version)
@@ -257,7 +258,7 @@ class TestGetVersion:
         facade, mock_svc = _make_facade(default_tenant_id="sys")
         mock_svc.get_version.return_value = None
         with patch(
-            "packages.enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
+            "enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
             return_value=None,
         ):
             await facade.get_version("vid-x")
@@ -285,7 +286,7 @@ class TestGetActiveVersion:
     async def test_get_active_version_uses_default_tenant(self):
         facade, mock_svc = _make_facade(default_tenant_id="sys")
         with patch(
-            "packages.enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
+            "enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
             return_value=None,
         ):
             await facade.get_active_version()
@@ -320,7 +321,7 @@ class TestActivateVersion:
     async def test_activate_version_uses_default_tenant(self):
         facade, mock_svc = _make_facade(default_tenant_id="sys")
         with patch(
-            "packages.enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
+            "enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
             return_value=None,
         ):
             await facade.activate_version("vid-1")
@@ -344,7 +345,7 @@ class TestSaveAmendment:
         facade, mock_svc = _make_facade(default_tenant_id="sys")
         amendment = _make_amendment()
         with patch(
-            "packages.enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
+            "enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
             return_value=None,
         ):
             await facade.save_amendment(amendment)
@@ -379,7 +380,7 @@ class TestGetAmendment:
     async def test_get_amendment_uses_default_tenant(self):
         facade, mock_svc = _make_facade(default_tenant_id="sys")
         with patch(
-            "packages.enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
+            "enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
             return_value=None,
         ):
             await facade.get_amendment("pid-1")
@@ -411,7 +412,7 @@ class TestListVersions:
     async def test_list_versions_uses_default_tenant(self):
         facade, mock_svc = _make_facade(default_tenant_id="sys")
         with patch(
-            "packages.enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
+            "enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
             return_value=None,
         ):
             await facade.list_versions()
@@ -468,7 +469,7 @@ class TestListAmendments:
     async def test_list_amendments_uses_default_tenant(self):
         facade, mock_svc = _make_facade(default_tenant_id="sys")
         with patch(
-            "packages.enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
+            "enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
             return_value=None,
         ):
             await facade.list_amendments()
@@ -594,7 +595,7 @@ class TestComputeDiff:
         to_v = _make_version(version="1.0.1", content={"x": 2})
         mock_svc.get_version.side_effect = [from_v, to_v]
         with patch(
-            "packages.enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
+            "enhanced_agent_bus.multi_tenancy.context.get_current_tenant_id",
             return_value=None,
         ):
             result = await facade.compute_diff("vid-from", "vid-to")
@@ -608,7 +609,7 @@ class TestComputeDiff:
 
 class TestStorageConfigExport:
     def test_storage_config_importable_from_storage(self):
-        from packages.enhanced_agent_bus.constitutional.storage import StorageConfig as SC
+        from enhanced_agent_bus.constitutional.storage import StorageConfig as SC
 
         assert SC is StorageConfig
 
@@ -642,7 +643,7 @@ class TestStorageConfigExport:
 
 class TestModuleExports:
     def test_all_exports(self):
-        from packages.enhanced_agent_bus.constitutional import storage
+        from enhanced_agent_bus.constitutional import storage
 
         assert "ConstitutionalStorageService" in storage.__all__
         assert "StorageConfig" in storage.__all__
@@ -655,7 +656,7 @@ class TestModuleExports:
 
 class TestMultiTenancyContextPropagation:
     async def test_tenant_context_propagates_to_save_version(self):
-        from packages.enhanced_agent_bus.multi_tenancy.context import tenant_context
+        from enhanced_agent_bus.multi_tenancy.context import tenant_context
 
         facade, mock_svc = _make_facade(enable_multi_tenancy=True, default_tenant_id="system")
         version = _make_version()
@@ -666,7 +667,7 @@ class TestMultiTenancyContextPropagation:
         mock_svc.save_version.assert_awaited_once_with(version, "ctx-tenant")
 
     async def test_tenant_context_propagates_to_get_active_version(self):
-        from packages.enhanced_agent_bus.multi_tenancy.context import tenant_context
+        from enhanced_agent_bus.multi_tenancy.context import tenant_context
 
         facade, mock_svc = _make_facade(enable_multi_tenancy=True, default_tenant_id="system")
 
@@ -676,7 +677,7 @@ class TestMultiTenancyContextPropagation:
         mock_svc.get_active_version.assert_awaited_once_with("active-tenant")
 
     async def test_disabled_multi_tenancy_ignores_context(self):
-        from packages.enhanced_agent_bus.multi_tenancy.context import tenant_context
+        from enhanced_agent_bus.multi_tenancy.context import tenant_context
 
         facade, mock_svc = _make_facade(enable_multi_tenancy=False, default_tenant_id="fixed")
         version = _make_version()

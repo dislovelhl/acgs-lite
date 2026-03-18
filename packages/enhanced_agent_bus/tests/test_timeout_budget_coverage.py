@@ -19,14 +19,14 @@ import logging
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.observability.timeout_budget import (
+
+from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.observability.timeout_budget import (
     Layer,
     LayerTimeoutBudget,
     LayerTimeoutError,
     TimeoutBudgetManager,
 )
-
-from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # ---------------------------------------------------------------------------
 # LayerTimeoutBudget - edge-case paths

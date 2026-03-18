@@ -13,15 +13,15 @@ import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.mcp_server.protocol.types import ResourceDefinition
-from packages.enhanced_agent_bus.mcp_server.resources.audit_trail import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.mcp_server.protocol.types import ResourceDefinition
+from enhanced_agent_bus.mcp_server.resources.audit_trail import (
     AUDIT_TRAIL_READ_ERRORS,
     AuditEntry,
     AuditEventType,
     AuditTrailResource,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 pytestmark = [pytest.mark.unit, pytest.mark.constitutional]

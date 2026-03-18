@@ -15,7 +15,10 @@ Features:
 - Identity federation across tenants
 """
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 from .gap_analysis import (
     ConstitutionalGap,

@@ -47,7 +47,7 @@ class TestLoadGuardModels:
 
     def test_returns_three_classes_on_success(self):
         """When the primary path succeeds the function returns real classes."""
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import _load_guard_models
+        from enhanced_agent_bus.deliberation_layer.interfaces import _load_guard_models
 
         guard, review, sig = _load_guard_models()
         # Should NOT be plain `object` if the module is importable
@@ -55,7 +55,7 @@ class TestLoadGuardModels:
 
     def test_fallback_returns_object_when_all_imports_fail(self):
         """When every candidate raises ImportError, fallback is (object, object, object)."""
-        from packages.enhanced_agent_bus.deliberation_layer import interfaces as iface_module
+        from enhanced_agent_bus.deliberation_layer import interfaces as iface_module
 
         original_import = iface_module.import_module
 
@@ -71,7 +71,7 @@ class TestLoadGuardModels:
 
     def test_fallback_handles_attribute_error(self):
         """AttributeError on module (missing GuardResult etc.) is handled."""
-        from packages.enhanced_agent_bus.deliberation_layer import interfaces as iface_module
+        from enhanced_agent_bus.deliberation_layer import interfaces as iface_module
 
         original_import = iface_module.import_module
         call_count = [0]
@@ -89,7 +89,7 @@ class TestLoadGuardModels:
 
     def test_first_candidate_success_short_circuits(self):
         """Succeeding on the first candidate returns immediately without trying others."""
-        from packages.enhanced_agent_bus.deliberation_layer import interfaces as iface_module
+        from enhanced_agent_bus.deliberation_layer import interfaces as iface_module
 
         original_import = iface_module.import_module
         calls = []
@@ -112,7 +112,7 @@ class TestLoadGuardModels:
 
     def test_second_candidate_used_when_first_fails(self):
         """Falls through to second candidate when first raises ImportError."""
-        from packages.enhanced_agent_bus.deliberation_layer import interfaces as iface_module
+        from enhanced_agent_bus.deliberation_layer import interfaces as iface_module
 
         original_import = iface_module.import_module
         candidates_tried = []
@@ -137,7 +137,7 @@ class TestLoadGuardModels:
 
     def test_third_candidate_used_when_first_two_fail(self):
         """Falls through to third candidate when first two fail."""
-        from packages.enhanced_agent_bus.deliberation_layer import interfaces as iface_module
+        from enhanced_agent_bus.deliberation_layer import interfaces as iface_module
 
         original_import = iface_module.import_module
         candidates_tried = []
@@ -165,13 +165,13 @@ class TestLoadAgentMessage:
     """_load_agent_message() exercises all three import paths and the fallback."""
 
     def test_returns_class_on_success(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import _load_agent_message
+        from enhanced_agent_bus.deliberation_layer.interfaces import _load_agent_message
 
         result = _load_agent_message()
         assert result is not None
 
     def test_fallback_returns_object_when_all_imports_fail(self):
-        from packages.enhanced_agent_bus.deliberation_layer import interfaces as iface_module
+        from enhanced_agent_bus.deliberation_layer import interfaces as iface_module
 
         original_import = iface_module.import_module
 
@@ -186,7 +186,7 @@ class TestLoadAgentMessage:
             iface_module.import_module = original_import
 
     def test_fallback_handles_attribute_error(self):
-        from packages.enhanced_agent_bus.deliberation_layer import interfaces as iface_module
+        from enhanced_agent_bus.deliberation_layer import interfaces as iface_module
 
         original_import = iface_module.import_module
 
@@ -201,7 +201,7 @@ class TestLoadAgentMessage:
             iface_module.import_module = original_import
 
     def test_first_candidate_success_short_circuits(self):
-        from packages.enhanced_agent_bus.deliberation_layer import interfaces as iface_module
+        from enhanced_agent_bus.deliberation_layer import interfaces as iface_module
 
         original_import = iface_module.import_module
         calls = []
@@ -221,7 +221,7 @@ class TestLoadAgentMessage:
             iface_module.import_module = original_import
 
     def test_second_candidate_used_when_first_fails(self):
-        from packages.enhanced_agent_bus.deliberation_layer import interfaces as iface_module
+        from enhanced_agent_bus.deliberation_layer import interfaces as iface_module
 
         original_import = iface_module.import_module
         calls = []
@@ -243,7 +243,7 @@ class TestLoadAgentMessage:
             iface_module.import_module = original_import
 
     def test_third_candidate_used_when_first_two_fail(self):
-        from packages.enhanced_agent_bus.deliberation_layer import interfaces as iface_module
+        from enhanced_agent_bus.deliberation_layer import interfaces as iface_module
 
         original_import = iface_module.import_module
         calls = []
@@ -274,12 +274,12 @@ class TestImpactScorerProtocol:
     """Tests for the ImpactScorerProtocol @runtime_checkable Protocol."""
 
     def test_protocol_is_importable(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import ImpactScorerProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import ImpactScorerProtocol
 
         assert ImpactScorerProtocol is not None
 
     def test_conforming_class_passes_isinstance(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import ImpactScorerProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import ImpactScorerProtocol
 
         class ConcreteScorer:
             def calculate_impact_score(self, content, context=None):
@@ -289,7 +289,7 @@ class TestImpactScorerProtocol:
         assert isinstance(obj, ImpactScorerProtocol)
 
     def test_non_conforming_object_fails_isinstance(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import ImpactScorerProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import ImpactScorerProtocol
 
         class Bad:
             pass
@@ -297,7 +297,7 @@ class TestImpactScorerProtocol:
         assert not isinstance(Bad(), ImpactScorerProtocol)
 
     def test_calculate_impact_score_returns_float(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import ImpactScorerProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import ImpactScorerProtocol
 
         class Scorer:
             def calculate_impact_score(self, content, context=None):
@@ -309,7 +309,7 @@ class TestImpactScorerProtocol:
         assert result == 0.75
 
     def test_calculate_impact_score_with_context(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import ImpactScorerProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import ImpactScorerProtocol
 
         class Scorer:
             def calculate_impact_score(self, content, context=None):
@@ -320,7 +320,7 @@ class TestImpactScorerProtocol:
         assert scorer.calculate_impact_score({"text": "hi"}) == 0.6
 
     def test_zero_impact_score(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import ImpactScorerProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import ImpactScorerProtocol
 
         class LowScorer:
             def calculate_impact_score(self, content, context=None):
@@ -331,7 +331,7 @@ class TestImpactScorerProtocol:
         assert scorer.calculate_impact_score({}) == 0.0
 
     def test_max_impact_score(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import ImpactScorerProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import ImpactScorerProtocol
 
         class HighScorer:
             def calculate_impact_score(self, content, context=None):
@@ -350,7 +350,7 @@ class TestAdaptiveRouterProtocol:
     """Tests for the AdaptiveRouterProtocol @runtime_checkable Protocol."""
 
     def _make_router(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import AdaptiveRouterProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import AdaptiveRouterProtocol
 
         class ConcreteRouter:
             async def route_message(self, message, context=None):
@@ -370,13 +370,13 @@ class TestAdaptiveRouterProtocol:
         return ConcreteRouter()
 
     def test_conforming_class_passes_isinstance(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import AdaptiveRouterProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import AdaptiveRouterProtocol
 
         router = self._make_router()
         assert isinstance(router, AdaptiveRouterProtocol)
 
     def test_missing_method_fails_isinstance(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import AdaptiveRouterProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import AdaptiveRouterProtocol
 
         class Partial:
             async def route_message(self, message, context=None):
@@ -418,7 +418,7 @@ class TestAdaptiveRouterProtocol:
         assert isinstance(stats, dict)
 
     def test_protocol_is_runtime_checkable(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import AdaptiveRouterProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import AdaptiveRouterProtocol
 
         # Should not raise TypeError when used in isinstance()
         assert not isinstance("not a router", AdaptiveRouterProtocol)
@@ -433,7 +433,7 @@ class TestDeliberationQueueProtocol:
     """Tests for the DeliberationQueueProtocol @runtime_checkable Protocol."""
 
     def _make_queue(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import (
+        from enhanced_agent_bus.deliberation_layer.interfaces import (
             DeliberationQueueProtocol,
         )
 
@@ -462,7 +462,7 @@ class TestDeliberationQueueProtocol:
         return ConcreteQueue()
 
     def test_conforming_class_passes_isinstance(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import (
+        from enhanced_agent_bus.deliberation_layer.interfaces import (
             DeliberationQueueProtocol,
         )
 
@@ -470,7 +470,7 @@ class TestDeliberationQueueProtocol:
         assert isinstance(queue, DeliberationQueueProtocol)
 
     def test_missing_enqueue_fails_isinstance(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import (
+        from enhanced_agent_bus.deliberation_layer.interfaces import (
             DeliberationQueueProtocol,
         )
 
@@ -531,7 +531,7 @@ class TestDeliberationQueueProtocol:
         assert details["id"] == "item-1"
 
     def test_get_item_details_missing_returns_none(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import (
+        from enhanced_agent_bus.deliberation_layer.interfaces import (
             DeliberationQueueProtocol,
         )
 
@@ -583,13 +583,13 @@ class TestLLMAssistantProtocol:
         return ConcreteAssistant()
 
     def test_conforming_class_passes_isinstance(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import LLMAssistantProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import LLMAssistantProtocol
 
         assistant = self._make_assistant()
         assert isinstance(assistant, LLMAssistantProtocol)
 
     def test_non_conforming_object_fails_isinstance(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import LLMAssistantProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import LLMAssistantProtocol
 
         class Bad:
             pass
@@ -613,7 +613,7 @@ class TestLLMAssistantProtocol:
         assert isinstance(result, dict)
 
     def test_protocol_is_runtime_checkable(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import LLMAssistantProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import LLMAssistantProtocol
 
         assert not isinstance(42, LLMAssistantProtocol)
 
@@ -643,13 +643,13 @@ class TestRedisQueueProtocol:
         return ConcreteRedisQueue()
 
     def test_conforming_class_passes_isinstance(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import RedisQueueProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import RedisQueueProtocol
 
         rq = self._make_redis_queue()
         assert isinstance(rq, RedisQueueProtocol)
 
     def test_non_conforming_object_fails_isinstance(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import RedisQueueProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import RedisQueueProtocol
 
         class Partial:
             async def connect(self):
@@ -685,7 +685,7 @@ class TestRedisQueueProtocol:
         assert "stream" in info
 
     def test_connect_failure_variant(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import RedisQueueProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import RedisQueueProtocol
 
         class FailedQueue:
             async def connect(self):
@@ -726,13 +726,13 @@ class TestRedisVotingProtocol:
         return ConcreteVoting()
 
     def test_conforming_class_passes_isinstance(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import RedisVotingProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import RedisVotingProtocol
 
         v = self._make_voting()
         assert isinstance(v, RedisVotingProtocol)
 
     def test_non_conforming_object_fails_isinstance(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import RedisVotingProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import RedisVotingProtocol
 
         class Partial:
             async def connect(self):
@@ -762,12 +762,12 @@ class TestRedisVotingProtocol:
         assert result is True
 
     def test_voting_protocol_is_runtime_checkable(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import RedisVotingProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import RedisVotingProtocol
 
         assert not isinstance("not a voting", RedisVotingProtocol)
 
     def test_failed_connect_variant(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import RedisVotingProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import RedisVotingProtocol
 
         class BadVoting:
             async def connect(self):
@@ -792,8 +792,8 @@ class TestOPAGuardProtocol:
     """Tests for the OPAGuardProtocol @runtime_checkable Protocol."""
 
     def _make_guard(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
-        from packages.enhanced_agent_bus.deliberation_layer.opa_guard_models import (
+        from enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
+        from enhanced_agent_bus.deliberation_layer.opa_guard_models import (
             GuardDecision,
             GuardResult,
             ReviewResult,
@@ -850,13 +850,13 @@ class TestOPAGuardProtocol:
         return ConcreteGuard()
 
     def test_conforming_class_passes_isinstance(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
 
         guard = self._make_guard()
         assert isinstance(guard, OPAGuardProtocol)
 
     def test_non_conforming_object_fails_isinstance(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
 
         class Partial:
             async def initialize(self):
@@ -873,7 +873,7 @@ class TestOPAGuardProtocol:
         await guard.close()
 
     async def test_verify_action_returns_guard_result(self):
-        from packages.enhanced_agent_bus.deliberation_layer.opa_guard_models import GuardResult
+        from enhanced_agent_bus.deliberation_layer.opa_guard_models import GuardResult
 
         guard = self._make_guard()
         result = await guard.verify_action("agent-1", {"type": "read"})
@@ -881,14 +881,14 @@ class TestOPAGuardProtocol:
         assert result.is_allowed is True
 
     async def test_verify_action_with_context(self):
-        from packages.enhanced_agent_bus.deliberation_layer.opa_guard_models import GuardResult
+        from enhanced_agent_bus.deliberation_layer.opa_guard_models import GuardResult
 
         guard = self._make_guard()
         result = await guard.verify_action("agent-2", {"type": "write"}, context={"tenant": "t1"})
         assert isinstance(result, GuardResult)
 
     async def test_collect_signatures(self):
-        from packages.enhanced_agent_bus.deliberation_layer.opa_guard_models import SignatureResult
+        from enhanced_agent_bus.deliberation_layer.opa_guard_models import SignatureResult
 
         guard = self._make_guard()
         result = await guard.collect_signatures("dec-1", ["signer-a", "signer-b"])
@@ -896,7 +896,7 @@ class TestOPAGuardProtocol:
         assert result.decision_id == "dec-1"
 
     async def test_collect_signatures_with_threshold_and_timeout(self):
-        from packages.enhanced_agent_bus.deliberation_layer.opa_guard_models import SignatureResult
+        from enhanced_agent_bus.deliberation_layer.opa_guard_models import SignatureResult
 
         guard = self._make_guard()
         result = await guard.collect_signatures(
@@ -915,7 +915,7 @@ class TestOPAGuardProtocol:
         assert result is True
 
     async def test_submit_for_review(self):
-        from packages.enhanced_agent_bus.deliberation_layer.opa_guard_models import ReviewResult
+        from enhanced_agent_bus.deliberation_layer.opa_guard_models import ReviewResult
 
         guard = self._make_guard()
         decision = {"action": "deploy", "risk": "high"}
@@ -923,7 +923,7 @@ class TestOPAGuardProtocol:
         assert isinstance(result, ReviewResult)
 
     async def test_submit_for_review_with_types_and_timeout(self):
-        from packages.enhanced_agent_bus.deliberation_layer.opa_guard_models import ReviewResult
+        from enhanced_agent_bus.deliberation_layer.opa_guard_models import ReviewResult
 
         guard = self._make_guard()
         result = await guard.submit_for_review(
@@ -981,7 +981,7 @@ class TestOPAGuardProtocol:
         assert isinstance(log, list)
 
     def test_opa_guard_protocol_runtime_checkable(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
 
         assert not isinstance("not a guard", OPAGuardProtocol)
 
@@ -995,7 +995,7 @@ class TestModuleExports:
     """Verify __all__ and re-exported CONSTITUTIONAL_HASH."""
 
     def test_all_list_contains_expected_names(self):
-        from packages.enhanced_agent_bus.deliberation_layer import interfaces as iface
+        from enhanced_agent_bus.deliberation_layer import interfaces as iface
 
         expected = {
             "CONSTITUTIONAL_HASH",
@@ -1010,50 +1010,50 @@ class TestModuleExports:
         assert expected.issubset(set(iface.__all__))
 
     def test_constitutional_hash_exported_from_module(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import CONSTITUTIONAL_HASH
+        from enhanced_agent_bus.deliberation_layer.interfaces import CONSTITUTIONAL_HASH
 
         assert CONSTITUTIONAL_HASH == CONSTITUTIONAL_HASH
 
     def test_all_protocol_classes_accessible(self):
-        import packages.enhanced_agent_bus.deliberation_layer.interfaces as iface
+        import enhanced_agent_bus.deliberation_layer.interfaces as iface
 
         for name in iface.__all__:
             assert hasattr(iface, name), f"Missing: {name}"
 
     def test_impact_scorer_protocol_in_module(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import ImpactScorerProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import ImpactScorerProtocol
 
         assert callable(ImpactScorerProtocol)
 
     def test_adaptive_router_protocol_in_module(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import AdaptiveRouterProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import AdaptiveRouterProtocol
 
         assert callable(AdaptiveRouterProtocol)
 
     def test_deliberation_queue_protocol_in_module(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import (
+        from enhanced_agent_bus.deliberation_layer.interfaces import (
             DeliberationQueueProtocol,
         )
 
         assert callable(DeliberationQueueProtocol)
 
     def test_llm_assistant_protocol_in_module(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import LLMAssistantProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import LLMAssistantProtocol
 
         assert callable(LLMAssistantProtocol)
 
     def test_redis_queue_protocol_in_module(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import RedisQueueProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import RedisQueueProtocol
 
         assert callable(RedisQueueProtocol)
 
     def test_redis_voting_protocol_in_module(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import RedisVotingProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import RedisVotingProtocol
 
         assert callable(RedisVotingProtocol)
 
     def test_opa_guard_protocol_in_module(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
 
         assert callable(OPAGuardProtocol)
 
@@ -1068,7 +1068,7 @@ class TestEdgeCases:
 
     def test_object_is_not_any_protocol(self):
         """Plain object() satisfies none of the protocols."""
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import (
+        from enhanced_agent_bus.deliberation_layer.interfaces import (
             AdaptiveRouterProtocol,
             DeliberationQueueProtocol,
             ImpactScorerProtocol,
@@ -1091,7 +1091,7 @@ class TestEdgeCases:
             assert not isinstance(plain, proto), f"object() should not satisfy {proto}"
 
     def test_none_is_not_any_protocol(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import (
+        from enhanced_agent_bus.deliberation_layer.interfaces import (
             AdaptiveRouterProtocol,
             DeliberationQueueProtocol,
             ImpactScorerProtocol,
@@ -1113,7 +1113,7 @@ class TestEdgeCases:
             assert not isinstance(None, proto)
 
     def test_impact_scorer_only_satisfies_its_own_protocol(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import (
+        from enhanced_agent_bus.deliberation_layer.interfaces import (
             AdaptiveRouterProtocol,
             ImpactScorerProtocol,
         )
@@ -1130,13 +1130,13 @@ class TestEdgeCases:
         """Importing the module multiple times returns the same module object."""
         import importlib
 
-        mod1 = importlib.import_module("packages.enhanced_agent_bus.deliberation_layer.interfaces")
-        mod2 = importlib.import_module("packages.enhanced_agent_bus.deliberation_layer.interfaces")
+        mod1 = importlib.import_module("enhanced_agent_bus.deliberation_layer.interfaces")
+        mod2 = importlib.import_module("enhanced_agent_bus.deliberation_layer.interfaces")
         assert mod1 is mod2
 
     async def test_adaptive_router_deliberation_lane(self):
         """Test routing decision with deliberation lane."""
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import AdaptiveRouterProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import AdaptiveRouterProtocol
 
         class DelibRouter:
             async def route_message(self, message, context=None):
@@ -1160,7 +1160,7 @@ class TestEdgeCases:
         assert result["lane"] == "deliberation"
 
     def test_deliberation_queue_with_empty_status(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import (
+        from enhanced_agent_bus.deliberation_layer.interfaces import (
             DeliberationQueueProtocol,
         )
 
@@ -1193,7 +1193,7 @@ class TestEdgeCases:
 
     def test_load_guard_models_mixed_errors(self):
         """First candidate: ImportError; second: AttributeError; third: success."""
-        from packages.enhanced_agent_bus.deliberation_layer import interfaces as iface_module
+        from enhanced_agent_bus.deliberation_layer import interfaces as iface_module
 
         original_import = iface_module.import_module
         calls = []
@@ -1223,7 +1223,7 @@ class TestEdgeCases:
 
     def test_load_agent_message_mixed_errors(self):
         """First candidate: AttributeError; second: ImportError; third: success."""
-        from packages.enhanced_agent_bus.deliberation_layer import interfaces as iface_module
+        from enhanced_agent_bus.deliberation_layer import interfaces as iface_module
 
         original_import = iface_module.import_module
         calls = []
@@ -1262,7 +1262,7 @@ class TestProtocolMethodBodiesDirect:
 
     # --- ImpactScorerProtocol ---
     def test_impact_scorer_protocol_calculate_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import ImpactScorerProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import ImpactScorerProtocol
 
         # Calling the protocol method directly executes the `...` body (coverage)
         ImpactScorerProtocol.calculate_impact_score(
@@ -1273,7 +1273,7 @@ class TestProtocolMethodBodiesDirect:
 
     # --- AdaptiveRouterProtocol ---
     async def test_adaptive_router_route_message_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import AdaptiveRouterProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import AdaptiveRouterProtocol
 
         await AdaptiveRouterProtocol.route_message(
             AdaptiveRouterProtocol,
@@ -1282,7 +1282,7 @@ class TestProtocolMethodBodiesDirect:
         )
 
     async def test_adaptive_router_force_deliberation_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import AdaptiveRouterProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import AdaptiveRouterProtocol
 
         await AdaptiveRouterProtocol.force_deliberation(
             AdaptiveRouterProtocol,
@@ -1291,7 +1291,7 @@ class TestProtocolMethodBodiesDirect:
         )
 
     async def test_adaptive_router_update_performance_feedback_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import AdaptiveRouterProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import AdaptiveRouterProtocol
 
         await AdaptiveRouterProtocol.update_performance_feedback(
             AdaptiveRouterProtocol,
@@ -1302,13 +1302,13 @@ class TestProtocolMethodBodiesDirect:
         )
 
     def test_adaptive_router_get_routing_stats_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import AdaptiveRouterProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import AdaptiveRouterProtocol
 
         AdaptiveRouterProtocol.get_routing_stats(AdaptiveRouterProtocol)  # type: ignore[arg-type]
 
     # --- DeliberationQueueProtocol ---
     async def test_deliberation_queue_enqueue_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import (
+        from enhanced_agent_bus.deliberation_layer.interfaces import (
             DeliberationQueueProtocol,
         )
 
@@ -1318,7 +1318,7 @@ class TestProtocolMethodBodiesDirect:
         )
 
     async def test_deliberation_queue_submit_human_decision_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import (
+        from enhanced_agent_bus.deliberation_layer.interfaces import (
             DeliberationQueueProtocol,
         )
 
@@ -1331,7 +1331,7 @@ class TestProtocolMethodBodiesDirect:
         )
 
     async def test_deliberation_queue_submit_agent_vote_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import (
+        from enhanced_agent_bus.deliberation_layer.interfaces import (
             DeliberationQueueProtocol,
         )
 
@@ -1344,7 +1344,7 @@ class TestProtocolMethodBodiesDirect:
         )
 
     def test_deliberation_queue_get_item_details_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import (
+        from enhanced_agent_bus.deliberation_layer.interfaces import (
             DeliberationQueueProtocol,
         )
 
@@ -1354,7 +1354,7 @@ class TestProtocolMethodBodiesDirect:
         )
 
     def test_deliberation_queue_get_queue_status_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import (
+        from enhanced_agent_bus.deliberation_layer.interfaces import (
             DeliberationQueueProtocol,
         )
 
@@ -1362,7 +1362,7 @@ class TestProtocolMethodBodiesDirect:
 
     # --- LLMAssistantProtocol ---
     async def test_llm_assistant_analyze_trends_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import LLMAssistantProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import LLMAssistantProtocol
 
         await LLMAssistantProtocol.analyze_deliberation_trends(
             LLMAssistantProtocol,
@@ -1371,17 +1371,17 @@ class TestProtocolMethodBodiesDirect:
 
     # --- RedisQueueProtocol ---
     async def test_redis_queue_connect_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import RedisQueueProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import RedisQueueProtocol
 
         await RedisQueueProtocol.connect(RedisQueueProtocol)  # type: ignore[arg-type]
 
     async def test_redis_queue_close_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import RedisQueueProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import RedisQueueProtocol
 
         await RedisQueueProtocol.close(RedisQueueProtocol)  # type: ignore[arg-type]
 
     async def test_redis_queue_enqueue_deliberation_item_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import RedisQueueProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import RedisQueueProtocol
 
         await RedisQueueProtocol.enqueue_deliberation_item(
             RedisQueueProtocol,
@@ -1390,23 +1390,23 @@ class TestProtocolMethodBodiesDirect:
         )
 
     async def test_redis_queue_get_stream_info_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import RedisQueueProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import RedisQueueProtocol
 
         await RedisQueueProtocol.get_stream_info(RedisQueueProtocol)  # type: ignore[arg-type]
 
     # --- RedisVotingProtocol ---
     async def test_redis_voting_connect_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import RedisVotingProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import RedisVotingProtocol
 
         await RedisVotingProtocol.connect(RedisVotingProtocol)  # type: ignore[arg-type]
 
     async def test_redis_voting_close_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import RedisVotingProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import RedisVotingProtocol
 
         await RedisVotingProtocol.close(RedisVotingProtocol)  # type: ignore[arg-type]
 
     async def test_redis_voting_submit_vote_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import RedisVotingProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import RedisVotingProtocol
 
         await RedisVotingProtocol.submit_vote(
             RedisVotingProtocol,
@@ -1418,17 +1418,17 @@ class TestProtocolMethodBodiesDirect:
 
     # --- OPAGuardProtocol ---
     async def test_opa_guard_initialize_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
 
         await OPAGuardProtocol.initialize(OPAGuardProtocol)  # type: ignore[arg-type]
 
     async def test_opa_guard_close_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
 
         await OPAGuardProtocol.close(OPAGuardProtocol)  # type: ignore[arg-type]
 
     async def test_opa_guard_verify_action_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
 
         await OPAGuardProtocol.verify_action(
             OPAGuardProtocol,
@@ -1437,7 +1437,7 @@ class TestProtocolMethodBodiesDirect:
         )
 
     async def test_opa_guard_collect_signatures_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
 
         await OPAGuardProtocol.collect_signatures(
             OPAGuardProtocol,
@@ -1446,7 +1446,7 @@ class TestProtocolMethodBodiesDirect:
         )
 
     async def test_opa_guard_submit_signature_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
 
         await OPAGuardProtocol.submit_signature(
             OPAGuardProtocol,
@@ -1455,7 +1455,7 @@ class TestProtocolMethodBodiesDirect:
         )
 
     async def test_opa_guard_submit_for_review_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
 
         await OPAGuardProtocol.submit_for_review(
             OPAGuardProtocol,
@@ -1464,7 +1464,7 @@ class TestProtocolMethodBodiesDirect:
         )
 
     async def test_opa_guard_submit_review_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
 
         await OPAGuardProtocol.submit_review(
             OPAGuardProtocol,
@@ -1474,7 +1474,7 @@ class TestProtocolMethodBodiesDirect:
         )
 
     def test_opa_guard_register_critic_agent_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
 
         OPAGuardProtocol.register_critic_agent(
             OPAGuardProtocol,
@@ -1483,7 +1483,7 @@ class TestProtocolMethodBodiesDirect:
         )
 
     def test_opa_guard_unregister_critic_agent_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
 
         OPAGuardProtocol.unregister_critic_agent(
             OPAGuardProtocol,
@@ -1491,11 +1491,11 @@ class TestProtocolMethodBodiesDirect:
         )
 
     def test_opa_guard_get_stats_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
 
         OPAGuardProtocol.get_stats(OPAGuardProtocol)  # type: ignore[arg-type]
 
     def test_opa_guard_get_audit_log_direct(self):
-        from packages.enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
+        from enhanced_agent_bus.deliberation_layer.interfaces import OPAGuardProtocol
 
         OPAGuardProtocol.get_audit_log(OPAGuardProtocol)  # type: ignore[arg-type]

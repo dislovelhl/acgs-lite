@@ -29,7 +29,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
-from packages.enhanced_agent_bus.api.routes.signup import (
+
+from enhanced_agent_bus.api.routes.signup import (
     FREE_TIER_LIMIT,
     AccountRecord,
     SignupRequest,
@@ -52,12 +53,12 @@ pytestmark = [pytest.mark.unit]
 # Helpers
 # ---------------------------------------------------------------------------
 
-_MOD_PATH = "packages.enhanced_agent_bus.api.routes.signup"
+_MOD_PATH = "enhanced_agent_bus.api.routes.signup"
 
 
 def _make_app() -> FastAPI:
     """Create a minimal FastAPI app with the signup router and limiter state."""
-    from packages.enhanced_agent_bus.api.rate_limiting import limiter
+    from enhanced_agent_bus.api.rate_limiting import limiter
 
     app = FastAPI()
     app.state.limiter = limiter

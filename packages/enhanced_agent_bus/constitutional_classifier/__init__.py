@@ -29,7 +29,10 @@ Usage:
     result = await classifier.classify(content, session_context=session)
 """
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 # Core classifier
 from .classifier import (

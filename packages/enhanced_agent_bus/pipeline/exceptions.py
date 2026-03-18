@@ -4,8 +4,12 @@ Pipeline exceptions for ACGS-2 Message Processing.
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-from packages.enhanced_agent_bus.exceptions import AgentBusError
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.exceptions import AgentBusError
 
 
 class PipelineException(AgentBusError):

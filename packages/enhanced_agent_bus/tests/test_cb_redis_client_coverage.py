@@ -57,7 +57,7 @@ async def _make_client(redis_mock=None, cb_mock=None, *, connect_fail=False):
     """
     Build an initialized CircuitBreakerRedisClient with all externals mocked.
     """
-    from packages.enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
+    from enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
 
     client = CircuitBreakerRedisClient()
 
@@ -65,7 +65,7 @@ async def _make_client(redis_mock=None, cb_mock=None, *, connect_fail=False):
         # Simulate Redis connection failure during initialize
         with (
             patch(
-                "packages.enhanced_agent_bus.cb_redis_client.get_service_circuit_breaker",
+                "enhanced_agent_bus.cb_redis_client.get_service_circuit_breaker",
                 new=AsyncMock(return_value=cb_mock or _make_cb()),
             ),
             patch("redis.asyncio.from_url", side_effect=ConnectionError("refused")),
@@ -76,7 +76,7 @@ async def _make_client(redis_mock=None, cb_mock=None, *, connect_fail=False):
         with (
             patch("redis.asyncio.from_url", return_value=r),
             patch(
-                "packages.enhanced_agent_bus.cb_redis_client.get_service_circuit_breaker",
+                "enhanced_agent_bus.cb_redis_client.get_service_circuit_breaker",
                 new=AsyncMock(return_value=cb_mock or _make_cb()),
             ),
         ):
@@ -91,7 +91,7 @@ async def _make_client(redis_mock=None, cb_mock=None, *, connect_fail=False):
 
 class TestInitialize:
     async def test_default_attributes(self):
-        from packages.enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
+        from enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
 
         client = CircuitBreakerRedisClient()
         assert client.redis_url == "redis://localhost:6379"
@@ -106,7 +106,7 @@ class TestInitialize:
         assert client._bypass_count == 0
 
     async def test_custom_attributes(self):
-        from packages.enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
+        from enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
 
         client = CircuitBreakerRedisClient(
             redis_url="redis://custom:6380",
@@ -141,7 +141,7 @@ class TestInitialize:
 
     async def test_initialize_import_error_raises(self):
         """If redis package is unavailable, ImportError is re-raised."""
-        from packages.enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
+        from enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
 
         client = CircuitBreakerRedisClient()
         with (
@@ -207,14 +207,14 @@ class TestClose:
 
     async def test_context_manager(self):
         """async context manager initializes and closes."""
-        from packages.enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
+        from enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
 
         r = _make_redis()
         cb = _make_cb()
         with (
             patch("redis.asyncio.from_url", return_value=r),
             patch(
-                "packages.enhanced_agent_bus.cb_redis_client.get_service_circuit_breaker",
+                "enhanced_agent_bus.cb_redis_client.get_service_circuit_breaker",
                 new=AsyncMock(return_value=cb),
             ),
         ):
@@ -273,7 +273,7 @@ class TestGet:
 
     async def test_get_auto_initializes(self):
         """get() calls initialize() if not yet initialized."""
-        from packages.enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
+        from enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
 
         r = _make_redis()
         r.get = AsyncMock(return_value="auto_init_value")
@@ -285,7 +285,7 @@ class TestGet:
         with (
             patch("redis.asyncio.from_url", return_value=r),
             patch(
-                "packages.enhanced_agent_bus.cb_redis_client.get_service_circuit_breaker",
+                "enhanced_agent_bus.cb_redis_client.get_service_circuit_breaker",
                 new=AsyncMock(return_value=cb),
             ),
         ):
@@ -349,7 +349,7 @@ class TestSet:
         cb.record_failure.assert_called_once()
 
     async def test_set_auto_initializes(self):
-        from packages.enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
+        from enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
 
         r = _make_redis()
         cb = _make_cb(can_execute=True)
@@ -358,7 +358,7 @@ class TestSet:
         with (
             patch("redis.asyncio.from_url", return_value=r),
             patch(
-                "packages.enhanced_agent_bus.cb_redis_client.get_service_circuit_breaker",
+                "enhanced_agent_bus.cb_redis_client.get_service_circuit_breaker",
                 new=AsyncMock(return_value=cb),
             ),
         ):
@@ -416,7 +416,7 @@ class TestDelete:
         cb.record_failure.assert_called_once()
 
     async def test_delete_auto_initializes(self):
-        from packages.enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
+        from enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
 
         r = _make_redis()
         r.delete = AsyncMock(return_value=1)
@@ -426,7 +426,7 @@ class TestDelete:
         with (
             patch("redis.asyncio.from_url", return_value=r),
             patch(
-                "packages.enhanced_agent_bus.cb_redis_client.get_service_circuit_breaker",
+                "enhanced_agent_bus.cb_redis_client.get_service_circuit_breaker",
                 new=AsyncMock(return_value=cb),
             ),
         ):
@@ -486,7 +486,7 @@ class TestBatchGet:
         cb.record_failure.assert_called_once()
 
     async def test_batch_get_auto_initializes(self):
-        from packages.enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
+        from enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
 
         r = _make_redis()
         pipe = r.pipeline.return_value
@@ -497,7 +497,7 @@ class TestBatchGet:
         with (
             patch("redis.asyncio.from_url", return_value=r),
             patch(
-                "packages.enhanced_agent_bus.cb_redis_client.get_service_circuit_breaker",
+                "enhanced_agent_bus.cb_redis_client.get_service_circuit_breaker",
                 new=AsyncMock(return_value=cb),
             ),
         ):
@@ -557,7 +557,7 @@ class TestBatchSet:
         cb.record_failure.assert_called_once()
 
     async def test_batch_set_auto_initializes(self):
-        from packages.enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
+        from enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
 
         r = _make_redis()
         pipe = r.pipeline.return_value
@@ -568,7 +568,7 @@ class TestBatchSet:
         with (
             patch("redis.asyncio.from_url", return_value=r),
             patch(
-                "packages.enhanced_agent_bus.cb_redis_client.get_service_circuit_breaker",
+                "enhanced_agent_bus.cb_redis_client.get_service_circuit_breaker",
                 new=AsyncMock(return_value=cb),
             ),
         ):
@@ -648,7 +648,7 @@ class TestHealthCheck:
 
     async def test_health_check_no_circuit_breaker(self):
         """health_check when circuit_breaker not yet set — circuit_state defaults to 'unknown'."""
-        from packages.enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
+        from enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
 
         client = CircuitBreakerRedisClient()
         # Do not initialize — _circuit_breaker is None
@@ -676,7 +676,7 @@ class TestGetCircuitStatus:
 
     async def test_get_circuit_status_not_initialized(self):
         """Returns error dict when circuit breaker is None."""
-        from packages.enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
+        from enhanced_agent_bus.cb_redis_client import CircuitBreakerRedisClient
 
         client = CircuitBreakerRedisClient()
         status = client.get_circuit_status()
@@ -742,6 +742,6 @@ class TestErrorTypes:
 
 class TestModuleExports:
     def test_all_exports(self):
-        import packages.enhanced_agent_bus.cb_redis_client as mod
+        import enhanced_agent_bus.cb_redis_client as mod
 
         assert "CircuitBreakerRedisClient" in mod.__all__

@@ -6,7 +6,8 @@ Constitutional Hash: cdd01ef066bc6cf2
 from datetime import datetime, timezone
 
 import pytest
-from packages.enhanced_agent_bus.models import CONSTITUTIONAL_HASH, GraphState
+
+from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, GraphState
 
 from ..state_reducer import (
     AccumulatorStateReducer,

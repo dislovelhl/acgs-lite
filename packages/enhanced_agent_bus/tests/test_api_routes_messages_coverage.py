@@ -23,7 +23,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
-from packages.enhanced_agent_bus.api.routes.messages import (
+from src.core.shared.security.auth import UserClaims
+
+from enhanced_agent_bus.api.routes.messages import (
     MESSAGE_HANDLERS,
     _build_agent_message,
     _development_status_response,
@@ -39,13 +41,12 @@ from packages.enhanced_agent_bus.api.routes.messages import (
     _validate_tenant_consistency,
     router,
 )
-from packages.enhanced_agent_bus.api_models import (
+from enhanced_agent_bus.api_models import (
     MessageRequest,
     MessageTypeEnum,
     PriorityEnum,
 )
-from packages.enhanced_agent_bus.models import MessageType, Priority
-from src.core.shared.security.auth import UserClaims
+from enhanced_agent_bus.models import MessageType, Priority
 
 # ---------------------------------------------------------------------------
 # Shared helpers
@@ -68,9 +69,10 @@ def _make_user_claims(tenant_id: str = "test-tenant") -> UserClaims:
 
 def _make_app(tenant_id: str = "test-tenant", bus: object = None) -> FastAPI:
     """Build a minimal FastAPI app with the messages router and mocked deps."""
-    from packages.enhanced_agent_bus.api.dependencies import get_agent_bus
-    from packages.enhanced_agent_bus.api.rate_limiting import limiter
     from src.core.shared.security.auth import get_current_user
+
+    from enhanced_agent_bus.api.dependencies import get_agent_bus
+    from enhanced_agent_bus.api.rate_limiting import limiter
 
     app = FastAPI()
     # Attach the limiter so slowapi can track state per app
@@ -93,7 +95,7 @@ def _make_app(tenant_id: str = "test-tenant", bus: object = None) -> FastAPI:
 def reset_rate_limiter() -> None:
     """Reset the module-level slowapi limiter before each test to prevent
     rate-limit spillover between tests."""
-    from packages.enhanced_agent_bus.api.rate_limiting import limiter
+    from enhanced_agent_bus.api.rate_limiting import limiter
 
     limiter.reset()
 
@@ -323,7 +325,7 @@ class TestRecordFailedBackgroundTask:
 
 class TestIsDevelopmentEnvironment:
     def test_development_env_returns_true(self) -> None:
-        import packages.enhanced_agent_bus.api.routes.messages as mod
+        import enhanced_agent_bus.api.routes.messages as mod
 
         with patch.dict(mod.__dict__, {"_ENVIRONMENT": "development"}):
             # Patch the module-level variable used by the function
@@ -335,7 +337,7 @@ class TestIsDevelopmentEnvironment:
                 mod._ENVIRONMENT = original
 
     def test_production_env_returns_false(self) -> None:
-        import packages.enhanced_agent_bus.api.routes.messages as mod
+        import enhanced_agent_bus.api.routes.messages as mod
 
         original = mod._ENVIRONMENT
         mod._ENVIRONMENT = "production"
@@ -345,7 +347,7 @@ class TestIsDevelopmentEnvironment:
             mod._ENVIRONMENT = original
 
     def test_test_env_returns_true(self) -> None:
-        import packages.enhanced_agent_bus.api.routes.messages as mod
+        import enhanced_agent_bus.api.routes.messages as mod
 
         original = mod._ENVIRONMENT
         mod._ENVIRONMENT = "test"
@@ -355,7 +357,7 @@ class TestIsDevelopmentEnvironment:
             mod._ENVIRONMENT = original
 
     def test_ci_env_returns_true(self) -> None:
-        import packages.enhanced_agent_bus.api.routes.messages as mod
+        import enhanced_agent_bus.api.routes.messages as mod
 
         original = mod._ENVIRONMENT
         mod._ENVIRONMENT = "ci"
@@ -448,10 +450,10 @@ class TestBuildAgentMessage:
         mock_logger = MagicMock()
         with (
             patch(
-                "packages.enhanced_agent_bus.api.routes.messages.AgentMessage",
+                "enhanced_agent_bus.api.routes.messages.AgentMessage",
                 side_effect=ValueError("bad model"),
             ),
-            patch("packages.enhanced_agent_bus.api.routes.messages.logger", mock_logger),
+            patch("enhanced_agent_bus.api.routes.messages.logger", mock_logger),
         ):
             with pytest.raises(HTTPException) as exc_info:
                 _build_agent_message(
@@ -487,7 +489,7 @@ class TestProcessMessageAsync:
         mock_bus = AsyncMock()
         mock_bus.process = AsyncMock(return_value=mock_result)
         mock_logger = MagicMock()
-        with patch("packages.enhanced_agent_bus.api.routes.messages.logger", mock_logger):
+        with patch("enhanced_agent_bus.api.routes.messages.logger", mock_logger):
             await _process_message_async(msg, mock_bus)  # type: ignore[arg-type]
         mock_bus.process.assert_awaited_once()
 
@@ -497,7 +499,7 @@ class TestProcessMessageAsync:
         mock_bus.process = AsyncMock(side_effect=RuntimeError("bus failure"))
         state = SimpleNamespace(failed_tasks=[])
         mock_logger = MagicMock()
-        with patch("packages.enhanced_agent_bus.api.routes.messages.logger", mock_logger):
+        with patch("enhanced_agent_bus.api.routes.messages.logger", mock_logger):
             await _process_message_async(msg, mock_bus, state)  # type: ignore[arg-type]
         assert len(state.failed_tasks) == 1
         assert "bus failure" in state.failed_tasks[0]["error"]
@@ -507,7 +509,7 @@ class TestProcessMessageAsync:
         mock_bus = AsyncMock()
         mock_bus.process = AsyncMock(side_effect=ValueError("oops"))
         mock_logger = MagicMock()
-        with patch("packages.enhanced_agent_bus.api.routes.messages.logger", mock_logger):
+        with patch("enhanced_agent_bus.api.routes.messages.logger", mock_logger):
             await _process_message_async(msg, mock_bus, None)  # type: ignore[arg-type]
 
 
@@ -593,7 +595,7 @@ class TestSendMessageEndpoint:
 
     def test_first_six_message_types_accepted(self) -> None:
         """First six of twelve message types — split to stay under 10/min rate limit."""
-        from packages.enhanced_agent_bus.api.rate_limiting import limiter
+        from enhanced_agent_bus.api.rate_limiting import limiter
 
         types = ["command", "query", "response", "event", "notification", "heartbeat"]
         for msg_type in types:
@@ -604,7 +606,7 @@ class TestSendMessageEndpoint:
 
     def test_second_six_message_types_accepted(self) -> None:
         """Second six of twelve message types — split to stay under 10/min rate limit."""
-        from packages.enhanced_agent_bus.api.rate_limiting import limiter
+        from enhanced_agent_bus.api.rate_limiting import limiter
 
         types = [
             "governance_request",
@@ -703,7 +705,7 @@ class TestSendMessageEndpoint:
     def test_build_error_returns_500(self) -> None:
         """Patch AgentMessage so construction raises to hit the HTTP 500 path."""
         with patch(
-            "packages.enhanced_agent_bus.api.routes.messages.AgentMessage",
+            "enhanced_agent_bus.api.routes.messages.AgentMessage",
             side_effect=ValueError("model exploded"),
         ):
             client = self._client()
@@ -721,7 +723,7 @@ INVALID_ID = "not-a-uuid"
 
 class TestGetMessageStatusEndpoint:
     def _client(self, env: str = "development") -> TestClient:
-        import packages.enhanced_agent_bus.api.routes.messages as mod
+        import enhanced_agent_bus.api.routes.messages as mod
 
         original = mod._ENVIRONMENT
         mod._ENVIRONMENT = env
@@ -747,7 +749,7 @@ class TestGetMessageStatusEndpoint:
         404/501) by confirming the 500 comes from response validation, not from
         our business logic raising HTTPException.
         """
-        import packages.enhanced_agent_bus.api.routes.messages as mod
+        import enhanced_agent_bus.api.routes.messages as mod
 
         original = mod._ENVIRONMENT
         mod._ENVIRONMENT = "development"
@@ -762,7 +764,7 @@ class TestGetMessageStatusEndpoint:
         assert resp.status_code not in (400, 404, 501)
 
     def test_valid_id_non_dev_env_returns_501(self) -> None:
-        import packages.enhanced_agent_bus.api.routes.messages as mod
+        import enhanced_agent_bus.api.routes.messages as mod
 
         original = mod._ENVIRONMENT
         mod._ENVIRONMENT = "production"
@@ -777,7 +779,7 @@ class TestGetMessageStatusEndpoint:
     def test_response_tenant_id_via_helper(self) -> None:
         """Verify _development_status_response includes the correct tenant_id
         (covers the branch without requiring the HTTP layer to succeed)."""
-        from packages.enhanced_agent_bus.api.routes.messages import (
+        from enhanced_agent_bus.api.routes.messages import (
             _development_status_response,
         )
 
@@ -788,8 +790,8 @@ class TestGetMessageStatusEndpoint:
     def test_uppercase_uuid_passes_pattern_check(self) -> None:
         """The MESSAGE_ID_PATTERN uses re.IGNORECASE, so uppercase UUIDs should
         not be rejected with 400. They may hit the dev/non-dev branch instead."""
-        import packages.enhanced_agent_bus.api.routes.messages as mod
-        from packages.enhanced_agent_bus.api.routes.messages import MESSAGE_ID_PATTERN
+        import enhanced_agent_bus.api.routes.messages as mod
+        from enhanced_agent_bus.api.routes.messages import MESSAGE_ID_PATTERN
 
         upper_uuid = VALID_UUID.upper()
         # Confirm the pattern itself accepts uppercase

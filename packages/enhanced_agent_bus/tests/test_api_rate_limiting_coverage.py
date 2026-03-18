@@ -24,9 +24,10 @@ from datetime import UTC, datetime, timedelta, timezone
 from typing import Any, ClassVar
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import packages.enhanced_agent_bus.api.rate_limiting as rl_mod
 import pytest
-from packages.enhanced_agent_bus.fallback_stubs import StubRateLimitExceeded as _StubRLE
+
+import enhanced_agent_bus.api.rate_limiting as rl_mod
+from enhanced_agent_bus.fallback_stubs import StubRateLimitExceeded as _StubRLE
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -83,7 +84,7 @@ class TestValidateItemSizes:
         assert result is None
 
     def test_oversized_item_returns_error_dict(self) -> None:
-        from packages.enhanced_agent_bus.api.config import MAX_ITEM_CONTENT_SIZE
+        from enhanced_agent_bus.api.config import MAX_ITEM_CONTENT_SIZE
 
         big_content = "x" * (MAX_ITEM_CONTENT_SIZE + 1)
         result = rl_mod.validate_item_sizes(_make_batch([_make_item(big_content, "big-1")]))
@@ -95,7 +96,7 @@ class TestValidateItemSizes:
         assert "max_size_mb" in result
 
     def test_mixed_valid_and_oversized(self) -> None:
-        from packages.enhanced_agent_bus.api.config import MAX_ITEM_CONTENT_SIZE
+        from enhanced_agent_bus.api.config import MAX_ITEM_CONTENT_SIZE
 
         big = "x" * (MAX_ITEM_CONTENT_SIZE + 1)
         items = [
@@ -123,7 +124,7 @@ class TestValidateItemSizes:
         assert result is None
 
     def test_many_oversized_capped_at_max_violations(self) -> None:
-        from packages.enhanced_agent_bus.api.config import (
+        from enhanced_agent_bus.api.config import (
             MAX_ITEM_CONTENT_SIZE,
             MAX_VIOLATIONS_TO_DISPLAY,
         )
@@ -137,7 +138,7 @@ class TestValidateItemSizes:
         assert len(result["oversized_items"]) == MAX_VIOLATIONS_TO_DISPLAY
 
     def test_result_contains_message_field(self) -> None:
-        from packages.enhanced_agent_bus.api.config import MAX_ITEM_CONTENT_SIZE
+        from enhanced_agent_bus.api.config import MAX_ITEM_CONTENT_SIZE
 
         big = "x" * (MAX_ITEM_CONTENT_SIZE + 1)
         result = rl_mod.validate_item_sizes(_make_batch([_make_item(big)]))
@@ -148,7 +149,7 @@ class TestValidateItemSizes:
         """Content at exactly MAX_ITEM_CONTENT_SIZE passes validation."""
         import sys
 
-        from packages.enhanced_agent_bus.api.config import MAX_ITEM_CONTENT_SIZE
+        from enhanced_agent_bus.api.config import MAX_ITEM_CONTENT_SIZE
 
         overhead = sys.getsizeof("")
         content = "a" * (MAX_ITEM_CONTENT_SIZE - overhead)
@@ -156,7 +157,7 @@ class TestValidateItemSizes:
         assert result is None
 
     def test_content_size_mb_in_oversized_item(self) -> None:
-        from packages.enhanced_agent_bus.api.config import MAX_ITEM_CONTENT_SIZE
+        from enhanced_agent_bus.api.config import MAX_ITEM_CONTENT_SIZE
 
         # Make content clearly bigger than 1 MB after JSON encoding
         big = "y" * (MAX_ITEM_CONTENT_SIZE + 10_000)
@@ -233,7 +234,7 @@ class TestCheckBatchRateLimitRedisPath:
 
     async def test_redis_over_limit_propagates_from_direct_helper(self) -> None:
         """Verify _check_rate_limit_redis itself raises when over limit."""
-        from packages.enhanced_agent_bus.api.config import BATCH_RATE_LIMIT_BASE
+        from enhanced_agent_bus.api.config import BATCH_RATE_LIMIT_BASE
 
         mock_redis = AsyncMock()
         mock_redis.incrby = AsyncMock(return_value=BATCH_RATE_LIMIT_BASE + 1)
@@ -310,7 +311,7 @@ class TestCheckRateLimitRedis:
             await rl_mod._check_rate_limit_redis("client", 5, 50)
 
     async def test_raises_when_count_exceeds_base(self) -> None:
-        from packages.enhanced_agent_bus.api.config import BATCH_RATE_LIMIT_BASE
+        from enhanced_agent_bus.api.config import BATCH_RATE_LIMIT_BASE
 
         mock_redis = AsyncMock()
         mock_redis.incrby = AsyncMock(return_value=BATCH_RATE_LIMIT_BASE + 10)
@@ -396,7 +397,7 @@ class TestProductionGuards:
     def test_create_app_calls_rate_limit_guard(self, monkeypatch) -> None:
         import importlib
 
-        api_app = importlib.import_module("packages.enhanced_agent_bus.api.app")
+        api_app = importlib.import_module("enhanced_agent_bus.api.app")
 
         called: list[str] = []
 
@@ -411,7 +412,7 @@ class TestProductionGuards:
         assert called == ["called"]
 
     async def test_raises_when_tokens_exceed_base(self) -> None:
-        from packages.enhanced_agent_bus.api.config import BATCH_RATE_LIMIT_BASE
+        from enhanced_agent_bus.api.config import BATCH_RATE_LIMIT_BASE
 
         await self._reset()
         with patch.dict(
@@ -425,7 +426,7 @@ class TestProductionGuards:
 
     async def test_different_clients_isolated(self) -> None:
         await self._reset()
-        from packages.enhanced_agent_bus.api.config import BATCH_RATE_LIMIT_BASE
+        from enhanced_agent_bus.api.config import BATCH_RATE_LIMIT_BASE
 
         with patch.dict(
             rl_mod.__dict__, {"RateLimitExceeded": _StubRLE, "RateLimitExceededWrapper": _StubRLE}
@@ -434,7 +435,7 @@ class TestProductionGuards:
             await rl_mod._check_rate_limit_memory("cli-b", BATCH_RATE_LIMIT_BASE, 1000)
 
     async def test_old_windows_cleaned_up(self) -> None:
-        from packages.enhanced_agent_bus.api.config import RATE_LIMIT_WINDOW_CLEANUP_MINUTES
+        from enhanced_agent_bus.api.config import RATE_LIMIT_WINDOW_CLEANUP_MINUTES
 
         await self._reset()
         old_time = datetime.now(UTC) - timedelta(minutes=RATE_LIMIT_WINDOW_CLEANUP_MINUTES + 1)
@@ -461,7 +462,7 @@ class TestProductionGuards:
         assert key in rl_mod._batch_rate_limit_state
 
     async def test_error_message_has_retry_after(self) -> None:
-        from packages.enhanced_agent_bus.api.config import BATCH_RATE_LIMIT_BASE
+        from enhanced_agent_bus.api.config import BATCH_RATE_LIMIT_BASE
 
         await self._reset()
         with patch.dict(
@@ -481,7 +482,7 @@ class TestProductionGuards:
         assert state["tokens_consumed"] == 1
 
     async def test_exactly_at_base_is_allowed(self) -> None:
-        from packages.enhanced_agent_bus.api.config import BATCH_RATE_LIMIT_BASE
+        from enhanced_agent_bus.api.config import BATCH_RATE_LIMIT_BASE
 
         await self._reset()
         with patch.dict(
@@ -584,7 +585,7 @@ class TestEdgeCases:
 
     def test_batch_request_protocol_can_be_used(self) -> None:
         """BatchRequestProtocol is a Protocol — validate structural check."""
-        from packages.enhanced_agent_bus.api.rate_limiting import BatchRequestProtocol
+        from enhanced_agent_bus.api.rate_limiting import BatchRequestProtocol
 
         class _Concrete:
             items: ClassVar[list] = []
@@ -598,7 +599,7 @@ class TestEdgeCases:
 
     async def test_redis_exception_logs_warning_and_uses_memory(self) -> None:
         """TypeError from RateLimitExceeded should also trigger memory fallback."""
-        from packages.enhanced_agent_bus.api.config import BATCH_RATE_LIMIT_BASE
+        from enhanced_agent_bus.api.config import BATCH_RATE_LIMIT_BASE
 
         mock_redis = AsyncMock()
         mock_redis.incrby = AsyncMock(return_value=BATCH_RATE_LIMIT_BASE + 1)

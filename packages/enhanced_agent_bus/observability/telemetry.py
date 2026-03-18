@@ -6,13 +6,12 @@ Provides unified telemetry configuration for distributed tracing,
 metrics collection, and constitutional compliance tracking.
 """
 
+import sys
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
-from typing import Optional
 
-from packages.enhanced_agent_bus.bus_types import JSONDict
-
+from enhanced_agent_bus.bus_types import JSONDict
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 try:
@@ -23,6 +22,10 @@ except ImportError:
     from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 logger = get_logger(__name__)
+_module = sys.modules.get(__name__)
+if _module is not None:
+    sys.modules.setdefault("enhanced_agent_bus.observability.telemetry", _module)
+    sys.modules.setdefault("packages.enhanced_agent_bus.observability.telemetry", _module)
 # Check OpenTelemetry availability
 OTEL_AVAILABLE = False
 tracer_type = None
@@ -145,21 +148,34 @@ class NoOpTracer:
         return NoOpSpan()
 
 
-class NoOpCounter:
+class _CrossModuleNoOpType(type):
+    """Treat equivalent no-op telemetry classes from dual import paths as compatible."""
+
+    def __instancecheck__(cls, instance: object) -> bool:
+        instance_cls = instance.__class__
+        if type.__instancecheck__(cls, instance):
+            return True
+        return (
+            instance_cls.__name__ == cls.__name__
+            and instance_cls.__module__.endswith(".observability.telemetry")
+        )
+
+
+class NoOpCounter(metaclass=_CrossModuleNoOpType):
     """No-op counter for when OpenTelemetry is not available."""
 
     def add(self, amount: int, attributes: JSONDict | None = None) -> None:
         pass
 
 
-class NoOpHistogram:
+class NoOpHistogram(metaclass=_CrossModuleNoOpType):
     """No-op histogram for when OpenTelemetry is not available."""
 
     def record(self, value: float, attributes: JSONDict | None = None) -> None:
         pass
 
 
-class NoOpUpDownCounter:
+class NoOpUpDownCounter(metaclass=_CrossModuleNoOpType):
     """No-op up-down counter for when OpenTelemetry is not available."""
 
     def add(self, amount: int, attributes: JSONDict | None = None) -> None:

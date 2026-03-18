@@ -18,9 +18,11 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
 from enum import Enum
-from typing import Optional
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.metrics.noop import (
     CONTENT_TYPE_LATEST,
     PROMETHEUS_AVAILABLE,
@@ -35,7 +37,11 @@ from src.core.shared.metrics.noop import (
 from src.core.shared.metrics.noop import (
     NoOpCounter as _NoOpCounter,
 )
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

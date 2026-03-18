@@ -13,9 +13,12 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 
-from packages.enhanced_agent_bus.circuit_breaker import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
+from enhanced_agent_bus.circuit_breaker import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)

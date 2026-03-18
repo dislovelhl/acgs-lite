@@ -14,7 +14,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -39,7 +42,10 @@ except ImportError:
     MAMBA_AVAILABLE = False
     logger.warning("mamba_ssm or causal_conv1d not available - using optimized torch fallback")
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 # Conditional base class for when torch is unavailable
 _ModuleBase = nn.Module if TORCH_AVAILABLE else object  # type: ignore[misc]

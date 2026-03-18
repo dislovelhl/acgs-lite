@@ -26,9 +26,16 @@ import os
 from collections.abc import Callable
 from typing import TYPE_CHECKING, ClassVar
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import ACGSBaseError
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 if TYPE_CHECKING:
     from starlette.types import ASGIApp, Receive, Scope, Send

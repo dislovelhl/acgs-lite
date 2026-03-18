@@ -17,25 +17,26 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.constitutional import activation_saga as _saga_module
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.constitutional import activation_saga as _saga_module
 
 # Import the module under test and helpers
-from packages.enhanced_agent_bus.constitutional.activation_saga import (
+from enhanced_agent_bus.constitutional.activation_saga import (
     ActivationSagaActivities,
     ActivationSagaError,
     activate_amendment,
     create_activation_saga,
 )
-from packages.enhanced_agent_bus.constitutional.amendment_model import (
+from enhanced_agent_bus.constitutional.amendment_model import (
     AmendmentProposal,
     AmendmentStatus,
 )
-from packages.enhanced_agent_bus.constitutional.storage import ConstitutionalStorageService
-from packages.enhanced_agent_bus.constitutional.version_model import (
+from enhanced_agent_bus.constitutional.storage import ConstitutionalStorageService
+from enhanced_agent_bus.constitutional.version_model import (
     ConstitutionalStatus,
     ConstitutionalVersion,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 pytestmark = [
     pytest.mark.constitutional,

@@ -24,16 +24,16 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 
-from packages.enhanced_agent_bus.agent_health.metrics import emit_health_metrics
-from packages.enhanced_agent_bus.agent_health.models import (
+from src.core.shared.types import AgentID
+
+from enhanced_agent_bus.agent_health.metrics import emit_health_metrics
+from enhanced_agent_bus.agent_health.models import (
     AgentHealthRecord,
     AgentHealthThresholds,
     AutonomyTier,
     HealthState,
 )
-from packages.enhanced_agent_bus.agent_health.store import AgentHealthStore
-from src.core.shared.types import AgentID
-
+from enhanced_agent_bus.agent_health.store import AgentHealthStore
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # Type alias for the sleep function (injectable for testing)

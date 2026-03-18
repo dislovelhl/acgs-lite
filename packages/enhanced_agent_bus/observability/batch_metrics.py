@@ -10,6 +10,7 @@ Tracks throughput, latency, success/failure rates, and resource usage.
 
 import time
 from dataclasses import dataclass, field
+from importlib import import_module
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -24,7 +25,10 @@ BATCH_METRICS_INIT_ERRORS = (
     AttributeError,
 )
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 
 @dataclass
@@ -160,7 +164,11 @@ class BatchMetrics:
 
     def _use_noop_metrics(self) -> None:
         """Fall back to no-op metrics if initialization fails."""
-        noop_meter = NoOpMeter()
+        try:
+            telemetry_module = import_module("packages.enhanced_agent_bus.observability.telemetry")
+            noop_meter = telemetry_module.NoOpMeter()
+        except ImportError:
+            noop_meter = NoOpMeter()
         self._batch_requests_total = noop_meter.create_counter("batch_requests_total")
         self._batch_items_total = noop_meter.create_counter("batch_items_total")
         self._batch_items_success = noop_meter.create_counter("batch_items_success_total")

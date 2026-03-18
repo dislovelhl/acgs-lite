@@ -30,8 +30,9 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
-from packages.enhanced_agent_bus.feedback_handler.enums import FeedbackType, OutcomeStatus
-from packages.enhanced_agent_bus.feedback_handler.models import StoredFeedbackEvent
+
+from enhanced_agent_bus.feedback_handler.enums import FeedbackType, OutcomeStatus
+from enhanced_agent_bus.feedback_handler.models import StoredFeedbackEvent
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -93,18 +94,18 @@ def _make_mock_aiokafka() -> types.ModuleType:
 
 class TestModuleConstants:
     def test_kafka_available_is_bool(self):
-        from packages.enhanced_agent_bus.feedback_handler import kafka_publisher as kp
+        from enhanced_agent_bus.feedback_handler import kafka_publisher as kp
 
         assert isinstance(kp.KAFKA_AVAILABLE, bool)
 
     def test_kafka_bootstrap_default(self):
-        from packages.enhanced_agent_bus.feedback_handler import kafka_publisher as kp
+        from enhanced_agent_bus.feedback_handler import kafka_publisher as kp
 
         assert isinstance(kp.KAFKA_BOOTSTRAP, str)
         assert ":" in kp.KAFKA_BOOTSTRAP or kp.KAFKA_BOOTSTRAP  # non-empty
 
     def test_kafka_topic_feedback_default(self):
-        from packages.enhanced_agent_bus.feedback_handler import kafka_publisher as kp
+        from enhanced_agent_bus.feedback_handler import kafka_publisher as kp
 
         assert kp.KAFKA_TOPIC_FEEDBACK
 
@@ -116,7 +117,7 @@ class TestModuleConstants:
 
 class TestFeedbackKafkaPublisherInit:
     def test_defaults(self):
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             KAFKA_BOOTSTRAP,
             KAFKA_TOPIC_FEEDBACK,
             FeedbackKafkaPublisher,
@@ -130,7 +131,7 @@ class TestFeedbackKafkaPublisherInit:
         assert pub._running is False
 
     def test_custom_args(self):
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -144,7 +145,7 @@ class TestFeedbackKafkaPublisherInit:
         assert pub.client_id == "custom-client"
 
     def test_bootstrap_none_uses_env(self):
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             KAFKA_BOOTSTRAP,
             FeedbackKafkaPublisher,
         )
@@ -153,7 +154,7 @@ class TestFeedbackKafkaPublisherInit:
         assert pub.bootstrap_servers == KAFKA_BOOTSTRAP
 
     def test_topic_none_uses_env(self):
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             KAFKA_TOPIC_FEEDBACK,
             FeedbackKafkaPublisher,
         )
@@ -170,7 +171,7 @@ class TestFeedbackKafkaPublisherInit:
 class TestFeedbackKafkaPublisherStart:
     async def test_start_kafka_unavailable(self):
         """When KAFKA_AVAILABLE is False, start() returns False."""
-        import packages.enhanced_agent_bus.feedback_handler.kafka_publisher as kp
+        import enhanced_agent_bus.feedback_handler.kafka_publisher as kp
 
         pub = kp.FeedbackKafkaPublisher()
         with patch.object(kp, "KAFKA_AVAILABLE", False):
@@ -180,7 +181,7 @@ class TestFeedbackKafkaPublisherStart:
 
     async def test_start_already_running(self):
         """If already running, start() returns True immediately."""
-        import packages.enhanced_agent_bus.feedback_handler.kafka_publisher as kp
+        import enhanced_agent_bus.feedback_handler.kafka_publisher as kp
 
         pub = kp.FeedbackKafkaPublisher()
         pub._running = True
@@ -190,7 +191,7 @@ class TestFeedbackKafkaPublisherStart:
 
     async def test_start_success(self):
         """Happy-path start with mocked AIOKafkaProducer."""
-        import packages.enhanced_agent_bus.feedback_handler.kafka_publisher as kp
+        import enhanced_agent_bus.feedback_handler.kafka_publisher as kp
 
         mock_producer = AsyncMock()
         mock_producer.start = AsyncMock()
@@ -209,7 +210,7 @@ class TestFeedbackKafkaPublisherStart:
 
     async def test_start_producer_raises_runtime_error(self):
         """RuntimeError during producer.start() → returns False."""
-        import packages.enhanced_agent_bus.feedback_handler.kafka_publisher as kp
+        import enhanced_agent_bus.feedback_handler.kafka_publisher as kp
 
         mock_producer = AsyncMock()
         mock_producer.start = AsyncMock(side_effect=RuntimeError("connection refused"))
@@ -228,7 +229,7 @@ class TestFeedbackKafkaPublisherStart:
 
     async def test_start_producer_raises_value_error(self):
         """ValueError during init → returns False."""
-        import packages.enhanced_agent_bus.feedback_handler.kafka_publisher as kp
+        import enhanced_agent_bus.feedback_handler.kafka_publisher as kp
 
         producer_cls = MagicMock(side_effect=ValueError("bad config"))
 
@@ -243,7 +244,7 @@ class TestFeedbackKafkaPublisherStart:
 
     async def test_start_producer_raises_type_error(self):
         """TypeError during init → returns False."""
-        import packages.enhanced_agent_bus.feedback_handler.kafka_publisher as kp
+        import enhanced_agent_bus.feedback_handler.kafka_publisher as kp
 
         producer_cls = MagicMock(side_effect=TypeError("type err"))
 
@@ -265,7 +266,7 @@ class TestFeedbackKafkaPublisherStart:
 class TestFeedbackKafkaPublisherStop:
     async def test_stop_not_running(self):
         """Stop when not running is a no-op."""
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -275,7 +276,7 @@ class TestFeedbackKafkaPublisherStop:
 
     async def test_stop_running_success(self):
         """Happy-path stop flushes and stops the producer."""
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -296,7 +297,7 @@ class TestFeedbackKafkaPublisherStop:
 
     async def test_stop_producer_raises_on_flush(self):
         """Exception during flush is caught; producer is still cleaned up."""
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -315,7 +316,7 @@ class TestFeedbackKafkaPublisherStop:
 
     async def test_stop_producer_raises_value_error(self):
         """ValueError during stop is caught."""
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -333,7 +334,7 @@ class TestFeedbackKafkaPublisherStop:
 
     async def test_stop_producer_raises_type_error(self):
         """TypeError during stop is caught."""
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -350,7 +351,7 @@ class TestFeedbackKafkaPublisherStop:
 
     async def test_stop_running_no_producer(self):
         """Running flag True but producer is None -- still marks not running."""
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -371,7 +372,7 @@ class TestFeedbackKafkaPublisherStop:
 class TestFeedbackKafkaPublisherPublish:
     async def test_publish_not_running(self):
         """Returns False when publisher is not running."""
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -382,7 +383,7 @@ class TestFeedbackKafkaPublisherPublish:
 
     async def test_publish_no_producer(self):
         """Returns False when _producer is None even if _running is True."""
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -395,7 +396,7 @@ class TestFeedbackKafkaPublisherPublish:
 
     async def test_publish_success(self):
         """Happy-path publish sends event to Kafka."""
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -417,7 +418,7 @@ class TestFeedbackKafkaPublisherPublish:
 
     async def test_publish_raises_runtime_error(self):
         """RuntimeError during send → returns False."""
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -432,7 +433,7 @@ class TestFeedbackKafkaPublisherPublish:
         assert result is False
 
     async def test_publish_raises_value_error(self):
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -447,7 +448,7 @@ class TestFeedbackKafkaPublisherPublish:
         assert result is False
 
     async def test_publish_raises_type_error(self):
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -469,7 +470,7 @@ class TestFeedbackKafkaPublisherPublish:
 
 class TestFeedbackKafkaPublisherPublishBatch:
     async def test_publish_batch_empty(self):
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -478,7 +479,7 @@ class TestFeedbackKafkaPublisherPublishBatch:
         assert results == {}
 
     async def test_publish_batch_all_success(self):
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -496,7 +497,7 @@ class TestFeedbackKafkaPublisherPublishBatch:
         assert all(results[f"evt-{i}"] is True for i in range(3))
 
     async def test_publish_batch_mixed_results(self):
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -522,7 +523,7 @@ class TestFeedbackKafkaPublisherPublishBatch:
         assert results["evt-2"] is True
 
     async def test_publish_batch_all_fail_not_running(self):
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -539,7 +540,7 @@ class TestFeedbackKafkaPublisherPublishBatch:
 
 class TestSerializeEvent:
     def _get_publisher(self):
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -643,7 +644,7 @@ class TestSerializeEvent:
 
 class TestSanitizeError:
     def _get_publisher(self):
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -685,7 +686,7 @@ class TestSanitizeError:
 
 class TestSanitizeBootstrap:
     def _get_publisher(self):
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -724,7 +725,7 @@ class TestSanitizeBootstrap:
 
 class TestIsRunning:
     def test_is_running_false_by_default(self):
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -732,7 +733,7 @@ class TestIsRunning:
         assert pub.is_running is False
 
     def test_is_running_true_after_set(self):
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -749,7 +750,7 @@ class TestIsRunning:
 class TestPublishSync:
     def test_publish_sync_no_running_loop(self):
         """Without a running event loop, asyncio.run() is used (returns False -- not running)."""
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -761,7 +762,7 @@ class TestPublishSync:
 
     def test_publish_sync_with_running_loop(self):
         """When a running loop exists, create_task is called and False is returned."""
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -790,7 +791,7 @@ class TestPublishSync:
 
     def test_publish_sync_no_loop_publish_succeeds(self):
         """asyncio.run() path with a producer that actually sends."""
-        from packages.enhanced_agent_bus.feedback_handler.kafka_publisher import (
+        from enhanced_agent_bus.feedback_handler.kafka_publisher import (
             FeedbackKafkaPublisher,
         )
 
@@ -816,7 +817,7 @@ class TestPublishSync:
 
 class TestGetFeedbackKafkaPublisher:
     async def test_creates_and_returns_publisher(self):
-        import packages.enhanced_agent_bus.feedback_handler.kafka_publisher as kp
+        import enhanced_agent_bus.feedback_handler.kafka_publisher as kp
 
         # Reset global
         kp._feedback_kafka_publisher = None
@@ -831,7 +832,7 @@ class TestGetFeedbackKafkaPublisher:
 
     async def test_returns_existing_publisher(self):
         """Second call returns the same instance."""
-        import packages.enhanced_agent_bus.feedback_handler.kafka_publisher as kp
+        import enhanced_agent_bus.feedback_handler.kafka_publisher as kp
 
         kp._feedback_kafka_publisher = None
 
@@ -844,7 +845,7 @@ class TestGetFeedbackKafkaPublisher:
 
     async def test_creates_publisher_with_kafka_available(self):
         """When KAFKA_AVAILABLE=True, producer creation is attempted."""
-        import packages.enhanced_agent_bus.feedback_handler.kafka_publisher as kp
+        import enhanced_agent_bus.feedback_handler.kafka_publisher as kp
 
         kp._feedback_kafka_publisher = None
 
@@ -869,7 +870,7 @@ class TestGetFeedbackKafkaPublisher:
 
 class TestPublishFeedbackEvent:
     async def test_publish_feedback_event_not_running(self):
-        import packages.enhanced_agent_bus.feedback_handler.kafka_publisher as kp
+        import enhanced_agent_bus.feedback_handler.kafka_publisher as kp
 
         kp._feedback_kafka_publisher = None
 
@@ -880,7 +881,7 @@ class TestPublishFeedbackEvent:
         kp._feedback_kafka_publisher = None
 
     async def test_publish_feedback_event_success(self):
-        import packages.enhanced_agent_bus.feedback_handler.kafka_publisher as kp
+        import enhanced_agent_bus.feedback_handler.kafka_publisher as kp
 
         kp._feedback_kafka_publisher = None
 
@@ -906,7 +907,7 @@ class TestPublishFeedbackEvent:
 
 class TestModuleExports:
     def test_all_exports_present(self):
-        import packages.enhanced_agent_bus.feedback_handler.kafka_publisher as kp
+        import enhanced_agent_bus.feedback_handler.kafka_publisher as kp
 
         for name in kp.__all__:
             assert hasattr(kp, name), f"Missing export: {name}"

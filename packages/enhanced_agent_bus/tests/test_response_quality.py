@@ -11,7 +11,9 @@ from typing import Optional
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.response_quality import (
+from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+
+from enhanced_agent_bus.response_quality import (
     # Constants
     CONSTITUTIONAL_HASH,
     # Validator
@@ -38,7 +40,6 @@ from packages.enhanced_agent_bus.response_quality import (
     create_refiner,
     create_validator,
 )
-from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 
 # ============================================================================
 # Test Constants

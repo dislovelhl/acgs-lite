@@ -8,14 +8,15 @@ Comprehensive tests for KafkaEventBus, Orchestrator, and Blackboard classes.
 from unittest.mock import AsyncMock
 
 import pytest
-from packages.enhanced_agent_bus.exceptions import MessageDeliveryError
-from packages.enhanced_agent_bus.kafka_bus import (
+
+from enhanced_agent_bus.exceptions import MessageDeliveryError
+from enhanced_agent_bus.kafka_bus import (
     KAFKA_AVAILABLE,
     Blackboard,
     KafkaEventBus,
     Orchestrator,
 )
-from packages.enhanced_agent_bus.models import (
+from enhanced_agent_bus.models import (
     CONSTITUTIONAL_HASH,
     AgentMessage,
     MessageType,
@@ -127,7 +128,7 @@ class TestKafkaEventBusLifecycle:
     async def test_start_without_kafka(self, kafka_bus: KafkaEventBus) -> None:
         """Test start when aiokafka is not available."""
         # Import the module to patch its constant
-        from packages.enhanced_agent_bus import kafka_bus as kb_module
+        from enhanced_agent_bus import kafka_bus as kb_module
 
         original_value = kb_module.KAFKA_AVAILABLE
         try:
@@ -285,7 +286,7 @@ class TestSubscribe:
         handler = AsyncMock()
 
         # Import the module to patch its constant
-        from packages.enhanced_agent_bus import kafka_bus as kb_module
+        from enhanced_agent_bus import kafka_bus as kb_module
 
         original_value = kb_module.KAFKA_AVAILABLE
         try:

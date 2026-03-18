@@ -11,7 +11,10 @@ import uuid
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from packages.enhanced_agent_bus.agent_health.models import (
+from pydantic import ValidationError
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.agent_health.models import (
     AgentHealthRecord,
     AgentHealthThresholds,
     AutonomyTier,
@@ -22,8 +25,6 @@ from packages.enhanced_agent_bus.agent_health.models import (
     HealthState,
     OverrideMode,
 )
-from pydantic import ValidationError
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # These imports will fail (RED) until models.py is implemented
 

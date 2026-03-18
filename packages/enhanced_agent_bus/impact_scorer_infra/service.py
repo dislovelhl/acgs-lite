@@ -13,9 +13,13 @@ Provides configurable impact scoring with support for:
 from dataclasses import dataclass
 
 import numpy as np
-from packages.enhanced_agent_bus.impact_scorer_infra.models import ScoringMethod, ScoringResult
-from src.core.shared.types import JSONDict
 
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.impact_scorer_infra.models import ScoringMethod, ScoringResult
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from .algorithms.base import WeightedEnsemble
@@ -25,7 +29,10 @@ from .algorithms.statistical import StatisticalScorer
 logger = get_logger(__name__)
 # Constitutional hash for governance validation
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 MINICPM_INIT_ERRORS = (AttributeError, OSError, RuntimeError, ValueError, TypeError)
 

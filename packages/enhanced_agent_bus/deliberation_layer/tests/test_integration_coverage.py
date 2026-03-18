@@ -28,7 +28,7 @@ if "ACGS2_ENCRYPTION_KEY" not in os.environ:
 if "JWT_SECRET_KEY" not in os.environ:
     os.environ["JWT_SECRET_KEY"] = "test-jwt-secret-key-for-testing-only"  # noqa: S105
 if "JWT_ALGORITHM" not in os.environ:
-    os.environ["JWT_ALGORITHM"] = "HS256"
+    os.environ["JWT_ALGORITHM"] = "ES256"
 
 # Ensure project root on path
 _PROJECT_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[6])
@@ -38,7 +38,7 @@ if _PROJECT_ROOT not in sys.path:
 # ---------------------------------------------------------------------------
 # Module under test + helpers (imported after path setup)
 # ---------------------------------------------------------------------------
-from packages.enhanced_agent_bus.deliberation_layer.integration import (  # noqa: E402
+from enhanced_agent_bus.deliberation_layer.integration import (  # noqa: E402
     DeliberationEngine,
     DeliberationLayer,
     _get_imports,
@@ -47,11 +47,11 @@ from packages.enhanced_agent_bus.deliberation_layer.integration import (  # noqa
     get_deliberation_layer,
     reset_deliberation_layer,
 )
-from packages.enhanced_agent_bus.deliberation_layer.opa_guard_models import (  # noqa: E402
+from enhanced_agent_bus.deliberation_layer.opa_guard_models import (  # noqa: E402
     GuardDecision,
     GuardResult,
 )
-from packages.enhanced_agent_bus.models import (  # noqa: E402
+from enhanced_agent_bus.models import (  # noqa: E402
     AgentMessage,
     MessageStatus,
     MessageType,
@@ -224,7 +224,7 @@ class TestDeliberationLayerInit:
 
     def test_enable_opa_guard_creates_guard(self):
         """When enable_opa_guard=True and no guard injected, an OPAGuard instance is created."""
-        from packages.enhanced_agent_bus.deliberation_layer.opa_guard import OPAGuard
+        from enhanced_agent_bus.deliberation_layer.opa_guard import OPAGuard
 
         layer = DeliberationLayer(
             impact_scorer=_mock_impact_scorer(),
@@ -906,7 +906,7 @@ class TestGetLayerStats:
         layer.enable_redis = True
         # asyncio.run is called internally; we patch it
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.integration.asyncio.run",
+            "enhanced_agent_bus.deliberation_layer.integration.asyncio.run",
             return_value={"stream": "data"},
         ):
             stats = layer.get_layer_stats()
@@ -920,7 +920,7 @@ class TestGetLayerStats:
         layer.enable_redis = True
         # asyncio.run raises RuntimeError (already in event loop)
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.integration.asyncio.run",
+            "enhanced_agent_bus.deliberation_layer.integration.asyncio.run",
             side_effect=RuntimeError("already running"),
         ):
             stats = layer.get_layer_stats()
@@ -972,7 +972,7 @@ class TestDFCDiagnostics:
 
         mock_components = MagicMock()
 
-        import packages.enhanced_agent_bus.deliberation_layer.integration as integ_mod
+        import enhanced_agent_bus.deliberation_layer.integration as integ_mod
 
         original_cache = integ_mod._imports_cache
         # Inject a mock get_dfc_components_from_context
@@ -1006,7 +1006,7 @@ class TestDFCDiagnostics:
         mock_dfc_calc.calculate = MagicMock(side_effect=ValueError("dfc error"))
         layer.dfc_calculator = mock_dfc_calc
 
-        import packages.enhanced_agent_bus.deliberation_layer.integration as integ_mod
+        import enhanced_agent_bus.deliberation_layer.integration as integ_mod
 
         original_cache = integ_mod._imports_cache
         integ_mod._imports_cache = dict(integ_mod._imports_cache or {})
@@ -1228,7 +1228,7 @@ class TestGlobalLayer:
 
 class TestLazyImport:
     def test_lazy_import_caches(self):
-        import packages.enhanced_agent_bus.deliberation_layer.integration as integ_mod
+        import enhanced_agent_bus.deliberation_layer.integration as integ_mod
 
         # Warm up the cache
         result1 = _lazy_import("DeliberationStatus")

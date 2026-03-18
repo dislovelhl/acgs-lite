@@ -6,7 +6,8 @@ from unittest.mock import AsyncMock
 import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ed25519
-from packages.enhanced_agent_bus.constitutional.council import (
+
+from enhanced_agent_bus.constitutional.council import (
     CONSTITUTIONAL_HASH,
     ConstitutionalCouncilService,
 )
@@ -71,7 +72,7 @@ async def test_submit_proposal_accepts_valid_proposer_signature(monkeypatch):
         def __init__(self, **kwargs):
             self.__dict__.update(kwargs)
 
-    import packages.enhanced_agent_bus.constitutional.council as council_module
+    import enhanced_agent_bus.constitutional.council as council_module
 
     monkeypatch.setattr(council_module, "AgentMessage", DummyAgentMessage)
     monkeypatch.setattr(council_module, "MessageType", DummyMessageType)

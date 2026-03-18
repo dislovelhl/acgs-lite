@@ -9,11 +9,14 @@ Data models for durable workflow execution with full audit trail support.
 
 from datetime import UTC, datetime, timezone
 from enum import Enum
-from typing import Optional
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 
 class WorkflowStatus(str, Enum):  # noqa: UP042

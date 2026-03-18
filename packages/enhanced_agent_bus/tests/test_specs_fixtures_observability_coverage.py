@@ -16,7 +16,7 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH
 # Import the module under test and introspect actual classes in use
 # ---------------------------------------------------------------------------
 
-_MOD_NAME = "packages.enhanced_agent_bus.specs.fixtures.observability"
+_MOD_NAME = "enhanced_agent_bus.specs.fixtures.observability"
 if _MOD_NAME in sys.modules:  # noqa: SIM108
     _mod = sys.modules[_MOD_NAME]
 else:
@@ -33,7 +33,7 @@ MetricsRegistry = _mod.MetricsRegistry  # type: ignore[attr-defined]
 TracingContext = _mod.TracingContext  # type: ignore[attr-defined]
 
 # Import the public fixtures and classes
-from packages.enhanced_agent_bus.specs.fixtures.observability import (  # noqa: E402
+from enhanced_agent_bus.specs.fixtures.observability import (  # noqa: E402
     LatencyMeasurement,
     SpecMetricsRegistry,
     SpecTimeoutBudgetManager,

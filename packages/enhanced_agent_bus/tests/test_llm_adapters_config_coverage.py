@@ -9,7 +9,10 @@ import os
 from unittest.mock import patch
 
 import pytest
-from packages.enhanced_agent_bus.llm_adapters.config import (
+from pydantic import SecretStr, ValidationError
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.llm_adapters.config import (
     AdapterConfig,
     AdapterType,
     AnthropicAdapterConfig,
@@ -23,8 +26,6 @@ from packages.enhanced_agent_bus.llm_adapters.config import (
     OpenAIAdapterConfig,
     RateLimitConfig,
 )
-from pydantic import SecretStr, ValidationError
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # AdapterType enum
@@ -964,7 +965,7 @@ class TestAdapterConfigUnion:
 
 class TestModuleExports:
     def test_all_exported(self):
-        from packages.enhanced_agent_bus.llm_adapters import config as cfg_module
+        from enhanced_agent_bus.llm_adapters import config as cfg_module
 
         expected = [
             "AdapterType",

@@ -8,16 +8,17 @@ Targets ≥95% coverage of:
 """
 
 import pytest
-from packages.enhanced_agent_bus.batch_models import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.batch_models import (
     BatchRequest,
     BatchRequestItem,
     BatchResponse,
     BatchResponseItem,
     BatchResponseStats,
 )
-from packages.enhanced_agent_bus.middlewares.batch.context import BatchPipelineContext
-from packages.enhanced_agent_bus.models import AgentMessage
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.middlewares.batch.context import BatchPipelineContext
+from enhanced_agent_bus.models import AgentMessage
 
 # ---------------------------------------------------------------------------
 # Helpers

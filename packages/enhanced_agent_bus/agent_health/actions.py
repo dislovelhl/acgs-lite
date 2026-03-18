@@ -20,7 +20,9 @@ from collections.abc import Awaitable, Callable
 from typing import Any, Protocol, runtime_checkable
 
 import httpx
-from packages.enhanced_agent_bus.agent_health.models import (
+from src.core.shared.types import AgentID
+
+from enhanced_agent_bus.agent_health.models import (
     CONSTITUTIONAL_HASH,
     AgentHealthThresholds,
     AutonomyTier,
@@ -28,9 +30,7 @@ from packages.enhanced_agent_bus.agent_health.models import (
     HealingTrigger,
     HealthState,
 )
-from packages.enhanced_agent_bus.agent_health.store import AgentHealthStore
-from src.core.shared.types import AgentID
-
+from enhanced_agent_bus.agent_health.store import AgentHealthStore
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)

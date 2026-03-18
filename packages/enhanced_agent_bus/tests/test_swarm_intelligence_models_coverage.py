@@ -16,12 +16,14 @@ from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import patch
 
 import pytest
-from packages.enhanced_agent_bus.swarm_intelligence.enums import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.swarm_intelligence.enums import (
     AgentState,
     ConsensusType,
     TaskPriority,
 )
-from packages.enhanced_agent_bus.swarm_intelligence.models import (
+from enhanced_agent_bus.swarm_intelligence.models import (
     AgentCapability,
     AgentMessage,
     ConsensusProposal,
@@ -30,7 +32,6 @@ from packages.enhanced_agent_bus.swarm_intelligence.models import (
     SwarmAgent,
     SwarmTask,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # AgentCapability
@@ -747,7 +748,7 @@ class TestModuleExports:
     """Verify all names are exported in __all__."""
 
     def test_all_exports_present(self):
-        import packages.enhanced_agent_bus.swarm_intelligence.models as m
+        import enhanced_agent_bus.swarm_intelligence.models as m
 
         expected = {
             "AgentCapability",
@@ -761,7 +762,7 @@ class TestModuleExports:
         assert set(m.__all__) == expected
 
     def test_all_classes_importable(self):
-        from packages.enhanced_agent_bus.swarm_intelligence.models import (
+        from enhanced_agent_bus.swarm_intelligence.models import (
             AgentCapability,
             AgentMessage,
             ConsensusProposal,

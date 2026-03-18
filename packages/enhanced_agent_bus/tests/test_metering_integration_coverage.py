@@ -8,10 +8,56 @@ asyncio_mode = "auto" — no @pytest.mark.asyncio needed.
 """
 
 import asyncio
+import enum
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.metering_integration import (
+
+# ---------------------------------------------------------------------------
+# Provide stub enums when the real metering service is unavailable.
+# The production module sets MeterableOperation / MeteringTier to None when
+# src.core.services.metering cannot be imported.  Tests need real enum-like
+# objects so attribute access (e.g. MeterableOperation.CONSTITUTIONAL_VALIDATION)
+# works and enum comparisons behave correctly.
+# ---------------------------------------------------------------------------
+import enhanced_agent_bus.metering_integration as _mi
+
+if not _mi.METERING_AVAILABLE:
+
+    class _MeterableOperation(enum.Enum):
+        CONSTITUTIONAL_VALIDATION = "constitutional_validation"
+        AGENT_MESSAGE = "agent_message"
+        POLICY_EVALUATION = "policy_evaluation"
+        DELIBERATION_REQUEST = "deliberation_request"
+        HITL_APPROVAL = "hitl_approval"
+
+    class _MeteringTier(enum.Enum):
+        STANDARD = "standard"
+        ENHANCED = "enhanced"
+        ENTERPRISE = "enterprise"
+        DELIBERATION = "deliberation"
+
+    class _UsageMeteringService:
+        """Lightweight stub so start() can instantiate a metering service."""
+
+        def __init__(self, **kwargs):
+            pass
+
+        async def start(self):
+            pass
+
+        async def stop(self):
+            pass
+
+        async def record_event(self, **kwargs):
+            pass
+
+    _mi.MeterableOperation = _MeterableOperation  # type: ignore[attr-defined]
+    _mi.MeteringTier = _MeteringTier  # type: ignore[attr-defined]
+    _mi.UsageMeteringService = _UsageMeteringService  # type: ignore[attr-defined]
+    _mi.METERING_AVAILABLE = True  # type: ignore[attr-defined]
+
+from enhanced_agent_bus.metering_integration import (
     CONSTITUTIONAL_HASH,
     METERING_AVAILABLE,
     AsyncMeteringQueue,
@@ -1033,7 +1079,7 @@ class TestMeteredOperationDecorator:
 
     async def test_tier_passed_to_enqueue(self):
         q = _make_queue()
-        import packages.enhanced_agent_bus.metering_integration as mi
+        import enhanced_agent_bus.metering_integration as mi
 
         with patch.object(mi, "_metering_hooks", MeteringHooks(q)):
             with patch.object(mi, "_metering_queue", q):

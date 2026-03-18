@@ -25,7 +25,11 @@ import httpx
 import jsonschema
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric import ed25519
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import (
     ConstitutionalViolationError,
     DataIntegrityError,
@@ -33,7 +37,11 @@ from src.core.shared.errors.exceptions import (
 from src.core.shared.errors.exceptions import (
     ValidationError as ACGSValidationError,
 )
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -484,9 +492,13 @@ class OCIRegistryClient:
         try:
             url = f"{self.scheme}://{self.host}/v2/"
             headers = await self._get_headers()
-            response = await self._client.get(url, headers=headers)
+            client = self._client or getattr(self, "_session", None)
+            if client is None:
+                await self.initialize()
+                client = self._client
+            response = await client.get(url, headers=headers)
             return bool(response.status_code == 200)
-        except Exception as e:
+        except (ConnectionError, TimeoutError, httpx.HTTPError, Exception) as e:
             logger.error(f"Registry health check failed: {e}")
             return False
 
@@ -979,7 +991,7 @@ class BundleDistributionService:
                     results["replicas"].append(
                         {"digest": fb_digest, "registry": fallback.host, "status": "success"}
                     )
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001 - replica replication must be best-effort
                     results["replicas"].append(
                         {"registry": fallback.host, "status": "failed", "error": str(e)}
                     )
@@ -1029,7 +1041,7 @@ class BundleDistributionService:
             self._lkg_path = path
 
             return manifest, path
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - failover must continue on any primary failure
             logger.warning(f"Primary registry failed: {e}, trying fallbacks")
 
         # Try fallbacks
@@ -1040,7 +1052,7 @@ class BundleDistributionService:
                     Path(cache_path + ".manifest.json").write_text, json.dumps(manifest.to_dict())
                 )
                 return manifest, path
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001 - fallback iteration must continue on errors
                 logger.warning(f"Fallback {fallback.host} failed: {e}")
 
         # Return LKG if available
@@ -1060,7 +1072,7 @@ class BundleDistributionService:
         experiment_tag = f"{base_tag}-{experiment_id}-{variant}"
         try:
             return await self.fetch(repository, experiment_tag, use_cache=True)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - variant miss should fall back to base tag
             # Fall back to base tag
             logger.info(f"A/B variant {experiment_tag} not found, using base: {e}")
             return await self.fetch(repository, base_tag, use_cache=True)

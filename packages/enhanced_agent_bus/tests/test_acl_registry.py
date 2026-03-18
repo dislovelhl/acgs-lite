@@ -10,6 +10,11 @@ Comprehensive tests for the AdapterRegistry class covering:
 - Async close operations
 """
 
+import pytest
+
+pytest.importorskip("acl_adapters.base")
+
+
 from datetime import UTC, datetime, timezone
 from typing import Any, Optional
 from unittest.mock import Mock

@@ -5,7 +5,7 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from abc import ABC, abstractmethod
 
-from packages.enhanced_agent_bus.impact_scorer_infra.models import (
+from enhanced_agent_bus.impact_scorer_infra.models import (
     ImpactVector,
     ScoringMethod,
     ScoringResult,

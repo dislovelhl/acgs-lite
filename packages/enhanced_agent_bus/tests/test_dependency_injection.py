@@ -6,11 +6,12 @@ Tests for DI pattern implementation including interfaces, registries, and core i
 """
 
 import pytest
-from packages.enhanced_agent_bus.agent_bus import EnhancedAgentBus
-from packages.enhanced_agent_bus.interfaces import AgentRegistry, MessageRouter, ValidationStrategy
-from packages.enhanced_agent_bus.message_processor import MessageProcessor
-from packages.enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage
-from packages.enhanced_agent_bus.registry import (
+
+from enhanced_agent_bus.agent_bus import EnhancedAgentBus
+from enhanced_agent_bus.interfaces import AgentRegistry, MessageRouter, ValidationStrategy
+from enhanced_agent_bus.message_processor import MessageProcessor
+from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage
+from enhanced_agent_bus.registry import (
     CapabilityBasedRouter,
     CompositeValidationStrategy,
     DirectMessageRouter,

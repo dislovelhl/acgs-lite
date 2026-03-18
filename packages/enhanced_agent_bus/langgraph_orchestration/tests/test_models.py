@@ -7,7 +7,9 @@ from datetime import datetime, timezone
 from unittest.mock import MagicMock
 
 import pytest
-from packages.enhanced_agent_bus.langgraph_orchestration.models import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.langgraph_orchestration.models import (
     Checkpoint,
     CheckpointStatus,
     ConditionalEdge,
@@ -29,7 +31,6 @@ from packages.enhanced_agent_bus.langgraph_orchestration.models import (
     StateDelta,
     StateSnapshot,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 
 class TestGraphState:

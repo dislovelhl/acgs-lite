@@ -9,13 +9,14 @@ Targets ≥ 90% coverage of:
 from datetime import UTC, datetime, timezone
 
 import pytest
-from packages.enhanced_agent_bus.constitutional.amendment_model import (
-    AmendmentProposal,
-    AmendmentStatus,
-)
 from pydantic import ValidationError as PydanticValidationError
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+
+from enhanced_agent_bus.constitutional.amendment_model import (
+    AmendmentProposal,
+    AmendmentStatus,
+)
 
 # ---------------------------------------------------------------------------
 # Helpers

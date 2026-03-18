@@ -6,13 +6,20 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from __future__ import annotations
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
 _MEMORY_COORDINATOR_ERRORS = (
+    ImportError,
     RuntimeError,
     ValueError,
     TypeError,
@@ -58,7 +65,7 @@ class MemoryCoordinator:
                 logger.warning(f"SAFLA v3.0 init failed: {e}")
 
         try:
-            from packages.enhanced_agent_bus.models import (
+            from enhanced_agent_bus.models import (
                 OrchestratorConfig,  # type: ignore[attr-defined]
             )
 

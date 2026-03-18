@@ -8,7 +8,7 @@ import pytest
 
 class TestSafeRegex:
     def setup_method(self):
-        from packages.enhanced_agent_bus.rlm_repl import _SafeRegex
+        from enhanced_agent_bus.rlm_repl import _SafeRegex
 
         self.regex = _SafeRegex(max_matches=5)
 
@@ -42,13 +42,13 @@ class TestSafeRegex:
 
 class TestSafeJsonHelpers:
     def test_json_loads_valid(self):
-        from packages.enhanced_agent_bus.rlm_repl import _safe_json_loads
+        from enhanced_agent_bus.rlm_repl import _safe_json_loads
 
         result = _safe_json_loads('{"key": "value"}')
         assert result == {"key": "value"}
 
     def test_json_dumps_basic(self):
-        from packages.enhanced_agent_bus.rlm_repl import _safe_json_dumps
+        from enhanced_agent_bus.rlm_repl import _safe_json_dumps
 
         result = _safe_json_dumps({"key": "value"})
         assert '"key"' in result
@@ -57,7 +57,7 @@ class TestSafeJsonHelpers:
     def test_json_dumps_non_serializable_uses_default(self):
         from datetime import datetime
 
-        from packages.enhanced_agent_bus.rlm_repl import _safe_json_dumps
+        from enhanced_agent_bus.rlm_repl import _safe_json_dumps
 
         result = _safe_json_dumps({"ts": datetime(2024, 1, 1)})
         assert "2024" in result

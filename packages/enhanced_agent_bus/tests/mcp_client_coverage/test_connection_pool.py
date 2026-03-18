@@ -7,11 +7,12 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.mcp_integration.client import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.mcp_integration.client import (
     MCPConnectionError,
     MCPConnectionPool,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 from .helpers import _make_config
 
@@ -88,7 +89,7 @@ class TestMCPConnectionPoolAddServer:
         validation_result.is_valid = True
         validator.validate = AsyncMock(return_value=validation_result)
 
-        with patch("packages.enhanced_agent_bus.mcp_integration.client.VALIDATORS_AVAILABLE", True):
+        with patch("enhanced_agent_bus.mcp_integration.client.VALIDATORS_AVAILABLE", True):
             pool = MCPConnectionPool(validator=validator)
             cfg = _make_config()
             client = await pool.add_server(cfg)

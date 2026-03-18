@@ -67,8 +67,10 @@ if "asyncpg" not in sys.modules:
 # ---------------------------------------------------------------------------
 from uuid import UUID, uuid4  # noqa: E402
 
-import packages.enhanced_agent_bus.persistence.postgres_repository as _pg_repo_module  # noqa: E402
-from packages.enhanced_agent_bus.persistence.models import (  # noqa: E402
+from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+
+import enhanced_agent_bus.persistence.postgres_repository as _pg_repo_module  # noqa: E402
+from enhanced_agent_bus.persistence.models import (  # noqa: E402
     CheckpointData,
     EventType,
     StepStatus,
@@ -79,11 +81,10 @@ from packages.enhanced_agent_bus.persistence.models import (  # noqa: E402
     WorkflowStatus,
     WorkflowStep,
 )
-from packages.enhanced_agent_bus.persistence.postgres_repository import (  # noqa: E402
+from enhanced_agent_bus.persistence.postgres_repository import (  # noqa: E402
     SCHEMA_SQL,
     PostgresWorkflowRepository,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Constants

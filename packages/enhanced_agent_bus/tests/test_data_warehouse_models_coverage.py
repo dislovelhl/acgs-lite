@@ -10,7 +10,9 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 import pytest
-from packages.enhanced_agent_bus.enterprise_sso.data_warehouse.models import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.enterprise_sso.data_warehouse.models import (
     _GCP_PROJECT_ID_RE,
     _SAFE_DEFAULT_RE,
     _SQL_TYPE_BASE,
@@ -43,7 +45,6 @@ from packages.enhanced_agent_bus.enterprise_sso.data_warehouse.models import (
     # Validation functions
     validate_identifier,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ============================================================================
 # Module-level regex patterns

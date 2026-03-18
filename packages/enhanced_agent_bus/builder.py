@@ -7,10 +7,14 @@ Isolates complex initialization and cross-layer instantiation logic.
 from dataclasses import dataclass
 from typing import Literal
 
-from packages.enhanced_agent_bus.config import BusConfiguration
 from src.core.shared.security.pqc_crypto import PQCCryptoService
-from src.core.shared.types import JSONDict
 
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.config import BusConfiguration
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
@@ -38,15 +42,15 @@ def build_sdpc_verifiers(config: BusConfiguration) -> SDPCVerifiers:
         return _cached_sdpc
 
     try:
-        from packages.enhanced_agent_bus.deliberation_layer.intent_classifier import (
+        from enhanced_agent_bus.deliberation_layer.intent_classifier import (
             IntentClassifier,
             IntentType,
         )
-        from packages.enhanced_agent_bus.sdpc.ampo_engine import AMPOEngine
-        from packages.enhanced_agent_bus.sdpc.asc_verifier import ASCVerifier
-        from packages.enhanced_agent_bus.sdpc.evolution_controller import EvolutionController
-        from packages.enhanced_agent_bus.sdpc.graph_check import GraphCheckVerifier
-        from packages.enhanced_agent_bus.sdpc.pacar_verifier import PACARVerifier
+        from enhanced_agent_bus.sdpc.ampo_engine import AMPOEngine
+        from enhanced_agent_bus.sdpc.asc_verifier import ASCVerifier
+        from enhanced_agent_bus.sdpc.evolution_controller import EvolutionController
+        from enhanced_agent_bus.sdpc.graph_check import GraphCheckVerifier
+        from enhanced_agent_bus.sdpc.pacar_verifier import PACARVerifier
 
         intent_classifier = IntentClassifier(config=config)
         asc_verifier = ASCVerifier()

@@ -13,10 +13,11 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
+from src.core.shared.types import CONSTITUTIONAL_HASH
 
 # Import via the metrics module to avoid circular import issues.
 # transaction_coordinator_metrics re-exports everything from the health module.
-from packages.enhanced_agent_bus.transaction_coordinator_metrics import (
+from enhanced_agent_bus.transaction_coordinator_metrics import (
     DashboardQueries,
     HealthChecker,
     HealthCheckResult,
@@ -24,7 +25,6 @@ from packages.enhanced_agent_bus.transaction_coordinator_metrics import (
     TransactionMetrics,
     reset_metrics_cache,
 )
-from src.core.shared.types import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Helpers

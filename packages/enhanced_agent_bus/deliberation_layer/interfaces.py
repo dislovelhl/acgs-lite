@@ -9,21 +9,29 @@ from collections.abc import Callable
 from importlib import import_module
 from typing import (
     TYPE_CHECKING,
-    Optional,
     Protocol,
     TypeAlias,
-    Union,
     runtime_checkable,
 )
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict, JSONValue
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import (
+        JSONDict,
+        JSONValue,
+    )  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+    JSONValue = object  # type: ignore[misc,assignment]
 
 
 def _load_guard_models() -> tuple[object, object, object]:
     """Load guard result models from available package paths."""
     candidates = (
-        "packages.enhanced_agent_bus.deliberation_layer.opa_guard_models",
+        "enhanced_agent_bus.deliberation_layer.opa_guard_models",
         "enhanced_agent_bus.deliberation_layer.opa_guard_models",
         ".opa_guard_models",
     )
@@ -43,7 +51,7 @@ def _load_guard_models() -> tuple[object, object, object]:
 def _load_agent_message() -> object:
     """Load AgentMessage model from available package paths."""
     candidates = (
-        "packages.enhanced_agent_bus.models",
+        "enhanced_agent_bus.models",
         "enhanced_agent_bus.models",
         "..models",
     )
@@ -57,12 +65,12 @@ def _load_agent_message() -> object:
 
 
 if TYPE_CHECKING:
-    from packages.enhanced_agent_bus.deliberation_layer.opa_guard_models import (
+    from enhanced_agent_bus.deliberation_layer.opa_guard_models import (
         GuardResult,
         ReviewResult,
         SignatureResult,
     )
-    from packages.enhanced_agent_bus.models import AgentMessage
+    from enhanced_agent_bus.models import AgentMessage
 else:
     GuardResult, ReviewResult, SignatureResult = _load_guard_models()
     AgentMessage = _load_agent_message()

@@ -28,14 +28,22 @@ from datetime import UTC, datetime
 from importlib import import_module
 from typing import TYPE_CHECKING
 
-from packages.enhanced_agent_bus.interfaces import GovernanceDecisionValidatorProtocol
-
+from enhanced_agent_bus.interfaces import GovernanceDecisionValidatorProtocol
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 if TYPE_CHECKING:
-    from packages.enhanced_agent_bus.config import BusConfiguration
+    from enhanced_agent_bus.config import BusConfiguration
 
-from src.core.shared.types import JSONDict, MessagePayload, PolicyContext
+try:
+    from src.core.shared.types import (
+        JSONDict,
+        MessagePayload,
+        PolicyContext,
+    )  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+    MessagePayload = dict  # type: ignore[misc,assignment]
+    PolicyContext = dict  # type: ignore[misc,assignment]
 
 # Optional ML dependency — lazy-imported
 try:
@@ -194,7 +202,7 @@ except ImportError:
         ShadowPolicyExecutor = None  # type: ignore[no-redef, misc]
 
 # Import from our own modules
-from ..governance_constants import (
+from enhanced_agent_bus.governance_constants import (
     GOVERNANCE_BACKOFF_SECONDS,
     GOVERNANCE_COMPLIANCE_THRESHOLD,
     GOVERNANCE_EMA_ALPHA,
@@ -202,6 +210,7 @@ from ..governance_constants import (
     GOVERNANCE_FEEDBACK_WINDOW_SECONDS,
     GOVERNANCE_HISTORY_TRIM,
     GOVERNANCE_LEARNING_CYCLE_SECONDS,
+    GOVERNANCE_MAX_TREND_LENGTH,
     GOVERNANCE_PERFORMANCE_TARGET,
     GOVERNANCE_RECOMMENDED_THRESHOLD,
     GOVERNANCE_RETRAIN_CHECK_MODULUS,
@@ -211,6 +220,7 @@ from ..governance_constants import (
     GOVERNANCE_RISK_LOW,
     GOVERNANCE_RISK_MEDIUM,
 )
+
 from .dtmc_learner import DTMCLearner
 from .impact_scorer import ImpactScorer
 from .models import (
@@ -246,7 +256,7 @@ class AdaptiveGovernanceEngine:
 
         self.impact_scorer = ImpactScorer(self.constitutional_hash)
         self.threshold_manager = AdaptiveThresholds(self.constitutional_hash)
-        validators_module = import_module("packages.enhanced_agent_bus.validators")
+        validators_module = import_module("enhanced_agent_bus.validators")
         self._decision_validator: GovernanceDecisionValidatorProtocol = (
             validators_module.GovernanceDecisionValidator()
         )
@@ -1148,7 +1158,13 @@ class AdaptiveGovernanceEngine:
                 1.0 / max(0.001, self.metrics.average_response_time)
             )
 
-            # Trend retention is handled by bounded deques in GovernanceMetrics.
+            # Trim trends to GOVERNANCE_MAX_TREND_LENGTH (handles plain-list overrides).
+            max_len = GOVERNANCE_MAX_TREND_LENGTH
+            for trend_name in ("compliance_trend", "accuracy_trend", "performance_trend"):
+                trend = getattr(self.metrics, trend_name)
+                if len(trend) > max_len:
+                    trimmed = type(trend)(list(trend)[-max_len:])
+                    setattr(self.metrics, trend_name, trimmed)
 
         except (RuntimeError, ValueError, TypeError) as e:
             logger.error("Performance trend analysis error: %s", e)

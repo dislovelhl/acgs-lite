@@ -24,7 +24,15 @@ from collections import deque
 from datetime import UTC, datetime
 
 from src.core.shared.config.governance_constants import IMPACT_SCORER_CONFIG
-from src.core.shared.types import MessagePayload, PolicyContext
+
+try:
+    from src.core.shared.types import (
+        MessagePayload,
+        PolicyContext,
+    )  # noqa: E402
+except ImportError:
+    MessagePayload = dict  # type: ignore[misc,assignment]
+    PolicyContext = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

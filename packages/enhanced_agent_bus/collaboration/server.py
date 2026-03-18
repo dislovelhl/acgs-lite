@@ -16,7 +16,19 @@ import time
 from collections.abc import Callable
 from typing import Protocol, cast
 
-from packages.enhanced_agent_bus.collaboration.models import (
+from src.core.shared.security.cors_config import get_cors_config
+from src.core.shared.security.rate_limiter import SlidingWindowRateLimiter
+
+try:
+    from src.core.shared.types import (
+        JSONDict,
+        JSONValue,
+    )  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+    JSONValue = object  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.collaboration.models import (
     ActivityEventType,
     ChatMessage,
     CollaborationConfig,
@@ -29,13 +41,9 @@ from packages.enhanced_agent_bus.collaboration.models import (
     SessionFullError,
     UserPermissions,
 )
-from packages.enhanced_agent_bus.collaboration.permissions import PermissionController
-from packages.enhanced_agent_bus.collaboration.presence import PresenceManager
-from packages.enhanced_agent_bus.collaboration.sync_engine import SyncEngine
-from src.core.shared.security.cors_config import get_cors_config
-from src.core.shared.security.rate_limiter import SlidingWindowRateLimiter
-from src.core.shared.types import JSONDict, JSONValue
-
+from enhanced_agent_bus.collaboration.permissions import PermissionController
+from enhanced_agent_bus.collaboration.presence import PresenceManager
+from enhanced_agent_bus.collaboration.sync_engine import SyncEngine
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)

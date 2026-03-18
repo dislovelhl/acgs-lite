@@ -6,26 +6,27 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH as CONST_HASH
+
+from enhanced_agent_bus.adaptive_governance.governance_engine import (
     AdaptiveGovernanceEngine,
 )
-from packages.enhanced_agent_bus.adaptive_governance.models import (
+from enhanced_agent_bus.adaptive_governance.models import (
     GovernanceDecision,
     GovernanceMode,
     ImpactFeatures,
     ImpactLevel,
 )
-from packages.enhanced_agent_bus.adaptive_governance.tests.engine.helpers import (
+from enhanced_agent_bus.adaptive_governance.tests.engine.helpers import (
     _make_decision,
     _make_features,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH as CONST_HASH
 
 _MLFLOW_PATCH = "mlflow.set_tracking_uri"
 _IMPACT_MLFLOW = (
-    "packages.enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
+    "enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
 )
-_THRESH_MLFLOW = "packages.enhanced_agent_bus.adaptive_governance.threshold_manager.AdaptiveThresholds._initialize_mlflow"  # noqa: E501
+_THRESH_MLFLOW = "enhanced_agent_bus.adaptive_governance.threshold_manager.AdaptiveThresholds._initialize_mlflow"  # noqa: E501
 
 
 class TestUpdateMetrics:
@@ -35,7 +36,7 @@ class TestUpdateMetrics:
         assert engine.metrics.average_response_time > 0
 
     def test_history_trimmed_when_over_max(self, engine):
-        from packages.enhanced_agent_bus.governance_constants import GOVERNANCE_HISTORY_MAX
+        from enhanced_agent_bus.governance_constants import GOVERNANCE_HISTORY_MAX
 
         # Fill exactly at max + 1; _update_metrics pops one entry
         engine.decision_history = [_make_decision() for _ in range(GOVERNANCE_HISTORY_MAX + 1)]
@@ -143,7 +144,7 @@ class TestStoreFeedbackEvent:
         engine._feedback_handler = None
         decision = _make_decision()
         # Patch FEEDBACK_HANDLER_AVAILABLE as False
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.FEEDBACK_HANDLER_AVAILABLE
         try:
@@ -168,7 +169,7 @@ class TestStoreFeedbackEvent:
 
         mock_event_cls = MagicMock()
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig_available = ge_mod.FEEDBACK_HANDLER_AVAILABLE
         orig_ft = ge_mod.FeedbackType
@@ -202,7 +203,7 @@ class TestStoreFeedbackEvent:
         mock_os.SUCCESS = "SUCCESS"
         mock_event_cls = MagicMock()
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig_available = ge_mod.FEEDBACK_HANDLER_AVAILABLE
         orig_ft = ge_mod.FeedbackType
@@ -236,7 +237,7 @@ class TestStoreFeedbackEvent:
         mock_os.SUCCESS = "SUCCESS"
         mock_event_cls = MagicMock()
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig_available = ge_mod.FEEDBACK_HANDLER_AVAILABLE
         orig_ft = ge_mod.FeedbackType

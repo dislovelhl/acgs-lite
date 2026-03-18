@@ -19,7 +19,10 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, ClassVar
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -464,7 +467,14 @@ def main():
         }}
 
         # SECURITY Q-C1: Use validated code (not request.code) to prevent TOCTOU
-        exec({repr(validated_code)}, namespace)
+        # SECURITY Q-C2: compile() with dont_inherit prevents __future__ flag injection
+        # and gives an explicit compilation step before execution.  The exec() is
+        # acceptable here because it runs INSIDE an isolated Docker container with:
+        # (a) AST-validated code (no imports, no dunder access, no blocked builtins),
+        # (b) frozen builtins (MappingProxyType), (c) restricted namespace, and
+        # (d) repr()-serialised source derived from the validated AST (TOCTOU-safe).
+        _code_obj = compile({repr(validated_code)}, "<sandbox>", "exec", dont_inherit=True)
+        exec(_code_obj, namespace)  # noqa: S102 — sandboxed in Docker; see Q-C2 above
 
         # Get output
         output = namespace.get("output", data)

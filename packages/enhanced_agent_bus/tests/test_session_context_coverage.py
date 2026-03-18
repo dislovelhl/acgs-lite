@@ -11,16 +11,17 @@ from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.session_context import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+from src.core.shared.enums import RiskLevel
+
+from enhanced_agent_bus.session_context import (
     _SESSION_CONTEXT_OPERATION_ERRORS,
     DUAL_READ_MIGRATION_ENABLED,
     SessionContext,
     SessionContextManager,
     SessionContextStore,
 )
-from packages.enhanced_agent_bus.session_models import SessionGovernanceConfig
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.enums import RiskLevel
+from enhanced_agent_bus.session_models import SessionGovernanceConfig
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -95,7 +96,7 @@ class TestDualReadMigrationEnabled:
         with patch.dict("os.environ", {"SESSION_DUAL_READ_MIGRATION": "true"}):
             import importlib
 
-            import packages.enhanced_agent_bus.session_context as sc_mod
+            import enhanced_agent_bus.session_context as sc_mod
 
             importlib.reload(sc_mod)
             assert sc_mod.DUAL_READ_MIGRATION_ENABLED is True
@@ -104,7 +105,7 @@ class TestDualReadMigrationEnabled:
         with patch.dict("os.environ", {"SESSION_DUAL_READ_MIGRATION": "false"}):
             import importlib
 
-            import packages.enhanced_agent_bus.session_context as sc_mod
+            import enhanced_agent_bus.session_context as sc_mod
 
             importlib.reload(sc_mod)
             assert sc_mod.DUAL_READ_MIGRATION_ENABLED is False
@@ -113,7 +114,7 @@ class TestDualReadMigrationEnabled:
         with patch.dict("os.environ", {"SESSION_DUAL_READ_MIGRATION": "1"}):
             import importlib
 
-            import packages.enhanced_agent_bus.session_context as sc_mod
+            import enhanced_agent_bus.session_context as sc_mod
 
             importlib.reload(sc_mod)
             assert sc_mod.DUAL_READ_MIGRATION_ENABLED is True
@@ -122,7 +123,7 @@ class TestDualReadMigrationEnabled:
         with patch.dict("os.environ", {"SESSION_DUAL_READ_MIGRATION": "yes"}):
             import importlib
 
-            import packages.enhanced_agent_bus.session_context as sc_mod
+            import enhanced_agent_bus.session_context as sc_mod
 
             importlib.reload(sc_mod)
             assert sc_mod.DUAL_READ_MIGRATION_ENABLED is True
@@ -251,8 +252,8 @@ class TestSessionContextStoreConnect:
         store = SessionContextStore()
         mock_redis = _make_mock_redis()
         with (
-            patch("packages.enhanced_agent_bus.session_context.aioredis") as mock_aioredis,
-            patch("packages.enhanced_agent_bus.session_context.REDIS_AVAILABLE", True),
+            patch("enhanced_agent_bus.session_context.aioredis") as mock_aioredis,
+            patch("enhanced_agent_bus.session_context.REDIS_AVAILABLE", True),
         ):
             mock_aioredis.from_url.return_value = mock_redis
             result = await store.connect()
@@ -261,7 +262,7 @@ class TestSessionContextStoreConnect:
 
     async def test_connect_redis_not_available(self) -> None:
         store = SessionContextStore()
-        with patch("packages.enhanced_agent_bus.session_context.REDIS_AVAILABLE", False):
+        with patch("enhanced_agent_bus.session_context.REDIS_AVAILABLE", False):
             result = await store.connect()
         assert result is False
         assert store.redis_client is None
@@ -271,8 +272,8 @@ class TestSessionContextStoreConnect:
         mock_redis = _make_mock_redis()
         mock_redis.ping.side_effect = ConnectionError("refused")
         with (
-            patch("packages.enhanced_agent_bus.session_context.aioredis") as mock_aioredis,
-            patch("packages.enhanced_agent_bus.session_context.REDIS_AVAILABLE", True),
+            patch("enhanced_agent_bus.session_context.aioredis") as mock_aioredis,
+            patch("enhanced_agent_bus.session_context.REDIS_AVAILABLE", True),
         ):
             mock_aioredis.from_url.return_value = mock_redis
             result = await store.connect()
@@ -284,8 +285,8 @@ class TestSessionContextStoreConnect:
         mock_redis = _make_mock_redis()
         mock_redis.ping.side_effect = OSError("io error")
         with (
-            patch("packages.enhanced_agent_bus.session_context.aioredis") as mock_aioredis,
-            patch("packages.enhanced_agent_bus.session_context.REDIS_AVAILABLE", True),
+            patch("enhanced_agent_bus.session_context.aioredis") as mock_aioredis,
+            patch("enhanced_agent_bus.session_context.REDIS_AVAILABLE", True),
         ):
             mock_aioredis.from_url.return_value = mock_redis
             result = await store.connect()
@@ -298,8 +299,8 @@ class TestSessionContextStoreConnect:
         mock_redis = _make_mock_redis()
         mock_redis.ping.side_effect = redis.exceptions.RedisError("generic")
         with (
-            patch("packages.enhanced_agent_bus.session_context.aioredis") as mock_aioredis,
-            patch("packages.enhanced_agent_bus.session_context.REDIS_AVAILABLE", True),
+            patch("enhanced_agent_bus.session_context.aioredis") as mock_aioredis,
+            patch("enhanced_agent_bus.session_context.REDIS_AVAILABLE", True),
         ):
             mock_aioredis.from_url.return_value = mock_redis
             result = await store.connect()
@@ -415,7 +416,7 @@ class TestSessionContextStoreGet:
         mock_redis.get.return_value = None
         store.redis_client = mock_redis
         with patch(
-            "packages.enhanced_agent_bus.session_context.DUAL_READ_MIGRATION_ENABLED", False
+            "enhanced_agent_bus.session_context.DUAL_READ_MIGRATION_ENABLED", False
         ):
             result = await store.get("unknown-session", "t1")
         assert result is None
@@ -426,7 +427,7 @@ class TestSessionContextStoreGet:
         store.redis_client = mock_redis
         ctx = _make_session_context()
         mock_redis.get.side_effect = [None, json.dumps(ctx.to_dict())]
-        with patch("packages.enhanced_agent_bus.session_context.DUAL_READ_MIGRATION_ENABLED", True):
+        with patch("enhanced_agent_bus.session_context.DUAL_READ_MIGRATION_ENABLED", True):
             result = await store.get("sess-1", "t1")
         assert result is not None
         assert result.session_id == "sess-1"
@@ -436,7 +437,7 @@ class TestSessionContextStoreGet:
         mock_redis = _make_mock_redis()
         mock_redis.get.return_value = None
         store.redis_client = mock_redis
-        with patch("packages.enhanced_agent_bus.session_context.DUAL_READ_MIGRATION_ENABLED", True):
+        with patch("enhanced_agent_bus.session_context.DUAL_READ_MIGRATION_ENABLED", True):
             result = await store.get("missing", "t1")
         assert result is None
 
@@ -624,7 +625,7 @@ class TestSessionContextStoreUpdateTtl:
         mock_redis = _make_mock_redis()
         mock_redis.expire.return_value = 1
         store.redis_client = mock_redis
-        with patch("packages.enhanced_agent_bus.session_context.logger") as mock_log:
+        with patch("enhanced_agent_bus.session_context.logger") as mock_log:
             result = await store.update_ttl("sess-1", "t1", 600)
         assert result is True
         mock_log.debug.assert_called()
@@ -1057,7 +1058,7 @@ class TestSessionContextManagerExtendTtl:
     async def test_extend_ttl_logs_on_success(self) -> None:
         mgr = SessionContextManager()
         mgr.store.update_ttl = AsyncMock(return_value=True)
-        with patch("packages.enhanced_agent_bus.session_context.logger") as mock_log:
+        with patch("enhanced_agent_bus.session_context.logger") as mock_log:
             await mgr.extend_ttl("sess-1", "t1", 1800)
         mock_log.info.assert_called()
 
@@ -1096,7 +1097,7 @@ class TestSessionContextManagerResetMetrics:
 
     def test_reset_logs(self) -> None:
         mgr = SessionContextManager()
-        with patch("packages.enhanced_agent_bus.session_context.logger") as mock_log:
+        with patch("enhanced_agent_bus.session_context.logger") as mock_log:
             mgr.reset_metrics()
         mock_log.info.assert_called_with("Metrics reset")
 
@@ -1113,7 +1114,7 @@ class TestSessionContextManagerClearCache:
 
     async def test_clear_cache_logs(self) -> None:
         mgr = SessionContextManager()
-        with patch("packages.enhanced_agent_bus.session_context.logger") as mock_log:
+        with patch("enhanced_agent_bus.session_context.logger") as mock_log:
             await mgr.clear_cache()
         mock_log.info.assert_called_with("Cache cleared")
 
@@ -1191,7 +1192,7 @@ class TestSessionContextManagerIntegration:
 
 class TestModuleExports:
     def test_all_exported(self) -> None:
-        import packages.enhanced_agent_bus.session_context as mod
+        import enhanced_agent_bus.session_context as mod
 
         assert "SessionContext" in mod.__all__
         assert "SessionContextStore" in mod.__all__

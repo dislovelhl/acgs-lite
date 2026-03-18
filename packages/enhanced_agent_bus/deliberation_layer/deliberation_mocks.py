@@ -11,9 +11,12 @@ import sys
 import uuid
 from datetime import UTC, datetime, timezone
 from enum import Enum
-from typing import Optional, cast
+from typing import cast
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 # type-safe global storage for mocks across module reloads
 # Using getattr/setattr to avoid mypy attr-defined errors on sys module

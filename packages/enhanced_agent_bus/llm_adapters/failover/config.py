@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from enum import Enum
 
-from packages.enhanced_agent_bus.circuit_breaker import (
+from enhanced_agent_bus.circuit_breaker import (
     CONSTITUTIONAL_HASH,
     FallbackStrategy,
     ServiceCircuitConfig,

@@ -907,7 +907,7 @@ class TestConcurrentOperations:
         # Use an infinite side effect to avoid StopIteration
         time_gen = itertools.count(start_time, 0.01)
         with patch(
-            "packages.enhanced_agent_bus.runtime_security.time.monotonic", side_effect=time_gen
+            "enhanced_agent_bus.runtime_security.time.monotonic", side_effect=time_gen
         ):
             # Run many concurrent scans
             tasks = [

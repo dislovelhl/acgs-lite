@@ -16,7 +16,9 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
-from packages.enhanced_agent_bus.agent_health.models import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.agent_health.models import (
     AgentHealthRecord,
     AgentHealthThresholds,
     AutonomyTier,
@@ -25,8 +27,7 @@ from packages.enhanced_agent_bus.agent_health.models import (
     HealthState,
     OverrideMode,
 )
-from packages.enhanced_agent_bus.agent_health.store import AgentHealthStore
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.agent_health.store import AgentHealthStore
 
 CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH
 
@@ -67,7 +68,7 @@ def _make_override(agent_id: str = "agent-001") -> HealingOverride:
 
 def _build_authed_client(mock_store: AgentHealthStore) -> TestClient:
     """Client with valid operator auth and injected store."""
-    from packages.enhanced_agent_bus.api.routes.agent_health import (
+    from enhanced_agent_bus.api.routes.agent_health import (
         get_agent_health_store,
         require_operator_role,
         router,
@@ -86,7 +87,7 @@ def _build_authed_client(mock_store: AgentHealthStore) -> TestClient:
 
 def _build_unauthenticated_client(mock_store: AgentHealthStore) -> TestClient:
     """Client that raises 401 (no auth token)."""
-    from packages.enhanced_agent_bus.api.routes.agent_health import (
+    from enhanced_agent_bus.api.routes.agent_health import (
         get_agent_health_store,
         require_operator_role,
         router,
@@ -105,7 +106,7 @@ def _build_unauthenticated_client(mock_store: AgentHealthStore) -> TestClient:
 
 def _build_forbidden_client(mock_store: AgentHealthStore) -> TestClient:
     """Client that raises 403 (authenticated but missing operator role)."""
-    from packages.enhanced_agent_bus.api.routes.agent_health import (
+    from enhanced_agent_bus.api.routes.agent_health import (
         get_agent_health_store,
         require_operator_role,
         router,
@@ -305,7 +306,7 @@ def _build_authed_client_with_audit(
     mock_audit_client: AsyncMock | None = None,
 ) -> TestClient:
     """Client with valid operator auth, injected store, and injected audit log client."""
-    from packages.enhanced_agent_bus.api.routes.agent_health import (
+    from enhanced_agent_bus.api.routes.agent_health import (
         get_agent_health_store,
         get_audit_log_client,
         require_operator_role,
@@ -327,7 +328,7 @@ def _build_authed_client_with_audit(
 
 def _build_unauthenticated_client_with_audit(mock_store: AgentHealthStore) -> TestClient:
     """Client that raises 401 (no auth token), with audit dep overridden."""
-    from packages.enhanced_agent_bus.api.routes.agent_health import (
+    from enhanced_agent_bus.api.routes.agent_health import (
         get_agent_health_store,
         get_audit_log_client,
         require_operator_role,
@@ -348,7 +349,7 @@ def _build_unauthenticated_client_with_audit(mock_store: AgentHealthStore) -> Te
 
 def _build_forbidden_client_with_audit(mock_store: AgentHealthStore) -> TestClient:
     """Client that raises 403 (insufficient role), with audit dep overridden."""
-    from packages.enhanced_agent_bus.api.routes.agent_health import (
+    from enhanced_agent_bus.api.routes.agent_health import (
         get_agent_health_store,
         get_audit_log_client,
         require_operator_role,
@@ -625,7 +626,7 @@ def test_delete_override_writes_audit_log() -> None:
 @pytest.mark.asyncio
 async def test_sc005_suppress_healing_override_produces_no_healing_action() -> None:
     """SC-005: when a SUPPRESS_HEALING override is active, HealingEngine returns None."""
-    from packages.enhanced_agent_bus.agent_health.healing_engine import HealingEngine
+    from enhanced_agent_bus.agent_health.healing_engine import HealingEngine
 
     store = AsyncMock()
     store.get_override.return_value = _make_override(agent_id="agent-sc005")

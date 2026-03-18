@@ -8,11 +8,17 @@ All tests use FakeAsyncRedis — no real Redis connection required.
 
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip("fakeredis")
+
 from datetime import UTC, datetime, timedelta
 
 import fakeredis.aioredis as fake_aioredis
 import pytest
-from packages.enhanced_agent_bus.agent_health.models import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.agent_health.models import (
     AgentHealthRecord,
     AgentHealthThresholds,
     AutonomyTier,
@@ -23,8 +29,7 @@ from packages.enhanced_agent_bus.agent_health.models import (
     HealthState,
     OverrideMode,
 )
-from packages.enhanced_agent_bus.agent_health.store import AgentHealthStore
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.agent_health.store import AgentHealthStore
 
 
 def _make_record(agent_id: str = "agent-001", **kwargs: object) -> AgentHealthRecord:

@@ -19,22 +19,23 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.circuit_breaker.config import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.circuit_breaker.config import (
     SERVICE_CIRCUIT_CONFIGS,
     ServiceCircuitConfig,
 )
-from packages.enhanced_agent_bus.circuit_breaker.enums import (
+from enhanced_agent_bus.circuit_breaker.enums import (
     CircuitState,
     FallbackStrategy,
     ServiceSeverity,
 )
-from packages.enhanced_agent_bus.circuit_breaker.registry import (
+from enhanced_agent_bus.circuit_breaker.registry import (
     ServiceCircuitBreakerRegistry,
     get_circuit_breaker_registry,
     get_service_circuit_breaker,
     reset_circuit_breaker_registry,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -163,10 +164,10 @@ class TestGetOrCreate:
 
             async def __aenter__(self):
                 # Simulate another coroutine having created the entry while we waited
-                from packages.enhanced_agent_bus.circuit_breaker.breaker import (
+                from enhanced_agent_bus.circuit_breaker.breaker import (
                     ServiceCircuitBreaker,
                 )
-                from packages.enhanced_agent_bus.circuit_breaker.config import (
+                from enhanced_agent_bus.circuit_breaker.config import (
                     get_service_config,
                 )
 

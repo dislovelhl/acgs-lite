@@ -5,7 +5,10 @@ Constitutional Hash: cdd01ef066bc6cf2
 Integrates SagaLLM transactions and MACI enforcement into a unified workflow.
 """
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

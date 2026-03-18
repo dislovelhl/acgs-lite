@@ -9,9 +9,22 @@ Tests cover: workflow lifecycle, signals, queries, activities, and error handlin
 import asyncio
 
 import pytest
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+from src.core.shared.errors.exceptions import (
+    ConstitutionalViolationError as ACGSConstitutionalViolationError,
+)
+from src.core.shared.errors.exceptions import (
+    ResourceNotFoundError as ACGSResourceNotFoundError,
+)
+from src.core.shared.errors.exceptions import (
+    ServiceUnavailableError as ACGSServiceUnavailableError,
+)
+from src.core.shared.errors.exceptions import (
+    ValidationError as ACGSValidationError,
+)
 
 # Import workflow components
-from packages.enhanced_agent_bus.workflows.agent_entity_workflow import (
+from enhanced_agent_bus.workflows.agent_entity_workflow import (
     AgentConfig,
     AgentEntityWorkflow,
     AgentResult,
@@ -31,25 +44,12 @@ from packages.enhanced_agent_bus.workflows.agent_entity_workflow import (
     initialize_agent_activity,
     shutdown_agent_activity,
 )
-from packages.enhanced_agent_bus.workflows.workflow_base import (
+from enhanced_agent_bus.workflows.workflow_base import (
     InMemoryWorkflowExecutor,
     WorkflowContext,
     WorkflowStatus,
     query,
     signal,
-)
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.errors.exceptions import (
-    ConstitutionalViolationError as ACGSConstitutionalViolationError,
-)
-from src.core.shared.errors.exceptions import (
-    ResourceNotFoundError as ACGSResourceNotFoundError,
-)
-from src.core.shared.errors.exceptions import (
-    ServiceUnavailableError as ACGSServiceUnavailableError,
-)
-from src.core.shared.errors.exceptions import (
-    ValidationError as ACGSValidationError,
 )
 
 # =============================================================================

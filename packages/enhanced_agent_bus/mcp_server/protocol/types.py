@@ -1,4 +1,7 @@
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 """
 MCP Protocol Types for ACGS-2 Constitutional Governance.
@@ -14,7 +17,7 @@ from dataclasses import dataclass, field  # noqa: E402
 from datetime import UTC, datetime  # noqa: E402
 from enum import Enum  # noqa: E402
 
-from packages.enhanced_agent_bus.bus_types import JSONDict, JSONValue  # noqa: E402
+from enhanced_agent_bus.bus_types import JSONDict, JSONValue  # noqa: E402
 
 
 class MCPErrorCode(Enum):

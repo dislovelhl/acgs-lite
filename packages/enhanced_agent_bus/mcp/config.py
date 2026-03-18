@@ -26,7 +26,11 @@ from pathlib import Path
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 
 from enhanced_agent_bus.observability.structured_logging import get_logger

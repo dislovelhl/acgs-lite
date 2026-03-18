@@ -8,18 +8,19 @@ hash tracking, and metadata. Extends existing PolicyVersion pattern.
 
 from datetime import UTC, datetime, timezone
 from enum import Enum
-from typing import Optional
 from uuid import uuid4
 
 from pydantic import BaseModel, Field, field_serializer, field_validator
-from src.core.shared.types import JSONDict
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
 except ImportError:
-    # Fallback for standalone usage
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 
 class ConstitutionalStatus(str, Enum):  # noqa: UP042

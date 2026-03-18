@@ -12,8 +12,7 @@ import time
 from collections.abc import Callable
 from typing import TypeVar, cast
 
-from packages.enhanced_agent_bus.bus_types import JSONDict, JSONValue
-
+from enhanced_agent_bus.bus_types import JSONDict, JSONValue
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from .telemetry import (

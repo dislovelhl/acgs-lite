@@ -9,11 +9,21 @@ NLU, Dialog Management, Response Generation, and Agent Bus Integration.
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
 from enum import Enum
-from typing import Optional, Protocol, TypeAlias, Union
+from typing import Protocol, TypeAlias
 
 # Import centralized constitutional hash with fallback
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict, JSONValue
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import (
+        JSONDict,
+        JSONValue,
+    )  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+    JSONValue = object  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

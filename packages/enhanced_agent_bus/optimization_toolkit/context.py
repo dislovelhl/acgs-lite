@@ -7,7 +7,10 @@ Reference: SPEC_ACGS2_ENHANCED_v2.3 Section 16.3 (Context Management)
 
 import re
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 # Constitutional Hash - immutable reference
 

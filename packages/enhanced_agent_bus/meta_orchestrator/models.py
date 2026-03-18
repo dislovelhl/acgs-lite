@@ -13,12 +13,18 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
 from enum import Enum
-from typing import Optional
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 # Re-export from models.py for consistency
-from packages.enhanced_agent_bus.models import AgentCapability, TaskComplexity, TaskType
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+from enhanced_agent_bus.models import AgentCapability, TaskComplexity, TaskType
 
 __all__ = [
     "AgentCapability",

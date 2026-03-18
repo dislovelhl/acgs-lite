@@ -14,14 +14,20 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from packages.enhanced_agent_bus.enums import TaskComplexity, TaskType
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
+from enhanced_agent_bus.enums import TaskComplexity, TaskType
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 if TYPE_CHECKING:
-    from packages.enhanced_agent_bus.models import SwarmAgent
+    from enhanced_agent_bus.models import SwarmAgent
 
     from ..routing_engine import RoutingEngine
 

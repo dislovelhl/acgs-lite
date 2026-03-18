@@ -14,7 +14,8 @@ import asyncio
 from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
-from packages.enhanced_agent_bus.llm_adapters.capability_matrix import (
+
+from enhanced_agent_bus.llm_adapters.capability_matrix import (
     CONSTITUTIONAL_HASH,
     CapabilityDimension,
     CapabilityLevel,
@@ -23,7 +24,7 @@ from packages.enhanced_agent_bus.llm_adapters.capability_matrix import (
     LatencyClass,
     ProviderCapabilityProfile,
 )
-from packages.enhanced_agent_bus.llm_adapters.cost_optimizer import (
+from enhanced_agent_bus.llm_adapters.cost_optimizer import (
     BatchOptimizer,
     BatchRequest,
     BudgetLimit,

@@ -14,8 +14,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi import HTTPException
-from packages.enhanced_agent_bus.routes.sessions._fallbacks import RiskLevel
-from packages.enhanced_agent_bus.routes.sessions.endpoints import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.routes.sessions._fallbacks import RiskLevel
+from enhanced_agent_bus.routes.sessions.endpoints import (
     _apply_policy_candidate,
     _build_policy_selection,
     _build_policy_selection_response,
@@ -30,13 +32,12 @@ from packages.enhanced_agent_bus.routes.sessions.endpoints import (
     select_session_policies,
     update_session_governance,
 )
-from packages.enhanced_agent_bus.routes.sessions.models import (
+from enhanced_agent_bus.routes.sessions.models import (
     CreateSessionRequest,
     PolicySelectionRequest,
     SelectedPolicy,
     UpdateGovernanceRequest,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Helpers / factories

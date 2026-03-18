@@ -8,16 +8,17 @@ from __future__ import annotations
 from unittest.mock import MagicMock
 
 import pytest
-from packages.enhanced_agent_bus.llm_adapters.failover.failover import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.llm_adapters.failover.failover import (
     FailoverEvent,
     ProactiveFailoverManager,
 )
-from packages.enhanced_agent_bus.llm_adapters.failover.health import (
+from enhanced_agent_bus.llm_adapters.failover.health import (
     HealthMetrics,
     ProviderHealthScore,
     ProviderHealthScorer,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 
 def _make_health(score: float, provider_id: str = "test-provider") -> ProviderHealthScore:

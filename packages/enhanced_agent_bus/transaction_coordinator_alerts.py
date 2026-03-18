@@ -10,7 +10,10 @@ TransactionCoordinator observability.
 from dataclasses import dataclass
 from typing import cast
 
-from src.core.shared.types import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.types import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"  # type: ignore[misc,assignment]
 
 
 @dataclass

@@ -7,7 +7,7 @@ The system tenant is the default tenant for backward compatibility
 and system-level resources.
 
 Usage:
-    from packages.enhanced_agent_bus.multi_tenancy.system_tenant import (
+    from enhanced_agent_bus.multi_tenancy.system_tenant import (
         SYSTEM_TENANT_ID,
         SYSTEM_TENANT_SLUG,
         is_system_tenant,

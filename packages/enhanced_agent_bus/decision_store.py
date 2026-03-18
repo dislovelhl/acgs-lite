@@ -17,7 +17,6 @@ import asyncio
 import json
 import time
 from datetime import UTC, datetime
-from typing import Optional
 
 from typing_extensions import TypedDict
 
@@ -41,8 +40,14 @@ class _DecisionStoreMetrics(TypedDict, total=False):
     constitutional_hash: str
 
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
-from src.core.shared.types import JSONDict  # noqa: E402
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 try:
     from src.core.shared.event_schemas.decision_explanation import (
@@ -280,7 +285,7 @@ class DecisionStore:
         self,
         decision_id: str,
         tenant_id: str = "default",
-    ) -> Optional["DecisionExplanationV1"]:
+    ) -> "DecisionExplanationV1" | None:
         """
         Retrieve a decision explanation by ID.
 
@@ -335,7 +340,7 @@ class DecisionStore:
         self,
         message_id: str,
         tenant_id: str = "default",
-    ) -> Optional["DecisionExplanationV1"]:
+    ) -> "DecisionExplanationV1" | None:
         """
         Retrieve a decision explanation by message ID.
 

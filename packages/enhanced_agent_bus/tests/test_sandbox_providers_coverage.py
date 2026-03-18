@@ -16,7 +16,9 @@ from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
-from packages.enhanced_agent_bus.guardrails.sandbox_providers import (
+from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+
+from enhanced_agent_bus.guardrails.sandbox_providers import (
     DockerSandboxProvider,
     FirecrackerSandboxProvider,
     MockSandboxProvider,
@@ -29,7 +31,6 @@ from packages.enhanced_agent_bus.guardrails.sandbox_providers import (
     SandboxSecurityConfig,
     get_default_provider,
 )
-from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 
 # ---------------------------------------------------------------------------
 # Helpers / fixtures
@@ -448,7 +449,7 @@ class TestDockerSandboxProviderExecuteInitialized:
         loop_mock.run_in_executor = fake_run_in_executor
 
         with patch(
-            "packages.enhanced_agent_bus.guardrails.sandbox_providers.asyncio.get_running_loop",
+            "enhanced_agent_bus.guardrails.sandbox_providers.asyncio.get_running_loop",
             return_value=loop_mock,
         ):
             req = _make_request(trace_id="t-timeout")
@@ -468,7 +469,7 @@ class TestDockerSandboxProviderExecuteInitialized:
         loop_mock.run_in_executor = fake_run_in_executor
 
         with patch(
-            "packages.enhanced_agent_bus.guardrails.sandbox_providers.asyncio.get_running_loop",
+            "enhanced_agent_bus.guardrails.sandbox_providers.asyncio.get_running_loop",
             return_value=loop_mock,
         ):
             req = _make_request(trace_id="t-rterr")
@@ -488,7 +489,7 @@ class TestDockerSandboxProviderExecuteInitialized:
         loop_mock.run_in_executor = fake_run_in_executor
 
         with patch(
-            "packages.enhanced_agent_bus.guardrails.sandbox_providers.asyncio.get_running_loop",
+            "enhanced_agent_bus.guardrails.sandbox_providers.asyncio.get_running_loop",
             return_value=loop_mock,
         ):
             req = _make_request(trace_id="t-oserr")
@@ -1013,7 +1014,7 @@ class TestDockerSandboxProviderCleanup:
         loop_mock.run_in_executor = fake_executor
 
         with patch(
-            "packages.enhanced_agent_bus.guardrails.sandbox_providers.asyncio.get_running_loop",
+            "enhanced_agent_bus.guardrails.sandbox_providers.asyncio.get_running_loop",
             return_value=loop_mock,
         ):
             await provider.cleanup()
@@ -1033,7 +1034,7 @@ class TestDockerSandboxProviderCleanup:
         loop_mock.run_in_executor = fake_executor
 
         with patch(
-            "packages.enhanced_agent_bus.guardrails.sandbox_providers.asyncio.get_running_loop",
+            "enhanced_agent_bus.guardrails.sandbox_providers.asyncio.get_running_loop",
             return_value=loop_mock,
         ):
             # Should not raise
@@ -1104,7 +1105,7 @@ class TestDockerSandboxProviderHealthCheck:
         loop_mock.run_in_executor = fake_executor
 
         with patch(
-            "packages.enhanced_agent_bus.guardrails.sandbox_providers.asyncio.get_running_loop",
+            "enhanced_agent_bus.guardrails.sandbox_providers.asyncio.get_running_loop",
             return_value=loop_mock,
         ):
             health = await provider.health_check()
@@ -1127,7 +1128,7 @@ class TestDockerSandboxProviderHealthCheck:
         loop_mock.run_in_executor = fake_executor
 
         with patch(
-            "packages.enhanced_agent_bus.guardrails.sandbox_providers.asyncio.get_running_loop",
+            "enhanced_agent_bus.guardrails.sandbox_providers.asyncio.get_running_loop",
             return_value=loop_mock,
         ):
             health = await provider.health_check()
@@ -1146,7 +1147,7 @@ class TestDockerSandboxProviderHealthCheck:
         loop_mock.run_in_executor = fake_executor
 
         with patch(
-            "packages.enhanced_agent_bus.guardrails.sandbox_providers.asyncio.get_running_loop",
+            "enhanced_agent_bus.guardrails.sandbox_providers.asyncio.get_running_loop",
             return_value=loop_mock,
         ):
             health = await provider.health_check()

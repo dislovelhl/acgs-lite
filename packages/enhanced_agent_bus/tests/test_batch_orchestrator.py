@@ -8,17 +8,18 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.batch_processor_infra.orchestrator import (
+
+from enhanced_agent_bus.batch_processor_infra.orchestrator import (
     BatchProcessorOrchestrator,
 )
-from packages.enhanced_agent_bus.models import (
+from enhanced_agent_bus.models import (
     CONSTITUTIONAL_HASH,
     BatchRequest,
     BatchRequestItem,
     MessageStatus,
     MessageType,
 )
-from packages.enhanced_agent_bus.validators import ValidationResult
+from enhanced_agent_bus.validators import ValidationResult
 
 
 class TestBatchProcessorOrchestrator:

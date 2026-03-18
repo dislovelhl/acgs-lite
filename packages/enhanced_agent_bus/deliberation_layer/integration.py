@@ -115,15 +115,22 @@ def _truncate_content_for_hotl(content: object, limit: int = 500) -> str:
     return str(content)[:limit]
 
 
-from src.core.shared.types import JSONDict, JSONList  # noqa: E402
+try:
+    from src.core.shared.types import (
+        JSONDict,
+        JSONList,
+    )  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+    JSONList = list  # type: ignore[misc,assignment]
 
 try:
-    from packages.enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage, MessageStatus
+    from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage, MessageStatus
 except ImportError:
     try:
         from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage, MessageStatus
     except ImportError:
-        from packages.enhanced_agent_bus.models import (
+        from enhanced_agent_bus.models import (
             CONSTITUTIONAL_HASH,
             AgentMessage,
             MessageStatus,
@@ -580,7 +587,9 @@ class DeliberationLayer(OPAGuardMixin):
             from src.core.shared.constants import RISK_TIER_HIGH_MIN, RISK_TIER_LOW_MAX
 
             if RISK_TIER_LOW_MAX <= impact_score < RISK_TIER_HIGH_MIN:
-                return await self._process_medium_risk(message, routing_decision, impact_score)
+                return await self._process_medium_risk(
+                    message, routing_decision, impact_score
+                )
         except ImportError:
             pass  # HOTL module unavailable — fall through to standard deliberation
 

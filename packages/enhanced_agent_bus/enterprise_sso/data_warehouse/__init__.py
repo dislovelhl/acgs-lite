@@ -16,7 +16,10 @@ This package exposes all public APIs for backward compatibility.
 """
 
 # Constitutional hash
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 # Re-export all models
 # Re-export connectors

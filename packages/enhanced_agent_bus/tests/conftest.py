@@ -46,7 +46,7 @@ def _patch_optional(pkg_name: str, flat_name: str | None = None) -> Any | None:
     """Import a module and register both flat and qualified names in sys.modules.
 
     Args:
-        pkg_name: Fully-qualified module name (e.g. "packages.enhanced_agent_bus.api").
+        pkg_name: Fully-qualified module name (e.g. "enhanced_agent_bus.api").
         flat_name: Short alias for sys.modules (e.g. "api"). If None, derived from pkg_name.
 
     Returns:
@@ -72,17 +72,17 @@ def _patch_optional(pkg_name: str, flat_name: str | None = None) -> Any | None:
 _PKG = "packages.enhanced_agent_bus"
 
 
-import packages.enhanced_agent_bus.audit_client as _audit_client  # noqa: E402
-import packages.enhanced_agent_bus.dependency_bridge as _dependency_bridge  # noqa: E402
+import enhanced_agent_bus.audit_client as _audit_client  # noqa: E402
+import enhanced_agent_bus.dependency_bridge as _dependency_bridge  # noqa: E402
 
 # imports.py deleted (v3.1 cleanup) — dependency_bridge.py is the canonical source
-import packages.enhanced_agent_bus.exceptions as _exceptions  # noqa: E402
-import packages.enhanced_agent_bus.interfaces as _interfaces  # noqa: E402
-import packages.enhanced_agent_bus.maci_enforcement as _maci_enforcement  # noqa: E402
-import packages.enhanced_agent_bus.models as _models  # noqa: E402
-import packages.enhanced_agent_bus.registry as _registry  # noqa: E402
-import packages.enhanced_agent_bus.utils as _utils  # noqa: E402
-import packages.enhanced_agent_bus.validators as _validators  # noqa: E402
+import enhanced_agent_bus.exceptions as _exceptions  # noqa: E402
+import enhanced_agent_bus.interfaces as _interfaces  # noqa: E402
+import enhanced_agent_bus.maci_enforcement as _maci_enforcement  # noqa: E402
+import enhanced_agent_bus.models as _models  # noqa: E402
+import enhanced_agent_bus.registry as _registry  # noqa: E402
+import enhanced_agent_bus.utils as _utils  # noqa: E402
+import enhanced_agent_bus.validators as _validators  # noqa: E402
 
 
 # PM-015 core-module fix: `import packages.enhanced_agent_bus.X as _X` uses the
@@ -93,8 +93,8 @@ import packages.enhanced_agent_bus.validators as _validators  # noqa: E402
 # Resolve canonical M_X_PEAB directly from sys.modules after the import has
 # triggered loading.
 def _canonical(submod: str) -> object:
-    """Return sys.modules["packages.enhanced_agent_bus.<submod>"] (M_X_PEAB)."""
-    return sys.modules.get(f"packages.enhanced_agent_bus.{submod}") or sys.modules.get(
+    """Return sys.modules["enhanced_agent_bus.<submod>"] (M_X_PEAB)."""
+    return sys.modules.get(f"enhanced_agent_bus.{submod}") or sys.modules.get(
         f"enhanced_agent_bus.{submod}"
     )
 
@@ -164,7 +164,7 @@ if _deliberation_layer is not None:
 
     try:
         _impact_scorer = _il.import_module(
-            "packages.enhanced_agent_bus.deliberation_layer.impact_scorer"
+            "enhanced_agent_bus.deliberation_layer.impact_scorer"
         )
         sys.modules["enhanced_agent_bus.deliberation_layer.impact_scorer"] = _impact_scorer
         sys.modules["core.enhanced_agent_bus.deliberation_layer.impact_scorer"] = _impact_scorer
@@ -173,11 +173,11 @@ if _deliberation_layer is not None:
 
 # Observability has sub-modules that also need patching
 try:
-    import packages.enhanced_agent_bus.observability as _observability
+    import enhanced_agent_bus.observability as _observability
 
     sys.modules["observability"] = _observability
     sys.modules["enhanced_agent_bus.observability"] = _observability
-    import packages.enhanced_agent_bus.observability.telemetry as _telemetry
+    import enhanced_agent_bus.observability.telemetry as _telemetry
 
     sys.modules["observability.telemetry"] = _telemetry
     sys.modules["enhanced_agent_bus.observability.telemetry"] = _telemetry
@@ -186,8 +186,8 @@ except ImportError:
 
 # Canonicalize multi_tenancy ORM imports to avoid duplicate mappers in parallel runs
 try:
-    import packages.enhanced_agent_bus.multi_tenancy as _multi_tenancy
-    import packages.enhanced_agent_bus.multi_tenancy.orm_models as _orm_models
+    import enhanced_agent_bus.multi_tenancy as _multi_tenancy
+    import enhanced_agent_bus.multi_tenancy.orm_models as _orm_models
 
     sys.modules["enhanced_agent_bus.multi_tenancy"] = _multi_tenancy
     sys.modules["core.enhanced_agent_bus.multi_tenancy"] = _multi_tenancy
@@ -217,7 +217,7 @@ for _submod in [
     "deliberation_layer.llm_assistant",
     "pipeline.legacy_wrapper",
 ]:
-    _canon = sys.modules.get(f"packages.enhanced_agent_bus.{_submod}")
+    _canon = sys.modules.get(f"enhanced_agent_bus.{_submod}")
     if _canon is not None:
         sys.modules[f"enhanced_agent_bus.{_submod}"] = _canon
         sys.modules[f"core.enhanced_agent_bus.{_submod}"] = _canon
@@ -294,7 +294,7 @@ def _reset_singletons() -> None:
 
     # Reset bundle_registry global distribution service to prevent xdist state leak
     try:
-        import packages.enhanced_agent_bus.bundle_registry as _br
+        import enhanced_agent_bus.bundle_registry as _br
 
         _br._distribution_service = None
     except (ImportError, AttributeError):
@@ -311,7 +311,7 @@ def _disable_redis_rate_limiting(monkeypatch):
     Constitutional Hash: cdd01ef066bc6cf2
     """
     try:
-        from packages.enhanced_agent_bus.bus.core import EnhancedAgentBus
+        from enhanced_agent_bus.bus.core import EnhancedAgentBus
 
         _original_init = EnhancedAgentBus.__init__
 

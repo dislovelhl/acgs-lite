@@ -5,10 +5,12 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip("src.core.cognitive", reason="src.core.cognitive removed during extraction")
+
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
-
-import pytest
 
 from enhanced_agent_bus.deliberation_layer.graphrag_integration import (
     GraphRAGContextEnricher,

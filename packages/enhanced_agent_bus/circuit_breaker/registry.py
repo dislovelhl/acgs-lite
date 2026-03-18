@@ -9,10 +9,15 @@ circuit breakers and provides global access functions.
 
 import asyncio
 from datetime import UTC, datetime, timezone
-from typing import Optional
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -30,7 +35,7 @@ class ServiceCircuitBreakerRegistry:
     Constitutional Hash: cdd01ef066bc6cf2
     """
 
-    _instance: Optional["ServiceCircuitBreakerRegistry"] = None
+    _instance: "ServiceCircuitBreakerRegistry" | None = None
     _circuits: dict[str, ServiceCircuitBreaker]
     _initialized: bool
 

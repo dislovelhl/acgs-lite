@@ -13,10 +13,10 @@ import pytest  # noqa: E402
 # Force-import the module under test at collection time so coverage sees it.
 # Use patch to suppress MLflow I/O during import-time initialisation.
 with patch(
-    "packages.enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow",
+    "enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow",
     return_value=None,
 ):
-    import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _IMPACT_MODULE
+    import enhanced_agent_bus.adaptive_governance.impact_scorer as _IMPACT_MODULE
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -25,7 +25,7 @@ with patch(
 
 def _make_scorer(constitutional_hash: str = CONSTITUTIONAL_HASH, **kwargs):
     """Return an ImpactScorer with MLflow initialisation suppressed."""
-    from packages.enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
+    from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
     with patch.object(ImpactScorer, "_initialize_mlflow", return_value=None):
         scorer = ImpactScorer(constitutional_hash=constitutional_hash, **kwargs)
@@ -44,7 +44,7 @@ def _make_features(
     risk_score: float = 0.0,
     confidence_level: float = 0.0,
 ):
-    from packages.enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
+    from enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
 
     return ImpactFeatures(
         message_length=message_length,
@@ -74,7 +74,7 @@ class TestImpactScorerInit:
         """When sklearn is available the classifier is set."""
         scorer = _make_scorer()
         # sklearn is available in this environment — classifier should not be None
-        from packages.enhanced_agent_bus.adaptive_governance import impact_scorer as _mod
+        from enhanced_agent_bus.adaptive_governance import impact_scorer as _mod
 
         if _mod.SKLEARN_AVAILABLE:
             assert scorer.impact_classifier is not None
@@ -83,7 +83,7 @@ class TestImpactScorerInit:
 
     def test_init_without_sklearn(self):
         """Without sklearn, impact_classifier is None."""
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         orig = _mod.SKLEARN_AVAILABLE
         orig_cls = _mod.RandomForestRegressor
@@ -107,7 +107,7 @@ class TestImpactScorerInit:
 
     def test_init_mlflow_not_initialized_in_pytest(self):
         """_initialize_mlflow should set _mlflow_initialized=False when pytest is in sys.modules."""
-        from packages.enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
+        from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
         # pytest IS already in sys.modules here; call real _initialize_mlflow
         scorer = ImpactScorer.__new__(ImpactScorer)
@@ -116,7 +116,7 @@ class TestImpactScorerInit:
         scorer._mlflow_experiment_id = None
         scorer.model_version = None
         # Patch MLFLOW_AVAILABLE so we reach the pytest check
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         orig = _mod.MLFLOW_AVAILABLE
         orig_mlflow = _mod.mlflow
@@ -132,8 +132,8 @@ class TestImpactScorerInit:
 
     def test_init_mlflow_not_available(self):
         """When MLflow is not available _initialize_mlflow logs a warning and returns."""
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
-        from packages.enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+        from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
         orig = _mod.MLFLOW_AVAILABLE
         try:
@@ -150,8 +150,8 @@ class TestImpactScorerInit:
 
     def test_init_mlflow_available_not_in_pytest(self):
         """When mlflow is available and we are NOT in pytest, _initialize_mlflow runs."""
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
-        from packages.enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+        from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
         orig_avail = _mod.MLFLOW_AVAILABLE
         orig_mlflow = _mod.mlflow
@@ -184,8 +184,8 @@ class TestImpactScorerInit:
 
     def test_init_mlflow_experiment_exists(self):
         """Branch: experiment already exists (get_experiment_by_name returns non-None)."""
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
-        from packages.enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+        from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
         orig_avail = _mod.MLFLOW_AVAILABLE
         orig_mlflow = _mod.mlflow
@@ -217,8 +217,8 @@ class TestImpactScorerInit:
 
     def test_init_mlflow_error_is_caught(self):
         """RuntimeError during mlflow init is caught and _mlflow_initialized stays False."""
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
-        from packages.enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+        from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
         orig_avail = _mod.MLFLOW_AVAILABLE
         orig_mlflow = _mod.mlflow
@@ -247,7 +247,7 @@ class TestImpactScorerInit:
             _mod.mlflow = orig_mlflow
 
     def test_use_mhc_stability_false_when_torch_unavailable(self):
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         orig = _mod.TORCH_AVAILABLE
         try:
@@ -258,7 +258,7 @@ class TestImpactScorerInit:
             _mod.TORCH_AVAILABLE = orig
 
     def test_use_mhc_stability_false_when_sinkhorn_none(self):
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         orig_sink = _mod.sinkhorn_projection
         orig_torch = _mod.TORCH_AVAILABLE
@@ -293,7 +293,7 @@ class TestAssessImpact:
         mock_clf.predict.return_value = [0.42]
         scorer.impact_classifier = mock_clf
 
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         orig = _mod.NUMPY_AVAILABLE
         orig_np = _mod.np
@@ -529,7 +529,7 @@ class TestPredictRiskScore:
         scorer = _make_scorer()
         scorer.model_trained = True
         scorer.impact_classifier = MagicMock()
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         orig = _mod.NUMPY_AVAILABLE
         try:
@@ -542,7 +542,8 @@ class TestPredictRiskScore:
 
     def test_successful_prediction_clipped(self):
         import numpy as np
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         scorer = _make_scorer()
         scorer.model_trained = True
@@ -564,7 +565,8 @@ class TestPredictRiskScore:
 
     def test_prediction_with_no_temporal_patterns(self):
         import numpy as np
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         scorer = _make_scorer()
         scorer.model_trained = True
@@ -586,7 +588,8 @@ class TestPredictRiskScore:
 
     def test_prediction_error_falls_back_to_rule_based(self):
         import numpy as np
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         scorer = _make_scorer()
         scorer.model_trained = True
@@ -621,7 +624,7 @@ class TestApplyMhcStability:
         assert scorer.feature_weights == original_weights
 
     def test_applies_softmax_when_torch_available(self):
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         scorer = _make_scorer()
         scorer.use_mhc_stability = True
@@ -654,7 +657,7 @@ class TestApplyMhcStability:
             _mod.TORCH_AVAILABLE = orig_avail
 
     def test_error_in_mhc_is_caught(self):
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         scorer = _make_scorer()
         scorer.use_mhc_stability = True
@@ -727,7 +730,7 @@ class TestUpdateModel:
 
 class TestRetrainModel:
     def test_no_op_when_numpy_not_available(self):
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         scorer = _make_scorer()
         orig = _mod.NUMPY_AVAILABLE
@@ -746,7 +749,8 @@ class TestRetrainModel:
 
     def test_no_op_when_too_few_samples(self):
         import numpy as np
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         scorer = _make_scorer()
         # Provide classifier but no samples
@@ -763,7 +767,8 @@ class TestRetrainModel:
 
     def test_retrains_without_mlflow(self):
         import numpy as np
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         scorer = _make_scorer()
         scorer._mlflow_initialized = False
@@ -791,7 +796,8 @@ class TestRetrainModel:
 
     def test_retrains_with_mlflow(self):
         import numpy as np
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         scorer = _make_scorer()
         scorer._mlflow_initialized = True
@@ -821,7 +827,8 @@ class TestRetrainModel:
 
     def test_error_in_retrain_is_caught(self):
         import numpy as np
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         scorer = _make_scorer()
         scorer._mlflow_initialized = False
@@ -853,7 +860,7 @@ class TestRetrainModel:
 
 class TestLogTrainingRunToMlflow:
     def _build_scorer_with_mock_mlflow(self):
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         scorer = _make_scorer()
         scorer._mlflow_initialized = True
@@ -869,7 +876,8 @@ class TestLogTrainingRunToMlflow:
 
     def test_logs_run_successfully(self):
         import numpy as np
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         scorer, mod = self._build_scorer_with_mock_mlflow()
 
@@ -902,7 +910,8 @@ class TestLogTrainingRunToMlflow:
     def test_logs_run_r2_zero_when_ss_tot_zero(self):
         """Branch: ss_tot == 0 -> r2_score = 0.0."""
         import numpy as np
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         scorer, mod = self._build_scorer_with_mock_mlflow()
         scorer.impact_classifier.predict.return_value = [0.5] * 50
@@ -935,7 +944,8 @@ class TestLogTrainingRunToMlflow:
     def test_no_feature_importances_attr(self):
         """Branch: classifier has no feature_importances_ attribute."""
         import numpy as np
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         scorer, mod = self._build_scorer_with_mock_mlflow()
         # Remove feature_importances_
@@ -967,7 +977,8 @@ class TestLogTrainingRunToMlflow:
     def test_error_falls_back_to_direct_fit(self):
         """RuntimeError during mlflow run causes fallback fit."""
         import numpy as np
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         scorer, mod = self._build_scorer_with_mock_mlflow()
 
@@ -995,7 +1006,8 @@ class TestLogTrainingRunToMlflow:
     def test_feature_importance_uses_fallback_name_beyond_known_list(self):
         """Branch: idx >= len(feature_names) -> uses f'feature_{idx}'."""
         import numpy as np
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         scorer, mod = self._build_scorer_with_mock_mlflow()
         # 9 importances — 9th index is beyond the 8-name list
@@ -1030,7 +1042,8 @@ class TestLogTrainingRunToMlflow:
     def test_impact_distribution_buckets(self):
         """Cover all three impact bucket branches (high/medium/low)."""
         import numpy as np
-        import packages.enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
+
+        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
 
         scorer, mod = self._build_scorer_with_mock_mlflow()
         scorer.impact_classifier.predict = MagicMock(return_value=[0.5] * 50)

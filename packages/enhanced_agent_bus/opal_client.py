@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import json
 import os
 from datetime import UTC, datetime
 from enum import Enum
@@ -31,8 +32,15 @@ from uuid import uuid4
 
 import httpx
 from pydantic import BaseModel, Field
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -193,7 +201,7 @@ class OPALPolicyClient:
             try:
                 self._audit_client = AuditClient(service_url=self.audit_service_url)
                 await self._audit_client.start()
-            except Exception as exc:  # noqa: BLE001
+            except (ConnectionError, TimeoutError, httpx.HTTPError, ValueError) as exc:
                 logger.warning("Audit client init failed (non-fatal): %s", exc)
                 self._audit_client = None
 
@@ -203,7 +211,7 @@ class OPALPolicyClient:
                 self._opa_client = OPAClient(opa_url=self.opa_url)
                 await self._opa_client.initialize()
                 logger.info("OPA client connected at %s", self.opa_url)
-            except Exception as exc:  # noqa: BLE001
+            except (ConnectionError, TimeoutError, httpx.HTTPError, ValueError) as exc:
                 logger.warning("OPA client init failed (non-fatal): %s", exc)
                 self._opa_client = None
 
@@ -272,7 +280,7 @@ class OPALPolicyClient:
             try:
                 result = await self._opa_client.evaluate(policy_path, input_data)
                 return bool(result)
-            except Exception as exc:  # noqa: BLE001
+            except (ConnectionError, TimeoutError, httpx.HTTPError, ValueError) as exc:
                 logger.error("OPA evaluation error (%s): %s", policy_path, exc)
                 return not deny_on_error
 
@@ -315,7 +323,7 @@ class OPALPolicyClient:
                 retry_delay = 1.0  # reset on successful connection
             except asyncio.CancelledError:
                 break
-            except Exception as exc:  # noqa: BLE001
+            except (ConnectionError, OSError, TimeoutError, httpx.HTTPError) as exc:
                 logger.warning("OPAL websocket error (retry in %.0fs): %s", retry_delay, exc)
                 self._connection_state = OPALConnectionState.RECONNECTING
                 self._fallback_active = True
@@ -368,11 +376,9 @@ class OPALPolicyClient:
 
     async def _handle_ws_message(self, raw_message: str | bytes) -> None:
         """Parse and dispatch an incoming OPAL websocket message."""
-        import json
-
         try:
             payload: JSONDict = json.loads(raw_message)
-        except Exception:  # noqa: BLE001
+        except (json.JSONDecodeError, TypeError, ValueError):
             logger.debug("OPAL: non-JSON message ignored")
             return
 
@@ -406,7 +412,7 @@ class OPALPolicyClient:
             try:
                 await self._opa_client.clear_cache()
                 logger.debug("OPA cache invalidated after OPAL event %s", event.event_id)
-            except Exception as exc:  # noqa: BLE001
+            except (AttributeError, ConnectionError, TimeoutError, httpx.HTTPError) as exc:
                 logger.warning("OPA cache invalidation failed: %s", exc)
 
     async def _audit_policy_update(self, event: PolicyUpdateEvent) -> None:
@@ -427,7 +433,7 @@ class OPALPolicyClient:
                     data=event_data,
                     constitutional_hash=CONSTITUTIONAL_HASH,
                 )
-            except Exception as exc:  # noqa: BLE001
+            except (ConnectionError, TimeoutError, httpx.HTTPError, ValueError) as exc:
                 logger.warning("Audit log failed for OPAL event: %s", exc)
 
         logger.info(

@@ -35,7 +35,7 @@ pytestmark = [pytest.mark.unit]
 # Import module under test
 # ---------------------------------------------------------------------------
 
-from packages.enhanced_agent_bus.deliberation_layer.vote_consumer import (  # noqa: E402
+from enhanced_agent_bus.deliberation_layer.vote_consumer import (  # noqa: E402
     _VOTE_CONSUMER_OPERATION_ERRORS,
     KAFKA_AVAILABLE,
     VoteEventConsumer,
@@ -149,7 +149,7 @@ class TestVoteEventConsumerInit:
         mock_svc_instance = MagicMock()
         mock_svc_cls = MagicMock(return_value=mock_svc_instance)
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.VotingService",
+            "enhanced_agent_bus.deliberation_layer.vote_consumer.VotingService",
             mock_svc_cls,
         ):
             consumer = VoteEventConsumer()
@@ -166,7 +166,7 @@ class TestVoteEventConsumerStart:
         svc = _mock_voting_service()
         consumer = VoteEventConsumer(voting_service=svc)
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.KAFKA_AVAILABLE",
+            "enhanced_agent_bus.deliberation_layer.vote_consumer.KAFKA_AVAILABLE",
             False,
         ):
             result = await consumer.start()
@@ -181,11 +181,11 @@ class TestVoteEventConsumerStart:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.KAFKA_AVAILABLE",
+                "enhanced_agent_bus.deliberation_layer.vote_consumer.KAFKA_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.AIOKafkaConsumer",
+                "enhanced_agent_bus.deliberation_layer.vote_consumer.AIOKafkaConsumer",
                 return_value=mock_kafka_consumer,
             ),
             patch("asyncio.create_task"),
@@ -205,11 +205,11 @@ class TestVoteEventConsumerStart:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.KAFKA_AVAILABLE",
+                "enhanced_agent_bus.deliberation_layer.vote_consumer.KAFKA_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.AIOKafkaConsumer",
+                "enhanced_agent_bus.deliberation_layer.vote_consumer.AIOKafkaConsumer",
                 return_value=mock_kafka_consumer,
             ),
             patch("asyncio.create_task", side_effect=lambda coro: created_tasks.append(coro)),
@@ -224,11 +224,11 @@ class TestVoteEventConsumerStart:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.KAFKA_AVAILABLE",
+                "enhanced_agent_bus.deliberation_layer.vote_consumer.KAFKA_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.AIOKafkaConsumer",
+                "enhanced_agent_bus.deliberation_layer.vote_consumer.AIOKafkaConsumer",
                 side_effect=ConnectionError("cannot connect"),
             ),
         ):
@@ -306,7 +306,7 @@ class TestConsumeLoop:
         store.get_election = AsyncMock(return_value=election_data)
 
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
+            "enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
             getter,
         ):
             await consumer._consume_loop()
@@ -434,7 +434,7 @@ class TestHandleVoteEvent:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
+                "enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
                 _no_store,
             ),
             caplog.at_level(logging.ERROR),
@@ -453,7 +453,7 @@ class TestHandleVoteEvent:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
+                "enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
                 getter,
             ),
             caplog.at_level(logging.WARNING),
@@ -471,7 +471,7 @@ class TestHandleVoteEvent:
         _store, getter = _mock_election_store(election_data=election_data)
 
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
+            "enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
             getter,
         ):
             await consumer._handle_vote_event(_make_vote_event(agent_id="agent-a"))
@@ -487,7 +487,7 @@ class TestHandleVoteEvent:
         _store, getter = _mock_election_store(election_data=election_data)
 
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
+            "enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
             getter,
         ):
             await consumer._handle_vote_event(_make_vote_event())
@@ -507,7 +507,7 @@ class TestHandleVoteEvent:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
+                "enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
                 getter,
             ),
             caplog.at_level(logging.WARNING),
@@ -525,7 +525,7 @@ class TestHandleVoteEvent:
         _store, getter = _mock_election_store(election_data=election_data)
 
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
+            "enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
             getter,
         ):
             with patch.object(
@@ -544,7 +544,7 @@ class TestHandleVoteEvent:
         _store, getter = _mock_election_store(election_data=election_data)
 
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
+            "enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
             getter,
         ):
             with patch.object(
@@ -565,7 +565,7 @@ class TestHandleVoteEvent:
         ev = _make_vote_event(timestamp="2024-06-15T12:00:00Z")
 
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
+            "enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
             getter,
         ):
             await consumer._handle_vote_event(ev)
@@ -588,7 +588,7 @@ class TestHandleVoteEvent:
         ev["timestamp"] = 1234567890  # non-string
 
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
+            "enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
             getter,
         ):
             await consumer._handle_vote_event(ev)
@@ -606,7 +606,7 @@ class TestHandleVoteEvent:
         ev = _make_vote_event(timestamp=None)
 
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
+            "enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
             getter,
         ):
             await consumer._handle_vote_event(ev)
@@ -624,7 +624,7 @@ class TestHandleVoteEvent:
         ev = _make_vote_event(reasoning=None)
 
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
+            "enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
             getter,
         ):
             await consumer._handle_vote_event(ev)
@@ -651,11 +651,11 @@ class TestPublishAuditRecord:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.settings"
+                "enhanced_agent_bus.deliberation_layer.vote_consumer.settings"
             ) as mock_settings,
             # sign_audit_record is imported inside the method from .audit_signature
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.audit_signature.sign_audit_record",
+                "enhanced_agent_bus.deliberation_layer.audit_signature.sign_audit_record",
                 return_value="abc123",
             ) as mock_sign,
         ):
@@ -678,7 +678,7 @@ class TestPublishAuditRecord:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.settings"
+                "enhanced_agent_bus.deliberation_layer.vote_consumer.settings"
             ) as mock_settings,
             caplog.at_level(logging.WARNING),
         ):
@@ -697,7 +697,7 @@ class TestPublishAuditRecord:
         election_data = {"tenant_id": "election-tenant"}
 
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.settings"
+            "enhanced_agent_bus.deliberation_layer.vote_consumer.settings"
         ) as mock_settings:
             mock_settings.voting.audit_signature_key = None
             await consumer._publish_audit_record("elec-1", vote_event, election_data)
@@ -716,7 +716,7 @@ class TestPublishAuditRecord:
         election_data = {}  # no tenant_id key
 
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.settings"
+            "enhanced_agent_bus.deliberation_layer.vote_consumer.settings"
         ) as mock_settings:
             mock_settings.voting.audit_signature_key = None
             await consumer._publish_audit_record("elec-1", vote_event, election_data)
@@ -740,7 +740,7 @@ class TestPublishAuditRecord:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.settings"
+                "enhanced_agent_bus.deliberation_layer.vote_consumer.settings"
             ) as mock_settings,
             caplog.at_level(logging.ERROR),
         ):
@@ -764,7 +764,7 @@ class TestPublishAuditRecord:
         svc.kafka_bus.publish_audit_record = _capture
 
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.settings"
+            "enhanced_agent_bus.deliberation_layer.vote_consumer.settings"
         ) as mock_settings:
             mock_settings.voting.audit_signature_key = None
             await consumer._publish_audit_record("elec-1", vote_event, election_data)
@@ -794,7 +794,7 @@ class TestPublishAuditRecord:
         mock_secret.get_secret_value.return_value = "secret"
 
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.settings"
+            "enhanced_agent_bus.deliberation_layer.vote_consumer.settings"
         ) as mock_settings:
             mock_settings.voting.audit_signature_key = mock_secret
             await consumer._publish_audit_record("elec-1", vote_event, election_data)
@@ -824,11 +824,11 @@ class TestIntegrationFlow:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.KAFKA_AVAILABLE",
+                "enhanced_agent_bus.deliberation_layer.vote_consumer.KAFKA_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.AIOKafkaConsumer",
+                "enhanced_agent_bus.deliberation_layer.vote_consumer.AIOKafkaConsumer",
                 return_value=mock_kafka,
             ),
             patch("asyncio.create_task"),
@@ -855,7 +855,7 @@ class TestIntegrationFlow:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
+                "enhanced_agent_bus.deliberation_layer.vote_consumer.get_election_store",
                 getter,
             ),
             caplog.at_level(logging.INFO),

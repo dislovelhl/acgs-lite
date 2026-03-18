@@ -14,7 +14,11 @@ from datetime import UTC, datetime
 from enum import Enum
 
 from pydantic import BaseModel, Field, field_validator
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 # =============================================================================
 # Enums

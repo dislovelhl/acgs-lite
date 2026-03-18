@@ -14,7 +14,7 @@ from typing import TypeAlias, TypeVar
 _module = sys.modules.get(__name__)
 if _module is not None:
     sys.modules.setdefault("enhanced_agent_bus.types", _module)
-    sys.modules.setdefault("packages.enhanced_agent_bus.bus_types", _module)
+    sys.modules.setdefault("enhanced_agent_bus.bus_types", _module)
     sys.modules.setdefault("core.enhanced_agent_bus.types", _module)
 
 # JSON types - for working with JSON-compatible data structures

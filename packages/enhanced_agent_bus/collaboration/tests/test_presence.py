@@ -8,14 +8,15 @@ import asyncio
 from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
-from packages.enhanced_agent_bus.collaboration.models import (
+
+from enhanced_agent_bus.collaboration.models import (
     CollaborationConfig,
     CursorPosition,
     PresenceStatus,
     SessionFullError,
     UserPermissions,
 )
-from packages.enhanced_agent_bus.collaboration.presence import PresenceManager
+from enhanced_agent_bus.collaboration.presence import PresenceManager
 
 
 class TestPresenceManager:

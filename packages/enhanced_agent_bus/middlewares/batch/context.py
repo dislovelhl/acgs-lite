@@ -6,7 +6,7 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from dataclasses import dataclass, field
 
-from packages.enhanced_agent_bus.models import AgentMessage
+from enhanced_agent_bus.models import AgentMessage
 
 from ...batch_models import (
     BatchRequest,

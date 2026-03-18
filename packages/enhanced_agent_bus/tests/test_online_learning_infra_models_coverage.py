@@ -9,8 +9,9 @@ properties/setters defined in that module.
 from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
-from packages.enhanced_agent_bus.online_learning_infra.config import LearningStatus
-from packages.enhanced_agent_bus.online_learning_infra.models import (
+
+from enhanced_agent_bus.online_learning_infra.config import LearningStatus
+from enhanced_agent_bus.online_learning_infra.models import (
     ConsumerStats,
     LearningResult,
     LearningStats,

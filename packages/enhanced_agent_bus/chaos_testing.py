@@ -23,9 +23,12 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
 from enum import Enum
 from functools import wraps
-from typing import NoReturn, Optional
+from typing import NoReturn
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

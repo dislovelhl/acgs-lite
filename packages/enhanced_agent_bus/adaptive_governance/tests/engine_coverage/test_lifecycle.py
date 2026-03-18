@@ -21,10 +21,10 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH as SHARED_CONSTITUTION
 
 _MLFLOW_PATCH = "mlflow.set_tracking_uri"
 _IMPACT_MLFLOW = (
-    "packages.enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
+    "enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
 )
 _THRESH_MLFLOW = (
-    "packages.enhanced_agent_bus.adaptive_governance.threshold_manager."
+    "enhanced_agent_bus.adaptive_governance.threshold_manager."
     "AdaptiveThresholds._initialize_mlflow"
 )
 
@@ -37,7 +37,7 @@ CONST_HASH = SHARED_CONSTITUTIONAL_HASH
 
 
 def _make_features(risk_score: float = 0.3, confidence: float = 0.9):
-    from packages.enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
+    from enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
 
     return ImpactFeatures(
         message_length=50,
@@ -54,7 +54,7 @@ def _make_features(risk_score: float = 0.3, confidence: float = 0.9):
 
 
 def _make_decision(risk_score: float = 0.3, action_allowed: bool = True):
-    from packages.enhanced_agent_bus.adaptive_governance.models import (
+    from enhanced_agent_bus.adaptive_governance.models import (
         GovernanceDecision,
         ImpactLevel,
     )
@@ -77,32 +77,32 @@ def engine():
         patch(_IMPACT_MLFLOW),
         patch(_THRESH_MLFLOW),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "FEEDBACK_HANDLER_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "DRIFT_MONITORING_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "ONLINE_LEARNING_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "AB_TESTING_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "ANOMALY_MONITORING_AVAILABLE",
             False,
         ),
     ):
-        from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+        from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
 
@@ -136,7 +136,7 @@ def sample_context():
 
 class TestInstantiation:
     def test_basic_creation(self, engine):
-        from packages.enhanced_agent_bus.adaptive_governance.models import GovernanceMode
+        from enhanced_agent_bus.adaptive_governance.models import GovernanceMode
 
         assert engine.constitutional_hash == CONST_HASH
         assert engine.mode == GovernanceMode.ADAPTIVE
@@ -171,32 +171,32 @@ class TestInstantiation:
             patch(_IMPACT_MLFLOW),
             patch(_THRESH_MLFLOW),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "FEEDBACK_HANDLER_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "DRIFT_MONITORING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ONLINE_LEARNING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "AB_TESTING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ANOMALY_MONITORING_AVAILABLE",
                 False,
             ),
         ):
-            from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+            from enhanced_agent_bus.adaptive_governance.governance_engine import (
                 AdaptiveGovernanceEngine,
             )
 
@@ -216,37 +216,37 @@ class TestInstantiation:
             patch(_IMPACT_MLFLOW),
             patch(_THRESH_MLFLOW),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "FEEDBACK_HANDLER_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "get_feedback_handler",
                 return_value=mock_fh,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "DRIFT_MONITORING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ONLINE_LEARNING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "AB_TESTING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ANOMALY_MONITORING_AVAILABLE",
                 False,
             ),
         ):
-            from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+            from enhanced_agent_bus.adaptive_governance.governance_engine import (
                 AdaptiveGovernanceEngine,
             )
 
@@ -263,37 +263,37 @@ class TestInstantiation:
             patch(_IMPACT_MLFLOW),
             patch(_THRESH_MLFLOW),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "FEEDBACK_HANDLER_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "get_feedback_handler",
                 return_value=mock_fh,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "DRIFT_MONITORING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ONLINE_LEARNING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "AB_TESTING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ANOMALY_MONITORING_AVAILABLE",
                 False,
             ),
         ):
-            from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+            from enhanced_agent_bus.adaptive_governance.governance_engine import (
                 AdaptiveGovernanceEngine,
             )
 
@@ -309,37 +309,37 @@ class TestInstantiation:
             patch(_IMPACT_MLFLOW),
             patch(_THRESH_MLFLOW),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "FEEDBACK_HANDLER_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "DRIFT_MONITORING_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "get_drift_detector",
                 return_value=mock_detector,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ONLINE_LEARNING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "AB_TESTING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ANOMALY_MONITORING_AVAILABLE",
                 False,
             ),
         ):
-            from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+            from enhanced_agent_bus.adaptive_governance.governance_engine import (
                 AdaptiveGovernanceEngine,
             )
 
@@ -355,37 +355,37 @@ class TestInstantiation:
             patch(_IMPACT_MLFLOW),
             patch(_THRESH_MLFLOW),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "FEEDBACK_HANDLER_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "DRIFT_MONITORING_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "get_drift_detector",
                 return_value=mock_detector,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ONLINE_LEARNING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "AB_TESTING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ANOMALY_MONITORING_AVAILABLE",
                 False,
             ),
         ):
-            from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+            from enhanced_agent_bus.adaptive_governance.governance_engine import (
                 AdaptiveGovernanceEngine,
             )
 
@@ -398,36 +398,36 @@ class TestInstantiation:
             patch(_IMPACT_MLFLOW),
             patch(_THRESH_MLFLOW),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "FEEDBACK_HANDLER_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "DRIFT_MONITORING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ONLINE_LEARNING_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine.RIVER_AVAILABLE",
+                "enhanced_agent_bus.adaptive_governance.governance_engine.RIVER_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "AB_TESTING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ANOMALY_MONITORING_AVAILABLE",
                 False,
             ),
         ):
-            from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+            from enhanced_agent_bus.adaptive_governance.governance_engine import (
                 AdaptiveGovernanceEngine,
             )
 
@@ -443,44 +443,44 @@ class TestInstantiation:
             patch(_IMPACT_MLFLOW),
             patch(_THRESH_MLFLOW),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "FEEDBACK_HANDLER_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "DRIFT_MONITORING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ONLINE_LEARNING_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine.RIVER_AVAILABLE",
+                "enhanced_agent_bus.adaptive_governance.governance_engine.RIVER_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "get_online_learning_pipeline",
                 return_value=mock_pipeline,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine.ModelType",
+                "enhanced_agent_bus.adaptive_governance.governance_engine.ModelType",
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "AB_TESTING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ANOMALY_MONITORING_AVAILABLE",
                 False,
             ),
         ):
-            from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+            from enhanced_agent_bus.adaptive_governance.governance_engine import (
                 AdaptiveGovernanceEngine,
             )
 
@@ -493,37 +493,37 @@ class TestInstantiation:
             patch(_IMPACT_MLFLOW),
             patch(_THRESH_MLFLOW),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "FEEDBACK_HANDLER_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "DRIFT_MONITORING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ONLINE_LEARNING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "AB_TESTING_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "get_ab_test_router",
                 side_effect=RuntimeError("ab init fail"),
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ANOMALY_MONITORING_AVAILABLE",
                 False,
             ),
         ):
-            from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+            from enhanced_agent_bus.adaptive_governance.governance_engine import (
                 AdaptiveGovernanceEngine,
             )
 
@@ -536,36 +536,36 @@ class TestInstantiation:
             patch(_IMPACT_MLFLOW),
             patch(_THRESH_MLFLOW),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "FEEDBACK_HANDLER_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "DRIFT_MONITORING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ONLINE_LEARNING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "AB_TESTING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ANOMALY_MONITORING_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine.AnomalyMonitor",
+                "enhanced_agent_bus.adaptive_governance.governance_engine.AnomalyMonitor",
                 side_effect=RuntimeError("monitor fail"),
             ),
         ):
-            from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+            from enhanced_agent_bus.adaptive_governance.governance_engine import (
                 AdaptiveGovernanceEngine,
             )
 
@@ -580,36 +580,36 @@ class TestInstantiation:
             patch(_IMPACT_MLFLOW),
             patch(_THRESH_MLFLOW),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "FEEDBACK_HANDLER_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "DRIFT_MONITORING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ONLINE_LEARNING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "AB_TESTING_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+                "enhanced_agent_bus.adaptive_governance.governance_engine."
                 "ANOMALY_MONITORING_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.adaptive_governance.governance_engine.AnomalyMonitor",
+                "enhanced_agent_bus.adaptive_governance.governance_engine.AnomalyMonitor",
                 return_value=mock_monitor,
             ),
         ):
-            from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+            from enhanced_agent_bus.adaptive_governance.governance_engine import (
                 AdaptiveGovernanceEngine,
             )
 
@@ -690,7 +690,7 @@ class TestBackgroundLearningLoop:
                 engine.running = False
 
         with patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine.asyncio.sleep",
+            "enhanced_agent_bus.adaptive_governance.governance_engine.asyncio.sleep",
             side_effect=fast_sleep,
         ):
             await engine._background_learning_loop()
@@ -711,7 +711,7 @@ class TestBackgroundLearningLoop:
         engine._analyze_performance_trends = MagicMock(side_effect=RuntimeError("trend fail"))
 
         with patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine.asyncio.sleep",
+            "enhanced_agent_bus.adaptive_governance.governance_engine.asyncio.sleep",
             side_effect=side_effect_sleep,
         ):
             await engine._background_learning_loop()
@@ -732,7 +732,7 @@ class TestBackgroundLearningLoop:
         engine._should_retrain_models = MagicMock(return_value=True)
 
         with patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine.asyncio.sleep",
+            "enhanced_agent_bus.adaptive_governance.governance_engine.asyncio.sleep",
             side_effect=fast_sleep,
         ):
             await engine._background_learning_loop()

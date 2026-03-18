@@ -23,7 +23,10 @@ PREFETCH_OPERATION_ERRORS = (
     asyncio.TimeoutError,
 )
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 try:
     from src.core.shared.types import JSONDict

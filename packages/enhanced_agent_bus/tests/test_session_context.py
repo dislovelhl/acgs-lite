@@ -11,10 +11,11 @@ from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.models import RiskLevel, SessionGovernanceConfig
 
 # Constitutional hash constant
 from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.models import RiskLevel, SessionGovernanceConfig
 
 from ..session_context import SessionContext, SessionContextManager, SessionContextStore
 

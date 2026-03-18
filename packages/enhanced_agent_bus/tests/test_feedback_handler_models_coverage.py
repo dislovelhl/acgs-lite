@@ -11,8 +11,10 @@ import logging
 from datetime import UTC, datetime, timezone
 
 import pytest
-from packages.enhanced_agent_bus.feedback_handler.enums import FeedbackType, OutcomeStatus
-from packages.enhanced_agent_bus.feedback_handler.models import (
+from pydantic import ValidationError
+
+from enhanced_agent_bus.feedback_handler.enums import FeedbackType, OutcomeStatus
+from enhanced_agent_bus.feedback_handler.models import (
     FeedbackBatchRequest,
     FeedbackBatchResponse,
     FeedbackEvent,
@@ -21,8 +23,6 @@ from packages.enhanced_agent_bus.feedback_handler.models import (
     FeedbackStats,
     StoredFeedbackEvent,
 )
-from pydantic import ValidationError
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # ---------------------------------------------------------------------------
@@ -296,7 +296,7 @@ class TestFeedbackEventCorrectionValidator:
 
     def test_correction_without_correction_data_logs_warning(self, caplog):
         with caplog.at_level(
-            logging.WARNING, logger="packages.enhanced_agent_bus.feedback_handler.models"
+            logging.WARNING, logger="enhanced_agent_bus.feedback_handler.models"
         ):
             ev = make_event(
                 feedback_type=FeedbackType.CORRECTION,
@@ -309,7 +309,7 @@ class TestFeedbackEventCorrectionValidator:
 
     def test_positive_no_correction_data_no_warning(self, caplog):
         with caplog.at_level(
-            logging.WARNING, logger="packages.enhanced_agent_bus.feedback_handler.models"
+            logging.WARNING, logger="enhanced_agent_bus.feedback_handler.models"
         ):
             make_event(feedback_type=FeedbackType.POSITIVE)
         # No warning should be emitted for non-correction types
@@ -317,14 +317,14 @@ class TestFeedbackEventCorrectionValidator:
 
     def test_negative_no_correction_data_no_warning(self, caplog):
         with caplog.at_level(
-            logging.WARNING, logger="packages.enhanced_agent_bus.feedback_handler.models"
+            logging.WARNING, logger="enhanced_agent_bus.feedback_handler.models"
         ):
             make_event(feedback_type=FeedbackType.NEGATIVE)
         assert not any("correction_data" in record.message.lower() for record in caplog.records)
 
     def test_neutral_no_correction_data_no_warning(self, caplog):
         with caplog.at_level(
-            logging.WARNING, logger="packages.enhanced_agent_bus.feedback_handler.models"
+            logging.WARNING, logger="enhanced_agent_bus.feedback_handler.models"
         ):
             make_event(feedback_type=FeedbackType.NEUTRAL)
         assert not any("correction_data" in record.message.lower() for record in caplog.records)
@@ -741,43 +741,43 @@ class TestFeedbackStats:
 
 class TestModuleExports:
     def test_all_exports_importable(self):
-        from packages.enhanced_agent_bus.feedback_handler import models as m
+        from enhanced_agent_bus.feedback_handler import models as m
 
         for name in m.__all__:
             assert hasattr(m, name), f"{name} missing from module"
 
     def test_feedback_event_in_all(self):
-        from packages.enhanced_agent_bus.feedback_handler.models import __all__
+        from enhanced_agent_bus.feedback_handler.models import __all__
 
         assert "FeedbackEvent" in __all__
 
     def test_feedback_response_in_all(self):
-        from packages.enhanced_agent_bus.feedback_handler.models import __all__
+        from enhanced_agent_bus.feedback_handler.models import __all__
 
         assert "FeedbackResponse" in __all__
 
     def test_batch_request_in_all(self):
-        from packages.enhanced_agent_bus.feedback_handler.models import __all__
+        from enhanced_agent_bus.feedback_handler.models import __all__
 
         assert "FeedbackBatchRequest" in __all__
 
     def test_batch_response_in_all(self):
-        from packages.enhanced_agent_bus.feedback_handler.models import __all__
+        from enhanced_agent_bus.feedback_handler.models import __all__
 
         assert "FeedbackBatchResponse" in __all__
 
     def test_query_params_in_all(self):
-        from packages.enhanced_agent_bus.feedback_handler.models import __all__
+        from enhanced_agent_bus.feedback_handler.models import __all__
 
         assert "FeedbackQueryParams" in __all__
 
     def test_stored_event_in_all(self):
-        from packages.enhanced_agent_bus.feedback_handler.models import __all__
+        from enhanced_agent_bus.feedback_handler.models import __all__
 
         assert "StoredFeedbackEvent" in __all__
 
     def test_feedback_stats_in_all(self):
-        from packages.enhanced_agent_bus.feedback_handler.models import __all__
+        from enhanced_agent_bus.feedback_handler.models import __all__
 
         assert "FeedbackStats" in __all__
 

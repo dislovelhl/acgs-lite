@@ -11,7 +11,8 @@ from copy import deepcopy
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.collaboration.models import (
+
+from enhanced_agent_bus.collaboration.models import (
     CollaborationSession,
     CollaborationValidationError,
     ConflictError,
@@ -19,7 +20,7 @@ from packages.enhanced_agent_bus.collaboration.models import (
     EditOperation,
     EditOperationType,
 )
-from packages.enhanced_agent_bus.collaboration.sync_engine import (
+from enhanced_agent_bus.collaboration.sync_engine import (
     OperationalTransform,
     SyncEngine,
 )

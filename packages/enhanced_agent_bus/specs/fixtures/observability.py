@@ -10,16 +10,23 @@ from datetime import UTC, datetime
 from enum import Enum
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 # Try to import from observability module, fallback to local definitions
 try:
-    from packages.enhanced_agent_bus.observability.telemetry import (
+    from enhanced_agent_bus.observability.telemetry import (
         MetricsRegistry,
         TracingContext,
     )
-    from packages.enhanced_agent_bus.observability.timeout_budget import (
+    from enhanced_agent_bus.observability.timeout_budget import (
         Layer,
         LayerTimeoutBudget,
         TimeoutBudgetManager,

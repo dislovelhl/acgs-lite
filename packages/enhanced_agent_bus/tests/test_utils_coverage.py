@@ -10,7 +10,8 @@ from datetime import UTC, timezone
 from unittest.mock import patch
 
 import pytest
-from packages.enhanced_agent_bus.utils import (
+
+from enhanced_agent_bus.utils import (
     LRUCache,
     TTLCache,
     get_iso_timestamp,

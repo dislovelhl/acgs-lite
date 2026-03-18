@@ -13,7 +13,10 @@ from datetime import datetime
 from enum import Enum
 from typing import Any
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import ACGSBaseError
 
 # ============================================================================

@@ -11,18 +11,22 @@ import time
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 
-from packages.enhanced_agent_bus.circuit_breaker import (
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.circuit_breaker import (
     CONSTITUTIONAL_HASH,
     ServiceCircuitBreaker,
     get_circuit_breaker_registry,
 )
-from packages.enhanced_agent_bus.llm_adapters.capability_matrix import (
+from enhanced_agent_bus.llm_adapters.capability_matrix import (
     CapabilityRegistry,
     CapabilityRequirement,
     LatencyClass,
     get_capability_registry,
 )
-from src.core.shared.types import JSONDict
 
 from .config import get_llm_circuit_config
 from .failover import ProactiveFailoverManager

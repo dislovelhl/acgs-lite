@@ -20,7 +20,10 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 if TYPE_CHECKING:
     from ..adapters.agent_bus import AgentBusAdapter
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from ..protocol.types import ToolDefinition, ToolInputSchema
 

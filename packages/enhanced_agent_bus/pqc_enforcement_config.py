@@ -139,7 +139,7 @@ class EnforcementModeConfigService:
                         mode=pg_mode,
                     )
                     return pg_mode
-            except Exception as pg_err:
+            except (ConnectionError, TimeoutError, OSError, ValueError) as pg_err:
                 logger.error(
                     "PostgreSQL fallback also failed for PQC enforcement config",
                     scope=scope,
@@ -180,7 +180,7 @@ class EnforcementModeConfigService:
                 mode=mode,
                 activated_by=activated_by,
             )
-        except Exception as redis_err:
+        except (ConnectionError, TimeoutError, OSError, ValueError) as redis_err:
             logger.error(
                 "Failed to persist PQC enforcement mode to Redis",
                 scope=scope,
@@ -211,7 +211,7 @@ class EnforcementModeConfigService:
                     mode=mode,
                     activated_by=activated_by,
                 )
-            except Exception as pg_err:
+            except (ConnectionError, TimeoutError, OSError, ValueError) as pg_err:
                 logger.error(
                     "Failed to persist PQC enforcement mode to PostgreSQL",
                     scope=scope,
@@ -234,7 +234,7 @@ class EnforcementModeConfigService:
         if redis_ok:
             try:
                 await self._redis.publish(REDIS_CHANNEL, f"{scope}:{mode}")
-            except Exception as pub_err:
+            except (ConnectionError, TimeoutError, OSError, ValueError) as pub_err:
                 # Non-fatal: other instances will re-read from Redis on next access
                 logger.warning(
                     "Failed to publish PQC enforcement mode change on pub/sub",

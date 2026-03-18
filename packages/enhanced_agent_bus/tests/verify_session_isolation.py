@@ -8,13 +8,13 @@ import asyncio
 import logging
 import time
 
-from packages.enhanced_agent_bus.message_processor import MessageProcessor
-from packages.enhanced_agent_bus.models import AgentMessage, MessageType, Priority
 from src.core.breakthrough.verification.z3_smt_verifier import (
     ConstitutionalVerifier,
     PolicySpecification,
 )
 
+from enhanced_agent_bus.message_processor import MessageProcessor
+from enhanced_agent_bus.models import AgentMessage, MessageType, Priority
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # Setup logging

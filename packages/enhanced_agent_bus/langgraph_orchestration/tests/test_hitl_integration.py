@@ -8,8 +8,9 @@ from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from packages.enhanced_agent_bus.exceptions import InterruptError, TimeoutError
-from packages.enhanced_agent_bus.models import (
+
+from enhanced_agent_bus.exceptions import InterruptError, TimeoutError
+from enhanced_agent_bus.models import (
     CONSTITUTIONAL_HASH,
     ExecutionContext,
     GraphState,

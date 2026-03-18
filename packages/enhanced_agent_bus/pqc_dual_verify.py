@@ -24,7 +24,12 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+import httpx
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 from src.core.tools.pqc_migration.phase4.exceptions import DualVerifyWindowError
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
@@ -216,7 +221,7 @@ class DualVerifyEnforcer:
             else:
                 self._cached_window_end = None
             self._cache_fetched_at = datetime.now(UTC)
-        except Exception as exc:
+        except (ConnectionError, TimeoutError, httpx.HTTPError, TypeError, ValueError) as exc:
             logger.warning(
                 "dual_verify_window_fetch_failed",
                 url=url,

@@ -7,7 +7,10 @@ import hashlib
 from collections.abc import Awaitable, Callable
 from typing import Protocol, TypeVar
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from .models import AgentMessage, get_enum_value
 from .validators import ValidationResult

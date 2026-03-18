@@ -22,7 +22,8 @@ from unittest.mock import MagicMock, patch
 import httpx
 import pytest
 from fastapi import FastAPI
-from packages.enhanced_agent_bus.api.routes import public_v1 as _mod
+
+from enhanced_agent_bus.api.routes import public_v1 as _mod
 
 pytestmark = [pytest.mark.unit]
 
@@ -62,7 +63,7 @@ class SyncASGIClient:
 # Helpers
 # ---------------------------------------------------------------------------
 
-_MOD_PATH = "packages.enhanced_agent_bus.api.routes.public_v1"
+_MOD_PATH = "enhanced_agent_bus.api.routes.public_v1"
 
 
 def _async_override(value):
@@ -83,16 +84,16 @@ def _make_app(*, override_api_key: bool = True) -> FastAPI:
     When *override_api_key* is True, the `require_api_key` dependency is
     replaced with a passthrough so tests don't need real API-key logic.
     """
-    from packages.enhanced_agent_bus.api.routes.public_v1 import router
+    from enhanced_agent_bus.api.routes.public_v1 import router
 
     app = FastAPI()
     if override_api_key:
-        from packages.enhanced_agent_bus.api.api_key_auth import require_api_key
+        from enhanced_agent_bus.api.api_key_auth import require_api_key
 
         app.dependency_overrides[require_api_key] = _async_override("test-key")
 
     # Attach limiter state expected by slowapi
-    from packages.enhanced_agent_bus.api.rate_limiting import limiter
+    from enhanced_agent_bus.api.rate_limiting import limiter
 
     app.state.limiter = limiter
     app.include_router(router)
@@ -270,7 +271,7 @@ class TestRecordValidation:
     def test_entry_fields_passed_correctly(self):
         recorded: list = []
 
-        from packages.enhanced_agent_bus.api.validation_store import ValidationEntry
+        from enhanced_agent_bus.api.validation_store import ValidationEntry
 
         def fake_record(entry: ValidationEntry) -> None:  # type: ignore[override]
             recorded.append(entry)
@@ -386,8 +387,8 @@ class TestV1Health:
     def test_no_auth_required(self):
         """Health endpoint should work without API key."""
         app = FastAPI()
-        from packages.enhanced_agent_bus.api.rate_limiting import limiter
-        from packages.enhanced_agent_bus.api.routes.public_v1 import router
+        from enhanced_agent_bus.api.rate_limiting import limiter
+        from enhanced_agent_bus.api.routes.public_v1 import router
 
         app.state.limiter = limiter
         app.include_router(router)
@@ -597,8 +598,8 @@ class TestV1ValidateSuccess:
 class TestV1ValidateAuthFailure:
     def test_missing_api_key_returns_401(self):
         """Without dependency override, missing key → 401."""
-        from packages.enhanced_agent_bus.api.rate_limiting import limiter
-        from packages.enhanced_agent_bus.api.routes.public_v1 import router
+        from enhanced_agent_bus.api.rate_limiting import limiter
+        from enhanced_agent_bus.api.routes.public_v1 import router
 
         app = FastAPI()
         app.state.limiter = limiter
@@ -613,8 +614,8 @@ class TestV1ValidateAuthFailure:
         assert resp.status_code == 401
 
     def test_invalid_api_key_returns_401(self):
-        from packages.enhanced_agent_bus.api.rate_limiting import limiter
-        from packages.enhanced_agent_bus.api.routes.public_v1 import router
+        from enhanced_agent_bus.api.rate_limiting import limiter
+        from enhanced_agent_bus.api.routes.public_v1 import router
 
         app = FastAPI()
         app.state.limiter = limiter
@@ -663,7 +664,7 @@ class TestV1ValidateBodyErrors:
 
 class TestValidationStoreIntegration:
     def test_store_receives_entry_after_validate(self):
-        from packages.enhanced_agent_bus.api.validation_store import (
+        from enhanced_agent_bus.api.validation_store import (
             ValidationStore,
             get_validation_store,
         )
@@ -691,7 +692,7 @@ class TestValidationStoreIntegration:
         assert recent[0].agent_id == "store_agent"
 
     def test_multiple_requests_accumulate_in_store(self):
-        from packages.enhanced_agent_bus.api.validation_store import ValidationStore
+        from enhanced_agent_bus.api.validation_store import ValidationStore
 
         fresh_store = ValidationStore()
         app = _make_app()

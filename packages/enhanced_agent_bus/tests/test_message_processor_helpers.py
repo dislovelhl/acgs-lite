@@ -10,11 +10,13 @@ import hashlib
 from contextlib import nullcontext
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
-import packages.enhanced_agent_bus.message_processor as message_processor_module
 import pytest
-from packages.enhanced_agent_bus.config import BusConfiguration
-from packages.enhanced_agent_bus.message_processor import MessageProcessor
-from packages.enhanced_agent_bus.message_processor_components import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+import enhanced_agent_bus.message_processor as message_processor_module
+from enhanced_agent_bus.config import BusConfiguration
+from enhanced_agent_bus.message_processor import MessageProcessor
+from enhanced_agent_bus.message_processor_components import (
     apply_latency_metadata,
     apply_session_governance_metrics,
     build_dlq_entry,
@@ -29,9 +31,8 @@ from packages.enhanced_agent_bus.message_processor_components import (
     run_message_validation_gates,
     schedule_background_task,
 )
-from packages.enhanced_agent_bus.models import AgentMessage, AutonomyTier, MessageType, Priority
-from packages.enhanced_agent_bus.validators import ValidationResult
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.models import AgentMessage, AutonomyTier, MessageType, Priority
+from enhanced_agent_bus.validators import ValidationResult
 
 
 @pytest.fixture
@@ -55,7 +56,7 @@ def sample_message():
 def processor():
     """Create a MessageProcessor instance for testing."""
     with patch.multiple(
-        "packages.enhanced_agent_bus.message_processor",
+        "enhanced_agent_bus.message_processor",
         get_dependency=MagicMock(),
         get_feature_flags=MagicMock(return_value={}),
         is_feature_available=MagicMock(return_value=False),
@@ -67,7 +68,7 @@ def processor():
 class TestSetupMemoryProfilingContext:
     """Tests for _setup_memory_profiling_context helper."""
 
-    @patch("packages.enhanced_agent_bus.message_processor.get_memory_profiler")
+    @patch("enhanced_agent_bus.message_processor.get_memory_profiler")
     def test_profiling_enabled_returns_profiler_context(
         self, mock_get_profiler, processor, sample_message
     ):
@@ -88,7 +89,7 @@ class TestSetupMemoryProfilingContext:
             "message_processing_command_1", trace_id="test-msg-123"
         )
 
-    @patch("packages.enhanced_agent_bus.message_processor.get_memory_profiler")
+    @patch("enhanced_agent_bus.message_processor.get_memory_profiler")
     def test_profiling_disabled_returns_null_context(
         self, mock_get_profiler, processor, sample_message
     ):
@@ -104,7 +105,7 @@ class TestSetupMemoryProfilingContext:
         # Assert
         assert isinstance(result, type(nullcontext()))
 
-    @patch("packages.enhanced_agent_bus.message_processor.get_memory_profiler")
+    @patch("enhanced_agent_bus.message_processor.get_memory_profiler")
     def test_no_profiler_returns_null_context(self, mock_get_profiler, processor, sample_message):
         """Test memory profiling context when profiler is None."""
         # Arrange
@@ -124,7 +125,7 @@ class TestAutoSelectStrategy:
         """Test strategy selection in isolated mode."""
         # Arrange
         with patch.multiple(
-            "packages.enhanced_agent_bus.message_processor",
+            "enhanced_agent_bus.message_processor",
             get_dependency=MagicMock(),
             get_feature_flags=MagicMock(return_value={}),
             is_feature_available=MagicMock(return_value=False),
@@ -138,7 +139,7 @@ class TestAutoSelectStrategy:
         assert strategy is not None
         assert strategy.get_name() == "python"
 
-    @patch("packages.enhanced_agent_bus.message_processor.rust_bus")
+    @patch("enhanced_agent_bus.message_processor.rust_bus")
     def test_rust_enabled_includes_rust_strategy(self, mock_rust_bus):
         """Test strategy selection when Rust is enabled."""
         # Arrange
@@ -146,7 +147,7 @@ class TestAutoSelectStrategy:
         mock_rust_bus.MessageProcessor.return_value = mock_rust_processor
 
         with patch.multiple(
-            "packages.enhanced_agent_bus.message_processor",
+            "enhanced_agent_bus.message_processor",
             get_dependency=MagicMock(),
             get_feature_flags=MagicMock(return_value={"USE_RUST": True}),
             is_feature_available=MagicMock(return_value=False),
@@ -166,7 +167,7 @@ class TestAutoSelectStrategy:
         assert strategy is not None
         # Should return CompositeProcessingStrategy or similar with Rust support
 
-    @patch("packages.enhanced_agent_bus.message_processor.get_opa_client")
+    @patch("enhanced_agent_bus.message_processor.get_opa_client")
     def test_opa_enabled_includes_opa_strategy(self, mock_get_opa_client):
         """Test strategy selection when OPA is enabled."""
         # Arrange
@@ -174,7 +175,7 @@ class TestAutoSelectStrategy:
         mock_get_opa_client.return_value = mock_opa_client
 
         with patch.multiple(
-            "packages.enhanced_agent_bus.message_processor",
+            "enhanced_agent_bus.message_processor",
             get_dependency=MagicMock(),
             get_feature_flags=MagicMock(return_value={"POLICY_CLIENT_AVAILABLE": True}),
             is_feature_available=MagicMock(return_value=False),
@@ -400,9 +401,9 @@ class TestEnforceIndependentValidatorGate:
 class TestEnforceAutonomyTier:
     """Tests for _enforce_autonomy_tier helper."""
 
-    @patch("packages.enhanced_agent_bus.message_processor.enforce_autonomy_tier_rules")
+    @patch("enhanced_agent_bus.message_processor.enforce_autonomy_tier_rules")
     @patch(
-        "packages.enhanced_agent_bus.message_processor._ADVISORY_BLOCKED_TYPES",
+        "enhanced_agent_bus.message_processor._ADVISORY_BLOCKED_TYPES",
         frozenset({"command", "governance_request", "task_request"}),
     )
     def test_calls_enforcement_function_with_correct_parameters(
@@ -412,7 +413,7 @@ class TestEnforceAutonomyTier:
         # Arrange
         mock_result = ValidationResult(is_valid=True)
         mock_enforce_rules.return_value = mock_result
-        from packages.enhanced_agent_bus.message_processor import _ADVISORY_BLOCKED_TYPES
+        from enhanced_agent_bus.message_processor import _ADVISORY_BLOCKED_TYPES
 
         # Act
         result = processor._enforce_autonomy_tier(sample_message)
@@ -423,7 +424,7 @@ class TestEnforceAutonomyTier:
         )
         assert result == mock_result
 
-    @patch("packages.enhanced_agent_bus.message_processor.enforce_autonomy_tier_rules")
+    @patch("enhanced_agent_bus.message_processor.enforce_autonomy_tier_rules")
     def test_returns_validation_result(self, mock_enforce_rules, processor, sample_message):
         """Test that autonomy tier enforcement returns validation result."""
         # Arrange
@@ -441,7 +442,7 @@ class TestEnforceAutonomyTier:
         assert result == mock_result
         assert result.is_valid is False
 
-    @patch("packages.enhanced_agent_bus.message_processor.enforce_autonomy_tier_rules")
+    @patch("enhanced_agent_bus.message_processor.enforce_autonomy_tier_rules")
     def test_returns_none_when_no_violation(self, mock_enforce_rules, processor, sample_message):
         """Test that autonomy tier enforcement returns None when no violation."""
         # Arrange
@@ -457,7 +458,7 @@ class TestEnforceAutonomyTier:
 class TestExtractMessageSessionId:
     """Tests for _extract_message_session_id helper."""
 
-    @patch("packages.enhanced_agent_bus.message_processor.extract_session_id_for_pacar")
+    @patch("enhanced_agent_bus.message_processor.extract_session_id_for_pacar")
     def test_calls_pacar_function_with_message(
         self, mock_extract_session, processor, sample_message
     ):
@@ -473,7 +474,7 @@ class TestExtractMessageSessionId:
         mock_extract_session.assert_called_once_with(sample_message)
         assert result == expected_session_id
 
-    @patch("packages.enhanced_agent_bus.message_processor.extract_session_id_for_pacar")
+    @patch("enhanced_agent_bus.message_processor.extract_session_id_for_pacar")
     def test_returns_none_when_no_session_id(self, mock_extract_session, processor, sample_message):
         """Test that session ID extraction returns None when no session ID found."""
         # Arrange
@@ -1082,7 +1083,7 @@ class TestBackgroundTaskSchedulingIntegration:
         # can be separate module objects. Patch both paths so _compute_cache_key.__globals__
         # sees the updated FAST_HASH_AVAILABLE regardless of which module was loaded first.
         for _mod_path in (
-            "packages.enhanced_agent_bus.message_processor",
+            "enhanced_agent_bus.message_processor",
             "enhanced_agent_bus.message_processor",
         ):
             _mod = sys.modules.get(_mod_path)

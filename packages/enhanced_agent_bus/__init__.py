@@ -8,7 +8,10 @@ constitutional governance platform.
 
 import sys
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 __version__ = "2.0.0"
 __constitutional_hash__ = CONSTITUTIONAL_HASH

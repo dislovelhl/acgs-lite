@@ -36,7 +36,11 @@ from packages.enhanced_agent_bus.agent_health.models import (
     OverrideMode,
 )
 from packages.enhanced_agent_bus.agent_health.store import AgentHealthStore
-from src.core.shared.types import AgentID
+
+try:
+    from src.core.shared.types import AgentID
+except ImportError:
+    AgentID = str  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

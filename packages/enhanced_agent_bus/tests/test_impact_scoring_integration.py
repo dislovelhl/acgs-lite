@@ -7,7 +7,8 @@ Constitutional Hash: cdd01ef066bc6cf2
 from unittest.mock import MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.impact_scorer_infra import (
+
+from enhanced_agent_bus.impact_scorer_infra import (
     CONSTITUTIONAL_HASH,
     ImpactScoringConfig,
     ImpactScoringService,

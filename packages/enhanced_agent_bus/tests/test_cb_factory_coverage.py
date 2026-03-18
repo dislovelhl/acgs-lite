@@ -54,8 +54,8 @@ def _make_mock_kafka():
 @pytest.fixture(autouse=True)
 def reset_singletons():
     """Reset cb_factory module-level singletons before/after every test."""
-    import packages.enhanced_agent_bus.cb_factory as cbf
-    from packages.enhanced_agent_bus.circuit_breaker.registry import (
+    import enhanced_agent_bus.cb_factory as cbf
+    from enhanced_agent_bus.circuit_breaker.registry import (
         reset_circuit_breaker_registry,
     )
 
@@ -80,10 +80,10 @@ class TestGetOPAClient:
     async def test_creates_new_client(self):
         mock_opa = _make_mock_opa()
         with patch(
-            "packages.enhanced_agent_bus.cb_factory.CircuitBreakerOPAClient",
+            "enhanced_agent_bus.cb_factory.CircuitBreakerOPAClient",
             return_value=mock_opa,
         ):
-            from packages.enhanced_agent_bus.cb_factory import (
+            from enhanced_agent_bus.cb_factory import (
                 get_circuit_breaker_opa_client,
             )
 
@@ -94,11 +94,11 @@ class TestGetOPAClient:
 
     async def test_returns_cached_singleton(self):
         mock_opa = _make_mock_opa()
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._opa_client = mock_opa
 
-        from packages.enhanced_agent_bus.cb_factory import get_circuit_breaker_opa_client
+        from enhanced_agent_bus.cb_factory import get_circuit_breaker_opa_client
 
         result = await get_circuit_breaker_opa_client()
         assert result is mock_opa
@@ -117,10 +117,10 @@ class TestGetOPAClient:
         mock_opa.initialize = AsyncMock(side_effect=slow_init)
 
         with patch(
-            "packages.enhanced_agent_bus.cb_factory.CircuitBreakerOPAClient",
+            "enhanced_agent_bus.cb_factory.CircuitBreakerOPAClient",
             return_value=mock_opa,
         ):
-            from packages.enhanced_agent_bus.cb_factory import (
+            from enhanced_agent_bus.cb_factory import (
                 get_circuit_breaker_opa_client,
             )
 
@@ -134,10 +134,10 @@ class TestGetOPAClient:
     async def test_custom_url_passed(self):
         mock_opa = _make_mock_opa()
         with patch(
-            "packages.enhanced_agent_bus.cb_factory.CircuitBreakerOPAClient",
+            "enhanced_agent_bus.cb_factory.CircuitBreakerOPAClient",
             return_value=mock_opa,
         ) as MockCls:
-            from packages.enhanced_agent_bus.cb_factory import (
+            from enhanced_agent_bus.cb_factory import (
                 get_circuit_breaker_opa_client,
             )
 
@@ -154,10 +154,10 @@ class TestGetRedisClient:
     async def test_creates_new_client(self):
         mock_redis = _make_mock_redis()
         with patch(
-            "packages.enhanced_agent_bus.cb_factory.CircuitBreakerRedisClient",
+            "enhanced_agent_bus.cb_factory.CircuitBreakerRedisClient",
             return_value=mock_redis,
         ):
-            from packages.enhanced_agent_bus.cb_factory import (
+            from enhanced_agent_bus.cb_factory import (
                 get_circuit_breaker_redis_client,
             )
 
@@ -168,11 +168,11 @@ class TestGetRedisClient:
 
     async def test_returns_cached_singleton(self):
         mock_redis = _make_mock_redis()
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._redis_client = mock_redis
 
-        from packages.enhanced_agent_bus.cb_factory import (
+        from enhanced_agent_bus.cb_factory import (
             get_circuit_breaker_redis_client,
         )
 
@@ -183,10 +183,10 @@ class TestGetRedisClient:
     async def test_custom_url_passed(self):
         mock_redis = _make_mock_redis()
         with patch(
-            "packages.enhanced_agent_bus.cb_factory.CircuitBreakerRedisClient",
+            "enhanced_agent_bus.cb_factory.CircuitBreakerRedisClient",
             return_value=mock_redis,
         ) as MockCls:
-            from packages.enhanced_agent_bus.cb_factory import (
+            from enhanced_agent_bus.cb_factory import (
                 get_circuit_breaker_redis_client,
             )
 
@@ -203,10 +203,10 @@ class TestGetKafkaProducer:
     async def test_creates_new_producer(self):
         mock_kafka = _make_mock_kafka()
         with patch(
-            "packages.enhanced_agent_bus.cb_factory.CircuitBreakerKafkaProducer",
+            "enhanced_agent_bus.cb_factory.CircuitBreakerKafkaProducer",
             return_value=mock_kafka,
         ):
-            from packages.enhanced_agent_bus.cb_factory import (
+            from enhanced_agent_bus.cb_factory import (
                 get_circuit_breaker_kafka_producer,
             )
 
@@ -217,11 +217,11 @@ class TestGetKafkaProducer:
 
     async def test_returns_cached_singleton(self):
         mock_kafka = _make_mock_kafka()
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._kafka_producer = mock_kafka
 
-        from packages.enhanced_agent_bus.cb_factory import (
+        from enhanced_agent_bus.cb_factory import (
             get_circuit_breaker_kafka_producer,
         )
 
@@ -232,10 +232,10 @@ class TestGetKafkaProducer:
     async def test_custom_bootstrap_servers(self):
         mock_kafka = _make_mock_kafka()
         with patch(
-            "packages.enhanced_agent_bus.cb_factory.CircuitBreakerKafkaProducer",
+            "enhanced_agent_bus.cb_factory.CircuitBreakerKafkaProducer",
             return_value=mock_kafka,
         ) as MockCls:
-            from packages.enhanced_agent_bus.cb_factory import (
+            from enhanced_agent_bus.cb_factory import (
                 get_circuit_breaker_kafka_producer,
             )
 
@@ -254,13 +254,13 @@ class TestCloseAllClients:
         mock_redis = _make_mock_redis()
         mock_kafka = _make_mock_kafka()
 
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._opa_client = mock_opa
         cbf._redis_client = mock_redis
         cbf._kafka_producer = mock_kafka
 
-        from packages.enhanced_agent_bus.cb_factory import close_all_circuit_breaker_clients
+        from enhanced_agent_bus.cb_factory import close_all_circuit_breaker_clients
 
         await close_all_circuit_breaker_clients()
 
@@ -274,18 +274,18 @@ class TestCloseAllClients:
 
     async def test_close_with_no_clients(self):
         """Should not raise when no clients are initialised."""
-        from packages.enhanced_agent_bus.cb_factory import close_all_circuit_breaker_clients
+        from enhanced_agent_bus.cb_factory import close_all_circuit_breaker_clients
 
         await close_all_circuit_breaker_clients()  # no error
 
     async def test_partial_clients_closed(self):
         """Only the opa client is set; redis and kafka are None."""
         mock_opa = _make_mock_opa()
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._opa_client = mock_opa
 
-        from packages.enhanced_agent_bus.cb_factory import close_all_circuit_breaker_clients
+        from enhanced_agent_bus.cb_factory import close_all_circuit_breaker_clients
 
         await close_all_circuit_breaker_clients()
 
@@ -300,13 +300,13 @@ class TestCloseAllClients:
 
 class TestResetClients:
     async def test_reset_clears_all_singletons(self):
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._opa_client = _make_mock_opa()
         cbf._redis_client = _make_mock_redis()
         cbf._kafka_producer = _make_mock_kafka()
 
-        from packages.enhanced_agent_bus.cb_factory import reset_circuit_breaker_clients
+        from enhanced_agent_bus.cb_factory import reset_circuit_breaker_clients
 
         reset_circuit_breaker_clients()
 
@@ -335,10 +335,10 @@ class TestGetAllCircuitHealth:
         registry = self._make_registry()
 
         with patch(
-            "packages.enhanced_agent_bus.cb_factory.get_circuit_breaker_registry",
+            "enhanced_agent_bus.cb_factory.get_circuit_breaker_registry",
             return_value=registry,
         ):
-            from packages.enhanced_agent_bus.cb_factory import get_all_circuit_health
+            from enhanced_agent_bus.cb_factory import get_all_circuit_health
 
             result = await get_all_circuit_health()
 
@@ -353,17 +353,17 @@ class TestGetAllCircuitHealth:
         mock_redis = _make_mock_redis()
         mock_kafka = _make_mock_kafka()
 
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._opa_client = mock_opa
         cbf._redis_client = mock_redis
         cbf._kafka_producer = mock_kafka
 
         with patch(
-            "packages.enhanced_agent_bus.cb_factory.get_circuit_breaker_registry",
+            "enhanced_agent_bus.cb_factory.get_circuit_breaker_registry",
             return_value=registry,
         ):
-            from packages.enhanced_agent_bus.cb_factory import get_all_circuit_health
+            from enhanced_agent_bus.cb_factory import get_all_circuit_health
 
             result = await get_all_circuit_health()
 
@@ -378,15 +378,15 @@ class TestGetAllCircuitHealth:
         mock_opa = _make_mock_opa()
         mock_opa.health_check = AsyncMock(return_value={"healthy": False})
 
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._opa_client = mock_opa
 
         with patch(
-            "packages.enhanced_agent_bus.cb_factory.get_circuit_breaker_registry",
+            "enhanced_agent_bus.cb_factory.get_circuit_breaker_registry",
             return_value=registry,
         ):
-            from packages.enhanced_agent_bus.cb_factory import get_all_circuit_health
+            from enhanced_agent_bus.cb_factory import get_all_circuit_health
 
             result = await get_all_circuit_health()
 
@@ -399,15 +399,15 @@ class TestGetAllCircuitHealth:
         mock_kafka = _make_mock_kafka()
         mock_kafka._retry_buffer.get_size.return_value = 6000
 
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._kafka_producer = mock_kafka
 
         with patch(
-            "packages.enhanced_agent_bus.cb_factory.get_circuit_breaker_registry",
+            "enhanced_agent_bus.cb_factory.get_circuit_breaker_registry",
             return_value=registry,
         ):
-            from packages.enhanced_agent_bus.cb_factory import get_all_circuit_health
+            from enhanced_agent_bus.cb_factory import get_all_circuit_health
 
             result = await get_all_circuit_health()
 
@@ -424,10 +424,10 @@ class TestGetAllCircuitHealth:
         }
 
         with patch(
-            "packages.enhanced_agent_bus.cb_factory.get_circuit_breaker_registry",
+            "enhanced_agent_bus.cb_factory.get_circuit_breaker_registry",
             return_value=registry,
         ):
-            from packages.enhanced_agent_bus.cb_factory import get_all_circuit_health
+            from enhanced_agent_bus.cb_factory import get_all_circuit_health
 
             result = await get_all_circuit_health()
 
@@ -441,7 +441,7 @@ class TestGetAllCircuitHealth:
 
 class TestCreateCircuitBreakerClientRouter:
     def test_returns_router_when_fastapi_available(self):
-        from packages.enhanced_agent_bus.cb_factory import (
+        from enhanced_agent_bus.cb_factory import (
             create_circuit_breaker_client_router,
         )
 
@@ -462,7 +462,7 @@ class TestCreateCircuitBreakerClientRouter:
 
         with patch("builtins.__import__", side_effect=fake_import):
             # Re-invoke the function so the try/except runs with mocked import
-            from packages.enhanced_agent_bus import cb_factory
+            from enhanced_agent_bus import cb_factory
 
             result = cb_factory.create_circuit_breaker_client_router()
 
@@ -479,10 +479,10 @@ class TestCreateCircuitBreakerClientRouter:
         }
 
         with patch(
-            "packages.enhanced_agent_bus.cb_factory.get_circuit_breaker_registry",
+            "enhanced_agent_bus.cb_factory.get_circuit_breaker_registry",
             return_value=registry,
         ):
-            from packages.enhanced_agent_bus.cb_factory import get_all_circuit_health
+            from enhanced_agent_bus.cb_factory import get_all_circuit_health
 
             health = await get_all_circuit_health()
 
@@ -500,15 +500,15 @@ class TestCreateCircuitBreakerClientRouter:
         mock_opa = _make_mock_opa()
         mock_opa.health_check = AsyncMock(return_value={"healthy": False})
 
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._opa_client = mock_opa
 
         with patch(
-            "packages.enhanced_agent_bus.cb_factory.get_circuit_breaker_registry",
+            "enhanced_agent_bus.cb_factory.get_circuit_breaker_registry",
             return_value=registry,
         ):
-            from packages.enhanced_agent_bus.cb_factory import get_all_circuit_health
+            from enhanced_agent_bus.cb_factory import get_all_circuit_health
 
             health = await get_all_circuit_health()
 
@@ -517,7 +517,7 @@ class TestCreateCircuitBreakerClientRouter:
     async def test_router_opa_health_initialized(self):
         """Simulate calling the /opa route logic directly."""
         mock_opa = _make_mock_opa()
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._opa_client = mock_opa
 
@@ -526,13 +526,13 @@ class TestCreateCircuitBreakerClientRouter:
 
     async def test_router_opa_health_not_initialized(self):
         """_opa_client is None - route returns 503."""
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         assert cbf._opa_client is None  # confirmed by fixture
 
     async def test_router_redis_health_initialized(self):
         mock_redis = _make_mock_redis()
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._redis_client = mock_redis
 
@@ -541,7 +541,7 @@ class TestCreateCircuitBreakerClientRouter:
 
     async def test_router_kafka_health_initialized(self):
         mock_kafka = _make_mock_kafka()
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._kafka_producer = mock_kafka
 
@@ -550,7 +550,7 @@ class TestCreateCircuitBreakerClientRouter:
 
     async def test_router_kafka_flush_initialized(self):
         mock_kafka = _make_mock_kafka()
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._kafka_producer = mock_kafka
 
@@ -558,7 +558,7 @@ class TestCreateCircuitBreakerClientRouter:
         assert results == {"flushed": 0}
 
     async def test_router_kafka_not_initialized(self):
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         assert cbf._kafka_producer is None  # no flush possible
 
@@ -576,7 +576,8 @@ class TestRouterEndpoints:
 
     def _build_app(self):
         from fastapi import FastAPI
-        from packages.enhanced_agent_bus.cb_factory import (
+
+        from enhanced_agent_bus.cb_factory import (
             create_circuit_breaker_client_router,
         )
 
@@ -597,7 +598,7 @@ class TestRouterEndpoints:
         }
 
         with patch(
-            "packages.enhanced_agent_bus.cb_factory.get_circuit_breaker_registry",
+            "enhanced_agent_bus.cb_factory.get_circuit_breaker_registry",
             return_value=registry,
         ):
             from httpx import ASGITransport, AsyncClient
@@ -619,12 +620,12 @@ class TestRouterEndpoints:
         mock_opa = _make_mock_opa()
         mock_opa.health_check = AsyncMock(return_value={"healthy": False})
 
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._opa_client = mock_opa
 
         with patch(
-            "packages.enhanced_agent_bus.cb_factory.get_circuit_breaker_registry",
+            "enhanced_agent_bus.cb_factory.get_circuit_breaker_registry",
             return_value=registry,
         ):
             from httpx import ASGITransport, AsyncClient
@@ -645,7 +646,7 @@ class TestRouterEndpoints:
         }
 
         with patch(
-            "packages.enhanced_agent_bus.cb_factory.get_circuit_breaker_registry",
+            "enhanced_agent_bus.cb_factory.get_circuit_breaker_registry",
             return_value=registry,
         ):
             from httpx import ASGITransport, AsyncClient
@@ -668,7 +669,7 @@ class TestRouterEndpoints:
 
     async def test_opa_health_healthy(self):
         mock_opa = _make_mock_opa()
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._opa_client = mock_opa
 
@@ -682,7 +683,7 @@ class TestRouterEndpoints:
     async def test_opa_health_unhealthy(self):
         mock_opa = _make_mock_opa()
         mock_opa.health_check = AsyncMock(return_value={"healthy": False})
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._opa_client = mock_opa
 
@@ -705,7 +706,7 @@ class TestRouterEndpoints:
 
     async def test_redis_health_healthy(self):
         mock_redis = _make_mock_redis()
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._redis_client = mock_redis
 
@@ -719,7 +720,7 @@ class TestRouterEndpoints:
     async def test_redis_health_unhealthy(self):
         mock_redis = _make_mock_redis()
         mock_redis.health_check = AsyncMock(return_value={"healthy": False})
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._redis_client = mock_redis
 
@@ -742,7 +743,7 @@ class TestRouterEndpoints:
 
     async def test_kafka_health_healthy(self):
         mock_kafka = _make_mock_kafka()
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._kafka_producer = mock_kafka
 
@@ -756,7 +757,7 @@ class TestRouterEndpoints:
     async def test_kafka_health_unhealthy(self):
         mock_kafka = _make_mock_kafka()
         mock_kafka.health_check = AsyncMock(return_value={"healthy": False})
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._kafka_producer = mock_kafka
 
@@ -779,7 +780,7 @@ class TestRouterEndpoints:
 
     async def test_kafka_flush_initialized(self):
         mock_kafka = _make_mock_kafka()
-        import packages.enhanced_agent_bus.cb_factory as cbf
+        import enhanced_agent_bus.cb_factory as cbf
 
         cbf._kafka_producer = mock_kafka
 

@@ -14,15 +14,16 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.exceptions import MessageDeliveryError
-from packages.enhanced_agent_bus.kafka_bus import (
+
+from enhanced_agent_bus.exceptions import MessageDeliveryError
+from enhanced_agent_bus.kafka_bus import (
     _KAFKA_BUS_OPERATION_ERRORS,
     KAFKA_AVAILABLE,
     Blackboard,
     KafkaEventBus,
     Orchestrator,
 )
-from packages.enhanced_agent_bus.models import AgentMessage, MessageType
+from enhanced_agent_bus.models import AgentMessage, MessageType
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -102,7 +103,7 @@ class TestCreateSslContext:
 
     def test_returns_none_for_plaintext(self) -> None:
         bus = _make_bus()
-        with patch("packages.enhanced_agent_bus.kafka_bus.settings") as mock_settings:
+        with patch("enhanced_agent_bus.kafka_bus.settings") as mock_settings:
             mock_settings.kafka = {"security_protocol": "PLAINTEXT"}
             result = bus._create_ssl_context()
         assert result is None
@@ -111,7 +112,7 @@ class TestCreateSslContext:
         bus = _make_bus()
         mock_ctx = MagicMock(spec=ssl.SSLContext)
         with (
-            patch("packages.enhanced_agent_bus.kafka_bus.settings") as mock_settings,
+            patch("enhanced_agent_bus.kafka_bus.settings") as mock_settings,
             patch("ssl.create_default_context", return_value=mock_ctx) as mock_create,
         ):
             mock_settings.kafka = {
@@ -131,7 +132,7 @@ class TestCreateSslContext:
         bus = _make_bus()
         mock_ctx = MagicMock(spec=ssl.SSLContext)
         with (
-            patch("packages.enhanced_agent_bus.kafka_bus.settings") as mock_settings,
+            patch("enhanced_agent_bus.kafka_bus.settings") as mock_settings,
             patch("ssl.create_default_context", return_value=mock_ctx),
         ):
             mock_settings.kafka = {
@@ -221,7 +222,7 @@ class TestKafkaEventBusStartStop:
         """start() returns early when KAFKA_AVAILABLE is False."""
         bus = _make_bus()
         # Patch KAFKA_AVAILABLE to False in the module's globals
-        import packages.enhanced_agent_bus.kafka_bus as kb_mod
+        import enhanced_agent_bus.kafka_bus as kb_mod
 
         orig = kb_mod.KAFKA_AVAILABLE
         try:
@@ -238,7 +239,7 @@ class TestKafkaEventBusStartStop:
         mock_producer = AsyncMock()
         mock_producer_cls = MagicMock(return_value=mock_producer)
 
-        import packages.enhanced_agent_bus.kafka_bus as kb_mod
+        import enhanced_agent_bus.kafka_bus as kb_mod
 
         orig_available = kb_mod.KAFKA_AVAILABLE
         orig_producer_cls = kb_mod.__dict__.get("AIOKafkaProducer")
@@ -401,7 +402,7 @@ class TestSanitizeError:
         err = RuntimeError("sensitive detail")
 
         with patch(
-            "packages.enhanced_agent_bus.kafka_bus.sanitize_error"
+            "enhanced_agent_bus.kafka_bus.sanitize_error"
             if False  # ensure we use the real lazy import path
             else "src.core.shared.security.error_sanitizer.sanitize_error",
             return_value="sanitized",
@@ -428,7 +429,7 @@ class TestSubscribe:
 
     async def test_subscribe_returns_early_when_kafka_unavailable(self) -> None:
         bus = _make_bus()
-        import packages.enhanced_agent_bus.kafka_bus as kb_mod
+        import enhanced_agent_bus.kafka_bus as kb_mod
 
         orig = kb_mod.KAFKA_AVAILABLE
         try:
@@ -450,7 +451,7 @@ class TestSubscribe:
         mock_consumer_cls = MagicMock(return_value=mock_consumer)
         handler = AsyncMock()
 
-        import packages.enhanced_agent_bus.kafka_bus as kb_mod
+        import enhanced_agent_bus.kafka_bus as kb_mod
 
         orig_available = kb_mod.KAFKA_AVAILABLE
         orig_consumer_cls = kb_mod.__dict__.get("AIOKafkaConsumer")
@@ -496,7 +497,7 @@ class TestSubscribe:
         mock_consumer_cls = MagicMock(return_value=mock_consumer)
         handler = AsyncMock()
 
-        import packages.enhanced_agent_bus.kafka_bus as kb_mod
+        import enhanced_agent_bus.kafka_bus as kb_mod
 
         orig_available = kb_mod.KAFKA_AVAILABLE
         orig_consumer_cls = kb_mod.__dict__.get("AIOKafkaConsumer")
@@ -541,7 +542,7 @@ class TestSubscribe:
         mock_consumer_cls = MagicMock(return_value=mock_consumer)
         handler = AsyncMock()
 
-        import packages.enhanced_agent_bus.kafka_bus as kb_mod
+        import enhanced_agent_bus.kafka_bus as kb_mod
 
         orig_available = kb_mod.KAFKA_AVAILABLE
         orig_consumer_cls = kb_mod.__dict__.get("AIOKafkaConsumer")
@@ -587,7 +588,7 @@ class TestSubscribe:
         mock_consumer_cls = MagicMock(return_value=mock_consumer)
         handler = AsyncMock(side_effect=RuntimeError("handler crash"))
 
-        import packages.enhanced_agent_bus.kafka_bus as kb_mod
+        import enhanced_agent_bus.kafka_bus as kb_mod
 
         orig_available = kb_mod.KAFKA_AVAILABLE
         orig_consumer_cls = kb_mod.__dict__.get("AIOKafkaConsumer")
@@ -626,7 +627,7 @@ class TestSubscribe:
         mock_consumer_cls = MagicMock(return_value=mock_consumer)
         handler = AsyncMock()
 
-        import packages.enhanced_agent_bus.kafka_bus as kb_mod
+        import enhanced_agent_bus.kafka_bus as kb_mod
 
         orig_available = kb_mod.KAFKA_AVAILABLE
         orig_consumer_cls = kb_mod.__dict__.get("AIOKafkaConsumer")

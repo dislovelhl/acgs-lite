@@ -9,7 +9,10 @@ import json
 import ssl
 from collections.abc import Callable
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -21,7 +24,7 @@ except ImportError:
     KAFKA_AVAILABLE = False
 
 try:
-    from packages.enhanced_agent_bus.exceptions import MessageDeliveryError
+    from enhanced_agent_bus.exceptions import MessageDeliveryError
 
     from .models import AgentMessage, MessageType
 except ImportError:
@@ -275,15 +278,13 @@ class KafkaEventBus:
             return True
         except _KAFKA_BUS_OPERATION_ERRORS as e:
             logger.error(
-                f"Failed to publish audit record to Kafka (topic={topic}): {self._sanitize_error(e)}"  # noqa: E501
+                f"Failed to publish audit record to Kafka (topic={topic}): {self._sanitize_error(e)}"
             )
             return False
 
 
 class Orchestrator:
-    """
-    Base class for Orchestrator-Worker pattern.
-    """
+    """Base class for Orchestrator-Worker pattern."""
 
     def __init__(self, bus: KafkaEventBus, tenant_id: str):
         self.bus = bus
@@ -301,9 +302,7 @@ class Orchestrator:
 
 
 class Blackboard:
-    """
-    Implementation of the Blackboard pattern using Kafka Compacted Topics.
-    """
+    """Implementation of the Blackboard pattern using Kafka Compacted Topics."""
 
     def __init__(self, bus: KafkaEventBus, tenant_id: str, board_name: str):
         self.bus = bus

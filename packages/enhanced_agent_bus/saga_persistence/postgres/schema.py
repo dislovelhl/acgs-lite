@@ -6,7 +6,7 @@ Contains database schema SQL and configuration constants for the
 PostgreSQL saga state repository.
 """
 
-from packages.enhanced_agent_bus.saga_persistence.models import SagaState
+from enhanced_agent_bus.saga_persistence.models import SagaState
 
 # Default configuration constants
 DEFAULT_POOL_MIN_SIZE = 5

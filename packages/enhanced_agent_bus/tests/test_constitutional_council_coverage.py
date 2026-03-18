@@ -12,7 +12,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ed25519
-from packages.enhanced_agent_bus.constitutional.council import (
+
+from enhanced_agent_bus.constitutional.council import (
     CONSTITUTIONAL_HASH,
     ConstitutionalCouncilService,
 )
@@ -134,7 +135,7 @@ async def test_submit_proposal_raises_on_invalid_proposer_signature():
 
 async def test_submit_proposal_raises_when_agent_message_none(monkeypatch):
     """RuntimeError raised when AgentMessage is None (import fallback)."""
-    import packages.enhanced_agent_bus.constitutional.council as council_module
+    import enhanced_agent_bus.constitutional.council as council_module
 
     priv = _make_private_key()
     pub_hex = _public_key_hex(priv)
@@ -186,7 +187,7 @@ async def test_submit_proposal_stores_active_election(monkeypatch):
         def __init__(self, **kwargs):
             self.__dict__.update(kwargs)
 
-    import packages.enhanced_agent_bus.constitutional.council as council_module
+    import enhanced_agent_bus.constitutional.council as council_module
 
     monkeypatch.setattr(council_module, "AgentMessage", DummyAgentMessage)
     monkeypatch.setattr(council_module, "MessageType", DummyMessageType)
@@ -527,7 +528,7 @@ async def test_submit_proposal_uses_proposal_id_fallback(monkeypatch):
         def __init__(self, **kwargs):
             self.__dict__.update(kwargs)
 
-    import packages.enhanced_agent_bus.constitutional.council as council_module
+    import enhanced_agent_bus.constitutional.council as council_module
 
     monkeypatch.setattr(council_module, "AgentMessage", DummyAgentMessage)
     monkeypatch.setattr(council_module, "MessageType", DummyMessageType)

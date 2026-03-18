@@ -5,8 +5,9 @@ from __future__ import annotations
 import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
-from packages.enhanced_agent_bus.api.routes.health import router
 from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.api.routes.health import router
 
 
 def _build_app(agent_bus_ready: bool = True) -> FastAPI:

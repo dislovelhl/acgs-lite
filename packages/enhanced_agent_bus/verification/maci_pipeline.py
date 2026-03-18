@@ -18,13 +18,23 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
 
-from src.core.shared.types import JSONDict, JSONList
+try:
+    from src.core.shared.types import (
+        JSONDict,
+        JSONList,
+    )  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+    JSONList = list  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
 # Constitutional Hash for immutable validation
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 # Memory-bounded history constants
 MAX_DECISION_HISTORY = 1_000  # FIFO eviction for agent decision history

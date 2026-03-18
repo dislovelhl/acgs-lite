@@ -6,11 +6,11 @@ Incremental learning using River with sklearn compatibility.
 Delegates to specialized modules in .online_learning_infra.
 """
 
-from packages.enhanced_agent_bus.online_learning_infra.adapter import (
+from enhanced_agent_bus.online_learning_infra.adapter import (
     RIVER_AVAILABLE,
     RiverSklearnAdapter,
 )
-from packages.enhanced_agent_bus.online_learning_infra.config import (
+from enhanced_agent_bus.online_learning_infra.config import (
     ENABLE_COLD_START_FALLBACK,
     KAFKA_AUTO_OFFSET_RESET,
     KAFKA_BOOTSTRAP,
@@ -24,16 +24,16 @@ from packages.enhanced_agent_bus.online_learning_infra.config import (
     LearningStatus,
     ModelType,
 )
-from packages.enhanced_agent_bus.online_learning_infra.consumer import FeedbackKafkaConsumer
-from packages.enhanced_agent_bus.online_learning_infra.evaluator import OnlineLearningEvaluator
-from packages.enhanced_agent_bus.online_learning_infra.models import (
+from enhanced_agent_bus.online_learning_infra.consumer import FeedbackKafkaConsumer
+from enhanced_agent_bus.online_learning_infra.evaluator import OnlineLearningEvaluator
+from enhanced_agent_bus.online_learning_infra.models import (
     ConsumerStats,
     LearningResult,
     LearningStats,
     PipelineStats,
     PredictionResult,
 )
-from packages.enhanced_agent_bus.online_learning_infra.registry import (
+from enhanced_agent_bus.online_learning_infra.registry import (
     get_consumer_stats,
     get_feedback_kafka_consumer,
     get_online_learning_adapter,
@@ -41,7 +41,7 @@ from packages.enhanced_agent_bus.online_learning_infra.registry import (
     start_feedback_consumer,
     stop_feedback_consumer,
 )
-from packages.enhanced_agent_bus.online_learning_infra.trainer import OnlineLearningPipeline
+from enhanced_agent_bus.online_learning_infra.trainer import OnlineLearningPipeline
 
 # Optional availability flags (backward compatibility)
 NUMPY_AVAILABLE = True

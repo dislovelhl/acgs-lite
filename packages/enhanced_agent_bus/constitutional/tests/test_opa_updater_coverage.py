@@ -199,8 +199,8 @@ class TestConnectDisconnect:
     @pytest.mark.asyncio
     async def test_connect_creates_http_client(self):
         u = OPAPolicyUpdater()
-        with patch("packages.enhanced_agent_bus.constitutional.opa_updater.OPAClient", None):
-            with patch("packages.enhanced_agent_bus.constitutional.opa_updater.AuditClient", None):
+        with patch("enhanced_agent_bus.constitutional.opa_updater.OPAClient", None):
+            with patch("enhanced_agent_bus.constitutional.opa_updater.AuditClient", None):
                 await u.connect()
                 assert u._http_client is not None
                 await u.disconnect()
@@ -208,8 +208,8 @@ class TestConnectDisconnect:
     @pytest.mark.asyncio
     async def test_disconnect_clears_http_client(self):
         u = OPAPolicyUpdater()
-        with patch("packages.enhanced_agent_bus.constitutional.opa_updater.OPAClient", None):
-            with patch("packages.enhanced_agent_bus.constitutional.opa_updater.AuditClient", None):
+        with patch("enhanced_agent_bus.constitutional.opa_updater.OPAClient", None):
+            with patch("enhanced_agent_bus.constitutional.opa_updater.AuditClient", None):
                 await u.connect()
                 await u.disconnect()
                 assert u._http_client is None
@@ -219,7 +219,7 @@ class TestConnectDisconnect:
         # OPAClient is None at module level (import failed in this env).
         # Test that connect() works gracefully when OPAClient is present by
         # directly invoking the connect logic with a monkey-patched module attr.
-        import packages.enhanced_agent_bus.constitutional.opa_updater as _mod
+        import enhanced_agent_bus.constitutional.opa_updater as _mod
 
         mock_opa_cls = MagicMock()
         mock_opa_inst = AsyncMock()
@@ -246,7 +246,7 @@ class TestConnectDisconnect:
 
     @pytest.mark.asyncio
     async def test_connect_with_opa_client_failure(self):
-        import packages.enhanced_agent_bus.constitutional.opa_updater as _mod
+        import enhanced_agent_bus.constitutional.opa_updater as _mod
 
         mock_opa_cls = MagicMock()
         mock_opa_inst = AsyncMock()
@@ -271,7 +271,7 @@ class TestConnectDisconnect:
 
     @pytest.mark.asyncio
     async def test_connect_with_audit_client_success(self):
-        import packages.enhanced_agent_bus.constitutional.opa_updater as _mod
+        import enhanced_agent_bus.constitutional.opa_updater as _mod
 
         mock_audit_cls = MagicMock()
         mock_audit_inst = AsyncMock()
@@ -296,7 +296,7 @@ class TestConnectDisconnect:
 
     @pytest.mark.asyncio
     async def test_connect_with_audit_client_failure(self):
-        import packages.enhanced_agent_bus.constitutional.opa_updater as _mod
+        import enhanced_agent_bus.constitutional.opa_updater as _mod
 
         mock_audit_cls = MagicMock()
         mock_audit_inst = AsyncMock()
@@ -502,7 +502,7 @@ class TestBackupCurrentPolicy:
         u._http_client.get = AsyncMock(return_value=get_resp)
 
         with patch(
-            "packages.enhanced_agent_bus.constitutional.opa_updater.AIOFILES_AVAILABLE", False
+            "enhanced_agent_bus.constitutional.opa_updater.AIOFILES_AVAILABLE", False
         ):
             with patch("builtins.open", mock_open()) as m:
                 backup_id = await u._backup_current_policy("constitutional")
@@ -554,10 +554,10 @@ class TestBackupCurrentPolicy:
         mock_aiofiles_module.open.return_value.__aexit__ = AsyncMock(return_value=False)
 
         with patch(
-            "packages.enhanced_agent_bus.constitutional.opa_updater.AIOFILES_AVAILABLE", True
+            "enhanced_agent_bus.constitutional.opa_updater.AIOFILES_AVAILABLE", True
         ):
             with patch(
-                "packages.enhanced_agent_bus.constitutional.opa_updater.aiofiles",
+                "enhanced_agent_bus.constitutional.opa_updater.aiofiles",
                 mock_aiofiles_module,
                 create=True,
             ):

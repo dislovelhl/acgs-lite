@@ -13,13 +13,23 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
 
-from src.core.shared.types import JSONDict, JSONList
+try:
+    from src.core.shared.types import (
+        JSONDict,
+        JSONList,
+    )  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+    JSONList = list  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
 # Constitutional compliance
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 __all__ = [
     "AGENT_TOOLS",

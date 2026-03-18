@@ -12,7 +12,9 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.enterprise_sso.kafka_streaming import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.enterprise_sso.kafka_streaming import (
     AcknowledgmentMode,
     ConsumerConfig,
     DeadLetterQueue,
@@ -33,7 +35,6 @@ from packages.enhanced_agent_bus.enterprise_sso.kafka_streaming import (
     SchemaRegistryError,
     SerializationError,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -1087,7 +1088,7 @@ class TestGovernanceEventAdditionalBranches:
         import unittest.mock as um
 
         with um.patch(
-            "packages.enhanced_agent_bus.enterprise_sso.kafka_streaming.json.dumps",
+            "enhanced_agent_bus.enterprise_sso.kafka_streaming.json.dumps",
             side_effect=TypeError("not serializable"),
         ):
             with pytest.raises(SerializationError, match="Failed to serialize"):

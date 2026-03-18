@@ -241,6 +241,24 @@ ignore_missing_imports = true
 exclude = ["venv", ".venv", "tests"]
 check_untyped_defs = true
 disallow_any_generics = false
-disallow_incomplete_defs = false
+# Re-enabled 2026-03: these were defeating strict mode.  New code MUST have
+# full type annotations.  Existing violations are grandfathered via per-module
+# overrides below — remove overrides as modules are brought into compliance.
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+
+# Grandfathered modules with pre-existing untyped defs — fix incrementally.
+[[tool.mypy.overrides]]
+module = [
+    "enhanced_agent_bus._ext_*",
+    "enhanced_agent_bus.deliberation_layer.*",
+    "enhanced_agent_bus.llm_adapters.*",
+    "enhanced_agent_bus.enterprise_sso.*",
+    "enhanced_agent_bus.cognitive.*",
+    "enhanced_agent_bus.ai_assistant.*",
+    "enhanced_agent_bus.context.*",
+    "enhanced_agent_bus.langgraph_orchestration.*",
+]
 disallow_untyped_defs = false
-no_implicit_optional = false
+disallow_incomplete_defs = false

@@ -5,11 +5,14 @@ Constitutional Hash: cdd01ef066bc6cf2
 MACI Role: JUDICIAL (constitutional validation)
 """
 
-from packages.enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage
-from packages.enhanced_agent_bus.validators import ValidationResult
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
+from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage
 from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.validators import ValidationResult
 
 try:
     from ..adaptive_governance import (

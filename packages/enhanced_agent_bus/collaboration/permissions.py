@@ -12,13 +12,16 @@ from __future__ import annotations
 import asyncio
 from datetime import UTC, datetime
 
-from packages.enhanced_agent_bus.collaboration.models import (
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.collaboration.models import (
     CollaborationSession,
     PermissionDeniedError,
     UserPermissions,
 )
-from src.core.shared.types import JSONDict
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)

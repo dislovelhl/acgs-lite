@@ -12,7 +12,11 @@ from enum import Enum
 from typing import ClassVar, Protocol, runtime_checkable
 
 from src.core.shared.type_guards import is_json_dict, is_str
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

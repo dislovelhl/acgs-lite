@@ -22,11 +22,12 @@ import sys
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.coordinators.memory_coordinator import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.coordinators.memory_coordinator import (
     _MEMORY_COORDINATOR_ERRORS,
     MemoryCoordinator,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -247,7 +248,7 @@ class TestInitFallbackSuccess:
 
         mock_memory_mod = MagicMock(MemoryTier=mock_tier_enum)
 
-        with patch.dict(sys.modules, {"packages.enhanced_agent_bus.memory": mock_memory_mod}):
+        with patch.dict(sys.modules, {"enhanced_agent_bus.memory": mock_memory_mod}):
             result = await coord.store("wkey", {"w": 1}, tier="working")
 
         assert result is True
@@ -262,7 +263,7 @@ class TestInitFallbackSuccess:
 
         mock_memory_mod = MagicMock(MemoryTier=mock_tier_enum)
 
-        with patch.dict(sys.modules, {"packages.enhanced_agent_bus.memory": mock_memory_mod}):
+        with patch.dict(sys.modules, {"enhanced_agent_bus.memory": mock_memory_mod}):
             result = await coord.store("skey", {"s": 1}, tier="semantic")
 
         assert result is True
@@ -277,7 +278,7 @@ class TestInitFallbackSuccess:
 
         mock_memory_mod = MagicMock(MemoryTier=mock_tier_enum)
 
-        with patch.dict(sys.modules, {"packages.enhanced_agent_bus.memory": mock_memory_mod}):
+        with patch.dict(sys.modules, {"enhanced_agent_bus.memory": mock_memory_mod}):
             result = await coord.store("pkey", {"p": 1}, tier="persistent")
 
         assert result is True
@@ -292,7 +293,7 @@ class TestInitFallbackSuccess:
 
         mock_memory_mod = MagicMock(MemoryTier=mock_tier_enum)
 
-        with patch.dict(sys.modules, {"packages.enhanced_agent_bus.memory": mock_memory_mod}):
+        with patch.dict(sys.modules, {"enhanced_agent_bus.memory": mock_memory_mod}):
             result = await coord.store("fkey", {"v": 1}, tier="unknown_tier")
 
         assert result is True
@@ -307,7 +308,7 @@ class TestInitFallbackSuccess:
         mock_tier_enum.EPHEMERAL = "EPHEMERAL"
         mock_memory_mod = MagicMock(MemoryTier=mock_tier_enum)
 
-        with patch.dict(sys.modules, {"packages.enhanced_agent_bus.memory": mock_memory_mod}):
+        with patch.dict(sys.modules, {"enhanced_agent_bus.memory": mock_memory_mod}):
             result = await coord.store("k", {})
 
         assert result is False
@@ -425,9 +426,9 @@ class TestInitializeMemoryBranches:
         with patch.dict(
             sys.modules,
             {
-                "packages.enhanced_agent_bus.safla_memory": mock_safla_module,
-                "packages.enhanced_agent_bus.memory": mock_memory_module,
-                "packages.enhanced_agent_bus.models": mock_models_module,
+                "enhanced_agent_bus.safla_memory": mock_safla_module,
+                "enhanced_agent_bus.memory": mock_memory_module,
+                "enhanced_agent_bus.models": mock_models_module,
             },
         ):
             coord = MemoryCoordinator(use_v3=True)
@@ -447,9 +448,9 @@ class TestInitializeMemoryBranches:
         with patch.dict(
             sys.modules,
             {
-                "packages.enhanced_agent_bus.safla_memory": mock_safla_module,
-                "packages.enhanced_agent_bus.memory": mock_memory_module,
-                "packages.enhanced_agent_bus.models": mock_models_module,
+                "enhanced_agent_bus.safla_memory": mock_safla_module,
+                "enhanced_agent_bus.memory": mock_memory_module,
+                "enhanced_agent_bus.models": mock_models_module,
             },
         ):
             coord = MemoryCoordinator(use_v3=True)
@@ -468,9 +469,9 @@ class TestInitializeMemoryBranches:
         with patch.dict(
             sys.modules,
             {
-                "packages.enhanced_agent_bus.safla_memory": None,  # triggers ImportError
-                "packages.enhanced_agent_bus.memory": mock_memory_module,
-                "packages.enhanced_agent_bus.models": mock_models_module,
+                "enhanced_agent_bus.safla_memory": None,  # triggers ImportError
+                "enhanced_agent_bus.memory": mock_memory_module,
+                "enhanced_agent_bus.models": mock_models_module,
             },
         ):
             coord = MemoryCoordinator(use_v3=True)

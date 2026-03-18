@@ -23,12 +23,12 @@ Public API exports:
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-from packages.enhanced_agent_bus.agent_health.actions import (
+from enhanced_agent_bus.agent_health.actions import (
     AgentBusGateway,
     GracefulRestarter,
 )
-from packages.enhanced_agent_bus.agent_health.metrics import emit_health_metrics
-from packages.enhanced_agent_bus.agent_health.models import (
+from enhanced_agent_bus.agent_health.metrics import emit_health_metrics
+from enhanced_agent_bus.agent_health.models import (
     AgentHealthRecord,
     AgentHealthThresholds,
     AutonomyTier,
@@ -39,8 +39,8 @@ from packages.enhanced_agent_bus.agent_health.models import (
     HealthState,
     OverrideMode,
 )
-from packages.enhanced_agent_bus.agent_health.monitor import AgentHealthMonitor
-from packages.enhanced_agent_bus.agent_health.store import AgentHealthStore
+from enhanced_agent_bus.agent_health.monitor import AgentHealthMonitor
+from enhanced_agent_bus.agent_health.store import AgentHealthStore
 
 __all__ = [
     # Actions

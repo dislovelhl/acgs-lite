@@ -18,12 +18,13 @@ from datetime import UTC, datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.llm_adapters.failover.hedging import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.llm_adapters.failover.hedging import (
     HEDGED_EXECUTION_ERRORS,
     HedgedRequest,
     RequestHedgingManager,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH  # pragma: allowlist secret
 
@@ -693,6 +694,6 @@ class TestModuleAll:
     """Verify __all__ exports."""
 
     def test_all_exports(self):
-        from packages.enhanced_agent_bus.llm_adapters.failover import hedging
+        from enhanced_agent_bus.llm_adapters.failover import hedging
 
         assert set(hedging.__all__) == {"HedgedRequest", "RequestHedgingManager"}

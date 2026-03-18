@@ -12,7 +12,10 @@ sys.path.insert(
     0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 )
 
-from packages.enhanced_agent_bus.ai_assistant.nlu import (
+# Import centralized constitutional hash with fallback
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.ai_assistant.nlu import (
     BasicSentimentAnalyzer,
     Entity,
     EntityExtractor,
@@ -25,9 +28,6 @@ from packages.enhanced_agent_bus.ai_assistant.nlu import (
     Sentiment,
     SentimentAnalyzer,
 )
-
-# Import centralized constitutional hash with fallback
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 
 class TestNLUResult:

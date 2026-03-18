@@ -12,7 +12,10 @@ from .models import EventType, WorkflowEvent, WorkflowInstance, WorkflowStatus
 from .repository import WorkflowRepository
 
 logger = get_logger(__name__)
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 
 class ReplayEngine:

@@ -12,7 +12,7 @@ import time
 from collections.abc import Awaitable, Callable
 from typing import cast
 
-from packages.enhanced_agent_bus.validators import ValidationResult
+from enhanced_agent_bus.validators import ValidationResult
 
 from ...batch_models import BatchRequestItem, BatchResponse, BatchResponseItem
 from ...enums import BatchItemStatus

@@ -12,9 +12,10 @@ Tests for the event schema evolution strategy including:
 from datetime import datetime, timezone
 from unittest.mock import patch
 
-import packages.enhanced_agent_bus.schema_evolution as schema_evolution_module
 import pytest
-from packages.enhanced_agent_bus.schema_evolution import (
+
+import enhanced_agent_bus.schema_evolution as schema_evolution_module
+from enhanced_agent_bus.schema_evolution import (
     AGENT_MESSAGE_SCHEMA_V1,
     AGENT_MESSAGE_SCHEMA_V1_1,
     AGENT_MESSAGE_SCHEMA_V1_2,

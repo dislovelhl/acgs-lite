@@ -22,8 +22,14 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, ClassVar
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -534,7 +540,7 @@ class ResponseValidationPipeline:
                     issues=[f"Stage {stage.value!r} validation timed out"],
                     confidence=0.0,
                 )
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 - validator plugins may raise arbitrary errors
                 logger.exception(
                     f"[{CONSTITUTIONAL_HASH}] Validation stage {stage.value!r} error: {exc}"
                 )
@@ -1015,7 +1021,7 @@ class ResponseRefiner:
                         f"at iteration {iteration}"
                     )
                     break
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001 - refinement callback is user-supplied
                     logger.error(f"[{CONSTITUTIONAL_HASH}] Refinement callback error: {exc}")
                     break
             else:

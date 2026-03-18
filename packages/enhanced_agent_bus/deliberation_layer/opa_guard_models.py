@@ -12,16 +12,16 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
 from enum import Enum
-from typing import Optional, TypeAlias, Union
+from typing import TypeAlias
 
-from packages.enhanced_agent_bus.bus_types import JSONDict, JSONValue
+from enhanced_agent_bus.bus_types import JSONDict, JSONValue
 
 # Ensure module aliasing across package import paths
 _module = sys.modules.get(__name__)
 if _module is not None:
     sys.modules.setdefault("enhanced_agent_bus.deliberation_layer.opa_guard_models", _module)
     sys.modules.setdefault(
-        "packages.enhanced_agent_bus.deliberation_layer.opa_guard_models", _module
+        "enhanced_agent_bus.deliberation_layer.opa_guard_models", _module
     )
     sys.modules.setdefault("core.enhanced_agent_bus.deliberation_layer.opa_guard_models", _module)
 
@@ -29,12 +29,7 @@ if _module is not None:
 try:
     from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
-    try:
         from src.core.shared.constants import CONSTITUTIONAL_HASH
-    except ImportError:
-        # Fallback for standalone usage
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
-
 # Alias for backward compatibility
 GUARD_CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH
 

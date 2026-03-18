@@ -7,26 +7,27 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH as CONST_HASH
+
+from enhanced_agent_bus.adaptive_governance.governance_engine import (
     AdaptiveGovernanceEngine,
 )
-from packages.enhanced_agent_bus.adaptive_governance.models import (
+from enhanced_agent_bus.adaptive_governance.models import (
     GovernanceDecision,
     GovernanceMode,
     ImpactFeatures,
     ImpactLevel,
 )
-from packages.enhanced_agent_bus.adaptive_governance.tests.engine.helpers import (
+from enhanced_agent_bus.adaptive_governance.tests.engine.helpers import (
     _make_decision,
     _make_features,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH as CONST_HASH
 
 _MLFLOW_PATCH = "mlflow.set_tracking_uri"
 _IMPACT_MLFLOW = (
-    "packages.enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
+    "enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
 )
-_THRESH_MLFLOW = "packages.enhanced_agent_bus.adaptive_governance.threshold_manager.AdaptiveThresholds._initialize_mlflow"  # noqa: E501
+_THRESH_MLFLOW = "enhanced_agent_bus.adaptive_governance.threshold_manager.AdaptiveThresholds._initialize_mlflow"  # noqa: E501
 
 
 class TestClassifyImpactLevel:
@@ -169,7 +170,7 @@ class TestEvaluateGovernanceDecision:
         engine.threshold_manager.get_adaptive_threshold = MagicMock(return_value=0.5)
 
         # Patch AB_TESTING_AVAILABLE and CohortType.CHAMPION in module scope
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig_ab = ge_mod.AB_TESTING_AVAILABLE
         orig_cohort_type = ge_mod.CohortType
@@ -195,7 +196,7 @@ class TestEvaluateGovernanceDecision:
         mock_router.route = MagicMock(side_effect=RuntimeError("route fail"))
         engine._ab_test_router = mock_router
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig_ab = ge_mod.AB_TESTING_AVAILABLE
         try:

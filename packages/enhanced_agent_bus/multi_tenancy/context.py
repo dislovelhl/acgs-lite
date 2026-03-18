@@ -9,16 +9,21 @@ Thread-safe and async-compatible for enterprise multi-tenant operations.
 from contextvars import ContextVar, Token
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import Optional
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
 # Context variable for tenant identification
-_tenant_context: ContextVar[Optional["TenantContext"]] = ContextVar("tenant_context", default=None)
+_tenant_context: ContextVar["TenantContext" | None] = ContextVar("tenant_context", default=None)
 
 
 @dataclass

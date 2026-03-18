@@ -11,14 +11,16 @@ from dataclasses import fields
 from unittest.mock import MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.ifc.labels import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.ifc.labels import (
     Confidentiality,
     IFCLabel,
     IFCViolation,
     Integrity,
 )
-from packages.enhanced_agent_bus.pipeline.context import PipelineContext, PipelineMetrics
-from packages.enhanced_agent_bus.prov.labels import (
+from enhanced_agent_bus.pipeline.context import PipelineContext, PipelineMetrics
+from enhanced_agent_bus.prov.labels import (
     ProvActivity,
     ProvAgent,
     ProvEntity,
@@ -26,8 +28,7 @@ from packages.enhanced_agent_bus.prov.labels import (
     ProvLineage,
     build_prov_label,
 )
-from packages.enhanced_agent_bus.validators import ValidationResult
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.validators import ValidationResult
 
 # ---------------------------------------------------------------------------
 # Helpers: minimal AgentMessage mock

@@ -10,9 +10,12 @@ import json
 import os
 from datetime import UTC, datetime, timezone
 from importlib import import_module
-from typing import TYPE_CHECKING, Optional, Protocol, cast
+from typing import TYPE_CHECKING, Protocol, cast
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -20,7 +23,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 def _load_deliberation_queue_types() -> tuple[object, object]:
     """Load queue/status types from available package paths."""
     candidates = (
-        "packages.enhanced_agent_bus.deliberation_layer.deliberation_queue",
+        "enhanced_agent_bus.deliberation_layer.deliberation_queue",
         "enhanced_agent_bus.deliberation_layer.deliberation_queue",
         ".deliberation_queue",
         "deliberation_queue",
@@ -37,7 +40,7 @@ def _load_deliberation_queue_types() -> tuple[object, object]:
 def _load_constitutional_hash() -> str:
     """Load constitutional hash constant from available package paths."""
     candidates = (
-        "packages.enhanced_agent_bus.models",
+        "enhanced_agent_bus.models",
         "enhanced_agent_bus.models",
         "..models",
         "models",
@@ -55,7 +58,7 @@ _DeliberationQueue, _DeliberationStatus = _load_deliberation_queue_types()
 _CONSTITUTIONAL_HASH = _load_constitutional_hash()
 
 if TYPE_CHECKING:
-    from packages.enhanced_agent_bus.deliberation_layer.deliberation_queue import (
+    from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
         DeliberationQueue,
         DeliberationStatus,
     )
@@ -66,13 +69,13 @@ CONSTITUTIONAL_HASH = _CONSTITUTIONAL_HASH
 
 # Try to import ValidationResult from canonical source first
 try:
-    from packages.enhanced_agent_bus.validators import ValidationResult
+    from enhanced_agent_bus.validators import ValidationResult
 except ImportError:
     try:
         from enhanced_agent_bus.validators import ValidationResult
     except ImportError:
         try:
-            from packages.enhanced_agent_bus.validators import ValidationResult
+            from enhanced_agent_bus.validators import ValidationResult
         except ImportError:
             try:
                 from validators import ValidationResult  # type: ignore[import-untyped]

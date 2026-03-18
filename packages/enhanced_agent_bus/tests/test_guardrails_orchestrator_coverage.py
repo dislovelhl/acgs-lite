@@ -17,13 +17,14 @@ from dataclasses import dataclass
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.guardrails.enums import (
+
+from enhanced_agent_bus.guardrails.enums import (
     GuardrailLayer,
     SafetyAction,
     ViolationSeverity,
 )
-from packages.enhanced_agent_bus.guardrails.models import GuardrailResult, Violation
-from packages.enhanced_agent_bus.guardrails.orchestrator import (
+from enhanced_agent_bus.guardrails.models import GuardrailResult, Violation
+from enhanced_agent_bus.guardrails.orchestrator import (
     RuntimeSafetyGuardrails,
     RuntimeSafetyGuardrailsConfig,
 )

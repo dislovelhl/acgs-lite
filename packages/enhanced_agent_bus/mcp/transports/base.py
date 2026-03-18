@@ -11,9 +11,9 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from typing import Protocol, runtime_checkable
 
-from packages.enhanced_agent_bus.bus_types import JSONDict
 from src.core.shared.errors.exceptions import ACGSBaseError
 
+from enhanced_agent_bus.bus_types import JSONDict
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
@@ -69,7 +69,7 @@ class MCPTransport(Protocol):
 
     Example usage::
 
-        from packages.enhanced_agent_bus.mcp.transports import HTTPTransport, MCPTransport
+        from enhanced_agent_bus.mcp.transports import HTTPTransport, MCPTransport
 
         transport: MCPTransport = HTTPTransport(base_url="http://localhost:5000")
         assert isinstance(transport, MCPTransport)

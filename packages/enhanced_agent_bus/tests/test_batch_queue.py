@@ -5,8 +5,9 @@ Constitutional Hash: cdd01ef066bc6cf2
 """
 
 import pytest
-from packages.enhanced_agent_bus.batch_processor_infra.queue import BatchRequestQueue
-from packages.enhanced_agent_bus.models import BatchRequest, BatchRequestItem, MessageType
+
+from enhanced_agent_bus.batch_processor_infra.queue import BatchRequestQueue
+from enhanced_agent_bus.models import BatchRequest, BatchRequestItem, MessageType
 
 
 class TestBatchRequestQueue:

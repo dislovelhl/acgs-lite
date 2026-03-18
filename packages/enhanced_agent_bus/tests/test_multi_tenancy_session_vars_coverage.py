@@ -10,7 +10,8 @@ line/branch coverage. All SQLAlchemy async I/O is mocked.
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.multi_tenancy.session_vars import (
+
+from enhanced_agent_bus.multi_tenancy.session_vars import (
     SESSION_VAR_IS_ADMIN,
     SESSION_VAR_TENANT_ID,
     admin_session,
@@ -22,7 +23,7 @@ from packages.enhanced_agent_bus.multi_tenancy.session_vars import (
     system_tenant_session,
     tenant_session,
 )
-from packages.enhanced_agent_bus.multi_tenancy.system_tenant import SYSTEM_TENANT_ID
+from enhanced_agent_bus.multi_tenancy.system_tenant import SYSTEM_TENANT_ID
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -105,7 +106,7 @@ class TestSetTenantSessionVars:
 
     async def test_logs_debug(self):
         session = _make_session()
-        with patch("packages.enhanced_agent_bus.multi_tenancy.session_vars.logger") as mock_logger:
+        with patch("enhanced_agent_bus.multi_tenancy.session_vars.logger") as mock_logger:
             await set_tenant_session_vars(session, tenant_id="log-test", is_admin=False)
             mock_logger.debug.assert_called_once()
             call_str = str(mock_logger.debug.call_args)
@@ -113,7 +114,7 @@ class TestSetTenantSessionVars:
 
     async def test_admin_logged(self):
         session = _make_session()
-        with patch("packages.enhanced_agent_bus.multi_tenancy.session_vars.logger") as mock_logger:
+        with patch("enhanced_agent_bus.multi_tenancy.session_vars.logger") as mock_logger:
             await set_tenant_session_vars(session, tenant_id="t", is_admin=True)
             call_str = str(mock_logger.debug.call_args)
             assert "True" in call_str or "true" in call_str.lower()
@@ -146,7 +147,7 @@ class TestClearTenantSessionVars:
 
     async def test_logs_debug(self):
         session = _make_session()
-        with patch("packages.enhanced_agent_bus.multi_tenancy.session_vars.logger") as mock_logger:
+        with patch("enhanced_agent_bus.multi_tenancy.session_vars.logger") as mock_logger:
             await clear_tenant_session_vars(session)
             mock_logger.debug.assert_called_once()
 
@@ -438,7 +439,7 @@ class TestModuleExports:
     """Verify __all__ declares the expected public names."""
 
     def test_all_contains_expected_exports(self):
-        from packages.enhanced_agent_bus.multi_tenancy import session_vars
+        from enhanced_agent_bus.multi_tenancy import session_vars
 
         expected = {
             "SESSION_VAR_TENANT_ID",

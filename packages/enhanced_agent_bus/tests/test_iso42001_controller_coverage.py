@@ -11,7 +11,9 @@ from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.compliance_layer.iso42001_controller import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.compliance_layer.iso42001_controller import (
     AIManagementSystemController,
     AIMSAuditScheduler,
     AIMSBlockchainAnchoring,
@@ -24,7 +26,6 @@ from packages.enhanced_agent_bus.compliance_layer.iso42001_controller import (
     ComplianceStatus,
     create_aims_controller,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # AIMSClause enum

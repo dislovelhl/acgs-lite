@@ -13,7 +13,10 @@ Reference: docs/ROADMAP_2025.md Phase 3.1 CEOS Architecture
 """
 
 # Import centralized constitutional hash
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 __version__ = "1.0.0"
 __constitutional_hash__ = CONSTITUTIONAL_HASH

@@ -8,7 +8,8 @@ Comprehensive tests for the MultiApproverWorkflowEngine and related classes.
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from packages.enhanced_agent_bus.deliberation_layer.multi_approver import (
+
+from enhanced_agent_bus.deliberation_layer.multi_approver import (
     CONSTITUTIONAL_HASH,
     ApprovalDecision,
     ApprovalPolicy,
@@ -1017,7 +1018,7 @@ class TestModuleFunctions:
     def test_get_workflow_engine_initial(self) -> None:
         """Test get_workflow_engine returns None initially."""
         # Reset global state
-        import packages.enhanced_agent_bus.deliberation_layer.multi_approver as ma
+        import enhanced_agent_bus.deliberation_layer.multi_approver as ma
 
         ma._workflow_engine = None
 

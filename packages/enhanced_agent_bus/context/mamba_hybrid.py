@@ -6,7 +6,10 @@ Implements breakthrough architecture for O(n) context handling with 4M+ token su
 
 from __future__ import annotations
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -26,7 +29,10 @@ except (ImportError, OSError, RuntimeError, Exception):
     TORCH_AVAILABLE = False
 
 # Constitutional Hash for immutable validation
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 # ---------------------------------------------------------------------------
 # When torch is NOT available, provide lightweight stubs so the module can be

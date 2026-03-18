@@ -9,7 +9,9 @@ from datetime import UTC, datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.ai_assistant.context import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.ai_assistant.context import (
     MAMBA_AVAILABLE,
     ContextManager,
     ConversationContext,
@@ -18,7 +20,6 @@ from packages.enhanced_agent_bus.ai_assistant.context import (
     MessageRole,
     UserProfile,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Message.from_dict - lines 106-116
@@ -496,7 +497,7 @@ class TestProcessLongContext:
         """Covers the not MAMBA_AVAILABLE early return path."""
         manager = ContextManager()
         ctx = ConversationContext(user_id="u1", session_id="s1")
-        import packages.enhanced_agent_bus.ai_assistant.context as ctx_module
+        import enhanced_agent_bus.ai_assistant.context as ctx_module
 
         with patch.object(ctx_module, "MAMBA_AVAILABLE", False):
             result = await manager.process_long_context(ctx)
@@ -512,7 +513,7 @@ class TestProcessLongContext:
         mock_config_cls = MagicMock()
         mock_init = MagicMock(return_value=False)
 
-        import packages.enhanced_agent_bus.ai_assistant.context as ctx_module
+        import enhanced_agent_bus.ai_assistant.context as ctx_module
 
         with (
             patch.object(ctx_module, "MAMBA_AVAILABLE", True),
@@ -541,7 +542,7 @@ class TestProcessLongContext:
 
         mock_torch_randn = MagicMock(return_value=MagicMock())
 
-        import packages.enhanced_agent_bus.ai_assistant.context as ctx_module
+        import enhanced_agent_bus.ai_assistant.context as ctx_module
 
         with (
             patch.object(ctx_module, "MAMBA_AVAILABLE", True),
@@ -562,7 +563,7 @@ class TestProcessLongContext:
         mock_mamba_mgr.is_loaded = True
         mock_mamba_mgr.process_context.side_effect = RuntimeError("boom")
 
-        import packages.enhanced_agent_bus.ai_assistant.context as ctx_module
+        import enhanced_agent_bus.ai_assistant.context as ctx_module
 
         with (
             patch.object(ctx_module, "MAMBA_AVAILABLE", True),

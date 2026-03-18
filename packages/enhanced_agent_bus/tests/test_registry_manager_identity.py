@@ -6,8 +6,9 @@ Constitutional Hash: cdd01ef066bc6cf2
 from __future__ import annotations
 
 import pytest
-from packages.enhanced_agent_bus.components.registry_manager import RegistryManager
 from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.components.registry_manager import RegistryManager
 
 
 class _CaptureRegistry:

@@ -20,7 +20,7 @@ from fastapi.testclient import TestClient
 # object (not the FastAPI `app` instance that `api/__init__.py` re-exports
 # under the same name), and store it in sys.modules so coverage can track
 # line execution in the source file.
-_MOD_NAME = "packages.enhanced_agent_bus.api.app"
+_MOD_NAME = "enhanced_agent_bus.api.app"
 importlib.import_module(_MOD_NAME)  # ensure the module is loaded and instrumented
 app_module = sys.modules[_MOD_NAME]
 
@@ -164,7 +164,7 @@ class TestRegisterOptionalRouters:
         with patch.dict(
             sys.modules,
             {
-                "packages.enhanced_agent_bus.constitutional.review_api": fake_review_mod,
+                "enhanced_agent_bus.constitutional.review_api": fake_review_mod,
             },
         ):
             app_module._register_optional_routers(application)
@@ -173,8 +173,8 @@ class TestRegisterOptionalRouters:
     def test_skips_constitutional_review_router_on_import_error(self):
         application = FastAPI()
         # Remove any cached version to trigger ImportError
-        sys.modules.pop("packages.enhanced_agent_bus.constitutional", None)
-        sys.modules.pop("packages.enhanced_agent_bus.constitutional.review_api", None)
+        sys.modules.pop("enhanced_agent_bus.constitutional", None)
+        sys.modules.pop("enhanced_agent_bus.constitutional.review_api", None)
         # Just verify no unhandled exception propagates
         with contextlib.suppress(ImportError):
             app_module._register_optional_routers(application)
@@ -188,7 +188,7 @@ class TestRegisterOptionalRouters:
         with patch.dict(
             sys.modules,
             {
-                "packages.enhanced_agent_bus.circuit_breaker": fake_circuit_mod,
+                "enhanced_agent_bus.circuit_breaker": fake_circuit_mod,
             },
         ):
             app_module._register_optional_routers(application)
@@ -202,7 +202,7 @@ class TestRegisterOptionalRouters:
         with patch.dict(
             sys.modules,
             {
-                "packages.enhanced_agent_bus.circuit_breaker": fake_circuit_mod,
+                "enhanced_agent_bus.circuit_breaker": fake_circuit_mod,
             },
         ):
             app_module._register_optional_routers(application)
@@ -216,7 +216,7 @@ class TestRegisterOptionalRouters:
         with patch.dict(
             sys.modules,
             {
-                "packages.enhanced_agent_bus.routes.sessions": fake_sessions_mod,
+                "enhanced_agent_bus.routes.sessions": fake_sessions_mod,
             },
         ):
             app_module._register_optional_routers(application)
@@ -357,7 +357,7 @@ class TestLifespanStartup:
             with patch.dict(
                 sys.modules,
                 {
-                    "packages.enhanced_agent_bus.routes.sessions": fake_sessions,
+                    "enhanced_agent_bus.routes.sessions": fake_sessions,
                 },
             ):
                 async with app_module._lifespan_context(fake_app):
@@ -388,7 +388,7 @@ class TestLifespanStartup:
             with patch.dict(
                 sys.modules,
                 {
-                    "packages.enhanced_agent_bus.routes.sessions": fake_sessions,
+                    "enhanced_agent_bus.routes.sessions": fake_sessions,
                 },
             ):
                 async with app_module._lifespan_context(fake_app):
@@ -419,7 +419,7 @@ class TestLifespanStartup:
             with patch.dict(
                 sys.modules,
                 {
-                    "packages.enhanced_agent_bus.routes.sessions": fake_sessions,
+                    "enhanced_agent_bus.routes.sessions": fake_sessions,
                 },
             ):
                 async with app_module._lifespan_context(fake_app):
@@ -458,7 +458,7 @@ class TestLifespanStartup:
             with patch.dict(
                 sys.modules,
                 {
-                    "packages.enhanced_agent_bus.routes.sessions": fake_sessions,
+                    "enhanced_agent_bus.routes.sessions": fake_sessions,
                 },
             ):
                 async with app_module._lifespan_context(fake_app):
@@ -497,7 +497,7 @@ class TestLifespanStartup:
             with patch.dict(
                 sys.modules,
                 {
-                    "packages.enhanced_agent_bus.routes.sessions": fake_sessions,
+                    "enhanced_agent_bus.routes.sessions": fake_sessions,
                 },
             ):
                 async with app_module._lifespan_context(fake_app):
@@ -538,7 +538,7 @@ class TestLifespanStartup:
                 with patch.dict(
                     sys.modules,
                     {
-                        "packages.enhanced_agent_bus.routes.sessions": fake_sessions,
+                        "enhanced_agent_bus.routes.sessions": fake_sessions,
                     },
                 ):
                     async with app_module._lifespan_context(fake_app):
@@ -607,7 +607,7 @@ class TestLifespanStartup:
             with patch.dict(
                 sys.modules,
                 {
-                    "packages.enhanced_agent_bus.routes.sessions": fake_sessions,
+                    "enhanced_agent_bus.routes.sessions": fake_sessions,
                 },
             ):
                 async with app_module._lifespan_context(fake_app):
@@ -643,7 +643,7 @@ class TestLifespanStartup:
             with patch.dict(
                 sys.modules,
                 {
-                    "packages.enhanced_agent_bus.routes.sessions": fake_sessions,
+                    "enhanced_agent_bus.routes.sessions": fake_sessions,
                 },
             ):
                 async with app_module._lifespan_context(fake_app):
@@ -681,7 +681,7 @@ class TestLifespanStartup:
             with patch.dict(
                 sys.modules,
                 {
-                    "packages.enhanced_agent_bus.routes.sessions": fake_sessions,
+                    "enhanced_agent_bus.routes.sessions": fake_sessions,
                 },
             ):
                 async with app_module._lifespan_context(fake_app):
@@ -719,7 +719,7 @@ class TestLifespanStartup:
             with patch.dict(
                 sys.modules,
                 {
-                    "packages.enhanced_agent_bus.routes.sessions": fake_sessions,
+                    "enhanced_agent_bus.routes.sessions": fake_sessions,
                 },
             ):
                 async with app_module._lifespan_context(fake_app):
@@ -750,13 +750,13 @@ class TestLifespanStartup:
             ),
         ):
             # Remove sessions from sys.modules to force ImportError in lifespan
-            saved = sys.modules.pop("packages.enhanced_agent_bus.routes.sessions", None)
+            saved = sys.modules.pop("enhanced_agent_bus.routes.sessions", None)
             try:
                 async with app_module._lifespan_context(fake_app):
                     assert fake_app.state.agent_bus is fake_mp
             finally:
                 if saved is not None:
-                    sys.modules["packages.enhanced_agent_bus.routes.sessions"] = saved
+                    sys.modules["enhanced_agent_bus.routes.sessions"] = saved
 
 
 # ---------------------------------------------------------------------------
@@ -805,7 +805,7 @@ class TestLifespanShutdown:
             with patch.dict(
                 sys.modules,
                 {
-                    "packages.enhanced_agent_bus.routes.sessions": fake_sessions,
+                    "enhanced_agent_bus.routes.sessions": fake_sessions,
                 },
             ):
                 async with app_module._lifespan_context(fake_app):
@@ -898,7 +898,7 @@ class TestLifespanShutdown:
             with patch.dict(
                 sys.modules,
                 {
-                    "packages.enhanced_agent_bus.routes.sessions": fake_sessions,
+                    "enhanced_agent_bus.routes.sessions": fake_sessions,
                 },
             ):
                 # Should not raise — error is logged and handled
@@ -961,7 +961,7 @@ class TestLifespanShutdown:
                 with patch.dict(
                     sys.modules,
                     {
-                        "packages.enhanced_agent_bus.routes.sessions": fake_sessions,
+                        "enhanced_agent_bus.routes.sessions": fake_sessions,
                     },
                 ):
                     # Should complete without calling repo.close() because repo is None
@@ -1003,7 +1003,7 @@ class TestLifespanShutdown:
             with patch.dict(
                 sys.modules,
                 {
-                    "packages.enhanced_agent_bus.routes.sessions": fake_sessions_with_error,
+                    "enhanced_agent_bus.routes.sessions": fake_sessions_with_error,
                 },
             ):
                 # Should not raise

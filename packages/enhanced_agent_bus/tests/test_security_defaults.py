@@ -20,7 +20,7 @@ try:
     from policy_client import PolicyRegistryClient, get_policy_client
     from validation_strategies import RustValidationStrategy
 except ImportError:
-    from packages.enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage
+    from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage
 
     from ..config import BusConfiguration
     from ..policy_client import PolicyRegistryClient, get_policy_client

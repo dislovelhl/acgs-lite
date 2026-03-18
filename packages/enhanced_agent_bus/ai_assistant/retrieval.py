@@ -13,7 +13,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
-from typing import TYPE_CHECKING, Optional, TypeAlias, Union
+from typing import TYPE_CHECKING, TypeAlias
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -30,8 +30,18 @@ except ImportError:
     POLICY_INDEX_AVAILABLE = False
     PolicyMetadata = object  # type: ignore[misc, assignment]
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict, JSONValue
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import (
+        JSONDict,
+        JSONValue,
+    )  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+    JSONValue = object  # type: ignore[misc,assignment]
 
 try:
     from enhanced_agent_bus.embeddings.provider import (

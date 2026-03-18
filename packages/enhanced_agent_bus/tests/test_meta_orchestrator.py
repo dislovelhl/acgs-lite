@@ -54,14 +54,14 @@ def _ensure_meta_orchestrator_importable():
     _keys_to_protect = [
         k
         for k in list(sys.modules.keys())
-        if k.startswith("packages.enhanced_agent_bus.meta_orchestrator")
+        if k.startswith("enhanced_agent_bus.meta_orchestrator")
         or k.startswith("enhanced_agent_bus.meta_orchestrator")
     ]
     # Also protect the maci_imports entry that other tests may corrupt
     _keys_to_protect.extend(
         [
-            "packages.enhanced_agent_bus.maci_imports",
-            "packages.enhanced_agent_bus.exceptions",
+            "enhanced_agent_bus.maci_imports",
+            "enhanced_agent_bus.exceptions",
         ]
     )
     _SENTINEL = object()

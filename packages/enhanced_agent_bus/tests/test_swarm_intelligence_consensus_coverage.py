@@ -11,9 +11,10 @@ from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import patch
 
 import pytest
-from packages.enhanced_agent_bus.swarm_intelligence.consensus import ConsensusMechanism
-from packages.enhanced_agent_bus.swarm_intelligence.enums import ConsensusType
-from packages.enhanced_agent_bus.swarm_intelligence.models import ConsensusProposal
+
+from enhanced_agent_bus.swarm_intelligence.consensus import ConsensusMechanism
+from enhanced_agent_bus.swarm_intelligence.enums import ConsensusType
+from enhanced_agent_bus.swarm_intelligence.models import ConsensusProposal
 
 # ---------------------------------------------------------------------------
 # Helpers

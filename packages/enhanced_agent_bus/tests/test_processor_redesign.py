@@ -17,33 +17,34 @@ from typing import Optional
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.config import BusConfiguration
-from packages.enhanced_agent_bus.message_processor import MessageProcessor
-from packages.enhanced_agent_bus.models import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.config import BusConfiguration
+from enhanced_agent_bus.message_processor import MessageProcessor
+from enhanced_agent_bus.models import (
     AgentMessage,
     MessageType,
     Priority,
 )
-from packages.enhanced_agent_bus.validators import ValidationResult
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.validators import ValidationResult
 
 # Guard imports for classes that will be created (TDD — tests first)
 try:
-    from packages.enhanced_agent_bus.session_context_resolver import (
+    from enhanced_agent_bus.session_context_resolver import (
         SessionContextResolver,
     )
 except ImportError:
     SessionContextResolver = None  # type: ignore[assignment, misc]
 
 try:
-    from packages.enhanced_agent_bus.security_scanner import (
+    from enhanced_agent_bus.security_scanner import (
         MessageSecurityScanner,
     )
 except ImportError:
     MessageSecurityScanner = None  # type: ignore[assignment, misc]
 
 try:
-    from packages.enhanced_agent_bus.verification_orchestrator import (
+    from enhanced_agent_bus.verification_orchestrator import (
         VerificationOrchestrator,
         VerificationResult,
     )
@@ -52,7 +53,7 @@ except ImportError:
     VerificationResult = None  # type: ignore[assignment, misc]
 
 try:
-    from packages.enhanced_agent_bus.processor_metrics import (
+    from enhanced_agent_bus.processor_metrics import (
         MessageProcessorMetrics,
     )
 except ImportError:
@@ -60,11 +61,11 @@ except ImportError:
 
 # Optional session imports (may not be available in all configs)
 try:
-    from packages.enhanced_agent_bus.models import (
+    from enhanced_agent_bus.models import (
         RiskLevel,
         SessionGovernanceConfig,
     )
-    from packages.enhanced_agent_bus.session_context import (
+    from enhanced_agent_bus.session_context import (
         SessionContext,
         SessionContextManager,
     )
@@ -435,7 +436,7 @@ class TestMessageSecurityScanner:
         mock_result.blocked = False
         mock_result.events = []
         with patch(
-            "packages.enhanced_agent_bus.security_scanner.get_runtime_security_scanner"
+            "enhanced_agent_bus.security_scanner.get_runtime_security_scanner"
         ) as mock_get:
             mock_scanner = AsyncMock()
             mock_scanner.scan = AsyncMock(return_value=mock_result)
@@ -459,7 +460,7 @@ class TestMessageSecurityScanner:
         mock_event.to_dict.return_value = {"type": "block"}
         mock_result.events = [mock_event]
         with patch(
-            "packages.enhanced_agent_bus.security_scanner.get_runtime_security_scanner"
+            "enhanced_agent_bus.security_scanner.get_runtime_security_scanner"
         ) as mock_get:
             mock_scanner = AsyncMock()
             mock_scanner.scan = AsyncMock(return_value=mock_result)
@@ -531,7 +532,7 @@ class TestMessageSecurityScanner:
         event1.to_dict.return_value = {"type": "threat", "score": 0.9}
         mock_result.events = [event1]
         with patch(
-            "packages.enhanced_agent_bus.security_scanner.get_runtime_security_scanner"
+            "enhanced_agent_bus.security_scanner.get_runtime_security_scanner"
         ) as mock_get:
             mock_scanner = AsyncMock()
             mock_scanner.scan = AsyncMock(return_value=mock_result)

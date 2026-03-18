@@ -18,17 +18,17 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # -- unit-under-test imports ---------------------------------------------------
-from packages.enhanced_agent_bus.circuit_breaker import CONSTITUTIONAL_HASH
-from packages.enhanced_agent_bus.llm_adapters.capability_matrix import (
+from enhanced_agent_bus.circuit_breaker import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.llm_adapters.capability_matrix import (
     CapabilityRegistry,
     CapabilityRequirement,
     ProviderCapabilityProfile,
 )
-from packages.enhanced_agent_bus.llm_adapters.failover.failover import (
+from enhanced_agent_bus.llm_adapters.failover.failover import (
     FailoverEvent,
     ProactiveFailoverManager,
 )
-from packages.enhanced_agent_bus.llm_adapters.failover.health import (
+from enhanced_agent_bus.llm_adapters.failover.health import (
     HealthMetrics,
     ProviderHealthScorer,
 )
@@ -672,7 +672,7 @@ class TestCheckAndFailover:
         def patched_get_health_score(provider_id: str):
             score = original(provider_id)
             if provider_id == "prov-b":
-                from packages.enhanced_agent_bus.llm_adapters.failover.health import (
+                from enhanced_agent_bus.llm_adapters.failover.health import (
                     ProviderHealthScore,
                 )
 
@@ -755,11 +755,11 @@ class TestModuleExports:
     """Verify __all__ exports are importable from failover.failover."""
 
     def test_failover_event_is_exported(self) -> None:
-        from packages.enhanced_agent_bus.llm_adapters.failover.failover import (
+        from enhanced_agent_bus.llm_adapters.failover.failover import (
             FailoverEvent,
         )
 
     def test_proactive_failover_manager_is_exported(self) -> None:
-        from packages.enhanced_agent_bus.llm_adapters.failover.failover import (
+        from enhanced_agent_bus.llm_adapters.failover.failover import (
             ProactiveFailoverManager,
         )

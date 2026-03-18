@@ -11,7 +11,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi import HTTPException
-from packages.enhanced_agent_bus.api import api_key_auth
+
+from enhanced_agent_bus.api import api_key_auth
 
 pytestmark = [pytest.mark.unit]
 
@@ -425,7 +426,7 @@ class TestIsSignupKey:
             import sys
 
             # Remove any cached reference so the lazy import fires
-            signup_key = "packages.enhanced_agent_bus.api.routes.signup"
+            signup_key = "enhanced_agent_bus.api.routes.signup"
             original = sys.modules.pop(signup_key, None)
             # Also remove any parent path entries that would allow reimport
             blocked = {signup_key: None}

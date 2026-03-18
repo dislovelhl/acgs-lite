@@ -6,8 +6,9 @@ targeting ≥95% coverage.
 """
 
 import pytest
-from packages.enhanced_agent_bus.ab_testing_infra.metrics import ABTestMetricsManager
-from packages.enhanced_agent_bus.ab_testing_infra.models import (
+
+from enhanced_agent_bus.ab_testing_infra.metrics import ABTestMetricsManager
+from enhanced_agent_bus.ab_testing_infra.models import (
     CohortType,
     ComparisonResult,
 )

@@ -13,7 +13,11 @@ from datetime import UTC, datetime
 from enum import Enum
 
 from src.core.shared.constants import MACIRole
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from ..maci_imports import CONSTITUTIONAL_HASH
 

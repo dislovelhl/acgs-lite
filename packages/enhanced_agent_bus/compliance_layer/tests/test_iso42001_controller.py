@@ -3,7 +3,8 @@
 from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
-from packages.enhanced_agent_bus.compliance_layer.iso42001_controller import (
+
+from enhanced_agent_bus.compliance_layer.iso42001_controller import (
     AIManagementSystemController,
     AIMSAuditScheduler,
     AIMSBlockchainAnchoring,

@@ -4,16 +4,22 @@
 Comprehensive tests for sdpc/pacar_manager.py targeting ≥95% coverage.
 """
 
+import pytest
+
+pytest.importorskip("enhanced_agent_bus.sdpc")
+
+
 import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.sdpc.conversation import (
+
+from enhanced_agent_bus.sdpc.conversation import (
     ConversationMessage,
     ConversationState,
     MessageRole,
 )
-from packages.enhanced_agent_bus.sdpc.pacar_manager import (
+from enhanced_agent_bus.sdpc.pacar_manager import (
     _PACAR_OPERATION_ERRORS,
     PACARManager,
 )
@@ -48,7 +54,7 @@ class TestPACARManagerInit:
 
     def test_init_without_config_calls_from_environment(self):
         mock_cfg = _make_config()
-        with patch("packages.enhanced_agent_bus.sdpc.pacar_manager.BusConfiguration") as mock_cls:
+        with patch("enhanced_agent_bus.sdpc.pacar_manager.BusConfiguration") as mock_cls:
             mock_cls.from_environment.return_value = mock_cfg
             mgr = PACARManager()
         mock_cls.from_environment.assert_called_once()
@@ -67,7 +73,7 @@ class TestGetRedis:
 
         mock_redis = AsyncMock()
         with patch(
-            "packages.enhanced_agent_bus.sdpc.pacar_manager.redis.from_url",
+            "enhanced_agent_bus.sdpc.pacar_manager.redis.from_url",
             return_value=mock_redis,
         ) as mock_from_url:
             result = await mgr._get_redis()
@@ -82,7 +88,7 @@ class TestGetRedis:
 
         mock_redis = AsyncMock()
         with patch(
-            "packages.enhanced_agent_bus.sdpc.pacar_manager.redis.from_url",
+            "enhanced_agent_bus.sdpc.pacar_manager.redis.from_url",
             return_value=mock_redis,
         ) as mock_from_url:
             r1 = await mgr._get_redis()
@@ -99,7 +105,7 @@ class TestGetRedis:
         mgr._redis = existing
 
         with patch(
-            "packages.enhanced_agent_bus.sdpc.pacar_manager.redis.from_url"
+            "enhanced_agent_bus.sdpc.pacar_manager.redis.from_url"
         ) as mock_from_url:
             result = await mgr._get_redis()
 
@@ -192,7 +198,7 @@ class TestGetState:
         mock_redis.get = AsyncMock(side_effect=RuntimeError("conn refused"))
 
         with patch.object(mgr, "_get_redis", return_value=mock_redis):
-            with patch("packages.enhanced_agent_bus.sdpc.pacar_manager.logger") as mock_log:
+            with patch("enhanced_agent_bus.sdpc.pacar_manager.logger") as mock_log:
                 await mgr.get_state("log-sess")
 
         mock_log.error.assert_called_once()
@@ -265,7 +271,7 @@ class TestSaveState:
 
         state = _make_state("log-save-sess")
         with patch.object(mgr, "_get_redis", return_value=mock_redis):
-            with patch("packages.enhanced_agent_bus.sdpc.pacar_manager.logger") as mock_log:
+            with patch("enhanced_agent_bus.sdpc.pacar_manager.logger") as mock_log:
                 await mgr.save_state(state)
 
         mock_log.error.assert_called_once()
@@ -486,7 +492,7 @@ class TestClearSession:
         mock_redis.delete = AsyncMock(side_effect=TimeoutError("timeout"))
 
         with patch.object(mgr, "_get_redis", return_value=mock_redis):
-            with patch("packages.enhanced_agent_bus.sdpc.pacar_manager.logger") as mock_log:
+            with patch("enhanced_agent_bus.sdpc.pacar_manager.logger") as mock_log:
                 await mgr.clear_session(sess_id)
 
         mock_log.error.assert_called_once()

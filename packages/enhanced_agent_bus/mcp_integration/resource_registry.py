@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from logging import Logger
 from typing import Protocol
 
-from packages.enhanced_agent_bus.bus_types import JSONDict
+from enhanced_agent_bus.bus_types import JSONDict
 
 
 class _InternalResourceProtocol(Protocol):

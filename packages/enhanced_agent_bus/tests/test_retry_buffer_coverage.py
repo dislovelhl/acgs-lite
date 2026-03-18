@@ -18,7 +18,7 @@ _test_with_rust = os.environ.get("TEST_WITH_RUST", "0") == "1"
 if not _test_with_rust:
     sys.modules["enhanced_agent_bus_rust"] = None  # type: ignore[assignment]
 
-from packages.enhanced_agent_bus.retry_buffer import (  # noqa: E402
+from enhanced_agent_bus.retry_buffer import (  # noqa: E402
     RETRY_DELIVERY_ERRORS,
     BufferedMessage,
     RetryBuffer,
@@ -282,14 +282,14 @@ class TestAdd:
 
     async def test_message_logged_on_add(self):
         buf = RetryBuffer()
-        with patch("packages.enhanced_agent_bus.retry_buffer.logger") as mock_log:
+        with patch("enhanced_agent_bus.retry_buffer.logger") as mock_log:
             await buf.add(make_message("m1"))
             assert mock_log.info.called
 
     async def test_dropped_message_logged_warning(self):
         buf = RetryBuffer(max_size=1)
         await buf.add(make_message("old"))
-        with patch("packages.enhanced_agent_bus.retry_buffer.logger") as mock_log:
+        with patch("enhanced_agent_bus.retry_buffer.logger") as mock_log:
             await buf.add(make_message("new"))
             assert mock_log.warning.called
 
@@ -753,11 +753,11 @@ class TestLifecycle:
 
 class TestModuleExports:
     def test_buffered_message_exported(self):
-        from packages.enhanced_agent_bus.retry_buffer import __all__ as exports
+        from enhanced_agent_bus.retry_buffer import __all__ as exports
 
         assert "BufferedMessage" in exports
 
     def test_retry_buffer_exported(self):
-        from packages.enhanced_agent_bus.retry_buffer import __all__ as exports
+        from enhanced_agent_bus.retry_buffer import __all__ as exports
 
         assert "RetryBuffer" in exports

@@ -11,17 +11,20 @@ Constitutional Hash: cdd01ef066bc6cf2
 import asyncio
 import hashlib
 import inspect
+import sys
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
 
-from packages.enhanced_agent_bus.bus_types import JSONDict
-
 # Import centralized constitutional hash
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import ACGSBaseError
 
+from enhanced_agent_bus.bus_types import JSONDict
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # Import validators
@@ -45,6 +48,8 @@ except ImportError:
     TOOL_REGISTRY_AVAILABLE = False
 
 logger = get_logger(__name__)
+sys.modules.setdefault("enhanced_agent_bus.mcp_integration.client", sys.modules[__name__])
+sys.modules.setdefault("enhanced_agent_bus.mcp_integration.client", sys.modules[__name__])
 try:
     from acgs2_perf import fast_hash
 

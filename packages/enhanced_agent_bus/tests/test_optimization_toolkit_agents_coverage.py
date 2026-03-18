@@ -12,7 +12,8 @@ from datetime import UTC, datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.optimization_toolkit.agents import (
+
+from enhanced_agent_bus.optimization_toolkit.agents import (
     CONSTITUTIONAL_HASH,
     AgentCoordinationProfiler,
     ApplicationPerformanceAgent,
@@ -490,7 +491,7 @@ class TestApplicationPerformanceAgentProfile:
         mock_monitor.get_metrics.return_value = {"operations": {}}
 
         with patch(
-            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()
@@ -512,7 +513,7 @@ class TestApplicationPerformanceAgentProfile:
         mock_monitor.get_metrics.return_value = {"operations": {}}
 
         with patch(
-            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()
@@ -539,7 +540,7 @@ class TestApplicationPerformanceAgentProfile:
         }
 
         with patch(
-            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()
@@ -572,7 +573,7 @@ class TestApplicationPerformanceAgentProfile:
         }
 
         with patch(
-            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()
@@ -599,7 +600,7 @@ class TestApplicationPerformanceAgentProfile:
         }
 
         with patch(
-            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()
@@ -626,7 +627,7 @@ class TestApplicationPerformanceAgentProfile:
         }
 
         with patch(
-            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()
@@ -652,7 +653,7 @@ class TestApplicationPerformanceAgentProfile:
         }
 
         with patch(
-            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()
@@ -674,7 +675,7 @@ class TestApplicationPerformanceAgentProfile:
         }
 
         with patch(
-            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()
@@ -1142,7 +1143,7 @@ class TestConcurrentProfiling:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
+                "enhanced_agent_bus.performance_monitor.get_performance_monitor",
                 return_value=mock_monitor,
             ),
             patch(

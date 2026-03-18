@@ -12,17 +12,21 @@ import uuid
 from datetime import UTC, datetime
 from enum import Enum
 
-from packages.enhanced_agent_bus.verification_layer.z3_policy_verifier import (
+from pydantic import BaseModel, Field
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.verification_layer.z3_policy_verifier import (
     Z3_AVAILABLE,
     ConstraintType,
     PolicyConstraint,
     PolicyVerificationRequest,
     Z3PolicyVerifier,
 )
-from pydantic import BaseModel, Field
-from src.core.shared.types import JSONDict
-
-from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
 

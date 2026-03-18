@@ -8,20 +8,21 @@ from __future__ import annotations
 import pytest
 from fastapi import HTTPException
 from fastapi.routing import APIRoute
-from packages.enhanced_agent_bus.api.routes.workflows import (
-    _resolve_tenant_id as resolve_workflow_tenant_id,
-)
-from packages.enhanced_agent_bus.api.routes.workflows import router as workflow_router
-from packages.enhanced_agent_bus.policy_copilot.api import (
-    _assert_tenant_scope as assert_copilot_tenant_scope,
-)
-from packages.enhanced_agent_bus.policy_copilot.api import router as copilot_router
-from packages.enhanced_agent_bus.visual_studio.api import (
-    _resolve_tenant_id as resolve_visual_tenant_id,
-)
-from packages.enhanced_agent_bus.visual_studio.api import router as visual_router
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.security.auth import UserClaims, get_current_user
+
+from enhanced_agent_bus.api.routes.workflows import (
+    _resolve_tenant_id as resolve_workflow_tenant_id,
+)
+from enhanced_agent_bus.api.routes.workflows import router as workflow_router
+from enhanced_agent_bus.policy_copilot.api import (
+    _assert_tenant_scope as assert_copilot_tenant_scope,
+)
+from enhanced_agent_bus.policy_copilot.api import router as copilot_router
+from enhanced_agent_bus.visual_studio.api import (
+    _resolve_tenant_id as resolve_visual_tenant_id,
+)
+from enhanced_agent_bus.visual_studio.api import router as visual_router
 
 
 def _mock_user(tenant_id: str = "tenant-jwt") -> UserClaims:

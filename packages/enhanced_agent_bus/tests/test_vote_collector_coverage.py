@@ -23,7 +23,8 @@ from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.deliberation_layer.vote_collector import (
+
+from enhanced_agent_bus.deliberation_layer.vote_collector import (
     EventDrivenVoteCollector,
     VoteEvent,
     VoteSession,
@@ -480,7 +481,7 @@ class TestCollectorConnect:
     async def test_connect_redis_unavailable(self) -> None:
         c = _collector()
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.vote_collector.REDIS_AVAILABLE", False
+            "enhanced_agent_bus.deliberation_layer.vote_collector.REDIS_AVAILABLE", False
         ):
             assert await c.connect() is False
 
@@ -495,11 +496,11 @@ class TestCollectorConnect:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_collector.REDIS_AVAILABLE",
+                "enhanced_agent_bus.deliberation_layer.vote_collector.REDIS_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_collector.aioredis",
+                "enhanced_agent_bus.deliberation_layer.vote_collector.aioredis",
                 mock_aioredis,
             ),
         ):
@@ -520,11 +521,11 @@ class TestCollectorConnect:
         mock_aioredis.from_url.return_value = mock_redis
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_collector.REDIS_AVAILABLE",
+                "enhanced_agent_bus.deliberation_layer.vote_collector.REDIS_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_collector.aioredis",
+                "enhanced_agent_bus.deliberation_layer.vote_collector.aioredis",
                 mock_aioredis,
             ),
         ):
@@ -540,11 +541,11 @@ class TestCollectorConnect:
         mock_aioredis.from_url.return_value = mock_redis
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_collector.REDIS_AVAILABLE",
+                "enhanced_agent_bus.deliberation_layer.vote_collector.REDIS_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_collector.aioredis",
+                "enhanced_agent_bus.deliberation_layer.vote_collector.aioredis",
                 mock_aioredis,
             ),
         ):

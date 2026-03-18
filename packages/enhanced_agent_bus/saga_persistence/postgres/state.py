@@ -11,7 +11,18 @@ import uuid
 from datetime import UTC, datetime
 
 import asyncpg
-from packages.enhanced_agent_bus.saga_persistence.models import (
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.saga_persistence.models import (
     CompensationEntry,
     PersistedSagaState,
     PersistedStepSnapshot,
@@ -19,10 +30,6 @@ from packages.enhanced_agent_bus.saga_persistence.models import (
     SagaState,
     StepState,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
-
-from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from ..repository import InvalidStateTransitionError, RepositoryError
 from .schema import VALID_STATE_TRANSITIONS

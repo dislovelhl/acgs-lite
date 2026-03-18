@@ -8,9 +8,12 @@ Replaces in-memory storage with distributed, persistent storage.
 
 import json
 from datetime import datetime, timezone
-from typing import Optional, cast
+from typing import cast
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

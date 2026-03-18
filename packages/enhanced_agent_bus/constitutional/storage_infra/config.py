@@ -5,7 +5,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 """
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass

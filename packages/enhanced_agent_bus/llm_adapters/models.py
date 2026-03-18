@@ -8,12 +8,14 @@ Provides unified interface for multi-provider LLM integration with constitutiona
 
 import json
 from enum import Enum
-from typing import Optional, Union
 
 from pydantic import BaseModel, Field, field_validator
 
 # Import from base module
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from .base import (
     CONSTITUTIONAL_HASH,

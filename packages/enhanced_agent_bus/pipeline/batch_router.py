@@ -10,10 +10,13 @@ Constitutional Hash: cdd01ef066bc6cf2
 import asyncio
 from collections.abc import Awaitable, Callable
 
-from packages.enhanced_agent_bus.validators import ValidationResult
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.validators import ValidationResult
 
 from ..batch_models import BatchRequest, BatchResponse
 from .middleware import BaseMiddleware, MiddlewareConfig

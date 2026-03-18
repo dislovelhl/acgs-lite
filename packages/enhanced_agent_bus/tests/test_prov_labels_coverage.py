@@ -13,7 +13,8 @@ from datetime import UTC, datetime, timezone
 from unittest.mock import patch
 
 import pytest
-from packages.enhanced_agent_bus.prov.labels import (
+
+from enhanced_agent_bus.prov.labels import (
     ACTIVITY_TYPE_MAP,
     CONSTITUTIONAL_HASH,
     ENTITY_TYPE_MAP,
@@ -765,7 +766,7 @@ class TestBuildProvLabel:
     def test_mock_utc_now_called_when_ended_at_is_none(self):
         fixed_ts = "2024-12-25T00:00:00+00:00"
         with patch(
-            "packages.enhanced_agent_bus.prov.labels._utc_now_iso",
+            "enhanced_agent_bus.prov.labels._utc_now_iso",
             return_value=fixed_ts,
         ):
             lbl = build_prov_label("security_scan", TS, ended_at=None)
@@ -891,19 +892,19 @@ class TestProvLineage:
 
 class TestProvPackagePublicApi:
     def test_import_from_package(self):
-        from packages.enhanced_agent_bus.prov import (
+        from enhanced_agent_bus.prov import (
             CONSTITUTIONAL_HASH as H,
         )
-        from packages.enhanced_agent_bus.prov import (
+        from enhanced_agent_bus.prov import (
             PROV_SCHEMA_VERSION as V,
         )
-        from packages.enhanced_agent_bus.prov import (
+        from enhanced_agent_bus.prov import (
             SERVICE_AGENT_ID as SID,
         )
-        from packages.enhanced_agent_bus.prov import (
+        from enhanced_agent_bus.prov import (
             SERVICE_AGENT_LABEL as SL,
         )
-        from packages.enhanced_agent_bus.prov import (
+        from enhanced_agent_bus.prov import (
             ProvActivity,
             ProvAgent,
             ProvEntity,

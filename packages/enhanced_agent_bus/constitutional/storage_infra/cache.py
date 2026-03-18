@@ -5,7 +5,7 @@ Constitutional Hash: cdd01ef066bc6cf2
 """
 
 import json
-from typing import Optional
+import sys
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -18,12 +18,20 @@ except ImportError:
     REDIS_AVAILABLE = False
 
 from pydantic import ValidationError
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from ..version_model import ConstitutionalVersion
 from .config import StorageConfig
 
 logger = get_logger(__name__)
+
+_module = sys.modules[__name__]
+sys.modules.setdefault("enhanced_agent_bus.constitutional.storage_infra.cache", _module)
+sys.modules.setdefault("packages.enhanced_agent_bus.constitutional.storage_infra.cache", _module)
 
 
 class CacheManager:

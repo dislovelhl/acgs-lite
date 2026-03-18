@@ -16,19 +16,19 @@ import logging
 from datetime import UTC, datetime, timezone
 
 import pytest
-from packages.enhanced_agent_bus.adaptive_governance.models import (
+
+from enhanced_agent_bus.adaptive_governance.models import (
     GovernanceDecision,
     ImpactFeatures,
     ImpactLevel,
 )
-from packages.enhanced_agent_bus.adaptive_governance.trace_collector import (
+from enhanced_agent_bus.adaptive_governance.trace_collector import (
     IMPACT_TO_STATE,
     N_STATES,
     STATE_TO_IMPACT,
     TraceCollector,
     TrajectoryRecord,
 )
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # ---------------------------------------------------------------------------

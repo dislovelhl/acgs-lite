@@ -12,10 +12,16 @@ import time
 from collections import OrderedDict
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 from typing_extensions import TypedDict
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
@@ -186,8 +192,8 @@ class ConstitutionalClassifierV2:
         detector: ThreatDetector | None = None,
         scoring_engine: ComplianceScoringEngine | None = None,
         pattern_registry: ThreatPatternRegistry | None = None,
-        policy_resolver: Optional["PolicyResolver"] = None,
-        maci_enforcer: Optional["MACIEnforcer"] = None,
+        policy_resolver: "PolicyResolver" | None = None,
+        maci_enforcer: "MACIEnforcer" | None = None,
     ):
         """Initialize the constitutional classifier.
 
@@ -234,7 +240,7 @@ class ConstitutionalClassifierV2:
         self,
         content: str,
         context: JSONDict | None = None,
-        session_context: Optional["SessionContext"] = None,
+        session_context: "SessionContext" | None = None,
         agent_id: str | None = None,
         mode: DetectionMode | None = None,
     ) -> ClassificationResult:
@@ -325,7 +331,7 @@ class ConstitutionalClassifierV2:
         self,
         contents: list[str],
         context: JSONDict | None = None,
-        session_context: Optional["SessionContext"] = None,
+        session_context: "SessionContext" | None = None,
         mode: DetectionMode | None = None,
         max_concurrency: int = 10,
     ) -> list[ClassificationResult]:
@@ -398,9 +404,9 @@ class ConstitutionalClassifierV2:
 
     async def _resolve_session_policy(
         self,
-        session_context: Optional["SessionContext"],
+        session_context: "SessionContext" | None,
         context: JSONDict | None,
-    ) -> Optional["PolicyResolutionResult"]:
+    ) -> "PolicyResolutionResult" | None:
         """Resolve session-specific policy if available."""
         if not self.config.enable_policy_resolver or not self.policy_resolver:
             return None
@@ -458,7 +464,7 @@ class ConstitutionalClassifierV2:
             logger.warning(f"Error resolving session policy: {e}")
             return None
 
-    def _apply_policy_threshold(self, policy_result: Optional["PolicyResolutionResult"]) -> float:
+    def _apply_policy_threshold(self, policy_result: "PolicyResolutionResult" | None) -> float:
         """Extract and apply policy-specific threshold."""
         if not policy_result or not policy_result.policy:
             return self.config.threshold
@@ -479,7 +485,7 @@ class ConstitutionalClassifierV2:
         return self.config.threshold
 
     def _extract_policy_patterns(
-        self, policy_result: Optional["PolicyResolutionResult"]
+        self, policy_result: "PolicyResolutionResult" | None
     ) -> list[str]:
         """Extract custom patterns from policy."""
         if not policy_result or not policy_result.policy:
@@ -521,8 +527,8 @@ class ConstitutionalClassifierV2:
     async def _validate_maci(
         self,
         agent_id: str,
-        session_context: Optional["SessionContext"],
-    ) -> Optional["MACIValidationResult"]:
+        session_context: "SessionContext" | None,
+    ) -> "MACIValidationResult" | None:
         """Validate agent action through MACI framework."""
         if not self.maci_enforcer:
             return None
@@ -552,7 +558,7 @@ class ConstitutionalClassifierV2:
     def _build_detection_context(
         self,
         context: JSONDict | None,
-        session_context: Optional["SessionContext"],
+        session_context: "SessionContext" | None,
     ) -> dict:
         """Build context for threat detection."""
         detection_context = dict(context) if context else {}
@@ -570,10 +576,10 @@ class ConstitutionalClassifierV2:
     def _build_classification_result(
         self,
         detection_result: DetectionResult,
-        policy_result: Optional["PolicyResolutionResult"],
-        maci_result: Optional["MACIValidationResult"],
+        policy_result: "PolicyResolutionResult" | None,
+        maci_result: "MACIValidationResult" | None,
         effective_threshold: float,
-        session_context: Optional["SessionContext"],
+        session_context: "SessionContext" | None,
         latency_ms: float,
         mode: DetectionMode,
     ) -> ClassificationResult:
@@ -643,8 +649,8 @@ class ConstitutionalClassifierV2:
     def _build_reason(
         self,
         detection_result: DetectionResult,
-        policy_result: Optional["PolicyResolutionResult"],
-        maci_result: Optional["MACIValidationResult"],
+        policy_result: "PolicyResolutionResult" | None,
+        maci_result: "MACIValidationResult" | None,
         effective_threshold: float,
     ) -> str:
         """Build human-readable reason for classification."""
@@ -876,7 +882,7 @@ def get_constitutional_classifier_v2(
 async def classify_action(
     content: str,
     context: JSONDict | None = None,
-    session_context: Optional["SessionContext"] = None,
+    session_context: "SessionContext" | None = None,
     **kwargs,
 ) -> ClassificationResult:
     """Convenience function for classification.

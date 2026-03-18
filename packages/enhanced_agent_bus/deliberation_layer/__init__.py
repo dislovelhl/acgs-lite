@@ -34,11 +34,11 @@ from .voting_service import Election, Vote, VotingService, VotingStrategy
 _module = sys.modules.get(__name__)
 if _module is not None:
     sys.modules.setdefault("enhanced_agent_bus.deliberation_layer", _module)
-    sys.modules.setdefault("packages.enhanced_agent_bus.deliberation_layer", _module)
+    sys.modules.setdefault("enhanced_agent_bus.deliberation_layer", _module)
     sys.modules.setdefault("core.enhanced_agent_bus.deliberation_layer", _module)
     sys.modules.setdefault("enhanced_agent_bus.deliberation_layer.integration", integration)
     sys.modules.setdefault(
-        "packages.enhanced_agent_bus.deliberation_layer.integration", integration
+        "enhanced_agent_bus.deliberation_layer.integration", integration
     )
     sys.modules.setdefault("core.enhanced_agent_bus.deliberation_layer.integration", integration)
 

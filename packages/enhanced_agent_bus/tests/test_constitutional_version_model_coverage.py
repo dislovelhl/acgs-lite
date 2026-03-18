@@ -8,12 +8,13 @@ from datetime import UTC, datetime, timezone
 from unittest.mock import patch
 
 import pytest
-from packages.enhanced_agent_bus.constitutional.version_model import (
+from pydantic import ValidationError
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.constitutional.version_model import (
     ConstitutionalStatus,
     ConstitutionalVersion,
 )
-from pydantic import ValidationError
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 VALID_HASH = CONSTITUTIONAL_HASH
 VALID_CONTENT = {"rules": ["rule1"], "policies": {"opa": "deny := false"}}

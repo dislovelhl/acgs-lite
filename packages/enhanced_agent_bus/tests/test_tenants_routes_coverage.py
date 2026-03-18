@@ -13,15 +13,16 @@ from datetime import UTC, datetime, timedelta, timezone
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
-# ---------------------------------------------------------------------------
-# Import the module under test once (after conftest has been loaded)
-# ---------------------------------------------------------------------------
-import packages.enhanced_agent_bus.routes.tenants as _tenants_mod
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.errors.exceptions import ACGSBaseError
+
+# ---------------------------------------------------------------------------
+# Import the module under test once (after conftest has been loaded)
+# ---------------------------------------------------------------------------
+import enhanced_agent_bus.routes.tenants as _tenants_mod
 
 # The admin key that we will patch into the module for each test.
 _TEST_ADMIN_KEY = "test-coverage-admin-key-xyz"

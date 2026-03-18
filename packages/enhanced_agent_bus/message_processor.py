@@ -8,9 +8,16 @@ import random
 import time
 from collections.abc import Callable, Coroutine
 from contextlib import AbstractContextManager, nullcontext
-from typing import Literal, Optional, Union, cast
+from typing import Literal, cast
 
-from src.core.shared.types import JSONDict, JSONValue
+try:
+    from src.core.shared.types import (
+        JSONDict,
+        JSONValue,
+    )  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+    JSONValue = object  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -88,13 +95,13 @@ del _flags
 
 # MCP integration — optional dependency; degrades gracefully when absent
 try:
-    from packages.enhanced_agent_bus.mcp import (
+    from enhanced_agent_bus.mcp import (
         MCPClient,
         MCPClientConfig,
         MCPClientPool,
     )
-    from packages.enhanced_agent_bus.mcp.config import MCPConfig
-    from packages.enhanced_agent_bus.mcp.types import MCPToolResult
+    from enhanced_agent_bus.mcp.config import MCPConfig
+    from enhanced_agent_bus.mcp.types import MCPToolResult
 
     _MCP_AVAILABLE = True
 except ImportError:
@@ -231,14 +238,20 @@ class MessageProcessor:
             else None
         )
         self.constitutional_hash = CONSTITUTIONAL_HASH
-        self._opa_client, self._audit_client = get_opa_client(), kwargs.get("audit_client")
+        self._audit_client = kwargs.get("audit_client")
+        self._opa_client = None
+        if not self._isolated_mode:
+            try:
+                self._opa_client = get_opa_client()
+            except Exception:
+                logger.debug("OPA client unavailable during message processor initialization")
         self._constitutional_verifier = kwargs.get("constitutional_verifier")
         # OPTIMIZATION: Increased cache size from 1000 to 10000 for enterprise scale
         # At 6,471 RPS, 1000 entries caused high cache churn (~seconds to evict)
         self._validation_cache: object = LRUCache(maxsize=DEFAULT_LRU_CACHE_SIZE)
 
         # SDPC Phase 2/3 Verifiers
-        from packages.enhanced_agent_bus.builder import build_pqc_service, build_sdpc_verifiers
+        from enhanced_agent_bus.builder import build_pqc_service, build_sdpc_verifiers
 
         sdpc = build_sdpc_verifiers(self.config)
         self.intent_classifier = kwargs.get("intent_classifier", sdpc.intent_classifier)
@@ -363,14 +376,14 @@ class MessageProcessor:
             logger.debug("Agent workflow telemetry emission failed", exc_info=True)
 
     def _auto_select_strategy(self) -> ProcessingStrategy:
-        from packages.enhanced_agent_bus.processing_strategies import (
+        from enhanced_agent_bus.processing_strategies import (
             CompositeProcessingStrategy,
             MACIProcessingStrategy,
             OPAProcessingStrategy,
             PythonProcessingStrategy,
             RustProcessingStrategy,
         )
-        from packages.enhanced_agent_bus.validation_strategies import (
+        from enhanced_agent_bus.validation_strategies import (
             ConstitutionalValidationStrategy,
             StaticHashValidationStrategy,
         )
@@ -985,7 +998,7 @@ class MessageProcessor:
         if isinstance(config, dict):
             try:
                 mcp_config = MCPConfig(**config)  # type: ignore[arg-type]
-            except Exception as exc:
+            except (TypeError, ValueError) as exc:
                 logger.error("mcp_initialize_invalid_config_dict", error=str(exc))
                 return
         elif isinstance(config, MCPConfig):  # type: ignore[arg-type]

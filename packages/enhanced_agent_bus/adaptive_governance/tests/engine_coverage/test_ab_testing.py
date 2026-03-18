@@ -21,10 +21,10 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH as SHARED_CONSTITUTION
 
 _MLFLOW_PATCH = "mlflow.set_tracking_uri"
 _IMPACT_MLFLOW = (
-    "packages.enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
+    "enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
 )
 _THRESH_MLFLOW = (
-    "packages.enhanced_agent_bus.adaptive_governance.threshold_manager."
+    "enhanced_agent_bus.adaptive_governance.threshold_manager."
     "AdaptiveThresholds._initialize_mlflow"
 )
 
@@ -37,7 +37,7 @@ CONST_HASH = SHARED_CONSTITUTIONAL_HASH
 
 
 def _make_features(risk_score: float = 0.3, confidence: float = 0.9):
-    from packages.enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
+    from enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
 
     return ImpactFeatures(
         message_length=50,
@@ -54,7 +54,7 @@ def _make_features(risk_score: float = 0.3, confidence: float = 0.9):
 
 
 def _make_decision(risk_score: float = 0.3, action_allowed: bool = True):
-    from packages.enhanced_agent_bus.adaptive_governance.models import (
+    from enhanced_agent_bus.adaptive_governance.models import (
         GovernanceDecision,
         ImpactLevel,
     )
@@ -77,32 +77,32 @@ def engine():
         patch(_IMPACT_MLFLOW),
         patch(_THRESH_MLFLOW),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "FEEDBACK_HANDLER_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "DRIFT_MONITORING_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "ONLINE_LEARNING_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "AB_TESTING_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "ANOMALY_MONITORING_AVAILABLE",
             False,
         ),
     ):
-        from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+        from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
 
@@ -151,7 +151,7 @@ class TestABTestMethods:
         mock_router.get_metrics_summary = MagicMock(return_value={"champion": {}})
         engine._ab_test_router = mock_router
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.AB_TESTING_AVAILABLE
         try:
@@ -166,7 +166,7 @@ class TestABTestMethods:
         mock_router.get_metrics_summary = MagicMock(side_effect=RuntimeError("fail"))
         engine._ab_test_router = mock_router
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.AB_TESTING_AVAILABLE
         try:
@@ -185,7 +185,7 @@ class TestABTestMethods:
         mock_router.compare_metrics = MagicMock(return_value=mock_comparison)
         engine._ab_test_router = mock_router
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.AB_TESTING_AVAILABLE
         try:
@@ -200,7 +200,7 @@ class TestABTestMethods:
         mock_router.compare_metrics = MagicMock(side_effect=RuntimeError("fail"))
         engine._ab_test_router = mock_router
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.AB_TESTING_AVAILABLE
         try:
@@ -224,7 +224,7 @@ class TestABTestMethods:
         mock_router.promote_candidate = MagicMock(return_value=mock_result)
         engine._ab_test_router = mock_router
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.AB_TESTING_AVAILABLE
         try:
@@ -244,7 +244,7 @@ class TestABTestMethods:
         mock_router.promote_candidate = MagicMock(return_value=mock_result)
         engine._ab_test_router = mock_router
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.AB_TESTING_AVAILABLE
         try:
@@ -259,7 +259,7 @@ class TestABTestMethods:
         mock_router.promote_candidate = MagicMock(side_effect=RuntimeError("fail"))
         engine._ab_test_router = mock_router
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.AB_TESTING_AVAILABLE
         try:
@@ -283,7 +283,7 @@ class TestPerformanceTrends:
         assert len(engine.metrics.performance_trend) == 1
 
     def test_analyze_performance_trends_trims_when_long(self, engine):
-        from packages.enhanced_agent_bus.governance_constants import GOVERNANCE_MAX_TREND_LENGTH
+        from enhanced_agent_bus.governance_constants import GOVERNANCE_MAX_TREND_LENGTH
 
         engine.metrics.compliance_trend = [0.5] * (GOVERNANCE_MAX_TREND_LENGTH + 5)
         engine.metrics.accuracy_trend = [0.5] * (GOVERNANCE_MAX_TREND_LENGTH + 5)
@@ -304,7 +304,7 @@ class TestPerformanceTrends:
         assert engine._should_retrain_models() is True
 
     def test_should_retrain_sufficient_data(self, engine):
-        from packages.enhanced_agent_bus.governance_constants import (
+        from enhanced_agent_bus.governance_constants import (
             GOVERNANCE_RETRAIN_CHECK_MODULUS,
             GOVERNANCE_RETRAIN_HISTORY_MIN,
         )
@@ -324,7 +324,7 @@ class TestPerformanceTrends:
     def test_log_performance_summary_handles_runtime_error(self, engine):
         """If logger.info raises RuntimeError it is caught."""
         with patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine.logger"
+            "enhanced_agent_bus.adaptive_governance.governance_engine.logger"
         ) as mock_logger:
             mock_logger.info.side_effect = RuntimeError("log fail")
             engine._log_performance_summary()  # should not raise

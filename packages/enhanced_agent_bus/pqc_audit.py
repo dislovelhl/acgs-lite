@@ -66,7 +66,7 @@ async def write_verification_audit_event(
             result = audit_writer(event)
             if hasattr(result, "__await__"):
                 await result
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - pluggable audit writers may raise arbitrary errors
             logger.error("Failed to write verification audit event", error=str(exc))
 
     # Increment Redis adoption counters
@@ -78,7 +78,7 @@ async def write_verification_audit_event(
             try:
                 await redis_client.hincrby(redis_key, counter_field, 1)
                 await redis_client.expire(redis_key, ttl)
-            except Exception as exc:
+            except (ConnectionError, TimeoutError, OSError, RuntimeError, ValueError) as exc:
                 logger.warning(
                     "Failed to increment PQC adoption counter",
                     window=window,
@@ -122,7 +122,7 @@ async def write_mode_change_audit_event(
             result = audit_writer(event)
             if hasattr(result, "__await__"):
                 await result
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - pluggable audit writers may raise arbitrary errors
             logger.error("Failed to write mode change audit event", error=str(exc))
 
     # Downgrade warning

@@ -14,7 +14,7 @@ import types
 # transitively triggers a Python-3.14-incompatible `from typing import object`
 # in models.py) is never executed.  We only need the exceptions submodule.
 # ---------------------------------------------------------------------------
-_PKG = "packages.enhanced_agent_bus.langgraph_orchestration"
+_PKG = "enhanced_agent_bus.langgraph_orchestration"
 if _PKG not in sys.modules:
     _stub = types.ModuleType(_PKG)
     _stub.__path__ = ["packages/enhanced_agent_bus/langgraph_orchestration"]
@@ -22,7 +22,9 @@ if _PKG not in sys.modules:
     sys.modules[_PKG] = _stub
 
 import pytest  # noqa: E402
-from packages.enhanced_agent_bus.langgraph_orchestration.exceptions import (  # noqa: E402
+from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+
+from enhanced_agent_bus.langgraph_orchestration.exceptions import (  # noqa: E402
     CheckpointError,
     ConstitutionalViolationError,
     CyclicDependencyError,
@@ -34,7 +36,6 @@ from packages.enhanced_agent_bus.langgraph_orchestration.exceptions import (  # 
     StateTransitionError,
     TimeoutError,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # OrchestrationError (base)
@@ -588,7 +589,7 @@ class TestDunderAll:
         import importlib
 
         exc_mod = importlib.import_module(
-            "packages.enhanced_agent_bus.langgraph_orchestration.exceptions"
+            "enhanced_agent_bus.langgraph_orchestration.exceptions"
         )
 
         expected = {

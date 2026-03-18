@@ -15,7 +15,7 @@ from __future__ import annotations
 from collections import deque
 from datetime import datetime, timedelta
 
-from packages.enhanced_agent_bus.agent_health.models import AgentHealthThresholds
+from enhanced_agent_bus.agent_health.models import AgentHealthThresholds
 
 
 class FailureLoopDetector:

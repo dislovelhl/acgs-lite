@@ -26,25 +26,28 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import Enum
 
-from packages.enhanced_agent_bus.circuit_breaker import (
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.circuit_breaker import (
     CONSTITUTIONAL_HASH,
     FallbackStrategy,
     ServiceCircuitConfig,
     ServiceSeverity,
 )
-from packages.enhanced_agent_bus.governance_constants import (
+from enhanced_agent_bus.governance_constants import (
     LLM_CB_DEFAULT_FAILURE_THRESHOLD,
     LLM_CB_DEFAULT_FALLBACK_TTL_SECONDS,
     LLM_CB_DEFAULT_HALF_OPEN_REQUESTS,
     LLM_CB_DEFAULT_TIMEOUT_SECONDS,
 )
-from packages.enhanced_agent_bus.llm_adapters.capability_matrix import (
+from enhanced_agent_bus.llm_adapters.capability_matrix import (
     CapabilityRegistry,
     CapabilityRequirement,
     get_capability_registry,
 )
-from src.core.shared.types import JSONDict
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
@@ -1076,7 +1079,7 @@ class RequestHedgingManager:
 # LLM Failover Orchestrator (re-exported from failover/ package)
 # =============================================================================
 
-from packages.enhanced_agent_bus.llm_adapters.failover.orchestrator import (  # noqa: E402
+from enhanced_agent_bus.llm_adapters.failover.orchestrator import (  # noqa: E402
     LLMFailoverOrchestrator,
     get_llm_failover_orchestrator,
     reset_llm_failover_orchestrator,

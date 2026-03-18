@@ -233,7 +233,7 @@ class TestFeatureFlagConstants:
             "METRICS_ENABLED": bus.METRICS_ENABLED,
         }
 
-        import packages.enhanced_agent_bus.dependency_bridge as bridge
+        import enhanced_agent_bus.dependency_bridge as bridge
 
         monkeypatch.setattr(
             bridge,

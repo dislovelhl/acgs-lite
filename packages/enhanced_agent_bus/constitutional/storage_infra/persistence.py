@@ -4,7 +4,6 @@ PostgreSQL Persistence for ACGS-2 Constitutional Storage.
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-from typing import Optional
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine

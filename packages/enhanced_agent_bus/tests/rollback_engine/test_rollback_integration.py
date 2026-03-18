@@ -7,18 +7,20 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.constitutional.amendment_model import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.constitutional.amendment_model import (
     AmendmentProposal,
     AmendmentStatus,
 )
-from packages.enhanced_agent_bus.constitutional.degradation_detector import (
+from enhanced_agent_bus.constitutional.degradation_detector import (
     DegradationReport,
     DegradationSeverity,
     MetricDegradationAnalysis,
     SignificanceLevel,
     TimeWindow,
 )
-from packages.enhanced_agent_bus.constitutional.rollback_engine import (
+from enhanced_agent_bus.constitutional.rollback_engine import (
     RollbackEngineError,
     RollbackReason,
     RollbackSagaActivities,
@@ -26,7 +28,6 @@ from packages.enhanced_agent_bus.constitutional.rollback_engine import (
     create_rollback_saga,
     rollback_amendment,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 from .conftest import _make_activities, _make_degradation_report, _make_saga_input
 
@@ -41,7 +42,7 @@ class TestRollbackAmendment:
     async def test_raises_import_error_when_no_saga_context(self) -> None:
         storage, mc, dd = self._make_deps()
         with patch(
-            "packages.enhanced_agent_bus.constitutional.rollback_engine.SagaContext",
+            "enhanced_agent_bus.constitutional.rollback_engine.SagaContext",
             None,
         ):
             with pytest.raises(ImportError, match="SagaContext not available"):
@@ -103,19 +104,19 @@ class TestRollbackAmendment:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.ConstitutionalSagaWorkflow",
+                "enhanced_agent_bus.constitutional.rollback_engine.ConstitutionalSagaWorkflow",
                 MockSaga,
             ),
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.SagaStep",
+                "enhanced_agent_bus.constitutional.rollback_engine.SagaStep",
                 MockSagaStep,
             ),
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.SagaCompensation",
+                "enhanced_agent_bus.constitutional.rollback_engine.SagaCompensation",
                 MockSagaCompensation,
             ),
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.SagaContext",
+                "enhanced_agent_bus.constitutional.rollback_engine.SagaContext",
                 MockSagaContext,
             ),
             patch.object(RollbackSagaActivities, "initialize", new=_noop_init),
@@ -179,19 +180,19 @@ class TestRollbackAmendment:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.ConstitutionalSagaWorkflow",
+                "enhanced_agent_bus.constitutional.rollback_engine.ConstitutionalSagaWorkflow",
                 MockSaga,
             ),
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.SagaStep",
+                "enhanced_agent_bus.constitutional.rollback_engine.SagaStep",
                 MockSagaStep,
             ),
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.SagaCompensation",
+                "enhanced_agent_bus.constitutional.rollback_engine.SagaCompensation",
                 MockSagaCompensation,
             ),
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.SagaContext",
+                "enhanced_agent_bus.constitutional.rollback_engine.SagaContext",
                 MockSagaContext,
             ),
             patch.object(RollbackSagaActivities, "initialize", new=_noop_init),
@@ -260,19 +261,19 @@ class TestRollbackAmendment:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.ConstitutionalSagaWorkflow",
+                "enhanced_agent_bus.constitutional.rollback_engine.ConstitutionalSagaWorkflow",
                 MockSagaNoSteps,
             ),
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.SagaStep",
+                "enhanced_agent_bus.constitutional.rollback_engine.SagaStep",
                 MockSagaStep,
             ),
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.SagaCompensation",
+                "enhanced_agent_bus.constitutional.rollback_engine.SagaCompensation",
                 MockSagaCompensation,
             ),
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.SagaContext",
+                "enhanced_agent_bus.constitutional.rollback_engine.SagaContext",
                 MockSagaContext,
             ),
             patch.object(RollbackSagaActivities, "initialize", new=tracking_init),
@@ -343,19 +344,19 @@ class TestRollbackAmendment:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.ConstitutionalSagaWorkflow",
+                "enhanced_agent_bus.constitutional.rollback_engine.ConstitutionalSagaWorkflow",
                 MockSaga,
             ),
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.SagaStep",
+                "enhanced_agent_bus.constitutional.rollback_engine.SagaStep",
                 MockSagaStep,
             ),
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.SagaCompensation",
+                "enhanced_agent_bus.constitutional.rollback_engine.SagaCompensation",
                 MockSagaCompensation,
             ),
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.SagaContext",
+                "enhanced_agent_bus.constitutional.rollback_engine.SagaContext",
                 MockSagaContext,
             ),
             patch.object(RollbackSagaActivities, "initialize", new=tracking_init),
@@ -428,19 +429,19 @@ class TestRollbackAmendment:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.ConstitutionalSagaWorkflow",
+                "enhanced_agent_bus.constitutional.rollback_engine.ConstitutionalSagaWorkflow",
                 MockSaga,
             ),
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.SagaStep",
+                "enhanced_agent_bus.constitutional.rollback_engine.SagaStep",
                 MockSagaStep,
             ),
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.SagaCompensation",
+                "enhanced_agent_bus.constitutional.rollback_engine.SagaCompensation",
                 MockSagaCompensation,
             ),
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.SagaContext",
+                "enhanced_agent_bus.constitutional.rollback_engine.SagaContext",
                 MockSagaContext,
             ),
             patch.object(RollbackSagaActivities, "initialize", new=tracking_init),
@@ -508,19 +509,19 @@ class TestRollbackAmendment:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.ConstitutionalSagaWorkflow",
+                "enhanced_agent_bus.constitutional.rollback_engine.ConstitutionalSagaWorkflow",
                 MockSaga,
             ),
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.SagaStep",
+                "enhanced_agent_bus.constitutional.rollback_engine.SagaStep",
                 MockSagaStep,
             ),
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.SagaCompensation",
+                "enhanced_agent_bus.constitutional.rollback_engine.SagaCompensation",
                 MockSagaCompensation,
             ),
             patch(
-                "packages.enhanced_agent_bus.constitutional.rollback_engine.SagaContext",
+                "enhanced_agent_bus.constitutional.rollback_engine.SagaContext",
                 MockSagaContext,
             ),
             patch.object(RollbackSagaActivities, "__init__", tracking_init),

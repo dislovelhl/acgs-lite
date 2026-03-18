@@ -11,7 +11,10 @@ import asyncio
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from ..maci_imports import CONSTITUTIONAL_HASH
 from ..observability.structured_logging import get_logger

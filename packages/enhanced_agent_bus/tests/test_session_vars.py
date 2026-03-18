@@ -11,7 +11,12 @@ import tempfile
 
 import pytest
 import pytest_asyncio
-from packages.enhanced_agent_bus.multi_tenancy.session_vars import (
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+from src.core.shared.database.session import Base
+
+from enhanced_agent_bus.multi_tenancy.session_vars import (
     SESSION_VAR_IS_ADMIN,
     SESSION_VAR_TENANT_ID,
     admin_session,
@@ -23,11 +28,7 @@ from packages.enhanced_agent_bus.multi_tenancy.session_vars import (
     system_tenant_session,
     tenant_session,
 )
-from packages.enhanced_agent_bus.multi_tenancy.system_tenant import SYSTEM_TENANT_ID
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.database.session import Base
+from enhanced_agent_bus.multi_tenancy.system_tenant import SYSTEM_TENANT_ID
 
 # Force all tests in this module into a single xdist group to avoid
 # SQLAlchemy Base.metadata backref conflicts across parallel workers.
@@ -196,7 +197,7 @@ class TestSessionVarsConstitutionalCompliance:
 
     def test_module_has_constitutional_hash(self):
         """Test that module exports constitutional hash."""
-        from packages.enhanced_agent_bus.multi_tenancy.session_vars import (
+        from enhanced_agent_bus.multi_tenancy.session_vars import (
             CONSTITUTIONAL_HASH as SV_HASH,
         )
 
@@ -204,7 +205,7 @@ class TestSessionVarsConstitutionalCompliance:
 
     def test_all_exports_defined(self):
         """Test that all expected functions are exported."""
-        from packages.enhanced_agent_bus.multi_tenancy import session_vars
+        from enhanced_agent_bus.multi_tenancy import session_vars
 
         expected_exports = [
             "SESSION_VAR_TENANT_ID",
@@ -233,25 +234,25 @@ class TestSessionVarsModuleIntegration:
 
     def test_exports_from_parent_module(self):
         """Test that session vars are exported from parent module."""
-        from packages.enhanced_agent_bus.multi_tenancy import (
+        from enhanced_agent_bus.multi_tenancy import (
             SESSION_VAR_IS_ADMIN as _SESSION_VAR_IS_ADMIN,
         )
-        from packages.enhanced_agent_bus.multi_tenancy import (
+        from enhanced_agent_bus.multi_tenancy import (
             SESSION_VAR_TENANT_ID as _SESSION_VAR_TENANT_ID,
         )
-        from packages.enhanced_agent_bus.multi_tenancy import (
+        from enhanced_agent_bus.multi_tenancy import (
             admin_session as _admin_session,
         )
-        from packages.enhanced_agent_bus.multi_tenancy import (
+        from enhanced_agent_bus.multi_tenancy import (
             set_tenant_for_request as _set_tenant_for_request,
         )
-        from packages.enhanced_agent_bus.multi_tenancy import (
+        from enhanced_agent_bus.multi_tenancy import (
             set_tenant_session_vars as _set_tenant_session_vars,
         )
-        from packages.enhanced_agent_bus.multi_tenancy import (
+        from enhanced_agent_bus.multi_tenancy import (
             system_tenant_session as _system_tenant_session,
         )
-        from packages.enhanced_agent_bus.multi_tenancy import (
+        from enhanced_agent_bus.multi_tenancy import (
             tenant_session as _tenant_session,
         )
 
@@ -266,7 +267,7 @@ class TestSessionVarsModuleIntegration:
 
     def test_system_tenant_available(self):
         """Test that SYSTEM_TENANT_ID is available in session_vars module."""
-        from packages.enhanced_agent_bus.multi_tenancy.session_vars import (
+        from enhanced_agent_bus.multi_tenancy.session_vars import (
             SYSTEM_TENANT_ID as SESSION_SYSTEM_ID,
         )
 

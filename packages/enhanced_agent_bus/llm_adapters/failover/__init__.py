@@ -14,7 +14,7 @@ Success Metrics:
 - Zero single-provider dependency for critical paths
 """
 
-from packages.enhanced_agent_bus.circuit_breaker import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.circuit_breaker import CONSTITUTIONAL_HASH
 
 from .config import (
     LLM_CIRCUIT_CONFIGS,

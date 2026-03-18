@@ -6,7 +6,11 @@ from unittest.mock import MagicMock
 
 import pytest
 from fastapi import HTTPException
-from packages.enhanced_agent_bus.policy_copilot.api import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+from src.core.shared.errors.exceptions import ValidationError
+from src.core.shared.security.auth import UserClaims
+
+from enhanced_agent_bus.policy_copilot.api import (
     FeedbackRequest,
     explain_policy,
     generate_policy,
@@ -17,10 +21,10 @@ from packages.enhanced_agent_bus.policy_copilot.api import (
     submit_feedback,
     validate_policy,
 )
-from packages.enhanced_agent_bus.policy_copilot.api import (
+from enhanced_agent_bus.policy_copilot.api import (
     test_policy as api_test_policy,
 )
-from packages.enhanced_agent_bus.policy_copilot.models import (
+from enhanced_agent_bus.policy_copilot.models import (
     CopilotRequest,
     ExplainRequest,
     ImproveRequest,
@@ -31,15 +35,12 @@ from packages.enhanced_agent_bus.policy_copilot.models import (
     PolicyTemplateCategory,
     ValidationResult,
 )
-from packages.enhanced_agent_bus.policy_copilot.models import (
+from enhanced_agent_bus.policy_copilot.models import (
     TestRequest as CopilotTestRequest,
 )
-from packages.enhanced_agent_bus.policy_copilot.models import (
+from enhanced_agent_bus.policy_copilot.models import (
     TestResult as CopilotTestResult,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.errors.exceptions import ValidationError
-from src.core.shared.security.auth import UserClaims
 
 
 def _user(tenant_id: str = "tenant-a") -> UserClaims:

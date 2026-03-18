@@ -5,6 +5,11 @@ Constitutional Hash: cdd01ef066bc6cf2
 This test file uses dynamic import to bypass parent module dependencies.
 """
 
+import pytest
+
+pytest.importorskip("src.core.services.policy_registry")
+
+
 import importlib.util
 import sys
 import types

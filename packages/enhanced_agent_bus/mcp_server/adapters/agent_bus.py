@@ -6,9 +6,11 @@ Bridges MCP tools/resources with the Enhanced Agent Bus.
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-from typing import Optional
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -117,7 +119,7 @@ class AgentBusAdapter:
             return await self._validate_standalone(action, context, strict_mode)
 
         try:
-            from packages.enhanced_agent_bus.models import AgentMessage, MessageType, Priority
+            from enhanced_agent_bus.models import AgentMessage, MessageType, Priority
 
             # Create governance request message
             message = AgentMessage(
@@ -255,7 +257,7 @@ class AgentBusAdapter:
             }
 
         try:
-            from packages.enhanced_agent_bus.models import AgentMessage, MessageType, Priority
+            from enhanced_agent_bus.models import AgentMessage, MessageType, Priority
 
             priority_map = {
                 "low": Priority.LOW,

@@ -9,7 +9,10 @@ import inspect
 import time
 from collections.abc import Callable
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 try:
     from src.core.shared.types import JSONDict, JSONList

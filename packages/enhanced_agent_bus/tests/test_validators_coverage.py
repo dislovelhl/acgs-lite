@@ -14,8 +14,8 @@ import pytest
 # Governance and constitutional compliance test markers
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
-from packages.enhanced_agent_bus.models import MessageStatus  # noqa: E402
-from packages.enhanced_agent_bus.validators import (  # noqa: E402
+from enhanced_agent_bus.models import MessageStatus  # noqa: E402
+from enhanced_agent_bus.validators import (  # noqa: E402
     CONSTITUTIONAL_HASH,
     ValidationResult,
     validate_constitutional_hash,
@@ -362,7 +362,7 @@ class TestValidateConstitutionalHashExtra:
     def test_unicode_encode_error_treated_as_mismatch(self):
         """When hmac.compare_digest raises UnicodeEncodeError, result is invalid."""
         with patch(
-            "packages.enhanced_agent_bus.validators.hmac.compare_digest",
+            "enhanced_agent_bus.validators.hmac.compare_digest",
             side_effect=UnicodeEncodeError("utf-8", "", 0, 1, "bad char"),
         ):
             result = validate_constitutional_hash(CONSTITUTIONAL_HASH)
@@ -419,30 +419,30 @@ class TestValidateMessageContentExtra:
 
 class TestModuleExports:
     def test_constitutional_hash_exported(self):
-        import packages.enhanced_agent_bus.validators as mod
+        import enhanced_agent_bus.validators as mod
 
         assert "CONSTITUTIONAL_HASH" in mod.__all__
         assert mod.CONSTITUTIONAL_HASH == CONSTITUTIONAL_HASH
 
     def test_validation_result_exported(self):
-        import packages.enhanced_agent_bus.validators as mod
+        import enhanced_agent_bus.validators as mod
 
         assert "ValidationResult" in mod.__all__
 
     def test_validate_constitutional_hash_exported(self):
-        import packages.enhanced_agent_bus.validators as mod
+        import enhanced_agent_bus.validators as mod
 
         assert "validate_constitutional_hash" in mod.__all__
         assert callable(mod.validate_constitutional_hash)
 
     def test_validate_message_content_exported(self):
-        import packages.enhanced_agent_bus.validators as mod
+        import enhanced_agent_bus.validators as mod
 
         assert "validate_message_content" in mod.__all__
         assert callable(mod.validate_message_content)
 
     def test_all_names_resolvable(self):
-        import packages.enhanced_agent_bus.validators as mod
+        import enhanced_agent_bus.validators as mod
 
         for name in mod.__all__:
             assert hasattr(mod, name), f"__all__ lists missing attribute: {name}"

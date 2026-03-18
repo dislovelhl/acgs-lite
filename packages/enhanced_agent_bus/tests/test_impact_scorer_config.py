@@ -7,11 +7,12 @@ Tests for the configurable ImpactScorer.
 
 import numpy as np
 import pytest
-from packages.enhanced_agent_bus.deliberation_layer.impact_scorer import (
+
+from enhanced_agent_bus.deliberation_layer.impact_scorer import (
     ImpactScorer,
 )
-from packages.enhanced_agent_bus.impact_scorer_infra.models import ScoringConfig
-from packages.enhanced_agent_bus.models import Priority
+from enhanced_agent_bus.impact_scorer_infra.models import ScoringConfig
+from enhanced_agent_bus.models import Priority
 
 
 class TestImpactScorerConfig:

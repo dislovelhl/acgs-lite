@@ -21,10 +21,10 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH as SHARED_CONSTITUTION
 
 _MLFLOW_PATCH = "mlflow.set_tracking_uri"
 _IMPACT_MLFLOW = (
-    "packages.enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
+    "enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
 )
 _THRESH_MLFLOW = (
-    "packages.enhanced_agent_bus.adaptive_governance.threshold_manager."
+    "enhanced_agent_bus.adaptive_governance.threshold_manager."
     "AdaptiveThresholds._initialize_mlflow"
 )
 
@@ -37,7 +37,7 @@ CONST_HASH = SHARED_CONSTITUTIONAL_HASH
 
 
 def _make_features(risk_score: float = 0.3, confidence: float = 0.9):
-    from packages.enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
+    from enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
 
     return ImpactFeatures(
         message_length=50,
@@ -54,7 +54,7 @@ def _make_features(risk_score: float = 0.3, confidence: float = 0.9):
 
 
 def _make_decision(risk_score: float = 0.3, action_allowed: bool = True):
-    from packages.enhanced_agent_bus.adaptive_governance.models import (
+    from enhanced_agent_bus.adaptive_governance.models import (
         GovernanceDecision,
         ImpactLevel,
     )
@@ -77,32 +77,32 @@ def engine():
         patch(_IMPACT_MLFLOW),
         patch(_THRESH_MLFLOW),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "FEEDBACK_HANDLER_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "DRIFT_MONITORING_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "ONLINE_LEARNING_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "AB_TESTING_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "ANOMALY_MONITORING_AVAILABLE",
             False,
         ),
     ):
-        from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+        from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
 
@@ -136,37 +136,37 @@ def sample_context():
 
 class TestClassifyImpactLevel:
     def test_critical(self, engine):
-        from packages.enhanced_agent_bus.adaptive_governance.models import ImpactLevel
+        from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
 
         assert engine._classify_impact_level(0.95) == ImpactLevel.CRITICAL
 
     def test_high(self, engine):
-        from packages.enhanced_agent_bus.adaptive_governance.models import ImpactLevel
+        from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
 
         assert engine._classify_impact_level(0.75) == ImpactLevel.HIGH
 
     def test_medium(self, engine):
-        from packages.enhanced_agent_bus.adaptive_governance.models import ImpactLevel
+        from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
 
         assert engine._classify_impact_level(0.5) == ImpactLevel.MEDIUM
 
     def test_low(self, engine):
-        from packages.enhanced_agent_bus.adaptive_governance.models import ImpactLevel
+        from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
 
         assert engine._classify_impact_level(0.25) == ImpactLevel.LOW
 
     def test_negligible(self, engine):
-        from packages.enhanced_agent_bus.adaptive_governance.models import ImpactLevel
+        from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
 
         assert engine._classify_impact_level(0.1) == ImpactLevel.NEGLIGIBLE
 
     def test_boundary_critical(self, engine):
-        from packages.enhanced_agent_bus.adaptive_governance.models import ImpactLevel
+        from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
 
         assert engine._classify_impact_level(0.9) == ImpactLevel.CRITICAL
 
     def test_boundary_high(self, engine):
-        from packages.enhanced_agent_bus.adaptive_governance.models import ImpactLevel
+        from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
 
         assert engine._classify_impact_level(0.7) == ImpactLevel.HIGH
 
@@ -213,7 +213,7 @@ class TestGenerateReasoning:
 
 class TestEvaluateGovernanceDecision:
     async def test_basic_evaluation(self, engine, sample_message, sample_context):
-        from packages.enhanced_agent_bus.adaptive_governance.models import GovernanceDecision
+        from enhanced_agent_bus.adaptive_governance.models import GovernanceDecision
 
         features = _make_features(risk_score=0.3)
         engine.impact_scorer.assess_impact = AsyncMock(return_value=features)
@@ -233,7 +233,7 @@ class TestEvaluateGovernanceDecision:
         assert decision.action_allowed is False
 
     async def test_fallback_on_exception(self, engine, sample_message, sample_context):
-        from packages.enhanced_agent_bus.adaptive_governance.models import ImpactLevel
+        from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
 
         engine.impact_scorer.assess_impact = AsyncMock(side_effect=RuntimeError("boom"))
 
@@ -256,7 +256,7 @@ class TestEvaluateGovernanceDecision:
 
     async def test_ab_test_routing_champion(self, engine, sample_message, sample_context):
         """AB routing branch — champion cohort + shadow execution."""
-        from packages.enhanced_agent_bus.adaptive_governance.models import (
+        from enhanced_agent_bus.adaptive_governance.models import (
             GovernanceDecision,
             ImpactLevel,
         )
@@ -287,7 +287,7 @@ class TestEvaluateGovernanceDecision:
         engine.threshold_manager.get_adaptive_threshold = MagicMock(return_value=0.5)
 
         # Patch AB_TESTING_AVAILABLE and CohortType.CHAMPION in module scope
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig_ab = ge_mod.AB_TESTING_AVAILABLE
         orig_cohort_type = ge_mod.CohortType
@@ -313,7 +313,7 @@ class TestEvaluateGovernanceDecision:
         mock_router.route = MagicMock(side_effect=RuntimeError("route fail"))
         engine._ab_test_router = mock_router
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig_ab = ge_mod.AB_TESTING_AVAILABLE
         try:
@@ -354,7 +354,7 @@ class TestEvaluateGovernanceDecision:
         self, engine, sample_message, sample_context
     ):
         """DTMC intervention escalates decision to HIGH / blocks action."""
-        from packages.enhanced_agent_bus.adaptive_governance.models import ImpactLevel
+        from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
 
         cfg = MagicMock()
         cfg.enable_dtmc = True
@@ -382,7 +382,7 @@ class TestEvaluateGovernanceDecision:
         self, engine, sample_message, sample_context
     ):
         """If decision is already HIGH, DTMC escalation path does not change it."""
-        from packages.enhanced_agent_bus.adaptive_governance.models import ImpactLevel
+        from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
 
         cfg = MagicMock()
         cfg.enable_dtmc = True

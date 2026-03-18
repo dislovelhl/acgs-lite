@@ -18,7 +18,11 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from pydantic import BaseModel, Field
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 
 class ContractPermissions(BaseModel):

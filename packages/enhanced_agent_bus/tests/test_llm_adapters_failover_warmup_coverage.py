@@ -12,14 +12,14 @@ from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.circuit_breaker import CONSTITUTIONAL_HASH
-from packages.enhanced_agent_bus.llm_adapters.failover.warmup import (
+
+from enhanced_agent_bus.circuit_breaker import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.llm_adapters.failover.warmup import (
     WARMUP_EXECUTION_ERRORS,
     WARMUP_LOOP_ERRORS,
     ProviderWarmupManager,
     WarmupResult,
 )
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # ---------------------------------------------------------------------------
@@ -522,7 +522,7 @@ class TestWarmupBeforeFailover:
         mgr.register_warmup_handler("target", AsyncMock())
 
         with caplog.at_level(
-            logging.INFO, logger="packages.enhanced_agent_bus.llm_adapters.failover.warmup"
+            logging.INFO, logger="enhanced_agent_bus.llm_adapters.failover.warmup"
         ):
             await mgr.warmup_before_failover("target")
 
@@ -895,7 +895,7 @@ class TestLogging:
         mgr.register_warmup_handler("openai", AsyncMock())
 
         with caplog.at_level(
-            logging.DEBUG, logger="packages.enhanced_agent_bus.llm_adapters.failover.warmup"
+            logging.DEBUG, logger="enhanced_agent_bus.llm_adapters.failover.warmup"
         ):
             await mgr.warmup("openai")
 
@@ -907,7 +907,7 @@ class TestLogging:
         mgr.register_warmup_handler("p", AsyncMock())
 
         with caplog.at_level(
-            logging.WARNING, logger="packages.enhanced_agent_bus.llm_adapters.failover.warmup"
+            logging.WARNING, logger="enhanced_agent_bus.llm_adapters.failover.warmup"
         ):
             with patch("asyncio.wait_for", side_effect=TimeoutError()):
                 await mgr.warmup("p")
@@ -920,7 +920,7 @@ class TestLogging:
         mgr.register_warmup_handler("p", AsyncMock())
 
         with caplog.at_level(
-            logging.ERROR, logger="packages.enhanced_agent_bus.llm_adapters.failover.warmup"
+            logging.ERROR, logger="enhanced_agent_bus.llm_adapters.failover.warmup"
         ):
             with patch("asyncio.wait_for", side_effect=RuntimeError("fail")):
                 await mgr.warmup("p")
@@ -938,12 +938,12 @@ class TestModuleExports:
 
     def test_warmup_result_exported(self):
         """WarmupResult is in __all__."""
-        from packages.enhanced_agent_bus.llm_adapters.failover import warmup as warmup_module
+        from enhanced_agent_bus.llm_adapters.failover import warmup as warmup_module
 
         assert "WarmupResult" in warmup_module.__all__
 
     def test_provider_warmup_manager_exported(self):
         """ProviderWarmupManager is in __all__."""
-        from packages.enhanced_agent_bus.llm_adapters.failover import warmup as warmup_module
+        from enhanced_agent_bus.llm_adapters.failover import warmup as warmup_module
 
         assert "ProviderWarmupManager" in warmup_module.__all__

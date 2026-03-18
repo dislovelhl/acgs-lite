@@ -11,14 +11,15 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.pipeline.middleware import BaseMiddleware, MiddlewareConfig
-from packages.enhanced_agent_bus.pipeline.router import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.pipeline.middleware import BaseMiddleware, MiddlewareConfig
+from enhanced_agent_bus.pipeline.router import (
     PIPELINE_PROCESSING_ERRORS,
     PipelineConfig,
     PipelineMessageRouter,
 )
-from packages.enhanced_agent_bus.validators import ValidationResult
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.validators import ValidationResult
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -186,15 +187,15 @@ class TestPipelineConfigCreateDefaultMiddlewares:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.middlewares.security.SecurityMiddleware",
+                "enhanced_agent_bus.middlewares.security.SecurityMiddleware",
                 return_value=mock_security,
             ),
             patch(
-                "packages.enhanced_agent_bus.middlewares.tool_privilege.ToolPrivilegeMiddleware",
+                "enhanced_agent_bus.middlewares.tool_privilege.ToolPrivilegeMiddleware",
                 return_value=mock_tool,
             ),
             patch(
-                "packages.enhanced_agent_bus.middlewares.temporal_policy.TemporalPolicyMiddleware",
+                "enhanced_agent_bus.middlewares.temporal_policy.TemporalPolicyMiddleware",
                 return_value=mock_temporal,
             ),
         ):
@@ -305,15 +306,15 @@ class TestPipelineMessageRouterInit:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.middlewares.security.SecurityMiddleware",
+                "enhanced_agent_bus.middlewares.security.SecurityMiddleware",
                 return_value=mock_security,
             ),
             patch(
-                "packages.enhanced_agent_bus.middlewares.tool_privilege.ToolPrivilegeMiddleware",
+                "enhanced_agent_bus.middlewares.tool_privilege.ToolPrivilegeMiddleware",
                 return_value=mock_tool,
             ),
             patch(
-                "packages.enhanced_agent_bus.middlewares.temporal_policy.TemporalPolicyMiddleware",
+                "enhanced_agent_bus.middlewares.temporal_policy.TemporalPolicyMiddleware",
                 return_value=mock_temporal,
             ),
         ):

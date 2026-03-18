@@ -11,11 +11,15 @@ import base64
 import hashlib
 import hmac
 import json
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.enterprise_sso.session_governance_sdk import (
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.enterprise_sso.session_governance_sdk import (
     ConcurrencyCheckResult,
     ConcurrencyPolicy,
     Session,
@@ -39,7 +43,13 @@ from packages.enhanced_agent_bus.enterprise_sso.session_governance_sdk import (
     TokenValidationError,
     TokenValidationResult,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+_TEST_RSA_KEY = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+TEST_PRIVATE_KEY = _TEST_RSA_KEY.private_bytes(
+    encoding=serialization.Encoding.PEM,
+    format=serialization.PrivateFormat.PKCS8,
+    encryption_algorithm=serialization.NoEncryption(),
+).decode()
 
 # ============================================================================
 # Exception Tests
@@ -697,8 +707,8 @@ class TestConcurrencyPolicy:
 
 class TestSessionTokenManager:
     def test_init_defaults(self):
-        manager = SessionTokenManager(secret_key="secret123")  # noqa: S106
-        assert manager.secret_key == "secret123"  # noqa: S105
+        manager = SessionTokenManager(private_key=TEST_PRIVATE_KEY)
+        assert manager._private_key == TEST_PRIVATE_KEY
         assert manager.token_ttl_minutes == 60
         assert manager.refresh_token_ttl_days == 7
         assert manager.constitutional_hash == CONSTITUTIONAL_HASH
@@ -708,7 +718,7 @@ class TestSessionTokenManager:
 
     def test_init_custom_values(self):
         manager = SessionTokenManager(
-            secret_key="s",  # noqa: S106
+            private_key=TEST_PRIVATE_KEY,
             token_ttl_minutes=30,
             refresh_token_ttl_days=14,
         )
@@ -716,7 +726,7 @@ class TestSessionTokenManager:
         assert manager.refresh_token_ttl_days == 14
 
     async def test_generate_access_token_with_roles(self):
-        manager = SessionTokenManager(secret_key="secret")  # noqa: S106
+        manager = SessionTokenManager(private_key=TEST_PRIVATE_KEY)
         token = await manager.generate_access_token("sid1", "t1", "u1", ["admin", "viewer"])
         assert token.access_token != ""
         assert token.token_type == "Bearer"  # noqa: S105
@@ -724,19 +734,19 @@ class TestSessionTokenManager:
         assert token.constitutional_hash == CONSTITUTIONAL_HASH
 
     async def test_generate_access_token_no_roles(self):
-        manager = SessionTokenManager(secret_key="secret")  # noqa: S106
+        manager = SessionTokenManager(private_key=TEST_PRIVATE_KEY)
         token = await manager.generate_access_token("sid1", "t1", "u1")
         assert token.access_token != ""
 
     async def test_generate_access_token_returns_jwt(self):
-        manager = SessionTokenManager(secret_key="secret")  # noqa: S106
+        manager = SessionTokenManager(private_key=TEST_PRIVATE_KEY)
         token = await manager.generate_access_token("sid1", "t1", "u1")
         # JWT implementation: token is a signed JWT string, not stored in memory
         assert len(token.access_token) > 20
         assert token.access_token.count(".") == 2  # header.payload.signature
 
     async def test_generate_refresh_token(self):
-        manager = SessionTokenManager(secret_key="secret")  # noqa: S106
+        manager = SessionTokenManager(private_key=TEST_PRIVATE_KEY)
         token = await manager.generate_refresh_token("sid1", "t1", "u1")
         assert token.refresh_token is not None
         assert token.access_token == ""
@@ -745,7 +755,7 @@ class TestSessionTokenManager:
         assert token.refresh_token in manager._refresh_tokens
 
     async def test_validate_token_valid(self):
-        manager = SessionTokenManager(secret_key="secret")  # noqa: S106
+        manager = SessionTokenManager(private_key=TEST_PRIVATE_KEY)
         access_token_obj = await manager.generate_access_token("sid1", "t1", "u1", ["viewer"])
         result = await manager.validate_token(access_token_obj.access_token)
         assert result.is_valid is True
@@ -756,7 +766,7 @@ class TestSessionTokenManager:
         assert result.constitutional_hash == CONSTITUTIONAL_HASH
 
     async def test_validate_token_revoked(self):
-        manager = SessionTokenManager(secret_key="secret")  # noqa: S106
+        manager = SessionTokenManager(private_key=TEST_PRIVATE_KEY)
         access_token_obj = await manager.generate_access_token("sid1", "t1", "u1")
         await manager.revoke_token(access_token_obj.access_token)
         result = await manager.validate_token(access_token_obj.access_token)
@@ -764,7 +774,7 @@ class TestSessionTokenManager:
         assert result.reason == "token_revoked"
 
     async def test_validate_token_invalid_garbage(self):
-        manager = SessionTokenManager(secret_key="secret")  # noqa: S106
+        manager = SessionTokenManager(private_key=TEST_PRIVATE_KEY)
         result = await manager.validate_token("garbage_token_xyz")
         assert result.is_valid is False
         assert result.reason == "invalid_token"
@@ -775,7 +785,7 @@ class TestSessionTokenManager:
 
         import jwt as pyjwt
 
-        manager = SessionTokenManager(secret_key="secret-key-long-enough", token_ttl_minutes=60)  # noqa: S106
+        manager = SessionTokenManager(private_key=TEST_PRIVATE_KEY, token_ttl_minutes=60)
         now = datetime.now(UTC)
         past = now - timedelta(hours=2)
         payload = {
@@ -791,24 +801,24 @@ class TestSessionTokenManager:
             "roles": [],
             "constitutional_hash": CONSTITUTIONAL_HASH,
         }
-        expired_token = pyjwt.encode(payload, manager.secret_key, algorithm=manager._algorithm)
+        expired_token = pyjwt.encode(payload, manager._private_key, algorithm=manager._algorithm)
         result = await manager.validate_token(expired_token)
         assert result.is_valid is False
         assert result.reason == "token_expired"
 
     async def test_refresh_access_token_success(self):
-        manager = SessionTokenManager(secret_key="secret")  # noqa: S106
+        manager = SessionTokenManager(private_key=TEST_PRIVATE_KEY)
         refresh_token_obj = await manager.generate_refresh_token("sid1", "t1", "u1")
         new_token = await manager.refresh_access_token(refresh_token_obj.refresh_token)
         assert new_token.access_token != ""
 
     async def test_refresh_access_token_invalid_raises(self):
-        manager = SessionTokenManager(secret_key="secret")  # noqa: S106
+        manager = SessionTokenManager(private_key=TEST_PRIVATE_KEY)
         with pytest.raises(TokenValidationError, match="Invalid refresh token"):
             await manager.refresh_access_token("nonexistent_refresh_xyz")
 
     async def test_refresh_access_token_expired_raises(self):
-        manager = SessionTokenManager(secret_key="secret")  # noqa: S106
+        manager = SessionTokenManager(private_key=TEST_PRIVATE_KEY)
         refresh_token_obj = await manager.generate_refresh_token("sid1", "t1", "u1")
         # Force expiry: _refresh_tokens["exp"] stores a Unix timestamp int
         manager._refresh_tokens[refresh_token_obj.refresh_token]["exp"] = int(
@@ -818,7 +828,7 @@ class TestSessionTokenManager:
             await manager.refresh_access_token(refresh_token_obj.refresh_token)
 
     async def test_revoke_token_removes_from_tokens(self):
-        manager = SessionTokenManager(secret_key="secret")  # noqa: S106
+        manager = SessionTokenManager(private_key=TEST_PRIVATE_KEY)
         access_token_obj = await manager.generate_access_token("sid1", "t1", "u1")
         token_str = access_token_obj.access_token
         await manager.revoke_token(token_str)
@@ -828,7 +838,7 @@ class TestSessionTokenManager:
         assert result.reason == "token_revoked"
 
     async def test_revoke_nonexistent_token_no_error(self):
-        manager = SessionTokenManager(secret_key="secret")  # noqa: S106
+        manager = SessionTokenManager(private_key=TEST_PRIVATE_KEY)
         # Malformed token: revoke_token stores the raw string as fallback in _revoked_jtis
         await manager.revoke_token("nonexistent_token_xyz")
         assert "nonexistent_token_xyz" in manager._revoked_jtis
@@ -1290,7 +1300,7 @@ class TestSessionLifecycleIntegration:
 
     async def test_token_full_lifecycle(self):
         """Generate access token -> validate -> revoke -> validate again."""
-        manager = SessionTokenManager(secret_key="supersecret")  # noqa: S106
+        manager = SessionTokenManager(private_key=TEST_PRIVATE_KEY)
         token_obj = await manager.generate_access_token("sid1", "t1", "u1", ["admin"])
 
         result = await manager.validate_token(token_obj.access_token)
@@ -1304,7 +1314,7 @@ class TestSessionLifecycleIntegration:
 
     async def test_refresh_token_lifecycle(self):
         """Generate refresh token -> use it -> expired refresh raises."""
-        manager = SessionTokenManager(secret_key="supersecret")  # noqa: S106
+        manager = SessionTokenManager(private_key=TEST_PRIVATE_KEY)
         refresh_obj = await manager.generate_refresh_token("sid1", "t1", "u1")
         new_access = await manager.refresh_access_token(refresh_obj.refresh_token)
         assert new_access.access_token != ""

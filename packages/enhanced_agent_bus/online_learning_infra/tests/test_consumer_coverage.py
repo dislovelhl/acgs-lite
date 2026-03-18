@@ -24,15 +24,15 @@ def _make_consumer(pipeline=None, **kwargs):
 
     with (
         patch(
-            "packages.enhanced_agent_bus.online_learning_infra.consumer.KAFKA_AVAILABLE",
+            "enhanced_agent_bus.online_learning_infra.consumer.KAFKA_AVAILABLE",
             True,
         ),
         patch(
-            "packages.enhanced_agent_bus.online_learning_infra.consumer.RIVER_AVAILABLE",
+            "enhanced_agent_bus.online_learning_infra.consumer.RIVER_AVAILABLE",
             True,
         ),
     ):
-        from packages.enhanced_agent_bus.online_learning_infra.consumer import (
+        from enhanced_agent_bus.online_learning_infra.consumer import (
             FeedbackKafkaConsumer,
         )
 
@@ -60,7 +60,7 @@ class TestModuleLevelImportFallback:
         import sys
 
         # Remove the module so we can re-import with aiokafka blocked
-        mod_name = "packages.enhanced_agent_bus.online_learning_infra.consumer"
+        mod_name = "enhanced_agent_bus.online_learning_infra.consumer"
         original = sys.modules.pop(mod_name, None)
         original_aiokafka = sys.modules.pop("aiokafka", None)
 
@@ -143,18 +143,18 @@ class TestFeedbackKafkaConsumerInit:
 
 class TestCheckDependencies:
     def test_returns_true_when_both_available(self):
-        from packages.enhanced_agent_bus.online_learning_infra.consumer import (
+        from enhanced_agent_bus.online_learning_infra.consumer import (
             FeedbackKafkaConsumer,
         )
 
         c = _make_consumer()
         with (
             patch(
-                "packages.enhanced_agent_bus.online_learning_infra.consumer.KAFKA_AVAILABLE",
+                "enhanced_agent_bus.online_learning_infra.consumer.KAFKA_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.online_learning_infra.consumer.RIVER_AVAILABLE",
+                "enhanced_agent_bus.online_learning_infra.consumer.RIVER_AVAILABLE",
                 True,
             ),
         ):
@@ -164,11 +164,11 @@ class TestCheckDependencies:
         c = _make_consumer()
         with (
             patch(
-                "packages.enhanced_agent_bus.online_learning_infra.consumer.KAFKA_AVAILABLE",
+                "enhanced_agent_bus.online_learning_infra.consumer.KAFKA_AVAILABLE",
                 False,
             ),
             patch(
-                "packages.enhanced_agent_bus.online_learning_infra.consumer.RIVER_AVAILABLE",
+                "enhanced_agent_bus.online_learning_infra.consumer.RIVER_AVAILABLE",
                 True,
             ),
         ):
@@ -178,11 +178,11 @@ class TestCheckDependencies:
         c = _make_consumer()
         with (
             patch(
-                "packages.enhanced_agent_bus.online_learning_infra.consumer.KAFKA_AVAILABLE",
+                "enhanced_agent_bus.online_learning_infra.consumer.KAFKA_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.online_learning_infra.consumer.RIVER_AVAILABLE",
+                "enhanced_agent_bus.online_learning_infra.consumer.RIVER_AVAILABLE",
                 False,
             ),
         ):
@@ -218,7 +218,7 @@ class TestStart:
         with (
             patch.object(c, "_check_dependencies", return_value=True),
             patch(
-                "packages.enhanced_agent_bus.online_learning_infra.consumer.AIOKafkaConsumer",
+                "enhanced_agent_bus.online_learning_infra.consumer.AIOKafkaConsumer",
                 mock_kafka_cls,
             ),
         ):
@@ -246,11 +246,11 @@ class TestStart:
         with (
             patch.object(c, "_check_dependencies", return_value=True),
             patch(
-                "packages.enhanced_agent_bus.online_learning_infra.consumer.AIOKafkaConsumer",
+                "enhanced_agent_bus.online_learning_infra.consumer.AIOKafkaConsumer",
                 mock_kafka_cls,
             ),
             patch(
-                "packages.enhanced_agent_bus.online_learning_infra.service.get_online_learning_pipeline",
+                "enhanced_agent_bus.online_learning_infra.service.get_online_learning_pipeline",
                 return_value=mock_pipeline,
             ),
         ):
@@ -269,7 +269,7 @@ class TestStart:
         with (
             patch.object(c, "_check_dependencies", return_value=True),
             patch(
-                "packages.enhanced_agent_bus.online_learning_infra.consumer.AIOKafkaConsumer",
+                "enhanced_agent_bus.online_learning_infra.consumer.AIOKafkaConsumer",
                 side_effect=RuntimeError("connection refused"),
             ),
         ):

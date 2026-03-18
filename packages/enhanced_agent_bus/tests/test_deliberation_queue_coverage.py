@@ -26,12 +26,14 @@ pytestmark = [pytest.mark.unit]
 # Core imports
 # ---------------------------------------------------------------------------
 
-from packages.enhanced_agent_bus.core_models import (  # noqa: E402
+from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+
+from enhanced_agent_bus.core_models import (  # noqa: E402
     AgentMessage,
     MessageStatus,
     MessageType,
 )
-from packages.enhanced_agent_bus.deliberation_layer.deliberation_queue import (  # noqa: E402
+from enhanced_agent_bus.deliberation_layer.deliberation_queue import (  # noqa: E402
     DELIBERATION_PERSISTENCE_ERRORS,
     AgentVote,
     DeliberationItem,
@@ -44,7 +46,6 @@ from packages.enhanced_agent_bus.deliberation_layer.deliberation_queue import ( 
     get_deliberation_queue,
     reset_deliberation_queue,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
 
 
 def _make_message(msg_id: str = "msg-001") -> AgentMessage:
@@ -1003,7 +1004,7 @@ class TestResolveTask:
 def _get_dq_module():
     """Return the deliberation_queue module regardless of import path alias."""
     for key in (
-        "packages.enhanced_agent_bus.deliberation_layer.deliberation_queue",
+        "enhanced_agent_bus.deliberation_layer.deliberation_queue",
         "core.enhanced_agent_bus.deliberation_layer.deliberation_queue",
         "enhanced_agent_bus.deliberation_layer.deliberation_queue",
     ):
@@ -1307,7 +1308,7 @@ class TestAllExports:
         import importlib
 
         mod = importlib.import_module(
-            "packages.enhanced_agent_bus.deliberation_layer.deliberation_queue"
+            "enhanced_agent_bus.deliberation_layer.deliberation_queue"
         )
         for name in mod.__all__:
             assert hasattr(mod, name), f"Missing export: {name}"

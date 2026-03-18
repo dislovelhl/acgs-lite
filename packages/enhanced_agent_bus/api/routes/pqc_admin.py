@@ -4,8 +4,8 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 Provides admin endpoints for managing the PQC enforcement mode:
 
-  PATCH /api/v1/admin/pqc-enforcement  — change mode (strict | permissive)
-  GET   /api/v1/admin/pqc-enforcement  — read current mode
+  PATCH /api/v1/admin/pqc-enforcement  - change mode (strict | permissive)
+  GET   /api/v1/admin/pqc-enforcement  - read current mode
 
 Authorization: platform-operator or tenant-admin JWT role required.
 """
@@ -19,14 +19,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 try:
     from src.core.shared.security.auth import UserClaims, get_current_user
-except ImportError:  # pragma: no cover — fallback for isolated test runs
+except ImportError:  # pragma: no cover - fallback for isolated test runs
     from unittest.mock import MagicMock
 
     UserClaims = MagicMock  # type: ignore[assignment,misc]
 
     async def get_current_user() -> MagicMock:  # type: ignore[misc]
         raise HTTPException(status_code=401, detail="Auth not configured")
-
 
 try:
     from ...pqc_enforcement_config import (
@@ -37,7 +36,7 @@ try:
         EnforcementModeRequest,
         EnforcementModeResponse,
     )
-except ImportError:  # pragma: no cover — fallback for isolated test runs
+except ImportError:  # pragma: no cover - fallback for isolated test runs
     from pqc_enforcement_config import (  # type: ignore[no-redef]
         EnforcementModeConfigService,
         StorageUnavailableError,
@@ -68,8 +67,9 @@ def get_enforcement_service() -> EnforcementModeConfigService:
     """FastAPI dependency that returns the shared enforcement-mode service.
 
     In production, the service is built by the app lifespan and stored on
-    app.state.  In tests, override this dependency via app.dependency_overrides.
+    app.state. In tests, override this dependency via app.dependency_overrides.
     """
+
     raise HTTPException(
         status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
         detail="PQC enforcement config service is not initialised",
@@ -117,7 +117,7 @@ async def patch_pqc_enforcement(
 
     if body.mode == "permissive":
         logger.warning(
-            "PQC enforcement mode set to permissive — classical keys will be accepted",
+            "PQC enforcement mode set to permissive - classical keys will be accepted",
             extra={"activated_by": user.sub, "scope": body.scope},
         )
 

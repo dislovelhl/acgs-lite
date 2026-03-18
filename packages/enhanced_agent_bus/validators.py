@@ -5,17 +5,22 @@ Constitutional Hash: cdd01ef066bc6cf2
 Validation utilities for message and agent compliance.
 """
 
+from __future__ import annotations
+
 import hmac
 from dataclasses import dataclass, field
 
 try:
     from .models import AgentMessage, MessageStatus
 except (ImportError, ValueError):
-    from models import MessageStatus  # type: ignore[import-untyped]
+    from models import AgentMessage, MessageStatus  # type: ignore[import-untyped]
 from datetime import UTC, datetime, timezone
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 if TYPE_CHECKING:
     from .models import PQCMetadata
@@ -38,7 +43,7 @@ class ValidationResult:
         warnings (list[str]): A list of warning messages.
         metadata (JSONDict): Additional metadata associated with the validation.
         constitutional_hash (str): The constitutional hash `cdd01ef066bc6cf2`.
-        pqc_metadata (Optional[PQCMetadata]): Post-quantum cryptography metadata including
+        pqc_metadata (PQCMetadata | None): Post-quantum cryptography metadata including
             algorithm details and verification status. None if PQC is not enabled.
     """
 
@@ -49,7 +54,7 @@ class ValidationResult:
     decision: str = "ALLOW"
     status: MessageStatus = MessageStatus.VALIDATED
     constitutional_hash: str = CONSTITUTIONAL_HASH
-    pqc_metadata: Optional["PQCMetadata"] = None
+    pqc_metadata: "PQCMetadata" | None = None
 
     def add_error(self, error: str) -> None:
         """Add an error to the result."""

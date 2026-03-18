@@ -10,7 +10,7 @@ Constitutional Hash: cdd01ef066bc6cf2
 import time
 from typing import cast
 
-from packages.enhanced_agent_bus.validators import ValidationResult
+from enhanced_agent_bus.validators import ValidationResult
 
 from ...batch_models import BatchResponse, BatchResponseItem
 from ...circuit_breaker.batch import CircuitBreaker, CircuitBreakerConfig

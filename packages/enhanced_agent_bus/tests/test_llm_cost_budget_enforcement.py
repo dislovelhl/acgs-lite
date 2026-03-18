@@ -6,9 +6,10 @@ Constitutional Hash: cdd01ef066bc6cf2
 from __future__ import annotations
 
 import pytest
-from packages.enhanced_agent_bus.llm_adapters.cost.budget import BudgetManager
-from packages.enhanced_agent_bus.llm_adapters.cost.enums import CostTier
-from packages.enhanced_agent_bus.llm_adapters.cost.models import BudgetLimit, CostModel
+
+from enhanced_agent_bus.llm_adapters.cost.budget import BudgetManager
+from enhanced_agent_bus.llm_adapters.cost.enums import CostTier
+from enhanced_agent_bus.llm_adapters.cost.models import BudgetLimit, CostModel
 
 # =============================================================================
 # CostModel.calculate_cost

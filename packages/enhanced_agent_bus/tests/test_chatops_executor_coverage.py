@@ -8,7 +8,8 @@ from typing import Optional
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.core_models import AgentMessage, MessageType
+
+from enhanced_agent_bus.core_models import AgentMessage, MessageType
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -53,7 +54,7 @@ class TestRoutingGuards:
 
     async def test_wrong_to_agent_returns_none(self) -> None:
         """Messages addressed to a different agent must be ignored."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -63,7 +64,7 @@ class TestRoutingGuards:
 
     async def test_wrong_message_type_returns_none(self) -> None:
         """Non-COMMAND messages must be ignored even when to_agent matches."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -73,7 +74,7 @@ class TestRoutingGuards:
 
     async def test_wrong_to_agent_and_wrong_type_returns_none(self) -> None:
         """Both guards failing still produces None."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -83,7 +84,7 @@ class TestRoutingGuards:
 
     async def test_event_type_returns_none(self) -> None:
         """MessageType.EVENT routed to chatops_executor must be ignored."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -93,7 +94,7 @@ class TestRoutingGuards:
 
     async def test_notification_type_returns_none(self) -> None:
         """MessageType.NOTIFICATION must be ignored."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -111,7 +112,7 @@ class TestContentTypeGuard:
     """Tests for the non-dict content guard."""
 
     async def test_string_content_returns_none(self) -> None:
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -120,7 +121,7 @@ class TestContentTypeGuard:
         assert result is None
 
     async def test_list_content_returns_none(self) -> None:
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -129,7 +130,7 @@ class TestContentTypeGuard:
         assert result is None
 
     async def test_none_content_returns_none(self) -> None:
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -140,7 +141,7 @@ class TestContentTypeGuard:
         assert result is None
 
     async def test_integer_content_returns_none(self) -> None:
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -150,7 +151,7 @@ class TestContentTypeGuard:
 
     async def test_empty_dict_content_falls_through(self) -> None:
         """An empty dict is valid content (no command_body → unrecognized branch)."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -170,7 +171,7 @@ class TestBuildFixCommand:
 
     async def test_build_fix_returns_original_message(self) -> None:
         """Build-fix routes to build_fix_swarm; returns a new routed AgentMessage."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -182,7 +183,7 @@ class TestBuildFixCommand:
 
     async def test_build_fix_with_args_returns_original_message(self) -> None:
         """Verify /acgs-build-fix with extra args still routes correctly."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -200,7 +201,7 @@ class TestBuildFixCommand:
 
     async def test_build_fix_logs_dispatch(self) -> None:
         """Logger.info must be called when dispatching to build-fix swarm."""
-        from packages.enhanced_agent_bus.agents import chatops_executor
+        from enhanced_agent_bus.agents import chatops_executor
 
         msg = _make_msg(content={"command_body": "/acgs-build-fix"})
         with patch.object(chatops_executor.logger, "info") as mock_info:
@@ -210,7 +211,7 @@ class TestBuildFixCommand:
 
     async def test_build_fix_command_body_prefix_match(self) -> None:
         """/acgs-build-fix must match even when extra text follows."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -221,7 +222,7 @@ class TestBuildFixCommand:
 
     async def test_build_fix_missing_author_uses_default(self) -> None:
         """author defaults to 'unknown' when absent; function routes to build_fix_swarm."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -250,7 +251,7 @@ class TestReviewCommandSuccess:
 
     async def test_review_returns_task_request_message(self) -> None:
         """Success path must return a new TASK_REQUEST AgentMessage."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -277,7 +278,7 @@ class TestReviewCommandSuccess:
 
     async def test_review_content_has_action_field(self) -> None:
         """The review task content must contain 'action'."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -300,7 +301,7 @@ class TestReviewCommandSuccess:
 
     async def test_review_content_has_issue_number(self) -> None:
         """The review task must forward the issue_number."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -323,7 +324,7 @@ class TestReviewCommandSuccess:
 
     async def test_review_content_includes_open_aware_context_on_success(self) -> None:
         """When context_result.success=True, open_aware_context must be populated."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -348,7 +349,7 @@ class TestReviewCommandSuccess:
 
     async def test_review_content_open_aware_none_when_context_fails(self) -> None:
         """When context_result.success=False, open_aware_context must be None."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -372,7 +373,7 @@ class TestReviewCommandSuccess:
 
     async def test_review_mcp_client_instantiated_with_correct_url(self) -> None:
         """ACGS2MCPClient must be called with the open-aware server URL."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -394,7 +395,7 @@ class TestReviewCommandSuccess:
 
     async def test_review_mcp_client_connect_called(self) -> None:
         """mcp_client.connect() must be awaited."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -416,7 +417,7 @@ class TestReviewCommandSuccess:
 
     async def test_review_mcp_client_disconnect_called(self) -> None:
         """mcp_client.disconnect() must be awaited after call_tool."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -438,7 +439,7 @@ class TestReviewCommandSuccess:
 
     async def test_review_call_tool_invoked_with_deep_research(self) -> None:
         """mcp_client.call_tool must be called with name='deep_research'."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -463,7 +464,7 @@ class TestReviewCommandSuccess:
 
     async def test_review_with_args_suffix_still_dispatches(self) -> None:
         """/acgs-review with trailing args must still enter the review branch."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -495,7 +496,7 @@ class TestReviewCommandException:
 
     async def test_connect_raises_returns_none(self) -> None:
         """If mcp_client.connect() raises, the function must return None."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -520,7 +521,7 @@ class TestReviewCommandException:
 
     async def test_call_tool_raises_returns_none(self) -> None:
         """If mcp_client.call_tool() raises, the function must return None."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -545,7 +546,7 @@ class TestReviewCommandException:
 
     async def test_disconnect_raises_returns_none(self) -> None:
         """If mcp_client.disconnect() raises, the function must return None."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -571,7 +572,7 @@ class TestReviewCommandException:
 
     async def test_import_error_returns_none(self) -> None:
         """If importing ACGS2MCPClient raises ImportError, the function must return None."""
-        from packages.enhanced_agent_bus.agents import chatops_executor
+        from enhanced_agent_bus.agents import chatops_executor
 
         # Remove the cached module to force re-import inside the function.
         sys.modules.pop("src.core.integrations.nemo_agent_toolkit.mcp_bridge", None)
@@ -588,7 +589,7 @@ class TestReviewCommandException:
 
     async def test_exception_logs_error(self) -> None:
         """Logger.error must be called when an exception occurs in review branch."""
-        from packages.enhanced_agent_bus.agents import chatops_executor
+        from enhanced_agent_bus.agents import chatops_executor
 
         mock_client = MagicMock()
         mock_client.connect = AsyncMock(side_effect=Exception("boom"))
@@ -612,7 +613,7 @@ class TestReviewCommandException:
 
     async def test_exception_error_extra_contains_error_key(self) -> None:
         """The error log extra dict must contain the 'error' key."""
-        from packages.enhanced_agent_bus.agents import chatops_executor
+        from enhanced_agent_bus.agents import chatops_executor
 
         error_msg = "something went wrong"
         mock_client = MagicMock()
@@ -646,7 +647,7 @@ class TestUnrecognizedCommand:
 
     async def test_unrecognized_command_returns_original_message(self) -> None:
         """Unrecognized commands must return the original message unchanged."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -656,7 +657,7 @@ class TestUnrecognizedCommand:
 
     async def test_empty_command_body_returns_original_message(self) -> None:
         """An empty command_body string is not recognized; returns original message."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -666,7 +667,7 @@ class TestUnrecognizedCommand:
 
     async def test_unrecognized_command_logs_warning(self) -> None:
         """A warning must be logged for unrecognized commands."""
-        from packages.enhanced_agent_bus.agents import chatops_executor
+        from enhanced_agent_bus.agents import chatops_executor
 
         msg = _make_msg(content={"command_body": "/something-else"})
         with patch.object(chatops_executor.logger, "warning") as mock_warn:
@@ -678,7 +679,7 @@ class TestUnrecognizedCommand:
 
     async def test_partial_command_not_matching_build_fix(self) -> None:
         """/acgs-build is not a recognized command prefix."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -688,7 +689,7 @@ class TestUnrecognizedCommand:
 
     async def test_partial_command_not_matching_review(self) -> None:
         """/acgs-rev is not a recognized command prefix."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -698,7 +699,7 @@ class TestUnrecognizedCommand:
 
     async def test_plain_text_command_body_returns_original(self) -> None:
         """Plain text without a slash prefix is unrecognized; returns original message."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -717,7 +718,7 @@ class TestMetadataExtraction:
 
     async def test_author_is_extracted_from_content(self) -> None:
         """The author field from content must be forwarded in the routed message."""
-        from packages.enhanced_agent_bus.agents import chatops_executor
+        from enhanced_agent_bus.agents import chatops_executor
 
         msg = _make_msg(
             content={"command_body": "/acgs-build-fix", "author": "alice", "issue_number": 100}
@@ -728,7 +729,7 @@ class TestMetadataExtraction:
 
     async def test_issue_number_none_when_absent(self) -> None:
         """Absence of issue_number is handled gracefully."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -739,7 +740,7 @@ class TestMetadataExtraction:
 
     async def test_extra_fields_in_content_are_ignored(self) -> None:
         """Extra unexpected fields in content do not break the function."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -756,7 +757,7 @@ class TestMetadataExtraction:
 
     async def test_info_log_called_on_valid_command(self) -> None:
         """Logger.info must be called with 'Executing ChatOps command'."""
-        from packages.enhanced_agent_bus.agents import chatops_executor
+        from enhanced_agent_bus.agents import chatops_executor
 
         msg = _make_msg(
             content={"command_body": "/acgs-build-fix", "author": "ci", "issue_number": 55}
@@ -777,7 +778,7 @@ class TestReturnValueIdentity:
     """Tests that verify the exact return value identity in each branch."""
 
     async def test_build_fix_returns_same_object(self) -> None:
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -788,7 +789,7 @@ class TestReturnValueIdentity:
         assert result.to_agent == "build_fix_swarm"
 
     async def test_unrecognized_returns_same_object(self) -> None:
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 
@@ -798,7 +799,7 @@ class TestReturnValueIdentity:
 
     async def test_review_success_returns_different_object(self) -> None:
         """Review success path creates a *new* AgentMessage, not the input."""
-        from packages.enhanced_agent_bus.agents.chatops_executor import (
+        from enhanced_agent_bus.agents.chatops_executor import (
             handle_chatops_command,
         )
 

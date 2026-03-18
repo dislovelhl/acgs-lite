@@ -6,13 +6,14 @@ from __future__ import annotations
 
 import hashlib
 
-import packages.enhanced_agent_bus.context_optimization as context_optimization_module
 import pytest
-from packages.enhanced_agent_bus.context_optimization import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+import enhanced_agent_bus.context_optimization as context_optimization_module
+from enhanced_agent_bus.context_optimization import (
     CachedGovernanceValidator,
     ValidationContext,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 
 def test_cached_validator_rejects_invalid_cache_hash_mode() -> None:

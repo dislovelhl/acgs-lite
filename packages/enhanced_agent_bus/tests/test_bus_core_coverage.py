@@ -55,7 +55,7 @@ def _make_mock_router() -> MagicMock:
 
 
 def _make_mock_processor() -> MagicMock:
-    from packages.enhanced_agent_bus.validators import ValidationResult
+    from enhanced_agent_bus.validators import ValidationResult
 
     proc = MagicMock()
     proc.process = AsyncMock(return_value=ValidationResult(is_valid=True))
@@ -75,7 +75,7 @@ def _make_mock_metering() -> MagicMock:
 
 def _build_bus(**kwargs: Any):
     """Build an EnhancedAgentBus with all heavy deps mocked out."""
-    from packages.enhanced_agent_bus.bus.core import EnhancedAgentBus
+    from enhanced_agent_bus.bus.core import EnhancedAgentBus
 
     registry_manager = kwargs.pop("registry_manager", _make_mock_registry_manager())
     governance = kwargs.pop("governance", _make_mock_governance())
@@ -88,15 +88,15 @@ def _build_bus(**kwargs: Any):
 
     with (
         patch(
-            "packages.enhanced_agent_bus.bus.core.create_metering_manager",
+            "enhanced_agent_bus.bus.core.create_metering_manager",
             return_value=metering_mock,
         ),
         patch(
-            "packages.enhanced_agent_bus.bus.core.CompositeValidationStrategy",
+            "enhanced_agent_bus.bus.core.CompositeValidationStrategy",
             return_value=MagicMock(),
         ),
         patch(
-            "packages.enhanced_agent_bus.bus.core.MessageProcessor",
+            "enhanced_agent_bus.bus.core.MessageProcessor",
             return_value=processor,
         ),
     ):
@@ -121,7 +121,7 @@ def _make_msg(
     tenant_id: str | None = "tenant-1",
     impact_score: float = 0.1,
 ):
-    from packages.enhanced_agent_bus.models import AgentMessage, MessageType
+    from enhanced_agent_bus.models import AgentMessage, MessageType
 
     msg = AgentMessage(
         from_agent=from_agent,
@@ -210,7 +210,7 @@ class TestEnhancedAgentBusConstruction:
         assert bus._processing_strategy is proc.processing_strategy
 
     def test_from_config_with_dict(self) -> None:
-        from packages.enhanced_agent_bus.bus.core import EnhancedAgentBus
+        from enhanced_agent_bus.bus.core import EnhancedAgentBus
 
         rm = _make_mock_registry_manager()
         gov = _make_mock_governance()
@@ -220,15 +220,15 @@ class TestEnhancedAgentBusConstruction:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.bus.core.create_metering_manager",
+                "enhanced_agent_bus.bus.core.create_metering_manager",
                 return_value=metering_mock,
             ),
             patch(
-                "packages.enhanced_agent_bus.bus.core.CompositeValidationStrategy",
+                "enhanced_agent_bus.bus.core.CompositeValidationStrategy",
                 return_value=MagicMock(),
             ),
             patch(
-                "packages.enhanced_agent_bus.bus.core.MessageProcessor",
+                "enhanced_agent_bus.bus.core.MessageProcessor",
                 return_value=proc,
             ),
         ):
@@ -244,7 +244,7 @@ class TestEnhancedAgentBusConstruction:
         assert bus is not None
 
     def test_from_config_with_to_dict(self) -> None:
-        from packages.enhanced_agent_bus.bus.core import EnhancedAgentBus
+        from enhanced_agent_bus.bus.core import EnhancedAgentBus
 
         rm = _make_mock_registry_manager()
         gov = _make_mock_governance()
@@ -263,15 +263,15 @@ class TestEnhancedAgentBusConstruction:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.bus.core.create_metering_manager",
+                "enhanced_agent_bus.bus.core.create_metering_manager",
                 return_value=metering_mock,
             ),
             patch(
-                "packages.enhanced_agent_bus.bus.core.CompositeValidationStrategy",
+                "enhanced_agent_bus.bus.core.CompositeValidationStrategy",
                 return_value=MagicMock(),
             ),
             patch(
-                "packages.enhanced_agent_bus.bus.core.MessageProcessor",
+                "enhanced_agent_bus.bus.core.MessageProcessor",
                 return_value=proc,
             ),
         ):
@@ -308,7 +308,7 @@ class TestEnhancedAgentBusConstruction:
 
     def test_router_without_inner_router_attr(self) -> None:
         """Router that lacks ._router should be wrapped in a RouterComponent."""
-        from packages.enhanced_agent_bus.bus.core import EnhancedAgentBus
+        from enhanced_agent_bus.bus.core import EnhancedAgentBus
 
         plain_router = MagicMock(spec=[])  # No ._router attribute
         proc = _make_mock_processor()
@@ -316,18 +316,18 @@ class TestEnhancedAgentBusConstruction:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.bus.core.create_metering_manager",
+                "enhanced_agent_bus.bus.core.create_metering_manager",
                 return_value=metering_mock,
             ),
             patch(
-                "packages.enhanced_agent_bus.bus.core.CompositeValidationStrategy",
+                "enhanced_agent_bus.bus.core.CompositeValidationStrategy",
                 return_value=MagicMock(),
             ),
             patch(
-                "packages.enhanced_agent_bus.bus.core.MessageProcessor",
+                "enhanced_agent_bus.bus.core.MessageProcessor",
                 return_value=proc,
             ),
-            patch("packages.enhanced_agent_bus.bus.core.MessageRouter") as MockRouterComponent,
+            patch("enhanced_agent_bus.bus.core.MessageRouter") as MockRouterComponent,
         ):
             mock_router_instance = MagicMock()
             mock_router_instance._router = MagicMock()
@@ -388,14 +388,14 @@ class TestEnhancedAgentBusLifecycle:
     async def test_start_metrics_and_circuit_breaker(self) -> None:
         """Cover METRICS_ENABLED and CIRCUIT_BREAKER_ENABLED branches."""
         with (
-            patch("packages.enhanced_agent_bus.bus.core.METRICS_ENABLED", True),
+            patch("enhanced_agent_bus.bus.core.METRICS_ENABLED", True),
             patch(
-                "packages.enhanced_agent_bus.bus.core.set_service_info",
+                "enhanced_agent_bus.bus.core.set_service_info",
                 MagicMock(),
             ) as mock_ssi,
-            patch("packages.enhanced_agent_bus.bus.core.CIRCUIT_BREAKER_ENABLED", True),
+            patch("enhanced_agent_bus.bus.core.CIRCUIT_BREAKER_ENABLED", True),
             patch(
-                "packages.enhanced_agent_bus.bus.core.initialize_core_circuit_breakers",
+                "enhanced_agent_bus.bus.core.initialize_core_circuit_breakers",
                 MagicMock(),
             ) as mock_icb,
         ):
@@ -510,7 +510,7 @@ class TestAgentManagement:
 
 class TestSendMessage:
     async def test_send_message_success(self) -> None:
-        from packages.enhanced_agent_bus.validators import ValidationResult
+        from enhanced_agent_bus.validators import ValidationResult
 
         proc = _make_mock_processor()
         proc.process = AsyncMock(return_value=ValidationResult(is_valid=True))
@@ -524,7 +524,7 @@ class TestSendMessage:
 
     async def test_send_message_bus_not_running_test_mode_fail_content(self) -> None:
         """Bus not running — test mode via 'fail' in content."""
-        from packages.enhanced_agent_bus.validators import ValidationResult
+        from enhanced_agent_bus.validators import ValidationResult
 
         proc = _make_mock_processor()
         proc.process = AsyncMock(return_value=ValidationResult(is_valid=True))
@@ -538,7 +538,7 @@ class TestSendMessage:
         assert bus._metrics["sent"] >= initial_sent
 
     async def test_send_message_bus_not_running_allow_unstarted(self) -> None:
-        from packages.enhanced_agent_bus.validators import ValidationResult
+        from enhanced_agent_bus.validators import ValidationResult
 
         proc = _make_mock_processor()
         proc.process = AsyncMock(return_value=ValidationResult(is_valid=True))
@@ -551,7 +551,7 @@ class TestSendMessage:
         assert result is not None
 
     async def test_send_message_invalid_constitutional_hash(self) -> None:
-        from packages.enhanced_agent_bus.validators import ValidationResult
+        from enhanced_agent_bus.validators import ValidationResult
 
         gov = _make_mock_governance()
         gov.validate_constitutional_hash = MagicMock(
@@ -566,7 +566,7 @@ class TestSendMessage:
 
     async def test_send_message_invalid_tenant(self) -> None:
         """Tenant validation failure should return invalid result."""
-        from packages.enhanced_agent_bus.validators import ValidationResult
+        from enhanced_agent_bus.validators import ValidationResult
 
         proc = _make_mock_processor()
         bus = _build_bus(processor=proc)
@@ -615,7 +615,7 @@ class TestSendMessage:
 
     async def test_send_message_test_agent_bypass(self) -> None:
         """'test-agent' in from_agent triggers test mode bypass."""
-        from packages.enhanced_agent_bus.validators import ValidationResult
+        from enhanced_agent_bus.validators import ValidationResult
 
         proc = _make_mock_processor()
         proc.process = AsyncMock(return_value=ValidationResult(is_valid=True))
@@ -635,7 +635,7 @@ class TestSendMessage:
 
 class TestBroadcastMessage:
     async def test_broadcast_to_multiple_agents(self) -> None:
-        from packages.enhanced_agent_bus.validators import ValidationResult
+        from enhanced_agent_bus.validators import ValidationResult
 
         rm = _make_mock_registry_manager()
         rm.get_agents_by_tenant = MagicMock(return_value=["agent-b", "agent-c"])
@@ -651,7 +651,7 @@ class TestBroadcastMessage:
         assert len(results) >= 0
 
     async def test_broadcast_excludes_sender(self) -> None:
-        from packages.enhanced_agent_bus.validators import ValidationResult
+        from enhanced_agent_bus.validators import ValidationResult
 
         rm = _make_mock_registry_manager()
         rm.get_agents_by_tenant = MagicMock(return_value=["agent-a", "agent-b"])
@@ -693,7 +693,7 @@ class TestReceiveMessage:
 
 class TestProcessBatch:
     async def test_process_batch_delegates_to_batch_processor(self) -> None:
-        from packages.enhanced_agent_bus.models import (
+        from enhanced_agent_bus.models import (
             BatchRequest,
             BatchRequestItem,
             BatchResponse,
@@ -741,7 +741,7 @@ class TestProcessBatch:
 
 class TestRecordBatchMetering:
     def test_record_batch_metering_delegates(self) -> None:
-        from packages.enhanced_agent_bus.models import (
+        from enhanced_agent_bus.models import (
             BatchRequest,
             BatchRequestItem,
             BatchResponse,
@@ -844,7 +844,7 @@ class TestDelegatedMethods:
         assert bus._metrics["sent"] == before_sent + 1
 
     def test_validate_constitutional_hash_for_message(self) -> None:
-        from packages.enhanced_agent_bus.validators import ValidationResult
+        from enhanced_agent_bus.validators import ValidationResult
 
         bus = _build_bus()
         msg = _make_msg()
@@ -854,7 +854,7 @@ class TestDelegatedMethods:
         assert ret is True
 
     def test_validate_constitutional_hash_for_message_failure(self) -> None:
-        from packages.enhanced_agent_bus.validators import ValidationResult
+        from enhanced_agent_bus.validators import ValidationResult
 
         gov = _make_mock_governance()
         gov.validate_constitutional_hash = MagicMock(
@@ -867,7 +867,7 @@ class TestDelegatedMethods:
         assert ret is False
 
     def test_validate_and_normalize_tenant(self) -> None:
-        from packages.enhanced_agent_bus.validators import ValidationResult
+        from enhanced_agent_bus.validators import ValidationResult
 
         bus = _build_bus()
         msg = _make_msg(tenant_id="tenant-abc")
@@ -877,7 +877,7 @@ class TestDelegatedMethods:
         assert isinstance(ret, bool)
 
     async def test_process_message_with_fallback_delegates(self) -> None:
-        from packages.enhanced_agent_bus.validators import ValidationResult
+        from enhanced_agent_bus.validators import ValidationResult
 
         bus = _build_bus()
         msg = _make_msg()
@@ -889,7 +889,7 @@ class TestDelegatedMethods:
         assert result is expected
 
     async def test_finalize_message_delivery_delegates(self) -> None:
-        from packages.enhanced_agent_bus.validators import ValidationResult
+        from enhanced_agent_bus.validators import ValidationResult
 
         bus = _build_bus()
         msg = _make_msg()
@@ -931,25 +931,25 @@ class TestDelegatedMethods:
 
 class TestNormalizeTenantId:
     def test_normalize_none(self) -> None:
-        from packages.enhanced_agent_bus.bus.core import EnhancedAgentBus
+        from enhanced_agent_bus.bus.core import EnhancedAgentBus
 
         result = EnhancedAgentBus._normalize_tenant_id(None)
         assert result is None or isinstance(result, str)
 
     def test_normalize_string(self) -> None:
-        from packages.enhanced_agent_bus.bus.core import EnhancedAgentBus
+        from enhanced_agent_bus.bus.core import EnhancedAgentBus
 
         result = EnhancedAgentBus._normalize_tenant_id("My_Tenant")
         assert isinstance(result, str)
 
     def test_format_tenant_id_none(self) -> None:
-        from packages.enhanced_agent_bus.bus.core import EnhancedAgentBus
+        from enhanced_agent_bus.bus.core import EnhancedAgentBus
 
         result = EnhancedAgentBus._format_tenant_id(None)
         assert result == "none"
 
     def test_format_tenant_id_string(self) -> None:
-        from packages.enhanced_agent_bus.bus.core import EnhancedAgentBus
+        from enhanced_agent_bus.bus.core import EnhancedAgentBus
 
         result = EnhancedAgentBus._format_tenant_id("tenant-x")
         assert isinstance(result, str)
@@ -1164,7 +1164,7 @@ class TestAdaptiveGovernanceNoOps:
 
 class TestModuleLevelConstants:
     def test_constants_are_bool(self) -> None:
-        import packages.enhanced_agent_bus.bus.core as core_module
+        import enhanced_agent_bus.bus.core as core_module
 
         assert isinstance(core_module.CIRCUIT_BREAKER_ENABLED, bool)
         assert isinstance(core_module.DELIBERATION_AVAILABLE, bool)
@@ -1174,12 +1174,12 @@ class TestModuleLevelConstants:
         assert isinstance(core_module.POLICY_CLIENT_AVAILABLE, bool)
 
     def test_default_redis_url_is_string(self) -> None:
-        import packages.enhanced_agent_bus.bus.core as core_module
+        import enhanced_agent_bus.bus.core as core_module
 
         assert isinstance(core_module.DEFAULT_REDIS_URL, str)
 
     def test_maci_enforcer_maci_role_registry_set(self) -> None:
-        import packages.enhanced_agent_bus.bus.core as core_module
+        import enhanced_agent_bus.bus.core as core_module
 
         # These are stubs/None when MACI not available — just assert they exist
         assert hasattr(core_module, "MACIEnforcer")
@@ -1193,19 +1193,19 @@ class TestModuleLevelConstants:
 
 class TestIsMockInstance:
     def test_mock_instance_detected(self) -> None:
-        from packages.enhanced_agent_bus.bus.validation import _is_mock_instance
+        from enhanced_agent_bus.bus.validation import _is_mock_instance
 
         m = MagicMock()
         assert _is_mock_instance(m) is True
 
     def test_plain_object_not_mock(self) -> None:
-        from packages.enhanced_agent_bus.bus.validation import _is_mock_instance
+        from enhanced_agent_bus.bus.validation import _is_mock_instance
 
         assert _is_mock_instance("hello") is False
         assert _is_mock_instance(42) is False
 
     def test_object_with_mock_name_attr(self) -> None:
-        from packages.enhanced_agent_bus.bus.validation import _is_mock_instance
+        from enhanced_agent_bus.bus.validation import _is_mock_instance
 
         obj = MagicMock()
         obj._mock_name = "SimpleMock"
@@ -1219,7 +1219,7 @@ class TestIsMockInstance:
 
 class TestGetPolicyClientFallback:
     def test_fallback_returns_none(self) -> None:
-        import packages.enhanced_agent_bus.bus.core as core_module
+        import enhanced_agent_bus.bus.core as core_module
 
         # The module exposes get_policy_client which may be the real one or fallback
         result = core_module.get_policy_client(fail_closed=False)
@@ -1235,7 +1235,7 @@ class TestGetPolicyClientFallback:
 class TestEdgeCases:
     async def test_send_message_invalid_hash_in_content_not_test_mode(self) -> None:
         """Bus not running, content has 'invalid' in hash — test mode."""
-        from packages.enhanced_agent_bus.validators import ValidationResult
+        from enhanced_agent_bus.validators import ValidationResult
 
         proc = _make_mock_processor()
         proc.process = AsyncMock(return_value=ValidationResult(is_valid=True))
@@ -1269,7 +1269,7 @@ class TestEdgeCases:
         assert bus.is_running is False
 
     async def test_send_message_delivery_failure_records_metrics(self) -> None:
-        from packages.enhanced_agent_bus.validators import ValidationResult
+        from enhanced_agent_bus.validators import ValidationResult
 
         proc = _make_mock_processor()
         proc.process = AsyncMock(return_value=ValidationResult(is_valid=True))
@@ -1351,26 +1351,26 @@ class TestEdgeCases:
 
     def test_init_get_feature_flags_exception_fallback(self) -> None:
         """Lines 184-185: exception in _get_feature_flags during __init__ uses fallback."""
-        from packages.enhanced_agent_bus.bus.core import EnhancedAgentBus
+        from enhanced_agent_bus.bus.core import EnhancedAgentBus
 
         proc = _make_mock_processor()
         metering_mock = _make_mock_metering()
 
         with (
             patch(
-                "packages.enhanced_agent_bus.bus.core.create_metering_manager",
+                "enhanced_agent_bus.bus.core.create_metering_manager",
                 return_value=metering_mock,
             ),
             patch(
-                "packages.enhanced_agent_bus.bus.core.CompositeValidationStrategy",
+                "enhanced_agent_bus.bus.core.CompositeValidationStrategy",
                 return_value=MagicMock(),
             ),
             patch(
-                "packages.enhanced_agent_bus.bus.core.MessageProcessor",
+                "enhanced_agent_bus.bus.core.MessageProcessor",
                 return_value=proc,
             ),
             patch(
-                "packages.enhanced_agent_bus.dependency_bridge.get_feature_flags",
+                "enhanced_agent_bus.dependency_bridge.get_feature_flags",
                 side_effect=RuntimeError("flags unavailable"),
             ),
         ):
@@ -1386,10 +1386,10 @@ class TestEdgeCases:
     async def test_start_metrics_enabled_set_service_info_none(self) -> None:
         """Line 382->384: METRICS_ENABLED=True but set_service_info=None — skips call."""
         with (
-            patch("packages.enhanced_agent_bus.bus.core.METRICS_ENABLED", True),
-            patch("packages.enhanced_agent_bus.bus.core.set_service_info", None),
-            patch("packages.enhanced_agent_bus.bus.core.CIRCUIT_BREAKER_ENABLED", True),
-            patch("packages.enhanced_agent_bus.bus.core.initialize_core_circuit_breakers", None),
+            patch("enhanced_agent_bus.bus.core.METRICS_ENABLED", True),
+            patch("enhanced_agent_bus.bus.core.set_service_info", None),
+            patch("enhanced_agent_bus.bus.core.CIRCUIT_BREAKER_ENABLED", True),
+            patch("enhanced_agent_bus.bus.core.initialize_core_circuit_breakers", None),
         ):
             bus = _build_bus()
             # Should not raise even with None callables
@@ -1398,7 +1398,7 @@ class TestEdgeCases:
 
     async def test_send_message_bus_not_running_not_test_mode(self) -> None:
         """Lines 545->549: bus not running and not test mode — sent not incremented."""
-        from packages.enhanced_agent_bus.validators import ValidationResult
+        from enhanced_agent_bus.validators import ValidationResult
 
         proc = _make_mock_processor()
         proc.process = AsyncMock(return_value=ValidationResult(is_valid=True))
@@ -1439,7 +1439,7 @@ class TestEdgeCases:
 
     def test_router_property_non_router_component(self) -> None:
         """Line 772: router property when _router_component is not a RouterComponent."""
-        from packages.enhanced_agent_bus.components import MessageRouter as RouterComponent
+        from enhanced_agent_bus.components import MessageRouter as RouterComponent
 
         bus = _build_bus()
 
@@ -1457,7 +1457,7 @@ class TestEdgeCases:
 
     def test_router_property_is_router_component(self) -> None:
         """Line 771: router property when _router_component IS a RouterComponent."""
-        from packages.enhanced_agent_bus.components import MessageRouter as RouterComponent
+        from enhanced_agent_bus.components import MessageRouter as RouterComponent
 
         bus = _build_bus()
         # Create real RouterComponent to ensure isinstance passes

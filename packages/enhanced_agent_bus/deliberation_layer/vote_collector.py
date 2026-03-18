@@ -26,7 +26,6 @@ import os
 import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta, timezone
-from typing import Optional
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -38,7 +37,10 @@ except ImportError:
     np = None  # type: ignore[assignment]
     NUMPY_AVAILABLE = False
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 try:
     import sys

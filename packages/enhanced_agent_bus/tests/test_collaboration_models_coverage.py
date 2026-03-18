@@ -11,7 +11,9 @@ import uuid
 from datetime import datetime, timezone
 
 import pytest
-from packages.enhanced_agent_bus.collaboration.models import (
+from pydantic import ValidationError
+
+from enhanced_agent_bus.collaboration.models import (
     ActivityEvent,
     ActivityEventType,
     ChatMessage,
@@ -34,7 +36,6 @@ from packages.enhanced_agent_bus.collaboration.models import (
     SessionFullError,
     UserPermissions,
 )
-from pydantic import ValidationError
 
 # ---------------------------------------------------------------------------
 # PresenceStatus enum

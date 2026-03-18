@@ -8,15 +8,16 @@ Regression tests for:
 - M3: Maximum session extension cap
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock
 
 import jwt
 import pytest
-
-pytestmark = [pytest.mark.unit, pytest.mark.constitutional]
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 from enterprise_sso.session_governance_sdk import (  # noqa: E402
+    SESSION_JWT_ALGORITHM,
     SESSION_JWT_AUDIENCE,
     SESSION_JWT_ISSUER,
     SessionConfig,
@@ -26,7 +27,15 @@ from enterprise_sso.session_governance_sdk import (  # noqa: E402
     TokenValidationError,
 )
 
-SECRET = "a-sufficiently-long-test-secret-key-32b"  # pragma: allowlist secret  # noqa: S105
+_TEST_RSA_KEY = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+JWT_PRIVATE_KEY = _TEST_RSA_KEY.private_bytes(
+    encoding=serialization.Encoding.PEM,
+    format=serialization.PrivateFormat.PKCS8,
+    encryption_algorithm=serialization.NoEncryption(),
+).decode()
+JWT_PUBLIC_KEY = _TEST_RSA_KEY.public_key()
+
+pytestmark = [pytest.mark.unit, pytest.mark.constitutional]
 
 
 # ============================================================================
@@ -39,15 +48,15 @@ class TestJWTClaimEnforcement:
 
     @pytest.fixture
     def manager(self) -> SessionTokenManager:
-        return SessionTokenManager(secret_key=SECRET)
+        return SessionTokenManager(private_key=JWT_PRIVATE_KEY)
 
     @pytest.mark.asyncio
     async def test_access_token_contains_iss_aud_jti(self, manager):
         token_obj = await manager.generate_access_token("s1", "t1", "u1")
         payload = jwt.decode(
             token_obj.access_token,
-            SECRET,
-            algorithms=["HS256"],
+            JWT_PUBLIC_KEY,
+            algorithms=[manager._algorithm],
             audience=SESSION_JWT_AUDIENCE,
             issuer=SESSION_JWT_ISSUER,
         )
@@ -62,8 +71,8 @@ class TestJWTClaimEnforcement:
         with pytest.raises(jwt.InvalidAudienceError):
             jwt.decode(
                 token_obj.access_token,
-                SECRET,
-                algorithms=["HS256"],
+                JWT_PUBLIC_KEY,
+                algorithms=[manager._algorithm],
                 audience="wrong-audience",
                 issuer=SESSION_JWT_ISSUER,
             )
@@ -74,8 +83,8 @@ class TestJWTClaimEnforcement:
         with pytest.raises(jwt.InvalidIssuerError):
             jwt.decode(
                 token_obj.access_token,
-                SECRET,
-                algorithms=["HS256"],
+                JWT_PUBLIC_KEY,
+                algorithms=[manager._algorithm],
                 audience=SESSION_JWT_AUDIENCE,
                 issuer="wrong-issuer",
             )
@@ -99,6 +108,20 @@ class TestJWTClaimEnforcement:
         assert "admin" in result.roles
 
 
+class TestPrivateKeyValidation:
+    """Constructor guardrails for asymmetric JWT private keys."""
+
+    def test_non_pem_private_key_is_rejected(self):
+        with pytest.raises(
+            ValueError,
+            match=(
+                f"private_key must be a PEM-encoded private key for "
+                f"{SESSION_JWT_ALGORITHM}"
+            ),
+        ):
+            SessionTokenManager(private_key="not-a-pem")
+
+
 # ============================================================================
 # M1 -- JTI-based revocation, optional Redis persistence
 # ============================================================================
@@ -109,7 +132,7 @@ class TestJTIRevocation:
 
     @pytest.fixture
     def manager(self) -> SessionTokenManager:
-        return SessionTokenManager(secret_key=SECRET)
+        return SessionTokenManager(private_key=JWT_PRIVATE_KEY)
 
     @pytest.mark.asyncio
     async def test_revoked_token_fails_validation(self, manager):
@@ -125,8 +148,8 @@ class TestJTIRevocation:
         token_obj = await manager.generate_access_token("s1", "t1", "u1")
         payload = jwt.decode(
             token_obj.access_token,
-            SECRET,
-            algorithms=["HS256"],
+            JWT_PUBLIC_KEY,
+            algorithms=[manager._algorithm],
             audience=SESSION_JWT_AUDIENCE,
             issuer=SESSION_JWT_ISSUER,
         )
@@ -140,7 +163,7 @@ class TestJTIRevocation:
         redis_mock = MagicMock()
         redis_mock.sadd = AsyncMock()
         redis_mock.expire = AsyncMock()
-        manager = SessionTokenManager(secret_key=SECRET, redis_client=redis_mock)
+        manager = SessionTokenManager(private_key=JWT_PRIVATE_KEY, redis_client=redis_mock)
 
         token_obj = await manager.generate_access_token("s1", "t1", "u1")
         await manager.revoke_token(token_obj.access_token)
@@ -154,7 +177,7 @@ class TestJTIRevocation:
         redis_mock.sadd = AsyncMock()
         redis_mock.expire = AsyncMock()
         redis_mock.sismember = AsyncMock(return_value=True)
-        manager = SessionTokenManager(secret_key=SECRET, redis_client=redis_mock)
+        manager = SessionTokenManager(private_key=JWT_PRIVATE_KEY, redis_client=redis_mock)
 
         token_obj = await manager.generate_access_token("s1", "t1", "u1")
         result = await manager.validate_token(token_obj.access_token)
@@ -168,7 +191,7 @@ class TestJTIRevocation:
         """Redis errors must not propagate -- fall back to in-memory set."""
         redis_mock = MagicMock()
         redis_mock.sismember = AsyncMock(side_effect=ConnectionError("Redis down"))
-        manager = SessionTokenManager(secret_key=SECRET, redis_client=redis_mock)
+        manager = SessionTokenManager(private_key=JWT_PRIVATE_KEY, redis_client=redis_mock)
 
         token_obj = await manager.generate_access_token("s1", "t1", "u1")
         result = await manager.validate_token(token_obj.access_token)

@@ -28,10 +28,17 @@ from enum import Enum
 from typing import Generic, TypeVar
 
 import redis.asyncio
-from packages.enhanced_agent_bus.governance_constants import SAGA_DEFAULT_TTL_SECONDS
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
 
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.governance_constants import SAGA_DEFAULT_TTL_SECONDS
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)

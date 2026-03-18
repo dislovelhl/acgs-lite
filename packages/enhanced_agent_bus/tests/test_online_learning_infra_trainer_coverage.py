@@ -27,8 +27,8 @@ import pytest
 # Helpers
 # ---------------------------------------------------------------------------
 
-_TRAINER_MODULE = "packages.enhanced_agent_bus.online_learning_infra.trainer"
-_ADAPTER_MODULE = "packages.enhanced_agent_bus.online_learning_infra.adapter"
+_TRAINER_MODULE = "enhanced_agent_bus.online_learning_infra.trainer"
+_ADAPTER_MODULE = "enhanced_agent_bus.online_learning_infra.adapter"
 
 
 def _make_mock_adapter(
@@ -38,8 +38,8 @@ def _make_mock_adapter(
     status=None,
 ) -> MagicMock:
     """Return a fully-configured mock RiverSklearnAdapter."""
-    from packages.enhanced_agent_bus.online_learning_infra.config import LearningStatus
-    from packages.enhanced_agent_bus.online_learning_infra.models import LearningStats
+    from enhanced_agent_bus.online_learning_infra.config import LearningStatus
+    from enhanced_agent_bus.online_learning_infra.models import LearningStats
 
     adapter = MagicMock()
     adapter.is_ready = is_ready
@@ -55,7 +55,7 @@ def _make_mock_adapter(
 
 def _make_mock_evaluator() -> MagicMock:
     """Return a mock OnlineLearningEvaluator."""
-    from packages.enhanced_agent_bus.online_learning_infra.models import PipelineStats
+    from enhanced_agent_bus.online_learning_infra.models import PipelineStats
 
     ev = MagicMock()
     ev.compute_pipeline_stats.return_value = PipelineStats()
@@ -78,7 +78,7 @@ def _build_pipeline(
     The RiverSklearnAdapter constructor is bypassed by directly assigning
     the mock *after* construction so we never touch real River code.
     """
-    from packages.enhanced_agent_bus.online_learning_infra.config import ModelType
+    from enhanced_agent_bus.online_learning_infra.config import ModelType
 
     _model_type = model_type or ModelType.CLASSIFIER
     _adapter = adapter or _make_mock_adapter()
@@ -102,7 +102,7 @@ def _build_pipeline(
     ):
         mock_rs.Mean.return_value = MagicMock()
 
-        from packages.enhanced_agent_bus.online_learning_infra.trainer import (
+        from enhanced_agent_bus.online_learning_infra.trainer import (
             OnlineLearningPipeline,
         )
 
@@ -127,7 +127,7 @@ def _build_pipeline(
 
 class TestModuleConstants:
     def test_fallback_prediction_errors_tuple(self):
-        from packages.enhanced_agent_bus.online_learning_infra.trainer import (
+        from enhanced_agent_bus.online_learning_infra.trainer import (
             FALLBACK_PREDICTION_ERRORS,
         )
 
@@ -138,7 +138,7 @@ class TestModuleConstants:
         assert AttributeError in FALLBACK_PREDICTION_ERRORS
 
     def test_online_learning_feedback_errors_tuple(self):
-        from packages.enhanced_agent_bus.online_learning_infra.trainer import (
+        from enhanced_agent_bus.online_learning_infra.trainer import (
             ONLINE_LEARNING_FEEDBACK_ERRORS,
         )
 
@@ -160,7 +160,7 @@ class TestCheckDependencies:
             patch(f"{_TRAINER_MODULE}.RIVER_AVAILABLE", False),
             patch(f"{_ADAPTER_MODULE}.RIVER_AVAILABLE", False),
         ):
-            from packages.enhanced_agent_bus.online_learning_infra.trainer import (
+            from enhanced_agent_bus.online_learning_infra.trainer import (
                 OnlineLearningPipeline,
             )
 
@@ -169,7 +169,7 @@ class TestCheckDependencies:
 
     def test_no_error_when_river_available(self):
         with patch(f"{_TRAINER_MODULE}.RIVER_AVAILABLE", True):
-            from packages.enhanced_agent_bus.online_learning_infra.trainer import (
+            from enhanced_agent_bus.online_learning_infra.trainer import (
                 OnlineLearningPipeline,
             )
 
@@ -235,7 +235,7 @@ class TestInit:
             # so with RIVER_AVAILABLE=False the loop is skipped.
             import importlib
 
-            from packages.enhanced_agent_bus.online_learning_infra import trainer
+            from enhanced_agent_bus.online_learning_infra import trainer
 
             assert trainer.RIVER_AVAILABLE is False  # confirms the patch took effect
 
@@ -268,7 +268,7 @@ class TestSetFallbackModel:
 
 class TestPredictOnlinePath:
     def test_returns_prediction_result(self):
-        from packages.enhanced_agent_bus.online_learning_infra.models import PredictionResult
+        from enhanced_agent_bus.online_learning_infra.models import PredictionResult
 
         p = _build_pipeline()
         result = p.predict({"f1": 0.5})
@@ -312,7 +312,7 @@ class TestPredictOnlinePath:
         assert result.probabilities == {0: 0.3, 1: 0.7}
 
     def test_empty_proba_dict_leaves_confidence_none(self):
-        from packages.enhanced_agent_bus.online_learning_infra.config import ModelType
+        from enhanced_agent_bus.online_learning_infra.config import ModelType
 
         adapter = _make_mock_adapter()
         adapter.predict_proba_one.return_value = {}  # empty → no confidence
@@ -322,7 +322,7 @@ class TestPredictOnlinePath:
         assert result.probabilities is None
 
     def test_no_proba_for_regressor(self):
-        from packages.enhanced_agent_bus.online_learning_infra.config import ModelType
+        from enhanced_agent_bus.online_learning_infra.config import ModelType
 
         adapter = _make_mock_adapter()
         p = _build_pipeline(adapter=adapter, model_type=ModelType.REGRESSOR)
@@ -671,7 +671,7 @@ class TestLearnFromFeedback:
 
 class TestGetStats:
     def test_returns_pipeline_stats(self):
-        from packages.enhanced_agent_bus.online_learning_infra.models import PipelineStats
+        from enhanced_agent_bus.online_learning_infra.models import PipelineStats
 
         evaluator = _make_mock_evaluator()
         p = _build_pipeline(evaluator=evaluator)

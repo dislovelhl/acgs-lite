@@ -16,7 +16,9 @@ from datetime import UTC, datetime
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.verification.sagallm_transactions import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.verification.sagallm_transactions import (
     SagaAction,
     SagaLLMEngine,
     SagaTransaction,
@@ -27,7 +29,6 @@ from packages.enhanced_agent_bus.verification.sagallm_transactions import (
     get_saga_engine,
     saga_transaction,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 pytestmark = [pytest.mark.unit, pytest.mark.constitutional]
 
@@ -609,7 +610,7 @@ class TestExecuteActionWithRetry:
             max_retries=1,
             timeout_s=0.01,
         )
-        module = "packages.enhanced_agent_bus.verification.sagallm_transactions"
+        module = "enhanced_agent_bus.verification.sagallm_transactions"
         with (
             patch(f"{module}.asyncio.wait_for", side_effect=asyncio.TimeoutError),
             patch(f"{module}.asyncio.sleep", new=AsyncMock()),

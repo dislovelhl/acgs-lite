@@ -27,13 +27,14 @@ pytestmark = [pytest.mark.unit]
 # Core imports
 # ---------------------------------------------------------------------------
 
-from packages.enhanced_agent_bus.core_models import AgentMessage, MessageType  # noqa: E402
-from packages.enhanced_agent_bus.deliberation_layer.deliberation_queue import (  # noqa: E402
+from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+
+from enhanced_agent_bus.core_models import AgentMessage, MessageType  # noqa: E402
+from enhanced_agent_bus.deliberation_layer.deliberation_queue import (  # noqa: E402
     DeliberationQueue,
     DeliberationStatus,
     DeliberationTask,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -67,18 +68,17 @@ async def _enqueue_task(queue: DeliberationQueue, msg: AgentMessage | None = Non
 
 import logging  # noqa: E402
 
-from packages.enhanced_agent_bus.deliberation_layer import hitl_manager as _hitl_mod  # noqa: E402
-from packages.enhanced_agent_bus.deliberation_layer.hitl_manager import (  # noqa: E402
+from enhanced_agent_bus.deliberation_layer import hitl_manager as _hitl_mod  # noqa: E402
+from enhanced_agent_bus.deliberation_layer.hitl_manager import (  # noqa: E402
     CONSTITUTIONAL_HASH as HITL_CONSTITUTIONAL_HASH,
 )
-from packages.enhanced_agent_bus.deliberation_layer.hitl_manager import (  # noqa: E402
+from enhanced_agent_bus.deliberation_layer.hitl_manager import (  # noqa: E402
     AuditLedger,
     HITLManager,
     ValidationResult,
     _load_constitutional_hash,
     _load_deliberation_queue_types,
 )
-
 from enhanced_agent_bus.observability.structured_logging import get_logger  # noqa: E402
 
 # ===========================================================================
@@ -115,7 +115,7 @@ class TestLoadDeliberationQueueTypes:
         # removing primary modules from sys.modules
         saved = {}
         candidates_to_remove = [
-            "packages.enhanced_agent_bus.deliberation_layer.deliberation_queue",
+            "enhanced_agent_bus.deliberation_layer.deliberation_queue",
             "enhanced_agent_bus.deliberation_layer.deliberation_queue",
         ]
         for key in candidates_to_remove:
@@ -132,7 +132,7 @@ class TestLoadDeliberationQueueTypes:
         """Should raise ImportError if all candidate paths are unavailable."""
         # Patch import_module to always raise ImportError
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.hitl_manager.import_module",
+            "enhanced_agent_bus.deliberation_layer.hitl_manager.import_module",
             side_effect=ImportError("mocked"),
         ):
             with pytest.raises(ImportError, match="Unable to load deliberation queue"):
@@ -160,7 +160,7 @@ class TestLoadConstitutionalHash:
     def test_fallback_value_when_all_imports_fail(self):
         """Should return hardcoded fallback hash when all imports fail."""
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.hitl_manager.import_module",
+            "enhanced_agent_bus.deliberation_layer.hitl_manager.import_module",
             side_effect=ImportError("mocked"),
         ):
             result = _load_constitutional_hash()
@@ -170,7 +170,7 @@ class TestLoadConstitutionalHash:
         """Should fall through to next candidate if CONSTITUTIONAL_HASH attr missing."""
         mock_module = MagicMock(spec=[])  # no CONSTITUTIONAL_HASH attribute
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.hitl_manager.import_module",
+            "enhanced_agent_bus.deliberation_layer.hitl_manager.import_module",
             side_effect=[mock_module, ImportError(), ImportError(), ImportError()],
         ):
             # AttributeError on first, ImportError on rest → fallback
@@ -191,14 +191,14 @@ class TestModuleLevelConstants:
 
     def test_deliberation_queue_alias(self):
         """The module-level DeliberationQueue alias should be a callable."""
-        from packages.enhanced_agent_bus.deliberation_layer.hitl_manager import (
+        from enhanced_agent_bus.deliberation_layer.hitl_manager import (
             DeliberationQueue as DQ,
         )
 
         assert callable(DQ)
 
     def test_deliberation_status_alias(self):
-        from packages.enhanced_agent_bus.deliberation_layer.hitl_manager import (
+        from enhanced_agent_bus.deliberation_layer.hitl_manager import (
             DeliberationStatus as DS,
         )
 

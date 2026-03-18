@@ -21,10 +21,10 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH as SHARED_CONSTITUTION
 
 _MLFLOW_PATCH = "mlflow.set_tracking_uri"
 _IMPACT_MLFLOW = (
-    "packages.enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
+    "enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
 )
 _THRESH_MLFLOW = (
-    "packages.enhanced_agent_bus.adaptive_governance.threshold_manager."
+    "enhanced_agent_bus.adaptive_governance.threshold_manager."
     "AdaptiveThresholds._initialize_mlflow"
 )
 
@@ -37,7 +37,7 @@ CONST_HASH = SHARED_CONSTITUTIONAL_HASH
 
 
 def _make_features(risk_score: float = 0.3, confidence: float = 0.9):
-    from packages.enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
+    from enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
 
     return ImpactFeatures(
         message_length=50,
@@ -54,7 +54,7 @@ def _make_features(risk_score: float = 0.3, confidence: float = 0.9):
 
 
 def _make_decision(risk_score: float = 0.3, action_allowed: bool = True):
-    from packages.enhanced_agent_bus.adaptive_governance.models import (
+    from enhanced_agent_bus.adaptive_governance.models import (
         GovernanceDecision,
         ImpactLevel,
     )
@@ -77,32 +77,32 @@ def engine():
         patch(_IMPACT_MLFLOW),
         patch(_THRESH_MLFLOW),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "FEEDBACK_HANDLER_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "DRIFT_MONITORING_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "ONLINE_LEARNING_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "AB_TESTING_AVAILABLE",
             False,
         ),
         patch(
-            "packages.enhanced_agent_bus.adaptive_governance.governance_engine."
+            "enhanced_agent_bus.adaptive_governance.governance_engine."
             "ANOMALY_MONITORING_AVAILABLE",
             False,
         ),
     ):
-        from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+        from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
 
@@ -211,7 +211,7 @@ class TestRunScheduledDriftDetection:
         engine._last_drift_check = time.time()  # just now
         engine._drift_check_interval = 9999
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.DRIFT_MONITORING_AVAILABLE
         try:
@@ -227,7 +227,7 @@ class TestRunScheduledDriftDetection:
         engine._last_drift_check = 0.0  # long ago
         engine._drift_check_interval = 0
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.DRIFT_MONITORING_AVAILABLE
         try:
@@ -240,7 +240,7 @@ class TestRunScheduledDriftDetection:
 
     def test_runs_drift_detection_with_data_drift_found(self, engine):
         """Drift detected path — dataset_drift=True."""
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         mock_drift_status = MagicMock()
         mock_drift_status.SUCCESS = "SUCCESS"
@@ -294,7 +294,7 @@ class TestRunScheduledDriftDetection:
         mock_df = MagicMock()
         mock_df.__len__ = MagicMock(return_value=5)
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.DRIFT_MONITORING_AVAILABLE
         try:
@@ -324,7 +324,7 @@ class TestCollectDriftData:
 
     def test_with_temporal_patterns_empty(self, engine):
         """Covers 0-division guard when temporal_patterns is empty."""
-        from packages.enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
+        from enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
 
         features = ImpactFeatures(
             message_length=10,
@@ -336,7 +336,7 @@ class TestCollectDriftData:
             resource_utilization=0.2,
             network_isolation=0.8,
         )
-        from packages.enhanced_agent_bus.adaptive_governance.models import (
+        from enhanced_agent_bus.adaptive_governance.models import (
             GovernanceDecision,
             ImpactLevel,
         )

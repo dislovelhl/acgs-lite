@@ -10,7 +10,7 @@ critic agent integration, and comprehensive audit logging.
 import asyncio
 import uuid
 from datetime import UTC, datetime, timedelta, timezone
-from typing import Optional, TypeAlias, Union, cast
+from typing import TypeAlias, cast
 
 from src.core.shared.type_guards import (
     get_bool,
@@ -19,14 +19,22 @@ from src.core.shared.type_guards import (
     is_json_dict,
     is_policy_result,
 )
-from src.core.shared.types import JSONDict, JSONValue
+
+try:
+    from src.core.shared.types import (
+        JSONDict,
+        JSONValue,
+    )  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+    JSONValue = object  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 try:
-    from packages.enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage, MessageStatus
-    from packages.enhanced_agent_bus.opa_client import OPAClient, get_opa_client
-    from packages.enhanced_agent_bus.validators import ValidationResult
+    from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage, MessageStatus
+    from enhanced_agent_bus.opa_client import OPAClient, get_opa_client
+    from enhanced_agent_bus.validators import ValidationResult
 except ImportError:
     try:
         from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage, MessageStatus
@@ -34,12 +42,12 @@ except ImportError:
         from enhanced_agent_bus.validators import ValidationResult
     except ImportError:
         try:
-            from packages.enhanced_agent_bus.models import (
+            from enhanced_agent_bus.models import (
                 CONSTITUTIONAL_HASH,
                 AgentMessage,
                 MessageStatus,
             )
-            from packages.enhanced_agent_bus.validators import ValidationResult
+            from enhanced_agent_bus.validators import ValidationResult
 
             from ..opa_client import OPAClient, get_opa_client
         except ImportError:

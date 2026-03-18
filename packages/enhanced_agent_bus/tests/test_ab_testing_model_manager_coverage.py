@@ -8,11 +8,11 @@ import sys
 from unittest.mock import MagicMock, call, patch
 
 import pytest
-from packages.enhanced_agent_bus.ab_testing_infra.model_manager import (
+
+from enhanced_agent_bus.ab_testing_infra.model_manager import (
     MODEL_LOAD_ERRORS,
     ABTestModelManager,
 )
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # ---------------------------------------------------------------------------
@@ -444,7 +444,7 @@ class TestLoadModelsErrorHandling:
         fake_tracking.MlflowClient = mock_client_cls
 
         with caplog.at_level(
-            logging.ERROR, logger="packages.enhanced_agent_bus.ab_testing_infra.model_manager"
+            logging.ERROR, logger="enhanced_agent_bus.ab_testing_infra.model_manager"
         ):
             with patch.dict(
                 sys.modules,

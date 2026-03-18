@@ -18,11 +18,12 @@ import importlib.util
 import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import packages.enhanced_agent_bus.cb_opa_client as cb_opa_client_module
 import pytest
 
 # Import centralized constitutional hash
 from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+import enhanced_agent_bus.cb_opa_client as cb_opa_client_module
 
 try:
     AIKAFKA_AVAILABLE = importlib.util.find_spec("aiokafka") is not None
@@ -33,8 +34,8 @@ except (ValueError, ModuleNotFoundError):
 @pytest.fixture(autouse=True)
 def reset_all():
     """Reset all singletons before and after each test."""
-    from packages.enhanced_agent_bus.circuit_breaker import reset_circuit_breaker_registry
-    from packages.enhanced_agent_bus.circuit_breaker_clients import (
+    from enhanced_agent_bus.circuit_breaker import reset_circuit_breaker_registry
+    from enhanced_agent_bus.circuit_breaker_clients import (
         reset_circuit_breaker_clients,
     )
 
@@ -56,7 +57,7 @@ class TestRetryBuffer:
     @pytest.mark.asyncio
     async def test_add_message_to_buffer(self):
         """Test adding messages to retry buffer."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             BufferedMessage,
             RetryBuffer,
         )
@@ -79,7 +80,7 @@ class TestRetryBuffer:
     @pytest.mark.asyncio
     async def test_buffer_max_size(self):
         """Test buffer respects max size."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             BufferedMessage,
             RetryBuffer,
         )
@@ -105,7 +106,7 @@ class TestRetryBuffer:
     @pytest.mark.asyncio
     async def test_buffer_process_success(self):
         """Test processing buffered messages."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             BufferedMessage,
             RetryBuffer,
         )
@@ -136,7 +137,7 @@ class TestRetryBuffer:
     @pytest.mark.asyncio
     async def test_buffer_process_with_failures(self):
         """Test processing with some failures."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             BufferedMessage,
             RetryBuffer,
         )
@@ -165,7 +166,7 @@ class TestRetryBuffer:
     @pytest.mark.asyncio
     async def test_buffer_metrics(self):
         """Test buffer metrics collection."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             BufferedMessage,
             RetryBuffer,
         )
@@ -199,7 +200,7 @@ class TestCircuitBreakerOPAClient:
 
     def test_opa_client_rejects_invalid_cache_hash_mode(self):
         """Test OPA client rejects unsupported cache hash mode."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerOPAClient,
         )
 
@@ -208,7 +209,7 @@ class TestCircuitBreakerOPAClient:
 
     def test_opa_cache_key_fast_mode_uses_kernel(self, monkeypatch):
         """Test OPA cache key uses fast hash kernel when enabled."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerOPAClient,
         )
 
@@ -229,7 +230,7 @@ class TestCircuitBreakerOPAClient:
 
     def test_opa_cache_key_fast_mode_falls_back_to_sha256(self, monkeypatch):
         """Test OPA fast hash mode falls back to SHA-256 when unavailable."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerOPAClient,
         )
 
@@ -244,7 +245,7 @@ class TestCircuitBreakerOPAClient:
     @pytest.mark.asyncio
     async def test_opa_client_initialization(self):
         """Test OPA client initializes with circuit breaker."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerOPAClient,
         )
 
@@ -261,7 +262,7 @@ class TestCircuitBreakerOPAClient:
     @pytest.mark.asyncio
     async def test_opa_fail_closed_when_circuit_open(self):
         """Test OPA client returns denied when circuit is open."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerOPAClient,
         )
 
@@ -284,7 +285,7 @@ class TestCircuitBreakerOPAClient:
     @pytest.mark.asyncio
     async def test_opa_successful_evaluation(self):
         """Test successful OPA policy evaluation."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerOPAClient,
         )
 
@@ -310,7 +311,7 @@ class TestCircuitBreakerOPAClient:
     @pytest.mark.asyncio
     async def test_opa_caching(self):
         """Test OPA result caching."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerOPAClient,
         )
 
@@ -341,7 +342,7 @@ class TestCircuitBreakerOPAClient:
     @pytest.mark.asyncio
     async def test_opa_health_check(self):
         """Test OPA client health check."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerOPAClient,
         )
 
@@ -376,7 +377,7 @@ class TestCircuitBreakerRedisClient:
     @pytest.mark.asyncio
     async def test_redis_client_initialization(self):
         """Test Redis client initializes with circuit breaker."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerRedisClient,
         )
 
@@ -397,7 +398,7 @@ class TestCircuitBreakerRedisClient:
     @pytest.mark.asyncio
     async def test_redis_fail_open_when_circuit_open(self):
         """Test Redis client bypasses when circuit is open."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerRedisClient,
         )
 
@@ -427,7 +428,7 @@ class TestCircuitBreakerRedisClient:
     @pytest.mark.asyncio
     async def test_redis_successful_operations(self):
         """Test successful Redis operations."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerRedisClient,
         )
 
@@ -458,7 +459,7 @@ class TestCircuitBreakerRedisClient:
     @pytest.mark.asyncio
     async def test_redis_batch_operations(self):
         """Test Redis batch operations with circuit breaker."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerRedisClient,
         )
 
@@ -498,7 +499,7 @@ class TestCircuitBreakerRedisClient:
     @pytest.mark.asyncio
     async def test_redis_degraded_mode(self):
         """Test Redis operates in degraded mode without connection."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerRedisClient,
         )
 
@@ -524,7 +525,7 @@ class TestCircuitBreakerRedisClient:
     @pytest.mark.asyncio
     async def test_redis_health_check(self):
         """Test Redis client health check."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerRedisClient,
         )
 
@@ -558,7 +559,7 @@ class TestCircuitBreakerKafkaProducer:
     @pytest.mark.asyncio
     async def test_kafka_producer_initialization(self):
         """Test Kafka producer initializes with circuit breaker."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerKafkaProducer,
         )
 
@@ -579,7 +580,7 @@ class TestCircuitBreakerKafkaProducer:
     @pytest.mark.asyncio
     async def test_kafka_buffer_when_circuit_open(self):
         """Test Kafka producer buffers messages when circuit is open."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerKafkaProducer,
         )
 
@@ -610,7 +611,7 @@ class TestCircuitBreakerKafkaProducer:
     @pytest.mark.asyncio
     async def test_kafka_successful_send(self):
         """Test successful Kafka message send."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerKafkaProducer,
         )
 
@@ -640,7 +641,7 @@ class TestCircuitBreakerKafkaProducer:
     @pytest.mark.asyncio
     async def test_kafka_batch_send(self):
         """Test Kafka batch message send."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerKafkaProducer,
         )
 
@@ -670,7 +671,7 @@ class TestCircuitBreakerKafkaProducer:
     @pytest.mark.asyncio
     async def test_kafka_buffer_on_failure(self):
         """Test Kafka producer buffers on send failure."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerKafkaProducer,
         )
 
@@ -698,7 +699,7 @@ class TestCircuitBreakerKafkaProducer:
     @pytest.mark.asyncio
     async def test_kafka_health_check(self):
         """Test Kafka producer health check."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerKafkaProducer,
         )
 
@@ -733,7 +734,7 @@ class TestFactoryFunctions:
     @pytest.mark.asyncio
     async def test_get_opa_client_singleton(self):
         """Test OPA client singleton pattern."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             close_all_circuit_breaker_clients,
             get_circuit_breaker_opa_client,
         )
@@ -749,7 +750,7 @@ class TestFactoryFunctions:
     @pytest.mark.asyncio
     async def test_get_redis_client_singleton(self):
         """Test Redis client singleton pattern."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             close_all_circuit_breaker_clients,
             get_circuit_breaker_redis_client,
         )
@@ -779,7 +780,7 @@ class TestHealthAggregator:
     @pytest.mark.asyncio
     async def test_get_all_circuit_health(self):
         """Test aggregated health check."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             get_all_circuit_health,
         )
 
@@ -792,8 +793,8 @@ class TestHealthAggregator:
     @pytest.mark.asyncio
     async def test_health_status_with_critical_issues(self):
         """Test health status reflects critical issues."""
-        from packages.enhanced_agent_bus import circuit_breaker_clients
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus import circuit_breaker_clients
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerOPAClient,
             get_all_circuit_health,
             reset_circuit_breaker_clients,
@@ -831,7 +832,7 @@ class TestConstitutionalCompliance:
     @pytest.mark.asyncio
     async def test_opa_client_has_constitutional_hash(self):
         """Test OPA client includes constitutional hash."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerOPAClient,
         )
 
@@ -849,7 +850,7 @@ class TestConstitutionalCompliance:
     @pytest.mark.asyncio
     async def test_redis_client_has_constitutional_hash(self):
         """Test Redis client includes constitutional hash."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerRedisClient,
         )
 
@@ -872,7 +873,7 @@ class TestConstitutionalCompliance:
     @pytest.mark.skipif(not AIKAFKA_AVAILABLE, reason="aiokafka not installed")
     async def test_kafka_producer_has_constitutional_hash(self):
         """Test Kafka producer includes constitutional hash."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             CircuitBreakerKafkaProducer,
         )
 
@@ -904,7 +905,7 @@ class TestFastAPIRouter:
 
     def test_router_creation(self):
         """Test router can be created."""
-        from packages.enhanced_agent_bus.circuit_breaker_clients import (
+        from enhanced_agent_bus.circuit_breaker_clients import (
             create_circuit_breaker_client_router,
         )
 

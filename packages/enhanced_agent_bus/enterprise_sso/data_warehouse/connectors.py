@@ -10,7 +10,10 @@ import asyncio
 from abc import ABC, abstractmethod
 from typing import Any
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 from .models import (
     BigQueryConfig,

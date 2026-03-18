@@ -26,7 +26,7 @@ def _import_module():
     """Import fallback_stubs fresh, respecting the current environment."""
     import importlib
 
-    import packages.enhanced_agent_bus.fallback_stubs as m
+    import enhanced_agent_bus.fallback_stubs as m
 
     importlib.reload(m)
     return m
@@ -51,12 +51,12 @@ class TestEnvironmentDetection:
         yield
         import importlib
 
-        import packages.enhanced_agent_bus.fallback_stubs as m
+        import enhanced_agent_bus.fallback_stubs as m
 
         importlib.reload(m)
 
     def test_environment_default(self):
-        from packages.enhanced_agent_bus.fallback_stubs import ENVIRONMENT
+        from enhanced_agent_bus.fallback_stubs import ENVIRONMENT
 
         # Must be a string
         assert isinstance(ENVIRONMENT, str)
@@ -64,7 +64,7 @@ class TestEnvironmentDetection:
     def test_is_production_false_in_test(self):
         import importlib
 
-        import packages.enhanced_agent_bus.fallback_stubs as m
+        import enhanced_agent_bus.fallback_stubs as m
 
         # Reload to pick up the CURRENT environment (not a prior test's reload state)
         importlib.reload(m)
@@ -78,7 +78,7 @@ class TestEnvironmentDetection:
             with patch.dict(os.environ, {"ENVIRONMENT": name}):
                 import importlib
 
-                import packages.enhanced_agent_bus.fallback_stubs as m
+                import enhanced_agent_bus.fallback_stubs as m
 
                 importlib.reload(m)
                 assert m.IS_PRODUCTION is True
@@ -88,7 +88,7 @@ class TestEnvironmentDetection:
             with patch.dict(os.environ, {"ENVIRONMENT": name}):
                 import importlib
 
-                import packages.enhanced_agent_bus.fallback_stubs as m
+                import enhanced_agent_bus.fallback_stubs as m
 
                 importlib.reload(m)
                 assert m.IS_PRODUCTION is False
@@ -101,17 +101,17 @@ class TestEnvironmentDetection:
 
 class TestDependencyNotAvailableError:
     def test_http_status_code(self):
-        from packages.enhanced_agent_bus.fallback_stubs import DependencyNotAvailableError
+        from enhanced_agent_bus.fallback_stubs import DependencyNotAvailableError
 
         assert DependencyNotAvailableError.http_status_code == 500
 
     def test_error_code(self):
-        from packages.enhanced_agent_bus.fallback_stubs import DependencyNotAvailableError
+        from enhanced_agent_bus.fallback_stubs import DependencyNotAvailableError
 
         assert DependencyNotAvailableError.error_code == "DEPENDENCY_NOT_AVAILABLE"
 
     def test_is_exception(self):
-        from packages.enhanced_agent_bus.fallback_stubs import DependencyNotAvailableError
+        from enhanced_agent_bus.fallback_stubs import DependencyNotAvailableError
 
         err = DependencyNotAvailableError("missing lib")
         assert isinstance(err, DependencyNotAvailableError)
@@ -125,25 +125,25 @@ class TestDependencyNotAvailableError:
 
 class TestRequireDependency:
     def test_available_dependency_does_nothing(self):
-        from packages.enhanced_agent_bus.fallback_stubs import require_dependency
+        from enhanced_agent_bus.fallback_stubs import require_dependency
 
         # Should not raise when available=True
         require_dependency("some_lib", available=True)
 
     def test_unavailable_in_production_raises(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             DependencyNotAvailableError,
             require_dependency,
         )
 
-        with patch("packages.enhanced_agent_bus.fallback_stubs.IS_PRODUCTION", True):
+        with patch("enhanced_agent_bus.fallback_stubs.IS_PRODUCTION", True):
             with pytest.raises(DependencyNotAvailableError):
                 require_dependency("missing_lib", available=False)
 
     def test_unavailable_in_development_logs_warning(self, caplog):
-        from packages.enhanced_agent_bus.fallback_stubs import require_dependency
+        from enhanced_agent_bus.fallback_stubs import require_dependency
 
-        with patch("packages.enhanced_agent_bus.fallback_stubs.IS_PRODUCTION", False):
+        with patch("enhanced_agent_bus.fallback_stubs.IS_PRODUCTION", False):
             with caplog.at_level(logging.WARNING):
                 require_dependency("optional_dep", available=False)
 
@@ -151,12 +151,12 @@ class TestRequireDependency:
         assert "stub" in caplog.text.lower() or "warning" in caplog.text.lower() or True
 
     def test_error_message_contains_dep_name(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             DependencyNotAvailableError,
             require_dependency,
         )
 
-        with patch("packages.enhanced_agent_bus.fallback_stubs.IS_PRODUCTION", True):
+        with patch("enhanced_agent_bus.fallback_stubs.IS_PRODUCTION", True):
             with pytest.raises(DependencyNotAvailableError) as exc_info:
                 require_dependency("special_package", available=False)
         assert "special_package" in str(exc_info.value)
@@ -169,26 +169,26 @@ class TestRequireDependency:
 
 class TestStubLimiter:
     def test_instantiation_no_args(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubLimiter
+        from enhanced_agent_bus.fallback_stubs import StubLimiter
 
         limiter = StubLimiter()
         assert limiter is not None
 
     def test_instantiation_with_args(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubLimiter
+        from enhanced_agent_bus.fallback_stubs import StubLimiter
 
         limiter = StubLimiter("key_func", default_limits=["100/minute"])
         assert limiter is not None
 
     def test_limit_returns_decorator(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubLimiter
+        from enhanced_agent_bus.fallback_stubs import StubLimiter
 
         limiter = StubLimiter()
         decorator = limiter.limit("10/second")
         assert callable(decorator)
 
     def test_limit_decorator_returns_function_unchanged(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubLimiter
+        from enhanced_agent_bus.fallback_stubs import StubLimiter
 
         limiter = StubLimiter()
         decorator = limiter.limit("5/minute", per_method=True)
@@ -200,7 +200,7 @@ class TestStubLimiter:
         assert result is my_route
 
     def test_limiter_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import Limiter, StubLimiter
+        from enhanced_agent_bus.fallback_stubs import Limiter, StubLimiter
 
         assert Limiter is StubLimiter
 
@@ -212,12 +212,12 @@ class TestStubLimiter:
 
 class TestStubGetRemoteAddress:
     def test_returns_localhost(self):
-        from packages.enhanced_agent_bus.fallback_stubs import stub_get_remote_address
+        from enhanced_agent_bus.fallback_stubs import stub_get_remote_address
 
         assert stub_get_remote_address() == "127.0.0.1"
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             get_remote_address,
             stub_get_remote_address,
         )
@@ -232,19 +232,19 @@ class TestStubGetRemoteAddress:
 
 class TestStubRateLimitExceededHandler:
     def test_no_op_no_args(self):
-        from packages.enhanced_agent_bus.fallback_stubs import stub_rate_limit_exceeded_handler
+        from enhanced_agent_bus.fallback_stubs import stub_rate_limit_exceeded_handler
 
         result = stub_rate_limit_exceeded_handler()
         assert result is None
 
     def test_no_op_with_args(self):
-        from packages.enhanced_agent_bus.fallback_stubs import stub_rate_limit_exceeded_handler
+        from enhanced_agent_bus.fallback_stubs import stub_rate_limit_exceeded_handler
 
         result = stub_rate_limit_exceeded_handler("request", "exception")
         assert result is None
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             _rate_limit_exceeded_handler,
             stub_rate_limit_exceeded_handler,
         )
@@ -259,24 +259,24 @@ class TestStubRateLimitExceededHandler:
 
 class TestStubRateLimitExceeded:
     def test_http_status_code(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubRateLimitExceeded
+        from enhanced_agent_bus.fallback_stubs import StubRateLimitExceeded
 
         assert StubRateLimitExceeded.http_status_code == 429
 
     def test_error_code(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubRateLimitExceeded
+        from enhanced_agent_bus.fallback_stubs import StubRateLimitExceeded
 
         assert StubRateLimitExceeded.error_code == "RATE_LIMIT_EXCEEDED"
 
     def test_default_construction(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubRateLimitExceeded
+        from enhanced_agent_bus.fallback_stubs import StubRateLimitExceeded
 
         err = StubRateLimitExceeded()
         assert err.agent_id == ""
         assert err.retry_after_ms is None
 
     def test_custom_construction(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubRateLimitExceeded
+        from enhanced_agent_bus.fallback_stubs import StubRateLimitExceeded
 
         err = StubRateLimitExceeded(
             agent_id="agent-1", message="Too many requests", retry_after_ms=5000
@@ -286,19 +286,19 @@ class TestStubRateLimitExceeded:
         assert "Too many requests" in str(err)
 
     def test_default_message_when_empty(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubRateLimitExceeded
+        from enhanced_agent_bus.fallback_stubs import StubRateLimitExceeded
 
         err = StubRateLimitExceeded(agent_id="a")
         assert "Rate limit exceeded" in str(err)
 
     def test_is_exception(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubRateLimitExceeded
+        from enhanced_agent_bus.fallback_stubs import StubRateLimitExceeded
 
         err = StubRateLimitExceeded()
         assert isinstance(err, StubRateLimitExceeded)
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             RateLimitExceeded,
             StubRateLimitExceeded,
         )
@@ -315,7 +315,7 @@ class TestStubRateLimitExceeded:
 
 class TestStubGetCorsConfig:
     def test_returns_deny_all_dict(self, caplog):
-        from packages.enhanced_agent_bus.fallback_stubs import stub_get_cors_config
+        from enhanced_agent_bus.fallback_stubs import stub_get_cors_config
 
         with caplog.at_level(logging.WARNING):
             config = stub_get_cors_config()
@@ -326,7 +326,7 @@ class TestStubGetCorsConfig:
         assert config["allow_headers"] == []
 
     def test_logs_warning(self, caplog):
-        from packages.enhanced_agent_bus.fallback_stubs import stub_get_cors_config
+        from enhanced_agent_bus.fallback_stubs import stub_get_cors_config
 
         with caplog.at_level(logging.WARNING):
             stub_get_cors_config()
@@ -334,7 +334,7 @@ class TestStubGetCorsConfig:
         assert "CORS stub" in caplog.text or "cors" in caplog.text.lower()
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import get_cors_config, stub_get_cors_config
+        from enhanced_agent_bus.fallback_stubs import get_cors_config, stub_get_cors_config
 
         assert get_cors_config is stub_get_cors_config
 
@@ -346,25 +346,25 @@ class TestStubGetCorsConfig:
 
 class TestStubSecurityHeadersConfig:
     def test_for_development(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubSecurityHeadersConfig
+        from enhanced_agent_bus.fallback_stubs import StubSecurityHeadersConfig
 
         config = StubSecurityHeadersConfig.for_development()
         assert isinstance(config, StubSecurityHeadersConfig)
 
     def test_for_production(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubSecurityHeadersConfig
+        from enhanced_agent_bus.fallback_stubs import StubSecurityHeadersConfig
 
         config = StubSecurityHeadersConfig.for_production()
         assert isinstance(config, StubSecurityHeadersConfig)
 
     def test_direct_instantiation(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubSecurityHeadersConfig
+        from enhanced_agent_bus.fallback_stubs import StubSecurityHeadersConfig
 
         config = StubSecurityHeadersConfig()
         assert config is not None
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             SecurityHeadersConfig,
             StubSecurityHeadersConfig,
         )
@@ -379,7 +379,7 @@ class TestStubSecurityHeadersConfig:
 
 class TestStubSecurityHeadersMiddleware:
     def _make_middleware(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             StubSecurityHeadersConfig,
             StubSecurityHeadersMiddleware,
         )
@@ -394,7 +394,7 @@ class TestStubSecurityHeadersMiddleware:
         assert middleware.config is not None
 
     def test_init_no_config(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubSecurityHeadersMiddleware
+        from enhanced_agent_bus.fallback_stubs import StubSecurityHeadersMiddleware
 
         app = AsyncMock()
         m = StubSecurityHeadersMiddleware(app=app)
@@ -410,7 +410,7 @@ class TestStubSecurityHeadersMiddleware:
         app.assert_awaited_once_with(scope, receive, send)
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             SecurityHeadersMiddleware,
             StubSecurityHeadersMiddleware,
         )
@@ -425,7 +425,7 @@ class TestStubSecurityHeadersMiddleware:
 
 class TestStubTenantContextConfig:
     def test_default_values(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubTenantContextConfig
+        from enhanced_agent_bus.fallback_stubs import StubTenantContextConfig
 
         config = StubTenantContextConfig()
         assert config.required is True
@@ -435,15 +435,15 @@ class TestStubTenantContextConfig:
         assert "/docs" in config.exempt_paths
 
     def test_custom_exempt_paths(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubTenantContextConfig
+        from enhanced_agent_bus.fallback_stubs import StubTenantContextConfig
 
         config = StubTenantContextConfig(exempt_paths=["/custom"])
         assert config.exempt_paths == ["/custom"]
 
     def test_fail_open_blocked_in_production(self, caplog):
-        from packages.enhanced_agent_bus.fallback_stubs import StubTenantContextConfig
+        from enhanced_agent_bus.fallback_stubs import StubTenantContextConfig
 
-        with patch("packages.enhanced_agent_bus.fallback_stubs.IS_PRODUCTION", True):
+        with patch("enhanced_agent_bus.fallback_stubs.IS_PRODUCTION", True):
             with caplog.at_level(logging.WARNING):
                 config = StubTenantContextConfig(required=True, fail_open=True)
 
@@ -452,15 +452,15 @@ class TestStubTenantContextConfig:
         assert "BLOCKED" in caplog.text or "production" in caplog.text.lower()
 
     def test_fail_open_allowed_in_development(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubTenantContextConfig
+        from enhanced_agent_bus.fallback_stubs import StubTenantContextConfig
 
-        with patch("packages.enhanced_agent_bus.fallback_stubs.IS_PRODUCTION", False):
+        with patch("enhanced_agent_bus.fallback_stubs.IS_PRODUCTION", False):
             config = StubTenantContextConfig(required=True, fail_open=True)
 
         assert config.fail_open is True
 
     def test_from_env(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubTenantContextConfig
+        from enhanced_agent_bus.fallback_stubs import StubTenantContextConfig
 
         config = StubTenantContextConfig.from_env()
         assert isinstance(config, StubTenantContextConfig)
@@ -468,7 +468,7 @@ class TestStubTenantContextConfig:
         assert config.fail_open is False
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             StubTenantContextConfig,
             TenantContextConfig,
         )
@@ -483,7 +483,7 @@ class TestStubTenantContextConfig:
 
 class TestStubTenantContextMiddleware:
     async def test_call_passes_through_when_no_config(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubTenantContextMiddleware
+        from enhanced_agent_bus.fallback_stubs import StubTenantContextMiddleware
 
         app = AsyncMock()
         middleware = StubTenantContextMiddleware(app=app, config=None)
@@ -495,7 +495,7 @@ class TestStubTenantContextMiddleware:
         app.assert_awaited_once_with(scope, receive, send)
 
     async def test_call_passes_through_non_http_scope(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             StubTenantContextConfig,
             StubTenantContextMiddleware,
         )
@@ -511,7 +511,7 @@ class TestStubTenantContextMiddleware:
         app.assert_awaited_once_with(scope, receive, send)
 
     async def test_call_rejects_http_when_required_and_not_fail_open(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             StubTenantContextConfig,
             StubTenantContextMiddleware,
         )
@@ -537,14 +537,14 @@ class TestStubTenantContextMiddleware:
         assert send.call_count > 0
 
     async def test_call_passes_through_when_fail_open(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             StubTenantContextConfig,
             StubTenantContextMiddleware,
         )
 
         app = AsyncMock()
         # fail_open=True only works when IS_PRODUCTION is False
-        with patch("packages.enhanced_agent_bus.fallback_stubs.IS_PRODUCTION", False):
+        with patch("enhanced_agent_bus.fallback_stubs.IS_PRODUCTION", False):
             config = StubTenantContextConfig(required=True, fail_open=True)
 
         middleware = StubTenantContextMiddleware(app=app, config=config)
@@ -556,7 +556,7 @@ class TestStubTenantContextMiddleware:
         app.assert_awaited_once_with(scope, receive, send)
 
     async def test_call_passes_through_when_not_required(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             StubTenantContextConfig,
             StubTenantContextMiddleware,
         )
@@ -572,7 +572,7 @@ class TestStubTenantContextMiddleware:
         app.assert_awaited_once_with(scope, receive, send)
 
     def test_stores_app_and_config(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             StubTenantContextConfig,
             StubTenantContextMiddleware,
         )
@@ -584,7 +584,7 @@ class TestStubTenantContextMiddleware:
         assert m.config is config
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             StubTenantContextMiddleware,
             TenantContextMiddleware,
         )
@@ -599,12 +599,12 @@ class TestStubTenantContextMiddleware:
 
 class TestStubCreateCorrelationMiddleware:
     def test_returns_none(self):
-        from packages.enhanced_agent_bus.fallback_stubs import stub_create_correlation_middleware
+        from enhanced_agent_bus.fallback_stubs import stub_create_correlation_middleware
 
         assert stub_create_correlation_middleware() is None
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             create_correlation_middleware,
             stub_create_correlation_middleware,
         )
@@ -619,42 +619,42 @@ class TestStubCreateCorrelationMiddleware:
 
 class TestStubAgentBusError:
     def test_http_status_code(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubAgentBusError
+        from enhanced_agent_bus.fallback_stubs import StubAgentBusError
 
         assert StubAgentBusError.http_status_code == 500
 
     def test_error_code(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubAgentBusError
+        from enhanced_agent_bus.fallback_stubs import StubAgentBusError
 
         assert StubAgentBusError.error_code == "AGENT_BUS_ERROR"
 
     def test_instantiation_no_args(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubAgentBusError
+        from enhanced_agent_bus.fallback_stubs import StubAgentBusError
 
         err = StubAgentBusError()
         assert isinstance(err, StubAgentBusError)
 
     def test_instantiation_with_message(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubAgentBusError
+        from enhanced_agent_bus.fallback_stubs import StubAgentBusError
 
         err = StubAgentBusError("bus failed")
         assert "bus failed" in str(err)
 
     def test_instantiation_with_kwargs(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubAgentBusError
+        from enhanced_agent_bus.fallback_stubs import StubAgentBusError
 
         err = StubAgentBusError("error", context="ctx", code=42)
         assert isinstance(err, StubAgentBusError)
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import AgentBusError, StubAgentBusError
+        from enhanced_agent_bus.fallback_stubs import AgentBusError, StubAgentBusError
 
         assert AgentBusError is StubAgentBusError
 
 
 class TestStubConstitutionalError:
     def test_is_agent_bus_error(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             StubAgentBusError,
             StubConstitutionalError,
         )
@@ -662,13 +662,13 @@ class TestStubConstitutionalError:
         assert issubclass(StubConstitutionalError, StubAgentBusError)
 
     def test_instantiation(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubConstitutionalError
+        from enhanced_agent_bus.fallback_stubs import StubConstitutionalError
 
         err = StubConstitutionalError("hash mismatch")
         assert isinstance(err, StubConstitutionalError)
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             ConstitutionalError,
             StubConstitutionalError,
         )
@@ -678,25 +678,25 @@ class TestStubConstitutionalError:
 
 class TestStubMessageError:
     def test_is_agent_bus_error(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubAgentBusError, StubMessageError
+        from enhanced_agent_bus.fallback_stubs import StubAgentBusError, StubMessageError
 
         assert issubclass(StubMessageError, StubAgentBusError)
 
     def test_instantiation(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubMessageError
+        from enhanced_agent_bus.fallback_stubs import StubMessageError
 
         err = StubMessageError("bad message")
         assert isinstance(err, StubMessageError)
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import MessageError, StubMessageError
+        from enhanced_agent_bus.fallback_stubs import MessageError, StubMessageError
 
         assert MessageError is StubMessageError
 
 
 class TestStubMessageTimeoutError:
     def test_is_message_error(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             StubMessageError,
             StubMessageTimeoutError,
         )
@@ -704,26 +704,26 @@ class TestStubMessageTimeoutError:
         assert issubclass(StubMessageTimeoutError, StubMessageError)
 
     def test_default_construction(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubMessageTimeoutError
+        from enhanced_agent_bus.fallback_stubs import StubMessageTimeoutError
 
         err = StubMessageTimeoutError()
         assert err.message_id == ""
 
     def test_custom_construction(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubMessageTimeoutError
+        from enhanced_agent_bus.fallback_stubs import StubMessageTimeoutError
 
         err = StubMessageTimeoutError(message_id="msg-123", message="Timed out")
         assert err.message_id == "msg-123"
         assert "Timed out" in str(err)
 
     def test_with_kwargs(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubMessageTimeoutError
+        from enhanced_agent_bus.fallback_stubs import StubMessageTimeoutError
 
         err = StubMessageTimeoutError(message_id="m1", message="t/o", context="x")
         assert err.message_id == "m1"
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             MessageTimeoutError,
             StubMessageTimeoutError,
         )
@@ -733,7 +733,7 @@ class TestStubMessageTimeoutError:
 
 class TestStubBusNotStartedError:
     def test_is_agent_bus_error(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             StubAgentBusError,
             StubBusNotStartedError,
         )
@@ -741,20 +741,20 @@ class TestStubBusNotStartedError:
         assert issubclass(StubBusNotStartedError, StubAgentBusError)
 
     def test_default_construction(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubBusNotStartedError
+        from enhanced_agent_bus.fallback_stubs import StubBusNotStartedError
 
         err = StubBusNotStartedError()
         assert err.operation == ""
 
     def test_custom_construction(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubBusNotStartedError
+        from enhanced_agent_bus.fallback_stubs import StubBusNotStartedError
 
         err = StubBusNotStartedError(operation="send", message="Bus not started")
         assert err.operation == "send"
         assert "Bus not started" in str(err)
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             BusNotStartedError,
             StubBusNotStartedError,
         )
@@ -764,7 +764,7 @@ class TestStubBusNotStartedError:
 
 class TestStubBusOperationError:
     def test_is_agent_bus_error(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             StubAgentBusError,
             StubBusOperationError,
         )
@@ -772,13 +772,13 @@ class TestStubBusOperationError:
         assert issubclass(StubBusOperationError, StubAgentBusError)
 
     def test_instantiation(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubBusOperationError
+        from enhanced_agent_bus.fallback_stubs import StubBusOperationError
 
         err = StubBusOperationError("operation failed")
         assert isinstance(err, StubBusOperationError)
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             BusOperationError,
             StubBusOperationError,
         )
@@ -788,7 +788,7 @@ class TestStubBusOperationError:
 
 class TestStubOPAConnectionError:
     def test_is_agent_bus_error(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             StubAgentBusError,
             StubOPAConnectionError,
         )
@@ -796,13 +796,13 @@ class TestStubOPAConnectionError:
         assert issubclass(StubOPAConnectionError, StubAgentBusError)
 
     def test_instantiation(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubOPAConnectionError
+        from enhanced_agent_bus.fallback_stubs import StubOPAConnectionError
 
         err = StubOPAConnectionError("opa unreachable")
         assert isinstance(err, StubOPAConnectionError)
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             OPAConnectionError,
             StubOPAConnectionError,
         )
@@ -812,54 +812,54 @@ class TestStubOPAConnectionError:
 
 class TestStubMACIError:
     def test_is_agent_bus_error(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubAgentBusError, StubMACIError
+        from enhanced_agent_bus.fallback_stubs import StubAgentBusError, StubMACIError
 
         assert issubclass(StubMACIError, StubAgentBusError)
 
     def test_instantiation(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubMACIError
+        from enhanced_agent_bus.fallback_stubs import StubMACIError
 
         err = StubMACIError("maci failed")
         assert isinstance(err, StubMACIError)
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import MACIError, StubMACIError
+        from enhanced_agent_bus.fallback_stubs import MACIError, StubMACIError
 
         assert MACIError is StubMACIError
 
 
 class TestStubPolicyError:
     def test_is_agent_bus_error(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubAgentBusError, StubPolicyError
+        from enhanced_agent_bus.fallback_stubs import StubAgentBusError, StubPolicyError
 
         assert issubclass(StubPolicyError, StubAgentBusError)
 
     def test_instantiation(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubPolicyError
+        from enhanced_agent_bus.fallback_stubs import StubPolicyError
 
         err = StubPolicyError("policy violation")
         assert isinstance(err, StubPolicyError)
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import PolicyError, StubPolicyError
+        from enhanced_agent_bus.fallback_stubs import PolicyError, StubPolicyError
 
         assert PolicyError is StubPolicyError
 
 
 class TestStubAgentError:
     def test_is_agent_bus_error(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubAgentBusError, StubAgentError
+        from enhanced_agent_bus.fallback_stubs import StubAgentBusError, StubAgentError
 
         assert issubclass(StubAgentError, StubAgentBusError)
 
     def test_instantiation(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubAgentError
+        from enhanced_agent_bus.fallback_stubs import StubAgentError
 
         err = StubAgentError("agent failed")
         assert isinstance(err, StubAgentError)
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import AgentError, StubAgentError
+        from enhanced_agent_bus.fallback_stubs import AgentError, StubAgentError
 
         assert AgentError is StubAgentError
 
@@ -871,7 +871,7 @@ class TestStubAgentError:
 
 class TestStubBatchRequestItem:
     def test_default_construction(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubBatchRequestItem
+        from enhanced_agent_bus.fallback_stubs import StubBatchRequestItem
 
         item = StubBatchRequestItem()
         assert item.request_id == ""
@@ -883,7 +883,7 @@ class TestStubBatchRequestItem:
         assert item.priority == "NORMAL"
 
     def test_custom_construction(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubBatchRequestItem
+        from enhanced_agent_bus.fallback_stubs import StubBatchRequestItem
 
         item = StubBatchRequestItem(
             request_id="req-1",
@@ -899,7 +899,7 @@ class TestStubBatchRequestItem:
         assert item.priority == "HIGH"
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             BatchRequestItem,
             StubBatchRequestItem,
         )
@@ -909,7 +909,7 @@ class TestStubBatchRequestItem:
 
 class TestStubBatchRequest:
     def test_default_construction(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubBatchRequest
+        from enhanced_agent_bus.fallback_stubs import StubBatchRequest
 
         req = StubBatchRequest()
         assert req.batch_id == ""
@@ -918,13 +918,13 @@ class TestStubBatchRequest:
         assert req.options == {}
 
     def test_validate_tenant_consistency_no_tenant_id(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubBatchRequest
+        from enhanced_agent_bus.fallback_stubs import StubBatchRequest
 
         req = StubBatchRequest(tenant_id="")
         assert req.validate_tenant_consistency() is None
 
     def test_validate_tenant_consistency_all_match(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             StubBatchRequest,
             StubBatchRequestItem,
         )
@@ -936,7 +936,7 @@ class TestStubBatchRequest:
         assert req.validate_tenant_consistency() is None
 
     def test_validate_tenant_consistency_empty_item_tenant_ids(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             StubBatchRequest,
             StubBatchRequestItem,
         )
@@ -947,7 +947,7 @@ class TestStubBatchRequest:
         assert req.validate_tenant_consistency() is None
 
     def test_validate_tenant_consistency_default_tenant_skipped(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             StubBatchRequest,
             StubBatchRequestItem,
         )
@@ -958,7 +958,7 @@ class TestStubBatchRequest:
         assert req.validate_tenant_consistency() is None
 
     def test_validate_tenant_consistency_mismatch(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             StubBatchRequest,
             StubBatchRequestItem,
         )
@@ -973,7 +973,7 @@ class TestStubBatchRequest:
         assert "t2" in error
 
     def test_validate_tenant_consistency_multiple_mismatches_truncated(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             StubBatchRequest,
             StubBatchRequestItem,
         )
@@ -991,14 +991,14 @@ class TestStubBatchRequest:
         assert "mismatched" in error.lower() or "mismatch" in error.lower() or "Items" in error
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import BatchRequest, StubBatchRequest
+        from enhanced_agent_bus.fallback_stubs import BatchRequest, StubBatchRequest
 
         assert BatchRequest is StubBatchRequest
 
 
 class TestStubBatchResponseItem:
     def test_default_construction(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubBatchResponseItem
+        from enhanced_agent_bus.fallback_stubs import StubBatchResponseItem
 
         item = StubBatchResponseItem()
         assert item.request_id == ""
@@ -1007,7 +1007,7 @@ class TestStubBatchResponseItem:
         assert item.result is None
 
     def test_custom_construction(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubBatchResponseItem
+        from enhanced_agent_bus.fallback_stubs import StubBatchResponseItem
 
         item = StubBatchResponseItem(
             request_id="r1",
@@ -1019,13 +1019,13 @@ class TestStubBatchResponseItem:
         assert item.result == {"status": "ok"}
 
     def test_error_field(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubBatchResponseItem
+        from enhanced_agent_bus.fallback_stubs import StubBatchResponseItem
 
         item = StubBatchResponseItem(request_id="r2", success=False, error="failed")
         assert item.error == "failed"
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             BatchResponseItem,
             StubBatchResponseItem,
         )
@@ -1035,7 +1035,7 @@ class TestStubBatchResponseItem:
 
 class TestStubBatchStats:
     def test_default_construction(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubBatchStats
+        from enhanced_agent_bus.fallback_stubs import StubBatchStats
 
         stats = StubBatchStats()
         assert stats.total_items == 0
@@ -1044,7 +1044,7 @@ class TestStubBatchStats:
         assert stats.processing_time_ms == 0.0
 
     def test_custom_construction(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubBatchStats
+        from enhanced_agent_bus.fallback_stubs import StubBatchStats
 
         stats = StubBatchStats(
             total_items=10, successful_items=8, failed_items=2, processing_time_ms=123.4
@@ -1054,14 +1054,14 @@ class TestStubBatchStats:
         assert stats.processing_time_ms == 123.4
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import BatchStats, StubBatchStats
+        from enhanced_agent_bus.fallback_stubs import BatchStats, StubBatchStats
 
         assert BatchStats is StubBatchStats
 
 
 class TestStubBatchResponse:
     def test_default_construction(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubBatchResponse
+        from enhanced_agent_bus.fallback_stubs import StubBatchResponse
 
         resp = StubBatchResponse()
         assert resp.batch_id == ""
@@ -1070,7 +1070,7 @@ class TestStubBatchResponse:
         assert resp.constitutional_hash == CONSTITUTIONAL_HASH
 
     def test_custom_construction(self):
-        from packages.enhanced_agent_bus.fallback_stubs import (
+        from enhanced_agent_bus.fallback_stubs import (
             StubBatchResponse,
             StubBatchResponseItem,
             StubBatchStats,
@@ -1090,19 +1090,19 @@ class TestStubBatchResponse:
         assert resp.warnings == ["minor issue"]
 
     def test_default_stats_is_stub_batch_stats(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubBatchResponse, StubBatchStats
+        from enhanced_agent_bus.fallback_stubs import StubBatchResponse, StubBatchStats
 
         resp = StubBatchResponse()
         assert isinstance(resp.stats, StubBatchStats)
 
     def test_constitutional_hash_constant(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubBatchResponse
+        from enhanced_agent_bus.fallback_stubs import StubBatchResponse
 
         resp = StubBatchResponse()
         assert resp.constitutional_hash == CONSTITUTIONAL_HASH  # pragma: allowlist secret
 
     def test_alias(self):
-        from packages.enhanced_agent_bus.fallback_stubs import BatchResponse, StubBatchResponse
+        from enhanced_agent_bus.fallback_stubs import BatchResponse, StubBatchResponse
 
         assert BatchResponse is StubBatchResponse
 
@@ -1114,13 +1114,13 @@ class TestStubBatchResponse:
 
 class TestDunderAll:
     def test_all_exported_names_importable(self):
-        import packages.enhanced_agent_bus.fallback_stubs as m
+        import enhanced_agent_bus.fallback_stubs as m
 
         for name in m.__all__:
             assert hasattr(m, name), f"__all__ lists {name!r} but it is not on the module"
 
     def test_all_contains_required_sections(self):
-        import packages.enhanced_agent_bus.fallback_stubs as m
+        import enhanced_agent_bus.fallback_stubs as m
 
         all_set = set(m.__all__)
         required = {

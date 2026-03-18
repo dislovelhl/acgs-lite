@@ -11,7 +11,8 @@ from datetime import UTC, datetime, timezone
 from unittest.mock import MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.optimization_toolkit import (
+
+from enhanced_agent_bus.optimization_toolkit import (
     CONSTITUTIONAL_HASH,
     AgentCoordinationProfiler,
     ApplicationPerformanceAgent,
@@ -145,7 +146,7 @@ class TestApplicationPerformanceAgent:
         mock_monitor = MagicMock()
         mock_monitor.get_metrics.return_value = {"operations": {}}
         with patch(
-            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()
@@ -162,7 +163,7 @@ class TestApplicationPerformanceAgent:
         mock_monitor = MagicMock()
         mock_monitor.get_metrics.return_value = {"operations": {}}
         with patch(
-            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()

@@ -10,13 +10,18 @@ Covers:
 - reset_mutations (specific intent and all intents)
 """
 
+import pytest
+
+pytest.importorskip("enhanced_agent_bus.sdpc")
+
+
 import logging
 
 import pytest
-from packages.enhanced_agent_bus.deliberation_layer.intent_classifier import IntentType
-from packages.enhanced_agent_bus.sdpc.evolution_controller import EvolutionController
 
+from enhanced_agent_bus.deliberation_layer.intent_classifier import IntentType
 from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.sdpc.evolution_controller import EvolutionController
 
 # ---------------------------------------------------------------------------
 # Helpers

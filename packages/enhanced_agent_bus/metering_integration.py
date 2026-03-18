@@ -11,9 +11,12 @@ import time
 from collections.abc import Callable
 from datetime import UTC, datetime
 from functools import wraps
-from typing import Optional, TypeVar
+from typing import TypeVar
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -29,7 +32,7 @@ try:
     MeteringTier = _models.MeteringTier
     UsageEvent = _models.UsageEvent
     UsageMeteringService = importlib.import_module(
-        "src.core.services.metering.app.service"
+    "src.core.services.metering.app.service"
     ).UsageMeteringService
 
     METERING_AVAILABLE = True
@@ -112,7 +115,7 @@ class AsyncMeteringQueue:
     """
 
     def __init__(
-        self, config: MeteringConfig, metering_service: Optional["UsageMeteringService"] = None
+        self, config: MeteringConfig, metering_service: "UsageMeteringService" | None = None
     ):
         self.config = config
         self._queue: asyncio.Queue = asyncio.Queue(maxsize=config.max_queue_size)

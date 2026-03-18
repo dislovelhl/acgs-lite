@@ -19,11 +19,12 @@ from typing import ClassVar
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from packages.enhanced_agent_bus.api.routes import batch as batch_routes
-from packages.enhanced_agent_bus.api.routes import messages as messages_routes
-from packages.enhanced_agent_bus.api.routes import policies as policies_routes
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.security.auth import UserClaims, get_current_user
+
+from enhanced_agent_bus.api.routes import batch as batch_routes
+from enhanced_agent_bus.api.routes import messages as messages_routes
+from enhanced_agent_bus.api.routes import policies as policies_routes
 
 # ---------------------------------------------------------------------------
 # App and client setup

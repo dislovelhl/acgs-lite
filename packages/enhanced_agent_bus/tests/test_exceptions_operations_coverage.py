@@ -8,9 +8,10 @@ Target: ≥95% line coverage of operations.py (84 stmts).
 from typing import ClassVar
 
 import pytest
-from packages.enhanced_agent_bus.exceptions.base import AgentBusError, BusOperationError
-from packages.enhanced_agent_bus.exceptions.messaging import RateLimitExceeded
-from packages.enhanced_agent_bus.exceptions.operations import (
+
+from enhanced_agent_bus.exceptions.base import AgentBusError, BusOperationError
+from enhanced_agent_bus.exceptions.messaging import RateLimitExceeded
+from enhanced_agent_bus.exceptions.operations import (
     AlignmentViolationError,
     AuthenticationError,
     AuthorizationError,
@@ -932,18 +933,18 @@ class TestValidationError:
 
 class TestModuleExports:
     def test_all_exports_importable(self):
-        from packages.enhanced_agent_bus.exceptions import operations as ops_module
+        from enhanced_agent_bus.exceptions import operations as ops_module
 
         for name in ops_module.__all__:
             assert hasattr(ops_module, name), f"Missing export: {name}"
 
     def test_bus_operation_error_exported(self):
-        from packages.enhanced_agent_bus.exceptions.operations import BusOperationError as BOE
+        from enhanced_agent_bus.exceptions.operations import BusOperationError as BOE
 
         assert BOE is BusOperationError
 
     def test_governance_error_exported(self):
-        from packages.enhanced_agent_bus.exceptions.operations import GovernanceError as GE
+        from enhanced_agent_bus.exceptions.operations import GovernanceError as GE
 
         assert GE is GovernanceError
 

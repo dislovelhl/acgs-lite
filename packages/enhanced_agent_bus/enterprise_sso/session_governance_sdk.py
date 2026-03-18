@@ -23,17 +23,37 @@ from enum import Enum
 from typing import Any
 
 import jwt
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import ACGSBaseError
 
+from enhanced_agent_bus.observability.structured_logging import get_logger
+
+logger = get_logger(__name__)
+
 # JWT configuration -- override via environment variables
-SESSION_JWT_ALGORITHM = os.environ.get("SESSION_JWT_ALGORITHM", "HS256")
+_ALLOWED_JWT_ALGORITHMS = frozenset({"RS256", "RS384", "RS512", "ES256", "ES384", "EdDSA"})
+SESSION_JWT_ALGORITHM = os.environ.get("SESSION_JWT_ALGORITHM", "RS256")
+if SESSION_JWT_ALGORITHM not in _ALLOWED_JWT_ALGORITHMS:
+    raise ValueError(
+        f"Unsupported JWT_ALGORITHM={SESSION_JWT_ALGORITHM!r}. "
+        f"Allowed: {sorted(_ALLOWED_JWT_ALGORITHMS)}"
+    )
 SESSION_JWT_ISSUER = os.environ.get("SESSION_JWT_ISSUER", "acgs2-session-governance")
 SESSION_JWT_AUDIENCE = os.environ.get("SESSION_JWT_AUDIENCE", "acgs2-services")
 # Maximum cumulative session duration across all extensions (default: 24 h)
 SESSION_MAX_TOTAL_DURATION_MINUTES = int(
     os.environ.get("SESSION_MAX_TOTAL_DURATION_MINUTES", "1440")
 )
+
+
+def _uses_asymmetric_jwt_algorithm(algorithm: str) -> bool:
+    """Return True when the JWT algorithm requires an asymmetric key pair."""
+    return algorithm.startswith(("RS", "ES")) or algorithm == "EdDSA"
+
 
 # ============================================================================
 # Exceptions
@@ -516,7 +536,8 @@ class SessionTokenManager:
     """Manages session tokens using PyJWT with iss/aud/jti claims.
 
     Security properties:
-    - HS256 JWT with configurable issuer and audience claim enforcement
+    - Asymmetric JWTs (RS*/ES*/EdDSA) signed with a PEM-encoded private key
+      and verified with the derived public key
     - Per-token JTI (JWT ID) enables precise single-token revocation
     - Revoked JTIs stored in-memory; pass ``redis_client`` for restart-durable
       persistence (must expose async ``sadd``, ``sismember``, and ``expire``).
@@ -524,7 +545,7 @@ class SessionTokenManager:
 
     def __init__(
         self,
-        secret_key: str,
+        private_key: str,
         token_ttl_minutes: int = 60,
         refresh_token_ttl_days: int = 7,
         constitutional_hash: str = CONSTITUTIONAL_HASH,
@@ -533,7 +554,7 @@ class SessionTokenManager:
         audience: str = SESSION_JWT_AUDIENCE,
         redis_client: Any | None = None,
     ):
-        self.secret_key = secret_key
+        self._private_key = private_key
         self.token_ttl_minutes = token_ttl_minutes
         self.refresh_token_ttl_days = refresh_token_ttl_days
         self.constitutional_hash = constitutional_hash
@@ -541,6 +562,23 @@ class SessionTokenManager:
         self._issuer = issuer
         self._audience = audience
         self._redis = redis_client
+        if _uses_asymmetric_jwt_algorithm(self._algorithm):
+            if "-----BEGIN" not in private_key:
+                raise ValueError(
+                    f"private_key must be a PEM-encoded private key for {self._algorithm}"
+                )
+
+            from cryptography.hazmat.primitives.serialization import load_pem_private_key
+
+            try:
+                private_key_obj = load_pem_private_key(private_key.encode(), password=None)
+            except (TypeError, ValueError) as e:
+                raise ValueError(
+                    f"private_key must be a PEM-encoded private key for {self._algorithm}"
+                ) from e
+            self._public_key = private_key_obj.public_key()
+        else:
+            self._public_key = private_key
         # In-memory fallback; also acts as local cache when Redis is available
         self._revoked_jtis: set[str] = set()
         self._refresh_tokens: dict[str, dict] = {}
@@ -588,7 +626,7 @@ class SessionTokenManager:
             "constitutional_hash": self.constitutional_hash,
         }
 
-        token = jwt.encode(payload, self.secret_key, algorithm=self._algorithm)
+        token = jwt.encode(payload, self._private_key, algorithm=self._algorithm)
 
         return SessionToken(
             access_token=token,
@@ -623,7 +661,7 @@ class SessionTokenManager:
         try:
             payload = jwt.decode(
                 token,
-                self.secret_key,
+                self._public_key,
                 algorithms=[self._algorithm],
                 audience=self._audience,
                 issuer=self._issuer,
@@ -679,7 +717,7 @@ class SessionTokenManager:
         try:
             payload = jwt.decode(
                 token,
-                self.secret_key,
+                self._public_key,
                 algorithms=[self._algorithm],
                 audience=self._audience,
                 issuer=self._issuer,

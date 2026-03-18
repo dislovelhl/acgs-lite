@@ -6,26 +6,27 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.adaptive_governance.governance_engine import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH as CONST_HASH
+
+from enhanced_agent_bus.adaptive_governance.governance_engine import (
     AdaptiveGovernanceEngine,
 )
-from packages.enhanced_agent_bus.adaptive_governance.models import (
+from enhanced_agent_bus.adaptive_governance.models import (
     GovernanceDecision,
     GovernanceMode,
     ImpactFeatures,
     ImpactLevel,
 )
-from packages.enhanced_agent_bus.adaptive_governance.tests.engine.helpers import (
+from enhanced_agent_bus.adaptive_governance.tests.engine.helpers import (
     _make_decision,
     _make_features,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH as CONST_HASH
 
 _MLFLOW_PATCH = "mlflow.set_tracking_uri"
 _IMPACT_MLFLOW = (
-    "packages.enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
+    "enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
 )
-_THRESH_MLFLOW = "packages.enhanced_agent_bus.adaptive_governance.threshold_manager.AdaptiveThresholds._initialize_mlflow"  # noqa: E501
+_THRESH_MLFLOW = "enhanced_agent_bus.adaptive_governance.threshold_manager.AdaptiveThresholds._initialize_mlflow"  # noqa: E501
 
 
 class TestUpdateRiverModel:
@@ -44,7 +45,7 @@ class TestUpdateRiverModel:
         mock_model.adapter.is_ready = False
         engine.river_model = mock_model
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.ONLINE_LEARNING_AVAILABLE
         try:
@@ -67,7 +68,7 @@ class TestUpdateRiverModel:
         engine.river_model = mock_model
         engine.impact_scorer.model_trained = False
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.ONLINE_LEARNING_AVAILABLE
         try:
@@ -84,7 +85,7 @@ class TestUpdateRiverModel:
         mock_model.learn_from_feedback = MagicMock(return_value=mock_result)
         engine.river_model = mock_model
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.ONLINE_LEARNING_AVAILABLE
         try:
@@ -98,7 +99,7 @@ class TestUpdateRiverModel:
         mock_model.learn_from_feedback = MagicMock(side_effect=RuntimeError("fail"))
         engine.river_model = mock_model
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.ONLINE_LEARNING_AVAILABLE
         try:
@@ -118,7 +119,7 @@ class TestUpdateRiverModel:
         mock_model.adapter.is_ready = False
         engine.river_model = mock_model
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig_ol = ge_mod.ONLINE_LEARNING_AVAILABLE
         orig_np = ge_mod.NUMPY_AVAILABLE
@@ -148,7 +149,7 @@ class TestGetRiverModelStats:
         mock_model.get_stats = MagicMock(return_value=mock_stats)
         engine.river_model = mock_model
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.ONLINE_LEARNING_AVAILABLE
         try:
@@ -163,7 +164,7 @@ class TestGetRiverModelStats:
         mock_model.get_stats = MagicMock(side_effect=RuntimeError("fail"))
         engine.river_model = mock_model
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.ONLINE_LEARNING_AVAILABLE
         try:
@@ -196,7 +197,7 @@ class TestABTestMethods:
         mock_router.get_metrics_summary = MagicMock(return_value={"champion": {}})
         engine._ab_test_router = mock_router
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.AB_TESTING_AVAILABLE
         try:
@@ -211,7 +212,7 @@ class TestABTestMethods:
         mock_router.get_metrics_summary = MagicMock(side_effect=RuntimeError("fail"))
         engine._ab_test_router = mock_router
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.AB_TESTING_AVAILABLE
         try:
@@ -230,7 +231,7 @@ class TestABTestMethods:
         mock_router.compare_metrics = MagicMock(return_value=mock_comparison)
         engine._ab_test_router = mock_router
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.AB_TESTING_AVAILABLE
         try:
@@ -245,7 +246,7 @@ class TestABTestMethods:
         mock_router.compare_metrics = MagicMock(side_effect=RuntimeError("fail"))
         engine._ab_test_router = mock_router
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.AB_TESTING_AVAILABLE
         try:
@@ -269,7 +270,7 @@ class TestABTestMethods:
         mock_router.promote_candidate = MagicMock(return_value=mock_result)
         engine._ab_test_router = mock_router
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.AB_TESTING_AVAILABLE
         try:
@@ -289,7 +290,7 @@ class TestABTestMethods:
         mock_router.promote_candidate = MagicMock(return_value=mock_result)
         engine._ab_test_router = mock_router
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.AB_TESTING_AVAILABLE
         try:
@@ -304,7 +305,7 @@ class TestABTestMethods:
         mock_router.promote_candidate = MagicMock(side_effect=RuntimeError("fail"))
         engine._ab_test_router = mock_router
 
-        from packages.enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
+        from enhanced_agent_bus.adaptive_governance import governance_engine as ge_mod
 
         orig = ge_mod.AB_TESTING_AVAILABLE
         try:

@@ -11,7 +11,7 @@ import asyncio
 import time
 from typing import cast
 
-from packages.enhanced_agent_bus.validators import ValidationResult
+from enhanced_agent_bus.validators import ValidationResult
 
 from ...pipeline.context import PipelineContext
 from ...pipeline.middleware import BaseMiddleware, MiddlewareConfig

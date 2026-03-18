@@ -4,6 +4,11 @@ Tests for SDPC Phase 2 Verifiers
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
+import pytest
+
+pytest.importorskip("enhanced_agent_bus.sdpc")
+
+
 import json
 from unittest.mock import AsyncMock, MagicMock
 

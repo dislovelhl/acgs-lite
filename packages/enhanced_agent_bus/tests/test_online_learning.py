@@ -675,7 +675,7 @@ class TestFeedbackKafkaConsumer:
 
         # Patch where the variable is checked (in consumer module)
         with patch(
-            "packages.enhanced_agent_bus.online_learning_infra.consumer.KAFKA_AVAILABLE", False
+            "enhanced_agent_bus.online_learning_infra.consumer.KAFKA_AVAILABLE", False
         ):
             result = consumer._check_dependencies()
             assert result is False
@@ -686,10 +686,10 @@ class TestFeedbackKafkaConsumer:
 
         # Patch where the variables are checked (in consumer module)
         with patch(
-            "packages.enhanced_agent_bus.online_learning_infra.consumer.KAFKA_AVAILABLE", True
+            "enhanced_agent_bus.online_learning_infra.consumer.KAFKA_AVAILABLE", True
         ):
             with patch(
-                "packages.enhanced_agent_bus.online_learning_infra.consumer.RIVER_AVAILABLE", False
+                "enhanced_agent_bus.online_learning_infra.consumer.RIVER_AVAILABLE", False
             ):
                 result = consumer._check_dependencies()
                 assert result is False

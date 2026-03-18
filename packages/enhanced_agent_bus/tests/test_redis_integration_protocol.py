@@ -17,8 +17,9 @@ import asyncio
 import json
 
 import pytest
-from packages.enhanced_agent_bus.deliberation_layer import redis_integration as ri
-from packages.enhanced_agent_bus.deliberation_layer.redis_integration import (
+
+from enhanced_agent_bus.deliberation_layer import redis_integration as ri
+from enhanced_agent_bus.deliberation_layer.redis_integration import (
     REDIS_AVAILABLE,
     VOTE_COLLECTION_ERRORS,
     VOTE_SUBSCRIPTION_ERRORS,

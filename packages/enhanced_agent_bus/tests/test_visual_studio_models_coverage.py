@@ -9,7 +9,9 @@ from __future__ import annotations
 from datetime import UTC, datetime, timezone
 
 import pytest
-from packages.enhanced_agent_bus.visual_studio.models import (
+from pydantic import ValidationError
+
+from enhanced_agent_bus.visual_studio.models import (
     ExportFormat,
     NodeType,
     SimulationStep,
@@ -24,7 +26,6 @@ from packages.enhanced_agent_bus.visual_studio.models import (
     WorkflowSummary,
     WorkflowValidationResult,
 )
-from pydantic import ValidationError
 
 # ---------------------------------------------------------------------------
 # NodeType enum
@@ -904,7 +905,7 @@ class TestWorkflowExportResult:
 
 class TestModuleExports:
     def test_all_exports_present(self):
-        from packages.enhanced_agent_bus.visual_studio import models as m
+        from enhanced_agent_bus.visual_studio import models as m
 
         expected = [
             "NodeType",

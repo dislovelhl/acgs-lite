@@ -8,16 +8,19 @@ import asyncio
 import time
 from collections.abc import Awaitable, Callable
 
-from packages.enhanced_agent_bus.models import (
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.models import (
     BatchRequest,
     BatchRequestItem,
     BatchResponse,
     BatchResponseStats,
 )
-from packages.enhanced_agent_bus.validators import ValidationResult
-from src.core.shared.types import JSONDict
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.validators import ValidationResult
 
 from .governance import BatchGovernanceManager
 from .metrics import BatchMetrics
@@ -85,7 +88,7 @@ class BatchProcessorOrchestrator:
         if not unique_items:
             # All items were deduplicated - create placeholder results
             # This happens when all items have been seen in previous batches
-            from packages.enhanced_agent_bus.models import BatchItemStatus, BatchResponseItem
+            from enhanced_agent_bus.models import BatchItemStatus, BatchResponseItem
 
             final_items = [
                 BatchResponseItem(

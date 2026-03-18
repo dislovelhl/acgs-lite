@@ -5,11 +5,9 @@ Routes messages based on impact scores to appropriate processing lanes.
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-from datetime import UTC, datetime, timezone
-from typing import Optional, TypeAlias, Union
+from datetime import UTC, datetime
 
-from packages.enhanced_agent_bus.bus_types import JSONDict, JSONValue
-
+from enhanced_agent_bus.bus_types import JSONDict, JSONValue
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 
@@ -46,12 +44,9 @@ def _lazy_import(name):
 
 
 try:
-    from packages.enhanced_agent_bus.models import AgentMessage, MessageStatus
+    from enhanced_agent_bus.models import AgentMessage, MessageStatus
 except ImportError:
-    try:
-        from enhanced_agent_bus.models import AgentMessage, MessageStatus
-    except ImportError:
-        from packages.enhanced_agent_bus.models import AgentMessage, MessageStatus
+    from ..models import AgentMessage, MessageStatus
 
 
 def get_deliberation_queue():
@@ -136,7 +131,7 @@ class AdaptiveRouter:
 
         Args:
             message (AgentMessage): The message to route.
-            context (Optional[JSONDict]): Optional context for impact
+            context (JSONDict | None): Optional context for impact
                 assessment. Defaults to None.
 
         Returns:
@@ -160,7 +155,7 @@ class AdaptiveRouter:
         impact_score = message.impact_score
 
         # Zero-Trust Security Boundary: Validate constitutional hash
-        from packages.enhanced_agent_bus.validators import validate_constitutional_hash
+        from enhanced_agent_bus.validators import validate_constitutional_hash
 
         hash_validation = validate_constitutional_hash(message.constitutional_hash)
         if not hash_validation.is_valid:

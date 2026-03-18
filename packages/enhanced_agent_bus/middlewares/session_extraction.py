@@ -28,7 +28,10 @@ SESSION_LOAD_ERRORS = (
 )
 
 # Constitutional compliance
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 # Header names for session identification
 SESSION_ID_HEADER = "X-Session-ID"

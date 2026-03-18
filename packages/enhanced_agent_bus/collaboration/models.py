@@ -12,7 +12,15 @@ from enum import Enum
 from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
-from src.core.shared.types import JSONDict, JSONValue
+
+try:
+    from src.core.shared.types import (
+        JSONDict,
+        JSONValue,
+    )  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+    JSONValue = object  # type: ignore[misc,assignment]
 
 
 class PresenceStatus(str, Enum):  # noqa: UP042

@@ -3,9 +3,11 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from packages.enhanced_agent_bus import interfaces as ifaces
-from packages.enhanced_agent_bus.core_models import AgentMessage
-from packages.enhanced_agent_bus.interfaces import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus import interfaces as ifaces
+from enhanced_agent_bus.core_models import AgentMessage
+from enhanced_agent_bus.interfaces import (
     AgentRegistry,
     CircuitBreakerProtocol,
     ConstitutionalVerificationResultProtocol,
@@ -27,8 +29,7 @@ from packages.enhanced_agent_bus.interfaces import (
     ValidationResultProtocol,
     ValidationStrategy,
 )
-from packages.enhanced_agent_bus.validators import ValidationResult
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.validators import ValidationResult
 
 
 class ConcreteAgentRegistry:

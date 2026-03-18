@@ -12,17 +12,18 @@ from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import patch
 
 import pytest
-from packages.enhanced_agent_bus.llm_adapters.capability_matrix import (
+
+from enhanced_agent_bus.llm_adapters.capability_matrix import (
     CONSTITUTIONAL_HASH,
     CapabilityDimension,
     CapabilityRequirement,
 )
-from packages.enhanced_agent_bus.llm_adapters.cost.enums import (
+from enhanced_agent_bus.llm_adapters.cost.enums import (
     CostTier,
     QualityLevel,
     UrgencyLevel,
 )
-from packages.enhanced_agent_bus.llm_adapters.cost.models import (
+from enhanced_agent_bus.llm_adapters.cost.models import (
     BatchRequest,
     BatchResult,
     BudgetLimit,
@@ -741,7 +742,7 @@ class TestBatchResult:
 
 class TestModuleExports:
     def test_all_classes_exported(self):
-        from packages.enhanced_agent_bus.llm_adapters.cost import models
+        from enhanced_agent_bus.llm_adapters.cost import models
 
         expected = {
             "CostModel",

@@ -36,9 +36,20 @@ from httpx import (
 from httpx import (
     TimeoutException as HTTPTimeoutException,
 )
-from src.core.shared.errors.exceptions import ConfigurationError
+
+try:
+    from src.core.shared.errors.exceptions import ConfigurationError  # noqa: E402
+except ImportError:
+    class ConfigurationError(Exception):  # type: ignore[no-redef]
+        def __init__(self, message: str = "", error_code: str = "") -> None:
+            super().__init__(message)
+            self.error_code = error_code
 from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -63,7 +74,7 @@ except (ImportError, ValueError):
         from validators import ValidationResult  # type: ignore[no-redef]
     except ImportError:
         try:
-            from packages.enhanced_agent_bus.config import settings  # type: ignore[no-redef]
+            from enhanced_agent_bus.config import settings  # type: ignore[no-redef]
 
             from ..exceptions import (  # type: ignore[no-redef]
                 OPAConnectionError,
@@ -233,6 +244,26 @@ class OPAClientCore:
     ) -> None:
         """Async context manager exit."""
         await self.close()
+
+    def get_stats(self) -> JSONDict:
+        """Return a lightweight snapshot of cache and evaluation state."""
+        cache_backend = "memory"
+        if self.enable_cache and self._redis_client is not None:
+            cache_backend = "redis"
+        elif not self.enable_cache:
+            cache_backend = "disabled"
+
+        return {
+            "mode": self.mode,
+            "cache_enabled": self.enable_cache,
+            "cache_size": len(self._memory_cache),
+            "cache_backend": cache_backend,
+            "fail_closed": self.fail_closed,
+            "multipath_evaluation_count": self._multipath_evaluation_count,
+            "multipath_last_path_count": self._multipath_last_path_count,
+            "multipath_last_diversity_ratio": self._multipath_last_diversity_ratio,
+            "multipath_last_support_family_count": self._multipath_last_support_family_count,
+        }
 
     async def initialize(self) -> None:
         """Initialize HTTP client and cache connections."""
@@ -592,7 +623,11 @@ class OPAClientCore:
             "result": False,
             "allowed": False,
             "reason": "OPA service unavailable - denied (fail-closed)",
-            "metadata": {"mode": "fallback", "policy_path": policy_path, "security": "fail-closed"},
+            "metadata": {
+                "mode": "fallback",
+                "policy_path": policy_path,
+                "security": "fail-closed",
+            },
         }
 
     async def evaluate_with_history(
@@ -612,16 +647,16 @@ class OPAClientCore:
         action_history is dynamic and changes every pipeline step.
 
         Args:
-            input_data: Standard OPA input (action, impact_score, etc.)
-            action_history: Ordered list of completed action labels for
-                the current session (e.g. ["constitutional_hash_verified",
-                "maci_consensus_approved"]).
-            policy_path: OPA policy path to evaluate. Defaults to the
-                ACGS temporal ordering policy.
+        input_data: Standard OPA input (action, impact_score, etc.)
+        action_history: Ordered list of completed action labels for
+        the current session (e.g. ["constitutional_hash_verified",
+        "maci_consensus_approved"]).
+        policy_path: OPA policy path to evaluate. Defaults to the
+        ACGS temporal ordering policy.
 
         Returns:
-            Standard OPA result dict with ``allowed``, ``reason``, and
-            ``metadata`` keys. Always fails-closed on error.
+        Standard OPA result dict with ``allowed``, ``reason``, and
+        ``metadata`` keys. Always fails-closed on error.
         """
         enriched = {
             **input_data,
@@ -640,7 +675,9 @@ class OPAClientCore:
 
             support_candidates: list[JSONDict] = []
             if self._is_temporal_multi_path_enabled():
-                support_candidates = self._build_temporal_support_set_candidates(action_history)
+                support_candidates = self._build_temporal_support_set_candidates(
+                    action_history
+                )
 
             if not support_candidates:
                 return await _evaluate_enriched(enriched)
@@ -670,10 +707,14 @@ class OPAClientCore:
 
             allowed_paths = [path for path in paths if path.get("allowed")]
             minimal_support_sets = self._minimal_support_sets(allowed_paths)
-            diversity = self._compute_diversity_metrics(paths, allowed_paths, minimal_support_sets)
+            diversity = self._compute_diversity_metrics(
+                paths, allowed_paths, minimal_support_sets
+            )
             self._multipath_evaluation_count += 1
             self._multipath_last_path_count = len(paths)
-            self._multipath_last_diversity_ratio = float(diversity.get("path_diversity_ratio", 0.0))
+            self._multipath_last_diversity_ratio = float(
+                diversity.get("path_diversity_ratio", 0.0)
+            )
             self._multipath_last_support_family_count = int(
                 diversity.get("support_family_count", 0)
             )
@@ -779,7 +820,9 @@ class OPAClientCore:
                 if support_candidates:
                     input_data["support_set_candidates"] = support_candidates
 
-            result = await self.evaluate_policy(input_data, policy_path="data.acgs.rbac.allow")
+            result = await self.evaluate_policy(
+                input_data, policy_path="data.acgs.rbac.allow"
+            )
 
             return result["allowed"]
 
@@ -826,8 +869,7 @@ class OPAClientCore:
             return False
 
     async def load_bundle_from_url(self, url: str, signature: str, public_key: str) -> bool:
-        """
-        Download and load an OPA bundle with signature verification.
+        """Download and load an OPA bundle with signature verification.
         Implements Pillar 1: Dynamic Policy-as-Code distribution.
         """
         if not self._http_client:
@@ -892,7 +934,7 @@ class OPAClientCore:
 
             with open(bundle_path, "rb") as f:
                 data = f.read()
-                bundle_hash = hashlib.sha256(data).hexdigest()
+            bundle_hash = hashlib.sha256(data).hexdigest()
 
             metadata = {"hash": bundle_hash, "constitutional_hash": CONSTITUTIONAL_HASH}
 
@@ -919,163 +961,51 @@ class OPAClientCore:
         logger.error("No LKG bundle available for rollback")
         return False
 
-    async def build_optimized_bundle(
-        self,
-        policy_dir: str,
-        output_path: str,
-        data_files: list[str] | None = None,
-    ) -> bool:
-        """
-        Build an optimized OPA bundle with the --optimize flag for sub-millisecond evaluation.
-
-        PERFORMANCE: Uses OPA's optimization levels:
-          - Level 0: No optimization (disabled)
-          - Level 1: Partial evaluation, rule inlining (recommended)
-          - Level 2: Aggressive inlining, copy propagation
-
-        Args:
-            policy_dir: Directory containing .rego policy files
-            output_path: Output path for the bundle (.tar.gz)
-            data_files: Optional list of data.json files to include
-
-        Returns:
-            True if bundle was built successfully, False otherwise
-        """
-        import shutil
-        import subprocess
-
-        # Check if OPA CLI is available
-        opa_path = shutil.which("opa")
-        if not opa_path:
-            logger.error("OPA CLI not found in PATH. Install OPA to build optimized bundles.")
-            return False
-
-        try:
-            # Build the opa build command with optimization
-            cmd = [
-                opa_path,
-                "build",
-                f"-O={self.optimize_level}",  # PERFORMANCE: Enable optimization
-                "-b",  # Bundle mode
-                "-o",
-                output_path,
-            ]
-
-            # Add data files if provided
-            if data_files:
-                for data_file in data_files:
-                    cmd.extend(["-d", data_file])
-
-            # Add policy directory
-            cmd.append(policy_dir)
-
-            logger.info(
-                "Building optimized OPA bundle: optimize_level=%s, policy_dir=%s, output=%s",
-                self.optimize_level,
-                policy_dir,
-                output_path,
-            )
-
-            # Run the OPA build command
-            result = subprocess.run(  # noqa: S603
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=60,  # 60 second timeout for bundle building
-            )
-
-            if result.returncode != 0:
-                logger.error("OPA bundle build failed: %s", result.stderr)
-                return False
-
-            logger.info("Successfully built optimized OPA bundle at %s", output_path)
-
-            # Clear cache when new bundle is built
-            await self.clear_cache()
-
-            return True
-
-        except subprocess.TimeoutExpired:
-            logger.error("OPA bundle build timed out after 60 seconds")
-            return False
-        except FileNotFoundError as e:
-            logger.error("OPA build failed - file not found: %s", e)
-            return False
-        except OSError as e:
-            logger.error("OPA build failed - OS error: %s", e)
-            return False
-        except (subprocess.SubprocessError, RuntimeError, ValueError, TypeError) as e:
-            logger.error("OPA bundle build failed with unexpected error: %s", e)
-            return False
-
-    def get_stats(self) -> JSONDict:
-        """Get client statistics."""
-        return {
-            "mode": self.mode,
-            "cache_enabled": self.enable_cache,
-            "cache_ttl": self.cache_ttl,
-            "cache_size": len(self._memory_cache),
-            "cache_backend": "redis" if self._redis_client else "memory",
-            "opa_url": self.opa_url if self.mode == "http" else None,
-            "lkg_bundle": self._lkg_bundle_path,
-            "fail_closed": self.fail_closed,
-            "optimize_level": self.optimize_level,
-            "multipath_evaluation_count": self._multipath_evaluation_count,
-            "multipath_last_path_count": self._multipath_last_path_count,
-            "multipath_last_diversity_ratio": self._multipath_last_diversity_ratio,
-            "multipath_last_support_family_count": self._multipath_last_support_family_count,
-        }
-
 
 class OPAClient(OPAClientCore, OPAClientCacheMixin, OPAClientHealthMixin):
-    """Composed OPA client with cache and health/multi-path capabilities."""
+    """Fully-composed OPA client with caching and health monitoring.
+
+    Constitutional Hash: cdd01ef066bc6cf2
+
+    Combines:
+    - OPAClientCore: evaluation, authorization, bundle management
+    - OPAClientCacheMixin: query result caching
+    - OPAClientHealthMixin: health checks, multi-path evaluation
+    """
 
     pass
 
 
 # ---------------------------------------------------------------------------
-# Global singleton lifecycle
+# Singleton lifecycle helpers
 # ---------------------------------------------------------------------------
 
 _opa_client: OPAClient | None = None
 
 
-def get_opa_client(fail_closed: bool = True) -> OPAClient:
-    """Get global OPA client instance.
+async def initialize_opa_client(**kwargs: object) -> OPAClient:
+    """Create (or re-use) the module-level singleton OPAClient.
 
-    Args:
-        fail_closed: If True, reject requests when OPA is unavailable.
-                    Default True for security (fail-closed architecture).
+    Keyword arguments are forwarded to the ``OPAClient`` constructor on first
+    call. Subsequent calls return the existing instance.
     """
     global _opa_client
     if _opa_client is None:
-        _opa_client = OPAClient()
-    # Allow callers to configure fail_closed behavior, but enforce fail-closed in production.
-    environment = os.getenv("ENVIRONMENT", "").lower()
-    if environment in {"production", "prod", "staging"} and not fail_closed:
-        logger.error(
-            "SECURITY VIOLATION: get_opa_client called with fail_closed=False in %s; "
-            "forcing fail_closed=True",
-            environment,
-        )
-        fail_closed = True
-    _opa_client.fail_closed = fail_closed
+        _opa_client = OPAClient(**kwargs)  # type: ignore[arg-type]
+        await _opa_client.initialize()
     return _opa_client
 
 
-async def initialize_opa_client(
-    opa_url: str = "http://localhost:8181", mode: str = "http", **kwargs
-) -> OPAClient:
-    """Initialize global OPA client."""
-    global _opa_client
-    _opa_client = OPAClient(opa_url=opa_url, mode=mode, **kwargs)
-    await _opa_client.initialize()
+def get_opa_client() -> OPAClient:
+    """Return the module-level singleton, or raise if not yet initialised."""
+    if _opa_client is None:
+        raise OPANotInitializedError("get_opa_client")
     return _opa_client
 
 
 async def close_opa_client() -> None:
-    """Close global OPA client."""
+    """Shut down the module-level singleton and release resources."""
     global _opa_client
-    if _opa_client:
+    if _opa_client is not None:
         await _opa_client.close()
         _opa_client = None

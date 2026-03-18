@@ -59,14 +59,14 @@ _PostgresError = sys.modules["asyncpg"].PostgresError  # type: ignore[attr-defin
 # Now import the modules under test (deferred so coverage instruments them).
 # ---------------------------------------------------------------------------
 
-from packages.enhanced_agent_bus.saga_persistence.models import (  # noqa: E402
+from enhanced_agent_bus.saga_persistence.models import (  # noqa: E402
     PersistedSagaState,
     SagaState,
 )
-from packages.enhanced_agent_bus.saga_persistence.postgres.queries import (  # noqa: E402
+from enhanced_agent_bus.saga_persistence.postgres.queries import (  # noqa: E402
     PostgresQueryOperations,
 )
-from packages.enhanced_agent_bus.saga_persistence.repository import (  # noqa: E402
+from enhanced_agent_bus.saga_persistence.repository import (  # noqa: E402
     RepositoryError,
 )
 
@@ -799,7 +799,7 @@ class TestModuleMetadata:
 
     def test_postgres_query_operations_exported(self) -> None:
         """PostgresQueryOperations is exported from the module."""
-        from packages.enhanced_agent_bus.saga_persistence.postgres.queries import (
+        from enhanced_agent_bus.saga_persistence.postgres.queries import (
             PostgresQueryOperations,
         )
 
@@ -807,16 +807,17 @@ class TestModuleMetadata:
 
     def test_all_contains_postgres_query_operations(self) -> None:
         """__all__ lists PostgresQueryOperations."""
-        import packages.enhanced_agent_bus.saga_persistence.postgres.queries as mod
+        import enhanced_agent_bus.saga_persistence.postgres.queries as mod
 
         assert "PostgresQueryOperations" in mod.__all__
 
     def test_module_uses_constitutional_hash(self) -> None:
         """The module references CONSTITUTIONAL_HASH (imported from constants)."""
-        from packages.enhanced_agent_bus.saga_persistence.postgres.queries import (
+        from src.core.shared.constants import CONSTITUTIONAL_HASH as CH2
+
+        from enhanced_agent_bus.saga_persistence.postgres.queries import (
             CONSTITUTIONAL_HASH as CH1,
         )
-        from src.core.shared.constants import CONSTITUTIONAL_HASH as CH2
 
         assert CH1 == CH2  # pragma: allowlist secret
 

@@ -11,20 +11,21 @@ from collections.abc import Awaitable, Callable
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.batch_models import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.batch_models import (
     BatchRequest,
     BatchRequestItem,
     BatchResponse,
     BatchResponseItem,
 )
-from packages.enhanced_agent_bus.pipeline.batch_router import (
+from enhanced_agent_bus.pipeline.batch_router import (
     BATCH_PIPELINE_ERRORS,
     BatchPipelineRouter,
 )
-from packages.enhanced_agent_bus.pipeline.middleware import BaseMiddleware, MiddlewareConfig
-from packages.enhanced_agent_bus.pipeline.router import PipelineConfig
-from packages.enhanced_agent_bus.validators import ValidationResult
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.pipeline.middleware import BaseMiddleware, MiddlewareConfig
+from enhanced_agent_bus.pipeline.router import PipelineConfig
+from enhanced_agent_bus.validators import ValidationResult
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -195,24 +196,24 @@ class TestCreateBatchMiddlewares:
             assert isinstance(mw, BaseMiddleware)
 
     def test_middleware_types(self):
-        from packages.enhanced_agent_bus.middlewares.batch.auto_tune import BatchAutoTuneMiddleware
-        from packages.enhanced_agent_bus.middlewares.batch.concurrency import (
+        from enhanced_agent_bus.middlewares.batch.auto_tune import BatchAutoTuneMiddleware
+        from enhanced_agent_bus.middlewares.batch.concurrency import (
             BatchConcurrencyMiddleware,
         )
-        from packages.enhanced_agent_bus.middlewares.batch.deduplication import (
+        from enhanced_agent_bus.middlewares.batch.deduplication import (
             BatchDeduplicationMiddleware,
         )
-        from packages.enhanced_agent_bus.middlewares.batch.governance import (
+        from enhanced_agent_bus.middlewares.batch.governance import (
             BatchGovernanceMiddleware,
         )
-        from packages.enhanced_agent_bus.middlewares.batch.metrics import BatchMetricsMiddleware
-        from packages.enhanced_agent_bus.middlewares.batch.processing import (
+        from enhanced_agent_bus.middlewares.batch.metrics import BatchMetricsMiddleware
+        from enhanced_agent_bus.middlewares.batch.processing import (
             BatchProcessingMiddleware,
         )
-        from packages.enhanced_agent_bus.middlewares.batch.tenant_isolation import (
+        from enhanced_agent_bus.middlewares.batch.tenant_isolation import (
             BatchTenantIsolationMiddleware,
         )
-        from packages.enhanced_agent_bus.middlewares.batch.validation import (
+        from enhanced_agent_bus.middlewares.batch.validation import (
             BatchValidationMiddleware,
         )
 
@@ -245,7 +246,7 @@ class TestCreateBatchMiddlewares:
 
 def _make_mock_chain_head_success(batch_request):
     """Return an AsyncMock chain head that sets a valid batch_response on context."""
-    from packages.enhanced_agent_bus.middlewares.batch.context import BatchPipelineContext
+    from enhanced_agent_bus.middlewares.batch.context import BatchPipelineContext
 
     async def _side_effect(ctx):
         # Build a minimal batch response on the context so finalize/to_batch_response works
@@ -456,7 +457,7 @@ class TestSetItemProcessor:
         assert router._item_processor is _bad_processor
 
     def test_set_item_processor_updates_batch_processing_middleware(self):
-        from packages.enhanced_agent_bus.middlewares.batch.processing import (
+        from enhanced_agent_bus.middlewares.batch.processing import (
             BatchProcessingMiddleware,
         )
 
@@ -480,7 +481,7 @@ class TestSetItemProcessor:
 
     def test_set_item_processor_only_first_match(self):
         """Ensures the loop breaks after the first BatchProcessingMiddleware."""
-        from packages.enhanced_agent_bus.middlewares.batch.processing import (
+        from enhanced_agent_bus.middlewares.batch.processing import (
             BatchProcessingMiddleware,
         )
 
@@ -701,7 +702,7 @@ class TestProcessBatchNoChainHead:
 class TestProcessBatchFinalize:
     async def test_finalize_called_on_context(self):
         """Verify that context.finalize() is invoked during successful processing."""
-        from packages.enhanced_agent_bus.middlewares.batch.context import BatchPipelineContext
+        from enhanced_agent_bus.middlewares.batch.context import BatchPipelineContext
 
         config = _make_passthrough_config()
         router = BatchPipelineRouter(config=config)
@@ -721,7 +722,7 @@ class TestProcessBatchFinalize:
 
     async def test_to_batch_response_called_on_context(self):
         """Verify that context.to_batch_response() is used as the return value."""
-        from packages.enhanced_agent_bus.middlewares.batch.context import BatchPipelineContext
+        from enhanced_agent_bus.middlewares.batch.context import BatchPipelineContext
 
         config = _make_passthrough_config()
         router = BatchPipelineRouter(config=config)

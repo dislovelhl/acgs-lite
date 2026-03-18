@@ -6,7 +6,12 @@ Centralized enumeration definitions for the agent bus.
 Split from models.py for improved maintainability.
 """
 
+import sys
 from enum import Enum
+
+_module = sys.modules[__name__]
+sys.modules.setdefault("enhanced_agent_bus.enums", _module)
+sys.modules.setdefault("packages.enhanced_agent_bus.enums", _module)
 
 
 class MessageType(Enum):

@@ -48,11 +48,11 @@ def _make_meter_with_distinct_instruments():
 
 def _make_bm_with_instruments():
     """Return (BatchMetrics instance, instrument_map)."""
-    from packages.enhanced_agent_bus.observability.batch_metrics import BatchMetrics
+    from enhanced_agent_bus.observability.batch_metrics import BatchMetrics
 
     meter, inst = _make_meter_with_distinct_instruments()
     with patch(
-        "packages.enhanced_agent_bus.observability.batch_metrics.get_meter",
+        "enhanced_agent_bus.observability.batch_metrics.get_meter",
         return_value=meter,
     ):
         bm = BatchMetrics()
@@ -71,11 +71,11 @@ class TestBatchMetricsInit:
         assert bm._initialized is True
 
     def test_initializes_with_custom_service_name(self):
-        from packages.enhanced_agent_bus.observability.batch_metrics import BatchMetrics
+        from enhanced_agent_bus.observability.batch_metrics import BatchMetrics
 
         meter, _ = _make_meter_with_distinct_instruments()
         with patch(
-            "packages.enhanced_agent_bus.observability.batch_metrics.get_meter",
+            "enhanced_agent_bus.observability.batch_metrics.get_meter",
             return_value=meter,
         ) as mock_get_meter:
             bm = BatchMetrics(service_name="custom-service")
@@ -84,11 +84,11 @@ class TestBatchMetricsInit:
         mock_get_meter.assert_called_once_with("custom-service")
 
     def test_creates_all_counters_and_histograms(self):
-        from packages.enhanced_agent_bus.observability.batch_metrics import BatchMetrics
+        from enhanced_agent_bus.observability.batch_metrics import BatchMetrics
 
         meter, _inst = _make_meter_with_distinct_instruments()
         with patch(
-            "packages.enhanced_agent_bus.observability.batch_metrics.get_meter",
+            "enhanced_agent_bus.observability.batch_metrics.get_meter",
             return_value=meter,
         ):
             BatchMetrics()
@@ -112,11 +112,11 @@ class TestBatchMetricsInit:
         assert "batch_size_distribution" in histogram_names
 
     def test_second_initialize_call_is_noop(self):
-        from packages.enhanced_agent_bus.observability.batch_metrics import BatchMetrics
+        from enhanced_agent_bus.observability.batch_metrics import BatchMetrics
 
         meter, _ = _make_meter_with_distinct_instruments()
         with patch(
-            "packages.enhanced_agent_bus.observability.batch_metrics.get_meter",
+            "enhanced_agent_bus.observability.batch_metrics.get_meter",
             return_value=meter,
         ) as mock_get_meter:
             bm = BatchMetrics()
@@ -133,14 +133,14 @@ class TestBatchMetricsInit:
 
 class TestBatchMetricsNoOpFallback:
     def test_falls_back_to_noop_on_runtime_error(self):
-        from packages.enhanced_agent_bus.observability.batch_metrics import BatchMetrics
-        from packages.enhanced_agent_bus.observability.telemetry import (
+        from enhanced_agent_bus.observability.batch_metrics import BatchMetrics
+        from enhanced_agent_bus.observability.telemetry import (
             NoOpCounter,
             NoOpHistogram,
         )
 
         with patch(
-            "packages.enhanced_agent_bus.observability.batch_metrics.get_meter",
+            "enhanced_agent_bus.observability.batch_metrics.get_meter",
             side_effect=RuntimeError("meter unavailable"),
         ):
             bm = BatchMetrics()
@@ -150,11 +150,11 @@ class TestBatchMetricsNoOpFallback:
         assert isinstance(bm._batch_request_duration, NoOpHistogram)
 
     def test_falls_back_to_noop_on_value_error(self):
-        from packages.enhanced_agent_bus.observability.batch_metrics import BatchMetrics
-        from packages.enhanced_agent_bus.observability.telemetry import NoOpCounter
+        from enhanced_agent_bus.observability.batch_metrics import BatchMetrics
+        from enhanced_agent_bus.observability.telemetry import NoOpCounter
 
         with patch(
-            "packages.enhanced_agent_bus.observability.batch_metrics.get_meter",
+            "enhanced_agent_bus.observability.batch_metrics.get_meter",
             side_effect=ValueError("bad value"),
         ):
             bm = BatchMetrics()
@@ -162,10 +162,10 @@ class TestBatchMetricsNoOpFallback:
         assert isinstance(bm._batch_items_total, NoOpCounter)
 
     def test_falls_back_to_noop_on_type_error(self):
-        from packages.enhanced_agent_bus.observability.batch_metrics import BatchMetrics
+        from enhanced_agent_bus.observability.batch_metrics import BatchMetrics
 
         with patch(
-            "packages.enhanced_agent_bus.observability.batch_metrics.get_meter",
+            "enhanced_agent_bus.observability.batch_metrics.get_meter",
             side_effect=TypeError("type mismatch"),
         ):
             bm = BatchMetrics()
@@ -173,10 +173,10 @@ class TestBatchMetricsNoOpFallback:
         assert bm._initialized is True
 
     def test_falls_back_to_noop_on_key_error(self):
-        from packages.enhanced_agent_bus.observability.batch_metrics import BatchMetrics
+        from enhanced_agent_bus.observability.batch_metrics import BatchMetrics
 
         with patch(
-            "packages.enhanced_agent_bus.observability.batch_metrics.get_meter",
+            "enhanced_agent_bus.observability.batch_metrics.get_meter",
             side_effect=KeyError("key"),
         ):
             bm = BatchMetrics()
@@ -184,10 +184,10 @@ class TestBatchMetricsNoOpFallback:
         assert bm._initialized is True
 
     def test_falls_back_to_noop_on_attribute_error(self):
-        from packages.enhanced_agent_bus.observability.batch_metrics import BatchMetrics
+        from enhanced_agent_bus.observability.batch_metrics import BatchMetrics
 
         with patch(
-            "packages.enhanced_agent_bus.observability.batch_metrics.get_meter",
+            "enhanced_agent_bus.observability.batch_metrics.get_meter",
             side_effect=AttributeError("attr"),
         ):
             bm = BatchMetrics()
@@ -195,14 +195,14 @@ class TestBatchMetricsNoOpFallback:
         assert bm._initialized is True
 
     def test_noop_all_instruments_assigned(self):
-        from packages.enhanced_agent_bus.observability.batch_metrics import BatchMetrics
-        from packages.enhanced_agent_bus.observability.telemetry import (
+        from enhanced_agent_bus.observability.batch_metrics import BatchMetrics
+        from enhanced_agent_bus.observability.telemetry import (
             NoOpCounter,
             NoOpHistogram,
         )
 
         with patch(
-            "packages.enhanced_agent_bus.observability.batch_metrics.get_meter",
+            "enhanced_agent_bus.observability.batch_metrics.get_meter",
             side_effect=RuntimeError("fail"),
         ):
             bm = BatchMetrics()
@@ -484,14 +484,14 @@ class TestRecordCacheStats:
 
 class TestSingleton:
     def test_get_batch_metrics_returns_same_instance(self):
-        from packages.enhanced_agent_bus.observability.batch_metrics import (
+        from enhanced_agent_bus.observability.batch_metrics import (
             get_batch_metrics,
             reset_batch_metrics,
         )
 
         meter, _ = _make_meter_with_distinct_instruments()
         with patch(
-            "packages.enhanced_agent_bus.observability.batch_metrics.get_meter",
+            "enhanced_agent_bus.observability.batch_metrics.get_meter",
             return_value=meter,
         ):
             reset_batch_metrics()
@@ -501,7 +501,7 @@ class TestSingleton:
         assert a is b
 
     def test_reset_batch_metrics_creates_new_instance(self):
-        from packages.enhanced_agent_bus.observability.batch_metrics import (
+        from enhanced_agent_bus.observability.batch_metrics import (
             get_batch_metrics,
             reset_batch_metrics,
         )
@@ -509,7 +509,7 @@ class TestSingleton:
         meter1, _ = _make_meter_with_distinct_instruments()
         meter2, _ = _make_meter_with_distinct_instruments()
         with patch(
-            "packages.enhanced_agent_bus.observability.batch_metrics.get_meter",
+            "enhanced_agent_bus.observability.batch_metrics.get_meter",
         ) as mock_get_meter:
             mock_get_meter.side_effect = [meter1, meter2]
             reset_batch_metrics()
@@ -520,11 +520,11 @@ class TestSingleton:
         assert a is not b
 
     def test_get_batch_metrics_creates_instance_on_first_call(self):
-        from packages.enhanced_agent_bus.observability import batch_metrics as bm_module
+        from enhanced_agent_bus.observability import batch_metrics as bm_module
 
         meter, _ = _make_meter_with_distinct_instruments()
         with patch(
-            "packages.enhanced_agent_bus.observability.batch_metrics.get_meter",
+            "enhanced_agent_bus.observability.batch_metrics.get_meter",
             return_value=meter,
         ):
             bm_module.reset_batch_metrics()
@@ -541,11 +541,11 @@ class TestSingleton:
 
 class TestBatchRequestTimer:
     def _setup(self):
-        from packages.enhanced_agent_bus.observability.batch_metrics import BatchRequestTimer
+        from enhanced_agent_bus.observability.batch_metrics import BatchRequestTimer
 
         mock_metrics = MagicMock()
         with patch(
-            "packages.enhanced_agent_bus.observability.batch_metrics.get_batch_metrics",
+            "enhanced_agent_bus.observability.batch_metrics.get_batch_metrics",
             return_value=mock_metrics,
         ):
             timer = BatchRequestTimer(tenant_id="acme", batch_size=50)
@@ -618,11 +618,11 @@ class TestBatchRequestTimer:
         assert call_kwargs["cache_misses"] == 0
 
     def test_context_manager_full_flow(self):
-        from packages.enhanced_agent_bus.observability.batch_metrics import BatchRequestTimer
+        from enhanced_agent_bus.observability.batch_metrics import BatchRequestTimer
 
         mock_metrics = MagicMock()
         with patch(
-            "packages.enhanced_agent_bus.observability.batch_metrics.get_batch_metrics",
+            "enhanced_agent_bus.observability.batch_metrics.get_batch_metrics",
             return_value=mock_metrics,
         ):
             with BatchRequestTimer(tenant_id="corp", batch_size=100) as t:
@@ -633,11 +633,11 @@ class TestBatchRequestTimer:
         mock_metrics.record_items_processed.assert_called_once()
 
     def test_context_manager_exception_propagates(self):
-        from packages.enhanced_agent_bus.observability.batch_metrics import BatchRequestTimer
+        from enhanced_agent_bus.observability.batch_metrics import BatchRequestTimer
 
         mock_metrics = MagicMock()
         with patch(
-            "packages.enhanced_agent_bus.observability.batch_metrics.get_batch_metrics",
+            "enhanced_agent_bus.observability.batch_metrics.get_batch_metrics",
             return_value=mock_metrics,
         ):
             with pytest.raises(ValueError):
@@ -674,11 +674,11 @@ class TestBatchRequestTimer:
 
 class TestItemTimer:
     def _setup(self):
-        from packages.enhanced_agent_bus.observability.batch_metrics import ItemTimer
+        from enhanced_agent_bus.observability.batch_metrics import ItemTimer
 
         mock_metrics = MagicMock()
         with patch(
-            "packages.enhanced_agent_bus.observability.batch_metrics.get_batch_metrics",
+            "enhanced_agent_bus.observability.batch_metrics.get_batch_metrics",
             return_value=mock_metrics,
         ):
             timer = ItemTimer(tenant_id="corp")
@@ -720,11 +720,11 @@ class TestItemTimer:
         assert result is None
 
     def test_context_manager_success_flow(self):
-        from packages.enhanced_agent_bus.observability.batch_metrics import ItemTimer
+        from enhanced_agent_bus.observability.batch_metrics import ItemTimer
 
         mock_metrics = MagicMock()
         with patch(
-            "packages.enhanced_agent_bus.observability.batch_metrics.get_batch_metrics",
+            "enhanced_agent_bus.observability.batch_metrics.get_batch_metrics",
             return_value=mock_metrics,
         ):
             with ItemTimer(tenant_id="tenant-x"):
@@ -734,11 +734,11 @@ class TestItemTimer:
         assert mock_metrics.record_item_duration.call_args[1]["success"] is True
 
     def test_context_manager_exception_propagates(self):
-        from packages.enhanced_agent_bus.observability.batch_metrics import ItemTimer
+        from enhanced_agent_bus.observability.batch_metrics import ItemTimer
 
         mock_metrics = MagicMock()
         with patch(
-            "packages.enhanced_agent_bus.observability.batch_metrics.get_batch_metrics",
+            "enhanced_agent_bus.observability.batch_metrics.get_batch_metrics",
             return_value=mock_metrics,
         ):
             with pytest.raises(RuntimeError):
@@ -749,11 +749,11 @@ class TestItemTimer:
         assert mock_metrics.record_item_duration.call_args[1]["success"] is False
 
     def test_success_default_is_true(self):
-        from packages.enhanced_agent_bus.observability.batch_metrics import ItemTimer
+        from enhanced_agent_bus.observability.batch_metrics import ItemTimer
 
         mock_metrics = MagicMock()
         with patch(
-            "packages.enhanced_agent_bus.observability.batch_metrics.get_batch_metrics",
+            "enhanced_agent_bus.observability.batch_metrics.get_batch_metrics",
             return_value=mock_metrics,
         ):
             t = ItemTimer(tenant_id="t")
@@ -770,10 +770,10 @@ class TestNoOpSmokeTest:
     """Verify all public methods work on no-op-backed BatchMetrics."""
 
     def _make_noop_bm(self):
-        from packages.enhanced_agent_bus.observability.batch_metrics import BatchMetrics
+        from enhanced_agent_bus.observability.batch_metrics import BatchMetrics
 
         with patch(
-            "packages.enhanced_agent_bus.observability.batch_metrics.get_meter",
+            "enhanced_agent_bus.observability.batch_metrics.get_meter",
             side_effect=RuntimeError("forced noop"),
         ):
             return BatchMetrics()

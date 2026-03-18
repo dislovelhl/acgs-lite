@@ -11,11 +11,12 @@ from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-from packages.enhanced_agent_bus.guardrails.sandbox import (
+
+from enhanced_agent_bus.guardrails.sandbox import (
     SandboxConfig,
     ToolRunnerSandbox,
 )
-from packages.enhanced_agent_bus.guardrails.sandbox_providers import (
+from enhanced_agent_bus.guardrails.sandbox_providers import (
     DockerSandboxProvider,
     FirecrackerSandboxProvider,
     MockSandboxProvider,
@@ -467,7 +468,7 @@ class TestToolRunnerSandbox:
     @pytest.mark.asyncio
     async def test_get_layer(self):
         """Test get_layer method."""
-        from packages.enhanced_agent_bus.guardrails.enums import GuardrailLayer
+        from enhanced_agent_bus.guardrails.enums import GuardrailLayer
 
         sandbox = ToolRunnerSandbox()
         assert sandbox.get_layer() == GuardrailLayer.TOOL_RUNNER_SANDBOX

@@ -15,9 +15,16 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
 
 # Import centralized constitutional hash
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from ..oauth2_provider import OAuth2Config, OAuth2Token
 from ..oidc_provider import OIDCConfig, OIDCTokens

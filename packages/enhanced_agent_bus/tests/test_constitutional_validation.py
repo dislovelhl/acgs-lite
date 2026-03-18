@@ -6,19 +6,20 @@ Comprehensive tests for constitutional validation paths.
 """
 
 import pytest
-from packages.enhanced_agent_bus.agent_bus import EnhancedAgentBus
-from packages.enhanced_agent_bus.message_processor import MessageProcessor
+
+from enhanced_agent_bus.agent_bus import EnhancedAgentBus
+from enhanced_agent_bus.message_processor import MessageProcessor
 
 # Import from module names that conftest.py patches (models, validators, core)
 # This ensures class identity with the strategies in registry.py
-from packages.enhanced_agent_bus.models import (
+from enhanced_agent_bus.models import (
     CONSTITUTIONAL_HASH,
     AgentMessage,
     MessageStatus,
     MessageType,
     Priority,
 )
-from packages.enhanced_agent_bus.validators import (
+from enhanced_agent_bus.validators import (
     ValidationResult,
     validate_constitutional_hash,
     validate_message_content,
@@ -38,7 +39,7 @@ def _disable_docker_sandbox():
     remaining security checks (constitutional hash, tenant, rate limit, input
     sanitization, prompt injection, anomaly detection) to run normally.
     """
-    import packages.enhanced_agent_bus.runtime_security as rt_sec
+    import enhanced_agent_bus.runtime_security as rt_sec
 
     original_scanner = rt_sec._scanner
     rt_sec._scanner = None

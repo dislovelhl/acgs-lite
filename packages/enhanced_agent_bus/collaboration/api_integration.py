@@ -10,18 +10,24 @@ import os
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from packages.enhanced_agent_bus.collaboration import (
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.collaboration import (
     CollaborationConfig,
     CollaborationServer,
 )
-from packages.enhanced_agent_bus.collaboration.models import (
+from enhanced_agent_bus.collaboration.models import (
     CollaborationError,
 )
-from src.core.shared.types import JSONDict
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
+
+_ALLOWED_JWT_ALGORITHMS = frozenset({"RS256", "RS384", "RS512", "ES256", "ES384", "EdDSA"})
 
 
 class CollaborationAPI:
@@ -75,7 +81,14 @@ class CollaborationAPI:
             return None
 
         try:
-            payload = jwt_module.decode(token, self.secret_key, algorithms=["HS256"])
+            jwt_algorithm = os.environ.get("JWT_ALGORITHM", "RS256")
+            if jwt_algorithm not in _ALLOWED_JWT_ALGORITHMS:
+                raise ValueError(
+                    f"Unsupported JWT_ALGORITHM={jwt_algorithm!r}. "
+                    f"Allowed: {sorted(_ALLOWED_JWT_ALGORITHMS)}"
+                )
+
+            payload = jwt_module.decode(token, self.secret_key, algorithms=[jwt_algorithm])
             return {
                 "user_id": payload.get("sub"),
                 "tenant_id": payload.get("tenant_id"),

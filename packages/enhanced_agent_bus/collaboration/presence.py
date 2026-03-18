@@ -14,7 +14,12 @@ import inspect
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 
-from packages.enhanced_agent_bus.collaboration.models import (
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.collaboration.models import (
     CollaborationConfig,
     CollaborationSession,
     Collaborator,
@@ -23,8 +28,6 @@ from packages.enhanced_agent_bus.collaboration.models import (
     SessionFullError,
     UserPermissions,
 )
-from src.core.shared.types import JSONDict
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
@@ -114,7 +117,7 @@ class PresenceManager:
             # Get or create session
             session = self._sessions.get(document_id)
             if not session:
-                from packages.enhanced_agent_bus.collaboration.models import DocumentType
+                from enhanced_agent_bus.collaboration.models import DocumentType
 
                 session = CollaborationSession(
                     document_id=document_id,

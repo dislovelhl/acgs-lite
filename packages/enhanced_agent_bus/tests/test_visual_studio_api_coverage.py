@@ -13,7 +13,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 from fastapi import FastAPI
-from packages.enhanced_agent_bus.visual_studio.models import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+from src.core.shared.security.auth import UserClaims, get_current_user
+
+from enhanced_agent_bus.visual_studio.models import (
     ExportFormat,
     NodeType,
     WorkflowDefinition,
@@ -26,8 +29,6 @@ from packages.enhanced_agent_bus.visual_studio.models import (
     WorkflowSummary,
     WorkflowValidationResult,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.security.auth import UserClaims, get_current_user
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -174,7 +175,7 @@ def mock_service():
 @pytest.fixture()
 def app(mock_service):
     """Build a FastAPI app with the vs router and mock service override."""
-    from packages.enhanced_agent_bus.visual_studio.api import get_service, router
+    from enhanced_agent_bus.visual_studio.api import get_service, router
 
     application = FastAPI()
     application.include_router(router)
@@ -690,16 +691,16 @@ class TestGetWorkflowSummary:
 class TestGetServiceDependency:
     def test_get_service_returns_visual_studio_service(self):
         """get_service() should return a VisualStudioService instance."""
-        from packages.enhanced_agent_bus.visual_studio.api import get_service
-        from packages.enhanced_agent_bus.visual_studio.service import VisualStudioService
+        from enhanced_agent_bus.visual_studio.api import get_service
+        from enhanced_agent_bus.visual_studio.service import VisualStudioService
 
         svc = get_service()
         assert isinstance(svc, VisualStudioService)
 
     def test_get_service_same_instance_as_global(self):
         """get_service() delegates to get_visual_studio_service()."""
-        from packages.enhanced_agent_bus.visual_studio.api import get_service
-        from packages.enhanced_agent_bus.visual_studio.service import get_visual_studio_service
+        from enhanced_agent_bus.visual_studio.api import get_service
+        from enhanced_agent_bus.visual_studio.service import get_visual_studio_service
 
         assert get_service() is get_visual_studio_service()
 
@@ -711,7 +712,7 @@ class TestGetServiceDependency:
 
 class TestModuleExports:
     def test_all_exports_present(self):
-        from packages.enhanced_agent_bus.visual_studio import api
+        from enhanced_agent_bus.visual_studio import api
 
         expected = {
             "router",
@@ -727,17 +728,17 @@ class TestModuleExports:
         assert set(api.__all__) == expected
 
     def test_router_prefix(self):
-        from packages.enhanced_agent_bus.visual_studio.api import router
+        from enhanced_agent_bus.visual_studio.api import router
 
         assert router.prefix == "/api/v1/visual"
 
     def test_router_tags(self):
-        from packages.enhanced_agent_bus.visual_studio.api import router
+        from enhanced_agent_bus.visual_studio.api import router
 
         assert "Visual Studio" in router.tags
 
     def test_visual_studio_operation_errors_tuple(self):
-        from packages.enhanced_agent_bus.visual_studio.api import (
+        from enhanced_agent_bus.visual_studio.api import (
             VISUAL_STUDIO_OPERATION_ERRORS,
         )
 

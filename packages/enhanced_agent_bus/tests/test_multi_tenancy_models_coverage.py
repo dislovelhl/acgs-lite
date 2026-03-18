@@ -10,15 +10,16 @@ from datetime import UTC, datetime, timezone
 from typing import Any
 
 import pytest
-from packages.enhanced_agent_bus.multi_tenancy.models import (
+from pydantic import ValidationError
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.multi_tenancy.models import (
     Tenant,
     TenantConfig,
     TenantQuota,
     TenantStatus,
     TenantUsage,
 )
-from pydantic import ValidationError
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # TenantStatus enum

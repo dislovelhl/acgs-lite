@@ -18,15 +18,20 @@ Coverage:
 
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip("fakeredis")
+
 import asyncio
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, call
 
 import pytest
+from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # RED: This import fails until healing_engine.py is created.
-from packages.enhanced_agent_bus.agent_health.healing_engine import HealingEngine
-from packages.enhanced_agent_bus.agent_health.models import (
+from enhanced_agent_bus.agent_health.healing_engine import HealingEngine
+from enhanced_agent_bus.agent_health.models import (
     AgentHealthRecord,
     AgentHealthThresholds,
     AutonomyTier,
@@ -37,7 +42,6 @@ from packages.enhanced_agent_bus.agent_health.models import (
     HealthState,
     OverrideMode,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -341,7 +345,7 @@ class TestAdvisoryTier:
             supervisor_notifier,
             thresholds,
         )
-        from packages.enhanced_agent_bus.agent_health import metrics as agent_metrics
+        from enhanced_agent_bus.agent_health import metrics as agent_metrics
 
         before = agent_metrics.HEALING_ACTIONS_COUNTER.labels(
             agent_id=AGENT_ID,

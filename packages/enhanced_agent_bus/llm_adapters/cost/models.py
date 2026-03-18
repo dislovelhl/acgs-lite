@@ -10,11 +10,15 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta, timezone
 
-from packages.enhanced_agent_bus.llm_adapters.capability_matrix import (
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.llm_adapters.capability_matrix import (
     CONSTITUTIONAL_HASH,
     CapabilityRequirement,
 )
-from src.core.shared.types import JSONDict
 
 from .enums import CostTier, QualityLevel, UrgencyLevel
 

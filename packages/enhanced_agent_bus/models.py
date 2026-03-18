@@ -16,18 +16,21 @@ New code should import directly from the specific modules.
 """
 
 import sys
-from typing import TypeAlias, Union
+from typing import TypeAlias
 
 # Ensure module aliasing across package import paths
 _module = sys.modules.get(__name__)
 if _module is not None:
     sys.modules.setdefault("enhanced_agent_bus.models", _module)
-    sys.modules.setdefault("packages.enhanced_agent_bus.models", _module)
+    sys.modules.setdefault("enhanced_agent_bus.models", _module)
     sys.modules.setdefault("core.enhanced_agent_bus.models", _module)
     sys.modules.setdefault("models", _module)
 
 # Import constitutional hash
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 # Import type aliases from shared types
 try:
@@ -121,6 +124,30 @@ from .session_models import (  # noqa: E402
     SessionGovernanceConfig,
 )
 
+# Re-export LangGraph orchestration models for backward compatibility
+try:
+    from .langgraph_orchestration.models import (  # noqa: E402
+        Checkpoint,
+        CheckpointStatus,
+        ConditionalEdge,
+        ExecutionContext,
+        ExecutionResult,
+        ExecutionStatus,
+        GraphConfig,
+        GraphDefinition,
+        GraphEdge,
+        GraphNode,
+        GraphState,
+        InterruptRequest,
+        InterruptResponse,
+        InterruptType,
+        NodeResult,
+        NodeStatus,
+        NodeType,
+    )
+except ImportError:
+    pass
+
 # Constants for message constraints
 MAX_PAYLOAD_SIZE_BYTES = 10 * 1024 * 1024  # 10MB default cap
 
@@ -141,7 +168,10 @@ __all__ = [
     "BatchResponse",
     "BatchResponseItem",
     "BatchResponseStats",
+    # LangGraph orchestration models
+    "Checkpoint",
     "CompatibilityChecker",
+    "ConditionalEdge",
     "ConstitutionalStatus",
     # Constitutional models
     "ConstitutionalVersion",
@@ -151,6 +181,7 @@ __all__ = [
     "DecisionLog",
     "EnumOrString",
     "EvolutionType",
+    "ExecutionContext",
     # type aliases
     "MessageContent",
     "MessageStatus",
@@ -185,4 +216,22 @@ __all__ = [
     "create_default_registry",
     # Utility functions
     "get_enum_value",
+    # LangGraph orchestration models
+    "Checkpoint",
+    "CheckpointStatus",
+    "ConditionalEdge",
+    "ExecutionContext",
+    "ExecutionResult",
+    "ExecutionStatus",
+    "GraphConfig",
+    "GraphDefinition",
+    "GraphEdge",
+    "GraphNode",
+    "GraphState",
+    "InterruptRequest",
+    "InterruptResponse",
+    "InterruptType",
+    "NodeResult",
+    "NodeStatus",
+    "NodeType",
 ]

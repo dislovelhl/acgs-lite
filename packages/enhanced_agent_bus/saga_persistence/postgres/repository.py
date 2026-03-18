@@ -21,7 +21,14 @@ import time
 import uuid
 
 import asyncpg
-from packages.enhanced_agent_bus.saga_persistence.models import (
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+
+from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.saga_persistence.models import (
     CompensationEntry,
     CompensationStrategy,
     PersistedSagaState,
@@ -29,9 +36,6 @@ from packages.enhanced_agent_bus.saga_persistence.models import (
     SagaCheckpoint,
     SagaState,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
-from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from ..repository import (
     RepositoryError,

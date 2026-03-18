@@ -21,7 +21,14 @@ Usage:
 import os
 from enum import Enum
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH, DEFAULT_REDIS_URL
+try:
+    from src.core.shared.constants import (
+        CONSTITUTIONAL_HASH,
+        DEFAULT_REDIS_URL,
+    )  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+    DEFAULT_REDIS_URL = "redis://localhost:6379"
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

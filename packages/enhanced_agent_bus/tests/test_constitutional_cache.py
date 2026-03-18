@@ -18,13 +18,14 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.constitutional_cache import (
+from src.core.shared.types import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.constitutional_cache import (
     VALIDATION_CACHE_TTL_SECONDS,
     ConstitutionalCache,
     PolicyCache,
     ValidationCache,
 )
-from src.core.shared.types import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -86,7 +87,7 @@ async def test_set_embeds_constitutional_hash(cache, mock_redis):
 @pytest.mark.asyncio
 async def test_get_local_hit_validates_hash(cache):
     """get() rejects local cache entry with wrong constitutional hash."""
-    from packages.enhanced_agent_bus.constitutional_cache import CacheEntry
+    from enhanced_agent_bus.constitutional_cache import CacheEntry
 
     key = cache._generate_key("policy", "pol-bad")
     bad_entry = CacheEntry(
@@ -122,7 +123,7 @@ async def test_get_redis_hit_validates_hash(cache, mock_redis):
 @pytest.mark.asyncio
 async def test_get_local_hit_valid_hash(cache):
     """get() returns value from local cache when hash is correct."""
-    from packages.enhanced_agent_bus.constitutional_cache import CacheEntry
+    from enhanced_agent_bus.constitutional_cache import CacheEntry
 
     key = cache._generate_key("policy", "pol-valid")
     good_entry = CacheEntry(
@@ -146,7 +147,7 @@ async def test_get_local_hit_valid_hash(cache):
 @pytest.mark.asyncio
 async def test_invalidate_by_tag_clears_local_entries(cache):
     """invalidate_by_tag() removes matching local cache entries."""
-    from packages.enhanced_agent_bus.constitutional_cache import CacheEntry
+    from enhanced_agent_bus.constitutional_cache import CacheEntry
 
     key = cache._generate_key("policy", "pol-tag")
     entry = CacheEntry(
@@ -201,7 +202,7 @@ async def test_policy_cache_cache_and_get(policy_cache, mock_redis):
 @pytest.mark.asyncio
 async def test_policy_cache_invalidate_removes_entry(policy_cache, mock_redis):
     """invalidate_policy() calls delete on the correct key."""
-    from packages.enhanced_agent_bus.constitutional_cache import CacheEntry
+    from enhanced_agent_bus.constitutional_cache import CacheEntry
 
     key = policy_cache._generate_key("policy", "pol-del")
     entry = CacheEntry(

@@ -10,13 +10,15 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional, TypeAlias, Union
-
-from packages.enhanced_agent_bus.bus_types import JSONDict, JSONValue
+from typing import TypeAlias
 
 # Import centralized constitutional hash with fallback
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
+from enhanced_agent_bus.bus_types import JSONDict, JSONValue
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from .context import ConversationContext, ConversationState

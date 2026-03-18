@@ -39,7 +39,7 @@ def _reset_opa_batch_singleton():
     """
     import sys
 
-    import packages.enhanced_agent_bus.opa_batch as mod
+    import enhanced_agent_bus.opa_batch as mod
 
     # --- Setup: reset before test ---
     mod._batch_client = None

@@ -9,18 +9,16 @@ thresholds.
 
 from datetime import UTC, datetime, timezone
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from enhanced_agent_bus.observability.structured_logging import get_logger
-
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
 except ImportError:
-    # Fallback for standalone usage
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    CONSTITUTIONAL_HASH = "standalone"
+
+from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # Import statistical libraries
 try:

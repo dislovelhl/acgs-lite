@@ -16,12 +16,13 @@ from collections.abc import Awaitable, Callable
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.circuit_breaker import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.circuit_breaker import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Helpers - build a minimal CapabilityRegistry
 # ---------------------------------------------------------------------------
-from packages.enhanced_agent_bus.llm_adapters.capability_matrix import (
+from enhanced_agent_bus.llm_adapters.capability_matrix import (
     CapabilityDimension,
     CapabilityRegistry,
     CapabilityRequirement,
@@ -32,7 +33,7 @@ from packages.enhanced_agent_bus.llm_adapters.capability_matrix import (
 # ---------------------------------------------------------------------------
 # Imports under test
 # ---------------------------------------------------------------------------
-from packages.enhanced_agent_bus.llm_adapters.failover.orchestrator import (
+from enhanced_agent_bus.llm_adapters.failover.orchestrator import (
     FAILOVER_EXECUTION_ERRORS,
     LLMFailoverOrchestrator,
     get_llm_failover_orchestrator,
@@ -116,7 +117,7 @@ class TestLLMFailoverOrchestratorInit:
         # We mock get_capability_registry to avoid side effects
         mock_registry = _make_registry("p1")
         with patch(
-            "packages.enhanced_agent_bus.llm_adapters.failover.orchestrator.get_capability_registry",
+            "enhanced_agent_bus.llm_adapters.failover.orchestrator.get_capability_registry",
             return_value=mock_registry,
         ):
             orch = LLMFailoverOrchestrator()
@@ -183,7 +184,7 @@ class TestGetLLMCircuitBreaker:
         mock_registry = AsyncMock()
         mock_registry.get_or_create = AsyncMock(return_value=mock_cb)
         with patch(
-            "packages.enhanced_agent_bus.llm_adapters.failover.orchestrator.get_circuit_breaker_registry",
+            "enhanced_agent_bus.llm_adapters.failover.orchestrator.get_circuit_breaker_registry",
             return_value=mock_registry,
         ):
             result = await orch.get_llm_circuit_breaker("openai-gpt4")
@@ -198,11 +199,11 @@ class TestGetLLMCircuitBreaker:
         mock_registry.get_or_create = AsyncMock(return_value=mock_cb)
         with (
             patch(
-                "packages.enhanced_agent_bus.llm_adapters.failover.orchestrator.get_circuit_breaker_registry",
+                "enhanced_agent_bus.llm_adapters.failover.orchestrator.get_circuit_breaker_registry",
                 return_value=mock_registry,
             ) as _,
             patch(
-                "packages.enhanced_agent_bus.llm_adapters.failover.orchestrator.get_llm_circuit_config",
+                "enhanced_agent_bus.llm_adapters.failover.orchestrator.get_llm_circuit_config",
             ) as mock_cfg,
         ):
             mock_cfg.return_value = MagicMock()
@@ -216,11 +217,11 @@ class TestGetLLMCircuitBreaker:
         mock_registry.get_or_create = AsyncMock(return_value=mock_cb)
         with (
             patch(
-                "packages.enhanced_agent_bus.llm_adapters.failover.orchestrator.get_circuit_breaker_registry",
+                "enhanced_agent_bus.llm_adapters.failover.orchestrator.get_circuit_breaker_registry",
                 return_value=mock_registry,
             ) as _,
             patch(
-                "packages.enhanced_agent_bus.llm_adapters.failover.orchestrator.get_llm_circuit_config",
+                "enhanced_agent_bus.llm_adapters.failover.orchestrator.get_llm_circuit_config",
             ) as mock_cfg,
         ):
             mock_cfg.return_value = MagicMock()
@@ -235,7 +236,7 @@ class TestGetLLMCircuitBreaker:
         mock_registry = AsyncMock()
         mock_registry.get_or_create = AsyncMock(return_value=mock_cb)
         with patch(
-            "packages.enhanced_agent_bus.llm_adapters.failover.orchestrator.get_circuit_breaker_registry",
+            "enhanced_agent_bus.llm_adapters.failover.orchestrator.get_circuit_breaker_registry",
             return_value=mock_registry,
         ):
             await orch.get_llm_circuit_breaker("bedrock-v1")
@@ -774,7 +775,7 @@ class TestGetOrchestratorStatus:
     def test_health_scores_dict_values_have_provider_id(self):
         orch = _make_orchestrator("myp")
         # Force metrics to exist
-        from packages.enhanced_agent_bus.llm_adapters.failover.health import HealthMetrics
+        from enhanced_agent_bus.llm_adapters.failover.health import HealthMetrics
 
         orch.health_scorer._metrics["myp"] = HealthMetrics()
         status = orch.get_orchestrator_status()
@@ -834,7 +835,7 @@ class TestExecuteWithFailoverIntegration:
         orch = LLMFailoverOrchestrator(capability_registry=registry)
         orch.failover_manager.set_primary_provider("tenant-A", "openai-gpt4")
         # Seed enough health data so health score > PROACTIVE_FAILOVER_THRESHOLD
-        from packages.enhanced_agent_bus.llm_adapters.failover.health import HealthMetrics
+        from enhanced_agent_bus.llm_adapters.failover.health import HealthMetrics
 
         metrics = HealthMetrics()
         metrics.health_score = 1.0
@@ -942,16 +943,16 @@ class TestInitializeExpectedLatencies:
 
 class TestModuleExports:
     def test_orchestrator_class_exported(self):
-        from packages.enhanced_agent_bus.llm_adapters.failover import orchestrator as mod
+        from enhanced_agent_bus.llm_adapters.failover import orchestrator as mod
 
         assert "LLMFailoverOrchestrator" in mod.__all__
 
     def test_get_function_exported(self):
-        from packages.enhanced_agent_bus.llm_adapters.failover import orchestrator as mod
+        from enhanced_agent_bus.llm_adapters.failover import orchestrator as mod
 
         assert "get_llm_failover_orchestrator" in mod.__all__
 
     def test_reset_function_exported(self):
-        from packages.enhanced_agent_bus.llm_adapters.failover import orchestrator as mod
+        from enhanced_agent_bus.llm_adapters.failover import orchestrator as mod
 
         assert "reset_llm_failover_orchestrator" in mod.__all__

@@ -13,14 +13,14 @@ import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.mcp_server.protocol.types import ToolDefinition, ToolInputSchema
-from packages.enhanced_agent_bus.mcp_server.tools.get_principles import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.mcp_server.protocol.types import ToolDefinition, ToolInputSchema
+from enhanced_agent_bus.mcp_server.tools.get_principles import (
     ConstitutionalPrinciple,
     GetPrinciplesTool,
     PrincipleCategory,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 pytestmark = [pytest.mark.unit, pytest.mark.constitutional]

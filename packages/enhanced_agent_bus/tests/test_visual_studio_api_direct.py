@@ -7,7 +7,10 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from fastapi import HTTPException
-from packages.enhanced_agent_bus.visual_studio.api import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+from src.core.shared.security.auth import UserClaims
+
+from enhanced_agent_bus.visual_studio.api import (
     _resolve_tenant_id,
     create_workflow,
     delete_workflow,
@@ -19,7 +22,7 @@ from packages.enhanced_agent_bus.visual_studio.api import (
     update_workflow,
     validate_workflow,
 )
-from packages.enhanced_agent_bus.visual_studio.models import (
+from enhanced_agent_bus.visual_studio.models import (
     NodeType,
     WorkflowDefinition,
     WorkflowExportRequest,
@@ -29,8 +32,6 @@ from packages.enhanced_agent_bus.visual_studio.models import (
     WorkflowSummary,
     WorkflowValidationResult,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.security.auth import UserClaims
 
 
 def _user(tenant_id: str = "tenant-a") -> UserClaims:

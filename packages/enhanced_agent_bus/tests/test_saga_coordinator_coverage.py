@@ -20,7 +20,8 @@ from datetime import UTC, datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.verification_layer.saga_coordinator import (
+
+from enhanced_agent_bus.verification_layer.saga_coordinator import (
     CONSTITUTIONAL_HASH,
     CompensationStrategy,
     SagaCheckpoint,

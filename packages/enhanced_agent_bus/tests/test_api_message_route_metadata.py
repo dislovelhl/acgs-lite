@@ -3,12 +3,12 @@
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-from packages.enhanced_agent_bus.api.routes.messages import (
+from enhanced_agent_bus.api.routes.messages import (
     _build_agent_message,
     _merge_validator_headers_into_metadata,
 )
-from packages.enhanced_agent_bus.api_models import MessageRequest
-from packages.enhanced_agent_bus.models import MessageType, Priority
+from enhanced_agent_bus.api_models import MessageRequest
+from enhanced_agent_bus.models import MessageType, Priority
 
 
 def test_merge_validator_headers_into_metadata_adds_missing_fields() -> None:

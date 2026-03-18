@@ -18,13 +18,14 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, call, patch
 
 import pytest
-from packages.enhanced_agent_bus.agent_health.actions import (
+
+from enhanced_agent_bus.agent_health.actions import (
     GracefulRestarter,
     HITLRequestor,
     QuarantineManager,
     SupervisorNotifier,
 )
-from packages.enhanced_agent_bus.agent_health.models import (
+from enhanced_agent_bus.agent_health.models import (
     AgentHealthRecord,
     AgentHealthThresholds,
     AutonomyTier,
@@ -33,7 +34,7 @@ from packages.enhanced_agent_bus.agent_health.models import (
     HealingTrigger,
     HealthState,
 )
-from packages.enhanced_agent_bus.agent_health.store import AgentHealthStore
+from enhanced_agent_bus.agent_health.store import AgentHealthStore
 
 # ---------------------------------------------------------------------------
 # Helpers / fixtures
@@ -42,7 +43,7 @@ from packages.enhanced_agent_bus.agent_health.store import AgentHealthStore
 AGENT_ID = "test-agent-001"
 
 # Patch target for asyncio.wait_for inside the actions module
-_WAIT_FOR_TARGET = "packages.enhanced_agent_bus.agent_health.actions.asyncio.wait_for"
+_WAIT_FOR_TARGET = "enhanced_agent_bus.agent_health.actions.asyncio.wait_for"
 
 
 def _thresholds(drain_timeout_seconds: int = 30) -> AgentHealthThresholds:
@@ -384,7 +385,7 @@ class TestNoBusConnectionRequired:
 # Helpers for new action tests
 # ---------------------------------------------------------------------------
 
-_ACTIONS_MODULE = "packages.enhanced_agent_bus.agent_health.actions"
+_ACTIONS_MODULE = "enhanced_agent_bus.agent_health.actions"
 _HTTPX_MODULE = f"{_ACTIONS_MODULE}.httpx"
 
 

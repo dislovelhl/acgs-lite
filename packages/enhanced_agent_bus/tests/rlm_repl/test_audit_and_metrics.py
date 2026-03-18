@@ -6,12 +6,13 @@ Constitutional Hash: cdd01ef066bc6cf2
 from datetime import UTC, datetime, timezone
 
 import pytest
-from packages.enhanced_agent_bus.tests.rlm_repl.conftest import _make_repl
+
+from enhanced_agent_bus.tests.rlm_repl.conftest import _make_repl
 
 
 class TestREPLOperation:
     def test_to_dict_short_code(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLOperation
+        from enhanced_agent_bus.rlm_repl import REPLOperation
 
         op = REPLOperation(
             operation_id="op_0",
@@ -27,7 +28,7 @@ class TestREPLOperation:
         assert d["success"] is True
 
     def test_to_dict_long_code_truncated(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLOperation
+        from enhanced_agent_bus.rlm_repl import REPLOperation
 
         long_code = "x" * 300
         op = REPLOperation(
@@ -46,7 +47,7 @@ class TestREPLOperation:
 
 class TestRecordOperation:
     def test_records_operation_when_audit_enabled(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLConfig
+        from enhanced_agent_bus.rlm_repl import REPLConfig
 
         config = REPLConfig(enable_audit_trail=True)
         repl = _make_repl(config)
@@ -54,7 +55,7 @@ class TestRecordOperation:
         assert len(repl._audit_trail) == 1
 
     def test_does_not_record_when_audit_disabled(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLConfig
+        from enhanced_agent_bus.rlm_repl import REPLConfig
 
         config = REPLConfig(enable_audit_trail=False)
         repl = _make_repl(config)

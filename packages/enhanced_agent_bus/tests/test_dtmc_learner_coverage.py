@@ -22,14 +22,15 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from packages.enhanced_agent_bus.adaptive_governance.dtmc_learner import (
+
+from enhanced_agent_bus.adaptive_governance.dtmc_learner import (
     _DEFAULT_INTERVENTION_THRESHOLD,
     _DEFAULT_LOOKAHEAD,
     _LAPLACE_ALPHA,
     DTMCFitResult,
     DTMCLearner,
 )
-from packages.enhanced_agent_bus.adaptive_governance.trace_collector import (
+from enhanced_agent_bus.adaptive_governance.trace_collector import (
     N_STATES,
     TrajectoryRecord,
 )
@@ -629,7 +630,7 @@ class TestDTMCLearnerLogging:
 
         learner = DTMCLearner()
         with caplog.at_level(
-            logging.WARNING, logger="packages.enhanced_agent_bus.adaptive_governance.dtmc_learner"
+            logging.WARNING, logger="enhanced_agent_bus.adaptive_governance.dtmc_learner"
         ):
             learner.fit([])
         assert any("empty trajectory" in r.message.lower() for r in caplog.records)
@@ -639,7 +640,7 @@ class TestDTMCLearnerLogging:
 
         learner = DTMCLearner()
         with caplog.at_level(
-            logging.INFO, logger="packages.enhanced_agent_bus.adaptive_governance.dtmc_learner"
+            logging.INFO, logger="enhanced_agent_bus.adaptive_governance.dtmc_learner"
         ):
             learner.fit([_safe_traj(), _unsafe_traj()])
         assert any("fitted" in r.message.lower() for r in caplog.records)

@@ -353,7 +353,7 @@ class TestActivationSagaFactory:
     def test_create_activation_saga_without_workflow(self, mock_storage):
         """Test saga creation fails without ConstitutionalSagaWorkflow."""
         with patch(
-            "packages.enhanced_agent_bus.constitutional.activation_saga.ConstitutionalSagaWorkflow",
+            "enhanced_agent_bus.constitutional.activation_saga.ConstitutionalSagaWorkflow",
             None,
         ):
             with pytest.raises(ImportError, match="ConstitutionalSagaWorkflow not available"):

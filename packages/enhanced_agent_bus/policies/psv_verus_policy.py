@@ -1,4 +1,7 @@
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 """
 ACGS-2 PSV-Verus Production Policy
@@ -12,7 +15,11 @@ import uuid  # noqa: E402
 
 from src.core.shared.policy.models import PolicySpecification, VerificationStatus  # noqa: E402
 from src.core.shared.policy.unified_generator import UnifiedVerifiedPolicyGenerator  # noqa: E402
-from src.core.shared.types import JSONDict  # noqa: E402
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger  # noqa: E402
 

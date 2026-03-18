@@ -20,7 +20,9 @@ from datetime import UTC, datetime, timezone  # noqa: E402
 from unittest.mock import AsyncMock, MagicMock, patch  # noqa: E402
 
 import pytest  # noqa: E402
-from packages.enhanced_agent_bus.enterprise_sso.data_warehouse import (  # noqa: E402
+from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError  # noqa: E402
+
+from enhanced_agent_bus.enterprise_sso.data_warehouse import (  # noqa: E402
     CONSTITUTIONAL_HASH,  # noqa: F811
     BigQueryConfig,
     BigQueryConnector,
@@ -54,7 +56,6 @@ from packages.enhanced_agent_bus.enterprise_sso.data_warehouse import (  # noqa:
     validate_default_value,
     validate_identifier,
 )
-from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError  # noqa: E402
 
 # ============================================================================
 # Test Fixtures
@@ -1136,7 +1137,7 @@ class TestErrorHandling:
 
     def test_sync_error(self):
         """Test SyncError exception."""
-        from packages.enhanced_agent_bus.enterprise_sso.data_warehouse import SyncError
+        from enhanced_agent_bus.enterprise_sso.data_warehouse import SyncError
 
         error = SyncError("Sync failed")
         assert "Sync failed" in str(error)

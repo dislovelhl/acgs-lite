@@ -13,19 +13,20 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import httpx
 import pytest
-from packages.enhanced_agent_bus.guardrails.audit_log import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.guardrails.audit_log import (
     AuditLog,
     AuditLogConfig,
 )
-from packages.enhanced_agent_bus.guardrails.enums import GuardrailLayer, SafetyAction
-from packages.enhanced_agent_bus.guardrails.siem_providers import (
+from enhanced_agent_bus.guardrails.enums import GuardrailLayer, SafetyAction
+from enhanced_agent_bus.guardrails.siem_providers import (
     ElasticsearchProvider,
     SIEMProviderConfig,
     SIEMProviderType,
     SplunkHECProvider,
     create_siem_provider,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 
 @pytest.fixture
@@ -774,7 +775,7 @@ class TestAuditLogSIEMEndToEnd:
 @pytest.mark.constitutional
 def test_siem_providers_constitutional_hash():
     """All SIEM events should include constitutional hash."""
-    from packages.enhanced_agent_bus.guardrails.siem_providers import (
+    from enhanced_agent_bus.guardrails.siem_providers import (
         CONSTITUTIONAL_HASH as ProviderHash,
     )
 

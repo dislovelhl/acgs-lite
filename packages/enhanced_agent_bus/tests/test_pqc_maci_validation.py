@@ -14,8 +14,8 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 try:
-    from packages.enhanced_agent_bus.models import CONSTITUTIONAL_HASH
-    from packages.enhanced_agent_bus.pqc_validators import (
+    from enhanced_agent_bus.models import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus.pqc_validators import (
         ValidationResult,
         _is_self_validation,
         validate_maci_record_pqc,
@@ -108,7 +108,7 @@ class TestValidateMACIRecordPQC:
         mock_pqc_config.pqc_enabled = True
 
         with patch(
-            "packages.enhanced_agent_bus.pqc_validators.validate_constitutional_hash_pqc"
+            "enhanced_agent_bus.pqc_validators.validate_constitutional_hash_pqc"
         ) as mock_val:
             mock_val.return_value = ValidationResult(
                 valid=True, constitutional_hash=CONSTITUTIONAL_HASH

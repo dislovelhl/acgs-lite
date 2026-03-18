@@ -21,7 +21,9 @@ from datetime import UTC, datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.chaos.scenarios import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.chaos.scenarios import (
     MAX_CPU_PERCENT,
     MAX_DURATION_S,
     MAX_LATENCY_MS,
@@ -37,8 +39,7 @@ from packages.enhanced_agent_bus.chaos.scenarios import (
     ScenarioResult,
     ScenarioStatus,
 )
-from packages.enhanced_agent_bus.exceptions import ConstitutionalHashMismatchError
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.exceptions import ConstitutionalHashMismatchError
 
 # ---------------------------------------------------------------------------
 # Helper: fast-forward asyncio.sleep so tests run in milliseconds

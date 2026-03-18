@@ -37,7 +37,7 @@ def _reset_constitutional_batch_singleton():
     """
     import sys
 
-    import packages.enhanced_agent_bus.constitutional_batch as mod
+    import enhanced_agent_bus.constitutional_batch as mod
 
     # --- Setup: reset before test ---
     if hasattr(mod, "_batch_validator"):

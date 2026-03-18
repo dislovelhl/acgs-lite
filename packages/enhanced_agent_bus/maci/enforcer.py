@@ -12,8 +12,12 @@ import asyncio
 from collections import deque
 from datetime import UTC, datetime
 
-from packages.enhanced_agent_bus.interfaces import RoleMatrixValidatorProtocol
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.interfaces import RoleMatrixValidatorProtocol
 
 from ..maci_imports import (
     CONSTITUTIONAL_HASH,

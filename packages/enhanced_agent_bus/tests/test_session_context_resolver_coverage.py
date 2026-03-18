@@ -19,14 +19,15 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.config import BusConfiguration
-from packages.enhanced_agent_bus.core_models import AgentMessage
-from packages.enhanced_agent_bus.session_context_resolver import (
+from src.core.shared.enums import RiskLevel
+
+from enhanced_agent_bus.config import BusConfiguration
+from enhanced_agent_bus.core_models import AgentMessage
+from enhanced_agent_bus.session_context_resolver import (
     SESSION_CONTEXT_LOAD_ERRORS,
     SessionContextResolver,
 )
-from packages.enhanced_agent_bus.session_models import SessionGovernanceConfig
-from src.core.shared.enums import RiskLevel
+from enhanced_agent_bus.session_models import SessionGovernanceConfig
 
 # ---------------------------------------------------------------------------
 # Helpers

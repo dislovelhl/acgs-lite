@@ -25,8 +25,14 @@ from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -222,7 +228,7 @@ class MACIToolFilter:
 
     Example::
 
-        from packages.enhanced_agent_bus.mcp.maci_filter import (
+        from enhanced_agent_bus.mcp.maci_filter import (
             MACIToolFilter, MACIToolRole,
         )
 

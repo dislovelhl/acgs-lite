@@ -6,7 +6,9 @@ Constitutional Hash: cdd01ef066bc6cf2
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from packages.enhanced_agent_bus.llm_adapters.capability_matrix import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.llm_adapters.capability_matrix import (
     CapabilityDimension,
     CapabilityLevel,
     CapabilityRegistry,
@@ -19,7 +21,6 @@ from packages.enhanced_agent_bus.llm_adapters.capability_matrix import (
     get_capability_router,
     initialize_capability_matrix,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 
 class TestCapabilityDimension:

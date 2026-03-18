@@ -3,11 +3,11 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from unittest.mock import MagicMock
 
-from packages.enhanced_agent_bus.multi_tenancy.db_repository_optimized import (
+from enhanced_agent_bus.multi_tenancy.db_repository_optimized import (
     DatabaseTenantRepository,
 )
-from packages.enhanced_agent_bus.multi_tenancy.models import TenantStatus
-from packages.enhanced_agent_bus.multi_tenancy.orm_models import TenantStatusEnum
+from enhanced_agent_bus.multi_tenancy.models import TenantStatus
+from enhanced_agent_bus.multi_tenancy.orm_models import TenantStatusEnum
 
 
 def _make_repo() -> DatabaseTenantRepository:

@@ -84,13 +84,13 @@ MACIEnforcer = get_maci_enforcer()  # type: ignore[assignment]
 MACIRoleRegistry = get_maci_role_registry()  # type: ignore[assignment]
 
 del _flags  # Clean up namespace
-from packages.enhanced_agent_bus.models import (  # noqa: E402
+from enhanced_agent_bus.models import (  # noqa: E402
     CONSTITUTIONAL_HASH,
     AgentMessage,
     BatchRequest,
     BatchResponse,
 )
-from packages.enhanced_agent_bus.validators import ValidationResult  # noqa: E402
+from enhanced_agent_bus.validators import ValidationResult  # noqa: E402
 
 from ..interfaces import (  # noqa: E402
     AgentRegistry,

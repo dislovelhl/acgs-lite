@@ -18,7 +18,8 @@ from dataclasses import fields
 from datetime import UTC, datetime, timezone
 
 import pytest
-from packages.enhanced_agent_bus.governance.models import (
+
+from enhanced_agent_bus.governance.models import (
     CONSTITUTIONAL_HASH,
     ConstitutionalProposal,
     DeliberationPhase,
@@ -1135,41 +1136,41 @@ class TestCrossModelIntegration:
 
 class TestModuleExports:
     def test_constitutional_hash_exported(self):
-        from packages.enhanced_agent_bus.governance import models as m
+        from enhanced_agent_bus.governance import models as m
 
         assert hasattr(m, "CONSTITUTIONAL_HASH")
 
     def test_deliberation_phase_exported(self):
-        from packages.enhanced_agent_bus.governance import models as m
+        from enhanced_agent_bus.governance import models as m
 
         assert hasattr(m, "DeliberationPhase")
 
     def test_stakeholder_group_exported(self):
-        from packages.enhanced_agent_bus.governance import models as m
+        from enhanced_agent_bus.governance import models as m
 
         assert hasattr(m, "StakeholderGroup")
 
     def test_stakeholder_exported(self):
-        from packages.enhanced_agent_bus.governance import models as m
+        from enhanced_agent_bus.governance import models as m
 
         assert hasattr(m, "Stakeholder")
 
     def test_deliberation_statement_exported(self):
-        from packages.enhanced_agent_bus.governance import models as m
+        from enhanced_agent_bus.governance import models as m
 
         assert hasattr(m, "DeliberationStatement")
 
     def test_opinion_cluster_exported(self):
-        from packages.enhanced_agent_bus.governance import models as m
+        from enhanced_agent_bus.governance import models as m
 
         assert hasattr(m, "OpinionCluster")
 
     def test_constitutional_proposal_exported(self):
-        from packages.enhanced_agent_bus.governance import models as m
+        from enhanced_agent_bus.governance import models as m
 
         assert hasattr(m, "ConstitutionalProposal")
 
     def test_deliberation_result_exported(self):
-        from packages.enhanced_agent_bus.governance import models as m
+        from enhanced_agent_bus.governance import models as m
 
         assert hasattr(m, "DeliberationResult")

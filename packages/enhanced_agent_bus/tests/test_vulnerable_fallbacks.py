@@ -42,7 +42,7 @@ def blocking_import(name, globals=None, locals=None, fromlist=(), level=0):
 
 builtins.__import__ = blocking_import
 
-module = importlib.import_module("packages.enhanced_agent_bus.routes.sessions._fallbacks")
+module = importlib.import_module("enhanced_agent_bus.routes.sessions._fallbacks")
 if not getattr(module, "USING_FALLBACK_TENANT", False):
     print("FALLBACK_NOT_ACTIVE")
     raise SystemExit(8)

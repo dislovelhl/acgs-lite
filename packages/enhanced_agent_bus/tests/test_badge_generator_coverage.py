@@ -10,7 +10,8 @@ Comprehensive coverage of all branches in the badge SVG generator:
 """
 
 import pytest
-from packages.enhanced_agent_bus.api.badge_generator import (
+
+from enhanced_agent_bus.api.badge_generator import (
     LOWEST_SCORE_COLOR,
     SCORE_COLORS,
     TEXT_CHAR_WIDTH,

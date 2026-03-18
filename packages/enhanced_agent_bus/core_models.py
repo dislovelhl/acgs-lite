@@ -6,11 +6,14 @@ Core message and routing models for agent communication.
 Split from models.py for improved maintainability.
 """
 
+from __future__ import annotations
+
+import sys
 import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
-from typing import TYPE_CHECKING, Optional, TypeAlias
+from typing import TYPE_CHECKING, TypeAlias
 
 from pydantic import BaseModel, Field
 
@@ -32,13 +35,20 @@ try:
 except ImportError:
     # Fallback for standalone usage
     JSONValue: TypeAlias = object  # type: ignore[misc, no-redef]
-    JSONDict: TypeAlias = JSONDict  # type: ignore[misc, no-redef]
-    SecurityContext = JSONDict  # type: ignore[misc, no-redef]
-    MetadataDict = JSONDict  # type: ignore[misc, no-redef]
+    JSONDict: TypeAlias = dict[str, object]
+    SecurityContext: TypeAlias = dict[str, object]
+    MetadataDict: TypeAlias = dict[str, object]
     PerformanceMetrics: TypeAlias = dict[str, int | float | str | None]  # type: ignore[misc, no-redef]
 
 # Import constitutional hash
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+
+_module = sys.modules[__name__]
+sys.modules.setdefault("enhanced_agent_bus.core_models", _module)
+sys.modules.setdefault("packages.enhanced_agent_bus.core_models", _module)
 
 # Type aliases
 MessageContent = JSONDict
@@ -100,7 +110,7 @@ class AgentMessage:
     to_agent: str = ""
     sender_id: str = ""
     message_type: MessageType = MessageType.COMMAND
-    routing: Optional["RoutingContext"] = None
+    routing: "RoutingContext" | None = None
     headers: dict[str, str] = field(default_factory=dict)
 
     # Multi-tenant security
@@ -123,7 +133,7 @@ class AgentMessage:
 
     # Session governance (Dynamic Per-Session Governance Configuration)
     session_id: str | None = None  # Session identifier for governance routing
-    session_context: Optional["SessionContext"] = None  # Full session context
+    session_context: "SessionContext" | None = None  # Full session context
 
     # Post-Quantum Cryptography support (NIST FIPS 203/204)
     pqc_signature: str | None = None  # CRYSTALS-Dilithium signature (base64)
@@ -157,17 +167,26 @@ class AgentMessage:
 
     # Performance tracking
     performance_metrics: PerformanceMetrics = field(default_factory=dict)
+    _cached_dict: JSONDict | None = field(default=None, init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         """Post-initialization validation."""
-        # Performance Optimization: Bypass expensive json.dumps on hot path (10K+ RPS)
-        # We rely on gateway-level validation for payload size limits.
-        # constitutional_validated is set by MessageProcessor after actual validation.
-        pass
+
+    def _invalidate_cache(self) -> None:
+        """Clear the cached dict when mutable fields change."""
+        self._cached_dict = None
 
     def to_dict(self) -> JSONDict:
-        """Convert message to dictionary."""
-        return {
+        """Convert message to dictionary.
+
+        Uses a single-shot cache to avoid repeated serialization on the hot
+        path (10K+ RPS).  The cache is invalidated when ``_invalidate_cache``
+        is called — callers that mutate ``status``, ``constitutional_validated``,
+        or ``metadata`` after construction should call it explicitly.
+        """
+        if self._cached_dict is not None:
+            return {**self._cached_dict}
+        result: JSONDict = {
             "message_id": self.message_id,
             "conversation_id": self.conversation_id,
             "content": self.content,
@@ -193,6 +212,8 @@ class AgentMessage:
             "updated_at": self.updated_at.isoformat(),
             "ifc_label": self.ifc_label.to_dict() if self.ifc_label is not None else None,
         }
+        self._cached_dict = result
+        return {**self._cached_dict}
 
     def to_dict_raw(self) -> JSONDict:
         """Convert message to dictionary with all fields for serialization."""

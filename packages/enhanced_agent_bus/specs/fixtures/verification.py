@@ -7,12 +7,19 @@ Fixtures for MACI role enforcement and Z3 verification testing.
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import ACGSBaseError
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 
 class SelfValidationError(ACGSBaseError):
@@ -86,7 +93,7 @@ class MACIAgent:
         self.outputs.append(output_id)
         return output_id
 
-    def validate(self, output_id: str, target_agent: Optional["MACIAgent"] = None) -> bool:
+    def validate(self, output_id: str, target_agent: "MACIAgent" | None = None) -> bool:
         """
         Validate an output (Judicial only).
 

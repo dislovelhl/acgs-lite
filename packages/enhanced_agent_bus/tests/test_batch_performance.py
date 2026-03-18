@@ -17,7 +17,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 try:
-    from packages.enhanced_agent_bus.models import BatchRequest, BatchRequestItem
+    from enhanced_agent_bus.models import BatchRequest, BatchRequestItem
 
     from ..batch_processor import BatchMessageProcessor
 except ImportError:

@@ -6,9 +6,10 @@ Tests for AutonomyTier enum enforcement in the message processing pipeline.
 """
 
 import pytest
-from packages.enhanced_agent_bus.enums import AutonomyTier, MessageType
-from packages.enhanced_agent_bus.message_processor import MessageProcessor
-from packages.enhanced_agent_bus.models import AgentMessage
+
+from enhanced_agent_bus.enums import AutonomyTier, MessageType
+from enhanced_agent_bus.message_processor import MessageProcessor
+from enhanced_agent_bus.models import AgentMessage
 
 
 class TestAutonomyTiers:

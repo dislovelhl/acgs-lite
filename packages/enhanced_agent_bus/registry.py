@@ -5,15 +5,16 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 import asyncio
 import json
+import sys
 from datetime import UTC, datetime, timezone
-from typing import TYPE_CHECKING, Optional, TypeAlias, Union
+from typing import TYPE_CHECKING, TypeAlias
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 if TYPE_CHECKING:
     import redis.asyncio as redis_async
 
-from packages.enhanced_agent_bus.bus_types import JSONDict, JSONValue, MetadataDict
+from enhanced_agent_bus.bus_types import JSONDict, JSONValue, MetadataDict
 
 try:
     from src.core.shared.types import AgentInfo
@@ -91,6 +92,9 @@ except (ImportError, ValueError):
     )
 
 logger = get_logger(__name__)
+sys.modules.setdefault("registry", sys.modules[__name__])
+sys.modules.setdefault("enhanced_agent_bus.registry", sys.modules[__name__])
+sys.modules.setdefault("packages.enhanced_agent_bus.registry", sys.modules[__name__])
 # Redis connection pool defaults to prevent resource exhaustion
 DEFAULT_REDIS_MAX_CONNECTIONS = 20
 DEFAULT_REDIS_SOCKET_TIMEOUT = 5.0

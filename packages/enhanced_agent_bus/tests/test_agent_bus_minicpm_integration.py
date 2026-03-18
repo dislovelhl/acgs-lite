@@ -11,7 +11,8 @@ Tests the integration of MiniCPM-enhanced impact scoring with:
 from unittest.mock import MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.deliberation_layer.impact_scorer import (
+
+from enhanced_agent_bus.deliberation_layer.impact_scorer import (
     CONSTITUTIONAL_HASH,
     ImpactScorer,
     ImpactScoringConfig,
@@ -23,7 +24,7 @@ from packages.enhanced_agent_bus.deliberation_layer.impact_scorer import (
     get_impact_scorer_service,
     reset_impact_scorer,
 )
-from packages.enhanced_agent_bus.runtime_safety_guardrails import (
+from enhanced_agent_bus.runtime_safety_guardrails import (
     IMPACT_SCORING_AVAILABLE,
     AgentEngine,
     AgentEngineConfig,

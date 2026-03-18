@@ -7,16 +7,17 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 import pytest
-from packages.enhanced_agent_bus.persistence.executor import (
+
+from enhanced_agent_bus.persistence.executor import (
     DurableWorkflowExecutor,
     WorkflowContext,
 )
-from packages.enhanced_agent_bus.persistence.models import (
+from enhanced_agent_bus.persistence.models import (
     StepStatus,
     WorkflowInstance,
     WorkflowStatus,
 )
-from packages.enhanced_agent_bus.persistence.repository import InMemoryWorkflowRepository
+from enhanced_agent_bus.persistence.repository import InMemoryWorkflowRepository
 
 
 @pytest.fixture

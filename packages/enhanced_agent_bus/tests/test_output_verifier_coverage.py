@@ -10,12 +10,13 @@ import json
 import re
 
 import pytest
-from packages.enhanced_agent_bus.guardrails.enums import (
+
+from enhanced_agent_bus.guardrails.enums import (
     GuardrailLayer,
     SafetyAction,
     ViolationSeverity,
 )
-from packages.enhanced_agent_bus.guardrails.output_verifier import (
+from enhanced_agent_bus.guardrails.output_verifier import (
     OutputVerifier,
     OutputVerifierConfig,
 )
@@ -513,7 +514,7 @@ class TestGuardrailResultStructure:
         assert hasattr(result, "trace_id")
 
     async def test_violations_are_violation_instances(self, verifier, ctx):
-        from packages.enhanced_agent_bus.guardrails.models import Violation
+        from enhanced_agent_bus.guardrails.models import Violation
 
         text = "Contact user@example.com — that racist user."
         result = await verifier.process(text, ctx)

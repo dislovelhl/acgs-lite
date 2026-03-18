@@ -14,8 +14,9 @@ import importlib
 import math
 import types
 
-import packages.enhanced_agent_bus.governance_constants as gc
 import pytest
+
+import enhanced_agent_bus.governance_constants as gc
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -104,7 +105,7 @@ class TestModuleImport:
         assert isinstance(gc, types.ModuleType)
 
     def test_module_can_be_reimported(self):
-        reloaded = importlib.import_module("packages.enhanced_agent_bus.governance_constants")
+        reloaded = importlib.import_module("enhanced_agent_bus.governance_constants")
         # Same file — module identity may differ under dual-import path aliasing
         assert reloaded.__file__ == gc.__file__
 

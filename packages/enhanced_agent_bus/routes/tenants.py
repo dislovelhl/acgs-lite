@@ -15,9 +15,17 @@ from typing import NoReturn
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.security.error_sanitizer import safe_error_detail
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -191,19 +199,27 @@ ENVIRONMENT = os.environ.get("AGENT_RUNTIME_ENVIRONMENT", "development")
 NORMALIZED_ENVIRONMENT = ENVIRONMENT.strip().lower()
 
 # JWT configuration (reuse from agent_runtime if available)
+_ALLOWED_JWT_ALGORITHMS = frozenset({"RS256", "RS384", "RS512", "ES256", "ES384", "EdDSA"})
 JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "")
-JWT_ALGORITHM = os.environ.get("JWT_ALGORITHM", "HS256")
+JWT_ALGORITHM = os.environ.get("JWT_ALGORITHM", "RS256")
+if JWT_ALGORITHM not in _ALLOWED_JWT_ALGORITHMS:
+    raise ValueError(
+        f"Unsupported JWT_ALGORITHM={JWT_ALGORITHM!r}. "
+        f"Allowed: {sorted(_ALLOWED_JWT_ALGORITHMS)}"
+    )
 JWT_ISSUER = os.environ.get("JWT_ISSUER", "acgs2-agent-runtime")
 JWT_AUDIENCE = os.environ.get("JWT_AUDIENCE", "acgs2-services")
 
 # Security scheme for Bearer token authentication
 security = HTTPBearer(auto_error=False)
 
-# Warn on startup if production without proper configuration
+# SECURITY FIX (2026-03): Fail-closed in production — refuse to start without auth keys.
+# Previously this only logged a warning; an operator could miss it and run without JWT
+# secrets, leaving the tenant management API unprotected.
 if NORMALIZED_ENVIRONMENT == "production" and not TENANT_ADMIN_KEY and not JWT_SECRET_KEY:
-    logger.critical(
-        f"SECURITY WARNING: Production environment without TENANT_ADMIN_KEY or JWT_SECRET_KEY. "
-        f"Tenant management API will reject all requests. "
+    raise ValueError(
+        "SECURITY: Production environment requires TENANT_ADMIN_KEY or JWT_SECRET_KEY. "
+        "Set at least one via environment variables before starting in production. "
         f"Constitutional Hash: {CONSTITUTIONAL_HASH}"
     )
 
@@ -312,7 +328,6 @@ def _ensure_auth_configured() -> None:
             detail={
                 "error": "Tenant management authentication is not configured",
                 "code": "AUTH_CONFIGURATION_ERROR",
-                "constitutional_hash": CONSTITUTIONAL_HASH,
             },
         )
 
@@ -336,7 +351,6 @@ def _authenticate_via_jwt(credentials: HTTPAuthorizationCredentials, admin_id: s
             detail={
                 "error": "Invalid or expired authentication token",
                 "code": "INVALID_TOKEN",
-                "constitutional_hash": CONSTITUTIONAL_HASH,
             },
             headers={"WWW-Authenticate": "Bearer"},
         )
@@ -351,7 +365,6 @@ def _authenticate_via_api_key(x_admin_key: str | None, admin_id: str) -> str:
             detail={
                 "error": "Authentication required. Provide Bearer token or X-Admin-Key header.",
                 "code": "AUTH_REQUIRED",
-                "constitutional_hash": CONSTITUTIONAL_HASH,
             },
             headers={"WWW-Authenticate": "Bearer"},
         )
@@ -376,7 +389,6 @@ def _authenticate_via_api_key(x_admin_key: str | None, admin_id: str) -> str:
         detail={
             "error": "Invalid authentication credentials",
             "code": "INVALID_CREDENTIALS",
-            "constitutional_hash": CONSTITUTIONAL_HASH,
         },
         headers={"WWW-Authenticate": "Bearer"},
     )
@@ -420,30 +432,30 @@ async def get_optional_tenant_id(
     return x_tenant_id
 
 
-_SUPER_ADMIN_ROLES = frozenset({"controller", "admin"})
-
-
-def _check_tenant_scope(admin_id: str, target_tenant_id: str) -> None:
+def _check_tenant_scope(
+    admin_id: str,
+    target_tenant_id: str,
+    is_super_admin: bool = False,
+) -> None:
     """Enforce cross-tenant scoping for tenant admin operations.
 
     Raises HTTP 403 if the caller is trying to operate on a tenant they do not own,
-    unless they hold a super-admin role (CONTROLLER or ADMIN).
+    unless they are an explicit super-admin, the system-admin account, or the target
+    tenant itself.
 
     Args:
         admin_id: Authenticated admin identity (tenant_id from JWT or API key identity).
         target_tenant_id: The tenant being operated on (path parameter).
+        is_super_admin: Explicit flag for callers that have already validated super-admin
+            privileges.
     """
-    if admin_id == target_tenant_id or admin_id == "system-admin":
+    if is_super_admin or admin_id == target_tenant_id or admin_id == "system-admin":
         return
-    for role in _SUPER_ADMIN_ROLES:
-        if role in admin_id.lower():
-            return
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
         detail={
             "error": "Cross-tenant access denied",
             "code": "CROSS_TENANT_DENIED",
-            "constitutional_hash": CONSTITUTIONAL_HASH,
         },
     )
 
@@ -451,6 +463,7 @@ def _check_tenant_scope(admin_id: str, target_tenant_id: str) -> None:
 def _build_tenant_config_and_quota(
     request: CreateTenantRequest,
 ) -> tuple[TenantConfig | None, TenantQuota | None]:
+    """Build TenantConfig and TenantQuota from request data."""
     return (
         TenantConfig(**request.config) if request.config else None,
         TenantQuota(**request.quota) if request.quota else None,
@@ -458,6 +471,7 @@ def _build_tenant_config_and_quota(
 
 
 def _parse_status_filter(status_filter: str | None) -> TenantStatus | None:
+    """Parse and validate status filter string, raising HTTP 400 if invalid."""
     if not status_filter:
         return None
     try:
@@ -473,6 +487,7 @@ def _parse_status_filter(status_filter: str | None) -> TenantStatus | None:
 
 
 async def _get_tenant_or_404(manager: TenantManager, tenant_id: str) -> Tenant:
+    """Retrieve tenant by ID, raising HTTP 404 if not found."""
     tenant = await manager.get_tenant(tenant_id)
     if tenant:
         return tenant
@@ -483,10 +498,12 @@ async def _get_tenant_or_404(manager: TenantManager, tenant_id: str) -> Tenant:
 
 
 def _tenant_response(tenant: Tenant) -> TenantResponse:
+    """Convert Tenant model to TenantResponse."""
     return TenantResponse.from_tenant(tenant)
 
 
 def _tenant_responses(tenants: list[Tenant]) -> list[TenantResponse]:
+    """Convert list of Tenant models to TenantResponse list."""
     return [TenantResponse.from_tenant(tenant) for tenant in tenants]
 
 
@@ -497,6 +514,7 @@ def _build_tenant_list_response(
     page_size: int,
     has_more: bool,
 ) -> TenantListResponse:
+    """Build paginated tenant list response with metadata."""
     return TenantListResponse(
         tenants=_tenant_responses(tenants),
         total_count=len(tenants),
@@ -512,6 +530,7 @@ def _extract_usage_and_quota_dicts(
     *,
     usage_override: object | None = None,
 ) -> tuple[JSONDict, JSONDict]:
+    """Extract usage and quota as dictionaries from tenant, with optional override."""
     usage_source = usage_override if usage_override is not None else getattr(tenant, "usage", None)
     quota_source = getattr(tenant, "quota", None)
     return _to_dict_safe(usage_source), _to_dict_safe(quota_source)
@@ -528,6 +547,7 @@ _QUOTA_RESOURCE_MAP: dict[str, tuple[str, str]] = {
 
 
 def _quota_resource_keys(resource: str) -> tuple[str, str]:
+    """Map resource name to (usage_key, quota_key) tuple."""
     return _QUOTA_RESOURCE_MAP.get(resource, (f"{resource}_count", f"max_{resource}"))
 
 
@@ -539,6 +559,7 @@ _USAGE_UTILIZATION_PAIRS: tuple[tuple[str, str], ...] = (
 
 
 def _calculate_utilization(usage_dict: JSONDict, quota_dict: JSONDict) -> dict[str, float]:
+    """Calculate utilization percentages for each resource."""
     utilization: dict[str, float] = {}
     for usage_key, quota_key in _USAGE_UTILIZATION_PAIRS:
         usage_val = usage_dict.get(usage_key, 0)
@@ -559,6 +580,7 @@ def _build_usage_response(
     quota_dict: JSONDict,
     utilization: dict[str, float] | None = None,
 ) -> UsageResponse:
+    """Build usage response with utilization metrics."""
     return UsageResponse(
         tenant_id=tenant_id,
         usage=usage_dict,
@@ -576,6 +598,7 @@ def _build_quota_check_response(
     usage_dict: JSONDict,
     quota_dict: JSONDict,
 ) -> QuotaCheckResponse:
+    """Build quota check response with availability and warning status."""
     usage_key, quota_key = _quota_resource_keys(request.resource)
     current_usage = usage_dict.get(usage_key, 0)
     quota_limit = quota_dict.get(quota_key, 0)
@@ -604,6 +627,7 @@ def _build_tenant_hierarchy_response(
     ancestors: list[Tenant],
     descendants: list[Tenant],
 ) -> TenantHierarchyResponse:
+    """Build tenant hierarchy response with ancestors and descendants."""
     return TenantHierarchyResponse(
         tenant_id=tenant_id,
         ancestors=_tenant_responses(ancestors[:-1]) if len(ancestors) > 1 else [],
@@ -614,6 +638,7 @@ def _build_tenant_hierarchy_response(
 
 
 def _raise_tenant_not_found(e: TenantNotFoundError) -> NoReturn:
+    """Raise HTTP 404 for tenant not found error."""
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
         detail=safe_error_detail(e, "tenant operation"),
@@ -621,6 +646,7 @@ def _raise_tenant_not_found(e: TenantNotFoundError) -> NoReturn:
 
 
 def _raise_internal_tenant_error(e: Exception, action: str, log_context: str) -> NoReturn:
+    """Log error and raise HTTP 500 for internal tenant operation failure."""
     logger.error(f"Failed to {log_context}: {e}")
     raise HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -635,6 +661,7 @@ def _raise_value_http_error(
     duplicate_markers: tuple[str, ...] = ("already exists", "duplicate"),
     conflict_markers: tuple[str, ...] = (),
 ) -> NoReturn:
+    """Raise HTTP 409 for conflicts or HTTP 400 for other ValueError."""
     message = str(e).lower()
     if any(marker in message for marker in duplicate_markers + conflict_markers):
         raise HTTPException(

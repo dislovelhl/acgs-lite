@@ -18,15 +18,21 @@ from datetime import UTC, datetime
 from enum import Enum
 from typing import Protocol
 
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
 # Import centralized constitutional hash
-from packages.enhanced_agent_bus.governance_constants import (
+from enhanced_agent_bus.governance_constants import (
     MACI_EXECUTIVE_CONFIDENCE,
     MACI_INTERPRETER_CONFIDENCE,
     MACI_VALIDATOR_CONFIDENCE,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)

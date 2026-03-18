@@ -12,12 +12,13 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
+import pytest
+
 # ---------------------------------------------------------------------------
 # Module under test
 # ---------------------------------------------------------------------------
-import packages.enhanced_agent_bus.transaction_coordinator_metrics as tcm_module
-import pytest
-from packages.enhanced_agent_bus.transaction_coordinator_metrics import (
+import enhanced_agent_bus.transaction_coordinator_metrics as tcm_module
+from enhanced_agent_bus.transaction_coordinator_metrics import (
     _METRICS_CACHE,
     CHECKPOINT_LATENCY_BUCKETS,
     COMPENSATION_LATENCY_BUCKETS,
@@ -311,7 +312,7 @@ class TestGetOrCreateMetric:
         assert m1 is m2
 
     def test_no_prometheus_counter_returns_noop(self):
-        import packages.enhanced_agent_bus.transaction_coordinator_metrics as mod
+        import enhanced_agent_bus.transaction_coordinator_metrics as mod
 
         reset_metrics_cache()
         original_prom = mod.PROMETHEUS_AVAILABLE
@@ -323,7 +324,7 @@ class TestGetOrCreateMetric:
         assert isinstance(m, _NoOpCounter)
 
     def test_no_prometheus_gauge_returns_noop(self):
-        import packages.enhanced_agent_bus.transaction_coordinator_metrics as mod
+        import enhanced_agent_bus.transaction_coordinator_metrics as mod
 
         reset_metrics_cache()
         original_prom = mod.PROMETHEUS_AVAILABLE
@@ -335,7 +336,7 @@ class TestGetOrCreateMetric:
         assert isinstance(m, _NoOpGauge)
 
     def test_no_prometheus_histogram_returns_noop(self):
-        import packages.enhanced_agent_bus.transaction_coordinator_metrics as mod
+        import enhanced_agent_bus.transaction_coordinator_metrics as mod
 
         reset_metrics_cache()
         original_prom = mod.PROMETHEUS_AVAILABLE
@@ -349,7 +350,7 @@ class TestGetOrCreateMetric:
         assert isinstance(m, _NoOpHistogram)
 
     def test_no_prometheus_unknown_class_returns_noop_counter(self):
-        import packages.enhanced_agent_bus.transaction_coordinator_metrics as mod
+        import enhanced_agent_bus.transaction_coordinator_metrics as mod
 
         reset_metrics_cache()
         original_prom = mod.PROMETHEUS_AVAILABLE
@@ -366,7 +367,7 @@ class TestGetOrCreateMetric:
 
     def test_duplicate_metric_returns_fallback(self):
         """Simulate a ValueError(Duplicated timeseries) -> fallback path."""
-        import packages.enhanced_agent_bus.transaction_coordinator_metrics as mod
+        import enhanced_agent_bus.transaction_coordinator_metrics as mod
 
         reset_metrics_cache()
 
@@ -386,7 +387,7 @@ class TestGetOrCreateMetric:
         assert isinstance(m, _NoOpCounter)
 
     def test_duplicate_histogram_returns_noop_histogram(self):
-        import packages.enhanced_agent_bus.transaction_coordinator_metrics as mod
+        import enhanced_agent_bus.transaction_coordinator_metrics as mod
 
         reset_metrics_cache()
 
@@ -405,7 +406,7 @@ class TestGetOrCreateMetric:
         assert isinstance(m, _NoOpHistogram)
 
     def test_duplicate_gauge_returns_noop_gauge(self):
-        import packages.enhanced_agent_bus.transaction_coordinator_metrics as mod
+        import enhanced_agent_bus.transaction_coordinator_metrics as mod
 
         reset_metrics_cache()
 
@@ -425,7 +426,7 @@ class TestGetOrCreateMetric:
 
     def test_duplicate_with_registry_lookup_succeeds(self):
         """Cover the branch where REGISTRY._names_to_collectors has the metric."""
-        import packages.enhanced_agent_bus.transaction_coordinator_metrics as mod
+        import enhanced_agent_bus.transaction_coordinator_metrics as mod
 
         reset_metrics_cache()
 
@@ -454,7 +455,7 @@ class TestGetOrCreateMetric:
 
     def test_duplicate_registry_attribute_error_falls_back(self):
         """Cover AttributeError inside _names_to_collectors iteration."""
-        import packages.enhanced_agent_bus.transaction_coordinator_metrics as mod
+        import enhanced_agent_bus.transaction_coordinator_metrics as mod
 
         reset_metrics_cache()
 
@@ -480,7 +481,7 @@ class TestGetOrCreateMetric:
 
     def test_registry_lookup_names_to_collectors_iteration(self):
         """Cover lines 272-277: iterate _names_to_collectors, collector found by name."""
-        import packages.enhanced_agent_bus.transaction_coordinator_metrics as mod
+        import enhanced_agent_bus.transaction_coordinator_metrics as mod
 
         reset_metrics_cache()
         target_name = "reg_lookup_found_xyz"
@@ -517,7 +518,7 @@ class TestGetOrCreateMetric:
 
     def test_registry_none_fallback(self):
         """Cover line 270: REGISTRY is None -> skip to no-op fallback."""
-        import packages.enhanced_agent_bus.transaction_coordinator_metrics as mod
+        import enhanced_agent_bus.transaction_coordinator_metrics as mod
 
         reset_metrics_cache()
 
@@ -540,7 +541,7 @@ class TestGetOrCreateMetric:
 
     def test_histogram_without_buckets_prometheus_path(self):
         """Cover line 258: Histogram creation without explicit buckets."""
-        import packages.enhanced_agent_bus.transaction_coordinator_metrics as mod
+        import enhanced_agent_bus.transaction_coordinator_metrics as mod
 
         reset_metrics_cache()
 
@@ -570,7 +571,7 @@ class TestGetOrCreateMetric:
 
     def test_info_metric_creation_prometheus_path(self):
         """Cover the Info metric_class == Info branch."""
-        import packages.enhanced_agent_bus.transaction_coordinator_metrics as mod
+        import enhanced_agent_bus.transaction_coordinator_metrics as mod
 
         reset_metrics_cache()
 
@@ -594,7 +595,7 @@ class TestGetOrCreateMetric:
 
     def test_non_dup_value_error_falls_through_to_noop(self):
         """Cover: ValueError that is NOT about duplicates -> still gets no-op."""
-        import packages.enhanced_agent_bus.transaction_coordinator_metrics as mod
+        import enhanced_agent_bus.transaction_coordinator_metrics as mod
 
         reset_metrics_cache()
 
@@ -614,7 +615,7 @@ class TestGetOrCreateMetric:
 
     def test_registry_lookup_type_error_falls_back(self):
         """Cover TypeError inside _names_to_collectors iteration."""
-        import packages.enhanced_agent_bus.transaction_coordinator_metrics as mod
+        import enhanced_agent_bus.transaction_coordinator_metrics as mod
 
         reset_metrics_cache()
 

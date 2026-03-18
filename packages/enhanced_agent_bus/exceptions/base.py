@@ -3,9 +3,16 @@ ACGS-2 Enhanced Agent Bus - Base Exceptions
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import ACGSBaseError as _ACGSBaseError
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 
 class AgentBusError(_ACGSBaseError):

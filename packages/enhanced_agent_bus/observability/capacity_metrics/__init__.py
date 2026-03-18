@@ -27,7 +27,10 @@ Expert Reference: Michael Nygard (Release It!)
 
 from __future__ import annotations
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 # Re-export from collector
 from .collector import (

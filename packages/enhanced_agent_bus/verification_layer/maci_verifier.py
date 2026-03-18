@@ -26,12 +26,17 @@ from datetime import UTC, datetime
 from enum import Enum
 from importlib import import_module
 
-from packages.enhanced_agent_bus.interfaces import RecommendationPlannerProtocol
-
 # Constitutional hash for immutable validation
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
+from enhanced_agent_bus.interfaces import RecommendationPlannerProtocol
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from ..governance_constants import (
@@ -805,7 +810,7 @@ class MACIVerifier:
         self.judicial = judicial_agent or JudicialAgent()
         if recommendation_planner is None:
             planner_module = import_module(
-                "packages.enhanced_agent_bus.verification_layer.recommendation_planner"
+                "enhanced_agent_bus.verification_layer.recommendation_planner"
             )
             recommendation_planner = planner_module.MACIRemediationPlanner()
         self._recommendation_planner = recommendation_planner

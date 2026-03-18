@@ -14,11 +14,12 @@ from datetime import UTC, datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Imports under test
 # ---------------------------------------------------------------------------
-from packages.enhanced_agent_bus.mcp_integration.server import (
+from enhanced_agent_bus.mcp_integration.server import (
     InternalResource,
     InternalTool,
     MCPIntegrationConfig,
@@ -28,8 +29,6 @@ from packages.enhanced_agent_bus.mcp_integration.server import (
     TransportType,
     create_mcp_integration_server,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
@@ -601,7 +600,7 @@ class TestHandleRequest:
 
     async def test_handle_request_with_validator_valid(self):
         """Validator present, VALIDATORS_AVAILABLE=True, validation passes."""
-        from packages.enhanced_agent_bus.mcp_integration.validators import (
+        from enhanced_agent_bus.mcp_integration.validators import (
             MCPOperationContext,
             OperationType,
         )
@@ -614,7 +613,7 @@ class TestHandleRequest:
 
         server = MCPIntegrationServer(validator=mock_validator)
 
-        with patch("packages.enhanced_agent_bus.mcp_integration.server.VALIDATORS_AVAILABLE", True):
+        with patch("enhanced_agent_bus.mcp_integration.server.VALIDATORS_AVAILABLE", True):
             resp = await server.handle_request(_rpc("tools/list"))
         assert "result" in resp
 
@@ -633,7 +632,7 @@ class TestHandleRequest:
             config=MCPIntegrationConfig(strict_mode=True),
         )
 
-        with patch("packages.enhanced_agent_bus.mcp_integration.server.VALIDATORS_AVAILABLE", True):
+        with patch("enhanced_agent_bus.mcp_integration.server.VALIDATORS_AVAILABLE", True):
             resp = await server.handle_request(_rpc("tools/list"))
         assert resp["error"]["code"] == -32001
         assert server._metrics.failed_requests == 1
@@ -653,7 +652,7 @@ class TestHandleRequest:
             config=MCPIntegrationConfig(strict_mode=False),
         )
 
-        with patch("packages.enhanced_agent_bus.mcp_integration.server.VALIDATORS_AVAILABLE", True):
+        with patch("enhanced_agent_bus.mcp_integration.server.VALIDATORS_AVAILABLE", True):
             resp = await server.handle_request(_rpc("tools/list"))
         # Should succeed since strict_mode is False
         assert "result" in resp
@@ -666,7 +665,7 @@ class TestHandleRequest:
 
 class TestMapMethodToOperation:
     def test_mapped_methods(self):
-        from packages.enhanced_agent_bus.mcp_integration.validators import OperationType
+        from enhanced_agent_bus.mcp_integration.validators import OperationType
 
         server = _make_server()
         mapping = {
@@ -952,7 +951,7 @@ class TestHandleToolsCall:
         mock_enforcer = AsyncMock()
         mock_enforcer.validate_action.side_effect = ValueError("MACI blocked")
 
-        with patch("packages.enhanced_agent_bus.mcp_integration.server.MACI_AVAILABLE", True):
+        with patch("enhanced_agent_bus.mcp_integration.server.MACI_AVAILABLE", True):
             server = MCPIntegrationServer(
                 config=MCPIntegrationConfig(enable_maci=True, strict_mode=True),
                 maci_enforcer=mock_enforcer,
@@ -971,7 +970,7 @@ class TestHandleToolsCall:
         mock_enforcer = AsyncMock()
         mock_enforcer.validate_action.side_effect = ValueError("MACI soft block")
 
-        with patch("packages.enhanced_agent_bus.mcp_integration.server.MACI_AVAILABLE", True):
+        with patch("enhanced_agent_bus.mcp_integration.server.MACI_AVAILABLE", True):
             server = MCPIntegrationServer(
                 config=MCPIntegrationConfig(enable_maci=True, strict_mode=False),
                 maci_enforcer=mock_enforcer,
@@ -1431,7 +1430,7 @@ class TestCreateMCPIntegrationServer:
 
 class TestModuleExports:
     def test_all_exports_importable(self):
-        from packages.enhanced_agent_bus.mcp_integration import server as srv_module
+        from enhanced_agent_bus.mcp_integration import server as srv_module
 
         for name in srv_module.__all__:
             assert hasattr(srv_module, name), f"Missing export: {name}"
@@ -1540,7 +1539,7 @@ class TestEdgeCases:
         mock_validator = AsyncMock()
         server = MCPIntegrationServer(validator=mock_validator)
 
-        with patch("packages.enhanced_agent_bus.mcp_integration.server.VALIDATORS_AVAILABLE", True):
+        with patch("enhanced_agent_bus.mcp_integration.server.VALIDATORS_AVAILABLE", True):
             resp = await server.handle_request(_rpc("ping"))
 
         # Validator.validate should NOT have been called because operation_type is None

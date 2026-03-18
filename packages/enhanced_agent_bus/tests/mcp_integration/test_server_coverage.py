@@ -540,7 +540,7 @@ class TestHandleRequestWithValidator:
 
         config = MCPIntegrationConfig(enable_maci=False, strict_mode=True)
 
-        with patch("packages.enhanced_agent_bus.mcp_integration.server.VALIDATORS_AVAILABLE", True):
+        with patch("enhanced_agent_bus.mcp_integration.server.VALIDATORS_AVAILABLE", True):
             server = MCPIntegrationServer(config=config, validator=mock_validator)
             await server.start()
 
@@ -563,7 +563,7 @@ class TestHandleRequestWithValidator:
 
         config = MCPIntegrationConfig(enable_maci=False, strict_mode=True)
 
-        with patch("packages.enhanced_agent_bus.mcp_integration.server.VALIDATORS_AVAILABLE", True):
+        with patch("enhanced_agent_bus.mcp_integration.server.VALIDATORS_AVAILABLE", True):
             server = MCPIntegrationServer(config=config, validator=mock_validator)
             await server.start()
 
@@ -584,7 +584,7 @@ class TestHandleRequestWithValidator:
 
         config = MCPIntegrationConfig(enable_maci=False, strict_mode=False)
 
-        with patch("packages.enhanced_agent_bus.mcp_integration.server.VALIDATORS_AVAILABLE", True):
+        with patch("enhanced_agent_bus.mcp_integration.server.VALIDATORS_AVAILABLE", True):
             server = MCPIntegrationServer(config=config, validator=mock_validator)
             await server.start()
 
@@ -604,7 +604,7 @@ class TestMapMethodToOperation:
     def test_known_methods_map_correctly(self):
         server = _make_server()
 
-        with patch("packages.enhanced_agent_bus.mcp_integration.server.VALIDATORS_AVAILABLE", True):
+        with patch("enhanced_agent_bus.mcp_integration.server.VALIDATORS_AVAILABLE", True):
             from ...mcp_integration.validators import OperationType
 
             assert server._map_method_to_operation("tools/call") == OperationType.TOOL_CALL
@@ -861,7 +861,7 @@ class TestHandleToolsCall:
 
         config = MCPIntegrationConfig(enable_maci=True, strict_mode=True)
 
-        with patch("packages.enhanced_agent_bus.mcp_integration.server.MACI_AVAILABLE", True):
+        with patch("enhanced_agent_bus.mcp_integration.server.MACI_AVAILABLE", True):
             server = MCPIntegrationServer(config=config, maci_enforcer=mock_enforcer)
             await server.start()
 
@@ -893,7 +893,7 @@ class TestHandleToolsCall:
 
         config = MCPIntegrationConfig(enable_maci=True, strict_mode=True)
 
-        with patch("packages.enhanced_agent_bus.mcp_integration.server.MACI_AVAILABLE", True):
+        with patch("enhanced_agent_bus.mcp_integration.server.MACI_AVAILABLE", True):
             server = MCPIntegrationServer(config=config, maci_enforcer=mock_enforcer)
             await server.start()
 
@@ -922,7 +922,7 @@ class TestHandleToolsCall:
 
         config = MCPIntegrationConfig(enable_maci=True, strict_mode=False)
 
-        with patch("packages.enhanced_agent_bus.mcp_integration.server.MACI_AVAILABLE", True):
+        with patch("enhanced_agent_bus.mcp_integration.server.MACI_AVAILABLE", True):
             server = MCPIntegrationServer(config=config, maci_enforcer=mock_enforcer)
             await server.start()
 

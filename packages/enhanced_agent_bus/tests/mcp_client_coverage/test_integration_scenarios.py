@@ -7,7 +7,8 @@ from __future__ import annotations
 import asyncio
 
 import pytest
-from packages.enhanced_agent_bus.mcp_integration.client import (
+
+from enhanced_agent_bus.mcp_integration.client import (
     MCPConnectionPool,
     MCPServerConnection,
 )

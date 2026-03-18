@@ -9,14 +9,15 @@ asyncio_mode = auto — no @pytest.mark.asyncio needed.
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.ai_assistant.context import (
+
+from enhanced_agent_bus.ai_assistant.context import (
     ConversationContext,
     Message,
     MessageRole,
     UserProfile,
 )
-from packages.enhanced_agent_bus.ai_assistant.nlu import Sentiment
-from packages.enhanced_agent_bus.ai_assistant.response import (
+from enhanced_agent_bus.ai_assistant.nlu import Sentiment
+from enhanced_agent_bus.ai_assistant.response import (
     CONSTITUTIONAL_HASH,
     HybridResponseGenerator,
     LLMResponseGenerator,
@@ -386,7 +387,7 @@ class TestTemplateResponseGenerator:
 
     def test_get_time_greeting_morning(self):
         gen = TemplateResponseGenerator()
-        with patch("packages.enhanced_agent_bus.ai_assistant.response.datetime") as mock_dt:
+        with patch("enhanced_agent_bus.ai_assistant.response.datetime") as mock_dt:
             mock_now = MagicMock()
             mock_now.hour = 8
             mock_dt.now.return_value = mock_now
@@ -394,7 +395,7 @@ class TestTemplateResponseGenerator:
 
     def test_get_time_greeting_afternoon(self):
         gen = TemplateResponseGenerator()
-        with patch("packages.enhanced_agent_bus.ai_assistant.response.datetime") as mock_dt:
+        with patch("enhanced_agent_bus.ai_assistant.response.datetime") as mock_dt:
             mock_now = MagicMock()
             mock_now.hour = 14
             mock_dt.now.return_value = mock_now
@@ -402,7 +403,7 @@ class TestTemplateResponseGenerator:
 
     def test_get_time_greeting_evening(self):
         gen = TemplateResponseGenerator()
-        with patch("packages.enhanced_agent_bus.ai_assistant.response.datetime") as mock_dt:
+        with patch("enhanced_agent_bus.ai_assistant.response.datetime") as mock_dt:
             mock_now = MagicMock()
             mock_now.hour = 20
             mock_dt.now.return_value = mock_now

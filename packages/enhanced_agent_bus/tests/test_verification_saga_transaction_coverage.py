@@ -10,7 +10,9 @@ import uuid
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.verification.saga_transaction import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.verification.saga_transaction import (
     SAGA_COMPENSATION_ERRORS,
     SAGA_STEP_EXECUTION_ERRORS,
     ConstitutionalSaga,
@@ -18,7 +20,6 @@ from packages.enhanced_agent_bus.verification.saga_transaction import (
     SagaStep,
     SagaTransaction,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # SagaStatus enum
@@ -523,7 +524,7 @@ class TestSagaTransactionCompensate:
         txn.add_step("good", good, bad_comp).add_step("bad", bad)
 
         with patch(
-            "packages.enhanced_agent_bus.verification.saga_transaction.logger"
+            "enhanced_agent_bus.verification.saga_transaction.logger"
         ) as mock_logger:
             with pytest.raises(RuntimeError):
                 await txn.execute()
@@ -543,7 +544,7 @@ class TestSagaTransactionCompensate:
         txn.add_step("good", good).add_step("bad", bad)
 
         with patch(
-            "packages.enhanced_agent_bus.verification.saga_transaction.logger"
+            "enhanced_agent_bus.verification.saga_transaction.logger"
         ) as mock_logger:
             with pytest.raises(RuntimeError):
                 await txn.execute()
@@ -676,7 +677,7 @@ class TestSagaTransactionLogging:
     async def test_execute_logs_start(self):
         txn = SagaTransaction(transaction_id="test-log-txn")
         with patch(
-            "packages.enhanced_agent_bus.verification.saga_transaction.logger"
+            "enhanced_agent_bus.verification.saga_transaction.logger"
         ) as mock_logger:
             await txn.execute()
             assert mock_logger.info.called
@@ -686,7 +687,7 @@ class TestSagaTransactionLogging:
     async def test_execute_logs_completion(self):
         txn = SagaTransaction(transaction_id="test-complete-txn")
         with patch(
-            "packages.enhanced_agent_bus.verification.saga_transaction.logger"
+            "enhanced_agent_bus.verification.saga_transaction.logger"
         ) as mock_logger:
             await txn.execute()
             # Should have info logged for both start and completion
@@ -700,7 +701,7 @@ class TestSagaTransactionLogging:
 
         txn.add_step("bad_step", bad)
         with patch(
-            "packages.enhanced_agent_bus.verification.saga_transaction.logger"
+            "enhanced_agent_bus.verification.saga_transaction.logger"
         ) as mock_logger:
             with pytest.raises(RuntimeError):
                 await txn.execute()
@@ -717,7 +718,7 @@ class TestSagaTransactionLogging:
 
         txn.add_step("good", good).add_step("bad", bad)
         with patch(
-            "packages.enhanced_agent_bus.verification.saga_transaction.logger"
+            "enhanced_agent_bus.verification.saga_transaction.logger"
         ) as mock_logger:
             with pytest.raises(RuntimeError):
                 await txn.execute()
@@ -731,7 +732,7 @@ class TestSagaTransactionLogging:
 
         txn.add_step("bad", bad)
         with patch(
-            "packages.enhanced_agent_bus.verification.saga_transaction.logger"
+            "enhanced_agent_bus.verification.saga_transaction.logger"
         ) as mock_logger:
             with pytest.raises(RuntimeError):
                 await txn.execute()
@@ -970,7 +971,7 @@ class TestEdgeCases:
         """Verify that the constitutional hash appears in log messages."""
         txn = SagaTransaction()
         with patch(
-            "packages.enhanced_agent_bus.verification.saga_transaction.logger"
+            "enhanced_agent_bus.verification.saga_transaction.logger"
         ) as mock_logger:
             await txn.execute()
             all_calls = str(mock_logger.mock_calls)

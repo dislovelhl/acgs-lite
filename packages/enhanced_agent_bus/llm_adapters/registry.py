@@ -11,9 +11,14 @@ import time
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
-from typing import Optional
 
 from src.core.shared import metrics as shared_metrics
+
+# Import centralized constitutional hash from shared module
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import (
     ResourceNotFoundError,
     ServiceUnavailableError,
@@ -21,10 +26,15 @@ from src.core.shared.errors.exceptions import (
 from src.core.shared.errors.exceptions import (
     ValidationError as ACGSValidationError,
 )
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
+from ..circuit_breaker.enums import CircuitState as CircuitBreakerState
 from .base import (
     AdapterStatus,
     BaseLLMAdapter,
@@ -33,15 +43,6 @@ from .base import (
     LLMResponse,
 )
 from .config import AdapterConfig, AdapterType
-
-# Import centralized constitutional hash from shared module
-try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
-except ImportError:
-    # Fallback for standalone usage
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
-
-from ..circuit_breaker.enums import CircuitState as CircuitBreakerState
 
 logger = get_logger(__name__)
 _REGISTRY_OPERATION_ERRORS = (

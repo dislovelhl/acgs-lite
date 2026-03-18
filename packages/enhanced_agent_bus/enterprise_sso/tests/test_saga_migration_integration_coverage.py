@@ -21,7 +21,7 @@ pytestmark = [pytest.mark.constitutional]
 # Import helpers — use fully-qualified src paths to avoid enterprise_sso
 # __init__.py triggering relative imports that break outside the package.
 # ---------------------------------------------------------------------------
-from packages.enhanced_agent_bus.enterprise_sso.migration_job_api import (  # noqa: E402
+from enhanced_agent_bus.enterprise_sso.migration_job_api import (  # noqa: E402
     MigrationJob,
     MigrationJobConfig,
     MigrationJobManager,
@@ -29,7 +29,7 @@ from packages.enhanced_agent_bus.enterprise_sso.migration_job_api import (  # no
     MigrationJobStatus,
     MigrationJobType,
 )
-from packages.enhanced_agent_bus.enterprise_sso.saga_migration_integration import (  # noqa: E402
+from enhanced_agent_bus.enterprise_sso.saga_migration_integration import (  # noqa: E402
     CONSTITUTIONAL_HASH,
     CheckpointStore,
     MigrationCheckpoint,
@@ -38,10 +38,10 @@ from packages.enhanced_agent_bus.enterprise_sso.saga_migration_integration impor
     SagaMigrationResult,
     SagaMigrationService,
 )
-from packages.enhanced_agent_bus.enterprise_sso.saga_orchestration import (  # noqa: E402
+from enhanced_agent_bus.enterprise_sso.saga_orchestration import (  # noqa: E402
     CONSTITUTIONAL_HASH as SAGA_CONSTITUTIONAL_HASH,
 )
-from packages.enhanced_agent_bus.enterprise_sso.saga_orchestration import (  # noqa: E402
+from enhanced_agent_bus.enterprise_sso.saga_orchestration import (  # noqa: E402
     Saga,
     SagaContext,
     SagaExecutionResult,

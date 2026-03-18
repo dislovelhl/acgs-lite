@@ -9,11 +9,13 @@ asyncio_mode = "auto" — no @pytest.mark.asyncio needed.
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from packages.enhanced_agent_bus.ai_assistant.context import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.ai_assistant.context import (
     ConversationContext,
     ConversationState,
 )
-from packages.enhanced_agent_bus.ai_assistant.dialog import (
+from enhanced_agent_bus.ai_assistant.dialog import (
     ActionType,
     ConversationFlow,
     DialogAction,
@@ -21,8 +23,7 @@ from packages.enhanced_agent_bus.ai_assistant.dialog import (
     FlowNode,
     RuleBasedDialogPolicy,
 )
-from packages.enhanced_agent_bus.ai_assistant.nlu import Entity, Intent, NLUResult
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.ai_assistant.nlu import Entity, Intent, NLUResult
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -1219,7 +1220,7 @@ class TestDialogManagerConstructor:
         assert manager.get_flow("f1") is not None
 
     def test_custom_policy_used(self):
-        from packages.enhanced_agent_bus.ai_assistant.dialog import DialogPolicy
+        from enhanced_agent_bus.ai_assistant.dialog import DialogPolicy
 
         class MyPolicy(DialogPolicy):
             async def select_action(self, context, nlu_result, available_actions):

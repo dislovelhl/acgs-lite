@@ -4,8 +4,8 @@ Targeted tests for Rust-accelerated percentile computation in metrics_collector.
 
 from __future__ import annotations
 
-import packages.enhanced_agent_bus.constitutional.metrics_collector as metrics_collector_module
-from packages.enhanced_agent_bus.constitutional.metrics_collector import GovernanceMetricsCollector
+import enhanced_agent_bus.constitutional.metrics_collector as metrics_collector_module
+from enhanced_agent_bus.constitutional.metrics_collector import GovernanceMetricsCollector
 
 
 def test_compute_percentiles_uses_rust_kernel_when_available(monkeypatch):

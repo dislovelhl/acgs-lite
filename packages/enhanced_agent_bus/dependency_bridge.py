@@ -7,7 +7,7 @@ This provides a migration path from scattered try/except patterns to the central
 DependencyRegistry, while maintaining backward compatibility.
 
 Usage:
-    from packages.enhanced_agent_bus.dependency_bridge import (
+    from enhanced_agent_bus.dependency_bridge import (
         get_feature_flags,
         get_dependency,
         is_feature_available,
@@ -24,7 +24,10 @@ Usage:
 
 from typing import TypeVar, cast
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 from src.core.shared.utilities import DependencyRegistry, FeatureFlag
 
 from enhanced_agent_bus.observability.structured_logging import get_logger

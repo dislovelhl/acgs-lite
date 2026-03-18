@@ -7,22 +7,27 @@ with impact analysis, MACI enforcement, and automatic audit logging.
 """
 
 from datetime import UTC, datetime, timezone
-from typing import Optional
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
-from src.core.shared.errors.exceptions import ACGSBaseError
-
-from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
 except ImportError:
-    # Fallback for standalone usage
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    CONSTITUTIONAL_HASH = "standalone"
+from src.core.shared.errors.exceptions import ACGSBaseError
 
-from src.core.shared.types import JSONDict, JSONList
+try:
+    from src.core.shared.types import (
+        JSONDict,
+        JSONList,
+    )  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+    JSONList = list  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from .amendment_model import AmendmentProposal, AmendmentStatus
 from .diff_engine import ConstitutionalDiffEngine, SemanticDiff

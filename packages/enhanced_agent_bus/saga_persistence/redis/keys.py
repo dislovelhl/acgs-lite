@@ -6,7 +6,7 @@ Defines Redis key prefixes and generation utilities for saga storage.
 Provides namespace isolation and consistent key formatting.
 """
 
-from packages.enhanced_agent_bus.saga_persistence.models import SagaState
+from enhanced_agent_bus.saga_persistence.models import SagaState
 
 # Redis key prefixes for namespace isolation
 SAGA_STATE_PREFIX = "acgs2:saga:state:"

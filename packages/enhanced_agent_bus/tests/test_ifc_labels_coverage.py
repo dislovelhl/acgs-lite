@@ -19,7 +19,8 @@ Covers:
 """
 
 import pytest
-from packages.enhanced_agent_bus.ifc.labels import (
+
+from enhanced_agent_bus.ifc.labels import (
     Confidentiality,
     IFCLabel,
     IFCViolation,

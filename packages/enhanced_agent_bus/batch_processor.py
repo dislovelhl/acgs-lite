@@ -10,7 +10,14 @@ from collections import deque
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from src.core.shared.types import JSONDict, JSONValue
+try:
+    from src.core.shared.types import (
+        JSONDict,
+        JSONValue,
+    )  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+    JSONValue = object  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

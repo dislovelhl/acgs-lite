@@ -17,14 +17,15 @@ from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID, uuid4
 
 import pytest
-from packages.enhanced_agent_bus.persistence.models import (
+
+from enhanced_agent_bus.persistence.models import (
     EventType,
     WorkflowEvent,
     WorkflowInstance,
     WorkflowStatus,
 )
-from packages.enhanced_agent_bus.persistence.replay import ReplayEngine
-from packages.enhanced_agent_bus.persistence.repository import InMemoryWorkflowRepository
+from enhanced_agent_bus.persistence.replay import ReplayEngine
+from enhanced_agent_bus.persistence.repository import InMemoryWorkflowRepository
 
 # ---------------------------------------------------------------------------
 # Helpers

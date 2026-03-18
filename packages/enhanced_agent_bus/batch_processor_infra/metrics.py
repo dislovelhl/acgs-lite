@@ -4,9 +4,12 @@ Metrics Collection for Batch Processing in ACGS-2.
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-from packages.enhanced_agent_bus.models import CONSTITUTIONAL_HASH, BatchResponseStats
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
+from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, BatchResponseStats
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
@@ -67,7 +70,7 @@ class BatchMetrics:
         processing_time_ms: float,
         deduplicated_count: int = 0,
     ) -> BatchResponseStats:
-        from packages.enhanced_agent_bus.models import BatchItemStatus
+        from enhanced_agent_bus.models import BatchItemStatus
 
         successful = sum(1 for r in results if r.status == BatchItemStatus.SUCCESS.value)
         failed = sum(1 for r in results if r.status == BatchItemStatus.FAILED.value)

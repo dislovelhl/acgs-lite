@@ -6,16 +6,16 @@ This is a debug version of test_constitutional_validation.py with detailed outpu
 """
 
 import pytest
-from packages.enhanced_agent_bus.message_processor import MessageProcessor
+
+from enhanced_agent_bus.message_processor import MessageProcessor
 
 # Import from module names that conftest.py patches
-from packages.enhanced_agent_bus.models import (
+from enhanced_agent_bus.models import (
     CONSTITUTIONAL_HASH,
     AgentMessage,
     MessageStatus,
     MessageType,
 )
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)

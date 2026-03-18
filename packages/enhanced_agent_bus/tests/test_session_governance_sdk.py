@@ -14,10 +14,12 @@ Tests:
 """
 
 import asyncio
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 # Governance and constitutional compliance test markers
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
@@ -40,6 +42,13 @@ from enterprise_sso.session_governance_sdk import (  # noqa: E402
     SessionValidationResult,
     TenantSessionStore,
 )
+
+_TEST_RSA_KEY = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+TEST_PRIVATE_KEY = _TEST_RSA_KEY.private_bytes(
+    encoding=serialization.Encoding.PEM,
+    format=serialization.PrivateFormat.PKCS8,
+    encryption_algorithm=serialization.NoEncryption(),
+).decode()
 
 # ============================================================================
 # Test Classes
@@ -273,7 +282,7 @@ class TestSessionTokenManager:
     @pytest.fixture
     def token_manager(self):
         return SessionTokenManager(
-            secret_key="test-secret-key-for-tokens",  # noqa: S106
+            private_key=TEST_PRIVATE_KEY,
             token_ttl_minutes=60,
             refresh_token_ttl_days=7,
         )

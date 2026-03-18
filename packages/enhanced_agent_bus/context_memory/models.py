@@ -8,11 +8,16 @@ Pydantic models and dataclasses for the Context & Memory layer.
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
 from enum import Enum
-from typing import Optional, TypeAlias, Union
+from typing import TypeAlias
 
-from packages.enhanced_agent_bus.bus_types import JSONDict, JSONValue
 from pydantic import BaseModel, Field, field_validator
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+
+from enhanced_agent_bus.bus_types import JSONDict, JSONValue
 
 
 class ContextType(str, Enum):  # noqa: UP042

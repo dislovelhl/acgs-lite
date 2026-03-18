@@ -3,8 +3,9 @@
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-import packages.enhanced_agent_bus.opa_client as opa_client_module
 import pytest
+
+import enhanced_agent_bus.opa_client as opa_client_module
 
 
 @pytest.fixture(autouse=True)

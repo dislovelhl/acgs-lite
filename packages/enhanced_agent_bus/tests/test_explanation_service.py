@@ -5,12 +5,25 @@ Constitutional Hash: cdd01ef066bc6cf2
 Tests for ExplanationService, CounterfactualEngine, and factor attribution.
 """
 
+import pytest
+
+pytest.importorskip("src.core.shared.schema_registry")
+
+
 import uuid
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.explanation_service import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+from src.core.shared.event_schemas.decision_explanation import (
+    CounterfactualHint,
+    ExplanationFactor,
+    GovernanceDimension,
+    PredictedOutcome,
+)
+
+from enhanced_agent_bus.explanation_service import (
     DEFAULT_GOVERNANCE_VECTOR,
     FACTOR_TO_GOVERNANCE_MAPPING,
     FACTOR_WEIGHTS,
@@ -18,13 +31,6 @@ from packages.enhanced_agent_bus.explanation_service import (
     ExplanationService,
     get_explanation_service,
     reset_explanation_service,
-)
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.event_schemas.decision_explanation import (
-    CounterfactualHint,
-    ExplanationFactor,
-    GovernanceDimension,
-    PredictedOutcome,
 )
 
 

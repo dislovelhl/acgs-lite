@@ -12,7 +12,7 @@ try:
 except ImportError:
     CONSTITUTIONAL_HASH: str = CONSTITUTIONAL_HASH  # pragma: allowlist secret
 
-from packages.enhanced_agent_bus.collaboration.models import (
+from enhanced_agent_bus.collaboration.models import (
     CollaborationSession,
     Collaborator,
     Comment,
@@ -22,10 +22,10 @@ from packages.enhanced_agent_bus.collaboration.models import (
     PresenceStatus,
     UserPermissions,
 )
-from packages.enhanced_agent_bus.collaboration.permissions import PermissionController
-from packages.enhanced_agent_bus.collaboration.presence import PresenceManager
-from packages.enhanced_agent_bus.collaboration.server import CollaborationServer
-from packages.enhanced_agent_bus.collaboration.sync_engine import OperationalTransform, SyncEngine
+from enhanced_agent_bus.collaboration.permissions import PermissionController
+from enhanced_agent_bus.collaboration.presence import PresenceManager
+from enhanced_agent_bus.collaboration.server import CollaborationServer
+from enhanced_agent_bus.collaboration.sync_engine import OperationalTransform, SyncEngine
 
 __all__ = [
     "CollaborationServer",

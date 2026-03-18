@@ -7,7 +7,9 @@ Target: ≥95% line coverage
 from datetime import UTC, datetime, timezone
 
 import pytest
-from packages.enhanced_agent_bus.api_models import (
+from pydantic import ValidationError
+
+from enhanced_agent_bus.api_models import (
     ErrorResponse,
     HealthResponse,
     # Dataclasses / classes
@@ -28,7 +30,6 @@ from packages.enhanced_agent_bus.api_models import (
     ValidationFinding,
     ValidationResponse,
 )
-from pydantic import ValidationError
 
 # =============================================================================
 # MessageTypeEnum Tests

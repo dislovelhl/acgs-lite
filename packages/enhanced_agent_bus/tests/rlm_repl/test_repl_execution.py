@@ -9,14 +9,15 @@ from contextlib import contextmanager
 from unittest.mock import patch
 
 import pytest
-from packages.enhanced_agent_bus.tests.rlm_repl.conftest import _make_repl
 
-REPL_MODULE = "packages.enhanced_agent_bus.rlm_repl"
+from enhanced_agent_bus.tests.rlm_repl.conftest import _make_repl
+
+REPL_MODULE = "enhanced_agent_bus.rlm_repl"
 
 
 class TestExecuteDisabledGuard:
     async def test_execute_raises_when_repl_disabled(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLDisabledError
+        from enhanced_agent_bus.rlm_repl import REPLDisabledError
 
         repl = _make_repl()
         with patch(f"{REPL_MODULE}.is_repl_enabled", return_value=False):
@@ -26,7 +27,7 @@ class TestExecuteDisabledGuard:
 
 class TestCheckRateLimit:
     def test_no_rate_limit_when_disabled(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLConfig
+        from enhanced_agent_bus.rlm_repl import REPLConfig
 
         config = REPLConfig(enable_rate_limiting=False)
         repl = _make_repl(config)
@@ -39,7 +40,7 @@ class TestCheckRateLimit:
         assert result is None
 
     def test_per_minute_rate_limit_exceeded(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLConfig
+        from enhanced_agent_bus.rlm_repl import REPLConfig
 
         config = REPLConfig(max_operations_per_minute=2)
         repl = _make_repl(config)
@@ -52,7 +53,7 @@ class TestCheckRateLimit:
 
 class TestExecuteRateLimit:
     async def test_execute_returns_failure_when_rate_limited(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLConfig
+        from enhanced_agent_bus.rlm_repl import REPLConfig
 
         config = REPLConfig(max_operations_per_minute=1)
         repl = _make_repl(config)

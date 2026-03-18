@@ -10,11 +10,13 @@ from datetime import UTC, datetime, timezone
 from unittest.mock import MagicMock
 
 import pytest
+from pydantic import ValidationError
+from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Import the module under test
 # ---------------------------------------------------------------------------
-from packages.enhanced_agent_bus.routes.sessions.models import (
+from enhanced_agent_bus.routes.sessions.models import (
     CreateSessionRequest,
     ErrorResponse,
     PolicySelectionRequest,
@@ -25,8 +27,6 @@ from packages.enhanced_agent_bus.routes.sessions.models import (
     SessionResponse,
     UpdateGovernanceRequest,
 )
-from pydantic import ValidationError
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ===========================================================================
 # CreateSessionRequest - field defaults
@@ -833,13 +833,13 @@ class TestErrorResponse:
 
 class TestModuleExports:
     def test_all_exports_importable(self):
-        from packages.enhanced_agent_bus.routes.sessions import models as m
+        from enhanced_agent_bus.routes.sessions import models as m
 
         for name in m.__all__:
             assert hasattr(m, name), f"{name} missing from module"
 
     def test_all_list_contents(self):
-        from packages.enhanced_agent_bus.routes.sessions import models as m
+        from enhanced_agent_bus.routes.sessions import models as m
 
         expected = {
             "CreateSessionRequest",

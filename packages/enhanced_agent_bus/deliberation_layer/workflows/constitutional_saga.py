@@ -33,17 +33,26 @@ from importlib import import_module
 from pathlib import Path
 from typing import (
     Generic,
-    Optional,
     TypeAlias,
     TypeVar,
-    Union,
 )
 
 import aiofiles
-from packages.enhanced_agent_bus.interfaces import ConstitutionalHashValidatorProtocol
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict, JSONValue
 
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import (
+        JSONDict,
+        JSONValue,
+    )  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+    JSONValue = object  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.interfaces import ConstitutionalHashValidatorProtocol
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
@@ -271,7 +280,7 @@ class DefaultSagaActivities:
         hash_validator: ConstitutionalHashValidatorProtocol | None = None,
     ) -> None:
         if hash_validator is None:
-            validators_module = import_module("packages.enhanced_agent_bus.validators")
+            validators_module = import_module("enhanced_agent_bus.validators")
             hash_validator = validators_module.ConstitutionalHashValidator()
         self._hash_validator = hash_validator
 
@@ -641,7 +650,7 @@ class ConstitutionalSagaWorkflow:
         saga_id: str,
         persistence_provider: FileSagaPersistenceProvider,
         activities: DefaultSagaActivities | None = None,
-    ) -> Optional["ConstitutionalSagaWorkflow"]:
+    ) -> "ConstitutionalSagaWorkflow" | None:
         """
         Resume a saga from persistent storage.
 

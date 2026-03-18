@@ -13,11 +13,9 @@ This module contains:
 - GovernanceDecision: Decision output from governance evaluation
 """
 
-from collections import deque
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
 from enum import Enum
-from typing import Optional
 
 
 class GovernanceMode(Enum):
@@ -51,9 +49,9 @@ class GovernanceMetrics:
     human_override_rate: float = 0.0
 
     # Historical trends
-    compliance_trend: deque[float] = field(default_factory=lambda: deque(maxlen=5000))
-    accuracy_trend: deque[float] = field(default_factory=lambda: deque(maxlen=5000))
-    performance_trend: deque[float] = field(default_factory=lambda: deque(maxlen=5000))
+    compliance_trend: list[float] = field(default_factory=list)
+    accuracy_trend: list[float] = field(default_factory=list)
+    performance_trend: list[float] = field(default_factory=list)
 
 
 @dataclass

@@ -8,8 +8,26 @@ No side effects beyond registering with the default Prometheus registry.
 
 from __future__ import annotations
 
-from packages.enhanced_agent_bus.agent_health.models import AgentHealthRecord
-from prometheus_client import Counter, Gauge
+from prometheus_client import REGISTRY, Counter, Gauge
+
+from enhanced_agent_bus.agent_health.models import AgentHealthRecord
+
+
+def _safe_gauge(name: str, doc: str, labelnames: list[str]) -> Gauge:
+    """Create a Gauge, returning the existing one if already registered."""
+    try:
+        return Gauge(name, doc, labelnames=labelnames)
+    except ValueError:
+        return REGISTRY._names_to_collectors[name]  # type: ignore[return-value]
+
+
+def _safe_counter(name: str, doc: str, labelnames: list[str]) -> Counter:
+    """Create a Counter, returning the existing one if already registered."""
+    try:
+        return Counter(name, doc, labelnames=labelnames)
+    except ValueError:
+        return REGISTRY._names_to_collectors[name]  # type: ignore[return-value]
+
 
 # ---------------------------------------------------------------------------
 # Metric singletons (defined at module import time)
@@ -17,28 +35,28 @@ from prometheus_client import Counter, Gauge
 
 # Current health state encoded as a gauge per agent/tier/state label-set.
 # Use value=1 for the active state, 0 for inactive states.
-HEALTH_STATE_GAUGE: Gauge = Gauge(
+HEALTH_STATE_GAUGE: Gauge = _safe_gauge(
     "acgs_agent_health_state",
     "Current health state of the agent (1 = active for this label combination)",
     labelnames=["agent_id", "autonomy_tier", "health_state"],
 )
 
 # Number of consecutive failures observed by the failure-loop detector.
-CONSECUTIVE_FAILURES_GAUGE: Gauge = Gauge(
+CONSECUTIVE_FAILURES_GAUGE: Gauge = _safe_gauge(
     "acgs_agent_consecutive_failures",
     "Number of consecutive failures for the agent",
     labelnames=["agent_id", "autonomy_tier"],
 )
 
 # Memory utilisation as percentage of declared agent limit.
-MEMORY_USAGE_GAUGE: Gauge = Gauge(
+MEMORY_USAGE_GAUGE: Gauge = _safe_gauge(
     "acgs_agent_memory_usage_pct",
     "Agent memory usage as a percentage of its declared memory limit",
     labelnames=["agent_id", "autonomy_tier"],
 )
 
 # Total healing actions initiated, partitioned by trigger and action type.
-HEALING_ACTIONS_COUNTER: Counter = Counter(
+HEALING_ACTIONS_COUNTER: Counter = _safe_counter(
     "acgs_agent_healing_actions_total",
     "Total number of healing actions initiated for the agent",
     labelnames=["agent_id", "autonomy_tier", "action_type", "trigger"],
@@ -59,7 +77,7 @@ def emit_health_metrics(record: AgentHealthRecord) -> None:
     Args:
         record: The current AgentHealthRecord for a single agent.
     """
-    from packages.enhanced_agent_bus.agent_health.models import HealthState
+    from enhanced_agent_bus.agent_health.models import HealthState
 
     tier = record.autonomy_tier.value
     agent = record.agent_id

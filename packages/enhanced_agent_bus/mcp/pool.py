@@ -9,8 +9,8 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 Quick start::
 
-    from packages.enhanced_agent_bus.mcp.pool import MCPClientPool
-    from packages.enhanced_agent_bus.mcp.client import MCPClient, MCPClientConfig
+    from enhanced_agent_bus.mcp.pool import MCPClientPool
+    from enhanced_agent_bus.mcp.client import MCPClient, MCPClientConfig
 
     pool = MCPClientPool()
     pool.register_client(MCPClient(MCPClientConfig(server_url="http://srv-a:8080", server_id="srv-a")))
@@ -43,9 +43,12 @@ from __future__ import annotations
 
 import asyncio
 
-from packages.enhanced_agent_bus.bus_types import JSONDict
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
+from enhanced_agent_bus.bus_types import JSONDict
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from .client import (

@@ -11,7 +11,7 @@ Session Variables:
 - app.is_admin: Boolean flag for admin bypass (default: false)
 
 Usage:
-    from packages.enhanced_agent_bus.multi_tenancy.session_vars import (
+    from enhanced_agent_bus.multi_tenancy.session_vars import (
         set_tenant_session_vars,
         clear_tenant_session_vars,
         tenant_session,

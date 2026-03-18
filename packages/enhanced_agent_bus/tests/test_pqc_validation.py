@@ -38,7 +38,7 @@ if _parent_dir not in sys.path:
     sys.path.insert(0, _parent_dir)
 
 try:
-    from packages.enhanced_agent_bus.models import (
+    from enhanced_agent_bus.models import (
         CONSTITUTIONAL_HASH,
         AgentMessage,
         MessageStatus,

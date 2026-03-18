@@ -19,9 +19,10 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-import packages.enhanced_agent_bus.api.middleware as mw_mod
 import pytest
 from fastapi import FastAPI
+
+import enhanced_agent_bus.api.middleware as mw_mod
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -573,7 +574,7 @@ class TestCorrelationIdMiddlewareReExport:
     """Verify that correlation_id_middleware is re-exported from api_exceptions."""
 
     def test_is_same_as_api_exceptions_export(self) -> None:
-        from packages.enhanced_agent_bus.api_exceptions import (
+        from enhanced_agent_bus.api_exceptions import (
             correlation_id_middleware as orig,
         )
 

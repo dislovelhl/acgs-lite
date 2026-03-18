@@ -31,7 +31,7 @@ import pytest
 # Helpers to import the module under test cleanly
 # ---------------------------------------------------------------------------
 
-MODULE_PATH = "packages.enhanced_agent_bus.coordinators.context_coordinator"
+MODULE_PATH = "enhanced_agent_bus.coordinators.context_coordinator"
 
 
 def _import_coordinator():

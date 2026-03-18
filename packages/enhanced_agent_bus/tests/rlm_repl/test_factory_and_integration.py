@@ -7,21 +7,22 @@ import asyncio
 from unittest.mock import patch
 
 import pytest
-from packages.enhanced_agent_bus.tests.rlm_repl.conftest import _make_repl
 
-REPL_MODULE = "packages.enhanced_agent_bus.rlm_repl"
+from enhanced_agent_bus.tests.rlm_repl.conftest import _make_repl
+
+REPL_MODULE = "enhanced_agent_bus.rlm_repl"
 
 
 class TestFactoryFunctions:
     def test_create_rlm_repl_default_security_level(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLSecurityLevel, create_rlm_repl
+        from enhanced_agent_bus.rlm_repl import REPLSecurityLevel, create_rlm_repl
 
         with patch(f"{REPL_MODULE}.is_repl_enabled", return_value=True):
             repl = create_rlm_repl()
             assert repl.config.security_level == REPLSecurityLevel.STANDARD
 
     def test_create_governance_repl_uses_strict_security(self):
-        from packages.enhanced_agent_bus.rlm_repl import REPLSecurityLevel, create_governance_repl
+        from enhanced_agent_bus.rlm_repl import REPLSecurityLevel, create_governance_repl
 
         with patch(f"{REPL_MODULE}.is_repl_enabled", return_value=True):
             repl = create_governance_repl()
@@ -52,7 +53,7 @@ class TestTimeoutCapping:
     @pytest.mark.asyncio
     async def test_timeout_capped_at_hard_limit(self):
         """max_execution_time_seconds > HARD_EXECUTION_TIMEOUT_SECONDS is capped."""
-        from packages.enhanced_agent_bus.rlm_repl import HARD_EXECUTION_TIMEOUT_SECONDS, REPLConfig
+        from enhanced_agent_bus.rlm_repl import HARD_EXECUTION_TIMEOUT_SECONDS, REPLConfig
 
         config = REPLConfig(max_execution_time_seconds=999.0)
         repl = _make_repl(config)

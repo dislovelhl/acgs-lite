@@ -16,7 +16,8 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.ai_assistant.context import (
+
+from enhanced_agent_bus.ai_assistant.context import (
     CONSTITUTIONAL_HASH,
     MAMBA_AVAILABLE,
     MAMBA_CONTEXT_PROCESSING_ERRORS,
@@ -35,7 +36,7 @@ from packages.enhanced_agent_bus.ai_assistant.context import (
 
 class TestProcessLongContextExceptions:
     async def test_runtime_error_stored_in_metadata(self):
-        import packages.enhanced_agent_bus.ai_assistant.context as ctx_module
+        import enhanced_agent_bus.ai_assistant.context as ctx_module
 
         mgr = ctx_module.ContextManager()
         ctx = ctx_module.ConversationContext(user_id="u1", session_id="s1")
@@ -59,7 +60,7 @@ class TestProcessLongContextExceptions:
         assert "runtime boom" in result.metadata["mamba_error"]
 
     async def test_value_error_stored_in_metadata(self):
-        import packages.enhanced_agent_bus.ai_assistant.context as ctx_module
+        import enhanced_agent_bus.ai_assistant.context as ctx_module
 
         mgr = ctx_module.ContextManager()
         ctx = ctx_module.ConversationContext(user_id="u1", session_id="s1")
@@ -82,7 +83,7 @@ class TestProcessLongContextExceptions:
         assert "mamba_error" in result.metadata
 
     async def test_type_error_stored_in_metadata(self):
-        import packages.enhanced_agent_bus.ai_assistant.context as ctx_module
+        import enhanced_agent_bus.ai_assistant.context as ctx_module
 
         mgr = ctx_module.ContextManager()
         ctx = ctx_module.ConversationContext(user_id="u1", session_id="s1")
@@ -105,7 +106,7 @@ class TestProcessLongContextExceptions:
         assert "mamba_error" in result.metadata
 
     async def test_key_error_stored_in_metadata(self):
-        import packages.enhanced_agent_bus.ai_assistant.context as ctx_module
+        import enhanced_agent_bus.ai_assistant.context as ctx_module
 
         mgr = ctx_module.ContextManager()
         ctx = ctx_module.ConversationContext(user_id="u1", session_id="s1")
@@ -128,7 +129,7 @@ class TestProcessLongContextExceptions:
         assert "mamba_error" in result.metadata
 
     async def test_attribute_error_stored_in_metadata(self):
-        import packages.enhanced_agent_bus.ai_assistant.context as ctx_module
+        import enhanced_agent_bus.ai_assistant.context as ctx_module
 
         mgr = ctx_module.ContextManager()
         ctx = ctx_module.ConversationContext(user_id="u1", session_id="s1")
@@ -151,7 +152,7 @@ class TestProcessLongContextExceptions:
         assert "mamba_error" in result.metadata
 
     async def test_os_error_stored_in_metadata(self):
-        import packages.enhanced_agent_bus.ai_assistant.context as ctx_module
+        import enhanced_agent_bus.ai_assistant.context as ctx_module
 
         mgr = ctx_module.ContextManager()
         ctx = ctx_module.ConversationContext(user_id="u1", session_id="s1")
@@ -175,7 +176,7 @@ class TestProcessLongContextExceptions:
 
     async def test_error_returns_context_unchanged_except_metadata(self):
         """Context is returned with mamba_error set but no mamba_processed."""
-        import packages.enhanced_agent_bus.ai_assistant.context as ctx_module
+        import enhanced_agent_bus.ai_assistant.context as ctx_module
 
         mgr = ctx_module.ContextManager()
         ctx = ctx_module.ConversationContext(user_id="u1", session_id="s1")

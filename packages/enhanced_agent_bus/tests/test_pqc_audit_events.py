@@ -12,7 +12,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 try:
-    from packages.enhanced_agent_bus.pqc_audit import (
+    from enhanced_agent_bus.pqc_audit import (
         write_mode_change_audit_event,
         write_verification_audit_event,
     )

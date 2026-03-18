@@ -69,7 +69,7 @@ def _make_research_integration_module(
     integrator: object | None = None,
 ) -> ModuleType:
     """Return a fake research_integration module."""
-    mod = ModuleType("packages.enhanced_agent_bus.research_integration")
+    mod = ModuleType("enhanced_agent_bus.research_integration")
 
     if create_raises is not None:
         mod.create_research_integrator = MagicMock(side_effect=create_raises)
@@ -112,12 +112,12 @@ def _build_coordinator(
         ):
             del sys.modules[key]
 
-    integration_module_key = "packages.enhanced_agent_bus.research_integration"
+    integration_module_key = "enhanced_agent_bus.research_integration"
 
     if not integration_available:
         # Cause ImportError on the relative import
         with patch.dict(sys.modules, {integration_module_key: None}):
-            from packages.enhanced_agent_bus.coordinators.research_coordinator import (
+            from enhanced_agent_bus.coordinators.research_coordinator import (
                 ResearchCoordinator,
             )
 
@@ -133,7 +133,7 @@ def _build_coordinator(
         integrator=integrator,
     )
     with patch.dict(sys.modules, {integration_module_key: fake_mod}):
-        from packages.enhanced_agent_bus.coordinators.research_coordinator import (
+        from enhanced_agent_bus.coordinators.research_coordinator import (
             ResearchCoordinator,
         )
 
@@ -310,7 +310,7 @@ class TestSearchArxiv:
 
         # We need the coordinator to have a live integrator and also
         # have the ResearchSource/ResearchType available during the method call.
-        integration_key = "packages.enhanced_agent_bus.research_integration"
+        integration_key = "enhanced_agent_bus.research_integration"
         fake_mod = _make_research_integration_module(integrator=mock_integrator)
 
         coordinator = _build_coordinator(integrator=mock_integrator)
@@ -328,7 +328,7 @@ class TestSearchArxiv:
     async def test_fallback_on_integrator_runtime_error(self):
         mock_integrator = MagicMock()
         mock_integrator.search = AsyncMock(side_effect=RuntimeError("boom"))
-        integration_key = "packages.enhanced_agent_bus.research_integration"
+        integration_key = "enhanced_agent_bus.research_integration"
         fake_mod = _make_research_integration_module(integrator=mock_integrator)
 
         coordinator = _build_coordinator(integrator=mock_integrator)
@@ -344,7 +344,7 @@ class TestSearchArxiv:
     async def test_fallback_on_integrator_timeout_error(self):
         mock_integrator = MagicMock()
         mock_integrator.search = AsyncMock(side_effect=TimeoutError("timeout"))
-        integration_key = "packages.enhanced_agent_bus.research_integration"
+        integration_key = "enhanced_agent_bus.research_integration"
         fake_mod = _make_research_integration_module(integrator=mock_integrator)
 
         coordinator = _build_coordinator(integrator=mock_integrator)
@@ -358,7 +358,7 @@ class TestSearchArxiv:
     async def test_fallback_on_integrator_connection_error(self):
         mock_integrator = MagicMock()
         mock_integrator.search = AsyncMock(side_effect=ConnectionError("network"))
-        integration_key = "packages.enhanced_agent_bus.research_integration"
+        integration_key = "enhanced_agent_bus.research_integration"
         fake_mod = _make_research_integration_module(integrator=mock_integrator)
 
         coordinator = _build_coordinator(integrator=mock_integrator)
@@ -372,7 +372,7 @@ class TestSearchArxiv:
     async def test_fallback_on_integrator_os_error(self):
         mock_integrator = MagicMock()
         mock_integrator.search = AsyncMock(side_effect=OSError("io error"))
-        integration_key = "packages.enhanced_agent_bus.research_integration"
+        integration_key = "enhanced_agent_bus.research_integration"
         fake_mod = _make_research_integration_module(integrator=mock_integrator)
 
         coordinator = _build_coordinator(integrator=mock_integrator)
@@ -400,7 +400,7 @@ class TestSearchArxiv:
         ]
         mock_integrator = MagicMock()
         mock_integrator.search = AsyncMock(return_value=results_data)
-        integration_key = "packages.enhanced_agent_bus.research_integration"
+        integration_key = "enhanced_agent_bus.research_integration"
         fake_mod = _make_research_integration_module(integrator=mock_integrator)
 
         coordinator = _build_coordinator(integrator=mock_integrator)
@@ -445,7 +445,7 @@ class TestSearchGithub:
         )
         mock_integrator = MagicMock()
         mock_integrator.search = AsyncMock(return_value=[mock_result])
-        integration_key = "packages.enhanced_agent_bus.research_integration"
+        integration_key = "enhanced_agent_bus.research_integration"
         fake_mod = _make_research_integration_module(integrator=mock_integrator)
 
         coordinator = _build_coordinator(integrator=mock_integrator)
@@ -468,7 +468,7 @@ class TestSearchGithub:
         )
         mock_integrator = MagicMock()
         mock_integrator.search = AsyncMock(return_value=[mock_result])
-        integration_key = "packages.enhanced_agent_bus.research_integration"
+        integration_key = "enhanced_agent_bus.research_integration"
         fake_mod = _make_research_integration_module(integrator=mock_integrator)
 
         coordinator = _build_coordinator(integrator=mock_integrator)
@@ -481,7 +481,7 @@ class TestSearchGithub:
     async def test_fallback_on_runtime_error(self):
         mock_integrator = MagicMock()
         mock_integrator.search = AsyncMock(side_effect=RuntimeError("net"))
-        integration_key = "packages.enhanced_agent_bus.research_integration"
+        integration_key = "enhanced_agent_bus.research_integration"
         fake_mod = _make_research_integration_module(integrator=mock_integrator)
 
         coordinator = _build_coordinator(integrator=mock_integrator)
@@ -495,7 +495,7 @@ class TestSearchGithub:
     async def test_fallback_on_value_error(self):
         mock_integrator = MagicMock()
         mock_integrator.search = AsyncMock(side_effect=ValueError("bad"))
-        integration_key = "packages.enhanced_agent_bus.research_integration"
+        integration_key = "enhanced_agent_bus.research_integration"
         fake_mod = _make_research_integration_module(integrator=mock_integrator)
 
         coordinator = _build_coordinator(integrator=mock_integrator)
@@ -519,7 +519,7 @@ class TestSearchGithub:
         results_data = [_make_research_result(title=f"Repo {i}", stars=i * 100) for i in range(4)]
         mock_integrator = MagicMock()
         mock_integrator.search = AsyncMock(return_value=results_data)
-        integration_key = "packages.enhanced_agent_bus.research_integration"
+        integration_key = "enhanced_agent_bus.research_integration"
         fake_mod = _make_research_integration_module(integrator=mock_integrator)
 
         coordinator = _build_coordinator(integrator=mock_integrator)
@@ -617,7 +617,7 @@ class TestSearchAll:
             return [github_result]
 
         mock_integrator.search = mock_search
-        integration_key = "packages.enhanced_agent_bus.research_integration"
+        integration_key = "enhanced_agent_bus.research_integration"
         fake_mod = _make_research_integration_module(integrator=mock_integrator)
 
         coordinator = _build_coordinator(sources=["arxiv", "github"], integrator=mock_integrator)
@@ -776,7 +776,7 @@ class TestSynthesizeResearch:
 
 class TestProtocolCompliance:
     def test_satisfies_research_coordinator_protocol(self):
-        from packages.enhanced_agent_bus.coordinators import (
+        from enhanced_agent_bus.coordinators import (
             ResearchCoordinatorProtocol,
         )
 
@@ -784,14 +784,14 @@ class TestProtocolCompliance:
         assert isinstance(coordinator, ResearchCoordinatorProtocol)
 
     def test_constitutional_hash_class_attribute(self):
-        from packages.enhanced_agent_bus.coordinators.research_coordinator import (
+        from enhanced_agent_bus.coordinators.research_coordinator import (
             ResearchCoordinator,
         )
 
         assert ResearchCoordinator.constitutional_hash == CONSTITUTIONAL_HASH
 
     def test_can_import_from_coordinators_package(self):
-        from packages.enhanced_agent_bus.coordinators import ResearchCoordinator
+        from enhanced_agent_bus.coordinators import ResearchCoordinator
 
         assert ResearchCoordinator is not None
 
@@ -839,7 +839,7 @@ class TestErrorTupleCoverage:
     async def test_arxiv_search_error_types_are_caught(self, exc):
         mock_integrator = MagicMock()
         mock_integrator.search = AsyncMock(side_effect=exc)
-        integration_key = "packages.enhanced_agent_bus.research_integration"
+        integration_key = "enhanced_agent_bus.research_integration"
         fake_mod = _make_research_integration_module(integrator=mock_integrator)
 
         coordinator = _build_coordinator(integrator=mock_integrator)
@@ -864,7 +864,7 @@ class TestErrorTupleCoverage:
     async def test_github_search_error_types_are_caught(self, exc):
         mock_integrator = MagicMock()
         mock_integrator.search = AsyncMock(side_effect=exc)
-        integration_key = "packages.enhanced_agent_bus.research_integration"
+        integration_key = "enhanced_agent_bus.research_integration"
         fake_mod = _make_research_integration_module(integrator=mock_integrator)
 
         coordinator = _build_coordinator(integrator=mock_integrator)

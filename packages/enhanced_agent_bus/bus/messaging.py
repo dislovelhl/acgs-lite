@@ -10,15 +10,18 @@ import asyncio
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from packages.enhanced_agent_bus.models import (
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.models import (
     CONSTITUTIONAL_HASH,
     AgentMessage,
     MessageStatus,
 )
-from packages.enhanced_agent_bus.validators import ValidationResult
-from src.core.shared.types import JSONDict
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.validators import ValidationResult
 
 from ..security_helpers import normalize_tenant_id
 

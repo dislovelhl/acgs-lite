@@ -108,7 +108,7 @@ def restore_modules_after_tests():
 
     # Ensure parent package exists
     try:
-        import packages.enhanced_agent_bus.deliberation_layer
+        import enhanced_agent_bus.deliberation_layer
     except (RuntimeError, ValueError, TypeError, AssertionError):
         get_logger(__name__).debug("Optional deliberation_layer not available")
 

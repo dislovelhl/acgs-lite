@@ -15,7 +15,11 @@ from fastapi import (
     Depends,
 )
 from src.core.shared.security.auth import UserClaims, get_current_user
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from ...api_models import (
     ErrorResponse,

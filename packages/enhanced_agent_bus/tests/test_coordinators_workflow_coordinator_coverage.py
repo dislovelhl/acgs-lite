@@ -29,7 +29,7 @@ def _make_fake_langgraph_module(
     engine: object | None = None,
 ) -> ModuleType:
     """Return a fake langgraph_orchestrator module."""
-    mod = ModuleType("packages.enhanced_agent_bus.langgraph_orchestrator")
+    mod = ModuleType("enhanced_agent_bus.langgraph_orchestrator")
     if raise_create is not None:
         mod.create_governance_workflow = MagicMock(side_effect=raise_create)
     else:
@@ -44,7 +44,7 @@ def _make_fake_evolution_module(
     engine: object | None = None,
 ) -> ModuleType:
     """Return a fake workflow_evolution module with OptimizationType."""
-    mod = ModuleType("packages.enhanced_agent_bus.workflow_evolution")
+    mod = ModuleType("enhanced_agent_bus.workflow_evolution")
     if raise_create is not None:
         mod.create_workflow_engine = MagicMock(side_effect=raise_create)
     else:
@@ -59,7 +59,7 @@ def _make_fake_evolution_module(
 
 def _import_coordinator():
     """Import WorkflowCoordinator fresh (no reimport caching issue)."""
-    from packages.enhanced_agent_bus.coordinators.workflow_coordinator import (
+    from enhanced_agent_bus.coordinators.workflow_coordinator import (
         WorkflowCoordinator,
     )
 
@@ -90,8 +90,8 @@ def _build_coordinator(
         engine=evolution_engine,
     )
 
-    lg_key = "packages.enhanced_agent_bus.langgraph_orchestrator"
-    evo_key = "packages.enhanced_agent_bus.workflow_evolution"
+    lg_key = "enhanced_agent_bus.langgraph_orchestrator"
+    evo_key = "enhanced_agent_bus.workflow_evolution"
 
     overrides = {lg_key: lg_mod, evo_key: evo_mod}
     with patch.dict(sys.modules, overrides):
@@ -550,8 +550,8 @@ class TestEvolveWorkflowWithEngine:
             evo_engine.propose_evolution = AsyncMock(return_value=proposal)
 
         # Build coordinator with real evo engine + OptimizationType in module
-        lg_key = "packages.enhanced_agent_bus.langgraph_orchestrator"
-        evo_key = "packages.enhanced_agent_bus.workflow_evolution"
+        lg_key = "enhanced_agent_bus.langgraph_orchestrator"
+        evo_key = "enhanced_agent_bus.workflow_evolution"
         lg_mod = _make_fake_langgraph_module(raise_create=ImportError("no lg"))
         evo_mod = _make_fake_evolution_module(raise_create=None, engine=evo_engine)
         # Attach the engine to the module directly so evolve_workflow can import
@@ -571,7 +571,7 @@ class TestEvolveWorkflowWithEngine:
 
     async def test_success_with_proposal_attributes(self):
         coord, _ = self._make_coord_with_evo()
-        evo_key = "packages.enhanced_agent_bus.workflow_evolution"
+        evo_key = "enhanced_agent_bus.workflow_evolution"
         evo_mod = coord._test_evo_mod
         with patch.dict(sys.modules, {evo_key: evo_mod}):
             result = await coord.evolve_workflow("wf-evolve", {"latency_ms": 200})
@@ -585,7 +585,7 @@ class TestEvolveWorkflowWithEngine:
     async def test_proposal_without_id_uses_default(self):
         proposal = MagicMock(spec=[])  # no attrs
         coord, _ = self._make_coord_with_evo(proposal=proposal)
-        evo_key = "packages.enhanced_agent_bus.workflow_evolution"
+        evo_key = "enhanced_agent_bus.workflow_evolution"
         evo_mod = coord._test_evo_mod
         with patch.dict(sys.modules, {evo_key: evo_mod}):
             result = await coord.evolve_workflow("wf-no-id", {})
@@ -596,7 +596,7 @@ class TestEvolveWorkflowWithEngine:
 
     async def test_runtime_error_returns_failure(self):
         coord, _ = self._make_coord_with_evo(raise_propose=RuntimeError("evo crash"))
-        evo_key = "packages.enhanced_agent_bus.workflow_evolution"
+        evo_key = "enhanced_agent_bus.workflow_evolution"
         evo_mod = coord._test_evo_mod
         with patch.dict(sys.modules, {evo_key: evo_mod}):
             result = await coord.evolve_workflow("wf-evo-err", {})
@@ -607,7 +607,7 @@ class TestEvolveWorkflowWithEngine:
 
     async def test_value_error_returns_failure(self):
         coord, _ = self._make_coord_with_evo(raise_propose=ValueError("bad val"))
-        evo_key = "packages.enhanced_agent_bus.workflow_evolution"
+        evo_key = "enhanced_agent_bus.workflow_evolution"
         evo_mod = coord._test_evo_mod
         with patch.dict(sys.modules, {evo_key: evo_mod}):
             result = await coord.evolve_workflow("wf-ve", {})
@@ -615,7 +615,7 @@ class TestEvolveWorkflowWithEngine:
 
     async def test_attribute_error_returns_failure(self):
         coord, _ = self._make_coord_with_evo(raise_propose=AttributeError("no attr"))
-        evo_key = "packages.enhanced_agent_bus.workflow_evolution"
+        evo_key = "enhanced_agent_bus.workflow_evolution"
         evo_mod = coord._test_evo_mod
         with patch.dict(sys.modules, {evo_key: evo_mod}):
             result = await coord.evolve_workflow("wf-attr", {})
@@ -623,7 +623,7 @@ class TestEvolveWorkflowWithEngine:
 
     async def test_default_strategy_moderate(self):
         coord, _ = self._make_coord_with_evo()
-        evo_key = "packages.enhanced_agent_bus.workflow_evolution"
+        evo_key = "enhanced_agent_bus.workflow_evolution"
         evo_mod = coord._test_evo_mod
         with patch.dict(sys.modules, {evo_key: evo_mod}):
             result = await coord.evolve_workflow("wf-default", {})
@@ -631,7 +631,7 @@ class TestEvolveWorkflowWithEngine:
 
     async def test_custom_strategy_accepted(self):
         coord, _ = self._make_coord_with_evo()
-        evo_key = "packages.enhanced_agent_bus.workflow_evolution"
+        evo_key = "enhanced_agent_bus.workflow_evolution"
         evo_mod = coord._test_evo_mod
         with patch.dict(sys.modules, {evo_key: evo_mod}):
             result = await coord.evolve_workflow("wf-conservative", {}, strategy="conservative")
@@ -709,7 +709,7 @@ class TestGetWorkflowStats:
 
 class TestProtocolConformance:
     def test_implements_workflow_coordinator_protocol(self):
-        from packages.enhanced_agent_bus.coordinators import WorkflowCoordinatorProtocol
+        from enhanced_agent_bus.coordinators import WorkflowCoordinatorProtocol
 
         coord = _build_coordinator()
         assert isinstance(coord, WorkflowCoordinatorProtocol)

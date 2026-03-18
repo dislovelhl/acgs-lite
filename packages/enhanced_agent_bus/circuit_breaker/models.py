@@ -7,7 +7,6 @@ This module defines data models for circuit breaker metrics and queued requests.
 """
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass

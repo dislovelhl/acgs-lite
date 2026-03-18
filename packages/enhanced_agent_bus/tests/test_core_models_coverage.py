@@ -10,7 +10,9 @@ from datetime import UTC, datetime, timezone
 from enum import Enum
 
 import pytest
-from packages.enhanced_agent_bus.core_models import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.core_models import (
     AgentMessage,
     ConversationMessage,
     ConversationState,
@@ -21,18 +23,17 @@ from packages.enhanced_agent_bus.core_models import (
     RoutingContext,
     get_enum_value,
 )
-from packages.enhanced_agent_bus.enums import (
+from enhanced_agent_bus.enums import (
     AutonomyTier,
     MessageStatus,
     MessageType,
     Priority,
 )
-from packages.enhanced_agent_bus.ifc.labels import (
+from enhanced_agent_bus.ifc.labels import (
     Confidentiality,
     IFCLabel,
     Integrity,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # get_enum_value
@@ -828,7 +829,7 @@ class TestTypeAliases:
 
 class TestModuleExports:
     def test_all_exports_present(self):
-        from packages.enhanced_agent_bus import core_models
+        from enhanced_agent_bus import core_models
 
         expected = [
             "MessageContent",

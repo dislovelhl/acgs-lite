@@ -29,8 +29,12 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 # Add parent to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from packages.enhanced_agent_bus.profiling import get_global_profiler
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.profiling import get_global_profiler
 
 logger = get_logger(__name__)
 BENCHMARK_SCORER_INIT_ERRORS = (
@@ -125,7 +129,7 @@ class GPUBenchmark:
     def _import_scorer(self):
         """Import scorer with error handling."""
         try:
-            from packages.enhanced_agent_bus.deliberation_layer.impact_scorer import (
+            from enhanced_agent_bus.deliberation_layer.impact_scorer import (
                 ImpactScorer,
                 get_gpu_decision_matrix,
                 get_impact_scorer,

@@ -10,12 +10,13 @@ import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.constitutional.storage_infra.cache import (
+
+from enhanced_agent_bus.constitutional.storage_infra.cache import (
     REDIS_AVAILABLE,
     CacheManager,
 )
-from packages.enhanced_agent_bus.constitutional.storage_infra.config import StorageConfig
-from packages.enhanced_agent_bus.constitutional.version_model import (
+from enhanced_agent_bus.constitutional.storage_infra.config import StorageConfig
+from enhanced_agent_bus.constitutional.version_model import (
     ConstitutionalStatus,
     ConstitutionalVersion,
 )
@@ -86,7 +87,7 @@ async def test_connect_returns_false_when_redis_unavailable():
     """connect() returns False when the redis library is not installed."""
     mgr = CacheManager(_make_config())
     # Patch REDIS_AVAILABLE inside the module
-    import packages.enhanced_agent_bus.constitutional.storage_infra.cache as cache_mod
+    import enhanced_agent_bus.constitutional.storage_infra.cache as cache_mod
 
     with patch.object(cache_mod, "REDIS_AVAILABLE", False):
         result = await mgr.connect()
@@ -96,7 +97,7 @@ async def test_connect_returns_false_when_redis_unavailable():
 
 async def test_connect_success():
     """connect() sets redis_client and returns True on successful ping."""
-    import packages.enhanced_agent_bus.constitutional.storage_infra.cache as cache_mod
+    import enhanced_agent_bus.constitutional.storage_infra.cache as cache_mod
 
     mock_redis = _make_mock_redis()
     with (
@@ -113,7 +114,7 @@ async def test_connect_success():
 
 async def test_connect_connection_error_returns_false():
     """connect() returns False and leaves redis_client None on ConnectionError."""
-    import packages.enhanced_agent_bus.constitutional.storage_infra.cache as cache_mod
+    import enhanced_agent_bus.constitutional.storage_infra.cache as cache_mod
 
     mock_redis = _make_mock_redis()
     mock_redis.ping.side_effect = ConnectionError("refused")
@@ -132,7 +133,7 @@ async def test_connect_connection_error_returns_false():
 
 async def test_connect_os_error_returns_false():
     """connect() returns False and leaves redis_client None on OSError."""
-    import packages.enhanced_agent_bus.constitutional.storage_infra.cache as cache_mod
+    import enhanced_agent_bus.constitutional.storage_infra.cache as cache_mod
 
     mock_redis = _make_mock_redis()
     mock_redis.ping.side_effect = OSError("network error")

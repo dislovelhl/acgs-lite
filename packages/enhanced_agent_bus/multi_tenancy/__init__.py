@@ -14,13 +14,16 @@ Features:
 
 import sys
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 # Ensure package aliasing across import paths
 _module = sys.modules.get(__name__)
 if _module is not None:
     sys.modules.setdefault("enhanced_agent_bus.multi_tenancy", _module)
-    sys.modules.setdefault("packages.enhanced_agent_bus.multi_tenancy", _module)
+    sys.modules.setdefault("enhanced_agent_bus.multi_tenancy", _module)
     sys.modules.setdefault("core.enhanced_agent_bus.multi_tenancy", _module)
 
 from .context import (  # noqa: E402

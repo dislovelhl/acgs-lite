@@ -6,12 +6,13 @@ Targets ≥90% coverage of:
 """
 
 import pytest
-from packages.enhanced_agent_bus.guardrails.enums import (
+
+from enhanced_agent_bus.guardrails.enums import (
     GuardrailLayer,
     SafetyAction,
     ViolationSeverity,
 )
-from packages.enhanced_agent_bus.guardrails.input_sanitizer import (
+from enhanced_agent_bus.guardrails.input_sanitizer import (
     InputSanitizer,
     InputSanitizerConfig,
 )

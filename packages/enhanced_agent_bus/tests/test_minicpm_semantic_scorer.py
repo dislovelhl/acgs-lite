@@ -7,7 +7,8 @@ Constitutional Hash: cdd01ef066bc6cf2
 from unittest.mock import MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.impact_scorer_infra.algorithms.minicpm_semantic import (
+
+from enhanced_agent_bus.impact_scorer_infra.algorithms.minicpm_semantic import (
     CONSTITUTIONAL_HASH,
     DOMAIN_REFERENCE_TEXTS,
     HIGH_IMPACT_INDICATORS,
@@ -17,7 +18,7 @@ from packages.enhanced_agent_bus.impact_scorer_infra.algorithms.minicpm_semantic
     cosine_similarity,
     create_minicpm_scorer,
 )
-from packages.enhanced_agent_bus.impact_scorer_infra.models import (
+from enhanced_agent_bus.impact_scorer_infra.models import (
     ImpactVector,
     ScoringMethod,
     ScoringResult,

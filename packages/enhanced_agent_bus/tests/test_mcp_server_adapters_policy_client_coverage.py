@@ -12,12 +12,12 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.mcp_server.adapters.policy_client import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.mcp_server.adapters.policy_client import (
     POLICY_CLIENT_OPERATION_ERRORS,
     PolicyClientAdapter,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 pytestmark = [pytest.mark.unit, pytest.mark.constitutional]
@@ -377,7 +377,7 @@ class TestGetActivePrinciplesWithClient:
         adapter = PolicyClientAdapter(policy_client=mock_client)
 
         with patch(
-            "packages.enhanced_agent_bus.mcp_server.adapters.policy_client.logger"
+            "enhanced_agent_bus.mcp_server.adapters.policy_client.logger"
         ) as mock_logger:
             with pytest.raises(RuntimeError):
                 await adapter.get_active_principles()
@@ -524,7 +524,7 @@ class TestGetPolicyByNameWithClient:
         adapter = PolicyClientAdapter(policy_client=mock_client)
 
         with patch(
-            "packages.enhanced_agent_bus.mcp_server.adapters.policy_client.logger"
+            "enhanced_agent_bus.mcp_server.adapters.policy_client.logger"
         ) as mock_logger:
             result = await adapter.get_policy_by_name("my_policy")
             assert result is None

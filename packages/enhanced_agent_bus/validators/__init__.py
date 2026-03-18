@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import sys
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -15,12 +16,13 @@ from .governance import GovernanceDecisionValidator
 def _load_legacy_validators_module() -> ModuleType | None:
     legacy_path = Path(__file__).resolve().parent.parent / "validators.py"
     spec = importlib.util.spec_from_file_location(
-        "packages.enhanced_agent_bus._legacy_validators", legacy_path
+        "enhanced_agent_bus._legacy_validators", legacy_path
     )
     if spec is None or spec.loader is None:
         return None
 
     module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
 

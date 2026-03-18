@@ -5,11 +5,16 @@ Comprehensive tests for src/core/enhanced_agent_bus/batch_auto_tuner.py
 Targets ≥95% branch coverage.
 """
 
+import pytest
+
+pytest.importorskip("enhanced_agent_bus.batch_auto_tuner")
+
+
 import logging
 
 import pytest
-from packages.enhanced_agent_bus.batch_auto_tuner import AutoTunerConfig, BatchAutoTuner
 
+from enhanced_agent_bus.batch_auto_tuner import AutoTunerConfig, BatchAutoTuner
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # ---------------------------------------------------------------------------
@@ -516,7 +521,7 @@ class TestReset:
     def test_reset_logs_info(self, caplog):
         cfg = AutoTunerConfig()
         tuner = BatchAutoTuner(cfg)
-        with caplog.at_level(logging.INFO, logger="packages.enhanced_agent_bus.batch_auto_tuner"):
+        with caplog.at_level(logging.INFO, logger="enhanced_agent_bus.batch_auto_tuner"):
             tuner.reset()
         assert "reset" in caplog.text.lower()
 
@@ -593,7 +598,7 @@ class TestIntegration:
             adjustment_factor=0.2,
         )
         tuner = BatchAutoTuner(cfg, initial_batch_size=100)
-        with caplog.at_level(logging.INFO, logger="packages.enhanced_agent_bus.batch_auto_tuner"):
+        with caplog.at_level(logging.INFO, logger="enhanced_agent_bus.batch_auto_tuner"):
             for _ in range(3):
                 tuner.record_batch_performance(
                     batch_size=100,

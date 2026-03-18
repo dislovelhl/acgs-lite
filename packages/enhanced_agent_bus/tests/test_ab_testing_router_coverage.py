@@ -14,7 +14,8 @@ from typing import Union
 from unittest.mock import MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.ab_testing_infra.models import (
+
+from enhanced_agent_bus.ab_testing_infra.models import (
     AB_TEST_CONFIDENCE_LEVEL,
     AB_TEST_MIN_IMPROVEMENT,
     AB_TEST_MIN_SAMPLES,
@@ -32,7 +33,7 @@ from packages.enhanced_agent_bus.ab_testing_infra.models import (
     PromotionStatus,
     RoutingResult,
 )
-from packages.enhanced_agent_bus.ab_testing_infra.router import ABTestRouter
+from enhanced_agent_bus.ab_testing_infra.router import ABTestRouter
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -142,7 +143,7 @@ class TestEnsureInitialized:
         with (
             patch.object(router.model_manager, "is_ready", return_value=False),
             patch.object(router.model_manager, "load_models", return_value=False),
-            patch("packages.enhanced_agent_bus.ab_testing_infra.router.logger") as mock_log,
+            patch("enhanced_agent_bus.ab_testing_infra.router.logger") as mock_log,
         ):
             router._ensure_initialized()
             mock_log.warning.assert_called_once()

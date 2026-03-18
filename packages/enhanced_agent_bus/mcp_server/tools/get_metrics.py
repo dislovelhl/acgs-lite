@@ -30,7 +30,10 @@ class _InternalMetrics(TypedDict):
     latencies: list[float]
 
 
-from src.core.shared.types import JSONDict  # noqa: E402
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from ..protocol.types import ToolDefinition, ToolInputSchema  # noqa: E402
 

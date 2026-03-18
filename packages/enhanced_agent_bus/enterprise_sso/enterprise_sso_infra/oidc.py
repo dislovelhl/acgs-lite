@@ -8,7 +8,10 @@ import json
 import time
 from urllib.parse import urlencode
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -222,7 +225,9 @@ class OIDCHandler(BaseProtocolHandler):
             parts = id_token.split(".")
             if len(parts) != 3:
                 return ProtocolValidationResult(
-                    success=False, error="Invalid ID token format", error_code="INVALID_TOKEN"
+                    success=False,
+                    error="Invalid ID token format",
+                    error_code="INVALID_TOKEN",
                 )
 
             payload = parts[1]
@@ -233,7 +238,9 @@ class OIDCHandler(BaseProtocolHandler):
             now = time.time()
             if claims.get("exp", 0) < now:
                 return ProtocolValidationResult(
-                    success=False, error="ID token expired", error_code="TOKEN_EXPIRED"
+                    success=False,
+                    error="ID token expired",
+                    error_code="TOKEN_EXPIRED",
                 )
 
             if claims.get("aud") != self.client_id:
@@ -251,19 +258,21 @@ class OIDCHandler(BaseProtocolHandler):
                 if token_nonce != expected_nonce:
                     return ProtocolValidationResult(
                         success=False,
-                        error="ID token nonce mismatch — possible replay attack",
+                        error="ID token nonce mismatch - possible replay attack",
                         error_code="NONCE_MISMATCH",
                     )
             elif expected_nonce and token_nonce is None:
                 logger.warning(
-                    f"[{CONSTITUTIONAL_HASH}] ID token missing nonce claim — "
+                    f"[{CONSTITUTIONAL_HASH}] ID token missing nonce claim - "
                     "IdP should return the nonce sent in the authorization request"
                 )
 
             user_id = claims.get("sub")
             if not user_id:
                 return ProtocolValidationResult(
-                    success=False, error="No subject claim in ID token", error_code="NO_SUBJECT"
+                    success=False,
+                    error="No subject claim in ID token",
+                    error_code="NO_SUBJECT",
                 )
 
             groups = claims.get("groups", [])
@@ -279,7 +288,9 @@ class OIDCHandler(BaseProtocolHandler):
             )
         except _OIDC_HANDLER_OPERATION_ERRORS as e:
             return ProtocolValidationResult(
-                success=False, error=f"Failed to parse ID token: {e}", error_code="PARSE_ERROR"
+                success=False,
+                error=f"Failed to parse ID token: {e}",
+                error_code="PARSE_ERROR",
             )
 
     async def _get_userinfo(self, access_token: str) -> ProtocolValidationResult:
@@ -311,7 +322,9 @@ class OIDCHandler(BaseProtocolHandler):
                 )
         except _OIDC_HANDLER_OPERATION_ERRORS as e:
             return ProtocolValidationResult(
-                success=False, error=f"Failed to get userinfo: {e}", error_code="USERINFO_ERROR"
+                success=False,
+                error=f"Failed to get userinfo: {e}",
+                error_code="USERINFO_ERROR",
             )
 
     @staticmethod

@@ -17,11 +17,12 @@ import uuid
 from contextvars import ContextVar
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import packages.enhanced_agent_bus.api_exceptions as api_exc_module
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from packages.enhanced_agent_bus.api_exceptions import (
+
+import enhanced_agent_bus.api_exceptions as api_exc_module
+from enhanced_agent_bus.api_exceptions import (
     RATE_LIMIT_REQUESTS_PER_MINUTE,
     agent_bus_error_handler,
     agent_error_handler,
@@ -635,7 +636,7 @@ class TestRegisterExceptionHandlers:
         handler_map = {exc_cls: h for exc_cls, h in called_with}  # noqa: C416
 
         # All known exception types must be registered
-        from packages.enhanced_agent_bus.api_exceptions import (
+        from enhanced_agent_bus.api_exceptions import (
             AgentBusError,
             AgentError,
             BusNotStartedError,
@@ -677,7 +678,7 @@ class TestRegisterExceptionHandlers:
 
         handler_map = {exc_cls: h for exc_cls, h in called_with}  # noqa: C416
 
-        from packages.enhanced_agent_bus.api_exceptions import (
+        from enhanced_agent_bus.api_exceptions import (
             AgentBusError,
             AgentError,
             BusNotStartedError,
@@ -736,7 +737,7 @@ class TestHandlersWithRealExceptions:
     """Integration tests using actual exception classes from the project."""
 
     async def test_message_timeout_handler_with_real_exception(self):
-        from packages.enhanced_agent_bus.exceptions.messaging import MessageTimeoutError
+        from enhanced_agent_bus.exceptions.messaging import MessageTimeoutError
 
         exc = MessageTimeoutError(message_id="real-msg", timeout_ms=3000)
         req = _make_request()
@@ -748,7 +749,7 @@ class TestHandlersWithRealExceptions:
         assert body["status"] == "error"
 
     async def test_bus_not_started_handler_with_real_exception(self):
-        from packages.enhanced_agent_bus.exceptions.operations import BusNotStartedError
+        from enhanced_agent_bus.exceptions.operations import BusNotStartedError
 
         exc = BusNotStartedError(operation="send_message")
         req = _make_request()
@@ -760,7 +761,7 @@ class TestHandlersWithRealExceptions:
         assert body["status"] == "error"
 
     async def test_opa_connection_handler_with_real_exception(self):
-        from packages.enhanced_agent_bus.exceptions.policy import OPAConnectionError
+        from enhanced_agent_bus.exceptions.policy import OPAConnectionError
 
         exc = OPAConnectionError(opa_url="http://opa:8181", reason="refused")
         req = _make_request()
@@ -768,7 +769,7 @@ class TestHandlersWithRealExceptions:
         assert resp.status_code == 503
 
     async def test_constitutional_error_handler_with_real_exception(self):
-        from packages.enhanced_agent_bus.exceptions.constitutional import ConstitutionalError
+        from enhanced_agent_bus.exceptions.constitutional import ConstitutionalError
 
         exc = ConstitutionalError("hash mismatch detected")
         req = _make_request()
@@ -776,7 +777,7 @@ class TestHandlersWithRealExceptions:
         assert resp.status_code == 400
 
     async def test_maci_error_handler_with_real_exception(self):
-        from packages.enhanced_agent_bus.exceptions.maci import MACIError
+        from enhanced_agent_bus.exceptions.maci import MACIError
 
         exc = MACIError("role separation violated")
         req = _make_request()
@@ -784,7 +785,7 @@ class TestHandlersWithRealExceptions:
         assert resp.status_code == 403
 
     async def test_policy_error_handler_with_real_exception(self):
-        from packages.enhanced_agent_bus.exceptions.policy import PolicyError
+        from enhanced_agent_bus.exceptions.policy import PolicyError
 
         exc = PolicyError("policy failed")
         req = _make_request()
@@ -792,7 +793,7 @@ class TestHandlersWithRealExceptions:
         assert resp.status_code == 400
 
     async def test_agent_error_handler_with_real_exception(self):
-        from packages.enhanced_agent_bus.exceptions.agent import AgentError
+        from enhanced_agent_bus.exceptions.agent import AgentError
 
         exc = AgentError("agent not registered")
         req = _make_request()
@@ -800,7 +801,7 @@ class TestHandlersWithRealExceptions:
         assert resp.status_code == 400
 
     async def test_message_error_handler_with_real_exception(self):
-        from packages.enhanced_agent_bus.exceptions.messaging import MessageError
+        from enhanced_agent_bus.exceptions.messaging import MessageError
 
         exc = MessageError("invalid message payload")
         req = _make_request()
@@ -808,7 +809,7 @@ class TestHandlersWithRealExceptions:
         assert resp.status_code == 400
 
     async def test_bus_operation_error_handler_with_real_exception(self):
-        from packages.enhanced_agent_bus.exceptions.operations import BusOperationError
+        from enhanced_agent_bus.exceptions.operations import BusOperationError
 
         exc = BusOperationError("bus operation failed")
         req = _make_request()
@@ -816,7 +817,7 @@ class TestHandlersWithRealExceptions:
         assert resp.status_code == 400
 
     async def test_agent_bus_error_handler_with_real_exception(self):
-        from packages.enhanced_agent_bus.exceptions.base import AgentBusError
+        from enhanced_agent_bus.exceptions.base import AgentBusError
 
         exc = AgentBusError("generic bus error")
         req = _make_request()
@@ -824,7 +825,7 @@ class TestHandlersWithRealExceptions:
         assert resp.status_code == 400
 
     async def test_rate_limit_with_stub_exception(self):
-        from packages.enhanced_agent_bus.fallback_stubs import StubRateLimitExceeded
+        from enhanced_agent_bus.fallback_stubs import StubRateLimitExceeded
 
         exc = StubRateLimitExceeded(
             agent_id="stub-agent",
@@ -857,7 +858,7 @@ class TestImportFallbackPaths:
         import importlib
         import sys
 
-        module_name = "packages.enhanced_agent_bus.api_exceptions"
+        module_name = "enhanced_agent_bus.api_exceptions"
         # Backup module
         original = sys.modules.pop(module_name, None)
         # Block acgs_logging import
@@ -883,7 +884,7 @@ class TestImportFallbackPaths:
         import importlib
         import sys
 
-        module_name = "packages.enhanced_agent_bus.api_exceptions"
+        module_name = "enhanced_agent_bus.api_exceptions"
         original = sys.modules.pop(module_name, None)
         # Block slowapi
         blocked_slowapi = "slowapi"
@@ -928,7 +929,7 @@ class TestImportFallbackPaths:
         try:
             mod = self._reload_with_missing_slowapi()
             # RateLimitExceeded should come from fallback_stubs when slowapi is missing
-            from packages.enhanced_agent_bus.fallback_stubs import StubRateLimitExceeded
+            from enhanced_agent_bus.fallback_stubs import StubRateLimitExceeded
 
             assert mod.RateLimitExceeded is StubRateLimitExceeded
         except Exception:
@@ -937,7 +938,7 @@ class TestImportFallbackPaths:
     def test_module_constants_stable_after_reload(self):
         """Ensure RATE_LIMIT_REQUESTS_PER_MINUTE stays consistent after any reload path."""
         # Re-import the already-loaded module — constants must remain stable.
-        import packages.enhanced_agent_bus.api_exceptions as m
+        import enhanced_agent_bus.api_exceptions as m
 
         assert m.RATE_LIMIT_REQUESTS_PER_MINUTE == 60
 
@@ -945,13 +946,13 @@ class TestImportFallbackPaths:
         """Confirm correlation_id_var is always a ContextVar regardless of import path."""
         from contextvars import ContextVar
 
-        import packages.enhanced_agent_bus.api_exceptions as m
+        import enhanced_agent_bus.api_exceptions as m
 
         assert isinstance(m.correlation_id_var, ContextVar)
 
     def test_all_handler_callables_present_after_reload(self):
         """All handler functions must be callable in the loaded module."""
-        import packages.enhanced_agent_bus.api_exceptions as m
+        import enhanced_agent_bus.api_exceptions as m
 
         handlers = [
             m.rate_limit_exceeded_handler,
@@ -978,10 +979,10 @@ class TestImportFallbackPaths:
         import importlib
         import sys
 
-        module_name = "packages.enhanced_agent_bus.api_exceptions"
+        module_name = "enhanced_agent_bus.api_exceptions"
         # We need to block both the relative and absolute imports for the exceptions subpackage.
         # The relative import `.exceptions` resolves to `packages.enhanced_agent_bus.exceptions`.
-        exceptions_pkg = "packages.enhanced_agent_bus.exceptions"
+        exceptions_pkg = "enhanced_agent_bus.exceptions"
         # Also block bare `exceptions` (the second try)
         bare_exceptions = "exceptions"
 

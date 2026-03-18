@@ -32,14 +32,17 @@ from sqlalchemy.orm import relationship
 JSONType = JSON().with_variant(JSONB(), "postgresql")
 
 # Constitutional hash constant
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.database.session import Base  # noqa: E402
 
 # Ensure module aliasing across package import paths to avoid duplicate ORM definitions
 _module = sys.modules.get(__name__)
 if _module is not None:
     sys.modules.setdefault("enhanced_agent_bus.multi_tenancy.orm_models", _module)
-    sys.modules.setdefault("packages.enhanced_agent_bus.multi_tenancy.orm_models", _module)
+    sys.modules.setdefault("enhanced_agent_bus.multi_tenancy.orm_models", _module)
     sys.modules.setdefault("core.enhanced_agent_bus.multi_tenancy.orm_models", _module)
 
 

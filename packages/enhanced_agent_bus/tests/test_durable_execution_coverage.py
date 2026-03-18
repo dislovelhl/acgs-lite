@@ -12,7 +12,8 @@ from datetime import UTC, datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.durable_execution import (
+
+from enhanced_agent_bus.durable_execution import (
     CONSTITUTIONAL_HASH,
     CheckpointStore,
     DurableExecutor,
@@ -53,7 +54,7 @@ def test_all_recovery_strategies():
 
 
 def test_all_exports():
-    from packages.enhanced_agent_bus.durable_execution import __all__ as exports
+    from enhanced_agent_bus.durable_execution import __all__ as exports
 
     expected = {
         "DurableExecutor",

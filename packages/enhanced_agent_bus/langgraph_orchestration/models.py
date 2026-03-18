@@ -16,8 +16,15 @@ from enum import Enum
 from typing import TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 # Type variables
 TState = TypeVar("TState", bound=JSONDict)

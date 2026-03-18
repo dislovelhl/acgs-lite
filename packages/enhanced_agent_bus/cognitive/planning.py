@@ -1,4 +1,7 @@
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 """
 Multi-Agent Planning - Task decomposition, capability matching, and plan verification.
@@ -13,7 +16,10 @@ from datetime import UTC, datetime  # noqa: E402
 from enum import Enum  # noqa: E402
 from typing import Protocol  # noqa: E402
 
-from src.core.shared.types import JSONDict  # noqa: E402
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 PLAN_EXECUTION_ERRORS = (
     RuntimeError,

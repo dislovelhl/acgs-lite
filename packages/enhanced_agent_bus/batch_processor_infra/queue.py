@@ -16,7 +16,7 @@ try:
 except ImportError:
     PERF_KERNELS_AVAILABLE = False
 
-from packages.enhanced_agent_bus.models import BatchRequest, BatchRequestItem
+from enhanced_agent_bus.models import BatchRequest, BatchRequestItem
 
 logger = get_logger(__name__)
 

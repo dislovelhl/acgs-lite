@@ -20,18 +20,19 @@ from datetime import UTC, datetime, timezone
 from unittest.mock import MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.circuit_breaker import CONSTITUTIONAL_HASH
-from packages.enhanced_agent_bus.llm_adapters.capability_matrix import (
+
+from enhanced_agent_bus.circuit_breaker import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.llm_adapters.capability_matrix import (
     CapabilityDimension,
     CapabilityRegistry,
     CapabilityRequirement,
     ProviderCapabilityProfile,
 )
-from packages.enhanced_agent_bus.llm_adapters.failover.failover import (
+from enhanced_agent_bus.llm_adapters.failover.failover import (
     FailoverEvent,
     ProactiveFailoverManager,
 )
-from packages.enhanced_agent_bus.llm_adapters.failover.health import (
+from enhanced_agent_bus.llm_adapters.failover.health import (
     HealthMetrics,
     ProviderHealthScore,
     ProviderHealthScorer,
@@ -1147,17 +1148,17 @@ class TestModuleExports:
     """Verify __all__ exports are importable from failover.failover."""
 
     def test_failover_event_is_exported(self) -> None:
-        from packages.enhanced_agent_bus.llm_adapters.failover.failover import (
+        from enhanced_agent_bus.llm_adapters.failover.failover import (
             FailoverEvent,
         )
 
     def test_proactive_failover_manager_is_exported(self) -> None:
-        from packages.enhanced_agent_bus.llm_adapters.failover.failover import (
+        from enhanced_agent_bus.llm_adapters.failover.failover import (
             ProactiveFailoverManager,
         )
 
     def test_all_contains_expected_names(self) -> None:
-        import packages.enhanced_agent_bus.llm_adapters.failover.failover as mod
+        import enhanced_agent_bus.llm_adapters.failover.failover as mod
 
         assert "FailoverEvent" in mod.__all__
         assert "ProactiveFailoverManager" in mod.__all__

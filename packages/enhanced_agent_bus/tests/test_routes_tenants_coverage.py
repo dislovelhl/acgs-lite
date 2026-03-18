@@ -20,12 +20,13 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
+from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Module under test — import via absolute path (importlib mode compatible)
 # ---------------------------------------------------------------------------
-from packages.enhanced_agent_bus.routes import tenants as tenants_module
-from packages.enhanced_agent_bus.routes.models.tenant_models import (
+from enhanced_agent_bus.routes import tenants as tenants_module
+from enhanced_agent_bus.routes.models.tenant_models import (
     CreateTenantRequest,
     QuotaCheckRequest,
     SuspendTenantRequest,
@@ -34,7 +35,7 @@ from packages.enhanced_agent_bus.routes.models.tenant_models import (
     UpdateTenantRequest,
     UsageIncrementRequest,
 )
-from packages.enhanced_agent_bus.routes.tenants import (
+from enhanced_agent_bus.routes.tenants import (
     _build_quota_check_response,
     _build_tenant_config_and_quota,
     _build_tenant_hierarchy_response,
@@ -54,7 +55,6 @@ from packages.enhanced_agent_bus.routes.tenants import (
     get_manager,
     router,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # FastAPI test application
@@ -232,8 +232,17 @@ class TestTenantRouteHelpers:
 
         assert exc_info.value.status_code == 403
 
-    def test_check_tenant_scope_allows_super_admin_role_string(self):
-        _check_tenant_scope("controller-ops", "tenant-002")
+    def test_check_tenant_scope_denies_substring_admin_without_flag(self):
+        with pytest.raises(HTTPException) as exc_info:
+            _check_tenant_scope("controller-ops", "tenant-002")
+
+        assert exc_info.value.status_code == 403
+
+    def test_check_tenant_scope_allows_explicit_super_admin_flag(self):
+        _check_tenant_scope("controller-ops", "tenant-002", is_super_admin=True)
+
+    def test_check_tenant_scope_allows_system_admin_account(self):
+        _check_tenant_scope("system-admin", "tenant-002")
 
     @pytest.mark.asyncio
     async def test_get_tenant_or_404_returns_tenant(self):
@@ -735,7 +744,7 @@ class TestCreateTenant:
         assert resp.status_code == 201
 
     def test_create_tenant_validation_error(self):
-        from packages.enhanced_agent_bus.routes.tenants import TenantValidationError
+        from enhanced_agent_bus.routes.tenants import TenantValidationError
 
         self.mock_mgr.create_tenant = AsyncMock(side_effect=TenantValidationError("Slug invalid"))
         resp = _client.post(
@@ -810,7 +819,7 @@ class TestGetTenant:
         assert resp.status_code == 404
 
     def test_get_tenant_not_found_error(self):
-        from packages.enhanced_agent_bus.routes.tenants import TenantNotFoundError
+        from enhanced_agent_bus.routes.tenants import TenantNotFoundError
 
         self.mock_mgr.get_tenant = AsyncMock(side_effect=TenantNotFoundError("not found"))
         resp = _client.get("/api/v1/tenants/missing-tenant")
@@ -962,7 +971,7 @@ class TestUpdateTenant:
         assert resp.status_code == 404
 
     def test_update_tenant_not_found_error(self):
-        from packages.enhanced_agent_bus.routes.tenants import TenantNotFoundError
+        from enhanced_agent_bus.routes.tenants import TenantNotFoundError
 
         self.mock_mgr.get_tenant = AsyncMock(side_effect=TenantNotFoundError("not found"))
         resp = _client.patch(
@@ -1013,7 +1022,7 @@ class TestDeleteTenant:
         assert resp.status_code == 404
 
     def test_delete_tenant_not_found_error(self):
-        from packages.enhanced_agent_bus.routes.tenants import TenantNotFoundError
+        from enhanced_agent_bus.routes.tenants import TenantNotFoundError
 
         self.mock_mgr.delete_tenant = AsyncMock(side_effect=TenantNotFoundError("not found"))
         resp = _client.delete("/api/v1/tenants/missing")
@@ -1066,7 +1075,7 @@ class TestActivateTenant:
         assert resp.status_code == 404
 
     def test_activate_tenant_not_found_error(self):
-        from packages.enhanced_agent_bus.routes.tenants import TenantNotFoundError
+        from enhanced_agent_bus.routes.tenants import TenantNotFoundError
 
         self.mock_mgr.activate_tenant = AsyncMock(side_effect=TenantNotFoundError("not found"))
         resp = _client.post("/api/v1/tenants/missing/activate")
@@ -1110,7 +1119,7 @@ class TestSuspendTenant:
         assert resp.status_code == 404
 
     def test_suspend_tenant_not_found_error(self):
-        from packages.enhanced_agent_bus.routes.tenants import TenantNotFoundError
+        from enhanced_agent_bus.routes.tenants import TenantNotFoundError
 
         self.mock_mgr.suspend_tenant = AsyncMock(side_effect=TenantNotFoundError("not found"))
         resp = _client.post("/api/v1/tenants/missing/suspend")
@@ -1157,7 +1166,7 @@ class TestDeactivateTenant:
         assert resp.status_code == 404
 
     def test_deactivate_tenant_not_found_error(self):
-        from packages.enhanced_agent_bus.routes.tenants import TenantNotFoundError
+        from enhanced_agent_bus.routes.tenants import TenantNotFoundError
 
         self.mock_mgr.deactivate_tenant = AsyncMock(side_effect=TenantNotFoundError("not found"))
         resp = _client.post("/api/v1/tenants/missing/deactivate")
@@ -1199,7 +1208,7 @@ class TestUpdateTenantQuota:
         assert resp.status_code == 404
 
     def test_update_quota_not_found_error(self):
-        from packages.enhanced_agent_bus.routes.tenants import TenantNotFoundError
+        from enhanced_agent_bus.routes.tenants import TenantNotFoundError
 
         self.mock_mgr.get_tenant = AsyncMock(side_effect=TenantNotFoundError("not found"))
         resp = _client.put(
@@ -1322,7 +1331,7 @@ class TestCheckQuota:
         assert resp.status_code == 404
 
     def test_check_quota_not_found_error(self):
-        from packages.enhanced_agent_bus.routes.tenants import TenantNotFoundError
+        from enhanced_agent_bus.routes.tenants import TenantNotFoundError
 
         self.mock_mgr.check_quota = AsyncMock(side_effect=TenantNotFoundError("not found"))
         resp = _client.post(
@@ -1408,7 +1417,7 @@ class TestGetTenantUsage:
         assert resp.status_code == 404
 
     def test_get_usage_not_found_error(self):
-        from packages.enhanced_agent_bus.routes.tenants import TenantNotFoundError
+        from enhanced_agent_bus.routes.tenants import TenantNotFoundError
 
         self.mock_mgr.get_tenant = AsyncMock(side_effect=TenantNotFoundError("not found"))
         resp = _client.get("/api/v1/tenants/missing/usage")
@@ -1445,7 +1454,7 @@ class TestIncrementUsage:
         assert data["tenant_id"] == "tenant-001"
 
     def test_increment_usage_quota_exceeded(self):
-        from packages.enhanced_agent_bus.routes.tenants import TenantQuotaExceededError
+        from enhanced_agent_bus.routes.tenants import TenantQuotaExceededError
 
         try:
             exc = TenantQuotaExceededError(
@@ -1467,7 +1476,7 @@ class TestIncrementUsage:
         assert resp.status_code == 429
 
     def test_increment_usage_not_found_error(self):
-        from packages.enhanced_agent_bus.routes.tenants import TenantNotFoundError
+        from enhanced_agent_bus.routes.tenants import TenantNotFoundError
 
         self.mock_mgr.increment_usage = AsyncMock(side_effect=TenantNotFoundError("not found"))
         resp = _client.post(
@@ -1564,7 +1573,7 @@ class TestGetTenantHierarchy:
         assert data["depth"] == 0
 
     def test_get_hierarchy_not_found_error(self):
-        from packages.enhanced_agent_bus.routes.tenants import TenantNotFoundError
+        from enhanced_agent_bus.routes.tenants import TenantNotFoundError
 
         self.mock_mgr.get_tenant_hierarchy = AsyncMock(side_effect=TenantNotFoundError("not found"))
         resp = _client.get("/api/v1/tenants/missing/hierarchy")
@@ -1604,7 +1613,7 @@ class TestGetChildTenants:
         assert data["total_count"] == 0
 
     def test_get_children_not_found_error(self):
-        from packages.enhanced_agent_bus.routes.tenants import TenantNotFoundError
+        from enhanced_agent_bus.routes.tenants import TenantNotFoundError
 
         self.mock_mgr.get_child_tenants = AsyncMock(side_effect=TenantNotFoundError("not found"))
         resp = _client.get("/api/v1/tenants/missing/children")
@@ -1670,6 +1679,6 @@ class TestRouterConfiguration:
         assert "Tenant Management" in router.tags
 
     def test_all_export(self):
-        from packages.enhanced_agent_bus.routes.tenants import __all__
+        from enhanced_agent_bus.routes.tenants import __all__
 
         assert "router" in __all__

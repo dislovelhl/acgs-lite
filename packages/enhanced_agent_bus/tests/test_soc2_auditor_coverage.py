@@ -6,21 +6,22 @@ Constitutional Hash: cdd01ef066bc6cf2
 """
 
 import pytest
-from packages.enhanced_agent_bus.compliance_layer.models import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.compliance_layer.models import (
     AvailabilityControl,
     ComplianceStatus,
     ConfidentialityControl,
     DataClassification,
     ProcessingIntegrityControl,
 )
-from packages.enhanced_agent_bus.compliance_layer.soc2_auditor import (
+from enhanced_agent_bus.compliance_layer.soc2_auditor import (
     SOC2Auditor,
     SOC2ControlValidator,
     SOC2EvidenceCollector,
     get_soc2_auditor,
     reset_soc2_auditor,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Helpers

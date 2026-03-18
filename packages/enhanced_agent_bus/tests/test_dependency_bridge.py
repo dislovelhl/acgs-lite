@@ -25,7 +25,7 @@ class TestDependencyBridgeInitialize:
 
     def test_initialize_calls_registry(self) -> None:
         """Test that initialize calls DependencyRegistry.initialize_defaults."""
-        from packages.enhanced_agent_bus import dependency_bridge
+        from enhanced_agent_bus import dependency_bridge
 
         # Reset and re-initialize
         DependencyRegistry.reset()
@@ -35,7 +35,7 @@ class TestDependencyBridgeInitialize:
 
     def test_initialize_idempotent(self) -> None:
         """Test that initialize can be called multiple times."""
-        from packages.enhanced_agent_bus import dependency_bridge
+        from enhanced_agent_bus import dependency_bridge
 
         dependency_bridge.initialize()
         # Should not raise
@@ -46,7 +46,7 @@ class TestIsFeatureAvailable:
 
     def test_known_feature_metrics(self) -> None:
         """Test checking METRICS feature availability."""
-        from packages.enhanced_agent_bus.dependency_bridge import is_feature_available
+        from enhanced_agent_bus.dependency_bridge import is_feature_available
 
         # METRICS should be available if prometheus_client is installed
         result = is_feature_available("METRICS")
@@ -54,21 +54,21 @@ class TestIsFeatureAvailable:
 
     def test_known_feature_redis(self) -> None:
         """Test checking REDIS feature availability."""
-        from packages.enhanced_agent_bus.dependency_bridge import is_feature_available
+        from enhanced_agent_bus.dependency_bridge import is_feature_available
 
         result = is_feature_available("REDIS")
         assert isinstance(result, bool)
 
     def test_unknown_feature_returns_false(self) -> None:
         """Test that unknown features return False."""
-        from packages.enhanced_agent_bus.dependency_bridge import is_feature_available
+        from enhanced_agent_bus.dependency_bridge import is_feature_available
 
         result = is_feature_available("UNKNOWN_FEATURE_XYZ")
         assert result is False
 
     def test_case_insensitive(self) -> None:
         """Test that feature names are case-insensitive."""
-        from packages.enhanced_agent_bus.dependency_bridge import is_feature_available
+        from enhanced_agent_bus.dependency_bridge import is_feature_available
 
         result_upper = is_feature_available("METRICS")
         result_lower = is_feature_available("metrics")
@@ -80,14 +80,14 @@ class TestGetDependency:
 
     def test_get_dependency_with_default(self) -> None:
         """Test getting dependency with default value."""
-        from packages.enhanced_agent_bus.dependency_bridge import get_dependency
+        from enhanced_agent_bus.dependency_bridge import get_dependency
 
         result = get_dependency("nonexistent_dep", default="fallback")
         assert result == "fallback"
 
     def test_get_dependency_legacy_name_mapping(self) -> None:
         """Test that legacy names are mapped correctly."""
-        from packages.enhanced_agent_bus.dependency_bridge import (
+        from enhanced_agent_bus.dependency_bridge import (
             _LEGACY_NAME_MAP,
             get_dependency,
         )
@@ -98,7 +98,7 @@ class TestGetDependency:
 
     def test_get_dependency_returns_none_for_unavailable(self) -> None:
         """Test that unavailable dependencies return None."""
-        from packages.enhanced_agent_bus.dependency_bridge import get_dependency
+        from enhanced_agent_bus.dependency_bridge import get_dependency
 
         result = get_dependency("nonexistent_dep")
         assert result is None
@@ -109,14 +109,14 @@ class TestGetFeatureFlags:
 
     def test_returns_dict(self) -> None:
         """Test that get_feature_flags returns a dictionary."""
-        from packages.enhanced_agent_bus.dependency_bridge import get_feature_flags
+        from enhanced_agent_bus.dependency_bridge import get_feature_flags
 
         flags = get_feature_flags()
         assert isinstance(flags, dict)
 
     def test_contains_expected_keys(self) -> None:
         """Test that the flags dict contains expected legacy keys."""
-        from packages.enhanced_agent_bus.dependency_bridge import get_feature_flags
+        from enhanced_agent_bus.dependency_bridge import get_feature_flags
 
         flags = get_feature_flags()
 
@@ -145,7 +145,7 @@ class TestGetFeatureFlags:
 
     def test_config_always_available(self) -> None:
         """Test that CONFIG_AVAILABLE is always True."""
-        from packages.enhanced_agent_bus.dependency_bridge import get_feature_flags
+        from enhanced_agent_bus.dependency_bridge import get_feature_flags
 
         flags = get_feature_flags()
         assert flags["CONFIG_AVAILABLE"] is True
@@ -156,7 +156,7 @@ class TestRequireFeature:
 
     def test_require_unknown_feature_raises(self) -> None:
         """Test that requiring unknown feature raises RuntimeError."""
-        from packages.enhanced_agent_bus.dependency_bridge import require_feature
+        from enhanced_agent_bus.dependency_bridge import require_feature
 
         with pytest.raises(RuntimeError) as exc_info:
             require_feature("UNKNOWN_FEATURE")
@@ -165,7 +165,7 @@ class TestRequireFeature:
 
     def test_require_unavailable_feature_raises(self) -> None:
         """Test that requiring unavailable feature raises RuntimeError."""
-        from packages.enhanced_agent_bus.dependency_bridge import require_feature
+        from enhanced_agent_bus.dependency_bridge import require_feature
 
         # Register an unavailable dependency
         DependencyRegistry.register(
@@ -186,14 +186,14 @@ class TestGetStatus:
 
     def test_returns_dict(self) -> None:
         """Test that get_status returns a dictionary."""
-        from packages.enhanced_agent_bus.dependency_bridge import get_status
+        from enhanced_agent_bus.dependency_bridge import get_status
 
         status = get_status()
         assert isinstance(status, dict)
 
     def test_contains_expected_structure(self) -> None:
         """Test that status has expected structure."""
-        from packages.enhanced_agent_bus.dependency_bridge import get_status
+        from enhanced_agent_bus.dependency_bridge import get_status
 
         status = get_status()
 
@@ -208,7 +208,7 @@ class TestOptionalImport:
 
     def test_returns_none_for_unavailable_feature(self) -> None:
         """Test that optional_import returns None for unavailable features."""
-        from packages.enhanced_agent_bus.dependency_bridge import optional_import
+        from enhanced_agent_bus.dependency_bridge import optional_import
 
         result = optional_import(
             module_path="nonexistent.module",
@@ -220,7 +220,7 @@ class TestOptionalImport:
 
     def test_returns_default_for_unavailable(self) -> None:
         """Test that optional_import returns default for unavailable features."""
-        from packages.enhanced_agent_bus.dependency_bridge import optional_import
+        from enhanced_agent_bus.dependency_bridge import optional_import
 
         sentinel = object()
         result = optional_import(
@@ -237,7 +237,7 @@ class TestStubMACIRole:
 
     def test_has_expected_roles(self) -> None:
         """Test that stub has expected role attributes."""
-        from packages.enhanced_agent_bus.dependency_bridge import StubMACIRole
+        from enhanced_agent_bus.dependency_bridge import StubMACIRole
 
         assert StubMACIRole.WORKER == "worker"
         assert StubMACIRole.CRITIC == "critic"
@@ -253,7 +253,7 @@ class TestStubMACIEnforcer:
 
     def test_can_instantiate(self) -> None:
         """Test that stub can be instantiated with any args."""
-        from packages.enhanced_agent_bus.dependency_bridge import StubMACIEnforcer
+        from enhanced_agent_bus.dependency_bridge import StubMACIEnforcer
 
         enforcer = StubMACIEnforcer(any="args", work=True)
         assert enforcer is not None
@@ -261,7 +261,7 @@ class TestStubMACIEnforcer:
     @pytest.mark.asyncio
     async def test_validate_action_returns_true(self) -> None:
         """Test that validate_action always returns True."""
-        from packages.enhanced_agent_bus.dependency_bridge import StubMACIEnforcer
+        from enhanced_agent_bus.dependency_bridge import StubMACIEnforcer
 
         enforcer = StubMACIEnforcer()
         result = await enforcer.validate_action(action="any", agent="agent")
@@ -270,7 +270,7 @@ class TestStubMACIEnforcer:
     @pytest.mark.asyncio
     async def test_check_permission_returns_true(self) -> None:
         """Test that check_permission always returns True."""
-        from packages.enhanced_agent_bus.dependency_bridge import StubMACIEnforcer
+        from enhanced_agent_bus.dependency_bridge import StubMACIEnforcer
 
         enforcer = StubMACIEnforcer()
         result = await enforcer.check_permission(permission="any")
@@ -282,7 +282,7 @@ class TestStubMACIRoleRegistry:
 
     def test_can_instantiate(self) -> None:
         """Test that stub can be instantiated."""
-        from packages.enhanced_agent_bus.dependency_bridge import StubMACIRoleRegistry
+        from enhanced_agent_bus.dependency_bridge import StubMACIRoleRegistry
 
         registry = StubMACIRoleRegistry()
         assert registry is not None
@@ -290,7 +290,7 @@ class TestStubMACIRoleRegistry:
     @pytest.mark.asyncio
     async def test_register_agent_is_noop(self) -> None:
         """Test that register_agent does nothing."""
-        from packages.enhanced_agent_bus.dependency_bridge import StubMACIRoleRegistry
+        from enhanced_agent_bus.dependency_bridge import StubMACIRoleRegistry
 
         registry = StubMACIRoleRegistry()
         await registry.register_agent(agent_id="test", role="worker")
@@ -299,7 +299,7 @@ class TestStubMACIRoleRegistry:
     @pytest.mark.asyncio
     async def test_get_role_returns_worker(self) -> None:
         """Test that get_role returns 'worker'."""
-        from packages.enhanced_agent_bus.dependency_bridge import StubMACIRoleRegistry
+        from enhanced_agent_bus.dependency_bridge import StubMACIRoleRegistry
 
         registry = StubMACIRoleRegistry()
         role = await registry.get_role(agent_id="test")
@@ -311,7 +311,7 @@ class TestGetMACIHelpers:
 
     def test_get_maci_enforcer_returns_stub_when_unavailable(self) -> None:
         """Test that get_maci_enforcer returns stub when MACI unavailable."""
-        from packages.enhanced_agent_bus.dependency_bridge import (
+        from enhanced_agent_bus.dependency_bridge import (
             StubMACIEnforcer,
             get_maci_enforcer,
         )
@@ -323,7 +323,7 @@ class TestGetMACIHelpers:
 
     def test_get_maci_role_returns_stub_when_unavailable(self) -> None:
         """Test that get_maci_role returns stub when MACI unavailable."""
-        from packages.enhanced_agent_bus.dependency_bridge import (
+        from enhanced_agent_bus.dependency_bridge import (
             StubMACIRole,
             get_maci_role,
         )
@@ -333,7 +333,7 @@ class TestGetMACIHelpers:
 
     def test_get_maci_role_registry_returns_stub_when_unavailable(self) -> None:
         """Test that get_maci_role_registry returns stub when unavailable."""
-        from packages.enhanced_agent_bus.dependency_bridge import (
+        from enhanced_agent_bus.dependency_bridge import (
             StubMACIRoleRegistry,
             get_maci_role_registry,
         )
@@ -347,7 +347,7 @@ class TestFeatureMap:
 
     def test_all_features_mapped(self) -> None:
         """Test that all expected features are in the map."""
-        from packages.enhanced_agent_bus.dependency_bridge import _FEATURE_MAP
+        from enhanced_agent_bus.dependency_bridge import _FEATURE_MAP
 
         expected_features = [
             "METRICS",
@@ -376,14 +376,14 @@ class TestLegacyNameMap:
 
     def test_metrics_mappings(self) -> None:
         """Test metrics-related legacy name mappings."""
-        from packages.enhanced_agent_bus.dependency_bridge import _LEGACY_NAME_MAP
+        from enhanced_agent_bus.dependency_bridge import _LEGACY_NAME_MAP
 
         assert _LEGACY_NAME_MAP["MESSAGE_QUEUE_DEPTH"] == "message_queue_depth"
         assert _LEGACY_NAME_MAP["set_service_info"] == "set_service_info"
 
     def test_maci_mappings(self) -> None:
         """Test MACI-related legacy name mappings."""
-        from packages.enhanced_agent_bus.dependency_bridge import _LEGACY_NAME_MAP
+        from enhanced_agent_bus.dependency_bridge import _LEGACY_NAME_MAP
 
         assert _LEGACY_NAME_MAP["MACIEnforcer"] == "maci_enforcer"
         assert _LEGACY_NAME_MAP["MACIRole"] == "maci_role"
@@ -391,14 +391,14 @@ class TestLegacyNameMap:
 
     def test_opa_mappings(self) -> None:
         """Test OPA-related legacy name mappings."""
-        from packages.enhanced_agent_bus.dependency_bridge import _LEGACY_NAME_MAP
+        from enhanced_agent_bus.dependency_bridge import _LEGACY_NAME_MAP
 
         assert _LEGACY_NAME_MAP["OPAClient"] == "opa_client"
         assert _LEGACY_NAME_MAP["get_opa_client"] == "get_opa_client"
 
     def test_circuit_breaker_mappings(self) -> None:
         """Test circuit breaker legacy name mappings."""
-        from packages.enhanced_agent_bus.dependency_bridge import _LEGACY_NAME_MAP
+        from enhanced_agent_bus.dependency_bridge import _LEGACY_NAME_MAP
 
         assert _LEGACY_NAME_MAP["get_circuit_breaker"] == "circuit_breaker"
         assert _LEGACY_NAME_MAP["CircuitBreakerConfig"] == "circuit_breaker_config"

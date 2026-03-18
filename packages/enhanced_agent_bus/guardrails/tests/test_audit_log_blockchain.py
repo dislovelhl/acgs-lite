@@ -11,13 +11,14 @@ from datetime import UTC, datetime, timezone
 from pathlib import Path
 
 import pytest
-from packages.enhanced_agent_bus.guardrails.audit_log import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.guardrails.audit_log import (
     AuditLog,
     AuditLogConfig,
     BlockchainLedger,
 )
-from packages.enhanced_agent_bus.guardrails.enums import GuardrailLayer, SafetyAction
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.guardrails.enums import GuardrailLayer, SafetyAction
 
 
 @pytest.fixture
@@ -335,7 +336,7 @@ class TestAuditLogBlockchainEdgeCases:
 @pytest.mark.constitutional
 def test_constitutional_hash_consistency():
     """Verify constitutional hash is correctly referenced."""
-    from packages.enhanced_agent_bus.guardrails.audit_log import CONSTITUTIONAL_HASH as ModuleHash
+    from enhanced_agent_bus.guardrails.audit_log import CONSTITUTIONAL_HASH as ModuleHash
 
     assert ModuleHash == CONSTITUTIONAL_HASH
 

@@ -10,7 +10,10 @@ import uuid
 from datetime import UTC, datetime, timezone
 
 import pytest
-from packages.enhanced_agent_bus.context_memory.models import (
+from pydantic import ValidationError
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.context_memory.models import (
     ContextChunk,
     ContextPriority,
     ContextRetrievalResult,
@@ -25,8 +28,6 @@ from packages.enhanced_agent_bus.context_memory.models import (
     MemoryQuery,
     SemanticMemoryEntry,
 )
-from pydantic import ValidationError
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # ContextType enum
@@ -1198,22 +1199,22 @@ class TestMemoryOperation:
 
 class TestModuleExports:
     def test_all_exports_importable(self):
-        from packages.enhanced_agent_bus.context_memory import models
+        from enhanced_agent_bus.context_memory import models
 
         for name in models.__all__:
             assert hasattr(models, name), f"{name} not found in models module"
 
     def test_constitutional_hash_in_all(self):
-        from packages.enhanced_agent_bus.context_memory import models
+        from enhanced_agent_bus.context_memory import models
 
         assert "CONSTITUTIONAL_HASH" in models.__all__
 
     def test_context_type_in_all(self):
-        from packages.enhanced_agent_bus.context_memory import models
+        from enhanced_agent_bus.context_memory import models
 
         assert "ContextType" in models.__all__
 
     def test_mamba_config_in_all(self):
-        from packages.enhanced_agent_bus.context_memory import models
+        from enhanced_agent_bus.context_memory import models
 
         assert "MambaConfig" in models.__all__

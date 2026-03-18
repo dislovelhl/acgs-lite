@@ -13,7 +13,10 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.llm_adapters.base import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+from src.core.shared.resilience.retry import RetryConfig as SharedRetryConfig
+
+from enhanced_agent_bus.llm_adapters.base import (
     LEGACY_RATE_LIMIT_ERRORS,
     LEGACY_SERVER_ERRORS,
     LEGACY_TIMEOUT_ERRORS,
@@ -30,9 +33,6 @@ from packages.enhanced_agent_bus.llm_adapters.base import (
     StreamingMode,
     TokenUsage,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.resilience.retry import RetryConfig as SharedRetryConfig
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # ---------------------------------------------------------------------------
@@ -799,13 +799,13 @@ class TestValidateMessagesRoles:
 
 class TestModuleExports:
     def test_all_exported(self):
-        from packages.enhanced_agent_bus.llm_adapters import base as base_mod
+        from enhanced_agent_bus.llm_adapters import base as base_mod
 
         for name in base_mod.__all__:
             assert hasattr(base_mod, name), f"Missing export: {name}"
 
     def test_expected_names_in_all(self):
-        from packages.enhanced_agent_bus.llm_adapters import base as base_mod
+        from enhanced_agent_bus.llm_adapters import base as base_mod
 
         expected = {
             "StreamingMode",

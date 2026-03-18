@@ -12,7 +12,14 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
-from src.core.shared.types import CONSTITUTIONAL_HASH, JSONDict
+try:
+    from src.core.shared.types import (
+        CONSTITUTIONAL_HASH,
+        JSONDict,
+    )  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"  # type: ignore[misc,assignment]
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

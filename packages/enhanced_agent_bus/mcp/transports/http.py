@@ -27,10 +27,14 @@ import random
 from typing import Any
 
 import httpx
-from packages.enhanced_agent_bus.bus_types import JSONDict
-from packages.enhanced_agent_bus.mcp.transports.base import MCPTransportError
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+
+from enhanced_agent_bus.bus_types import JSONDict
+from enhanced_agent_bus.mcp.transports.base import MCPTransportError
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)

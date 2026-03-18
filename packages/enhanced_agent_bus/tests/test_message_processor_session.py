@@ -14,16 +14,17 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.config import BusConfiguration
-from packages.enhanced_agent_bus.message_processor import MessageProcessor
-from packages.enhanced_agent_bus.models import (
+
+from enhanced_agent_bus.config import BusConfiguration
+from enhanced_agent_bus.message_processor import MessageProcessor
+from enhanced_agent_bus.models import (
     AgentMessage,
     MessageType,
     Priority,
     RiskLevel,
     SessionGovernanceConfig,
 )
-from packages.enhanced_agent_bus.session_context import SessionContext, SessionContextManager
+from enhanced_agent_bus.session_context import SessionContext, SessionContextManager
 
 
 @pytest.fixture

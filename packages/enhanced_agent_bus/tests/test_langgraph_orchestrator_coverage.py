@@ -12,7 +12,8 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.langgraph_orchestrator import (
+
+from enhanced_agent_bus.langgraph_orchestrator import (
     CONSTITUTIONAL_HASH,
     BaseNode,
     ConditionalNode,

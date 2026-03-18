@@ -22,21 +22,28 @@ import json
 import time
 from dataclasses import dataclass, field
 
-from packages.enhanced_agent_bus.exceptions.operations import GovernanceError
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.exceptions.operations import GovernanceError
 
 # ---- Local imports ----------------------------------------------------------------
-from packages.enhanced_agent_bus.llm_adapters.config import LocoOperatorAdapterConfig
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
-from src.core.shared.types import JSONDict
-
+from enhanced_agent_bus.llm_adapters.config import LocoOperatorAdapterConfig
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
 # Optional heavy imports -- guarded so unit tests don't require a GPU
 _HUGGINGFACE_ADAPTER_AVAILABLE = False
 try:
-    from packages.enhanced_agent_bus.llm_adapters import HuggingFaceAdapter, LLMMessage
+    from enhanced_agent_bus.llm_adapters import HuggingFaceAdapter, LLMMessage
 
     _HUGGINGFACE_ADAPTER_AVAILABLE = True
 except ImportError:

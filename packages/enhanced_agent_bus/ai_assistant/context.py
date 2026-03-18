@@ -11,7 +11,7 @@ import json
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import Enum
-from typing import Optional, TypeAlias, Union
+from typing import TypeAlias
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -25,7 +25,7 @@ MAMBA_CONTEXT_PROCESSING_ERRORS = (
     OSError,
 )
 
-from packages.enhanced_agent_bus.bus_types import JSONDict, JSONValue  # noqa: E402
+from enhanced_agent_bus.bus_types import JSONDict, JSONValue  # noqa: E402
 
 # Optional torch import for Mamba processing
 try:
@@ -50,7 +50,10 @@ except (ImportError, AttributeError):
     logger.warning("Mamba-2 Hybrid Processor not available - using standard context processing")
 
 # Import centralized constitutional hash with fallback
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 
 class ConversationState(Enum):

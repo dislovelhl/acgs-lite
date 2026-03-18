@@ -6,7 +6,10 @@ Constitutional Hash: cdd01ef066bc6cf2
 import secrets
 from abc import ABC, abstractmethod
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from .models import CONSTITUTIONAL_HASH, AuthorizationRequest, ProtocolValidationResult
 

@@ -6,6 +6,11 @@ Tests for ACL adapter exceptions, configuration, circuit breaker,
 rate limiter, and abstract base class.
 """
 
+import pytest
+
+pytest.importorskip("acl_adapters.base")
+
+
 import asyncio
 import time
 

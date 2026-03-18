@@ -11,7 +11,9 @@ from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import patch
 
 import pytest
-from packages.enhanced_agent_bus.multi_tenancy.context import (
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus.multi_tenancy.context import (
     TenantContext,
     clear_tenant_context,
     get_current_tenant,
@@ -20,7 +22,6 @@ from packages.enhanced_agent_bus.multi_tenancy.context import (
     set_current_tenant,
     tenant_context,
 )
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # TenantContext - construction and validation
@@ -260,7 +261,7 @@ class TestGetCurrentTenant:
         try:
             assert get_current_tenant() is ctx
         finally:
-            from packages.enhanced_agent_bus.multi_tenancy.context import _tenant_context
+            from enhanced_agent_bus.multi_tenancy.context import _tenant_context
 
             _tenant_context.reset(token)
 
@@ -311,7 +312,7 @@ class TestSetCurrentTenant:
         token = set_current_tenant(ctx)
         assert isinstance(token, Token)
         assert get_current_tenant() is ctx
-        from packages.enhanced_agent_bus.multi_tenancy.context import _tenant_context
+        from enhanced_agent_bus.multi_tenancy.context import _tenant_context
 
         _tenant_context.reset(token)
 

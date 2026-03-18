@@ -10,13 +10,14 @@ Targets >=95% coverage of:
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.middlewares.batch.auto_tune import (
+
+from enhanced_agent_bus.middlewares.batch.auto_tune import (
     BATCH_AUTO_TUNE_ERRORS,
     BatchAutoTuneMiddleware,
 )
-from packages.enhanced_agent_bus.middlewares.batch.context import BatchPipelineContext
-from packages.enhanced_agent_bus.middlewares.batch.exceptions import BatchAutoTuneException
-from packages.enhanced_agent_bus.pipeline.middleware import MiddlewareConfig
+from enhanced_agent_bus.middlewares.batch.context import BatchPipelineContext
+from enhanced_agent_bus.middlewares.batch.exceptions import BatchAutoTuneException
+from enhanced_agent_bus.pipeline.middleware import MiddlewareConfig
 
 # ---------------------------------------------------------------------------
 # Helpers

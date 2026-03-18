@@ -13,86 +13,89 @@ from __future__ import annotations
 from importlib import import_module
 from typing import TYPE_CHECKING
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH
 
 if TYPE_CHECKING:
-    from packages.enhanced_agent_bus.agents.chatops_executor import handle_chatops_command
-    from packages.enhanced_agent_bus.bundle_registry import (
+    from enhanced_agent_bus.agents.chatops_executor import handle_chatops_command
+    from enhanced_agent_bus.bundle_registry import (
         BasicAuthProvider,
         BundleManifest,
         OCIRegistryClient,
         RegistryType,
     )
-    from packages.enhanced_agent_bus.enums import MessageType
-    from packages.enhanced_agent_bus.explanation_service import (
+    from enhanced_agent_bus.enums import MessageType
+    from enhanced_agent_bus.explanation_service import (
         ExplanationService,
         ExplanationServiceAdapter,
     )
-    from packages.enhanced_agent_bus.message_processor import MessageProcessor
-    from packages.enhanced_agent_bus.models import DecisionLog
-    from packages.enhanced_agent_bus.multi_tenancy.orm_models import (
+    from enhanced_agent_bus.message_processor import MessageProcessor
+    from enhanced_agent_bus.models import DecisionLog
+    from enhanced_agent_bus.multi_tenancy.orm_models import (
         EnterpriseIntegrationORM,
         MigrationJobORM,
         TenantAuditLogORM,
         TenantORM,
         TenantRoleMappingORM,
     )
-    from packages.enhanced_agent_bus.session_context import SessionContext, SessionContextManager
-    from packages.enhanced_agent_bus.validators import ValidationResult
+    from enhanced_agent_bus.session_context import SessionContext, SessionContextManager
+    from enhanced_agent_bus.validators import ValidationResult
 
 
 _SYMBOL_SOURCES: dict[str, tuple[str, str]] = {
     "ExplanationService": (
-        "packages.enhanced_agent_bus.explanation_service",
+        "enhanced_agent_bus.explanation_service",
         "ExplanationService",
     ),
     "ExplanationServiceAdapter": (
-        "packages.enhanced_agent_bus.explanation_service",
+        "enhanced_agent_bus.explanation_service",
         "ExplanationServiceAdapter",
     ),
-    "DecisionLog": ("packages.enhanced_agent_bus.models", "DecisionLog"),
-    "ValidationResult": ("packages.enhanced_agent_bus.validators", "ValidationResult"),
-    "BundleManifest": ("packages.enhanced_agent_bus.bundle_registry", "BundleManifest"),
+    "DecisionLog": ("enhanced_agent_bus.models", "DecisionLog"),
+    "ValidationResult": ("enhanced_agent_bus.validators", "ValidationResult"),
+    "BundleManifest": ("enhanced_agent_bus.bundle_registry", "BundleManifest"),
     "OCIRegistryClient": (
-        "packages.enhanced_agent_bus.bundle_registry",
+        "enhanced_agent_bus.bundle_registry",
         "OCIRegistryClient",
     ),
-    "RegistryType": ("packages.enhanced_agent_bus.bundle_registry", "RegistryType"),
+    "RegistryType": ("enhanced_agent_bus.bundle_registry", "RegistryType"),
     "BasicAuthProvider": (
-        "packages.enhanced_agent_bus.bundle_registry",
+        "enhanced_agent_bus.bundle_registry",
         "BasicAuthProvider",
     ),
-    "SessionContext": ("packages.enhanced_agent_bus.session_context", "SessionContext"),
+    "SessionContext": ("enhanced_agent_bus.session_context", "SessionContext"),
     "SessionContextManager": (
-        "packages.enhanced_agent_bus.session_context",
+        "enhanced_agent_bus.session_context",
         "SessionContextManager",
     ),
     "EnterpriseIntegrationORM": (
-        "packages.enhanced_agent_bus.multi_tenancy.orm_models",
+        "enhanced_agent_bus.multi_tenancy.orm_models",
         "EnterpriseIntegrationORM",
     ),
     "MigrationJobORM": (
-        "packages.enhanced_agent_bus.multi_tenancy.orm_models",
+        "enhanced_agent_bus.multi_tenancy.orm_models",
         "MigrationJobORM",
     ),
     "TenantAuditLogORM": (
-        "packages.enhanced_agent_bus.multi_tenancy.orm_models",
+        "enhanced_agent_bus.multi_tenancy.orm_models",
         "TenantAuditLogORM",
     ),
-    "TenantORM": ("packages.enhanced_agent_bus.multi_tenancy.orm_models", "TenantORM"),
+    "TenantORM": ("enhanced_agent_bus.multi_tenancy.orm_models", "TenantORM"),
     "TenantRoleMappingORM": (
-        "packages.enhanced_agent_bus.multi_tenancy.orm_models",
+        "enhanced_agent_bus.multi_tenancy.orm_models",
         "TenantRoleMappingORM",
     ),
     "handle_chatops_command": (
-        "packages.enhanced_agent_bus.agents.chatops_executor",
+        "enhanced_agent_bus.agents.chatops_executor",
         "handle_chatops_command",
     ),
-    "MessageType": ("packages.enhanced_agent_bus.enums", "MessageType"),
+    "MessageType": ("enhanced_agent_bus.enums", "MessageType"),
     "MessageProcessor": (
-        "packages.enhanced_agent_bus.message_processor",
+        "enhanced_agent_bus.message_processor",
         "MessageProcessor",
     ),
 }

@@ -4,13 +4,19 @@ Constitutional Hash: cdd01ef066bc6cf2
 """
 
 import pytest
-from packages.enhanced_agent_bus.config import BusConfiguration
-from packages.enhanced_agent_bus.message_processor import MessageProcessor
-from packages.enhanced_agent_bus.models import AgentMessage, MessageType
+
+pytest.importorskip("src.core.shared.agent_workflow_metrics")
+
+
+import pytest
 from src.core.shared.agent_workflow_metrics import (
     get_agent_workflow_metrics_collector,
     reset_agent_workflow_metrics_collector,
 )
+
+from enhanced_agent_bus.config import BusConfiguration
+from enhanced_agent_bus.message_processor import MessageProcessor
+from enhanced_agent_bus.models import AgentMessage, MessageType
 
 
 @pytest.fixture

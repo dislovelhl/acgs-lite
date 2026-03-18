@@ -5,8 +5,9 @@ Constitutional Hash: cdd01ef066bc6cf2
 """
 
 import pytest
-from packages.enhanced_agent_bus.batch_processor_infra.metrics import BatchMetrics
-from packages.enhanced_agent_bus.models import BatchItemStatus, BatchResponseStats
+
+from enhanced_agent_bus.batch_processor_infra.metrics import BatchMetrics
+from enhanced_agent_bus.models import BatchItemStatus, BatchResponseStats
 
 
 class TestBatchMetrics:

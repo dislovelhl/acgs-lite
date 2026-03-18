@@ -28,7 +28,8 @@ from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.deliberation_layer.vote_collector import (
+
+from enhanced_agent_bus.deliberation_layer.vote_collector import (
     EventDrivenVoteCollector,
     VoteEvent,
     VoteSession,
@@ -142,11 +143,11 @@ class TestStabilizeWeights:
         mock_rust.sinkhorn_knopp_stabilize.return_value = mock_stabilized_matrix
 
         with patch.dict(
-            "packages.enhanced_agent_bus.deliberation_layer.vote_collector.__dict__",
+            "enhanced_agent_bus.deliberation_layer.vote_collector.__dict__",
             {"RUST_AVAILABLE": True, "NUMPY_AVAILABLE": True, "rust_opt": mock_rust, "np": mock_np},
         ):
             # Call via the module globals path using patch
-            import packages.enhanced_agent_bus.deliberation_layer.vote_collector as vc_mod
+            import enhanced_agent_bus.deliberation_layer.vote_collector as vc_mod
 
             orig_rust = vc_mod.RUST_AVAILABLE
             orig_numpy = vc_mod.NUMPY_AVAILABLE
@@ -170,7 +171,7 @@ class TestStabilizeWeights:
     def test_rust_available_numpy_unavailable_falls_through(self) -> None:
         """RUST_AVAILABLE=True but NUMPY_AVAILABLE=False raises ImportError inside try block."""
         sess = _session(agent_weights={"a1": 2.0})
-        import packages.enhanced_agent_bus.deliberation_layer.vote_collector as vc_mod
+        import enhanced_agent_bus.deliberation_layer.vote_collector as vc_mod
 
         orig_rust = vc_mod.RUST_AVAILABLE
         orig_numpy = vc_mod.NUMPY_AVAILABLE
@@ -193,7 +194,7 @@ class TestStabilizeWeights:
     def test_rust_sinkhorn_value_error_falls_through(self) -> None:
         """Rust sinkhorn raises ValueError — logs warning, falls to python path."""
         sess = _session(agent_weights={"a1": 2.0, "a2": 1.0})
-        import packages.enhanced_agent_bus.deliberation_layer.vote_collector as vc_mod
+        import enhanced_agent_bus.deliberation_layer.vote_collector as vc_mod
 
         mock_rust = MagicMock()
         mock_rust.sinkhorn_knopp_stabilize.side_effect = ValueError("bad matrix")
@@ -226,7 +227,7 @@ class TestStabilizeWeights:
 
     def test_no_rust_no_sinkhorn_returns_original_weights(self) -> None:
         sess = _session(agent_weights={"a1": 1.5, "a2": 0.5})
-        import packages.enhanced_agent_bus.deliberation_layer.vote_collector as vc_mod
+        import enhanced_agent_bus.deliberation_layer.vote_collector as vc_mod
 
         orig_rust = vc_mod.RUST_AVAILABLE
         orig_sinkhorn = vc_mod.sinkhorn_projection
@@ -282,7 +283,7 @@ class TestCollectorConnect:
     async def test_connect_redis_not_available_returns_false(self) -> None:
         c = _collector()
         with patch(
-            "packages.enhanced_agent_bus.deliberation_layer.vote_collector.REDIS_AVAILABLE",
+            "enhanced_agent_bus.deliberation_layer.vote_collector.REDIS_AVAILABLE",
             False,
         ):
             result = await c.connect()
@@ -300,11 +301,11 @@ class TestCollectorConnect:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_collector.REDIS_AVAILABLE",
+                "enhanced_agent_bus.deliberation_layer.vote_collector.REDIS_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_collector.aioredis",
+                "enhanced_agent_bus.deliberation_layer.vote_collector.aioredis",
                 mock_aioredis,
             ),
         ):
@@ -329,11 +330,11 @@ class TestCollectorConnect:
 
         with (
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_collector.REDIS_AVAILABLE",
+                "enhanced_agent_bus.deliberation_layer.vote_collector.REDIS_AVAILABLE",
                 True,
             ),
             patch(
-                "packages.enhanced_agent_bus.deliberation_layer.vote_collector.aioredis",
+                "enhanced_agent_bus.deliberation_layer.vote_collector.aioredis",
                 mock_aioredis,
             ),
         ):
@@ -905,7 +906,7 @@ class TestCollectorAdditionalCoverage:
 class TestStabilizeWeightsAdditional:
     def test_rust_path_numpy_raises_import_error_falls_through(self) -> None:
         """RUST_AVAILABLE=True, NUMPY_AVAILABLE=True but numpy raises ImportError."""
-        import packages.enhanced_agent_bus.deliberation_layer.vote_collector as vc_mod
+        import enhanced_agent_bus.deliberation_layer.vote_collector as vc_mod
 
         sess = _session(agent_weights={"a1": 2.0})
         mock_rust = MagicMock()
@@ -940,7 +941,7 @@ class TestStabilizeWeightsAdditional:
 
     def test_rust_sinkhorn_runtime_error_falls_through(self) -> None:
         """RuntimeError in rust sinkhorn is caught and falls through."""
-        import packages.enhanced_agent_bus.deliberation_layer.vote_collector as vc_mod
+        import enhanced_agent_bus.deliberation_layer.vote_collector as vc_mod
 
         sess = _session(agent_weights={"a1": 3.0, "a2": 1.0})
         mock_rust = MagicMock()
@@ -975,7 +976,7 @@ class TestStabilizeWeightsAdditional:
 
     def test_rust_success_normalizes_weights(self) -> None:
         """Rust sinkhorn succeeds and returns normalized weights (covers lines 184-187)."""
-        import packages.enhanced_agent_bus.deliberation_layer.vote_collector as vc_mod
+        import enhanced_agent_bus.deliberation_layer.vote_collector as vc_mod
 
         sess = _session(agent_weights={"a1": 3.0, "a2": 1.0})
         mock_rust = MagicMock()

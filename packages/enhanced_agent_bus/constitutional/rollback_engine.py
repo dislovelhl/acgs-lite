@@ -22,11 +22,15 @@ import inspect
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timezone
-from typing import TYPE_CHECKING, Optional, TypeAlias
+from typing import TYPE_CHECKING, TypeAlias
 from uuid import uuid4
 
 import httpx
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import ACGSBaseError
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
@@ -39,7 +43,10 @@ except ImportError:
     aioredis = None
     REDIS_AVAILABLE = False
 
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from ..governance_constants import (
     ROLLBACK_DETECT_TIMEOUT_SECONDS,

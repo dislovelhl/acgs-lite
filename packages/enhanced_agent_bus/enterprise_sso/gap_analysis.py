@@ -17,7 +17,10 @@ from datetime import UTC, datetime, timezone
 from enum import Enum
 from typing import ClassVar, cast
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 # ============================================================================
 # Enums

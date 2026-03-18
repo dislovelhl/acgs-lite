@@ -22,11 +22,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import pytest
-from packages.enhanced_agent_bus.persistence.executor import (
+
+from enhanced_agent_bus.persistence.executor import (
     DurableWorkflowExecutor,
     WorkflowContext,
 )
-from packages.enhanced_agent_bus.persistence.models import (
+from enhanced_agent_bus.persistence.models import (
     CONSTITUTIONAL_HASH,
     CheckpointData,
     StepStatus,
@@ -36,7 +37,7 @@ from packages.enhanced_agent_bus.persistence.models import (
     WorkflowStatus,
     WorkflowStep,
 )
-from packages.enhanced_agent_bus.persistence.repository import InMemoryWorkflowRepository
+from enhanced_agent_bus.persistence.repository import InMemoryWorkflowRepository
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -315,7 +316,7 @@ class TestExecuteActivityCaching:
 
         cached_value = {"from": "redis"}
 
-        with patch("packages.enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
+        with patch("enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
             mock_cache.get_step_result = AsyncMock(return_value=cached_value)
             mock_cache.set_step_result = AsyncMock()
             mock_cache.invalidate_workflow_state = AsyncMock()
@@ -345,7 +346,7 @@ class TestExecuteActivityCaching:
         ctx = WorkflowContext(instance, repository, executor)
 
         # Pre-populate a completed step in the repository
-        from packages.enhanced_agent_bus.persistence.models import StepStatus
+        from enhanced_agent_bus.persistence.models import StepStatus
 
         idempotency_key = ctx.get_idempotency_key("pre-step")
         existing_step = WorkflowStep(
@@ -365,7 +366,7 @@ class TestExecuteActivityCaching:
             call_count += 1
             return {"should": "not be called"}
 
-        with patch("packages.enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
+        with patch("enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
             mock_cache.get_step_result = AsyncMock(return_value=None)  # No Redis hit
             mock_cache.set_step_result = AsyncMock()
             mock_cache.invalidate_workflow_state = AsyncMock()
@@ -387,7 +388,7 @@ class TestExecuteActivityCaching:
         await repository.save_workflow(instance)
         ctx = WorkflowContext(instance, repository, executor)
 
-        from packages.enhanced_agent_bus.persistence.models import StepStatus
+        from enhanced_agent_bus.persistence.models import StepStatus
 
         idempotency_key = ctx.get_idempotency_key("null-step")
         existing_step = WorkflowStep(
@@ -400,7 +401,7 @@ class TestExecuteActivityCaching:
         )
         await repository.save_step(existing_step)
 
-        with patch("packages.enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
+        with patch("enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
             mock_cache.get_step_result = AsyncMock(return_value=None)
             mock_cache.set_step_result = AsyncMock()
             mock_cache.invalidate_workflow_state = AsyncMock()
@@ -422,7 +423,7 @@ class TestExecuteActivityCaching:
         await repository.save_workflow(instance)
         ctx = WorkflowContext(instance, repository, executor)
 
-        with patch("packages.enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
+        with patch("enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
             mock_cache.get_step_result = AsyncMock(return_value=None)
             mock_cache.set_step_result = AsyncMock()
             mock_cache.invalidate_workflow_state = AsyncMock()
@@ -456,7 +457,7 @@ class TestExecuteActivityCancellation:
         await repository.save_workflow(instance)
         ctx = WorkflowContext(instance, repository, executor_no_retry)
 
-        with patch("packages.enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
+        with patch("enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
             mock_cache.get_step_result = AsyncMock(return_value=None)
             mock_cache.set_step_result = AsyncMock()
             mock_cache.invalidate_workflow_state = AsyncMock()
@@ -482,7 +483,7 @@ class TestExecuteActivityCancellation:
             await repository.save_workflow(instance)
             return {"done": True}
 
-        with patch("packages.enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
+        with patch("enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
             mock_cache.get_step_result = AsyncMock(return_value=None)
             mock_cache.set_step_result = AsyncMock()
             mock_cache.invalidate_workflow_state = AsyncMock()
@@ -509,7 +510,7 @@ class TestExecuteActivityCancellation:
             call_count += 1
             raise asyncio.CancelledError("hard cancel")
 
-        with patch("packages.enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
+        with patch("enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
             mock_cache.get_step_result = AsyncMock(return_value=None)
             mock_cache.set_step_result = AsyncMock()
             mock_cache.invalidate_workflow_state = AsyncMock()
@@ -543,7 +544,7 @@ class TestExecuteActivityTimeout:
             await asyncio.sleep(10)
             return {"slow": True}
 
-        with patch("packages.enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
+        with patch("enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
             mock_cache.get_step_result = AsyncMock(return_value=None)
             mock_cache.set_step_result = AsyncMock()
             mock_cache.invalidate_workflow_state = AsyncMock()
@@ -574,7 +575,7 @@ class TestExecuteActivityTimeout:
                 await asyncio.sleep(5)  # Will timeout first time
             return {"ok": True}
 
-        with patch("packages.enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
+        with patch("enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
             mock_cache.get_step_result = AsyncMock(return_value=None)
             mock_cache.set_step_result = AsyncMock()
             mock_cache.invalidate_workflow_state = AsyncMock()
@@ -608,7 +609,7 @@ class TestExecuteActivityResultWrapping:
         async def returns_string(ctx, data):
             return "a string value"
 
-        with patch("packages.enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
+        with patch("enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
             mock_cache.get_step_result = AsyncMock(return_value=None)
             mock_cache.set_step_result = AsyncMock()
             mock_cache.invalidate_workflow_state = AsyncMock()
@@ -660,7 +661,7 @@ class TestRunCompensations:
 
         ctx._compensation_handlers["already-done"] = should_not_run
 
-        with patch("packages.enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
+        with patch("enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
             mock_cache.invalidate_workflow_state = AsyncMock()
             await executor._run_compensations(ctx)
 
@@ -688,7 +689,7 @@ class TestRunCompensations:
         await repository.save_compensation(comp)
         # Deliberately leave ctx._compensation_handlers empty
 
-        with patch("packages.enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
+        with patch("enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
             mock_cache.invalidate_workflow_state = AsyncMock()
             # Should not raise; logs a warning instead
             await executor._run_compensations(ctx)
@@ -721,7 +722,7 @@ class TestRunCompensations:
 
         ctx._compensation_handlers["fail-comp"] = failing_handler
 
-        with patch("packages.enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
+        with patch("enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
             mock_cache.invalidate_workflow_state = AsyncMock()
             await executor._run_compensations(ctx)
 
@@ -754,7 +755,7 @@ class TestRunCompensations:
 
         ctx._compensation_handlers["non-dict-comp"] = string_handler
 
-        with patch("packages.enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
+        with patch("enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
             mock_cache.invalidate_workflow_state = AsyncMock()
             await executor._run_compensations(ctx)
 
@@ -795,7 +796,7 @@ class TestCreateCheckpoint:
         # Verify event recorded
         events = await repository.get_events(instance.id)
         event_types = [e.event_type for e in events]
-        from packages.enhanced_agent_bus.persistence.models import EventType
+        from enhanced_agent_bus.persistence.models import EventType
 
         assert EventType.CHECKPOINT_CREATED in event_types
 
@@ -1002,7 +1003,7 @@ class TestFullWorkflowIntegration:
             await ctx.executor.execute_activity(ctx, "step2", step2_fail)
             return {}
 
-        with patch("packages.enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
+        with patch("enhanced_agent_bus.persistence.executor.workflow_cache") as mock_cache:
             mock_cache.get_step_result = AsyncMock(return_value=None)
             mock_cache.set_step_result = AsyncMock()
             mock_cache.invalidate_workflow_state = AsyncMock()

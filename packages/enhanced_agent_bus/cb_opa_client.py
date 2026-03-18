@@ -9,13 +9,20 @@ Split from circuit_breaker_clients.py for improved maintainability.
 
 import hashlib
 import json
+import sys
 import time
 from datetime import UTC, datetime
 from typing import Literal
 
 # Import centralized constitutional hash
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
+try:
+    from src.core.shared.types import JSONDict  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -44,6 +51,10 @@ try:
     FAST_HASH_AVAILABLE = True
 except ImportError:
     FAST_HASH_AVAILABLE = False
+
+_module = sys.modules[__name__]
+sys.modules.setdefault("enhanced_agent_bus.cb_opa_client", _module)
+sys.modules.setdefault("packages.enhanced_agent_bus.cb_opa_client", _module)
 
 
 class CircuitBreakerOPAClient:

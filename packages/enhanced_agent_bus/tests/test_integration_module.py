@@ -15,32 +15,18 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 logger = get_logger(__name__)
 
 # Import from models module (conftest.py sets up sys.modules patching)
-try:
-    import enhanced_agent_bus.deliberation_layer.integration as integration_module
-    from enhanced_agent_bus.deliberation_layer.integration import (
-        DeliberationLayer,
-        get_deliberation_layer,
-    )
-    from enhanced_agent_bus.models import (
-        CONSTITUTIONAL_HASH,
-        AgentMessage,
-        MessageStatus,
-        MessageType,
-        Priority,
-    )
-except ImportError:
-    import packages.enhanced_agent_bus.deliberation_layer.integration as integration_module
-    from packages.enhanced_agent_bus.deliberation_layer.integration import (
-        DeliberationLayer,
-        get_deliberation_layer,
-    )
-    from packages.enhanced_agent_bus.models import (
-        CONSTITUTIONAL_HASH,
-        AgentMessage,
-        MessageStatus,
-        MessageType,
-        Priority,
-    )
+import enhanced_agent_bus.deliberation_layer.integration as integration_module
+from enhanced_agent_bus.deliberation_layer.integration import (
+    DeliberationLayer,
+    get_deliberation_layer,
+)
+from enhanced_agent_bus.models import (
+    CONSTITUTIONAL_HASH,
+    AgentMessage,
+    MessageStatus,
+    MessageType,
+    Priority,
+)
 
 
 @pytest.fixture(autouse=True)

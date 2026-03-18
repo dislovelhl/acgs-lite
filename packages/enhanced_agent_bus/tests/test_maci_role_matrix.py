@@ -4,7 +4,8 @@ Constitutional Hash: cdd01ef066bc6cf2
 """
 
 import pytest
-from packages.enhanced_agent_bus.maci_enforcement import (
+
+from enhanced_agent_bus.maci_enforcement import (
     MACIAction,
     MACIRole,
     validate_maci_role_matrix,

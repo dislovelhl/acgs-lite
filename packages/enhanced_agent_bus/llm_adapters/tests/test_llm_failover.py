@@ -16,13 +16,14 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.circuit_breaker import (
+
+from enhanced_agent_bus.circuit_breaker import (
     CONSTITUTIONAL_HASH,
     CircuitState,
     FallbackStrategy,
     ServiceSeverity,
 )
-from packages.enhanced_agent_bus.llm_adapters.capability_matrix import (
+from enhanced_agent_bus.llm_adapters.capability_matrix import (
     CapabilityDimension,
     CapabilityLevel,
     CapabilityRegistry,
@@ -30,7 +31,7 @@ from packages.enhanced_agent_bus.llm_adapters.capability_matrix import (
     LatencyClass,
     ProviderCapabilityProfile,
 )
-from packages.enhanced_agent_bus.llm_adapters.llm_failover import (
+from enhanced_agent_bus.llm_adapters.llm_failover import (
     LLM_CIRCUIT_CONFIGS,
     FailoverEvent,
     HealthMetrics,

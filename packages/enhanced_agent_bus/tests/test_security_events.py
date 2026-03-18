@@ -18,7 +18,8 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from packages.enhanced_agent_bus.security_events import (
+
+from enhanced_agent_bus.security_events import (
     CONSTITUTIONAL_HASH,
     AuthenticationFailureEvent,
     AuthorizationDenialEvent,

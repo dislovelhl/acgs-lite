@@ -7,14 +7,15 @@ Constitutional Hash: cdd01ef066bc6cf2
 import asyncio
 
 import pytest
-from packages.enhanced_agent_bus.collaboration.models import (
+
+from enhanced_agent_bus.collaboration.models import (
     CollaborationSession,
     DocumentLockedError,
     DocumentType,
     PermissionDeniedError,
     UserPermissions,
 )
-from packages.enhanced_agent_bus.collaboration.permissions import PermissionController
+from enhanced_agent_bus.collaboration.permissions import PermissionController
 
 
 class TestPermissionController:

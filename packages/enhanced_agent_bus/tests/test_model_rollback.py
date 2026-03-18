@@ -19,6 +19,11 @@ These tests verify:
 - API serving the correct (previous) model after rollback
 """
 
+import pytest
+
+pytest.importorskip("ml_versioning")
+
+
 import os
 import sys
 import time

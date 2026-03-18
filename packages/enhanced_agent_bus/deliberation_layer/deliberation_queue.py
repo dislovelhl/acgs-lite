@@ -11,25 +11,25 @@ import uuid
 from collections.abc import Coroutine
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta, timezone
-from typing import Optional, TypeAlias, TypeVar, Union, cast
+from typing import TypeAlias, TypeVar, cast
 
 import aiofiles
-from packages.enhanced_agent_bus.governance_constants import (
+
+from enhanced_agent_bus.governance_constants import (
     DEFAULT_CONSENSUS_THRESHOLD,
     DEFAULT_DELIBERATION_TIMEOUT_SECONDS,
     DEFAULT_REQUIRED_VOTES,
 )
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 try:
-    from packages.enhanced_agent_bus.models import AgentMessage, MessageStatus, get_enum_value
+    from enhanced_agent_bus.models import AgentMessage, MessageStatus, get_enum_value
 except (ImportError, ValueError):
     try:
         from enhanced_agent_bus.models import AgentMessage, MessageStatus, get_enum_value
     except (ImportError, ValueError):
         try:
-            from packages.enhanced_agent_bus.models import (
+            from enhanced_agent_bus.models import (
                 AgentMessage,
                 MessageStatus,
                 get_enum_value,
@@ -43,7 +43,14 @@ except (ImportError, ValueError):
             )
 from enum import Enum
 
-from src.core.shared.types import JSONDict, JSONValue
+try:
+    from src.core.shared.types import (
+        JSONDict,
+        JSONValue,
+    )  # noqa: E402
+except ImportError:
+    JSONDict = dict  # type: ignore[misc,assignment]
+    JSONValue = object  # type: ignore[misc,assignment]
 
 
 class DeliberationStatus(Enum):
@@ -456,7 +463,7 @@ class DeliberationQueue:
         # Record governance override for Spec-to-Artifact tracking
         if had_agent_votes:
             try:
-                from packages.enhanced_agent_bus.deliberation_layer.impact_scorer import (
+                from enhanced_agent_bus.deliberation_layer.impact_scorer import (
                     get_impact_scorer,
                 )
 
