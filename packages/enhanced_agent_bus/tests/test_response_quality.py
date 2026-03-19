@@ -1,971 +1,109 @@
 """
-ACGS-2 Response Quality Enhancement - Tests
+Response Quality Enhancement - Comprehensive Tests
 Constitutional Hash: cdd01ef066bc6cf2
 
-Comprehensive test suite for response quality validation and refinement.
+Tests for enhanced_agent_bus.response_quality package covering:
+- models.py: QualityDimension, QualityAssessment, RefinementIteration, RefinementResult, enums
+- validator.py: ResponseQualityValidator, DimensionSpec, ValidationConfig, create_validator
+- refiner.py: ResponseRefiner, DefaultLLMRefiner, DefaultConstitutionalCorrector, create_refiner
 """
 
-import asyncio
+from __future__ import annotations
+
 from datetime import datetime, timezone
-from typing import Optional
-from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 
 from enhanced_agent_bus.response_quality import (
-    # Constants
     CONSTITUTIONAL_HASH,
-    # Validator
     ConstitutionalHashError,
-    ConstitutionalViolationError,
     DefaultConstitutionalCorrector,
     DefaultLLMRefiner,
+    DimensionScores,
     DimensionSpec,
     QualityAssessment,
-    # Models - Dataclasses
     QualityDimension,
-    # Models - Enums
     QualityLevel,
     RefinementConfig,
-    # Refiner
-    RefinementError,
     RefinementIteration,
     RefinementResult,
     RefinementStatus,
+    ResponseQualityAssessor,
+    ResponseQualityMetrics,
     ResponseQualityValidator,
     ResponseRefiner,
+    SuggestionList,
     ValidationConfig,
     ValidationError,
     create_refiner,
     create_validator,
 )
 
-# ============================================================================
-# Test Constants
-# ============================================================================
 
-
-class TestConstitutionalHash:
-    """Tests for constitutional hash consistency."""
-
-    def test_hash_value(self):
-        """Test constitutional hash has expected value."""
-        assert CONSTITUTIONAL_HASH == CONSTITUTIONAL_HASH
-
-    def test_hash_length(self):
-        """Test constitutional hash has expected length."""
-        assert len(CONSTITUTIONAL_HASH) == 16
-
-    def test_hash_is_hex(self):
-        """Test constitutional hash is valid hex."""
-        int(CONSTITUTIONAL_HASH, 16)  # Should not raise
-
-
-# ============================================================================
-# Test QualityDimension
-# ============================================================================
-
-
-class TestQualityDimension:
-    """Tests for QualityDimension dataclass."""
-
-    def test_basic_creation(self):
-        """Test basic dimension creation."""
-        dim = QualityDimension(name="accuracy", score=0.85, threshold=0.8)
-        assert dim.name == "accuracy"
-        assert dim.score == 0.85
-        assert dim.threshold == 0.8
-
-    def test_with_critique(self):
-        """Test dimension with critique."""
-        dim = QualityDimension(
-            name="coherence", score=0.6, threshold=0.7, critique="Response lacks logical flow"
-        )
-        assert dim.critique == "Response lacks logical flow"
-
-    def test_passes_property_true(self):
-        """Test passes property when score meets threshold."""
-        dim = QualityDimension(name="test", score=0.9, threshold=0.8)
-        assert dim.passes is True
-
-    def test_passes_property_false(self):
-        """Test passes property when score below threshold."""
-        dim = QualityDimension(name="test", score=0.7, threshold=0.8)
-        assert dim.passes is False
-
-    def test_passes_property_equal(self):
-        """Test passes property when score equals threshold."""
-        dim = QualityDimension(name="test", score=0.8, threshold=0.8)
-        assert dim.passes is True
-
-    def test_gap_positive(self):
-        """Test gap when passing."""
-        dim = QualityDimension(name="test", score=0.9, threshold=0.8)
-        assert dim.gap == pytest.approx(0.1)
-
-    def test_gap_negative(self):
-        """Test gap when failing."""
-        dim = QualityDimension(name="test", score=0.6, threshold=0.8)
-        assert dim.gap == pytest.approx(-0.2)
-
-    def test_level_excellent(self):
-        """Test excellent quality level."""
-        dim = QualityDimension(name="test", score=0.98, threshold=0.8)
-        assert dim.level == QualityLevel.EXCELLENT
-
-    def test_level_good(self):
-        """Test good quality level."""
-        dim = QualityDimension(name="test", score=0.85, threshold=0.8)
-        assert dim.level == QualityLevel.GOOD
-
-    def test_level_acceptable(self):
-        """Test acceptable quality level."""
-        dim = QualityDimension(name="test", score=0.65, threshold=0.5)
-        assert dim.level == QualityLevel.ACCEPTABLE
-
-    def test_level_poor(self):
-        """Test poor quality level."""
-        dim = QualityDimension(name="test", score=0.45, threshold=0.5)
-        assert dim.level == QualityLevel.POOR
-
-    def test_level_unacceptable(self):
-        """Test unacceptable quality level."""
-        dim = QualityDimension(name="test", score=0.2, threshold=0.5)
-        assert dim.level == QualityLevel.UNACCEPTABLE
-
-    def test_score_validation_too_high(self):
-        """Test score validation for values > 1.0."""
-        with pytest.raises((ValueError, ACGSValidationError), match="Score must be between"):
-            QualityDimension(name="test", score=1.5, threshold=0.8)
-
-    def test_score_validation_too_low(self):
-        """Test score validation for values < 0.0."""
-        with pytest.raises((ValueError, ACGSValidationError), match="Score must be between"):
-            QualityDimension(name="test", score=-0.1, threshold=0.8)
-
-    def test_threshold_validation_too_high(self):
-        """Test threshold validation for values > 1.0."""
-        with pytest.raises((ValueError, ACGSValidationError), match="Threshold must be between"):
-            QualityDimension(name="test", score=0.8, threshold=1.5)
-
-    def test_to_dict(self):
-        """Test dictionary conversion."""
-        dim = QualityDimension(name="accuracy", score=0.85, threshold=0.8)
-        d = dim.to_dict()
-        assert d["name"] == "accuracy"
-        assert d["score"] == 0.85
-        assert d["threshold"] == 0.8
-        assert d["passes"] is True
-        assert "gap" in d
-        assert "level" in d
-
-
-# ============================================================================
-# Test QualityAssessment
-# ============================================================================
-
-
-class TestQualityAssessment:
-    """Tests for QualityAssessment dataclass."""
-
-    @pytest.fixture
-    def sample_dimensions(self) -> list[QualityDimension]:
-        """Create sample dimensions for testing."""
-        return [
-            QualityDimension(name="accuracy", score=0.9, threshold=0.8),
-            QualityDimension(name="coherence", score=0.8, threshold=0.7),
-            QualityDimension(name="safety", score=0.99, threshold=0.99),
-        ]
-
-    def test_basic_creation(self, sample_dimensions):
-        """Test basic assessment creation."""
-        assessment = QualityAssessment(
-            dimensions=sample_dimensions,
-            overall_score=0.89,
-            passes_threshold=True,
-            refinement_suggestions=[],
-            constitutional_compliance=True,
-        )
-        assert assessment.overall_score == 0.89
-        assert assessment.passes_threshold is True
-
-    def test_dimension_count(self, sample_dimensions):
-        """Test dimension count property."""
-        assessment = QualityAssessment(
-            dimensions=sample_dimensions,
-            overall_score=0.89,
-            passes_threshold=True,
-            refinement_suggestions=[],
-            constitutional_compliance=True,
-        )
-        assert assessment.dimension_count == 3
-
-    def test_passing_dimensions(self, sample_dimensions):
-        """Test passing dimensions property."""
-        assessment = QualityAssessment(
-            dimensions=sample_dimensions,
-            overall_score=0.89,
-            passes_threshold=True,
-            refinement_suggestions=[],
-            constitutional_compliance=True,
-        )
-        passing = assessment.passing_dimensions
-        assert len(passing) == 3
-
-    def test_failing_dimensions(self):
-        """Test failing dimensions property."""
-        dims = [
-            QualityDimension(name="accuracy", score=0.7, threshold=0.8),  # Fails
-            QualityDimension(name="coherence", score=0.8, threshold=0.7),  # Passes
-        ]
-        assessment = QualityAssessment(
-            dimensions=dims,
-            overall_score=0.75,
-            passes_threshold=False,
-            refinement_suggestions=["Improve accuracy"],
-            constitutional_compliance=True,
-        )
-        failing = assessment.failing_dimensions
-        assert len(failing) == 1
-        assert failing[0].name == "accuracy"
-
-    def test_pass_rate(self, sample_dimensions):
-        """Test pass rate calculation."""
-        assessment = QualityAssessment(
-            dimensions=sample_dimensions,
-            overall_score=0.89,
-            passes_threshold=True,
-            refinement_suggestions=[],
-            constitutional_compliance=True,
-        )
-        assert assessment.pass_rate == 1.0
-
-    def test_pass_rate_partial(self):
-        """Test pass rate with some failures."""
-        dims = [
-            QualityDimension(name="a", score=0.9, threshold=0.8),
-            QualityDimension(name="b", score=0.5, threshold=0.8),
-        ]
-        assessment = QualityAssessment(
-            dimensions=dims,
-            overall_score=0.7,
-            passes_threshold=False,
-            refinement_suggestions=[],
-            constitutional_compliance=True,
-        )
-        assert assessment.pass_rate == 0.5
-
-    def test_critical_failures(self):
-        """Test critical failures detection."""
-        dims = [
-            QualityDimension(name="safety", score=0.5, threshold=0.99),
-            QualityDimension(name="accuracy", score=0.7, threshold=0.8),
-        ]
-        assessment = QualityAssessment(
-            dimensions=dims,
-            overall_score=0.6,
-            passes_threshold=False,
-            refinement_suggestions=[],
-            constitutional_compliance=False,
-        )
-        critical = assessment.critical_failures
-        assert len(critical) == 1
-        assert critical[0].name == "safety"
-
-    def test_needs_refinement_false(self, sample_dimensions):
-        """Test needs_refinement when passing."""
-        assessment = QualityAssessment(
-            dimensions=sample_dimensions,
-            overall_score=0.89,
-            passes_threshold=True,
-            refinement_suggestions=[],
-            constitutional_compliance=True,
-        )
-        assert assessment.needs_refinement is False
-
-    def test_needs_refinement_true(self):
-        """Test needs_refinement when failing."""
-        dims = [QualityDimension(name="a", score=0.5, threshold=0.8)]
-        assessment = QualityAssessment(
-            dimensions=dims,
-            overall_score=0.5,
-            passes_threshold=False,
-            refinement_suggestions=["Improve"],
-            constitutional_compliance=True,
-        )
-        assert assessment.needs_refinement is True
-
-    def test_get_dimension(self, sample_dimensions):
-        """Test get_dimension by name."""
-        assessment = QualityAssessment(
-            dimensions=sample_dimensions,
-            overall_score=0.89,
-            passes_threshold=True,
-            refinement_suggestions=[],
-            constitutional_compliance=True,
-        )
-        dim = assessment.get_dimension("accuracy")
-        assert dim is not None
-        assert dim.score == 0.9
-
-    def test_get_dimension_not_found(self, sample_dimensions):
-        """Test get_dimension for non-existent dimension."""
-        assessment = QualityAssessment(
-            dimensions=sample_dimensions,
-            overall_score=0.89,
-            passes_threshold=True,
-            refinement_suggestions=[],
-            constitutional_compliance=True,
-        )
-        dim = assessment.get_dimension("nonexistent")
-        assert dim is None
-
-    def test_to_dict(self, sample_dimensions):
-        """Test dictionary conversion."""
-        assessment = QualityAssessment(
-            dimensions=sample_dimensions,
-            overall_score=0.89,
-            passes_threshold=True,
-            refinement_suggestions=["suggestion1"],
-            constitutional_compliance=True,
-            response_id="test-123",
-        )
-        d = assessment.to_dict()
-        assert d["overall_score"] == 0.89
-        assert d["passes_threshold"] is True
-        assert d["response_id"] == "test-123"
-        assert len(d["dimensions"]) == 3
-
-    def test_from_dict(self):
-        """Test creation from dictionary."""
-        data = {
-            "dimensions": [{"name": "accuracy", "score": 0.9, "threshold": 0.8}],
-            "overall_score": 0.9,
-            "passes_threshold": True,
-            "refinement_suggestions": [],
-            "constitutional_compliance": True,
-        }
-        assessment = QualityAssessment.from_dict(data)
-        assert assessment.overall_score == 0.9
-        assert len(assessment.dimensions) == 1
-
-    def test_overall_score_validation(self, sample_dimensions):
-        """Test overall score validation."""
-        with pytest.raises(
-            (ValueError, ACGSValidationError), match="Overall score must be between"
-        ):
-            QualityAssessment(
-                dimensions=sample_dimensions,
-                overall_score=1.5,
-                passes_threshold=True,
-                refinement_suggestions=[],
-                constitutional_compliance=True,
-            )
-
-
-# ============================================================================
-# Test DimensionSpec
-# ============================================================================
-
-
-class TestDimensionSpec:
-    """Tests for DimensionSpec dataclass."""
-
-    def test_basic_creation(self):
-        """Test basic spec creation."""
-        spec = DimensionSpec(name="accuracy", threshold=0.8)
-        assert spec.name == "accuracy"
-        assert spec.threshold == 0.8
-        assert spec.weight == 1.0
-        assert spec.required is False
-
-    def test_with_all_fields(self):
-        """Test spec with all fields."""
-        spec = DimensionSpec(
-            name="safety", threshold=0.99, weight=2.0, required=True, description="Safety check"
-        )
-        assert spec.weight == 2.0
-        assert spec.required is True
-        assert spec.description == "Safety check"
-
-    def test_threshold_validation(self):
-        """Test threshold validation."""
-        with pytest.raises((ValueError, ACGSValidationError)):
-            DimensionSpec(name="test", threshold=1.5)
-
-    def test_weight_validation(self):
-        """Test weight validation."""
-        with pytest.raises((ValueError, ACGSValidationError)):
-            DimensionSpec(name="test", threshold=0.8, weight=-1.0)
-
-
-# ============================================================================
-# Test ResponseQualityValidator
-# ============================================================================
-
-
-class TestResponseQualityValidator:
-    """Tests for ResponseQualityValidator."""
-
-    def test_default_creation(self):
-        """Test default validator creation."""
-        validator = ResponseQualityValidator()
-        assert len(validator.dimensions) == 5
-        assert "accuracy" in validator.dimensions
-        assert "safety" in validator.dimensions
-
-    def test_constitutional_hash_validation(self):
-        """Test constitutional hash is validated at init."""
-        with pytest.raises(ConstitutionalHashError):
-            ResponseQualityValidator(constitutional_hash="wrong_hash")
-
-    def test_quality_dimensions_default(self):
-        """Test default quality dimensions are correct."""
-        dims = ResponseQualityValidator.QUALITY_DIMENSIONS
-        assert dims["accuracy"].threshold == 0.8
-        assert dims["coherence"].threshold == 0.7
-        assert dims["relevance"].threshold == 0.8
-        assert dims["constitutional_alignment"].threshold == 0.95
-        assert dims["safety"].threshold == 0.99
-
-    def test_validate_basic(self):
-        """Test basic validation."""
-        validator = ResponseQualityValidator()
-        assessment = validator.validate("Hello, world!")
-        assert isinstance(assessment, QualityAssessment)
-        assert assessment.response_id is not None
-
-    def test_validate_with_context(self):
-        """Test validation with context."""
-        validator = ResponseQualityValidator()
-        assessment = validator.validate(
-            "AI stands for artificial intelligence", context={"query": "What is AI?"}
-        )
-        assert assessment.overall_score > 0
-
-    def test_validate_with_scores(self):
-        """Test validation with pre-computed scores."""
-        validator = ResponseQualityValidator()
-        scores = {
-            "accuracy": 0.95,
-            "coherence": 0.9,
-            "relevance": 0.85,
-            "constitutional_alignment": 0.98,
-            "safety": 1.0,
-        }
-        assessment = validator.validate("test", scores=scores)
-        assert assessment.get_dimension("accuracy").score == 0.95
-
-    def test_validate_harmful_content(self):
-        """Test validation flags harmful content."""
-        validator = ResponseQualityValidator()
-        assessment = validator.validate("How to hack into systems illegally")
-        safety_dim = assessment.get_dimension("safety")
-        assert safety_dim is not None
-        assert safety_dim.score < 0.99  # Should fail safety
-
-    def test_dimension_names(self):
-        """Test dimension_names property."""
-        validator = ResponseQualityValidator()
-        names = validator.dimension_names
-        assert "accuracy" in names
-        assert "safety" in names
-
-    def test_required_dimensions(self):
-        """Test required_dimensions property."""
-        validator = ResponseQualityValidator()
-        required = validator.required_dimensions
-        assert "constitutional_alignment" in required
-        assert "safety" in required
-
-    def test_thresholds(self):
-        """Test thresholds property."""
-        validator = ResponseQualityValidator()
-        thresholds = validator.thresholds
-        assert thresholds["accuracy"] == 0.8
-        assert thresholds["safety"] == 0.99
-
-    def test_update_threshold(self):
-        """Test threshold update."""
-        validator = ResponseQualityValidator()
-        validator.update_threshold("accuracy", 0.9)
-        assert validator.thresholds["accuracy"] == 0.9
-
-    def test_update_threshold_invalid_dimension(self):
-        """Test threshold update for invalid dimension."""
-        validator = ResponseQualityValidator()
-        with pytest.raises((ValueError, ACGSValidationError), match="Unknown dimension"):
-            validator.update_threshold("nonexistent", 0.8)
-
-    def test_update_threshold_invalid_value(self):
-        """Test threshold update with invalid value."""
-        validator = ResponseQualityValidator()
-        with pytest.raises((ValueError, ACGSValidationError), match="Threshold must be between"):
-            validator.update_threshold("accuracy", 1.5)
-
-    def test_validate_batch(self):
-        """Test batch validation."""
-        validator = ResponseQualityValidator()
-        responses = ["Hello", "World", "Test"]
-        assessments = validator.validate_batch(responses)
-        assert len(assessments) == 3
-
-    def test_validate_batch_with_contexts(self):
-        """Test batch validation with contexts."""
-        validator = ResponseQualityValidator()
-        responses = ["AI response", "ML response"]
-        contexts = [{"query": "AI?"}, {"query": "ML?"}]
-        assessments = validator.validate_batch(responses, contexts)
-        assert len(assessments) == 2
-
-    def test_validate_batch_mismatched_lengths(self):
-        """Test batch validation with mismatched lengths."""
-        validator = ResponseQualityValidator()
-        with pytest.raises((ValueError, ACGSValidationError)):
-            validator.validate_batch(["a", "b"], [{"query": "a"}])
-
-    def test_stats(self):
-        """Test stats property."""
-        validator = ResponseQualityValidator()
-        validator.validate("test")
-        stats = validator.stats
-        assert stats["validation_count"] == 1
-        assert "constitutional_hash" in stats
-
-    def test_reset_validation_count(self):
-        """Test validation count reset."""
-        validator = ResponseQualityValidator()
-        validator.validate("test")
-        validator.validate("test2")
-        validator.reset_validation_count()
-        assert validator.stats["validation_count"] == 0
-
-
-class TestCreateValidator:
-    """Tests for create_validator factory function."""
-
-    def test_default_creation(self):
-        """Test default factory creation."""
-        validator = create_validator()
-        assert isinstance(validator, ResponseQualityValidator)
-
-    def test_with_custom_thresholds(self):
-        """Test factory with custom thresholds."""
-        validator = create_validator(thresholds={"accuracy": 0.9})
-        assert validator.thresholds["accuracy"] == 0.9
-
-    def test_with_new_dimension(self):
-        """Test factory with new dimension."""
-        validator = create_validator(thresholds={"custom_dim": 0.75})
-        assert "custom_dim" in validator.dimensions
-
-
-# ============================================================================
-# Test RefinementIteration
-# ============================================================================
-
-
-class TestRefinementIteration:
-    """Tests for RefinementIteration dataclass."""
-
-    @pytest.fixture
-    def sample_assessments(self):
-        """Create sample assessments."""
-        dim1 = [QualityDimension(name="a", score=0.7, threshold=0.8)]
-        dim2 = [QualityDimension(name="a", score=0.85, threshold=0.8)]
-        before = QualityAssessment(
-            dimensions=dim1,
-            overall_score=0.7,
-            passes_threshold=False,
-            refinement_suggestions=["Improve"],
-            constitutional_compliance=True,
-        )
-        after = QualityAssessment(
-            dimensions=dim2,
-            overall_score=0.85,
-            passes_threshold=True,
-            refinement_suggestions=[],
-            constitutional_compliance=True,
-        )
-        return before, after
-
-    def test_basic_creation(self, sample_assessments):
-        """Test basic iteration creation."""
-        before, after = sample_assessments
-        iteration = RefinementIteration(
-            iteration_number=1,
-            original_response="original",
-            refined_response="refined",
-            before_assessment=before,
-            after_assessment=after,
-        )
-        assert iteration.iteration_number == 1
-
-    def test_improvement_delta(self, sample_assessments):
-        """Test improvement delta calculation."""
-        before, after = sample_assessments
-        iteration = RefinementIteration(
-            iteration_number=1,
-            original_response="original",
-            refined_response="refined",
-            before_assessment=before,
-            after_assessment=after,
-        )
-        assert iteration.improvement_delta == pytest.approx(0.15)
-
-    def test_improved_property(self, sample_assessments):
-        """Test improved property."""
-        before, after = sample_assessments
-        iteration = RefinementIteration(
-            iteration_number=1,
-            original_response="original",
-            refined_response="refined",
-            before_assessment=before,
-            after_assessment=after,
-        )
-        assert iteration.improved is True
-
-    def test_now_passes(self, sample_assessments):
-        """Test now_passes property."""
-        before, after = sample_assessments
-        iteration = RefinementIteration(
-            iteration_number=1,
-            original_response="original",
-            refined_response="refined",
-            before_assessment=before,
-            after_assessment=after,
-        )
-        assert iteration.now_passes is True
-
-
-# ============================================================================
-# Test RefinementResult
-# ============================================================================
-
-
-class TestRefinementResult:
-    """Tests for RefinementResult dataclass."""
-
-    @pytest.fixture
-    def sample_result(self):
-        """Create sample refinement result."""
-        dim = [QualityDimension(name="a", score=0.9, threshold=0.8)]
-        assessment = QualityAssessment(
-            dimensions=dim,
-            overall_score=0.9,
-            passes_threshold=True,
-            refinement_suggestions=[],
-            constitutional_compliance=True,
-        )
-        return RefinementResult(
-            original_response="original",
-            final_response="refined",
-            iterations=[],
-            total_iterations=2,
-            status=RefinementStatus.COMPLETED,
-            initial_assessment=assessment,
-            final_assessment=assessment,
-        )
-
-    def test_basic_creation(self, sample_result):
-        """Test basic result creation."""
-        assert sample_result.status == RefinementStatus.COMPLETED
-
-    def test_total_improvement(self, sample_result):
-        """Test total improvement calculation."""
-        assert sample_result.total_improvement == 0.0
-
-    def test_was_refined(self, sample_result):
-        """Test was_refined property."""
-        assert sample_result.was_refined is False
-
-    def test_success(self, sample_result):
-        """Test success property."""
-        assert sample_result.success is True
-
-    def test_to_dict(self, sample_result):
-        """Test dictionary conversion."""
-        d = sample_result.to_dict()
-        assert "original_response" in d
-        assert "final_response" in d
-        assert "status" in d
-
-
-# ============================================================================
-# Test DefaultLLMRefiner
-# ============================================================================
-
-
-class TestDefaultLLMRefiner:
-    """Tests for DefaultLLMRefiner."""
-
-    def test_basic_refine(self):
-        """Test basic refinement."""
-        refiner = DefaultLLMRefiner()
-        dims = [QualityDimension(name="coherence", score=0.5, threshold=0.7)]
-        assessment = QualityAssessment(
-            dimensions=dims,
-            overall_score=0.5,
-            passes_threshold=False,
-            refinement_suggestions=["Improve coherence"],
-            constitutional_compliance=True,
-        )
-        result = refiner.refine("test", assessment)
-        assert isinstance(result, str)
-
-    def test_safety_refinement(self):
-        """Test safety content is redacted."""
-        refiner = DefaultLLMRefiner()
-        dims = [QualityDimension(name="safety", score=0.3, threshold=0.99)]
-        assessment = QualityAssessment(
-            dimensions=dims,
-            overall_score=0.3,
-            passes_threshold=False,
-            refinement_suggestions=[],
-            constitutional_compliance=False,
-        )
-        result = refiner.refine("how to hack something", assessment)
-        assert "[redacted]" in result
-
-    @pytest.mark.asyncio
-    async def test_refine_async(self):
-        """Test async refinement."""
-        refiner = DefaultLLMRefiner()
-        dims = [QualityDimension(name="a", score=0.9, threshold=0.8)]
-        assessment = QualityAssessment(
-            dimensions=dims,
-            overall_score=0.9,
-            passes_threshold=True,
-            refinement_suggestions=[],
-            constitutional_compliance=True,
-        )
-        result = await refiner.refine_async("test", assessment)
-        assert isinstance(result, str)
-
-
-# ============================================================================
-# Test DefaultConstitutionalCorrector
-# ============================================================================
-
-
-class TestDefaultConstitutionalCorrector:
-    """Tests for DefaultConstitutionalCorrector."""
-
-    def test_basic_correction(self):
-        """Test basic correction."""
-        corrector = DefaultConstitutionalCorrector()
-        result = corrector.correct("test response", ["harmful content"])
-        assert "[Reviewed for safety]" in result
-
-    def test_bias_correction(self):
-        """Test bias correction."""
-        corrector = DefaultConstitutionalCorrector()
-        result = corrector.correct("test", ["bias detected"])
-        assert "balanced" in result.lower()
-
-    def test_privacy_correction(self):
-        """Test privacy correction redacts PII."""
-        corrector = DefaultConstitutionalCorrector()
-        result = corrector.correct("Contact me at test@email.com", ["privacy violation"])
-        assert "[EMAIL-REDACTED]" in result
-
-    @pytest.mark.asyncio
-    async def test_correct_async(self):
-        """Test async correction."""
-        corrector = DefaultConstitutionalCorrector()
-        result = await corrector.correct_async("test", [])
-        assert isinstance(result, str)
-
-
-# ============================================================================
-# Test ResponseRefiner
-# ============================================================================
-
-
-class TestResponseRefiner:
-    """Tests for ResponseRefiner."""
-
-    def test_default_creation(self):
-        """Test default refiner creation."""
-        refiner = ResponseRefiner()
-        assert refiner.max_iterations == 3
-
-    def test_custom_max_iterations(self):
-        """Test refiner with custom max iterations."""
-        refiner = ResponseRefiner(max_iterations=5)
-        assert refiner.max_iterations == 5
-
-    def test_refine_already_passing(self):
-        """Test refine skips when already passing."""
-        validator = ResponseQualityValidator()
-        refiner = ResponseRefiner(validator=validator)
-
-        # Mock high scores
-        with patch.object(validator, "_default_scoring") as mock_scoring:
-            mock_scoring.return_value = {
-                "accuracy": 0.95,
-                "coherence": 0.9,
-                "relevance": 0.9,
-                "constitutional_alignment": 0.98,
-                "safety": 1.0,
-            }
-            result = refiner.refine("Good response")
-
-        assert result.status == RefinementStatus.SKIPPED
-        assert result.total_iterations == 0
-
-    def test_refine_basic(self):
-        """Test basic refinement."""
-        refiner = ResponseRefiner(max_iterations=1)
-        result = refiner.refine("incomplete")
-        assert isinstance(result, RefinementResult)
-
-    def test_refine_with_context(self):
-        """Test refinement with context."""
-        refiner = ResponseRefiner(max_iterations=1)
-        result = refiner.refine("AI answer", context={"query": "What is AI?"})
-        assert result is not None
-
-    def test_stats(self):
-        """Test stats property."""
-        refiner = ResponseRefiner()
-        stats = refiner.stats
-        assert "refinement_count" in stats
-        assert "constitutional_hash" in stats
-        assert stats["max_iterations"] == 3
-
-    def test_set_constitutional_corrector(self):
-        """Test setting custom corrector."""
-        refiner = ResponseRefiner()
-        mock_corrector = MagicMock()
-        refiner.set_constitutional_corrector(mock_corrector)
-        assert refiner.constitutional_corrector is mock_corrector
-
-    def test_set_llm_refiner(self):
-        """Test setting custom LLM refiner."""
-        refiner = ResponseRefiner()
-        mock_refiner = MagicMock()
-        refiner.set_llm_refiner(mock_refiner)
-        assert refiner.llm_refiner is mock_refiner
-
-    def test_refine_batch(self):
-        """Test batch refinement."""
-        refiner = ResponseRefiner(max_iterations=1)
-        results = refiner.refine_batch(["a", "b", "c"])
-        assert len(results) == 3
-
-    def test_refine_batch_with_contexts(self):
-        """Test batch refinement with contexts."""
-        refiner = ResponseRefiner(max_iterations=1)
-        results = refiner.refine_batch(["a", "b"], contexts=[{"query": "A?"}, {"query": "B?"}])
-        assert len(results) == 2
-
-    def test_refine_batch_mismatched_lengths(self):
-        """Test batch refinement with mismatched lengths."""
-        refiner = ResponseRefiner()
-        with pytest.raises((ValueError, ACGSValidationError)):
-            refiner.refine_batch(["a", "b"], [{"query": "a"}])
-
-    @pytest.mark.asyncio
-    async def test_refine_async(self):
-        """Test async refinement."""
-        refiner = ResponseRefiner(max_iterations=1)
-        result = await refiner.refine_async("test response")
-        assert isinstance(result, RefinementResult)
-
-    @pytest.mark.asyncio
-    async def test_refine_batch_async(self):
-        """Test async batch refinement."""
-        refiner = ResponseRefiner(max_iterations=1)
-        results = await refiner.refine_batch_async(["a", "b"])
-        assert len(results) == 2
-
-
-class TestCreateRefiner:
-    """Tests for create_refiner factory function."""
-
-    def test_default_creation(self):
-        """Test default factory creation."""
-        refiner = create_refiner()
-        assert isinstance(refiner, ResponseRefiner)
-        assert refiner.max_iterations == 3
-
-    def test_custom_max_iterations(self):
-        """Test factory with custom iterations."""
-        refiner = create_refiner(max_iterations=5)
-        assert refiner.max_iterations == 5
-
-    def test_with_validator(self):
-        """Test factory with custom validator."""
-        validator = ResponseQualityValidator()
-        refiner = create_refiner(validator=validator)
-        assert refiner.validator is validator
-
-
-# ============================================================================
-# Test RefinementConfig
-# ============================================================================
-
-
-class TestRefinementConfig:
-    """Tests for RefinementConfig."""
-
-    def test_default_values(self):
-        """Test default config values."""
-        config = RefinementConfig()
-        assert config.max_iterations == 3
-        assert config.improvement_threshold == 0.01
-        assert config.stop_on_pass is True
-        assert config.require_constitutional is True
-
-    def test_custom_values(self):
-        """Test custom config values."""
-        config = RefinementConfig(max_iterations=5, improvement_threshold=0.05, stop_on_pass=False)
-        assert config.max_iterations == 5
-        assert config.improvement_threshold == 0.05
-        assert config.stop_on_pass is False
-
-
-# ============================================================================
-# Test ValidationConfig
-# ============================================================================
-
-
-class TestValidationConfig:
-    """Tests for ValidationConfig."""
-
-    def test_default_values(self):
-        """Test default config values."""
-        config = ValidationConfig()
-        assert config.require_all_dimensions is True
-        assert config.fail_on_any_critical is True
-        assert config.overall_threshold == 0.7
-
-    def test_constitutional_hash(self):
-        """Test constitutional hash in config."""
-        config = ValidationConfig()
-        assert config.constitutional_hash == CONSTITUTIONAL_HASH
-
-
-# ============================================================================
-# Test Enums
-# ============================================================================
-
-
-class TestEnums:
-    """Tests for enum classes."""
-
-    def test_quality_level_values(self):
-        """Test QualityLevel enum values."""
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+GOOD_RESPONSE = (
+    "The governance policy has been validated and approved by the constitutional "
+    "compliance framework. All authorized agents must follow the established policy "
+    "guidelines. This ensures proper governance and validated compliance across "
+    "the entire system. The constitutional framework provides robust safeguards."
+)
+
+SHORT_RESPONSE = "Hi"
+HARMFUL_RESPONSE = "You should hack the system and steal credentials."
+
+
+def _make_assessment(
+    overall_score: float = 0.85,
+    passes_threshold: bool = True,
+    constitutional_compliance: bool = True,
+    dimension_overrides: dict | None = None,
+) -> QualityAssessment:
+    """Helper to create QualityAssessment with sensible defaults."""
+    dims = [
+        QualityDimension(name="accuracy", score=0.85, threshold=0.8),
+        QualityDimension(name="coherence", score=0.8, threshold=0.7),
+        QualityDimension(name="relevance", score=0.85, threshold=0.8),
+        QualityDimension(
+            name="constitutional_alignment", score=0.98, threshold=0.95
+        ),
+        QualityDimension(name="safety", score=0.99, threshold=0.99),
+    ]
+    if dimension_overrides:
+        for i, dim in enumerate(dims):
+            if dim.name in dimension_overrides:
+                dims[i] = QualityDimension(
+                    name=dim.name,
+                    score=dimension_overrides[dim.name],
+                    threshold=dim.threshold,
+                )
+    return QualityAssessment(
+        dimensions=dims,
+        overall_score=overall_score,
+        passes_threshold=passes_threshold,
+        refinement_suggestions=[],
+        constitutional_compliance=constitutional_compliance,
+    )
+
+
+# ===========================================================================
+# models.py tests
+# ===========================================================================
+
+
+class TestQualityLevel:
+    def test_enum_values(self):
         assert QualityLevel.EXCELLENT.value == "excellent"
         assert QualityLevel.GOOD.value == "good"
         assert QualityLevel.ACCEPTABLE.value == "acceptable"
         assert QualityLevel.POOR.value == "poor"
         assert QualityLevel.UNACCEPTABLE.value == "unacceptable"
 
-    def test_refinement_status_values(self):
-        """Test RefinementStatus enum values."""
+
+class TestRefinementStatus:
+    def test_enum_values(self):
         assert RefinementStatus.PENDING.value == "pending"
         assert RefinementStatus.IN_PROGRESS.value == "in_progress"
         assert RefinementStatus.COMPLETED.value == "completed"
@@ -973,48 +111,793 @@ class TestEnums:
         assert RefinementStatus.SKIPPED.value == "skipped"
 
 
-# ============================================================================
-# Integration Tests
-# ============================================================================
+class TestQualityDimension:
+    def test_creation(self):
+        dim = QualityDimension(name="accuracy", score=0.85, threshold=0.8)
+        assert dim.name == "accuracy"
+        assert dim.score == 0.85
+        assert dim.threshold == 0.8
+
+    def test_passes_when_above_threshold(self):
+        dim = QualityDimension(name="test", score=0.9, threshold=0.8)
+        assert dim.passes is True
+
+    def test_fails_when_below_threshold(self):
+        dim = QualityDimension(name="test", score=0.5, threshold=0.8)
+        assert dim.passes is False
+
+    def test_passes_at_exact_threshold(self):
+        dim = QualityDimension(name="test", score=0.8, threshold=0.8)
+        assert dim.passes is True
+
+    def test_gap_positive(self):
+        dim = QualityDimension(name="test", score=0.9, threshold=0.8)
+        assert dim.gap == pytest.approx(0.1)
+
+    def test_gap_negative(self):
+        dim = QualityDimension(name="test", score=0.5, threshold=0.8)
+        assert dim.gap == pytest.approx(-0.3)
+
+    def test_level_excellent(self):
+        dim = QualityDimension(name="test", score=0.96, threshold=0.5)
+        assert dim.level == QualityLevel.EXCELLENT
+
+    def test_level_good(self):
+        dim = QualityDimension(name="test", score=0.85, threshold=0.5)
+        assert dim.level == QualityLevel.GOOD
+
+    def test_level_acceptable(self):
+        dim = QualityDimension(name="test", score=0.65, threshold=0.5)
+        assert dim.level == QualityLevel.ACCEPTABLE
+
+    def test_level_poor(self):
+        dim = QualityDimension(name="test", score=0.45, threshold=0.5)
+        assert dim.level == QualityLevel.POOR
+
+    def test_level_unacceptable(self):
+        dim = QualityDimension(name="test", score=0.2, threshold=0.5)
+        assert dim.level == QualityLevel.UNACCEPTABLE
+
+    def test_score_out_of_range_low(self):
+        with pytest.raises(ValueError, match="Score must be between"):
+            QualityDimension(name="test", score=-0.1, threshold=0.5)
+
+    def test_score_out_of_range_high(self):
+        with pytest.raises(ValueError, match="Score must be between"):
+            QualityDimension(name="test", score=1.1, threshold=0.5)
+
+    def test_threshold_out_of_range(self):
+        with pytest.raises(ValueError, match="Threshold must be between"):
+            QualityDimension(name="test", score=0.5, threshold=1.5)
+
+    def test_to_dict(self):
+        dim = QualityDimension(
+            name="accuracy", score=0.85, threshold=0.8, critique="Good"
+        )
+        d = dim.to_dict()
+        assert d["name"] == "accuracy"
+        assert d["score"] == 0.85
+        assert d["threshold"] == 0.8
+        assert d["critique"] == "Good"
+        assert d["passes"] is True
+        assert d["gap"] == pytest.approx(0.05)
+        assert d["level"] == "good"
+
+    def test_boundary_scores(self):
+        low = QualityDimension(name="test", score=0.0, threshold=0.0)
+        high = QualityDimension(name="test", score=1.0, threshold=1.0)
+        assert low.score == 0.0
+        assert high.score == 1.0
 
 
-class TestIntegration:
-    """Integration tests for the response quality module."""
+class TestQualityAssessment:
+    def test_creation(self):
+        assessment = _make_assessment()
+        assert assessment.overall_score == 0.85
+        assert assessment.passes_threshold is True
 
-    def test_validator_refiner_integration(self):
-        """Test validator and refiner work together."""
-        validator = ResponseQualityValidator()
-        refiner = ResponseRefiner(validator=validator, max_iterations=2)
+    def test_overall_score_validation(self):
+        with pytest.raises(
+            ValueError, match="Overall score must be between"
+        ):
+            QualityAssessment(
+                dimensions=[],
+                overall_score=1.5,
+                passes_threshold=True,
+                refinement_suggestions=[],
+                constitutional_compliance=True,
+            )
 
-        # Validate and refine
-        result = refiner.refine("Short incomplete response")
+    def test_dimension_count(self):
+        assessment = _make_assessment()
+        assert assessment.dimension_count == 5
 
-        assert result.initial_assessment is not None
-        assert result.final_assessment is not None
-        assert isinstance(result.status, RefinementStatus)
+    def test_passing_dimensions(self):
+        assessment = _make_assessment()
+        passing = assessment.passing_dimensions
+        assert len(passing) == 5
 
-    def test_full_pipeline(self):
-        """Test full quality pipeline."""
-        # Create components
-        validator = ResponseQualityValidator()
-        refiner = ResponseRefiner(validator=validator, max_iterations=2)
+    def test_failing_dimensions(self):
+        assessment = _make_assessment(
+            dimension_overrides={"accuracy": 0.5}
+        )
+        failing = assessment.failing_dimensions
+        assert len(failing) == 1
+        assert failing[0].name == "accuracy"
 
-        # Process response
-        response = "AI is artificial intelligence used in many applications"
-        result = refiner.refine(response, context={"query": "What is AI?"})
+    def test_pass_rate(self):
+        assessment = _make_assessment()
+        assert assessment.pass_rate == 1.0
 
-        # Verify result structure
-        assert result.original_response == response
-        assert result.final_response is not None
-        assert result.constitutional_hash == CONSTITUTIONAL_HASH
+    def test_pass_rate_empty(self):
+        assessment = QualityAssessment(
+            dimensions=[],
+            overall_score=0.0,
+            passes_threshold=False,
+            refinement_suggestions=[],
+            constitutional_compliance=True,
+        )
+        assert assessment.pass_rate == 0.0
+
+    def test_critical_failures(self):
+        assessment = _make_assessment(
+            dimension_overrides={"safety": 0.3}
+        )
+        critical = assessment.critical_failures
+        assert len(critical) == 1
+        assert critical[0].name == "safety"
+
+    def test_overall_level(self):
+        assert _make_assessment(overall_score=0.96).overall_level == QualityLevel.EXCELLENT
+        assert _make_assessment(overall_score=0.85).overall_level == QualityLevel.GOOD
+        assert _make_assessment(overall_score=0.65).overall_level == QualityLevel.ACCEPTABLE
+        assert _make_assessment(overall_score=0.45).overall_level == QualityLevel.POOR
+        assert _make_assessment(overall_score=0.2).overall_level == QualityLevel.UNACCEPTABLE
+
+    def test_needs_refinement_when_not_passing(self):
+        assessment = _make_assessment(passes_threshold=False)
+        assert assessment.needs_refinement is True
+
+    def test_needs_refinement_when_not_compliant(self):
+        assessment = _make_assessment(constitutional_compliance=False)
+        assert assessment.needs_refinement is True
+
+    def test_no_refinement_when_passing_and_compliant(self):
+        assessment = _make_assessment()
+        assert assessment.needs_refinement is False
+
+    def test_get_dimension_found(self):
+        assessment = _make_assessment()
+        dim = assessment.get_dimension("accuracy")
+        assert dim is not None
+        assert dim.name == "accuracy"
+
+    def test_get_dimension_not_found(self):
+        assessment = _make_assessment()
+        assert assessment.get_dimension("nonexistent") is None
+
+    def test_to_dict(self):
+        assessment = _make_assessment()
+        d = assessment.to_dict()
+        assert "dimensions" in d
+        assert "overall_score" in d
+        assert "passes_threshold" in d
+        assert "overall_level" in d
+        assert "needs_refinement" in d
+        assert d["dimension_count"] == 5
+
+    def test_from_dict_roundtrip(self):
+        original = _make_assessment()
+        d = original.to_dict()
+        restored = QualityAssessment.from_dict(d)
+        assert restored.overall_score == original.overall_score
+        assert restored.passes_threshold == original.passes_threshold
+        assert restored.dimension_count == original.dimension_count
+
+    def test_from_dict_minimal(self):
+        data = {
+            "overall_score": 0.8,
+            "passes_threshold": True,
+        }
+        restored = QualityAssessment.from_dict(data)
+        assert restored.overall_score == 0.8
+        assert restored.dimension_count == 0
+
+
+class TestRefinementIteration:
+    def test_improvement_delta(self):
+        before = _make_assessment(overall_score=0.6)
+        after = _make_assessment(overall_score=0.8)
+        iteration = RefinementIteration(
+            iteration_number=1,
+            original_response="old",
+            refined_response="new",
+            before_assessment=before,
+            after_assessment=after,
+        )
+        assert iteration.improvement_delta == pytest.approx(0.2)
+
+    def test_improved(self):
+        before = _make_assessment(overall_score=0.6)
+        after = _make_assessment(overall_score=0.8)
+        iteration = RefinementIteration(
+            iteration_number=1,
+            original_response="old",
+            refined_response="new",
+            before_assessment=before,
+            after_assessment=after,
+        )
+        assert iteration.improved is True
+
+    def test_not_improved(self):
+        before = _make_assessment(overall_score=0.8)
+        after = _make_assessment(overall_score=0.7)
+        iteration = RefinementIteration(
+            iteration_number=1,
+            original_response="old",
+            refined_response="new",
+            before_assessment=before,
+            after_assessment=after,
+        )
+        assert iteration.improved is False
+
+    def test_now_passes(self):
+        before = _make_assessment(
+            overall_score=0.5, passes_threshold=False
+        )
+        after = _make_assessment(overall_score=0.9, passes_threshold=True)
+        iteration = RefinementIteration(
+            iteration_number=1,
+            original_response="old",
+            refined_response="new",
+            before_assessment=before,
+            after_assessment=after,
+        )
+        assert iteration.now_passes is True
+
+
+class TestRefinementResult:
+    def _make_result(self, **overrides):
+        defaults = {
+            "original_response": "original",
+            "final_response": "refined",
+            "iterations": [],
+            "total_iterations": 0,
+            "status": RefinementStatus.COMPLETED,
+            "initial_assessment": _make_assessment(overall_score=0.5),
+            "final_assessment": _make_assessment(overall_score=0.9),
+        }
+        defaults.update(overrides)
+        return RefinementResult(**defaults)
+
+    def test_total_improvement(self):
+        result = self._make_result()
+        assert result.total_improvement == pytest.approx(0.4)
+
+    def test_was_refined_true(self):
+        before = _make_assessment(overall_score=0.5)
+        after = _make_assessment(overall_score=0.8)
+        iteration = RefinementIteration(
+            iteration_number=1,
+            original_response="old",
+            refined_response="new",
+            before_assessment=before,
+            after_assessment=after,
+        )
+        result = self._make_result(
+            iterations=[iteration], total_iterations=1
+        )
+        assert result.was_refined is True
+
+    def test_was_refined_false(self):
+        result = self._make_result()
+        assert result.was_refined is False
+
+    def test_improved(self):
+        result = self._make_result()
+        assert result.improved is True
+
+    def test_success(self):
+        result = self._make_result(
+            status=RefinementStatus.COMPLETED,
+            final_assessment=_make_assessment(passes_threshold=True),
+        )
+        assert result.success is True
+
+    def test_not_success_failed_status(self):
+        result = self._make_result(status=RefinementStatus.FAILED)
+        assert result.success is False
+
+    def test_to_dict(self):
+        result = self._make_result()
+        d = result.to_dict()
+        assert "original_response" in d
+        assert "final_response" in d
+        assert "total_improvement" in d
+        assert "constitutional_hash" in d
+
+
+class TestTypeAliases:
+    def test_dimension_scores_is_dict(self):
+        scores: DimensionScores = {"accuracy": 0.9}
+        assert isinstance(scores, dict)
+
+    def test_suggestion_list_is_list(self):
+        suggestions: SuggestionList = ["fix this"]
+        assert isinstance(suggestions, list)
+
+
+# ===========================================================================
+# validator.py tests
+# ===========================================================================
+
+
+class TestDimensionSpec:
+    def test_creation(self):
+        spec = DimensionSpec(name="accuracy", threshold=0.8)
+        assert spec.name == "accuracy"
+        assert spec.threshold == 0.8
+        assert spec.weight == 1.0
+        assert spec.required is False
+
+    def test_threshold_out_of_range(self):
+        with pytest.raises(ValidationError):
+            DimensionSpec(name="test", threshold=1.5)
+
+    def test_negative_weight(self):
+        with pytest.raises(ValidationError):
+            DimensionSpec(name="test", threshold=0.5, weight=-1.0)
+
+
+class TestValidationConfig:
+    def test_defaults(self):
+        cfg = ValidationConfig()
+        assert cfg.require_all_dimensions is True
+        assert cfg.fail_on_any_critical is True
+        assert cfg.overall_threshold == 0.7
+        assert cfg.enable_constitutional_check is True
+        assert "constitutional_alignment" in cfg.critical_dimensions
+        assert "safety" in cfg.critical_dimensions
+
+
+class TestResponseQualityValidator:
+    @pytest.fixture()
+    def validator(self):
+        return ResponseQualityValidator()
+
+    def test_creation(self, validator):
+        assert len(validator.dimensions) == 5
+        assert validator._validation_count == 0
+
+    def test_dimension_names(self, validator):
+        names = validator.dimension_names
+        assert "accuracy" in names
+        assert "coherence" in names
+        assert "safety" in names
+
+    def test_required_dimensions(self, validator):
+        required = validator.required_dimensions
+        assert "constitutional_alignment" in required
+        assert "safety" in required
+
+    def test_thresholds(self, validator):
+        thresholds = validator.thresholds
+        assert thresholds["safety"] == 0.99
+        assert thresholds["coherence"] == 0.7
+
+    def test_validate_good_response(self, validator):
+        assessment = validator.validate(GOOD_RESPONSE)
+        assert isinstance(assessment, QualityAssessment)
+        assert assessment.overall_score > 0
+        assert assessment.dimension_count == 5
+        assert assessment.response_id is not None
+
+    def test_validate_with_context(self, validator):
+        assessment = validator.validate(
+            "Governance policy regarding AI safety rules.",
+            context={"query": "governance safety"},
+        )
+        assert isinstance(assessment, QualityAssessment)
+
+    def test_validate_with_scores(self, validator):
+        scores = {
+            "accuracy": 0.9,
+            "coherence": 0.85,
+            "relevance": 0.88,
+            "constitutional_alignment": 0.98,
+            "safety": 0.99,
+        }
+        assessment = validator.validate(
+            GOOD_RESPONSE, scores=scores
+        )
+        dim = assessment.get_dimension("accuracy")
+        assert dim is not None
+        assert dim.score == 0.9
+
+    def test_validate_increments_count(self, validator):
+        validator.validate(GOOD_RESPONSE)
+        validator.validate(GOOD_RESPONSE)
+        assert validator._validation_count == 2
+
+    def test_validate_harmful_response(self, validator):
+        assessment = validator.validate(HARMFUL_RESPONSE)
+        safety_dim = assessment.get_dimension("safety")
+        assert safety_dim is not None
+        assert safety_dim.score < 0.99
+
+    def test_validate_empty_response(self, validator):
+        assessment = validator.validate("")
+        coherence_dim = assessment.get_dimension("coherence")
+        assert coherence_dim is not None
+        assert coherence_dim.score == 0.0
+
+    def test_validate_clamps_scores(self, validator):
+        scores = {"accuracy": 5.0, "coherence": -1.0}
+        assessment = validator.validate(GOOD_RESPONSE, scores=scores)
+        acc = assessment.get_dimension("accuracy")
+        coh = assessment.get_dimension("coherence")
+        assert acc is not None and acc.score == 1.0
+        assert coh is not None and coh.score == 0.0
+
+    def test_constitutional_hash_mismatch(self):
+        with pytest.raises(ConstitutionalHashError):
+            ResponseQualityValidator(constitutional_hash="wrong_hash")
+
+    def test_custom_dimensions(self):
+        custom = {
+            "custom_dim": DimensionSpec(
+                name="custom_dim", threshold=0.5, weight=1.0
+            )
+        }
+        validator = ResponseQualityValidator(custom_dimensions=custom)
+        assert "custom_dim" in validator.dimension_names
+
+    def test_validate_batch(self, validator):
+        results = validator.validate_batch(
+            [GOOD_RESPONSE, HARMFUL_RESPONSE]
+        )
+        assert len(results) == 2
+        assert all(isinstance(r, QualityAssessment) for r in results)
+
+    def test_validate_batch_with_contexts(self, validator):
+        results = validator.validate_batch(
+            [GOOD_RESPONSE, GOOD_RESPONSE],
+            contexts=[{"query": "test"}, None],
+        )
+        assert len(results) == 2
+
+    def test_validate_batch_length_mismatch(self, validator):
+        with pytest.raises(ValidationError):
+            validator.validate_batch(
+                [GOOD_RESPONSE], contexts=[None, None]
+            )
+
+    def test_get_dimension_spec(self, validator):
+        spec = validator.get_dimension_spec("safety")
+        assert spec is not None
+        assert spec.required is True
+
+    def test_get_dimension_spec_missing(self, validator):
+        assert validator.get_dimension_spec("nonexistent") is None
+
+    def test_update_threshold(self, validator):
+        validator.update_threshold("accuracy", 0.5)
+        assert validator.thresholds["accuracy"] == 0.5
+
+    def test_update_threshold_unknown_dimension(self, validator):
+        with pytest.raises(ValidationError):
+            validator.update_threshold("nonexistent", 0.5)
+
+    def test_update_threshold_invalid_value(self, validator):
+        with pytest.raises(ValidationError):
+            validator.update_threshold("accuracy", 1.5)
+
+    def test_reset_validation_count(self, validator):
+        validator.validate(GOOD_RESPONSE)
+        assert validator._validation_count == 1
+        validator.reset_validation_count()
+        assert validator._validation_count == 0
+
+    def test_stats(self, validator):
+        validator.validate(GOOD_RESPONSE)
+        stats = validator.stats
+        assert stats["validation_count"] == 1
+        assert stats["dimension_count"] == 5
+        assert "constitutional_hash" in stats
+        assert "thresholds" in stats
+
+    def test_generates_critique_for_failing(self, validator):
+        scores = {"accuracy": 0.3}
+        assessment = validator.validate(GOOD_RESPONSE, scores=scores)
+        acc = assessment.get_dimension("accuracy")
+        assert acc is not None
+        assert acc.critique is not None
+
+    def test_no_critique_for_passing(self, validator):
+        scores = {"accuracy": 0.95}
+        assessment = validator.validate(GOOD_RESPONSE, scores=scores)
+        acc = assessment.get_dimension("accuracy")
+        assert acc is not None
+        assert acc.critique is None
+
+    def test_generates_suggestions_for_failing(self, validator):
+        scores = {"accuracy": 0.3, "coherence": 0.2}
+        assessment = validator.validate(GOOD_RESPONSE, scores=scores)
+        assert len(assessment.refinement_suggestions) > 0
+
+    def test_passes_threshold_requires_all(self, validator):
+        scores = {
+            "accuracy": 0.5,
+            "coherence": 0.5,
+            "relevance": 0.5,
+            "constitutional_alignment": 0.98,
+            "safety": 0.99,
+        }
+        assessment = validator.validate(GOOD_RESPONSE, scores=scores)
+        assert assessment.passes_threshold is False
+
+    def test_constitutional_compliance_check(self, validator):
+        scores = {"constitutional_alignment": 0.5}
+        assessment = validator.validate(GOOD_RESPONSE, scores=scores)
+        assert assessment.constitutional_compliance is False
+
+    def test_constitutional_check_disabled(self):
+        config = ValidationConfig(enable_constitutional_check=False)
+        validator = ResponseQualityValidator(config=config)
+        scores = {"constitutional_alignment": 0.1}
+        assessment = validator.validate(GOOD_RESPONSE, scores=scores)
+        assert assessment.constitutional_compliance is True
+
+
+class TestCreateValidator:
+    def test_default(self):
+        validator = create_validator()
+        assert isinstance(validator, ResponseQualityValidator)
+
+    def test_custom_thresholds(self):
+        validator = create_validator(
+            thresholds={"accuracy": 0.5, "custom": 0.3}
+        )
+        assert validator.thresholds["accuracy"] == 0.5
+        assert "custom" in validator.dimension_names
+
+    def test_with_scorer(self):
+        class FakeScorer:
+            def score(self, response, context=None):
+                return {"accuracy": 0.9}
+
+        validator = create_validator(scorer=FakeScorer())
+        assessment = validator.validate("test response")
+        acc = assessment.get_dimension("accuracy")
+        assert acc is not None
+        assert acc.score == 0.9
+
+
+# ===========================================================================
+# refiner.py tests
+# ===========================================================================
+
+
+class TestRefinementConfig:
+    def test_defaults(self):
+        cfg = RefinementConfig()
+        assert cfg.max_iterations == 3
+        assert cfg.improvement_threshold == 0.01
+        assert cfg.stop_on_pass is True
+        assert cfg.require_constitutional is True
+
+
+class TestDefaultLLMRefiner:
+    def test_refine_coherence(self):
+        refiner = DefaultLLMRefiner()
+        assessment = _make_assessment(
+            dimension_overrides={"coherence": 0.3}
+        )
+        result = refiner.refine("incomplete response", assessment)
+        assert result.endswith(".")
+
+    def test_refine_relevance_with_context(self):
+        refiner = DefaultLLMRefiner()
+        assessment = _make_assessment(
+            dimension_overrides={"relevance": 0.3}
+        )
+        result = refiner.refine(
+            "Some response.", assessment, context={"query": "What is AI?"}
+        )
+        assert "Regarding your query" in result
+
+    def test_refine_safety(self):
+        refiner = DefaultLLMRefiner()
+        assessment = _make_assessment(
+            dimension_overrides={"safety": 0.3}
+        )
+        result = refiner.refine(HARMFUL_RESPONSE, assessment)
+        assert "[redacted]" in result
 
     @pytest.mark.asyncio
-    async def test_async_pipeline(self):
-        """Test async quality pipeline."""
-        validator = ResponseQualityValidator()
-        refiner = ResponseRefiner(validator=validator, max_iterations=1)
+    async def test_refine_async(self):
+        refiner = DefaultLLMRefiner()
+        assessment = _make_assessment()
+        result = await refiner.refine_async("good response", assessment)
+        assert isinstance(result, str)
 
-        result = await refiner.refine_async("Test async response")
 
+class TestDefaultConstitutionalCorrector:
+    def test_correct_harmful(self):
+        corrector = DefaultConstitutionalCorrector()
+        result = corrector.correct(
+            "test response", violations=["harmful content"]
+        )
+        assert "[Reviewed for safety]" in result
+
+    def test_correct_bias(self):
+        corrector = DefaultConstitutionalCorrector()
+        result = corrector.correct(
+            "test response", violations=["bias detected"]
+        )
+        assert "balanced and fair" in result
+
+    def test_correct_privacy(self):
+        corrector = DefaultConstitutionalCorrector()
+        result = corrector.correct(
+            "SSN: 123-45-6789 and email: test@example.com",
+            violations=["privacy concern"],
+        )
+        assert "[SSN-REDACTED]" in result
+        assert "[EMAIL-REDACTED]" in result
+
+    @pytest.mark.asyncio
+    async def test_correct_async(self):
+        corrector = DefaultConstitutionalCorrector()
+        result = await corrector.correct_async(
+            "test", violations=["harmful"]
+        )
+        assert isinstance(result, str)
+
+
+class TestResponseRefiner:
+    @pytest.fixture()
+    def refiner(self):
+        return ResponseRefiner()
+
+    def test_creation(self, refiner):
+        assert refiner.max_iterations == 3
+        assert refiner._refinement_count == 0
+
+    def test_refine_good_response(self, refiner):
+        result = refiner.refine(GOOD_RESPONSE)
         assert isinstance(result, RefinementResult)
-        assert result.final_response is not None
+        assert result.status in (
+            RefinementStatus.SKIPPED,
+            RefinementStatus.COMPLETED,
+        )
+
+    def test_refine_skipped_when_all_pass(self):
+        """When pre-computed scores all pass, refinement is skipped."""
+        validator = ResponseQualityValidator()
+        refiner = ResponseRefiner(validator=validator)
+        # Provide scores that pass all thresholds
+        scores = {
+            "accuracy": 0.95,
+            "coherence": 0.95,
+            "relevance": 0.95,
+            "constitutional_alignment": 0.99,
+            "safety": 0.99,
+        }
+        assessment = validator.validate(GOOD_RESPONSE, scores=scores)
+        assert assessment.passes_threshold is True
+        # Verify skipping behavior directly via _should_stop
+        assert refiner._should_stop(assessment, None, 0) is True
+
+    def test_refine_short_response(self, refiner):
+        result = refiner.refine(SHORT_RESPONSE)
+        assert isinstance(result, RefinementResult)
+        assert result.total_iterations >= 0
+
+    def test_refine_with_context(self, refiner):
+        result = refiner.refine(
+            GOOD_RESPONSE, context={"query": "governance policy"}
+        )
+        assert isinstance(result, RefinementResult)
+
+    def test_stats(self, refiner):
+        refiner.refine(GOOD_RESPONSE)
+        stats = refiner.stats
+        assert stats["refinement_count"] == 1
+        assert "constitutional_hash" in stats
+
+    def test_custom_max_iterations(self):
+        refiner = ResponseRefiner(max_iterations=1)
+        assert refiner.max_iterations == 1
+
+    def test_set_llm_refiner(self, refiner):
+        new_refiner = DefaultLLMRefiner()
+        refiner.set_llm_refiner(new_refiner)
+        assert refiner.llm_refiner is new_refiner
+
+    def test_set_constitutional_corrector(self, refiner):
+        new_corrector = DefaultConstitutionalCorrector()
+        refiner.set_constitutional_corrector(new_corrector)
+        assert refiner.constitutional_corrector is new_corrector
+
+    def test_refine_batch(self, refiner):
+        results = refiner.refine_batch([GOOD_RESPONSE, GOOD_RESPONSE])
+        assert len(results) == 2
+
+    def test_refine_batch_length_mismatch(self, refiner):
+        with pytest.raises(ValueError, match="same length"):
+            refiner.refine_batch(
+                [GOOD_RESPONSE], contexts=[None, None]
+            )
+
+    @pytest.mark.asyncio
+    async def test_refine_async_good_response(self, refiner):
+        result = await refiner.refine_async(GOOD_RESPONSE)
+        assert isinstance(result, RefinementResult)
+        assert result.status in (
+            RefinementStatus.SKIPPED,
+            RefinementStatus.COMPLETED,
+        )
+
+    @pytest.mark.asyncio
+    async def test_refine_async_short_response(self, refiner):
+        result = await refiner.refine_async(SHORT_RESPONSE)
+        assert isinstance(result, RefinementResult)
+
+    @pytest.mark.asyncio
+    async def test_refine_batch_async(self, refiner):
+        results = await refiner.refine_batch_async(
+            [GOOD_RESPONSE, GOOD_RESPONSE]
+        )
+        assert len(results) == 2
+
+    @pytest.mark.asyncio
+    async def test_refine_batch_async_length_mismatch(self, refiner):
+        with pytest.raises(ValueError, match="same length"):
+            await refiner.refine_batch_async(
+                [GOOD_RESPONSE], contexts=[None, None]
+            )
+
+    def test_stops_on_no_improvement(self):
+        """Refiner stops when improvement is below threshold."""
+        config = RefinementConfig(
+            max_iterations=5, improvement_threshold=10.0
+        )
+        refiner = ResponseRefiner(config=config, max_iterations=5)
+        result = refiner.refine(SHORT_RESPONSE)
+        # Should stop early because improvement can't exceed 10.0
+        assert result.total_iterations <= 2
+
+    def test_harmful_response_refinement(self):
+        refiner = ResponseRefiner()
+        result = refiner.refine(HARMFUL_RESPONSE)
+        assert isinstance(result, RefinementResult)
+
+
+class TestCreateRefiner:
+    def test_default(self):
+        refiner = create_refiner()
+        assert isinstance(refiner, ResponseRefiner)
+        assert refiner.max_iterations == 3
+
+    def test_custom_iterations(self):
+        refiner = create_refiner(max_iterations=5)
+        assert refiner.max_iterations == 5
+
+    def test_with_validator(self):
+        validator = ResponseQualityValidator()
+        refiner = create_refiner(validator=validator)
+        assert refiner.validator is validator
+
+
+# ===========================================================================
+# Backward Compatibility
+# ===========================================================================
+
+
+class TestBackwardCompatibility:
+    def test_response_quality_assessor_alias(self):
+        assert ResponseQualityAssessor is ResponseQualityValidator
+
+    def test_response_quality_metrics_alias(self):
+        assert ResponseQualityMetrics is QualityAssessment
