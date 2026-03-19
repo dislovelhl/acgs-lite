@@ -25,6 +25,11 @@ _planning = importlib.util.module_from_spec(_spec)
 sys.modules[_MOD_NAME] = _planning
 _spec.loader.exec_module(_planning)
 
+
+def teardown_module() -> None:
+    """Remove injected module from sys.modules to avoid polluting other tests."""
+    sys.modules.pop(_MOD_NAME, None)
+
 AgentCapability = _planning.AgentCapability
 CapabilityMatcher = _planning.CapabilityMatcher
 CapabilityType = _planning.CapabilityType
