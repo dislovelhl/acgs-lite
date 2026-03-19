@@ -28,11 +28,25 @@ from redis.exceptions import RedisError
 # Import rate limiting and health modules
 from starlette.middleware.sessions import SessionMiddleware
 
-from src.core.self_evolution.api import evidence_router
-from src.core.self_evolution.research.operator_control import (
-    DEFAULT_RESEARCH_OPERATOR_CONTROL_KEY_PREFIX,
-    create_research_operator_control_plane,
-)
+try:
+    from src.core.self_evolution.api import evidence_router
+
+    _SELF_EVOLUTION_AVAILABLE = True
+except ImportError:
+    evidence_router = None  # type: ignore[assignment]
+    _SELF_EVOLUTION_AVAILABLE = False
+
+try:
+    from src.core.self_evolution.research.operator_control import (
+        DEFAULT_RESEARCH_OPERATOR_CONTROL_KEY_PREFIX,
+        create_research_operator_control_plane,
+    )
+except ImportError:
+    DEFAULT_RESEARCH_OPERATOR_CONTROL_KEY_PREFIX = "acgs:research:operator_control"
+
+    async def create_research_operator_control_plane(**kwargs):  # type: ignore[misc]
+        """Stub when self_evolution module is not installed."""
+        return None
 from src.core.shared.api_versioning import (
     DEPRECATED_ROUTES,
     DEPRECATED_VERSIONS,
@@ -890,12 +904,13 @@ logger.info("Admin autonomy-tiers routes configured: /api/v1/admin/autonomy-tier
 # Include self-evolution evidence router for operator/admin read access
 # evidence_router has /evolution prefix; mounted under /api/v1/admin with admin RBAC
 # Final paths: /api/v1/admin/evolution/bounded-experiments, /api/v1/admin/evolution/bounded-experiments/{evidence_id}
-app.include_router(
-    evidence_router,
-    prefix="/api/v1/admin",
-    tags=["self-evolution-evidence"],
-    dependencies=[Depends(require_role("admin"))],
-)
+if _SELF_EVOLUTION_AVAILABLE and evidence_router is not None:
+    app.include_router(
+        evidence_router,
+        prefix="/api/v1/admin",
+        tags=["self-evolution-evidence"],
+        dependencies=[Depends(require_role("admin"))],
+    )
 logger.info(
     "Self-evolution evidence routes configured: /api/v1/admin/evolution/bounded-experiments*"
 )
