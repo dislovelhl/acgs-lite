@@ -349,21 +349,54 @@ class TestHybridModeValidateSignature:
     def _stub_pqc_key_registry(self):
         """Ensure the pqc_key_registry stub module has a key_registry_client attribute.
 
-        The actual module may be absent (namespace package from empty dir).
-        Tests that need a real registry mock patch it explicitly.
+        The actual module may be absent (namespace package from empty dir) or
+        may not be importable when earlier test files haven't registered it in
+        sys.modules.  In that case we create a minimal stub package so that
+        ``validate_signature`` can import it at call time.
         """
-        import importlib
-
         mod_name = "src.core.services.policy_registry.app.services.pqc_key_registry"
-        mod = importlib.import_module(mod_name)
+
+        # Ensure parent package chain exists in sys.modules so importlib can
+        # resolve the dotted path.  Earlier PQC test files may or may not have
+        # set these up depending on collection order.
+        import types
+
+        parent_parts = mod_name.rsplit(".", 1)[0]  # ...app.services
+        parents_to_clean: list[str] = []
+        for i, _part in enumerate(parent_parts.split(".")):
+            dotted = ".".join(parent_parts.split(".")[:i + 1])
+            if dotted not in sys.modules:
+                stub = types.ModuleType(dotted)
+                stub.__path__ = []  # mark as package
+                stub.__package__ = ".".join(parent_parts.split(".")[:i]) or dotted
+                sys.modules[dotted] = stub
+                parents_to_clean.append(dotted)
+
+        # Now ensure the leaf module itself exists.
+        mod_created = False
+        if mod_name not in sys.modules:
+            stub_mod = types.ModuleType(mod_name)
+            stub_mod.__path__ = []
+            stub_mod.__package__ = parent_parts
+            sys.modules[mod_name] = stub_mod
+            mod_created = True
+
+        mod = sys.modules[mod_name]
         had_attr = hasattr(mod, "key_registry_client")
         if not had_attr:
             stub_client = MagicMock()
             stub_client._registry = None  # skip registry lookup
             mod.key_registry_client = stub_client
+
         yield
+
+        # Teardown: restore original state
         if not had_attr and hasattr(mod, "key_registry_client"):
             delattr(mod, "key_registry_client")
+        if mod_created and mod_name in sys.modules:
+            del sys.modules[mod_name]
+        for p in reversed(parents_to_clean):
+            sys.modules.pop(p, None)
 
     @pytest.mark.asyncio
     @pytest.mark.unit

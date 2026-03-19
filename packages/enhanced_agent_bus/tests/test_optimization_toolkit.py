@@ -146,7 +146,7 @@ class TestApplicationPerformanceAgent:
         mock_monitor = MagicMock()
         mock_monitor.get_metrics.return_value = {"operations": {}}
         with patch(
-            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()
@@ -163,7 +163,7 @@ class TestApplicationPerformanceAgent:
         mock_monitor = MagicMock()
         mock_monitor.get_metrics.return_value = {"operations": {}}
         with patch(
-            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()

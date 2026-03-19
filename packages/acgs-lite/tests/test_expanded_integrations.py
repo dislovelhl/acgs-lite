@@ -4,7 +4,9 @@ Tests use mocked external services (no real API calls).
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
+import importlib
 import json
+import sys
 from dataclasses import dataclass
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -250,6 +252,71 @@ class TestGovernedGenAI:
 
 @pytest.mark.integration
 class TestMCPServer:
+    @pytest.fixture(autouse=True)
+    def _ensure_real_mcp(self):
+        """Fix MCP module shadowing caused by enhanced_agent_bus/mcp/ on sys.path.
+
+        When running the full test suite, the enhanced_agent_bus conftest adds its
+        package directory to sys.path, which causes ``import mcp`` to resolve to the
+        bus's local ``mcp/`` package instead of the pip-installed ``mcp`` package.
+        This fixture purges the wrong module, reloads the correct one, and reloads
+        ``acgs_lite.integrations.mcp_server`` so ``MCP_AVAILABLE`` is set correctly.
+        """
+        # Snapshot current state for restoration
+        saved_mcp_modules = {
+            key: sys.modules[key]
+            for key in list(sys.modules)
+            if key == "mcp" or key.startswith("mcp.")
+        }
+
+        # Remove any shadowed mcp modules
+        for key in list(sys.modules):
+            if key == "mcp" or key.startswith("mcp."):
+                del sys.modules[key]
+
+        # Find the real mcp package via its installed spec (skip local paths)
+        real_mcp_spec = importlib.util.find_spec("mcp")
+        if real_mcp_spec is None:
+            # mcp not installed at all -- try removing bus paths temporarily
+            bus_paths = [p for p in sys.path if "enhanced_agent_bus" in p]
+            for p in bus_paths:
+                sys.path.remove(p)
+            try:
+                real_mcp_spec = importlib.util.find_spec("mcp")
+            finally:
+                for p in bus_paths:
+                    sys.path.insert(0, p)
+
+        if real_mcp_spec and real_mcp_spec.origin and "enhanced_agent_bus" in real_mcp_spec.origin:
+            # Still resolving to the wrong mcp -- temporarily remove bus paths
+            bus_paths = [p for p in sys.path if "enhanced_agent_bus" in p]
+            for p in bus_paths:
+                sys.path.remove(p)
+            # Clear again and re-import
+            for key in list(sys.modules):
+                if key == "mcp" or key.startswith("mcp."):
+                    del sys.modules[key]
+            import mcp  # noqa: F401 — triggers correct resolution
+            for p in bus_paths:
+                sys.path.insert(0, p)
+        else:
+            import mcp  # noqa: F401
+
+        # Reload mcp_server so MCP_AVAILABLE picks up the real mcp package
+        if "acgs_lite.integrations.mcp_server" in sys.modules:
+            importlib.reload(sys.modules["acgs_lite.integrations.mcp_server"])
+
+        yield
+
+        # Restore original mcp modules to avoid affecting other tests
+        for key in list(sys.modules):
+            if key == "mcp" or key.startswith("mcp."):
+                del sys.modules[key]
+        sys.modules.update(saved_mcp_modules)
+        # Reload mcp_server back to original state
+        if "acgs_lite.integrations.mcp_server" in sys.modules:
+            importlib.reload(sys.modules["acgs_lite.integrations.mcp_server"])
+
     def test_create_server(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
