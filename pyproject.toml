@@ -136,7 +136,7 @@ source = ["src", "packages/enhanced_agent_bus", "packages/acgs-lite/src"]
 omit = ["tests/*", "**/tests/*", "**/__init__.py"]
 
 [tool.coverage.report]
-fail_under = 30
+fail_under = 60
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",

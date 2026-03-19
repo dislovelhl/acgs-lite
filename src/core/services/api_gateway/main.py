@@ -883,6 +883,21 @@ HOP_BY_HOP_HEADERS = frozenset(
     }
 )
 
+# SECURITY: Allowlist of headers forwarded to Agent Bus (H-3 fix).
+# Using an allowlist instead of a blocklist prevents internal header injection.
+_PROXY_FORWARD_HEADERS = frozenset(
+    {
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "content-type",
+        "user-agent",
+        "x-request-id",
+        "x-correlation-id",
+        "x-idempotency-key",
+    }
+)
+
 # Maximum proxy request body size (1 MB)
 MAX_PROXY_BODY_SIZE = 1 * 1024 * 1024
 
@@ -944,9 +959,12 @@ async def proxy_to_agent_bus(
             except ValidationError as e:
                 raise HTTPException(status_code=422, detail="Invalid JSON payload") from e
 
+        # SECURITY: Use allowlist — only forward known-safe headers to Agent Bus.
+        # This prevents clients from injecting internal headers (H-3 fix).
         safe_headers = {
-            k: v for k, v in request.headers.items() if k.lower() not in HOP_BY_HOP_HEADERS
+            k: v for k, v in request.headers.items() if k.lower() in _PROXY_FORWARD_HEADERS
         }
+        # Inject authenticated identity headers (gateway-controlled, not client-settable)
         safe_headers["X-Tenant-ID"] = user.tenant_id
         safe_headers["X-User-ID"] = user.sub
 

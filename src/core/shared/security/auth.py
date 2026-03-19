@@ -24,6 +24,39 @@ from src.core.shared.structured_logging import get_logger
 
 logger = get_logger(__name__)
 
+# H-1 fix: Singleton revocation service instance (initialized lazily on first auth check).
+_revocation_service: object | None = None
+_revocation_service_initialized: bool = False
+
+
+def _get_revocation_service() -> object | None:
+    """Get the singleton TokenRevocationService, or None if unavailable."""
+    global _revocation_service, _revocation_service_initialized
+    if _revocation_service_initialized:
+        return _revocation_service
+    _revocation_service_initialized = True
+    try:
+        import redis as _redis_mod
+
+        from src.core.shared.security.token_revocation import TokenRevocationService
+
+        redis_url = os.environ.get("REDIS_URL")
+        if not redis_url:
+            logger.info("Token revocation disabled: REDIS_URL not configured")
+            return None
+        redis_async = getattr(_redis_mod, "asyncio", None)
+        if redis_async is None:
+            logger.warning("Token revocation disabled: redis.asyncio not available")
+            return None
+        client = redis_async.from_url(redis_url)
+        _revocation_service = TokenRevocationService(redis_client=client)
+        logger.info("Token revocation service initialized for auth flow")
+        return _revocation_service
+    except Exception as e:
+        logger.warning("Token revocation service initialization failed: %s", e)
+        return None
+
+
 _JWT_SECRET_ENV_KEYS = ("JWT_SECRET", "JWT_SECRET_KEY")
 _JWT_PRIVATE_KEY_ENV_KEY = "JWT_PRIVATE_KEY"
 _JWT_PUBLIC_KEY_ENV_KEY = "JWT_PUBLIC_KEY"
@@ -282,6 +315,8 @@ async def get_current_user(
     """
     FastAPI dependency to get current authenticated user.
 
+    Validates JWT claims AND checks token revocation blacklist (H-1 fix).
+
     Args:
         credentials: HTTP Bearer token credentials
 
@@ -289,7 +324,7 @@ async def get_current_user(
         UserClaims for authenticated user
 
     Raises:
-        HTTPException: If authentication fails
+        HTTPException: If authentication fails or token is revoked
     """
     if not credentials:
         raise HTTPException(
@@ -298,7 +333,27 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    return verify_token(credentials.credentials)
+    claims = verify_token(credentials.credentials)
+
+    # H-1 fix: Check token revocation blacklist after JWT validation.
+    # Lazy import to avoid circular dependency and allow graceful degradation.
+    try:
+
+        revocation_service = _get_revocation_service()
+        if revocation_service is not None:
+            if await revocation_service.is_token_revoked(claims.jti):
+                logger.warning(
+                    "Revoked token used: jti=%s sub=%s", claims.jti[:8], claims.sub
+                )
+                raise HTTPException(status_code=401, detail="Token has been revoked")
+    except HTTPException:
+        raise
+    except Exception as e:
+        # Revocation check failed — log but don't block in dev mode.
+        # In production, the revocation service handles fail-open/closed policy internally.
+        logger.warning("Token revocation check failed: %s", e)
+
+    return claims
 
 
 async def get_current_user_optional(
