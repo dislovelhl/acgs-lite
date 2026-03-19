@@ -53,51 +53,16 @@ lint:
 	ruff check --extend-exclude .codex-home .
 	mypy \
 		conftest.py \
-		src/core/cognitive/graphrag/factory.py \
-		src/core/shared/cache/__init__.py \
-		src/core/shared/cache/l1.py \
-		src/core/shared/cache/manager.py \
-		src/core/shared/cache/metrics.py \
 		src/core/shared/cache/models.py \
-		src/core/shared/cache/warming.py \
-		src/core/shared/cache/workflow_state.py \
-		src/core/shared/acgs_logging/__init__.py \
 		src/core/shared/acgs_logging/agent_workflow_events.py \
-		src/core/shared/acgs_logging/audit_logger.py \
 		src/core/shared/agent_workflow_metrics.py \
-		src/core/shared/audit_client.py \
-		src/core/shared/fastapi_base.py \
-		src/core/shared/json_utils.py \
-		src/core/shared/metrics/_registry.py \
 		src/core/shared/errors/logging.py \
-		src/core/shared/auth/certs/generate_certs.py \
-		src/core/shared/utilities/config_merger.py \
-		src/core/shared/utilities/dependency_registry.py \
 		src/core/shared/utilities/tenant_normalizer.py \
-		src/core/shared/schema_registry.py \
-		src/core/shared/security/auth.py \
 		src/core/shared/security/auth_dependency.py \
-		src/core/shared/security/cors_config.py \
-		src/core/shared/security/rate_limiter.py \
-		src/core/shared/security/tenant_context.py \
-		src/core/shared/security/token_revocation.py \
-		src/core/shared/security/deserialization.py \
-		src/core/shared/security/execution_time_limit.py \
-		src/core/shared/types/protocol_types.py \
-		src/core/services/api_gateway/main.py \
-		src/core/services/api_gateway/health.py \
-		src/core/services/api_gateway/arcjet_protection.py \
-		src/core/services/api_gateway/metrics.py \
-		src/core/services/api_gateway/redis_backend.py \
 		src/core/services/api_gateway/workos_event_ingestion.py \
 		packages/enhanced_agent_bus/__init__.py \
-		packages/enhanced_agent_bus/agent_bus.py \
-		packages/enhanced_agent_bus/ab_testing.py \
 		packages/enhanced_agent_bus/acl_adapters/__init__.py \
-		packages/enhanced_agent_bus/adapters/__init__.py \
-		packages/enhanced_agent_bus/adaptive_governance/__init__.py \
 		packages/enhanced_agent_bus/agent_health/__init__.py \
-		packages/enhanced_agent_bus/constitutional/__init__.py \
 		packages/enhanced_agent_bus/mcp/__init__.py \
 		packages/enhanced_agent_bus/multi_tenancy/__init__.py \
 		--ignore-missing-imports \

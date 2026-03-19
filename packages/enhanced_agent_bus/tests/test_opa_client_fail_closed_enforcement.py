@@ -1,6 +1,9 @@
-"""Tests for environment-aware fail-closed enforcement in get_opa_client.
+"""Tests for fail-closed enforcement in OPAClient.
 
 Constitutional Hash: cdd01ef066bc6cf2
+
+VULN-002: OPAClient always forces fail_closed=True regardless of environment.
+The constructor no longer accepts a fail_closed parameter.
 """
 
 import pytest
@@ -8,30 +11,25 @@ import pytest
 import enhanced_agent_bus.opa_client as opa_client_module
 
 
-@pytest.fixture(autouse=True)
-def _reset_global_client() -> None:
-    opa_client_module._opa_client = None
-    yield
-    opa_client_module._opa_client = None
-
-
 @pytest.mark.constitutional
-def test_get_opa_client_respects_fail_closed_flag_outside_production(
+def test_opa_client_forces_fail_closed_outside_production(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Even in development, fail_closed is always True (VULN-002)."""
     monkeypatch.setenv("ENVIRONMENT", "development")
 
-    client = opa_client_module.get_opa_client(fail_closed=False)
+    client = opa_client_module.OPAClient()
 
-    assert client.fail_closed is False
+    assert client.fail_closed is True
 
 
 @pytest.mark.constitutional
-def test_get_opa_client_forces_fail_closed_in_production(
+def test_opa_client_forces_fail_closed_in_production(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """In production, fail_closed is always True (VULN-002)."""
     monkeypatch.setenv("ENVIRONMENT", "production")
 
-    client = opa_client_module.get_opa_client(fail_closed=False)
+    client = opa_client_module.OPAClient()
 
     assert client.fail_closed is True

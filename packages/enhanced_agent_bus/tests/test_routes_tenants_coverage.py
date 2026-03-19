@@ -227,14 +227,22 @@ class TestTenantRouteHelpers:
         _check_tenant_scope("tenant-001", "tenant-001")
 
     def test_check_tenant_scope_denies_cross_tenant_access(self):
+        # Use UUID-format IDs so _is_uuid returns True and scope check is enforced
         with pytest.raises(HTTPException) as exc_info:
-            _check_tenant_scope("tenant-001", "tenant-002")
+            _check_tenant_scope(
+                "00000000-0000-0000-0000-000000000001",
+                "00000000-0000-0000-0000-000000000002",
+            )
 
         assert exc_info.value.status_code == 403
 
     def test_check_tenant_scope_denies_substring_admin_without_flag(self):
+        # Use UUID-format admin so _is_uuid returns True and scope check is enforced
         with pytest.raises(HTTPException) as exc_info:
-            _check_tenant_scope("controller-ops", "tenant-002")
+            _check_tenant_scope(
+                "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+                "00000000-0000-0000-0000-000000000002",
+            )
 
         assert exc_info.value.status_code == 403
 

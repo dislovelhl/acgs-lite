@@ -10,6 +10,7 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from __future__ import annotations
 
+from collections import deque
 from unittest.mock import MagicMock
 
 import pytest
@@ -267,6 +268,7 @@ class TestInternalTracking:
 
     def test_record_duration_caps_at_max_samples(self):
         self.m._max_samples = 5
+        self.m._duration_samples = deque(maxlen=5)
         for i in range(10):
             self.m._record_duration(float(i) * 0.1)
         assert len(self.m._duration_samples) == 5
@@ -280,6 +282,7 @@ class TestInternalTracking:
 
     def test_record_compensation_duration_caps(self):
         self.m._max_samples = 3
+        self.m._compensation_samples = deque(maxlen=3)
         for i in range(6):
             self.m._record_compensation_duration(float(i) * 0.1)
         assert len(self.m._compensation_samples) == 3

@@ -12,7 +12,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from fastapi import APIRouter, Request
-from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response
 
@@ -143,11 +142,11 @@ def _extract_version_from_path(path: str) -> str | None:
 
 
 __all__ = [
-    "APIVersioningMiddleware",
     "DEPRECATED_ROUTES",
     "DEPRECATED_VERSIONS",
-    "DeprecationNoticeMiddleware",
     "SUPPORTED_VERSIONS",
+    "APIVersioningMiddleware",
+    "DeprecationNoticeMiddleware",
     "VersioningConfig",
     "create_version_info_endpoint",
     "create_version_metrics_endpoint",

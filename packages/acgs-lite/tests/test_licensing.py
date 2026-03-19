@@ -172,7 +172,7 @@ class TestExpiredKeys:
         import hmac as _hmac
 
         msg = expiry_b + nonce + tier_b
-        sig = _hmac.new(SECRET.encode(), msg, hashlib.sha256).digest()[:6]
+        sig = _hmac.new(SECRET.encode(), msg, hashlib.sha256).digest()[:16]
         g1, g2, g3, g4, g5 = (
             expiry_b.hex(),
             nonce[:2].hex(),
@@ -195,7 +195,7 @@ class TestExpiredKeys:
         import hmac as _hmac
 
         msg = expiry_b + nonce + tier_b
-        sig = _hmac.new(SECRET.encode(), msg, hashlib.sha256).digest()[:6]
+        sig = _hmac.new(SECRET.encode(), msg, hashlib.sha256).digest()[:16]
         g1, g2, g3, g4, g5 = (
             expiry_b.hex(),
             nonce[:2].hex(),

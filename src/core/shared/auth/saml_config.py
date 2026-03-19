@@ -37,9 +37,9 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from src.core.shared.structured_logging import get_logger
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.errors.exceptions import ACGSBaseError
+from src.core.shared.structured_logging import get_logger
 from src.core.shared.types import JSONValue
 
 logger = get_logger(__name__)

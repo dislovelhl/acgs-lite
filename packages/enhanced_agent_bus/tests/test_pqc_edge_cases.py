@@ -58,7 +58,7 @@ def _config_mock(mode: str = "strict") -> AsyncMock:
 async def test_config_failure_defaults_to_strict_rejects_classical():
     """When get_mode() raises, enforcement defaults to strict and rejects classical key."""
     config = AsyncMock()
-    config.get_mode.side_effect = Exception("Redis/PG both down")
+    config.get_mode.side_effect = OSError("Redis/PG both down")
 
     with pytest.raises(ClassicalKeyRejectedError):
         await check_enforcement_for_create(

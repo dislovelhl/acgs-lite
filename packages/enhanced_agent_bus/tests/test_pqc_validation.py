@@ -345,6 +345,26 @@ class TestPQCSecurityProperties:
 class TestHybridModeValidateSignature:
     """Tests for validate_signature() hybrid mode behaviour."""
 
+    @pytest.fixture(autouse=True)
+    def _stub_pqc_key_registry(self):
+        """Ensure the pqc_key_registry stub module has a key_registry_client attribute.
+
+        The actual module may be absent (namespace package from empty dir).
+        Tests that need a real registry mock patch it explicitly.
+        """
+        import importlib
+
+        mod_name = "src.core.services.policy_registry.app.services.pqc_key_registry"
+        mod = importlib.import_module(mod_name)
+        had_attr = hasattr(mod, "key_registry_client")
+        if not had_attr:
+            stub_client = MagicMock()
+            stub_client._registry = None  # skip registry lookup
+            mod.key_registry_client = stub_client
+        yield
+        if not had_attr and hasattr(mod, "key_registry_client"):
+            delattr(mod, "key_registry_client")
+
     @pytest.mark.asyncio
     @pytest.mark.unit
     async def test_ed25519_accepted_in_hybrid_mode(self):

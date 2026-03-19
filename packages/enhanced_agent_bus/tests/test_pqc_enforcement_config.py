@@ -97,7 +97,7 @@ def pg_strict():
 @pytest.fixture
 def pg_unavailable():
     """PostgreSQL that raises an exception on every call."""
-    return _make_pg_mock(fetchrow_raises=Exception("PG down"))
+    return _make_pg_mock(fetchrow_raises=OSError("PG down"))
 
 
 # ---------------------------------------------------------------------------

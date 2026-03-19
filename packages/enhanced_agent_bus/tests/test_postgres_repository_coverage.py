@@ -86,6 +86,12 @@ from enhanced_agent_bus.persistence.postgres_repository import (  # noqa: E402
     PostgresWorkflowRepository,
 )
 
+# Under pytest's importlib import mode the module object that ``_pg_repo_module``
+# points to may be a *different* object from the one whose ``__dict__`` is used
+# as ``__globals__`` by the class methods.  Obtain the canonical globals dict so
+# that ``patch.dict`` actually affects runtime behaviour.
+_pg_globals: dict = PostgresWorkflowRepository.__init__.__globals__  # type: ignore[attr-defined]
+
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -267,7 +273,7 @@ def repo(mock_pool: MagicMock):
     mock_asyncpg = MagicMock()
     mock_asyncpg.create_pool = AsyncMock(return_value=mock_pool)
 
-    with patch.dict(_pg_repo_module.__dict__, {"asyncpg_module": mock_asyncpg}):
+    with patch.dict(_pg_globals, {"asyncpg_module": mock_asyncpg}):
         r = PostgresWorkflowRepository.__new__(PostgresWorkflowRepository)
         r.dsn = "postgresql://localhost/test"
         r.min_connections = 2
@@ -283,13 +289,13 @@ def repo(mock_pool: MagicMock):
 
 class TestInit:
     def test_init_raises_when_asyncpg_missing(self) -> None:
-        with patch.dict(_pg_repo_module.__dict__, {"asyncpg_module": None}):
+        with patch.dict(_pg_globals, {"asyncpg_module": None}):
             with pytest.raises(ImportError, match="asyncpg required"):
                 PostgresWorkflowRepository("postgresql://localhost/test")
 
     def test_init_stores_dsn_and_pool_sizes(self) -> None:
         mock_asyncpg = MagicMock()
-        with patch.dict(_pg_repo_module.__dict__, {"asyncpg_module": mock_asyncpg}):
+        with patch.dict(_pg_globals, {"asyncpg_module": mock_asyncpg}):
             r = PostgresWorkflowRepository("dsn://x", min_connections=3, max_connections=15)
         assert r.dsn == "dsn://x"
         assert r.min_connections == 3
@@ -298,7 +304,7 @@ class TestInit:
 
     def test_init_default_pool_sizes(self) -> None:
         mock_asyncpg = MagicMock()
-        with patch.dict(_pg_repo_module.__dict__, {"asyncpg_module": mock_asyncpg}):
+        with patch.dict(_pg_globals, {"asyncpg_module": mock_asyncpg}):
             r = PostgresWorkflowRepository("dsn://y")
         assert r.min_connections == 5
         assert r.max_connections == 20
@@ -316,7 +322,7 @@ class TestInitializeClose:
         mock_asyncpg = MagicMock()
         mock_asyncpg.create_pool = AsyncMock(return_value=mock_pool)
 
-        with patch.dict(_pg_repo_module.__dict__, {"asyncpg_module": mock_asyncpg}):
+        with patch.dict(_pg_globals, {"asyncpg_module": mock_asyncpg}):
             r = PostgresWorkflowRepository.__new__(PostgresWorkflowRepository)
             r.dsn = "dsn://x"
             r.min_connections = 2
@@ -333,7 +339,7 @@ class TestInitializeClose:
         mock_asyncpg = MagicMock()
         mock_asyncpg.create_pool = AsyncMock(return_value=mock_pool)
 
-        with patch.dict(_pg_repo_module.__dict__, {"asyncpg_module": mock_asyncpg}):
+        with patch.dict(_pg_globals, {"asyncpg_module": mock_asyncpg}):
             r = PostgresWorkflowRepository.__new__(PostgresWorkflowRepository)
             r.dsn = "postgresql://myhost/mydb"
             r.min_connections = 3
@@ -353,7 +359,7 @@ class TestInitializeClose:
 
     async def test_close_when_pool_is_none(self) -> None:
         mock_asyncpg = MagicMock()
-        with patch.dict(_pg_repo_module.__dict__, {"asyncpg_module": mock_asyncpg}):
+        with patch.dict(_pg_globals, {"asyncpg_module": mock_asyncpg}):
             r = PostgresWorkflowRepository.__new__(PostgresWorkflowRepository)
             r._pool = None
         await r.close()  # must not raise
@@ -367,7 +373,7 @@ class TestInitializeClose:
 class TestConnection:
     async def test_connection_raises_when_not_initialized(self) -> None:
         mock_asyncpg = MagicMock()
-        with patch.dict(_pg_repo_module.__dict__, {"asyncpg_module": mock_asyncpg}):
+        with patch.dict(_pg_globals, {"asyncpg_module": mock_asyncpg}):
             r = PostgresWorkflowRepository.__new__(PostgresWorkflowRepository)
             r._pool = None
         with pytest.raises(RuntimeError, match="not initialized"):

@@ -10,6 +10,7 @@ Tests for the event schema evolution strategy including:
 """
 
 from datetime import datetime, timezone
+from typing import ClassVar
 from unittest.mock import patch
 
 import pytest
@@ -299,11 +300,11 @@ class TestSchemaDefinition:
     def test_schema_fingerprint_uses_fast_kernel_when_available(self):
         """Test schema fingerprint uses fast hash kernel when available.
 
-        Uses direct assignment instead of monkeypatch to avoid teardown
-        ordering races with the autouse ``_reset_fast_hash_state`` fixture
-        under xdist loadscope.  The autouse ``patch.dict`` restores the
-        entire module ``__dict__`` after the test, so explicit undo is
-        unnecessary.
+        Patches the globals dict that ``compute_fingerprint`` actually
+        resolves names through (its ``__globals__``), which may differ
+        from ``schema_evolution_module.__dict__`` under importlib import
+        mode.  The autouse ``patch.dict`` still restores the module-level
+        dict after the test.
         """
         called = {"value": False}
 
@@ -311,19 +312,31 @@ class TestSchemaDefinition:
             called["value"] = True
             return 0xBEEF
 
+        # Patch both the test-visible module dict AND the method's own
+        # globals dict (they can be different objects under importlib).
+        method_globals = SchemaDefinition.compute_fingerprint.__globals__
         schema_evolution_module.FAST_HASH_AVAILABLE = True
         schema_evolution_module.fast_hash = _fake_fast_hash
+        orig_avail = method_globals.get("FAST_HASH_AVAILABLE")
+        orig_fh = method_globals.get("fast_hash")
+        method_globals["FAST_HASH_AVAILABLE"] = True
+        method_globals["fast_hash"] = _fake_fast_hash
 
-        schema = SchemaDefinition(
-            schema_id="test",
-            name="Test",
-            version="1.0.0",
-            fields=[SchemaFieldDefinition(name="id", field_type="str")],
-        )
-        fingerprint = schema.compute_fingerprint()
+        try:
+            schema = SchemaDefinition(
+                schema_id="test",
+                name="Test",
+                version="1.0.0",
+                fields=[SchemaFieldDefinition(name="id", field_type="str")],
+            )
+            fingerprint = schema.compute_fingerprint()
 
-        assert called["value"] is True
-        assert fingerprint == "000000000000beef"
+            assert called["value"] is True
+            assert fingerprint == "000000000000beef"
+        finally:
+            # Restore method globals to avoid polluting other tests.
+            method_globals["FAST_HASH_AVAILABLE"] = orig_avail
+            method_globals["fast_hash"] = orig_fh
 
     def test_schema_fingerprint_falls_back_to_sha256(self):
         """Test schema fingerprint falls back when fast hash is unavailable.
@@ -856,8 +869,8 @@ class TestVersionedMessageBase:
         """Test versioned message has correct defaults."""
 
         class MyMessage(VersionedMessageBase):
-            _schema_version = "1.0.0"
-            _schema_name = "MyMessage"
+            _schema_version: ClassVar[str] = "1.0.0"
+            _schema_name: ClassVar[str] = "MyMessage"
             data: str = ""
 
         msg = MyMessage()
