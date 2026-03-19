@@ -9,9 +9,8 @@ Active coordination artifact for all agents (Claude Code, Codex, subagents) work
 
 | Agent | MACI Role | Scope | Status | Next Step | Blockers |
 |-------|-----------|-------|--------|-----------|----------|
-| Claude Code | Validator | Governance sweep: lint, tests, .gitignore, PLANS.md | done | PR `fix/p0-security-hardening` to main | — |
+| Claude Code | Validator | Governance sweep + dev-agent infrastructure | done | Merge `fix/p0-security-hardening` to main | — |
 | Claude Code (worktree) | Proposer | `src/core/cli/` — platform CLI | stalled | Needs type annotation fixes (26 mypy errors) before merge | Worktree `agent-a56ce594` |
-| Codex CLI | Proposer | `PLANS.md`, `autoresearch/program.md`, `autoresearch/setup_run.py`, `autoresearch/log_run.py` | done | — | — |
 
 > **Hotspot ownership**: Claim `proposal_engine.py`, `api_gateway/main.py`, or `builder.py` here
 > before touching them. One agent at a time — wait or use a worktree if claimed.
