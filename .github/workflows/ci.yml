@@ -25,6 +25,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
       - name: Restore uv cache
         uses: actions/cache@v4
         with:
@@ -33,6 +36,8 @@ jobs:
           restore-keys: uv-${{ runner.os }}-
       - name: Install dependencies
         run: uv sync --all-extras --dev
+      - name: Make setup
+        run: make setup
       - name: Lint
         run: make lint
 
@@ -46,6 +51,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
       - name: Restore uv cache
         uses: actions/cache@v4
         with:
@@ -54,6 +62,8 @@ jobs:
           restore-keys: uv-${{ runner.os }}-
       - name: Install dependencies
         run: uv sync --all-extras --dev
+      - name: Make setup
+        run: make setup
       - name: Test (quick)
         run: make test-quick
 
@@ -68,6 +78,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
       - name: Restore uv cache
         uses: actions/cache@v4
         with:
@@ -76,5 +89,7 @@ jobs:
           restore-keys: uv-${{ runner.os }}-
       - name: Install dependencies
         run: uv sync --all-extras --dev
+      - name: Make setup
+        run: make setup
       - name: Test (full suite)
         run: make test

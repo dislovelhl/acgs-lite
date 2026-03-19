@@ -31,13 +31,16 @@ setup:
 	$(PIP) install -e packages/acgs-lite[dev]
 	$(PIP) install -e packages/enhanced_agent_bus[dev]
 	pre-commit install
+	cd packages/propriety-ai && npm install
 
 # === Testing ===
 test:
 	$(PYTHON) -m pytest --import-mode=importlib -v
+	cd packages/propriety-ai && npm run test
 
 test-quick:
 	$(PYTHON) -m pytest --import-mode=importlib -m "not slow" -x -v
+	cd packages/propriety-ai && npm run test:unit
 
 test-lite:
 	$(PYTHON) -m pytest packages/acgs-lite/tests/ -v --import-mode=importlib
@@ -67,10 +70,12 @@ lint:
 		packages/enhanced_agent_bus/multi_tenancy/__init__.py \
 		--ignore-missing-imports \
 		--follow-imports skip
+	cd packages/propriety-ai && npm run check && npm run lint
 
 format:
 	ruff check --fix .
 	ruff format .
+	cd packages/propriety-ai && npm run format
 
 # === Coverage ===
 cov:
