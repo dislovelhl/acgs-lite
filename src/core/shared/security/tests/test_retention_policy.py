@@ -7,8 +7,6 @@ Tests for RetentionPolicyEngine, disposal handlers, and GDPR compliance.
 
 from datetime import UTC, datetime, timedelta
 
-import pytest
-
 from src.core.shared.security.data_classification import (
     CONSTITUTIONAL_HASH,
     DataClassificationTier,
@@ -121,7 +119,6 @@ class TestInMemoryRetentionStorage:
         """Set up test fixtures."""
         self.storage = InMemoryRetentionStorage()
 
-    @pytest.mark.asyncio
     async def test_save_and_get_record(self):
         """Test saving and retrieving a retention record."""
         record = RetentionRecord(
@@ -139,13 +136,11 @@ class TestInMemoryRetentionStorage:
         assert retrieved.data_id == "data-001"
         assert retrieved.record_id == record.record_id
 
-    @pytest.mark.asyncio
     async def test_get_nonexistent_record(self):
         """Test retrieving nonexistent record returns None."""
         retrieved = await self.storage.get_record("nonexistent-id")
         assert retrieved is None
 
-    @pytest.mark.asyncio
     async def test_find_expired_records(self):
         """Test finding expired retention records."""
         # Create expired record
@@ -173,7 +168,6 @@ class TestInMemoryRetentionStorage:
         assert len(expired) == 1
         assert expired[0].data_id == "expired-001"
 
-    @pytest.mark.asyncio
     async def test_find_expired_excludes_legal_hold(self):
         """Test that legal hold records are not marked as expired."""
         # Create expired record with legal hold
@@ -191,7 +185,6 @@ class TestInMemoryRetentionStorage:
         expired = await self.storage.find_expired_records()
         assert len(expired) == 0
 
-    @pytest.mark.asyncio
     async def test_find_expired_with_tenant_filter(self):
         """Test finding expired records filtered by tenant."""
         # Create expired record for tenant A
@@ -221,7 +214,6 @@ class TestInMemoryRetentionStorage:
         assert len(expired) == 1
         assert expired[0].tenant_id == "tenant-a"
 
-    @pytest.mark.asyncio
     async def test_log_action(self):
         """Test logging retention actions."""
         action = RetentionAction(
@@ -240,7 +232,6 @@ class TestInMemoryRetentionStorage:
 class TestDisposalHandlers:
     """Tests for disposal handler implementations."""
 
-    @pytest.mark.asyncio
     async def test_delete_handler_success(self):
         """Test DeleteHandler successful disposal."""
         handler = DeleteHandler()
@@ -259,7 +250,6 @@ class TestDisposalHandlers:
         assert result.audit_trail_hash != ""
         assert result.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_archive_handler_success(self):
         """Test ArchiveHandler successful disposal."""
         handler = ArchiveHandler()
@@ -277,7 +267,6 @@ class TestDisposalHandlers:
         assert result.method == DisposalMethod.ARCHIVE
         assert result.audit_trail_hash != ""
 
-    @pytest.mark.asyncio
     async def test_anonymize_handler_success(self):
         """Test AnonymizeHandler successful disposal."""
         handler = AnonymizeHandler()
@@ -296,7 +285,6 @@ class TestDisposalHandlers:
         assert result.method == DisposalMethod.ANONYMIZE
         assert result.bytes_disposed == 0  # Data transformed, not deleted
 
-    @pytest.mark.asyncio
     async def test_pseudonymize_handler_success(self):
         """Test PseudonymizeHandler successful disposal."""
         handler = PseudonymizeHandler()
@@ -330,7 +318,6 @@ class TestRetentionPolicyEngine:
         """Test engine has constitutional hash set."""
         assert self.engine.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_create_retention_record(self):
         """Test creating a retention record."""
         record = await self.engine.create_retention_record(
@@ -347,7 +334,6 @@ class TestRetentionPolicyEngine:
         assert record.tenant_id == "test-tenant"
         assert record.retention_until > datetime.now(UTC)
 
-    @pytest.mark.asyncio
     async def test_create_retention_record_with_pii(self):
         """Test creating retention record with PII categories."""
         record = await self.engine.create_retention_record(
@@ -363,7 +349,6 @@ class TestRetentionPolicyEngine:
         assert PIICategory.PERSONAL_IDENTIFIERS in record.pii_categories
         assert record.metadata.get("source") == "registration"
 
-    @pytest.mark.asyncio
     async def test_extend_retention(self):
         """Test extending retention period."""
         # Create record
@@ -389,7 +374,6 @@ class TestRetentionPolicyEngine:
         expected_extension = original_retention + timedelta(days=30)
         assert updated.retention_until == expected_extension
 
-    @pytest.mark.asyncio
     async def test_extend_retention_nonexistent(self):
         """Test extending nonexistent record returns None."""
         result = await self.engine.extend_retention(
@@ -399,7 +383,6 @@ class TestRetentionPolicyEngine:
         )
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_apply_legal_hold(self):
         """Test applying legal hold."""
         # Create record
@@ -421,7 +404,6 @@ class TestRetentionPolicyEngine:
         assert held.legal_hold is True
         assert "Case #2024-001" in held.legal_hold_reason
 
-    @pytest.mark.asyncio
     async def test_release_legal_hold(self):
         """Test releasing legal hold."""
         # Create record with legal hold
@@ -447,7 +429,6 @@ class TestRetentionPolicyEngine:
         assert released.legal_hold is False
         assert released.legal_hold_reason is None
 
-    @pytest.mark.asyncio
     async def test_dispose_record_delete(self):
         """Test disposing record with delete method."""
         # Create record
@@ -471,7 +452,6 @@ class TestRetentionPolicyEngine:
         updated = await self.engine.storage.get_record(record.record_id)
         assert updated.status == RetentionStatus.DISPOSED
 
-    @pytest.mark.asyncio
     async def test_dispose_record_archive(self):
         """Test disposing record with archive method."""
         record = await self.engine.create_retention_record(
@@ -492,7 +472,6 @@ class TestRetentionPolicyEngine:
         updated = await self.engine.storage.get_record(record.record_id)
         assert updated.status == RetentionStatus.ARCHIVED
 
-    @pytest.mark.asyncio
     async def test_dispose_record_anonymize(self):
         """Test disposing record with anonymize method."""
         record = await self.engine.create_retention_record(
@@ -513,7 +492,6 @@ class TestRetentionPolicyEngine:
         updated = await self.engine.storage.get_record(record.record_id)
         assert updated.status == RetentionStatus.ANONYMIZED
 
-    @pytest.mark.asyncio
     async def test_dispose_record_blocked_by_legal_hold(self):
         """Test disposal blocked by legal hold."""
         record = await self.engine.create_retention_record(
@@ -533,7 +511,6 @@ class TestRetentionPolicyEngine:
         assert result.success is False
         assert "legal hold" in result.error_message.lower()
 
-    @pytest.mark.asyncio
     async def test_dispose_nonexistent_record(self):
         """Test disposing nonexistent record."""
         result = await self.engine.dispose_record(
@@ -544,7 +521,6 @@ class TestRetentionPolicyEngine:
         assert result.success is False
         assert "not found" in result.error_message.lower()
 
-    @pytest.mark.asyncio
     async def test_enforce_retention(self):
         """Test automated retention enforcement."""
         # Create multiple expired records
@@ -578,7 +554,6 @@ class TestRetentionPolicyEngine:
         assert report.duration_ms >= 0
         assert report.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_enforce_retention_skips_legal_hold(self):
         """Test enforcement skips records with legal hold.
 
@@ -617,7 +592,6 @@ class TestRetentionPolicyEngine:
         assert report.records_disposed == 1
         assert report.records_held == 0  # Legal hold filtered at storage level
 
-    @pytest.mark.asyncio
     async def test_enforce_retention_with_tenant_filter(self):
         """Test enforcement with tenant isolation."""
         # Create expired records for different tenants
@@ -638,7 +612,6 @@ class TestRetentionPolicyEngine:
         assert report.records_disposed == 1
         assert report.tenant_id == "tenant-a"
 
-    @pytest.mark.asyncio
     async def test_get_record_history(self):
         """Test retrieving action history for a record."""
         # Create record
@@ -702,7 +675,6 @@ class TestGDPRCompliance:
         """Clean up after tests."""
         reset_retention_engine()
 
-    @pytest.mark.asyncio
     async def test_right_to_erasure_workflow(self):
         """Test GDPR right to erasure (Article 17) workflow."""
         # Create user data records
@@ -732,7 +704,6 @@ class TestGDPRCompliance:
             updated = await self.engine.storage.get_record(record.record_id)
             assert updated.status == RetentionStatus.DISPOSED
 
-    @pytest.mark.asyncio
     async def test_data_minimization_via_anonymization(self):
         """Test data minimization through anonymization."""
         record = await self.engine.create_retention_record(
@@ -754,7 +725,6 @@ class TestGDPRCompliance:
         updated = await self.engine.storage.get_record(record.record_id)
         assert updated.status == RetentionStatus.ANONYMIZED
 
-    @pytest.mark.asyncio
     async def test_audit_trail_completeness(self):
         """Test that all operations are fully audited."""
         # Create record

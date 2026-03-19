@@ -167,7 +167,6 @@ class TestAPISessionHeader:
         ):
             yield
 
-    @pytest.mark.asyncio
     async def test_api_session_header(self):
         """Test /messages endpoint with X-Session-ID header stores session."""
         transport = ASGITransport(app=api.app)
@@ -193,7 +192,6 @@ class TestAPISessionHeader:
             assert "details" in data
             assert data["details"]["session_id"] == "test-session-123"
 
-    @pytest.mark.asyncio
     async def test_api_session_header_optional(self):
         """Test /messages endpoint works without X-Session-ID header (backward compatibility)."""
         transport = ASGITransport(app=api.app)
@@ -219,7 +217,6 @@ class TestAPISessionHeader:
             # session_id should be None when not provided
             assert data["details"]["session_id"] is None
 
-    @pytest.mark.asyncio
     async def test_api_session_body_takes_precedence(self):
         """Test session_id in request body takes precedence over header."""
         transport = ASGITransport(app=api.app)
@@ -257,7 +254,6 @@ class TestSessionTTLExpiration:
         """Create mock PACAR verifier with Redis client."""
         return MockPACARVerifier(mock_redis)
 
-    @pytest.mark.asyncio
     async def test_session_ttl_expiration(self, mock_redis, mock_verifier):
         """Test that session storage uses correct TTL for expiration."""
         session_id = "ttl-test-session-123"
@@ -276,7 +272,6 @@ class TestSessionTTLExpiration:
         assert expected_key in mock_redis._data
         assert mock_redis.get_ttl(expected_key) == 3600
 
-    @pytest.mark.asyncio
     async def test_session_ttl_refresh_on_update(self, mock_redis, mock_verifier):
         """Test that TTL is refreshed (sliding window) on conversation update."""
         session_id = "refresh-ttl-session-789"
@@ -309,7 +304,6 @@ class TestSessionTTLExpiration:
         conversation = json.loads(conversation_json)
         assert len(conversation["messages"]) == 2
 
-    @pytest.mark.asyncio
     async def test_session_no_ttl_without_redis(self):
         """Test graceful degradation when Redis is unavailable."""
         verifier = MockPACARVerifier(redis_client=None)
@@ -349,7 +343,6 @@ class TestMultiTurnConversation:
             yield
 
     @pytest.mark.skip(reason="API tests require running server - Pydantic forward ref issue")
-    @pytest.mark.asyncio
     async def test_multi_turn_conversation(self, mock_redis, mock_verifier):
         """
         End-to-end test for multi-turn conversation flow:
@@ -447,7 +440,6 @@ class TestMultiTurnConversation:
         assert "updated_at" in updated_conversation
 
     @pytest.mark.skip(reason="API tests require running server - Pydantic forward ref issue")
-    @pytest.mark.asyncio
     async def test_multi_turn_conversation_with_header(self, mock_redis, mock_verifier):
         """Test multi-turn conversation using X-Session-ID header."""
         session_id = "header-session-e2e-002"
@@ -501,7 +493,6 @@ class TestMultiTurnConversation:
         conversation = json.loads(mock_redis._data.get(expected_key))
         assert len(conversation["messages"]) == 2
 
-    @pytest.mark.asyncio
     async def test_multi_turn_conversation_isolation(self, mock_redis, mock_verifier):
         """Test that different sessions maintain isolated conversations."""
         session_a = "isolation-session-A"
@@ -540,7 +531,6 @@ class TestMultiTurnConversation:
         assert conversation_a["messages"][0]["content"] == "Session A message 1"
         assert conversation_b["messages"][0]["content"] == "Session B message 1"
 
-    @pytest.mark.asyncio
     async def test_multi_turn_verification_results_stored(self, mock_redis, mock_verifier):
         """Test that verification results are stored in conversation history."""
         session_id = "verification-results-session-003"

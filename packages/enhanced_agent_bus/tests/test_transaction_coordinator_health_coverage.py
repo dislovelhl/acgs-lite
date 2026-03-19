@@ -12,7 +12,6 @@ from dataclasses import fields
 from typing import Any
 from unittest.mock import MagicMock, patch
 
-import pytest
 from src.core.shared.types import CONSTITUTIONAL_HASH
 
 # Import via the metrics module to avoid circular import issues.

@@ -353,7 +353,6 @@ class TestOIDCCallbackFlow:
             "handler": mock_oidc_handler_dependency,
         }
 
-    @pytest.mark.asyncio
     async def test_oidc_callback_success(self, client, setup_login_state):
         """Test successful OIDC callback with valid code and state."""
         state = setup_login_state["state"]
@@ -537,7 +536,6 @@ class TestOIDCLogout:
         assert data["success"] is True
         assert "logged out" in data["message"].lower()
 
-    @pytest.mark.asyncio
     async def test_logout_returns_idp_logout_url(self, client, mock_oidc_handler_dependency):
         """Test that logout returns IdP logout URL when available."""
         # First, simulate a logged-in session
@@ -651,7 +649,6 @@ class TestOIDCHandlerMethods:
 class TestOIDCIdTokenDecoding:
     """Tests for ID token decoding."""
 
-    @pytest.mark.asyncio
     @pytest.mark.skipif(not HAS_AUTHLIB, reason="authlib required for ID token validation")
     async def test_decode_valid_id_token(self, mock_handler):
         """Test decoding a valid ID token structure."""
@@ -664,7 +661,6 @@ class TestOIDCIdTokenDecoding:
         assert claims["email"] == "test.user@example.com"
         assert claims["iss"] == "https://accounts.google.com"
 
-    @pytest.mark.asyncio
     @pytest.mark.skipif(not HAS_AUTHLIB, reason="authlib required for ID token validation")
     async def test_decode_invalid_id_token_format(self, mock_handler):
         """Test that invalid token format raises error."""
@@ -673,7 +669,6 @@ class TestOIDCIdTokenDecoding:
         with pytest.raises(OIDCTokenError):
             await mock_handler._decode_id_token("invalid-token-format", provider)
 
-    @pytest.mark.asyncio
     @pytest.mark.skipif(not HAS_AUTHLIB, reason="authlib required for ID token validation")
     async def test_decode_id_token_with_malformed_payload(self, mock_handler):
         """Test that malformed payload raises error."""

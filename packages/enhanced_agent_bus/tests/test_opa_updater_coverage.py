@@ -14,7 +14,6 @@ import tempfile
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import httpx
-import pytest
 
 # Constitutional hash for tests
 from src.core.shared.constants import CONSTITUTIONAL_HASH

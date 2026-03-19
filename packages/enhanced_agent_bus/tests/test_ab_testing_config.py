@@ -11,8 +11,6 @@ import sys
 from datetime import datetime, timezone
 from unittest.mock import MagicMock
 
-import pytest
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # Add parent directory to path for module imports

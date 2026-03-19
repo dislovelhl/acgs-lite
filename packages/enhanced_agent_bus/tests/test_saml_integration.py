@@ -442,7 +442,6 @@ class TestSAMLResponseValidation:
     Constitutional Hash: cdd01ef066bc6cf2
     """
 
-    @pytest.mark.asyncio
     async def test_validate_response_success(self, saml_handler):
         """Test successful SAML response validation."""
         saml_response = generate_valid_saml_response()
@@ -464,7 +463,6 @@ class TestSAMLResponseValidation:
         assert result.success is True
         assert result.user_id == "user@example.com"
 
-    @pytest.mark.asyncio
     async def test_validate_response_missing_saml_response(self, saml_handler):
         """Test validation fails for missing SAMLResponse."""
         result = await saml_handler.validate_response(
@@ -475,7 +473,6 @@ class TestSAMLResponseValidation:
         assert result.success is False
         assert result.error_code == "MISSING_RESPONSE"
 
-    @pytest.mark.asyncio
     async def test_validate_response_state_mismatch(self, saml_handler):
         """Test validation fails for state mismatch."""
         saml_response = generate_valid_saml_response()
@@ -494,7 +491,6 @@ class TestSAMLResponseValidation:
         assert result.success is False
         assert result.error_code == "STATE_MISMATCH"
 
-    @pytest.mark.asyncio
     async def test_validate_response_invalid_base64(self, saml_handler):
         """Test validation fails for invalid Base64 encoding."""
         response_data = {
@@ -509,7 +505,6 @@ class TestSAMLResponseValidation:
         assert result.success is False
         assert result.error_code == "DECODE_ERROR"
 
-    @pytest.mark.asyncio
     async def test_validate_response_expired_request(self, saml_handler):
         """Test validation fails for expired authorization request."""
         saml_response = generate_valid_saml_response()
@@ -532,7 +527,6 @@ class TestSAMLResponseValidation:
         assert result.success is False
         assert result.error_code == "REQUEST_EXPIRED"
 
-    @pytest.mark.asyncio
     async def test_validate_response_no_user_id(self, saml_handler):
         """Test validation fails when no user ID in response."""
         # Create response without NameID
@@ -556,7 +550,6 @@ class TestSAMLResponseValidation:
         assert result.success is False
         assert result.error_code == "NO_USER_ID"
 
-    @pytest.mark.asyncio
     async def test_validate_response_cleans_up_pending(self, saml_handler):
         """Test validation cleans up pending request."""
         saml_response = generate_valid_saml_response()
@@ -580,7 +573,6 @@ class TestSAMLResponseValidation:
         # Pending request should be cleaned up
         assert state not in saml_handler._pending_requests
 
-    @pytest.mark.asyncio
     async def test_validate_response_timestamp_validation(self, saml_handler):
         """Test validation handles timestamp checking."""
         # Create response with expired timestamp
@@ -602,7 +594,6 @@ class TestSAMLResponseValidation:
         # This test documents expected behavior
         assert result.success is True or result.error_code in ["ASSERTION_EXPIRED", None]
 
-    @pytest.mark.asyncio
     async def test_validate_response_replay_prevention(self, saml_handler):
         """Test replay prevention by tracking used response IDs."""
         saml_response = generate_valid_saml_response()
@@ -642,7 +633,6 @@ class TestSAMLAttributeExtraction:
     Constitutional Hash: cdd01ef066bc6cf2
     """
 
-    @pytest.mark.asyncio
     async def test_extract_email_attribute(self, saml_handler):
         """Test email extraction from SAML assertion."""
         saml_response = generate_valid_saml_response(email="test@example.com")
@@ -655,7 +645,6 @@ class TestSAMLAttributeExtraction:
         assert result.success is True
         assert result.email == "test@example.com"
 
-    @pytest.mark.asyncio
     async def test_extract_display_name(self, saml_handler):
         """Test display name extraction from SAML assertion."""
         saml_response = generate_valid_saml_response(display_name="John Doe")
@@ -668,7 +657,6 @@ class TestSAMLAttributeExtraction:
         assert result.success is True
         assert result.display_name == "John Doe"
 
-    @pytest.mark.asyncio
     async def test_extract_first_name(self, saml_handler):
         """Test first name extraction from SAML assertion."""
         saml_response = generate_valid_saml_response(first_name="John")
@@ -681,7 +669,6 @@ class TestSAMLAttributeExtraction:
         assert result.success is True
         assert result.first_name == "John"
 
-    @pytest.mark.asyncio
     async def test_extract_last_name(self, saml_handler):
         """Test last name extraction from SAML assertion."""
         saml_response = generate_valid_saml_response(last_name="Doe")
@@ -694,7 +681,6 @@ class TestSAMLAttributeExtraction:
         assert result.success is True
         assert result.last_name == "Doe"
 
-    @pytest.mark.asyncio
     async def test_extract_groups(self, saml_handler):
         """Test group membership extraction from SAML assertion."""
         groups = ["Engineering", "Admins", "DevOps"]
@@ -708,7 +694,6 @@ class TestSAMLAttributeExtraction:
         assert result.success is True
         assert set(result.groups) == set(groups)
 
-    @pytest.mark.asyncio
     async def test_extract_nameid_as_user_id(self, saml_handler):
         """Test NameID extraction as user ID."""
         saml_response = generate_valid_saml_response(user_id="user123@example.com")
@@ -721,7 +706,6 @@ class TestSAMLAttributeExtraction:
         assert result.success is True
         assert result.user_id == "user123@example.com"
 
-    @pytest.mark.asyncio
     async def test_email_fallback_to_nameid(self, saml_handler):
         """Test email fallback to NameID when not in attributes."""
         # Create response where NameID is email but no email attribute
@@ -743,7 +727,6 @@ class TestSAMLAttributeExtraction:
         assert result.success is True
         assert result.email == "user@example.com"
 
-    @pytest.mark.asyncio
     async def test_extract_all_user_attributes(self, saml_handler):
         """Test extraction of all user attributes together."""
         saml_response = generate_valid_saml_response(
@@ -769,7 +752,6 @@ class TestSAMLAttributeExtraction:
         assert "Group1" in result.groups
         assert "Group2" in result.groups
 
-    @pytest.mark.asyncio
     async def test_attribute_extraction_with_different_formats(self, saml_handler):
         """Test attribute extraction with different attribute name formats."""
         # Test with 'mail' attribute name
@@ -865,7 +847,6 @@ class TestSAMLSingleLogout:
 
         assert TEST_IDP_SLO_URL in saml_request
 
-    @pytest.mark.asyncio
     async def test_validate_logout_response_success(self, saml_handler_with_slo):
         """Test successful SLO response validation."""
         # Generate logout response
@@ -889,7 +870,6 @@ class TestSAMLSingleLogout:
 
         assert result.success is True
 
-    @pytest.mark.asyncio
     async def test_validate_logout_response_failure(self, saml_handler_with_slo):
         """Test SLO response validation failure."""
         logout_response = """<?xml version="1.0" encoding="UTF-8"?>
@@ -917,7 +897,6 @@ class TestSAMLSingleLogout:
         # Without SLO URL, this should indicate SLO is not available
         assert result is None or hasattr(saml_handler, "slo_url") is False
 
-    @pytest.mark.asyncio
     async def test_handle_idp_initiated_logout(self, saml_handler_with_slo):
         """Test handling IdP-initiated logout request."""
         # IdP sends LogoutRequest to SP
@@ -953,7 +932,6 @@ class TestSAMLEndToEndFlow:
     Constitutional Hash: cdd01ef066bc6cf2
     """
 
-    @pytest.mark.asyncio
     async def test_full_authentication_flow(self, saml_handler):
         """Test complete SAML authentication flow."""
         # Step 1: Initiate SSO
@@ -987,7 +965,6 @@ class TestSAMLEndToEndFlow:
         assert "Engineering" in result.groups
         assert "ACGS-Users" in result.groups
 
-    @pytest.mark.asyncio
     async def test_authentication_flow_with_custom_state(self, saml_handler):
         """Test authentication flow with custom state for deep linking."""
         custom_state = base64.b64encode(b'{"redirect": "/dashboard"}').decode()
@@ -1010,7 +987,6 @@ class TestSAMLEndToEndFlow:
 
         assert result.success is True
 
-    @pytest.mark.asyncio
     async def test_multiple_concurrent_authentication_flows(self, saml_handler):
         """Test handling multiple concurrent authentication flows."""
         # Create multiple auth requests
@@ -1038,7 +1014,6 @@ class TestSAMLEndToEndFlow:
             assert result.success is True
             assert result.user_id == f"user{i}@example.com"
 
-    @pytest.mark.asyncio
     async def test_authentication_with_different_idp_configs(self):
         """Test authentication with different IdP configurations."""
         # Create handlers for different IdPs
@@ -1188,7 +1163,6 @@ class TestSAMLEdgeCases:
         assert handler.authn_request_signed is True
         assert handler.want_assertions_signed is True
 
-    @pytest.mark.asyncio
     async def test_validate_response_with_empty_groups(self, saml_handler):
         """Test response validation with empty groups."""
         saml_response = generate_valid_saml_response(groups=[])
@@ -1201,7 +1175,6 @@ class TestSAMLEdgeCases:
         assert result.success is True
         assert result.groups == []
 
-    @pytest.mark.asyncio
     async def test_validate_response_with_special_characters(self, saml_handler):
         """Test response validation with special characters in attributes."""
         saml_response = generate_valid_saml_response(
@@ -1217,7 +1190,6 @@ class TestSAMLEdgeCases:
         assert result.success is True
         assert "O'Brien" in result.display_name
 
-    @pytest.mark.asyncio
     async def test_validate_response_unicode_attributes(self, saml_handler):
         """Test response validation with unicode attributes."""
         saml_response = generate_valid_saml_response(

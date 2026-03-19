@@ -35,7 +35,6 @@ sinkhorn_projection = mhc_module.sinkhorn_projection
 logger = get_logger(__name__)
 
 
-@pytest.mark.asyncio
 @pytest.mark.skipif(
     psutil is None or torch is None,
     reason="Scale test requires optional dependencies: psutil and torch",

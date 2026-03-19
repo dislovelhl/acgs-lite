@@ -72,7 +72,6 @@ class TestSessionLifecycle:
             refresh_threshold_minutes=5,
         )
 
-    @pytest.mark.asyncio
     async def test_create_session(self, lifecycle_manager, session_config):
         """Test creating a new session."""
         session = await lifecycle_manager.create_session(session_config)
@@ -84,7 +83,6 @@ class TestSessionLifecycle:
         assert session.state == SessionState.ACTIVE
         assert session.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_validate_active_session(self, lifecycle_manager, session_config):
         """Test validating an active session."""
         session = await lifecycle_manager.create_session(session_config)
@@ -95,7 +93,6 @@ class TestSessionLifecycle:
         assert result.session_id == session.session_id
         assert result.state == SessionState.ACTIVE
 
-    @pytest.mark.asyncio
     async def test_validate_expired_session(self, lifecycle_manager, session_config):
         """Test validating an expired session."""
         session_config.max_duration_minutes = 0
@@ -110,7 +107,6 @@ class TestSessionLifecycle:
         assert result.is_valid is False
         assert result.reason == "session_expired"
 
-    @pytest.mark.asyncio
     async def test_extend_session(self, lifecycle_manager, session_config):
         """Test extending a session."""
         session = await lifecycle_manager.create_session(session_config)
@@ -121,7 +117,6 @@ class TestSessionLifecycle:
         assert extended.expires_at > original_expires
         assert extended.extension_count == 1
 
-    @pytest.mark.asyncio
     async def test_revoke_session(self, lifecycle_manager, session_config):
         """Test revoking a session."""
         session = await lifecycle_manager.create_session(session_config)
@@ -131,7 +126,6 @@ class TestSessionLifecycle:
         assert revoked.state == SessionState.REVOKED
         assert revoked.revocation_reason == "user_logout"
 
-    @pytest.mark.asyncio
     async def test_refresh_session_activity(self, lifecycle_manager, session_config):
         """Test refreshing session activity."""
         session = await lifecycle_manager.create_session(session_config)
@@ -142,7 +136,6 @@ class TestSessionLifecycle:
 
         assert refreshed.last_activity > original_activity
 
-    @pytest.mark.asyncio
     async def test_session_idle_timeout(self, lifecycle_manager, session_config):
         """Test session idle timeout detection."""
         session_config.idle_timeout_minutes = 0
@@ -218,7 +211,6 @@ class TestConcurrencyPolicy:
     def session_store(self):
         return TenantSessionStore(tenant_id="tenant-001")
 
-    @pytest.mark.asyncio
     async def test_check_concurrency_allowed(self, concurrency_policy, session_store):
         """Test concurrency check when under limit."""
         result = await concurrency_policy.check_concurrency(
@@ -228,7 +220,6 @@ class TestConcurrencyPolicy:
         assert result.allowed is True
         assert result.current_count == 0
 
-    @pytest.mark.asyncio
     async def test_check_concurrency_exceeded(self, concurrency_policy, session_store):
         """Test concurrency check when at limit."""
         # Add 3 sessions
@@ -244,7 +235,6 @@ class TestConcurrencyPolicy:
         assert result.allowed is False
         assert result.current_count == 3
 
-    @pytest.mark.asyncio
     async def test_evict_oldest_session(self, concurrency_policy, session_store):
         """Test eviction of oldest session."""
         # Add 3 sessions with different ages
@@ -261,7 +251,6 @@ class TestConcurrencyPolicy:
 
         assert evicted.session_id == "session-0"  # Oldest
 
-    @pytest.mark.asyncio
     async def test_strict_enforcement_blocks(self, concurrency_policy, session_store):
         """Test strict enforcement blocks new sessions."""
         # Fill to limit
@@ -287,7 +276,6 @@ class TestSessionTokenManager:
             refresh_token_ttl_days=7,
         )
 
-    @pytest.mark.asyncio
     async def test_generate_access_token(self, token_manager):
         """Test access token generation."""
         token = await token_manager.generate_access_token(
@@ -302,7 +290,6 @@ class TestSessionTokenManager:
         assert token.token_type == "Bearer"  # noqa: S105
         assert token.expires_in > 0
 
-    @pytest.mark.asyncio
     async def test_generate_refresh_token(self, token_manager):
         """Test refresh token generation."""
         token = await token_manager.generate_refresh_token(
@@ -313,7 +300,6 @@ class TestSessionTokenManager:
         assert len(token.refresh_token) > 0
         assert token.expires_in > 0
 
-    @pytest.mark.asyncio
     async def test_validate_access_token(self, token_manager):
         """Test access token validation."""
         token = await token_manager.generate_access_token(
@@ -326,7 +312,6 @@ class TestSessionTokenManager:
         assert result.session_id == "session-123"
         assert result.tenant_id == "tenant-001"
 
-    @pytest.mark.asyncio
     async def test_refresh_access_token(self, token_manager):
         """Test refreshing access token."""
         # Generate initial tokens
@@ -343,7 +328,6 @@ class TestSessionTokenManager:
         assert new_token.access_token is not None
         assert new_token.access_token != access.access_token
 
-    @pytest.mark.asyncio
     async def test_revoke_token(self, token_manager):
         """Test token revocation."""
         token = await token_manager.generate_access_token(
@@ -388,7 +372,6 @@ class TestSessionMonitor:
             ),
         ]
 
-    @pytest.mark.asyncio
     async def test_record_session_event(self, monitor):
         """Test recording a session event."""
         event = SessionEvent(
@@ -404,7 +387,6 @@ class TestSessionMonitor:
         assert len(events) == 1
         assert events[0].event_type == SessionEventType.CREATED
 
-    @pytest.mark.asyncio
     async def test_get_active_session_count(self, monitor, sample_events):
         """Test getting active session count."""
         for event in sample_events:
@@ -414,7 +396,6 @@ class TestSessionMonitor:
 
         assert count >= 0
 
-    @pytest.mark.asyncio
     async def test_get_session_analytics(self, monitor, sample_events):
         """Test getting session analytics."""
         for event in sample_events:
@@ -429,7 +410,6 @@ class TestSessionMonitor:
         assert analytics.total_sessions >= 0
         assert analytics.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_get_user_session_history(self, monitor, sample_events):
         """Test getting user session history."""
         for event in sample_events:
@@ -447,7 +427,6 @@ class TestTenantSessionStore:
     def store(self):
         return TenantSessionStore(tenant_id="tenant-001")
 
-    @pytest.mark.asyncio
     async def test_add_and_get_session(self, store):
         """Test adding and retrieving a session."""
         await store.add_session(
@@ -459,7 +438,6 @@ class TestTenantSessionStore:
         assert session is not None
         assert session.session_id == "session-123"
 
-    @pytest.mark.asyncio
     async def test_session_isolation_between_tenants(self):
         """Test session isolation between tenants."""
         store1 = TenantSessionStore(tenant_id="tenant-001")
@@ -474,7 +452,6 @@ class TestTenantSessionStore:
 
         assert session is None
 
-    @pytest.mark.asyncio
     async def test_list_user_sessions(self, store):
         """Test listing all sessions for a user."""
         for i in range(3):
@@ -486,7 +463,6 @@ class TestTenantSessionStore:
 
         assert len(sessions) == 3
 
-    @pytest.mark.asyncio
     async def test_remove_session(self, store):
         """Test removing a session."""
         await store.add_session(
@@ -498,7 +474,6 @@ class TestTenantSessionStore:
 
         assert session is None
 
-    @pytest.mark.asyncio
     async def test_cleanup_expired_sessions(self, store):
         """Test cleanup of expired sessions."""
         # Add expired session
@@ -532,7 +507,6 @@ class TestSessionGovernanceClient:
             base_url="http://localhost:8000", api_key="test-api-key", tenant_id="tenant-001"
         )
 
-    @pytest.mark.asyncio
     async def test_client_create_session(self, client):
         """Test client session creation."""
         with patch.object(client, "_request") as mock_request:
@@ -546,7 +520,6 @@ class TestSessionGovernanceClient:
 
             assert session["session_id"] == "session-123"
 
-    @pytest.mark.asyncio
     async def test_client_validate_session(self, client):
         """Test client session validation."""
         with patch.object(client, "_request") as mock_request:
@@ -560,7 +533,6 @@ class TestSessionGovernanceClient:
 
             assert result["is_valid"] is True
 
-    @pytest.mark.asyncio
     async def test_client_revoke_session(self, client):
         """Test client session revocation."""
         with patch.object(client, "_request") as mock_request:
@@ -574,7 +546,6 @@ class TestSessionGovernanceClient:
 
             assert result["state"] == "revoked"
 
-    @pytest.mark.asyncio
     async def test_client_with_retry(self, client):
         """Test client retry on transient errors."""
         client.max_retries = 3

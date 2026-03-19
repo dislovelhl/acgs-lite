@@ -165,7 +165,6 @@ class TestBundleManifestSignature:
 class TestAWSECRAuthProviderExpanded:
     """Expanded tests for AWSECRAuthProvider."""
 
-    @pytest.mark.asyncio
     async def test_get_token_with_valid_cached_token(self):
         """get_token returns cached token if valid."""
         provider = AWSECRAuthProvider()
@@ -175,7 +174,6 @@ class TestAWSECRAuthProviderExpanded:
         token = await provider.get_token()
         assert token == "cached_token"  # noqa: S105
 
-    @pytest.mark.asyncio
     async def test_get_token_with_expired_token(self):
         """get_token refreshes expired token."""
         provider = AWSECRAuthProvider()
@@ -188,7 +186,6 @@ class TestAWSECRAuthProviderExpanded:
         token = await provider.get_token()
         assert token == "new_token"  # noqa: S105
 
-    @pytest.mark.asyncio
     async def test_refresh_token_with_boto3(self):
         """refresh_token uses boto3 when available."""
         mock_ecr = MagicMock()
@@ -209,7 +206,6 @@ class TestAWSECRAuthProviderExpanded:
 
             assert token == "boto3_token"  # noqa: S105
 
-    @pytest.mark.asyncio
     async def test_refresh_token_without_boto3(self):
         """refresh_token falls back to environment when boto3 unavailable."""
         with patch.dict(os.environ, {"AWS_ECR_TOKEN": "env_token"}):
@@ -227,7 +223,6 @@ class TestAWSECRAuthProviderExpanded:
 class TestOCIRegistryClientNetworkOperations:
     """Tests for OCIRegistryClient network operations (mocked)."""
 
-    @pytest.mark.asyncio
     async def test_check_health_success(self):
         """check_health returns True on 200 response."""
         mock_response = AsyncMock()
@@ -244,7 +239,6 @@ class TestOCIRegistryClientNetworkOperations:
         result = await client.check_health()
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_check_health_failure(self):
         """check_health returns False on error."""
         mock_session = MagicMock()
@@ -256,7 +250,6 @@ class TestOCIRegistryClientNetworkOperations:
         result = await client.check_health()
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_list_tags_success(self):
         """list_tags returns tag list on success."""
         mock_response = AsyncMock()
@@ -274,7 +267,6 @@ class TestOCIRegistryClientNetworkOperations:
         tags = await client.list_tags("myrepo")
         assert tags == ["v1.0", "v2.0", "latest"]
 
-    @pytest.mark.asyncio
     async def test_list_tags_empty_on_error(self):
         """list_tags returns empty list on non-200."""
         mock_response = AsyncMock()
@@ -291,7 +283,6 @@ class TestOCIRegistryClientNetworkOperations:
         tags = await client.list_tags("nonexistent")
         assert tags == []
 
-    @pytest.mark.asyncio
     async def test_delete_tag_success(self):
         """delete_tag returns True on success."""
         mock_response = AsyncMock()
@@ -308,7 +299,6 @@ class TestOCIRegistryClientNetworkOperations:
         result = await client.delete_tag("myrepo", "v1.0")
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_delete_tag_failure(self):
         """delete_tag returns False on error."""
         mock_response = AsyncMock()
@@ -329,7 +319,6 @@ class TestOCIRegistryClientNetworkOperations:
 class TestOCIRegistryClientPushPull:
     """Tests for OCIRegistryClient push/pull operations."""
 
-    @pytest.mark.asyncio
     async def test_push_bundle_constitutional_hash_mismatch(self):
         """push_bundle raises on constitutional hash mismatch."""
         client = OCIRegistryClient("https://registry.example.com")
@@ -342,7 +331,6 @@ class TestOCIRegistryClientPushPull:
         ):
             BundleManifest(version="1.0.0", revision="a" * 40, constitutional_hash="wrong_hash")
 
-    @pytest.mark.asyncio
     async def test_push_bundle_auto_initialize(self):
         """push_bundle auto-initializes session if needed."""
         with tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as tmp:
@@ -388,7 +376,6 @@ class TestOCIRegistryClientPushPull:
         finally:
             os.unlink(tmp_path)
 
-    @pytest.mark.asyncio
     async def test_push_bundle_blob_exists_skips_upload(self):
         """push_bundle skips blob upload if already exists."""
         with tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as tmp:
@@ -426,7 +413,6 @@ class TestOCIRegistryClientPushPull:
         finally:
             os.unlink(tmp_path)
 
-    @pytest.mark.asyncio
     async def test_push_bundle_upload_initiation_failure(self):
         """push_bundle raises on upload initiation failure."""
         with tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as tmp:
@@ -463,7 +449,6 @@ class TestOCIRegistryClientPushPull:
 class TestOCIRegistryClientPullBundle:
     """Tests for pull_bundle operation."""
 
-    @pytest.mark.asyncio
     async def test_pull_bundle_success(self):
         """pull_bundle successfully downloads bundle."""
         from typing import Any
@@ -523,7 +508,6 @@ class TestOCIRegistryClientPullBundle:
             with open(path, "rb") as f:
                 assert f.read() == bundle_content
 
-    @pytest.mark.asyncio
     async def test_pull_bundle_constitutional_hash_mismatch(self):
         """pull_bundle raises on constitutional hash mismatch."""
         from typing import Any
@@ -563,7 +547,6 @@ class TestOCIRegistryClientPullBundle:
             ):
                 await client.pull_bundle("repo", "v1.0", output_path)
 
-    @pytest.mark.asyncio
     async def test_pull_bundle_no_layers(self):
         """pull_bundle raises when no layers in manifest."""
         from typing import Any
@@ -592,7 +575,6 @@ class TestOCIRegistryClientPullBundle:
 class TestBundleDistributionServiceOperations:
     """Tests for BundleDistributionService operations."""
 
-    @pytest.mark.asyncio
     async def test_publish_to_primary_only(self):
         """publish to primary without replication."""
         with tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as tmp:
@@ -618,7 +600,6 @@ class TestBundleDistributionServiceOperations:
         finally:
             os.unlink(tmp_path)
 
-    @pytest.mark.asyncio
     async def test_publish_with_replication(self):
         """publish replicates to fallback registries."""
         with tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as tmp:
@@ -648,7 +629,6 @@ class TestBundleDistributionServiceOperations:
         finally:
             os.unlink(tmp_path)
 
-    @pytest.mark.asyncio
     async def test_publish_replication_failure(self):
         """publish continues even if fallback replication fails."""
         with tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as tmp:
@@ -678,7 +658,6 @@ class TestBundleDistributionServiceOperations:
         finally:
             os.unlink(tmp_path)
 
-    @pytest.mark.asyncio
     async def test_fetch_from_cache(self):
         """fetch uses cache when available."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -712,7 +691,6 @@ class TestBundleDistributionServiceOperations:
             assert manifest.version == "1.0.0"
             mock_primary.pull_bundle.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_fetch_from_primary(self):
         """fetch downloads from primary when not cached."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -730,7 +708,6 @@ class TestBundleDistributionServiceOperations:
             assert manifest.version == "2.0.0"
             mock_primary.pull_bundle.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_fetch_fallback_on_primary_failure(self):
         """fetch tries fallbacks when primary fails."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -751,7 +728,6 @@ class TestBundleDistributionServiceOperations:
 
             assert manifest.version == "1.0.0"
 
-    @pytest.mark.asyncio
     async def test_fetch_uses_lkg_when_all_fail(self):
         """fetch returns LKG when all registries fail."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -770,7 +746,6 @@ class TestBundleDistributionServiceOperations:
             assert manifest.version == "0.9.0"
             assert path == lkg_path
 
-    @pytest.mark.asyncio
     async def test_fetch_raises_when_no_lkg(self):
         """fetch raises when all registries fail and no LKG."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -786,7 +761,6 @@ class TestBundleDistributionServiceOperations:
 class TestABTestBundle:
     """Tests for A/B test bundle fetching."""
 
-    @pytest.mark.asyncio
     async def test_get_ab_test_bundle_experiment_found(self):
         """get_ab_test_bundle returns experiment bundle."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -802,7 +776,6 @@ class TestABTestBundle:
             assert manifest.version == "1.0.0-exp1"
             service.fetch.assert_called_once_with("repo", "v1.0-exp1-A", use_cache=True)
 
-    @pytest.mark.asyncio
     async def test_get_ab_test_bundle_falls_back_to_base(self):
         """get_ab_test_bundle falls back to base tag."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -831,7 +804,6 @@ class TestABTestBundle:
 class TestOCIRegistryClientReplication:
     """Tests for OCI registry replication operations."""
 
-    @pytest.mark.asyncio
     async def test_replicate_from(self):
         """replicate_from copies bundle between registries."""
         src_manifest = BundleManifest(version="1.0.0", revision="a" * 40)
@@ -851,7 +823,6 @@ class TestOCIRegistryClientReplication:
 
         assert digest == "sha256:abc"
 
-    @pytest.mark.asyncio
     async def test_copy_bundle(self):
         """copy_bundle copies within same registry."""
         manifest = BundleManifest(version="1.0.0", revision="a" * 40)
@@ -870,7 +841,6 @@ class TestOCIRegistryClientReplication:
 class TestOCIRegistryClientSigning:
     """Tests for OCI registry signing operations."""
 
-    @pytest.mark.asyncio
     async def test_sign_manifest(self):
         """sign_manifest creates valid signature."""
         from cryptography.hazmat.primitives.asymmetric import ed25519
@@ -888,7 +858,6 @@ class TestOCIRegistryClientSigning:
 
         assert len(sig_hex) == 128  # 64 bytes hex encoded
 
-    @pytest.mark.asyncio
     async def test_sign_manifest_error(self):
         """sign_manifest raises on invalid key."""
         client = OCIRegistryClient("https://registry.example.com")
@@ -900,7 +869,6 @@ class TestOCIRegistryClientSigning:
 class TestGlobalFunctionsExpanded:
     """Expanded tests for global distribution service functions."""
 
-    @pytest.mark.asyncio
     async def test_close_distribution_service_with_fallbacks(self):
         """close_distribution_service closes all fallbacks."""
         import bundle_registry
@@ -923,7 +891,6 @@ class TestGlobalFunctionsExpanded:
         mock_fallback.close.assert_called_once()
         assert bundle_registry._distribution_service is None
 
-    @pytest.mark.asyncio
     async def test_initialize_with_registry_type(self):
         """initialize_distribution_service accepts registry type."""
         import bundle_registry

@@ -6,8 +6,6 @@ violation rules, and constitutional metadata.
 
 from pathlib import Path
 
-import pytest
-
 POLICY_PATH = Path(__file__).resolve().parents[1] / "policies" / "invariants.rego"
 
 

@@ -21,7 +21,6 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 class TestSagaStepExecution:
     """Tests for individual saga step execution."""
 
-    @pytest.mark.asyncio
     async def test_step_with_timeout(self, orchestrator: SagaOrchestrator):
         """Test step execution with timeout."""
 
@@ -55,7 +54,6 @@ class TestSagaStepExecution:
         assert result.success is False
         assert "timed out" in result.error.lower()
 
-    @pytest.mark.asyncio
     async def test_step_with_retries(self, orchestrator: SagaOrchestrator):
         """Test step execution with retries."""
         attempt_count = 0
@@ -93,7 +91,6 @@ class TestSagaStepExecution:
         assert result.success is True
         assert attempt_count == 3
 
-    @pytest.mark.asyncio
     async def test_step_exception_triggers_compensation(self, orchestrator: SagaOrchestrator):
         """Test that step exceptions trigger compensation."""
 

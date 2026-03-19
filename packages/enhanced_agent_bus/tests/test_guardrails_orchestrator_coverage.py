@@ -16,8 +16,6 @@ import asyncio
 from dataclasses import dataclass
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from enhanced_agent_bus.guardrails.enums import (
     GuardrailLayer,
     SafetyAction,

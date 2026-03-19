@@ -5,8 +5,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from unittest.mock import AsyncMock, patch
 
-import pytest
-
 from enhanced_agent_bus.deliberation_layer.intent_classifier import (
     ClassificationResult,
     IntentClassifier,
@@ -42,14 +40,12 @@ def test_classify_general():
     assert classifier.classify("Remind me to buy milk") == IntentType.GENERAL
 
 
-@pytest.mark.asyncio
 async def test_classify_async_heuristic():
     classifier = IntentClassifier()
     result = await classifier.classify_async("What happened in 1989?")
     assert result == IntentType.FACTUAL
 
 
-@pytest.mark.asyncio
 async def test_llm_classification_ambiguous():
     """Test LLM classification is invoked for ambiguous low-confidence inputs."""
     # Create classifier with LLM enabled and low threshold to trigger LLM path
@@ -91,7 +87,6 @@ async def test_llm_classification_ambiguous():
         assert result == IntentType.REASONING
 
 
-@pytest.mark.asyncio
 async def test_llm_classification_fallback_on_failure():
     """Test fallback to rule-based when LLM fails."""
     classifier = IntentClassifier(
@@ -117,7 +112,6 @@ async def test_llm_classification_fallback_on_failure():
         assert result == IntentType.GENERAL
 
 
-@pytest.mark.asyncio
 async def test_llm_classification_with_metadata():
     """Test classify_async_with_metadata returns proper routing metadata."""
     classifier = IntentClassifier(
@@ -154,7 +148,6 @@ async def test_llm_classification_with_metadata():
         assert result.llm_reasoning == "Creative request"
 
 
-@pytest.mark.asyncio
 async def test_llm_skipped_for_high_confidence():
     """Test LLM is NOT invoked when rule-based confidence is high."""
     classifier = IntentClassifier(
@@ -177,7 +170,6 @@ async def test_llm_skipped_for_high_confidence():
         assert result == IntentType.FACTUAL
 
 
-@pytest.mark.asyncio
 async def test_llm_fallback_on_error():
     """Test LLM fallback to rule-based when LLM returns an error.
 

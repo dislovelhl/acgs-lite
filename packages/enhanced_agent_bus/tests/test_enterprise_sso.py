@@ -653,7 +653,6 @@ class TestRequireSSOAuthentication:
         finally:
             clear_sso_session()
 
-    @pytest.mark.asyncio
     async def test_async_function_with_session(self):
         """Test async function succeeds with session."""
         now = datetime.now(UTC)
@@ -1135,14 +1134,12 @@ class TestSAML2Handler:
         assert state1 != state2
         assert len(state1) >= 32
 
-    @pytest.mark.asyncio
     async def test_validate_response_missing_saml_response(self, saml_handler):
         """Test validation with missing SAML response."""
         result = await saml_handler.validate_response({})
         assert result.success is False
         assert result.error_code == "MISSING_RESPONSE"
 
-    @pytest.mark.asyncio
     async def test_validate_response_state_mismatch(self, saml_handler):
         """Test validation with state mismatch."""
         import base64
@@ -1232,7 +1229,6 @@ class TestOIDCHandler:
         assert nonce1 != nonce2
         assert len(nonce1) >= 32
 
-    @pytest.mark.asyncio
     async def test_validate_response_error(self, oidc_handler):
         """Test validation with error response."""
         result = await oidc_handler.validate_response(
@@ -1242,14 +1238,12 @@ class TestOIDCHandler:
         assert result.error == "User denied access"
         assert result.error_code == "access_denied"
 
-    @pytest.mark.asyncio
     async def test_validate_response_missing_code(self, oidc_handler):
         """Test validation with missing authorization code."""
         result = await oidc_handler.validate_response({"state": "test-state"})
         assert result.success is False
         assert result.error_code == "MISSING_CODE"
 
-    @pytest.mark.asyncio
     async def test_validate_response_state_mismatch(self, oidc_handler):
         """Test validation with state mismatch."""
         result = await oidc_handler.validate_response(

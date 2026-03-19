@@ -349,7 +349,6 @@ class TestDegradationDetector:
             escalated_requests=100,
         )
 
-    @pytest.mark.asyncio
     async def test_analyze_degradation_detects_issues(
         self, mock_metrics_collector, mock_baseline_snapshot, mock_current_snapshot_degraded
     ):
@@ -375,7 +374,6 @@ class TestDegradationDetector:
         assert len(report.metric_analyses) > 0
         assert report.amendment_id == "amendment-001"
 
-    @pytest.mark.asyncio
     async def test_analyze_degradation_healthy_system(
         self, mock_metrics_collector, mock_baseline_snapshot, mock_current_snapshot_healthy
     ):
@@ -395,7 +393,6 @@ class TestDegradationDetector:
         assert report.overall_severity == DegradationSeverity.NONE
         assert report.rollback_recommended is False
 
-    @pytest.mark.asyncio
     async def test_analyze_degradation_collects_current_if_not_provided(
         self, mock_metrics_collector, mock_baseline_snapshot
     ):
@@ -429,7 +426,6 @@ class TestDegradationDetector:
         mock_metrics_collector.collect_snapshot.assert_called_once()
         assert report.current_snapshot == mock_current
 
-    @pytest.mark.asyncio
     async def test_analyze_multi_window(
         self, mock_metrics_collector, mock_baseline_snapshot, mock_current_snapshot_degraded
     ):

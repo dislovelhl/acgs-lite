@@ -40,7 +40,6 @@ class TestTokenRevocationIntegration:
             result = _get_revocation_service()
             assert result is None
 
-    @pytest.mark.asyncio
     async def test_get_current_user_checks_revocation(self):
         """get_current_user should check is_token_revoked after JWT validation."""
         from src.core.shared.security.auth import UserClaims, get_current_user
@@ -76,7 +75,6 @@ class TestTokenRevocationIntegration:
             assert result.sub == "user-1"
             mock_revocation.is_token_revoked.assert_awaited_once_with("token-jti-123")
 
-    @pytest.mark.asyncio
     async def test_get_current_user_rejects_revoked_token(self):
         """Revoked tokens should cause 401."""
         from fastapi import HTTPException

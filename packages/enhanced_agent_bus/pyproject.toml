@@ -75,7 +75,7 @@ packages = [
 enhanced_agent_bus = "."
 
 [tool.setuptools.package-data]
-enhanced_agent_bus = ["policies/*.rego"]
+enhanced_agent_bus = ["policies/*.rego", "py.typed"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"

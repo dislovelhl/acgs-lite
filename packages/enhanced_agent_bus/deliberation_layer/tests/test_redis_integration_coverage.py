@@ -7,8 +7,6 @@ import asyncio
 import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from enhanced_agent_bus.deliberation_layer.redis_integration import (
     REDIS_AVAILABLE,
     RedisDeliberationQueue,

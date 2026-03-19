@@ -85,7 +85,6 @@ class TestLLMAssistedZ3Adapter:
         assert adapter.max_refinements == 3
         assert adapter.z3_solver is not None
 
-    @pytest.mark.asyncio
     async def test_natural_language_to_constraints(self, adapter):
         """Test constraint generation from natural language."""
         policy = "Users must be authenticated before accessing sensitive data."
@@ -107,7 +106,6 @@ class TestLLMAssistedZ3Adapter:
         assert all("type" in elem for elem in elements)
         assert all("text" in elem for elem in elements)
 
-    @pytest.mark.asyncio
     async def test_constraint_verification(self, adapter):
         """Test constraint verification."""
         # Create simple constraints
@@ -142,7 +140,6 @@ class TestConstitutionalZ3Verifier:
         assert verifier.llm_adapter is not None
         assert verifier.verified_policies == {}
 
-    @pytest.mark.asyncio
     async def test_policy_verification(self, verifier):
         """Test policy verification."""
         policy_text = "All user data must be encrypted at rest."
@@ -157,7 +154,6 @@ class TestConstitutionalZ3Verifier:
         assert policy.created_at is not None
         assert policy.verification_result is not None
 
-    @pytest.mark.asyncio
     async def test_policy_compliance_check(self, verifier):
         """Test policy compliance checking."""
         # First verify a policy
@@ -248,7 +244,6 @@ class TestDataStructures:
 class TestIntegration:
     """Integration tests."""
 
-    @pytest.mark.asyncio
     async def test_full_verification_workflow(self):
         """Test complete verification workflow."""
         try:
@@ -285,7 +280,6 @@ class TestIntegration:
         assert stats["total_policies"] >= 1
         assert stats["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_convenience_function(self):
         """Test convenience verification function."""
         try:
@@ -318,7 +312,6 @@ class TestErrorHandling:
         finally:
             z3_globals["Z3_AVAILABLE"] = original_available
 
-    @pytest.mark.asyncio
     async def test_malformed_policy_handling(self):
         """Test handling of malformed policies."""
         try:

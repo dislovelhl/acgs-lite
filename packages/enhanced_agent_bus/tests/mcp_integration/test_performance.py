@@ -15,7 +15,6 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 class TestPerformance:
     """Performance tests for MCP integration."""
 
-    @pytest.mark.asyncio
     async def test_validation_latency(self):
         """Test validation latency is within acceptable bounds."""
         from ...mcp_integration.validators import (
@@ -37,7 +36,6 @@ class TestPerformance:
         # Validation should complete in under 100ms
         assert result.latency_ms < 100
 
-    @pytest.mark.asyncio
     async def test_batch_validation_performance(self):
         """Test batch validation performance."""
         from ...mcp_integration.validators import (
@@ -67,7 +65,6 @@ class TestPerformance:
         # 100 validations should complete in under 1 second
         assert total_ms < 1000
 
-    @pytest.mark.asyncio
     async def test_tool_registry_scalability(self):
         """Test tool registry can handle many tools."""
         from ...mcp_integration.tool_registry import (

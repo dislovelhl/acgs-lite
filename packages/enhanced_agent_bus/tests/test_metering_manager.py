@@ -167,7 +167,6 @@ class TestMeteringManagerProperties:
 class TestMeteringManagerLifecycle:
     """Tests for MeteringManager start/stop methods."""
 
-    @pytest.mark.asyncio
     async def test_start_calls_queue_start(
         self, metering_manager: MeteringManager, mock_metering_queue: AsyncMock
     ) -> None:
@@ -175,13 +174,11 @@ class TestMeteringManagerLifecycle:
         await metering_manager.start()
         mock_metering_queue.start.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_start_without_queue(self, disabled_metering_manager: MeteringManager) -> None:
         """Test start does nothing without queue."""
         # Should not raise
         await disabled_metering_manager.start()
 
-    @pytest.mark.asyncio
     async def test_stop_calls_queue_stop(
         self, metering_manager: MeteringManager, mock_metering_queue: AsyncMock
     ) -> None:
@@ -189,7 +186,6 @@ class TestMeteringManagerLifecycle:
         await metering_manager.stop()
         mock_metering_queue.stop.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_stop_without_queue(self, disabled_metering_manager: MeteringManager) -> None:
         """Test stop does nothing without queue."""
         # Should not raise
@@ -482,7 +478,6 @@ class TestCreateMeteringManager:
 class TestMeteringManagerIntegration:
     """Integration tests for MeteringManager."""
 
-    @pytest.mark.asyncio
     async def test_full_lifecycle(
         self,
         mock_metering_hooks: MagicMock,
@@ -516,7 +511,6 @@ class TestMeteringManagerIntegration:
         await manager.stop()
         mock_metering_queue.stop.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_fire_and_forget_pattern(
         self,
         metering_manager: MeteringManager,

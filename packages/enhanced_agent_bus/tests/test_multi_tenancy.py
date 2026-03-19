@@ -156,7 +156,6 @@ class TestTenantContext:
 
         assert get_current_tenant() is None
 
-    @pytest.mark.asyncio
     async def test_context_manager_async(self):
         """Test asynchronous context manager."""
         assert get_current_tenant() is None
@@ -508,7 +507,6 @@ class TestTenantRepository:
         """Create a fresh repository for each test."""
         return TenantRepository()
 
-    @pytest.mark.asyncio
     async def test_create_tenant(self, repo):
         """Test tenant creation."""
         tenant = await repo.create_tenant(
@@ -521,7 +519,6 @@ class TestTenantRepository:
         assert tenant.status == TenantStatus.PENDING
         assert repo.get_tenant_count() == 1
 
-    @pytest.mark.asyncio
     async def test_create_tenant_duplicate_slug(self, repo):
         """Test duplicate slug rejection."""
         await repo.create_tenant(name="First", slug="my-slug")
@@ -529,7 +526,6 @@ class TestTenantRepository:
         with pytest.raises(ValueError, match="already exists"):
             await repo.create_tenant(name="Second", slug="my-slug")
 
-    @pytest.mark.asyncio
     async def test_get_tenant(self, repo):
         """Test getting tenant by ID."""
         created = await repo.create_tenant(name="Test", slug="test-get")
@@ -541,7 +537,6 @@ class TestTenantRepository:
         not_found = await repo.get_tenant("nonexistent-id")
         assert not_found is None
 
-    @pytest.mark.asyncio
     async def test_get_tenant_by_slug(self, repo):
         """Test getting tenant by slug."""
         await repo.create_tenant(name="Test", slug="test-slug")
@@ -553,7 +548,6 @@ class TestTenantRepository:
         not_found = await repo.get_tenant_by_slug("nonexistent")
         assert not_found is None
 
-    @pytest.mark.asyncio
     async def test_list_tenants(self, repo):
         """Test listing tenants."""
         await repo.create_tenant(name="A", slug="tenant-a")
@@ -567,7 +561,6 @@ class TestTenantRepository:
         tenants = await repo.list_tenants(skip=1, limit=1)
         assert len(tenants) == 1
 
-    @pytest.mark.asyncio
     async def test_list_tenants_by_status(self, repo):
         """Test filtering tenants by status."""
         t1 = await repo.create_tenant(name="A", slug="tenant-a")
@@ -581,7 +574,6 @@ class TestTenantRepository:
         pending = await repo.list_tenants(status=TenantStatus.PENDING)
         assert len(pending) == 1
 
-    @pytest.mark.asyncio
     async def test_activate_tenant(self, repo):
         """Test tenant activation."""
         tenant = await repo.create_tenant(name="Test", slug="test-activate")
@@ -593,7 +585,6 @@ class TestTenantRepository:
 
         assert repo.get_active_tenant_count() == 1
 
-    @pytest.mark.asyncio
     async def test_suspend_tenant(self, repo):
         """Test tenant suspension."""
         tenant = await repo.create_tenant(name="Test", slug="test-suspend")
@@ -604,7 +595,6 @@ class TestTenantRepository:
         assert suspended.suspended_at is not None
         assert "suspension_reason" in suspended.metadata
 
-    @pytest.mark.asyncio
     async def test_update_tenant_config(self, repo):
         """Test updating tenant configuration."""
         tenant = await repo.create_tenant(name="Test", slug="test-config")
@@ -618,7 +608,6 @@ class TestTenantRepository:
         assert updated.config.enable_blockchain_anchoring is True
         assert updated.config.default_timeout_ms == 10000
 
-    @pytest.mark.asyncio
     async def test_update_tenant_quota(self, repo):
         """Test updating tenant quota."""
         tenant = await repo.create_tenant(name="Test", slug="test-quota")
@@ -629,7 +618,6 @@ class TestTenantRepository:
         assert updated.quota["max_agents"] == 500
         assert updated.quota["max_policies"] == 5000
 
-    @pytest.mark.asyncio
     async def test_delete_tenant(self, repo):
         """Test tenant deletion."""
         tenant = await repo.create_tenant(name="Test", slug="test-delete")
@@ -692,7 +680,6 @@ class TestTenantMiddleware:
 class TestMultiTenancyIntegration:
     """Integration tests for multi-tenancy system."""
 
-    @pytest.mark.asyncio
     async def test_full_tenant_lifecycle(self):
         """Test complete tenant lifecycle."""
         repo = TenantRepository()
@@ -726,7 +713,6 @@ class TestMultiTenancyIntegration:
         tenant = await repo.get_tenant(tenant.tenant_id)
         assert tenant is None
 
-    @pytest.mark.asyncio
     async def test_rls_policy_generation_and_application(self):
         """Test RLS policy generation produces valid SQL."""
         manager = create_acgs2_rls_policies()
@@ -743,7 +729,6 @@ class TestMultiTenancyIntegration:
         for table in ACGS2_RLS_TABLES:
             assert table in up_sql
 
-    @pytest.mark.asyncio
     async def test_concurrent_tenant_contexts(self):
         """Test multiple concurrent tenant contexts."""
         results = []
@@ -775,7 +760,6 @@ class TestTenantManager:
 
         return TenantManager(cache_ttl_seconds=60, quota_warning_threshold=0.8)
 
-    @pytest.mark.asyncio
     async def test_create_tenant_with_validation(self, manager):
         """Test tenant creation with validation."""
         tenant = await manager.create_tenant(
@@ -789,7 +773,6 @@ class TestTenantManager:
         assert tenant.status == TenantStatus.PENDING
         assert tenant.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_create_tenant_auto_activate(self, manager):
         """Test tenant creation with auto-activation."""
         tenant = await manager.create_tenant(
@@ -801,7 +784,6 @@ class TestTenantManager:
         assert tenant.status == TenantStatus.ACTIVE
         assert tenant.activated_at is not None
 
-    @pytest.mark.asyncio
     async def test_create_tenant_invalid_slug(self, manager):
         """Test tenant creation with invalid slug fails."""
         from enhanced_agent_bus.multi_tenancy.manager import TenantValidationError
@@ -812,7 +794,6 @@ class TestTenantManager:
                 slug="Bad-Slug!",
             )
 
-    @pytest.mark.asyncio
     async def test_create_tenant_short_slug(self, manager):
         """Test minimum 2 character slug validation."""
         # Minimum 2 chars required by model pattern
@@ -822,7 +803,6 @@ class TestTenantManager:
         )
         assert tenant.slug == "xc"
 
-    @pytest.mark.asyncio
     async def test_create_tenant_with_parent(self, manager):
         """Test creating child tenant."""
         parent = await manager.create_tenant(
@@ -839,7 +819,6 @@ class TestTenantManager:
 
         assert child.parent_tenant_id == parent.tenant_id
 
-    @pytest.mark.asyncio
     async def test_create_tenant_with_inactive_parent_fails(self, manager):
         """Test creating child with inactive parent fails."""
         from enhanced_agent_bus.multi_tenancy.manager import TenantValidationError
@@ -857,7 +836,6 @@ class TestTenantManager:
                 parent_tenant_id=parent.tenant_id,
             )
 
-    @pytest.mark.asyncio
     async def test_get_tenant_with_caching(self, manager):
         """Test tenant caching."""
         tenant = await manager.create_tenant(
@@ -873,7 +851,6 @@ class TestTenantManager:
         assert fetched1 == fetched2
         assert len(manager._cache) > 0
 
-    @pytest.mark.asyncio
     async def test_get_tenant_by_slug(self, manager):
         """Test tenant lookup by slug."""
         tenant = await manager.create_tenant(
@@ -885,7 +862,6 @@ class TestTenantManager:
         assert fetched is not None
         assert fetched.tenant_id == tenant.tenant_id
 
-    @pytest.mark.asyncio
     async def test_list_tenants_with_status_filter(self, manager):
         """Test listing tenants with status filter."""
         # Create multiple tenants
@@ -899,7 +875,6 @@ class TestTenantManager:
         assert len([t for t in active if t.status == TenantStatus.ACTIVE]) >= 2
         assert any(t.status == TenantStatus.PENDING for t in pending)
 
-    @pytest.mark.asyncio
     async def test_suspend_and_reactivate_tenant(self, manager):
         """Test tenant suspension and reactivation."""
         tenant = await manager.create_tenant(
@@ -917,7 +892,6 @@ class TestTenantManager:
         reactivated = await manager.reactivate_tenant(tenant.tenant_id)
         assert reactivated.status == TenantStatus.ACTIVE
 
-    @pytest.mark.asyncio
     async def test_delete_tenant_with_children_fails(self, manager):
         """Test deleting tenant with children fails without force."""
         from enhanced_agent_bus.multi_tenancy.manager import TenantValidationError
@@ -936,7 +910,6 @@ class TestTenantManager:
         with pytest.raises(TenantValidationError, match="child tenants"):
             await manager.delete_tenant(parent.tenant_id)
 
-    @pytest.mark.asyncio
     async def test_delete_tenant_with_force(self, manager):
         """Test force deleting tenant with children."""
         parent = await manager.create_tenant(
@@ -957,7 +930,6 @@ class TestTenantManager:
         assert await manager.get_tenant(parent.tenant_id) is None
         assert await manager.get_tenant(child.tenant_id) is None
 
-    @pytest.mark.asyncio
     async def test_quota_check_within_limits(self, manager):
         """Test quota check when within limits."""
         tenant = await manager.create_tenant(
@@ -968,7 +940,6 @@ class TestTenantManager:
         result = await manager.check_quota(tenant.tenant_id, "agents", 10)
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_quota_check_exceeds_limits(self, manager):
         """Test quota check when exceeding limits."""
         tenant = await manager.create_tenant(
@@ -987,7 +958,6 @@ class TestTenantManager:
         result = await manager.check_quota(tenant.tenant_id, "agents", 5)
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_increment_usage(self, manager):
         """Test incrementing resource usage."""
         tenant = await manager.create_tenant(
@@ -1001,7 +971,6 @@ class TestTenantManager:
         usage = await manager.increment_usage(tenant.tenant_id, "agents", 3)
         assert usage.agent_count == 8
 
-    @pytest.mark.asyncio
     async def test_decrement_usage(self, manager):
         """Test decrementing resource usage."""
         tenant = await manager.create_tenant(
@@ -1017,7 +986,6 @@ class TestTenantManager:
         usage = await manager.decrement_usage(tenant.tenant_id, "policies", 100)
         assert usage.policy_count == 0
 
-    @pytest.mark.asyncio
     async def test_quota_exceeded_error(self, manager):
         """Test quota exceeded error on increment."""
         from enhanced_agent_bus.multi_tenancy.manager import TenantQuotaExceededError
@@ -1036,7 +1004,6 @@ class TestTenantManager:
         assert exc.value.resource == "agents"
         assert exc.value.limit == 5
 
-    @pytest.mark.asyncio
     async def test_get_child_tenants(self, manager):
         """Test getting child tenants."""
         parent = await manager.create_tenant(
@@ -1059,7 +1026,6 @@ class TestTenantManager:
         children = await manager.get_child_tenants(parent.tenant_id)
         assert len(children) == 2
 
-    @pytest.mark.asyncio
     async def test_get_tenant_hierarchy(self, manager):
         """Test getting full tenant hierarchy."""
         root = await manager.create_tenant(
@@ -1085,7 +1051,6 @@ class TestTenantManager:
         assert hierarchy[1].tenant_id == mid.tenant_id
         assert hierarchy[2].tenant_id == leaf.tenant_id
 
-    @pytest.mark.asyncio
     async def test_get_all_descendants(self, manager):
         """Test getting all descendant tenants."""
         root = await manager.create_tenant(
@@ -1113,7 +1078,6 @@ class TestTenantManager:
         descendants = await manager.get_all_descendants(root.tenant_id)
         assert len(descendants) == 3
 
-    @pytest.mark.asyncio
     async def test_event_subscription(self, manager):
         """Test event subscription and publishing."""
         from enhanced_agent_bus.multi_tenancy.manager import TenantEvent
@@ -1136,7 +1100,6 @@ class TestTenantManager:
         assert events_received[0][0].tenant_id == tenant.tenant_id
         assert "constitutional_hash" in events_received[0][1]
 
-    @pytest.mark.asyncio
     async def test_event_unsubscribe(self, manager):
         """Test event unsubscription."""
         from enhanced_agent_bus.multi_tenancy.manager import TenantEvent
@@ -1154,7 +1117,6 @@ class TestTenantManager:
 
         assert len(events_received) == 1
 
-    @pytest.mark.asyncio
     async def test_update_config(self, manager):
         """Test updating tenant configuration."""
         tenant = await manager.create_tenant(
@@ -1171,7 +1133,6 @@ class TestTenantManager:
         assert updated.config.enable_batch_processing is False
         assert updated.config.cache_ttl_seconds == 600
 
-    @pytest.mark.asyncio
     async def test_update_quota(self, manager):
         """Test updating tenant quota."""
         tenant = await manager.create_tenant(
@@ -1189,7 +1150,6 @@ class TestTenantManager:
         assert quota.max_agents == 500
         assert quota.max_policies == 5000
 
-    @pytest.mark.asyncio
     async def test_context_manager_helper(self, manager):
         """Test manager context helper."""
         tenant = await manager.create_tenant(
@@ -1202,7 +1162,6 @@ class TestTenantManager:
             assert ctx.user_id == "user-123"
             assert ctx.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_clear_cache(self, manager):
         """Test clearing cache."""
         tenant = await manager.create_tenant(
@@ -1217,7 +1176,6 @@ class TestTenantManager:
         assert len(manager._cache) == 0
         assert len(manager._slug_to_id) == 0
 
-    @pytest.mark.asyncio
     async def test_get_stats(self, manager):
         """Test getting manager statistics."""
         await manager.create_tenant(name="Stats 1", slug="stats-1", auto_activate=True)
@@ -1228,7 +1186,6 @@ class TestTenantManager:
         assert "active_tenants" in stats
         assert stats["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_reset_message_usage(self, manager):
         """Test resetting message rate limit counters."""
         tenant = await manager.create_tenant(
@@ -1244,7 +1201,6 @@ class TestTenantManager:
         usage = await manager.get_usage(tenant.tenant_id)
         assert usage.message_count_minute == 0
 
-    @pytest.mark.asyncio
     async def test_suspend_children_cascade(self, manager):
         """Test suspending parent cascades to children."""
         parent = await manager.create_tenant(

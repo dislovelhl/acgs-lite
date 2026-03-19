@@ -164,25 +164,21 @@ def sample_message_no_tenant(constitutional_hash):
 class TestLifecycle:
     """Test EnhancedAgentBus lifecycle management."""
 
-    @pytest.mark.asyncio
     async def test_initial_state_not_running(self, agent_bus):
         """Test that bus starts in non-running state."""
         assert agent_bus.is_running is False
 
-    @pytest.mark.asyncio
     async def test_start_sets_running_true(self, agent_bus):
         """Test that start() sets running state to True."""
         await agent_bus.start()
         assert agent_bus.is_running is True
         await agent_bus.stop()
 
-    @pytest.mark.asyncio
     async def test_stop_sets_running_false(self, started_agent_bus):
         """Test that stop() sets running state to False."""
         await started_agent_bus.stop()
         assert started_agent_bus.is_running is False
 
-    @pytest.mark.asyncio
     async def test_double_start_is_safe(self, agent_bus):
         """Test that calling start() twice is safe (idempotent)."""
         await agent_bus.start()
@@ -190,7 +186,6 @@ class TestLifecycle:
         assert agent_bus.is_running is True
         await agent_bus.stop()
 
-    @pytest.mark.asyncio
     async def test_double_stop_is_safe(self, started_agent_bus):
         """Test that calling stop() twice is safe (idempotent)."""
         await started_agent_bus.stop()
@@ -206,7 +201,6 @@ class TestLifecycle:
 class TestAgentRegistration:
     """Test agent registration functionality."""
 
-    @pytest.mark.asyncio
     async def test_register_agent_success(self, agent_bus, constitutional_hash):
         """Test successful agent registration."""
         result = await agent_bus.register_agent(
@@ -217,7 +211,6 @@ class TestAgentRegistration:
         )
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_register_agent_with_constitutional_hash(self, agent_bus, constitutional_hash):
         """Test agent registration includes constitutional hash."""
         await agent_bus.register_agent(
@@ -231,7 +224,6 @@ class TestAgentRegistration:
         assert "constitutional_hash" in info
         assert info["constitutional_hash"] == constitutional_hash
 
-    @pytest.mark.asyncio
     async def test_register_multiple_agents(self, agent_bus):
         """Test registering multiple agents."""
         await agent_bus.register_agent("agent-1", "worker", [], None)
@@ -244,7 +236,6 @@ class TestAgentRegistration:
         assert "agent-2" in agents
         assert "agent-3" in agents
 
-    @pytest.mark.asyncio
     async def test_unregister_agent_success(self, agent_bus):
         """Test successful agent unregistration."""
         await agent_bus.register_agent("test-agent", "worker", [], None)
@@ -252,13 +243,11 @@ class TestAgentRegistration:
         assert result is True
         assert "test-agent" not in agent_bus.get_registered_agents()
 
-    @pytest.mark.asyncio
     async def test_unregister_nonexistent_agent(self, agent_bus):
         """Test unregistering agent that doesn't exist."""
         result = await agent_bus.unregister_agent("nonexistent-agent")
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_get_agent_info_exists(self, agent_bus):
         """Test getting info for registered agent."""
         await agent_bus.register_agent(
@@ -273,7 +262,6 @@ class TestAgentRegistration:
         assert info["capabilities"] == ["cap1", "cap2"]
         assert info["tenant_id"] == "tenant-x"
 
-    @pytest.mark.asyncio
     async def test_get_agent_info_not_exists(self, agent_bus):
         """Test getting info for non-existent agent."""
         info = agent_bus.get_agent_info("nonexistent")
@@ -288,7 +276,6 @@ class TestAgentRegistration:
 class TestAgentFiltering:
     """Test agent filtering by type and capability."""
 
-    @pytest.mark.asyncio
     async def test_get_agents_by_type(self, agent_bus):
         """Test filtering agents by type."""
         await agent_bus.register_agent("worker-1", "worker", [], None)
@@ -300,7 +287,6 @@ class TestAgentFiltering:
         assert "worker-1" in workers
         assert "worker-2" in workers
 
-    @pytest.mark.asyncio
     async def test_get_agents_by_type_empty(self, agent_bus):
         """Test filtering by type returns empty for no matches."""
         await agent_bus.register_agent("worker-1", "worker", [], None)
@@ -308,7 +294,6 @@ class TestAgentFiltering:
         result = agent_bus.get_agents_by_type("nonexistent_type")
         assert result == []
 
-    @pytest.mark.asyncio
     async def test_get_agents_by_capability(self, agent_bus):
         """Test filtering agents by capability."""
         await agent_bus.register_agent("agent-1", "worker", ["analyze", "process"], None)
@@ -321,7 +306,6 @@ class TestAgentFiltering:
         assert "agent-2" in analyzers
         assert "agent-3" not in analyzers
 
-    @pytest.mark.asyncio
     async def test_get_agents_by_capability_empty(self, agent_bus):
         """Test filtering by capability returns empty for no matches."""
         await agent_bus.register_agent("agent-1", "worker", ["analyze"], None)
@@ -338,7 +322,6 @@ class TestAgentFiltering:
 class TestMessageSending:
     """Test message sending functionality."""
 
-    @pytest.mark.asyncio
     async def test_send_message_success(self, started_agent_bus, sample_message, mock_processor):
         """Test successful message sending."""
         mock_processor.process = AsyncMock(return_value=ValidationResult(is_valid=True))
@@ -346,7 +329,6 @@ class TestMessageSending:
         result = await started_agent_bus.send_message(sample_message)
         assert result.is_valid is True
 
-    @pytest.mark.asyncio
     async def test_send_message_validation_failure(
         self, started_agent_bus, sample_message, mock_processor
     ):
@@ -358,7 +340,6 @@ class TestMessageSending:
         result = await started_agent_bus.send_message(sample_message)
         assert result.is_valid is False
 
-    @pytest.mark.asyncio
     async def test_send_message_increments_metrics(
         self, started_agent_bus, sample_message, mock_processor
     ):
@@ -371,7 +352,6 @@ class TestMessageSending:
         updated_metrics = started_agent_bus.get_metrics()
         assert updated_metrics["messages_sent"] == initial_metrics["messages_sent"] + 1
 
-    @pytest.mark.asyncio
     async def test_send_message_failed_increments_failed_metrics(
         self, started_agent_bus, sample_message, mock_processor
     ):
@@ -394,7 +374,6 @@ class TestMessageSending:
 class TestMultiTenantIsolation:
     """Test multi-tenant isolation - CRITICAL SECURITY FEATURE."""
 
-    @pytest.mark.asyncio
     async def test_tenant_mismatch_sender_rejected(self, started_agent_bus, constitutional_hash):
         """Test that sender tenant mismatch is rejected."""
         # Register sender with different tenant than message
@@ -420,7 +399,6 @@ class TestMultiTenantIsolation:
         assert result.is_valid is False
         assert any("Tenant mismatch" in err for err in result.errors)
 
-    @pytest.mark.asyncio
     async def test_tenant_mismatch_recipient_rejected(self, started_agent_bus, constitutional_hash):
         """Test that recipient tenant mismatch is rejected."""
         # Register both agents
@@ -452,7 +430,6 @@ class TestMultiTenantIsolation:
         assert result.is_valid is False
         assert any("Tenant mismatch" in err for err in result.errors)
 
-    @pytest.mark.asyncio
     async def test_tenant_match_accepted(
         self, started_agent_bus, constitutional_hash, mock_processor
     ):
@@ -487,7 +464,6 @@ class TestMultiTenantIsolation:
         # Should proceed to validation (tenant check passed)
         assert result.is_valid is True
 
-    @pytest.mark.asyncio
     async def test_no_tenant_agents_isolated(
         self, started_agent_bus, constitutional_hash, mock_processor
     ):
@@ -530,7 +506,6 @@ class TestMultiTenantIsolation:
 class TestBroadcast:
     """Test broadcast functionality with tenant isolation."""
 
-    @pytest.mark.asyncio
     async def test_broadcast_to_same_tenant_only(
         self, started_agent_bus, constitutional_hash, mock_processor
     ):
@@ -560,7 +535,6 @@ class TestBroadcast:
         assert "agent-a2" in results
         assert "agent-b1" not in results
 
-    @pytest.mark.asyncio
     async def test_broadcast_no_tenant_isolation(
         self, started_agent_bus, constitutional_hash, mock_processor
     ):
@@ -595,13 +569,11 @@ class TestBroadcast:
 class TestMessageReceiving:
     """Test message receiving functionality."""
 
-    @pytest.mark.asyncio
     async def test_receive_message_timeout(self, started_agent_bus):
         """Test receiving message times out when queue is empty."""
         result = await started_agent_bus.receive_message(timeout=0.1)
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_receive_message_success(
         self, started_agent_bus, sample_message_no_tenant, mock_processor
     ):
@@ -625,7 +597,6 @@ class TestMessageReceiving:
 class TestMetrics:
     """Test metrics collection functionality."""
 
-    @pytest.mark.asyncio
     async def test_get_metrics_includes_required_fields(self, agent_bus, constitutional_hash):
         """Test that metrics include all required fields."""
         metrics = agent_bus.get_metrics()
@@ -639,14 +610,12 @@ class TestMetrics:
         assert "constitutional_hash" in metrics
         assert metrics["constitutional_hash"] == constitutional_hash
 
-    @pytest.mark.asyncio
     async def test_get_metrics_async_includes_circuit_breaker(self, started_agent_bus):
         """Test that async metrics include circuit breaker health."""
         metrics = await started_agent_bus.get_metrics_async()
 
         assert "circuit_breaker_health" in metrics
 
-    @pytest.mark.asyncio
     async def test_metrics_track_registered_agents(self, agent_bus):
         """Test that metrics correctly track registered agents count."""
         initial_metrics = agent_bus.get_metrics()
@@ -667,7 +636,6 @@ class TestMetrics:
 class TestDegradedMode:
     """Test degraded mode fallback behavior."""
 
-    @pytest.mark.asyncio
     async def test_fallback_to_static_validation_on_processor_failure(
         self, started_agent_bus, sample_message_no_tenant, mock_processor
     ):
@@ -680,7 +648,6 @@ class TestDegradedMode:
         assert result.metadata.get("governance_mode") == "DEGRADED"
         assert "fallback_reason" in result.metadata
 
-    @pytest.mark.asyncio
     async def test_degraded_mode_still_validates_hash(
         self, started_agent_bus, constitutional_hash, mock_processor
     ):
@@ -702,7 +669,6 @@ class TestDegradedMode:
         result = await started_agent_bus.send_message(message_valid)
         assert result.is_valid is True
 
-    @pytest.mark.asyncio
     async def test_degraded_mode_rejects_invalid_hash(self, started_agent_bus, mock_processor):
         """Test that degraded mode rejects invalid constitutional hash."""
         mock_processor.process = AsyncMock(side_effect=Exception("Processor failure"))
@@ -731,22 +697,18 @@ class TestDegradedMode:
 class TestDIComponents:
     """Test dependency injection and component access."""
 
-    @pytest.mark.asyncio
     async def test_processor_property(self, agent_bus, mock_processor):
         """Test processor property returns injected processor."""
         assert agent_bus.processor is mock_processor
 
-    @pytest.mark.asyncio
     async def test_registry_property(self, agent_bus, mock_registry):
         """Test registry property returns injected registry."""
         assert agent_bus.registry is mock_registry
 
-    @pytest.mark.asyncio
     async def test_router_property(self, agent_bus, mock_router):
         """Test router property returns injected router."""
         assert agent_bus.router is mock_router
 
-    @pytest.mark.asyncio
     async def test_validator_property(self, agent_bus, mock_validator):
         """Test validator property returns injected validator."""
         assert agent_bus.validator is mock_validator

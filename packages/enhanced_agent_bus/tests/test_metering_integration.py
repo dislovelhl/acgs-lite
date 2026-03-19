@@ -167,7 +167,6 @@ class TestMeteringConfig:
 class TestAsyncMeteringQueue:
     """Test AsyncMeteringQueue class."""
 
-    @pytest.mark.asyncio
     async def test_queue_initialization(self, metering_config):
         """Test queue initialization."""
         queue = AsyncMeteringQueue(metering_config)
@@ -176,7 +175,6 @@ class TestAsyncMeteringQueue:
         assert queue._events_flushed == 0
         assert queue._events_dropped == 0
 
-    @pytest.mark.asyncio
     async def test_enqueue_nowait(self, metering_queue):
         """Test non-blocking event enqueue."""
         if not METERING_AVAILABLE:
@@ -195,7 +193,6 @@ class TestAsyncMeteringQueue:
         assert metering_queue._events_queued == 1
         assert metering_queue._queue.qsize() == 1
 
-    @pytest.mark.asyncio
     async def test_enqueue_when_disabled(self, disabled_metering_config):
         """Test enqueue when metering is disabled."""
         queue = AsyncMeteringQueue(disabled_metering_config)
@@ -209,7 +206,6 @@ class TestAsyncMeteringQueue:
         assert success is False
         assert queue._events_queued == 0
 
-    @pytest.mark.asyncio
     async def test_queue_overflow_handling(self, metering_config):
         """Test queue overflow handling."""
         if not METERING_AVAILABLE:
@@ -238,7 +234,6 @@ class TestAsyncMeteringQueue:
         assert queue._events_queued == 2
         assert queue._events_dropped == 3
 
-    @pytest.mark.asyncio
     async def test_get_metrics(self, metering_queue):
         """Test getting queue metrics."""
         metrics = metering_queue.get_metrics()
@@ -347,7 +342,6 @@ class TestMeteringMixin:
         assert obj._metering_queue is not None
         assert obj._metering_hooks is not None
 
-    @pytest.mark.asyncio
     async def test_start_stop_metering(self):
         """Test starting and stopping metering."""
 
@@ -408,7 +402,6 @@ class TestSingletons:
 class TestMeteredOperationDecorator:
     """Test metered_operation decorator."""
 
-    @pytest.mark.asyncio
     async def test_decorator_basic(self):
         """Test basic decorator functionality."""
         reset_metering()
@@ -423,7 +416,6 @@ class TestMeteredOperationDecorator:
         result = await test_function(tenant_id="test-tenant")
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_decorator_with_validation_result(self):
         """Test decorator with ValidationResult return."""
         reset_metering()
@@ -438,7 +430,6 @@ class TestMeteredOperationDecorator:
         result = await test_function()
         assert result.is_valid is True
 
-    @pytest.mark.asyncio
     async def test_decorator_with_exception(self):
         """Test decorator handling exceptions."""
         reset_metering()
@@ -453,7 +444,6 @@ class TestMeteredOperationDecorator:
         with pytest.raises(ValueError):
             await test_function()
 
-    @pytest.mark.asyncio
     async def test_decorator_with_object_tenant_id(self):
         """Test decorator extracts tenant_id from object attribute."""
         reset_metering()
@@ -472,7 +462,6 @@ class TestMeteredOperationDecorator:
         result = await test_function(MessageLike())
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_decorator_with_custom_extract_tenant(self):
         """Test decorator with custom extract_tenant callable."""
         reset_metering()
@@ -496,7 +485,6 @@ class TestMeteredOperationDecorator:
         result = await test_function(CustomObject())
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_decorator_with_custom_extract_agent(self):
         """Test decorator with custom extract_agent callable."""
         reset_metering()
@@ -520,7 +508,6 @@ class TestMeteredOperationDecorator:
         result = await test_function(AgentObject())
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_decorator_extract_tenant_exception_handling(self):
         """Test decorator handles extract_tenant exceptions gracefully."""
         reset_metering()
@@ -542,7 +529,6 @@ class TestMeteredOperationDecorator:
         result = await test_function(object())
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_decorator_extract_agent_exception_handling(self):
         """Test decorator handles extract_agent exceptions gracefully."""
         reset_metering()
@@ -568,7 +554,6 @@ class TestMeteredOperationDecorator:
 class TestLatencyImpact:
     """Test that metering has minimal latency impact."""
 
-    @pytest.mark.asyncio
     async def test_enqueue_latency(self, metering_queue):
         """Test that enqueue operation is fast."""
         if not METERING_AVAILABLE:
@@ -594,7 +579,6 @@ class TestLatencyImpact:
         assert avg_latency_us < 100, f"Enqueue latency too high: {avg_latency_us:.2f}us"
         logger.info(f"\nAverage enqueue latency: {avg_latency_us:.2f}us")
 
-    @pytest.mark.asyncio
     async def test_hooks_latency(self, metering_hooks, metering_queue):
         """Test that hooks have minimal latency."""
         if not METERING_AVAILABLE:
@@ -636,7 +620,6 @@ class TestConstitutionalCompliance:
 class TestIntegrationWithMessageProcessor:
     """Test integration with MessageProcessor."""
 
-    @pytest.mark.asyncio
     async def test_processor_with_metering(self, sample_message, metering_hooks):
         """Test MessageProcessor with metering hooks."""
         try:
@@ -657,7 +640,6 @@ class TestIntegrationWithMessageProcessor:
         assert result is not None
         assert "validation_latency_ms" in result.metadata or result.is_valid is not None
 
-    @pytest.mark.asyncio
     async def test_processor_metering_disabled(self, sample_message):
         """Test MessageProcessor with metering disabled."""
         try:
@@ -680,7 +662,6 @@ class TestIntegrationWithMessageProcessor:
 class TestIntegrationWithAgentBus:
     """Test integration with EnhancedAgentBus."""
 
-    @pytest.mark.asyncio
     async def test_bus_with_metering(self, sample_message):
         """Test EnhancedAgentBus with metering enabled."""
         try:
@@ -711,7 +692,6 @@ class TestIntegrationWithAgentBus:
         finally:
             await bus.stop()
 
-    @pytest.mark.asyncio
     async def test_bus_metering_disabled(self, sample_message):
         """Test EnhancedAgentBus with metering disabled."""
         try:

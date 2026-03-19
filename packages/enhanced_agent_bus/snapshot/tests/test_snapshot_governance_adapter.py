@@ -140,20 +140,17 @@ class TestAdapterInit:
 
 
 class TestSyncProposals:
-    @pytest.mark.asyncio
     async def test_sync_empty(self, adapter):
         proposals = await adapter.sync_proposals()
         assert proposals == []
         assert adapter.get_metrics()["proposals_synced"] == 0
 
-    @pytest.mark.asyncio
     async def test_sync_returns_cached(self, adapter, sample_proposal):
         adapter._proposals["prop-001"] = sample_proposal
         proposals = await adapter.sync_proposals()
         assert len(proposals) == 1
         assert proposals[0].proposal_id == "prop-001"
 
-    @pytest.mark.asyncio
     async def test_sync_filter_by_state(self, adapter, sample_proposal):
         adapter._proposals["prop-001"] = sample_proposal
         closed = SnapshotProposal(
@@ -173,7 +170,6 @@ class TestSyncProposals:
         assert len(active) == 1
         assert active[0].proposal_id == "prop-001"
 
-    @pytest.mark.asyncio
     async def test_sync_respects_limit(self, adapter):
         for i in range(10):
             adapter._proposals[f"p-{i}"] = SnapshotProposal(
@@ -192,7 +188,6 @@ class TestSyncProposals:
 
 
 class TestSubmitAmendment:
-    @pytest.mark.asyncio
     async def test_creates_proposal(self, adapter):
         pid = await adapter.submit_constitutional_amendment(
             amendment_id="AMD-001",
@@ -209,7 +204,6 @@ class TestSubmitAmendment:
         assert proposal.acgs2_amendment_id == "AMD-001"
         assert "[Constitutional Amendment]" in proposal.title
 
-    @pytest.mark.asyncio
     async def test_custom_choices(self, adapter):
         pid = await adapter.submit_constitutional_amendment(
             amendment_id="AMD-002",
@@ -221,7 +215,6 @@ class TestSubmitAmendment:
         proposal = adapter.get_proposal(pid)
         assert proposal.choices == ["Accept", "Reject"]
 
-    @pytest.mark.asyncio
     async def test_metrics_increment(self, adapter):
         await adapter.submit_constitutional_amendment(
             amendment_id="AMD-003",
@@ -233,7 +226,6 @@ class TestSubmitAmendment:
 
 
 class TestRecordVote:
-    @pytest.mark.asyncio
     async def test_valid_vote(self, adapter, sample_proposal):
         adapter._proposals["prop-001"] = sample_proposal
         ok = await adapter.record_vote("prop-001", "0xVoter", "For", 5.0)
@@ -243,12 +235,10 @@ class TestRecordVote:
         assert p.votes_count == 43  # 42 + 1
         assert p.scores[0] == 105.0  # 100 + 5
 
-    @pytest.mark.asyncio
     async def test_vote_on_missing_proposal(self, adapter):
         ok = await adapter.record_vote("nonexistent", "0xV", "For")
         assert ok is False
 
-    @pytest.mark.asyncio
     async def test_vote_on_closed_proposal(self, adapter):
         closed = SnapshotProposal(
             proposal_id="closed-1",
@@ -265,26 +255,22 @@ class TestRecordVote:
         ok = await adapter.record_vote("closed-1", "0xV", "For")
         assert ok is False
 
-    @pytest.mark.asyncio
     async def test_invalid_choice(self, adapter, sample_proposal):
         adapter._proposals["prop-001"] = sample_proposal
         ok = await adapter.record_vote("prop-001", "0xV", "InvalidChoice")
         assert ok is False
 
-    @pytest.mark.asyncio
     async def test_empty_voter_raises(self, adapter, sample_proposal):
         adapter._proposals["prop-001"] = sample_proposal
         with pytest.raises(ValueError, match="voter must not be empty"):
             await adapter.record_vote("prop-001", "", "For")
 
-    @pytest.mark.asyncio
     async def test_empty_author_raises(self, adapter):
         with pytest.raises(ValueError, match="author must not be empty"):
             await adapter.submit_constitutional_amendment(
                 amendment_id="A1", title="T", body="B", author=""
             )
 
-    @pytest.mark.asyncio
     async def test_vote_invalidates_analytics_cache(self, adapter, sample_proposal):
         adapter._proposals["prop-001"] = sample_proposal
         # Pre-compute analytics
@@ -297,7 +283,6 @@ class TestRecordVote:
 
 
 class TestVotingAnalytics:
-    @pytest.mark.asyncio
     async def test_compute_from_proposal(self, adapter, sample_proposal):
         adapter._proposals["prop-001"] = sample_proposal
         analytics = await adapter.get_voting_analytics("prop-001")
@@ -306,7 +291,6 @@ class TestVotingAnalytics:
         assert analytics.scores_by_choice["For"] == 100.0
         assert analytics.participation_rate == 0.42  # 42/100 default eligible
 
-    @pytest.mark.asyncio
     async def test_quorum_with_space(self, adapter, sample_proposal):
         space = SnapshotSpace(space_id="test-dao.eth", name="Test", follower_count=200)
         adapter.add_space(space)
@@ -316,14 +300,12 @@ class TestVotingAnalytics:
         assert analytics.participation_rate == 0.21  # 42/200
         assert analytics.quorum_reached is True  # 0.21 >= 0.1
 
-    @pytest.mark.asyncio
     async def test_missing_proposal_returns_none(self, adapter):
         result = await adapter.get_voting_analytics("nonexistent")
         assert result is None
 
 
 class TestProposalSummary:
-    @pytest.mark.asyncio
     async def test_summary_basic(self, adapter, sample_proposal):
         adapter._proposals["prop-001"] = sample_proposal
         summary = await adapter.get_proposal_summary("prop-001")
@@ -332,7 +314,6 @@ class TestProposalSummary:
         assert summary["risk_level"] == "medium"  # "treasury" in body
         assert summary["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_summary_security_risk(self, adapter):
         pid = await adapter.submit_constitutional_amendment(
             amendment_id="SEC-1",
@@ -343,12 +324,10 @@ class TestProposalSummary:
         summary = await adapter.get_proposal_summary(pid)
         assert summary["risk_level"] == "high"
 
-    @pytest.mark.asyncio
     async def test_summary_missing_proposal(self, adapter):
         result = await adapter.get_proposal_summary("nonexistent")
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_summary_amendment_flag(self, adapter):
         pid = await adapter.submit_constitutional_amendment(
             amendment_id="AMD-5",

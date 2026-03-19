@@ -136,7 +136,6 @@ class TestSIEMProviderConfig:
 class TestSplunkHECProvider:
     """Test suite for SplunkHECProvider."""
 
-    @pytest.mark.asyncio
     async def test_send_event_success(self, splunk_config, sample_audit_entry):
         """Should successfully send event to Splunk."""
         provider = SplunkHECProvider(splunk_config)
@@ -154,7 +153,6 @@ class TestSplunkHECProvider:
             call_args = mock_post.call_args
             assert splunk_config.endpoint_url in str(call_args)
 
-    @pytest.mark.asyncio
     async def test_send_event_server_error(self, splunk_config, sample_audit_entry):
         """Should handle server error response."""
         provider = SplunkHECProvider(splunk_config)
@@ -168,7 +166,6 @@ class TestSplunkHECProvider:
 
             assert result is False
 
-    @pytest.mark.asyncio
     async def test_send_event_timeout(self, splunk_config, sample_audit_entry):
         """Should handle timeout with retry."""
         provider = SplunkHECProvider(splunk_config)
@@ -182,7 +179,6 @@ class TestSplunkHECProvider:
             # Should have retried max_retries times
             assert mock_post.call_count == splunk_config.max_retries
 
-    @pytest.mark.asyncio
     async def test_send_event_connection_error(self, splunk_config, sample_audit_entry):
         """Should handle connection error."""
         provider = SplunkHECProvider(splunk_config)
@@ -194,7 +190,6 @@ class TestSplunkHECProvider:
 
             assert result is False
 
-    @pytest.mark.asyncio
     async def test_health_check_success(self, splunk_config):
         """Should return healthy status."""
         provider = SplunkHECProvider(splunk_config)
@@ -209,7 +204,6 @@ class TestSplunkHECProvider:
             assert health["status"] == "healthy"
             assert health["status_code"] == 200
 
-    @pytest.mark.asyncio
     async def test_health_check_failure(self, splunk_config):
         """Should return unhealthy status on failure."""
         provider = SplunkHECProvider(splunk_config)
@@ -245,7 +239,6 @@ class TestSplunkHECProvider:
 class TestElasticsearchProvider:
     """Test suite for ElasticsearchProvider."""
 
-    @pytest.mark.asyncio
     async def test_send_event_success(self, elasticsearch_config, sample_audit_entry):
         """Should successfully index event in Elasticsearch."""
         provider = ElasticsearchProvider(elasticsearch_config)
@@ -260,7 +253,6 @@ class TestElasticsearchProvider:
 
             assert result is True
 
-    @pytest.mark.asyncio
     async def test_send_event_updated(self, elasticsearch_config, sample_audit_entry):
         """Should handle updated result."""
         provider = ElasticsearchProvider(elasticsearch_config)
@@ -275,7 +267,6 @@ class TestElasticsearchProvider:
 
             assert result is True
 
-    @pytest.mark.asyncio
     async def test_send_event_index_not_found(self, elasticsearch_config, sample_audit_entry):
         """Should attempt to create index if not found."""
         provider = ElasticsearchProvider(elasticsearch_config)
@@ -297,7 +288,6 @@ class TestElasticsearchProvider:
             assert mock_post.call_count == 2
             mock_put.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_send_event_timeout(self, elasticsearch_config, sample_audit_entry):
         """Should handle timeout with retry."""
         provider = ElasticsearchProvider(elasticsearch_config)
@@ -310,7 +300,6 @@ class TestElasticsearchProvider:
             assert result is False
             assert mock_post.call_count == elasticsearch_config.max_retries
 
-    @pytest.mark.asyncio
     async def test_health_check_success(self, elasticsearch_config):
         """Should return cluster health status."""
         provider = ElasticsearchProvider(elasticsearch_config)
@@ -400,7 +389,6 @@ class TestCreateSIEMProvider:
 class TestAuditLogSIEMIntegration:
     """Test suite for AuditLog SIEM integration."""
 
-    @pytest.mark.asyncio
     async def test_siem_initialization(self):
         """AuditLog should initialize SIEM providers from config."""
         config = AuditLogConfig(
@@ -427,7 +415,6 @@ class TestAuditLogSIEMIntegration:
         assert len(audit_log._siem_providers) == 2
         assert audit_log._siem_metrics["providers_configured"] == 2
 
-    @pytest.mark.asyncio
     async def test_siem_disabled_no_providers(self):
         """Should not initialize providers when SIEM disabled."""
         config = AuditLogConfig(
@@ -446,7 +433,6 @@ class TestAuditLogSIEMIntegration:
 
         assert len(audit_log._siem_providers) == 0
 
-    @pytest.mark.asyncio
     async def test_log_to_siem_success(self, sample_audit_entry):
         """Should successfully log to SIEM."""
         config = AuditLogConfig(
@@ -474,7 +460,6 @@ class TestAuditLogSIEMIntegration:
         mock_provider.send_event.assert_called_once()
         assert audit_log._siem_metrics["events_sent"] == 1
 
-    @pytest.mark.asyncio
     async def test_log_to_siem_multiple_providers(self, sample_audit_entry):
         """Should log to all configured providers."""
         config = AuditLogConfig(
@@ -502,7 +487,6 @@ class TestAuditLogSIEMIntegration:
         mock_provider2.send_event.assert_called_once()
         assert audit_log._siem_metrics["events_sent"] == 2
 
-    @pytest.mark.asyncio
     async def test_log_to_siem_partial_failure(self, sample_audit_entry):
         """Should handle partial provider failures."""
         config = AuditLogConfig(
@@ -529,7 +513,6 @@ class TestAuditLogSIEMIntegration:
         assert audit_log._siem_metrics["events_sent"] == 1
         assert audit_log._siem_metrics["events_failed"] == 1
 
-    @pytest.mark.asyncio
     async def test_log_to_siem_fail_not_silent(self, sample_audit_entry):
         """Should raise exception when siem_fail_silent is False."""
         config = AuditLogConfig(
@@ -548,7 +531,6 @@ class TestAuditLogSIEMIntegration:
         with pytest.raises(RuntimeError, match="SIEM logging failed"):
             await audit_log._log_to_siem(sample_audit_entry)
 
-    @pytest.mark.asyncio
     async def test_log_to_siem_exception_handling(self, sample_audit_entry):
         """Should handle provider exceptions gracefully."""
         config = AuditLogConfig(
@@ -568,7 +550,6 @@ class TestAuditLogSIEMIntegration:
 
         assert audit_log._siem_metrics["events_failed"] == 1
 
-    @pytest.mark.asyncio
     async def test_siem_enrichment(self, sample_audit_entry):
         """Should enrich events with SIEM metadata."""
         config = AuditLogConfig(
@@ -607,7 +588,6 @@ class TestAuditLogSIEMIntegration:
         assert metrics["events_failed"] == 2
         assert metrics["providers_configured"] == 1
 
-    @pytest.mark.asyncio
     async def test_health_check_siem(self):
         """Should check health of all SIEM providers."""
         config = AuditLogConfig(enabled=True, log_to_siem=True)
@@ -664,7 +644,6 @@ class TestAuditLogSIEMEdgeCases:
 
         assert len(audit_log._siem_providers) == 0
 
-    @pytest.mark.asyncio
     async def test_no_providers_configured_warning(self, caplog):
         """Should log warning when SIEM enabled but no valid providers."""
         config = AuditLogConfig(
@@ -678,7 +657,6 @@ class TestAuditLogSIEMEdgeCases:
 
         assert "no valid providers configured" in caplog.text.lower()
 
-    @pytest.mark.asyncio
     async def test_log_to_siem_no_providers(self, sample_audit_entry):
         """Should handle logging when no providers initialized."""
         config = AuditLogConfig(
@@ -692,7 +670,6 @@ class TestAuditLogSIEMEdgeCases:
         # Should not raise, just return
         await audit_log._log_to_siem(sample_audit_entry)
 
-    @pytest.mark.asyncio
     async def test_invalid_provider_type_in_config(self):
         """Should handle invalid provider type gracefully."""
         config = AuditLogConfig(
@@ -715,7 +692,6 @@ class TestAuditLogSIEMEdgeCases:
 class TestAuditLogSIEMEndToEnd:
     """End-to-end tests with AuditLog process method."""
 
-    @pytest.mark.asyncio
     async def test_process_with_siem_logging(self):
         """Full flow: process audit entry and log to SIEM."""
         config = AuditLogConfig(
@@ -746,7 +722,6 @@ class TestAuditLogSIEMEndToEnd:
         assert result.allowed is True
         mock_provider.send_event.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_process_siem_disabled(self):
         """Process should not call SIEM when disabled."""
         config = AuditLogConfig(

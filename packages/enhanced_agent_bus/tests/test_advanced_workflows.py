@@ -34,7 +34,6 @@ def persistence_path():
         shutil.rmtree("test_storage")
 
 
-@pytest.mark.asyncio
 async def test_saga_persistence_and_resume(persistence_path):
     """Test that a saga can save its state and be resumed."""
     saga_id = "test-saga-persistence"
@@ -84,7 +83,6 @@ async def test_saga_persistence_and_resume(persistence_path):
     assert "step_1" in resumed_saga._completed_steps
 
 
-@pytest.mark.asyncio
 async def test_weighted_voting_consensus():
     """Test that weighted voting correctly influences consensus."""
     workflow_id = "test-weighted-voting"
@@ -129,7 +127,6 @@ async def test_weighted_voting_consensus():
     assert workflow._check_consensus(votes_fail, 3, 0.6, input_weighted.agent_weights) is True
 
 
-@pytest.mark.asyncio
 async def test_workflow_versioning_propagation():
     """Test that versioning is correctly propagated in results."""
     input_v2 = DeliberationWorkflowInput(

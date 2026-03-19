@@ -5,8 +5,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from datetime import UTC, datetime, timezone
 
-import pytest
-
 from enhanced_agent_bus.tests.rlm_repl.conftest import _make_repl
 
 

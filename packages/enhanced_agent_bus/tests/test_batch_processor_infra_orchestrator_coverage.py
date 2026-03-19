@@ -9,8 +9,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from enhanced_agent_bus.batch_processor_infra.orchestrator import (
     BatchProcessorOrchestrator,
 )

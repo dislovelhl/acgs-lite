@@ -42,7 +42,6 @@ class TestSagaResume:
         """Create persistence provider."""
         return FileSagaPersistenceProvider(str(tmp_path))
 
-    @pytest.mark.asyncio
     async def test_resume_nonexistent_saga(self, provider):
         """Test resuming non-existent saga returns None."""
         saga = await ConstitutionalSagaWorkflow.resume(
@@ -51,7 +50,6 @@ class TestSagaResume:
         )
         assert saga is None
 
-    @pytest.mark.asyncio
     async def test_resume_existing_saga(self, provider):
         """Test resuming existing saga."""
         # Save state first

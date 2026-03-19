@@ -53,7 +53,6 @@ def expires_at() -> datetime:
 class TestTokenRevocationService:
     """Test suite for TokenRevocationService."""
 
-    @pytest.mark.asyncio
     async def test_revoke_token_adds_to_blacklist(self, mock_redis, valid_jti, expires_at):
         """
         Test that revoking a token adds it to Redis blacklist with correct TTL.
@@ -85,7 +84,6 @@ class TestTokenRevocationService:
         # Check value indicates revocation
         assert call_args[0][2] == "revoked"
 
-    @pytest.mark.asyncio
     async def test_is_token_revoked_returns_true_for_blacklisted(self, mock_redis, valid_jti):
         """
         Test that blacklisted tokens are correctly identified.
@@ -106,7 +104,6 @@ class TestTokenRevocationService:
         assert result is True, "Blacklisted token should return True"
         mock_redis.exists.assert_called_once_with(f"token_blacklist:{valid_jti}")
 
-    @pytest.mark.asyncio
     async def test_is_token_revoked_returns_false_for_valid(self, mock_redis, valid_jti):
         """
         Test that non-blacklisted tokens return False.
@@ -127,7 +124,6 @@ class TestTokenRevocationService:
         assert result is False, "Valid token should return False"
         mock_redis.exists.assert_called_once_with(f"token_blacklist:{valid_jti}")
 
-    @pytest.mark.asyncio
     async def test_revoke_all_user_tokens_invalidates_all(self, mock_redis, user_id, expires_at):
         """
         Test that revoking all user tokens sets user revocation timestamp.
@@ -159,7 +155,6 @@ class TestTokenRevocationService:
         user_key_set = any(f"user_revoked:{user_id}" in call for call in calls)
         assert user_key_set, "User revocation timestamp must be set"
 
-    @pytest.mark.asyncio
     async def test_token_revocation_ttl_expires(self, mock_redis, valid_jti):
         """
         Test that revoked tokens naturally expire via TTL.
@@ -182,7 +177,6 @@ class TestTokenRevocationService:
         # Verify TTL was set (even if 0 or negative, Redis will handle)
         mock_redis.setex.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_graceful_degradation_when_redis_unavailable(self, valid_jti, expires_at):
         """
         Test graceful degradation when Redis is unavailable.
@@ -206,7 +200,6 @@ class TestTokenRevocationService:
         revoked = await service.is_token_revoked(valid_jti)
         assert revoked is False, "Should fail open when Redis unavailable"
 
-    @pytest.mark.asyncio
     async def test_revoke_token_without_redis_client(self, valid_jti, expires_at):
         """
         Test behavior when TokenRevocationService initialized without Redis.
@@ -224,7 +217,6 @@ class TestTokenRevocationService:
         # Assert - should fail gracefully
         assert result is False, "Should return False when no Redis client"
 
-    @pytest.mark.asyncio
     async def test_is_token_revoked_without_redis_client(self, valid_jti):
         """
         Test checking revocation without Redis client.
@@ -242,7 +234,6 @@ class TestTokenRevocationService:
         # Assert - fail open
         assert result is False, "Should fail open when no Redis client"
 
-    @pytest.mark.asyncio
     async def test_is_token_revoked_without_redis_client_fails_closed_in_production(
         self, valid_jti, monkeypatch
     ):
@@ -259,7 +250,6 @@ class TestTokenRevocationService:
 
         assert result is True, "Should fail closed in production-like environments"
 
-    @pytest.mark.asyncio
     async def test_is_token_revoked_honors_explicit_fail_open_override(
         self, valid_jti, monkeypatch
     ):
@@ -275,7 +265,6 @@ class TestTokenRevocationService:
 
         assert result is False, "Explicit fail-open override should take precedence"
 
-    @pytest.mark.asyncio
     async def test_constitutional_hash_in_audit_logs(
         self, mock_redis, valid_jti, expires_at, caplog
     ):
@@ -298,7 +287,6 @@ class TestTokenRevocationService:
 
         assert hash_in_logs, f"Constitutional hash {CONSTITUTIONAL_HASH} must appear in audit logs"
 
-    @pytest.mark.asyncio
     async def test_revoke_all_user_tokens_with_existing_tokens(
         self, mock_redis, user_id, valid_jti, expires_at
     ):
@@ -328,7 +316,6 @@ class TestTokenRevocationService:
         user_keys = [call[0][0] for call in calls if "user_revoked" in call[0][0]]
         assert len(user_keys) > 0, "User revocation timestamp must be set"
 
-    @pytest.mark.asyncio
     async def test_ttl_calculation_accuracy(self, mock_redis, valid_jti):
         """
         Test that TTL is calculated accurately from expires_at.
@@ -359,7 +346,6 @@ class TestTokenRevocationService:
                 f"TTL {actual_ttl} should be close to {expected_ttl}"
             )
 
-    @pytest.mark.asyncio
     async def test_maci_separation_of_powers(self, mock_redis, valid_jti, expires_at):
         """
         Test MACI compliance - no self-validation.
@@ -384,7 +370,6 @@ class TestTokenRevocationService:
             "Service must not self-validate (MACI separation of powers)"
         )
 
-    @pytest.mark.asyncio
     async def test_concurrent_revocation_safety(self, mock_redis, user_id, expires_at):
         """
         Test thread/async safety of concurrent revocations.
@@ -408,7 +393,6 @@ class TestTokenRevocationService:
             )
             assert isinstance(result, int), "Should return count"
 
-    @pytest.mark.asyncio
     async def test_null_jti_handling(self, mock_redis, expires_at):
         """
         Test handling of null/empty JTI.
@@ -426,7 +410,6 @@ class TestTokenRevocationService:
         with pytest.raises((ValueError, ACGSValidationError), match="JTI cannot be empty"):
             await service.is_token_revoked("")
 
-    @pytest.mark.asyncio
     async def test_null_user_id_handling(self, mock_redis, expires_at):
         """
         Test handling of null/empty user_id.
@@ -441,7 +424,6 @@ class TestTokenRevocationService:
         with pytest.raises((ValueError, ACGSValidationError), match="User ID cannot be empty"):
             await service.revoke_all_user_tokens("", expires_at)
 
-    @pytest.mark.asyncio
     async def test_expired_token_ttl_handling(self, mock_redis, valid_jti):
         """
         Test handling when expires_at is in the past.
@@ -465,7 +447,6 @@ class TestTokenRevocationService:
         mock_redis.setex.assert_called_once()
 
 
-@pytest.mark.asyncio
 class TestTokenRevocationIntegration:
     """Integration tests with real Redis patterns."""
 
@@ -546,7 +527,6 @@ class TestTokenRevocationIntegration:
 
 
 # Edge case tests
-@pytest.mark.asyncio
 class TestTokenRevocationEdgeCases:
     """Edge case and error handling tests."""
 
@@ -609,7 +589,6 @@ class TestTokenRevocationEdgeCases:
         assert jti in call_args[0][0]
 
 
-@pytest.mark.asyncio
 class TestUserRevocationTracking:
     """Tests for user-level revocation tracking (is_user_revoked)."""
 
@@ -754,7 +733,6 @@ class TestUserRevocationTracking:
         assert result is True, "Should handle timezone-naive datetimes"
 
 
-@pytest.mark.asyncio
 class TestRevocationStats:
     """Tests for get_revocation_stats method."""
 
@@ -845,7 +823,6 @@ class TestRevocationStats:
         assert stats["user_revocations"] == 0
 
 
-@pytest.mark.asyncio
 class TestCreateTokenRevocationService:
     """Tests for the convenience factory function."""
 
@@ -887,7 +864,6 @@ class TestCreateTokenRevocationService:
         assert service._use_redis is False
 
 
-@pytest.mark.asyncio
 class TestExceptionHandling:
     """Tests for exception handling paths."""
 

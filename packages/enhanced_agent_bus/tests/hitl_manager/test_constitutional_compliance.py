@@ -17,7 +17,6 @@ import pytest
 class TestConstitutionalCompliance:
     """Test constitutional compliance in HITL operations."""
 
-    @pytest.mark.asyncio
     @pytest.mark.constitutional
     async def test_constitutional_hash_in_audit_trail(self):
         """Verify constitutional hash is maintained in audit trail."""
@@ -67,7 +66,6 @@ class TestConstitutionalCompliance:
 
         await queue.stop()
 
-    @pytest.mark.asyncio
     @pytest.mark.constitutional
     async def test_all_decisions_include_timestamp(self):
         """Verify all decisions include proper timestamps."""

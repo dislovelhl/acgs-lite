@@ -3,7 +3,6 @@ Tests for internal REPL helpers: _SafeRegex and JSON helpers.
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-import pytest
 
 
 class TestSafeRegex:

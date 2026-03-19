@@ -342,7 +342,6 @@ class TestGovernanceEvent:
 
 
 class TestMockProducer:
-    @pytest.mark.asyncio
     async def test_send(self):
         cfg = make_kafka_config()
         pcfg = make_producer_config()
@@ -351,7 +350,6 @@ class TestMockProducer:
         assert result["topic"] == "topic"
         assert result["partition"] == 0
 
-    @pytest.mark.asyncio
     async def test_close(self):
         cfg = make_kafka_config()
         pcfg = make_producer_config()
@@ -365,7 +363,6 @@ class TestMockProducer:
 
 
 class TestKafkaConnectionPool:
-    @pytest.mark.asyncio
     async def test_start_populates_pool(self):
         pool = KafkaConnectionPool(make_kafka_config(), make_producer_config(), pool_size=3)
         await pool.start()
@@ -373,7 +370,6 @@ class TestKafkaConnectionPool:
         assert pool._pool.qsize() == 3
         await pool.stop()
 
-    @pytest.mark.asyncio
     async def test_start_idempotent(self):
         pool = KafkaConnectionPool(make_kafka_config(), make_producer_config(), pool_size=2)
         await pool.start()
@@ -381,7 +377,6 @@ class TestKafkaConnectionPool:
         assert pool._pool.qsize() == 2
         await pool.stop()
 
-    @pytest.mark.asyncio
     async def test_stop_clears_producers(self):
         pool = KafkaConnectionPool(make_kafka_config(), make_producer_config(), pool_size=2)
         await pool.start()
@@ -389,12 +384,10 @@ class TestKafkaConnectionPool:
         assert pool._started is False
         assert len(pool._producers) == 0
 
-    @pytest.mark.asyncio
     async def test_stop_when_not_started(self):
         pool = KafkaConnectionPool(make_kafka_config(), make_producer_config(), pool_size=2)
         await pool.stop()  # should not raise
 
-    @pytest.mark.asyncio
     async def test_acquire_and_release(self):
         pool = KafkaConnectionPool(make_kafka_config(), make_producer_config(), pool_size=2)
         await pool.start()
@@ -405,7 +398,6 @@ class TestKafkaConnectionPool:
         assert pool._pool.qsize() == 2
         await pool.stop()
 
-    @pytest.mark.asyncio
     async def test_acquire_starts_pool_if_not_started(self):
         pool = KafkaConnectionPool(make_kafka_config(), make_producer_config(), pool_size=1)
         assert pool._started is False
@@ -414,7 +406,6 @@ class TestKafkaConnectionPool:
         await pool.release(producer)
         await pool.stop()
 
-    @pytest.mark.asyncio
     async def test_health_check_started(self):
         pool = KafkaConnectionPool(make_kafka_config(), make_producer_config(), pool_size=2)
         await pool.start()
@@ -425,14 +416,12 @@ class TestKafkaConnectionPool:
         assert health["constitutional_hash"] == CONSTITUTIONAL_HASH
         await pool.stop()
 
-    @pytest.mark.asyncio
     async def test_health_check_not_started(self):
         pool = KafkaConnectionPool(make_kafka_config(), make_producer_config(), pool_size=2)
         health = await pool.health_check()
         assert health["healthy"] is False
         assert health["available_connections"] == 0
 
-    @pytest.mark.asyncio
     async def test_close_producer_with_async_close(self):
         pool = KafkaConnectionPool(make_kafka_config(), make_producer_config(), pool_size=1)
         mock_producer = AsyncMock()
@@ -440,7 +429,6 @@ class TestKafkaConnectionPool:
         await pool._close_producer(mock_producer)
         mock_producer.close.assert_awaited_once()
 
-    @pytest.mark.asyncio
     async def test_close_producer_with_sync_close(self):
         pool = KafkaConnectionPool(make_kafka_config(), make_producer_config(), pool_size=1)
         mock_producer = MagicMock()
@@ -448,7 +436,6 @@ class TestKafkaConnectionPool:
         await pool._close_producer(mock_producer)
         mock_producer.close.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_stop_swallows_close_errors(self):
         pool = KafkaConnectionPool(make_kafka_config(), make_producer_config(), pool_size=2)
         await pool.start()
@@ -462,7 +449,6 @@ class TestKafkaConnectionPool:
         await pool.stop()
         assert pool._started is False
 
-    @pytest.mark.asyncio
     async def test_constitutional_hash(self):
         pool = KafkaConnectionPool(make_kafka_config(), make_producer_config())
         assert pool.constitutional_hash == CONSTITUTIONAL_HASH
@@ -474,7 +460,6 @@ class TestKafkaConnectionPool:
 
 
 class TestKafkaEventPublisher:
-    @pytest.mark.asyncio
     async def test_publish_success(self):
         cfg = make_kafka_config()
         publisher = KafkaEventPublisher(cfg)
@@ -484,14 +469,12 @@ class TestKafkaEventPublisher:
         assert result.event_id == "evt-001"
         assert result.topic == "my-topic"
 
-    @pytest.mark.asyncio
     async def test_publish_with_key(self):
         publisher = KafkaEventPublisher(make_kafka_config())
         evt = make_event()
         result = await publisher.publish("t", evt, key="k1")
         assert result.success is True
 
-    @pytest.mark.asyncio
     async def test_publish_with_on_delivery_callback(self):
         publisher = KafkaEventPublisher(make_kafka_config())
         evt = make_event()
@@ -504,7 +487,6 @@ class TestKafkaEventPublisher:
         assert result.success is True
         assert calls[0] == ("evt-001", True, None)
 
-    @pytest.mark.asyncio
     async def test_publish_handles_error_and_calls_on_delivery(self):
         publisher = KafkaEventPublisher(make_kafka_config())
         evt = make_event()
@@ -524,7 +506,6 @@ class TestKafkaEventPublisher:
         assert "Kafka is down" in result.error
         assert calls[0][1] is False
 
-    @pytest.mark.asyncio
     async def test_publish_handles_error_without_callback(self):
         publisher = KafkaEventPublisher(make_kafka_config())
         evt = make_event()
@@ -537,7 +518,6 @@ class TestKafkaEventPublisher:
         assert result.success is False
         assert result.error is not None
 
-    @pytest.mark.asyncio
     async def test_publish_batch(self):
         publisher = KafkaEventPublisher(make_kafka_config())
         events = [make_event(event_id=f"e{i}") for i in range(4)]
@@ -545,7 +525,6 @@ class TestKafkaEventPublisher:
         assert len(results) == 4
         assert all(r.success for r in results)
 
-    @pytest.mark.asyncio
     async def test_publish_batch_with_key_extractor(self):
         publisher = KafkaEventPublisher(make_kafka_config())
         events = [make_event(event_id=f"e{i}", tenant_id=f"t{i}") for i in range(3)]
@@ -554,7 +533,6 @@ class TestKafkaEventPublisher:
         )
         assert len(results) == 3
 
-    @pytest.mark.asyncio
     async def test_ensure_pool_creates_pool_once(self):
         publisher = KafkaEventPublisher(make_kafka_config())
         assert publisher._pool is None
@@ -564,18 +542,15 @@ class TestKafkaEventPublisher:
         # Same pool object reused
         assert publisher._pool is pool_first
 
-    @pytest.mark.asyncio
     async def test_close_with_pool(self):
         publisher = KafkaEventPublisher(make_kafka_config())
         await publisher._ensure_pool()
         await publisher.close()  # should not raise
 
-    @pytest.mark.asyncio
     async def test_close_without_pool(self):
         publisher = KafkaEventPublisher(make_kafka_config())
         await publisher.close()  # _pool is None, should be a no-op
 
-    @pytest.mark.asyncio
     async def test_send_batch_returns_true_list(self):
         publisher = KafkaEventPublisher(make_kafka_config())
         events = [make_event(event_id=f"e{i}") for i in range(3)]
@@ -586,7 +561,6 @@ class TestKafkaEventPublisher:
         publisher = KafkaEventPublisher(make_kafka_config())
         assert publisher.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_publish_with_custom_producer_config(self):
         pcfg = make_producer_config(retries=5)
         publisher = KafkaEventPublisher(make_kafka_config(), pcfg)
@@ -601,7 +575,6 @@ class TestKafkaEventPublisher:
 
 
 class TestGovernanceEventProducer:
-    @pytest.mark.asyncio
     async def test_publish_success(self):
         producer = GovernanceEventProducer(make_kafka_config())
         evt = make_event()
@@ -609,14 +582,12 @@ class TestGovernanceEventProducer:
         assert result.success is True
         assert result.event_id == "evt-001"
 
-    @pytest.mark.asyncio
     async def test_publish_with_key(self):
         producer = GovernanceEventProducer(make_kafka_config())
         evt = make_event()
         result = await producer.publish("topic", evt, key="k1")
         assert result.success is True
 
-    @pytest.mark.asyncio
     async def test_publish_with_on_delivery_success(self):
         producer = GovernanceEventProducer(make_kafka_config())
         evt = make_event()
@@ -629,7 +600,6 @@ class TestGovernanceEventProducer:
         assert result.success is True
         assert calls[0] == ("evt-001", True, None)
 
-    @pytest.mark.asyncio
     async def test_publish_retries_on_failure(self):
         pcfg = make_producer_config(retries=2, retry_backoff_ms=1)
         producer = GovernanceEventProducer(make_kafka_config(), pcfg)
@@ -648,7 +618,6 @@ class TestGovernanceEventProducer:
         assert call_count == 3
         assert result.success is False
 
-    @pytest.mark.asyncio
     async def test_publish_calls_on_delivery_on_failure(self):
         pcfg = make_producer_config(retries=0, retry_backoff_ms=1)
         producer = GovernanceEventProducer(make_kafka_config(), pcfg)
@@ -668,7 +637,6 @@ class TestGovernanceEventProducer:
         assert calls[0][1] is False
         assert "bad" in calls[0][2]
 
-    @pytest.mark.asyncio
     async def test_publish_unknown_error_when_no_exception(self):
         """Covers the path where last_error is None (all attempts return False)."""
         pcfg = make_producer_config(retries=0)
@@ -683,7 +651,6 @@ class TestGovernanceEventProducer:
         assert result.success is False
         assert result.error == "Unknown error"
 
-    @pytest.mark.asyncio
     async def test_close(self):
         producer = GovernanceEventProducer(make_kafka_config())
         await producer.close()  # should not raise
@@ -699,7 +666,6 @@ class TestGovernanceEventProducer:
 
 
 class TestSchemaRegistry:
-    @pytest.mark.asyncio
     async def test_register_schema(self):
         registry = SchemaRegistry(url="http://schema-registry:8081")
         schema = EventSchema(
@@ -711,7 +677,6 @@ class TestSchemaRegistry:
         schema_id = await registry.register_schema("test-value", schema)
         assert schema_id == 1
 
-    @pytest.mark.asyncio
     async def test_get_schema_caches_result(self):
         registry = SchemaRegistry(url="http://schema-registry:8081")
         schema = await registry.get_schema(42)
@@ -721,14 +686,12 @@ class TestSchemaRegistry:
         assert schema2 == schema
         assert 42 in registry._schema_cache
 
-    @pytest.mark.asyncio
     async def test_get_schema_cache_hit(self):
         registry = SchemaRegistry(url="http://sr:8081")
         registry._schema_cache[99] = {"cached": True}
         schema = await registry.get_schema(99)
         assert schema == {"cached": True}
 
-    @pytest.mark.asyncio
     async def test_check_compatibility(self):
         registry = SchemaRegistry(url="http://sr:8081")
         schema = EventSchema(
@@ -783,53 +746,44 @@ class TestSchemaRegistry:
 
 
 class TestGovernanceEventConsumer:
-    @pytest.mark.asyncio
     async def test_subscribe(self):
         consumer = GovernanceEventConsumer(make_kafka_config(), make_consumer_config())
         await consumer.subscribe(["topic-a", "topic-b"])
         assert consumer._subscribed_topics == ["topic-a", "topic-b"]
 
-    @pytest.mark.asyncio
     async def test_consume_returns_none(self):
         consumer = GovernanceEventConsumer(make_kafka_config(), make_consumer_config())
         result = await consumer.consume()
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_consume_batch_returns_empty(self):
         consumer = GovernanceEventConsumer(make_kafka_config(), make_consumer_config())
         events = await consumer.consume_batch()
         assert events == []
 
-    @pytest.mark.asyncio
     async def test_commit(self):
         consumer = GovernanceEventConsumer(make_kafka_config(), make_consumer_config())
         await consumer.commit()  # no-op, should not raise
 
-    @pytest.mark.asyncio
     async def test_commit_offsets(self):
         consumer = GovernanceEventConsumer(make_kafka_config(), make_consumer_config())
         await consumer.commit_offsets({"partition-0": 100})
 
-    @pytest.mark.asyncio
     async def test_seek_to_beginning(self):
         consumer = GovernanceEventConsumer(make_kafka_config(), make_consumer_config())
         await consumer.seek_to_beginning("topic", 0)
 
-    @pytest.mark.asyncio
     async def test_get_lag(self):
         consumer = GovernanceEventConsumer(make_kafka_config(), make_consumer_config())
         lag = await consumer.get_lag()
         assert lag == {}
 
-    @pytest.mark.asyncio
     async def test_close(self):
         consumer = GovernanceEventConsumer(make_kafka_config(), make_consumer_config())
         consumer._running = True
         await consumer.close()
         assert consumer._running is False
 
-    @pytest.mark.asyncio
     async def test_consume_with_handler_no_events(self):
         consumer = GovernanceEventConsumer(make_kafka_config(), make_consumer_config())
         calls = []
@@ -841,7 +795,6 @@ class TestGovernanceEventConsumer:
         assert processed == 0
         assert calls == []
 
-    @pytest.mark.asyncio
     async def test_consume_with_handler_processes_events(self):
         consumer = GovernanceEventConsumer(make_kafka_config(), make_consumer_config())
         events_to_yield = [make_event(event_id=f"e{i}") for i in range(3)]
@@ -861,7 +814,6 @@ class TestGovernanceEventConsumer:
         assert processed == 3
         assert collected == ["e0", "e1", "e2"]
 
-    @pytest.mark.asyncio
     async def test_consume_with_handler_manual_ack_commits(self):
         cfg = make_consumer_config(acknowledgment_mode=AcknowledgmentMode.MANUAL)
         consumer = GovernanceEventConsumer(make_kafka_config(), cfg)
@@ -886,7 +838,6 @@ class TestGovernanceEventConsumer:
         await consumer.consume_with_handler(handler)
         assert len(commit_calls) == 1
 
-    @pytest.mark.asyncio
     async def test_consume_with_handler_auto_ack_does_not_commit(self):
         cfg = make_consumer_config(acknowledgment_mode=AcknowledgmentMode.AUTO)
         consumer = GovernanceEventConsumer(make_kafka_config(), cfg)
@@ -911,7 +862,6 @@ class TestGovernanceEventConsumer:
         await consumer.consume_with_handler(handler)
         assert len(commit_calls) == 0
 
-    @pytest.mark.asyncio
     async def test_consume_with_handler_respects_max_events(self):
         consumer = GovernanceEventConsumer(make_kafka_config(), make_consumer_config())
         counter = [0]
@@ -940,7 +890,6 @@ class TestGovernanceEventConsumer:
 
 
 class TestDeadLetterQueue:
-    @pytest.mark.asyncio
     async def test_send_to_dlq(self):
         dlq = DeadLetterQueue(topic="events-dlq")
         evt = make_event()
@@ -955,20 +904,17 @@ class TestDeadLetterQueue:
         dlq = DeadLetterQueue(topic="t", permanent_failure_topic="custom-pf")
         assert dlq.permanent_failure_topic == "custom-pf"
 
-    @pytest.mark.asyncio
     async def test_handle_max_retries_exceeded(self):
         dlq = DeadLetterQueue(topic="dlq")
         evt = make_event()
         result = await dlq.handle_max_retries_exceeded(evt, RuntimeError("too many"))
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_reprocess_empty_dlq(self):
         dlq = DeadLetterQueue(topic="dlq")
         processed = await dlq.reprocess(handler=AsyncMock(return_value=True))
         assert processed == 0
 
-    @pytest.mark.asyncio
     async def test_reprocess_calls_handler(self):
         dlq = DeadLetterQueue(topic="dlq")
         events = [make_event(event_id=f"e{i}") for i in range(3)]
@@ -988,7 +934,6 @@ class TestDeadLetterQueue:
         assert processed == 3
         assert handler_calls == ["e0", "e1", "e2"]
 
-    @pytest.mark.asyncio
     async def test_reprocess_skips_failed_events(self):
         dlq = DeadLetterQueue(topic="dlq")
         events = [make_event(event_id="good"), make_event(event_id="bad")]
@@ -1006,7 +951,6 @@ class TestDeadLetterQueue:
         processed = await dlq.reprocess(handler=handler)
         assert processed == 1
 
-    @pytest.mark.asyncio
     async def test_reprocess_counts_only_successful(self):
         dlq = DeadLetterQueue(topic="dlq")
         events = [make_event(event_id=f"e{i}") for i in range(4)]
@@ -1026,7 +970,6 @@ class TestDeadLetterQueue:
         dlq = DeadLetterQueue(topic="t")
         assert dlq.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_send_includes_error_metadata(self):
         dlq = DeadLetterQueue(topic="dlq")
 
@@ -1045,20 +988,17 @@ class TestDeadLetterQueue:
         assert captured_metadata["retry_count"] == 1
         assert captured_metadata["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_internal_send(self):
         dlq = DeadLetterQueue(topic="dlq")
         evt = make_event()
         result = await dlq._send(event=evt, metadata={"x": 1})
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_internal_consume_dlq(self):
         dlq = DeadLetterQueue(topic="dlq")
         events = await dlq._consume_dlq(max_events=10)
         assert events == []
 
-    @pytest.mark.asyncio
     async def test_internal_send_to_permanent_failure(self):
         dlq = DeadLetterQueue(topic="dlq")
         evt = make_event()
@@ -1143,7 +1083,6 @@ class TestGovernanceEventAdditionalBranches:
 class TestConnectionPoolInternalClose:
     """Tests targeting _close_producer branches."""
 
-    @pytest.mark.asyncio
     async def test_close_producer_no_close_attr(self):
         """Line 319->exit: producer has no close attribute."""
         pool = KafkaConnectionPool(make_kafka_config(), make_producer_config(), pool_size=1)
@@ -1154,7 +1093,6 @@ class TestConnectionPoolInternalClose:
 
         await pool._close_producer(NoClose())  # should not raise
 
-    @pytest.mark.asyncio
     async def test_close_producer_sync_close_returns_coroutine(self):
         """Line 322: await result when close() returns a coroutine."""
         pool = KafkaConnectionPool(make_kafka_config(), make_producer_config(), pool_size=1)
@@ -1168,7 +1106,6 @@ class TestConnectionPoolInternalClose:
         await pool._close_producer(mock_producer)
         assert awaited == [True]
 
-    @pytest.mark.asyncio
     async def test_stop_catches_runtime_error(self):
         """Lines 296-297: RuntimeError swallowed in stop."""
         pool = KafkaConnectionPool(make_kafka_config(), make_producer_config(), pool_size=2)
@@ -1181,7 +1118,6 @@ class TestConnectionPoolInternalClose:
         await pool.stop()  # should not raise
         assert pool._started is False
 
-    @pytest.mark.asyncio
     async def test_stop_catches_connection_error(self):
         """Lines 296-297: ConnectionError swallowed in stop."""
         pool = KafkaConnectionPool(make_kafka_config(), make_producer_config(), pool_size=1)
@@ -1194,7 +1130,6 @@ class TestConnectionPoolInternalClose:
         await pool.stop()
         assert pool._started is False
 
-    @pytest.mark.asyncio
     async def test_stop_catches_os_error(self):
         """Lines 296-297: OSError swallowed in stop."""
         pool = KafkaConnectionPool(make_kafka_config(), make_producer_config(), pool_size=1)
@@ -1211,7 +1146,6 @@ class TestConnectionPoolInternalClose:
 class TestMockProducerDirectCalls:
     """Directly call MockProducer.send and close to hit lines 343/347."""
 
-    @pytest.mark.asyncio
     async def test_mock_producer_send_direct(self):
         cfg = make_kafka_config()
         pcfg = make_producer_config()
@@ -1219,7 +1153,6 @@ class TestMockProducerDirectCalls:
         result = await p.send("mytopic", b"data", key=b"k", headers={"h": "v"})
         assert result == {"topic": "mytopic", "partition": 0, "offset": 1}
 
-    @pytest.mark.asyncio
     async def test_mock_producer_close_direct(self):
         cfg = make_kafka_config()
         pcfg = make_producer_config()
@@ -1230,7 +1163,6 @@ class TestMockProducerDirectCalls:
 class TestKafkaEventPublisherInternalMethods:
     """Direct calls to publisher internal methods."""
 
-    @pytest.mark.asyncio
     async def test_send_to_kafka_direct(self):
         """Line 422: _send_to_kafka direct call."""
         publisher = KafkaEventPublisher(make_kafka_config())
@@ -1238,21 +1170,18 @@ class TestKafkaEventPublisherInternalMethods:
         result = await publisher._send_to_kafka("t", evt)
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_send_to_kafka_with_key_and_headers(self):
         publisher = KafkaEventPublisher(make_kafka_config())
         evt = make_event()
         result = await publisher._send_to_kafka("t", evt, key="k", headers={"h": "v"})
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_send_batch_empty(self):
         """Line 426: _send_batch with empty list."""
         publisher = KafkaEventPublisher(make_kafka_config())
         result = await publisher._send_batch("t", [])
         assert result == []
 
-    @pytest.mark.asyncio
     async def test_close_calls_pool_stop(self):
         """Lines 430-431: close() when pool exists."""
         publisher = KafkaEventPublisher(make_kafka_config())
@@ -1260,7 +1189,6 @@ class TestKafkaEventPublisherInternalMethods:
         assert publisher._pool is not None
         await publisher.close()
 
-    @pytest.mark.asyncio
     async def test_publish_on_delivery_success_path(self):
         """Line 385: on_delivery called on success path."""
         publisher = KafkaEventPublisher(make_kafka_config())
@@ -1274,7 +1202,6 @@ class TestKafkaEventPublisherInternalMethods:
         assert recorded[0]["success"] is True
         assert recorded[0]["err"] is None
 
-    @pytest.mark.asyncio
     async def test_publish_exception_with_on_delivery(self):
         """Lines 393-397: exception path with on_delivery callback."""
         publisher = KafkaEventPublisher(make_kafka_config())
@@ -1295,7 +1222,6 @@ class TestKafkaEventPublisherInternalMethods:
         assert recorded[0]["success"] is False
         assert "connection reset" in recorded[0]["err"]
 
-    @pytest.mark.asyncio
     async def test_publish_exception_no_callback(self):
         """Lines 393-397: exception path without on_delivery callback."""
         publisher = KafkaEventPublisher(make_kafka_config())
@@ -1314,20 +1240,17 @@ class TestKafkaEventPublisherInternalMethods:
 class TestGovernanceEventProducerInternals:
     """Direct calls to GovernanceEventProducer internal methods."""
 
-    @pytest.mark.asyncio
     async def test_send_to_kafka_direct(self):
         """Line 486: _send_to_kafka direct call."""
         producer = GovernanceEventProducer(make_kafka_config())
         result = await producer._send_to_kafka("t", make_event(), key=None)
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_close_direct(self):
         """Line 490: close() direct call."""
         producer = GovernanceEventProducer(make_kafka_config())
         await producer.close()
 
-    @pytest.mark.asyncio
     async def test_publish_retry_continue_branch(self):
         """Lines 462->459, 469-470: retry loop continues on exception with retries left."""
         pcfg = make_producer_config(retries=2, retry_backoff_ms=1)
@@ -1346,7 +1269,6 @@ class TestGovernanceEventProducerInternals:
         assert result.success is True
         assert len(attempts) == 3
 
-    @pytest.mark.asyncio
     async def test_publish_break_after_max_retries(self):
         """Lines 471-476: break after max retries exhausted."""
         pcfg = make_producer_config(retries=1, retry_backoff_ms=1)
@@ -1371,7 +1293,6 @@ class TestGovernanceEventProducerInternals:
 class TestSchemaRegistryInternalMethods:
     """Direct calls to SchemaRegistry internal methods."""
 
-    @pytest.mark.asyncio
     async def test_register_schema_internal(self):
         """Line 514: _register_schema direct call."""
         registry = SchemaRegistry(url="http://sr:8081")
@@ -1379,14 +1300,12 @@ class TestSchemaRegistryInternalMethods:
         result = await registry._register_schema("subject", schema)
         assert result == 1
 
-    @pytest.mark.asyncio
     async def test_get_schema_internal(self):
         """Line 527: _get_schema direct call."""
         registry = SchemaRegistry(url="http://sr:8081")
         result = await registry._get_schema(99)
         assert result == {"type": "record", "name": "TestSchema"}
 
-    @pytest.mark.asyncio
     async def test_check_compatibility_internal(self):
         """Line 535: _check_compatibility direct call."""
         registry = SchemaRegistry(url="http://sr:8081")
@@ -1408,7 +1327,6 @@ class TestSchemaRegistryInternalMethods:
         result = registry._deserialize(schema, json.dumps({"b": 2}).encode())
         assert result == {"b": 2}
 
-    @pytest.mark.asyncio
     async def test_get_schema_no_cache_then_caches(self):
         """Line 519: cache miss path, then cache stores result."""
         registry = SchemaRegistry(url="http://sr:8081")
@@ -1422,52 +1340,44 @@ class TestSchemaRegistryInternalMethods:
 class TestGovernanceEventConsumerInternalMethods:
     """Direct calls to consumer internal methods."""
 
-    @pytest.mark.asyncio
     async def test_subscribe_internal(self):
         """Line 576: _subscribe direct call."""
         consumer = GovernanceEventConsumer(make_kafka_config(), make_consumer_config())
         await consumer._subscribe(["topic-x"])  # pass, should not raise
 
-    @pytest.mark.asyncio
     async def test_poll_internal(self):
         """Line 584: _poll direct call."""
         consumer = GovernanceEventConsumer(make_kafka_config(), make_consumer_config())
         result = await consumer._poll(500)
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_poll_batch_internal(self):
         """Line 594: _poll_batch direct call."""
         consumer = GovernanceEventConsumer(make_kafka_config(), make_consumer_config())
         result = await consumer._poll_batch(10, 1000)
         assert result == []
 
-    @pytest.mark.asyncio
     async def test_commit_internal(self):
         """Line 602 (pass in _commit): direct call."""
         consumer = GovernanceEventConsumer(make_kafka_config(), make_consumer_config())
         await consumer._commit()  # pass statement
 
-    @pytest.mark.asyncio
     async def test_commit_offsets_internal(self):
         """Line 610 (pass in _commit_offsets): direct call."""
         consumer = GovernanceEventConsumer(make_kafka_config(), make_consumer_config())
         await consumer._commit_offsets({"p0": 42})
 
-    @pytest.mark.asyncio
     async def test_seek_to_beginning_internal(self):
         """Line 639: _seek_to_beginning direct call."""
         consumer = GovernanceEventConsumer(make_kafka_config(), make_consumer_config())
         await consumer._seek_to_beginning("topic", 0)
 
-    @pytest.mark.asyncio
     async def test_get_lag_internal(self):
         """Line 647: _get_lag direct call."""
         consumer = GovernanceEventConsumer(make_kafka_config(), make_consumer_config())
         result = await consumer._get_lag()
         assert result == {}
 
-    @pytest.mark.asyncio
     async def test_close_sets_running_false(self):
         """Line 651: close() sets _running = False."""
         consumer = GovernanceEventConsumer(make_kafka_config(), make_consumer_config())
@@ -1475,7 +1385,6 @@ class TestGovernanceEventConsumerInternalMethods:
         await consumer.close()
         assert consumer._running is False
 
-    @pytest.mark.asyncio
     async def test_consume_with_handler_max_events_none_stops_on_none(self):
         """Lines 620/623: max_events=None loop breaks when poll returns None."""
         consumer = GovernanceEventConsumer(make_kafka_config(), make_consumer_config())
@@ -1483,7 +1392,6 @@ class TestGovernanceEventConsumerInternalMethods:
         result = await consumer.consume_with_handler(AsyncMock(), max_events=None)
         assert result == 0
 
-    @pytest.mark.asyncio
     async def test_consume_with_handler_processed_increments(self):
         """Line 626: processed += 1 after handler."""
         consumer = GovernanceEventConsumer(make_kafka_config(), make_consumer_config())

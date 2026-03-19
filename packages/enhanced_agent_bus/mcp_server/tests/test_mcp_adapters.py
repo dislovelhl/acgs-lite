@@ -8,7 +8,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 from ..adapters.agent_bus import AgentBusAdapter
@@ -33,7 +32,6 @@ class TestAgentBusAdapter:
 
         assert adapter.mcp_agent_id == "custom-mcp"
 
-    @pytest.mark.asyncio
     async def test_connect_standalone(self):
         """Test connecting without agent bus (standalone mode)."""
         adapter = AgentBusAdapter()
@@ -43,7 +41,6 @@ class TestAgentBusAdapter:
         assert result is False  # No agent bus provided
         assert adapter._connected is False
 
-    @pytest.mark.asyncio
     async def test_connect_with_agent_bus(self):
         """Test connecting with agent bus."""
         mock_bus = MagicMock()
@@ -56,7 +53,6 @@ class TestAgentBusAdapter:
         assert adapter._connected is True
         mock_bus.register_agent.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_disconnect(self):
         """Test disconnecting from agent bus."""
         mock_bus = MagicMock()
@@ -70,7 +66,6 @@ class TestAgentBusAdapter:
         assert adapter._connected is False
         mock_bus.deregister_agent.assert_called_once_with("mcp-server")
 
-    @pytest.mark.asyncio
     async def test_validate_action_standalone(self):
         """Test validating action in standalone mode."""
         adapter = AgentBusAdapter()
@@ -84,7 +79,6 @@ class TestAgentBusAdapter:
         assert "standalone_mode" in result
         assert result["standalone_mode"] is True
 
-    @pytest.mark.asyncio
     async def test_validate_sensitive_data_standalone(self):
         """Test validating sensitive data access in standalone mode."""
         adapter = AgentBusAdapter()
@@ -100,7 +94,6 @@ class TestAgentBusAdapter:
         assert result["compliant"] is False
         assert len(result["violations"]) > 0
 
-    @pytest.mark.asyncio
     async def test_validate_high_risk_action_standalone(self):
         """Test validating high-risk action in standalone mode."""
         adapter = AgentBusAdapter()
@@ -112,7 +105,6 @@ class TestAgentBusAdapter:
 
         assert result["compliant"] is False
 
-    @pytest.mark.asyncio
     async def test_validate_with_agent_bus(self):
         """Test validating action through agent bus."""
         mock_bus = MagicMock()
@@ -136,7 +128,6 @@ class TestAgentBusAdapter:
         assert result["compliant"] is True
         assert result["confidence"] == 0.95
 
-    @pytest.mark.asyncio
     async def test_submit_governance_request_standalone(self):
         """Test submitting governance request in standalone mode."""
         adapter = AgentBusAdapter()
@@ -151,7 +142,6 @@ class TestAgentBusAdapter:
         assert "status" in result
         assert "standalone_mode" in result
 
-    @pytest.mark.asyncio
     async def test_fail_closed_on_error(self):
         """Test fail-closed behavior on error."""
         mock_bus = MagicMock()
@@ -191,7 +181,6 @@ class TestPolicyClientAdapter:
         assert adapter.CONSTITUTIONAL_HASH == CONSTITUTIONAL_HASH
         assert adapter.policy_client is None
 
-    @pytest.mark.asyncio
     async def test_get_default_principles(self):
         """Test getting default principles without client."""
         adapter = PolicyClientAdapter()
@@ -204,7 +193,6 @@ class TestPolicyClientAdapter:
             assert "name" in p
             assert "category" in p
 
-    @pytest.mark.asyncio
     async def test_filter_by_category(self):
         """Test filtering principles by category."""
         adapter = PolicyClientAdapter()
@@ -214,7 +202,6 @@ class TestPolicyClientAdapter:
         for p in principles:
             assert p["category"] == "safety"
 
-    @pytest.mark.asyncio
     async def test_filter_by_enforcement_level(self):
         """Test filtering by enforcement level."""
         adapter = PolicyClientAdapter()
@@ -224,7 +211,6 @@ class TestPolicyClientAdapter:
         for p in principles:
             assert p["enforcement_level"] == "strict"
 
-    @pytest.mark.asyncio
     async def test_filter_by_ids(self):
         """Test filtering by principle IDs."""
         adapter = PolicyClientAdapter()
@@ -236,7 +222,6 @@ class TestPolicyClientAdapter:
             if pid in ids:
                 assert True
 
-    @pytest.mark.asyncio
     async def test_get_policy_by_name(self):
         """Test getting a specific policy by name."""
         adapter = PolicyClientAdapter()
@@ -246,7 +231,6 @@ class TestPolicyClientAdapter:
         if policy:
             assert policy["name"] == "beneficence"
 
-    @pytest.mark.asyncio
     async def test_get_nonexistent_policy(self):
         """Test getting a non-existent policy."""
         adapter = PolicyClientAdapter()
@@ -255,7 +239,6 @@ class TestPolicyClientAdapter:
 
         assert policy is None
 
-    @pytest.mark.asyncio
     async def test_with_policy_client(self):
         """Test with actual policy client."""
         mock_client = MagicMock()
@@ -290,7 +273,6 @@ class TestAuditClientAdapter:
         assert adapter.CONSTITUTIONAL_HASH == CONSTITUTIONAL_HASH
         assert adapter.audit_client is None
 
-    @pytest.mark.asyncio
     async def test_get_sample_precedents(self):
         """Test getting sample precedents without client."""
         adapter = AuditClientAdapter()
@@ -303,7 +285,6 @@ class TestAuditClientAdapter:
             assert "action_type" in p
             assert "outcome" in p
 
-    @pytest.mark.asyncio
     async def test_filter_by_action_type(self):
         """Test filtering precedents by action type."""
         adapter = AuditClientAdapter()
@@ -313,7 +294,6 @@ class TestAuditClientAdapter:
         for p in precedents:
             assert "data_access" in p["action_type"].lower()
 
-    @pytest.mark.asyncio
     async def test_filter_by_outcome(self):
         """Test filtering by outcome."""
         adapter = AuditClientAdapter()
@@ -323,7 +303,6 @@ class TestAuditClientAdapter:
         for p in precedents:
             assert p["outcome"] == "denied"
 
-    @pytest.mark.asyncio
     async def test_filter_by_principles(self):
         """Test filtering by principles applied."""
         adapter = AuditClientAdapter()
@@ -333,7 +312,6 @@ class TestAuditClientAdapter:
         for p in precedents:
             assert any("P007" in pr for pr in p["principles_applied"])
 
-    @pytest.mark.asyncio
     async def test_limit_results(self):
         """Test limiting query results."""
         adapter = AuditClientAdapter()
@@ -342,7 +320,6 @@ class TestAuditClientAdapter:
 
         assert len(precedents) <= 2
 
-    @pytest.mark.asyncio
     async def test_get_audit_trail(self):
         """Test getting audit trail entries."""
         adapter = AuditClientAdapter()
@@ -355,7 +332,6 @@ class TestAuditClientAdapter:
             assert "event_type" in e
             assert "constitutional_hash" in e
 
-    @pytest.mark.asyncio
     async def test_filter_audit_by_event_type(self):
         """Test filtering audit trail by event type."""
         adapter = AuditClientAdapter()
@@ -365,7 +341,6 @@ class TestAuditClientAdapter:
         for e in entries:
             assert e["event_type"] == "validation"
 
-    @pytest.mark.asyncio
     async def test_filter_audit_by_actor(self):
         """Test filtering audit trail by actor ID."""
         adapter = AuditClientAdapter()
@@ -375,7 +350,6 @@ class TestAuditClientAdapter:
         for e in entries:
             assert e["actor_id"] == "mcp-server"
 
-    @pytest.mark.asyncio
     async def test_log_audit_event(self):
         """Test logging an audit event."""
         adapter = AuditClientAdapter()
@@ -393,7 +367,6 @@ class TestAuditClientAdapter:
         assert entry["actor_id"] == "test-agent"
         assert entry["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_with_audit_client(self):
         """Test with actual audit client."""
         mock_client = MagicMock()
@@ -407,7 +380,6 @@ class TestAuditClientAdapter:
 
         mock_client.query_precedents.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_semantic_query_filtering(self):
         """Test semantic query filtering."""
         adapter = AuditClientAdapter()
@@ -431,7 +403,6 @@ class TestAuditClientAdapter:
 class TestAdapterIntegration:
     """Integration tests for adapters working together."""
 
-    @pytest.mark.asyncio
     async def test_validate_then_log(self):
         """Test validating action and logging result."""
         agent_adapter = AgentBusAdapter()
@@ -457,7 +428,6 @@ class TestAdapterIntegration:
 
         assert entry["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_get_principles_for_validation(self):
         """Test getting principles to use in validation."""
         policy_adapter = PolicyClientAdapter()

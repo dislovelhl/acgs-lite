@@ -33,7 +33,6 @@ from enhanced_agent_bus.guardrails.sandbox_providers import (
 class TestMockSandboxProvider:
     """Test the mock sandbox provider."""
 
-    @pytest.mark.asyncio
     async def test_initialization(self):
         """Test mock provider initialization."""
         provider = MockSandboxProvider()
@@ -42,7 +41,6 @@ class TestMockSandboxProvider:
         assert result is True
         assert provider._initialized is True
 
-    @pytest.mark.asyncio
     async def test_execute_success(self):
         """Test successful execution."""
         provider = MockSandboxProvider()
@@ -62,7 +60,6 @@ class TestMockSandboxProvider:
         assert result.trace_id == "test-trace"
         assert result.execution_time_ms >= 0
 
-    @pytest.mark.asyncio
     async def test_health_check(self):
         """Test health check."""
         provider = MockSandboxProvider()
@@ -74,7 +71,6 @@ class TestMockSandboxProvider:
         assert health["provider"] == "mock"
         assert health["initialized"] is True
 
-    @pytest.mark.asyncio
     async def test_cleanup(self):
         """Test cleanup (should do nothing for mock)."""
         provider = MockSandboxProvider()
@@ -87,7 +83,6 @@ class TestMockSandboxProvider:
 class TestDockerSandboxProvider:
     """Test the Docker sandbox provider."""
 
-    @pytest.mark.asyncio
     async def test_initialization_without_docker(self):
         """Test initialization when Docker is not available."""
         with patch.dict("sys.modules", {"docker": None}):
@@ -97,7 +92,6 @@ class TestDockerSandboxProvider:
             assert result is False
             assert provider._initialized is False
 
-    @pytest.mark.asyncio
     async def test_initialization_with_mock_docker(self):
         """Test initialization with mocked Docker client."""
         mock_docker = MagicMock()
@@ -113,7 +107,6 @@ class TestDockerSandboxProvider:
                 assert result is True
                 assert provider._initialized is True
 
-    @pytest.mark.asyncio
     async def test_execute_without_initialization(self):
         """Test execution without initialization."""
         provider = DockerSandboxProvider()
@@ -129,7 +122,6 @@ class TestDockerSandboxProvider:
         assert result.success is False
         assert "not initialized" in result.error_message.lower()
 
-    @pytest.mark.asyncio
     async def test_health_check_without_initialization(self):
         """Test health check without initialization."""
         provider = DockerSandboxProvider()
@@ -139,7 +131,6 @@ class TestDockerSandboxProvider:
         assert health["status"] == "unhealthy"
         assert health["initialized"] is False
 
-    @pytest.mark.asyncio
     async def test_container_config_building(self):
         """Test container configuration building."""
         provider = DockerSandboxProvider()
@@ -175,7 +166,6 @@ class TestDockerSandboxProvider:
             assert config["host_config"]["mem_limit"] == "1024m"
             assert config["host_config"]["nano_cpus"] == 1_000_000_000
 
-    @pytest.mark.asyncio
     async def test_script_generation(self):
         """Test execution script generation."""
         provider = DockerSandboxProvider()
@@ -201,7 +191,6 @@ class TestDockerSandboxProvider:
 class TestFirecrackerSandboxProvider:
     """Test the Firecracker sandbox provider."""
 
-    @pytest.mark.asyncio
     async def test_initialization_without_binary(self):
         """Test initialization when Firecracker is not available."""
         with patch("os.path.exists", return_value=False):
@@ -210,7 +199,6 @@ class TestFirecrackerSandboxProvider:
 
             assert result is False
 
-    @pytest.mark.asyncio
     async def test_initialization_with_binary(self):
         """Test initialization when Firecracker binary exists."""
         with patch("os.path.exists", return_value=True):
@@ -220,7 +208,6 @@ class TestFirecrackerSandboxProvider:
             assert result is True
             assert provider._initialized is True
 
-    @pytest.mark.asyncio
     async def test_execute_returns_not_implemented(self):
         """Test that execute returns not implemented error."""
         provider = FirecrackerSandboxProvider()
@@ -449,7 +436,6 @@ class TestSandboxExecutionResult:
 class TestToolRunnerSandbox:
     """Test the ToolRunnerSandbox guardrail component."""
 
-    @pytest.mark.asyncio
     async def test_initialization_with_mock(self):
         """Test initialization with mock provider."""
         config = SandboxConfig(
@@ -465,7 +451,6 @@ class TestToolRunnerSandbox:
         assert sandbox._initialized is True
         assert isinstance(sandbox._provider, MockSandboxProvider)
 
-    @pytest.mark.asyncio
     async def test_get_layer(self):
         """Test get_layer method."""
         from enhanced_agent_bus.guardrails.enums import GuardrailLayer
@@ -473,7 +458,6 @@ class TestToolRunnerSandbox:
         sandbox = ToolRunnerSandbox()
         assert sandbox.get_layer() == GuardrailLayer.TOOL_RUNNER_SANDBOX
 
-    @pytest.mark.asyncio
     async def test_process_disabled(self):
         """Test processing when sandbox is disabled."""
         config = SandboxConfig(enabled=False)
@@ -488,7 +472,6 @@ class TestToolRunnerSandbox:
         assert result.action.value == "allow"
         assert len(result.violations) == 0
 
-    @pytest.mark.asyncio
     async def test_process_success(self):
         """Test successful processing."""
         config = SandboxConfig(
@@ -509,7 +492,6 @@ class TestToolRunnerSandbox:
         assert result.trace_id == "test-trace"
         assert result.processing_time_ms >= 0
 
-    @pytest.mark.asyncio
     async def test_process_sandbox_failure(self):
         """Test processing when sandbox execution fails."""
         config = SandboxConfig(
@@ -540,7 +522,6 @@ class TestToolRunnerSandbox:
         assert len(result.violations) == 1
         assert result.violations[0].violation_type == "sandbox_execution_failed"
 
-    @pytest.mark.asyncio
     async def test_process_exception(self):
         """Test processing when exception occurs."""
         config = SandboxConfig(
@@ -567,7 +548,6 @@ class TestToolRunnerSandbox:
         assert len(result.violations) == 1
         assert result.violations[0].violation_type == "sandbox_error"
 
-    @pytest.mark.asyncio
     async def test_cleanup(self):
         """Test cleanup."""
         config = SandboxConfig(
@@ -582,7 +562,6 @@ class TestToolRunnerSandbox:
 
         assert sandbox._initialized is False
 
-    @pytest.mark.asyncio
     async def test_execute_in_sandbox_not_initialized(self):
         """Test execution when not initialized."""
         config = SandboxConfig(
@@ -598,7 +577,6 @@ class TestToolRunnerSandbox:
 
         assert result["success"] is True  # Mock provider returns success
 
-    @pytest.mark.asyncio
     async def test_execute_in_sandbox_no_provider(self):
         """Test execution when provider is None."""
         config = SandboxConfig(enabled=False)
@@ -618,7 +596,6 @@ class TestToolRunnerSandbox:
 class TestGetDefaultProvider:
     """Test the get_default_provider function."""
 
-    @pytest.mark.asyncio
     async def test_returns_docker_when_available(self):
         """Test that Docker is returned when available."""
         mock_docker = MagicMock()
@@ -632,7 +609,6 @@ class TestGetDefaultProvider:
 
                 assert isinstance(provider, DockerSandboxProvider)
 
-    @pytest.mark.asyncio
     async def test_fallback_to_mock(self):
         """Test that mock is returned when Docker unavailable."""
         with patch.object(DockerSandboxProvider, "initialize", return_value=False):

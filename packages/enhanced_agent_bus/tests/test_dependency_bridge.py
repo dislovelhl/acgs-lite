@@ -258,7 +258,6 @@ class TestStubMACIEnforcer:
         enforcer = StubMACIEnforcer(any="args", work=True)
         assert enforcer is not None
 
-    @pytest.mark.asyncio
     async def test_validate_action_returns_false_fail_closed(self) -> None:
         """Test that validate_action returns False (fail-closed)."""
         from enhanced_agent_bus.dependency_bridge import StubMACIEnforcer
@@ -267,7 +266,6 @@ class TestStubMACIEnforcer:
         result = await enforcer.validate_action(action="any", agent="agent")
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_check_permission_returns_false_fail_closed(self) -> None:
         """Test that check_permission returns False (fail-closed)."""
         from enhanced_agent_bus.dependency_bridge import StubMACIEnforcer
@@ -287,7 +285,6 @@ class TestStubMACIRoleRegistry:
         registry = StubMACIRoleRegistry()
         assert registry is not None
 
-    @pytest.mark.asyncio
     async def test_register_agent_is_noop(self) -> None:
         """Test that register_agent does nothing."""
         from enhanced_agent_bus.dependency_bridge import StubMACIRoleRegistry
@@ -296,7 +293,6 @@ class TestStubMACIRoleRegistry:
         await registry.register_agent(agent_id="test", role="worker")
         # Should not raise
 
-    @pytest.mark.asyncio
     async def test_get_role_returns_worker(self) -> None:
         """Test that get_role returns 'worker'."""
         from enhanced_agent_bus.dependency_bridge import StubMACIRoleRegistry

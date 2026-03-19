@@ -69,7 +69,6 @@ def _reset_constitutional_batch_singleton():
 class TestConstitutionalBatchValidatorConfig:
     """Test constitutional batch validator configuration."""
 
-    @pytest.mark.asyncio
     async def test_default_configuration(self):
         """Test default validator configuration."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -79,7 +78,6 @@ class TestConstitutionalBatchValidatorConfig:
         assert validator.max_parallel > 0
         assert validator.chunk_size > 0
 
-    @pytest.mark.asyncio
     async def test_configurable_parallelism(self):
         """Test configurable parallel validation count."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -87,7 +85,6 @@ class TestConstitutionalBatchValidatorConfig:
         validator = ConstitutionalBatchValidator(max_parallel=50)
         assert validator.max_parallel == 50
 
-    @pytest.mark.asyncio
     async def test_configurable_chunk_size(self):
         """Test configurable chunk size for batch processing."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -95,7 +92,6 @@ class TestConstitutionalBatchValidatorConfig:
         validator = ConstitutionalBatchValidator(chunk_size=200)
         assert validator.chunk_size == 200
 
-    @pytest.mark.asyncio
     async def test_constitutional_hash_tracking(self):
         """Test validator tracks constitutional hash for compliance."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -107,7 +103,6 @@ class TestConstitutionalBatchValidatorConfig:
 class TestConstitutionalBatchValidation:
     """Test batch constitutional validation operations."""
 
-    @pytest.mark.asyncio
     async def test_validate_single_item(self):
         """Test validating a single item."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -124,7 +119,6 @@ class TestConstitutionalBatchValidation:
         assert len(result) == 1
         assert result[0]["is_valid"] is True
 
-    @pytest.mark.asyncio
     async def test_validate_multiple_items(self):
         """Test validating multiple items in batch."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -141,7 +135,6 @@ class TestConstitutionalBatchValidation:
         assert len(results) == 10
         assert all(r["is_valid"] for r in results)
 
-    @pytest.mark.asyncio
     async def test_validate_empty_batch(self):
         """Test validating empty batch returns empty results."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -152,7 +145,6 @@ class TestConstitutionalBatchValidation:
 
         assert results == []
 
-    @pytest.mark.asyncio
     async def test_invalid_hash_fails_validation(self):
         """Test items with invalid hash fail validation."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -169,7 +161,6 @@ class TestConstitutionalBatchValidation:
         assert results[0]["is_valid"] is False
         assert "error" in results[0]
 
-    @pytest.mark.asyncio
     async def test_missing_hash_fails_validation(self):
         """Test items without hash fail validation."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -185,7 +176,6 @@ class TestConstitutionalBatchValidation:
         assert len(results) == 1
         assert results[0]["is_valid"] is False
 
-    @pytest.mark.asyncio
     async def test_mixed_valid_invalid_batch(self):
         """Test batch with mixed valid and invalid items."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -205,7 +195,6 @@ class TestConstitutionalBatchValidation:
         assert results[1]["is_valid"] is False
         assert results[2]["is_valid"] is True
 
-    @pytest.mark.asyncio
     async def test_results_preserve_order(self):
         """Test validation results maintain input order."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -227,7 +216,6 @@ class TestConstitutionalBatchValidation:
 class TestParallelExecution:
     """Test parallel execution of constitutional validation."""
 
-    @pytest.mark.asyncio
     async def test_parallel_validation_execution(self):
         """Test validation executes in parallel."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -265,7 +253,6 @@ class TestParallelExecution:
         # Should have had concurrent executions
         assert max_concurrent > 1
 
-    @pytest.mark.asyncio
     async def test_respects_max_parallel_limit(self):
         """Test validation respects max parallel limit."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -306,7 +293,6 @@ class TestParallelExecution:
 class TestPerformance:
     """Test performance requirements for constitutional validation."""
 
-    @pytest.mark.asyncio
     async def test_sub_millisecond_per_item_validation(self):
         """Test validation achieves sub-millisecond per item."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -327,7 +313,6 @@ class TestPerformance:
         assert per_item_ms < 1.0, f"Per-item validation took {per_item_ms}ms"
         assert len(results) == 1000
 
-    @pytest.mark.asyncio
     async def test_large_batch_performance(self):
         """Test performance with large batch sizes."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -350,7 +335,6 @@ class TestPerformance:
 class TestVectorizedOperations:
     """Test vectorized hash validation operations."""
 
-    @pytest.mark.asyncio
     async def test_vectorized_hash_comparison(self):
         """Test hash comparison uses vectorized approach when possible."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -367,7 +351,6 @@ class TestVectorizedOperations:
 
         assert all(r["is_valid"] for r in results)
 
-    @pytest.mark.asyncio
     async def test_batch_deduplication(self):
         """Test duplicate items are efficiently handled."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -387,7 +370,6 @@ class TestVectorizedOperations:
 class TestMetrics:
     """Test metrics collection for constitutional validation."""
 
-    @pytest.mark.asyncio
     async def test_tracks_validation_count(self):
         """Test validator tracks total validation count."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -403,7 +385,6 @@ class TestMetrics:
         stats = validator.get_stats()
         assert stats["total_validations"] == 10
 
-    @pytest.mark.asyncio
     async def test_tracks_valid_invalid_counts(self):
         """Test validator tracks valid and invalid counts."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -422,7 +403,6 @@ class TestMetrics:
         assert stats["valid_count"] == 2
         assert stats["invalid_count"] == 1
 
-    @pytest.mark.asyncio
     async def test_tracks_average_latency(self):
         """Test validator tracks average validation latency."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -439,7 +419,6 @@ class TestMetrics:
         assert "avg_latency_ms" in stats
         assert stats["avg_latency_ms"] >= 0
 
-    @pytest.mark.asyncio
     async def test_metrics_include_constitutional_hash(self):
         """Test metrics include constitutional hash for compliance."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -453,7 +432,6 @@ class TestMetrics:
 class TestSecurityValidation:
     """Test security aspects of constitutional validation."""
 
-    @pytest.mark.asyncio
     async def test_constant_time_comparison(self):
         """Test hash comparison uses constant-time algorithm."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -488,7 +466,6 @@ class TestSecurityValidation:
         ratio = max(avg_similar, avg_different) / max(min(avg_similar, avg_different), 1e-9)
         assert ratio < 2.0, f"Timing ratio {ratio} suggests non-constant-time comparison"
 
-    @pytest.mark.asyncio
     async def test_fail_closed_on_error(self):
         """Test validator fails closed on errors."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -511,7 +488,6 @@ class TestSecurityValidation:
 class TestIntegration:
     """Test integration with batch processing system."""
 
-    @pytest.mark.asyncio
     async def test_validates_message_batch(self):
         """Test validation of message batch format."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -535,7 +511,6 @@ class TestIntegration:
         assert len(results) == 10
         assert all(r["is_valid"] for r in results)
 
-    @pytest.mark.asyncio
     async def test_async_context_manager(self):
         """Test validator works as async context manager."""
         from enhanced_agent_bus.constitutional_batch import ConstitutionalBatchValidator
@@ -547,7 +522,6 @@ class TestIntegration:
             results = await validator.validate_batch(items)
             assert len(results) == 5
 
-    @pytest.mark.asyncio
     async def test_singleton_pattern(self):
         """Test get_batch_validator returns singleton."""
         from enhanced_agent_bus.constitutional_batch import (

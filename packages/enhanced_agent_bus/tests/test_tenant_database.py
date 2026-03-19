@@ -132,7 +132,6 @@ def sample_tenant_data():
 class TestTenantCreate:
     """Tests for tenant creation operations."""
 
-    @pytest.mark.asyncio
     @pytest.mark.constitutional
     async def test_create_tenant_success(self, db_session: AsyncSession, sample_tenant_data):
         """Test successful tenant creation with all fields."""
@@ -149,7 +148,6 @@ class TestTenantCreate:
         assert tenant.created_at is not None
         assert tenant.updated_at is not None
 
-    @pytest.mark.asyncio
     async def test_create_tenant_with_defaults(self, db_session: AsyncSession):
         """Test tenant creation with default values."""
         tenant = TenantORM(
@@ -167,7 +165,6 @@ class TestTenantCreate:
         assert tenant.config == {}
         assert tenant.quota == {}
 
-    @pytest.mark.asyncio
     async def test_create_tenant_unique_slug_constraint(self, db_session: AsyncSession):
         """Test that duplicate slugs are rejected."""
         tenant1 = TenantORM(name="First", slug="unique-slug")
@@ -180,7 +177,6 @@ class TestTenantCreate:
         with pytest.raises((Exception,), match=r".+"):  # IntegrityError - noqa: B017
             await db_session.commit()
 
-    @pytest.mark.asyncio
     async def test_create_tenant_with_parent(self, db_session: AsyncSession):
         """Test creating a child tenant with parent relationship."""
         # Create parent
@@ -205,7 +201,6 @@ class TestTenantCreate:
 class TestTenantRead:
     """Tests for tenant retrieval operations."""
 
-    @pytest.mark.asyncio
     async def test_get_tenant_by_id(self, db_session: AsyncSession, sample_tenant_data):
         """Test retrieving a tenant by ID."""
         tenant = TenantORM(**sample_tenant_data)
@@ -221,7 +216,6 @@ class TestTenantRead:
         assert retrieved.tenant_id == sample_tenant_data["tenant_id"]
         assert retrieved.name == "Acme Corporation"
 
-    @pytest.mark.asyncio
     async def test_get_tenant_by_slug(self, db_session: AsyncSession, sample_tenant_data):
         """Test retrieving a tenant by slug."""
         tenant = TenantORM(**sample_tenant_data)
@@ -235,7 +229,6 @@ class TestTenantRead:
         assert retrieved.slug == "acme-corp"
         assert retrieved.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_get_nonexistent_tenant(self, db_session: AsyncSession):
         """Test retrieving a non-existent tenant returns None."""
         result = await db_session.execute(
@@ -245,7 +238,6 @@ class TestTenantRead:
 
         assert retrieved is None
 
-    @pytest.mark.asyncio
     async def test_list_tenants_by_status(self, db_session: AsyncSession):
         """Test listing tenants filtered by status."""
         # Create tenants with different statuses
@@ -267,7 +259,6 @@ class TestTenantRead:
         assert len(active_tenants) == 1
         assert active_tenants[0].slug == "active-tenant"
 
-    @pytest.mark.asyncio
     async def test_list_tenants_pagination(self, db_session: AsyncSession):
         """Test tenant listing with pagination."""
         # Create 5 tenants
@@ -294,7 +285,6 @@ class TestTenantRead:
 class TestTenantUpdate:
     """Tests for tenant update operations."""
 
-    @pytest.mark.asyncio
     async def test_update_tenant_name(self, db_session: AsyncSession, sample_tenant_data):
         """Test updating tenant name."""
         tenant = TenantORM(**sample_tenant_data)
@@ -308,7 +298,6 @@ class TestTenantUpdate:
         assert tenant.name == "Updated Corporation"
         # Note: SQLite doesn't support onupdate for timestamps
 
-    @pytest.mark.asyncio
     async def test_update_tenant_status(self, db_session: AsyncSession, sample_tenant_data):
         """Test updating tenant status lifecycle."""
         tenant = TenantORM(**sample_tenant_data)
@@ -325,7 +314,6 @@ class TestTenantUpdate:
         assert tenant.activated_at is not None
         assert tenant.is_active() is True
 
-    @pytest.mark.asyncio
     async def test_update_tenant_config(self, db_session: AsyncSession, sample_tenant_data):
         """Test updating tenant configuration."""
         tenant = TenantORM(**sample_tenant_data)
@@ -344,7 +332,6 @@ class TestTenantUpdate:
         assert tenant.config["cache_ttl"] == 600
         assert tenant.config["enable_batch_processing"] is True
 
-    @pytest.mark.asyncio
     async def test_update_tenant_quota(self, db_session: AsyncSession, sample_tenant_data):
         """Test updating tenant quota limits."""
         tenant = TenantORM(**sample_tenant_data)
@@ -362,7 +349,6 @@ class TestTenantUpdate:
         assert tenant.quota["max_agents"] == 200
         assert tenant.quota["max_policies"] == 2000
 
-    @pytest.mark.asyncio
     async def test_suspend_tenant(self, db_session: AsyncSession, sample_tenant_data):
         """Test suspending an active tenant."""
         tenant = TenantORM(**sample_tenant_data)
@@ -387,7 +373,6 @@ class TestTenantUpdate:
 class TestTenantDelete:
     """Tests for tenant deletion operations."""
 
-    @pytest.mark.asyncio
     async def test_delete_tenant(self, db_session: AsyncSession, sample_tenant_data):
         """Test deleting a tenant."""
         tenant = TenantORM(**sample_tenant_data)
@@ -402,7 +387,6 @@ class TestTenantDelete:
         )
         assert result.scalar_one_or_none() is None
 
-    @pytest.mark.asyncio
     async def test_delete_parent_sets_null_on_children(self, db_session: AsyncSession):
         """Test that deleting parent tenant sets NULL on children (SET NULL foreign key)."""
         # Create parent
@@ -448,7 +432,6 @@ class TestTenantDelete:
 class TestEnterpriseIntegration:
     """Tests for enterprise integration CRUD operations."""
 
-    @pytest.mark.asyncio
     async def test_create_integration(self, db_session: AsyncSession, sample_tenant_data):
         """Test creating an enterprise integration."""
         tenant = TenantORM(**sample_tenant_data)
@@ -475,7 +458,6 @@ class TestEnterpriseIntegration:
         assert integration.provider == "okta"
         assert integration.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_cascade_delete_integration(self, db_session: AsyncSession, sample_tenant_data):
         """Test that deleting tenant cascades to integrations."""
         tenant = TenantORM(**sample_tenant_data)
@@ -504,7 +486,6 @@ class TestEnterpriseIntegration:
         )
         assert result.scalar_one_or_none() is None
 
-    @pytest.mark.asyncio
     async def test_unique_integration_per_tenant(
         self, db_session: AsyncSession, sample_tenant_data
     ):
@@ -542,7 +523,6 @@ class TestEnterpriseIntegration:
 class TestTenantRoleMapping:
     """Tests for tenant role mapping CRUD operations."""
 
-    @pytest.mark.asyncio
     async def test_create_role_mapping(self, db_session: AsyncSession, sample_tenant_data):
         """Test creating a role mapping."""
         tenant = TenantORM(**sample_tenant_data)
@@ -565,7 +545,6 @@ class TestTenantRoleMapping:
         assert mapping.internal_role == "EXECUTIVE"
         assert mapping.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_role_mapping_with_integration(
         self, db_session: AsyncSession, sample_tenant_data
     ):
@@ -603,7 +582,6 @@ class TestTenantRoleMapping:
 class TestMigrationJob:
     """Tests for migration job CRUD operations."""
 
-    @pytest.mark.asyncio
     async def test_create_migration_job(self, db_session: AsyncSession, sample_tenant_data):
         """Test creating a migration job."""
         tenant = TenantORM(**sample_tenant_data)
@@ -626,7 +604,6 @@ class TestMigrationJob:
         assert job.progress == 0.0
         assert job.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_update_migration_progress(self, db_session: AsyncSession, sample_tenant_data):
         """Test updating migration job progress."""
         tenant = TenantORM(**sample_tenant_data)
@@ -651,7 +628,6 @@ class TestMigrationJob:
         assert job.progress == 50.0
         assert job.started_at is not None
 
-    @pytest.mark.asyncio
     async def test_complete_migration_job(self, db_session: AsyncSession, sample_tenant_data):
         """Test completing a migration job."""
         tenant = TenantORM(**sample_tenant_data)
@@ -686,7 +662,6 @@ class TestMigrationJob:
 class TestTenantAuditLog:
     """Tests for tenant audit log operations."""
 
-    @pytest.mark.asyncio
     @pytest.mark.governance
     async def test_create_audit_log(self, db_session: AsyncSession, sample_tenant_data):
         """Test creating an audit log entry."""
@@ -718,7 +693,6 @@ class TestTenantAuditLog:
         assert log.actor_id == "admin@example.com"
         assert log.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     @pytest.mark.governance
     async def test_audit_log_immutability(self, db_session: AsyncSession, sample_tenant_data):
         """Test that audit log entries are immutable (no update_at field)."""
@@ -742,7 +716,6 @@ class TestTenantAuditLog:
         assert hasattr(log, "created_at")
         assert log.created_at == original_created_at
 
-    @pytest.mark.asyncio
     @pytest.mark.governance
     async def test_list_audit_logs_by_tenant(self, db_session: AsyncSession, sample_tenant_data):
         """Test listing audit logs for a specific tenant."""
@@ -782,7 +755,6 @@ class TestTenantAuditLog:
 class TestConstitutionalCompliance:
     """Tests for constitutional hash compliance in database models."""
 
-    @pytest.mark.asyncio
     @pytest.mark.constitutional
     async def test_tenant_constitutional_hash(self, db_session: AsyncSession):
         """Test that tenants have correct constitutional hash."""
@@ -794,7 +766,6 @@ class TestConstitutionalCompliance:
         assert tenant.constitutional_hash == CONSTITUTIONAL_HASH
         assert tenant.validate_constitutional_compliance() is True
 
-    @pytest.mark.asyncio
     @pytest.mark.constitutional
     async def test_integration_constitutional_hash(
         self, db_session: AsyncSession, sample_tenant_data
@@ -816,7 +787,6 @@ class TestConstitutionalCompliance:
 
         assert integration.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     @pytest.mark.constitutional
     async def test_audit_log_constitutional_hash(
         self, db_session: AsyncSession, sample_tenant_data
@@ -847,7 +817,6 @@ class TestConstitutionalCompliance:
 class TestTenantModelMethods:
     """Tests for TenantORM model helper methods."""
 
-    @pytest.mark.asyncio
     async def test_is_active_true(self, db_session: AsyncSession):
         """Test is_active returns True for active tenants."""
         tenant = TenantORM(
@@ -860,7 +829,6 @@ class TestTenantModelMethods:
 
         assert tenant.is_active() is True
 
-    @pytest.mark.asyncio
     async def test_is_active_false(self, db_session: AsyncSession):
         """Test is_active returns False for non-active tenants."""
         tenant = TenantORM(
@@ -873,7 +841,6 @@ class TestTenantModelMethods:
 
         assert tenant.is_active() is False
 
-    @pytest.mark.asyncio
     async def test_validate_constitutional_compliance_valid(self, db_session: AsyncSession):
         """Test constitutional compliance validation passes for valid hash."""
         tenant = TenantORM(
@@ -886,7 +853,6 @@ class TestTenantModelMethods:
 
         assert tenant.validate_constitutional_compliance() is True
 
-    @pytest.mark.asyncio
     async def test_validate_constitutional_compliance_invalid(self, db_session: AsyncSession):
         """Test constitutional compliance validation fails for invalid hash."""
         tenant = TenantORM(
@@ -899,7 +865,6 @@ class TestTenantModelMethods:
 
         assert tenant.validate_constitutional_compliance() is False
 
-    @pytest.mark.asyncio
     async def test_repr(self, db_session: AsyncSession, sample_tenant_data):
         """Test __repr__ method output."""
         tenant = TenantORM(**sample_tenant_data)

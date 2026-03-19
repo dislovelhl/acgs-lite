@@ -5,7 +5,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 Task 7.4: GET /tenants/{tenant_id}/integrations with credential redaction
 """
 
-import pytest
 
 from .conftest import (
     CONSTITUTIONAL_HASH,
@@ -16,7 +15,6 @@ from .conftest import (
 class TestCredentialRedaction:
     """Tests for credential redaction in API responses."""
 
-    @pytest.mark.asyncio
     async def test_to_dict_redacts_sensitive_fields(self, integration_service):
         """Test that to_dict redacts sensitive fields."""
         integration = await integration_service.create_integration(
@@ -34,7 +32,6 @@ class TestCredentialRedaction:
         assert data["config"]["server_url"] == "ldap://example.com"
         assert data["config"]["bind_password"] == "********"  # noqa: S105
 
-    @pytest.mark.asyncio
     async def test_to_dict_without_redaction(self, integration_service):
         """Test that to_dict can return encrypted values."""
         integration = await integration_service.create_integration(
@@ -50,7 +47,6 @@ class TestCredentialRedaction:
         assert data["config"]["bind_password"] != "********"  # noqa: S105
         assert data["config"]["bind_password"] != "secret"  # noqa: S105
 
-    @pytest.mark.asyncio
     async def test_multiple_sensitive_fields_redacted(self, integration_service):
         """Test that all sensitive fields are redacted."""
         integration = await integration_service.create_integration(
@@ -70,7 +66,6 @@ class TestCredentialRedaction:
         assert data["config"]["client_secret"] == "********"  # noqa: S105
         assert data["config"]["api_key"] == "********"
 
-    @pytest.mark.asyncio
     async def test_redacted_response_includes_metadata(self, integration_service):
         """Test that redacted response includes all metadata."""
         integration = await integration_service.create_integration(

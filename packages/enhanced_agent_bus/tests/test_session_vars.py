@@ -123,14 +123,12 @@ class TestSessionVarsSQLite:
     These tests verify the functions handle this gracefully.
     """
 
-    @pytest.mark.asyncio
     async def test_set_tenant_session_vars_sqlite_fails(self, db_session: AsyncSession):
         """Test that set_tenant_session_vars fails on SQLite."""
         # SQLite doesn't support SET LOCAL - expect any SQLAlchemy/DB error
         with pytest.raises((Exception,), match=r".+"):
             await set_tenant_session_vars(db_session, "test-tenant-id")
 
-    @pytest.mark.asyncio
     async def test_get_current_tenant_sqlite(self, db_session: AsyncSession):
         """Test that get_current_tenant_from_session returns None on SQLite."""
         # SQLite doesn't have current_setting function - expect any DB error
@@ -165,21 +163,18 @@ class TestSessionVarsUnitBehavior:
 class TestContextManagerStructure:
     """Tests for context manager structure (not database operations)."""
 
-    @pytest.mark.asyncio
     async def test_tenant_session_is_async_context_manager(self):
         """Test that tenant_session is an async context manager."""
         import inspect
 
         assert inspect.isasyncgenfunction(tenant_session.__wrapped__)
 
-    @pytest.mark.asyncio
     async def test_system_tenant_session_is_async_context_manager(self):
         """Test that system_tenant_session is an async context manager."""
         import inspect
 
         assert inspect.isasyncgenfunction(system_tenant_session.__wrapped__)
 
-    @pytest.mark.asyncio
     async def test_admin_session_is_async_context_manager(self):
         """Test that admin_session is an async context manager."""
         import inspect

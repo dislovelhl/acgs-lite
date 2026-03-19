@@ -274,7 +274,6 @@ class TestMetricsCollectorIsinstance:
 class TestMockRegistryFunctional:
     """Functional tests for mock registry implementation."""
 
-    @pytest.mark.asyncio
     async def test_register_and_get(self):
         """MockAgentRegistry can register and retrieve agents."""
         registry = MockAgentRegistry()
@@ -286,7 +285,6 @@ class TestMockRegistryFunctional:
         assert agent is not None
         assert agent["capabilities"]["type"] == "worker"
 
-    @pytest.mark.asyncio
     async def test_duplicate_register(self):
         """MockAgentRegistry rejects duplicate registration."""
         registry = MockAgentRegistry()
@@ -295,7 +293,6 @@ class TestMockRegistryFunctional:
         result = await registry.register("agent-1")
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_unregister(self):
         """MockAgentRegistry can unregister agents."""
         registry = MockAgentRegistry()
@@ -307,14 +304,12 @@ class TestMockRegistryFunctional:
         assert result is True
         assert await registry.exists("agent-1") is False
 
-    @pytest.mark.asyncio
     async def test_unregister_nonexistent(self):
         """MockAgentRegistry returns False for nonexistent unregister."""
         registry = MockAgentRegistry()
         result = await registry.unregister("nonexistent")
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_list_agents(self):
         """MockAgentRegistry lists all agents."""
         registry = MockAgentRegistry()
@@ -329,7 +324,6 @@ class TestMockRegistryFunctional:
         assert "agent-2" in agents
         assert "agent-3" in agents
 
-    @pytest.mark.asyncio
     async def test_update_metadata(self):
         """MockAgentRegistry can update metadata."""
         registry = MockAgentRegistry()
@@ -342,14 +336,12 @@ class TestMockRegistryFunctional:
         assert agent["metadata"]["version"] == "1.0"
         assert agent["metadata"]["status"] == "active"
 
-    @pytest.mark.asyncio
     async def test_update_metadata_nonexistent(self):
         """MockAgentRegistry returns False for nonexistent metadata update."""
         registry = MockAgentRegistry()
         result = await registry.update_metadata("nonexistent", {"key": "value"})
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_get_nonexistent(self):
         """MockAgentRegistry returns None for nonexistent agent."""
         registry = MockAgentRegistry()
@@ -360,7 +352,6 @@ class TestMockRegistryFunctional:
 class TestMockRouterFunctional:
     """Functional tests for mock router implementation."""
 
-    @pytest.mark.asyncio
     async def test_route(self):
         """MockMessageRouter routes to target agent."""
         router = MockMessageRouter()
@@ -376,7 +367,6 @@ class TestMockRouterFunctional:
         target = await router.route(message, registry)
         assert target == "target-agent"
 
-    @pytest.mark.asyncio
     async def test_broadcast(self):
         """MockMessageRouter broadcasts to all agents."""
         router = MockMessageRouter()
@@ -395,7 +385,6 @@ class TestMockRouterFunctional:
         targets = await router.broadcast(message, registry)
         assert len(targets) == 3
 
-    @pytest.mark.asyncio
     async def test_broadcast_with_exclude(self):
         """MockMessageRouter respects exclusion list."""
         router = MockMessageRouter()
@@ -419,7 +408,6 @@ class TestMockRouterFunctional:
 class TestMockValidationFunctional:
     """Functional tests for mock validation implementation."""
 
-    @pytest.mark.asyncio
     async def test_valid_message(self):
         """MockValidationStrategy validates valid message."""
         validator = MockValidationStrategy()
@@ -434,7 +422,6 @@ class TestMockValidationFunctional:
         assert is_valid is True
         assert error is None
 
-    @pytest.mark.asyncio
     async def test_invalid_message(self):
         """MockValidationStrategy rejects invalid message."""
         validator = MockValidationStrategy()
@@ -454,7 +441,6 @@ class TestMockValidationFunctional:
 class TestMockProcessingFunctional:
     """Functional tests for mock processing implementation."""
 
-    @pytest.mark.asyncio
     async def test_process(self):
         """MockProcessingStrategy processes messages."""
         strategy = MockProcessingStrategy()
@@ -472,7 +458,6 @@ class TestMockProcessingFunctional:
 class TestMockHandlerFunctional:
     """Functional tests for mock handler implementation."""
 
-    @pytest.mark.asyncio
     async def test_handle(self):
         """MockMessageHandler handles messages."""
         handler = MockMessageHandler()

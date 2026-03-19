@@ -9,13 +9,11 @@ Tests cover:
 - Integration with related components
 """
 
-import pytest
 
 
 class TestFallbackAuditLedgerClass:
     """Test the fallback AuditLedger class defined in hitl_manager."""
 
-    @pytest.mark.asyncio
     async def test_mock_audit_ledger_returns_hash(self):
         """Test that mock audit ledger returns a hash."""
         from enhanced_agent_bus.deliberation_layer.hitl_manager import (
@@ -30,7 +28,6 @@ class TestFallbackAuditLedgerClass:
 
         assert hash_value == "mock_audit_hash"
 
-    @pytest.mark.asyncio
     async def test_mock_audit_ledger_logs_result(self, caplog):
         """Test that mock audit ledger logs the result."""
         import logging

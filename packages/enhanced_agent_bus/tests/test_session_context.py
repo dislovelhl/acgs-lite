@@ -176,7 +176,6 @@ class TestSessionContextStore:
             default_ttl=3600,
         )
 
-    @pytest.mark.asyncio
     async def test_store_initialization(self, store):
         """Test store initialization."""
         assert store.redis_url == "redis://localhost:6379"
@@ -184,13 +183,11 @@ class TestSessionContextStore:
         assert store.default_ttl == 3600
         assert store.redis_client is None
 
-    @pytest.mark.asyncio
     async def test_make_key(self, store):
         """Test Redis key generation with tenant isolation."""
         key = store._make_key("session-123", "tenant-123")
         assert key == "test:session:t:tenant-123:session-123"
 
-    @pytest.mark.asyncio
     async def test_connect_success(self, store, mock_redis):
         """Test successful Redis connection."""
         with patch("redis.asyncio.from_url", return_value=mock_redis):
@@ -200,7 +197,6 @@ class TestSessionContextStore:
             assert store.redis_client is not None
             mock_redis.ping.assert_awaited_once()
 
-    @pytest.mark.asyncio
     async def test_connect_failure(self, store):
         """Test failed Redis connection."""
         with patch("redis.asyncio.from_url", side_effect=ConnectionError("Connection failed")):
@@ -209,7 +205,6 @@ class TestSessionContextStore:
             assert result is False
             assert store.redis_client is None
 
-    @pytest.mark.asyncio
     async def test_connect_redis_unavailable(self, store):
         """Test connection when Redis is not available."""
         with patch("core.enhanced_agent_bus.session_context.REDIS_AVAILABLE", False):
@@ -217,7 +212,6 @@ class TestSessionContextStore:
 
             assert result is False
 
-    @pytest.mark.asyncio
     async def test_disconnect(self, store, mock_redis):
         """Test Redis disconnection."""
         store.redis_client = mock_redis
@@ -226,7 +220,6 @@ class TestSessionContextStore:
         mock_redis.close.assert_awaited_once()
         assert store.redis_client is None
 
-    @pytest.mark.asyncio
     async def test_set_session_context(self, store, mock_redis, sample_session_context):
         """Test storing session context."""
         store.redis_client = mock_redis
@@ -241,7 +234,6 @@ class TestSessionContextStore:
         assert call_args[0][0] == "test:session:t:tenant-123:session-abc123"
         assert call_args[0][1] == 1800  # TTL
 
-    @pytest.mark.asyncio
     async def test_set_session_context_default_ttl(self, store, mock_redis, sample_session_context):
         """Test storing session context with default TTL."""
         store.redis_client = mock_redis
@@ -255,7 +247,6 @@ class TestSessionContextStore:
         call_args = mock_redis.setex.call_args
         assert call_args[0][1] == 3600  # Default TTL
 
-    @pytest.mark.asyncio
     async def test_set_session_context_no_ttl(self, store, mock_redis, sample_session_context):
         """Test storing session context without TTL."""
         store.redis_client = mock_redis
@@ -265,13 +256,11 @@ class TestSessionContextStore:
         assert result is True
         mock_redis.set.assert_awaited_once()
 
-    @pytest.mark.asyncio
     async def test_set_without_connection(self, store, sample_session_context):
         """Test set operation without Redis connection."""
         result = await store.set(sample_session_context)
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_get_session_context(self, store, mock_redis, sample_session_context):
         """Test retrieving session context."""
         store.redis_client = mock_redis
@@ -287,7 +276,6 @@ class TestSessionContextStore:
         assert result.governance_config.tenant_id == "tenant-123"
         mock_redis.get.assert_awaited_once_with("test:session:t:tenant-123:session-abc123")
 
-    @pytest.mark.asyncio
     async def test_get_session_context_not_found(self, store, mock_redis):
         """Test retrieving non-existent session context."""
         store.redis_client = mock_redis
@@ -297,7 +285,6 @@ class TestSessionContextStore:
 
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_get_session_context_expired(self, store, mock_redis, sample_session_context):
         """Test retrieving expired session context."""
         store.redis_client = mock_redis
@@ -313,13 +300,11 @@ class TestSessionContextStore:
         assert result is None
         mock_redis.delete.assert_awaited_once()
 
-    @pytest.mark.asyncio
     async def test_get_without_connection(self, store):
         """Test get operation without Redis connection."""
         result = await store.get("session-123", "tenant-123")
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_delete_session_context(self, store, mock_redis):
         """Test deleting session context."""
         store.redis_client = mock_redis
@@ -329,13 +314,11 @@ class TestSessionContextStore:
         assert result is True
         mock_redis.delete.assert_awaited_once_with("test:session:t:tenant-123:session-abc123")
 
-    @pytest.mark.asyncio
     async def test_delete_without_connection(self, store):
         """Test delete operation without Redis connection."""
         result = await store.delete("session-123", "tenant-123")
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_exists_session_context(self, store, mock_redis):
         """Test checking session context existence."""
         store.redis_client = mock_redis
@@ -346,7 +329,6 @@ class TestSessionContextStore:
         assert result is True
         mock_redis.exists.assert_awaited_once_with("test:session:t:tenant-123:session-abc123")
 
-    @pytest.mark.asyncio
     async def test_exists_session_not_found(self, store, mock_redis):
         """Test checking non-existent session."""
         store.redis_client = mock_redis
@@ -356,13 +338,11 @@ class TestSessionContextStore:
 
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_exists_without_connection(self, store):
         """Test exists operation without Redis connection."""
         result = await store.exists("session-123", "tenant-123")
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_update_ttl(self, store, mock_redis):
         """Test updating session TTL."""
         store.redis_client = mock_redis
@@ -373,13 +353,11 @@ class TestSessionContextStore:
         assert result is True
         mock_redis.expire.assert_awaited_once_with("test:session:t:tenant-123:session-abc123", 7200)
 
-    @pytest.mark.asyncio
     async def test_update_ttl_without_connection(self, store):
         """Test update TTL without Redis connection."""
         result = await store.update_ttl("session-123", "tenant-123", 3600)
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_get_ttl(self, store, mock_redis):
         """Test getting session TTL."""
         store.redis_client = mock_redis
@@ -390,7 +368,6 @@ class TestSessionContextStore:
         assert result == 1800
         mock_redis.ttl.assert_awaited_once_with("test:session:t:tenant-123:session-abc123")
 
-    @pytest.mark.asyncio
     async def test_get_ttl_no_expiration(self, store, mock_redis):
         """Test getting TTL for session without expiration."""
         store.redis_client = mock_redis
@@ -400,7 +377,6 @@ class TestSessionContextStore:
 
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_get_ttl_not_found(self, store, mock_redis):
         """Test getting TTL for non-existent session."""
         store.redis_client = mock_redis
@@ -410,13 +386,11 @@ class TestSessionContextStore:
 
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_get_ttl_without_connection(self, store):
         """Test get TTL without Redis connection."""
         result = await store.get_ttl("session-123", "tenant-123")
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_concurrent_operations(self, store, mock_redis, sample_session_context):
         """Test thread-safe concurrent operations."""
         store.redis_client = mock_redis
@@ -449,7 +423,6 @@ class TestSessionContextStoreIntegration:
         yield store
         await store.disconnect()
 
-    @pytest.mark.asyncio
     async def test_full_lifecycle(self, redis_store, sample_session_context):
         """Test complete session lifecycle with real Redis."""
         tenant_id = sample_session_context.tenant_id
@@ -518,7 +491,6 @@ class TestSessionContextManager:
         assert metrics["cache_hits"] == 0
         assert metrics["cache_misses"] == 0
 
-    @pytest.mark.asyncio
     async def test_connect_disconnect(self, manager, mock_store):
         """Test connect and disconnect operations."""
         # Connect
@@ -530,7 +502,6 @@ class TestSessionContextManager:
         await manager.disconnect()
         mock_store.disconnect.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_create_session(self, manager, mock_store, sample_governance_config):
         """Test creating a new session."""
         session = await manager.create(
@@ -557,7 +528,6 @@ class TestSessionContextManager:
         metrics = manager.get_metrics()
         assert metrics["creates"] == 1
 
-    @pytest.mark.asyncio
     async def test_create_session_duplicate(self, manager, mock_store, sample_governance_config):
         """Test creating duplicate session raises error."""
         mock_store.exists = AsyncMock(return_value=True)
@@ -569,7 +539,6 @@ class TestSessionContextManager:
                 session_id="duplicate-session",
             )
 
-    @pytest.mark.asyncio
     async def test_get_session_cache_hit(self, manager, mock_store, sample_session_context):
         """Test getting session from cache (cache hit)."""
         # Populate cache
@@ -588,7 +557,6 @@ class TestSessionContextManager:
         assert metrics["cache_hits"] == 1
         assert metrics["cache_misses"] == 0
 
-    @pytest.mark.asyncio
     async def test_get_session_cache_miss(self, manager, mock_store, sample_session_context):
         """Test getting session from Redis (cache miss)."""
         mock_store.get = AsyncMock(return_value=sample_session_context)
@@ -611,7 +579,6 @@ class TestSessionContextManager:
         assert metrics["cache_hits"] == 0
         assert metrics["cache_misses"] == 1
 
-    @pytest.mark.asyncio
     async def test_update_session(self, manager, mock_store, sample_session_context):
         """Test updating session."""
         # Setup - session exists
@@ -640,7 +607,6 @@ class TestSessionContextManager:
         metrics = manager.get_metrics()
         assert metrics["updates"] == 1
 
-    @pytest.mark.asyncio
     async def test_update_nonexistent_session(self, manager, mock_store):
         """Test updating non-existent session."""
         mock_store.get = AsyncMock(return_value=None)
@@ -653,7 +619,6 @@ class TestSessionContextManager:
 
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_delete_session(self, manager, mock_store, sample_session_context):
         """Test deleting session."""
         # Add to cache first
@@ -676,7 +641,6 @@ class TestSessionContextManager:
         metrics = manager.get_metrics()
         assert metrics["deletes"] == 1
 
-    @pytest.mark.asyncio
     async def test_exists_in_cache(self, manager, sample_session_context):
         """Test exists check when session is in cache."""
         manager._update_cache(sample_session_context)
@@ -687,7 +651,6 @@ class TestSessionContextManager:
 
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_exists_in_redis(self, manager, mock_store):
         """Test exists check when session is in Redis but not cache."""
         mock_store.exists = AsyncMock(return_value=True)
@@ -697,7 +660,6 @@ class TestSessionContextManager:
         assert result is True
         mock_store.exists.assert_called_once_with("session-in-redis", "tenant-123")
 
-    @pytest.mark.asyncio
     async def test_extend_ttl(self, manager, mock_store):
         """Test extending session TTL."""
         result = await manager.extend_ttl("session-123", "tenant-123", 7200)
@@ -705,7 +667,6 @@ class TestSessionContextManager:
         assert result is True
         mock_store.update_ttl.assert_called_once_with("session-123", "tenant-123", 7200)
 
-    @pytest.mark.asyncio
     async def test_cache_lru_eviction(self, manager, sample_governance_config):
         """Test LRU cache eviction when cache is full."""
         # Create manager with small cache
@@ -731,7 +692,6 @@ class TestSessionContextManager:
         assert "tenant-123:session-2" in manager._cache
         assert "tenant-123:session-3" in manager._cache
 
-    @pytest.mark.asyncio
     async def test_cache_ttl_expiration(self, manager, sample_session_context):
         """Test cache entry expiration based on TTL."""
         import time
@@ -787,7 +747,6 @@ class TestSessionContextManager:
         assert metrics["cache_hits"] == 0
         assert metrics["cache_misses"] == 0
 
-    @pytest.mark.asyncio
     async def test_clear_cache(self, manager, sample_session_context):
         """Test clearing cache."""
         # Add sessions to cache
@@ -801,7 +760,6 @@ class TestSessionContextManager:
         assert len(manager._cache) == 0
         assert len(manager._cache_timestamps) == 0
 
-    @pytest.mark.asyncio
     async def test_concurrent_operations(self, manager, mock_store, sample_governance_config):
         """Test concurrent operations are thread-safe."""
 
@@ -824,7 +782,6 @@ class TestSessionContextManager:
         assert len(results) == 3
         assert all(r.session_id.startswith("concurrent-") for r in results)
 
-    @pytest.mark.asyncio
     async def test_cache_hit_rate_calculation(self, manager, sample_session_context):
         """Test cache hit rate calculation."""
         # Simulate cache hits and misses
@@ -864,7 +821,6 @@ class TestSessionContextManagerIntegration:
         yield manager
         await manager.disconnect()
 
-    @pytest.mark.asyncio
     async def test_full_crud_lifecycle(self, redis_manager, sample_governance_config):
         """Test complete CRUD lifecycle with real Redis."""
         tenant_id = "integration-tenant"
@@ -906,7 +862,6 @@ class TestSessionContextManagerIntegration:
         exists = await redis_manager.exists("integration-test-session", tenant_id)
         assert exists is False
 
-    @pytest.mark.asyncio
     async def test_cache_performance(self, redis_manager, sample_governance_config):
         """Test cache improves performance."""
         tenant_id = "cache-perf-tenant"

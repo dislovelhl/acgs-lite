@@ -39,7 +39,6 @@ class TestInMemoryStatePersistence:
         persistence = InMemoryStatePersistence(constitutional_hash="custom")
         assert persistence.constitutional_hash == "custom"
 
-    @pytest.mark.asyncio
     async def test_save_and_load_state(self):
         """Test saving and loading state."""
         persistence = InMemoryStatePersistence()
@@ -60,14 +59,12 @@ class TestInMemoryStatePersistence:
         assert loaded is not None
         assert loaded.data == {"key": "value"}
 
-    @pytest.mark.asyncio
     async def test_load_state_not_found(self):
         """Test loading nonexistent state."""
         persistence = InMemoryStatePersistence()
         loaded = await persistence.load_state("nonexistent")
         assert loaded is None
 
-    @pytest.mark.asyncio
     async def test_save_multiple_states(self):
         """Test saving multiple state versions."""
         persistence = InMemoryStatePersistence()
@@ -86,7 +83,6 @@ class TestInMemoryStatePersistence:
         loaded = await persistence.load_state("wf1")
         assert loaded.data["version"] == 2
 
-    @pytest.mark.asyncio
     async def test_save_and_load_checkpoint(self):
         """Test saving and loading checkpoint."""
         persistence = InMemoryStatePersistence()
@@ -107,14 +103,12 @@ class TestInMemoryStatePersistence:
         assert loaded.id == "cp1"
         assert loaded.workflow_id == "wf1"
 
-    @pytest.mark.asyncio
     async def test_load_checkpoint_not_found(self):
         """Test loading nonexistent checkpoint."""
         persistence = InMemoryStatePersistence()
         loaded = await persistence.load_checkpoint("nonexistent")
         assert loaded is None
 
-    @pytest.mark.asyncio
     async def test_list_checkpoints(self):
         """Test listing checkpoints."""
         persistence = InMemoryStatePersistence()
@@ -136,7 +130,6 @@ class TestInMemoryStatePersistence:
         assert len(checkpoints) == 3
         assert checkpoints[0].id == "cp0"
 
-    @pytest.mark.asyncio
     async def test_list_checkpoints_by_run_id(self):
         """Test listing checkpoints filtered by run_id."""
         persistence = InMemoryStatePersistence()
@@ -156,7 +149,6 @@ class TestInMemoryStatePersistence:
 
         assert len(run1_checkpoints) == 2
 
-    @pytest.mark.asyncio
     async def test_delete_checkpoint(self):
         """Test deleting checkpoint."""
         persistence = InMemoryStatePersistence()
@@ -177,14 +169,12 @@ class TestInMemoryStatePersistence:
         loaded = await persistence.load_checkpoint("cp1")
         assert loaded is None
 
-    @pytest.mark.asyncio
     async def test_delete_nonexistent_checkpoint(self):
         """Test deleting nonexistent checkpoint."""
         persistence = InMemoryStatePersistence()
         deleted = await persistence.delete_checkpoint("nonexistent")
         assert deleted is False
 
-    @pytest.mark.asyncio
     async def test_save_and_load_execution_result(self):
         """Test saving and loading execution result."""
         persistence = InMemoryStatePersistence()
@@ -206,7 +196,6 @@ class TestInMemoryStatePersistence:
         assert loaded.status == ExecutionStatus.COMPLETED
         assert loaded.total_execution_time_ms == 100.0
 
-    @pytest.mark.asyncio
     async def test_load_execution_result_not_found(self):
         """Test loading nonexistent execution result."""
         persistence = InMemoryStatePersistence()

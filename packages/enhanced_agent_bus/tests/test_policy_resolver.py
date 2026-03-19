@@ -123,7 +123,6 @@ class TestPolicyResolverInitialization:
 class TestPolicyResolution:
     """Test policy resolution functionality"""
 
-    @pytest.mark.asyncio
     async def test_resolve_policy_basic(self, policy_resolver):
         """Test basic policy resolution"""
         result = await policy_resolver.resolve_policy(
@@ -140,7 +139,6 @@ class TestPolicyResolution:
         assert result.user_id == "user-456"
         assert result.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_resolve_policy_with_session_context(
         self, policy_resolver, session_governance_config
     ):
@@ -153,14 +151,12 @@ class TestPolicyResolution:
         assert result.tenant_id == "tenant-123"
         assert result.user_id == "user-456"
 
-    @pytest.mark.asyncio
     async def test_resolve_policy_default_risk_level(self, policy_resolver):
         """Test policy resolution with default risk level"""
         result = await policy_resolver.resolve_policy(tenant_id="tenant-123")
 
         assert result.risk_level == RiskLevel.MEDIUM  # Default
 
-    @pytest.mark.asyncio
     async def test_resolve_policy_with_session_id(self, policy_resolver):
         """Test policy resolution with session ID"""
         result = await policy_resolver.resolve_policy(
@@ -171,7 +167,6 @@ class TestPolicyResolution:
 
         assert result.session_id == "session-789"
 
-    @pytest.mark.asyncio
     async def test_resolve_policy_with_policy_name_filter(self, policy_resolver):
         """Test policy resolution with policy name filter"""
         result = await policy_resolver.resolve_policy(
@@ -186,7 +181,6 @@ class TestPolicyResolution:
 class TestCaching:
     """Test caching functionality"""
 
-    @pytest.mark.asyncio
     async def test_memory_cache_hit(self, policy_resolver):
         """Test memory cache hit on second request"""
         # First request - cache miss
@@ -213,7 +207,6 @@ class TestCaching:
         assert result1.policy == result2.policy
         assert result1.source == result2.source
 
-    @pytest.mark.asyncio
     async def test_cache_key_generation(self, policy_resolver):
         """Test cache key generation for different parameters"""
         # Different tenant IDs should generate different cache keys
@@ -231,7 +224,6 @@ class TestCaching:
         assert metrics["cache_misses"] == 2
         assert metrics["cache_hits"] == 0
 
-    @pytest.mark.asyncio
     async def test_cache_ttl_expiration(self, policy_resolver):
         """Test cache TTL expiration"""
         # Set very short TTL
@@ -256,7 +248,6 @@ class TestCaching:
         assert metrics["cache_misses"] == 2
         assert metrics["cache_hits"] == 0
 
-    @pytest.mark.asyncio
     async def test_lru_eviction(self, policy_resolver):
         """Test LRU cache eviction when at capacity"""
         # Set small cache size
@@ -277,7 +268,6 @@ class TestCaching:
         # 3 initial misses + 1 eviction miss = 4 total misses
         assert metrics["cache_misses"] == 4
 
-    @pytest.mark.asyncio
     async def test_force_refresh_bypasses_cache(self, policy_resolver):
         """Test force_refresh bypasses cache"""
         # First request - populate cache
@@ -301,7 +291,6 @@ class TestCaching:
 class TestCacheInvalidation:
     """Test cache invalidation functionality"""
 
-    @pytest.mark.asyncio
     async def test_invalidate_all(self, policy_resolver):
         """Test invalidating entire cache"""
         # Populate cache with multiple entries
@@ -321,7 +310,6 @@ class TestCacheInvalidation:
         metrics = policy_resolver.get_metrics()
         assert metrics["memory_cache_size"] == 0
 
-    @pytest.mark.asyncio
     async def test_invalidate_by_tenant(self, policy_resolver):
         """Test invalidating cache entries for specific tenant"""
         # Populate cache with multiple tenants
@@ -337,7 +325,6 @@ class TestCacheInvalidation:
         metrics = policy_resolver.get_metrics()
         assert metrics["memory_cache_size"] == 1
 
-    @pytest.mark.asyncio
     async def test_invalidate_by_session(self, policy_resolver):
         """Test invalidating cache entries for specific session"""
         # Populate cache with different sessions
@@ -364,7 +351,6 @@ class TestCacheInvalidation:
 class TestMetrics:
     """Test metrics tracking"""
 
-    @pytest.mark.asyncio
     async def test_metrics_tracking(self, policy_resolver):
         """Test metrics are properly tracked"""
         # Make several requests
@@ -382,7 +368,6 @@ class TestMetrics:
         assert metrics["policy_selector_calls"] == 2
         assert metrics["cache_hit_rate"] == 1 / 3  # 1 hit out of 3 total
 
-    @pytest.mark.asyncio
     async def test_reset_metrics(self, policy_resolver):
         """Test resetting metrics"""
         # Make some requests
@@ -398,7 +383,6 @@ class TestMetrics:
         assert metrics["cache_misses"] == 0
         assert metrics["policy_selector_calls"] == 0
 
-    @pytest.mark.asyncio
     async def test_cache_hit_rate_calculation(self, policy_resolver):
         """Test cache hit rate calculation"""
         # No requests yet
@@ -464,7 +448,6 @@ class TestPolicyResolutionResult:
 class TestErrorHandling:
     """Test error handling"""
 
-    @pytest.mark.asyncio
     async def test_error_returns_empty_result(self, policy_resolver):
         """Test that errors return empty result instead of raising"""
         # Mock query to raise error
@@ -483,7 +466,6 @@ class TestErrorHandling:
             assert "Error" in result.reasoning
             assert "error" in result.resolution_metadata
 
-    @pytest.mark.asyncio
     async def test_error_increments_error_metric(self, policy_resolver):
         """Test that errors increment error metric"""
         # Mock query to raise error
@@ -504,7 +486,6 @@ class TestErrorHandling:
 class TestPerformance:
     """Test performance characteristics"""
 
-    @pytest.mark.asyncio
     async def test_cached_lookup_performance(self, policy_resolver):
         """Test that cached lookups are fast"""
         # First request - cache miss
@@ -524,7 +505,6 @@ class TestPerformance:
         # Should be sub-millisecond for cached lookup
         assert elapsed_ms < 1.0  # P99 < 1ms requirement
 
-    @pytest.mark.asyncio
     async def test_concurrent_resolutions(self, policy_resolver):
         """Test concurrent policy resolutions"""
         # Create multiple concurrent requests
@@ -552,13 +532,11 @@ class TestPerformance:
 class TestRedisIntegration:
     """Test Redis integration (when available)"""
 
-    @pytest.mark.asyncio
     async def test_redis_cache_disabled_in_isolated_mode(self, policy_resolver):
         """Test that Redis is not used in isolated mode"""
         client = await policy_resolver._get_redis_client()
         assert client is None
 
-    @pytest.mark.asyncio
     async def test_redis_cache_storage(self, mock_redis):
         """Test Redis cache storage"""
         with patch("redis.asyncio.from_url", return_value=mock_redis):
@@ -591,7 +569,6 @@ class TestConstitutionalValidation:
 
         assert result.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_constitutional_hash_in_resolved_policy(self, policy_resolver):
         """Test constitutional hash in resolved policies"""
         result = await policy_resolver.resolve_policy(

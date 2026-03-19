@@ -334,7 +334,6 @@ class TestOPAGuardIntegration:
         """Test OPA guard is None when disabled."""
         assert layer_without_opa.opa_guard is None
 
-    @pytest.mark.asyncio
     async def test_evaluate_opa_guard_returns_none_when_disabled(self, layer_without_opa):
         """Test _evaluate_opa_guard returns None when guard is disabled."""
         msg = AgentMessage(
@@ -349,7 +348,6 @@ class TestOPAGuardIntegration:
         result = await layer_without_opa._evaluate_opa_guard(msg, datetime.now(UTC))
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_verify_with_opa_guard_returns_none_when_disabled(self, layer_without_opa):
         """Test _verify_with_opa_guard returns None when guard is disabled."""
         msg = AgentMessage(
@@ -452,13 +450,11 @@ class TestEnsureImpactScore:
 class TestCloseMethods:
     """Tests for close methods."""
 
-    @pytest.mark.asyncio
     async def test_close_without_redis(self):
         """Test close works without Redis components."""
         layer = DeliberationLayer(enable_redis=False, enable_opa_guard=False)
         await layer.close()  # Should not raise
 
-    @pytest.mark.asyncio
     async def test_close_without_opa_guard(self):
         """Test close works without OPA guard."""
         layer = DeliberationLayer(enable_opa_guard=False)
@@ -473,7 +469,6 @@ class TestResolvedeliberationItem:
         """Create a deliberation layer."""
         return DeliberationLayer(enable_learning=False, enable_llm=False, enable_opa_guard=False)
 
-    @pytest.mark.asyncio
     async def test_resolve_without_queue(self):
         """Test resolving when no queue configured."""
         layer = DeliberationLayer(enable_opa_guard=False)
@@ -489,7 +484,6 @@ class TestResolvedeliberationItem:
         # Restore
         layer.deliberation_queue = original_queue
 
-    @pytest.mark.asyncio
     async def test_resolve_existing_item(self, layer):
         """Test resolving an existing deliberation item."""
         # First, queue a message
@@ -563,7 +557,6 @@ class TestDependencyInjection:
 class TestRecordPerformanceFeedback:
     """Tests for _record_performance_feedback method."""
 
-    @pytest.mark.asyncio
     async def test_feedback_skipped_when_learning_disabled(self):
         """Test feedback is skipped when learning is disabled."""
         layer = DeliberationLayer(enable_learning=False, enable_opa_guard=False)
@@ -583,7 +576,6 @@ class TestRecordPerformanceFeedback:
         # Should not have been called when learning disabled
         layer.adaptive_router.update_performance_feedback.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_feedback_for_fast_lane(self):
         """Test feedback is recorded for fast lane processing."""
         layer = DeliberationLayer(enable_learning=True, enable_opa_guard=False)
@@ -601,7 +593,6 @@ class TestRecordPerformanceFeedback:
 
         layer.adaptive_router.update_performance_feedback.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_feedback_for_deliberation_lane(self):
         """Test feedback is recorded for deliberation lane."""
         layer = DeliberationLayer(enable_learning=True, enable_opa_guard=False)
@@ -632,7 +623,6 @@ class TestExecuteRouting:
         """Create a deliberation layer."""
         return DeliberationLayer(enable_learning=False, enable_llm=False, enable_opa_guard=False)
 
-    @pytest.mark.asyncio
     async def test_fast_lane_routing(self, layer):
         """Test message routed to fast lane."""
         msg = AgentMessage(
@@ -651,7 +641,6 @@ class TestExecuteRouting:
         assert result.get("lane") == "fast"
         assert result.get("status") == "delivered"
 
-    @pytest.mark.asyncio
     async def test_deliberation_lane_routing(self, layer):
         """Test message routed to deliberation lane."""
         msg = AgentMessage(
@@ -674,7 +663,6 @@ class TestExecuteRouting:
 class TestFinalizeProcessing:
     """Tests for _finalize_processing method."""
 
-    @pytest.mark.asyncio
     async def test_finalize_adds_processing_time(self):
         """Test finalize adds processing_time to result."""
         layer = DeliberationLayer(enable_learning=False, enable_opa_guard=False)
@@ -694,7 +682,6 @@ class TestFinalizeProcessing:
         assert "processing_time" in result
         assert result["success"] is True
 
-    @pytest.mark.asyncio
     async def test_finalize_preserves_existing_guard_result(self):
         """Test finalize preserves guard_result in result."""
         layer = DeliberationLayer(enable_learning=False, enable_opa_guard=False)
@@ -718,7 +705,6 @@ class TestFinalizeProcessing:
 class TestInitializeAsync:
     """Tests for async initialization."""
 
-    @pytest.mark.asyncio
     async def test_initialize_with_opa_guard(self):
         """Test initialization initializes OPA guard."""
         layer = DeliberationLayer(enable_opa_guard=True, enable_redis=False)
@@ -741,7 +727,6 @@ class TestTimeoutErrorHandling:
         """Create a deliberation layer."""
         return DeliberationLayer(enable_learning=False, enable_llm=False, enable_opa_guard=False)
 
-    @pytest.mark.asyncio
     async def test_timeout_returns_error_result(self, layer):
         """Test timeout error returns proper error result."""
         msg = AgentMessage(
@@ -771,7 +756,6 @@ class TestValueErrorHandling:
         """Create a deliberation layer."""
         return DeliberationLayer(enable_learning=False, enable_llm=False, enable_opa_guard=False)
 
-    @pytest.mark.asyncio
     async def test_value_error_returns_error_result(self, layer):
         """Test ValueError returns proper error result."""
         msg = AgentMessage(
@@ -800,7 +784,6 @@ class TestRuntimeErrorHandling:
         """Create a deliberation layer."""
         return DeliberationLayer(enable_learning=False, enable_llm=False, enable_opa_guard=False)
 
-    @pytest.mark.asyncio
     async def test_runtime_error_returns_error_result(self, layer):
         """Test RuntimeError returns proper error result."""
         msg = AgentMessage(
@@ -850,7 +833,6 @@ class TestLayerStatsErrorHandling:
 class TestUpdateDeliberationOutcome:
     """Tests for _update_deliberation_outcome method."""
 
-    @pytest.mark.asyncio
     async def test_update_skipped_when_learning_disabled(self):
         """Test update is skipped when learning is disabled."""
         layer = DeliberationLayer(enable_learning=False, enable_opa_guard=False)
@@ -858,7 +840,6 @@ class TestUpdateDeliberationOutcome:
         # Should not raise and should not call router
         await layer._update_deliberation_outcome("item_123", "approved", "Good")
 
-    @pytest.mark.asyncio
     async def test_update_handles_missing_item(self):
         """Test update handles missing item gracefully."""
         layer = DeliberationLayer(enable_learning=True, enable_opa_guard=False)
@@ -877,7 +858,6 @@ class TestAgentVoteErrorHandling:
         """Create a deliberation layer."""
         return DeliberationLayer(enable_opa_guard=False)
 
-    @pytest.mark.asyncio
     async def test_submit_vote_handles_value_error(self, layer):
         """Test submit_agent_vote handles ValueError."""
         layer.deliberation_queue.submit_agent_vote = AsyncMock(
@@ -893,7 +873,6 @@ class TestAgentVoteErrorHandling:
 
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_submit_vote_handles_runtime_error(self, layer):
         """Test submit_agent_vote handles RuntimeError."""
         layer.deliberation_queue.submit_agent_vote = AsyncMock(
@@ -918,7 +897,6 @@ class TestHumanDecisionErrorHandling:
         """Create a deliberation layer."""
         return DeliberationLayer(enable_opa_guard=False)
 
-    @pytest.mark.asyncio
     async def test_submit_decision_handles_type_error(self, layer):
         """Test submit_human_decision handles TypeError."""
         layer.deliberation_queue.submit_human_decision = AsyncMock(
@@ -934,7 +912,6 @@ class TestHumanDecisionErrorHandling:
 
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_submit_decision_handles_attribute_error(self, layer):
         """Test submit_human_decision handles AttributeError."""
         layer.deliberation_queue.submit_human_decision = AsyncMock(
@@ -954,7 +931,6 @@ class TestHumanDecisionErrorHandling:
 class TestAnalyzeTrendsErrorHandling:
     """Tests for error handling in analyze_trends."""
 
-    @pytest.mark.asyncio
     async def test_trends_handles_value_error(self):
         """Test analyze_trends handles ValueError."""
         layer = DeliberationLayer(enable_llm=True, enable_opa_guard=False)
@@ -967,7 +943,6 @@ class TestAnalyzeTrendsErrorHandling:
 
             assert "error" in result
 
-    @pytest.mark.asyncio
     async def test_trends_handles_runtime_error(self):
         """Test analyze_trends handles RuntimeError."""
         layer = DeliberationLayer(enable_llm=True, enable_opa_guard=False)

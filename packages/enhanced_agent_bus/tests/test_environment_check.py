@@ -84,7 +84,6 @@ def test_processor_imports():
     logger.info(f"✓ Strategy: {processor.processing_strategy.get_name()}")
 
 
-@pytest.mark.asyncio
 async def test_basic_message_flow():
     """Verify basic message processing works."""
     from enhanced_agent_bus.message_processor import MessageProcessor

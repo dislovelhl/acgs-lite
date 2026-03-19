@@ -560,7 +560,6 @@ class TestGlobalInstances:
         assert router is not None
         assert isinstance(router, CapabilityRouter)
 
-    @pytest.mark.asyncio
     async def test_initialize_capability_matrix(self):
         """Test initializing capability matrix."""
         await initialize_capability_matrix()

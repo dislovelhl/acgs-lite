@@ -285,7 +285,6 @@ class TestEventDrivenVoteCollector:
         reset_vote_collector()
         return EventDrivenVoteCollector(redis_url="redis://localhost:6379")
 
-    @pytest.mark.asyncio
     async def test_create_vote_session(self, collector):
         """Test creating a vote session."""
         session_id = await collector.create_vote_session(
@@ -299,7 +298,6 @@ class TestEventDrivenVoteCollector:
         assert "msg-test" in session_id
         assert collector.get_session_count() == 1
 
-    @pytest.mark.asyncio
     async def test_submit_vote_in_memory(self, collector):
         """Test submitting a vote (in-memory fallback)."""
         # Create session first
@@ -320,7 +318,6 @@ class TestEventDrivenVoteCollector:
 
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_get_session_info(self, collector):
         """Test retrieving session information."""
         session_id = await collector.create_vote_session(
@@ -338,7 +335,6 @@ class TestEventDrivenVoteCollector:
         assert info["consensus_threshold"] == 0.8
         assert info["completed"] is False
 
-    @pytest.mark.asyncio
     async def test_max_concurrent_sessions(self, collector):
         """Test concurrent session limit."""
         collector.max_concurrent_sessions = 5
@@ -361,7 +357,6 @@ class TestEventDrivenVoteCollector:
                 timeout_seconds=300,
             )
 
-    @pytest.mark.asyncio
     async def test_vote_event_processing(self, collector):
         """Test processing vote events."""
         session_id = await collector.create_vote_session(

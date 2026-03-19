@@ -655,7 +655,6 @@ def high_impact_message():
 class TestFastLaneIntegration:
     """Test fast lane processing achieves <1ms target latency."""
 
-    @pytest.mark.asyncio
     async def test_fast_lane_processes_under_1ms(self, fast_lane_processor, test_message):
         """Verify fast lane processes messages in under 1ms."""
         result = await fast_lane_processor.process(test_message)
@@ -665,7 +664,6 @@ class TestFastLaneIntegration:
         assert result.lane == ProcessingLane.FAST
         assert result.constitutional_compliant is True
 
-    @pytest.mark.asyncio
     async def test_fast_lane_caches_results(self, fast_lane_processor, test_message):
         """Verify fast lane caches processed messages."""
         # First processing
@@ -679,7 +677,6 @@ class TestFastLaneIntegration:
         # not the relative timing which is flaky at sub-ms resolution.
         assert result2.processing_time_ms < 5.0
 
-    @pytest.mark.asyncio
     async def test_fast_lane_validates_constitutional_hash(self, fast_lane_processor):
         """Verify fast lane rejects messages with invalid constitutional hash."""
         invalid_message = AgentTestMessage(
@@ -696,7 +693,6 @@ class TestFastLaneIntegration:
         assert result.constitutional_compliant is False
         assert "hash mismatch" in result.error.lower()
 
-    @pytest.mark.asyncio
     async def test_fast_lane_batch_processing(self, fast_lane_processor):
         """Verify fast lane handles batch processing efficiently."""
         messages = [
@@ -717,7 +713,6 @@ class TestFastLaneIntegration:
         assert total_time < 50  # 10 messages should complete in < 50ms
         assert fast_lane_processor.processed_count == 10
 
-    @pytest.mark.asyncio
     async def test_fast_lane_preserves_message_integrity(self, fast_lane_processor, test_message):
         """Verify fast lane preserves message integrity through processing."""
         original_content = test_message.content
@@ -729,7 +724,6 @@ class TestFastLaneIntegration:
         assert test_message.content == original_content
         assert test_message.constitutional_hash == original_hash
 
-    @pytest.mark.asyncio
     async def test_fast_lane_handles_concurrent_requests(self, fast_lane_processor):
         """Verify fast lane handles concurrent requests without race conditions."""
         concurrent_messages = [
@@ -750,7 +744,6 @@ class TestFastLaneIntegration:
         assert success_count == 50
         assert fast_lane_processor.processed_count == 50
 
-    @pytest.mark.asyncio
     async def test_fast_lane_reports_processing_metrics(self, fast_lane_processor, test_message):
         """Verify fast lane reports accurate processing metrics."""
         result = await fast_lane_processor.process(test_message)
@@ -760,7 +753,6 @@ class TestFastLaneIntegration:
         assert result.lane == ProcessingLane.FAST
         assert isinstance(result.validation_passed, bool)
 
-    @pytest.mark.asyncio
     async def test_fast_lane_constitutional_hash_attribute(self, fast_lane_processor):
         """Verify fast lane processor has constitutional hash attribute."""
         assert hasattr(fast_lane_processor, "constitutional_hash")
@@ -775,7 +767,6 @@ class TestFastLaneIntegration:
 class TestDeliberationLaneIntegration:
     """Test deliberation lane with OPA policy evaluation."""
 
-    @pytest.mark.asyncio
     async def test_deliberation_evaluates_opa_policy(
         self, deliberation_processor, high_impact_message
     ):
@@ -785,7 +776,6 @@ class TestDeliberationLaneIntegration:
         assert result.lane == ProcessingLane.DELIBERATION
         assert deliberation_processor.opa_client.evaluation_count == 1
 
-    @pytest.mark.asyncio
     async def test_deliberation_respects_policy_decisions(
         self, opa_client, redis_client, high_impact_message
     ):
@@ -797,7 +787,6 @@ class TestDeliberationLaneIntegration:
         assert result.success is False
         assert result.validation_passed is False
 
-    @pytest.mark.asyncio
     async def test_deliberation_validates_constitutional_hash(self, deliberation_processor):
         """Verify deliberation validates constitutional hash via OPA."""
         message = AgentTestMessage(
@@ -813,7 +802,6 @@ class TestDeliberationLaneIntegration:
         assert result.success is False
         assert result.constitutional_compliant is False
 
-    @pytest.mark.asyncio
     async def test_deliberation_policy_path_routing(
         self, deliberation_processor, high_impact_message
     ):
@@ -830,7 +818,6 @@ class TestDeliberationLaneIntegration:
         assert history[0]["policy_path"] == "governance/default"
         assert history[1]["policy_path"] == "governance/strict"
 
-    @pytest.mark.asyncio
     async def test_deliberation_deny_policy_handling(
         self, deliberation_processor, high_impact_message
     ):
@@ -840,7 +827,6 @@ class TestDeliberationLaneIntegration:
         assert result.success is False
         assert "denied" in result.error.lower()
 
-    @pytest.mark.asyncio
     async def test_deliberation_records_evaluation_history(
         self, deliberation_processor, high_impact_message
     ):
@@ -852,7 +838,6 @@ class TestDeliberationLaneIntegration:
         assert history[0]["input_data"]["message_id"] == high_impact_message.id
         assert history[0]["input_data"]["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_deliberation_includes_impact_score_in_evaluation(
         self, deliberation_processor, high_impact_message
     ):
@@ -862,7 +847,6 @@ class TestDeliberationLaneIntegration:
         history = deliberation_processor.opa_client.evaluation_history
         assert history[0]["input_data"]["impact_score"] == 0.9
 
-    @pytest.mark.asyncio
     async def test_deliberation_constitutional_hash_attribute(self, deliberation_processor):
         """Verify deliberation processor has constitutional hash attribute."""
         assert hasattr(deliberation_processor, "constitutional_hash")
@@ -954,7 +938,6 @@ class TestMACISeparation:
 class TestContextWindowOptimization:
     """Test Phase 4 context window optimization integration."""
 
-    @pytest.mark.asyncio
     async def test_context_optimizer_selects_relevant_chunks(self, context_optimizer):
         """Verify context optimizer selects most relevant chunks."""
         chunks = [
@@ -970,7 +953,6 @@ class TestContextWindowOptimization:
         selected_ids = [c["id"] for c in result["selected_chunks"]]
         assert "c1" in selected_ids or "c3" in selected_ids
 
-    @pytest.mark.asyncio
     async def test_context_optimizer_respects_token_limits(self, context_optimizer):
         """Verify context optimizer respects max token limits."""
         # Create chunks that exceed limit
@@ -982,7 +964,6 @@ class TestContextWindowOptimization:
 
         assert result["total_tokens"] <= context_optimizer.max_context_size
 
-    @pytest.mark.asyncio
     async def test_context_optimizer_caches_results(self, context_optimizer):
         """Verify context optimizer caches optimization results."""
         chunks = [{"id": "c1", "content": "Test content", "tokens": 100}]
@@ -996,7 +977,6 @@ class TestContextWindowOptimization:
         assert context_optimizer.optimization_stats["cache_hits"] >= 1
         assert result2["processing_time_ms"] <= result1["processing_time_ms"]
 
-    @pytest.mark.asyncio
     async def test_context_optimizer_tracks_statistics(self, context_optimizer):
         """Verify context optimizer tracks optimization statistics."""
         chunks = [{"id": "c1", "content": "Test", "tokens": 100}]
@@ -1009,7 +989,6 @@ class TestContextWindowOptimization:
         assert "cache_misses" in stats
         assert "compressions" in stats
 
-    @pytest.mark.asyncio
     async def test_context_optimizer_handles_empty_chunks(self, context_optimizer):
         """Verify context optimizer handles empty chunk lists."""
         result = await context_optimizer.optimize_context([], "test query")
@@ -1017,7 +996,6 @@ class TestContextWindowOptimization:
         assert result["selected_chunks"] == []
         assert result["total_tokens"] == 0
 
-    @pytest.mark.asyncio
     async def test_context_optimizer_includes_constitutional_hash(self, context_optimizer):
         """Verify context optimizer includes constitutional hash in results."""
         chunks = [{"id": "c1", "content": "Test", "tokens": 100}]
@@ -1026,7 +1004,6 @@ class TestContextWindowOptimization:
 
         assert result["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_context_optimizer_processing_time(self, context_optimizer):
         """Verify context optimizer meets performance targets."""
         chunks = [{"id": f"c{i}", "content": f"Content {i}", "tokens": 100} for i in range(100)]
@@ -1036,7 +1013,6 @@ class TestContextWindowOptimization:
         # Should complete quickly even with 100 chunks
         assert result["processing_time_ms"] < 100
 
-    @pytest.mark.asyncio
     async def test_context_optimizer_constitutional_hash_attribute(self, context_optimizer):
         """Verify context optimizer has constitutional hash attribute."""
         assert hasattr(context_optimizer, "constitutional_hash")
@@ -1051,7 +1027,6 @@ class TestContextWindowOptimization:
 class TestResponseQualityValidation:
     """Test Phase 5 response quality validator integration."""
 
-    @pytest.mark.asyncio
     async def test_quality_validator_scores_relevance(self, quality_validator):
         """Verify quality validator scores response relevance."""
         result = await quality_validator.validate_response(
@@ -1062,7 +1037,6 @@ class TestResponseQualityValidation:
         assert result["metrics"]["relevance"] > 0
         assert result["metrics"]["relevance"] <= 1.0
 
-    @pytest.mark.asyncio
     async def test_quality_validator_scores_coherence(self, quality_validator):
         """Verify quality validator scores response coherence."""
         result = await quality_validator.validate_response(
@@ -1072,7 +1046,6 @@ class TestResponseQualityValidation:
 
         assert result["metrics"]["coherence"] > 0.5
 
-    @pytest.mark.asyncio
     async def test_quality_validator_detects_constitutional_violations(self, quality_validator):
         """Verify quality validator detects constitutional compliance issues."""
         # Test with potentially harmful content
@@ -1083,7 +1056,6 @@ class TestResponseQualityValidation:
 
         assert result["metrics"]["constitutional_compliance"] < 0.5
 
-    @pytest.mark.asyncio
     async def test_quality_validator_overall_score_calculation(self, quality_validator):
         """Verify quality validator calculates overall score correctly."""
         result = await quality_validator.validate_response(
@@ -1101,7 +1073,6 @@ class TestResponseQualityValidation:
         )
         assert abs(metrics["overall_score"] - expected_overall) < 0.01
 
-    @pytest.mark.asyncio
     async def test_quality_validator_applies_thresholds(self, quality_validator):
         """Verify quality validator applies quality thresholds."""
         # Low quality response
@@ -1110,7 +1081,6 @@ class TestResponseQualityValidation:
         assert result["passed"] is False  # Should fail thresholds
         assert "thresholds" in result
 
-    @pytest.mark.asyncio
     async def test_quality_validator_records_history(self, quality_validator):
         """Verify quality validator records validation history."""
         await quality_validator.validate_response("Response 1", "Prompt 1")
@@ -1118,14 +1088,12 @@ class TestResponseQualityValidation:
 
         assert len(quality_validator.validation_history) == 2
 
-    @pytest.mark.asyncio
     async def test_quality_validator_includes_constitutional_hash(self, quality_validator):
         """Verify quality validator includes constitutional hash."""
         result = await quality_validator.validate_response("Test response", "Test prompt")
 
         assert result["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_quality_validator_constitutional_hash_attribute(self, quality_validator):
         """Verify quality validator has constitutional hash attribute."""
         assert hasattr(quality_validator, "constitutional_hash")
@@ -1168,7 +1136,6 @@ class TestConstitutionalHashConsistency:
         """Verify test messages have correct constitutional hash."""
         assert test_message.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_policy_evaluation_hash(self, opa_client):
         """Verify OPA policy evaluations include constitutional hash."""
         result = await opa_client.evaluate_policy(

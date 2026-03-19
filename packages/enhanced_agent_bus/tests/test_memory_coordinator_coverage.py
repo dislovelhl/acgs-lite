@@ -21,7 +21,6 @@ from __future__ import annotations
 import sys
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 from enhanced_agent_bus.coordinators.memory_coordinator import (

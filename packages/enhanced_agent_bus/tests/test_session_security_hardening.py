@@ -50,7 +50,6 @@ class TestJWTClaimEnforcement:
     def manager(self) -> SessionTokenManager:
         return SessionTokenManager(private_key=JWT_PRIVATE_KEY)
 
-    @pytest.mark.asyncio
     async def test_access_token_contains_iss_aud_jti(self, manager):
         token_obj = await manager.generate_access_token("s1", "t1", "u1")
         payload = jwt.decode(
@@ -65,7 +64,6 @@ class TestJWTClaimEnforcement:
         assert "jti" in payload and len(payload["jti"]) > 0
         assert payload["sub"] == "u1"
 
-    @pytest.mark.asyncio
     async def test_wrong_audience_rejected(self, manager):
         token_obj = await manager.generate_access_token("s1", "t1", "u1")
         with pytest.raises(jwt.InvalidAudienceError):
@@ -77,7 +75,6 @@ class TestJWTClaimEnforcement:
                 issuer=SESSION_JWT_ISSUER,
             )
 
-    @pytest.mark.asyncio
     async def test_wrong_issuer_rejected(self, manager):
         token_obj = await manager.generate_access_token("s1", "t1", "u1")
         with pytest.raises(jwt.InvalidIssuerError):
@@ -89,7 +86,6 @@ class TestJWTClaimEnforcement:
                 issuer="wrong-issuer",
             )
 
-    @pytest.mark.asyncio
     async def test_tampered_token_rejected(self, manager):
         token_obj = await manager.generate_access_token("s1", "t1", "u1")
         tampered = token_obj.access_token[:-5] + "XXXXX"
@@ -97,7 +93,6 @@ class TestJWTClaimEnforcement:
         assert result.is_valid is False
         assert result.reason == "invalid_token"
 
-    @pytest.mark.asyncio
     async def test_validate_returns_correct_claims(self, manager):
         token_obj = await manager.generate_access_token("sess-99", "tenant-A", "user-Z", ["admin"])
         result = await manager.validate_token(token_obj.access_token)
@@ -134,7 +129,6 @@ class TestJTIRevocation:
     def manager(self) -> SessionTokenManager:
         return SessionTokenManager(private_key=JWT_PRIVATE_KEY)
 
-    @pytest.mark.asyncio
     async def test_revoked_token_fails_validation(self, manager):
         token_obj = await manager.generate_access_token("s1", "t1", "u1")
         await manager.revoke_token(token_obj.access_token)
@@ -142,7 +136,6 @@ class TestJTIRevocation:
         assert result.is_valid is False
         assert result.reason == "token_revoked"
 
-    @pytest.mark.asyncio
     async def test_revocation_uses_jti_not_full_token(self, manager):
         """Verify that revocation stores the JTI, not the raw token string."""
         token_obj = await manager.generate_access_token("s1", "t1", "u1")
@@ -158,7 +151,6 @@ class TestJTIRevocation:
         assert jti in manager._revoked_jtis
         assert token_obj.access_token not in manager._revoked_jtis
 
-    @pytest.mark.asyncio
     async def test_redis_sadd_called_on_revoke(self):
         redis_mock = MagicMock()
         redis_mock.sadd = AsyncMock()
@@ -171,7 +163,6 @@ class TestJTIRevocation:
         redis_mock.sadd.assert_called_once()
         redis_mock.expire.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_redis_sismember_checked_on_validate(self):
         redis_mock = MagicMock()
         redis_mock.sadd = AsyncMock()
@@ -186,7 +177,6 @@ class TestJTIRevocation:
         assert result.is_valid is False
         assert result.reason == "token_revoked"
 
-    @pytest.mark.asyncio
     async def test_redis_failure_does_not_break_validation(self):
         """Redis errors must not propagate -- fall back to in-memory set."""
         redis_mock = MagicMock()
@@ -219,13 +209,11 @@ class TestMaxExtensionCap:
             max_duration_minutes=30,  # short session for testing
         )
 
-    @pytest.mark.asyncio
     async def test_small_extension_accepted(self, manager, short_config):
         session = await manager.create_session(short_config)
         extended = await manager.extend_session(session.session_id, extension_minutes=15)
         assert extended.extension_count == 1
 
-    @pytest.mark.asyncio
     async def test_excessive_extension_rejected(self, manager, short_config):
         """A single extension that would push total lifetime far beyond cap must fail."""
         session = await manager.create_session(short_config)
@@ -234,7 +222,6 @@ class TestMaxExtensionCap:
             # request 200 min extension → 230 min total > 120 min cap
             await manager.extend_session(session.session_id, extension_minutes=200)
 
-    @pytest.mark.asyncio
     async def test_cumulative_extensions_capped(self, manager, short_config):
         """Multiple small extensions should fail once they cross the cap."""
         session = await manager.create_session(short_config)
@@ -246,7 +233,6 @@ class TestMaxExtensionCap:
         with pytest.raises(SessionGovernanceError, match="maximum allowed session duration"):
             await manager.extend_session(session.session_id, extension_minutes=25)
 
-    @pytest.mark.asyncio
     async def test_extension_count_incremented(self, manager, short_config):
         session = await manager.create_session(short_config)
         assert session.extension_count == 0

@@ -106,7 +106,6 @@ class TestDefaultMaxCacheSize:
 class TestPolicyRegistryClientContextManager:
     """Tests for context manager behavior."""
 
-    @pytest.mark.asyncio
     async def test_aenter_initializes(self):
         """__aenter__ initializes the client."""
         client = PolicyRegistryClient()
@@ -116,7 +115,6 @@ class TestPolicyRegistryClientContextManager:
             mock_init.assert_called_once()
             assert result is client
 
-    @pytest.mark.asyncio
     async def test_aexit_closes(self):
         """__aexit__ closes the client."""
         client = PolicyRegistryClient()
@@ -129,7 +127,6 @@ class TestPolicyRegistryClientContextManager:
 class TestPolicyRegistryClientInitialize:
     """Tests for initialize method."""
 
-    @pytest.mark.asyncio
     async def test_initialize_creates_http_client(self):
         """Initialize creates HTTP client if none exists."""
         client = PolicyRegistryClient()
@@ -141,7 +138,6 @@ class TestPolicyRegistryClientInitialize:
         finally:
             await client.close()
 
-    @pytest.mark.asyncio
     async def test_initialize_with_api_key_sets_header(self):
         """Initialize with API key sets header."""
         client = PolicyRegistryClient(api_key="test-key")
@@ -153,7 +149,6 @@ class TestPolicyRegistryClientInitialize:
         finally:
             await client.close()
 
-    @pytest.mark.asyncio
     async def test_initialize_idempotent(self):
         """Initialize is idempotent - doesn't recreate client."""
         client = PolicyRegistryClient()
@@ -173,7 +168,6 @@ class TestPolicyRegistryClientInitialize:
 class TestPolicyRegistryClientClose:
     """Tests for close method."""
 
-    @pytest.mark.asyncio
     async def test_close_clears_http_client(self):
         """Close closes and clears HTTP client."""
         client = PolicyRegistryClient()
@@ -184,7 +178,6 @@ class TestPolicyRegistryClientClose:
         await client.close()
         assert client._http_client is None
 
-    @pytest.mark.asyncio
     async def test_close_safe_when_not_initialized(self):
         """Close is safe when client not initialized."""
         client = PolicyRegistryClient()
@@ -219,7 +212,6 @@ class TestPolicyRegistryClientGetPolicyContent:
         yield client
         await client.close()
 
-    @pytest.mark.asyncio
     async def test_get_policy_content_returns_cached(self, initialized_client):
         """get_policy_content returns cached content if fresh."""
         # Pre-populate cache
@@ -243,7 +235,6 @@ class TestPolicyRegistryClientValidateMessageSignature:
             to_agent="receiver",
         )
 
-    @pytest.mark.asyncio
     async def test_validate_no_policy_fail_open(self):
         """Validation with no policy and fail_closed=False passes with warning."""
         client = PolicyRegistryClient(fail_closed=False)
@@ -259,7 +250,6 @@ class TestPolicyRegistryClientValidateMessageSignature:
             assert len(result.warnings) > 0
             assert any("unavailable" in w.lower() for w in result.warnings)
 
-    @pytest.mark.asyncio
     async def test_validate_no_policy_fail_closed(self):
         """Validation with no policy and fail_closed=True fails."""
         client = PolicyRegistryClient(fail_closed=True)
@@ -273,7 +263,6 @@ class TestPolicyRegistryClientValidateMessageSignature:
             assert result.is_valid is False
             assert len(result.errors) > 0
 
-    @pytest.mark.asyncio
     async def test_validate_exceeds_max_length(self):
         """Validation fails when message exceeds max length."""
         client = PolicyRegistryClient()
@@ -288,7 +277,6 @@ class TestPolicyRegistryClientValidateMessageSignature:
             assert result.is_valid is False
             assert any("length" in e.lower() for e in result.errors)
 
-    @pytest.mark.asyncio
     async def test_validate_prohibited_content(self):
         """Validation fails when message contains prohibited content."""
         client = PolicyRegistryClient()
@@ -302,7 +290,6 @@ class TestPolicyRegistryClientValidateMessageSignature:
             assert result.is_valid is False
             assert any("prohibited" in e.lower() for e in result.errors)
 
-    @pytest.mark.asyncio
     async def test_validate_allowed_topics_warning(self):
         """Validation adds warning when topic not in allowed list."""
         client = PolicyRegistryClient()
@@ -317,7 +304,6 @@ class TestPolicyRegistryClientValidateMessageSignature:
             assert result.is_valid is True
             assert any("topic" in w.lower() for w in result.warnings)
 
-    @pytest.mark.asyncio
     async def test_validate_passes_with_valid_content(self):
         """Validation passes with valid content."""
         client = PolicyRegistryClient()
@@ -335,7 +321,6 @@ class TestPolicyRegistryClientValidateMessageSignature:
 class TestPolicyRegistryClientHealthCheck:
     """Tests for health_check method."""
 
-    @pytest.mark.asyncio
     async def test_health_check_success(self):
         """Health check returns healthy status on success."""
         client = PolicyRegistryClient()
@@ -352,7 +337,6 @@ class TestPolicyRegistryClientHealthCheck:
 
         assert result["status"] == "healthy"
 
-    @pytest.mark.asyncio
     async def test_health_check_http_error(self):
         """Health check returns unhealthy on HTTP error."""
         import httpx
@@ -374,7 +358,6 @@ class TestPolicyRegistryClientHealthCheck:
         assert result["status"] == "unhealthy"
         assert "500" in result["error"]
 
-    @pytest.mark.asyncio
     async def test_health_check_timeout(self):
         """Health check returns unhealthy on timeout."""
         import httpx
@@ -390,7 +373,6 @@ class TestPolicyRegistryClientHealthCheck:
         assert result["status"] == "unhealthy"
         assert "TimeoutException" in result["error"]
 
-    @pytest.mark.asyncio
     async def test_health_check_connection_error(self):
         """Health check returns unhealthy on connection error."""
         import httpx
@@ -406,7 +388,6 @@ class TestPolicyRegistryClientHealthCheck:
         assert result["status"] == "unhealthy"
         assert "ConnectError" in result["error"]
 
-    @pytest.mark.asyncio
     async def test_health_check_parsing_error(self):
         """Health check returns unhealthy on response parsing error."""
         client = PolicyRegistryClient()

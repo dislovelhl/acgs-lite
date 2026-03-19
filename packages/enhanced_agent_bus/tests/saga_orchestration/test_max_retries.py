@@ -61,7 +61,6 @@ async def _always_fail_comp(ctx: SagaContext) -> SagaStepResult:
 class TestMaxRetriesEdgeCases:
     """Verify retry counting and exhaustion semantics."""
 
-    @pytest.mark.asyncio
     async def test_step_succeeds_on_last_allowed_retry(
         self, orchestrator: SagaOrchestrator
     ) -> None:
@@ -92,7 +91,6 @@ class TestMaxRetriesEdgeCases:
         assert result.status == SagaStatus.COMPLETED
         assert call_counter[0] == 3  # 2 failures + 1 success
 
-    @pytest.mark.asyncio
     async def test_step_fails_when_max_retries_exhausted(
         self, orchestrator: SagaOrchestrator
     ) -> None:
@@ -125,7 +123,6 @@ class TestMaxRetriesEdgeCases:
         # 1 initial attempt + 2 retries = 3 total calls
         assert call_counter[0] == 3
 
-    @pytest.mark.asyncio
     async def test_max_retries_zero_fails_immediately(self, orchestrator: SagaOrchestrator) -> None:
         """With max_retries=0, a failing step is attempted exactly once."""
         call_counter = [0]
@@ -153,7 +150,6 @@ class TestMaxRetriesEdgeCases:
         assert result.success is False
         assert call_counter[0] == 1  # Single attempt only
 
-    @pytest.mark.asyncio
     async def test_retry_count_recorded_on_step_execution(
         self, orchestrator: SagaOrchestrator
     ) -> None:
@@ -188,7 +184,6 @@ class TestMaxRetriesEdgeCases:
         assert step_exec.status == SagaStepStatus.COMPLETED
         assert step_exec.retry_count == 1  # Failed once, succeeded on retry
 
-    @pytest.mark.asyncio
     async def test_saga_timeout_counts_as_retry(self, orchestrator: SagaOrchestrator) -> None:
         """A step that times out consumes a retry slot."""
         call_counter = [0]
@@ -223,7 +218,6 @@ class TestMaxRetriesEdgeCases:
         assert result.success is True
         assert call_counter[0] == 2  # Timed-out call + successful retry
 
-    @pytest.mark.asyncio
     async def test_compensation_retries_on_failure(self, orchestrator: SagaOrchestrator) -> None:
         """Compensation retries up to max_compensation_retries before marking as failed."""
         comp_calls = [0]
@@ -275,7 +269,6 @@ class TestMaxRetriesEdgeCases:
         assert "succeeds_step" in result.compensated_steps
         assert comp_calls[0] == 3
 
-    @pytest.mark.asyncio
     async def test_compensation_skip_strategy_on_exhaustion(
         self, orchestrator: SagaOrchestrator
     ) -> None:

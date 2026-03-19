@@ -87,7 +87,6 @@ def store(fake_redis: fake_aioredis.FakeRedis) -> AgentHealthStore:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_metric_emission_fires_at_configured_interval(
     store: AgentHealthStore,
 ) -> None:
@@ -120,7 +119,6 @@ async def test_metric_emission_fires_at_configured_interval(
     assert emitted[0].agent_id == AGENT_ID
 
 
-@pytest.mark.asyncio
 async def test_consecutive_failure_count_resets_to_zero(
     store: AgentHealthStore,
 ) -> None:
@@ -167,7 +165,6 @@ async def test_consecutive_failure_count_resets_to_zero(
     assert reset_records, "At least one emitted record must show failure count = 0 after reset"
 
 
-@pytest.mark.asyncio
 async def test_recovery_event_recorded_in_store(
     store: AgentHealthStore,
 ) -> None:
@@ -213,7 +210,6 @@ async def test_recovery_event_recorded_in_store(
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_monitor_continues_when_processing_loop_blocked(
     store: AgentHealthStore,
 ) -> None:
@@ -254,7 +250,6 @@ async def test_monitor_continues_when_processing_loop_blocked(
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_metric_emission_overhead_under_one_ms(
     store: AgentHealthStore,
 ) -> None:
@@ -281,7 +276,6 @@ async def test_metric_emission_overhead_under_one_ms(
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_heartbeat_loss_sets_degraded_in_store(
     store: AgentHealthStore,
 ) -> None:
@@ -322,7 +316,6 @@ async def test_heartbeat_loss_sets_degraded_in_store(
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_monitor_stop_cancels_task(store: AgentHealthStore) -> None:
     """stop() cancels the background task cleanly."""
     blocked = asyncio.Event()
@@ -348,7 +341,6 @@ async def test_monitor_stop_cancels_task(store: AgentHealthStore) -> None:
     assert task.done(), "Task must be done after stop()"
 
 
-@pytest.mark.asyncio
 async def test_monitor_updates_memory_usage_from_provider(
     store: AgentHealthStore,
 ) -> None:
@@ -380,7 +372,6 @@ async def test_monitor_updates_memory_usage_from_provider(
     )
 
 
-@pytest.mark.asyncio
 async def test_monitor_loop_survives_exceptions(
     store: AgentHealthStore,
 ) -> None:

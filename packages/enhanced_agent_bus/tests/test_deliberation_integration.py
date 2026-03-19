@@ -79,7 +79,6 @@ def workflow():
 class TestDeliberationWorkflowIntegration:
     """Integration tests for the complete deliberation workflow."""
 
-    @pytest.mark.asyncio
     @pytest.mark.governance
     async def test_workflow_constitutional_validation_pass(self, workflow, sample_workflow_input):
         """Test workflow with valid constitutional hash."""
@@ -93,7 +92,6 @@ class TestDeliberationWorkflowIntegration:
         assert result.validation_passed is True
         assert result.status in [WorkflowStatus.APPROVED, WorkflowStatus.REJECTED]
 
-    @pytest.mark.asyncio
     @pytest.mark.governance
     async def test_workflow_constitutional_validation_fail(self, workflow, sample_workflow_input):
         """Test workflow rejects invalid constitutional hash."""
@@ -105,7 +103,6 @@ class TestDeliberationWorkflowIntegration:
         assert result.validation_passed is False
         assert len(result.errors) > 0
 
-    @pytest.mark.asyncio
     @pytest.mark.governance
     async def test_workflow_impact_scoring(self, workflow, sample_workflow_input):
         """Test impact score calculation in workflow."""
@@ -119,7 +116,6 @@ class TestDeliberationWorkflowIntegration:
         assert result.impact_score >= 0.0
         assert result.impact_score <= 1.0
 
-    @pytest.mark.asyncio
     async def test_workflow_vote_collection(self, workflow, sample_workflow_input):
         """Test multi-agent vote collection in workflow."""
         # Short timeout to avoid slow test
@@ -131,7 +127,6 @@ class TestDeliberationWorkflowIntegration:
         # With no votes, should timeout or reach minimum votes status
         assert result.votes_required == 3
 
-    @pytest.mark.asyncio
     async def test_workflow_processing_time_tracking(self, workflow, sample_workflow_input):
         """Test processing time is tracked."""
         sample_workflow_input.require_multi_agent_vote = False
@@ -150,7 +145,6 @@ class TestEventDrivenVoteCollectorIntegration:
         """Create vote collector instance."""
         return EventDrivenVoteCollector()
 
-    @pytest.mark.asyncio
     async def test_full_vote_collection_cycle(self, collector):
         """Test complete vote collection cycle."""
         # Create session
@@ -185,7 +179,6 @@ class TestEventDrivenVoteCollectorIntegration:
         assert info is not None
         assert info["votes_received"] >= 2
 
-    @pytest.mark.asyncio
     async def test_weighted_consensus_calculation(self, collector):
         """Test weighted voting with agent weights."""
         session_id = await collector.create_vote_session(
@@ -227,7 +220,6 @@ class TestEventDrivenVoteCollectorIntegration:
         assert consensus["consensus_reached"] is True
         assert consensus["decision"] == "approved"
 
-    @pytest.mark.asyncio
     async def test_session_timeout_handling(self, collector):
         """Test session timeout behavior."""
         session_id = await collector.create_vote_session(
@@ -251,14 +243,12 @@ class TestRedisVotingSystemIntegration:
         """Create voting system instance."""
         return get_redis_voting_system()
 
-    @pytest.mark.asyncio
     async def test_in_memory_fallback_when_redis_unavailable(self, voting_system):
         """Test graceful degradation when Redis is unavailable."""
         # Without connection, should use in-memory
         votes = await voting_system.get_votes("nonexistent-item")
         assert votes == []  # Returns empty list, not error
 
-    @pytest.mark.asyncio
     async def test_consensus_check_thresholds(self, voting_system):
         """Test consensus threshold calculations."""
         # Test with in-memory mock data
@@ -341,7 +331,6 @@ class TestDeliberationQueueIntegration:
         """Create deliberation queue instance."""
         return DeliberationQueue()
 
-    @pytest.mark.asyncio
     async def test_queue_enqueue_and_get_task(self, queue):
         """Test basic queue operations."""
         from enhanced_agent_bus.models import AgentMessage
@@ -362,7 +351,6 @@ class TestDeliberationQueueIntegration:
         task = queue.get_task(task_id)
         assert task is not None
 
-    @pytest.mark.asyncio
     async def test_queue_task_status_management(self, queue):
         """Test task status management in queue."""
         from enhanced_agent_bus.models import AgentMessage
@@ -407,7 +395,6 @@ class TestVotingServiceIntegration:
         # Create service with force_in_memory=True to skip Redis initialization
         return VotingService(default_strategy=VotingStrategy.QUORUM, force_in_memory=True)
 
-    @pytest.mark.asyncio
     async def test_voting_strategy_quorum(self, voting_service):
         """Test quorum voting strategy (50% + 1)."""
         from enhanced_agent_bus.models import AgentMessage
@@ -437,7 +424,6 @@ class TestVotingServiceIntegration:
         # With 2/3 approvals (>50%), should approve
         assert result == "APPROVE"
 
-    @pytest.mark.asyncio
     async def test_voting_strategy_unanimous(self, voting_service):
         """Test unanimous voting strategy (100% required)."""
         from enhanced_agent_bus.models import AgentMessage
@@ -470,7 +456,6 @@ class TestVotingServiceIntegration:
         # Should deny since one agent rejected
         assert result == "DENY"
 
-    @pytest.mark.asyncio
     async def test_voting_with_participant_weights(self, voting_service):
         """Test weighted voting calculation using participant_weights."""
         from enhanced_agent_bus.models import AgentMessage
@@ -518,7 +503,6 @@ class TestDefaultDeliberationActivities:
         """Create activities instance."""
         return DefaultDeliberationActivities()
 
-    @pytest.mark.asyncio
     async def test_validate_constitutional_hash_valid(self, activities):
         """Test valid constitutional hash validation."""
         result = await activities.validate_constitutional_hash(
@@ -530,7 +514,6 @@ class TestDefaultDeliberationActivities:
         assert result["is_valid"] is True
         assert len(result["errors"]) == 0
 
-    @pytest.mark.asyncio
     async def test_validate_constitutional_hash_invalid(self, activities):
         """Test invalid constitutional hash validation."""
         result = await activities.validate_constitutional_hash(
@@ -542,7 +525,6 @@ class TestDefaultDeliberationActivities:
         assert result["is_valid"] is False
         assert len(result["errors"]) > 0
 
-    @pytest.mark.asyncio
     async def test_calculate_impact_score_with_fallback(self, activities):
         """Test impact score calculation."""
         score = await activities.calculate_impact_score(
@@ -553,7 +535,6 @@ class TestDefaultDeliberationActivities:
         # Should produce a score using keyword fallback
         assert 0.0 <= score <= 1.0
 
-    @pytest.mark.asyncio
     async def test_record_audit_trail(self, activities):
         """Test audit trail recording."""
         audit_hash = await activities.record_audit_trail(

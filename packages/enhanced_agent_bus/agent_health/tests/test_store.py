@@ -75,12 +75,10 @@ def store(fake_redis: fake_aioredis.FakeRedis) -> AgentHealthStore:
 
 
 class TestGetHealthRecord:
-    @pytest.mark.asyncio
     async def test_returns_none_for_missing_agent(self, store: AgentHealthStore) -> None:
         result = await store.get_health_record("unknown-agent")
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_returns_record_after_upsert(self, store: AgentHealthStore) -> None:
         record = _make_record("agent-001")
         await store.upsert_health_record(record)
@@ -89,7 +87,6 @@ class TestGetHealthRecord:
         assert fetched.agent_id == "agent-001"
         assert fetched.health_state == HealthState.HEALTHY
 
-    @pytest.mark.asyncio
     async def test_key_schema(
         self, store: AgentHealthStore, fake_redis: fake_aioredis.FakeRedis
     ) -> None:
@@ -100,7 +97,6 @@ class TestGetHealthRecord:
 
 
 class TestUpsertHealthRecord:
-    @pytest.mark.asyncio
     async def test_upsert_overwrites_existing(self, store: AgentHealthStore) -> None:
         record1 = _make_record("agent-001", consecutive_failure_count=0)
         record2 = _make_record("agent-001", consecutive_failure_count=5)
@@ -110,7 +106,6 @@ class TestUpsertHealthRecord:
         assert fetched is not None
         assert fetched.consecutive_failure_count == 5
 
-    @pytest.mark.asyncio
     async def test_upsert_sets_ttl(
         self, store: AgentHealthStore, fake_redis: fake_aioredis.FakeRedis
     ) -> None:
@@ -119,7 +114,6 @@ class TestUpsertHealthRecord:
         ttl = await fake_redis.ttl("agent_health:agent-001")
         assert ttl > 0
 
-    @pytest.mark.asyncio
     async def test_ttl_is_3600_seconds(
         self, store: AgentHealthStore, fake_redis: fake_aioredis.FakeRedis
     ) -> None:
@@ -129,7 +123,6 @@ class TestUpsertHealthRecord:
         # Allow small tolerance for test execution time
         assert 3595 <= ttl <= 3600
 
-    @pytest.mark.asyncio
     async def test_all_fields_persisted(self, store: AgentHealthStore) -> None:
         now = datetime.now(UTC)
         record = _make_record(
@@ -159,12 +152,10 @@ class TestUpsertHealthRecord:
 
 
 class TestGetOverride:
-    @pytest.mark.asyncio
     async def test_returns_none_for_missing_agent(self, store: AgentHealthStore) -> None:
         result = await store.get_override("unknown-agent")
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_returns_override_after_set(self, store: AgentHealthStore) -> None:
         override = _make_override("agent-001")
         await store.set_override(override)
@@ -173,7 +164,6 @@ class TestGetOverride:
         assert fetched.agent_id == "agent-001"
         assert fetched.mode == OverrideMode.SUPPRESS_HEALING
 
-    @pytest.mark.asyncio
     async def test_key_schema(
         self, store: AgentHealthStore, fake_redis: fake_aioredis.FakeRedis
     ) -> None:
@@ -184,7 +174,6 @@ class TestGetOverride:
 
 
 class TestSetOverride:
-    @pytest.mark.asyncio
     async def test_overwrites_existing_override(self, store: AgentHealthStore) -> None:
         now = datetime.now(UTC)
         override1 = _make_override("agent-001", mode=OverrideMode.SUPPRESS_HEALING)
@@ -195,7 +184,6 @@ class TestSetOverride:
         assert fetched is not None
         assert fetched.mode == OverrideMode.FORCE_QUARANTINE
 
-    @pytest.mark.asyncio
     async def test_all_fields_persisted(self, store: AgentHealthStore) -> None:
         now = datetime.now(UTC)
         expiry = now + timedelta(hours=2)
@@ -232,14 +220,12 @@ def _make_action(agent_id: str = "agent-001", **kwargs: object) -> HealingAction
 
 
 class TestDeleteOverride:
-    @pytest.mark.asyncio
     async def test_delete_existing_override_returns_true(self, store: AgentHealthStore) -> None:
         override = _make_override("agent-001")
         await store.set_override(override)
         result = await store.delete_override("agent-001")
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_delete_removes_override(self, store: AgentHealthStore) -> None:
         override = _make_override("agent-001")
         await store.set_override(override)
@@ -247,7 +233,6 @@ class TestDeleteOverride:
         fetched = await store.get_override("agent-001")
         assert fetched is None
 
-    @pytest.mark.asyncio
     async def test_delete_missing_override_returns_false(self, store: AgentHealthStore) -> None:
         result = await store.delete_override("unknown-agent")
         assert result is False
@@ -259,7 +244,6 @@ class TestDeleteOverride:
 
 
 class TestSaveHealingAction:
-    @pytest.mark.asyncio
     async def test_saves_action_with_correct_key_schema(
         self, store: AgentHealthStore, fake_redis: fake_aioredis.FakeRedis
     ) -> None:
@@ -269,7 +253,6 @@ class TestSaveHealingAction:
         assert len(keys) == 1
         assert keys[0].startswith("agent_healing_action:agent-001:")
 
-    @pytest.mark.asyncio
     async def test_saves_all_required_fields(
         self, store: AgentHealthStore, fake_redis: fake_aioredis.FakeRedis
     ) -> None:
@@ -282,7 +265,6 @@ class TestSaveHealingAction:
         assert data["action_type"] == HealingActionType.GRACEFUL_RESTART.value
         assert data["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_sets_ttl_on_action_key(
         self, store: AgentHealthStore, fake_redis: fake_aioredis.FakeRedis
     ) -> None:
@@ -292,7 +274,6 @@ class TestSaveHealingAction:
         ttl = await fake_redis.ttl(key)
         assert ttl > 0
 
-    @pytest.mark.asyncio
     async def test_action_with_completed_at(
         self, store: AgentHealthStore, fake_redis: fake_aioredis.FakeRedis
     ) -> None:
@@ -303,7 +284,6 @@ class TestSaveHealingAction:
         data = await fake_redis.hgetall(key)
         assert data["completed_at"] != ""
 
-    @pytest.mark.asyncio
     async def test_action_without_completed_at(
         self, store: AgentHealthStore, fake_redis: fake_aioredis.FakeRedis
     ) -> None:

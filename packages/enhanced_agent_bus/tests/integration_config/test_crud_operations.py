@@ -5,7 +5,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 Task 7.1: API integration tests for CRUD operations
 """
 
-import pytest
 
 from .conftest import (
     CONSTITUTIONAL_HASH,
@@ -17,7 +16,6 @@ from .conftest import (
 class TestIntegrationCRUD:
     """Tests for integration CRUD operations."""
 
-    @pytest.mark.asyncio
     async def test_create_ldap_integration(self, integration_service):
         """Test creating an LDAP integration."""
         config = {
@@ -42,7 +40,6 @@ class TestIntegrationCRUD:
         assert integration.status == IntegrationStatus.PENDING
         assert integration.created_by == "admin@example.com"
 
-    @pytest.mark.asyncio
     async def test_create_saml_integration(self, integration_service):
         """Test creating a SAML integration."""
         config = {
@@ -61,7 +58,6 @@ class TestIntegrationCRUD:
         assert integration.integration_type == IntegrationType.SAML
         assert "certificate" in integration.encrypted_fields
 
-    @pytest.mark.asyncio
     async def test_create_oidc_integration(self, integration_service):
         """Test creating an OIDC integration."""
         config = {
@@ -81,7 +77,6 @@ class TestIntegrationCRUD:
         assert integration.integration_type == IntegrationType.OIDC
         assert "client_secret" in integration.encrypted_fields
 
-    @pytest.mark.asyncio
     async def test_get_integration(self, integration_service):
         """Test getting an integration by ID."""
         created = await integration_service.create_integration(
@@ -96,7 +91,6 @@ class TestIntegrationCRUD:
         assert retrieved.id == created.id
         assert retrieved.name == "Test LDAP"
 
-    @pytest.mark.asyncio
     async def test_get_integration_tenant_isolation(self, integration_service):
         """Test tenant isolation when getting integrations."""
         created = await integration_service.create_integration(
@@ -110,7 +104,6 @@ class TestIntegrationCRUD:
         result = integration_service.get_integration(created.id, tenant_id="tenant-2")
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_list_integrations(self, integration_service):
         """Test listing integrations for a tenant."""
         await integration_service.create_integration(
@@ -138,7 +131,6 @@ class TestIntegrationCRUD:
         tenant2_integrations = integration_service.list_integrations("tenant-2")
         assert len(tenant2_integrations) == 1
 
-    @pytest.mark.asyncio
     async def test_list_integrations_by_type(self, integration_service):
         """Test filtering integrations by type."""
         await integration_service.create_integration(
@@ -160,7 +152,6 @@ class TestIntegrationCRUD:
         assert len(ldap_integrations) == 1
         assert ldap_integrations[0].integration_type == IntegrationType.LDAP
 
-    @pytest.mark.asyncio
     async def test_list_integrations_by_status(self, integration_service):
         """Test filtering integrations by status."""
         integration = await integration_service.create_integration(
@@ -179,7 +170,6 @@ class TestIntegrationCRUD:
         )
         assert len(pending) == 0
 
-    @pytest.mark.asyncio
     async def test_update_integration(self, integration_service):
         """Test updating an integration."""
         created = await integration_service.create_integration(
@@ -206,7 +196,6 @@ class TestIntegrationCRUD:
         assert updated.config["server_url"] == "ldap://new.example.com"
         assert updated.updated_at >= original_updated_at
 
-    @pytest.mark.asyncio
     async def test_update_integration_wrong_tenant(self, integration_service):
         """Test update fails for wrong tenant."""
         created = await integration_service.create_integration(
@@ -224,7 +213,6 @@ class TestIntegrationCRUD:
 
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_delete_integration(self, integration_service):
         """Test deleting an integration."""
         created = await integration_service.create_integration(
@@ -243,7 +231,6 @@ class TestIntegrationCRUD:
         assert result is True
         assert integration_service.get_integration(created.id) is None
 
-    @pytest.mark.asyncio
     async def test_delete_integration_wrong_tenant(self, integration_service):
         """Test delete fails for wrong tenant."""
         created = await integration_service.create_integration(

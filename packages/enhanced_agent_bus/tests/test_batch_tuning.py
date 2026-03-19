@@ -4,7 +4,6 @@ Unit tests for Batch Processor Auto-tuning.
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-import pytest
 
 from enhanced_agent_bus.batch_processor_infra.tuning import BatchAutoTuner
 

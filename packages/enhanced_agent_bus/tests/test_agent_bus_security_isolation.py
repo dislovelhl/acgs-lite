@@ -117,7 +117,6 @@ async def started_agent_bus(agent_bus):
 class TestMultiTenantIsolation:
     """Test multi-tenant isolation - CRITICAL SECURITY FEATURE."""
 
-    @pytest.mark.asyncio
     async def test_tenant_mismatch_sender_rejected(self, started_agent_bus, constitutional_hash):
         """Test that sender tenant mismatch is rejected."""
         await started_agent_bus.register_agent(
@@ -142,7 +141,6 @@ class TestMultiTenantIsolation:
         assert result.is_valid is False
         assert any("Tenant mismatch" in err for err in result.errors)
 
-    @pytest.mark.asyncio
     async def test_tenant_mismatch_recipient_rejected(self, started_agent_bus, constitutional_hash):
         """Test that recipient tenant mismatch is rejected."""
         await started_agent_bus.register_agent(
@@ -173,7 +171,6 @@ class TestMultiTenantIsolation:
         assert result.is_valid is False
         assert any("Tenant mismatch" in err for err in result.errors)
 
-    @pytest.mark.asyncio
     async def test_tenant_match_accepted(
         self, started_agent_bus, constitutional_hash, mock_processor
     ):
@@ -207,7 +204,6 @@ class TestMultiTenantIsolation:
         result = await started_agent_bus.send_message(message)
         assert result.is_valid is True
 
-    @pytest.mark.asyncio
     async def test_no_tenant_agents_isolated(
         self, started_agent_bus, constitutional_hash, mock_processor
     ):
@@ -245,7 +241,6 @@ class TestMultiTenantIsolation:
 class TestBroadcastMultiTenantIsolation:
     """Test broadcast message multi-tenant isolation paths for coverage."""
 
-    @pytest.mark.asyncio
     async def test_broadcast_skips_agents_from_different_tenant(self, started_agent_bus):
         """Test broadcast skips agents not in same tenant."""
         bus = started_agent_bus
@@ -271,7 +266,6 @@ class TestBroadcastMultiTenantIsolation:
         assert "agent-A2" in results
         assert "agent-B1" not in results
 
-    @pytest.mark.asyncio
     async def test_broadcast_to_no_tenant_agents(self, started_agent_bus):
         """Test broadcast to agents without tenant."""
         bus = started_agent_bus
@@ -329,7 +323,6 @@ class TestTenantValidation:
         result = tenant_bus._format_tenant_id(None)
         assert result == "none"
 
-    @pytest.mark.asyncio
     async def test_validate_tenant_consistency_sender_mismatch(self, tenant_bus):
         """Test tenant validation with sender mismatch."""
         await tenant_bus.register_agent("sender", "worker", [], "tenant-A")
@@ -349,7 +342,6 @@ class TestTenantValidation:
         assert "Tenant mismatch" in errors[0]
         assert "sender" in errors[0]
 
-    @pytest.mark.asyncio
     async def test_validate_tenant_consistency_recipient_mismatch(self, tenant_bus):
         """Test tenant validation with recipient mismatch."""
         await tenant_bus.register_agent("receiver", "worker", [], "tenant-A")

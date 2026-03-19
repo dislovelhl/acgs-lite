@@ -76,7 +76,6 @@ class TestMessageProcessorDebug:
         logger.info(f"  - Status: {msg.status}")
         return msg
 
-    @pytest.mark.asyncio
     async def test_process_valid_message_debug(self, processor, valid_message):
         """Test processing a valid message with debug output."""
         logger.debug("\n[DEBUG] Processing valid message...")
@@ -98,7 +97,6 @@ class TestMessageProcessorDebug:
 
         logger.debug("\n[DEBUG] ✓ Test passed")
 
-    @pytest.mark.asyncio
     async def test_process_invalid_hash_message_debug(self, processor, invalid_hash_message):
         """Test processing message with invalid constitutional hash."""
         logger.debug("\n[DEBUG] Processing invalid hash message...")
@@ -124,7 +122,6 @@ class TestMessageProcessorDebug:
 
         logger.debug("\n[DEBUG] ✓ Test passed")
 
-    @pytest.mark.asyncio
     async def test_handler_registration_debug(self, processor, valid_message):
         """Test handler registration and execution."""
         logger.debug("\n[DEBUG] Testing handler registration...")

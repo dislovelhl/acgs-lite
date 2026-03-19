@@ -6,7 +6,6 @@ Tests for the configurable ImpactScorer.
 """
 
 import numpy as np
-import pytest
 
 from enhanced_agent_bus.deliberation_layer.impact_scorer import (
     ImpactScorer,

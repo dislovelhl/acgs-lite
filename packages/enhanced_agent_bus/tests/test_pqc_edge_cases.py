@@ -54,7 +54,6 @@ def _config_mock(mode: str = "strict") -> AsyncMock:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_config_failure_defaults_to_strict_rejects_classical():
     """When get_mode() raises, enforcement defaults to strict and rejects classical key."""
     config = AsyncMock()
@@ -73,7 +72,6 @@ async def test_config_failure_defaults_to_strict_rejects_classical():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_mode_change_uses_value_at_processing_time():
     """Enforcement uses the mode value returned at the time of the check,
     not a cached value. Simulated by returning 'permissive' from get_mode()."""
@@ -93,7 +91,6 @@ async def test_mode_change_uses_value_at_processing_time():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_delete_classical_key_strict_succeeds():
     """DELETE operations do not enforce key-type checks.
 
@@ -120,7 +117,6 @@ async def test_delete_classical_key_strict_succeeds():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_recreate_after_delete_requires_pqc_key():
     """Recreating a deleted record under strict mode requires PQC key (uses create path)."""
     config = _config_mock("strict")
@@ -137,7 +133,6 @@ async def test_recreate_after_delete_requires_pqc_key():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_batch_migration_context_bypasses_create_strict():
     """migration_context=True on create bypasses strict gate."""
     config = _config_mock("strict")
@@ -154,7 +149,6 @@ async def test_batch_migration_context_bypasses_create_strict():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_unsupported_pqc_returns_supported_algorithms_list():
     """UnsupportedPQCAlgorithmError carries the supported_algorithms list."""
     config = _config_mock("strict")

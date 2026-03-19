@@ -10,8 +10,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import patch
 
-import pytest
-
 from enhanced_agent_bus.swarm_intelligence.consensus import ConsensusMechanism
 from enhanced_agent_bus.swarm_intelligence.enums import ConsensusType
 from enhanced_agent_bus.swarm_intelligence.models import ConsensusProposal

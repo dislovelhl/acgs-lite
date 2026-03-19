@@ -116,7 +116,6 @@ class TestLLMProviderTypeAllValues:
 class TestProviderHealthScorerUncoveredPaths:
     """Cover rate_limit path and edge cases in ProviderHealthScorer."""
 
-    @pytest.mark.asyncio
     async def test_record_request_rate_limit_error(self) -> None:
         """Line 331: rate_limit error type increments rate_limit_count."""
         scorer = ProviderHealthScorer()
@@ -130,7 +129,6 @@ class TestProviderHealthScorerUncoveredPaths:
         assert metrics.rate_limit_count == 1
         assert metrics.timeout_count == 0
 
-    @pytest.mark.asyncio
     async def test_record_request_unrecognised_error_type(self) -> None:
         """Neither timeout nor rate_limit — counters stay at 0."""
         scorer = ProviderHealthScorer()
@@ -176,7 +174,6 @@ class TestProviderHealthScorerUncoveredPaths:
         scorer.reset("nonexistent-provider")
         assert scorer._metrics["real-provider"].total_requests == 5
 
-    @pytest.mark.asyncio
     async def test_multiple_rate_limit_failures_accumulate(self) -> None:
         """Multiple rate_limit failures add up correctly."""
         scorer = ProviderHealthScorer()
@@ -184,7 +181,6 @@ class TestProviderHealthScorerUncoveredPaths:
             await scorer.record_request("prov", 100.0, success=False, error_type="rate_limit")
         assert scorer._metrics["prov"].rate_limit_count == 3
 
-    @pytest.mark.asyncio
     async def test_latency_stats_with_single_sample(self) -> None:
         """Single sample produces equal mean/median/p95/p99."""
         scorer = ProviderHealthScorer()
@@ -193,7 +189,6 @@ class TestProviderHealthScorerUncoveredPaths:
         assert metrics.avg_latency_ms == pytest.approx(250.0)
         assert metrics.p50_latency_ms == pytest.approx(250.0)
 
-    @pytest.mark.asyncio
     async def test_consecutive_failures_then_success_resets(self) -> None:
         """Success after consecutive failures resets the failure counter."""
         scorer = ProviderHealthScorer()
@@ -318,7 +313,6 @@ class TestProactiveFailoverManagerUncoveredPaths:
         chain = manager.build_fallback_chain("prov-nonexistent", requirements=[])
         assert len(chain) <= 5
 
-    @pytest.mark.asyncio
     async def test_check_and_failover_no_primary_with_capable_fallback(self) -> None:
         """Lines 545-548: no primary provider → picks first capable from registry."""
         registry = CapabilityRegistry()
@@ -338,7 +332,6 @@ class TestProactiveFailoverManagerUncoveredPaths:
         assert isinstance(provider, str)
         assert failover_occurred is False
 
-    @pytest.mark.asyncio
     async def test_check_and_failover_no_primary_no_capable_raises(self) -> None:
         """Line 548: raises ValueError when no capable provider found."""
         registry = CapabilityRegistry()
@@ -348,7 +341,6 @@ class TestProactiveFailoverManagerUncoveredPaths:
         with pytest.raises(ValueError, match="No capable providers"):
             await manager.check_and_failover("tenant-orphan", requirements=[])
 
-    @pytest.mark.asyncio
     async def test_check_and_failover_degraded_all_fallbacks_also_unhealthy(self) -> None:
         """Lines 561->559, 584: primary degraded but all fallbacks too unhealthy."""
         scorer = ProviderHealthScorer()
@@ -374,7 +366,6 @@ class TestProactiveFailoverManagerUncoveredPaths:
         assert failover_occurred is False
         assert provider == "prov-a"
 
-    @pytest.mark.asyncio
     async def test_check_and_failover_health_degraded_reason(self) -> None:
         """Line 570: reason is 'health_degraded' when health_score <= 0.3.
 
@@ -424,7 +415,6 @@ class TestProactiveFailoverManagerUncoveredPaths:
         last_event = manager._failover_history[-1]
         assert last_event.reason == "health_degraded"
 
-    @pytest.mark.asyncio
     async def test_check_and_failover_recovery_to_primary(self) -> None:
         """Lines 591-609: recovers to primary when it becomes healthy again."""
         scorer = ProviderHealthScorer()
@@ -511,7 +501,6 @@ class TestProactiveFailoverManagerUncoveredPaths:
 class TestProviderWarmupManagerUncoveredPaths:
     """Cover warmup timeout, start/stop periodic warmup."""
 
-    @pytest.mark.asyncio
     async def test_warmup_timeout(self) -> None:
         """Lines 732-739: warmup times out → WarmupResult(success=False, error='Timeout')."""
         manager = ProviderWarmupManager()
@@ -532,7 +521,6 @@ class TestProviderWarmupManagerUncoveredPaths:
         assert result.error == "Timeout"
         assert result.latency_ms >= 0
 
-    @pytest.mark.asyncio
     async def test_warmup_if_needed_with_expired_interval(self) -> None:
         """warmup_if_needed executes when interval has expired."""
         manager = ProviderWarmupManager()
@@ -546,7 +534,6 @@ class TestProviderWarmupManagerUncoveredPaths:
         assert result is not None
         assert result.success is True
 
-    @pytest.mark.asyncio
     async def test_warmup_if_needed_skips_when_recent(self) -> None:
         """warmup_if_needed skips when last warmup was recent."""
         manager = ProviderWarmupManager()
@@ -558,7 +545,6 @@ class TestProviderWarmupManagerUncoveredPaths:
         assert result is None
         handler.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_start_periodic_warmup_creates_task(self) -> None:
         """Lines 785-803: start_periodic_warmup creates an asyncio task."""
         manager = ProviderWarmupManager()
@@ -576,7 +562,6 @@ class TestProviderWarmupManagerUncoveredPaths:
         except (asyncio.CancelledError, Exception):  # noqa: S110
             pass
 
-    @pytest.mark.asyncio
     async def test_start_periodic_warmup_replaces_existing_task(self) -> None:
         """start_periodic_warmup cancels the old task and creates a new one."""
         manager = ProviderWarmupManager()
@@ -598,7 +583,6 @@ class TestProviderWarmupManagerUncoveredPaths:
         except (asyncio.CancelledError, Exception):  # noqa: S110
             pass
 
-    @pytest.mark.asyncio
     async def test_stop_periodic_warmup_cancels_task(self) -> None:
         """Lines 807-809: stop_periodic_warmup cancels and removes the task."""
         manager = ProviderWarmupManager()
@@ -646,7 +630,6 @@ class TestProviderWarmupManagerUncoveredPaths:
         assert status["last_warmup"] is None
         assert status["last_result"] is None
 
-    @pytest.mark.asyncio
     async def test_get_warmup_status_periodic_enabled_flag(self) -> None:
         """periodic_enabled is True only when a task is running."""
         manager = ProviderWarmupManager()
@@ -663,7 +646,6 @@ class TestProviderWarmupManagerUncoveredPaths:
         # Cleanup
         manager.stop_periodic_warmup("prov")
 
-    @pytest.mark.asyncio
     async def test_warmup_with_sync_handler(self) -> None:
         """Sync (non-coroutine) handler runs via asyncio.to_thread."""
         manager = ProviderWarmupManager()
@@ -686,7 +668,6 @@ class TestProviderWarmupManagerUncoveredPaths:
 class TestRequestHedgingManagerUncoveredPaths:
     """Cover pending-task cancellation and latency-improvement stats."""
 
-    @pytest.mark.asyncio
     async def test_execute_hedged_cancels_slow_tasks(self) -> None:
         """Lines 952->949, 970: when first provider wins, pending tasks are cancelled."""
         manager = RequestHedgingManager(default_hedge_count=3, hedge_delay_ms=0)
@@ -715,7 +696,6 @@ class TestRequestHedgingManagerUncoveredPaths:
         # Give cancelled tasks a moment to process
         await asyncio.sleep(0.05)
 
-    @pytest.mark.asyncio
     async def test_execute_hedged_all_fail_records_errors(self) -> None:
         """When all providers fail, the error message includes provider details."""
         manager = RequestHedgingManager(default_hedge_count=2, hedge_delay_ms=0)
@@ -732,7 +712,6 @@ class TestRequestHedgingManagerUncoveredPaths:
             )
         assert "All hedged providers failed" in str(exc_info.value)
 
-    @pytest.mark.asyncio
     async def test_get_hedging_stats_latency_improvement_calculation(self) -> None:
         """Lines 1006-1013: stats calculate latency improvement when winner is faster."""
         manager = RequestHedgingManager(default_hedge_count=2, hedge_delay_ms=0)
@@ -754,7 +733,6 @@ class TestRequestHedgingManagerUncoveredPaths:
         assert "fast-prov" in stats["provider_win_counts"]
         assert stats["provider_win_counts"]["fast-prov"] == 1
 
-    @pytest.mark.asyncio
     async def test_get_hedging_stats_no_improvement_when_single_latency(self) -> None:
         """No latency improvement when only one latency recorded."""
         manager = RequestHedgingManager(default_hedge_count=2, hedge_delay_ms=0)
@@ -770,7 +748,6 @@ class TestRequestHedgingManagerUncoveredPaths:
         # avg_latency_improvement_ms should be 0 (no other latency to compare)
         assert stats["avg_latency_improvement_ms"] == 0
 
-    @pytest.mark.asyncio
     async def test_execute_hedged_uses_default_hedge_count(self) -> None:
         """When hedge_count is not specified, uses default_hedge_count."""
         manager = RequestHedgingManager(default_hedge_count=2, hedge_delay_ms=0)
@@ -790,7 +767,6 @@ class TestRequestHedgingManagerUncoveredPaths:
         assert winner in ("p1", "p2")
         assert len(manager._hedged_requests) == 1
 
-    @pytest.mark.asyncio
     async def test_execute_hedged_hedge_count_exceeds_providers(self) -> None:
         """hedge_count larger than available providers works fine."""
         manager = RequestHedgingManager(default_hedge_count=5, hedge_delay_ms=0)
@@ -807,7 +783,6 @@ class TestRequestHedgingManagerUncoveredPaths:
         )
         assert winner == "only-prov"
 
-    @pytest.mark.asyncio
     async def test_execute_hedged_with_delay(self) -> None:
         """Hedge delay staggers request start times."""
         manager = RequestHedgingManager(default_hedge_count=2, hedge_delay_ms=20)
@@ -827,7 +802,6 @@ class TestRequestHedgingManagerUncoveredPaths:
         )
         assert winner in ("p1", "p2")
 
-    @pytest.mark.asyncio
     async def test_execute_hedged_first_fails_then_second_succeeds_with_different_error_types(
         self,
     ) -> None:

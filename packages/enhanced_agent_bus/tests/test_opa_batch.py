@@ -63,7 +63,6 @@ def _reset_opa_batch_singleton():
 class TestOPABatchClientConfig:
     """Test OPA batch client configuration."""
 
-    @pytest.mark.asyncio
     async def test_batch_client_has_constitutional_hash(self):
         """Test batch client tracks constitutional hash for compliance."""
         from enhanced_agent_bus.opa_batch import OPABatchClient
@@ -71,7 +70,6 @@ class TestOPABatchClientConfig:
         client = OPABatchClient(opa_url="http://localhost:8181")
         assert client.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_batch_client_configurable_concurrency(self):
         """Test batch client concurrency limit is configurable."""
         from enhanced_agent_bus.opa_batch import OPABatchClient
@@ -82,7 +80,6 @@ class TestOPABatchClientConfig:
         )
         assert client.max_concurrent == 20
 
-    @pytest.mark.asyncio
     async def test_batch_client_default_concurrency(self):
         """Test batch client has reasonable default concurrency."""
         from enhanced_agent_bus.opa_batch import DEFAULT_MAX_CONCURRENT, OPABatchClient
@@ -92,7 +89,6 @@ class TestOPABatchClientConfig:
         assert DEFAULT_MAX_CONCURRENT >= 5
         assert DEFAULT_MAX_CONCURRENT <= 50
 
-    @pytest.mark.asyncio
     async def test_batch_client_configurable_batch_size(self):
         """Test batch client batch size is configurable."""
         from enhanced_agent_bus.opa_batch import OPABatchClient
@@ -103,7 +99,6 @@ class TestOPABatchClientConfig:
         )
         assert client.batch_size == 50
 
-    @pytest.mark.asyncio
     async def test_batch_client_default_cache_hash_mode(self):
         """Test batch client defaults to SHA-256 cache keys."""
         from enhanced_agent_bus.opa_batch import DEFAULT_CACHE_HASH_MODE, OPABatchClient
@@ -112,7 +107,6 @@ class TestOPABatchClientConfig:
         assert client.cache_hash_mode == DEFAULT_CACHE_HASH_MODE
         assert DEFAULT_CACHE_HASH_MODE == "sha256"
 
-    @pytest.mark.asyncio
     async def test_batch_client_rejects_invalid_cache_hash_mode(self):
         """Test invalid cache hash mode is rejected."""
         from enhanced_agent_bus.opa_batch import OPABatchClient
@@ -120,7 +114,6 @@ class TestOPABatchClientConfig:
         with pytest.raises(ValueError, match="Invalid cache_hash_mode"):
             OPABatchClient(opa_url="http://localhost:8181", cache_hash_mode="unknown")  # type: ignore[arg-type]
 
-    @pytest.mark.asyncio
     async def test_generate_cache_key_fast_mode_uses_kernel(self, monkeypatch):
         """Test fast mode uses Rust fast_hash when available."""
         import importlib
@@ -152,7 +145,6 @@ class TestOPABatchClientConfig:
         assert called["value"] is True
         assert key == "fast:0000000000001234"
 
-    @pytest.mark.asyncio
     async def test_generate_cache_key_fast_mode_falls_back_to_sha256(self, monkeypatch):
         """Test fast mode falls back to SHA-256 when Rust kernel is unavailable."""
         import enhanced_agent_bus.opa_batch as opa_batch_module
@@ -169,7 +161,6 @@ class TestOPABatchClientConfig:
 class TestOPABatchEvaluation:
     """Test OPA batch policy evaluation."""
 
-    @pytest.mark.asyncio
     async def test_batch_evaluate_single_policy(self):
         """Test batch evaluate with single input."""
         from enhanced_agent_bus.opa_batch import OPABatchClient
@@ -195,7 +186,6 @@ class TestOPABatchEvaluation:
 
             await client.close()
 
-    @pytest.mark.asyncio
     async def test_batch_evaluate_multiple_inputs(self):
         """Test batch evaluate with multiple inputs."""
         from enhanced_agent_bus.opa_batch import OPABatchClient
@@ -226,7 +216,6 @@ class TestOPABatchEvaluation:
 
             await client.close()
 
-    @pytest.mark.asyncio
     async def test_batch_evaluate_empty_input(self):
         """Test batch evaluate with empty input list."""
         from enhanced_agent_bus.opa_batch import OPABatchClient
@@ -236,7 +225,6 @@ class TestOPABatchEvaluation:
 
         assert results == []
 
-    @pytest.mark.asyncio
     async def test_batch_evaluate_preserves_order(self):
         """Test batch evaluate preserves input order in results."""
         from enhanced_agent_bus.opa_batch import OPABatchClient
@@ -285,7 +273,6 @@ class TestOPABatchEvaluation:
 class TestOPABatchParallelExecution:
     """Test OPA batch parallel execution."""
 
-    @pytest.mark.asyncio
     async def test_batch_uses_parallel_execution(self):
         """Test batch evaluate uses parallel execution."""
         from enhanced_agent_bus.opa_batch import OPABatchClient
@@ -331,7 +318,6 @@ class TestOPABatchParallelExecution:
 
             await client.close()
 
-    @pytest.mark.asyncio
     async def test_batch_respects_concurrency_limit(self):
         """Test batch evaluate respects concurrency limit."""
         from enhanced_agent_bus.opa_batch import OPABatchClient
@@ -383,7 +369,6 @@ class TestOPABatchParallelExecution:
 class TestOPABatchCaching:
     """Test OPA batch caching integration."""
 
-    @pytest.mark.asyncio
     async def test_batch_uses_cache_for_duplicates(self):
         """Test batch evaluate uses cache for duplicate inputs."""
         from enhanced_agent_bus.opa_batch import OPABatchClient
@@ -426,7 +411,6 @@ class TestOPABatchCaching:
 
             await client.close()
 
-    @pytest.mark.asyncio
     async def test_batch_cache_returns_correct_results_for_duplicates(self):
         """Test batch cache returns correct results for duplicate inputs."""
         from enhanced_agent_bus.opa_batch import OPABatchClient
@@ -473,7 +457,6 @@ class TestOPABatchCaching:
 class TestOPABatchErrorHandling:
     """Test OPA batch error handling."""
 
-    @pytest.mark.asyncio
     async def test_batch_handles_partial_failures(self):
         """Test batch evaluate handles partial failures gracefully."""
         from enhanced_agent_bus.opa_batch import OPABatchClient
@@ -521,7 +504,6 @@ class TestOPABatchErrorHandling:
 
             await client.close()
 
-    @pytest.mark.asyncio
     async def test_batch_fail_closed_on_error(self):
         """Test batch evaluate uses fail-closed on errors."""
         from enhanced_agent_bus.opa_batch import OPABatchClient
@@ -554,7 +536,6 @@ class TestOPABatchErrorHandling:
 class TestOPABatchMetrics:
     """Test OPA batch metrics collection."""
 
-    @pytest.mark.asyncio
     async def test_batch_tracks_metrics(self):
         """Test batch client tracks evaluation metrics."""
         from enhanced_agent_bus.opa_batch import OPABatchClient
@@ -583,7 +564,6 @@ class TestOPABatchMetrics:
 
             await client.close()
 
-    @pytest.mark.asyncio
     async def test_batch_tracks_cache_hits(self):
         """Test batch client tracks cache hit rate."""
         from enhanced_agent_bus.opa_batch import OPABatchClient
@@ -618,7 +598,6 @@ class TestOPABatchMetrics:
 
             await client.close()
 
-    @pytest.mark.asyncio
     async def test_batch_tracks_latency(self):
         """Test batch client tracks average latency."""
         from enhanced_agent_bus.opa_batch import OPABatchClient
@@ -654,7 +633,6 @@ class TestOPABatchMetrics:
 class TestOPABatchConnectionPooling:
     """Test OPA batch connection pooling."""
 
-    @pytest.mark.asyncio
     async def test_batch_reuses_connections(self):
         """Test batch client reuses HTTP connections."""
         from enhanced_agent_bus.opa_batch import OPABatchClient
@@ -682,7 +660,6 @@ class TestOPABatchConnectionPooling:
 
             await client.close()
 
-    @pytest.mark.asyncio
     async def test_batch_configures_connection_pool(self):
         """Test batch client configures connection pool limits."""
         from enhanced_agent_bus.opa_batch import OPABatchClient
@@ -712,7 +689,6 @@ class TestOPABatchConnectionPooling:
 class TestOPABatchIntegration:
     """Test OPA batch integration with existing OPA client."""
 
-    @pytest.mark.asyncio
     async def test_batch_client_compatible_with_opa_client(self):
         """Test batch client produces compatible results with OPAClient."""
         from enhanced_agent_bus.opa_batch import OPABatchClient
@@ -746,7 +722,6 @@ class TestOPABatchIntegration:
 
             await client.close()
 
-    @pytest.mark.asyncio
     async def test_batch_client_context_manager(self):
         """Test batch client works as async context manager."""
         from enhanced_agent_bus.opa_batch import OPABatchClient

@@ -46,7 +46,6 @@ class TestMigrationJobLifecycle:
     def job_manager(self):
         return MigrationJobManager()
 
-    @pytest.mark.asyncio
     async def test_create_job(self, job_manager):
         """Test creating a new migration job."""
         config = MigrationJobConfig(
@@ -62,7 +61,6 @@ class TestMigrationJobLifecycle:
         assert job.status == MigrationJobStatus.PENDING
         assert job.config.job_type == MigrationJobType.POLICY_IMPORT
 
-    @pytest.mark.asyncio
     async def test_get_job(self, job_manager):
         """Test retrieving a job by ID."""
         config = MigrationJobConfig(job_type=MigrationJobType.FULL_MIGRATION)
@@ -73,7 +71,6 @@ class TestMigrationJobLifecycle:
         assert retrieved is not None
         assert retrieved.job_id == job.job_id
 
-    @pytest.mark.asyncio
     async def test_get_job_wrong_tenant(self, job_manager):
         """Test that jobs are tenant-isolated."""
         config = MigrationJobConfig(job_type=MigrationJobType.FULL_MIGRATION)
@@ -83,7 +80,6 @@ class TestMigrationJobLifecycle:
 
         assert retrieved is None
 
-    @pytest.mark.asyncio
     async def test_list_jobs_for_tenant(self, job_manager):
         """Test listing jobs for a specific tenant."""
         config = MigrationJobConfig(job_type=MigrationJobType.POLICY_IMPORT)
@@ -97,7 +93,6 @@ class TestMigrationJobLifecycle:
         assert len(jobs) == 2
         assert all(j.tenant_id == "tenant-001" for j in jobs)
 
-    @pytest.mark.asyncio
     async def test_list_jobs_with_status_filter(self, job_manager):
         """Test filtering jobs by status."""
         config = MigrationJobConfig(job_type=MigrationJobType.POLICY_IMPORT)
@@ -112,7 +107,6 @@ class TestMigrationJobLifecycle:
         assert len(cancelled) == 1
         assert len(pending) == 1
 
-    @pytest.mark.asyncio
     async def test_cancel_job(self, job_manager):
         """Test cancelling a migration job."""
         config = MigrationJobConfig(job_type=MigrationJobType.POLICY_IMPORT)
@@ -123,7 +117,6 @@ class TestMigrationJobLifecycle:
         assert cancelled.status == MigrationJobStatus.CANCELLED
         assert cancelled.completed_at is not None
 
-    @pytest.mark.asyncio
     async def test_start_job(self, job_manager):
         """Test starting a pending job."""
         config = MigrationJobConfig(job_type=MigrationJobType.POLICY_IMPORT)
@@ -133,7 +126,6 @@ class TestMigrationJobLifecycle:
 
         assert started.status == MigrationJobStatus.QUEUED
 
-    @pytest.mark.asyncio
     async def test_complete_job(self, job_manager):
         """Test completing a job with results."""
         config = MigrationJobConfig(job_type=MigrationJobType.POLICY_IMPORT)
@@ -151,7 +143,6 @@ class TestMigrationJobLifecycle:
         assert completed.status == MigrationJobStatus.COMPLETED
         assert completed.completed_at is not None
 
-    @pytest.mark.asyncio
     async def test_fail_job(self, job_manager):
         """Test failing a job with error message."""
         config = MigrationJobConfig(job_type=MigrationJobType.POLICY_IMPORT)
@@ -234,7 +225,6 @@ class TestPDFReportGeneration:
     def generator(self):
         return PDFReportGenerator()
 
-    @pytest.mark.asyncio
     async def test_generate_pdf_report(self, generator):
         """Test generating a PDF report."""
         result = MigrationJobResult(
@@ -254,7 +244,6 @@ class TestPDFReportGeneration:
         assert pdf.filename.endswith(".pdf")
         assert len(pdf.content_bytes) > 0
 
-    @pytest.mark.asyncio
     async def test_pdf_contains_job_info(self, generator):
         """Test that PDF contains job information."""
         result = MigrationJobResult(
@@ -268,7 +257,6 @@ class TestPDFReportGeneration:
         assert "tenant-456" in content
         assert CONSTITUTIONAL_HASH in content
 
-    @pytest.mark.asyncio
     async def test_pdf_includes_constitutional_hash(self, generator):
         """Test that PDF report includes constitutional hash."""
         result = MigrationJobResult(
@@ -290,7 +278,6 @@ class TestAsyncTaskQueue:
         yield queue
         await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_enqueue_and_process(self, task_queue):
         """Test enqueueing and processing a task."""
 
@@ -305,7 +292,6 @@ class TestAsyncTaskQueue:
         assert result["status"] == "success"
         assert result["result"] == 10
 
-    @pytest.mark.asyncio
     async def test_queue_multiple_tasks(self, task_queue):
         """Test processing multiple tasks."""
 
@@ -322,7 +308,6 @@ class TestAsyncTaskQueue:
             assert result is not None
             assert result["result"] == i + 1
 
-    @pytest.mark.asyncio
     async def test_task_error_handling(self, task_queue):
         """Test error handling in task processing."""
 
@@ -337,7 +322,6 @@ class TestAsyncTaskQueue:
         assert result["status"] == "error"
         assert "Task failed" in result["error"]
 
-    @pytest.mark.asyncio
     async def test_queue_size(self, task_queue):
         """Test getting queue size."""
         # Initially empty
@@ -355,7 +339,6 @@ class TestMigrationJobAPI:
         pdf_generator = PDFReportGenerator()
         return MigrationJobAPI(job_manager, task_queue, pdf_generator)
 
-    @pytest.mark.asyncio
     async def test_create_migration_endpoint(self, api):
         """Test POST /tenants/{tenant_id}/migrations"""
         response = await api.create_migration(
@@ -369,7 +352,6 @@ class TestMigrationJobAPI:
         assert response["status"] == "pending"
         assert response["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_get_migration_endpoint(self, api):
         """Test GET /tenants/{tenant_id}/migrations/{job_id}"""
         create_resp = await api.create_migration(
@@ -386,7 +368,6 @@ class TestMigrationJobAPI:
         assert "progress" in get_resp
         assert get_resp["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_list_migrations_endpoint(self, api):
         """Test GET /tenants/{tenant_id}/migrations"""
         await api.create_migration(
@@ -408,7 +389,6 @@ class TestMigrationJobAPI:
         assert len(response["jobs"]) == 2
         assert response["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_cancel_migration_endpoint(self, api):
         """Test DELETE /tenants/{tenant_id}/migrations/{job_id}"""
         create_resp = await api.create_migration(
@@ -424,7 +404,6 @@ class TestMigrationJobAPI:
         assert cancel_resp["status"] == "cancelled"
         assert cancel_resp["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_get_results_json(self, api):
         """Test GET /tenants/{tenant_id}/migrations/{job_id}/results (JSON)"""
         create_resp = await api.create_migration(
@@ -450,7 +429,6 @@ class TestMigrationJobAPI:
         assert response["format"] == "json"
         assert response["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_get_results_pdf(self, api):
         """Test GET /tenants/{tenant_id}/migrations/{job_id}/results (PDF)"""
         create_resp = await api.create_migration(

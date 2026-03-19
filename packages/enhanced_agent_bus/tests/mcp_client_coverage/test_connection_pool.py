@@ -45,7 +45,6 @@ class TestMCPConnectionPoolInit:
 
 
 class TestMCPConnectionPoolAddServer:
-    @pytest.mark.asyncio
     async def test_add_server_auto_connect(self):
         pool = MCPConnectionPool()
         cfg = _make_config()
@@ -53,7 +52,6 @@ class TestMCPConnectionPoolAddServer:
         assert client.is_connected
         assert len(pool._clients) == 1
 
-    @pytest.mark.asyncio
     async def test_add_server_no_auto_connect(self):
         pool = MCPConnectionPool()
         cfg = _make_config()
@@ -61,28 +59,24 @@ class TestMCPConnectionPoolAddServer:
         assert not client.is_connected
         assert len(pool._clients) == 1
 
-    @pytest.mark.asyncio
     async def test_add_server_custom_agent_id(self):
         pool = MCPConnectionPool()
         cfg = _make_config()
         client = await pool.add_server(cfg, agent_id="special-agent", auto_connect=False)
         assert client.agent_id == "special-agent"
 
-    @pytest.mark.asyncio
     async def test_add_server_uses_default_agent_id(self):
         pool = MCPConnectionPool(default_agent_id="pool-default")
         cfg = _make_config()
         client = await pool.add_server(cfg, auto_connect=False)
         assert client.agent_id == "pool-default"
 
-    @pytest.mark.asyncio
     async def test_add_server_max_connections_raises(self):
         pool = MCPConnectionPool()
         with patch.object(type(pool), "MAX_CONNECTIONS", 0):
             with pytest.raises(MCPConnectionError, match="Maximum connections reached"):
                 await pool.add_server(_make_config())
 
-    @pytest.mark.asyncio
     async def test_add_server_with_validator(self):
         validator = MagicMock()
         validation_result = MagicMock()
@@ -99,7 +93,6 @@ class TestMCPConnectionPoolAddServer:
 
 
 class TestMCPConnectionPoolRemoveServer:
-    @pytest.mark.asyncio
     async def test_remove_existing_connected_server(self):
         pool = MCPConnectionPool()
         cfg = _make_config()
@@ -109,7 +102,6 @@ class TestMCPConnectionPoolRemoveServer:
         assert result is True
         assert server_id not in pool._clients
 
-    @pytest.mark.asyncio
     async def test_remove_existing_disconnected_server(self):
         pool = MCPConnectionPool()
         cfg = _make_config()
@@ -118,13 +110,11 @@ class TestMCPConnectionPoolRemoveServer:
         result = await pool.remove_server(server_id)
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_remove_nonexistent_server_returns_false(self):
         pool = MCPConnectionPool()
         result = await pool.remove_server("does-not-exist")
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_remove_server_disconnects_client(self):
         pool = MCPConnectionPool()
         cfg = _make_config()
@@ -136,7 +126,6 @@ class TestMCPConnectionPoolRemoveServer:
 
 
 class TestMCPConnectionPoolQuery:
-    @pytest.mark.asyncio
     async def test_get_client_existing(self):
         pool = MCPConnectionPool()
         cfg = _make_config()
@@ -148,12 +137,10 @@ class TestMCPConnectionPoolQuery:
         pool = MCPConnectionPool()
         assert pool.get_client("no-such-id") is None
 
-    @pytest.mark.asyncio
     async def test_list_servers_empty(self):
         pool = MCPConnectionPool()
         assert pool.list_servers() == []
 
-    @pytest.mark.asyncio
     async def test_list_servers_after_add(self):
         pool = MCPConnectionPool()
         cfg = _make_config()
@@ -161,7 +148,6 @@ class TestMCPConnectionPoolQuery:
         servers = pool.list_servers()
         assert len(servers) == 1
 
-    @pytest.mark.asyncio
     async def test_list_servers_disconnected_client(self):
         pool = MCPConnectionPool()
         cfg = _make_config()
@@ -173,13 +159,11 @@ class TestMCPConnectionPoolQuery:
 
 
 class TestMCPConnectionPoolBulkOps:
-    @pytest.mark.asyncio
     async def test_connect_all_empty_pool(self):
         pool = MCPConnectionPool()
         results = await pool.connect_all()
         assert results == {}
 
-    @pytest.mark.asyncio
     async def test_connect_all_already_connected(self):
         pool = MCPConnectionPool()
         cfg = _make_config()
@@ -187,7 +171,6 @@ class TestMCPConnectionPoolBulkOps:
         results = await pool.connect_all()
         assert results == {}
 
-    @pytest.mark.asyncio
     async def test_connect_all_connects_disconnected(self):
         pool = MCPConnectionPool()
         cfg = _make_config()
@@ -196,7 +179,6 @@ class TestMCPConnectionPoolBulkOps:
         assert results[client.server_id] is True
         assert client.is_connected
 
-    @pytest.mark.asyncio
     async def test_connect_all_records_failure(self):
         pool = MCPConnectionPool()
         cfg = _make_config(retry_attempts=1)
@@ -209,12 +191,10 @@ class TestMCPConnectionPoolBulkOps:
         results = await pool.connect_all()
         assert results[client.server_id] is False
 
-    @pytest.mark.asyncio
     async def test_disconnect_all_empty_pool(self):
         pool = MCPConnectionPool()
         await pool.disconnect_all()
 
-    @pytest.mark.asyncio
     async def test_disconnect_all_connected(self):
         pool = MCPConnectionPool()
         cfg = _make_config()
@@ -223,7 +203,6 @@ class TestMCPConnectionPoolBulkOps:
         await pool.disconnect_all()
         assert not client.is_connected
 
-    @pytest.mark.asyncio
     async def test_disconnect_all_mixed(self):
         pool = MCPConnectionPool()
         cfg1 = _make_config(server_url="http://a.example.com/mcp")
@@ -245,7 +224,6 @@ class TestMCPConnectionPoolMetrics:
         assert m["max_connections"] == MCPConnectionPool.MAX_CONNECTIONS
         assert m["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_get_metrics_with_connections(self):
         pool = MCPConnectionPool()
         cfg1 = _make_config(server_url="http://s1.example.com/mcp")

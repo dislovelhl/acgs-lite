@@ -82,7 +82,6 @@ class MockPolicyResolver:
             )
 
 
-@pytest.mark.asyncio
 class TestConstitutionalClassifierSessionIntegration:
     """Test suite for session-specific policy integration"""
 

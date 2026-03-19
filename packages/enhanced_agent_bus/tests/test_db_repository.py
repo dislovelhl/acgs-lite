@@ -100,7 +100,6 @@ async def repository(db_session: AsyncSession) -> DatabaseTenantRepository:
 class TestDatabaseTenantRepositoryCreate:
     """Tests for tenant creation via database repository."""
 
-    @pytest.mark.asyncio
     async def test_create_tenant_success(self, repository: DatabaseTenantRepository):
         """Test creating a tenant successfully."""
         tenant = await repository.create_tenant(
@@ -119,7 +118,6 @@ class TestDatabaseTenantRepositoryCreate:
         assert tenant.config.enable_batch_processing is True
         assert tenant.created_at is not None
 
-    @pytest.mark.asyncio
     async def test_create_tenant_with_defaults(self, repository: DatabaseTenantRepository):
         """Test creating a tenant with default values."""
         tenant = await repository.create_tenant(
@@ -132,7 +130,6 @@ class TestDatabaseTenantRepositoryCreate:
         assert tenant.config is not None
         assert tenant.quota == {}
 
-    @pytest.mark.asyncio
     async def test_create_tenant_duplicate_slug_fails(self, repository: DatabaseTenantRepository):
         """Test that duplicate slugs are rejected."""
         await repository.create_tenant(name="First", slug="unique-slug")
@@ -140,7 +137,6 @@ class TestDatabaseTenantRepositoryCreate:
         with pytest.raises(ValueError, match="already exists"):
             await repository.create_tenant(name="Second", slug="unique-slug")
 
-    @pytest.mark.asyncio
     async def test_create_tenant_with_parent(self, repository: DatabaseTenantRepository):
         """Test creating a child tenant with parent."""
         parent = await repository.create_tenant(name="Parent", slug="parent-org")
@@ -161,7 +157,6 @@ class TestDatabaseTenantRepositoryCreate:
 class TestDatabaseTenantRepositoryRead:
     """Tests for tenant read operations via database repository."""
 
-    @pytest.mark.asyncio
     async def test_get_tenant_by_id(self, repository: DatabaseTenantRepository):
         """Test retrieving a tenant by ID."""
         created = await repository.create_tenant(name="Get Test", slug="get-test")
@@ -172,7 +167,6 @@ class TestDatabaseTenantRepositoryRead:
         assert fetched.tenant_id == created.tenant_id
         assert fetched.name == "Get Test"
 
-    @pytest.mark.asyncio
     async def test_get_tenant_by_slug(self, repository: DatabaseTenantRepository):
         """Test retrieving a tenant by slug."""
         created = await repository.create_tenant(name="Slug Test", slug="slug-test")
@@ -182,13 +176,11 @@ class TestDatabaseTenantRepositoryRead:
         assert fetched is not None
         assert fetched.tenant_id == created.tenant_id
 
-    @pytest.mark.asyncio
     async def test_get_nonexistent_tenant(self, repository: DatabaseTenantRepository):
         """Test that nonexistent tenant returns None."""
         result = await repository.get_tenant("nonexistent-id")
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_list_tenants(self, repository: DatabaseTenantRepository):
         """Test listing all tenants."""
         await repository.create_tenant(name="Tenant 1", slug="tenant-1")
@@ -199,7 +191,6 @@ class TestDatabaseTenantRepositoryRead:
 
         assert len(tenants) == 3
 
-    @pytest.mark.asyncio
     async def test_list_tenants_by_status(self, repository: DatabaseTenantRepository):
         """Test listing tenants filtered by status."""
         t1 = await repository.create_tenant(name="Pending", slug="pending-t")
@@ -212,7 +203,6 @@ class TestDatabaseTenantRepositoryRead:
         assert len(active_tenants) == 1
         assert len(pending_tenants) == 1
 
-    @pytest.mark.asyncio
     async def test_list_tenants_pagination(self, repository: DatabaseTenantRepository):
         """Test listing tenants with pagination."""
         for i in range(10):
@@ -233,7 +223,6 @@ class TestDatabaseTenantRepositoryRead:
 class TestDatabaseTenantRepositoryUpdate:
     """Tests for tenant update operations via database repository."""
 
-    @pytest.mark.asyncio
     async def test_activate_tenant(self, repository: DatabaseTenantRepository):
         """Test activating a tenant."""
         created = await repository.create_tenant(name="Activate Me", slug="activate-me")
@@ -245,7 +234,6 @@ class TestDatabaseTenantRepositoryUpdate:
         assert activated.status == TenantStatus.ACTIVE
         assert activated.activated_at is not None
 
-    @pytest.mark.asyncio
     async def test_suspend_tenant(self, repository: DatabaseTenantRepository):
         """Test suspending a tenant."""
         created = await repository.create_tenant(name="Suspend Me", slug="suspend-me")
@@ -258,7 +246,6 @@ class TestDatabaseTenantRepositoryUpdate:
         assert suspended.suspended_at is not None
         assert suspended.metadata.get("suspension_reason") == "Policy violation"
 
-    @pytest.mark.asyncio
     async def test_update_tenant_config(self, repository: DatabaseTenantRepository):
         """Test updating tenant configuration."""
         created = await repository.create_tenant(
@@ -277,7 +264,6 @@ class TestDatabaseTenantRepositoryUpdate:
         assert updated.config.enable_batch_processing is True
         assert updated.config.enable_deliberation is True
 
-    @pytest.mark.asyncio
     async def test_update_tenant_quota(self, repository: DatabaseTenantRepository):
         """Test updating tenant quota."""
         created = await repository.create_tenant(
@@ -293,7 +279,6 @@ class TestDatabaseTenantRepositoryUpdate:
         assert updated.quota["max_agents"] == 500
         assert updated.quota["max_policies"] == 1000
 
-    @pytest.mark.asyncio
     async def test_update_tenant_properties(self, repository: DatabaseTenantRepository):
         """Test updating tenant name and metadata."""
         created = await repository.create_tenant(
@@ -322,7 +307,6 @@ class TestDatabaseTenantRepositoryUpdate:
 class TestDatabaseTenantRepositoryDelete:
     """Tests for tenant delete operations via database repository."""
 
-    @pytest.mark.asyncio
     async def test_delete_tenant(self, repository: DatabaseTenantRepository):
         """Test deleting a tenant."""
         created = await repository.create_tenant(name="Delete Me", slug="delete-me")
@@ -335,7 +319,6 @@ class TestDatabaseTenantRepositoryDelete:
         fetched = await repository.get_tenant(created.tenant_id)
         assert fetched is None
 
-    @pytest.mark.asyncio
     async def test_delete_nonexistent_tenant(self, repository: DatabaseTenantRepository):
         """Test that deleting nonexistent tenant returns False."""
         result = await repository.delete_tenant("nonexistent-id")
@@ -350,7 +333,6 @@ class TestDatabaseTenantRepositoryDelete:
 class TestDatabaseTenantRepositoryCounts:
     """Tests for tenant count operations via database repository."""
 
-    @pytest.mark.asyncio
     async def test_get_tenant_count(self, repository: DatabaseTenantRepository):
         """Test getting total tenant count."""
         assert await repository.get_tenant_count() == 0
@@ -360,7 +342,6 @@ class TestDatabaseTenantRepositoryCounts:
 
         assert await repository.get_tenant_count() == 2
 
-    @pytest.mark.asyncio
     async def test_get_active_tenant_count(self, repository: DatabaseTenantRepository):
         """Test getting active tenant count."""
         t1 = await repository.create_tenant(name="Active", slug="active-count")
@@ -379,7 +360,6 @@ class TestDatabaseTenantRepositoryCounts:
 class TestDatabaseTenantRepositoryHierarchy:
     """Tests for hierarchical tenant operations via database repository."""
 
-    @pytest.mark.asyncio
     async def test_get_children(self, repository: DatabaseTenantRepository):
         """Test getting child tenants."""
         parent = await repository.create_tenant(name="Parent", slug="parent-h")
@@ -403,7 +383,6 @@ class TestDatabaseTenantRepositoryHierarchy:
 class TestDatabaseTenantRepositoryConstitutional:
     """Tests for constitutional compliance in database repository."""
 
-    @pytest.mark.asyncio
     async def test_constitutional_hash_set_on_create(self, repository: DatabaseTenantRepository):
         """Test that constitutional hash is correctly set on tenant creation."""
         tenant = await repository.create_tenant(
@@ -414,7 +393,6 @@ class TestDatabaseTenantRepositoryConstitutional:
         # For this test, we verify the repository has the correct hash
         assert repository.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_repository_has_constitutional_hash(self, repository: DatabaseTenantRepository):
         """Test that repository instance has constitutional hash."""
         assert repository.constitutional_hash == CONSTITUTIONAL_HASH

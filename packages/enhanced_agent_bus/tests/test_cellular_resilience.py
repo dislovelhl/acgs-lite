@@ -8,8 +8,6 @@ import asyncio
 import time
 from unittest.mock import patch
 
-import pytest
-
 from enhanced_agent_bus.agent_bus import EnhancedAgentBus
 from enhanced_agent_bus.message_processor import MessageProcessor
 from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage, MessageType
@@ -24,7 +22,6 @@ class TestCellularResilience:
     Focuses on Degraded Mode transitions and sub-5ms latency for Isolated Mode.
     """
 
-    @pytest.mark.asyncio
     async def test_degraded_mode_on_processor_failure(self):
         """
         Verify that a failure in the MessageProcessor's primary path
@@ -54,7 +51,6 @@ class TestCellularResilience:
             assert result.metadata.get("governance_mode") == "DEGRADED"
             assert "Infrastructure Crash simulated" in result.metadata.get("fallback_reason")
 
-    @pytest.mark.asyncio
     async def test_isolated_mode_latency_benchmark(self):
         """
         Verify that Isolated Mode (Governor-in-a-Box) maintains sub-5ms latency.
@@ -86,7 +82,6 @@ class TestCellularResilience:
         # Requirement: Sub-5ms
         assert avg_latency_ms < 5.0
 
-    @pytest.mark.asyncio
     async def test_concurrency_stress_during_outage(self):
         """
         Stress test the AgentBus with high concurrency during a simulated outage.
@@ -142,7 +137,6 @@ class TestCellularResilience:
                 "[Stress] 50 requests processed: 25 normal, 25 DEGRADED. Zero constitutional breaches."  # noqa: E501
             )
 
-    @pytest.mark.asyncio
     async def test_isolated_mode_dependency_decoupling(self):
         """
         Verify that Isolated Mode actually disables dynamic policy lookups.

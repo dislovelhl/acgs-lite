@@ -252,7 +252,6 @@ class TestConstitutionalHashCorruption:
 class TestMACIRoleDesynchronization:
     """Tests for MACI role desynchronization attacks."""
 
-    @pytest.mark.asyncio
     async def test_executive_cannot_validate(self) -> None:
         """Test that executive role cannot perform validation (judicial action).
 
@@ -280,7 +279,6 @@ class TestMACIRoleDesynchronization:
         except ImportError:
             pytest.skip("MACI enforcement module not available")
 
-    @pytest.mark.asyncio
     async def test_legislative_cannot_audit(self) -> None:
         """Test that legislative role cannot perform audit (judicial action).
 
@@ -307,7 +305,6 @@ class TestMACIRoleDesynchronization:
         except ImportError:
             pytest.skip("MACI enforcement module not available")
 
-    @pytest.mark.asyncio
     async def test_judicial_cannot_propose(self) -> None:
         """Test that judicial role cannot propose (executive action).
 
@@ -334,7 +331,6 @@ class TestMACIRoleDesynchronization:
         except ImportError:
             pytest.skip("MACI enforcement module not available")
 
-    @pytest.mark.asyncio
     async def test_unregistered_agent_rejected(self) -> None:
         """Test that unregistered agent is rejected.
 
@@ -357,7 +353,6 @@ class TestMACIRoleDesynchronization:
         except ImportError:
             pytest.skip("MACI enforcement module not available")
 
-    @pytest.mark.asyncio
     async def test_all_roles_can_query(self) -> None:
         """Test that all roles can perform QUERY action."""
         try:
@@ -409,7 +404,6 @@ class TestMACIRoleDesynchronization:
 class TestPartialOPAOutages:
     """Tests for partial OPA service outages."""
 
-    @pytest.mark.asyncio
     async def test_opa_client_handles_timeout(self) -> None:
         """Test that OPA client handles timeout gracefully."""
         try:
@@ -433,7 +427,6 @@ class TestPartialOPAOutages:
         except ImportError:
             pytest.skip("OPA client module not available")
 
-    @pytest.mark.asyncio
     async def test_opa_connection_error_handled(self) -> None:
         """Test that OPA connection error is handled gracefully."""
         try:
@@ -480,7 +473,6 @@ class TestPartialOPAOutages:
         except ImportError:
             pytest.skip("OPA client module not available")
 
-    @pytest.mark.asyncio
     async def test_opa_cache_prevents_outage_amplification(self) -> None:
         """Test that OPA cache prevents outage amplification."""
         try:
@@ -495,7 +487,6 @@ class TestPartialOPAOutages:
         except ImportError:
             pytest.skip("OPA client module not available")
 
-    @pytest.mark.asyncio
     async def test_fallback_mode_available(self) -> None:
         """Test that OPA client has fallback mode."""
         try:
@@ -517,7 +508,6 @@ class TestPartialOPAOutages:
 class TestConflictingApprovals:
     """Tests for conflicting approval injection attacks."""
 
-    @pytest.mark.asyncio
     async def test_voting_service_exists(self) -> None:
         """Test that voting service can be instantiated."""
         try:
@@ -530,7 +520,6 @@ class TestConflictingApprovals:
         except ImportError:
             pytest.skip("Voting service module not available")
 
-    @pytest.mark.asyncio
     async def test_election_creation(self) -> None:
         """Test that elections can be created for voting."""
         try:
@@ -559,7 +548,6 @@ class TestConflictingApprovals:
         except ImportError:
             pytest.skip("Voting service module not available")
 
-    @pytest.mark.asyncio
     async def test_split_brain_scenario(self) -> None:
         """Test handling of split-brain approval scenario."""
         simulator = AdversarialGovernanceSimulator()

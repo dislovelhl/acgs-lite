@@ -77,7 +77,6 @@ def mock_rust_processor() -> MagicMock:
 class TestStaticHashValidationStrategy:
     """Tests for StaticHashValidationStrategy."""
 
-    @pytest.mark.asyncio
     async def test_valid_message_passes(self, valid_message: AgentMessage) -> None:
         """Test that a valid message passes validation."""
         strategy = StaticHashValidationStrategy(strict=True)
@@ -85,7 +84,6 @@ class TestStaticHashValidationStrategy:
         assert is_valid is True
         assert error is None
 
-    @pytest.mark.asyncio
     async def test_invalid_hash_fails_in_strict_mode(
         self, invalid_hash_message: AgentMessage
     ) -> None:
@@ -95,7 +93,6 @@ class TestStaticHashValidationStrategy:
         assert is_valid is False
         assert "Constitutional hash mismatch" in error
 
-    @pytest.mark.asyncio
     async def test_invalid_hash_passes_in_non_strict_mode(
         self, invalid_hash_message: AgentMessage
     ) -> None:
@@ -105,7 +102,6 @@ class TestStaticHashValidationStrategy:
         assert is_valid is True
         assert error is None
 
-    @pytest.mark.asyncio
     async def test_missing_message_id_fails(self) -> None:
         """Test that missing message ID fails validation."""
         message = AgentMessage(
@@ -120,7 +116,6 @@ class TestStaticHashValidationStrategy:
         assert is_valid is False
         assert "Message ID is required" in error
 
-    @pytest.mark.asyncio
     async def test_none_content_fails(self) -> None:
         """Test that None content fails validation."""
         message = AgentMessage(
@@ -143,7 +138,6 @@ class TestStaticHashValidationStrategy:
 class TestDynamicPolicyValidationStrategy:
     """Tests for DynamicPolicyValidationStrategy."""
 
-    @pytest.mark.asyncio
     async def test_no_policy_client_fails(self, valid_message: AgentMessage) -> None:
         """Test that missing policy client fails."""
         strategy = DynamicPolicyValidationStrategy(policy_client=None)
@@ -151,7 +145,6 @@ class TestDynamicPolicyValidationStrategy:
         assert is_valid is False
         assert "Policy client not available" in error
 
-    @pytest.mark.asyncio
     async def test_valid_policy_response(
         self, valid_message: AgentMessage, mock_policy_client: AsyncMock
     ) -> None:
@@ -168,7 +161,6 @@ class TestDynamicPolicyValidationStrategy:
         assert error is None
         mock_policy_client.validate_message_signature.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_invalid_policy_response(
         self, valid_message: AgentMessage, mock_policy_client: AsyncMock
     ) -> None:
@@ -184,7 +176,6 @@ class TestDynamicPolicyValidationStrategy:
         assert is_valid is False
         assert "unauthorized action" in error
 
-    @pytest.mark.asyncio
     async def test_policy_client_exception(
         self, valid_message: AgentMessage, mock_policy_client: AsyncMock
     ) -> None:
@@ -209,7 +200,6 @@ class TestDynamicPolicyValidationStrategy:
 class TestOPAValidationStrategy:
     """Tests for OPAValidationStrategy."""
 
-    @pytest.mark.asyncio
     async def test_no_opa_client_fails(self, valid_message: AgentMessage) -> None:
         """Test that missing OPA client fails."""
         strategy = OPAValidationStrategy(opa_client=None)
@@ -217,7 +207,6 @@ class TestOPAValidationStrategy:
         assert is_valid is False
         assert "OPA client not available" in error
 
-    @pytest.mark.asyncio
     async def test_valid_opa_response(
         self, valid_message: AgentMessage, mock_opa_client: AsyncMock
     ) -> None:
@@ -234,7 +223,6 @@ class TestOPAValidationStrategy:
         assert error is None
         mock_opa_client.validate_constitutional.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_invalid_opa_response(
         self, valid_message: AgentMessage, mock_opa_client: AsyncMock
     ) -> None:
@@ -250,7 +238,6 @@ class TestOPAValidationStrategy:
         assert is_valid is False
         assert "role not authorized" in error
 
-    @pytest.mark.asyncio
     async def test_opa_client_exception(
         self, valid_message: AgentMessage, mock_opa_client: AsyncMock
     ) -> None:
@@ -273,7 +260,6 @@ class TestOPAValidationStrategy:
 class TestRustValidationStrategy:
     """Tests for RustValidationStrategy."""
 
-    @pytest.mark.asyncio
     async def test_no_rust_processor_fails(self, valid_message: AgentMessage) -> None:
         """Test that missing Rust processor fails."""
         strategy = RustValidationStrategy(rust_processor=None)
@@ -281,7 +267,6 @@ class TestRustValidationStrategy:
         assert is_valid is False
         assert "Rust processor not available" in error
 
-    @pytest.mark.asyncio
     async def test_validate_message_returns_true(
         self, valid_message: AgentMessage, mock_rust_processor: MagicMock
     ) -> None:
@@ -294,7 +279,6 @@ class TestRustValidationStrategy:
         assert is_valid is True
         assert error is None
 
-    @pytest.mark.asyncio
     async def test_validate_message_returns_false(
         self, valid_message: AgentMessage, mock_rust_processor: MagicMock
     ) -> None:
@@ -307,7 +291,6 @@ class TestRustValidationStrategy:
         assert is_valid is False
         assert "rejected message" in error
 
-    @pytest.mark.asyncio
     async def test_validate_message_returns_dict_valid(
         self, valid_message: AgentMessage, mock_rust_processor: MagicMock
     ) -> None:
@@ -320,7 +303,6 @@ class TestRustValidationStrategy:
         assert is_valid is True
         assert error is None
 
-    @pytest.mark.asyncio
     async def test_validate_message_returns_dict_invalid(
         self, valid_message: AgentMessage, mock_rust_processor: MagicMock
     ) -> None:
@@ -335,7 +317,6 @@ class TestRustValidationStrategy:
         assert is_valid is False
         assert "Custom error message" in error
 
-    @pytest.mark.asyncio
     async def test_sync_validate_method(
         self, valid_message: AgentMessage, mock_rust_processor: MagicMock
     ) -> None:
@@ -350,7 +331,6 @@ class TestRustValidationStrategy:
         assert is_valid is True
         assert error is None
 
-    @pytest.mark.asyncio
     async def test_constitutional_validate_method(
         self, valid_message: AgentMessage, mock_rust_processor: MagicMock
     ) -> None:
@@ -368,7 +348,6 @@ class TestRustValidationStrategy:
         assert is_valid is True
         assert error is None
 
-    @pytest.mark.asyncio
     async def test_no_validation_method_fails_closed(self, valid_message: AgentMessage) -> None:
         """Test that missing validation methods fail closed."""
         # Create processor with no validation methods
@@ -380,7 +359,6 @@ class TestRustValidationStrategy:
         assert is_valid is False
         assert "fail closed" in error.lower()
 
-    @pytest.mark.asyncio
     async def test_exception_fails_closed(
         self, valid_message: AgentMessage, mock_rust_processor: MagicMock
     ) -> None:
@@ -403,7 +381,6 @@ class TestRustValidationStrategy:
 class TestCompositeValidationStrategy:
     """Tests for CompositeValidationStrategy."""
 
-    @pytest.mark.asyncio
     async def test_empty_strategies_passes(self, valid_message: AgentMessage) -> None:
         """Test that empty strategy list passes."""
         strategy = CompositeValidationStrategy(strategies=[])
@@ -411,7 +388,6 @@ class TestCompositeValidationStrategy:
         assert is_valid is True
         assert error is None
 
-    @pytest.mark.asyncio
     async def test_all_strategies_pass(self, valid_message: AgentMessage) -> None:
         """Test that all passing strategies result in success."""
         mock_strategy1 = AsyncMock()
@@ -426,7 +402,6 @@ class TestCompositeValidationStrategy:
         assert is_valid is True
         assert error is None
 
-    @pytest.mark.asyncio
     async def test_one_strategy_fails(self, valid_message: AgentMessage) -> None:
         """Test that one failing strategy causes overall failure."""
         mock_strategy1 = AsyncMock()
@@ -441,7 +416,6 @@ class TestCompositeValidationStrategy:
         assert is_valid is False
         assert "Strategy 2 failed" in error
 
-    @pytest.mark.asyncio
     async def test_multiple_strategies_fail(self, valid_message: AgentMessage) -> None:
         """Test that multiple failures are aggregated."""
         mock_strategy1 = AsyncMock()
@@ -458,7 +432,6 @@ class TestCompositeValidationStrategy:
         assert "Error 2" in error
         assert ";" in error  # Errors are joined with semicolon
 
-    @pytest.mark.asyncio
     async def test_add_strategy(self, valid_message: AgentMessage) -> None:
         """Test adding a strategy dynamically."""
         strategy = CompositeValidationStrategy()
@@ -472,7 +445,6 @@ class TestCompositeValidationStrategy:
         assert is_valid is True
         mock_strategy.validate.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_with_real_static_strategy(self, valid_message: AgentMessage) -> None:
         """Test composite with real StaticHashValidationStrategy."""
         static_strategy = StaticHashValidationStrategy(strict=True)
@@ -483,7 +455,6 @@ class TestCompositeValidationStrategy:
         assert is_valid is True
         assert error is None
 
-    @pytest.mark.asyncio
     async def test_with_real_static_strategy_invalid(
         self, invalid_hash_message: AgentMessage
     ) -> None:

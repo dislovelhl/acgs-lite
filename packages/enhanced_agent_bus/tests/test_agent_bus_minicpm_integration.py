@@ -211,7 +211,6 @@ class TestRuntimeSafetyGuardrailsIntegration:
         assert engine.config.enable_minicpm is True
         assert engine.config.minicpm_model_name == "MiniCPM4-8B"
 
-    @pytest.mark.asyncio
     async def test_calculate_impact_score_basic(self):
         """Test basic impact score calculation."""
         engine = AgentEngine()
@@ -220,7 +219,6 @@ class TestRuntimeSafetyGuardrailsIntegration:
         assert isinstance(score, float)
         assert 0.0 <= score <= 1.0
 
-    @pytest.mark.asyncio
     async def test_calculate_impact_score_high_impact(self):
         """Test impact score for high-impact content."""
         engine = AgentEngine()
@@ -233,7 +231,6 @@ class TestRuntimeSafetyGuardrailsIntegration:
             score >= baseline_score * 0.9
         )  # At least close to baseline due to keyword recognition
 
-    @pytest.mark.asyncio
     async def test_calculate_impact_score_with_context(self):
         """Test impact score calculation with additional context."""
         engine = AgentEngine()
@@ -244,7 +241,6 @@ class TestRuntimeSafetyGuardrailsIntegration:
         assert isinstance(score, float)
         assert 0.0 <= score <= 1.0
 
-    @pytest.mark.asyncio
     async def test_impact_score_fallback_on_error(self):
         """Test fallback scoring when service fails."""
         config = AgentEngineConfig(impact_scoring=True)
@@ -301,7 +297,6 @@ class TestIntegrationEndToEnd:
         if guardrail_engine._impact_scorer is not None:
             assert delib_scorer.service is guardrail_engine._impact_scorer
 
-    @pytest.mark.asyncio
     async def test_consistent_scoring_across_components(self):
         """Test scoring consistency between deliberation and guardrails."""
         test_content = "critical security breach detected"

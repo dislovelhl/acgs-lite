@@ -133,7 +133,6 @@ def mock_opa_client() -> AsyncMock:
 class TestPythonProcessingStrategy:
     """Tests for PythonProcessingStrategy."""
 
-    @pytest.mark.asyncio
     async def test_successful_processing(
         self, valid_message: AgentMessage, mock_handlers: dict
     ) -> None:
@@ -144,7 +143,6 @@ class TestPythonProcessingStrategy:
         assert result.is_valid is True
         assert valid_message.status.value == "delivered"
 
-    @pytest.mark.asyncio
     async def test_failed_validation(
         self, invalid_hash_message: AgentMessage, mock_handlers: dict
     ) -> None:
@@ -155,7 +153,6 @@ class TestPythonProcessingStrategy:
         assert result.is_valid is False
         assert invalid_hash_message.status.value == "failed"
 
-    @pytest.mark.asyncio
     async def test_with_custom_validation_strategy(
         self, valid_message: AgentMessage, mock_handlers: dict, mock_validation_strategy: AsyncMock
     ) -> None:
@@ -166,7 +163,6 @@ class TestPythonProcessingStrategy:
         assert result.is_valid is True
         mock_validation_strategy.validate.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_handler_execution(self, valid_message: AgentMessage) -> None:
         """Test that handlers are executed."""
         sync_handler = MagicMock()
@@ -180,7 +176,6 @@ class TestPythonProcessingStrategy:
         sync_handler.assert_called_once_with(valid_message)
         async_handler.assert_called_once_with(valid_message)
 
-    @pytest.mark.asyncio
     async def test_handler_error_type_error(self, valid_message: AgentMessage) -> None:
         """Test handling of TypeError in handlers."""
 
@@ -195,7 +190,6 @@ class TestPythonProcessingStrategy:
         assert "TypeError" in result.errors[0]
         assert valid_message.status.value == "failed"
 
-    @pytest.mark.asyncio
     async def test_handler_error_value_error(self, valid_message: AgentMessage) -> None:
         """Test handling of ValueError in handlers."""
 
@@ -209,7 +203,6 @@ class TestPythonProcessingStrategy:
         assert result.is_valid is False
         assert "ValueError" in result.errors[0]
 
-    @pytest.mark.asyncio
     async def test_handler_runtime_error(self, valid_message: AgentMessage) -> None:
         """Test handling of RuntimeError in handlers."""
 
@@ -233,7 +226,6 @@ class TestPythonProcessingStrategy:
         strategy = PythonProcessingStrategy()
         assert strategy.get_name() == "python"
 
-    @pytest.mark.asyncio
     async def test_no_handlers_for_message_type(self, valid_message: AgentMessage) -> None:
         """Test processing when no handlers exist for message type."""
         handlers: dict = {}
@@ -252,7 +244,6 @@ class TestPythonProcessingStrategy:
 class TestRustProcessingStrategy:
     """Tests for RustProcessingStrategy."""
 
-    @pytest.mark.asyncio
     async def test_no_rust_processor_unavailable(
         self, valid_message: AgentMessage, mock_handlers: dict
     ) -> None:
@@ -264,7 +255,6 @@ class TestRustProcessingStrategy:
         assert result.is_valid is False
         assert "not available" in result.errors[0]
 
-    @pytest.mark.asyncio
     async def test_successful_rust_processing(
         self,
         valid_message: AgentMessage,
@@ -284,7 +274,6 @@ class TestRustProcessingStrategy:
         assert result.is_valid is True
         assert valid_message.status.value == "delivered"
 
-    @pytest.mark.asyncio
     async def test_rust_validation_failure(
         self,
         valid_message: AgentMessage,
@@ -304,7 +293,6 @@ class TestRustProcessingStrategy:
         assert result.is_valid is False
         assert valid_message.status.value == "failed"
 
-    @pytest.mark.asyncio
     async def test_rust_processing_exception(
         self,
         valid_message: AgentMessage,
@@ -368,7 +356,6 @@ class TestRustProcessingStrategy:
         )
         assert strategy.get_name() == "rust"
 
-    @pytest.mark.asyncio
     async def test_async_rust_process_method(
         self,
         valid_message: AgentMessage,
@@ -407,7 +394,6 @@ class TestRustProcessingStrategy:
 class TestDynamicPolicyProcessingStrategy:
     """Tests for DynamicPolicyProcessingStrategy."""
 
-    @pytest.mark.asyncio
     async def test_no_policy_client_unavailable(
         self, valid_message: AgentMessage, mock_handlers: dict
     ) -> None:
@@ -420,7 +406,6 @@ class TestDynamicPolicyProcessingStrategy:
             assert result.is_valid is False
             assert "not available" in result.errors[0]
 
-    @pytest.mark.asyncio
     async def test_successful_policy_processing(
         self,
         valid_message: AgentMessage,
@@ -436,7 +421,6 @@ class TestDynamicPolicyProcessingStrategy:
 
         assert result.is_valid is True
 
-    @pytest.mark.asyncio
     async def test_policy_validation_failure(
         self,
         valid_message: AgentMessage,
@@ -453,7 +437,6 @@ class TestDynamicPolicyProcessingStrategy:
         assert result.is_valid is False
         assert valid_message.status.value == "failed"
 
-    @pytest.mark.asyncio
     async def test_policy_validation_exception(
         self, valid_message: AgentMessage, mock_handlers: dict, mock_policy_client: AsyncMock
     ) -> None:
@@ -488,7 +471,6 @@ class TestDynamicPolicyProcessingStrategy:
 class TestOPAProcessingStrategy:
     """Tests for OPAProcessingStrategy."""
 
-    @pytest.mark.asyncio
     async def test_no_opa_client_unavailable(
         self, valid_message: AgentMessage, mock_handlers: dict
     ) -> None:
@@ -500,7 +482,6 @@ class TestOPAProcessingStrategy:
             assert result.is_valid is False
             assert "not available" in result.errors[0]
 
-    @pytest.mark.asyncio
     async def test_successful_opa_processing(
         self,
         valid_message: AgentMessage,
@@ -516,7 +497,6 @@ class TestOPAProcessingStrategy:
 
         assert result.is_valid is True
 
-    @pytest.mark.asyncio
     async def test_opa_validation_failure(
         self,
         valid_message: AgentMessage,
@@ -532,7 +512,6 @@ class TestOPAProcessingStrategy:
 
         assert result.is_valid is False
 
-    @pytest.mark.asyncio
     async def test_opa_validation_exception(
         self, valid_message: AgentMessage, mock_handlers: dict, mock_opa_client: AsyncMock
     ) -> None:
@@ -567,7 +546,6 @@ class TestOPAProcessingStrategy:
 class TestCompositeProcessingStrategy:
     """Tests for CompositeProcessingStrategy."""
 
-    @pytest.mark.asyncio
     async def test_first_strategy_succeeds(
         self, valid_message: AgentMessage, mock_handlers: dict
     ) -> None:
@@ -583,7 +561,6 @@ class TestCompositeProcessingStrategy:
         assert result.is_valid is True
         mock_strategy.process.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_fallback_on_unavailable(
         self, valid_message: AgentMessage, mock_handlers: dict
     ) -> None:
@@ -603,7 +580,6 @@ class TestCompositeProcessingStrategy:
         assert result.is_valid is True
         available.process.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_fallback_on_exception(
         self, valid_message: AgentMessage, mock_handlers: dict
     ) -> None:
@@ -624,7 +600,6 @@ class TestCompositeProcessingStrategy:
         assert result.is_valid is True
         backup.process.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_all_strategies_fail(
         self, valid_message: AgentMessage, mock_handlers: dict
     ) -> None:
@@ -645,7 +620,6 @@ class TestCompositeProcessingStrategy:
         assert result.is_valid is False
         assert "All processing strategies failed" in result.errors[0]
 
-    @pytest.mark.asyncio
     async def test_record_failure_called_on_exception(
         self, valid_message: AgentMessage, mock_handlers: dict
     ) -> None:
@@ -702,7 +676,6 @@ class TestCompositeProcessingStrategy:
 class TestMACIProcessingStrategy:
     """Tests for MACIProcessingStrategy."""
 
-    @pytest.mark.asyncio
     async def test_delegates_to_inner_strategy(
         self, valid_message: AgentMessage, mock_handlers: dict
     ) -> None:
@@ -768,7 +741,6 @@ class TestMACIProcessingStrategy:
         else:
             assert enforcer is None
 
-    @pytest.mark.asyncio
     async def test_strict_mode_error_handling(
         self, valid_message: AgentMessage, mock_handlers: dict
     ) -> None:
@@ -798,7 +770,6 @@ class TestMACIProcessingStrategy:
 class TestProcessingStrategyIntegration:
     """Integration tests for processing strategies."""
 
-    @pytest.mark.asyncio
     async def test_python_strategy_end_to_end(self, valid_message: AgentMessage) -> None:
         """Test complete Python strategy workflow."""
         results = []
@@ -818,7 +789,6 @@ class TestProcessingStrategyIntegration:
         assert len(results) == 2
         assert valid_message.status.value == "delivered"
 
-    @pytest.mark.asyncio
     async def test_composite_with_python_fallback(self, valid_message: AgentMessage) -> None:
         """Test composite with Python as fallback."""
         unavailable = MagicMock()
@@ -834,7 +804,6 @@ class TestProcessingStrategyIntegration:
         assert result.is_valid is True
         assert valid_message.status.value == "delivered"
 
-    @pytest.mark.asyncio
     async def test_maci_wrapping_python(self, valid_message: AgentMessage) -> None:
         """Test MACI strategy wrapping Python strategy."""
         python_strategy = PythonProcessingStrategy()

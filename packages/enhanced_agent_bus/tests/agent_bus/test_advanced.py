@@ -192,13 +192,11 @@ class TestInitialization:
 class TestConstitutionalHash:
     """Test constitutional hash enforcement."""
 
-    @pytest.mark.asyncio
     async def test_bus_has_constitutional_hash(self, agent_bus, constitutional_hash):
         """Test that bus maintains constitutional hash."""
         assert hasattr(agent_bus, "constitutional_hash")
         assert agent_bus.constitutional_hash == constitutional_hash
 
-    @pytest.mark.asyncio
     async def test_registered_agents_have_constitutional_hash(self, agent_bus, constitutional_hash):
         """Test that registered agents include constitutional hash."""
         await agent_bus.register_agent("test-agent", "worker", [], None)
@@ -214,7 +212,6 @@ class TestConstitutionalHash:
 class TestEdgeCases:
     """Test edge cases and boundary conditions."""
 
-    @pytest.mark.asyncio
     async def test_register_duplicate_agent(self, agent_bus):
         """Test registering same agent ID twice."""
         await agent_bus.register_agent("duplicate", "worker", [], None)
@@ -224,14 +221,12 @@ class TestEdgeCases:
         info = agent_bus.get_agent_info("duplicate")
         assert info["agent_type"] == "supervisor"
 
-    @pytest.mark.asyncio
     async def test_empty_capabilities_list(self, agent_bus):
         """Test agent registration with empty capabilities."""
         await agent_bus.register_agent("no-caps", "worker", [], None)
         info = agent_bus.get_agent_info("no-caps")
         assert info["capabilities"] == []
 
-    @pytest.mark.asyncio
     async def test_many_capabilities(self, agent_bus):
         """Test agent with many capabilities."""
         caps = [f"cap-{i}" for i in range(100)]
@@ -239,7 +234,6 @@ class TestEdgeCases:
         info = agent_bus.get_agent_info("many-caps")
         assert len(info["capabilities"]) == 100
 
-    @pytest.mark.asyncio
     async def test_unicode_tenant_id_rejected(self, agent_bus, constitutional_hash, mock_processor):
         """Test that unicode tenant IDs are rejected for security (homograph attack prevention)."""
         mock_processor.process = AsyncMock(return_value=ValidationResult(is_valid=True))
@@ -309,7 +303,6 @@ class TestMACIStrictMode:
         """Create a bus with strict MACI mode enabled."""
         return EnhancedAgentBus(enable_maci=True, maci_strict_mode=True)
 
-    @pytest.mark.asyncio
     async def test_maci_registration_failure_in_strict_mode(self, strict_maci_bus):
         """Test that MACI registration failure in strict mode removes agent."""
         # Mock MACI registry to raise an error
@@ -395,7 +388,6 @@ class TestTenantValidation:
         result = tenant_bus._format_tenant_id(None)
         assert result == "none"
 
-    @pytest.mark.asyncio
     async def test_validate_tenant_consistency_sender_mismatch(self, tenant_bus):
         """Test tenant validation with sender mismatch."""
         await tenant_bus.register_agent("sender", "worker", [], "tenant-A")
@@ -415,7 +407,6 @@ class TestTenantValidation:
         assert "Tenant mismatch" in errors[0]
         assert "sender" in errors[0]
 
-    @pytest.mark.asyncio
     async def test_validate_tenant_consistency_recipient_mismatch(self, tenant_bus):
         """Test tenant validation with recipient mismatch."""
         await tenant_bus.register_agent("receiver", "worker", [], "tenant-A")
@@ -503,7 +494,6 @@ class TestDeliberationQueue:
 
         return bus
 
-    @pytest.mark.asyncio
     async def test_handle_deliberation_enqueues_message(self, bus_with_deliberation_queue):
         """Test _handle_deliberation enqueues message to deliberation queue."""
         bus = bus_with_deliberation_queue
@@ -565,7 +555,6 @@ class TestAsyncMetrics:
 
         return bus
 
-    @pytest.mark.asyncio
     async def test_get_metrics_async_with_healthy_policy(self, bus_with_policy_client):
         """Test get_metrics_async includes policy registry status when healthy."""
         metrics = await bus_with_policy_client.get_metrics_async()
@@ -573,7 +562,6 @@ class TestAsyncMetrics:
         assert "policy_registry_status" in metrics
         assert metrics["policy_registry_status"] == "healthy"
 
-    @pytest.mark.asyncio
     async def test_get_metrics_async_with_failing_policy(self, bus_with_failing_policy_client):
         """Test get_metrics_async handles policy client failure."""
         metrics = await bus_with_failing_policy_client.get_metrics_async()
@@ -671,7 +659,6 @@ class TestJWTAgentValidation:
             enable_maci=False, use_dynamic_policy=False
         )  # test-only: MACI off — testing JWT validation
 
-    @pytest.mark.asyncio
     async def test_validate_agent_identity_no_token(self, bus_for_jwt):
         """Test validation when no auth token is provided."""
         result = await bus_for_jwt._validate_agent_identity(
@@ -681,7 +668,6 @@ class TestJWTAgentValidation:
         # Should return (None, None) when no token
         assert result == (None, None)
 
-    @pytest.mark.asyncio
     async def test_validate_agent_identity_token_without_crypto_available(self, bus_for_jwt):
         """Test validation when token provided but crypto/config not available."""
         # This tests the path where token is provided but CRYPTO_AVAILABLE or CONFIG_AVAILABLE is False  # noqa: E501
@@ -696,7 +682,6 @@ class TestJWTAgentValidation:
         # Without both CRYPTO_AVAILABLE and CONFIG_AVAILABLE, returns (None, None) with warning logged  # noqa: E501
         assert result == (None, None) or result == (False, None)
 
-    @pytest.mark.asyncio
     async def test_validate_agent_identity_dynamic_mode_no_token(self):
         """Test validation rejects registration in dynamic mode without token."""
         bus = EnhancedAgentBus(
@@ -714,7 +699,6 @@ class TestJWTAgentValidation:
 class TestStartWithMetricsAndCircuitBreakers:
     """Test start() with metrics and circuit breakers for coverage."""
 
-    @pytest.mark.asyncio
     async def test_start_records_started_timestamp(self):
         """Test start() records started timestamp in metrics."""
         bus = EnhancedAgentBus(
@@ -729,7 +713,6 @@ class TestStartWithMetricsAndCircuitBreakers:
 
         await bus.stop()
 
-    @pytest.mark.asyncio
     async def test_start_then_stop_lifecycle(self):
         """Test complete start/stop lifecycle."""
         bus = EnhancedAgentBus(
@@ -749,7 +732,6 @@ class TestStartWithMetricsAndCircuitBreakers:
 class TestPolicyClientInitialization:
     """Test policy client initialization during start for coverage."""
 
-    @pytest.mark.asyncio
     async def test_start_with_policy_client_success(self):
         """Test start() initializes policy client successfully."""
         bus = EnhancedAgentBus(
@@ -771,7 +753,6 @@ class TestPolicyClientInitialization:
 
         await bus.stop()
 
-    @pytest.mark.asyncio
     async def test_start_with_policy_client_failure(self):
         """Test start() handles policy client initialization failure."""
         bus = EnhancedAgentBus(

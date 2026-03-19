@@ -35,7 +35,6 @@ def _build_token(secret: str, **overrides: object) -> str:
     return jwt.encode(payload, secret, algorithm="HS256")
 
 
-@pytest.mark.asyncio
 async def test_require_auth_allows_bypass_only_in_development(monkeypatch):
     monkeypatch.setenv("AUTH_DISABLED", "true")
     monkeypatch.setattr(settings, "env", "development")
@@ -45,7 +44,6 @@ async def test_require_auth_allows_bypass_only_in_development(monkeypatch):
     assert result["sub"] == "dev-user"
 
 
-@pytest.mark.asyncio
 async def test_require_auth_rejects_bypass_in_production(monkeypatch):
     monkeypatch.setenv("AUTH_DISABLED", "true")
     # Must patch settings.env — it's pre-computed at import time, not read from
@@ -58,7 +56,6 @@ async def test_require_auth_rejects_bypass_in_production(monkeypatch):
     assert exc_info.value.status_code == 401
 
 
-@pytest.mark.asyncio
 async def test_require_auth_uses_runtime_environment_precedence(monkeypatch):
     monkeypatch.setenv("AUTH_DISABLED", "true")
     # settings.env is the canonical source — env vars are only read once at startup.
@@ -68,7 +65,6 @@ async def test_require_auth_uses_runtime_environment_precedence(monkeypatch):
         await auth_dependency.require_auth(None)
 
 
-@pytest.mark.asyncio
 async def test_require_auth_validates_token_with_runtime_secret(monkeypatch):
     monkeypatch.setenv("AUTH_DISABLED", "false")
     monkeypatch.setattr(settings, "env", "production")
@@ -87,7 +83,6 @@ async def test_require_auth_validates_token_with_runtime_secret(monkeypatch):
 # ============================================================================
 
 
-@pytest.mark.asyncio
 async def test_configure_revocation_service():
     """configure_revocation_service registers the service."""
     from unittest.mock import MagicMock
@@ -102,7 +97,6 @@ async def test_configure_revocation_service():
     auth_dependency._revocation_service = None
 
 
-@pytest.mark.asyncio
 async def test_check_revocation_skips_when_no_service():
     """_check_revocation skips when no service configured."""
     auth_dependency._revocation_service = None
@@ -110,7 +104,6 @@ async def test_check_revocation_skips_when_no_service():
     await auth_dependency._check_revocation("test-jti")
 
 
-@pytest.mark.asyncio
 async def test_check_revocation_skips_when_no_jti():
     """_check_revocation skips when no JTI provided."""
     from unittest.mock import AsyncMock, MagicMock
@@ -127,7 +120,6 @@ async def test_check_revocation_skips_when_no_jti():
     auth_dependency._revocation_service = None
 
 
-@pytest.mark.asyncio
 async def test_check_revocation_raises_when_token_revoked():
     """_check_revocation raises 401 when token is revoked."""
     from unittest.mock import AsyncMock, MagicMock
@@ -146,7 +138,6 @@ async def test_check_revocation_raises_when_token_revoked():
     auth_dependency._revocation_service = None
 
 
-@pytest.mark.asyncio
 async def test_check_revocation_handles_service_errors():
     """_check_revocation handles service errors gracefully."""
     from unittest.mock import AsyncMock, MagicMock
@@ -162,7 +153,6 @@ async def test_check_revocation_handles_service_errors():
     auth_dependency._revocation_service = None
 
 
-@pytest.mark.asyncio
 async def test_require_auth_missing_jwt_secret(monkeypatch):
     """require_auth raises 500 when no supported JWT secret is configured."""
     monkeypatch.setenv("AUTH_DISABLED", "false")
@@ -179,7 +169,6 @@ async def test_require_auth_missing_jwt_secret(monkeypatch):
     assert "JWT secret" in exc_info.value.detail
 
 
-@pytest.mark.asyncio
 async def test_require_auth_expired_token(monkeypatch):
     """require_auth raises 401 for expired token."""
     monkeypatch.setenv("AUTH_DISABLED", "false")
@@ -197,7 +186,6 @@ async def test_require_auth_expired_token(monkeypatch):
     assert "expired" in exc_info.value.detail.lower()
 
 
-@pytest.mark.asyncio
 async def test_require_auth_invalid_token(monkeypatch):
     """require_auth raises 401 for invalid token."""
     monkeypatch.setenv("AUTH_DISABLED", "false")
@@ -213,14 +201,12 @@ async def test_require_auth_invalid_token(monkeypatch):
     assert "invalid" in exc_info.value.detail.lower()
 
 
-@pytest.mark.asyncio
 async def test_require_auth_optional_no_credentials():
     """require_auth_optional returns None when no credentials."""
     result = auth_dependency.require_auth_optional(None)
     assert result is None
 
 
-@pytest.mark.asyncio
 async def test_require_auth_optional_valid_token(monkeypatch):
     """require_auth_optional returns payload for valid token."""
     monkeypatch.setenv("JWT_SECRET_KEY", TEST_JWT_SECRET)
@@ -234,7 +220,6 @@ async def test_require_auth_optional_valid_token(monkeypatch):
     assert result["sub"] == "user-1"
 
 
-@pytest.mark.asyncio
 async def test_require_auth_optional_no_secret(monkeypatch):
     """require_auth_optional returns None when no JWT secret configured."""
     monkeypatch.setenv("JWT_SECRET_KEY", "")
@@ -246,7 +231,6 @@ async def test_require_auth_optional_no_secret(monkeypatch):
     assert result is None
 
 
-@pytest.mark.asyncio
 async def test_require_auth_optional_invalid_token_raises(monkeypatch):
     """require_auth_optional raises 401 for invalid token."""
     monkeypatch.setenv("JWT_SECRET_KEY", TEST_JWT_SECRET)
@@ -259,7 +243,6 @@ async def test_require_auth_optional_invalid_token_raises(monkeypatch):
     assert exc_info.value.status_code == 401
 
 
-@pytest.mark.asyncio
 async def test_require_auth_rejects_invalid_audience(monkeypatch):
     monkeypatch.setenv("AUTH_DISABLED", "false")
     monkeypatch.setattr(settings, "env", "production")
@@ -274,7 +257,6 @@ async def test_require_auth_rejects_invalid_audience(monkeypatch):
     assert exc_info.value.status_code == 401
 
 
-@pytest.mark.asyncio
 async def test_require_auth_rejects_constitutional_hash_mismatch(monkeypatch):
     monkeypatch.setenv("AUTH_DISABLED", "false")
     monkeypatch.setattr(settings, "env", "production")

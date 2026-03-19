@@ -81,7 +81,6 @@ def voting_service() -> VotingService:
 class TestValidateVoteEligibility:
     """Tests for _validate_vote_eligibility helper function."""
 
-    @pytest.mark.asyncio
     async def test_validate_vote_eligibility_success(
         self, voting_service: VotingService, sample_vote: Vote, sample_election_data: dict
     ) -> None:
@@ -96,7 +95,6 @@ class TestValidateVoteEligibility:
         assert result is not None
         assert result == sample_election_data
 
-    @pytest.mark.asyncio
     async def test_validate_vote_eligibility_election_not_found(
         self, voting_service: VotingService, sample_vote: Vote
     ) -> None:
@@ -104,7 +102,6 @@ class TestValidateVoteEligibility:
         result = await voting_service._validate_vote_eligibility("nonexistent", sample_vote)
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_validate_vote_eligibility_election_closed(
         self, voting_service: VotingService, sample_vote: Vote, sample_election_data: dict
     ) -> None:
@@ -116,7 +113,6 @@ class TestValidateVoteEligibility:
         result = await voting_service._validate_vote_eligibility(election_id, sample_vote)
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_validate_vote_eligibility_not_participant(
         self, voting_service: VotingService, sample_election_data: dict
     ) -> None:
@@ -128,7 +124,6 @@ class TestValidateVoteEligibility:
         result = await voting_service._validate_vote_eligibility(election_id, non_participant_vote)
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_validate_vote_eligibility_election_expired(
         self, voting_service: VotingService, sample_vote: Vote, sample_election_data: dict
     ) -> None:
@@ -594,7 +589,6 @@ class TestCheckSuperMajorityResolution:
 class TestHelpersIntegration:
     """Integration tests showing helpers working together."""
 
-    @pytest.mark.asyncio
     async def test_helpers_workflow(
         self, voting_service: VotingService, sample_election_data: dict
     ) -> None:

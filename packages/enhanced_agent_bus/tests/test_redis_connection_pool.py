@@ -14,8 +14,6 @@ from datetime import datetime, timezone
 from typing import Optional
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 # Import centralized constitutional hash
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 
@@ -23,7 +21,6 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH
 class TestRedisConnectionPoolConfig:
     """Test Redis connection pool configuration."""
 
-    @pytest.mark.asyncio
     async def test_default_pool_size(self):
         """Test default connection pool size is reasonable."""
         from enhanced_agent_bus.redis_pool import DEFAULT_POOL_SIZE, RedisConnectionPool
@@ -31,7 +28,6 @@ class TestRedisConnectionPoolConfig:
         assert DEFAULT_POOL_SIZE >= 10
         assert DEFAULT_POOL_SIZE <= 100
 
-    @pytest.mark.asyncio
     async def test_configurable_pool_size(self):
         """Test pool size can be configured."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -42,7 +38,6 @@ class TestRedisConnectionPoolConfig:
         )
         assert pool.max_connections == 50
 
-    @pytest.mark.asyncio
     async def test_configurable_min_connections(self):
         """Test minimum pool connections can be configured."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -54,7 +49,6 @@ class TestRedisConnectionPoolConfig:
         )
         assert pool.min_connections == 5
 
-    @pytest.mark.asyncio
     async def test_pool_has_constitutional_hash(self):
         """Test pool tracks constitutional hash for compliance."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -66,7 +60,6 @@ class TestRedisConnectionPoolConfig:
 class TestRedisConnectionPoolAcquisition:
     """Test Redis connection acquisition and release."""
 
-    @pytest.mark.asyncio
     async def test_acquire_connection(self):
         """Test acquiring a connection from pool."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -81,7 +74,6 @@ class TestRedisConnectionPoolAcquisition:
                 async with pool.acquire() as conn:
                     assert conn is not None
 
-    @pytest.mark.asyncio
     async def test_connection_reuse_across_batch(self):
         """Test connections are reused across batch operations."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -108,7 +100,6 @@ class TestRedisConnectionPoolAcquisition:
                 # Should only create pool once
                 mock_pool_cls.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_concurrent_connection_acquisition(self):
         """Test multiple concurrent connections from pool."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -141,7 +132,6 @@ class TestRedisConnectionPoolAcquisition:
 class TestRedisConnectionPoolHealthMonitoring:
     """Test Redis connection health monitoring."""
 
-    @pytest.mark.asyncio
     async def test_health_check_healthy(self):
         """Test health check returns healthy for good connection."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -158,7 +148,6 @@ class TestRedisConnectionPoolHealthMonitoring:
                 assert health["healthy"] is True
                 assert health["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_health_check_unhealthy(self):
         """Test health check returns unhealthy for failed connection."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -175,7 +164,6 @@ class TestRedisConnectionPoolHealthMonitoring:
                 assert health["healthy"] is False
                 assert "error" in health
 
-    @pytest.mark.asyncio
     async def test_health_check_includes_pool_stats(self):
         """Test health check includes pool statistics."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -196,7 +184,6 @@ class TestRedisConnectionPoolHealthMonitoring:
                 assert "max_connections" in health["pool_stats"]
                 assert health["pool_stats"]["max_connections"] == 20
 
-    @pytest.mark.asyncio
     async def test_connection_retry_on_failure(self):
         """Test connection is retried on transient failure."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -229,7 +216,6 @@ class TestRedisConnectionPoolHealthMonitoring:
 class TestRedisConnectionPoolBatchOperations:
     """Test Redis connection pool for batch operations."""
 
-    @pytest.mark.asyncio
     async def test_batch_get_uses_pipeline(self):
         """Test batch get operations use Redis pipeline for efficiency."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -253,7 +239,6 @@ class TestRedisConnectionPoolBatchOperations:
                 assert len(results) == 3
                 mock_redis.pipeline.assert_called()
 
-    @pytest.mark.asyncio
     async def test_batch_set_uses_pipeline(self):
         """Test batch set operations use Redis pipeline for efficiency."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -281,7 +266,6 @@ class TestRedisConnectionPoolBatchOperations:
                 assert all(results)
                 mock_redis.pipeline.assert_called()
 
-    @pytest.mark.asyncio
     async def test_batch_operation_with_connection_pool_reuse(self):
         """Test batch operations reuse connection pool."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -314,7 +298,6 @@ class TestRedisConnectionPoolBatchOperations:
 class TestRedisConnectionPoolCleanup:
     """Test Redis connection pool cleanup."""
 
-    @pytest.mark.asyncio
     async def test_pool_close(self):
         """Test pool closes all connections on shutdown."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -336,7 +319,6 @@ class TestRedisConnectionPoolCleanup:
                 mock_redis.close.assert_called_once()
                 mock_pool.disconnect.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_context_manager_cleanup(self):
         """Test pool cleans up when used as context manager."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -360,7 +342,6 @@ class TestRedisConnectionPoolCleanup:
 class TestRedisConnectionPoolSingleton:
     """Test Redis connection pool singleton pattern."""
 
-    @pytest.mark.asyncio
     async def test_get_shared_pool_returns_singleton(self):
         """Test get_shared_pool returns singleton instance."""
         from enhanced_agent_bus.redis_pool import (
@@ -394,7 +375,6 @@ class TestRedisConnectionPoolSingleton:
         except (RuntimeError, ConnectionError, OSError):
             pass
 
-    @pytest.mark.asyncio
     async def test_reset_shared_pool(self):
         """Test reset_shared_pool clears singleton."""
         from enhanced_agent_bus.redis_pool import (
@@ -433,7 +413,6 @@ class TestRedisConnectionPoolSingleton:
 class TestRedisConnectionPoolPreWarming:
     """Test Redis connection pool pre-warming for startup latency reduction."""
 
-    @pytest.mark.asyncio
     async def test_pre_warming_enabled_by_default(self):
         """Test pool pre-warms connections on initialization by default."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -453,7 +432,6 @@ class TestRedisConnectionPoolPreWarming:
                 # Initial ping + pre-warming pings
                 assert mock_redis.ping.call_count >= pool.min_connections
 
-    @pytest.mark.asyncio
     async def test_pre_warming_can_be_disabled(self):
         """Test pool pre-warming can be disabled."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -472,7 +450,6 @@ class TestRedisConnectionPoolPreWarming:
                 # Should only call ping once for initial connection check
                 assert mock_redis.ping.call_count == 1
 
-    @pytest.mark.asyncio
     async def test_pre_warming_tracks_warmed_connections(self):
         """Test pre-warming tracks number of warmed connections in metrics."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -492,7 +469,6 @@ class TestRedisConnectionPoolPreWarming:
                 assert "warmed_connections" in metrics
                 assert metrics["warmed_connections"] >= 1
 
-    @pytest.mark.asyncio
     async def test_pre_warming_handles_partial_failures(self):
         """Test pre-warming continues even if some connections fail."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -525,7 +501,6 @@ class TestRedisConnectionPoolPreWarming:
                 # Should have warmed at least some connections
                 assert metrics.get("warmed_connections", 0) >= 1
 
-    @pytest.mark.asyncio
     async def test_pre_warming_skipped_with_single_min_connection(self):
         """Test pre-warming is skipped when min_connections is 1."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -544,7 +519,6 @@ class TestRedisConnectionPoolPreWarming:
                 # Only initial connection check - pre-warming skipped
                 assert mock_redis.ping.call_count == 1
 
-    @pytest.mark.asyncio
     async def test_pre_warming_logs_status(self):
         """Test pre-warming logs the number of warmed connections."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -569,7 +543,6 @@ class TestRedisConnectionPoolPreWarming:
 class TestRedisConnectionPoolMetrics:
     """Test Redis connection pool metrics collection."""
 
-    @pytest.mark.asyncio
     async def test_pool_tracks_connection_count(self):
         """Test pool tracks active connection count."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool
@@ -586,7 +559,6 @@ class TestRedisConnectionPoolMetrics:
                 assert "total_connections" in metrics
                 assert "active_connections" in metrics
 
-    @pytest.mark.asyncio
     async def test_pool_tracks_operation_latency(self):
         """Test pool tracks operation latency."""
         from enhanced_agent_bus.redis_pool import RedisConnectionPool

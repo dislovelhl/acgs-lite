@@ -7,7 +7,6 @@ Target: ≥95% line coverage of constitutional/storage.py (57 stmts).
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 from enhanced_agent_bus.constitutional.amendment_model import AmendmentProposal

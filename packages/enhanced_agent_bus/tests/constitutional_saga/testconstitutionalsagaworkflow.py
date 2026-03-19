@@ -96,7 +96,6 @@ class TestConstitutionalSagaWorkflow:
         saga._status = SagaStatus.EXECUTING
         assert saga.get_status() == SagaStatus.EXECUTING
 
-    @pytest.mark.asyncio
     async def test_execute_empty_saga(self, saga):
         """Test executing saga with no steps."""
         result = await saga.execute()
@@ -106,7 +105,6 @@ class TestConstitutionalSagaWorkflow:
         assert result.completed_steps == []
         assert result.failed_step is None
 
-    @pytest.mark.asyncio
     async def test_execute_single_step_success(self, saga):
         """Test executing saga with single successful step."""
 
@@ -121,7 +119,6 @@ class TestConstitutionalSagaWorkflow:
         assert "single_step" in result.completed_steps
         assert result.context.get_step_result("single_step") == {"data": "success"}
 
-    @pytest.mark.asyncio
     async def test_execute_multiple_steps_success(self, saga):
         """Test executing saga with multiple successful steps."""
 
@@ -146,7 +143,6 @@ class TestConstitutionalSagaWorkflow:
         assert result.context.get_step_result("step2") == "step2_result"
         assert result.context.get_step_result("step3") == "step3_result"
 
-    @pytest.mark.asyncio
     async def test_execute_step_failure_triggers_compensation(self, saga):
         """Test that step failure triggers compensation."""
         compensation_called = {"count": 0}
@@ -184,7 +180,6 @@ class TestConstitutionalSagaWorkflow:
         assert "comp1" in result.compensated_steps
         assert compensation_called["count"] == 1
 
-    @pytest.mark.asyncio
     async def test_compensation_lifo_order(self, saga):
         """Test that compensations run in LIFO order."""
         compensation_order = []
@@ -229,7 +224,6 @@ class TestConstitutionalSagaWorkflow:
         # LIFO: comp2 should run before comp1
         assert compensation_order == ["comp2", "comp1"]
 
-    @pytest.mark.asyncio
     async def test_optional_step_failure_continues(self, saga):
         """Test that optional step failure doesn't stop saga."""
 
@@ -260,7 +254,6 @@ class TestConstitutionalSagaWorkflow:
         assert "step3" in result.completed_steps
         assert "optional" not in result.completed_steps
 
-    @pytest.mark.asyncio
     async def test_step_timeout(self, saga):
         """Test step timeout handling."""
 
@@ -282,7 +275,6 @@ class TestConstitutionalSagaWorkflow:
         assert result.status == SagaStatus.COMPENSATED
         assert result.failed_step == "slow_step"
 
-    @pytest.mark.asyncio
     async def test_step_retries_before_failure(self, saga):
         """Test step retries before marking as failed."""
         attempt_count = {"count": 0}
@@ -307,7 +299,6 @@ class TestConstitutionalSagaWorkflow:
         assert result.status == SagaStatus.COMPLETED
         assert attempt_count["count"] == 3
 
-    @pytest.mark.asyncio
     async def test_compensation_retries(self, saga):
         """Test compensation retries."""
         comp_attempts = {"count": 0}
@@ -340,7 +331,6 @@ class TestConstitutionalSagaWorkflow:
         assert "flaky_comp" in result.compensated_steps
         assert comp_attempts["count"] == 2
 
-    @pytest.mark.asyncio
     async def test_compensation_failure(self, saga):
         """Test compensation failure handling."""
 
@@ -368,7 +358,6 @@ class TestConstitutionalSagaWorkflow:
         assert result.status == SagaStatus.PARTIALLY_COMPENSATED
         assert "failing_comp" in result.failed_compensations
 
-    @pytest.mark.asyncio
     async def test_context_passed_to_steps(self, saga):
         """Test that context is passed to steps."""
         received_context = {}
@@ -392,7 +381,6 @@ class TestConstitutionalSagaWorkflow:
         assert received_context["constitutional_hash"] == "custom_hash"
         assert received_context["metadata"]["custom_key"] == "custom_value"
 
-    @pytest.mark.asyncio
     async def test_execution_time_measurement(self, saga):
         """Test execution time measurement."""
 
@@ -407,7 +395,6 @@ class TestConstitutionalSagaWorkflow:
         assert result.total_execution_time_ms >= 50
         assert result.total_execution_time_ms < 500  # Sanity check
 
-    @pytest.mark.asyncio
     async def test_persistence_during_execution(self, tmp_path):
         """Test state persistence during execution."""
         provider = FileSagaPersistenceProvider(str(tmp_path))

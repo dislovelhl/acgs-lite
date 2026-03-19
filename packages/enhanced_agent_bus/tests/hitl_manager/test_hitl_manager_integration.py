@@ -9,7 +9,6 @@ Tests cover:
 - Integration with related components
 """
 
-import pytest
 
 from .hitl_test_helpers import (
     MockAuditLedger,
@@ -21,7 +20,6 @@ from .hitl_test_helpers import (
 class TestHITLManagerIntegration:
     """Integration tests for HITLManager."""
 
-    @pytest.mark.asyncio
     async def test_full_approval_workflow(
         self, mock_queue: MockDeliberationQueue, mock_audit_ledger: MockAuditLedger
     ) -> None:
@@ -72,7 +70,6 @@ class TestHITLManagerIntegration:
         )
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_full_rejection_workflow(
         self, mock_queue: MockDeliberationQueue, mock_audit_ledger: MockAuditLedger
     ) -> None:

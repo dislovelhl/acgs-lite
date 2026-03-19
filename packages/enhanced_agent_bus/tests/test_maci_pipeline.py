@@ -87,7 +87,6 @@ class TestMACIAgents:
         assert principle.hash is not None
         assert len(principle.hash) == 16  # SHA256 truncated to 16 chars
 
-    @pytest.mark.asyncio
     async def test_executive_agent_response(self, constitutional_principles, sample_decision):
         """Test Executive agent response generation."""
         agent = ExecutiveAgent()
@@ -101,7 +100,6 @@ class TestMACIAgents:
         assert response.reasoning is not None
         assert response.agent_hash is not None
 
-    @pytest.mark.asyncio
     async def test_legislative_agent_response(self, constitutional_principles, sample_decision):
         """Test Legislative agent response generation."""
         agent = LegislativeAgent()
@@ -113,7 +111,6 @@ class TestMACIAgents:
         assert response.decision_id == sample_decision.id
         assert 0.0 <= response.confidence <= 1.0
 
-    @pytest.mark.asyncio
     async def test_judicial_agent_response(self, constitutional_principles, sample_decision):
         """Test Judicial agent response generation."""
         agent = JudicialAgent()
@@ -177,7 +174,6 @@ class TestMACIVerificationPipeline:
         """Test constitutional hash validation."""
         assert pipeline.get_constitutional_hash() == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_propose_and_verify_decision(self, pipeline):
         """Test complete propose and verify workflow."""
         action = "Implement user safety enhancement"
@@ -206,7 +202,6 @@ class TestMACIVerificationPipeline:
         assert verification.judicial_response is not None
         assert verification.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_emergency_decision_handling(self, pipeline):
         """Test emergency decision handling."""
         action = "Emergency security lockdown"
@@ -223,7 +218,6 @@ class TestMACIVerificationPipeline:
         assert decision.action == action
         assert verification.confidence > 0.0  # Should have some confidence even in emergency
 
-    @pytest.mark.asyncio
     async def test_high_impact_decision(self, pipeline):
         """Test high-impact decision with many stakeholders."""
         action = "System-wide policy change"
@@ -253,7 +247,6 @@ class TestMACIVerificationPipeline:
         assert "total_decisions" in stats
         assert stats["total_decisions"] == 0  # No decisions processed yet
 
-    @pytest.mark.asyncio
     async def test_pipeline_stats_after_decisions(self, pipeline):
         """Test pipeline statistics after processing decisions."""
         # Process a few decisions
@@ -343,7 +336,6 @@ class TestGovernanceDecision:
 class TestIntegration:
     """Integration tests for MACI pipeline."""
 
-    @pytest.mark.asyncio
     async def test_full_governance_workflow(self):
         """Test complete governance workflow."""
         # Setup pipeline with constitution

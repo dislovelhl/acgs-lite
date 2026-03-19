@@ -8,8 +8,6 @@ Comprehensive tests to expand health_aggregator.py coverage from 52.59% to 70%+.
 from datetime import UTC, datetime, timezone
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from health_aggregator import (
     CONSTITUTIONAL_HASH,
     HealthAggregator,
@@ -351,7 +349,6 @@ class TestHealthChangeCallbacks:
         aggregator.on_health_change(cb2)
         assert len(aggregator._health_change_callbacks) == 2
 
-    @pytest.mark.asyncio
     async def test_invoke_sync_callback(self) -> None:
         """Test invoking a synchronous callback."""
         aggregator = HealthAggregator()
@@ -374,7 +371,6 @@ class TestHealthChangeCallbacks:
         await aggregator._invoke_callback(sync_callback, report)
         assert callback_called == [SystemHealthStatus.HEALTHY]
 
-    @pytest.mark.asyncio
     async def test_invoke_async_callback(self) -> None:
         """Test invoking an async callback."""
         aggregator = HealthAggregator()
@@ -397,7 +393,6 @@ class TestHealthChangeCallbacks:
         await aggregator._invoke_callback(async_callback, report)
         assert callback_called == [SystemHealthStatus.DEGRADED]
 
-    @pytest.mark.asyncio
     async def test_invoke_callback_handles_error(self) -> None:
         """Test that callback errors are caught and logged."""
         aggregator = HealthAggregator()
@@ -561,7 +556,6 @@ class TestGetMetrics:
 class TestAggregatorLifecycle:
     """Tests for HealthAggregator start/stop lifecycle."""
 
-    @pytest.mark.asyncio
     async def test_start_when_disabled(self) -> None:
         """Test that start does nothing when disabled."""
         config = HealthAggregatorConfig(enabled=False)
@@ -572,7 +566,6 @@ class TestAggregatorLifecycle:
         assert aggregator._running is False
         assert aggregator._health_check_task is None
 
-    @pytest.mark.asyncio
     async def test_start_without_circuit_breaker(self) -> None:
         """Test start when circuit breaker not available."""
         with patch("health_aggregator.CIRCUIT_BREAKER_AVAILABLE", False):
@@ -581,7 +574,6 @@ class TestAggregatorLifecycle:
 
             assert aggregator._running is False
 
-    @pytest.mark.asyncio
     async def test_start_already_running(self) -> None:
         """Test that start is idempotent when already running."""
         aggregator = HealthAggregator()
@@ -593,7 +585,6 @@ class TestAggregatorLifecycle:
         # Should not change
         assert aggregator._health_check_task is original_task
 
-    @pytest.mark.asyncio
     async def test_stop_without_task(self) -> None:
         """Test stop when no task is running."""
         aggregator = HealthAggregator()

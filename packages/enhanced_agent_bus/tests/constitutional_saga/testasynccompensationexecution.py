@@ -38,7 +38,6 @@ from enhanced_agent_bus.deliberation_layer.workflows.constitutional_saga import 
 class TestAsyncCompensationExecution:
     """Tests for async compensation execution."""
 
-    @pytest.mark.asyncio
     async def test_compensation_execution(self):
         """Test compensation can be executed."""
         execution_tracker = {"called": False}
@@ -56,7 +55,6 @@ class TestAsyncCompensationExecution:
         assert result is True
         assert execution_tracker["called"] is True
 
-    @pytest.mark.asyncio
     async def test_step_execution(self):
         """Test step can be executed."""
 

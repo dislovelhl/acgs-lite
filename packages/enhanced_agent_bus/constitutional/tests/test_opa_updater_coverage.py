@@ -196,7 +196,6 @@ class TestOPAPolicyUpdaterInit:
 
 
 class TestConnectDisconnect:
-    @pytest.mark.asyncio
     async def test_connect_creates_http_client(self):
         u = OPAPolicyUpdater()
         with patch("enhanced_agent_bus.constitutional.opa_updater.OPAClient", None):
@@ -205,7 +204,6 @@ class TestConnectDisconnect:
                 assert u._http_client is not None
                 await u.disconnect()
 
-    @pytest.mark.asyncio
     async def test_disconnect_clears_http_client(self):
         u = OPAPolicyUpdater()
         with patch("enhanced_agent_bus.constitutional.opa_updater.OPAClient", None):
@@ -214,7 +212,6 @@ class TestConnectDisconnect:
                 await u.disconnect()
                 assert u._http_client is None
 
-    @pytest.mark.asyncio
     async def test_connect_with_opa_client_success(self):
         # OPAClient is None at module level (import failed in this env).
         # Test that connect() works gracefully when OPAClient is present by
@@ -244,7 +241,6 @@ class TestConnectDisconnect:
             _mod.OPAClient = orig_opa
             await u.disconnect()
 
-    @pytest.mark.asyncio
     async def test_connect_with_opa_client_failure(self):
         import enhanced_agent_bus.constitutional.opa_updater as _mod
 
@@ -269,7 +265,6 @@ class TestConnectDisconnect:
             _mod.OPAClient = orig_opa
             await u.disconnect()
 
-    @pytest.mark.asyncio
     async def test_connect_with_audit_client_success(self):
         import enhanced_agent_bus.constitutional.opa_updater as _mod
 
@@ -294,7 +289,6 @@ class TestConnectDisconnect:
             _mod.AuditClient = orig_audit
             await u.disconnect()
 
-    @pytest.mark.asyncio
     async def test_connect_with_audit_client_failure(self):
         import enhanced_agent_bus.constitutional.opa_updater as _mod
 
@@ -319,7 +313,6 @@ class TestConnectDisconnect:
             _mod.AuditClient = orig_audit
             await u.disconnect()
 
-    @pytest.mark.asyncio
     async def test_disconnect_with_opa_and_audit_clients(self):
         mock_opa = AsyncMock()
         mock_audit = AsyncMock()
@@ -336,7 +329,6 @@ class TestConnectDisconnect:
         assert u._opa_client is None
         assert u._audit_client is None
 
-    @pytest.mark.asyncio
     async def test_disconnect_when_nothing_connected(self):
         u = OPAPolicyUpdater()
         # Should not raise
@@ -349,7 +341,6 @@ class TestConnectDisconnect:
 
 
 class TestValidatePolicy:
-    @pytest.mark.asyncio
     async def test_no_http_client_returns_error(self):
         u = OPAPolicyUpdater()
         req = make_request()
@@ -357,7 +348,6 @@ class TestValidatePolicy:
         assert not result.is_valid
         assert any("not initialized" in e for e in result.errors)
 
-    @pytest.mark.asyncio
     async def test_syntax_error_returns_invalid(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -375,7 +365,6 @@ class TestValidatePolicy:
         assert any("Syntax error" in e for e in result.errors)
         u._http_client.delete.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_syntax_error_non_json_response(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -392,7 +381,6 @@ class TestValidatePolicy:
         assert not result.is_valid
         assert any("HTTP 422" in e for e in result.errors)
 
-    @pytest.mark.asyncio
     async def test_compile_check_passes(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -411,7 +399,6 @@ class TestValidatePolicy:
         assert result.syntax_check is True
         assert result.compile_check is True
 
-    @pytest.mark.asyncio
     async def test_compile_check_fails(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -431,7 +418,6 @@ class TestValidatePolicy:
         assert result.compile_check is False
         assert any("Compilation error" in e for e in result.errors)
 
-    @pytest.mark.asyncio
     async def test_compile_check_fails_non_json(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -451,7 +437,6 @@ class TestValidatePolicy:
         assert not result.is_valid
         assert any("Compilation failed with status 500" in e for e in result.errors)
 
-    @pytest.mark.asyncio
     async def test_http_error_during_validation(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -462,7 +447,6 @@ class TestValidatePolicy:
         assert not result.is_valid
         assert any("HTTP error" in e for e in result.errors)
 
-    @pytest.mark.asyncio
     async def test_runtime_error_during_validation(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -480,19 +464,16 @@ class TestValidatePolicy:
 
 
 class TestBackupCurrentPolicy:
-    @pytest.mark.asyncio
     async def test_rollback_disabled_returns_none(self):
         u = OPAPolicyUpdater(enable_rollback=False)
         result = await u._backup_current_policy("constitutional")
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_no_http_client_returns_none(self):
         u = OPAPolicyUpdater()
         result = await u._backup_current_policy("constitutional")
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_policy_exists_backup_created(self):
         u = OPAPolicyUpdater(policy_backup_dir=tempfile.gettempdir())
         u._http_client = AsyncMock()
@@ -510,7 +491,6 @@ class TestBackupCurrentPolicy:
                 assert "constitutional_backup_" in backup_id
                 assert "constitutional" in u._policy_backups
 
-    @pytest.mark.asyncio
     async def test_policy_not_found_returns_none(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -520,7 +500,6 @@ class TestBackupCurrentPolicy:
         result = await u._backup_current_policy("constitutional")
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_policy_server_error_returns_none(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -530,7 +509,6 @@ class TestBackupCurrentPolicy:
         result = await u._backup_current_policy("constitutional")
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_exception_returns_none(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -539,7 +517,6 @@ class TestBackupCurrentPolicy:
         result = await u._backup_current_policy("constitutional")
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_policy_exists_with_aiofiles(self):
         u = OPAPolicyUpdater(policy_backup_dir=tempfile.gettempdir())
         u._http_client = AsyncMock()
@@ -572,14 +549,12 @@ class TestBackupCurrentPolicy:
 
 
 class TestUploadPolicyToOpa:
-    @pytest.mark.asyncio
     async def test_no_http_client_returns_false(self):
         u = OPAPolicyUpdater()
         req = make_request()
         result = await u._upload_policy_to_opa(req)
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_upload_success_200(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -589,7 +564,6 @@ class TestUploadPolicyToOpa:
         result = await u._upload_policy_to_opa(req)
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_upload_success_204(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -599,7 +573,6 @@ class TestUploadPolicyToOpa:
         result = await u._upload_policy_to_opa(req)
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_upload_failure_400(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -609,7 +582,6 @@ class TestUploadPolicyToOpa:
         result = await u._upload_policy_to_opa(req)
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_upload_exception(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -626,7 +598,6 @@ class TestUploadPolicyToOpa:
 
 
 class TestHealthCheckOpa:
-    @pytest.mark.asyncio
     async def test_via_opa_client_healthy(self):
         u = OPAPolicyUpdater()
         mock_opa = AsyncMock()
@@ -636,7 +607,6 @@ class TestHealthCheckOpa:
         result = await u._health_check_opa()
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_via_opa_client_unhealthy(self):
         u = OPAPolicyUpdater()
         mock_opa = AsyncMock()
@@ -646,7 +616,6 @@ class TestHealthCheckOpa:
         result = await u._health_check_opa()
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_via_opa_client_exception(self):
         u = OPAPolicyUpdater()
         mock_opa = AsyncMock()
@@ -656,7 +625,6 @@ class TestHealthCheckOpa:
         result = await u._health_check_opa()
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_fallback_http_healthy(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -665,7 +633,6 @@ class TestHealthCheckOpa:
         result = await u._health_check_opa()
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_fallback_http_unhealthy(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -674,13 +641,11 @@ class TestHealthCheckOpa:
         result = await u._health_check_opa()
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_fallback_no_http_client(self):
         u = OPAPolicyUpdater()
         result = await u._health_check_opa()
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_fallback_http_exception(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -696,13 +661,11 @@ class TestHealthCheckOpa:
 
 
 class TestInvalidateCache:
-    @pytest.mark.asyncio
     async def test_no_opa_client_returns_false(self):
         u = OPAPolicyUpdater()
         result = await u._invalidate_cache("constitutional")
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_cache_invalidated_successfully(self):
         u = OPAPolicyUpdater()
         mock_opa = AsyncMock()
@@ -713,7 +676,6 @@ class TestInvalidateCache:
         assert result is True
         mock_opa.clear_cache.assert_called_once_with(policy_path="constitutional")
 
-    @pytest.mark.asyncio
     async def test_cache_invalidation_underscore_replaced(self):
         u = OPAPolicyUpdater()
         mock_opa = AsyncMock()
@@ -724,7 +686,6 @@ class TestInvalidateCache:
         assert result is True
         mock_opa.clear_cache.assert_called_once_with(policy_path="my.policy.id")
 
-    @pytest.mark.asyncio
     async def test_cache_invalidation_exception(self):
         u = OPAPolicyUpdater()
         mock_opa = AsyncMock()
@@ -741,7 +702,6 @@ class TestInvalidateCache:
 
 
 class TestRollbackPolicy:
-    @pytest.mark.asyncio
     async def test_rollback_disabled(self):
         u = OPAPolicyUpdater(enable_rollback=False)
         result_obj = PolicyUpdateResult(
@@ -750,7 +710,6 @@ class TestRollbackPolicy:
         result = await u._rollback_policy("p1", "backup_id", result_obj)
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_no_backup_id(self):
         u = OPAPolicyUpdater()
         result_obj = PolicyUpdateResult(
@@ -759,7 +718,6 @@ class TestRollbackPolicy:
         result = await u._rollback_policy("p1", None, result_obj)
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_rollback_from_memory_success(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -778,7 +736,6 @@ class TestRollbackPolicy:
         assert result_obj.rolled_back is True
         assert result_obj.status == PolicyUpdateStatus.ROLLED_BACK
 
-    @pytest.mark.asyncio
     async def test_rollback_from_memory_204(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -795,7 +752,6 @@ class TestRollbackPolicy:
             result = await u._rollback_policy("p1", "p1_backup_20240101_120000", result_obj)
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_rollback_http_failure(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -811,7 +767,6 @@ class TestRollbackPolicy:
         result = await u._rollback_policy("p1", "p1_backup", result_obj)
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_rollback_no_raw_content(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -826,7 +781,6 @@ class TestRollbackPolicy:
         result = await u._rollback_policy("p1", "p1_backup", result_obj)
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_rollback_from_disk_real_file(self):
         """Test rollback loading backup from disk (using actual temp file)."""
         u = OPAPolicyUpdater(policy_backup_dir=tempfile.gettempdir())
@@ -854,7 +808,6 @@ class TestRollbackPolicy:
             if os.path.exists(backup_path):
                 os.remove(backup_path)
 
-    @pytest.mark.asyncio
     async def test_rollback_disk_not_found(self):
         u = OPAPolicyUpdater(policy_backup_dir=tempfile.gettempdir())
         u._policy_backups = {}
@@ -866,7 +819,6 @@ class TestRollbackPolicy:
             result = await u._rollback_policy("p1", "missing_backup", result_obj)
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_rollback_exception(self):
         u = OPAPolicyUpdater()
         u._policy_backups["p1"] = {
@@ -889,7 +841,6 @@ class TestRollbackPolicy:
 
 
 class TestEmitPolicyEvent:
-    @pytest.mark.asyncio
     async def test_emit_without_audit_client(self):
         u = OPAPolicyUpdater()
         result_obj = PolicyUpdateResult(
@@ -898,7 +849,6 @@ class TestEmitPolicyEvent:
         # Should not raise
         await u._emit_policy_event(result_obj, "policy_updated")
 
-    @pytest.mark.asyncio
     async def test_emit_with_audit_client(self):
         u = OPAPolicyUpdater()
         mock_audit = AsyncMock()
@@ -910,7 +860,6 @@ class TestEmitPolicyEvent:
         await u._emit_policy_event(result_obj, "policy_updated")
         mock_audit.log.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_emit_audit_client_exception(self):
         u = OPAPolicyUpdater()
         mock_audit = AsyncMock()
@@ -923,7 +872,6 @@ class TestEmitPolicyEvent:
         # Should not raise even when audit fails
         await u._emit_policy_event(result_obj, "policy_update_failed")
 
-    @pytest.mark.asyncio
     async def test_emit_includes_error_message(self):
         u = OPAPolicyUpdater()
         mock_audit = AsyncMock()
@@ -940,7 +888,6 @@ class TestEmitPolicyEvent:
         call_kwargs = mock_audit.log.call_args
         assert call_kwargs is not None
 
-    @pytest.mark.asyncio
     async def test_emit_includes_validation_data(self):
         u = OPAPolicyUpdater()
         mock_audit = AsyncMock()
@@ -988,7 +935,6 @@ class TestUpdatePolicy:
     def _mock_emit(self, u: OPAPolicyUpdater):
         u._emit_policy_event = AsyncMock()
 
-    @pytest.mark.asyncio
     async def test_update_policy_validation_fails(self):
         u = self._make_updater_with_mock_http()
         invalid_result = PolicyValidationResult(
@@ -1002,7 +948,6 @@ class TestUpdatePolicy:
         assert result.status == PolicyUpdateStatus.FAILED
         assert "validation failed" in result.error_message
 
-    @pytest.mark.asyncio
     async def test_update_policy_dry_run(self):
         u = self._make_updater_with_mock_http()
         valid_result = PolicyValidationResult(
@@ -1014,7 +959,6 @@ class TestUpdatePolicy:
         result = await u.update_policy(req)
         assert result.status == PolicyUpdateStatus.COMPLETED
 
-    @pytest.mark.asyncio
     async def test_update_policy_upload_fails_no_backup(self):
         u = self._make_updater_with_mock_http()
         self._mock_validate_pass(u)
@@ -1028,7 +972,6 @@ class TestUpdatePolicy:
         assert result.status == PolicyUpdateStatus.FAILED
         assert "Failed to upload" in result.error_message
 
-    @pytest.mark.asyncio
     async def test_update_policy_upload_fails_with_backup(self):
         u = self._make_updater_with_mock_http()
         self._mock_validate_pass(u)
@@ -1042,7 +985,6 @@ class TestUpdatePolicy:
         assert result.status == PolicyUpdateStatus.FAILED
         u._rollback_policy.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_update_policy_health_check_fails(self):
         u = OPAPolicyUpdater(enable_health_checks=True, enable_cache_invalidation=False)
         u._http_client = AsyncMock()
@@ -1058,7 +1000,6 @@ class TestUpdatePolicy:
         assert result.status == PolicyUpdateStatus.FAILED
         assert "health check failed" in result.error_message
 
-    @pytest.mark.asyncio
     async def test_update_policy_health_check_passes(self):
         u = OPAPolicyUpdater(enable_health_checks=True, enable_cache_invalidation=True)
         u._http_client = AsyncMock()
@@ -1075,7 +1016,6 @@ class TestUpdatePolicy:
         assert result.health_check_passed is True
         assert result.cache_invalidated is True
 
-    @pytest.mark.asyncio
     async def test_update_policy_success_no_health_no_cache(self):
         u = OPAPolicyUpdater(enable_health_checks=False, enable_cache_invalidation=False)
         u._http_client = AsyncMock()
@@ -1089,7 +1029,6 @@ class TestUpdatePolicy:
         assert result.status == PolicyUpdateStatus.COMPLETED
         assert result.metadata.get("constitutional_hash") == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_update_policy_exception_with_previous_version_triggers_rollback(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -1104,7 +1043,6 @@ class TestUpdatePolicy:
         assert result.status == PolicyUpdateStatus.FAILED
         assert "boom" in result.error_message
 
-    @pytest.mark.asyncio
     async def test_update_policy_exception_without_previous_version_no_rollback(self):
         u = OPAPolicyUpdater()
         u._http_client = AsyncMock()
@@ -1120,7 +1058,6 @@ class TestUpdatePolicy:
         # rollback should not be called when no previous version
         u._rollback_policy.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_update_policy_metadata_includes_dry_run(self):
         u = OPAPolicyUpdater(enable_health_checks=False, enable_cache_invalidation=False)
         u._http_client = AsyncMock()

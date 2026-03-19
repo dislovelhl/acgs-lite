@@ -164,7 +164,6 @@ class TestBlockchainLedger:
 class TestAuditLogWithBlockchain:
     """Test suite for AuditLog with blockchain integration."""
 
-    @pytest.mark.asyncio
     async def test_process_creates_blockchain_entry(self, audit_log):
         """Processing audit entry should create blockchain block."""
         context = {
@@ -185,7 +184,6 @@ class TestAuditLogWithBlockchain:
         assert len(blockchain_entries) == 2
         assert blockchain_entries[1]["data"]["trace_id"] == "test-123"
 
-    @pytest.mark.asyncio
     async def test_multiple_entries_chain_correctly(self, audit_log):
         """Multiple entries should form valid chain."""
         for i in range(3):
@@ -208,7 +206,6 @@ class TestAuditLogWithBlockchain:
             prev = blockchain_entries[i - 1]
             assert curr["previous_hash"] == prev["hash"]
 
-    @pytest.mark.asyncio
     async def test_blockchain_integrity_verification(self, audit_log):
         """Blockchain should maintain integrity across operations."""
         context = {
@@ -224,7 +221,6 @@ class TestAuditLogWithBlockchain:
 
         assert audit_log.verify_blockchain_integrity() is True
 
-    @pytest.mark.asyncio
     async def test_get_blockchain_stats(self, audit_log):
         """Should return accurate blockchain statistics."""
         context = {
@@ -276,7 +272,6 @@ class TestAuditLogWithBlockchain:
 class TestAuditLogBlockchainEdgeCases:
     """Test edge cases and error handling."""
 
-    @pytest.mark.asyncio
     async def test_process_without_blockchain_does_not_fail(self):
         """Processing should work without blockchain enabled."""
         config = AuditLogConfig(enabled=True, log_to_blockchain=False)
@@ -297,7 +292,6 @@ class TestAuditLogBlockchainEdgeCases:
         assert result.allowed is True
         assert len(audit_log.get_entries()) == 1
 
-    @pytest.mark.asyncio
     async def test_audit_entry_still_logged_without_blockchain(self):
         """Regular audit logging should work without blockchain."""
         config = AuditLogConfig(enabled=True, log_to_blockchain=False)
@@ -358,7 +352,6 @@ class TestBlockchainConstitutionalCompliance:
         for block in blockchain_ledger.blocks:
             assert block["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_audit_entries_include_constitutional_hash(self, audit_log):
         """Audit entries must include constitutional hash."""
         context = {

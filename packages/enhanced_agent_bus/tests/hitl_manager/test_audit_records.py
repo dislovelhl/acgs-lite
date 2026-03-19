@@ -11,8 +11,6 @@ Tests cover:
 
 from datetime import UTC, datetime
 
-import pytest
-
 
 class TestAuditRecords:
     """Tests for audit record generation."""

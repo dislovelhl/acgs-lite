@@ -76,7 +76,6 @@ async def _post_message(
 class TestMessageTypeCommand:
     """Test COMMAND message type processing."""
 
-    @pytest.mark.asyncio
     async def test_message_type_command(self):
         """Test sending a COMMAND message type."""
         message_data = {
@@ -102,7 +101,6 @@ class TestMessageTypeCommand:
 class TestMessageTypeQuery:
     """Test QUERY message type processing."""
 
-    @pytest.mark.asyncio
     async def test_message_type_query(self):
         """Test sending a QUERY message type."""
         message_data = {
@@ -127,7 +125,6 @@ class TestMessageTypeQuery:
 class TestMessageTypeResponse:
     """Test RESPONSE message type processing."""
 
-    @pytest.mark.asyncio
     async def test_message_type_response(self):
         """Test sending a RESPONSE message type."""
         message_data = {
@@ -153,7 +150,6 @@ class TestMessageTypeResponse:
 class TestMessageTypeEvent:
     """Test EVENT message type processing."""
 
-    @pytest.mark.asyncio
     async def test_message_type_event(self):
         """Test sending an EVENT message type."""
         message_data = {
@@ -179,7 +175,6 @@ class TestMessageTypeEvent:
 class TestMessageTypeNotification:
     """Test NOTIFICATION message type processing."""
 
-    @pytest.mark.asyncio
     async def test_message_type_notification(self):
         """Test sending a NOTIFICATION message type."""
         message_data = {
@@ -204,7 +199,6 @@ class TestMessageTypeNotification:
 class TestMessageTypeHeartbeat:
     """Test HEARTBEAT message type processing."""
 
-    @pytest.mark.asyncio
     async def test_message_type_heartbeat(self):
         """Test sending a HEARTBEAT message type."""
         message_data = {
@@ -230,7 +224,6 @@ class TestMessageTypeHeartbeat:
 class TestMessageTypeGovernanceRequest:
     """Test GOVERNANCE_REQUEST message type processing."""
 
-    @pytest.mark.asyncio
     async def test_message_type_governance_request(self):
         """Test sending a GOVERNANCE_REQUEST message type."""
         message_data = {
@@ -256,7 +249,6 @@ class TestMessageTypeGovernanceRequest:
 class TestMessageTypeGovernanceResponse:
     """Test GOVERNANCE_RESPONSE message type processing."""
 
-    @pytest.mark.asyncio
     async def test_message_type_governance_response(self):
         """Test sending a GOVERNANCE_RESPONSE message type."""
         message_data = {
@@ -283,7 +275,6 @@ class TestMessageTypeGovernanceResponse:
 class TestMessageTypeConstitutionalValidation:
     """Test CONSTITUTIONAL_VALIDATION message type processing."""
 
-    @pytest.mark.asyncio
     async def test_message_type_constitutional_validation(self):
         """Test sending a CONSTITUTIONAL_VALIDATION message type."""
         message_data = {
@@ -309,7 +300,6 @@ class TestMessageTypeConstitutionalValidation:
 class TestMessageTypeTaskRequest:
     """Test TASK_REQUEST message type processing."""
 
-    @pytest.mark.asyncio
     async def test_message_type_task_request(self):
         """Test sending a TASK_REQUEST message type."""
         message_data = {
@@ -336,7 +326,6 @@ class TestMessageTypeTaskRequest:
 class TestMessageTypeTaskResponse:
     """Test TASK_RESPONSE message type processing."""
 
-    @pytest.mark.asyncio
     async def test_message_type_task_response(self):
         """Test sending a TASK_RESPONSE message type."""
         message_data = {
@@ -363,7 +352,6 @@ class TestMessageTypeTaskResponse:
 class TestMessageTypeAuditLog:
     """Test AUDIT_LOG message type processing."""
 
-    @pytest.mark.asyncio
     async def test_message_type_audit_log(self):
         """Test sending an AUDIT_LOG message type."""
         message_data = {
@@ -394,7 +382,6 @@ class TestMessageTypeAuditLog:
 class TestAllTypesIntegration:
     """Integration tests for all message types in sequence."""
 
-    @pytest.mark.asyncio
     async def test_all_twelve_types_accepted_sequential(self):
         """Test all 12 message types are accepted sequentially."""
         message_types = [
@@ -433,7 +420,6 @@ class TestAllTypesIntegration:
 class TestMessageResponseStructure:
     """Test response structure for message endpoints."""
 
-    @pytest.mark.asyncio
     async def test_response_includes_latency_ms(self):
         """Test that message response includes latency_ms in details."""
         message_data = {
@@ -455,7 +441,6 @@ class TestMessageResponseStructure:
             except httpx.ConnectError:
                 pytest.skip("API server not running")
 
-    @pytest.mark.asyncio
     async def test_response_includes_rate_limit_headers(self):
         """Test that response includes X-RateLimit-* headers."""
         message_data = {

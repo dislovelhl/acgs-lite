@@ -156,7 +156,6 @@ class TestMCPConstitutionalValidator:
         )
         return MCPConstitutionalValidator(config=config)
 
-    @pytest.mark.asyncio
     async def test_validate_valid_operation(self, validator):
         """Test validating a valid operation."""
         from ...mcp_integration.validators import (
@@ -176,7 +175,6 @@ class TestMCPConstitutionalValidator:
         assert result.is_valid is True
         assert len(result.issues) == 0
 
-    @pytest.mark.asyncio
     async def test_validate_missing_hash(self, validator):
         """Test validation fails with missing constitutional hash."""
         from ...mcp_integration.validators import (
@@ -195,7 +193,6 @@ class TestMCPConstitutionalValidator:
         assert result.is_valid is False
         assert any(i.code == "HASH_MISSING" for i in result.issues)
 
-    @pytest.mark.asyncio
     async def test_validate_invalid_hash(self, validator):
         """Test validation fails with invalid constitutional hash."""
         from ...mcp_integration.validators import (
@@ -214,7 +211,6 @@ class TestMCPConstitutionalValidator:
         assert result.is_valid is False
         assert any(i.code == "HASH_MISMATCH" for i in result.issues)
 
-    @pytest.mark.asyncio
     async def test_validate_blocked_operation(self):
         """Test validation fails for blocked operations."""
         from ...mcp_integration.validators import (
@@ -240,7 +236,6 @@ class TestMCPConstitutionalValidator:
         assert result.is_valid is False
         assert any(i.code == "OPERATION_BLOCKED" for i in result.issues)
 
-    @pytest.mark.asyncio
     async def test_validate_blocked_tool(self):
         """Test validation fails for blocked tools."""
         from ...mcp_integration.validators import (
@@ -267,7 +262,6 @@ class TestMCPConstitutionalValidator:
         assert result.is_valid is False
         assert any(i.code == "TOOL_BLOCKED" for i in result.issues)
 
-    @pytest.mark.asyncio
     async def test_validate_high_risk_tool_warning(self, validator):
         """Test validation adds warning for high-risk tools."""
         from ...mcp_integration.validators import (
@@ -286,7 +280,6 @@ class TestMCPConstitutionalValidator:
 
         assert any("high-risk" in w for w in result.warnings)
 
-    @pytest.mark.asyncio
     async def test_batch_validation(self, validator):
         """Test batch validation."""
         from ...mcp_integration.validators import (

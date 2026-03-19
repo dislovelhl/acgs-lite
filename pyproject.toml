@@ -30,8 +30,6 @@ dependencies = [
     "PyYAML>=6.0.0",
     "psutil>=5.9.0",
     "jsonschema>=4.0.0",
-    "pyyaml>=6.0",
-    "click>=8.0",
 ]
 
 [project.optional-dependencies]
@@ -78,7 +76,7 @@ members = ["packages/enhanced_agent_bus", "packages/acgs-lite"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-exclude = [".claude", ".codex-home", "examples", "node_modules", "__pycache__"]
+exclude = [".claude", ".codex-home", "examples", "node_modules", "__pycache__", "tools"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "BLE", "S", "RUF", "C90"]
@@ -137,7 +135,7 @@ source = ["src", "packages/enhanced_agent_bus", "packages/acgs-lite/src"]
 omit = ["tests/*", "**/tests/*", "**/__init__.py"]
 
 [tool.coverage.report]
-fail_under = 60
+fail_under = 70
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",

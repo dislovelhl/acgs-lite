@@ -268,7 +268,6 @@ class TestOPAAdapterInit:
 class TestOPAAdapterGetHttpClient:
     """Tests for OPAAdapter._get_http_client method."""
 
-    @pytest.mark.asyncio
     async def test_get_http_client_creates_session(self, opa_adapter):
         """Test that _get_http_client creates internal HttpClient."""
         # Test the actual behavior
@@ -278,7 +277,6 @@ class TestOPAAdapterGetHttpClient:
         # Either returns a session or None (if aiohttp not available)
         # This exercises the creation path
 
-    @pytest.mark.asyncio
     async def test_get_http_client_returns_cached(self, opa_adapter):
         """Test that _get_http_client returns cached client."""
         mock_client = AsyncMock()
@@ -288,7 +286,6 @@ class TestOPAAdapterGetHttpClient:
 
         assert result is mock_client
 
-    @pytest.mark.asyncio
     async def test_get_http_client_import_error(self, opa_adapter):
         """Test _get_http_client handles errors gracefully."""
         # Simulate HttpClient.start raising an error
@@ -490,7 +487,6 @@ class TestOPAAdapterGetFallbackResponse:
 class TestOPAAdapterClose:
     """Tests for OPAAdapter.close method."""
 
-    @pytest.mark.asyncio
     async def test_close_with_client(self, opa_adapter):
         """Test close() properly closes HTTP client."""
         mock_client = AsyncMock()
@@ -501,7 +497,6 @@ class TestOPAAdapterClose:
         mock_client.close.assert_called_once()
         assert opa_adapter._http_client is None
 
-    @pytest.mark.asyncio
     async def test_close_without_client(self, opa_adapter):
         """Test close() handles None client gracefully."""
         opa_adapter._http_client = None
@@ -514,7 +509,6 @@ class TestOPAAdapterClose:
 class TestOPAAdapterExecute:
     """Tests for OPAAdapter._execute method."""
 
-    @pytest.mark.asyncio
     async def test_execute_without_http_client(self, opa_adapter, opa_request):
         """Test _execute falls back to simulated response when no HTTP client."""
         opa_adapter._http_client = None
@@ -530,7 +524,6 @@ class TestOPAAdapterExecute:
         # Should use _simulate_opa_response
         assert response.result.get("simulated") is True
 
-    @pytest.mark.asyncio
     async def test_execute_with_query_params(self, opa_adapter, opa_request_with_options):
         """Test _execute builds correct URL with query params."""
         # Mock client to capture the URL
@@ -561,7 +554,6 @@ class TestOPAAdapterExecute:
         assert "pretty=true" in url
         assert "metrics=true" in url
 
-    @pytest.mark.asyncio
     async def test_execute_non_200_status_fail_closed(self, opa_adapter, opa_request):
         """Test _execute handles non-200 status in fail-closed mode."""
         mock_response = MagicMock()
@@ -582,7 +574,6 @@ class TestOPAAdapterExecute:
         assert "error" in response.result
         assert "500" in response.result["error"]
 
-    @pytest.mark.asyncio
     async def test_execute_timeout_fail_closed(self, opa_adapter, opa_request):
         """Test _execute handles timeout in fail-closed mode."""
         mock_client = AsyncMock()
@@ -599,7 +590,6 @@ class TestOPAAdapterExecute:
         assert response.allow is False
         assert response.result == {"error": "timeout"}
 
-    @pytest.mark.asyncio
     async def test_execute_exception_fail_closed(self, opa_adapter, opa_request):
         """Test _execute handles connection exception in fail-closed mode."""
         mock_client = AsyncMock()
@@ -625,7 +615,6 @@ class TestOPAAdapterExecute:
 class TestCheckConstitutionalCompliance:
     """Tests for check_constitutional_compliance function."""
 
-    @pytest.mark.asyncio
     async def test_check_compliance_creates_adapter(self):
         """Test check_constitutional_compliance creates adapter when not provided."""
         with patch.object(OPAAdapter, "call", new_callable=AsyncMock) as mock_call:
@@ -646,7 +635,6 @@ class TestCheckConstitutionalCompliance:
             assert request.input["resource"] == "test_resource"
             assert request.input["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_check_compliance_with_context(self):
         """Test check_constitutional_compliance with additional context."""
         with patch.object(OPAAdapter, "call", new_callable=AsyncMock) as mock_call:
@@ -665,7 +653,6 @@ class TestCheckConstitutionalCompliance:
             assert request.input["user_role"] == "admin"
             assert request.input["department"] == "security"
 
-    @pytest.mark.asyncio
     async def test_check_compliance_with_provided_adapter(self):
         """Test check_constitutional_compliance with provided adapter."""
         mock_adapter = MagicMock(spec=OPAAdapter)
@@ -689,7 +676,6 @@ class TestCheckConstitutionalCompliance:
 class TestCheckAgentPermission:
     """Tests for check_agent_permission function."""
 
-    @pytest.mark.asyncio
     async def test_check_permission_basic(self):
         """Test check_agent_permission basic functionality."""
         with patch.object(OPAAdapter, "call", new_callable=AsyncMock) as mock_call:
@@ -709,7 +695,6 @@ class TestCheckAgentPermission:
             assert request.input["target"] is None
             assert request.policy_path == "acgs2/agent/permissions"
 
-    @pytest.mark.asyncio
     async def test_check_permission_with_target(self):
         """Test check_agent_permission with target specified."""
         with patch.object(OPAAdapter, "call", new_callable=AsyncMock) as mock_call:
@@ -727,7 +712,6 @@ class TestCheckAgentPermission:
             request = mock_call.call_args[0][0]
             assert request.input["target"] == "agent_002"
 
-    @pytest.mark.asyncio
     async def test_check_permission_with_adapter(self):
         """Test check_agent_permission with provided adapter."""
         mock_adapter = MagicMock(spec=OPAAdapter)
@@ -750,7 +734,6 @@ class TestCheckAgentPermission:
 class TestEvaluateMaciRole:
     """Tests for evaluate_maci_role function."""
 
-    @pytest.mark.asyncio
     async def test_evaluate_maci_role_basic(self):
         """Test evaluate_maci_role basic functionality."""
         with patch.object(OPAAdapter, "call", new_callable=AsyncMock) as mock_call:
@@ -771,7 +754,6 @@ class TestEvaluateMaciRole:
             assert request.policy_path == "acgs2/maci/role_separation"
             assert request.explain is True  # Always explain role decisions
 
-    @pytest.mark.asyncio
     async def test_evaluate_maci_role_with_target(self):
         """Test evaluate_maci_role with target role."""
         with patch.object(OPAAdapter, "call", new_callable=AsyncMock) as mock_call:
@@ -789,7 +771,6 @@ class TestEvaluateMaciRole:
             request = mock_call.call_args[0][0]
             assert request.input["target_role"] == "judicial"
 
-    @pytest.mark.asyncio
     async def test_evaluate_maci_role_with_adapter(self):
         """Test evaluate_maci_role with provided adapter."""
         mock_adapter = MagicMock(spec=OPAAdapter)
@@ -817,7 +798,6 @@ class TestEvaluateMaciRole:
 class TestOPAAdapterIntegration:
     """Integration tests for OPAAdapter."""
 
-    @pytest.mark.asyncio
     async def test_full_workflow_simulated(self, opa_adapter, opa_request):
         """Test full workflow with simulated OPA (no aiohttp)."""
         opa_adapter._http_client = None
@@ -840,7 +820,6 @@ class TestOPAAdapterIntegration:
         # Close adapter
         await opa_adapter.close()
 
-    @pytest.mark.asyncio
     async def test_fail_closed_security_model(self, opa_adapter, opa_request):
         """Test that fail-closed model denies on all failures."""
         opa_adapter.opa_config.fail_closed = True
@@ -853,7 +832,6 @@ class TestOPAAdapterIntegration:
         fallback = opa_adapter._get_fallback_response(opa_request)
         assert fallback.allow is False
 
-    @pytest.mark.asyncio
     async def test_fail_open_security_model(self, opa_adapter, opa_request):
         """Test fail-open model (not recommended for production)."""
         opa_adapter.opa_config.fail_closed = False

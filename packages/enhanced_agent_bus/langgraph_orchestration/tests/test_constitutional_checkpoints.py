@@ -41,7 +41,6 @@ class TestConstitutionalHashValidator:
         validator = ConstitutionalHashValidator(expected_hash="custom_hash")
         assert validator.expected_hash == "custom_hash"
 
-    @pytest.mark.asyncio
     async def test_validate_matching_hash(self):
         """Test validation with matching hash."""
         validator = ConstitutionalHashValidator()
@@ -60,7 +59,6 @@ class TestConstitutionalHashValidator:
         assert is_valid is True
         assert len(violations) == 0
 
-    @pytest.mark.asyncio
     async def test_validate_mismatched_checkpoint_hash(self):
         """Test validation with mismatched checkpoint hash."""
         validator = ConstitutionalHashValidator()
@@ -81,7 +79,6 @@ class TestConstitutionalHashValidator:
         assert len(violations) >= 1
         assert any("checkpoint" in v.lower() for v in violations)
 
-    @pytest.mark.asyncio
     async def test_validate_mismatched_state_hash(self):
         """Test validation with mismatched state hash."""
         validator = ConstitutionalHashValidator()
@@ -104,7 +101,6 @@ class TestConstitutionalHashValidator:
 class TestStateIntegrityValidator:
     """Tests for StateIntegrityValidator."""
 
-    @pytest.mark.asyncio
     async def test_validate_state_integrity(self):
         """Test state integrity validation."""
         validator = StateIntegrityValidator()
@@ -123,7 +119,6 @@ class TestStateIntegrityValidator:
         assert is_valid is True
         assert "state_checksum" in checkpoint.metadata
 
-    @pytest.mark.asyncio
     async def test_validate_invalid_version(self):
         """Test validation catches invalid version."""
         validator = StateIntegrityValidator()
@@ -146,7 +141,6 @@ class TestStateIntegrityValidator:
 class TestMACIRoleValidator:
     """Tests for MACIRoleValidator."""
 
-    @pytest.mark.asyncio
     async def test_validate_without_maci(self):
         """Test validation passes without MACI enforcer."""
         validator = MACIRoleValidator()
@@ -165,7 +159,6 @@ class TestMACIRoleValidator:
         assert is_valid is True
         assert checkpoint.maci_validated is True
 
-    @pytest.mark.asyncio
     async def test_validate_with_maci_enforcer(self):
         """Test validation with MACI enforcer."""
         mock_enforcer = MagicMock()
@@ -221,7 +214,6 @@ class TestConstitutionalCheckpoint:
 
         assert len(cc._validators) == 1
 
-    @pytest.mark.asyncio
     async def test_validate_success(self):
         """Test successful validation."""
         state = GraphState(data={}, version=1)
@@ -241,7 +233,6 @@ class TestConstitutionalCheckpoint:
         assert cc.checkpoint.status == CheckpointStatus.VALIDATED
         assert cc.checkpoint.constitutional_validated is True
 
-    @pytest.mark.asyncio
     async def test_validate_failure_raises(self):
         """Test validation failure raises exception."""
         state = GraphState(data={}, constitutional_hash="wrong")
@@ -295,7 +286,6 @@ class TestConstitutionalCheckpointManager:
         )
         assert manager.constitutional_hash == "custom_hash"
 
-    @pytest.mark.asyncio
     async def test_create_checkpoint(self):
         """Test creating a checkpoint."""
         manager = ConstitutionalCheckpointManager()
@@ -314,7 +304,6 @@ class TestConstitutionalCheckpointManager:
         assert checkpoint.status == CheckpointStatus.VALIDATED
         assert checkpoint.id in manager._checkpoints
 
-    @pytest.mark.asyncio
     async def test_create_checkpoint_without_validation(self):
         """Test creating checkpoint without validation."""
         manager = ConstitutionalCheckpointManager()
@@ -330,7 +319,6 @@ class TestConstitutionalCheckpointManager:
 
         assert checkpoint.status == CheckpointStatus.CREATED
 
-    @pytest.mark.asyncio
     async def test_get_checkpoint(self):
         """Test getting a checkpoint."""
         manager = ConstitutionalCheckpointManager()
@@ -348,14 +336,12 @@ class TestConstitutionalCheckpointManager:
         assert retrieved is not None
         assert retrieved.id == created.id
 
-    @pytest.mark.asyncio
     async def test_get_checkpoint_not_found(self):
         """Test getting nonexistent checkpoint."""
         manager = ConstitutionalCheckpointManager()
         result = await manager.get_checkpoint("nonexistent")
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_restore_checkpoint(self):
         """Test restoring from checkpoint."""
         manager = ConstitutionalCheckpointManager()
@@ -374,7 +360,6 @@ class TestConstitutionalCheckpointManager:
         assert checkpoint.status == CheckpointStatus.RESTORED
         assert restored_state.data == {"restored": "data"}
 
-    @pytest.mark.asyncio
     async def test_restore_checkpoint_not_found(self):
         """Test restoring nonexistent checkpoint raises."""
         manager = ConstitutionalCheckpointManager()
@@ -383,7 +368,6 @@ class TestConstitutionalCheckpointManager:
         with pytest.raises(CheckpointError):
             await manager.restore_checkpoint("nonexistent", context)
 
-    @pytest.mark.asyncio
     async def test_restore_checkpoint_hash_mismatch(self):
         """Test restoring with hash mismatch raises."""
         manager = ConstitutionalCheckpointManager()
@@ -402,7 +386,6 @@ class TestConstitutionalCheckpointManager:
         with pytest.raises(CheckpointError):
             await manager.restore_checkpoint(created.id, context)
 
-    @pytest.mark.asyncio
     async def test_list_checkpoints(self):
         """Test listing checkpoints."""
         manager = ConstitutionalCheckpointManager()
@@ -420,7 +403,6 @@ class TestConstitutionalCheckpointManager:
 
         assert len(checkpoints) == 3
 
-    @pytest.mark.asyncio
     async def test_delete_checkpoint(self):
         """Test deleting checkpoint."""
         manager = ConstitutionalCheckpointManager()
@@ -438,14 +420,12 @@ class TestConstitutionalCheckpointManager:
         assert deleted is True
         assert created.id not in manager._checkpoints
 
-    @pytest.mark.asyncio
     async def test_delete_nonexistent_checkpoint(self):
         """Test deleting nonexistent checkpoint."""
         manager = ConstitutionalCheckpointManager()
         deleted = await manager.delete_checkpoint("nonexistent")
         assert deleted is False
 
-    @pytest.mark.asyncio
     async def test_cleanup_old_checkpoints(self):
         """Test cleaning up old checkpoints."""
         manager = ConstitutionalCheckpointManager()

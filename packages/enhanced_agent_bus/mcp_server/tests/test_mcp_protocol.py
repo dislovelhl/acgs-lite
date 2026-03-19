@@ -8,7 +8,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from unittest.mock import AsyncMock
 
-import pytest
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 from ..config import MCPConfig
@@ -373,7 +372,6 @@ class TestMCPHandler:
 
         assert "custom://resource" in handler._resources
 
-    @pytest.mark.asyncio
     async def test_handle_initialize(self):
         """Test handling initialize request."""
         config = MCPConfig()
@@ -397,7 +395,6 @@ class TestMCPHandler:
         assert "protocolVersion" in response.result
         assert "serverInfo" in response.result
 
-    @pytest.mark.asyncio
     async def test_handle_tools_list(self):
         """Test handling tools/list request."""
         config = MCPConfig()
@@ -424,7 +421,6 @@ class TestMCPHandler:
         assert "tools" in response.result
         assert len(response.result["tools"]) >= 1
 
-    @pytest.mark.asyncio
     async def test_handle_resources_list(self):
         """Test handling resources/list request."""
         config = MCPConfig()
@@ -451,7 +447,6 @@ class TestMCPHandler:
         assert response is not None
         assert "resources" in response.result
 
-    @pytest.mark.asyncio
     async def test_handle_tool_call(self):
         """Test handling tool call."""
         config = MCPConfig()
@@ -485,7 +480,6 @@ class TestMCPHandler:
         assert response.error is None
         assert "content" in response.result
 
-    @pytest.mark.asyncio
     async def test_handle_resource_read(self):
         """Test handling resource read."""
         config = MCPConfig()
@@ -517,7 +511,6 @@ class TestMCPHandler:
         assert response.error is None
         assert "contents" in response.result
 
-    @pytest.mark.asyncio
     async def test_handle_unknown_method(self):
         """Test handling unknown method."""
         config = MCPConfig()
@@ -536,7 +529,6 @@ class TestMCPHandler:
         assert response.error is not None
         assert response.error.code == -32601
 
-    @pytest.mark.asyncio
     async def test_handle_notification(self):
         """Test handling notification (no response expected)."""
         config = MCPConfig()
@@ -554,7 +546,6 @@ class TestMCPHandler:
         # Notifications should not receive responses
         assert response is None
 
-    @pytest.mark.asyncio
     async def test_constitutional_hash_injection(self):
         """Test that constitutional hash is injected for required tools."""
         config = MCPConfig(strict_mode=True)

@@ -10,8 +10,6 @@ import json
 import logging
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from ..structured_logging import (
     CONSTITUTIONAL_HASH,
     LOG_LEVEL_CONFIG,

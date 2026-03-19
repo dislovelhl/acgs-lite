@@ -270,7 +270,6 @@ class TestDeliberationQueue:
             content={"action": "high_risk_operation"},
         )
 
-    @pytest.mark.asyncio
     async def test_enqueue_for_deliberation(self, queue, test_message):
         """Test enqueueing a message for deliberation."""
         item_id = await queue.enqueue_for_deliberation(
@@ -283,7 +282,6 @@ class TestDeliberationQueue:
         assert item_id in queue.queue
         assert queue.stats["total_queued"] == 1
 
-    @pytest.mark.asyncio
     async def test_queue_status(self, queue, test_message):
         """Test getting queue status."""
         await queue.enqueue_for_deliberation(test_message)
@@ -294,7 +292,6 @@ class TestDeliberationQueue:
         assert len(status["items"]) == 1
         assert status["stats"]["total_queued"] == 1
 
-    @pytest.mark.asyncio
     async def test_item_details(self, queue, test_message):
         """Test getting item details."""
         item_id = await queue.enqueue_for_deliberation(test_message)
@@ -306,7 +303,6 @@ class TestDeliberationQueue:
         assert details["message_id"] == test_message.message_id
         assert details["status"] == DeliberationStatus.PENDING.value
 
-    @pytest.mark.asyncio
     async def test_item_details_not_found(self, queue):
         """Test getting details for nonexistent item."""
         details = queue.get_item_details("nonexistent_id")
@@ -381,7 +377,6 @@ class TestVoting:
             content={"action": "high_risk_operation"},
         )
 
-    @pytest.mark.asyncio
     async def test_submit_agent_vote(self, queue, test_message):
         """Test submitting an agent vote."""
         item_id = await queue.enqueue_for_deliberation(test_message, requires_multi_agent_vote=True)
@@ -399,7 +394,6 @@ class TestVoting:
         assert len(details["votes"]) == 1
         assert details["votes"][0]["vote"] == VoteType.APPROVE.value
 
-    @pytest.mark.asyncio
     async def test_vote_update(self, queue, test_message):
         """Test updating an existing vote."""
         item_id = await queue.enqueue_for_deliberation(test_message)
@@ -426,7 +420,6 @@ class TestVoting:
         assert len(agent1_votes) == 1
         assert agent1_votes[0]["vote"] == VoteType.REJECT.value
 
-    @pytest.mark.asyncio
     async def test_vote_for_nonexistent_item(self, queue):
         """Test voting on nonexistent item returns False."""
         result = await queue.submit_agent_vote(
@@ -513,7 +506,6 @@ class TestAdaptiveRouter:
         message.impact_score = 0.9
         return message
 
-    @pytest.mark.asyncio
     async def test_route_low_risk_to_fast_lane(self, router, low_risk_message):
         """Test low-risk messages go to fast lane."""
         decision = await router.route_message(low_risk_message)
@@ -522,7 +514,6 @@ class TestAdaptiveRouter:
         assert decision["requires_deliberation"] is False
         assert low_risk_message.status == MessageStatus.DELIVERED
 
-    @pytest.mark.asyncio
     async def test_route_high_risk_to_deliberation(self, router, high_risk_message):
         """Test high-risk messages go to deliberation."""
         decision = await router.route_message(high_risk_message)
@@ -531,7 +522,6 @@ class TestAdaptiveRouter:
         assert decision["requires_deliberation"] is True
         assert "item_id" in decision
 
-    @pytest.mark.asyncio
     async def test_routing_stats(self, router, low_risk_message):
         """Test routing statistics are tracked."""
         await router.route_message(low_risk_message)
@@ -555,7 +545,6 @@ class TestAdaptiveRouter:
         router.set_impact_threshold(-0.5)
         assert router.impact_threshold == 0.0
 
-    @pytest.mark.asyncio
     async def test_force_deliberation(self, router, low_risk_message):
         """Test forcing message into deliberation."""
         decision = await router.force_deliberation(low_risk_message, reason="manual_override")

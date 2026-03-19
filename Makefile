@@ -1,4 +1,4 @@
-.PHONY: help setup test test-quick test-lite test-bus test-gw lint format clean bench codex-doctor autoresearch-promote agent-commit
+.PHONY: help setup test test-quick test-lite test-bus test-gw lint format clean bench cov cov-html codex-doctor autoresearch-promote agent-commit
 
 PYTHON ?= python3
 PIP ?= $(PYTHON) -m pip
@@ -71,6 +71,14 @@ lint:
 format:
 	ruff check --fix .
 	ruff format .
+
+# === Coverage ===
+cov:
+	$(PYTHON) -m pytest --import-mode=importlib --cov --cov-report=term-missing -m "not slow" -x
+
+cov-html:
+	$(PYTHON) -m pytest --import-mode=importlib --cov --cov-report=html -m "not slow"
+	@echo "Coverage report: htmlcov/index.html"
 
 # === Benchmarks ===
 bench:

@@ -6,8 +6,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 # Import LLMAssistant
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 
@@ -15,7 +13,6 @@ from enhanced_agent_bus.deliberation_layer.llm_assistant import LLMAssistant
 from enhanced_agent_bus.models import AgentMessage, MessageType, Priority
 
 
-@pytest.mark.asyncio
 async def test_analyze_message_impact_prompt_standardization():
     """Verify that analyze_message_impact uses the standardized prompt template."""
     with (
@@ -74,7 +71,6 @@ async def test_analyze_message_impact_prompt_standardization():
         assert kwargs["constitutional_hash"] == CONSTITUTIONAL_HASH
 
 
-@pytest.mark.asyncio
 async def test_generate_decision_reasoning_prompt_standardization():
     """Verify that generate_decision_reasoning uses the standardized prompt template."""
     with (

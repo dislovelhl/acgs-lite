@@ -25,7 +25,6 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 class TestSagaRecoveryService:
     """Tests for saga recovery service."""
 
-    @pytest.mark.asyncio
     async def test_start_and_stop_recovery_service(
         self,
         orchestrator: SagaOrchestrator,
@@ -39,7 +38,6 @@ class TestSagaRecoveryService:
         await recovery.stop()
         assert recovery._running is False
 
-    @pytest.mark.asyncio
     async def test_recovery_of_pending_compensations(
         self,
         orchestrator: SagaOrchestrator,

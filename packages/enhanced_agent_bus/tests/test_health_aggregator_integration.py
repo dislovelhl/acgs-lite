@@ -72,7 +72,6 @@ async def aggregator_with_registry(registry):
         await aggregator.stop()
 
 
-@pytest.mark.asyncio
 class TestHealthAggregatorIntegration:
     """Integration tests with real circuit breaker registry."""
 
@@ -381,7 +380,6 @@ class TestHealthAggregatorIntegration:
         await aggregator_with_registry.stop()
 
 
-@pytest.mark.asyncio
 class TestGlobalSingletonIntegration:
     """Test global singleton integration."""
 

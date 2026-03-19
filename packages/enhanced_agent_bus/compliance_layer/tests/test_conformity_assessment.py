@@ -5,8 +5,6 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH
 import json  # noqa: E402
 from datetime import UTC, datetime, timedelta, timezone  # noqa: E402
 
-import pytest  # noqa: E402
-
 from enhanced_agent_bus.compliance_layer.conformity_assessment import (  # noqa: E402
     AssessmentStatus,
     ComplianceEvidence,

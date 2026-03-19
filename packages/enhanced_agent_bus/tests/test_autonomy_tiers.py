@@ -19,7 +19,6 @@ class TestAutonomyTiers:
     def processor(self):
         return MessageProcessor(isolated_mode=True)
 
-    @pytest.mark.asyncio
     async def test_advisory_agent_blocked_execution(self, processor):
         """Advisory agents cannot execute commands."""
         msg = AgentMessage(
@@ -34,7 +33,6 @@ class TestAutonomyTiers:
         assert result.metadata["rejection_reason"] == "autonomy_tier_violation"
         assert "Advisory agent cannot execute commands" in result.errors[0]
 
-    @pytest.mark.asyncio
     async def test_advisory_agent_allowed_query(self, processor):
         """Advisory agents can send queries."""
         msg = AgentMessage(
@@ -47,7 +45,6 @@ class TestAutonomyTiers:
         result = await processor.process(msg)
         assert result.is_valid
 
-    @pytest.mark.asyncio
     async def test_human_approved_blocked_without_validator(self, processor):
         """Human-approved tier requires validation evidence."""
         msg = AgentMessage(
@@ -62,7 +59,6 @@ class TestAutonomyTiers:
         assert result.metadata["rejection_reason"] == "autonomy_tier_violation"
         assert "Human-approved tier requires independent validation" in result.errors[0]
 
-    @pytest.mark.asyncio
     async def test_human_approved_allowed_with_validator(self, processor):
         """Human-approved tier allowed with validator evidence."""
         msg = AgentMessage(
@@ -76,7 +72,6 @@ class TestAutonomyTiers:
         result = await processor.process(msg)
         assert result.is_valid
 
-    @pytest.mark.asyncio
     async def test_bounded_agent_allowed(self, processor):
         """Bounded agents can execute (subject to other policies)."""
         msg = AgentMessage(

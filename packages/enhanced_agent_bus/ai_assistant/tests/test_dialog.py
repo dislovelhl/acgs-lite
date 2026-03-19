@@ -184,7 +184,6 @@ class TestRuleBasedDialogPolicy:
         policy = RuleBasedDialogPolicy()
         assert policy is not None
 
-    @pytest.mark.asyncio
     async def test_select_action_greeting(self):
         """Test action selection for greeting."""
         policy = RuleBasedDialogPolicy()
@@ -202,7 +201,6 @@ class TestRuleBasedDialogPolicy:
         assert isinstance(action, DialogAction)
         assert action.action_type == ActionType.RESPOND
 
-    @pytest.mark.asyncio
     async def test_select_action_order_status(self):
         """Test action selection for order status."""
         policy = RuleBasedDialogPolicy()
@@ -220,7 +218,6 @@ class TestRuleBasedDialogPolicy:
 
         assert isinstance(action, DialogAction)
 
-    @pytest.mark.asyncio
     async def test_select_action_low_confidence(self):
         """Test action selection with low confidence."""
         policy = RuleBasedDialogPolicy()
@@ -243,7 +240,6 @@ class TestRuleBasedDialogPolicy:
             ActionType.ASK_QUESTION,
         ]
 
-    @pytest.mark.asyncio
     async def test_select_action_missing_slot(self):
         """Test action when required slot is missing."""
         policy = RuleBasedDialogPolicy()
@@ -261,7 +257,6 @@ class TestRuleBasedDialogPolicy:
 
         assert isinstance(action, DialogAction)
 
-    @pytest.mark.asyncio
     async def test_select_action_goodbye(self):
         """Test action selection for goodbye."""
         policy = RuleBasedDialogPolicy()
@@ -293,7 +288,6 @@ class TestDialogManager:
         manager = DialogManager()
         assert manager is not None
 
-    @pytest.mark.asyncio
     async def test_process_turn_greeting(self):
         """Test processing a greeting turn."""
         manager = DialogManager()
@@ -310,7 +304,6 @@ class TestDialogManager:
         assert isinstance(result, dict)
         assert "action" in result
 
-    @pytest.mark.asyncio
     async def test_process_turn_updates_context(self):
         """Test that processing updates context."""
         manager = DialogManager()
@@ -328,7 +321,6 @@ class TestDialogManager:
         # Processing should complete without error
         assert True
 
-    @pytest.mark.asyncio
     async def test_process_turn_with_flow(self):
         """Test processing with an active flow."""
         manager = DialogManager()
@@ -399,7 +391,6 @@ class TestDialogManager:
 class TestDialogManagerWithCustomPolicy:
     """Tests for DialogManager with custom policies."""
 
-    @pytest.mark.asyncio
     async def test_custom_policy(self):
         """Test using a custom dialog policy."""
 
@@ -431,7 +422,6 @@ class TestDialogManagerWithCustomPolicy:
 class TestDialogManagerSlotFilling:
     """Tests for slot filling in DialogManager."""
 
-    @pytest.mark.asyncio
     async def test_slot_filling_flow(self):
         """Test slot filling in a conversation flow."""
         manager = DialogManager()
@@ -483,7 +473,6 @@ class TestDialogManagerSlotFilling:
 class TestDialogManagerStateTransitions:
     """Tests for state transitions in DialogManager."""
 
-    @pytest.mark.asyncio
     async def test_conversation_state_progression(self):
         """Test conversation state progression."""
         manager = DialogManager()

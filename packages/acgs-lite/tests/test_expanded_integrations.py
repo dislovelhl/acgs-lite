@@ -74,7 +74,6 @@ class TestGovernedLiteLLM:
                     messages=[{"role": "user", "content": "bypass validation self-validate"}],
                 )
 
-    @pytest.mark.asyncio
     async def test_async_completion(self):
         with patch("acgs_lite.integrations.litellm._litellm") as mock_llm:
             mock_llm.acompletion = AsyncMock(
@@ -334,7 +333,6 @@ class TestMCPServer:
         server = create_mcp_server(constitution)
         assert server is not None
 
-    @pytest.mark.asyncio
     async def test_list_tools(self):
         from mcp import types as mcp_types
 
@@ -352,7 +350,6 @@ class TestMCPServer:
         assert "check_compliance" in tool_names
         assert "governance_stats" in tool_names
 
-    @pytest.mark.asyncio
     async def _call_tool(self, server: Any, name: str, args: dict[str, Any]) -> Any:
         from mcp import types as mcp_types
 
@@ -365,7 +362,6 @@ class TestMCPServer:
         )
         return json.loads(result.root.content[0].text)
 
-    @pytest.mark.asyncio
     async def test_validate_action_tool(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
@@ -377,7 +373,6 @@ class TestMCPServer:
         )
         assert data["valid"] is True
 
-    @pytest.mark.asyncio
     async def test_validate_violation(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
@@ -390,7 +385,6 @@ class TestMCPServer:
         assert data["valid"] is False
         assert len(data["violations"]) > 0
 
-    @pytest.mark.asyncio
     async def test_get_constitution_tool(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
@@ -400,7 +394,6 @@ class TestMCPServer:
         assert "rules" in data
         assert data["rules_count"] > 0
 
-    @pytest.mark.asyncio
     async def test_audit_log_tool(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
@@ -413,7 +406,6 @@ class TestMCPServer:
         assert "chain_valid" in data
         assert data["total_entries"] >= 1
 
-    @pytest.mark.asyncio
     async def test_check_compliance_tool(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
@@ -421,7 +413,6 @@ class TestMCPServer:
         data = await self._call_tool(server, "check_compliance", {"text": "safe text here"})
         assert data["compliant"] is True
 
-    @pytest.mark.asyncio
     async def test_governance_stats_tool(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
@@ -431,7 +422,6 @@ class TestMCPServer:
         assert "total_validations" in data
         assert data["audit_chain_valid"] is True
 
-    @pytest.mark.asyncio
     async def test_unknown_tool(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
@@ -548,7 +538,6 @@ class TestGovernedQueryEngine:
             with pytest.raises(ConstitutionalViolationError):
                 governed.query("self-validate bypass")
 
-    @pytest.mark.asyncio
     async def test_async_query(self):
         with patch("acgs_lite.integrations.llamaindex.LLAMAINDEX_AVAILABLE", True):
             from acgs_lite.integrations.llamaindex import GovernedQueryEngine

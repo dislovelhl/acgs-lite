@@ -68,7 +68,6 @@ def _make_mock_storage(
 class TestProposalEngineInvariantIntegration:
     """Verify that ProposalInvariantValidator is wired into the proposal engine."""
 
-    @pytest.mark.asyncio
     async def test_protected_path_raises_proposal_validation_error(self) -> None:
         """Changes to a MACI-protected path must be rejected."""
         storage = _make_mock_storage()
@@ -90,7 +89,6 @@ class TestProposalEngineInvariantIntegration:
         with pytest.raises(ProposalValidationError, match="[Ii]nvariant"):
             await engine.create_proposal(request)
 
-    @pytest.mark.asyncio
     async def test_unprotected_path_succeeds(self) -> None:
         """Changes to an unprotected path must proceed normally."""
         storage = _make_mock_storage()
@@ -113,7 +111,6 @@ class TestProposalEngineInvariantIntegration:
         assert response.proposal is not None
         assert response.proposal.status == AmendmentStatus.PROPOSED
 
-    @pytest.mark.asyncio
     async def test_invariant_hash_populated_on_proposal(self) -> None:
         """Created proposals should carry the invariant_hash from the manifest."""
         storage = _make_mock_storage()

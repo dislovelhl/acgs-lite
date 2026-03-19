@@ -7,8 +7,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, patch
 
-import pytest
-
 from src.core.shared.security.rate_limiter import (
     CONSTITUTIONAL_HASH,
     RateLimitAlgorithm,
@@ -190,7 +188,6 @@ def test_token_bucket_logic():
 
 
 # Test SlidingWindowRateLimiter
-@pytest.mark.asyncio
 async def test_sliding_window_allow_deny():
     limiter = SlidingWindowRateLimiter(fallback_to_memory=True)
     key = "test_key"
@@ -212,7 +209,6 @@ async def test_sliding_window_allow_deny():
     assert result.retry_after == 1
 
 
-@pytest.mark.asyncio
 async def test_sliding_window_expiry():
     limiter = SlidingWindowRateLimiter(fallback_to_memory=True)
     key = "test_expiry_logic"
@@ -235,7 +231,6 @@ async def test_sliding_window_expiry():
         assert result.allowed is True
 
 
-@pytest.mark.asyncio
 async def test_sliding_window_retry_after_uses_oldest_timestamp():
     limiter = SlidingWindowRateLimiter(fallback_to_memory=True)
     key = "test_retry_after_oldest"
@@ -258,7 +253,6 @@ async def test_sliding_window_retry_after_uses_oldest_timestamp():
 
 
 # Test RateLimitMiddleware
-@pytest.mark.asyncio
 async def test_middleware_logic():
     app_mock = AsyncMock()
     middleware = RateLimitMiddleware(app_mock)
@@ -309,7 +303,6 @@ async def test_middleware_logic():
 
 
 # Test create_rate_limit_middleware burst_capacity wiring (1C)
-@pytest.mark.asyncio
 async def test_middleware_burst_capacity_wiring():
     """Per-user capacity in limits_to_check should be int(burst_limit * burst_multiplier) * 2."""
     burst_limit = 10
@@ -366,7 +359,6 @@ async def test_middleware_burst_capacity_wiring():
 
 
 # Test rate_limit decorator window_seconds and limit (1D)
-@pytest.mark.asyncio
 async def test_rate_limit_decorator_correct_window_and_limit():
     """rate_limit decorator should call is_allowed with window_seconds=60 and limit=requests_per_minute."""
     requests_per_minute = 120

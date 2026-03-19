@@ -9,8 +9,6 @@ to reach ≥90% line coverage on CacheManager.
 import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from enhanced_agent_bus.constitutional.storage_infra.cache import (
     REDIS_AVAILABLE,
     CacheManager,

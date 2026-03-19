@@ -113,7 +113,6 @@ def closed_window_enforcer(mock_http_client: AsyncMock) -> DualVerifyEnforcer:
 
 
 class TestVerifyClassicalActiveWindow:
-    @pytest.mark.asyncio
     async def test_classical_accepted_when_window_active(
         self, active_window_enforcer: DualVerifyEnforcer
     ) -> None:
@@ -122,7 +121,6 @@ class TestVerifyClassicalActiveWindow:
         result = await active_window_enforcer.verify(decision, key_type="classical")
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_classical_accepted_emits_audit_event(
         self, active_window_enforcer: DualVerifyEnforcer
     ) -> None:
@@ -143,7 +141,6 @@ class TestVerifyClassicalActiveWindow:
 
         assert len(audit_events) >= 1
 
-    @pytest.mark.asyncio
     async def test_classical_audit_event_schema(
         self, active_window_enforcer: DualVerifyEnforcer
     ) -> None:
@@ -175,7 +172,6 @@ class TestVerifyClassicalActiveWindow:
 
 
 class TestVerifyClassicalClosedWindow:
-    @pytest.mark.asyncio
     async def test_classical_rejected_when_window_closed(
         self, closed_window_enforcer: DualVerifyEnforcer
     ) -> None:
@@ -185,7 +181,6 @@ class TestVerifyClassicalClosedWindow:
             await closed_window_enforcer.verify(decision, key_type="classical")
         assert exc_info.value.error_code == "CLASSICAL_KEY_RETIRED"
 
-    @pytest.mark.asyncio
     async def test_rejection_error_code_is_classical_key_retired(
         self, closed_window_enforcer: DualVerifyEnforcer
     ) -> None:
@@ -206,7 +201,6 @@ class TestVerifyClassicalClosedWindow:
 
 
 class TestVerifyPQCAndHybrid:
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("key_type", ["pqc", "hybrid"])
     async def test_pqc_hybrid_accepted_with_active_window(
         self,
@@ -218,7 +212,6 @@ class TestVerifyPQCAndHybrid:
         result = await active_window_enforcer.verify(decision, key_type=key_type)
         assert result is True
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("key_type", ["pqc", "hybrid"])
     async def test_pqc_hybrid_accepted_with_closed_window(
         self,
@@ -230,7 +223,6 @@ class TestVerifyPQCAndHybrid:
         result = await closed_window_enforcer.verify(decision, key_type=key_type)
         assert result is True
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("key_type", ["pqc", "hybrid"])
     async def test_pqc_hybrid_do_not_raise(
         self,
@@ -253,7 +245,6 @@ class TestVerifyPQCAndHybrid:
 
 
 class TestGracePeriod:
-    @pytest.mark.asyncio
     async def test_classical_accepted_within_grace_period(
         self, mock_http_client: AsyncMock
     ) -> None:
@@ -271,7 +262,6 @@ class TestGracePeriod:
         result = await enforcer.verify(decision, key_type="classical")
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_classical_rejected_beyond_grace_period(
         self, closed_window_enforcer: DualVerifyEnforcer
     ) -> None:
@@ -289,7 +279,6 @@ class TestGracePeriod:
 
 
 class TestCacheRefresh:
-    @pytest.mark.asyncio
     async def test_stale_cache_triggers_refresh(self, mock_http_client: AsyncMock) -> None:
         """Enforcer fetches fresh window state when cache is stale (>10s old)."""
         enforcer = DualVerifyEnforcer(dual_verify_service_url="http://policy-registry:8003")
@@ -311,7 +300,6 @@ class TestCacheRefresh:
         # HTTP call was made because cache was stale
         mock_http_client.get.assert_awaited()
 
-    @pytest.mark.asyncio
     async def test_fresh_cache_avoids_http_call(
         self, active_window_enforcer: DualVerifyEnforcer, mock_http_client: AsyncMock
     ) -> None:

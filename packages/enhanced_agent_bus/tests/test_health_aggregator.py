@@ -216,7 +216,6 @@ class TestHealthAggregatorConfig:
         assert config.critical_threshold == 0.6
 
 
-@pytest.mark.asyncio
 class TestHealthAggregator:
     """Test HealthAggregator class."""
 
@@ -547,7 +546,6 @@ class TestHealthAggregatorSingleton:
         assert agg1 is not agg2  # Different instances after reset
 
 
-@pytest.mark.asyncio
 class TestFireAndForgetPattern:
     """Test fire-and-forget async pattern for zero latency impact."""
 

@@ -20,7 +20,6 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 class TestEdgeCases:
     """Tests for edge cases and error conditions."""
 
-    @pytest.mark.asyncio
     async def test_empty_saga_definition(self, orchestrator: SagaOrchestrator):
         """Test saga with no steps."""
         definition = SagaDefinition(
@@ -37,7 +36,6 @@ class TestEdgeCases:
         assert result.status == SagaStatus.COMPLETED
         assert len(result.completed_steps) == 0
 
-    @pytest.mark.asyncio
     async def test_saga_with_metadata(
         self,
         orchestrator: SagaOrchestrator,
@@ -57,13 +55,11 @@ class TestEdgeCases:
         assert saga.context.metadata["source"] == "test"
         assert saga.context.metadata["priority"] == "high"
 
-    @pytest.mark.asyncio
     async def test_cancel_nonexistent_saga(self, orchestrator: SagaOrchestrator):
         """Test cancelling a non-existent saga."""
         result = await orchestrator.cancel_saga("nonexistent")
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_step_order_sorting(self, orchestrator: SagaOrchestrator):
         """Test that steps are sorted by order."""
 

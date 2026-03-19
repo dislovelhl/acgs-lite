@@ -64,7 +64,6 @@ class TestCreateConstitutionalValidationSaga:
         audit_step = next(s for s in saga._steps if s.name == "audit_reasoning")
         assert audit_step.is_optional is True
 
-    @pytest.mark.asyncio
     async def test_full_saga_execution_success(self):
         """Test full saga execution with default activities."""
         saga = create_constitutional_validation_saga("full-exec-test")
@@ -77,7 +76,6 @@ class TestCreateConstitutionalValidationSaga:
         assert result.status == SagaStatus.COMPLETED
         assert len(result.completed_steps) >= 4  # At least 4 non-optional steps
 
-    @pytest.mark.asyncio
     async def test_saga_with_custom_activities(self):
         """Test saga with custom activities."""
         custom_activities = MagicMock(spec=DefaultSagaActivities)

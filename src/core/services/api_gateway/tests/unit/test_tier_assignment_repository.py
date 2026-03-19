@@ -79,7 +79,6 @@ def _make_repo(
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 @pytest.mark.unit
 async def test_get_by_agent_cache_hit() -> None:
     """Redis returns a serialized assignment; DB must NOT be called."""
@@ -105,7 +104,6 @@ async def test_get_by_agent_cache_hit() -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 @pytest.mark.unit
 async def test_get_by_agent_cache_miss_db_hit() -> None:
     """Redis returns None; DB is queried and cache repopulated with TTL=60s."""
@@ -135,7 +133,6 @@ async def test_get_by_agent_cache_miss_db_hit() -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 @pytest.mark.unit
 async def test_get_by_agent_not_found() -> None:
     """Cache miss AND DB returns no row → returns None (does not raise)."""
@@ -157,7 +154,6 @@ async def test_get_by_agent_not_found() -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 @pytest.mark.unit
 async def test_create_persists_and_invalidates_cache() -> None:
     """create() adds row to DB and deletes the Redis cache key."""
@@ -185,7 +181,6 @@ async def test_create_persists_and_invalidates_cache() -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 @pytest.mark.unit
 async def test_update_modifies_db_and_invalidates_cache() -> None:
     """update() updates the DB row and deletes the Redis cache key."""
@@ -210,7 +205,6 @@ async def test_update_modifies_db_and_invalidates_cache() -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 @pytest.mark.unit
 async def test_update_raises_not_found_for_unknown_agent() -> None:
     """update() raises NotFoundError when the agent has no existing assignment."""
@@ -233,7 +227,6 @@ async def test_update_raises_not_found_for_unknown_agent() -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 @pytest.mark.unit
 async def test_delete_removes_db_row_and_cache_key() -> None:
     """delete() removes the DB row and deletes the Redis cache key."""
@@ -256,7 +249,6 @@ async def test_delete_removes_db_row_and_cache_key() -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 @pytest.mark.unit
 async def test_delete_raises_not_found_for_unknown_agent() -> None:
     """delete() raises NotFoundError when the agent has no existing assignment."""

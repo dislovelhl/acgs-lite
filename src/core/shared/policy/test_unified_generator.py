@@ -6,8 +6,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 import asyncio
 
-import pytest
-
 from src.core.shared.policy.models import PolicySpecification
 from src.core.shared.policy.unified_generator import (
     UnifiedVerifiedPolicyGenerator,
@@ -15,7 +13,6 @@ from src.core.shared.policy.unified_generator import (
 )
 
 
-@pytest.mark.asyncio
 async def test_policy_generation_and_verification():
     generator = UnifiedVerifiedPolicyGenerator(max_iterations=3)
 
@@ -35,7 +32,6 @@ async def test_policy_generation_and_verification():
     assert policy.confidence_score > 0.0
 
 
-@pytest.mark.asyncio
 async def test_critical_path_annotation():
     generator = UnifiedVerifiedPolicyGenerator()
     spec = PolicySpecification(
@@ -48,7 +44,6 @@ async def test_critical_path_annotation():
     assert "[CRITICAL] High-impact governance path" in policy.dafny_spec
 
 
-@pytest.mark.asyncio
 async def test_resource_permission_verification():
     generator = UnifiedVerifiedPolicyGenerator()
     spec = PolicySpecification(

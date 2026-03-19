@@ -139,7 +139,6 @@ class TestExecutiveAgent:
         agent = ExecutiveAgent(agent_id="custom-exec-001")
         assert agent.agent_id == "custom-exec-001"
 
-    @pytest.mark.asyncio
     async def test_propose_decision(self):
         """Test decision proposal."""
         agent = ExecutiveAgent()
@@ -154,7 +153,6 @@ class TestExecutiveAgent:
         assert decision["role"] == "executive"
         assert decision["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_propose_decision_registers_output(self):
         """Test that proposed decision is registered."""
         agent = ExecutiveAgent()
@@ -166,7 +164,6 @@ class TestExecutiveAgent:
         assert agent.owns_output(output_id)
         assert output_id in agent.output_registry
 
-    @pytest.mark.asyncio
     async def test_risk_assessment(self):
         """Test risk assessment in proposal."""
         agent = ExecutiveAgent()
@@ -197,7 +194,6 @@ class TestLegislativeAgent:
         assert agent.role == MACIAgentRole.LEGISLATIVE
         assert agent.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_extract_rules(self):
         """Test rule extraction."""
         agent = LegislativeAgent()
@@ -216,7 +212,6 @@ class TestLegislativeAgent:
         assert "constraints" in rules
         assert rules["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_extract_rules_with_policy_keywords(self):
         """Test rule extraction recognizes policy keywords."""
         agent = LegislativeAgent()
@@ -233,7 +228,6 @@ class TestLegislativeAgent:
         rule_ids = [r["rule_id"] for r in rules["rules"]]
         assert any("policy" in rid or "integrity" in rid for rid in rule_ids)
 
-    @pytest.mark.asyncio
     async def test_registers_output(self):
         """Test that extracted rules are registered."""
         agent = LegislativeAgent()
@@ -260,7 +254,6 @@ class TestJudicialAgent:
         assert agent.role == MACIAgentRole.JUDICIAL
         assert agent.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_validate_compliance(self):
         """Test compliance validation."""
         agent = JudicialAgent()
@@ -287,7 +280,6 @@ class TestJudicialAgent:
         assert "violations" in judgment
         assert judgment["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_godel_bypass_prevention(self):
         """Test that judicial agent cannot validate its own output."""
         agent = JudicialAgent(agent_id="judicial-001")
@@ -309,7 +301,6 @@ class TestJudicialAgent:
         with pytest.raises(ValueError, match="Godel bypass prevention"):
             await agent.validate_compliance(decision, rules, ctx)
 
-    @pytest.mark.asyncio
     async def test_detects_violations(self):
         """Test that violations are detected."""
         agent = JudicialAgent()
@@ -369,7 +360,6 @@ class TestMACIVerifier:
         assert verifier.legislative.agent_id == "legis-custom"
         assert verifier.judicial.agent_id == "jud-custom"
 
-    @pytest.mark.asyncio
     async def test_full_verification_pipeline(self):
         """Test full MACI verification pipeline."""
         verifier = create_maci_verifier()
@@ -385,7 +375,6 @@ class TestMACIVerifier:
         assert result.status == VerificationStatus.COMPLETED
         assert result.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_verification_result_contains_agent_records(self):
         """Test that verification result contains all agent records."""
         verifier = create_maci_verifier()
@@ -401,7 +390,6 @@ class TestMACIVerifier:
         assert MACIAgentRole.LEGISLATIVE in roles
         assert MACIAgentRole.JUDICIAL in roles
 
-    @pytest.mark.asyncio
     async def test_verification_produces_audit_trail(self):
         """Test that verification produces audit trail."""
         verifier = create_maci_verifier()
@@ -415,7 +403,6 @@ class TestMACIVerifier:
         phases_in_trail = [e.get("phase") for e in result.audit_trail]
         assert VerificationPhase.PROPOSAL.value in phases_in_trail
 
-    @pytest.mark.asyncio
     async def test_compliant_decision(self):
         """Test compliant decision verification."""
         verifier = create_maci_verifier()
@@ -428,7 +415,6 @@ class TestMACIVerifier:
         assert result.is_compliant
         assert result.confidence > 0.5
 
-    @pytest.mark.asyncio
     async def test_non_compliant_decision(self):
         """Test non-compliant decision verification."""
         verifier = create_maci_verifier()
@@ -445,7 +431,6 @@ class TestMACIVerifier:
         # Should have violations
         assert len(result.violations) > 0 or not result.is_compliant
 
-    @pytest.mark.asyncio
     async def test_verification_context_passed_through(self):
         """Test that verification context is passed through pipeline."""
         verifier = create_maci_verifier()
@@ -463,7 +448,6 @@ class TestMACIVerifier:
 
         assert result.verification_id == ctx.verification_id
 
-    @pytest.mark.asyncio
     async def test_cross_role_validation_check(self):
         """Test cross-role validation permission checking."""
         verifier = create_maci_verifier()
@@ -488,7 +472,6 @@ class TestMACIVerifier:
         )
         assert not can_validate
 
-    @pytest.mark.asyncio
     async def test_self_validation_prevented(self):
         """Test that self-validation is prevented."""
         verifier = create_maci_verifier()
@@ -511,7 +494,6 @@ class TestMACIVerifier:
         assert "total_verifications" in stats
         assert stats["total_verifications"] == 0
 
-    @pytest.mark.asyncio
     async def test_verification_stats_after_execution(self):
         """Test statistics after verification."""
         verifier = create_maci_verifier()

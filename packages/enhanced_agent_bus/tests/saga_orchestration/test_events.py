@@ -19,7 +19,6 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 class TestSagaEventPublisher:
     """Tests for saga event publishing."""
 
-    @pytest.mark.asyncio
     async def test_publish_event(self, event_publisher: SagaEventPublisher):
         """Test publishing an event."""
         event = SagaEvent(
@@ -34,7 +33,6 @@ class TestSagaEventPublisher:
         assert len(events) == 1
         assert events[0].event_type == SagaEventType.SAGA_STARTED
 
-    @pytest.mark.asyncio
     async def test_subscribe_to_events(self, event_publisher: SagaEventPublisher):
         """Test subscribing to events."""
         received_events: list[SagaEvent] = []
@@ -53,7 +51,6 @@ class TestSagaEventPublisher:
 
         assert len(received_events) == 1
 
-    @pytest.mark.asyncio
     async def test_filter_events_by_type(self, event_publisher: SagaEventPublisher):
         """Test filtering events by type."""
         event1 = SagaEvent(
@@ -73,7 +70,6 @@ class TestSagaEventPublisher:
         started_events = event_publisher.get_events(event_type=SagaEventType.SAGA_STARTED)
         assert len(started_events) == 1
 
-    @pytest.mark.asyncio
     async def test_handler_exception_does_not_break_publishing(
         self, event_publisher: SagaEventPublisher
     ):

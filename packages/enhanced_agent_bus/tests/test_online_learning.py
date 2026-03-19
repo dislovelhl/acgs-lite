@@ -794,7 +794,6 @@ class TestFeedbackKafkaConsumer:
 
         assert consumer.pipeline is mock_pipeline
 
-    @pytest.mark.asyncio
     async def test_consumer_start_missing_deps(self, mock_pipeline):
         """Test start returns False when dependencies missing."""
         consumer = FeedbackKafkaConsumer(pipeline=mock_pipeline)
@@ -803,7 +802,6 @@ class TestFeedbackKafkaConsumer:
             result = await consumer.start()
             assert result is False
 
-    @pytest.mark.asyncio
     async def test_consumer_stop_when_not_running(self, mock_pipeline):
         """Test stop when consumer is not running."""
         consumer = FeedbackKafkaConsumer(pipeline=mock_pipeline)

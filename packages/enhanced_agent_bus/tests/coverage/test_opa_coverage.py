@@ -30,7 +30,6 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
 class TestDeliberationQueuePersistence:
     """Tests for deliberation queue persistence coverage."""
 
-    @pytest.mark.asyncio
     async def test_load_tasks_file_not_found(self) -> None:
         """Test _load_tasks when file doesn't exist."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -42,7 +41,6 @@ class TestDeliberationQueuePersistence:
             # Should handle FileNotFoundError gracefully
             assert len(queue.tasks) == 0
 
-    @pytest.mark.asyncio
     async def test_load_tasks_invalid_json(self) -> None:
         """Test _load_tasks with invalid JSON."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -58,7 +56,6 @@ class TestDeliberationQueuePersistence:
             # Should handle JSONDecodeError gracefully
             assert len(queue.tasks) == 0
 
-    @pytest.mark.asyncio
     async def test_load_tasks_valid_json(self) -> None:
         """Test _load_tasks with valid JSON."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -89,7 +86,6 @@ class TestDeliberationQueuePersistence:
             # Should load task successfully
             assert "task-001" in queue.tasks
 
-    @pytest.mark.asyncio
     async def test_save_tasks(self) -> None:
         """Test _save_tasks persists tasks to file."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -125,7 +121,6 @@ class TestDeliberationQueuePersistence:
                 saved_data = json.load(f)
             assert task_id in saved_data
 
-    @pytest.mark.asyncio
     async def test_save_tasks_exception_handling(self) -> None:
         """Test _save_tasks handles write errors."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -142,7 +137,6 @@ class TestDeliberationQueuePersistence:
 class TestDeliberationQueueUpdateStatus:
     """Tests for update_status method coverage."""
 
-    @pytest.mark.asyncio
     async def test_update_status_string_to_enum(self) -> None:
         """Test update_status converts string to enum."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -170,7 +164,6 @@ class TestDeliberationQueueUpdateStatus:
         assert task is not None
         # Status should be converted
 
-    @pytest.mark.asyncio
     async def test_update_status_invalid_string(self) -> None:
         """Test update_status with invalid string."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -197,7 +190,6 @@ class TestDeliberationQueueUpdateStatus:
         task = queue.tasks.get(task_id)
         assert task is not None
 
-    @pytest.mark.asyncio
     async def test_update_status_nonexistent_task(self) -> None:
         """Test update_status with nonexistent task ID."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -214,7 +206,6 @@ class TestDeliberationQueueUpdateStatus:
 class TestDeliberationQueueResolveTask:
     """Tests for resolve_task method coverage."""
 
-    @pytest.mark.asyncio
     async def test_resolve_task_approved(self) -> None:
         """Test resolve_task with approved=True."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -242,7 +233,6 @@ class TestDeliberationQueueResolveTask:
         # Use value comparison to avoid enum identity issues across imports
         assert task.message.status.value == MessageStatus.PENDING.value
 
-    @pytest.mark.asyncio
     async def test_resolve_task_rejected(self) -> None:
         """Test resolve_task with approved=False."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -270,7 +260,6 @@ class TestDeliberationQueueResolveTask:
         # Use value comparison to avoid enum identity issues across imports
         assert task.message.status.value == MessageStatus.FAILED.value
 
-    @pytest.mark.asyncio
     async def test_resolve_task_nonexistent(self) -> None:
         """Test resolve_task with nonexistent task."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (

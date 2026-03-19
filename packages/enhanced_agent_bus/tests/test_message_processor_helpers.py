@@ -629,7 +629,6 @@ class TestPrepareMessageContentString:
 
         assert prepare_message_content_string(sample_message) == str({"nested": [1, 2, 3]})
 
-    @pytest.mark.asyncio
     async def test_execute_verification_passes_normalized_content(self, processor, sample_message):
         sample_message.content = {"nested": [1, 2, 3]}
         verification_result = Mock(
@@ -668,7 +667,6 @@ class TestMergeVerificationMetadata:
         assert result == {"sdpc": "ok"}
         assert result is not sdpc_metadata
 
-    @pytest.mark.asyncio
     async def test_execute_verification_applies_merged_metadata_to_result(
         self, processor, sample_message
     ):
@@ -698,7 +696,6 @@ class TestExtractPqcFailureResult:
 
         assert extract_pqc_failure_result(verification_result) is None
 
-    @pytest.mark.asyncio
     async def test_execute_verification_returns_pqc_failure_and_increments_count(
         self, processor, sample_message
     ):
@@ -729,7 +726,6 @@ class TestApplyLatencyMetadata:
 
         assert result.metadata["latency_ms"] == 12.5
 
-    @pytest.mark.asyncio
     async def test_execute_verification_applies_latency_metadata(self, processor, sample_message):
         verification_result = Mock(
             sdpc_metadata={},
@@ -749,7 +745,6 @@ class TestApplyLatencyMetadata:
         assert "latency_ms" in result.metadata
         assert isinstance(result.metadata["latency_ms"], float)
 
-    @pytest.mark.asyncio
     async def test_execute_verification_passes_same_latency_to_success_handler(
         self, processor, sample_message
     ):
@@ -900,7 +895,6 @@ class TestEnrichMetricsWithWorkflowTelemetry:
 
 
 class TestRunMessageValidationGates:
-    @pytest.mark.asyncio
     async def test_returns_autonomy_result_and_increments_failure(self, sample_message):
         autonomy_result = ValidationResult(
             is_valid=False,
@@ -927,7 +921,6 @@ class TestRunMessageValidationGates:
         independent_gate.assert_not_called()
         prompt_injection_gate.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_returns_security_result_without_extra_failure_increment(self, sample_message):
         security_result = ValidationResult(
             is_valid=False,
@@ -948,7 +941,6 @@ class TestRunMessageValidationGates:
         assert result == security_result
         increment_failure.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_returns_independent_validator_result_and_increments_failure(
         self, sample_message
     ):
@@ -973,7 +965,6 @@ class TestRunMessageValidationGates:
         increment_failure.assert_called_once_with()
         prompt_injection_gate.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_returns_prompt_injection_result_and_increments_failure(self, sample_message):
         injection_result = ValidationResult(
             is_valid=False,
@@ -994,7 +985,6 @@ class TestRunMessageValidationGates:
         assert result == injection_result
         increment_failure.assert_called_once_with()
 
-    @pytest.mark.asyncio
     async def test_returns_none_when_all_gates_pass(self, sample_message):
         increment_failure = Mock()
 
@@ -1012,7 +1002,6 @@ class TestRunMessageValidationGates:
 
 
 class TestScheduleBackgroundTask:
-    @pytest.mark.asyncio
     async def test_tracks_and_discards_completed_task(self):
         background_tasks: set[asyncio.Task[object]] = set()
 
@@ -1028,7 +1017,6 @@ class TestScheduleBackgroundTask:
 
 
 class TestBackgroundTaskSchedulingIntegration:
-    @pytest.mark.asyncio
     async def test_successful_processing_uses_scheduler_for_metering(
         self, monkeypatch, processor, sample_message
     ):
@@ -1048,7 +1036,6 @@ class TestBackgroundTaskSchedulingIntegration:
 
         assert len(scheduled) == 1
 
-    @pytest.mark.asyncio
     async def test_failed_processing_uses_scheduler_for_dlq(
         self, monkeypatch, processor, sample_message
     ):

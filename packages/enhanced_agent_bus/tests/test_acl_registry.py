@@ -386,7 +386,6 @@ class TestGetAllMetrics:
 class TestCloseAll:
     """Tests for close_all method."""
 
-    @pytest.mark.asyncio
     async def test_close_all_adapters(self, fresh_registry):
         """Test closing all adapters."""
         adapter1 = fresh_registry.get_or_create("adapter-1", MockAdapter)
@@ -397,7 +396,6 @@ class TestCloseAll:
         assert adapter1._closed is True
         assert adapter2._closed is True
 
-    @pytest.mark.asyncio
     async def test_close_adapters_without_close_method(self, fresh_registry):
         """Test closing adapters that don't have close method."""
         # MockAdapterNoClose doesn't have a close method
@@ -406,7 +404,6 @@ class TestCloseAll:
         # Should not raise
         await fresh_registry.close_all()
 
-    @pytest.mark.asyncio
     async def test_close_handles_errors(self, fresh_registry):
         """Test that close handles errors gracefully."""
         adapter = fresh_registry.get_or_create("error-adapter", MockAdapter)

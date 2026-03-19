@@ -140,7 +140,6 @@ class TestPolicyRegistryClientActual:
         client = PolicyRegistryClient(registry_url="http://test.com/api/")
         assert not client.registry_url.endswith("/")
 
-    @pytest.mark.asyncio
     async def test_aenter_initializes(self):
         """Test context manager calls initialize."""
         client = PolicyRegistryClient()
@@ -150,7 +149,6 @@ class TestPolicyRegistryClientActual:
                 mock_init.assert_called_once()
                 assert result is client
 
-    @pytest.mark.asyncio
     async def test_aexit_closes(self):
         """Test context manager calls close."""
         client = PolicyRegistryClient()
@@ -158,7 +156,6 @@ class TestPolicyRegistryClientActual:
             await client.__aexit__(None, None, None)
             mock_close.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_initialize_creates_client(self):
         """Test initialize creates HTTP client."""
         client = PolicyRegistryClient()
@@ -166,7 +163,6 @@ class TestPolicyRegistryClientActual:
         assert client._http_client is not None
         await client.close()
 
-    @pytest.mark.asyncio
     async def test_initialize_idempotent(self):
         """Test multiple initializes keep same client."""
         client = PolicyRegistryClient()
@@ -176,7 +172,6 @@ class TestPolicyRegistryClientActual:
         assert client._http_client is first
         await client.close()
 
-    @pytest.mark.asyncio
     async def test_close_clears_client(self):
         """Test close clears HTTP client."""
         client = PolicyRegistryClient()
@@ -185,7 +180,6 @@ class TestPolicyRegistryClientActual:
         await client.close()
         assert client._http_client is None
 
-    @pytest.mark.asyncio
     async def test_close_safe_when_none(self):
         """Test close is safe when no client."""
         client = PolicyRegistryClient()
@@ -203,7 +197,6 @@ class TestGetPolicyContentActual:
         client._http_client = AsyncMock()
         return client
 
-    @pytest.mark.asyncio
     async def test_success(self, client):
         """Test successful policy fetch."""
         mock_resp = MagicMock()
@@ -214,7 +207,6 @@ class TestGetPolicyContentActual:
         result = await client.get_policy_content("test_policy")
         assert result == {"rule": "value"}
 
-    @pytest.mark.asyncio
     async def test_with_client_id(self, client):
         """Test fetch with client_id parameter."""
         mock_resp = MagicMock()
@@ -227,7 +219,6 @@ class TestGetPolicyContentActual:
         call_args = client._http_client.get.call_args
         assert call_args[1]["params"] == {"client_id": "abc123"}
 
-    @pytest.mark.asyncio
     async def test_404_returns_none(self, client):
         """Test 404 returns None."""
         import httpx
@@ -240,7 +231,6 @@ class TestGetPolicyContentActual:
         result = await client.get_policy_content("missing")
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_timeout_raises(self, client):
         """Test timeout exception is raised."""
         import httpx
@@ -250,7 +240,6 @@ class TestGetPolicyContentActual:
         with pytest.raises(httpx.TimeoutException):
             await client.get_policy_content("policy")
 
-    @pytest.mark.asyncio
     async def test_connect_error_raises(self, client):
         """Test connection error is raised."""
         import httpx
@@ -280,7 +269,6 @@ class TestValidateMessageActual:
             priority=Priority.NORMAL,
         )
 
-    @pytest.mark.asyncio
     async def test_no_policy_fails_closed_by_default(self, client, message):
         """Test no policy fails closed by default (SECURITY FIX 2025-12).
 
@@ -296,7 +284,6 @@ class TestValidateMessageActual:
                 "unavailable" in e.lower() or "not found" in e.lower() for e in result.errors
             )
 
-    @pytest.mark.asyncio
     async def test_no_policy_with_fail_open_returns_warning(self, message):
         """Test no policy with explicit fail_closed=False returns warning."""
         # Explicit fail-open for legacy/testing scenarios only
@@ -313,7 +300,6 @@ class TestValidateMessageActual:
         finally:
             await fail_open_client.close()
 
-    @pytest.mark.asyncio
     async def test_valid_content_passes(self, client, message):
         """Test valid content passes."""
         policy = {
@@ -326,7 +312,6 @@ class TestValidateMessageActual:
             result = await client.validate_message_signature(message)
             assert result.is_valid is True
 
-    @pytest.mark.asyncio
     async def test_exceeds_length_fails(self, client):
         """Test message exceeding max length fails."""
         message = AgentMessage(
@@ -342,7 +327,6 @@ class TestValidateMessageActual:
             assert result.is_valid is False
             assert any("exceeds" in e.lower() or "maximum" in e.lower() for e in result.errors)
 
-    @pytest.mark.asyncio
     async def test_prohibited_content_fails(self, client):
         """Test prohibited content fails."""
         message = AgentMessage(
@@ -358,7 +342,6 @@ class TestValidateMessageActual:
             assert result.is_valid is False
             assert any("prohibited" in e.lower() for e in result.errors)
 
-    @pytest.mark.asyncio
     async def test_topic_warning(self, client):
         """Test topic not in allowed list warns."""
         message = AgentMessage(
@@ -378,7 +361,6 @@ class TestValidateMessageActual:
             assert result.is_valid is True
             assert any("topic" in w.lower() for w in result.warnings)
 
-    @pytest.mark.asyncio
     async def test_network_error_fails_closed_by_default(self, client, message):
         """Test network error fails closed by default (SECURITY FIX 2025-12).
 
@@ -394,7 +376,6 @@ class TestValidateMessageActual:
             assert result.is_valid is False
             assert any("network" in e.lower() for e in result.errors)
 
-    @pytest.mark.asyncio
     async def test_network_error_with_fail_open_returns_warning(self, message):
         """Test network error with explicit fail_closed=False returns warning."""
         import httpx
@@ -423,7 +404,6 @@ class TestHealthCheckActual:
         client._http_client = AsyncMock()
         return client
 
-    @pytest.mark.asyncio
     async def test_healthy(self, client):
         """Test healthy response."""
         mock_resp = MagicMock()
@@ -434,7 +414,6 @@ class TestHealthCheckActual:
         result = await client.health_check()
         assert result == {"status": "healthy"}
 
-    @pytest.mark.asyncio
     async def test_http_error(self, client):
         """Test HTTP error returns unhealthy."""
         import httpx
@@ -447,7 +426,6 @@ class TestHealthCheckActual:
         result = await client.health_check()
         assert result["status"] == "unhealthy"
 
-    @pytest.mark.asyncio
     async def test_timeout(self, client):
         """Test timeout returns unhealthy."""
         import httpx
@@ -457,7 +435,6 @@ class TestHealthCheckActual:
         result = await client.health_check()
         assert result["status"] == "unhealthy"
 
-    @pytest.mark.asyncio
     async def test_connect_error(self, client):
         """Test connection error returns unhealthy."""
         import httpx
@@ -478,7 +455,6 @@ class TestGetPublicKeyActual:
         client._http_client = AsyncMock()
         return client
 
-    @pytest.mark.asyncio
     async def test_success(self, client):
         """Test successful key fetch."""
         mock_resp = MagicMock()
@@ -489,7 +465,6 @@ class TestGetPublicKeyActual:
         result = await client.get_current_public_key()
         assert result == "key123"
 
-    @pytest.mark.asyncio
     async def test_error_returns_none(self, client):
         """Test error returns None."""
         import httpx
@@ -521,7 +496,6 @@ class TestGlobalFunctionsActual:
 
         _policy_module._policy_client = None
 
-    @pytest.mark.asyncio
     async def test_initialize_policy_client(self):
         """Test initialize_policy_client creates and initializes."""
         _policy_module._policy_client = None
@@ -533,7 +507,6 @@ class TestGlobalFunctionsActual:
 
         await close_policy_client()
 
-    @pytest.mark.asyncio
     async def test_close_policy_client(self):
         """Test close_policy_client clears global."""
         await initialize_policy_client()
@@ -542,7 +515,6 @@ class TestGlobalFunctionsActual:
 
         assert _policy_module._policy_client is None
 
-    @pytest.mark.asyncio
     async def test_close_when_none(self):
         """Test close safe when no client."""
         _policy_module._policy_client = None

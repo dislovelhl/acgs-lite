@@ -105,7 +105,6 @@ def pg_unavailable():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_get_mode_returns_permissive_when_redis_has_no_config(redis_no_config):
     """Default mode is 'permissive' when no entry exists in Redis."""
     svc = EnforcementModeConfigService(redis_client=redis_no_config)
@@ -114,7 +113,6 @@ async def test_get_mode_returns_permissive_when_redis_has_no_config(redis_no_con
     redis_no_config.hget.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_get_mode_reads_strict_from_redis(redis_strict):
     """get_mode() returns the value stored in Redis when key exists."""
     svc = EnforcementModeConfigService(redis_client=redis_strict)
@@ -122,7 +120,6 @@ async def test_get_mode_reads_strict_from_redis(redis_strict):
     assert mode == "strict"
 
 
-@pytest.mark.asyncio
 async def test_get_mode_reads_permissive_from_redis(redis_permissive):
     """get_mode() returns 'permissive' when that is what Redis has stored."""
     svc = EnforcementModeConfigService(redis_client=redis_permissive)
@@ -130,7 +127,6 @@ async def test_get_mode_reads_permissive_from_redis(redis_permissive):
     assert mode == "permissive"
 
 
-@pytest.mark.asyncio
 async def test_get_mode_falls_back_to_postgres_when_redis_unavailable(redis_unavailable, pg_strict):
     """get_mode() falls back to PostgreSQL when Redis raises ConnectionError."""
     svc = EnforcementModeConfigService(redis_client=redis_unavailable, pg_conn=pg_strict)
@@ -139,7 +135,6 @@ async def test_get_mode_falls_back_to_postgres_when_redis_unavailable(redis_unav
     pg_strict.fetchrow.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_get_mode_returns_strict_failsafe_when_both_unavailable(
     redis_unavailable, pg_unavailable
 ):
@@ -154,7 +149,6 @@ async def test_get_mode_returns_strict_failsafe_when_both_unavailable(
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_set_mode_persists_to_redis_and_postgres_and_publishes(
     redis_no_config,
 ):
@@ -178,7 +172,6 @@ async def test_set_mode_persists_to_redis_and_postgres_and_publishes(
     assert channel_arg == "pqc:enforcement_mode"
 
 
-@pytest.mark.asyncio
 async def test_set_mode_updates_local_cache(redis_no_config):
     """set_mode() updates the local in-process cache so the next get_mode() is a cache hit."""
     pg = _make_pg_mock()
@@ -198,7 +191,6 @@ async def test_set_mode_updates_local_cache(redis_no_config):
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_local_cache_is_invalidated_on_pubsub_message(redis_strict):
     """Cache is cleared when a pub/sub invalidation message is received."""
     svc = EnforcementModeConfigService(redis_client=redis_strict)
@@ -216,7 +208,6 @@ async def test_local_cache_is_invalidated_on_pubsub_message(redis_strict):
     redis_strict.hget.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_local_cache_ttl_expires_and_triggers_redis_reread():
     """After TTL expiry, get_mode() re-reads from Redis instead of using stale cache."""
     redis = _make_redis_mock(hget_return=b"permissive")
@@ -237,7 +228,6 @@ async def test_local_cache_ttl_expires_and_triggers_redis_reread():
     redis.hget.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_local_cache_hit_avoids_redis_call(redis_permissive):
     """Within TTL, repeated get_mode() calls hit the local cache only."""
     svc = EnforcementModeConfigService(redis_client=redis_permissive, cache_ttl_seconds=30)

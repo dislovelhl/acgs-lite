@@ -26,7 +26,6 @@ def _sign_payload(private_key: ed25519.Ed25519PrivateKey, payload: str) -> str:
     return private_key.sign(payload.encode()).hex()
 
 
-@pytest.mark.asyncio
 async def test_submit_proposal_rejects_invalid_proposer_signature(monkeypatch):
     voting_service = AsyncMock()
     proposal_engine = AsyncMock()
@@ -46,7 +45,6 @@ async def test_submit_proposal_rejects_invalid_proposer_signature(monkeypatch):
         await service.submit_proposal(request, proposer_signature="deadbeef")
 
 
-@pytest.mark.asyncio
 async def test_submit_proposal_accepts_valid_proposer_signature(monkeypatch):
     private_key = ed25519.Ed25519PrivateKey.generate()
     public_key = (

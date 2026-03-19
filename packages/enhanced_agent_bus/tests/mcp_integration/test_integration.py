@@ -13,7 +13,6 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 class TestMCPIntegration:
     """Integration tests for MCP components."""
 
-    @pytest.mark.asyncio
     async def test_client_server_integration(self):
         """Test client and server integration."""
         from ...mcp_integration.client import MCPClient, MCPClientConfig
@@ -50,7 +49,6 @@ class TestMCPIntegration:
         await client.disconnect()
         await server.stop()
 
-    @pytest.mark.asyncio
     async def test_validator_with_tool_registry(self):
         """Test validator integrated with tool registry."""
         from ...mcp_integration.tool_registry import (
@@ -85,7 +83,6 @@ class TestMCPIntegration:
 
         assert result.success is True
 
-    @pytest.mark.asyncio
     async def test_full_governance_flow(self):
         """Test full governance flow through MCP."""
         from ...mcp_integration.server import (

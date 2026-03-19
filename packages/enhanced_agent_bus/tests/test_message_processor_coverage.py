@@ -7,8 +7,6 @@ Extended tests to increase message_processor.py coverage.
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 try:
     from enhanced_agent_bus.message_processor import (
         PROMPT_INJECTION_PATTERNS,
@@ -371,7 +369,6 @@ class TestPromptInjectionDetection:
 class TestMessageProcessorProcess:
     """Tests for process method."""
 
-    @pytest.mark.asyncio
     @patch("core.enhanced_agent_bus.message_processor.get_runtime_security_scanner")
     async def test_process_valid_message(self, mock_get_scanner):
         """Process valid message returns success."""
@@ -393,7 +390,6 @@ class TestMessageProcessorProcess:
         # In isolated mode with simple message, should pass
         assert result.is_valid is True
 
-    @pytest.mark.asyncio
     async def test_process_with_injection_fails(self):
         """Process message with injection fails."""
         processor = MessageProcessor(isolated_mode=True)
@@ -413,7 +409,6 @@ class TestMessageProcessorProcess:
             or "compliance" in error_msg
         )
 
-    @pytest.mark.asyncio
     async def test_process_increments_count(self):
         """Process increments processed count."""
         processor = MessageProcessor(isolated_mode=True)
@@ -428,7 +423,6 @@ class TestMessageProcessorProcess:
 
         assert processor.processed_count >= initial_count
 
-    @pytest.mark.asyncio
     @patch("core.enhanced_agent_bus.message_processor.get_runtime_security_scanner")
     async def test_process_with_custom_strategy(self, mock_get_scanner):
         """Process uses custom processing strategy."""

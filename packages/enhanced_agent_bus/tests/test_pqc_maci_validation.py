@@ -57,7 +57,6 @@ class TestMACISelfValidation:
 class TestValidateMACIRecordPQC:
     """Tests for validate_maci_record_pqc entry point."""
 
-    @pytest.mark.asyncio
     async def test_validate_maci_missing_fields(self):
         """Invalid MACI structure should fail."""
         record = {"agent_id": "agent-001"}  # missing action, timestamp
@@ -65,7 +64,6 @@ class TestValidateMACIRecordPQC:
         assert result.valid is False
         assert any("Missing required MACI field" in e for e in result.errors)
 
-    @pytest.mark.asyncio
     async def test_validate_maci_hash_mismatch(self):
         """Constitutional hash mismatch should fail."""
         record = {
@@ -78,7 +76,6 @@ class TestValidateMACIRecordPQC:
         assert result.valid is False
         assert "MACI record constitutional hash mismatch" in result.errors
 
-    @pytest.mark.asyncio
     async def test_validate_maci_self_validation_rejected(self):
         """Gödel bypass: self-validation should be rejected."""
         record = {
@@ -92,7 +89,6 @@ class TestValidateMACIRecordPQC:
         assert result.valid is False
         assert "Self-validation not allowed (Gödel bypass prevention)" in result.errors
 
-    @pytest.mark.asyncio
     async def test_validate_maci_pqc_enabled_delegation(self):
         """If PQC is enabled and signature present, it should delegate to validate_constitutional_hash_pqc."""  # noqa: E501
         record = {

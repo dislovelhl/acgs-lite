@@ -71,7 +71,6 @@ class TestEdgeCases:
         assert info is not None
         assert info["server_id"] == "s"
 
-    @pytest.mark.asyncio
     async def test_disconnect_when_connected_pending_already_done(self):
         client = _make_client()
         await client.connect()
@@ -82,7 +81,6 @@ class TestEdgeCases:
         await client.disconnect()
         assert len(client._pending_requests) == 0
 
-    @pytest.mark.asyncio
     async def test_call_tool_increments_metrics(self):
         client = _make_client()
         await client.connect()
@@ -90,7 +88,6 @@ class TestEdgeCases:
         await client.call_tool("example_tool", {})
         assert client._total_requests > prev_requests
 
-    @pytest.mark.asyncio
     async def test_read_resource_increments_metrics(self):
         client = _make_client()
         await client.connect()
@@ -109,7 +106,6 @@ class TestEdgeCases:
         assert d["resources_count"] == 1
         assert d["prompts_count"] == 3
 
-    @pytest.mark.asyncio
     async def test_connect_with_server_name_in_simulate_response(self):
         cfg = _make_config(server_name="my-sim-server")
         client = _make_client(config=cfg)
@@ -121,7 +117,6 @@ class TestEdgeCases:
             cfg = MCPClientConfig(transport_type=transport)
             assert cfg.transport_type == transport
 
-    @pytest.mark.asyncio
     async def test_connect_async_handler_receives_connection(self):
         received = []
 
@@ -134,7 +129,6 @@ class TestEdgeCases:
         assert len(received) == 1
         assert isinstance(received[0], MCPServerConnection)
 
-    @pytest.mark.asyncio
     async def test_disconnect_async_handler_receives_connection(self):
         received = []
 

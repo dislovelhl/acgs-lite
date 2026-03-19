@@ -6,8 +6,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 import asyncio
 from unittest.mock import patch
 
-import pytest
-
 from enhanced_agent_bus.tests.rlm_repl.conftest import _make_repl
 
 REPL_MODULE = "enhanced_agent_bus.rlm_repl"
@@ -30,7 +28,6 @@ class TestFactoryFunctions:
 
 
 class TestExecuteIntegration:
-    @pytest.mark.asyncio
     async def test_search_helper_via_execute(self):
         repl = _make_repl()
         repl.set_context("doc", "hello world hello")
@@ -39,7 +36,6 @@ class TestExecuteIntegration:
         assert result["success"] is True
         assert len(result["result"]) == 2
 
-    @pytest.mark.asyncio
     async def test_word_count_via_execute(self):
         repl = _make_repl()
         repl.set_context("doc", "one two three four five")
@@ -50,7 +46,6 @@ class TestExecuteIntegration:
 
 
 class TestTimeoutCapping:
-    @pytest.mark.asyncio
     async def test_timeout_capped_at_hard_limit(self):
         """max_execution_time_seconds > HARD_EXECUTION_TIMEOUT_SECONDS is capped."""
         from enhanced_agent_bus.rlm_repl import HARD_EXECUTION_TIMEOUT_SECONDS, REPLConfig

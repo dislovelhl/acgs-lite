@@ -165,7 +165,6 @@ def sample_message_no_tenant(constitutional_hash):
 class TestMessageSending:
     """Test message sending functionality."""
 
-    @pytest.mark.asyncio
     async def test_send_message_success(self, started_agent_bus, sample_message, mock_processor):
         """Test successful message sending."""
         mock_processor.process = AsyncMock(return_value=ValidationResult(is_valid=True))
@@ -173,7 +172,6 @@ class TestMessageSending:
         result = await started_agent_bus.send_message(sample_message)
         assert result.is_valid is True
 
-    @pytest.mark.asyncio
     async def test_send_message_validation_failure(
         self, started_agent_bus, sample_message, mock_processor
     ):
@@ -185,7 +183,6 @@ class TestMessageSending:
         result = await started_agent_bus.send_message(sample_message)
         assert result.is_valid is False
 
-    @pytest.mark.asyncio
     async def test_send_message_increments_metrics(
         self, started_agent_bus, sample_message, mock_processor, mock_router
     ):
@@ -202,7 +199,6 @@ class TestMessageSending:
         assert updated_metrics["messages_sent"] == initial_metrics["messages_sent"] + 1
         assert updated_metrics["sent"] == initial_metrics["sent"] + 1
 
-    @pytest.mark.asyncio
     async def test_send_message_failed_increments_failed_metrics(
         self, started_agent_bus, sample_message, mock_processor
     ):
@@ -225,7 +221,6 @@ class TestMessageSending:
 class TestBroadcast:
     """Test broadcast functionality with tenant isolation."""
 
-    @pytest.mark.asyncio
     async def test_broadcast_to_same_tenant_only(
         self, started_agent_bus, constitutional_hash, mock_processor
     ):
@@ -255,7 +250,6 @@ class TestBroadcast:
         assert "agent-a2" in results
         assert "agent-b1" not in results
 
-    @pytest.mark.asyncio
     async def test_broadcast_no_tenant_isolation(
         self, started_agent_bus, constitutional_hash, mock_processor
     ):
@@ -290,13 +284,11 @@ class TestBroadcast:
 class TestMessageReceiving:
     """Test message receiving functionality."""
 
-    @pytest.mark.asyncio
     async def test_receive_message_timeout(self, started_agent_bus):
         """Test receiving message times out when queue is empty."""
         result = await started_agent_bus.receive_message(timeout=0.1)
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_receive_message_success(
         self, started_agent_bus, sample_message_no_tenant, mock_processor
     ):

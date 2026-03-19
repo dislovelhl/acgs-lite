@@ -192,7 +192,6 @@ class TestDualKeyJWTValidatorAsync:
         config = DualKeyConfig(require_kid=False)
         return DualKeyJWTValidator(config)
 
-    @pytest.mark.asyncio
     async def test_load_keys_from_env_missing(self, validator):
         """Test loading keys when environment variables are missing."""
         # Clear any existing environment variables
@@ -214,7 +213,6 @@ class TestDualKeyJWTValidatorAsync:
             # Should return False when no keys found
             assert result is False
 
-    @pytest.mark.asyncio
     async def test_load_keys_from_vault_fallback(self, validator):
         """Test loading keys from Vault falls back to env when no client."""
         # No vault client configured

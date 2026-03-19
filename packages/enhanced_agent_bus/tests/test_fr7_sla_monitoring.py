@@ -365,7 +365,6 @@ class TestPrometheusSLAAlerts:
         assert cache_rule is not None
         assert "0.85" in cache_rule["expr"]  # 85% minimum
 
-    @pytest.mark.asyncio
     async def test_prometheus_query_returns_sla_metrics(self, prometheus_client):
         """Verify Prometheus queries return SLA-relevant metrics."""
         # Query latency
@@ -640,7 +639,6 @@ class TestSLABreachNotifications:
         """Create mock alert manager."""
         return MockAlertManager()
 
-    @pytest.mark.asyncio
     async def test_latency_breach_triggers_notification(self, alert_manager):
         """Verify latency SLA breach triggers notification."""
         alert = alert_manager.create_alert(
@@ -665,7 +663,6 @@ class TestSLABreachNotifications:
         assert notification["severity"] == "critical"
         assert notification["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_availability_breach_triggers_escalation(self, alert_manager):
         """Verify availability SLA breach triggers escalation."""
         alert = alert_manager.create_alert(
@@ -700,7 +697,6 @@ class TestSLABreachNotifications:
         assert notification2["channel"] == "pagerduty"
         assert notification2["context"]["escalation"] is True
 
-    @pytest.mark.asyncio
     async def test_error_rate_breach_notification(self, alert_manager):
         """Verify error rate SLA breach triggers warning notification."""
         alert = alert_manager.create_alert(
@@ -724,7 +720,6 @@ class TestSLABreachNotifications:
         assert notification["severity"] == "warning"
         assert "0.15%" in notification["message"]
 
-    @pytest.mark.asyncio
     async def test_throughput_breach_notification(self, alert_manager):
         """Verify throughput SLA breach triggers notification."""
         alert = alert_manager.create_alert(
@@ -748,7 +743,6 @@ class TestSLABreachNotifications:
         assert notification["channel"] == "email"
         assert "80 RPS" in notification["message"]
 
-    @pytest.mark.asyncio
     async def test_notification_includes_constitutional_context(self, alert_manager):
         """Verify breach notifications include constitutional context."""
         alert = alert_manager.create_alert(
@@ -761,7 +755,6 @@ class TestSLABreachNotifications:
         assert alert["constitutional_hash"] == CONSTITUTIONAL_HASH
         assert alert["labels"]["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_multi_channel_notification(self, alert_manager):
         """Verify SLA breach notifies multiple channels."""
         alert = alert_manager.create_alert(
@@ -784,7 +777,6 @@ class TestSLABreachNotifications:
         sent_channels = {n["channel"] for n in alert_manager.notifications_sent}
         assert sent_channels == set(channels)
 
-    @pytest.mark.asyncio
     async def test_alert_resolution_notification(self, alert_manager):
         """Verify SLA breach resolution triggers notification."""
         alert = alert_manager.create_alert(
@@ -838,7 +830,6 @@ class TestAvailabilityTracking:
         """Create mock availability tracker."""
         return MockAvailabilityTracker()
 
-    @pytest.mark.asyncio
     async def test_health_check_recording(self, availability_tracker):
         """Verify health checks are recorded for availability calculation."""
         services = ["api-gateway", "enhanced-agent-bus", "policy-registry"]
@@ -856,7 +847,6 @@ class TestAvailabilityTracking:
             assert record["status"] == "healthy"
             assert record["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_downtime_incident_recording(self, availability_tracker):
         """Verify downtime incidents are properly recorded."""
         start_time = datetime.now(UTC) - timedelta(minutes=30)
@@ -874,7 +864,6 @@ class TestAvailabilityTracking:
         assert abs(incident["duration_seconds"] - 25 * 60) < 1  # 25 minutes, within 1 second
         assert incident["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_availability_calculation_with_no_downtime(self, availability_tracker):
         """Verify 100% availability when no downtime recorded."""
         availability = availability_tracker.calculate_availability(
@@ -884,7 +873,6 @@ class TestAvailabilityTracking:
 
         assert availability == 100.0
 
-    @pytest.mark.asyncio
     async def test_availability_calculation_with_downtime(self, availability_tracker):
         """Verify availability calculation accounts for downtime."""
         # Record 1 hour of downtime in a 30-day period
@@ -907,7 +895,6 @@ class TestAvailabilityTracking:
         expected = ((720 - 1) / 720) * 100  # ~99.86%
         assert abs(availability - expected) < 0.01
 
-    @pytest.mark.asyncio
     async def test_sla_compliance_check_passing(self, availability_tracker):
         """Verify SLA compliance check passes when above threshold."""
         availability_tracker.availability_score = 99.95  # Above 99.9% target
@@ -919,7 +906,6 @@ class TestAvailabilityTracking:
         assert abs(compliance["margin"] - 0.05) < 0.001  # Floating point tolerance
         assert compliance["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_sla_compliance_check_failing(self, availability_tracker):
         """Verify SLA compliance check fails when below threshold."""
         availability_tracker.availability_score = 99.5  # Below 99.9% target
@@ -930,7 +916,6 @@ class TestAvailabilityTracking:
         assert compliance["current_availability"] == 99.5
         assert abs(compliance["margin"] - (-0.4)) < 0.001  # Floating point tolerance
 
-    @pytest.mark.asyncio
     async def test_uptime_record_includes_response_time(self, availability_tracker):
         """Verify uptime records include response time for SLA tracking."""
         availability_tracker.record_health_check(
@@ -943,7 +928,6 @@ class TestAvailabilityTracking:
         assert record["response_time_ms"] == 0.91
         assert record["response_time_ms"] < 5.0  # Under SLA
 
-    @pytest.mark.asyncio
     async def test_degraded_status_tracking(self, availability_tracker):
         """Verify degraded status is tracked separately from unhealthy."""
         statuses = ["healthy", "degraded", "unhealthy", "healthy"]
@@ -962,7 +946,6 @@ class TestAvailabilityTracking:
         )
         assert degraded_count == 1
 
-    @pytest.mark.asyncio
     async def test_multiple_service_availability_tracking(self, availability_tracker):
         """Verify availability is tracked per service."""
         services = [
@@ -1009,7 +992,6 @@ class TestSLAMonitoringIntegration:
             "availability": MockAvailabilityTracker(),
         }
 
-    @pytest.mark.asyncio
     async def test_full_sla_monitoring_pipeline(self, full_sla_setup):
         """Test complete SLA monitoring flow from metrics to notifications."""
         prometheus = full_sla_setup["prometheus"]
@@ -1074,7 +1056,6 @@ class TestSLAMonitoringIntegration:
         assert len(dashboard["panels"]) >= 1
         assert len(availability.uptime_records) >= 1
 
-    @pytest.mark.asyncio
     async def test_sla_metrics_all_passing(self, full_sla_setup):
         """Verify all SLA metrics are within targets (current achieved state)."""
         prometheus = full_sla_setup["prometheus"]
@@ -1109,7 +1090,6 @@ class TestSLAMonitoringIntegration:
             f"Cache hit {cache_hit_pct}% below {SLA_TARGETS['cache_hit_rate_percent']}%"
         )
 
-    @pytest.mark.asyncio
     async def test_constitutional_hash_in_all_components(self, full_sla_setup):
         """Verify constitutional hash is present across all SLA monitoring components."""
         grafana = full_sla_setup["grafana"]
@@ -1131,7 +1111,6 @@ class TestSLAMonitoringIntegration:
         assert alert["constitutional_hash"] == CONSTITUTIONAL_HASH
         assert availability.uptime_records[0]["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_sla_breach_detection_and_recovery(self, full_sla_setup):
         """Test SLA breach detection and subsequent recovery tracking."""
         alertmanager = full_sla_setup["alertmanager"]

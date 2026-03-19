@@ -520,7 +520,6 @@ class TestTextExtraction:
 class TestGetEmbeddings:
     """Tests for embedding generation."""
 
-    @pytest.mark.asyncio
     async def test_fallback_embeddings_when_no_model(self):
         """Test that fallback embeddings are returned when model unavailable."""
         with patch(

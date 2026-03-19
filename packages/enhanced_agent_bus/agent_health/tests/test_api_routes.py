@@ -623,7 +623,6 @@ def test_delete_override_writes_audit_log() -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_sc005_suppress_healing_override_produces_no_healing_action() -> None:
     """SC-005: when a SUPPRESS_HEALING override is active, HealingEngine returns None."""
     from enhanced_agent_bus.agent_health.healing_engine import HealingEngine

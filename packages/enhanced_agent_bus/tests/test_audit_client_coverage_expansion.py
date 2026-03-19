@@ -11,7 +11,6 @@ from dataclasses import dataclass
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import httpx
-import pytest
 from src.core.shared.types import JSONDict
 
 from audit_client import (
@@ -153,7 +152,6 @@ class TestAuditBatchResult:
 class TestAuditClientLifecycle:
     """Tests for AuditClient start/stop lifecycle."""
 
-    @pytest.mark.asyncio
     async def test_start_creates_batch_worker(self) -> None:
         """Test that start() creates a batch worker when batching is enabled."""
         config = AuditClientConfig(enable_batching=True)
@@ -167,7 +165,6 @@ class TestAuditClientLifecycle:
         finally:
             await client.stop()
 
-    @pytest.mark.asyncio
     async def test_start_no_worker_when_batching_disabled(self) -> None:
         """Test that start() doesn't create worker when batching is disabled."""
         config = AuditClientConfig(enable_batching=False)
@@ -180,7 +177,6 @@ class TestAuditClientLifecycle:
         finally:
             await client.stop()
 
-    @pytest.mark.asyncio
     async def test_start_already_running(self) -> None:
         """Test that start() is idempotent when already running."""
         config = AuditClientConfig(enable_batching=True)
@@ -195,7 +191,6 @@ class TestAuditClientLifecycle:
 
         await client.stop()
 
-    @pytest.mark.asyncio
     async def test_stop_flushes_pending_batch(self) -> None:
         """Test that stop() flushes any pending batch."""
         config = AuditClientConfig(enable_batching=True, batch_size=100)
@@ -219,7 +214,6 @@ class TestAuditClientLifecycle:
             # Batch should be flushed
             assert len(client._batch) == 0
 
-    @pytest.mark.asyncio
     async def test_stop_cancels_batch_worker(self) -> None:
         """Test that stop() cancels the batch worker."""
         config = AuditClientConfig(enable_batching=True)
@@ -242,7 +236,6 @@ class TestAuditClientLifecycle:
 class TestBatchingWorkflow:
     """Tests for batching workflow."""
 
-    @pytest.mark.asyncio
     async def test_queue_for_batch(self) -> None:
         """Test queuing validation results for batch submission."""
         config = AuditClientConfig(enable_batching=True, batch_size=10)
@@ -262,7 +255,6 @@ class TestBatchingWorkflow:
 
         client._running = False
 
-    @pytest.mark.asyncio
     async def test_batch_auto_flush_when_full(self) -> None:
         """Test that batch is auto-flushed when reaching batch_size via _queue_for_batch."""
         config = AuditClientConfig(enable_batching=True, batch_size=3)
@@ -289,7 +281,6 @@ class TestBatchingWorkflow:
 
         client._running = False
 
-    @pytest.mark.asyncio
     async def test_flush_empty_batch_returns_none(self) -> None:
         """Test that flushing an empty batch returns None."""
         config = AuditClientConfig(enable_batching=True)
@@ -298,7 +289,6 @@ class TestBatchingWorkflow:
         result = await client._flush_batch()
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_submit_batch_success(self) -> None:
         """Test successful batch submission."""
         config = AuditClientConfig(enable_batching=True)
@@ -325,14 +315,12 @@ class TestBatchingWorkflow:
             assert client._stats["batches_sent"] == 1
             assert client._stats["successful"] == 2
 
-    @pytest.mark.asyncio
     async def test_submit_batch_empty_returns_none(self) -> None:
         """Test that submitting empty batch returns None."""
         client = AuditClient()
         result = await client._submit_batch([])
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_submit_batch_with_failures(self) -> None:
         """Test batch submission with partial failures."""
         client = AuditClient()
@@ -356,7 +344,6 @@ class TestBatchingWorkflow:
             assert result.failed == 2
             assert client._stats["failed"] == 2
 
-    @pytest.mark.asyncio
     async def test_submit_batch_retry_on_network_error(self) -> None:
         """Test batch submission retries on network errors."""
         config = AuditClientConfig(max_retries=3, retry_delay_s=0.01)
@@ -373,7 +360,6 @@ class TestBatchingWorkflow:
             assert mock_post.call_count == 3  # max_retries
             assert client._stats["failed"] == 1
 
-    @pytest.mark.asyncio
     async def test_submit_batch_non_200_response(self) -> None:
         """Test batch submission with non-200 response."""
         config = AuditClientConfig(max_retries=2, retry_delay_s=0.01)
@@ -402,7 +388,6 @@ class TestBatchingWorkflow:
 class TestCircuitBreakerIntegration:
     """Tests for circuit breaker integration."""
 
-    @pytest.mark.asyncio
     async def test_submit_single_circuit_open_rejection(self) -> None:
         """Test that open circuit breaker rejects single submissions."""
         config = AuditClientConfig(enable_circuit_breaker=True)
@@ -419,7 +404,6 @@ class TestCircuitBreakerIntegration:
             assert result is None
             assert client._stats["circuit_rejections"] == 1
 
-    @pytest.mark.asyncio
     async def test_submit_batch_circuit_open_rejection(self) -> None:
         """Test that open circuit breaker rejects batch submissions."""
         config = AuditClientConfig(enable_circuit_breaker=True)
@@ -441,7 +425,6 @@ class TestCircuitBreakerIntegration:
             assert result is None
             assert client._stats["circuit_rejections"] == 2  # Counts each item
 
-    @pytest.mark.asyncio
     async def test_circuit_breaker_exception_handling(self) -> None:
         """Test graceful handling of circuit breaker exceptions."""
         config = AuditClientConfig(enable_circuit_breaker=True)
@@ -473,7 +456,6 @@ class TestCircuitBreakerIntegration:
 class TestHealthCheck:
     """Tests for health_check method."""
 
-    @pytest.mark.asyncio
     async def test_health_check_healthy(self) -> None:
         """Test health check when service is healthy."""
         client = AuditClient()
@@ -490,7 +472,6 @@ class TestHealthCheck:
             assert health["latency_ms"] is not None
             assert health["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_health_check_degraded(self) -> None:
         """Test health check when service returns non-200."""
         client = AuditClient()
@@ -506,7 +487,6 @@ class TestHealthCheck:
             assert health["status"] == "degraded"
             assert health["latency_ms"] is not None
 
-    @pytest.mark.asyncio
     async def test_health_check_unhealthy(self) -> None:
         """Test health check when service is unreachable."""
         client = AuditClient()
@@ -520,7 +500,6 @@ class TestHealthCheck:
             assert health["error"] == "Connection refused"
             assert health["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_health_check_with_circuit_state(self) -> None:
         """Test health check includes circuit breaker state."""
         config = AuditClientConfig(enable_circuit_breaker=True)
@@ -610,7 +589,6 @@ class TestRecentResults:
 class TestGlobalClientFunctions:
     """Tests for global client functions."""
 
-    @pytest.mark.asyncio
     async def test_get_audit_client_creates_singleton(self) -> None:
         """Test that get_audit_client creates a singleton."""
         # Reset global client
@@ -626,7 +604,6 @@ class TestGlobalClientFunctions:
         # Cleanup
         await close_audit_client()
 
-    @pytest.mark.asyncio
     async def test_get_audit_client_with_config(self) -> None:
         """Test get_audit_client with custom config."""
         import audit_client
@@ -640,7 +617,6 @@ class TestGlobalClientFunctions:
 
         await close_audit_client()
 
-    @pytest.mark.asyncio
     async def test_initialize_audit_client(self) -> None:
         """Test initialize_audit_client starts the client."""
         import audit_client
@@ -654,7 +630,6 @@ class TestGlobalClientFunctions:
 
         await close_audit_client()
 
-    @pytest.mark.asyncio
     async def test_close_audit_client(self) -> None:
         """Test close_audit_client stops and clears the global client."""
         import audit_client
@@ -669,7 +644,6 @@ class TestGlobalClientFunctions:
 
         assert audit_client._global_client is None
 
-    @pytest.mark.asyncio
     async def test_close_audit_client_when_none(self) -> None:
         """Test close_audit_client when no client exists."""
         import audit_client
@@ -690,7 +664,6 @@ class TestGlobalClientFunctions:
 class TestRetryLogic:
     """Tests for retry logic in submissions."""
 
-    @pytest.mark.asyncio
     async def test_submit_single_retry_on_request_error(self) -> None:
         """Test single submission retries on request errors."""
         config = AuditClientConfig(max_retries=3, retry_delay_s=0.01)
@@ -705,7 +678,6 @@ class TestRetryLogic:
             assert mock_post.call_count == 3
             assert client._stats["failed"] == 1
 
-    @pytest.mark.asyncio
     async def test_submit_single_success_after_retry(self) -> None:
         """Test single submission succeeds after initial failures."""
         config = AuditClientConfig(max_retries=3, retry_delay_s=0.01)
@@ -729,7 +701,6 @@ class TestRetryLogic:
             assert mock_post.call_count == 3
             assert client._stats["successful"] == 1
 
-    @pytest.mark.asyncio
     async def test_submit_single_non_200_response(self) -> None:
         """Test single submission handles non-200 response."""
         config = AuditClientConfig(max_retries=2, retry_delay_s=0.01)
@@ -758,7 +729,6 @@ class TestRetryLogic:
 class TestBatchFlushWorker:
     """Tests for the background batch flush worker."""
 
-    @pytest.mark.asyncio
     async def test_batch_flush_worker_exists_when_batching_enabled(self) -> None:
         """Test that batch flush worker is created when batching is enabled."""
         config = AuditClientConfig(
@@ -776,7 +746,6 @@ class TestBatchFlushWorker:
         finally:
             await client.stop()
 
-    @pytest.mark.asyncio
     async def test_batch_flush_worker_stops_on_cancel(self) -> None:
         """Test that batch flush worker handles cancellation gracefully."""
         config = AuditClientConfig(
@@ -804,7 +773,6 @@ class TestBatchFlushWorker:
 class TestStatsTracking:
     """Tests for statistics tracking."""
 
-    @pytest.mark.asyncio
     async def test_stats_track_submitted(self) -> None:
         """Test that stats track total submitted."""
         config = AuditClientConfig(enable_batching=False)
@@ -823,7 +791,6 @@ class TestStatsTracking:
         assert client._stats["total_submitted"] == 2
         assert client._stats["successful"] == 2
 
-    @pytest.mark.asyncio
     async def test_get_stats_returns_comprehensive_info(self) -> None:
         """Test that get_stats returns comprehensive information."""
         config = AuditClientConfig(enable_batching=True)
@@ -902,7 +869,6 @@ class TestSerialization:
 class TestEdgeCases:
     """Tests for edge cases and boundary conditions."""
 
-    @pytest.mark.asyncio
     async def test_report_with_batching_not_running(self) -> None:
         """Test reporting when batching enabled but not started."""
         config = AuditClientConfig(enable_batching=True)
@@ -920,7 +886,6 @@ class TestEdgeCases:
             result = await client.report_validation(MockValidationResult(True, "msg-1"))
             assert result == "hash1"
 
-    @pytest.mark.asyncio
     async def test_concurrent_batch_operations(self) -> None:
         """Test concurrent batch operations don't cause race conditions."""
         config = AuditClientConfig(enable_batching=True, batch_size=20)
@@ -947,7 +912,6 @@ class TestEdgeCases:
 
         client._running = False
 
-    @pytest.mark.asyncio
     async def test_stop_without_start(self) -> None:
         """Test stopping a client that was never started."""
         client = AuditClient()

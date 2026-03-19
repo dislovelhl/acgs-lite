@@ -82,7 +82,6 @@ def _make_activities(mock_storage=None, **kwargs):
 class TestInitialize:
     """Tests for ActivationSagaActivities.initialize()."""
 
-    @pytest.mark.asyncio
     async def test_initialize_creates_http_client(self):
         """initialize() should always create an httpx.AsyncClient."""
         activities = _make_activities()
@@ -96,7 +95,6 @@ class TestInitialize:
         assert activities._http_client is not None
         await activities._http_client.aclose()
 
-    @pytest.mark.asyncio
     async def test_initialize_redis_available_success(self):
         """initialize() should connect to Redis when available."""
         activities = _make_activities()
@@ -125,7 +123,6 @@ class TestInitialize:
 
         assert activities._redis_client is mock_redis_instance
 
-    @pytest.mark.asyncio
     async def test_initialize_redis_connection_error(self):
         """initialize() should handle Redis connection errors gracefully."""
         activities = _make_activities()
@@ -153,7 +150,6 @@ class TestInitialize:
         # Should not raise; redis client stays None
         assert activities._redis_client is None
 
-    @pytest.mark.asyncio
     async def test_initialize_opa_client_success(self):
         """initialize() should initialise OPAClient when available."""
         activities = _make_activities()
@@ -171,7 +167,6 @@ class TestInitialize:
 
         mock_opa.initialize.assert_awaited_once()
 
-    @pytest.mark.asyncio
     async def test_initialize_opa_client_error(self):
         """initialize() should handle OPAClient initialization errors."""
         activities = _make_activities()
@@ -189,7 +184,6 @@ class TestInitialize:
 
         assert activities._opa_client is None
 
-    @pytest.mark.asyncio
     async def test_initialize_audit_client_success(self):
         """initialize() should start AuditClient when available."""
         activities = _make_activities()
@@ -207,7 +201,6 @@ class TestInitialize:
 
         mock_audit.start.assert_awaited_once()
 
-    @pytest.mark.asyncio
     async def test_initialize_audit_client_error(self):
         """initialize() should handle AuditClient start errors."""
         activities = _make_activities()
@@ -234,7 +227,6 @@ class TestInitialize:
 class TestClose:
     """Tests for ActivationSagaActivities.close()."""
 
-    @pytest.mark.asyncio
     async def test_close_with_all_clients(self):
         """close() should close all active clients."""
         activities = _make_activities()
@@ -256,14 +248,12 @@ class TestClose:
         mock_opa.close.assert_awaited_once()
         mock_audit.stop.assert_awaited_once()
 
-    @pytest.mark.asyncio
     async def test_close_with_no_clients(self):
         """close() should be a no-op when no clients exist."""
         activities = _make_activities()
         # All clients are None by default — should not raise
         await activities.close()
 
-    @pytest.mark.asyncio
     async def test_close_with_only_http(self):
         """close() with only http client set."""
         activities = _make_activities()
@@ -272,7 +262,6 @@ class TestClose:
         await activities.close()
         mock_http.aclose.assert_awaited_once()
 
-    @pytest.mark.asyncio
     async def test_close_with_only_redis(self):
         """close() with only redis client set."""
         activities = _make_activities()
@@ -290,7 +279,6 @@ class TestClose:
 class TestValidateActivationWarningPaths:
     """Test warning-path branches in validate_activation."""
 
-    @pytest.mark.asyncio
     async def test_target_version_not_active(self):
         """validate_activation warns when target version is not the active one."""
         mock_storage = AsyncMock(spec=ConstitutionalStorageService)
@@ -309,7 +297,6 @@ class TestValidateActivationWarningPaths:
         # Should still succeed
         assert result["is_valid"] is True
 
-    @pytest.mark.asyncio
     async def test_no_active_version_warns_but_passes(self):
         """validate_activation warns when no active version exists."""
         mock_storage = AsyncMock(spec=ConstitutionalStorageService)
@@ -326,7 +313,6 @@ class TestValidateActivationWarningPaths:
         )
         assert result["is_valid"] is True
 
-    @pytest.mark.asyncio
     async def test_target_version_not_found(self):
         """validate_activation raises when target version is missing."""
         mock_storage = AsyncMock(spec=ConstitutionalStorageService)
@@ -341,7 +327,6 @@ class TestValidateActivationWarningPaths:
                 {"saga_id": "s1", "context": {"amendment_id": "amendment-123"}}
             )
 
-    @pytest.mark.asyncio
     async def test_hash_mismatch_warns_but_passes(self):
         """validate_activation warns about hash mismatch but still validates."""
         mock_storage = AsyncMock(spec=ConstitutionalStorageService)
@@ -368,7 +353,6 @@ class TestValidateActivationWarningPaths:
 class TestRestoreBackupException:
     """Test restore_backup compensation exception path."""
 
-    @pytest.mark.asyncio
     async def test_restore_backup_storage_error(self):
         """restore_backup returns False when storage.activate_version raises."""
         mock_storage = AsyncMock(spec=ConstitutionalStorageService)
@@ -383,7 +367,6 @@ class TestRestoreBackupException:
         )
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_restore_backup_value_error(self):
         """restore_backup returns False on ValueError from storage."""
         mock_storage = AsyncMock(spec=ConstitutionalStorageService)
@@ -407,7 +390,6 @@ class TestRestoreBackupException:
 class TestUpdateOpaPolicies:
     """Tests for update_opa_policies activity."""
 
-    @pytest.mark.asyncio
     async def test_amendment_not_found_raises(self):
         """update_opa_policies raises when amendment not found."""
         mock_storage = AsyncMock(spec=ConstitutionalStorageService)
@@ -425,7 +407,6 @@ class TestUpdateOpaPolicies:
                 }
             )
 
-    @pytest.mark.asyncio
     async def test_target_version_not_found_raises(self):
         """update_opa_policies raises when target version not found."""
         mock_storage = AsyncMock(spec=ConstitutionalStorageService)
@@ -445,7 +426,6 @@ class TestUpdateOpaPolicies:
                 }
             )
 
-    @pytest.mark.asyncio
     async def test_no_http_client_skips_opa_call(self):
         """update_opa_policies skips HTTP call when no client available."""
         mock_storage = AsyncMock(spec=ConstitutionalStorageService)
@@ -468,7 +448,6 @@ class TestUpdateOpaPolicies:
         )
         assert result["updated"] is True
 
-    @pytest.mark.asyncio
     async def test_opa_non_200_response_logs_warning(self):
         """update_opa_policies logs warning on non-200 OPA response."""
         mock_storage = AsyncMock(spec=ConstitutionalStorageService)
@@ -493,7 +472,6 @@ class TestUpdateOpaPolicies:
         )
         assert result["updated"] is True  # Still returns success
 
-    @pytest.mark.asyncio
     async def test_opa_request_error_continues(self):
         """update_opa_policies continues on OPA HTTP request error."""
         import httpx
@@ -521,7 +499,6 @@ class TestUpdateOpaPolicies:
         )
         assert result["updated"] is True
 
-    @pytest.mark.asyncio
     async def test_opa_204_response_succeeds(self):
         """update_opa_policies handles 204 No Content response."""
         mock_storage = AsyncMock(spec=ConstitutionalStorageService)
@@ -555,7 +532,6 @@ class TestUpdateOpaPolicies:
 class TestRevertOpaPolicies:
     """Tests for revert_opa_policies compensation."""
 
-    @pytest.mark.asyncio
     async def test_revert_no_http_client_returns_true(self):
         """revert_opa_policies returns True when no HTTP client."""
         activities = _make_activities()
@@ -571,7 +547,6 @@ class TestRevertOpaPolicies:
         )
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_revert_opa_200_success(self):
         """revert_opa_policies returns True on 200 response."""
         activities = _make_activities()
@@ -592,7 +567,6 @@ class TestRevertOpaPolicies:
         )
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_revert_opa_204_success(self):
         """revert_opa_policies returns True on 204 response."""
         activities = _make_activities()
@@ -613,7 +587,6 @@ class TestRevertOpaPolicies:
         )
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_revert_opa_error_response_returns_false(self):
         """revert_opa_policies returns False on non-200/204 response."""
         activities = _make_activities()
@@ -634,7 +607,6 @@ class TestRevertOpaPolicies:
         )
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_revert_opa_request_error_returns_false(self):
         """revert_opa_policies returns False on HTTP request exception."""
         import httpx
@@ -657,7 +629,6 @@ class TestRevertOpaPolicies:
         )
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_revert_opa_empty_backup_uses_defaults(self):
         """revert_opa_policies uses default hash when backup is empty."""
         activities = _make_activities()
@@ -688,7 +659,6 @@ class TestUpdateCacheRedisErrors:
         activities._compute_constitutional_hash = MagicMock(return_value=CONSTITUTIONAL_HASH)
         return activities
 
-    @pytest.mark.asyncio
     async def test_update_cache_no_redis_client(self):
         """update_cache works when no Redis client is available."""
         mock_storage = AsyncMock(spec=ConstitutionalStorageService)
@@ -712,7 +682,6 @@ class TestUpdateCacheRedisErrors:
         assert result["activated"] is True
         assert result["cache_invalidated"] is False
 
-    @pytest.mark.asyncio
     async def test_update_cache_redis_delete_error(self):
         """update_cache handles Redis delete errors gracefully."""
         mock_storage = AsyncMock(spec=ConstitutionalStorageService)
@@ -738,7 +707,6 @@ class TestUpdateCacheRedisErrors:
         assert result["activated"] is True
         assert result["cache_invalidated"] is False
 
-    @pytest.mark.asyncio
     async def test_update_cache_redis_value_error(self):
         """update_cache handles Redis ValueError gracefully."""
         mock_storage = AsyncMock(spec=ConstitutionalStorageService)
@@ -773,7 +741,6 @@ class TestUpdateCacheRedisErrors:
 class TestRevertCache:
     """Tests for revert_cache compensation."""
 
-    @pytest.mark.asyncio
     async def test_revert_cache_no_redis_returns_true(self):
         """revert_cache returns True when no Redis client."""
         activities = _make_activities()
@@ -781,7 +748,6 @@ class TestRevertCache:
         result = await activities.revert_cache({"saga_id": "s1", "context": {}})
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_revert_cache_success(self):
         """revert_cache invalidates cache key successfully."""
         activities = _make_activities()
@@ -793,7 +759,6 @@ class TestRevertCache:
         assert result is True
         mock_redis.delete.assert_awaited_once_with("constitutional:active_version")
 
-    @pytest.mark.asyncio
     async def test_revert_cache_redis_error_returns_false(self):
         """revert_cache returns False on Redis error."""
         activities = _make_activities()
@@ -804,7 +769,6 @@ class TestRevertCache:
         result = await activities.revert_cache({"saga_id": "s1", "context": {}})
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_revert_cache_connection_error_returns_false(self):
         """revert_cache returns False on ConnectionError."""
         activities = _make_activities()
@@ -815,7 +779,6 @@ class TestRevertCache:
         result = await activities.revert_cache({"saga_id": "s1", "context": {}})
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_revert_cache_value_error_returns_false(self):
         """revert_cache returns False on ValueError."""
         activities = _make_activities()
@@ -835,7 +798,6 @@ class TestRevertCache:
 class TestAuditActivation:
     """Tests for audit_activation activity."""
 
-    @pytest.mark.asyncio
     async def test_audit_no_client_still_returns(self):
         """audit_activation succeeds even without audit client."""
         activities = _make_activities()
@@ -854,7 +816,6 @@ class TestAuditActivation:
         )
         assert result["event_type"] == "constitutional_version_activated"
 
-    @pytest.mark.asyncio
     async def test_audit_client_error_logged_as_warning(self):
         """audit_activation handles audit client log errors gracefully."""
         activities = _make_activities()
@@ -877,7 +838,6 @@ class TestAuditActivation:
         assert result["event_type"] == "constitutional_version_activated"
         assert result["amendment_id"] == "amendment-456"
 
-    @pytest.mark.asyncio
     async def test_audit_uses_cache_hash_when_available(self):
         """audit_activation uses new_hash from cache update when available."""
         activities = _make_activities()
@@ -895,7 +855,6 @@ class TestAuditActivation:
         )
         assert result["constitutional_hash"] == "custom-hash-value"
 
-    @pytest.mark.asyncio
     async def test_audit_falls_back_to_constitutional_hash(self):
         """audit_activation falls back to CONSTITUTIONAL_HASH when no new_hash."""
         activities = _make_activities()
@@ -913,7 +872,6 @@ class TestAuditActivation:
         )
         assert result["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_audit_client_os_error(self):
         """audit_activation handles OSError from audit client."""
         activities = _make_activities()
@@ -943,7 +901,6 @@ class TestAuditActivation:
 class TestMarkAuditFailed:
     """Tests for mark_audit_failed compensation."""
 
-    @pytest.mark.asyncio
     async def test_mark_audit_failed_no_audit_client(self):
         """mark_audit_failed returns True without audit client."""
         activities = _make_activities()
@@ -956,7 +913,6 @@ class TestMarkAuditFailed:
         )
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_mark_audit_failed_client_error_still_returns_true(self):
         """mark_audit_failed returns True even when audit client raises."""
         activities = _make_activities()
@@ -972,7 +928,6 @@ class TestMarkAuditFailed:
         )
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_mark_audit_failed_missing_audit_data_uses_unknown(self):
         """mark_audit_failed uses 'unknown' when audit_id not in context."""
         activities = _make_activities()
@@ -984,7 +939,6 @@ class TestMarkAuditFailed:
         )
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_mark_audit_failed_connection_error(self):
         """mark_audit_failed handles ConnectionError from audit client."""
         activities = _make_activities()
@@ -1000,7 +954,6 @@ class TestMarkAuditFailed:
         )
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_mark_audit_failed_os_error(self):
         """mark_audit_failed handles OSError from audit client."""
         activities = _make_activities()
@@ -1227,7 +1180,6 @@ class TestActivateAmendment:
     def mock_storage(self):
         return AsyncMock(spec=ConstitutionalStorageService)
 
-    @pytest.mark.asyncio
     async def test_activate_amendment_requires_saga_context(self, mock_storage):
         """activate_amendment raises ImportError when SagaContext is None."""
         with patch.object(_saga_module, "SagaContext", None):
@@ -1237,7 +1189,6 @@ class TestActivateAmendment:
                     storage=mock_storage,
                 )
 
-    @pytest.mark.asyncio
     async def test_activate_amendment_full_flow(self, mock_storage):
         """activate_amendment executes full saga and returns result."""
         MockWorkflow, MockStep, MockComp, MockContext, _MockResult = _make_mock_saga_classes()
@@ -1261,7 +1212,6 @@ class TestActivateAmendment:
 
         assert result.status == "COMPLETED"
 
-    @pytest.mark.asyncio
     async def test_activate_amendment_cleanup_on_exception(self, mock_storage):
         """activate_amendment closes activities even when saga.execute raises."""
         MockWorkflow, MockStep, MockComp, MockContext, _MockResult = _make_mock_saga_classes()
@@ -1295,7 +1245,6 @@ class TestActivateAmendment:
                     # close() must be called in finally block
                     mock_close.assert_awaited_once()
 
-    @pytest.mark.asyncio
     async def test_activate_amendment_custom_urls(self, mock_storage):
         """activate_amendment passes custom URLs to the saga."""
         MockWorkflow, MockStep, MockComp, MockContext, _MockResult = _make_mock_saga_classes()

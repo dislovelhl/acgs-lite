@@ -15,7 +15,6 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timezone
 
-import pytest
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 from enhanced_agent_bus.observability.capacity_metrics.models import (

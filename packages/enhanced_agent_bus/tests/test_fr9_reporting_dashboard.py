@@ -77,7 +77,6 @@ class TestNISTRMFReports:
         except ImportError:
             pytest.skip("NIST RMF types not available")
 
-    @pytest.mark.asyncio
     async def test_rmf_assessment_generation(self, nist_rmf_reporter):
         """Test RMF assessment generation with all seven steps."""
         assessment = await nist_rmf_reporter.generate_rmf_assessment(
@@ -108,7 +107,6 @@ class TestNISTRMFReports:
         # Verify constitutional hash
         assert assessment.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_rmf_control_coverage(self, nist_rmf_reporter):
         """Test that RMF assessment covers required security controls."""
         assessment = await nist_rmf_reporter.generate_rmf_assessment()
@@ -122,7 +120,6 @@ class TestNISTRMFReports:
         for required_id in required_controls:
             assert required_id in control_ids, f"Missing required control: {required_id}"
 
-    @pytest.mark.asyncio
     async def test_rmf_security_impact_levels(self, nist_rmf_reporter):
         """Test security impact level calculations."""
         from src.core.services.audit_service.reporters.nist_rmf import SecurityImpactLevel
@@ -146,7 +143,6 @@ class TestNISTRMFReports:
         ]:
             assert overall == SecurityImpactLevel.HIGH
 
-    @pytest.mark.asyncio
     async def test_rmf_authorization_status(self, nist_rmf_reporter):
         """Test authorization status tracking."""
         assessment = await nist_rmf_reporter.generate_rmf_assessment()
@@ -163,7 +159,6 @@ class TestNISTRMFReports:
         assert assessment.authorization_expiry > datetime.now(UTC)
         assert assessment.authorization_expiry <= datetime.now(UTC) + timedelta(days=366)
 
-    @pytest.mark.asyncio
     async def test_rmf_report_generation(self, nist_rmf_reporter):
         """Test complete RMF report generation."""
         report = await nist_rmf_reporter.generate_rmf_report(
@@ -185,7 +180,6 @@ class TestNISTRMFReports:
         # Verify recommendations are generated
         assert isinstance(report.improvement_recommendations, list)
 
-    @pytest.mark.asyncio
     async def test_rmf_report_export_json(self, nist_rmf_reporter):
         """Test RMF report JSON export."""
         report = await nist_rmf_reporter.generate_rmf_report()
@@ -201,7 +195,6 @@ class TestNISTRMFReports:
         # Verify constitutional hash in export
         assert data["assessment"]["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_rmf_report_export_html(self, nist_rmf_reporter):
         """Test RMF report HTML export."""
         report = await nist_rmf_reporter.generate_rmf_report()
@@ -217,7 +210,6 @@ class TestNISTRMFReports:
         assert "Control ID" in html_output
         assert "Implementation Status" in html_output or "Status" in html_output
 
-    @pytest.mark.asyncio
     async def test_rmf_control_compliance_rate(self, nist_rmf_reporter):
         """Test control compliance rate calculation."""
         assessment = await nist_rmf_reporter.generate_rmf_assessment()
@@ -270,7 +262,6 @@ class TestEUAIActCompliance:
         except ImportError:
             pytest.skip("Unified compliance reporter not available")
 
-    @pytest.mark.asyncio
     async def test_eu_ai_act_framework_assessment(self, compliance_dashboard_service):
         """Test EU AI Act framework assessment."""
         from src.core.services.compliance_docs.src.api.compliance_dashboard import (
@@ -297,7 +288,6 @@ class TestEUAIActCompliance:
         # Verify coverage percentage meets PRD requirements (88%)
         assert eu_ai_assessment.coverage_percentage >= 80.0
 
-    @pytest.mark.asyncio
     async def test_eu_ai_act_transparency_controls(self, compliance_dashboard_service):
         """Test EU AI Act Article 13 transparency controls."""
         from src.core.services.compliance_docs.src.api.compliance_dashboard import (
@@ -318,7 +308,6 @@ class TestEUAIActCompliance:
                 assert len(assessment.recommendations) > 0
                 break
 
-    @pytest.mark.asyncio
     async def test_eu_ai_act_hitl_requirements(self, compliance_dashboard_service):
         """Test EU AI Act human oversight (HITL) requirements."""
         from src.core.services.compliance_docs.src.api.compliance_dashboard import (
@@ -340,7 +329,6 @@ class TestEUAIActCompliance:
                 )
                 break
 
-    @pytest.mark.asyncio
     async def test_eu_ai_act_high_risk_classification(self, unified_reporter):
         """Test EU AI Act high-risk AI system classification."""
         from src.core.services.audit_service.reporters.unified_compliance import (
@@ -403,7 +391,6 @@ class TestUnifiedComplianceEndpoint:
         except ImportError:
             pytest.skip("Unified compliance reporter not available")
 
-    @pytest.mark.asyncio
     async def test_unified_dashboard_all_frameworks(self, compliance_dashboard_service):
         """Test unified dashboard with all frameworks."""
         dashboard = await compliance_dashboard_service.get_unified_dashboard()
@@ -417,7 +404,6 @@ class TestUnifiedComplianceEndpoint:
         assert dashboard.overall_compliance_score <= 100.0
         assert dashboard.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_unified_dashboard_filtered_frameworks(self, compliance_dashboard_service):
         """Test unified dashboard with filtered frameworks."""
         from src.core.services.compliance_docs.src.api.compliance_dashboard import (
@@ -433,7 +419,6 @@ class TestUnifiedComplianceEndpoint:
         for assessment in dashboard.framework_assessments:
             assert assessment.framework in frameworks
 
-    @pytest.mark.asyncio
     async def test_overall_compliance_score_calculation(self, compliance_dashboard_service):
         """Test overall compliance score calculation."""
         dashboard = await compliance_dashboard_service.get_unified_dashboard()
@@ -445,7 +430,6 @@ class TestUnifiedComplianceEndpoint:
         # Verify overall score matches average
         assert abs(dashboard.overall_compliance_score - expected_average) < 0.1
 
-    @pytest.mark.asyncio
     async def test_compliance_status_determination(self, compliance_dashboard_service):
         """Test compliance status determination logic."""
         from src.core.services.compliance_docs.src.api.compliance_dashboard import (
@@ -462,7 +446,6 @@ class TestUnifiedComplianceEndpoint:
         else:
             assert dashboard.overall_status == ComplianceStatus.NON_COMPLIANT
 
-    @pytest.mark.asyncio
     async def test_gap_analysis(self, compliance_dashboard_service):
         """Test gap analysis functionality."""
         from src.core.services.compliance_docs.src.api.compliance_dashboard import (
@@ -482,7 +465,6 @@ class TestUnifiedComplianceEndpoint:
             assert gap.description is not None
             assert gap.priority is not None
 
-    @pytest.mark.asyncio
     async def test_gap_analysis_priority_filter(self, compliance_dashboard_service):
         """Test gap analysis with priority filter."""
         from src.core.services.compliance_docs.src.api.compliance_dashboard import (
@@ -497,7 +479,6 @@ class TestUnifiedComplianceEndpoint:
         for gap in gaps:
             assert gap.priority == GapPriority.P2_HIGH
 
-    @pytest.mark.asyncio
     async def test_cross_framework_gap_impact(self, compliance_dashboard_service):
         """Test cross-framework gap impact tracking."""
         from src.core.services.compliance_docs.src.api.compliance_dashboard import (
@@ -512,7 +493,6 @@ class TestUnifiedComplianceEndpoint:
             # Verify cross_framework_impact is a list
             assert isinstance(gap.cross_framework_impact, list)
 
-    @pytest.mark.asyncio
     async def test_executive_summary_generation(self, compliance_dashboard_service):
         """Test executive summary generation."""
         from src.core.services.compliance_docs.src.api.compliance_dashboard import (
@@ -530,7 +510,6 @@ class TestUnifiedComplianceEndpoint:
         # Verify constitutional hash is included
         assert CONSTITUTIONAL_HASH in summary
 
-    @pytest.mark.asyncio
     async def test_unified_report_generation(self, unified_reporter):
         """Test unified compliance report generation."""
         report = await unified_reporter.generate_unified_report()
@@ -546,7 +525,6 @@ class TestUnifiedComplianceEndpoint:
         # Verify remediation roadmap
         assert isinstance(report.remediation_roadmap, list)
 
-    @pytest.mark.asyncio
     async def test_unified_report_export_json(self, unified_reporter):
         """Test unified compliance report JSON export."""
         report = await unified_reporter.generate_unified_report()
@@ -559,7 +537,6 @@ class TestUnifiedComplianceEndpoint:
         assert "constitutional_hash" in data
         assert data["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_unified_report_export_html(self, unified_reporter):
         """Test unified compliance report HTML export."""
         report = await unified_reporter.generate_unified_report()
@@ -599,7 +576,6 @@ class TestComplianceTrendAnalysis:
         except ImportError:
             pytest.skip("Compliance dashboard service not available")
 
-    @pytest.mark.asyncio
     async def test_dashboard_has_trend_data_field(self, compliance_dashboard_service):
         """Test that dashboard includes compliance trend data field."""
         dashboard = await compliance_dashboard_service.get_unified_dashboard()
@@ -608,7 +584,6 @@ class TestComplianceTrendAnalysis:
         assert hasattr(dashboard, "compliance_trend")
         assert isinstance(dashboard.compliance_trend, list)
 
-    @pytest.mark.asyncio
     async def test_framework_assessment_timestamps(self, compliance_dashboard_service):
         """Test that framework assessments have timestamps for trend tracking."""
         dashboard = await compliance_dashboard_service.get_unified_dashboard()
@@ -621,7 +596,6 @@ class TestComplianceTrendAnalysis:
             # Verify timestamp is a datetime
             assert isinstance(assessment.last_assessment, datetime)
 
-    @pytest.mark.asyncio
     async def test_multiple_dashboard_snapshots(self, compliance_dashboard_service):
         """Test that multiple dashboard snapshots can be generated for trend analysis."""
         import time
@@ -650,7 +624,6 @@ class TestComplianceTrendAnalysis:
         scores = [s["score"] for s in snapshots]
         assert max(scores) - min(scores) < 0.1  # Small variance allowed
 
-    @pytest.mark.asyncio
     async def test_framework_control_status_tracking(self, compliance_dashboard_service):
         """Test tracking of control status for trend analysis."""
         dashboard = await compliance_dashboard_service.get_unified_dashboard()
@@ -669,7 +642,6 @@ class TestComplianceTrendAnalysis:
             assert control_status.coverage_percentage >= 0.0
             assert control_status.coverage_percentage <= 100.0
 
-    @pytest.mark.asyncio
     async def test_gap_status_tracking(self, compliance_dashboard_service):
         """Test gap status tracking for trend analysis."""
         from src.core.services.compliance_docs.src.api.compliance_dashboard import (
@@ -732,7 +704,6 @@ class TestFR9Integration:
         except ImportError:
             pytest.skip("NIST RMF reporter not available")
 
-    @pytest.mark.asyncio
     async def test_end_to_end_compliance_reporting(
         self,
         compliance_dashboard_service,
@@ -764,7 +735,6 @@ class TestFR9Integration:
         assert rmf_data["assessment"]["constitutional_hash"] == CONSTITUTIONAL_HASH
         assert unified_data["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_all_frameworks_complete(self, compliance_dashboard_service):
         """Test that all required frameworks are assessed."""
         from src.core.services.compliance_docs.src.api.compliance_dashboard import (
@@ -787,7 +757,6 @@ class TestFR9Integration:
         for framework in required_frameworks:
             assert framework in assessed_frameworks, f"Missing framework: {framework}"
 
-    @pytest.mark.asyncio
     async def test_constitutional_hash_consistency(
         self,
         compliance_dashboard_service,
@@ -805,7 +774,6 @@ class TestFR9Integration:
         assert unified_report.constitutional_hash == CONSTITUTIONAL_HASH
         assert rmf_report.assessment.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_compliance_metrics_meet_prd_targets(self, compliance_dashboard_service):
         """Test that compliance metrics meet PRD v2.3.1 targets."""
         dashboard = await compliance_dashboard_service.get_unified_dashboard()
@@ -856,7 +824,6 @@ class TestComplianceDashboardAPI:
         except ImportError:
             pytest.skip("Compliance dashboard API not available")
 
-    @pytest.mark.asyncio
     async def test_get_dashboard_endpoint(self, mock_service):
         """Test GET /compliance-dashboard/ endpoint."""
         dashboard = await mock_service.get_unified_dashboard()
@@ -868,7 +835,6 @@ class TestComplianceDashboardAPI:
         assert isinstance(dashboard.overall_compliance_score, float)
         assert isinstance(dashboard.total_gaps, int)
 
-    @pytest.mark.asyncio
     async def test_get_frameworks_endpoint(self, mock_service):
         """Test GET /compliance-dashboard/frameworks endpoint."""
         frameworks = list(mock_service._assessments.values())
@@ -879,7 +845,6 @@ class TestComplianceDashboardAPI:
             assert framework.framework_name is not None
             assert framework.coverage_percentage >= 0.0
 
-    @pytest.mark.asyncio
     async def test_get_gaps_endpoint(self, mock_service):
         """Test GET /compliance-dashboard/gaps endpoint."""
         gaps = mock_service._gaps
@@ -889,7 +854,6 @@ class TestComplianceDashboardAPI:
             assert gap.gap_id is not None
             assert gap.description is not None
 
-    @pytest.mark.asyncio
     async def test_get_score_endpoint(self, mock_service):
         """Test GET /compliance-dashboard/score endpoint."""
         dashboard = await mock_service.get_unified_dashboard()

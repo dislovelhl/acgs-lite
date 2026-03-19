@@ -88,7 +88,6 @@ async def bus(mock_processor, mock_registry, mock_router, mock_validator):
         await bus.stop()
 
 
-@pytest.mark.asyncio
 async def test_maci_zk_vote(bus):
     """Simulate a MACI ZK-verified vote as per v3.0.0 requirements."""
     # Register an agent with ZK capabilities
@@ -119,7 +118,6 @@ async def test_maci_zk_vote(bus):
     assert result.metadata["zk_verified"] is True
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("p_failure", [0.1, 0.5])
 async def test_chaos_inject_failure(bus, p_failure):
     """Test resilience when failures are injected (Chaos Engineering)."""
@@ -159,7 +157,6 @@ async def test_chaos_inject_failure(bus, p_failure):
     pass
 
 
-@pytest.mark.asyncio
 async def test_alignment_error_handling(bus):
     """Verify that specific AlignmentViolationErrors are captured and reported."""
     bus.processor.process = AsyncMock(side_effect=AlignmentViolationError("Violation!"))

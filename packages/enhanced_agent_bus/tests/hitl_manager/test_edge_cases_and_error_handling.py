@@ -9,13 +9,11 @@ Tests cover:
 - Integration with related components
 """
 
-import pytest
 
 
 class TestEdgeCasesAndErrorHandling:
     """Test edge cases and error handling in HITLManager."""
 
-    @pytest.mark.asyncio
     async def test_empty_content_message(self):
         """Test handling of message with empty content."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -43,7 +41,6 @@ class TestEdgeCasesAndErrorHandling:
 
         await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_special_characters_in_reasoning(self):
         """Test special characters in reasoning field."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -85,7 +82,6 @@ class TestEdgeCasesAndErrorHandling:
 
         await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_concurrent_approval_requests(self):
         """Test concurrent approval requests don't interfere."""
         import asyncio
@@ -122,7 +118,6 @@ class TestEdgeCasesAndErrorHandling:
 
         await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_long_content_truncation(self, caplog):
         """Test that long content is truncated in notification."""
         import logging

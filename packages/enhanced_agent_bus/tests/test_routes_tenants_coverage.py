@@ -252,7 +252,6 @@ class TestTenantRouteHelpers:
     def test_check_tenant_scope_allows_system_admin_account(self):
         _check_tenant_scope("system-admin", "tenant-002")
 
-    @pytest.mark.asyncio
     async def test_get_tenant_or_404_returns_tenant(self):
         manager = MagicMock()
         tenant = _make_tenant()
@@ -262,7 +261,6 @@ class TestTenantRouteHelpers:
 
         assert result is tenant
 
-    @pytest.mark.asyncio
     async def test_get_tenant_or_404_raises(self):
         manager = MagicMock()
         manager.get_tenant = AsyncMock(return_value=None)

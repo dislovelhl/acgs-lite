@@ -409,7 +409,6 @@ class TestModelProfilerDecorator:
 class TestModelProfilerAsyncDecorator:
     """Tests for profile_async() decorator."""
 
-    @pytest.mark.asyncio
     async def test_profile_async_basic(self):
         """Test basic async profile decorator."""
         profiler = ModelProfiler(enable_prometheus=False)
@@ -423,7 +422,6 @@ class TestModelProfilerAsyncDecorator:
         assert result == "async result"
         assert len(profiler._samples["async_func"]) == 1
 
-    @pytest.mark.asyncio
     async def test_profile_async_measures_time(self):
         """Test async decorator measures execution time."""
         profiler = ModelProfiler(enable_prometheus=False)
@@ -645,7 +643,6 @@ class TestGlobalProfiler:
 class TestProfileAsyncCall:
     """Tests for profile_async_call function."""
 
-    @pytest.mark.asyncio
     async def test_profile_async_call_coroutine(self):
         """Test profiling async call with coroutine."""
         # Reset global profiler
@@ -660,7 +657,6 @@ class TestProfileAsyncCall:
         result = await profile_async_call("test_model", async_compute)
         assert result == 42
 
-    @pytest.mark.asyncio
     async def test_profile_async_call_sync_function(self):
         """Test profiling call with sync function that returns coroutine."""
         import enhanced_agent_bus.profiling.model_profiler as profiler_module

@@ -19,7 +19,6 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-import pytest
 from fastapi import FastAPI
 
 import enhanced_agent_bus.api.middleware as mw_mod

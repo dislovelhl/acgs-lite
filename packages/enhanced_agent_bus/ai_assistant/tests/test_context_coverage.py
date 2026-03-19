@@ -8,7 +8,6 @@ Targets uncovered lines to boost coverage from 44% to ≥90%.
 from datetime import UTC, datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 from enhanced_agent_bus.ai_assistant.context import (

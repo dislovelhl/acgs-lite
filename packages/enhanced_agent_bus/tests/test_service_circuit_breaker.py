@@ -134,7 +134,6 @@ class TestServiceCircuitConfig:
 class TestServiceCircuitBreaker:
     """Tests for ServiceCircuitBreaker state transitions."""
 
-    @pytest.mark.asyncio
     async def test_initial_state_is_closed(self):
         """Test that circuit breaker starts in closed state."""
         from enhanced_agent_bus.circuit_breaker import (
@@ -149,7 +148,6 @@ class TestServiceCircuitBreaker:
         assert not cb.is_open
         assert not cb.is_half_open
 
-    @pytest.mark.asyncio
     async def test_transition_to_open_after_failures(self):
         """Test circuit opens after failure threshold is reached."""
         from enhanced_agent_bus.circuit_breaker import (
@@ -167,7 +165,6 @@ class TestServiceCircuitBreaker:
         assert cb.is_open
         assert not await cb.can_execute()
 
-    @pytest.mark.asyncio
     async def test_transition_to_half_open_after_timeout(self):
         """Test circuit transitions to half-open after timeout."""
         from enhanced_agent_bus.circuit_breaker import (
@@ -196,7 +193,6 @@ class TestServiceCircuitBreaker:
         assert can_execute
         assert cb.state == CircuitState.HALF_OPEN
 
-    @pytest.mark.asyncio
     async def test_transition_to_closed_after_successes(self):
         """Test circuit closes after successful half-open requests."""
         from enhanced_agent_bus.circuit_breaker import (
@@ -228,7 +224,6 @@ class TestServiceCircuitBreaker:
 
         assert cb.state == CircuitState.CLOSED
 
-    @pytest.mark.asyncio
     async def test_half_open_failure_reopens_circuit(self):
         """Test that failure in half-open state reopens the circuit."""
         from enhanced_agent_bus.circuit_breaker import (
@@ -264,7 +259,6 @@ class TestServiceCircuitBreaker:
 class TestFallbackStrategies:
     """Tests for fallback strategy implementations."""
 
-    @pytest.mark.asyncio
     async def test_cached_value_fallback(self):
         """Test CACHED_VALUE fallback returns cached data."""
         from enhanced_agent_bus.circuit_breaker import get_service_circuit_breaker
@@ -279,7 +273,6 @@ class TestFallbackStrategies:
         cached = cb.get_cached_fallback("test_key")
         assert cached == test_data
 
-    @pytest.mark.asyncio
     async def test_cached_value_expiry(self):
         """Test cached values expire after TTL."""
         from enhanced_agent_bus.circuit_breaker import (
@@ -305,7 +298,6 @@ class TestFallbackStrategies:
         # Should be expired
         assert cb.get_cached_fallback("test_key") is None
 
-    @pytest.mark.asyncio
     async def test_queue_for_retry(self):
         """Test QUEUE_FOR_RETRY fallback queues requests."""
         from enhanced_agent_bus.circuit_breaker import get_service_circuit_breaker
@@ -322,7 +314,6 @@ class TestFallbackStrategies:
         assert result is True
         assert cb.get_queue_size() == 1
 
-    @pytest.mark.asyncio
     async def test_queue_max_size_limit(self):
         """Test retry queue respects max size limit."""
         from enhanced_agent_bus.circuit_breaker import (
@@ -351,7 +342,6 @@ class TestFallbackStrategies:
 class TestCircuitBreakerRegistry:
     """Tests for ServiceCircuitBreakerRegistry."""
 
-    @pytest.mark.asyncio
     async def test_get_or_create(self):
         """Test getting or creating circuit breakers."""
         from enhanced_agent_bus.circuit_breaker import get_circuit_breaker_registry
@@ -364,7 +354,6 @@ class TestCircuitBreakerRegistry:
         # Same instance returned
         assert cb1 is cb2
 
-    @pytest.mark.asyncio
     async def test_initialize_default_circuits(self):
         """Test initialization of all default circuit breakers."""
         from enhanced_agent_bus.circuit_breaker import (
@@ -381,7 +370,6 @@ class TestCircuitBreakerRegistry:
         for service in SERVICE_CIRCUIT_CONFIGS.keys():
             assert service in states
 
-    @pytest.mark.asyncio
     async def test_health_summary(self):
         """Test health summary calculation."""
         from enhanced_agent_bus.circuit_breaker import get_circuit_breaker_registry
@@ -399,7 +387,6 @@ class TestCircuitBreakerRegistry:
         assert "half_open" in summary
         assert summary["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_reset_single_circuit(self):
         """Test resetting a single circuit breaker."""
         from enhanced_agent_bus.circuit_breaker import (
@@ -421,7 +408,6 @@ class TestCircuitBreakerRegistry:
         assert success
         assert cb.state == CircuitState.CLOSED
 
-    @pytest.mark.asyncio
     async def test_reset_all_circuits(self):
         """Test resetting all circuit breakers."""
         from enhanced_agent_bus.circuit_breaker import (
@@ -449,7 +435,6 @@ class TestCircuitBreakerRegistry:
 class TestCircuitBreakerDecorator:
     """Tests for with_service_circuit_breaker decorator."""
 
-    @pytest.mark.asyncio
     async def test_decorator_records_success(self):
         """Test decorator records successful calls."""
         from enhanced_agent_bus.circuit_breaker import (
@@ -468,7 +453,6 @@ class TestCircuitBreakerDecorator:
         cb = await get_service_circuit_breaker("policy_registry")
         assert cb.metrics.successful_calls == 1
 
-    @pytest.mark.asyncio
     async def test_decorator_records_failure(self):
         """Test decorator records failed calls."""
         from enhanced_agent_bus.circuit_breaker import (
@@ -486,7 +470,6 @@ class TestCircuitBreakerDecorator:
         cb = await get_service_circuit_breaker("policy_registry")
         assert cb.metrics.failed_calls == 1
 
-    @pytest.mark.asyncio
     async def test_decorator_fail_closed_when_open(self):
         """Test FAIL_CLOSED strategy raises exception when circuit is open."""
         from enhanced_agent_bus.circuit_breaker import (
@@ -510,7 +493,6 @@ class TestCircuitBreakerDecorator:
         assert "opa_evaluator" in str(exc_info.value)
         assert "fail_closed" in str(exc_info.value)
 
-    @pytest.mark.asyncio
     async def test_decorator_cached_fallback(self):
         """Test CACHED_VALUE strategy returns cached value when circuit is open."""
         from enhanced_agent_bus.circuit_breaker import (
@@ -534,7 +516,6 @@ class TestCircuitBreakerDecorator:
 
         assert result["policies"] == ["cached"]
 
-    @pytest.mark.asyncio
     async def test_decorator_bypass_strategy(self):
         """Test BYPASS strategy returns fallback value when circuit is open."""
         from enhanced_agent_bus.circuit_breaker import (
@@ -560,7 +541,6 @@ class TestCircuitBreakerDecorator:
 class TestCircuitBreakerMetrics:
     """Tests for Prometheus metrics integration."""
 
-    @pytest.mark.asyncio
     async def test_metrics_are_updated(self):
         """Test that Prometheus metrics are updated correctly."""
         from enhanced_agent_bus.circuit_breaker import get_service_circuit_breaker
@@ -576,7 +556,6 @@ class TestCircuitBreakerMetrics:
         assert cb.metrics.successful_calls == 2
         assert cb.metrics.failed_calls == 1
 
-    @pytest.mark.asyncio
     async def test_status_includes_all_fields(self):
         """Test get_status includes all required fields."""
         from enhanced_agent_bus.circuit_breaker import get_service_circuit_breaker
@@ -613,7 +592,6 @@ class TestConstitutionalCompliance:
                 f"Config {name} has incorrect constitutional hash"
             )
 
-    @pytest.mark.asyncio
     async def test_circuit_breaker_has_constitutional_hash(self):
         """Test circuit breaker instances have constitutional hash."""
         from enhanced_agent_bus.circuit_breaker import get_service_circuit_breaker
@@ -622,7 +600,6 @@ class TestConstitutionalCompliance:
 
         assert cb.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_status_includes_constitutional_hash(self):
         """Test status output includes constitutional hash."""
         from enhanced_agent_bus.circuit_breaker import get_service_circuit_breaker
@@ -636,7 +613,6 @@ class TestConstitutionalCompliance:
 class TestCircuitHealthRouter:
     """Tests for the /health/circuits endpoint router."""
 
-    @pytest.mark.asyncio
     async def test_router_creation(self):
         """Test that the circuit health router can be created."""
         from enhanced_agent_bus.circuit_breaker import create_circuit_health_router
@@ -743,7 +719,6 @@ class TestUnifiedConfigIntegration:
 class TestCircuitBreakerStateTracking:
     """Tests for circuit breaker state tracking (T002 requirement)."""
 
-    @pytest.mark.asyncio
     async def test_state_tracking_metrics(self):
         """Test state changes are properly tracked in metrics."""
         from enhanced_agent_bus.circuit_breaker import (
@@ -777,7 +752,6 @@ class TestCircuitBreakerStateTracking:
         assert cb.state == CircuitState.HALF_OPEN
         assert cb.metrics.state_changes == 2
 
-    @pytest.mark.asyncio
     async def test_metrics_timestamps(self):
         """Test metrics include proper timestamps."""
         from enhanced_agent_bus.circuit_breaker import get_service_circuit_breaker

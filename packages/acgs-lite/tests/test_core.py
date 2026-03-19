@@ -449,7 +449,6 @@ class TestGovernedCallable:
 
 @pytest.mark.constitutional
 class TestAsyncGovernedAgent:
-    @pytest.mark.asyncio
     async def test_async_run(self):
         async def my_agent(input: str) -> str:
             return f"Async: {input}"
@@ -458,7 +457,6 @@ class TestAsyncGovernedAgent:
         result = await agent.arun("hello")
         assert result == "Async: hello"
 
-    @pytest.mark.asyncio
     async def test_async_blocks_violation(self):
         async def my_agent(input: str) -> str:
             return input

@@ -219,7 +219,6 @@ class TestAsyncMemoryQueue:
         """Create test config."""
         return MemoryProfilingConfig(enabled=True, queue_size=10)
 
-    @pytest.mark.asyncio
     async def test_start_stop(self, config):
         """Queue can start and stop."""
         queue = AsyncMemoryQueue(config)
@@ -228,7 +227,6 @@ class TestAsyncMemoryQueue:
         await queue.stop()
         assert queue._running is False
 
-    @pytest.mark.asyncio
     async def test_enqueue_when_stopped(self, config):
         """Enqueue returns False when queue is stopped."""
         queue = AsyncMemoryQueue(config)
@@ -236,7 +234,6 @@ class TestAsyncMemoryQueue:
         result = await queue.enqueue(snap)
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_enqueue_when_running(self, config):
         """Enqueue returns True when queue is running."""
         queue = AsyncMemoryQueue(config)
@@ -248,7 +245,6 @@ class TestAsyncMemoryQueue:
         finally:
             await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_queue_full_drops_snapshot(self):
         """When queue is full, new snapshots are dropped."""
         config = MemoryProfilingConfig(enabled=True, queue_size=2)
@@ -266,7 +262,6 @@ class TestAsyncMemoryQueue:
         finally:
             await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_callback_invoked(self, config):
         """Callback is invoked for each snapshot."""
         received = []
@@ -286,7 +281,6 @@ class TestAsyncMemoryQueue:
         finally:
             await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_get_recent_snapshots(self, config):
         """get_recent_snapshots returns stored snapshots."""
         queue = AsyncMemoryQueue(config)
@@ -305,7 +299,6 @@ class TestAsyncMemoryQueue:
         finally:
             await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_get_memory_stats_empty(self, config):
         """get_memory_stats handles empty queue."""
         queue = AsyncMemoryQueue(config)
@@ -313,7 +306,6 @@ class TestAsyncMemoryQueue:
         assert stats["total_snapshots"] == 0
         assert stats["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_get_memory_stats_with_data(self, config):
         """get_memory_stats computes correct statistics."""
         queue = AsyncMemoryQueue(config)
@@ -426,7 +418,6 @@ class TestMemoryProfiler:
 class TestMemoryProfilingContext:
     """Tests for MemoryProfilingContext."""
 
-    @pytest.mark.asyncio
     async def test_context_disabled(self):
         """Context is no-op when profiling disabled."""
         profiler = MemoryProfiler(MemoryProfilingConfig(enabled=False))
@@ -436,7 +427,6 @@ class TestMemoryProfilingContext:
 
         assert ctx.delta is None
 
-    @pytest.mark.asyncio
     async def test_context_enabled(self):
         """Context records memory delta when enabled."""
         config = MemoryProfilingConfig(enabled=True)
@@ -456,7 +446,6 @@ class TestMemoryProfilingContext:
         finally:
             profiler.stop()
 
-    @pytest.mark.asyncio
     async def test_context_with_queue(self):
         """Context enqueues snapshot to queue."""
         config = MemoryProfilingConfig(enabled=True)
@@ -481,7 +470,6 @@ class TestMemoryProfilingContext:
 class TestProfileMemoryDecorator:
     """Tests for @profile_memory decorator."""
 
-    @pytest.mark.asyncio
     async def test_decorator_disabled(self):
         """Decorator is no-op when profiling disabled."""
 

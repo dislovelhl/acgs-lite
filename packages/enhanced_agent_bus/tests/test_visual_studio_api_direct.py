@@ -74,7 +74,6 @@ def test_resolve_tenant_id_rejects_cross_tenant() -> None:
     assert exc.value.status_code == 403
 
 
-@pytest.mark.asyncio
 async def test_create_workflow_success() -> None:
     service = MagicMock()
     wf = _workflow()
@@ -90,7 +89,6 @@ async def test_create_workflow_success() -> None:
     assert result.id == "wf-1"
 
 
-@pytest.mark.asyncio
 async def test_get_workflow_not_found_raises_404() -> None:
     service = MagicMock()
     service.get_workflow = AsyncMock(return_value=None)
@@ -100,7 +98,6 @@ async def test_get_workflow_not_found_raises_404() -> None:
     assert exc.value.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_update_workflow_id_mismatch_raises_400() -> None:
     service = MagicMock()
     wf = _workflow(workflow_id="wf-real")
@@ -110,7 +107,6 @@ async def test_update_workflow_id_mismatch_raises_400() -> None:
     assert exc.value.status_code == 400
 
 
-@pytest.mark.asyncio
 async def test_list_workflows_success() -> None:
     service = MagicMock()
     wf = _workflow()
@@ -143,7 +139,6 @@ async def test_list_workflows_success() -> None:
     assert len(result.workflows) == 1
 
 
-@pytest.mark.asyncio
 async def test_delete_workflow_missing_raises_404() -> None:
     service = MagicMock()
     service.delete_workflow = AsyncMock(return_value=False)
@@ -153,7 +148,6 @@ async def test_delete_workflow_missing_raises_404() -> None:
     assert exc.value.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_validate_workflow_success() -> None:
     service = MagicMock()
     wf = _workflow()
@@ -164,7 +158,6 @@ async def test_validate_workflow_success() -> None:
     assert result.is_valid is True
 
 
-@pytest.mark.asyncio
 async def test_validate_workflow_not_found_raises_404() -> None:
     service = MagicMock()
     service.get_workflow = AsyncMock(return_value=None)
@@ -174,7 +167,6 @@ async def test_validate_workflow_not_found_raises_404() -> None:
     assert exc.value.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_simulate_workflow_success() -> None:
     service = MagicMock()
     wf = _workflow()
@@ -187,7 +179,6 @@ async def test_simulate_workflow_success() -> None:
     assert result.success is True
 
 
-@pytest.mark.asyncio
 async def test_export_workflow_success() -> None:
     service = MagicMock()
     wf = _workflow()
@@ -209,7 +200,6 @@ async def test_export_workflow_success() -> None:
     assert result.workflow_id == wf.id
 
 
-@pytest.mark.asyncio
 async def test_get_workflow_summary_success() -> None:
     service = MagicMock()
     wf = _workflow()

@@ -14,8 +14,6 @@ import asyncio
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from ..constitutional_transition import (
     CONSTITUTIONAL_HASH,
     VALID_TRANSITIONS,
@@ -202,7 +200,6 @@ class TestTransitionCreation:
 class TestStateTransitions:
     """Tests for state transitions."""
 
-    @pytest.mark.asyncio
     async def test_transition_to_valid_state(self):
         """Test transitioning to valid state."""
         manager = create_transition_manager()
@@ -221,7 +218,6 @@ class TestStateTransitions:
         assert proof is not None
         assert transition.current_state == TransitionState.PENDING_VALIDATION
 
-    @pytest.mark.asyncio
     async def test_transition_to_invalid_state(self):
         """Test transitioning to invalid state fails."""
         manager = create_transition_manager()
@@ -241,7 +237,6 @@ class TestStateTransitions:
         assert proof is None
         assert transition.current_state == TransitionState.INITIAL
 
-    @pytest.mark.asyncio
     async def test_transition_generates_proof(self):
         """Test that transitions generate proofs."""
         manager = create_transition_manager()
@@ -263,7 +258,6 @@ class TestStateTransitions:
         assert proof.from_state == TransitionState.INITIAL
         assert proof.to_state == TransitionState.PENDING_VALIDATION
 
-    @pytest.mark.asyncio
     async def test_transition_records_actor(self):
         """Test that transitions record the actor."""
         manager = create_transition_manager()
@@ -286,7 +280,6 @@ class TestStateTransitions:
 class TestValidationTransition:
     """Tests for validation transition sequence."""
 
-    @pytest.mark.asyncio
     async def test_validate_transition(self):
         """Test validation transition sequence."""
         manager = create_transition_manager()
@@ -307,7 +300,6 @@ class TestValidationTransition:
 class TestApprovalTransition:
     """Tests for approval transitions."""
 
-    @pytest.mark.asyncio
     async def test_approve_transition(self):
         """Test approving a validated transition."""
         manager = create_transition_manager()
@@ -335,7 +327,6 @@ class TestApprovalTransition:
 class TestExecutionTransition:
     """Tests for execution transitions."""
 
-    @pytest.mark.asyncio
     async def test_execute_transition(self):
         """Test executing an approved transition."""
         manager = create_transition_manager()
@@ -363,7 +354,6 @@ class TestExecutionTransition:
         assert transition.current_state == TransitionState.EXECUTED
         assert transition.execution_result is not None
 
-    @pytest.mark.asyncio
     async def test_execute_transition_failure(self):
         """Test handling execution failure."""
         manager = create_transition_manager()
@@ -394,7 +384,6 @@ class TestExecutionTransition:
 class TestRejectionTransition:
     """Tests for rejection transitions."""
 
-    @pytest.mark.asyncio
     async def test_reject_transition(self):
         """Test rejecting a transition."""
         manager = create_transition_manager()
@@ -418,7 +407,6 @@ class TestRejectionTransition:
 class TestRollbackTransition:
     """Tests for rollback transitions."""
 
-    @pytest.mark.asyncio
     async def test_rollback_transition(self):
         """Test rolling back a transition."""
         manager = create_transition_manager()
@@ -454,7 +442,6 @@ class TestRollbackTransition:
         assert transition.current_state == TransitionState.ROLLED_BACK
         assert transition.rollback_data is not None
 
-    @pytest.mark.asyncio
     async def test_rollback_without_checkpoint(self):
         """Test rollback fails without checkpoint."""
         manager = create_transition_manager()
@@ -477,7 +464,6 @@ class TestRollbackTransition:
 class TestCompletionTransition:
     """Tests for completion transitions."""
 
-    @pytest.mark.asyncio
     async def test_complete_transition(self):
         """Test completing a transition."""
         manager = create_transition_manager()
@@ -553,7 +539,6 @@ class TestTransitionProof:
 class TestProofChain:
     """Tests for proof chain integrity."""
 
-    @pytest.mark.asyncio
     async def test_proof_chain_continuity(self):
         """Test that proof chain maintains continuity."""
         manager = create_transition_manager()
@@ -701,7 +686,6 @@ class TestManagerOperations:
 
         assert len(active) == 2
 
-    @pytest.mark.asyncio
     async def test_manager_status(self):
         """Test getting manager status."""
         manager = create_transition_manager()
