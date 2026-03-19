@@ -161,7 +161,7 @@ async def test_validate_workflow_success() -> None:
     service.validate_workflow = MagicMock(return_value=WorkflowValidationResult(is_valid=True))
 
     result = await validate_workflow("wf-1", service=service)
-    assert result["is_valid"] is True
+    assert result.is_valid is True
 
 
 @pytest.mark.asyncio
@@ -184,7 +184,7 @@ async def test_simulate_workflow_success() -> None:
     )
 
     result = await simulate_workflow("wf-1", input_data={"k": "v"}, service=service)
-    assert result["success"] is True
+    assert result.success is True
 
 
 @pytest.mark.asyncio
@@ -206,7 +206,7 @@ async def test_export_workflow_success() -> None:
         request=WorkflowExportRequest(format="json"),
         service=service,
     )
-    assert result["workflow_id"] == wf.id
+    assert result.workflow_id == wf.id
 
 
 @pytest.mark.asyncio

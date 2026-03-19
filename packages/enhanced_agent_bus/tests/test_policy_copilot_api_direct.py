@@ -12,6 +12,7 @@ from src.core.shared.security.auth import UserClaims
 
 from enhanced_agent_bus.policy_copilot.api import (
     FeedbackRequest,
+    ValidateRequest,
     explain_policy,
     generate_policy,
     get_template,
@@ -70,7 +71,10 @@ def _result(
 
 @pytest.mark.asyncio
 async def test_health_check_success() -> None:
-    result = await health_check()
+    nlp = MagicMock()
+    gen = MagicMock()
+    val = MagicMock()
+    result = await health_check(nlp=nlp, generator=gen, validator=val)
     assert result.status == "healthy"
     assert result.constitutional_hash == CONSTITUTIONAL_HASH
 
@@ -182,7 +186,7 @@ async def test_validate_policy_success() -> None:
     validator = MagicMock()
     validator.validate_syntax.return_value = ValidationResult(valid=True, syntax_check=True)
 
-    resp = await validate_policy("package x", validator=validator)
+    resp = await validate_policy(ValidateRequest(policy="package x"), validator=validator)
     assert resp.valid is True
 
 

@@ -362,7 +362,7 @@ class TestValidateConstitutionalHashExtra:
     def test_unicode_encode_error_treated_as_mismatch(self):
         """When hmac.compare_digest raises UnicodeEncodeError, result is invalid."""
         with patch(
-            "enhanced_agent_bus.validators.hmac.compare_digest",
+            "hmac.compare_digest",
             side_effect=UnicodeEncodeError("utf-8", "", 0, 1, "bad char"),
         ):
             result = validate_constitutional_hash(CONSTITUTIONAL_HASH)
