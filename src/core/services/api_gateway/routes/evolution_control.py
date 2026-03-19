@@ -4,14 +4,37 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from __future__ import annotations
 
+from typing import Protocol
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 from redis.exceptions import RedisError
 
-from src.core.self_evolution.research.operator_control import (
-    ResearchOperatorControlPlane,
-    ResearchOperatorControlSnapshot,
-)
+try:
+    from src.core.self_evolution.research.operator_control import (
+        ResearchOperatorControlPlane,
+        ResearchOperatorControlSnapshot,
+    )
+except ImportError:
+    class ResearchOperatorControlSnapshot(BaseModel):
+        """Fallback snapshot model when self_evolution is unavailable."""
+
+        paused: bool = False
+        stop_requested: bool = False
+        status: str = "unavailable"
+        updated_by: str | None = None
+        reason: str | None = None
+
+    class ResearchOperatorControlPlane(Protocol):
+        """Fallback control plane protocol for typing only."""
+
+        async def snapshot(self) -> dict[str, object]: ...
+
+        async def request_pause(self, user_id: str, reason: str | None) -> dict[str, object]: ...
+
+        async def request_resume(self, user_id: str, reason: str | None) -> dict[str, object]: ...
+
+        async def request_stop(self, user_id: str, reason: str | None) -> dict[str, object]: ...
 from src.core.shared.security.auth import UserClaims, get_current_user
 from src.core.shared.structured_logging import get_logger
 

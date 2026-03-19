@@ -20,7 +20,7 @@ from datetime import UTC, datetime
 
 import httpx
 import redis.asyncio
-from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, FastAPI, HTTPException, Request
 from fastapi.responses import ORJSONResponse
 from pydantic import BaseModel, Field, ValidationError, field_validator, model_validator
 from redis.exceptions import RedisError
@@ -63,7 +63,17 @@ from src.core.shared.config import settings
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.fastapi_base import create_acgs_app
 from src.core.shared.metrics import track_request_metrics
-from src.core.shared.otel_config import init_otel
+
+try:
+    from src.core.shared.otel_config import init_otel
+
+    _OTEL_CONFIG_AVAILABLE = True
+except ImportError:
+    _OTEL_CONFIG_AVAILABLE = False
+
+    def init_otel(*args: object, **kwargs: object) -> None:
+        """Fallback no-op when optional OpenTelemetry config is unavailable."""
+        return None
 from src.core.shared.redis_config import get_redis_url
 from src.core.shared.security.auth import (
     UserClaims,
@@ -97,7 +107,11 @@ from .routes import (
     sso_router,
     x402_governance_router,
 )
-from .routes.pqc_phase5 import pqc_phase5_router
+
+try:
+    from .routes.pqc_phase5 import pqc_phase5_router
+except ImportError:
+    pqc_phase5_router = APIRouter()
 
 # Service name for logging and tracing
 SERVICE_NAME = "api_gateway"
@@ -107,6 +121,9 @@ configure_logging()
 
 # Get structured logger
 logger = get_logger(__name__)
+
+if not _OTEL_CONFIG_AVAILABLE:
+    logger.warning("OpenTelemetry config unavailable; tracing initialization disabled")
 
 # Feedback stats cache
 _feedback_stats_cache: dict = {"data": None, "timestamp": 0.0}

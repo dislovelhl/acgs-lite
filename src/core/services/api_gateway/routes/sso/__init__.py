@@ -13,8 +13,16 @@ from src.core.shared.structured_logging import get_logger
 
 from .common import get_oidc_handler, get_saml_handler, handle_sso_error
 from .oidc import router as oidc_router
-from .saml import router as saml_router
-from .workos import router as workos_router
+
+try:
+    from .saml import router as saml_router
+except ImportError:
+    saml_router = APIRouter()
+
+try:
+    from .workos import router as workos_router
+except ImportError:
+    workos_router = APIRouter()
 
 # Configure logging
 logger = get_logger(__name__)
