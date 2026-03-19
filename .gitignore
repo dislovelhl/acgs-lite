@@ -69,7 +69,10 @@ claudedocs/
 generated-hooks/
 
 # Frontend build artifacts
-propriety-ai/
+propriety-ai-legacy/
+packages/propriety-ai/.svelte-kit
+packages/propriety-ai/build
+packages/propriety-ai/node_modules
 
 # Policy bundles
 runtime/
