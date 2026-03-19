@@ -1444,7 +1444,7 @@ class GovernanceEngine(BatchValidationMixin):
             )
             # exp159: Enhanced audit trails with rule evaluation paths
             rule_evaluations = []
-            for rule in self._constitution.rules:
+            for rule in self.constitution.rules:
                 rule_evaluations.append(
                     {
                         "rule_id": rule.id,
@@ -1523,7 +1523,7 @@ class GovernanceEngine(BatchValidationMixin):
         rule_evaluations = []
         violation_rule_ids = {v.rule_id for v in unique_violations}
 
-        for rule in self._constitution.rules:
+        for rule in self.constitution.rules:
             rule_evaluations.append(
                 {
                     "rule_id": rule.id,
