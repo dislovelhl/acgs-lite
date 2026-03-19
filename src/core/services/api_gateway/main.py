@@ -155,8 +155,53 @@ is_development = environment in {"development", "dev", "test", "testing", "ci"}
 
 
 @asynccontextmanager
+def _verify_constitutional_hash_at_startup() -> None:
+    """M-5 fix: Verify CONSTITUTIONAL_HASH matches the env-provided hash at startup.
+
+    In production, operators must set CONSTITUTIONAL_HASH env var explicitly.
+    This prevents a tampered deployment from silently bypassing governance by
+    using a stale/wrong hash embedded in the codebase.
+
+    In development mode, a mismatch is logged as a warning but does not block.
+    """
+    env_hash = os.getenv("CONSTITUTIONAL_HASH")
+    if not env_hash:
+        if not is_development:
+            logger.error(
+                "CONSTITUTIONAL_HASH env var not set in production — "
+                "governance integrity cannot be verified; refusing to start",
+                code_hash=CONSTITUTIONAL_HASH,
+            )
+            raise RuntimeError(
+                "CONSTITUTIONAL_HASH must be set explicitly in production. "
+                f"Current code constant: {CONSTITUTIONAL_HASH}"
+            )
+        logger.warning(
+            "CONSTITUTIONAL_HASH env var not set; using code constant (dev only)",
+            code_hash=CONSTITUTIONAL_HASH,
+        )
+        return
+
+    if env_hash != CONSTITUTIONAL_HASH:
+        msg = (
+            f"Constitutional hash mismatch — env={env_hash!r} code={CONSTITUTIONAL_HASH!r}. "
+            "Deployment may be tampered or misconfigured."
+        )
+        if not is_development:
+            logger.error(msg)
+            raise RuntimeError(msg)
+        logger.warning(msg + " (dev mode — continuing)")
+    else:
+        logger.info(
+            "Constitutional hash verified at startup",
+            hash=CONSTITUTIONAL_HASH,
+        )
+
+
 async def lifespan(app_instance: FastAPI) -> AsyncGenerator[None, None]:
     """Manage shared client lifecycle (startup/shutdown)."""
+    # Startup: verify constitutional hash integrity (M-5)
+    _verify_constitutional_hash_at_startup()
     # Startup: initialize HITL client for autonomy tier enforcement
     hitl_url = os.getenv("HITL_URL", "http://localhost:8002")
     app_instance.state.hitl_client = HttpHitlSubmissionClient(url=hitl_url)
@@ -539,6 +584,19 @@ def _get_feedback_source_identifier(request: Request) -> str:
     return "unknown"
 
 
+def _hash_ip_for_storage(ip: str) -> str:
+    """Hash an IP address for GDPR-compliant storage (H-2 fix).
+
+    Uses SHA-256 with a daily rotating salt so the hash can still be used
+    for abuse detection within a 24h window but cannot be reversed to
+    recover the original IP address.
+    """
+    import hashlib
+
+    daily_salt = datetime.now(UTC).strftime("%Y-%m-%d")
+    return hashlib.sha256(f"{ip}:{daily_salt}".encode()).hexdigest()[:16]
+
+
 async def _enforce_feedback_submission_policy(
     request: Request,
     user: UserClaims | None = Depends(get_current_user_optional),
@@ -638,7 +696,7 @@ async def submit_feedback_v1(
             "description": feedback.description,
             "user_agent": feedback.user_agent or request.headers.get("user-agent", ""),
             "url": feedback.url,
-            "ip_address": source_id,
+            "ip_address_hash": _hash_ip_for_storage(source_id),
             "metadata": feedback.metadata,
             "authenticated_user_id": user.sub if user else None,
             "user_id_verified": bool(user),
