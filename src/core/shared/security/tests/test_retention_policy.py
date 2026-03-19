@@ -810,3 +810,225 @@ class TestRetentionEnforcementReport:
 
         assert len(report.disposal_results) == 3
         assert all(r.success for r in report.disposal_results)
+
+
+class TestInMemoryStorageExtended:
+    """Extended tests for storage edge cases."""
+
+    def setup_method(self):
+        self.storage = InMemoryRetentionStorage()
+
+    async def test_update_record(self):
+        record = RetentionRecord(
+            data_id="data-upd",
+            data_type="message",
+            policy_id="policy-001",
+            classification_tier=DataClassificationTier.INTERNAL,
+            retention_until=datetime.now(UTC) + timedelta(days=30),
+        )
+        await self.storage.save_record(record)
+        record.status = RetentionStatus.DISPOSED
+        await self.storage.update_record(record)
+        updated = await self.storage.get_record(record.record_id)
+        assert updated.status == RetentionStatus.DISPOSED
+
+    async def test_find_expired_with_limit(self):
+        for i in range(5):
+            record = RetentionRecord(
+                data_id=f"exp-{i}",
+                data_type="message",
+                policy_id="policy-001",
+                classification_tier=DataClassificationTier.INTERNAL,
+                retention_until=datetime.now(UTC) - timedelta(days=1),
+            )
+            await self.storage.save_record(record)
+        expired = await self.storage.find_expired_records(limit=2)
+        assert len(expired) == 2
+
+    async def test_find_expired_skips_non_active(self):
+        record = RetentionRecord(
+            data_id="disposed",
+            data_type="message",
+            policy_id="policy-001",
+            classification_tier=DataClassificationTier.INTERNAL,
+            retention_until=datetime.now(UTC) - timedelta(days=1),
+            status=RetentionStatus.DISPOSED,
+        )
+        await self.storage.save_record(record)
+        expired = await self.storage.find_expired_records()
+        assert len(expired) == 0
+
+    async def test_get_actions_without_filter(self):
+        action1 = RetentionAction(
+            record_id="rec-1", action_type=RetentionActionType.CREATED
+        )
+        action2 = RetentionAction(
+            record_id="rec-2", action_type=RetentionActionType.DISPOSED
+        )
+        await self.storage.log_action(action1)
+        await self.storage.log_action(action2)
+        actions = await self.storage.get_actions()
+        assert len(actions) == 2
+
+    async def test_get_actions_with_limit(self):
+        for i in range(5):
+            await self.storage.log_action(
+                RetentionAction(
+                    record_id=f"rec-{i}",
+                    action_type=RetentionActionType.CREATED,
+                )
+            )
+        actions = await self.storage.get_actions(limit=2)
+        assert len(actions) == 2
+
+    def test_get_policy_found(self):
+        policy = self.storage.get_policy(next(iter(self.storage.policies)))
+        assert policy is not None
+
+    def test_get_policy_not_found(self):
+        policy = self.storage.get_policy("nonexistent-policy")
+        assert policy is None
+
+    def test_add_policy(self):
+        from src.core.shared.security.data_classification import RetentionPolicy
+        new_policy = RetentionPolicy(
+            name="Custom",
+            classification_tier=DataClassificationTier.PUBLIC,
+            retention_days=7,
+            disposal_method=DisposalMethod.DELETE,
+        )
+        self.storage.add_policy(new_policy)
+        assert self.storage.get_policy(new_policy.policy_id) is not None
+
+
+class TestRetentionPolicyEngineExtended:
+    """Extended engine tests for edge cases."""
+
+    def setup_method(self):
+        reset_retention_engine()
+        self.engine = RetentionPolicyEngine()
+
+    def teardown_method(self):
+        reset_retention_engine()
+
+    async def test_create_record_unknown_policy_uses_tier_default(self):
+        record = await self.engine.create_retention_record(
+            data_id="data-unknown-policy",
+            data_type="message",
+            policy_id="nonexistent-policy-id",
+            classification_tier=DataClassificationTier.INTERNAL,
+        )
+        assert record is not None
+        assert record.status == RetentionStatus.ACTIVE
+
+    async def test_create_record_with_indefinite_retention(self):
+        from src.core.shared.security.data_classification import RetentionPolicy
+        indefinite_policy = RetentionPolicy(
+            name="Indefinite",
+            classification_tier=DataClassificationTier.RESTRICTED,
+            retention_days=-1,
+            disposal_method=DisposalMethod.ARCHIVE,
+        )
+        self.engine.storage.add_policy(indefinite_policy)
+        record = await self.engine.create_retention_record(
+            data_id="data-indef",
+            data_type="critical",
+            policy_id=indefinite_policy.policy_id,
+            classification_tier=DataClassificationTier.RESTRICTED,
+        )
+        assert record.retention_until.year == datetime.max.year
+
+    async def test_dispose_record_pseudonymize(self):
+        record = await self.engine.create_retention_record(
+            data_id="data-pseudo",
+            data_type="user_data",
+            policy_id="retention-restricted-90",
+            classification_tier=DataClassificationTier.RESTRICTED,
+        )
+        result = await self.engine.dispose_record(
+            record_id=record.record_id,
+            method=DisposalMethod.PSEUDONYMIZE,
+        )
+        assert result.success is True
+        updated = await self.engine.storage.get_record(record.record_id)
+        assert updated.status == RetentionStatus.ANONYMIZED
+
+    async def test_dispose_record_no_method_uses_policy(self):
+        record = await self.engine.create_retention_record(
+            data_id="data-auto-method",
+            data_type="message",
+            policy_id="retention-internal-365",
+            classification_tier=DataClassificationTier.INTERNAL,
+        )
+        result = await self.engine.dispose_record(record_id=record.record_id)
+        assert result.success is True
+
+    async def test_dispose_with_no_handler(self):
+        engine = RetentionPolicyEngine()
+        # Clear handlers after init to bypass the `or` default
+        engine.disposal_handlers = {}
+        record = RetentionRecord(
+            data_id="data-no-handler",
+            data_type="message",
+            policy_id="retention-internal-365",
+            classification_tier=DataClassificationTier.INTERNAL,
+            retention_until=datetime.now(UTC) + timedelta(days=30),
+        )
+        await engine.storage.save_record(record)
+        result = await engine.dispose_record(
+            record_id=record.record_id,
+            method=DisposalMethod.DELETE,
+        )
+        assert result.success is False
+        assert "No handler" in result.error_message
+
+    async def test_apply_legal_hold_nonexistent(self):
+        result = await self.engine.apply_legal_hold(
+            record_id="nonexistent",
+            reason="test",
+        )
+        assert result is None
+
+    async def test_release_legal_hold_nonexistent(self):
+        result = await self.engine.release_legal_hold(record_id="nonexistent")
+        assert result is None
+
+    async def test_enforce_retention_archive_method(self):
+        from src.core.shared.security.data_classification import RetentionPolicy
+        archive_policy = RetentionPolicy(
+            name="ArchivePolicy",
+            classification_tier=DataClassificationTier.CONFIDENTIAL,
+            retention_days=1,
+            disposal_method=DisposalMethod.ARCHIVE,
+        )
+        self.engine.storage.add_policy(archive_policy)
+        record = RetentionRecord(
+            data_id="arch-001",
+            data_type="audit",
+            policy_id=archive_policy.policy_id,
+            classification_tier=DataClassificationTier.CONFIDENTIAL,
+            retention_until=datetime.now(UTC) - timedelta(days=1),
+        )
+        await self.engine.storage.save_record(record)
+        report = await self.engine.enforce_retention()
+        assert report.records_archived == 1
+
+    async def test_enforce_retention_anonymize_method(self):
+        from src.core.shared.security.data_classification import RetentionPolicy
+        anon_policy = RetentionPolicy(
+            name="AnonPolicy",
+            classification_tier=DataClassificationTier.RESTRICTED,
+            retention_days=1,
+            disposal_method=DisposalMethod.ANONYMIZE,
+        )
+        self.engine.storage.add_policy(anon_policy)
+        record = RetentionRecord(
+            data_id="anon-001",
+            data_type="pii",
+            policy_id=anon_policy.policy_id,
+            classification_tier=DataClassificationTier.RESTRICTED,
+            retention_until=datetime.now(UTC) - timedelta(days=1),
+        )
+        await self.engine.storage.save_record(record)
+        report = await self.engine.enforce_retention()
+        assert report.records_anonymized == 1
