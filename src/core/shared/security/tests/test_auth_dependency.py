@@ -10,7 +10,7 @@ from src.core.shared.config import settings
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.security import auth_dependency
 
-TEST_JWT_SECRET = "test-secret-key-that-is-at-least-32-chars"  # noqa: S105
+TEST_JWT_SECRET = "test-secret-key-that-is-at-least-32-chars"
 
 
 @pytest.fixture(autouse=True)

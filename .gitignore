@@ -51,3 +51,28 @@ node_modules/
 
 # Benchmarks
 .benchmarks/
+
+# Claude Code (local IDE state, agent skills, worktrees)
+.agents/
+.claude/
+
+# Codex readiness test harness
+.codex-readiness-unit-test/
+
+# Memory databases
+.safla_memory.db
+
+# Research/design docs (not production)
+claudedocs/
+
+# Generated hooks
+generated-hooks/
+
+# Frontend build artifacts
+propriety-ai/
+
+# Policy bundles
+runtime/
+
+# SDK build artifacts
+sdk/

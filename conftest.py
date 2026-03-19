@@ -19,9 +19,8 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH
 # conftest files (e.g. enhanced_agent_bus/tests/conftest.py) cannot shadow it by
 # inserting their own `tests/` directory at the front of sys.path.
 with contextlib.suppress(ImportError):
-    import tests
-    import tests.core
-    import tests.unit  # noqa: F401
+    pass
+
 
 # Preload pydantic modules to fix litellm compatibility
 

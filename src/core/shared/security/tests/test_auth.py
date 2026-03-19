@@ -8,7 +8,7 @@ from src.core.shared.errors.exceptions import ConfigurationError
 from src.core.shared.security import auth
 from src.core.shared.security.testing import create_test_token
 
-TEST_JWT_SECRET = "test-secret-key-that-is-at-least-32-chars"  # noqa: S105
+TEST_JWT_SECRET = "test-secret-key-that-is-at-least-32-chars"
 EXPECTED_RSA_KEYS_ERROR = (
     "RS256 requested but RSA keys (JWT_PRIVATE_KEY, JWT_PUBLIC_KEY) are not configured. "
     "Set keys or change JWT_ALGORITHM to HS256."
