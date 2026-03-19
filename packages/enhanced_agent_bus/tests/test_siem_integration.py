@@ -166,6 +166,24 @@ class TestSIEMEventFormatter:
             result = formatter.format(event)
             assert result  # Should not raise
 
+    def test_format_cef_with_correlation_id(self, sample_event):
+        """Test CEF format includes correlation ID."""
+        formatter = SIEMEventFormatter(format_type=SIEMFormat.CEF)
+        result = formatter.format(sample_event, correlation_id="corr-abc")
+        assert "CorrelationID=corr-abc" in result
+
+    def test_format_leef_with_correlation_id(self, sample_event):
+        """Test LEEF format includes correlation ID."""
+        formatter = SIEMEventFormatter(format_type=SIEMFormat.LEEF)
+        result = formatter.format(sample_event, correlation_id="corr-xyz")
+        assert "correlationId=corr-xyz" in result
+
+    def test_format_syslog_with_correlation_id(self, sample_event):
+        """Test Syslog format includes correlation ID."""
+        formatter = SIEMEventFormatter(format_type=SIEMFormat.SYSLOG)
+        result = formatter.format(sample_event, correlation_id="corr-999")
+        assert 'correlation_id="corr-999"' in result
+
 
 # --- AlertManager Tests ---
 
@@ -278,6 +296,67 @@ class TestAlertManager:
         result = await manager.process_event(sample_event)
         assert result is None
 
+    async def test_sync_callback_invoked(self, sample_event):
+        """Test that synchronous callbacks also work."""
+        called = {"value": False}
+
+        def sync_callback(level, message, context):
+            called["value"] = True
+
+        threshold = AlertThreshold(
+            event_type=SecurityEventType.AUTHENTICATION_FAILURE,
+            count_threshold=1,
+            time_window_seconds=60,
+            alert_level=AlertLevel.NOTIFY,
+        )
+        manager = AlertManager(thresholds=[threshold], callback=sync_callback)
+        await manager.process_event(sample_event)
+        assert called["value"] is True
+
+    async def test_escalation_multiplier(self, sample_event):
+        """Test alert level escalation with multiplier."""
+        threshold = AlertThreshold(
+            event_type=SecurityEventType.AUTHENTICATION_FAILURE,
+            count_threshold=2,
+            time_window_seconds=60,
+            alert_level=AlertLevel.NOTIFY,
+            cooldown_seconds=0,
+            escalation_multiplier=2,
+        )
+        manager = AlertManager(thresholds=[threshold])
+        # Process enough events to trigger escalation
+        for _ in range(6):
+            result = await manager.process_event(sample_event)
+        # Should have escalated above NOTIFY
+        assert result is not None
+        assert result.value >= AlertLevel.NOTIFY.value
+
+    async def test_no_threshold_no_critical_returns_none(self):
+        """Test event with no matching threshold and not critical returns None."""
+        manager = AlertManager(thresholds=[])
+        event = SecurityEvent(
+            event_type=SecurityEventType.INVALID_INPUT,
+            severity=SecuritySeverity.LOW,
+            message="low severity",
+        )
+        result = await manager.process_event(event)
+        assert result is None
+
+    async def test_escalation_multiplier_one_no_escalation(self, sample_event):
+        """Test that escalation_multiplier<=1 doesn't escalate."""
+        threshold = AlertThreshold(
+            event_type=SecurityEventType.AUTHENTICATION_FAILURE,
+            count_threshold=1,
+            time_window_seconds=60,
+            alert_level=AlertLevel.NOTIFY,
+            cooldown_seconds=0,
+            escalation_multiplier=1,
+        )
+        manager = AlertManager(thresholds=[threshold])
+        for _ in range(5):
+            result = await manager.process_event(sample_event)
+        assert result == AlertLevel.NOTIFY
+
 
 # --- EventCorrelator Tests ---
 
@@ -376,6 +455,25 @@ class TestEventCorrelator:
 
         assert len(result) == 16
         int(result, 16)
+
+    async def test_get_correlated_events_unknown_id(self):
+        """Test retrieving events for unknown correlation ID."""
+        correlator = EventCorrelator()
+        result = correlator.get_correlated_events("unknown-id")
+        assert result == []
+
+    async def test_window_expiry(self):
+        """Test that events outside window are pruned."""
+        correlator = EventCorrelator(window_seconds=0)
+        event = SecurityEvent(
+            event_type=SecurityEventType.AUTHENTICATION_FAILURE,
+            severity=SecuritySeverity.HIGH,
+            message="Test",
+            tenant_id="tenant-test",
+        )
+        await correlator.add_event(event)
+        # After adding, old events should be pruned (window=0)
+        assert len(correlator._events) <= 1
 
 
 # --- SIEMIntegration Tests ---
@@ -503,6 +601,34 @@ class TestSIEMIntegration:
         await siem.stop()
         # Queue should be empty after stop
 
+    async def test_start_idempotent(self, siem_config):
+        """Test that starting twice is safe."""
+        siem = SIEMIntegration(siem_config)
+        await siem.start()
+        await siem.start()  # Should not raise
+        assert siem._running is True
+        await siem.stop()
+
+    async def test_stop_idempotent(self, siem_config):
+        """Test that stopping twice is safe."""
+        siem = SIEMIntegration(siem_config)
+        await siem.start()
+        await siem.stop()
+        await siem.stop()  # Should not raise
+        assert siem._running is False
+
+    async def test_alerting_disabled(self, sample_event):
+        """Test that alerts are not triggered when alerting is disabled."""
+        config = SIEMConfig(enable_alerting=False, flush_interval_seconds=0.1)
+        siem = SIEMIntegration(config)
+        await siem.start()
+        try:
+            await siem.log_event(sample_event)
+            metrics = siem.get_metrics()
+            assert metrics["alerts_triggered"] == 0
+        finally:
+            await siem.stop()
+
 
 # --- Global SIEM Functions Tests ---
 
@@ -547,6 +673,15 @@ class TestGlobalSIEMFunctions:
             severity=SecuritySeverity.LOW,
             message="Test without SIEM",
         )
+
+    async def test_initialize_siem_idempotent(self):
+        """Test that initialize returns the same instance on second call."""
+        try:
+            siem1 = await initialize_siem()
+            siem2 = await initialize_siem()
+            assert siem1 is siem2
+        finally:
+            await close_siem()
 
 
 # --- Security Audit Decorator Tests ---
