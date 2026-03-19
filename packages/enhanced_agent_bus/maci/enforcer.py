@@ -119,6 +119,29 @@ class MACIEnforcer:
                 )
                 self._validation_log.append(result)
                 raise MACIRoleNotAssignedError(agent_id, action.value)
+            # Non-strict mode: unregistered agents are restricted to OBSERVER level (QUERY only).
+            # Never grant write/execute actions to unknown agents — that would bypass MACI entirely.
+            logger.warning(
+                "Unregistered agent attempted action in non-strict mode; "
+                "restricting to OBSERVER-level (QUERY only)",
+                agent_id=agent_id,
+                action=action.value,
+                session_id=session_id,
+            )
+            if action != MACIAction.QUERY:
+                result = MACIValidationResult(
+                    is_valid=False,
+                    violation_type="unregistered_agent_non_query",
+                    session_id=session_id,
+                    details={"agent_id": agent_id, "action": action.value},
+                )
+                self._validation_log.append(result)
+                raise MACIRoleViolationError(  # type: ignore[call-arg]
+                    agent_id,
+                    "unregistered",
+                    action.value,
+                    allowed_roles=[],
+                )
             return MACIValidationResult(is_valid=True, session_id=session_id)
 
         if not rec.can_perform(action):

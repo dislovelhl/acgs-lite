@@ -465,13 +465,25 @@ class TestMACIEnforcerUnregisteredAgents:
         assert exc_info.value.agent_id == "unknown-agent"
 
     @pytest.mark.asyncio
-    async def test_non_strict_mode_allows_unregistered(self, maci_enforcer_non_strict):
-        """Test non-strict mode allows unregistered agents."""
+    async def test_non_strict_mode_restricts_unregistered_to_query(self, maci_enforcer_non_strict):
+        """Non-strict mode restricts unregistered agents to OBSERVER-level (QUERY only).
+
+        Write/execute actions must be blocked even in non-strict mode to prevent
+        MACI bypass via the non-strict code path (C-1 security fix).
+        """
+        # QUERY is the only allowed action for unregistered agents in non-strict mode
         result = await maci_enforcer_non_strict.validate_action(
             agent_id="unknown-agent",
-            action=MACIAction.PROPOSE,
+            action=MACIAction.QUERY,
         )
         assert result.is_valid is True
+
+        # Write/execute actions must be rejected even in non-strict mode
+        with pytest.raises(MACIRoleViolationError):
+            await maci_enforcer_non_strict.validate_action(
+                agent_id="unknown-agent",
+                action=MACIAction.PROPOSE,
+            )
 
 
 # =============================================================================

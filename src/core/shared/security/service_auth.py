@@ -32,7 +32,10 @@ def _get_service_secret() -> str:
     if secret:
         return secret
 
-    if os.getenv("ACGS2_ENV", "development") == "development":
+    # Check BOTH ACGS2_ENV and ENVIRONMENT — if either signals production, a real secret is required.
+    acgs_env = os.getenv("ACGS2_ENV", "development")
+    app_env = os.getenv("ENVIRONMENT", "development")
+    if acgs_env != "production" and app_env != "production":
         logger.warning(
             "Using development ACGS2_SERVICE_SECRET. Set ACGS2_SERVICE_SECRET for production."
         )
