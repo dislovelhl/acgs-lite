@@ -22,7 +22,7 @@ try:
 
     _SELF_EVOLUTION_AVAILABLE = True
 except ImportError:
-    evidence_router = None  # type: ignore[assignment]
+    evidence_router = None
     _SELF_EVOLUTION_AVAILABLE = False
 
 from src.core.shared.api_versioning import (
@@ -44,13 +44,13 @@ try:
 except ImportError:
     _OTEL_CONFIG_AVAILABLE = False
 
-    def init_otel(*args: object, **kwargs: object) -> None:
+    def init_otel(*args: object, **kwargs: object) -> None:  # type: ignore[misc]
         """Fallback no-op when optional OpenTelemetry config is unavailable."""
-        return None
 
 from src.core.shared.security.auth import (
     require_role,
 )
+from src.core.shared.security.csrf import CSRFConfig, CSRFMiddleware
 from src.core.shared.security.rate_limiter import (
     RateLimitConfig,
     RateLimitMiddleware,
@@ -100,6 +100,7 @@ is_development = environment in {"development", "dev", "test", "testing", "ci"}
 
 app = create_acgs_app(
     "api-gateway",
+    environment=settings.env,
     title="ACGS-2 API Gateway",
     description="Development API Gateway for ACGS-2 services with constitutional governance",
     version="1.0.0",
@@ -110,6 +111,7 @@ app = create_acgs_app(
     include_default_health_routes=False,
     lifespan=lifespan,
     logger=logger,
+    trusted_hosts=settings.sso.trusted_hosts,
 )
 
 # GZip compression for responses > 1KB (60-70% bandwidth reduction for JSON payloads)
@@ -187,6 +189,24 @@ app.add_middleware(
     https_only=(settings.env == "production" or settings.sso.saml_enabled),
 )
 logger.info("SessionMiddleware configured for OAuth state management")
+
+app.add_middleware(
+    CSRFMiddleware,
+    config=CSRFConfig(
+        cookie_secure=(settings.env == "production" or settings.sso.saml_enabled),
+        exempt_paths=(
+            "/health",
+            "/health/live",
+            "/health/ready",
+            "/metrics",
+            "/api/v1/sso/saml/acs",
+            "/api/v1/sso/saml/sls",
+            "/api/v1/sso/workos/webhooks/events",
+        ),
+        session_cookie_name="acgs2_session",
+    ),
+)
+logger.info("CSRF middleware enabled for session-authenticated browser flows")
 
 # Add rate limiting middleware per SPEC Section 3.3
 # Enable only in production/staging or when explicitly configured

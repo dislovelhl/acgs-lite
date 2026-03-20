@@ -12,6 +12,12 @@ ACGS (Advanced Constitutional Governance System) — constitutional governance i
 
 Constitutional hash: `cdd01ef066bc6cf2` — embedded in all validation paths.
 
+Primary languages: Python (primary), TypeScript (secondary), Markdown (docs), Rust (occasional). Default to Python unless otherwise specified.
+
+### When to Use Rust
+
+Use Rust (via PyO3) whenever the implementation would meaningfully benefit from it — performance-critical paths, CPU-bound computation, memory-sensitive data structures, or where Rust's type system prevents classes of bugs. The existing extension lives in `packages/acgs-lite/rust/`. Every Rust function must have a pure-Python fallback so the extension remains optional.
+
 ## Commands
 
 ```bash
@@ -138,9 +144,25 @@ Use `middlewares/` (plural), `context_memory/`, `persistence/`. Deprecated singu
 - **Imports**: `from enhanced_agent_bus.models import Priority` (not `MessagePriority`, deprecated)
 - **mypy**: strict mode for `src/`, excluded for `enhanced_agent_bus` package
 
+## Testing
+
+When running tests, always verify the correct import paths and module invocation before running coverage or test suites. Use `python -m pytest <path>` format to avoid import shadowing issues.
+
 ## Test Markers
 
 `unit`, `integration`, `slow`, `constitutional`, `benchmark`, `governance`, `security`, `maci`, `chaos`, `pqc`, `e2e`, `compliance`
+
+## Workflow / Commit Guidelines
+
+After making code changes, run the full test suite ONCE and fix all failures before committing. Do not commit with known test failures unless explicitly asked.
+
+## Code Quality
+
+When using linters (mypy, ruff, eslint), scope checks to changed files first before expanding. Add `# noqa` or `# type: ignore` comments for re-exports that linters incorrectly flag as unused.
+
+## Git Workflow
+
+When cherry-picking or rebasing multiple commits, always use a one-at-a-time approach with conflict resolution rather than batch --no-commit mode.
 
 ## Environment
 

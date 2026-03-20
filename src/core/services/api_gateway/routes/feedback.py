@@ -9,6 +9,7 @@ import asyncio
 import json
 import time
 from datetime import UTC, datetime
+from typing import Any
 
 import httpx
 import redis.asyncio
@@ -43,7 +44,7 @@ from ..metrics import record_feedback_rejection, record_feedback_submission
 logger = get_logger(__name__)
 
 # Feedback stats cache
-_feedback_stats_cache: dict = {"data": None, "timestamp": 0.0}
+_feedback_stats_cache: dict[str, Any] = {"data": None, "timestamp": 0.0}
 _FEEDBACK_STATS_TTL = 60.0  # 1 minute cache TTL
 _FEEDBACK_ANONYMOUS_RATE_LIMIT = 20
 _FEEDBACK_AUTHENTICATED_RATE_LIMIT = 60
@@ -66,18 +67,18 @@ AGENT_BUS_URL = settings.services.agent_bus_url
 ENVIRONMENT = settings.env
 
 
-def get_cached_feedback_stats() -> dict | None:
+def get_cached_feedback_stats() -> dict[str, Any] | None:
     """Get cached feedback stats if valid."""
     now = time.time()
     if (
         _feedback_stats_cache["data"]
         and (now - _feedback_stats_cache["timestamp"]) < _FEEDBACK_STATS_TTL
     ):
-        return _feedback_stats_cache["data"]
+        return _feedback_stats_cache["data"]  # type: ignore[no-any-return]
     return None
 
 
-def update_feedback_stats_cache(stats: dict) -> None:
+def update_feedback_stats_cache(stats: dict[str, Any]) -> None:
     """Update the feedback stats cache."""
     _feedback_stats_cache["data"] = stats
     _feedback_stats_cache["timestamp"] = time.time()
@@ -271,7 +272,7 @@ async def _enforce_feedback_submission_policy(
     description="Returns comprehensive documentation about API versioning strategy.",
     tags=["Version"],
 )
-async def get_versioning_docs() -> dict:
+async def get_versioning_docs() -> dict[str, Any]:
     """Get API versioning documentation and strategy."""
     return get_versioning_documentation()
 
@@ -288,13 +289,13 @@ async def get_versioning_docs() -> dict:
         "is treated as metadata and must match the authenticated identity when auth is present."
     ),
 )
-@track_request_metrics("api-gateway", "/api/v1/gateway/feedback")
+@track_request_metrics("api-gateway", "/api/v1/gateway/feedback")  # type: ignore[untyped-decorator]
 async def submit_feedback_v1(
     feedback: FeedbackRequest,
     request: Request,
     background_tasks: BackgroundTasks,
     user: UserClaims | None = Depends(_enforce_feedback_submission_policy),
-):
+) -> FeedbackResponse:
     """Submit user feedback for ACGS-2 (API v1)"""
     try:
         source_id = _get_feedback_source_identifier(request)
@@ -313,7 +314,7 @@ async def submit_feedback_v1(
         feedback_id = str(uuid.uuid4())
 
         # Create feedback record
-        feedback_record = {
+        feedback_record: dict[str, Any] = {
             "feedback_id": feedback_id,
             "timestamp": datetime.now(UTC).isoformat(),
             "user_id": feedback.user_id,
@@ -362,10 +363,10 @@ async def submit_feedback_v1(
 
 
 @gateway_v1_router.get("/feedback/stats")
-@track_request_metrics("api-gateway", "/api/v1/gateway/feedback/stats")
+@track_request_metrics("api-gateway", "/api/v1/gateway/feedback/stats")  # type: ignore[untyped-decorator]
 async def get_feedback_stats_v1(
     user: UserClaims = Depends(get_current_user_optional),
-):
+) -> dict[str, Any]:
     """Get feedback statistics (admin endpoint) (API v1)"""
     # Check for admin role
     if not user or "admin" not in user.roles:
@@ -432,8 +433,8 @@ async def get_feedback_stats_v1(
 
 # Service discovery endpoint (Versioned: /api/v1/gateway/services)
 @gateway_v1_router.get("/services")
-@track_request_metrics("api-gateway", "/api/v1/gateway/services")
-async def list_services_v1(user: UserClaims = Depends(get_current_user)):
+@track_request_metrics("api-gateway", "/api/v1/gateway/services")  # type: ignore[untyped-decorator]
+async def list_services_v1(user: UserClaims = Depends(get_current_user)) -> dict[str, Any]:
     """List available services (admin only) (API v1)"""
     # Require admin role
     if "admin" not in user.roles:

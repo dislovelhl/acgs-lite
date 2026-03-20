@@ -1,0 +1,44 @@
+@startuml
+title <size:24>Dynamic View: ACGS Platform</size>\n<size:24>Request validation flow through the governance stack</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+System_Boundary("ACGSPlatform_boundary", "ACGS Platform", $tags="") {
+  Container(ACGSPlatform.EnhancedAgentBus, "Enhanced Agent Bus", $techn="FastAPI / Python", $descr="Core messaging platform with 80+ subsystems: message routing, batch processing, constitutional validation, MACI enforcement, and multi-agent orchestration.", $tags="", $link="")
+  Container(ACGSPlatform.ACGSLiteEngine, "ACGS-Lite Engine", $techn="Python / Rust (PyO3)", $descr="Constitutional validation engine with Python + optional Rust/PyO3 backend (560ns P50). Core API: Constitution.from_yaml() + GovernedAgent().", $tags="", $link="")
+  ContainerDb(ACGSPlatform.PostgreSQL, "PostgreSQL", $techn="PostgreSQL 15", $descr="Workflow persistence, audit logs, governance state.", $tags="", $link="")
+  Container(ACGSPlatform.GovernanceProxy, "Governance Proxy", $techn="Cloudflare Worker / TypeScript", $descr="Edge-level request/response governance validation with WASM validator. Intercepts LLM API calls and attaches governance proof headers.", $tags="", $link="")
+  Container(ACGSPlatform.APIGateway, "API Gateway", $techn="FastAPI / Python", $descr="Unified ingress with JWT auth, rate limiting (Redis-backed), SSO (OIDC/SAML), PQC enforcement, autonomy tier control, and API versioning.", $tags="", $link="")
+}
+
+Person(AIDeveloper, "AI Developer", $descr="Integrates governance into AI agents via SDK or API.", $tags="", $link="")
+System(OpenPolicyAgent, "Open Policy Agent", $descr="Policy decision engine for rule evaluation.", $tags="", $link="")
+System(LLMProviders, "LLM Providers", $descr="OpenAI, Anthropic, and other LLM APIs.", $tags="", $link="")
+System(CloudflareKV, "Cloudflare KV", $descr="Edge key-value store for constitution configs.", $tags="", $link="")
+System(CloudflareD1, "Cloudflare D1", $descr="Edge SQLite database for audit logs.", $tags="", $link="")
+
+Rel(AIDeveloper, ACGSPlatform.GovernanceProxy, "1: Sends LLM API request", $techn="HTTPS", $tags="", $link="")
+Rel(ACGSPlatform.GovernanceProxy, CloudflareKV, "2: Loads constitution config", $techn="KV API", $tags="", $link="")
+Rel(ACGSPlatform.GovernanceProxy, ACGSPlatform.APIGateway, "3: Forwards validated request", $techn="HTTPS", $tags="", $link="")
+Rel(ACGSPlatform.APIGateway, ACGSPlatform.EnhancedAgentBus, "4: Routes to governance endpoint", $techn="REST/JSON", $tags="", $link="")
+Rel(ACGSPlatform.EnhancedAgentBus, ACGSPlatform.ACGSLiteEngine, "5: Validates against constitution", $techn="Python API", $tags="", $link="")
+Rel(ACGSPlatform.EnhancedAgentBus, OpenPolicyAgent, "6: Evaluates policy rules", $techn="REST/JSON", $tags="", $link="")
+Rel(ACGSPlatform.EnhancedAgentBus, ACGSPlatform.PostgreSQL, "7: Persists audit record", $techn="asyncpg", $tags="", $link="")
+Rel(ACGSPlatform.GovernanceProxy, LLMProviders, "8: Proxies to upstream LLM", $techn="HTTPS", $tags="", $link="")
+Rel(ACGSPlatform.GovernanceProxy, CloudflareD1, "9: Logs audit trail", $techn="D1 API", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

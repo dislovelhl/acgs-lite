@@ -104,6 +104,8 @@ else:
         warnings: list[str] = field(default_factory=list)
         pqc_metadata: PQCMetadata | None = None
         validation_duration_ms: float | None = None
+        classical_verification_ms: float | None = None
+        pqc_verification_ms: float | None = None
 
 
 PQC_CRYPTO_AVAILABLE = True  # The interfaces are always available

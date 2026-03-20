@@ -57,6 +57,8 @@ class CSRFConfig:
         token_length: Byte-length of generated tokens (hex-encoded).
         secret: HMAC key for token signing.  Auto-generated when empty.
         exempt_paths: Path prefixes that skip CSRF checks.
+        session_cookie_name: Optional session cookie name. When set, CSRF is
+            only enforced for requests that actually carry that session cookie.
     """
 
     enabled: bool = True
@@ -70,6 +72,7 @@ class CSRFConfig:
     exempt_paths: tuple[str, ...] = field(
         default_factory=lambda: ("/health", "/readiness", "/metrics")
     )
+    session_cookie_name: str | None = None
 
     def get_secret(self) -> str:
         """Return the HMAC secret, falling back to env var or random.
@@ -162,6 +165,11 @@ class CSRFMiddleware(BaseHTTPMiddleware):
         for exempt in self.config.exempt_paths:
             if path.startswith(exempt):
                 return await call_next(request)
+
+        # Only enforce CSRF when the request is actually using a browser session.
+        session_cookie_name = self.config.session_cookie_name
+        if session_cookie_name and session_cookie_name not in request.cookies:
+            return await call_next(request)
 
         # Validate double-submit
         cookie_token = request.cookies.get(self.config.cookie_name)

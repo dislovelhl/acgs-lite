@@ -104,7 +104,7 @@ async def proxy_to_agent_bus(
     request: Request,
     path: str,
     user: UserClaims = Depends(get_current_user_optional),
-):
+) -> ORJSONResponse:
     """Proxy requests to the Agent Bus service (auth required)"""
     if not user:
         raise HTTPException(status_code=401, detail="Authentication required")

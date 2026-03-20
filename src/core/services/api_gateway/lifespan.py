@@ -18,9 +18,8 @@ try:
 except ImportError:
     DEFAULT_RESEARCH_OPERATOR_CONTROL_KEY_PREFIX = "acgs:research:operator_control"
 
-    async def create_research_operator_control_plane(**kwargs):  # type: ignore[misc]
+    async def create_research_operator_control_plane(**kwargs: object) -> None:
         """Stub when self_evolution module is not installed."""
-        return None
 
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.redis_config import get_redis_url
@@ -36,7 +35,6 @@ environment = os.getenv("ENVIRONMENT", "production").strip().lower()
 is_development = environment in {"development", "dev", "test", "testing", "ci"}
 
 
-@asynccontextmanager
 def _verify_constitutional_hash_at_startup() -> None:
     """M-5 fix: Verify CONSTITUTIONAL_HASH matches the env-provided hash at startup.
 

@@ -1005,22 +1005,18 @@ class TestValidateConstitutionalHashPqc:
         assert result.valid is True
 
     async def test_valid_hash_classical_signature_no_pqc(self):
-        """Classical signature path with pqc_config=None triggers TypeError
-        in upstream code (ValidationResult lacks classical_verification_ms).
-        We verify the code enters the path and the error is handled."""
-        # The upstream code constructs a ValidationResult with kwargs that
-        # don't exist on the dataclass -- this is a known bug in pqc_validators.py
-        # when signature has a "signature" key and pqc_config is None.
-        # The function raises TypeError internally for that branch.
-        with pytest.raises(TypeError):
-            await validate_constitutional_hash_pqc(
-                {
-                    "constitutional_hash": "cdd01ef066bc6cf2",
-                    "signature": {"signature": "abc123"},
-                },
-                expected_hash="cdd01ef066bc6cf2",
-                pqc_config=None,
-            )
+        """Classical signature path with pqc_config=None returns a valid result.
+        The ValidationResult dataclass now includes classical_verification_ms and
+        pqc_verification_ms fields, so the classical signature branch succeeds."""
+        result = await validate_constitutional_hash_pqc(
+            {
+                "constitutional_hash": "cdd01ef066bc6cf2",
+                "signature": {"signature": "abc123"},
+            },
+            expected_hash="cdd01ef066bc6cf2",
+            pqc_config=None,
+        )
+        assert result.valid is True
 
     async def test_valid_hash_signature_dict_no_sig_key(self):
         """When signature dict has no 'signature' key and pqc_config is None,
@@ -1056,19 +1052,20 @@ class TestValidateConstitutionalHashPqc:
 
     async def test_pqc_disabled_with_config(self):
         """When pqc_config has pqc_enabled=False and signature has 'signature' key,
-        triggers TypeError because ValidationResult lacks classical_verification_ms."""
+        the classical verification path runs and returns a valid result.
+        ValidationResult now accepts classical_verification_ms so no TypeError."""
         from src.core.shared.security.pqc_crypto import PQCConfig
 
         pqc_config = PQCConfig(pqc_enabled=False)
-        with pytest.raises(TypeError):
-            await validate_constitutional_hash_pqc(
-                {
-                    "constitutional_hash": "cdd01ef066bc6cf2",
-                    "signature": {"signature": "test"},
-                },
-                expected_hash="cdd01ef066bc6cf2",
-                pqc_config=pqc_config,
-            )
+        result = await validate_constitutional_hash_pqc(
+            {
+                "constitutional_hash": "cdd01ef066bc6cf2",
+                "signature": {"signature": "test"},
+            },
+            expected_hash="cdd01ef066bc6cf2",
+            pqc_config=pqc_config,
+        )
+        assert result.valid is True
 
     async def test_pqc_disabled_with_config_no_sig_key(self):
         """PQC disabled config, signature dict without 'signature' key -- valid."""
