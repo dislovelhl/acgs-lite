@@ -112,7 +112,7 @@ exclude = ["build", "dist", ".codex-home", ".venv", "tests"]
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "--import-mode=importlib"
-testpaths = ["tests", "packages/enhanced_agent_bus/tests", "packages/acgs-lite/tests"]
+testpaths = ["tests", "packages/enhanced_agent_bus/tests", "packages/acgs-lite/tests", "src/core/shared/tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"

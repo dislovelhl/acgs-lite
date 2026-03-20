@@ -1,0 +1,42 @@
+{
+  "plan_path": ".codex-readiness-integration-test/20260320T012800Z/plan.json",
+  "project_dir": "/home/martin/Documents/acgs-clean/packages/acgs-lite",
+  "cwd": "/home/martin/Documents/acgs-clean/packages/acgs-lite",
+  "soft_timeout_seconds": 600,
+  "hard_timeout_multiplier": 3,
+  "steps": [
+    {
+      "cmd": "python -m pytest --import-mode=importlib tests/test_governance_quality.py -v",
+      "status": "PASS",
+      "exit_code": 0,
+      "duration_seconds": 0.73,
+      "soft_timeout_seconds": 600,
+      "hard_timeout_seconds": 1800,
+      "soft_timeout_exceeded": false,
+      "hard_timeout_exceeded": false,
+      "log_path": "/home/martin/Documents/acgs-clean/packages/acgs-lite/.codex-readiness-integration-test/20260320T012800Z/logs/01-test-merge-focused.log",
+      "started_at": "2026-03-20T01:28:08.041917+00:00",
+      "ended_at": "2026-03-20T01:28:08.774372+00:00",
+      "label": "test-merge-focused",
+      "denylisted": false
+    },
+    {
+      "cmd": "make test-lite",
+      "status": "FAIL",
+      "exit_code": 2,
+      "duration_seconds": 0.0,
+      "soft_timeout_seconds": 600,
+      "hard_timeout_seconds": 1800,
+      "soft_timeout_exceeded": false,
+      "hard_timeout_exceeded": false,
+      "log_path": "/home/martin/Documents/acgs-clean/packages/acgs-lite/.codex-readiness-integration-test/20260320T012800Z/logs/02-test-lite.log",
+      "started_at": "2026-03-20T01:28:08.774430+00:00",
+      "ended_at": "2026-03-20T01:28:08.776614+00:00",
+      "label": "test-lite",
+      "denylisted": false
+    }
+  ],
+  "overall_status": "FAIL",
+  "started_at": "2026-03-20T01:28:08.041917+00:00",
+  "ended_at": "2026-03-20T01:28:08.776614+00:00"
+}

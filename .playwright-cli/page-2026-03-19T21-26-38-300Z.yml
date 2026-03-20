@@ -1,0 +1,536 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - img [ref=e8]
+        - generic [ref=e12] [cursor=pointer]:
+          - img [ref=e14]
+          - img [ref=e17]
+      - generic [ref=e27]:
+        - button "Upgrade" [ref=e2308] [cursor=pointer]:
+          - img [ref=e29]
+          - generic [ref=e31]: Upgrade
+        - img [ref=e35] [cursor=pointer]
+  - generic [ref=e36]:
+    - generic [ref=e37]:
+      - generic [ref=e38]:
+        - img [ref=e40] [cursor=pointer]
+        - generic [ref=e44] [cursor=pointer]:
+          - img [ref=e46]
+          - img [ref=e49]
+      - generic [ref=e59]:
+        - generic [ref=e60]:
+          - generic [ref=e61] [cursor=pointer]:
+            - img [ref=e62]
+            - generic [ref=e68]: Home
+          - generic [ref=e69] [cursor=pointer]:
+            - img [ref=e70]
+            - generic [ref=e73]: Media Library
+          - generic [ref=e74] [cursor=pointer]:
+            - img [ref=e75]
+            - generic [ref=e78]: Generative Picks
+        - separator [ref=e80]
+        - generic [ref=e81]:
+          - generic [ref=e82]: Plugins
+          - generic [ref=e83]:
+            - generic [ref=e84] [cursor=pointer]:
+              - img [ref=e85]
+              - generic [ref=e89]: AI Photo to avatar
+            - generic [ref=e90] [cursor=pointer]:
+              - img [ref=e91]
+              - generic [ref=e96]: Motion graphics
+            - generic [ref=e97] [cursor=pointer]:
+              - img [ref=e98]
+              - generic [ref=e103]: Text to clip
+            - generic [ref=e104] [cursor=pointer]:
+              - img [ref=e105]
+              - generic [ref=e111]: Text to image
+            - generic [ref=e112] [cursor=pointer]:
+              - img [ref=e113]
+              - generic [ref=e118]: Photo to clip
+            - generic [ref=e119] [cursor=pointer]:
+              - img [ref=e120]
+              - generic [ref=e124]: Text to title clip
+            - generic [ref=e125] [cursor=pointer]:
+              - img [ref=e126]
+              - generic [ref=e131]: Preset library
+        - separator [ref=e133]
+        - generic [ref=e1106]:
+          - generic [ref=e1107]: History
+          - generic [ref=e1108]:
+            - button "New Video" [ref=e1109]:
+              - generic [ref=e1111] [cursor=pointer]: New Video
+            - button "New Video" [ref=e3621]:
+              - generic [ref=e3623] [cursor=pointer]: New Video
+            - button "New Video" [ref=e3624]:
+              - generic [ref=e1114] [cursor=pointer]: New Video
+            - button "Your Agent Stack Has a Bug. Fix it with ACGS." [ref=e3625]:
+              - generic [ref=e3627] [cursor=pointer]: Your Agent Stack Has a Bug. Fix it with ACGS.
+        - separator [ref=e1116]
+        - generic [ref=e134]:
+          - separator [ref=e136]
+          - generic [ref=e137] [cursor=pointer]:
+            - img [ref=e138]
+            - generic [ref=e141]:
+              - generic [ref=e142]: "Credits: 0.00/5"
+              - img [ref=e143]
+    - generic [ref=e146]:
+      - generic [ref=e3670]:
+        - generic:
+          - heading "Discover Sheet" [level=2]:
+            - generic [ref=e3671]: Discover Sheet
+          - generic [ref=e3672]:
+            - generic [ref=e3674]:
+              - button "v4.0" [ref=e3677] [cursor=pointer]:
+                - generic [ref=e3678]: v4.0
+                - img [ref=e3679]
+              - generic [ref=e3681]:
+                - textbox "Give me a topic, your point of view and instructions in any language" [active] [ref=e3686]
+                - generic [ref=e3687]:
+                  - button "AI twins" [ref=e3688] [cursor=pointer]:
+                    - img [ref=e3689]
+                    - generic [ref=e3691]: AI twins
+                  - button "Generate my video" [ref=e3693] [cursor=pointer]:
+                    - generic [ref=e3694]:
+                      - generic [ref=e3695]: Generate my video
+                      - img [ref=e3696]
+            - generic [ref=e3702]:
+              - button "Advertising Studio free" [ref=e3703] [cursor=pointer]:
+                - generic [ref=e3704]: Advertising Studio
+                - generic [ref=e3705]: free
+              - button "Dynamic Captions" [ref=e3706] [cursor=pointer]:
+                - generic [ref=e3707]: Dynamic Captions
+              - button "Lyrical Videos" [ref=e3708] [cursor=pointer]:
+                - generic [ref=e3709]: Lyrical Videos
+              - button "Create short video" [ref=e3710] [cursor=pointer]:
+                - img [ref=e3711]
+                - generic [ref=e3713]: Create short video
+              - button "Make explainer video" [ref=e3714] [cursor=pointer]:
+                - img [ref=e3715]
+                - generic [ref=e3718]: Make explainer video
+              - button "Use my script" [ref=e3719] [cursor=pointer]:
+                - img [ref=e3720]
+                - generic [ref=e3723]: Use my script
+              - button "Clone myself" [ref=e3724] [cursor=pointer]:
+                - img [ref=e3725]
+                - generic [ref=e3729]: Clone myself
+        - generic [ref=e3731]:
+          - generic [ref=e3735]:
+            - button "Agents & models" [ref=e3736] [cursor=pointer]
+            - button "Projects" [ref=e3737] [cursor=pointer]
+            - button "Trends" [ref=e3738] [cursor=pointer]
+            - button "Workflows" [ref=e3739] [cursor=pointer]
+            - button "Explore" [ref=e3740] [cursor=pointer]
+          - generic [ref=e3742]:
+            - generic [ref=e3745]:
+              - img [ref=e3750] [cursor=pointer]
+              - img [ref=e3759] [cursor=pointer]
+              - img [ref=e3768] [cursor=pointer]
+              - img [ref=e3777] [cursor=pointer]
+              - img [ref=e3786] [cursor=pointer]
+              - img [ref=e3795] [cursor=pointer]
+              - img [ref=e3804] [cursor=pointer]
+              - img [ref=e3813] [cursor=pointer]
+              - img [ref=e3822] [cursor=pointer]
+            - generic [ref=e3827]:
+              - generic [ref=e3828]:
+                - generic [ref=e3829]:
+                  - generic [ref=e3830]: Generative models
+                  - generic [ref=e3831]: All the best models in one place
+                - generic [ref=e3833] [cursor=pointer]: See all
+              - generic [ref=e3835]:
+                - generic [ref=e3839] [cursor=pointer]:
+                  - generic [ref=e3840]: Kling 3.0 Video
+                  - generic [ref=e3841]: Kling's latest video generation with multi-shot support
+                - generic [ref=e3845] [cursor=pointer]:
+                  - generic [ref=e3846]: Kling 3.0 Omni Video
+                  - generic [ref=e3847]: Kling's omni video model with multi-shot and sound support
+                - generic [ref=e3851] [cursor=pointer]:
+                  - generic [ref=e3852]: VEO 3.1
+                  - generic [ref=e3853]: Google's AI video generation model with audio
+                - generic [ref=e3857] [cursor=pointer]:
+                  - generic [ref=e3858]: Sora 2 Pro
+                  - generic [ref=e3859]: OpenAI's most realistic video with character audio
+                - generic [ref=e3863] [cursor=pointer]:
+                  - generic [ref=e3864]: Kling 2.6
+                  - generic [ref=e3865]: Visuals, voice, SFX, atmosphere unified
+                - generic [ref=e3869] [cursor=pointer]:
+                  - generic [ref=e3870]: Kling Video O1
+                  - generic [ref=e3871]: Kling's video gen model for editing videos
+                - generic [ref=e3875] [cursor=pointer]:
+                  - generic [ref=e3876]: VEO 3.1 Fast
+                  - generic [ref=e3877]: Faster and more cost efficient version of Veo 3
+                - generic [ref=e3881] [cursor=pointer]:
+                  - generic [ref=e3882]: Kling 3.0 Motion Control
+                  - generic [ref=e3883]: Animate images with motion from reference videos
+                - generic [ref=e3887] [cursor=pointer]:
+                  - generic [ref=e3888]: Kling Effects
+                  - generic [ref=e3889]: Dance effects and transformations
+                - generic [ref=e3893] [cursor=pointer]:
+                  - generic [ref=e3894]: Sora 2
+                  - generic [ref=e3895]: Fast and efficient version of Sora 2 pro with character support
+                - generic [ref=e3899] [cursor=pointer]:
+                  - generic [ref=e3900]: VEO 3
+                  - generic [ref=e3901]: Google's AI video generation model with audio
+                - generic [ref=e3905] [cursor=pointer]:
+                  - generic [ref=e3906]: DreamActor M2.0
+                  - generic [ref=e3907]: Motion control driven by large models.
+                - generic [ref=e3911] [cursor=pointer]:
+                  - generic [ref=e3912]: Gen-4.5
+                  - generic [ref=e3913]: Advanced multimodal video gen model by Runway
+                - generic [ref=e3917] [cursor=pointer]:
+                  - generic [ref=e3918]: Pixverse 5.6
+                  - generic [ref=e3919]: Pixverse’s newest video model with enhanced quality with audio
+                - generic [ref=e3923] [cursor=pointer]:
+                  - generic [ref=e3924]: LTX Audio to Video
+                  - generic [ref=e3925]: Generate videos synchronized to audio input using LTX-2 Pro
+                - generic [ref=e3929] [cursor=pointer]:
+                  - generic [ref=e3930]: LTX-2 Pro
+                  - generic [ref=e3931]: Generate video with audio using LTX-2 Pro 19B model
+                - generic [ref=e3935] [cursor=pointer]:
+                  - generic [ref=e3936]: LTX 2.3 Pro
+                  - generic [ref=e3937]: Generate high-quality video with portrait support, and flexible frame rates
+                - generic [ref=e3941] [cursor=pointer]:
+                  - generic [ref=e3942]: Kling 2.6 Motion Control
+                  - generic [ref=e3943]: Animate images with motion from reference videos
+                - generic [ref=e3947] [cursor=pointer]:
+                  - generic [ref=e3948]: Seedance 1.5 Pro
+                  - generic [ref=e3949]: Bytedance's advanced video model with native audio
+                - generic [ref=e3953] [cursor=pointer]:
+                  - generic [ref=e3954]: VEO 3 Fast
+                  - generic [ref=e3955]: Faster and more cost efficient version of Veo 3
+                - generic [ref=e3959] [cursor=pointer]:
+                  - generic [ref=e3960]: Pixverse 5.5
+                  - generic [ref=e3961]: Pixverse's latest video gen model with native audio
+                - generic [ref=e3965] [cursor=pointer]:
+                  - generic [ref=e3966]: Wan 2.6
+                  - generic [ref=e3967]: Alibaba's video gen model with reference video support
+                - generic [ref=e3971] [cursor=pointer]:
+                  - generic [ref=e3972]: VEO 2
+                  - generic [ref=e3973]: Google's AI video generation model with audio
+                - generic [ref=e3977] [cursor=pointer]:
+                  - generic [ref=e3978]: Kling 2.5 Turbo Pro
+                  - generic [ref=e3979]: Kling's pro video gen model with rich cinematic quality
+                - generic [ref=e3983] [cursor=pointer]:
+                  - generic [ref=e3984]: Pixverse Lipsync
+                  - generic [ref=e3985]: Lipsync video generation by Pixverse
+                - generic [ref=e3989] [cursor=pointer]:
+                  - generic [ref=e3990]: Seedance Pro
+                  - generic [ref=e3991]: Bytedance's video model with advanced capabilities
+                - generic [ref=e3995] [cursor=pointer]:
+                  - generic [ref=e3996]: Seedance Pro Fast
+                  - generic [ref=e3997]: Faster and cost efficient version of Seedance Pro
+                - generic [ref=e4001] [cursor=pointer]:
+                  - generic [ref=e4002]: Pixverse SFX
+                  - generic [ref=e4003]: Add sound effects to video using Pixverse AI
+                - generic [ref=e4007] [cursor=pointer]:
+                  - generic [ref=e4008]: Minimax Hailuo 2.3
+                  - generic [ref=e4009]: State of the art video gen model from Minimax
+                - generic [ref=e4013] [cursor=pointer]:
+                  - generic [ref=e4014]: Minimax Hailuo 02
+                  - generic [ref=e4015]: Standard video gen model from Minimax
+                - generic [ref=e4019] [cursor=pointer]:
+                  - generic [ref=e4020]: Kling 2.1 Master
+                  - generic [ref=e4021]: Kling's top-tier text-to-video gen model with motion fluidity
+                - generic [ref=e4025] [cursor=pointer]:
+                  - generic [ref=e4026]: Pixverse Mimic
+                  - generic [ref=e4027]: Motion transfer video generation by Pixverse
+                - generic [ref=e4031] [cursor=pointer]:
+                  - generic [ref=e4032]: Minimax Hailuo 2.3 Fast
+                  - generic [ref=e4033]: State of the art video gen model from Minimax
+                - generic [ref=e4037] [cursor=pointer]:
+                  - generic [ref=e4038]: FlashVSR Video Upscaler
+                  - generic [ref=e4039]: FlashVSR Video Upscaler by FlashVSR
+                - generic [ref=e4043] [cursor=pointer]:
+                  - generic [ref=e4044]: SeedVR Video Upscaler
+                  - generic [ref=e4045]: SeedVR Video Upscaler by Bytedance
+                - generic [ref=e4049] [cursor=pointer]:
+                  - generic [ref=e4050]: Kling 2.1 Pro
+                  - generic [ref=e4051]: Kling's professional-grade video model
+                - generic [ref=e4055] [cursor=pointer]:
+                  - generic [ref=e4056]: Bytedance Video Upscaler
+                  - generic [ref=e4057]: Bytedance Video Upscaler by Bytedance
+                - generic [ref=e4061] [cursor=pointer]:
+                  - generic [ref=e4062]: Wan 2.2 Animate Move
+                  - generic [ref=e4063]: Animated video generation by Wan 2.2 move
+                - generic [ref=e4067] [cursor=pointer]:
+                  - generic [ref=e4068]: Nano Banana 2
+                  - generic [ref=e4069]: Google's advanced image generation model
+                - generic [ref=e4073] [cursor=pointer]:
+                  - generic [ref=e4074]: Seedream 5.0 Lite
+                  - generic [ref=e4075]: Bytedance's lightweight image model for realistic images
+                - generic [ref=e4079] [cursor=pointer]:
+                  - generic [ref=e4080]: Kling 3.0 Image
+                  - generic [ref=e4081]: Kling's latest image generation model
+                - generic [ref=e4085] [cursor=pointer]:
+                  - generic [ref=e4086]: Kling 3.0 Omni Image
+                  - generic [ref=e4087]: Kling's omni image model with 4K support
+                - generic [ref=e4091] [cursor=pointer]:
+                  - generic [ref=e4092]: Nano Banana Pro
+                  - generic [ref=e4093]: Google's next-gen state of the art model for image and edit
+                - generic [ref=e4097] [cursor=pointer]:
+                  - generic [ref=e4098]: Flux 2 Klein
+                  - generic [ref=e4099]: A 9B parameter model with enhanced realism and crisp text generation
+                - generic [ref=e4103] [cursor=pointer]:
+                  - generic [ref=e4104]: GPT Image 1.5
+                  - generic [ref=e4105]: OpenAI's latest model with improved visual preservation
+                - generic [ref=e4109] [cursor=pointer]:
+                  - generic [ref=e4110]: Recraft V4
+                  - generic [ref=e4111]: Create professional images and SVG vector
+                - generic [ref=e4115] [cursor=pointer]:
+                  - generic [ref=e4116]: Qwen Image 2.0 Pro
+                  - generic [ref=e4117]: Alibaba's premium image generation model
+                - generic [ref=e4121] [cursor=pointer]:
+                  - generic [ref=e4122]: Seedream 4.5
+                  - generic [ref=e4123]: Bytedance's enhanced image model for realistic images
+                - generic [ref=e4127] [cursor=pointer]:
+                  - generic [ref=e4128]: Qwen Image 2.0
+                  - generic [ref=e4129]: Alibaba's image generation model
+                - generic [ref=e4133] [cursor=pointer]:
+                  - generic [ref=e4134]: Qwen Edit 2511 Multiple Angles
+                  - generic [ref=e4135]: Change angles with Qwen
+                - generic [ref=e4139] [cursor=pointer]:
+                  - generic [ref=e4140]: Flux 2 Pro Create
+                  - generic [ref=e4141]: Flux's flagship text-to-image model for cinematic renders
+                - generic [ref=e4145] [cursor=pointer]:
+                  - generic [ref=e4146]: Flux 2 Pro Edit
+                  - generic [ref=e4147]: Flux's controllable image-to-image model for precise edits
+                - generic [ref=e4151] [cursor=pointer]:
+                  - generic [ref=e4152]: Flux Kontext Pro
+                  - generic [ref=e4153]: An image gen and edit model with good context awareness
+                - generic [ref=e4157] [cursor=pointer]:
+                  - generic [ref=e4158]: Flux Kontext Max
+                  - generic [ref=e4159]: Image gen model with good prompt adherence
+                - generic [ref=e4163] [cursor=pointer]:
+                  - generic [ref=e4164]: Seedream 4
+                  - generic [ref=e4165]: Bytedance's image model for realistic images
+                - generic [ref=e4169] [cursor=pointer]:
+                  - generic [ref=e4170]: Flux 2 Lora Gallery
+                  - generic [ref=e4171]: Flux's image generation and editing LoRA gallery
+                - generic [ref=e4175] [cursor=pointer]:
+                  - generic [ref=e4176]: Imagen 4
+                  - generic [ref=e4177]: Google's standard image generation model
+                - generic [ref=e4181] [cursor=pointer]:
+                  - generic [ref=e4182]: Flux 2 Flex
+                  - generic [ref=e4183]: Flux's versatile text-to-image and image editing model
+                - generic [ref=e4187] [cursor=pointer]:
+                  - generic [ref=e4188]: Flux 2 Max
+                  - generic [ref=e4189]: Flux's flagship text-to-image model for realism
+                - generic [ref=e4193] [cursor=pointer]:
+                  - generic [ref=e4194]: Ideogram v3
+                  - generic [ref=e4195]: Advanced AI image generation with rich style options
+                - generic [ref=e4199] [cursor=pointer]:
+                  - generic [ref=e4200]: GPT Image 1
+                  - generic [ref=e4201]: OpenAI's state of the art image gen and edit model
+                - generic [ref=e4205] [cursor=pointer]:
+                  - generic [ref=e4206]: GPT Image 1 Mini
+                  - generic [ref=e4207]: OpenAI's cost efficient version of image gen and edit model
+                - generic [ref=e4211] [cursor=pointer]:
+                  - generic [ref=e4212]: Reve
+                  - generic [ref=e4213]: Reimagine reality using Reve's image gen model
+                - generic [ref=e4217] [cursor=pointer]:
+                  - generic [ref=e4218]: Qwen Edit Skin
+                  - generic [ref=e4219]: "Alibaba's image editing model for editing skin details`"
+                - generic [ref=e4223] [cursor=pointer]:
+                  - generic [ref=e4224]: Qwen Edit Relight
+                  - generic [ref=e4225]: Alibaba's image editing model for relighting images
+                - generic [ref=e4229] [cursor=pointer]:
+                  - generic [ref=e4230]: Qwen Edit Multiple Angles
+                  - generic [ref=e4231]: Alibaba's model for changing camera angles/perspectives
+                - generic [ref=e4235] [cursor=pointer]:
+                  - generic [ref=e4236]: Crystal Upscaler
+                  - generic [ref=e4237]: Advanced upscaling for clear, detailed faces and portraits
+                - generic [ref=e4241] [cursor=pointer]:
+                  - generic [ref=e4242]: Bria BG Remove
+                  - generic [ref=e4243]: Remove background from images
+                - generic [ref=e4247] [cursor=pointer]:
+                  - generic [ref=e4248]: BiRefNet BG Remove
+                  - generic [ref=e4249]: Bilateral ref framework for high-res segmentation
+                - generic [ref=e4253] [cursor=pointer]:
+                  - generic [ref=e4254]: Clarity Upscaler
+                  - generic [ref=e4255]: Clarity Upscaler
+                - generic [ref=e4259] [cursor=pointer]:
+                  - generic [ref=e4260]: Qwen Edit Shirt Design
+                  - generic [ref=e4261]: Alibaba's model for editing shirt designs on clothing
+                - generic [ref=e4265] [cursor=pointer]:
+                  - generic [ref=e4266]: Qwen Edit Remove Lighting
+                  - generic [ref=e4267]: Removes lighting effects
+                - generic [ref=e4271] [cursor=pointer]:
+                  - generic [ref=e4272]: Qwen Edit Next Scene
+                  - generic [ref=e4273]: Alibaba's model for generating the next logical scene
+                - generic [ref=e4277] [cursor=pointer]:
+                  - generic [ref=e4278]: Qwen Edit Integrate Product
+                  - generic [ref=e4279]: Integrate products into scenes
+                - generic [ref=e4283] [cursor=pointer]:
+                  - generic [ref=e4284]: Qwen Edit Group Photo
+                  - generic [ref=e4285]: Alibaba's model for creating and editing group photos
+                - generic [ref=e4289] [cursor=pointer]:
+                  - generic [ref=e4290]: Qwen Edit Face To Portrait
+                  - generic [ref=e4291]: Alibaba's model for converting faces to professional portraits
+                - generic [ref=e4295] [cursor=pointer]:
+                  - generic [ref=e4296]: Qwen Edit Remove Element
+                  - generic [ref=e4297]: Remove image elements
+                - generic [ref=e4301] [cursor=pointer]:
+                  - generic [ref=e4302]: Qwen Edit Add Background
+                  - generic [ref=e4303]: Add backgrounds easily
+                - generic [ref=e4307] [cursor=pointer]:
+                  - generic [ref=e4308]: Z-Image Turbo
+                  - generic [ref=e4309]: Fast 6B parameter text-to-image model
+                - generic [ref=e4313] [cursor=pointer]:
+                  - generic [ref=e4314]: Reve Remix
+                  - generic [ref=e4315]: Multi-image remixing with Reve's advanced AI model
+                - generic [ref=e4319] [cursor=pointer]:
+                  - generic [ref=e4320]: MMAudio V2
+                  - generic [ref=e4321]: Turn silent clips into videos with sound
+                - generic [ref=e4325] [cursor=pointer]:
+                  - generic [ref=e4326]: ElevenLabs SFX
+                  - generic [ref=e4327]: Generate sound effects from text descriptions
+                - generic [ref=e4331] [cursor=pointer]:
+                  - generic [ref=e4332]: Elevenlabs Voice Design
+                  - generic [ref=e4333]: The most expressive Voice Design model
+                - generic [ref=e4337] [cursor=pointer]:
+                  - generic [ref=e4338]: Elevenlabs Text to Speech
+                  - generic [ref=e4339]: The most expressive Text to Speech model
+                - generic [ref=e4343] [cursor=pointer]:
+                  - generic [ref=e4344]: Elevenlabs Text to Dialogue
+                  - generic [ref=e4345]: Generate multi-speaker dialogue with the most expressive Text to Dialogue model
+                - generic [ref=e4349] [cursor=pointer]:
+                  - generic [ref=e4350]: Maya 1
+                  - generic [ref=e4351]: Voice generation with rich emotions and precise design
+                - generic [ref=e4355] [cursor=pointer]:
+                  - generic [ref=e4356]: VibeVoice 7B
+                  - generic [ref=e4357]: A Frontier Open-Source Text-to-Speech Model
+                - generic [ref=e4361] [cursor=pointer]:
+                  - generic [ref=e4362]: Elevenlabs Music V1 Song
+                  - generic [ref=e4363]: Generate songs with vocals.
+                - generic [ref=e4367] [cursor=pointer]:
+                  - generic [ref=e4368]: Elevenlabs Instrumental V1
+                  - generic [ref=e4369]: Generate perfect background music and soundtracks.
+                - generic [ref=e4373] [cursor=pointer]:
+                  - generic [ref=e4374]: Sonauto V2 Song
+                  - generic [ref=e4375]: Generate songs with vocals, customize style through tags.
+                - generic [ref=e4379] [cursor=pointer]:
+                  - generic [ref=e4380]: Sonauto V2 Instrumental
+                  - generic [ref=e4381]: Generate instrumental music, customize style through tags.
+                - generic [ref=e4385] [cursor=pointer]:
+                  - generic [ref=e4386]: Google Lyria-002
+                  - generic [ref=e4387]: Professional-grade 48kHz stereo music generation.
+                - generic [ref=e4391] [cursor=pointer]:
+                  - generic [ref=e4392]: Minimax Music 2.0
+                  - generic [ref=e4393]: AI music generation with lyrics.
+                - generic [ref=e4397] [cursor=pointer]:
+                  - generic [ref=e4398]: Mureka 7.5
+                  - generic [ref=e4399]: Lyrics-first music generation with style prompts.
+                - generic [ref=e4403] [cursor=pointer]:
+                  - generic [ref=e4404]: Wan 2.2 Animate Replace
+                  - generic [ref=e4405]: Animated video generation by Wan 2.2 replace
+                - generic [ref=e4409] [cursor=pointer]:
+                  - generic [ref=e4410]: Grok Imagine Video
+                  - generic [ref=e4411]: xAI's Grok Imagine for creating and editing video from text or images
+                - generic [ref=e4415] [cursor=pointer]:
+                  - generic [ref=e4416]: Pixverse 5
+                  - generic [ref=e4417]: Video gen model for captivating, realistic videos
+                - generic [ref=e4421] [cursor=pointer]:
+                  - generic [ref=e4422]: Z-Image Turbo V2
+                  - generic [ref=e4423]: Fast text-to-image and image-to-image model
+                - generic [ref=e4427] [cursor=pointer]:
+                  - generic [ref=e4428]: Reve Remix Fast
+                  - generic [ref=e4429]: Fast multi-image remixing with Reve's AI model
+                - generic [ref=e4433] [cursor=pointer]:
+                  - generic [ref=e4434]: Reve Edit Fast
+                  - generic [ref=e4435]: Fast single-image editing with Reve's AI model
+                - generic [ref=e4439] [cursor=pointer]:
+                  - generic [ref=e4440]: Nano Banana
+                  - generic [ref=e4441]: Google's state of the art image gen and edit model
+                - generic [ref=e4445] [cursor=pointer]:
+                  - generic [ref=e4446]: Kling Image o1
+                  - generic [ref=e4447]: Kling's image gen model for editing image
+                - generic [ref=e4451] [cursor=pointer]:
+                  - generic [ref=e4452]: Kling Lipsync
+                  - generic [ref=e4453]: Lipsync video generation by Kling
+                - generic [ref=e4457] [cursor=pointer]:
+                  - generic [ref=e4458]: Rapid Lipsync
+                  - generic [ref=e4459]: Generate fast, realistic lip-synced videos.
+                - generic [ref=e4463] [cursor=pointer]:
+                  - generic [ref=e4464]: VEED Fabric 1.0
+                  - generic [ref=e4465]: High-quality lip-sync video generation from image and audio.
+                - generic [ref=e4469] [cursor=pointer]:
+                  - generic [ref=e4470]: Midjourney V7
+                  - generic [ref=e4471]: Generate images using Midjourney V7
+                - generic [ref=e4475] [cursor=pointer]:
+                  - generic [ref=e4476]: Topaz Video Upscaler
+                  - generic [ref=e4477]: Topaz Video Upscaler by Topaz
+                - generic [ref=e4481] [cursor=pointer]:
+                  - generic [ref=e4482]: P-Image
+                  - generic [ref=e4483]: PrunaAI's real-time image generation model
+                - generic [ref=e4487] [cursor=pointer]:
+                  - generic [ref=e4488]: Gen-4 Aleph
+                  - generic [ref=e4489]: Next gen video creation model by Runway
+                - generic [ref=e4493] [cursor=pointer]:
+                  - generic [ref=e4494]: P-Image Edit
+                  - generic [ref=e4495]: PrunaAI's real-time image editing model
+                - generic [ref=e4499] [cursor=pointer]:
+                  - generic [ref=e4500]: Qwen Image Layered
+                  - generic [ref=e4501]: Decomposes an image into multiple layers
+                - generic [ref=e4505] [cursor=pointer]:
+                  - generic [ref=e4506]: Runway Act-Two
+                  - generic [ref=e4507]: Animate characters by motion and expression
+                - generic [ref=e4511] [cursor=pointer]:
+                  - generic [ref=e4512]: Grok Imagine
+                  - generic [ref=e4513]: xAI's Grok Imagine for text-to-image and image-to-image generation
+                - generic [ref=e4517] [cursor=pointer]:
+                  - generic [ref=e4518]: Sonic 3
+                  - generic [ref=e4519]: Fast and expressive text to speech with voice cloning
+                - generic [ref=e4523] [cursor=pointer]:
+                  - generic [ref=e4524]: LTX 2.0 Retake
+                  - generic [ref=e4525]: Change sections of a video using LTX-2
+                - generic [ref=e4529] [cursor=pointer]:
+                  - generic [ref=e4530]: Magnific Upscaler Creative
+                  - generic [ref=e4531]: With style optimization
+                - generic [ref=e4535] [cursor=pointer]:
+                  - generic [ref=e4536]: Magnific Upscaler Precision
+                  - generic [ref=e4537]: With detail enhancement
+                - generic [ref=e4541] [cursor=pointer]:
+                  - generic [ref=e4542]: Magnific Skin Enhancer
+                  - generic [ref=e4543]: Skin enhancement for images
+                - generic [ref=e4547] [cursor=pointer]:
+                  - generic [ref=e4548]: Kling 2.1 Standard
+                  - generic [ref=e4549]: Kling's cost efficent video gen model
+                - generic [ref=e4553] [cursor=pointer]:
+                  - generic [ref=e4554]: Riverflow 2.0 Pro
+                  - generic [ref=e4555]: High-accuracy AI for flawless brand output.
+                - generic [ref=e4559] [cursor=pointer]:
+                  - generic [ref=e4560]: Grok Imagine Pro
+                  - generic [ref=e4561]: xAI's Grok Imagine Pro for higher quality text-to-image and image editing
+                - generic [ref=e4565] [cursor=pointer]:
+                  - generic [ref=e4566]: Wan 2.5
+                  - generic [ref=e4567]: Alibaba's video gen model with rich video dynamics
+                - generic [ref=e4571] [cursor=pointer]:
+                  - generic [ref=e4572]: Riverflow 2.0 Fast
+                  - generic [ref=e4573]: Fast, accurate rendering for brand pipelines.
+            - generic [ref=e4574]:
+              - generic [ref=e4576]:
+                - generic [ref=e4577]: AI agents
+                - generic [ref=e4578]: Do months worth of work in hours
+              - generic [ref=e4580]:
+                - generic [ref=e4583] [cursor=pointer]:
+                  - generic:
+                    - generic "Angles"
+                - generic [ref=e4587] [cursor=pointer]:
+                  - generic:
+                    - generic "Boards"
+                - generic [ref=e4591] [cursor=pointer]:
+                  - generic:
+                    - generic "Looks"
+            - generic [ref=e4593]:
+              - generic [ref=e4595]:
+                - generic [ref=e4596]: Characters
+                - generic [ref=e4597]: Create identity-verified avatars with face
+              - generic [ref=e4600]:
+                - img [ref=e4602] [cursor=pointer]
+                - generic [ref=e4605]: New character
+      - generic [ref=e3652]:
+        - img [ref=e3654] [cursor=pointer]
+        - img [ref=e3658] [cursor=pointer]
+        - img [ref=e3662] [cursor=pointer]
+        - img [ref=e3667] [cursor=pointer]

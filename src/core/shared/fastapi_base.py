@@ -6,6 +6,7 @@ import time
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 
 from src.core.shared.security.cors_config import get_cors_config
@@ -61,6 +62,13 @@ def create_acgs_app(service_name: str, **config: object) -> FastAPI:
             )
             return response
 
+    trusted_hosts = config.get("trusted_hosts")
+    if trusted_hosts:
+        hosts = list(trusted_hosts) if not isinstance(trusted_hosts, list) else trusted_hosts
+        if is_development and "testserver" not in hosts:
+            hosts = [*hosts, "testserver"]
+        app.add_middleware(TrustedHostMiddleware, allowed_hosts=hosts)
+
     if config.get("enable_cors", True):
         app.add_middleware(CORSMiddleware, **config.get("cors_config", get_cors_config()))
 
@@ -108,7 +116,7 @@ def create_acgs_app(service_name: str, **config: object) -> FastAPI:
                     "detail": exc.errors(),
                 },
             )
-            return JSONResponse(status_code=422, content={"detail": exc.errors(), "body": body})
+            return JSONResponse(status_code=422, content={"detail": exc.errors()})
 
         @app.exception_handler(Exception)
         async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:

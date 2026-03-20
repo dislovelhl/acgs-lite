@@ -1,0 +1,58 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - progressbar [ref=e6]
+      - main [ref=e14]:
+        - generic [ref=e15]:
+          - generic [ref=e17]:
+            - generic [ref=e18]:
+              - img [ref=e20]
+              - generic [ref=e25]: Sign in with Google
+            - img "AI Test Kitchen" [ref=e26]
+          - generic [ref=e27]:
+            - heading "2-Step Verification" [level=1] [ref=e28]
+            - generic [ref=e29]: To help keep your account safe, Google wants to make sure it’s really you trying to sign in
+            - generic [ref=e36]: martin@git.com.co
+        - generic [ref=e44]:
+          - generic [ref=e45]:
+            - figure [ref=e47]:
+              - img [ref=e48]
+            - generic [ref=e82]:
+              - heading "Open the Gmail app on iPhone" [level=2] [ref=e84]:
+                - generic [ref=e85]: Open the Gmail app on iPhone
+              - generic [ref=e88]:
+                - text: Google sent a notification to your iPhone. Open the Gmail app and tap
+                - strong [ref=e89]: "Yes"
+                - text: on the prompt to verify it’s you.
+          - generic [ref=e93]:
+            - generic [ref=e96] [cursor=pointer]:
+              - checkbox "Don’t ask again on this device" [checked] [ref=e97]
+              - generic:
+                - img
+            - generic [ref=e100] [cursor=pointer]: Don’t ask again on this device
+        - generic [ref=e101]:
+          - timer [ref=e103]:
+            - generic [ref=e104]:
+              - button "Resend it" [disabled]:
+                - generic: Resend it
+          - button "Try another way" [ref=e110]:
+            - generic [ref=e113]: Try another way
+    - contentinfo [ref=e117]:
+      - combobox "Change language English (United States)" [ref=e121] [cursor=pointer]:
+        - generic:
+          - generic: English (United States)
+        - generic:
+          - img
+      - list [ref=e123]:
+        - listitem [ref=e124]:
+          - link "Help" [ref=e125] [cursor=pointer]:
+            - /url: https://support.google.com/accounts?hl=en-US&p=account_iph
+        - listitem [ref=e126]:
+          - link "Privacy" [ref=e127] [cursor=pointer]:
+            - /url: https://accounts.google.com/TOS?loc=CA&hl=en-US&privacy=true
+        - listitem [ref=e128]:
+          - link "Terms" [ref=e129] [cursor=pointer]:
+            - /url: https://accounts.google.com/TOS?loc=CA&hl=en-US
+  - iframe [ref=e130]:
+    
+  - generic [ref=e132]: 2-Step Verification To help keep your account safe, Google wants to make sure it’s really you trying to sign in
