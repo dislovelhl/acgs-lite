@@ -1,30 +1,37 @@
-# syntax=docker/dockerfile:1
+# Constitutional Hash: cdd01ef066bc6cf2
+# ACGS-Lite Cloud Run Deployment
+# Minimal production image for GitLab AI Governance Bot
+
 FROM python:3.11-slim AS base
 
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
+# Prevent .pyc files and enable unbuffered stdout for Cloud Run logging
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Install uv for fast dependency resolution
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+# Install system deps (none needed beyond slim defaults)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install dependencies first (cached layer)
-COPY pyproject.toml uv.lock ./
-COPY packages/acgs-lite/pyproject.toml packages/acgs-lite/pyproject.toml
-COPY packages/enhanced_agent_bus/pyproject.toml packages/enhanced_agent_bus/pyproject.toml
-RUN uv sync --no-dev --frozen 2>/dev/null || uv pip install --system -e ".[test]"
+# Copy and install the package
+COPY pyproject.toml README.md LICENSE ./
+COPY src/ src/
 
-# Copy source
-COPY . .
-RUN uv pip install --system -e . -e packages/acgs-lite -e packages/enhanced_agent_bus
+RUN pip install --no-cache-dir ".[google-cloud]" "starlette>=0.27" "uvicorn[standard]>=0.24" "httpx>=0.27"
 
-# Agent Bus service
-FROM base AS agent-bus
-EXPOSE 8000
-CMD ["uvicorn", "enhanced_agent_bus.api.app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Non-root user for production security
+RUN useradd --create-home appuser
+USER appuser
 
-# API Gateway service
-FROM base AS api-gateway
+# Cloud Run default port
+ENV PORT=8080
 EXPOSE 8080
-CMD ["uvicorn", "src.core.services.api_gateway.main:app", "--host", "0.0.0.0", "--port", "8080"]
+
+# Health check against the /health endpoint
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:${PORT}/health || exit 1
+
+# Run the Cloud Run server
+CMD ["python", "-m", "uvicorn", "acgs_lite.integrations.cloud_run_server:app", "--host", "0.0.0.0", "--port", "8080"]
