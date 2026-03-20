@@ -132,6 +132,7 @@ class MultiFrameworkAssessor:
     """
 
     def __init__(self, frameworks: list[str] | None = None) -> None:
+        """Initialize with an optional list of framework IDs to assess."""
         self._requested_frameworks = frameworks
         self._instances: dict[str, ComplianceFramework] = {}
 
@@ -182,6 +183,7 @@ class MultiFrameworkAssessor:
 
         Returns:
             Sorted list of applicable framework IDs.
+
         """
         desc = {"jurisdiction": jurisdiction, "domain": domain}
         return self._resolve_frameworks(desc)
@@ -199,6 +201,7 @@ class MultiFrameworkAssessor:
 
         Returns:
             Frozen MultiFrameworkReport with per-framework and cross-framework results.
+
         """
         system_id = system_description.get("system_id", "unknown")
         fw_ids = self._resolve_frameworks(system_description)
@@ -230,6 +233,7 @@ class MultiFrameworkAssessor:
 
         Returns:
             Dict mapping framework_id to framework_name.
+
         """
         result: dict[str, str] = {}
         for fid, cls in sorted(_FRAMEWORK_REGISTRY.items()):
