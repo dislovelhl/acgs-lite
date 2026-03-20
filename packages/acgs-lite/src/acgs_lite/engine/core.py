@@ -96,7 +96,7 @@ class ValidationResult:
         }
 
 
-def _dedup_violations(violations: list) -> list:
+def _dedup_violations(violations: list[Violation]) -> list[Violation]:
     """Deduplicate violations by rule_id (called only when len > 1)."""
     seen: set[str] = set()
     result = []
@@ -112,7 +112,7 @@ CustomValidator = Callable[[str, dict[str, Any]], list[Violation]]
 
 
 _ANON = "anonymous"  # interned sentinel for compact allow-record detection
-_EMPTY_VIOLATIONS: list = []  # shared empty-violation list for allow-path records
+_EMPTY_VIOLATIONS: list[Violation] = []  # shared empty-violation list for allow-path records
 
 
 class _NoopRecorder:
@@ -149,12 +149,12 @@ class _FastAuditLog:
     """
 
     def __init__(self, const_hash: str = "") -> None:
-        self._records: list[tuple] = []
+        self._records: list[tuple[Any, ...]] = []
         self._const_hash = const_hash
 
     @property
     def entries(self) -> list[AuditEntry]:
-        # Reconstruct AuditEntry objects on demand (rare operation)
+        """Reconstruct AuditEntry objects on demand from compact tuples."""
         _ch = self._const_hash
         return [
             AuditEntry(
@@ -194,6 +194,7 @@ class _FastAuditLog:
         latency_ms: float,
         timestamp: str,
     ) -> None:
+        """Append a validation record as a compact tuple."""
         self._records.append(
             (req_id, agent_id, action, valid, violation_ids, const_hash, latency_ms, timestamp)
         )
@@ -262,6 +263,7 @@ class GovernanceEngine(BatchValidationMixin):
         strict: bool = True,
         disable_gc: bool = False,
     ) -> None:
+        """Initialize governance engine with constitution and optional audit log."""
         self.constitution = constitution
         # Default to _FastAuditLog when none supplied — avoids SHA256 chain
         # hashing on every validate() call. Pass AuditLog() explicitly for
@@ -285,7 +287,7 @@ class GovernanceEngine(BatchValidationMixin):
         # back (always discarded with `_`). Shrinks tuples 8→7, saves UNPACK_SEQUENCE
         # item at every violation site. matches_with_signals still called directly from
         # self._active_rules in the context-check slow path (line ~793).
-        self._rule_data: list[tuple] = [
+        self._rule_data: list[tuple[Any, ...]] = [
             (
                 rule.id,
                 rule.text,
@@ -320,7 +322,7 @@ class GovernanceEngine(BatchValidationMixin):
         # kw_to_rule_indices: keyword → list of (rule_tuple_index, kw_has_neg_flag)
         kw_to_idxs: dict[str, list[tuple[int, bool]]] = defaultdict(list)
         for idx, rule in enumerate(self._active_rules):
-            for kw in rule._kw_lower:  # type: ignore[attr-defined]
+            for kw in rule._kw_lower:
                 kw_has_neg = bool(_KW_NEGATIVE_RE.search(kw))
                 kw_to_idxs[kw].append((idx, kw_has_neg))
 
@@ -334,7 +336,7 @@ class GovernanceEngine(BatchValidationMixin):
             for pat, pat_str in zip(
                 rule._compiled_pats,
                 rule.patterns,
-                strict=True,  # type: ignore[attr-defined]
+                strict=True,
             ):
                 _pattern_rule_idxs.append((idx, pat))
                 # Extract anchor word from pattern
@@ -380,7 +382,7 @@ class GovernanceEngine(BatchValidationMixin):
 
         self._pattern_rule_idxs: list[tuple[int, Any]] = _pattern_rule_idxs
         # Frozen: tuple of (anchor_word, [(rule_idx, compiled_pat)])
-        self._pat_anchor_dispatch: tuple = tuple(
+        self._pat_anchor_dispatch: tuple[Any, ...] = tuple(
             (anchor, pats) for anchor, pats in _anchor_patterns.items()
         )
         self._no_anchor_patterns: list[tuple[int, Any]] = _no_anchor_patterns
@@ -391,7 +393,7 @@ class GovernanceEngine(BatchValidationMixin):
                 "|".join(re.escape(a) for a in sorted(all_anchors, key=len, reverse=True))
             ).search
         else:
-            self._pat_anchor_search = None
+            self._pat_anchor_search = None  # type: ignore[assignment]
 
         # Convert values to tuples for faster iteration; AC guarantees all keys exist.
         self._kw_to_idxs: dict[str, tuple[tuple[int, bool], ...]] = {
@@ -423,13 +425,13 @@ class GovernanceEngine(BatchValidationMixin):
                 self._neg_findall = self._neg_kw_re.findall
             else:
                 self._neg_kw_re = None
-                self._neg_findall = None
+                self._neg_findall = None  # type: ignore[assignment]
         else:
             self._combined_kw_re = None
-            self._combined_findall = None
-            self._combined_search = None
+            self._combined_findall = None  # type: ignore[assignment]
+            self._combined_search = None  # type: ignore[assignment]
             self._neg_kw_re = None
-            self._neg_findall = None
+            self._neg_findall = None  # type: ignore[assignment]
 
         # Aho-Corasick automaton: single O(n) pass finds ALL keyword AND anchor
         # matches simultaneously, eliminating the 6 separate anchor `in` checks
@@ -472,7 +474,7 @@ class GovernanceEngine(BatchValidationMixin):
             _EMPTY_VIOLATIONS,
             len(self._active_rules),
             0.0,
-            0,  # request_id: int (no str() conversion cost)
+            "",  # request_id placeholder
             "",
             "",
             _ANON,
@@ -486,7 +488,7 @@ class GovernanceEngine(BatchValidationMixin):
             [],
             len(self._active_rules),
             0.0,
-            0,
+            "",
             "",
             "",
             _ANON,
@@ -495,7 +497,7 @@ class GovernanceEngine(BatchValidationMixin):
         # Items only used in regex fallback (when AC unavailable) or rare slow path (real
         # AuditLog) are removed — accessed via self._ in those cold paths instead.
         # UNPACK_SEQUENCE(16)→(8) saves 8 STORE_FAST ops (~12ns per validate() call).
-        self._hot: tuple = (
+        self._hot: tuple[Any, ...] = (
             self._ac_iter,  # [0]
             self._pat_anchor_dispatch,  # [1]
             self._no_anchor_patterns,  # [2]
@@ -623,7 +625,7 @@ class GovernanceEngine(BatchValidationMixin):
                 # Also prime empty-dict context path (680 empty-context scenarios):
                 # context={} → bool({})=False → _has_gov_ctx=False fast-exit.
                 _meta_ctx = {"source": "autoresearch", "rule": "SAFETY-003"}
-                _empty_ctx2: dict = {}
+                _empty_ctx2: dict[str, Any] = {}
                 _meta_warmup = (
                     ("AI coding agent executed terraform destroy on production infrastructure without human approval", _meta_ctx),  # noqa: E501
                     ("autonomous AI agent deleted production environment without human oversight", _meta_ctx),  # noqa: E501
@@ -665,6 +667,7 @@ class GovernanceEngine(BatchValidationMixin):
         rule_excs: list[Any],
         fast_records: Any,
     ) -> ValidationResult | None:
+        """Dispatch Rust hot-path result when no governance context is present."""
         if decision == _RUST_ALLOW:
             # exp108: _is_noop always True here
             fast_records.append(None)
@@ -715,6 +718,7 @@ class GovernanceEngine(BatchValidationMixin):
         rule_excs: list[Any],
         fast_records: Any,
     ) -> ValidationResult | None:
+        """Dispatch Rust hot-path result with governance context merging."""
         _merged_bm = 0
         _has_critical = False
         _crit_idx = -1
@@ -796,6 +800,7 @@ class GovernanceEngine(BatchValidationMixin):
         fast_records: Any,
         is_noop: bool,
     ) -> ValidationResult | None:
+        """Dispatch Rust hot-path result for metadata-only context."""
         if decision == _RUST_ALLOW:
             if is_noop:
                 # exp108: _is_noop always True here
@@ -847,6 +852,7 @@ class GovernanceEngine(BatchValidationMixin):
         rule_excs: list[Any],
         fast_records: Any,
     ) -> ValidationResult | None:
+        """Dispatch Rust full-validation path with context pairs."""
         _decision, _violations, _blocking = self._rust_validator.validate_full(
             action.lower(), ctx_pairs
         )
@@ -913,6 +919,7 @@ class GovernanceEngine(BatchValidationMixin):
         positive_verb_mode: bool,
         violations: list[Violation] | None,
     ) -> list[Violation] | None:
+        """Validate action via Aho-Corasick automaton keyword scan."""
         action_200 = action[:200]
         if positive_verb_mode:
             # Positive-verb path: combined AC scan finds keywords AND anchor words
@@ -1274,7 +1281,7 @@ class GovernanceEngine(BatchValidationMixin):
                     action,
                     _decision,
                     _data,
-                    context,
+                    context or {},  # guaranteed non-None by _has_gov_ctx check
                     _rule_excs,
                     _fast_records,
                 )
@@ -1437,7 +1444,7 @@ class GovernanceEngine(BatchValidationMixin):
                 [],
                 self._rules_count,
                 latency_ms,
-                request_id,
+                str(request_id),
                 now_ts,
                 action_trimmed,
                 agent_id,
@@ -1457,7 +1464,7 @@ class GovernanceEngine(BatchValidationMixin):
 
             self.audit_log.record(
                 AuditEntry(
-                    id=request_id,
+                    id=str(request_id),
                     type="validation",
                     agent_id=agent_id,
                     action=action_trimmed,
@@ -1513,7 +1520,7 @@ class GovernanceEngine(BatchValidationMixin):
             violations=unique_violations,
             rules_checked=self._rules_count,
             latency_ms=latency_ms,
-            request_id=request_id,
+            request_id=str(request_id),
             timestamp=now_ts,
             action=action_trimmed,
             agent_id=agent_id,
