@@ -285,3 +285,10 @@ uncommitted	0.999855	1.000000	0.004820	improved	stable avg after exp108+111+113+
 uncommitted	0.999845	1.000000	0.005050	neutral	exp157: list-based fast_records attempted but caused malloc-spike variance; reverted to NoopRecorder
 uncommitted	0.999853	1.000000	0.004870	improved	revert exp137 (bool→is not None): IS_OP is faster for common case; stable avg 0.999853
 uncommitted	0.999854	1.000000	0.004880	neutral-kept	exp162: swap action_description/action_detail check order (25 vs 11 freq); within noise
+417c533	0.999859	1.000000	0.004700	discard	exp243: disable_gc=True default — no measurable improvement; GC not causing p99 spikes in 532-scenario accuracy phase (not enough allocs to trigger gen-0)
+reverted	0.999839	1.000000	0.005420	reverted	exp244: Rust scan_hot zero-allocation path — worse; scan_hot bypassed scan() pipeline, cold path regression
+reverted	0.999841	1.000000	0.005380	reverted	exp245: always action.lower() without islower() check — worse; CPython 3.14 lower() always allocates new string, +1809 GC objects per run
+reverted	0.999808	1.000000	0.005760	reverted	exp246: pre-built CVE reuse + raise _e_src directly — much worse; re-raising same exception object triggers traceback chain handling overhead
+reverted	0.999808	1.000000	0.005760	reverted	exp247: gc.set_threshold(100000) — much worse; 5000-10000 JSON objects accumulate in gen-0 then trigger large GC during evaluate() phase
+reverted	0.999839	1.000000	0.005350	reverted	exp248: 5× no-ctx warmup (vs 3×) — worse; extra 26 warmup calls evict more cache, net negative
+417c533	0.999873	1.000000	0.004290	ceiling	CEILING DETECTED after exp244-248: 5 consecutive failures. p99 dominated by OS jitter, not code. Best achievable ~0.999857±0.00003 without architectural change.
