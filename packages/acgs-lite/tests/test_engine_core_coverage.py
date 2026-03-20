@@ -8,17 +8,16 @@ from __future__ import annotations
 import pytest
 
 from acgs_lite.audit import AuditEntry, AuditLog
-from acgs_lite.constitution import Constitution, Rule, Severity
+from acgs_lite.constitution import Constitution, Severity
 from acgs_lite.engine.core import (
     GovernanceEngine,
     ValidationResult,
     Violation,
+    _dedup_violations,
     _FastAuditLog,
     _NoopRecorder,
-    _dedup_violations,
 )
 from acgs_lite.errors import ConstitutionalViolationError
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

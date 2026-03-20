@@ -2,6 +2,10 @@
 
 > Scope: `packages/acgs-lite/` — Standalone governance library. `pip install acgs-lite`.
 
+## Planning
+
+- Planning notes live in [PLANS.md](PLANS.md).
+
 ## Structure
 
 ```
@@ -56,6 +60,12 @@ acgs-lite/
 - Rust extension: `maturin develop --release` then `pytest` (not `cargo test`).
 
 ## Commands
+
+### Dev / Build / Test Loop
+
+- If you change Python code or docs, run `pytest packages/acgs-lite/tests/ -v` from the package root after the edit.
+- If you change the Rust extension, run `maturin develop --release` first, then run `pytest packages/acgs-lite/tests/ -v`.
+- Treat the loop as successful when the command exits with status `0` and pytest reports all selected tests passing.
 
 ```bash
 make test-lite                        # Run acgs-lite tests only

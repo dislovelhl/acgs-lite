@@ -2009,7 +2009,7 @@ class TestArticle12Logger:
         from acgs_lite.eu_ai_act.article12 import Article12Logger
 
         logger = Article12Logger(system_id="test-sys")
-        with pytest.raises(ValueError, match="oops"), logger.record_operation("op") as ctx:
+        with pytest.raises(ValueError, match="oops"), logger.record_operation("op"):
             raise ValueError("oops")
         assert logger.record_count == 1
         assert logger.records[0].outcome == "failure"

@@ -361,7 +361,8 @@ class RegulatoryHorizonScanner:
             try:
                 for rule in constitution.rules:
                     rid = getattr(rule, "id", None) or getattr(rule, "rule_id", str(rule))
-                    rule_ids_in_constitution.add(rid)
+                    if isinstance(rid, str):
+                        rule_ids_in_constitution.add(rid)
             except Exception:
                 pass
 

@@ -7,12 +7,11 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass
-from typing import Any
-from unittest.mock import MagicMock
 
 import pytest
 
 from acgs_lite.constitution.policy_fuzzer import (
+    _STRATEGIES,
     FuzzCase,
     FuzzReport,
     GovernancePolicyFuzzer,
@@ -24,12 +23,7 @@ from acgs_lite.constitution.policy_fuzzer import (
     _mixed_case,
     _normalize_unicode,
     _synonym_replace,
-    _HOMOGLYPHS,
-    _LEETSPEAK,
-    _STRATEGIES,
-    _SYNONYMS,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers: mock constitution

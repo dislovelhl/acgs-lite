@@ -7,9 +7,6 @@ GovernanceSLO, GovernanceCostModel, and GovernanceForecaster.
 
 from __future__ import annotations
 
-import time
-from typing import Any
-
 import pytest
 
 from acgs_lite.constitution.metrics import (
@@ -24,7 +21,6 @@ from acgs_lite.constitution.metrics import (
     RuleEffectiveness,
     create_governance_event,
 )
-
 
 # ── GovernanceEvent ──────────────────────────────────────────────────────────
 

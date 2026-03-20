@@ -8,9 +8,6 @@ Missing lines from coverage report:
 
 from __future__ import annotations
 
-import asyncio
-from collections.abc import Mapping
-from dataclasses import dataclass
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -22,9 +19,7 @@ from acgs_lite.constitution.rule import (
     RuleSynthesisProvider,
     Severity,
     _cosine_sim,
-    _extract_keywords,
     _heuristic_rule_payload,
-    _parse_iso,
 )
 from acgs_lite.constitution.testing import (
     GovernanceTestCase,
@@ -32,7 +27,6 @@ from acgs_lite.constitution.testing import (
     TestCaseFailure,
     TestSuiteResult,
 )
-
 
 # ─── rule.py coverage ────────────────────────────────────────────────────────
 

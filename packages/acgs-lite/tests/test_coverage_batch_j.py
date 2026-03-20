@@ -6,13 +6,9 @@ Covers all four modules at 0% coverage to maximize line coverage gains.
 from __future__ import annotations
 
 import argparse
-import sys
-from dataclasses import dataclass, field
-from typing import Any
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 
 # ---------------------------------------------------------------------------
 # 1. cli.py tests
@@ -894,7 +890,7 @@ class TestCloudRunEndpoints:
             srv._webhook_handler = mock_handler
             srv._bot = mock_bot
             srv._cloud_exporter = None
-            response = await srv.webhook_endpoint(mock_request)
+            await srv.webhook_endpoint(mock_request)
         finally:
             srv._webhook_handler = original_wh
             srv._bot = original_bot
@@ -1082,7 +1078,9 @@ class TestConstitutionToRego:
 
     def test_rule_with_only_empty_keywords(self):
         """A rule whose keywords are all empty/whitespace produces no conditions."""
-        from acgs_lite.constitution.rego_export import constitution_to_rego, _rule_to_rego_conditions
+        from acgs_lite.constitution.rego_export import (
+            _rule_to_rego_conditions,
+        )
         from acgs_lite.constitution.rule import Rule, Severity
 
         rule = Rule(

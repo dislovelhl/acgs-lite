@@ -1085,7 +1085,7 @@ class TestObligationEngine:
         engine = ObligationEngine({
             "RULE-1": [ObligationSpec("Log access", sla_minutes=5)],
         })
-        ids = engine.emit("agent-1", "read data", ["RULE-1"])
+        engine.emit("agent-1", "read data", ["RULE-1"])
         records = engine.for_agent("agent-1")
         d = records[0].to_dict()
         assert d["rule_id"] == "RULE-1"

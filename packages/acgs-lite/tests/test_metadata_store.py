@@ -9,15 +9,12 @@ from __future__ import annotations
 import time
 from unittest.mock import patch
 
-import pytest
-
 from acgs_lite.constitution.metadata_store import (
     GovernanceMetadataStore,
     MetadataDiff,
     MetadataEntry,
     MetadataScope,
 )
-
 
 # ---------------------------------------------------------------------------
 # MetadataEntry
@@ -259,7 +256,7 @@ class TestGovernanceMetadataStoreTTL:
     def test_expired_entry_not_returned(self):
         store = GovernanceMetadataStore()
         # Set with a TTL of 0 effectively makes it expire immediately
-        entry = store.set("a", "k", "v", ttl_seconds=0.0)
+        store.set("a", "k", "v", ttl_seconds=0.0)
         # Force expiry by patching monotonic to return future
         original_monotonic = time.monotonic
         with patch("time.monotonic", return_value=original_monotonic() + 1):

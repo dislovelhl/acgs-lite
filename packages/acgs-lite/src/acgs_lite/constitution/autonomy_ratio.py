@@ -295,10 +295,11 @@ class CommitmentRatioTracker:
         """
         tokens = {t.lower() for t in _TOKEN_RE.findall(action)}
         commitment = classify_action(action)
+        matched: frozenset[str]
         if commitment == ActionCommitment.COMMIT:
-            matched = tokens & _COMMIT_KEYWORDS
+            matched = frozenset(tokens & _COMMIT_KEYWORDS)
         elif commitment == ActionCommitment.PROPOSE:
-            matched = tokens & _PROPOSE_KEYWORDS
+            matched = frozenset(tokens & _PROPOSE_KEYWORDS)
         else:
             matched = frozenset()
         rec = ActionRecord(action=action, commitment=commitment, matched_keywords=matched)

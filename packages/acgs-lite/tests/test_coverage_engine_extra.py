@@ -14,9 +14,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from __future__ import annotations
 
-from typing import Any
-from unittest.mock import MagicMock, patch
-
 import pytest
 
 from acgs_lite.audit import AuditLog
@@ -25,12 +22,9 @@ from acgs_lite.engine.core import (
     GovernanceEngine,
     ValidationResult,
     Violation,
-    _FastAuditLog,
-    _NoopRecorder,
 )
 from acgs_lite.engine.rust import _HAS_AHO, _HAS_RUST
 from acgs_lite.errors import ConstitutionalViolationError
-
 
 # ---------------------------------------------------------------------------
 # Helpers

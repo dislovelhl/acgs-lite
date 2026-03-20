@@ -13,14 +13,13 @@ from unittest.mock import MagicMock, PropertyMock
 import pytest
 
 from acgs_lite.constitution.amendments import (
+    _VALID_TRANSITIONS,
     Amendment,
     AmendmentProtocol,
     AmendmentStatus,
     AmendmentType,
     Vote,
-    _VALID_TRANSITIONS,
 )
-
 
 # ---------------------------------------------------------------------------
 # Vote dataclass
@@ -567,7 +566,7 @@ class TestApplyChanges:
         )
         mock_c = MagicMock()
         mock_c.update_rule.return_value = MagicMock()
-        result = AmendmentProtocol._apply_changes(amd, mock_c)
+        AmendmentProtocol._apply_changes(amd, mock_c)
         mock_c.update_rule.assert_called_once_with("R1", reason="Test", severity="critical")
 
     def test_modify_severity(self) -> None:

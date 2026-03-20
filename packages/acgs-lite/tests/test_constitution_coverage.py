@@ -9,9 +9,8 @@ from __future__ import annotations
 import pytest
 
 from acgs_lite.constitution.constitution import Constitution
-from acgs_lite.constitution.rule import AcknowledgedTension, Rule, Severity, _cosine_sim
+from acgs_lite.constitution.rule import AcknowledgedTension, Rule, Severity
 from acgs_lite.errors import ConstitutionalViolationError
-
 
 # ---------------------------------------------------------------------------
 # Helpers

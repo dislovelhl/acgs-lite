@@ -4,9 +4,9 @@ Covers the PolicyLifecycleOrchestrator state machine, gate checks,
 rollout plans, audit trail, supersession, and query/reporting helpers.
 """
 
-import pytest
 
 from acgs_lite.constitution.policy_lifecycle import (
+    _ALLOWED_TRANSITIONS,
     GateEvaluation,
     GateType,
     LifecycleGate,
@@ -18,9 +18,7 @@ from acgs_lite.constitution.policy_lifecycle import (
     RolloutStage,
     TransitionRecord,
     TransitionResult,
-    _ALLOWED_TRANSITIONS,
 )
-
 
 # ---------------------------------------------------------------------------
 # Enums / dataclasses

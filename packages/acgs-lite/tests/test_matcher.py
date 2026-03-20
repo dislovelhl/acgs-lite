@@ -3,20 +3,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
-
-import pytest
 
 from acgs_lite.matcher import (
-    ConstitutionMatcher,
-    MatchResult,
-    _BloomFilter,
-    _CompiledRuleIndex,
     _HAS_AHO,
     _NEGATIVE_PHRASES,
     _POSITIVE_VERBS,
+    ConstitutionMatcher,
+    _BloomFilter,
+    _CompiledRuleIndex,
 )
-
 
 # ---------------------------------------------------------------------------
 # Minimal Rule stub — matches the fields the matcher reads

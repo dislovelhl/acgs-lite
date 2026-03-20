@@ -12,13 +12,8 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from __future__ import annotations
 
-import copy
-import json
 import logging
-import re
-from dataclasses import dataclass
-from typing import Any
-from unittest.mock import MagicMock, PropertyMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -34,7 +29,6 @@ from acgs_lite.engine.core import (
     _NoopRecorder,
 )
 from acgs_lite.errors import ConstitutionalViolationError
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -567,7 +561,7 @@ class TestDisableGcInit:
 
     def test_init_without_gc_disable(self):
         c = _make_constitution()
-        engine = GovernanceEngine(c, disable_gc=False)
+        GovernanceEngine(c, disable_gc=False)
         # Should not crash; gc should still be enabled
         import gc
         assert gc.isenabled()
@@ -578,7 +572,7 @@ class TestDisableGcInit:
         c = _make_constitution()
         was_enabled = gc.isenabled()
         try:
-            engine = GovernanceEngine(c, disable_gc=True)
+            GovernanceEngine(c, disable_gc=True)
             assert not gc.isenabled()
         finally:
             # Re-enable for other tests
@@ -1017,7 +1011,7 @@ class TestGovernedAnthropic:
             GovernedAnthropic()
 
     def test_governance_tools_returns_deep_copy(self):
-        from acgs_lite.integrations.anthropic import GovernedAnthropic, _GOVERNANCE_TOOLS
+        from acgs_lite.integrations.anthropic import _GOVERNANCE_TOOLS, GovernedAnthropic
 
         tools = GovernedAnthropic.governance_tools()
         assert len(tools) == len(_GOVERNANCE_TOOLS)
@@ -1212,7 +1206,7 @@ class TestGovernanceToolsConstant:
 
         expected = {"validate_action", "check_compliance", "get_constitution",
                     "get_audit_log", "governance_stats"}
-        assert _GOVERNANCE_TOOL_NAMES == expected
+        assert expected == _GOVERNANCE_TOOL_NAMES
 
     def test_agent_id_pattern(self):
         from acgs_lite.integrations.anthropic import _AGENT_ID_PATTERN

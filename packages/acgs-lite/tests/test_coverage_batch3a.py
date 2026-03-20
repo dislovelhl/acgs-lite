@@ -915,7 +915,7 @@ class TestPolicyExporter:
         with tempfile.TemporaryDirectory() as tmpdir:
             written = exporter.export_all(tmpdir)
             assert len(written) == 5
-            for fmt, path in written.items():
+            for _fmt, path in written.items():
                 assert os.path.isfile(path)
 
     def test_csv_custom_delimiter(self):

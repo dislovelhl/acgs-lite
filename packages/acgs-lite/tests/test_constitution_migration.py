@@ -9,8 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-import pytest
-
+from acgs_lite.constitution.core import Rule, Severity
 from acgs_lite.constitution.migration import (
     MigrationPlan,
     MigrationResult,
@@ -19,7 +18,6 @@ from acgs_lite.constitution.migration import (
     RuleAction,
     RuleMigrationStep,
 )
-from acgs_lite.constitution.core import Rule, Severity
 
 
 # ---------------------------------------------------------------------------

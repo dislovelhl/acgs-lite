@@ -12,6 +12,7 @@ import time
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from operator import itemgetter
 from typing import Any
 
 
@@ -1073,7 +1074,7 @@ class GovernanceCostModel:
                 }
                 for d in self._decision_counts
             ],
-            key=lambda x: x["cost"],
+            key=itemgetter("cost"),
             reverse=True,
         )
         by_rule = sorted(
@@ -1081,7 +1082,7 @@ class GovernanceCostModel:
                 {"rule_id": r, "cost": c, "count": self._rule_counts.get(r, 0)}
                 for r, c in self._rule_costs.items()
             ],
-            key=lambda x: x["cost"],
+            key=itemgetter("cost"),
             reverse=True,
         )
         by_agent = sorted(
@@ -1089,7 +1090,7 @@ class GovernanceCostModel:
                 {"agent_id": a, "cost": c, "count": self._agent_counts.get(a, 0)}
                 for a, c in self._agent_costs.items()
             ],
-            key=lambda x: x["cost"],
+            key=itemgetter("cost"),
             reverse=True,
         )
         return {
@@ -1113,7 +1114,7 @@ class GovernanceCostModel:
                 {"rule_id": r, "cost": c, "count": self._rule_counts.get(r, 0)}
                 for r, c in self._rule_costs.items()
             ],
-            key=lambda x: x["cost"],
+            key=itemgetter("cost"),
             reverse=True,
         )[:n]
 
@@ -1124,7 +1125,7 @@ class GovernanceCostModel:
                 {"agent_id": a, "cost": c, "count": self._agent_counts.get(a, 0)}
                 for a, c in self._agent_costs.items()
             ],
-            key=lambda x: x["cost"],
+            key=itemgetter("cost"),
             reverse=True,
         )[:n]
 

@@ -100,6 +100,7 @@ def cmd_status(_args: argparse.Namespace) -> int:
 def cmd_verify(args: argparse.Namespace) -> int:
     """Validate a key passed via --key flag or the currently loaded key."""
     key_arg: str | None = getattr(args, "key", None)
+    key: str | None
 
     if key_arg:
         key = key_arg.strip()
@@ -108,7 +109,8 @@ def cmd_verify(args: argparse.Namespace) -> int:
 
         from acgs_lite.licensing import _read_license_file
 
-        key = os.environ.get("ACGS_LICENSE_KEY") or _read_license_file()
+        env_key = os.environ.get("ACGS_LICENSE_KEY")
+        key = env_key if env_key is not None else _read_license_file()
 
     if not key:
         print("No license key found. Run 'acgs-lite activate <key>' first.", file=sys.stderr)
