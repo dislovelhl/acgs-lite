@@ -116,7 +116,7 @@ def _cosine_similarity(a: list[float], b: list[float]) -> float:
     mag_b = sum(x * x for x in b) ** 0.5
     if mag_a == 0.0 or mag_b == 0.0:
         return 0.0
-    return dot / (mag_a * mag_b)
+    return float(dot / (mag_a * mag_b))
 
 
 def _embedding_fingerprint(rules: list[Rule]) -> str:

@@ -23,6 +23,8 @@ Example::
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import csv
 import io
 import json
@@ -189,7 +191,7 @@ class PolicyExporter:
             raise ValueError(
                 f"Unsupported format '{fmt}'. Choose from: {sorted(_SUPPORTED_FORMATS)}"
             )
-        dispatch = {
+        dispatch: dict[str, Callable[[], str]] = {
             "json": self.to_json,
             "yaml": self.to_yaml,
             "csv": self.to_csv,

@@ -216,7 +216,7 @@ class GovernanceMetrics:
         return merged
 
     @classmethod
-    def from_snapshot(cls, snapshot: dict) -> GovernanceMetrics:
+    def from_snapshot(cls, snapshot: dict[str, Any]) -> GovernanceMetrics:
         """exp126: Reconstruct a GovernanceMetrics from a snapshot dict.
 
         Enables metrics aggregation across process boundaries by deserialising

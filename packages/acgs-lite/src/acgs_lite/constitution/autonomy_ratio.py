@@ -282,6 +282,7 @@ class CommitmentRatioTracker:
 
     @property
     def agent_id(self) -> str:
+        """Return the agent identifier for this tracker."""
         return self._agent_id
 
     def record(self, action: str) -> ActionRecord:

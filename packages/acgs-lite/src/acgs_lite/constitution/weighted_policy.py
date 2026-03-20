@@ -191,14 +191,17 @@ class WeightedConstitution:
 
     @property
     def constitution(self) -> Constitution:
+        """Return the underlying constitution."""
         return self._constitution
 
     @property
     def block_threshold(self) -> float:
+        """Return the penalty threshold that blocks an action."""
         return self._block_threshold
 
     @property
     def warn_threshold(self) -> float:
+        """Return the penalty threshold that triggers a warning."""
         return self._warn_threshold
 
     # ── weight resolution ──────────────────────────────────────────────────

@@ -129,7 +129,7 @@ class Constitution(BaseModel):
     @property
     def hash(self) -> str:
         """Return the cached constitutional hash."""
-        return self._hash_cache  # type: ignore[return-value]
+        return self._hash_cache
 
     @property
     def hash_versioned(self) -> str:
@@ -308,7 +308,7 @@ class Constitution(BaseModel):
             engine = GovernanceEngine(constitution)
             result = engine.validate("auto-approve merge request", agent_id="ci-bot")
         """
-        _TEMPLATES: dict[str, dict] = {
+        _TEMPLATES: dict[str, dict[str, Any]] = {
             "gitlab": {
                 "name": "gitlab-governance",
                 "version": "1.0.0",
@@ -839,7 +839,7 @@ class Constitution(BaseModel):
             changelog=new_changelog,
         )
 
-    def rule_changelog(self, rule_id: str) -> list[dict]:
+    def rule_changelog(self, rule_id: str) -> list[dict[str, Any]]:
         """exp106: Return human-readable change log for a rule.
 
         Returns a list of snapshot dicts (oldest first), each describing
@@ -986,7 +986,7 @@ class Constitution(BaseModel):
 
     def active_rules(self) -> list[Rule]:
         """Return only enabled rules (cached)."""
-        return self._active_rules_cache  # type: ignore[return-value]
+        return self._active_rules_cache
 
     def deprecated_rules(self) -> list[Rule]:
         """exp135: Return all deprecated rules regardless of enabled state.
@@ -1818,7 +1818,7 @@ class Constitution(BaseModel):
         template = templates[template_name]
 
         # Fill in template parameters
-        text = template["text"]
+        text: str = str(template["text"])
         keywords = []
         for param in parameters:
             text = text.replace(f"{{{param}}}", str(parameters[param]))
@@ -1835,7 +1835,7 @@ class Constitution(BaseModel):
             text=text,
             severity=Severity(template["severity"]),
             keywords=list(set(keywords)),  # deduplicate
-            category=template["category"],
+            category=str(template["category"]),
             enabled=True,
             hardcoded=False,
             metadata={"template": template_name, "template_params": parameters},
@@ -1944,13 +1944,13 @@ class Constitution(BaseModel):
                 - ``usage_patterns``: rule activation frequency estimates
         """
         # Rule counts by severity
-        severity_counts = {}
+        severity_counts: dict[str, int] = {}
         for rule in self.rules:
             sev = rule.severity.value
             severity_counts[sev] = severity_counts.get(sev, 0) + 1
 
         # Rule counts by category
-        category_counts = {}
+        category_counts: dict[str, int] = {}
         for rule in self.rules:
             cat = rule.category or "uncategorized"
             category_counts[cat] = category_counts.get(cat, 0) + 1
@@ -2395,7 +2395,7 @@ class Constitution(BaseModel):
         Returns:
             dict with tenant isolation statistics and conflicts
         """
-        tenant_rules = {}
+        tenant_rules: dict[str, list[str]] = {}
         global_rules = []
 
         for rule in self.rules:
@@ -2408,7 +2408,7 @@ class Constitution(BaseModel):
 
         # Check for tenant conflicts (same rule ID in multiple tenants with different content)
         conflicts = []
-        rule_tenants = {}
+        rule_tenants: dict[str, dict[str, Any]] = {}
 
         for rule in self.rules:
             tenants = rule.metadata.get("tenants", [])
@@ -2750,7 +2750,7 @@ class Constitution(BaseModel):
 
     # exp137: Regulatory framework control families mapped to governance signals.
     # Each control family lists the category names and keywords that indicate coverage.
-    _REGULATORY_FRAMEWORKS: dict[str, dict[str, list[dict[str, list[str]]]]] = {
+    _REGULATORY_FRAMEWORKS: dict[str, dict[str, list[dict[str, str | list[str]]]]] = {
         "soc2": {
             "controls": [
                 {
