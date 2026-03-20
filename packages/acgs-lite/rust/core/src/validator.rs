@@ -3,17 +3,16 @@
 /// Implements keyword-scan + anchor-dispatch + regex validation using
 /// Aho-Corasick automaton for O(N) multi-pattern matching.
 ///
+/// Pure Rust — no FFI dependencies.
+///
 /// Constitutional Hash: cdd01ef066bc6cf2
 
 use aho_corasick::{AhoCorasick, MatchKind};
-use pyo3::exceptions::PyValueError;
-use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList, PyTuple};
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 
 use crate::context::{self, ContextRule};
-use crate::result::{RustDecision, RustViolation};
+use crate::result::{Decision, ValidationResult, Violation, ViolationRecord};
 use crate::severity::{self, Severity};
 
 /// Payload carried by each Aho-Corasick pattern.
@@ -41,8 +40,57 @@ struct RuleData {
     is_critical: bool,
 }
 
-/// The core hot-path validator exposed to Python.
-#[pyclass]
+/// Error returned when building a GovernanceValidator fails.
+#[derive(Debug)]
+pub enum BuildError {
+    BadRegex { pattern: String, message: String },
+    TooManyRules { count: usize },
+    TooManyAnchors { count: usize },
+    AhoCorasickBuild(String),
+}
+
+impl std::fmt::Display for BuildError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            BuildError::BadRegex { pattern, message } => {
+                write!(f, "Bad regex '{}': {}", pattern, message)
+            }
+            BuildError::TooManyRules { count } => {
+                write!(f, "Rule count {} exceeds 63 (u64 bitmask limit)", count)
+            }
+            BuildError::TooManyAnchors { count } => {
+                write!(f, "Anchor count {} exceeds 63 (u64 bitmask limit)", count)
+            }
+            BuildError::AhoCorasickBuild(msg) => {
+                write!(f, "AC build error: {}", msg)
+            }
+        }
+    }
+}
+
+impl std::error::Error for BuildError {}
+
+/// Input for constructing a GovernanceValidator from plain Rust types.
+pub struct ValidatorConfig {
+    /// Map of keyword → [(rule_idx, keyword_has_negative)]
+    pub kw_to_idxs: HashMap<String, Vec<(usize, bool)>>,
+    /// [(anchor_string, [(rule_idx, pattern_string)])]
+    pub anchor_dispatch: Vec<(String, Vec<(usize, String)>)>,
+    /// [(rule_idx, pattern_string)]
+    pub no_anchor_pats: Vec<(usize, String)>,
+    /// [(rule_id, rule_text, severity_str, category, is_critical)]
+    pub rule_data: Vec<(String, String, String, String, bool)>,
+    /// Positive verb set
+    pub positive_verbs: HashSet<String>,
+    /// Strict mode
+    pub strict: bool,
+    /// Optional context rules
+    pub context_rules: Vec<ContextRule>,
+    /// Constitutional hash
+    pub const_hash: String,
+}
+
+/// The core hot-path validator — pure Rust, no FFI.
 pub struct GovernanceValidator {
     automaton: AhoCorasick,
     payloads: Vec<AcPayload>,
@@ -55,70 +103,29 @@ pub struct GovernanceValidator {
     const_hash: String,
 }
 
-#[pymethods]
 impl GovernanceValidator {
-    /// Constructor.
-    ///
-    /// kw_to_idxs: {keyword_str: [(rule_idx: int, kw_has_neg: bool)]}
-    /// anchor_dispatch_py: [(anchor_str, [(rule_idx: int, pattern_str: str)])]
-    /// no_anchor_pats_py: [(rule_idx: int, pattern_str: str)]
-    /// rule_data_py: [(rule_id, rule_text, severity_str, category, is_critical)]
-    /// positive_verbs_py: [str]
-    /// strict: bool
-    /// context_rules_py: optional [(rule_id, rule_text, severity, category, [kw_lower], [patterns], enabled)]
-    /// const_hash: optional str
-    #[new]
-    #[pyo3(signature = (kw_to_idxs, anchor_dispatch_py, no_anchor_pats_py, rule_data_py, positive_verbs_py, strict, context_rules_py=None, const_hash=None))]
-    fn new(
-        kw_to_idxs: &Bound<'_, PyDict>,
-        anchor_dispatch_py: &Bound<'_, PyList>,
-        no_anchor_pats_py: &Bound<'_, PyList>,
-        rule_data_py: &Bound<'_, PyList>,
-        positive_verbs_py: &Bound<'_, PyList>,
-        strict: bool,
-        context_rules_py: Option<&Bound<'_, PyList>>,
-        const_hash: Option<String>,
-    ) -> PyResult<Self> {
+    /// Build a new validator from plain Rust config.
+    pub fn new(config: ValidatorConfig) -> Result<Self, BuildError> {
         // Build anchor_to_idx and anchor_dispatch
         let mut anchor_to_idx: HashMap<String, usize> = HashMap::new();
         let mut anchor_dispatch: Vec<AnchorEntry> = Vec::new();
-        for (ai, item) in anchor_dispatch_py.iter().enumerate() {
-            let tuple = item.downcast::<PyTuple>()?;
-            let anchor: String = tuple.get_item(0)?.extract()?;
-            let pats_py = tuple.get_item(1)?.downcast_into::<PyList>()?;
-            let mut patterns: Vec<(usize, Regex)> = Vec::with_capacity(pats_py.len());
-            for pat_item in pats_py.iter() {
-                let pt = pat_item.downcast::<PyTuple>()?;
-                let rule_idx: usize = pt.get_item(0)?.extract()?;
-                let pat_str: String = pt.get_item(1)?.extract()?;
-                let re = Regex::new(&pat_str).map_err(|e| {
-                    PyValueError::new_err(format!("Bad regex '{}': {}", pat_str, e))
+        for (ai, (anchor, pats)) in config.anchor_dispatch.iter().enumerate() {
+            let mut patterns: Vec<(usize, Regex)> = Vec::with_capacity(pats.len());
+            for (rule_idx, pat_str) in pats {
+                let re = Regex::new(pat_str).map_err(|e| BuildError::BadRegex {
+                    pattern: pat_str.clone(),
+                    message: e.to_string(),
                 })?;
-                patterns.push((rule_idx, re));
+                patterns.push((*rule_idx, re));
             }
-            anchor_to_idx.insert(anchor, ai);
+            anchor_to_idx.insert(anchor.clone(), ai);
             anchor_dispatch.push(AnchorEntry { patterns });
-        }
-
-        // Build kw_map
-        let mut kw_map: HashMap<String, Vec<(usize, bool)>> = HashMap::new();
-        for (key, val) in kw_to_idxs.iter() {
-            let kw: String = key.extract()?;
-            let idxs_py = val.downcast::<PyList>()?;
-            let mut idxs: Vec<(usize, bool)> = Vec::with_capacity(idxs_py.len());
-            for item in idxs_py.iter() {
-                let t = item.downcast::<PyTuple>()?;
-                let rule_idx: usize = t.get_item(0)?.extract()?;
-                let has_neg: bool = t.get_item(1)?.extract()?;
-                idxs.push((rule_idx, has_neg));
-            }
-            kw_map.insert(kw, idxs);
         }
 
         // Collect all words and build payloads
         let mut all_words: Vec<String> = Vec::new();
         let mut payloads: Vec<AcPayload> = Vec::new();
-        for (kw, idxs) in &kw_map {
+        for (kw, idxs) in &config.kw_to_idxs {
             if let Some(&ai) = anchor_to_idx.get(kw) {
                 all_words.push(kw.clone());
                 payloads.push(AcPayload::Both {
@@ -131,7 +138,7 @@ impl GovernanceValidator {
             }
         }
         for (anchor, &ai) in &anchor_to_idx {
-            if !kw_map.contains_key(anchor) {
+            if !config.kw_to_idxs.contains_key(anchor) {
                 all_words.push(anchor.clone());
                 payloads.push(AcPayload::Anchor(ai));
             }
@@ -139,98 +146,44 @@ impl GovernanceValidator {
 
         // No-anchor patterns
         let mut no_anchor_pats: Vec<(usize, Regex)> = Vec::new();
-        for item in no_anchor_pats_py.iter() {
-            let t = item.downcast::<PyTuple>()?;
-            let rule_idx: usize = t.get_item(0)?.extract()?;
-            let pat_str: String = t.get_item(1)?.extract()?;
-            let re = Regex::new(&pat_str).map_err(|e| {
-                PyValueError::new_err(format!("Bad regex '{}': {}", pat_str, e))
+        for (rule_idx, pat_str) in &config.no_anchor_pats {
+            let re = Regex::new(pat_str).map_err(|e| BuildError::BadRegex {
+                pattern: pat_str.clone(),
+                message: e.to_string(),
             })?;
-            no_anchor_pats.push((rule_idx, re));
+            no_anchor_pats.push((*rule_idx, re));
         }
 
         // Rule data
-        let mut rule_data: Vec<RuleData> = Vec::with_capacity(rule_data_py.len());
-        for item in rule_data_py.iter() {
-            let t = item.downcast::<PyTuple>()?;
-            let sev_str: String = t.get_item(2)?.extract()?;
-            rule_data.push(RuleData {
-                rule_id: t.get_item(0)?.extract()?,
-                rule_text: t.get_item(1)?.extract()?,
-                severity_enum: Severity::from_str(&sev_str),
-                severity: sev_str,
-                category: t.get_item(3)?.extract()?,
-                is_critical: t.get_item(4)?.extract()?,
-            });
-        }
-
-        // Positive verbs set
-        let mut positive_verbs: HashSet<String> = HashSet::new();
-        for item in positive_verbs_py.iter() {
-            positive_verbs.insert(item.extract()?);
-        }
-
-        // Context rules (optional, for validate_full)
-        let context_rules = if let Some(cr_py) = context_rules_py {
-            let mut rules = Vec::with_capacity(cr_py.len());
-            for item in cr_py.iter() {
-                let t = item.downcast::<PyTuple>()?;
-                let rule_id: String = t.get_item(0)?.extract()?;
-                let rule_text: String = t.get_item(1)?.extract()?;
-                let sev_str: String = t.get_item(2)?.extract()?;
-                let category: String = t.get_item(3)?.extract()?;
-                let kws_py = t.get_item(4)?.downcast_into::<PyList>()?;
-                let pats_py = t.get_item(5)?.downcast_into::<PyList>()?;
-                let enabled: bool = t.get_item(6)?.extract()?;
-
-                let keywords_lower: Vec<String> = kws_py
-                    .iter()
-                    .map(|k| k.extract::<String>())
-                    .collect::<PyResult<_>>()?;
-
-                let compiled_patterns: Vec<Regex> = pats_py
-                    .iter()
-                    .map(|p| {
-                        let s: String = p.extract()?;
-                        Regex::new(&format!("(?i){}", s)).map_err(|e| {
-                            PyValueError::new_err(format!("Bad context regex '{}': {}", s, e))
-                        })
-                    })
-                    .collect::<PyResult<_>>()?;
-
-                rules.push(ContextRule {
-                    rule_id,
-                    rule_text,
-                    severity: Severity::from_str(&sev_str),
-                    category,
-                    keywords_lower,
-                    compiled_patterns,
-                    enabled,
-                });
-            }
-            rules
-        } else {
-            Vec::new()
-        };
+        let rule_data: Vec<RuleData> = config
+            .rule_data
+            .iter()
+            .map(|(rid, rtxt, sev_str, cat, is_crit)| RuleData {
+                rule_id: rid.clone(),
+                rule_text: rtxt.clone(),
+                severity_enum: Severity::from_str(sev_str),
+                severity: sev_str.clone(),
+                category: cat.clone(),
+                is_critical: *is_crit,
+            })
+            .collect();
 
         // Build Aho-Corasick automaton
         let automaton = AhoCorasick::builder()
             .match_kind(MatchKind::Standard)
             .build(&all_words)
-            .map_err(|e| PyValueError::new_err(format!("AC build error: {}", e)))?;
+            .map_err(|e| BuildError::AhoCorasickBuild(e.to_string()))?;
 
         // Guard: bitmask deduplication uses u64 — max 63 rules/anchors
         if rule_data.len() > 63 {
-            return Err(PyValueError::new_err(format!(
-                "GovernanceValidator: rule count {} exceeds 63 (u64 bitmask limit)",
-                rule_data.len()
-            )));
+            return Err(BuildError::TooManyRules {
+                count: rule_data.len(),
+            });
         }
         if anchor_dispatch.len() > 63 {
-            return Err(PyValueError::new_err(format!(
-                "GovernanceValidator: anchor count {} exceeds 63 (u64 bitmask limit)",
-                anchor_dispatch.len()
-            )));
+            return Err(BuildError::TooManyAnchors {
+                count: anchor_dispatch.len(),
+            });
         }
 
         Ok(GovernanceValidator {
@@ -239,41 +192,37 @@ impl GovernanceValidator {
             anchor_dispatch,
             no_anchor_pats,
             rule_data,
-            positive_verbs,
-            strict,
-            context_rules,
-            const_hash: const_hash.unwrap_or_default(),
+            positive_verbs: config.positive_verbs,
+            strict: config.strict,
+            context_rules: config.context_rules,
+            const_hash: config.const_hash,
         })
     }
 
-    /// Legacy hot-path validation — minimal Python object creation.
+    /// Legacy hot-path validation — minimal allocation.
     ///
-    /// Returns: (decision: int, data: int)
+    /// Returns: (decision_code, data)
     ///   (ALLOW=0, 0)              — no violations
     ///   (DENY_CRITICAL=1, rule_idx) — critical violation
     ///   (DENY=2, fired_bitmask)   — non-critical violations
-    fn validate_hot(&self, text_lower: &str) -> PyResult<(i32, i64)> {
+    pub fn validate_hot(&self, text_lower: &str) -> (i32, i64) {
         let decision = self.scan(text_lower);
-        Ok(decision.to_legacy_tuple())
+        decision.to_legacy_tuple()
     }
 
     /// Full validation with structured violation data.
     ///
-    /// Returns: (decision: int, violations: [(rule_id, rule_text, severity, matched_content, category)], blocking: bool)
-    ///
-    /// context_pairs: optional list of (key, value) from the context dict
-    #[pyo3(signature = (text_lower, context_pairs=None))]
-    fn validate_full(
+    /// Returns: (decision, violations_tuples, blocking)
+    pub fn validate_full(
         &self,
         text_lower: &str,
-        context_pairs: Option<Vec<(String, String)>>,
-    ) -> PyResult<(i32, Vec<(String, String, String, String, String)>, bool)> {
+        context_pairs: Option<&[(String, String)]>,
+    ) -> (i32, Vec<(String, String, String, String, String)>, bool) {
         let decision = self.scan(text_lower);
 
         match decision {
-            RustDecision::Allow => {
-                // Check context if provided
-                if let Some(ref pairs) = context_pairs {
+            Decision::Allow => {
+                if let Some(pairs) = context_pairs {
                     if !pairs.is_empty() && !self.context_rules.is_empty() {
                         let ctx_violations =
                             context::process_context(pairs, &self.context_rules);
@@ -292,13 +241,13 @@ impl GovernanceValidator {
                                     )
                                 })
                                 .collect();
-                            return Ok((severity::DENY, tuples, has_blocking));
+                            return (severity::DENY, tuples, has_blocking);
                         }
                     }
                 }
-                Ok((severity::ALLOW, Vec::new(), false))
+                (severity::ALLOW, Vec::new(), false)
             }
-            RustDecision::DenyCritical { rule_idx } => {
+            Decision::DenyCritical { rule_idx } => {
                 let rd = &self.rule_data[rule_idx];
                 let tuples = vec![(
                     rd.rule_id.clone(),
@@ -307,14 +256,13 @@ impl GovernanceValidator {
                     String::new(),
                     rd.category.clone(),
                 )];
-                Ok((severity::DENY_CRITICAL, tuples, true))
+                (severity::DENY_CRITICAL, tuples, true)
             }
-            RustDecision::Deny {
+            Decision::Deny {
                 mut violations,
                 has_blocking,
             } => {
-                // Also process context if provided
-                if let Some(ref pairs) = context_pairs {
+                if let Some(pairs) = context_pairs {
                     if !pairs.is_empty() && !self.context_rules.is_empty() {
                         let ctx_violations =
                             context::process_context(pairs, &self.context_rules);
@@ -335,21 +283,41 @@ impl GovernanceValidator {
                         )
                     })
                     .collect();
-                Ok((severity::DENY, tuples, blocking))
+                (severity::DENY, tuples, blocking)
             }
         }
     }
 
-    /// Get the constitutional hash stored during construction.
-    #[getter]
-    fn const_hash(&self) -> &str {
+    /// Structured validation result for external consumers (WASM, HTTP).
+    pub fn validate(&self, text: &str, context_pairs: Option<&[(String, String)]>) -> ValidationResult {
+        let text_lower = text.to_lowercase();
+        let (decision, violations, blocking) = self.validate_full(&text_lower, context_pairs);
+        let records: Vec<ViolationRecord> = violations
+            .into_iter()
+            .map(|(rule_id, rule_text, sev, matched, cat)| ViolationRecord {
+                rule_id,
+                rule_text,
+                severity: sev,
+                matched_content: matched,
+                category: cat,
+            })
+            .collect();
+        ValidationResult {
+            decision,
+            violations: records,
+            blocking,
+            constitutional_hash: self.const_hash.clone(),
+            rules_checked: self.rule_data.len(),
+        }
+    }
+
+    /// Get the constitutional hash.
+    pub fn const_hash(&self) -> &str {
         &self.const_hash
     }
-}
 
-impl GovernanceValidator {
     /// Core scan logic — shared between validate_hot and validate_full.
-    fn scan(&self, text_lower: &str) -> RustDecision {
+    fn scan(&self, text_lower: &str) -> Decision {
         let first_word = match text_lower.find(' ') {
             Some(i) => &text_lower[..i],
             None => text_lower,
@@ -358,7 +326,7 @@ impl GovernanceValidator {
 
         let mut fired: u64 = 0;
         let mut hit_anchors: u64 = 0;
-        let mut violations: Vec<RustViolation> = Vec::new();
+        let mut violations: Vec<Violation> = Vec::new();
 
         // AC scan — overlapping mode finds all matches
         for mat in self.automaton.find_overlapping_iter(text_lower) {
@@ -375,9 +343,9 @@ impl GovernanceValidator {
                         fired |= bit;
                         let rd = &self.rule_data[rule_idx];
                         if self.strict && rd.is_critical {
-                            return RustDecision::DenyCritical { rule_idx };
+                            return Decision::DenyCritical { rule_idx };
                         }
-                        violations.push(RustViolation {
+                        violations.push(Violation {
                             rule_idx,
                             rule_id: rd.rule_id.clone(),
                             rule_text: rd.rule_text.clone(),
@@ -406,9 +374,9 @@ impl GovernanceValidator {
                         fired |= bit;
                         let rd = &self.rule_data[rule_idx];
                         if self.strict && rd.is_critical {
-                            return RustDecision::DenyCritical { rule_idx };
+                            return Decision::DenyCritical { rule_idx };
                         }
-                        violations.push(RustViolation {
+                        violations.push(Violation {
                             rule_idx,
                             rule_id: rd.rule_id.clone(),
                             rule_text: rd.rule_text.clone(),
@@ -436,11 +404,11 @@ impl GovernanceValidator {
                                 fired |= bit;
                                 let rd = &self.rule_data[*rule_idx];
                                 if self.strict && rd.is_critical {
-                                    return RustDecision::DenyCritical {
+                                    return Decision::DenyCritical {
                                         rule_idx: *rule_idx,
                                     };
                                 }
-                                violations.push(RustViolation {
+                                violations.push(Violation {
                                     rule_idx: *rule_idx,
                                     rule_id: rd.rule_id.clone(),
                                     rule_text: rd.rule_text.clone(),
@@ -459,11 +427,11 @@ impl GovernanceValidator {
                     fired |= bit;
                     let rd = &self.rule_data[*rule_idx];
                     if self.strict && rd.is_critical {
-                        return RustDecision::DenyCritical {
+                        return Decision::DenyCritical {
                             rule_idx: *rule_idx,
                         };
                     }
-                    violations.push(RustViolation {
+                    violations.push(Violation {
                         rule_idx: *rule_idx,
                         rule_id: rd.rule_id.clone(),
                         rule_text: rd.rule_text.clone(),
@@ -476,10 +444,10 @@ impl GovernanceValidator {
         }
 
         if violations.is_empty() {
-            RustDecision::Allow
+            Decision::Allow
         } else {
             let has_blocking = violations.iter().any(|v| v.severity.blocks());
-            RustDecision::Deny {
+            Decision::Deny {
                 violations,
                 has_blocking,
             }

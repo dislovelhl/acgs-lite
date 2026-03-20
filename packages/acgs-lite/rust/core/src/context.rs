@@ -5,7 +5,7 @@
 ///
 /// Constitutional Hash: cdd01ef066bc6cf2
 
-use crate::result::RustViolation;
+use crate::result::Violation;
 use crate::severity::Severity;
 use crate::verbs;
 use regex::Regex;
@@ -29,7 +29,7 @@ pub struct ContextRule {
 pub fn process_context(
     context_pairs: &[(String, String)],
     rules: &[ContextRule],
-) -> Vec<RustViolation> {
+) -> Vec<Violation> {
     let mut violations = Vec::new();
 
     for (key, value) in context_pairs {
@@ -39,7 +39,7 @@ pub fn process_context(
 
         let val_lower = value.to_lowercase();
         let has_neg = verbs::has_negative_verb(&val_lower);
-            // Python checks first 4 words for positive verbs (constitution.py:190)
+        // Python checks first 4 words for positive verbs (constitution.py:190)
         let has_pos = if has_neg {
             false
         } else {
@@ -61,7 +61,7 @@ pub fn process_context(
                 } else {
                     format!("context[{}]: {}", key, value)
                 };
-                violations.push(RustViolation {
+                violations.push(Violation {
                     rule_idx: 0, // context violations don't have a rule_idx in the _rule_data sense
                     rule_id: rule.rule_id.clone(),
                     rule_text: rule.rule_text.clone(),

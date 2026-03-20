@@ -3,12 +3,15 @@
 /// Mirrors `constitution.Severity` in Python.
 /// Constitutional Hash: cdd01ef066bc6cf2
 
+use serde::{Deserialize, Serialize};
+
 /// Decision codes returned by the validator.
 pub const ALLOW: i32 = 0;
 pub const DENY_CRITICAL: i32 = 1;
 pub const DENY: i32 = 2;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Severity {
     Critical,
     High,

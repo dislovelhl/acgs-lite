@@ -1,15 +1,16 @@
 /// Validation result types for the governance engine.
 ///
-/// These are internal Rust types used within the crate. They are converted
-/// to Python-compatible tuples at the FFI boundary in the validator.
+/// Pure Rust types — no FFI dependencies.
 ///
 /// Constitutional Hash: cdd01ef066bc6cf2
 
-use crate::severity::Severity;
+use serde::{Deserialize, Serialize};
+
+use crate::severity::{self, Severity};
 
 /// A single rule violation detected during validation.
-#[derive(Debug, Clone)]
-pub struct RustViolation {
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Violation {
     pub rule_idx: usize,
     pub rule_id: String,
     pub rule_text: String,
@@ -20,59 +21,78 @@ pub struct RustViolation {
 
 /// The decision made by the validator.
 #[derive(Debug)]
-pub enum RustDecision {
+pub enum Decision {
     /// No violations found — action is allowed.
     Allow,
     /// A CRITICAL violation found in strict mode — must raise immediately.
     DenyCritical { rule_idx: usize },
     /// Non-critical violations found — action may be escalated or denied.
     Deny {
-        violations: Vec<RustViolation>,
+        violations: Vec<Violation>,
         has_blocking: bool,
     },
 }
 
-impl RustDecision {
+impl Decision {
     /// Convert to the legacy (decision_code, data) tuple format for backward compat.
     pub fn to_legacy_tuple(&self) -> (i32, i64) {
         match self {
-            RustDecision::Allow => (crate::severity::ALLOW, 0),
-            RustDecision::DenyCritical { rule_idx } => {
-                (crate::severity::DENY_CRITICAL, *rule_idx as i64)
+            Decision::Allow => (severity::ALLOW, 0),
+            Decision::DenyCritical { rule_idx } => {
+                (severity::DENY_CRITICAL, *rule_idx as i64)
             }
-            RustDecision::Deny { violations, .. } => {
+            Decision::Deny { violations, .. } => {
                 let mut bitmask: u64 = 0;
                 for v in violations {
                     bitmask |= 1u64 << v.rule_idx;
                 }
-                (crate::severity::DENY, bitmask as i64)
+                (severity::DENY, bitmask as i64)
             }
         }
     }
 }
 
+/// Structured result of a full validation.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ValidationResult {
+    pub decision: i32,
+    pub violations: Vec<ViolationRecord>,
+    pub blocking: bool,
+    pub constitutional_hash: String,
+    pub rules_checked: usize,
+}
+
+/// Serializable violation record for external consumers.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ViolationRecord {
+    pub rule_id: String,
+    pub rule_text: String,
+    pub severity: String,
+    pub matched_content: String,
+    pub category: String,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::severity;
 
     #[test]
     fn test_allow_legacy() {
-        let d = RustDecision::Allow;
+        let d = Decision::Allow;
         assert_eq!(d.to_legacy_tuple(), (severity::ALLOW, 0));
     }
 
     #[test]
     fn test_deny_critical_legacy() {
-        let d = RustDecision::DenyCritical { rule_idx: 3 };
+        let d = Decision::DenyCritical { rule_idx: 3 };
         assert_eq!(d.to_legacy_tuple(), (severity::DENY_CRITICAL, 3));
     }
 
     #[test]
     fn test_deny_bitmask() {
-        let d = RustDecision::Deny {
+        let d = Decision::Deny {
             violations: vec![
-                RustViolation {
+                Violation {
                     rule_idx: 0,
                     rule_id: "R1".into(),
                     rule_text: "test".into(),
@@ -80,7 +100,7 @@ mod tests {
                     matched_content: "x".into(),
                     category: "c".into(),
                 },
-                RustViolation {
+                Violation {
                     rule_idx: 2,
                     rule_id: "R3".into(),
                     rule_text: "test".into(),

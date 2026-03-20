@@ -1,31 +1,6 @@
-[package]
-name = "acgs_lite_rust"
-version = "0.1.0"
-edition = "2021"
-
-[lib]
-name = "acgs_lite_rust"
-crate-type = ["cdylib"]
-
-[dependencies]
-pyo3 = { version = "0.23", features = ["extension-module", "abi3-py38"] }
-aho-corasick = "1.1"
-regex = "1.11"
-sha2 = "0.10"
-hex = "0.4"
-
-# Candle deps disabled (impact_scorer.rs uses broken candle API — exp81 rebuild)
-# candle-core = { git = "https://github.com/huggingface/candle", branch = "main" }
-# candle-nn = { git = "https://github.com/huggingface/candle", branch = "main" }
-# candle-transformers = { git = "https://github.com/huggingface/candle", branch = "main" }
-# hf-hub = { version = "0.3", features = ["tokio"] }
-# tokenizers = { version = "0.19", default-features = false, features = ["onig"] }
-# serde = { version = "1", features = ["derive"] }
-# serde_json = "1"
-# tokio = { version = "1", features = ["rt-multi-thread"] }
-
-[features]
-default = []
+[workspace]
+members = ["core", "pyo3", "wasm"]
+resolver = "2"
 
 [profile.release]
 opt-level = 3
