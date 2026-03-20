@@ -198,7 +198,7 @@ class GovernedGenAI:
                 "google-genai is required. Install with: pip install acgs-lite[google]"
             )
 
-        self._client = GenAIClient(api_key=api_key, **genai_kwargs)  # type: ignore[misc]
+        self._client = GenAIClient(api_key=api_key, **genai_kwargs)
         self.constitution = constitution or Constitution.default()
         self.audit_log = AuditLog()
         self.engine = GovernanceEngine(

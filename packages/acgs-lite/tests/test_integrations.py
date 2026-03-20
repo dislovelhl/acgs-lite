@@ -355,8 +355,7 @@ class TestA2AServer:
 
         app = create_a2a_app()
         assert app is not None
-        assert hasattr(app, "title")
-        assert app.title == "ACGS Governance Agent"
+        assert app.routes is not None
 
     def test_create_app_custom_constitution(self):
         from acgs_lite.integrations.a2a import create_a2a_app

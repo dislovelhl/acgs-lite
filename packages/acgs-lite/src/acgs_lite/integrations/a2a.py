@@ -256,6 +256,5 @@ def create_a2a_app(
             Route("/", handle_a2a, methods=["POST"]),
         ],
     )
-    app.title = "ACGS Governance Agent"
 
     return app

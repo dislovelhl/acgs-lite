@@ -204,7 +204,7 @@ async def webhook_endpoint(request: Request) -> JSONResponse:
             )
         )
 
-    return response  # type: ignore[return-value]
+    return response  # type: ignore[no-any-return]
 
 
 async def health_endpoint(request: Request) -> JSONResponse:
