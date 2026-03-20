@@ -70,21 +70,25 @@ class ChecklistItem:
     updated_at: str | None = None
 
     def mark_complete(self, evidence: str | None = None) -> None:
+        """Mark this item as compliant with optional evidence."""
         self.status = ChecklistStatus.COMPLIANT
         self.evidence = evidence
         self.updated_at = datetime.now(UTC).isoformat()
 
     def mark_partial(self, evidence: str | None = None) -> None:
+        """Mark this item as partially compliant with optional evidence."""
         self.status = ChecklistStatus.PARTIAL
         self.evidence = evidence
         self.updated_at = datetime.now(UTC).isoformat()
 
     def mark_not_applicable(self, reason: str | None = None) -> None:
+        """Mark this item as not applicable with optional reason."""
         self.status = ChecklistStatus.NOT_APPLICABLE
         self.evidence = reason
         self.updated_at = datetime.now(UTC).isoformat()
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the checklist item to a dictionary."""
         return {
             "article_ref": self.article_ref,
             "requirement": self.requirement,
@@ -257,6 +261,7 @@ class ComplianceChecklist:
 
     @property
     def items(self) -> list[ChecklistItem]:
+        """Return a copy of all checklist items."""
         return list(self._items)
 
     def get_item(self, article_ref: str) -> ChecklistItem | None:

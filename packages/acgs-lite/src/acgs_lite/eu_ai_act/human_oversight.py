@@ -99,6 +99,7 @@ class OversightDecision:
     context: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the oversight decision to a dictionary for audit export."""
         return {
             "decision_id": self.decision_id,
             "system_id": self.system_id,
