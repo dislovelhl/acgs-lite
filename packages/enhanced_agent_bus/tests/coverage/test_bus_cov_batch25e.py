@@ -1403,6 +1403,10 @@ class TestDemocraticGovernanceStabilityWithMHC:
             mock_no_grad.__exit__ = MagicMock(return_value=False)
             mock_torch.no_grad.return_value = mock_no_grad
 
+            from enhanced_agent_bus.governance.democratic_governance import (
+                DemocraticConstitutionalGovernance,
+            )
+
             gov = DemocraticConstitutionalGovernance.__new__(DemocraticConstitutionalGovernance)
             gov.stability_layer = mock_mhc_instance
 
