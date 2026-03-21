@@ -126,10 +126,16 @@ class TestValidateRules:
         with pytest.raises(Exception):
             Constitution(rules=[r1, r2])
 
-    def test_no_keywords_detected_by_constitution(self) -> None:
-        """Constitution itself rejects rules with no keywords via validate_rules."""
+    def test_no_keywords_accepted_by_constitution(self) -> None:
+        """Empty keywords is valid — validate_rules does not reject it.
+
+        The YAML schema validator issues a *warning* (not an error) for rules
+        with no keywords or patterns.  At the Constitution model level, empty
+        keywords is allowed because rules may rely on patterns instead.
+        """
         from acgs_lite.constitution.rule import Rule, Severity
 
         r = Rule(id="NOKEY", text="some text", severity=Severity.HIGH, keywords=[])
-        with pytest.raises(Exception):
-            Constitution(rules=[r])
+        c = Constitution(rules=[r])
+        assert len(c.rules) == 1
+        assert c.rules[0].keywords == []

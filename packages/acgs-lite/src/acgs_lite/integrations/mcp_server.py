@@ -55,7 +55,7 @@ def create_mcp_server(
     if not MCP_AVAILABLE:
         raise ImportError("mcp package is required. Install with: pip install acgs-lite[mcp]")
 
-    constitution = constitution or Constitution.default()
+    constitution = constitution if constitution is not None else Constitution.default()
     audit_log = AuditLog()
     engine = GovernanceEngine(constitution, audit_log=audit_log, strict=strict)
 
