@@ -19,7 +19,6 @@ from . import (
     filtering,
     lifecycle,
     merging,
-    merging_advanced,
     permission_ceiling,
     provenance,
     regulatory,
@@ -914,8 +913,8 @@ class Constitution(BaseModel):
         acknowledged_tensions: Sequence[AcknowledgedTension] | None = None,
         allow_hardcoded_override: bool = False,
     ) -> dict[str, Any]:
-        """Merge two constitutions with conflict detection and resolution. See :mod:`merging_advanced`."""
-        return merging_advanced.merge(self, other, strategy=strategy, name=name, acknowledged_tensions=acknowledged_tensions, allow_hardcoded_override=allow_hardcoded_override)
+        """Merge two constitutions with conflict detection and resolution. See :mod:`merging`."""
+        return merging.merge(self, other, strategy=strategy, name=name, acknowledged_tensions=acknowledged_tensions, allow_hardcoded_override=allow_hardcoded_override)
 
     def set_rule_lifecycle_state(self, rule_id: str, state: str, reason: str = "") -> bool:
         """Set lifecycle state (draft/active/deprecated) for a rule. See :mod:`lifecycle`."""
@@ -930,8 +929,8 @@ class Constitution(BaseModel):
         return lifecycle.lifecycle_transition_rules(self, from_state, to_state)
 
     def cascade(self, child: Constitution, *, name: str = "") -> Constitution:
-        """Parent-authoritative federation of two constitutions. See :mod:`merging_advanced`."""
-        return merging_advanced.cascade(self, child, name=name)
+        """Parent-authoritative federation of two constitutions. See :mod:`merging`."""
+        return merging.cascade(self, child, name=name)
 
     def set_rule_tenants(self, rule_id: str, tenants: list[str]) -> bool:
         """Assign tenant scoping to a rule. See :mod:`lifecycle`."""
