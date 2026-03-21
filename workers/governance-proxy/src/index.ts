@@ -61,6 +61,23 @@ export default {
       return healthResponse();
     }
 
+    // Admin endpoints require ADMIN_SECRET bearer token
+    if (url.pathname.startsWith("/admin/")) {
+      if (!env.ADMIN_SECRET) {
+        return new Response(
+          JSON.stringify({ error: "Admin endpoints disabled: ADMIN_SECRET not configured" }),
+          { status: 503, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      const authHeader = request.headers.get("Authorization");
+      if (authHeader !== `Bearer ${env.ADMIN_SECRET}`) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { "Content-Type": "application/json" } },
+        );
+      }
+    }
+
     // Admin: upload constitution to KV
     if (url.pathname === "/admin/constitution" && request.method === "PUT") {
       try {

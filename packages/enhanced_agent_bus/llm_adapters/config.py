@@ -39,6 +39,7 @@ class AdapterType(Enum):
     AWS_BEDROCK = "aws_bedrock"
     HUGGINGFACE = "huggingface"
     KIMI = "kimi"
+    XAI = "xai"
     OPENCLAW = "openclaw"
     CUSTOM = "custom"
 
@@ -170,7 +171,7 @@ class BaseAdapterConfig(BaseModel):
     )
     model: str = Field(
         ...,
-        description="Model identifier (e.g., 'gpt-5.2', 'claude-sonnet-4-6')",
+        description="Model identifier (e.g., 'gpt-5.4', 'claude-sonnet-4-6')",
     )
     api_key: SecretStr | None = Field(
         default=None,
@@ -284,7 +285,7 @@ class OpenAIAdapterConfig(BaseAdapterConfig):
     @classmethod
     def from_environment(
         cls,
-        model: str = "gpt-5.2",
+        model: str = "gpt-5.4",
         **kwargs: object,
     ) -> "OpenAIAdapterConfig":
         """Create config from environment variables.
@@ -405,7 +406,7 @@ class AzureOpenAIAdapterConfig(BaseAdapterConfig):
     def from_environment(
         cls,
         deployment_name: str,
-        model: str = "gpt-5.2",
+        model: str = "gpt-5.4",
         **kwargs: object,
     ) -> "AzureOpenAIAdapterConfig":
         """Create config from environment variables.
@@ -648,6 +649,77 @@ class KimiAdapterConfig(BaseAdapterConfig):
         )
 
 
+class XAIAdapterConfig(BaseAdapterConfig):
+    """Configuration for xAI (Grok) adapter.
+
+    Constitutional Hash: cdd01ef066bc6cf2
+
+    xAI exposes an OpenAI-compatible API at https://api.x.ai/v1.
+    Supports Grok 4.x models with 2M token context, server-side tools
+    (web search, X search, code execution, Collections), prompt caching,
+    and batch API (50% off).
+    """
+
+    adapter_type: AdapterType = Field(
+        default=AdapterType.XAI,
+        description="Adapter type (always 'xai')",
+    )
+    enable_web_search: bool = Field(
+        default=False,
+        description="Enable server-side web search tool",
+    )
+    enable_x_search: bool = Field(
+        default=False,
+        description="Enable server-side X (Twitter) search tool",
+    )
+    enable_code_execution: bool = Field(
+        default=False,
+        description="Enable server-side code execution tool",
+    )
+    search_allowed_domains: list[str] | None = Field(
+        default=None,
+        description="Restrict web search to these domains (max 5)",
+    )
+    search_excluded_domains: list[str] | None = Field(
+        default=None,
+        description="Exclude these domains from web search (max 5)",
+    )
+
+    @classmethod
+    def from_environment(
+        cls,
+        model: str = "grok-4-1-fast",
+        **kwargs: object,
+    ) -> "XAIAdapterConfig":
+        """Create config from environment variables.
+
+        Environment variables:
+            - XAI_API_KEY: API key
+            - XAI_API_BASE: Base URL (optional, defaults to https://api.x.ai/v1)
+            - XAI_RPM: Requests per minute (optional)
+            - XAI_TPM: Tokens per minute (optional)
+
+        Args:
+            model: Model identifier (e.g., 'grok-4-1-fast', 'grok-4.20')
+            **kwargs: Additional configuration overrides
+
+        Returns:
+            XAIAdapterConfig instance
+        """
+        api_key = os.getenv("XAI_API_KEY")
+
+        return cls(
+            model=model,
+            api_key=SecretStr(api_key) if api_key else None,
+            api_base=os.getenv("XAI_API_BASE", "https://api.x.ai/v1"),
+            rate_limit=RateLimitConfig(
+                requests_per_minute=int(os.getenv("XAI_RPM", "607")),
+                tokens_per_minute=int(os.getenv("XAI_TPM", "4000000")),
+            ),
+            **kwargs,
+        )
+
+
 class OpenClawAdapterConfig(BaseAdapterConfig):
     """Configuration for OpenClaw gateway adapter.
 
@@ -866,6 +938,7 @@ AdapterConfig = (
     | HuggingFaceAdapterConfig
     | LocoOperatorAdapterConfig
     | KimiAdapterConfig
+    | XAIAdapterConfig
     | OpenClawAdapterConfig
     | CustomAdapterConfig
 )
@@ -889,4 +962,5 @@ __all__ = [
     "OpenClawAdapterConfig",
     # Configuration models
     "RateLimitConfig",
+    "XAIAdapterConfig",
 ]

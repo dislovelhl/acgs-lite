@@ -2,16 +2,16 @@
 
 <!-- Constitutional Hash: cdd01ef066bc6cf2 -->
 
-[![Tests](https://img.shields.io/badge/tests-3534%20passed-brightgreen)](./tests/)
-[![Coverage](https://img.shields.io/badge/coverage-65.65%25-green)](./coverage.json)
+[![Tests](https://img.shields.io/badge/tests-pytest-blue)](./tests/)
+[![Coverage](https://img.shields.io/badge/coverage-local--report-blue)](./coverage.json)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-blue)](./LICENSE)
 
 > **Version:** 2.5.0
-> **Status:** Production Ready
-> **Tests:** 3,534 total (99.92% pass rate)
-> **Performance:** P99 0.103ms | 5,066 RPS
-> **Antifragility Score:** 10/10
+> **Status:** Active repository package
+> **Tests:** Run `python -m pytest packages/enhanced_agent_bus/tests/ --import-mode=importlib`
+> **Performance:** Benchmark from the current checkout before quoting latency or throughput
+> **Dependencies:** Redis/OPA optional for some features, required for full local stack
 
 ## Overview
 
@@ -19,14 +19,13 @@ The Enhanced Agent Bus is the core communication infrastructure for ACGS-2's mul
 
 ### Key Capabilities
 
-| Capability                    | Description                                                  | Status        |
+| Capability | Description | Status |
 | ----------------------------- | ------------------------------------------------------------ | ------------- |
-| **Constitutional Compliance** | All messages validated against hash `cdd01ef066bc6cf2`       | ✅ 100%       |
-| **High Performance**          | Sub-millisecond P99 latency (0.278ms achieved vs 5ms target) | ✅ 94% better |
-| **Massive Throughput**        | 6,310+ requests per second (63x target capacity)             | ✅ Exceeded   |
-| **MACI Role Separation**      | Trias Politica enforcement (Executive/Legislative/Judicial)  | ✅ Active     |
-| **Antifragility**             | Health aggregation, recovery orchestration, chaos testing    | ✅ 10/10      |
-| **Multi-Backend**             | Pure Python with optional Rust acceleration (10-50x speedup) | ✅ Available  |
+| **Constitutional Compliance** | Messages and workflows can be validated against constitutional rules and hash-bound governance paths | Implemented |
+| **High Performance** | Designed for low-latency routing; measure current performance from this checkout before quoting numbers | Implemented |
+| **MACI Role Separation** | Trias Politica enforcement (Executive/Legislative/Judicial) | Implemented |
+| **Antifragility** | Health aggregation, recovery orchestration, chaos testing | Implemented |
+| **Multi-Backend** | Pure Python with optional Rust acceleration in selected paths | Available |
 
 ## Quick Start
 
@@ -253,15 +252,9 @@ async with repo.lock(saga.saga_id):
 
 ## Performance
 
-### Benchmarks
-
-| Metric                    | Target   | Achieved  | Improvement    |
-| ------------------------- | -------- | --------- | -------------- |
-| P99 Latency               | <5ms     | 0.278ms   | **94% better** |
-| Throughput                | >100 RPS | 6,310 RPS | **63x target** |
-| Cache Hit Rate            | >85%     | 95%       | **12% better** |
-| Constitutional Compliance | 100%     | 100%      | ✅             |
-| Antifragility Score       | 10/10    | 10/10     | ✅             |
+Performance characteristics depend on the enabled subsystems, optional dependencies, and whether
+Redis/OPA and other backends are available. Use the repository benchmark and test commands to
+measure the current checkout instead of relying on hard-coded numbers in this README.
 
 ### Optimization Tips
 
@@ -273,31 +266,31 @@ async with repo.lock(saga.saga_id):
 ## Testing
 
 ```bash
-# Run all tests (2,091 tests)
-python3 -m pytest tests/ -v
+# Run all package tests
+python3 -m pytest packages/enhanced_agent_bus/tests/ -v --import-mode=importlib
 
 # Run with coverage
-python3 -m pytest tests/ --cov=. --cov-report=html
+python3 -m pytest packages/enhanced_agent_bus/tests/ --cov=packages/enhanced_agent_bus --cov-report=html --import-mode=importlib
 
 # Constitutional tests only
-python3 -m pytest -m constitutional
+python3 -m pytest packages/enhanced_agent_bus/tests/ -m constitutional --import-mode=importlib
 
-# MACI role tests (108 tests)
-python3 -m pytest tests/test_maci*.py -v
+# MACI role tests
+python3 -m pytest packages/enhanced_agent_bus/tests/test_maci*.py -v --import-mode=importlib
 
 # Antifragility tests
-python3 -m pytest tests/test_health_aggregator.py tests/test_chaos_framework.py -v
+python3 -m pytest packages/enhanced_agent_bus/tests/test_health_aggregator.py packages/enhanced_agent_bus/tests/test_chaos_framework.py -v --import-mode=importlib
 ```
 
 ### Test Categories
 
-| Category       | Count | Description                        |
-| -------------- | ----- | ---------------------------------- |
-| Core           | 500+  | Bus operations, message processing |
-| Constitutional | 200+  | Hash validation, compliance        |
-| MACI           | 108   | Role separation, permissions       |
-| Antifragility  | 150+  | Health, recovery, chaos            |
-| Integration    | 100+  | E2E workflows                      |
+| Category | Description |
+| -------------- | ---------------------------------- |
+| Core | Bus operations, message processing |
+| Constitutional | Hash validation, compliance |
+| MACI | Role separation, permissions |
+| Antifragility | Health, recovery, chaos |
+| Integration | Cross-module and workflow coverage |
 
 ## Configuration
 

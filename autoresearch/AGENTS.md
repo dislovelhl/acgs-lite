@@ -1,23 +1,35 @@
 # Autoresearch Agent Guide
 
-Use this directory for benchmark optimization work driven by `autoresearch/program.md`.
+> Scope: `autoresearch/` — benchmark optimization harness for governance behavior.
 
-## Purpose / Big Picture
+## Files
 
-- Keep experiment loops small, reproducible, and easy to compare against prior runs.
-- Treat `program.md` and `results.tsv` as the primary working artifacts.
+- `program.md`: experiment discipline and decision rules
+- `benchmark.py`: benchmark runner
+- `setup_run.py`: run setup
+- `log_run.py`: append-only run logging
+- `results_utils.py`: results parsing/comparison
+- `governance_quality_benchmark.py`: governance-specific benchmark logic
+- `constitution.yaml`: benchmark constitution
+- `results.tsv`: append-only results log
+- `scenarios/`: benchmark scenarios
 
-## Progress
+## Workflow
 
-- Current focus: keep the benchmark loop documented and reproducible.
-- Track the next experiment, the expected change, and the observed result.
+1. Read `program.md`.
+2. Change one variable.
+3. Run the benchmark.
+4. Compare against prior results.
+5. Keep or revert based on measured outcome.
+6. Append the result to `results.tsv`.
 
-## Decision Log
+## Conventions
 
-- Prefer the smallest change that can be validated by the benchmark loop.
-- Revert or annotate experiments that do not improve the target metric.
+- Treat `results.tsv` as append-only.
+- Keep experiments isolated and attributable.
+- Use the scenario files instead of embedding scenario data in code.
 
-## Outcomes & Retrospective
+## Anti-Patterns
 
-- Record what changed, what improved, and what regressed after each run.
-- Note any new failure mode or setup issue so the next run starts faster.
+- Do not rewrite or delete prior benchmark rows.
+- Do not run multiple overlapping experiments against the same result log.

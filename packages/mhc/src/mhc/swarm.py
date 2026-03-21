@@ -12,9 +12,9 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable
 
-from omalhc.artifact import Artifact, ArtifactStore
-from omalhc.capability import Capability, CapabilityRegistry
-from omalhc.contract import ContractStatus, TaskContract
+from constitutional_swarm.artifact import Artifact, ArtifactStore
+from constitutional_swarm.capability import Capability, CapabilityRegistry
+from constitutional_swarm.contract import ContractStatus, TaskContract
 
 
 class NodeStatus(Enum):

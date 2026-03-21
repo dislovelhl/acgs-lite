@@ -1,75 +1,70 @@
 # ACGS-Lite
 
-> Scope: `packages/acgs-lite/` — Standalone governance library. `pip install acgs-lite`.
+> Scope: `packages/acgs-lite/` — standalone governance library published as `acgs-lite`.
 
 ## Planning
 
-- Planning notes live in [PLANS.md](PLANS.md).
+- Planning notes live in `PLANS.md`.
 
 ## Structure
 
 ```
 acgs-lite/
 ├── src/acgs_lite/
-│   ├── engine/              # GovernanceEngine core (validation, batch, metrics)
-│   ├── constitution/        # Constitution loader, builder, templates, diff, merge
-│   ├── compliance/          # 9-framework regulatory assessor (EU AI Act, NIST, ISO, GDPR…)
-│   ├── eu_ai_act/           # EU AI Act self-assessment tool
-│   ├── integrations/        # 11 platform integrations + MCP server + GitLab bot
+│   ├── engine/              # Core validation and execution logic
+│   ├── constitution/        # Constitution loading, templates, policy export
+│   ├── compliance/          # Compliance mapping and regulatory helpers
+│   ├── integrations/        # Adapter modules for external agent ecosystems
 │   ├── governed.py          # GovernedAgent / GovernedCallable wrappers
-│   ├── maci.py              # MACI enforcer (4 roles, separation of powers)
-│   ├── matcher.py           # Aho-Corasick + regex rule matching (560ns P50)
-│   ├── audit.py             # Tamper-evident audit trail (chain-verified)
-│   ├── cli.py               # `acgs-lite` CLI (activate, status, verify)
-│   ├── server.py            # FastAPI microservice wrapper
-│   └── errors.py            # Exception hierarchy
-├── rust/                    # PyO3 Rust extension (optional, 10-50x speedup)
-├── tests/                   # 286 tests
-└── examples/                # Quickstart examples
+│   ├── maci.py              # MACI role enforcement
+│   ├── matcher.py           # Rule matching hot path
+│   ├── audit.py             # Tamper-evident audit trail
+│   ├── cli.py               # `acgs-lite` CLI entrypoint
+│   └── server.py            # FastAPI wrapper
+├── src/eu_ai_act_tool/      # EU AI Act assessment tool
+├── rust/                    # Optional Rust workspace (`core/`, `pyo3/`, `wasm/`)
+├── tests/                   # Python package tests
+└── examples/                # Quickstarts and examples
 ```
 
 ## Where to Look
 
-| Task                       | Location                              |
-| -------------------------- | ------------------------------------- |
-| Add governance rule type   | `constitution/models.py`              |
-| Change validation logic    | `engine/`, `matcher.py`               |
-| Add platform integration   | `integrations/` (copy existing)       |
-| Compliance framework       | `compliance/` + `eu_ai_act/`          |
-| MACI role boundaries       | `maci.py`                             |
-| MCP server tools           | `integrations/mcp_server.py`          |
-| GitLab MR governance       | `integrations/gitlab.py`              |
-| Audit trail                | `audit.py`                            |
-| CLI commands               | `cli.py`                              |
-| Rust acceleration          | `rust/src/` (PyO3, maturin)           |
+| Task | Location |
+| ---- | -------- |
+| Add governance rule type | `src/acgs_lite/constitution/` |
+| Change validation logic | `src/acgs_lite/engine/`, `src/acgs_lite/matcher.py` |
+| Add integration adapter | `src/acgs_lite/integrations/` |
+| Compliance framework work | `src/acgs_lite/compliance/` |
+| MACI role boundaries | `src/acgs_lite/maci.py` |
+| MCP server tools | `src/acgs_lite/integrations/mcp_server.py` |
+| GitLab governance integration | `src/acgs_lite/integrations/gitlab.py` |
+| Audit trail | `src/acgs_lite/audit.py` |
+| CLI commands | `src/acgs_lite/cli.py` |
+| Rust acceleration | `rust/` |
 
 ## Conventions
 
-- Library targets Python 3.10+ (broader compat than platform).
-- All integrations are optional extras: `acgs-lite[openai]`, `acgs-lite[mcp]`, etc.
-- Rust extension is optional — Python fallback always exists.
-- Constitutional hash `cdd01ef066bc6cf2` embedded in all validation paths.
-- `Constitution.from_template("gitlab")` for zero-config governance.
-- `_make_*` factory functions in tests for fixture creation.
+- Package runtime target is Python 3.10+.
+- Keep integrations optional through extras and lazy imports.
+- Keep Python fallbacks when Rust acceleration is optional.
+- Constitutional hash `cdd01ef066bc6cf2` is part of validation flows.
+- Use `_make_*` helpers in tests for fixture creation when available.
 
 ## Anti-Patterns
 
-- Do not import platform SDKs at module level — lazy-load in integration modules.
-- Do not modify `matcher.py` hot path without benchmarking (560ns P50 target).
-- Do not skip MACI checks — `maci.py` enforces that proposers cannot self-validate.
-- Rust extension: `maturin develop --release` then `pytest` (not `cargo test`).
+- Do not import optional platform SDKs at module import time.
+- Do not change `matcher.py` hot-path behavior without benchmarking or targeted tests.
+- Do not bypass MACI enforcement in wrappers or integrations.
+- Do not rely on raw `cargo test` as the only verification for Python-facing Rust changes.
 
 ## Commands
 
-### Dev / Build / Test Loop
-
-- If you change Python code or docs, run `pytest packages/acgs-lite/tests/ -v` from the package root after the edit.
-- If you change the Rust extension, run `maturin develop --release` first, then run `pytest packages/acgs-lite/tests/ -v`.
-- Treat the loop as successful when the command exits with status `0` and pytest reports all selected tests passing.
-
 ```bash
-make test-lite                        # Run acgs-lite tests only
-pytest packages/acgs-lite/tests/ -v   # Direct pytest
-acgs-lite activate <key>              # License activation
-acgs-lite status                      # Show tier/features
+make test-lite
+python -m pytest packages/acgs-lite/tests/ -v --import-mode=importlib
+cd packages/acgs-lite/rust && maturin develop --release
+acgs-lite status
 ```
+
+If you touch the Rust-backed validation path, rebuild with `maturin develop --release` and then
+run the relevant pytest selection from the repo root.

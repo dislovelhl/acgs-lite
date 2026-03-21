@@ -272,6 +272,17 @@ class SagaStore:
             "error_message": saga.error_message,
             "current_step_index": saga.current_step_index,
             "constitutional_hash": saga.constitutional_hash,
+            "context": {
+                "saga_id": saga.context.saga_id,
+                "tenant_id": saga.context.tenant_id,
+                "correlation_id": saga.context.correlation_id,
+                "data": saga.context.data,
+                "step_results": saga.context.step_results,
+                "metadata": saga.context.metadata,
+                "constitutional_hash": saga.context.constitutional_hash,
+            }
+            if saga.context
+            else None,
         }
 
     def _dict_to_saga(self, data: dict) -> Saga:
@@ -306,6 +317,17 @@ class SagaStore:
         saga.error_message = data.get("error_message")
         saga.current_step_index = data.get("current_step_index", 0)
         saga.constitutional_hash = data.get("constitutional_hash", CONSTITUTIONAL_HASH)
+        ctx_data = data.get("context")
+        if ctx_data:
+            saga.context = SagaContext(
+                saga_id=ctx_data["saga_id"],
+                tenant_id=ctx_data["tenant_id"],
+                correlation_id=ctx_data.get("correlation_id", ""),
+                data=ctx_data.get("data", {}),
+                step_results=ctx_data.get("step_results", {}),
+                metadata=ctx_data.get("metadata", {}),
+                constitutional_hash=ctx_data.get("constitutional_hash", CONSTITUTIONAL_HASH),
+            )
         return saga
 
     async def save(self, saga: Saga) -> None:

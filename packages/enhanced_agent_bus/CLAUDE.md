@@ -1,33 +1,54 @@
 # Enhanced Agent Bus
 
-**For project-wide instructions, see the root `/CLAUDE.md`.**
+For repo-wide rules, see `/CLAUDE.md`.
 
 ## Imports
 
 ```python
-from enhanced_agent_bus.models import Priority       # NOT MessagePriority (deprecated)
+from enhanced_agent_bus.models import Priority
 from enhanced_agent_bus.agent_bus import EnhancedAgentBus
-from enhanced_agent_bus.maci.enforcer import MACIRole
+from enhanced_agent_bus.maci import MACIRole
 ```
 
-Always import from `enhanced_agent_bus.*` — never `src.core.enhanced_agent_bus.*` (Phase 3 extraction complete).
+Always import from `enhanced_agent_bus.*`.
+
+## Structure
+
+```
+enhanced_agent_bus/
+├── api/                  # FastAPI app and routes
+├── agent_bus.py          # Core bus class
+├── message_processor.py  # Routing and orchestration
+├── models.py             # Shared models and enums
+├── maci/                 # MACI enforcement
+├── constitutional/       # Constitutional workflows
+├── middlewares/          # Canonical middleware stack
+├── context_memory/       # Context and memory subsystem
+├── persistence/          # Persistence layer
+├── saga_persistence/     # Saga persistence layer
+└── _ext_*.py             # Optional dependency wrappers
+```
 
 ## Testing
 
 ```bash
-python -m pytest packages/enhanced_agent_bus/tests/ -v --import-mode=importlib   # 3,534 tests
-python -m pytest packages/enhanced_agent_bus/tests/ -m "not slow" -v             # Skip slow tests
+python -m pytest packages/enhanced_agent_bus/tests/ -v --import-mode=importlib
+python -m pytest packages/enhanced_agent_bus/tests/ -m "not slow" -v --import-mode=importlib
 ```
 
-## Performance Targets
+The package also has its own `pyproject.toml` with stricter package-local coverage settings.
 
-P99 < 0.103ms | Throughput > 5,066 RPS | Memory < 5MB/1000 msgs
+## Performance
+
+This package contains hot paths, but performance targets should be validated from current
+benchmarks or tests rather than copied from old docs.
 
 ## Gotchas
 
-- **MACI enforcement** is at middleware level (`middlewares/batch/governance.py`), not in deleted `maci_metrics.py`
-- **Rust backend** provides 10-50x speedup — see `rust/AGENTS.md` for build/test instructions
-- **Module migration**: 6 modules deleted in refactor — see `docs/CLAUDE.md` for the full migration table
-- **Entry point**: `enhanced_agent_bus.api.app:app` (PM2 uvicorn path)
-- **PYTHONPATH**: Must include both project root and `src/` for cross-package imports
-- **mypy excluded**: This entire package is excluded from mypy checking in `.pre-commit-config.yaml`
+- MACI enforcement and governance checks span middleware and runtime paths; avoid narrow
+  assumptions about a single file owning the invariant.
+- Legacy namespaces such as `middleware/` and `context/` still appear for compatibility but are
+  not for new code.
+- `_ext_*.py` modules intentionally use fallback stubs for missing optional dependencies.
+- Package-level MyPy is enabled in `packages/enhanced_agent_bus/pyproject.toml`; do not assume
+  the package is globally exempt from type discipline.

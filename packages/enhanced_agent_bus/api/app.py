@@ -8,6 +8,7 @@ Constitutional Hash: cdd01ef066bc6cf2
 import os  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
 from importlib import import_module  # noqa: E402
+from typing import Any  # noqa: E402
 
 import pybreaker  # noqa: E402
 from fastapi import APIRouter, FastAPI  # noqa: E402
@@ -42,8 +43,9 @@ from ..api_exceptions import (  # noqa: E402
 )
 from ..batch_processor import BatchMessageProcessor  # noqa: E402
 from ..message_processor import MessageProcessor  # noqa: E402
-from ..persistence.executor import DurableWorkflowExecutor  # noqa: E402
+from ..persistence.executor import DurableWorkflowExecutor, WorkflowContext  # noqa: E402
 from ..persistence.postgres_repository import PostgresWorkflowRepository  # noqa: E402
+from ..persistence.repository import InMemoryWorkflowRepository  # noqa: E402
 from .config import (  # noqa: E402
     API_VERSION,
     BATCH_PROCESSOR_ITEM_TIMEOUT_SECONDS,
@@ -137,6 +139,21 @@ workflow_executor: DurableWorkflowExecutor | None = None
 workflow_repository: PostgresWorkflowRepository | None = None
 
 
+def _register_builtin_workflows(executor: DurableWorkflowExecutor) -> DurableWorkflowExecutor:
+    """Register stable built-in workflows required by the HTTP API."""
+
+    @executor.workflow("builtin.echo")
+    async def builtin_echo_workflow(ctx: WorkflowContext) -> dict[str, Any]:
+        payload = ctx.input or {}
+        return {
+            "echo": payload,
+            "workflow_id": ctx.workflow_id,
+            "tenant_id": ctx.tenant_id,
+        }
+
+    return executor
+
+
 def _is_development_like_environment() -> bool:
     """Return whether current environment is development-like."""
     environment = os.environ.get("ENVIRONMENT", "").lower()
@@ -174,13 +191,30 @@ async def _initialize_workflow_components(
 
         repository = PostgresWorkflowRepository(dsn=normalized_dsn)
         await repository.initialize()
-        executor = DurableWorkflowExecutor(repository=repository)
+        executor = _register_builtin_workflows(DurableWorkflowExecutor(repository=repository))
         app.state.workflow_executor = executor
         logger.info("Durable Workflow Executor initialized successfully")
         return executor, repository
     except ImportError:
+        if _is_development_like_environment():
+            logger.warning(
+                "asyncpg not installed, using in-memory Workflow Executor in development"
+            )
+            repository = InMemoryWorkflowRepository()
+            executor = _register_builtin_workflows(DurableWorkflowExecutor(repository=repository))
+            app.state.workflow_executor = executor
+            return executor, None
         logger.warning("asyncpg not installed, skipping Workflow Executor initialization")
     except Exception as e:
+        if _is_development_like_environment():
+            logger.warning(
+                "Workflow repository unavailable, using in-memory Workflow Executor in "
+                f"development: {e}"
+            )
+            repository = InMemoryWorkflowRepository()
+            executor = _register_builtin_workflows(DurableWorkflowExecutor(repository=repository))
+            app.state.workflow_executor = executor
+            return executor, None
         logger.error(f"Failed to initialize Durable Workflow Executor: {e}")
 
     return None, None

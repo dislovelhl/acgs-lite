@@ -9,6 +9,9 @@ data subject rights APIs (GDPR/CCPA), feedback endpoints, and the
 reverse-proxy catch-all.
 """
 
+from ._x402_bundles import router as x402_bundles_router
+from ._x402_facilitator import router as x402_facilitator_router
+from ._x402_revenue import router as x402_revenue_router
 from .admin_sso import router as admin_sso_router
 from .admin_workos import router as admin_workos_router
 from .autonomy_tiers import autonomy_tiers_router
@@ -33,6 +36,9 @@ __all__ = [
     "gateway_v1_router",
     "proxy_router",
     "sso_router",
+    "x402_bundles_router",
+    "x402_facilitator_router",
     "x402_governance_router",
     "x402_marketplace_router",
+    "x402_revenue_router",
 ]

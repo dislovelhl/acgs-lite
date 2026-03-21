@@ -79,8 +79,11 @@ ROUTES = {
 # Install dependencies
 pip install -r requirements.txt
 
-# Run with auto-reload
-uvicorn main:app --reload --port 8080
+# Run from repo root
+python start_api_gateway.py
+
+# Or run with uvicorn from repo root
+python -m uvicorn src.core.services.api_gateway.main:app --reload --port 8080
 
 # Run tests
 pytest tests/

@@ -1,4 +1,18 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   redis:
     image: redis:7-alpine
     ports:
@@ -24,12 +38,15 @@ services:
     environment:
       REDIS_URL: redis://redis:6379
       OPA_URL: http://opa:8181
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/postgres
       CONSTITUTIONAL_HASH: cdd01ef066bc6cf2
       MACI_STRICT_MODE: "true"
       ACGS2_SERVICE_SECRET: dev-secret-do-not-use-in-prod
     volumes:
       - ./packages/enhanced_agent_bus:/app/packages/enhanced_agent_bus
     depends_on:
+      postgres:
+        condition: service_healthy
       redis:
         condition: service_healthy
 

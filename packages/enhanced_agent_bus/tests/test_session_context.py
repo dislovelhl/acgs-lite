@@ -207,7 +207,7 @@ class TestSessionContextStore:
 
     async def test_connect_redis_unavailable(self, store):
         """Test connection when Redis is not available."""
-        with patch("core.enhanced_agent_bus.session_context.REDIS_AVAILABLE", False):
+        with patch("enhanced_agent_bus.session_context.REDIS_AVAILABLE", False):
             result = await store.connect()
 
             assert result is False
@@ -866,6 +866,12 @@ class TestSessionContextManagerIntegration:
         """Test cache improves performance."""
         tenant_id = "cache-perf-tenant"
 
+        # Ensure clean state from prior runs
+        try:
+            await redis_manager.delete("cache-perf-test", tenant_id)
+        except Exception:
+            pass
+
         # Create session
         session = await redis_manager.create(
             governance_config=sample_governance_config,
@@ -873,16 +879,24 @@ class TestSessionContextManagerIntegration:
             session_id="cache-perf-test",
         )
 
+        # Record baseline metrics after create (create populates cache)
+        baseline = redis_manager.get_metrics()
+        baseline_hits = baseline["cache_hits"]
+        baseline_misses = baseline["cache_misses"]
+
+        # Evict from local cache so first get is a true cache miss
+        redis_manager._invalidate_cache("cache-perf-test", tenant_id)
+
         # First get - cache miss (from Redis)
         await redis_manager.get("cache-perf-test", tenant_id)
 
         # Second get - cache hit (from memory)
         await redis_manager.get("cache-perf-test", tenant_id)
 
-        # Check metrics
+        # Check that we got exactly 1 new hit and 1 new miss
         metrics = redis_manager.get_metrics()
-        assert metrics["cache_hits"] == 1
-        assert metrics["cache_misses"] == 1
+        assert metrics["cache_hits"] - baseline_hits == 1
+        assert metrics["cache_misses"] - baseline_misses == 1
 
         # Cleanup
         await redis_manager.delete("cache-perf-test", tenant_id)

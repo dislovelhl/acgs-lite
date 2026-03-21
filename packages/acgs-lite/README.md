@@ -6,7 +6,7 @@
 
 ---
 
-**560ns** P50 latency | **100%** compliance | **9** regulatory frameworks | **11** integrations | **460+ tests** | **125** checklist items | **Apache-2.0**
+**Low-latency** validation | **Rule-based governance** | **9** regulatory frameworks | **11** integrations | **Current tests in repo** | **125** checklist items | **Apache-2.0**
 
 ---
 
@@ -24,7 +24,7 @@ These are not hypotheticals. They are happening now. At scale. Billions of conse
 
 The EU AI Act takes full enforcement August 2026. Fines up to 7% of global annual revenue. Most companies have zero governance infrastructure. The liability is shifting from "who built the model" to "who deployed it." Deployment without provable governance is becoming uninsurable.
 
-**ACGS-Lite is HTTPS for AI** -- the early web could not scale commercially until SSL/TLS provided cryptographic proof that transactions were secure. AI cannot scale into regulated, high-stakes domains without the equivalent: cryptographic proof that decisions are constitutionally compliant. Five lines of code. 560 nanoseconds of overhead.
+**ACGS-Lite is HTTPS for AI** -- the early web could not scale commercially until SSL/TLS provided cryptographic proof that transactions were secure. AI cannot scale into regulated, high-stakes domains without the equivalent: cryptographic proof that decisions are constitutionally compliant. Five lines of code. Benchmark the current checkout before quoting latency.
 
 ## The Solution
 
@@ -159,7 +159,9 @@ Action in --> lowercase + first-word extract (18ns)
           --> decision out: ALLOW | DENY | ESCALATE
 ```
 
-P50: 560ns. P99: 3.9us. 100% compliance across 847 benchmark scenarios. Zero false negatives.
+Performance and benchmark results depend on the current checkout, optional Rust acceleration, and
+the benchmark harness used. Run the local benchmark and test suite before quoting exact latency,
+scenario counts, or compliance percentages.
 
 ---
 
@@ -337,7 +339,9 @@ The creator has no technical background. No CS degree. No bootcamp. No prior pro
 
 He taught himself by building with Claude -- Anthropic's AI assistant -- day after day, for two years. Every architecture decision, every optimization, every test was a conversation between a human with a vision and an AI with the capability to realize it.
 
-The governance engine has been through 118 optimization experiments, tracked in an append-only research log. It started at 145 microseconds P99 latency and now runs at 3.9 microseconds -- a 37x improvement through systematic experimentation: Aho-Corasick automata, CPython specializer warmup, bit-trick anchor dispatch, pre-allocated exception pools. The benchmark suite covers 847 scenarios with 100% compliance and zero false negatives.
+The governance engine has been through repeated optimization experiments, tracked in the research
+artifacts in this repository. The exact latency, throughput, and benchmark totals should be taken
+from the current benchmark output rather than frozen README numbers.
 
 This is a democratic argument, not just a technical one.
 

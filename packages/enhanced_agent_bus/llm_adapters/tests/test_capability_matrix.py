@@ -613,7 +613,7 @@ class TestProviderProfiles:
 
     def test_azure_profile(self, registry):
         """Test Azure OpenAI profile."""
-        azure = registry.get_profile("azure-gpt-5-2")
+        azure = registry.get_profile("azure-gpt-5-4")
         assert azure is not None
         assert azure.provider_type == "azure"
 

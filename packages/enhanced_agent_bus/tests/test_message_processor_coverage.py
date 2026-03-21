@@ -369,7 +369,7 @@ class TestPromptInjectionDetection:
 class TestMessageProcessorProcess:
     """Tests for process method."""
 
-    @patch("core.enhanced_agent_bus.message_processor.get_runtime_security_scanner")
+    @patch("enhanced_agent_bus.message_processor.get_runtime_security_scanner")
     async def test_process_valid_message(self, mock_get_scanner):
         """Process valid message returns success."""
         # Mock scanner to return valid result
@@ -423,7 +423,7 @@ class TestMessageProcessorProcess:
 
         assert processor.processed_count >= initial_count
 
-    @patch("core.enhanced_agent_bus.message_processor.get_runtime_security_scanner")
+    @patch("enhanced_agent_bus.message_processor.get_runtime_security_scanner")
     async def test_process_with_custom_strategy(self, mock_get_scanner):
         """Process uses custom processing strategy."""
         # Mock scanner to return valid result

@@ -116,9 +116,15 @@ class OpenClawAdapter(BaseLLMAdapter):
         "anthropic/claude-sonnet-4-6": {"prompt": 3.00, "completion": 15.00},
         "anthropic/claude-haiku-4-5-20251001": {"prompt": 1.00, "completion": 5.00},
         # OpenAI models via OpenClaw
+        "openai/gpt-5.4": {"prompt": 2.00, "completion": 16.00},
+        "openai/gpt-5.3": {"prompt": 1.75, "completion": 14.00},
         "openai/gpt-5.2": {"prompt": 1.75, "completion": 14.00},
         "openai/gpt-5.1": {"prompt": 1.25, "completion": 10.00},
         "openai/gpt-5-mini": {"prompt": 0.25, "completion": 2.00},
+        # xAI models via OpenClaw
+        "xai/grok-4-1-fast": {"prompt": 0.20, "completion": 0.50},
+        "xai/grok-4.20": {"prompt": 2.00, "completion": 6.00},
+        "xai/grok-4": {"prompt": 3.00, "completion": 15.00},
         # Google models via OpenClaw
         "google/gemini-2.0-flash": {"prompt": 0.0, "completion": 0.0},
     }

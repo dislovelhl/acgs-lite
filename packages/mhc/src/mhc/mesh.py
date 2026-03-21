@@ -1,6 +1,6 @@
 """Constitutional Mesh — Byzantine-tolerant peer validation with cryptographic proof.
 
-The defensible core of omalhc. Every agent's output is validated by randomly
+The defensible core of constitutional_swarm. Every agent's output is validated by randomly
 assigned peers using the ACGS constitutional engine (443ns). No single
 validator bottleneck. Tolerates up to 1/3 faulty/malicious agents.
 
@@ -30,7 +30,7 @@ from typing import Any
 
 from acgs_lite import Constitution, ConstitutionalViolationError, Rule
 
-from omalhc.dna import AgentDNA
+from constitutional_swarm.dna import AgentDNA
 
 
 # ---------------------------------------------------------------------------

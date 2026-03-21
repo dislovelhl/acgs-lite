@@ -47,6 +47,7 @@ except ImportError:
     def init_otel(*args: object, **kwargs: object) -> None:  # type: ignore[misc]
         """Fallback no-op when optional OpenTelemetry config is unavailable."""
 
+
 from src.core.shared.security.auth import (
     require_role,
 )
@@ -75,9 +76,13 @@ from .routes import (
     gateway_v1_router,
     proxy_router,
     sso_router,
+    x402_bundles_router,
+    x402_facilitator_router,
     x402_governance_router,
     x402_marketplace_router,
+    x402_revenue_router,
 )
+from .routes.x402_governance import ensure_attestation_secret_config
 
 try:
     from .routes.pqc_phase5 import pqc_phase5_router
@@ -219,6 +224,9 @@ app.add_middleware(
             "/x402/circuit-breaker",
             "/x402/policy-lint",
             "/x402/eu-ai-log",
+            "/x402/bundle/scout",
+            "/x402/bundle/shield",
+            "/x402/bundle/fortress",
         ),
         session_cookie_name="acgs2_session",
     ),
@@ -277,7 +285,14 @@ if ENABLE_RATE_LIMITING:
             requests=30,
             window_seconds=60,
             scope=RateLimitScope.IP,
-            endpoints=["/x402/check", "/x402/verify", "/x402/pricing", "/x402/health"],
+            endpoints=[
+                "/x402/check",
+                "/x402/verify",
+                "/x402/pricing",
+                "/x402/health",
+                "/x402/bundles",
+                "/x402/facilitator-health",
+            ],
         ),
         # x402 paid endpoints — generous but bounded (payment = auth)
         RateLimitRule(
@@ -285,12 +300,33 @@ if ENABLE_RATE_LIMITING:
             window_seconds=60,
             scope=RateLimitScope.IP,
             endpoints=[
-                "/x402/validate", "/x402/audit", "/x402/certify", "/x402/batch",
-                "/x402/treasury", "/x402/scan", "/x402/classify-risk",
-                "/x402/compliance", "/x402/simulate", "/x402/trust",
-                "/x402/anomaly", "/x402/explain", "/x402/invariant-guard",
-                "/x402/circuit-breaker", "/x402/policy-lint", "/x402/eu-ai-log",
+                "/x402/validate",
+                "/x402/audit",
+                "/x402/certify",
+                "/x402/batch",
+                "/x402/treasury",
+                "/x402/scan",
+                "/x402/classify-risk",
+                "/x402/compliance",
+                "/x402/simulate",
+                "/x402/trust",
+                "/x402/anomaly",
+                "/x402/explain",
+                "/x402/invariant-guard",
+                "/x402/circuit-breaker",
+                "/x402/policy-lint",
+                "/x402/eu-ai-log",
+                "/x402/bundle/scout",
+                "/x402/bundle/shield",
+                "/x402/bundle/fortress",
             ],
+        ),
+        # x402 admin endpoints — strict rate limit
+        RateLimitRule(
+            requests=10,
+            window_seconds=60,
+            scope=RateLimitScope.IP,
+            endpoints=["/x402/revenue"],
         ),
         # Default for other endpoints
         RateLimitRule(
@@ -441,11 +477,14 @@ logger.info("PQC Phase 5 admin routes configured: /api/v1/admin/pqc/pqc-only-mod
 # Include x402 Governance-as-a-Service routes (pay-per-call constitutional validation)
 # Endpoints: /x402/pricing, /x402/validate, /x402/treasury, /x402/health
 # Constitutional Hash: cdd01ef066bc6cf2
+ensure_attestation_secret_config()
 app.include_router(x402_governance_router)
 app.include_router(x402_marketplace_router)
+app.include_router(x402_bundles_router)
+app.include_router(x402_facilitator_router)
+app.include_router(x402_revenue_router)
 logger.info(
-    "x402 routes configured: governance (check/validate/audit/certify/batch/treasury) "
-    "+ marketplace (scan/classify-risk/compliance/simulate/trust/anomaly/explain)"
+    "x402 routes configured: governance + marketplace + bundles + facilitator + revenue"
 )
 
 # x402 Payment Middleware — activates only when EVM_ADDRESS is set
@@ -466,9 +505,7 @@ if _x402_pay_to:
         _price_certify = os.getenv("X402_PRICE_CERTIFY", "0.50")
         _price_batch = os.getenv("X402_PRICE_BATCH", "0.10")
         _price_treasury = os.getenv("X402_PRICE_TREASURY", "0.05")
-        _x402_facilitator_url = os.getenv(
-            "FACILITATOR_URL", "https://facilitator.xpay.sh"
-        )
+        _x402_facilitator_url = os.getenv("FACILITATOR_URL", "https://facilitator.xpay.sh")
 
         _facilitator_cfg = FacilitatorConfig(url=_x402_facilitator_url)
         _facilitator_client = HTTPFacilitatorClient(_facilitator_cfg)
@@ -503,7 +540,9 @@ if _x402_pay_to:
             ),
             "POST /x402/certify": X402RouteConfig(
                 accepts=[_make_option(_price_certify)],
-                description="Signed attestation — verifiable compliance proof ($" + _price_certify + ")",
+                description="Signed attestation — verifiable compliance proof ($"
+                + _price_certify
+                + ")",
                 extensions=_bazaar_meta,
             ),
             "POST /x402/batch": X402RouteConfig(
@@ -571,6 +610,22 @@ if _x402_pay_to:
             "POST /x402/eu-ai-log": X402RouteConfig(
                 accepts=[_make_option(os.getenv("X402_PRICE_EU_AI_LOG", "0.10"))],
                 description="EU AI Act Article 12 logging ($0.10)",
+                extensions=_bazaar_meta,
+            ),
+            # Bundle endpoints
+            "POST /x402/bundle/scout": X402RouteConfig(
+                accepts=[_make_option(os.getenv("X402_PRICE_BUNDLE_SCOUT", "0.05"))],
+                description="Scout bundle: check + validate + scan ($0.05)",
+                extensions=_bazaar_meta,
+            ),
+            "POST /x402/bundle/shield": X402RouteConfig(
+                accepts=[_make_option(os.getenv("X402_PRICE_BUNDLE_SHIELD", "0.25"))],
+                description="Shield bundle: 8-endpoint risk analysis ($0.25)",
+                extensions=_bazaar_meta,
+            ),
+            "POST /x402/bundle/fortress": X402RouteConfig(
+                accepts=[_make_option(os.getenv("X402_PRICE_BUNDLE_FORTRESS", "1.00"))],
+                description="Fortress bundle: 15-endpoint enterprise suite ($1.00)",
                 extensions=_bazaar_meta,
             ),
         }

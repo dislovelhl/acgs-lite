@@ -31,6 +31,7 @@ class ModelProvider(Enum):
     DEEPSEEK = "deepseek"
     META = "meta"  # Llama
     HUGGINGFACE = "huggingface"
+    XAI = "xai"  # xAI Grok
     MOONSHOT = "moonshot"  # Kimi AI
     CUSTOM = "custom"
 

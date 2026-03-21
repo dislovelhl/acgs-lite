@@ -1,4 +1,4 @@
-"""omalhc — Constitutional Swarm Mesh.
+"""constitutional_swarm — Constitutional Swarm Mesh.
 
 Orchestrator-free multi-agent governance via embedded Agent DNA,
 stigmergic task coordination, and constitutional peer validation.
@@ -9,12 +9,12 @@ Three breakthrough patterns:
   C. Constitutional Mesh — peer-validated Byzantine tolerance
 """
 
-from omalhc.dna import constitutional_dna, AgentDNA
-from omalhc.capability import Capability, CapabilityRegistry
-from omalhc.contract import TaskContract, ContractStatus
-from omalhc.artifact import Artifact, ArtifactStore
-from omalhc.swarm import SwarmExecutor, TaskDAG, TaskNode
-from omalhc.mesh import ConstitutionalMesh, PeerAssignment, ValidationVote, MeshProof, MeshResult
+from constitutional_swarm.dna import constitutional_dna, AgentDNA
+from constitutional_swarm.capability import Capability, CapabilityRegistry
+from constitutional_swarm.contract import TaskContract, ContractStatus
+from constitutional_swarm.artifact import Artifact, ArtifactStore
+from constitutional_swarm.swarm import SwarmExecutor, TaskDAG, TaskNode
+from constitutional_swarm.mesh import ConstitutionalMesh, PeerAssignment, ValidationVote, MeshProof, MeshResult
 
 __all__ = [
     "constitutional_dna",

@@ -37,7 +37,7 @@ class TestOpenAIAdapterInit:
     def test_default_model(self):
         with patch.dict("os.environ", {"OPENAI_API_KEY": "sk-fake"}):
             a = OpenAIAdapter(api_key="sk-fake")
-        assert a.model == "gpt-5.2"
+        assert a.model == "gpt-5.4"
 
     def test_custom_model(self):
         with patch.dict("os.environ", {"OPENAI_API_KEY": "sk-fake"}):
@@ -67,7 +67,7 @@ class TestEstimateCost:
         with patch.dict("os.environ", {"OPENAI_API_KEY": "sk-fake"}):
             a = OpenAIAdapter(model="totally-unknown-model", api_key="sk-fake")
         cost = a.estimate_cost(prompt_tokens=1000, completion_tokens=500)
-        # Falls back to gpt-5.2 pricing
+        # Falls back to gpt-5.4 pricing
         assert cost.total_cost_usd > 0
 
     def test_zero_tokens(self, adapter):

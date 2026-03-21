@@ -7,6 +7,7 @@ export interface Env {
   AUDIT_DB: D1Database;
   CONSTITUTIONAL_HASH: string;
   UPSTREAM_API_KEY?: string;
+  ADMIN_SECRET?: string;
 }
 
 export interface GovernanceContext {

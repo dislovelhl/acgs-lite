@@ -59,6 +59,7 @@ from .config import (  # noqa: E402
     OpenAIAdapterConfig,
     OpenClawAdapterConfig,
     RateLimitConfig,
+    XAIAdapterConfig,
 )
 from .cost_optimizer import (  # noqa: E402
     BatchOptimizer,
@@ -142,6 +143,11 @@ try:
     from .openclaw_adapter import OpenClawAdapter
 except ImportError:
     OpenClawAdapter = None  # type: ignore[assignment]
+
+try:
+    from .xai_adapter import XAIAdapter
+except ImportError:
+    XAIAdapter = None  # type: ignore[assignment]
 
 # Version info
 __version__ = "1.0.0"
@@ -236,6 +242,8 @@ __all__ = [
     "ToolType",
     "UrgencyLevel",
     "WarmupResult",
+    "XAIAdapter",
+    "XAIAdapterConfig",
     "__constitutional_hash__",
     # Metadata
     "__version__",

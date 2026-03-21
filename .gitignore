@@ -37,6 +37,12 @@ node_modules/
 .vscode/
 .idea/
 
+# Claude Code worktrees (embedded git repos — not submodules)
+.claude/worktrees/
+
+# Demo harnesses (local only)
+constitutional-sentinel-demo/
+
 # OS
 .DS_Store
 Thumbs.db

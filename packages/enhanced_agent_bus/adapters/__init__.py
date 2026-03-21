@@ -70,6 +70,7 @@ def create_adapter(
         ModelProvider.DEEPSEEK: DeepSeekAdapter,
         ModelProvider.HUGGINGFACE: HuggingFaceAdapter,
         ModelProvider.META: HuggingFaceAdapter,
+        ModelProvider.XAI: OpenAIAdapter,  # xAI uses OpenAI-compatible API
         ModelProvider.MOONSHOT: OpenAIAdapter,  # Moonshot uses OpenAI-compatible API
     }
 

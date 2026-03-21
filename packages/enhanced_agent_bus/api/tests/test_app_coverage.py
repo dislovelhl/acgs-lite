@@ -611,8 +611,12 @@ class TestLifespanStartup:
                 },
             ):
                 async with app_module._lifespan_context(fake_app):
-                    # workflow_executor should not be set on app.state
-                    assert not hasattr(fake_app.state, "workflow_executor") or True
+                    assert hasattr(fake_app.state, "workflow_executor")
+                    assert fake_app.state.workflow_executor is not None
+                    assert isinstance(
+                        fake_app.state.workflow_executor.repository,
+                        app_module.InMemoryWorkflowRepository,
+                    )
 
     async def test_startup_workflow_executor_general_exception(self):
         """Test that general exception during workflow init is handled."""
@@ -648,6 +652,12 @@ class TestLifespanStartup:
             ):
                 async with app_module._lifespan_context(fake_app):
                     assert fake_app.state.agent_bus is fake_mp
+                    assert hasattr(fake_app.state, "workflow_executor")
+                    assert fake_app.state.workflow_executor is not None
+                    assert isinstance(
+                        fake_app.state.workflow_executor.repository,
+                        app_module.InMemoryWorkflowRepository,
+                    )
 
     async def test_startup_batch_processor_failure_handled(self):
         """Test that BatchMessageProcessor failure is handled gracefully."""

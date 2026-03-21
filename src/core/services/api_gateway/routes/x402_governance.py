@@ -40,6 +40,14 @@ from pydantic import BaseModel, Field
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.structured_logging import get_logger
 
+from ._x402_common import (
+    PAID_RESPONSE_DISCLAIMER,
+    RelatedEndpoint,
+    build_related_endpoint,
+    ensure_attestation_secret_config,
+)
+from ._x402_revenue import RevenueEvent, emit_revenue_event
+
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/x402", tags=["x402-governance"])
@@ -55,9 +63,6 @@ X402_PRICE_TREASURY = os.getenv("X402_PRICE_TREASURY", "0.05")
 X402_NETWORK = os.getenv("X402_NETWORK", "eip155:84532")
 X402_PAY_TO = os.getenv("EVM_ADDRESS", "")
 X402_FACILITATOR = os.getenv("FACILITATOR_URL", "https://facilitator.xpay.sh")
-_ATTESTATION_SECRET = os.getenv(
-    "ATTESTATION_SECRET", os.getenv("JWT_SECRET", "acgs2-dev-key")
-)
 BATCH_MAX_ACTIONS = 20
 
 # ---------------------------------------------------------------------------
@@ -99,6 +104,8 @@ class GovernanceValidationResponse(BaseModel):
     violations: list[str]
     timestamp: str
     processing_ms: int
+    disclaimer: str | None = None
+    related_endpoints: list[RelatedEndpoint] = Field(default_factory=list)
 
 
 class GovernanceAuditResponse(BaseModel):
@@ -112,6 +119,8 @@ class GovernanceAuditResponse(BaseModel):
     recommendations: list[str]
     timestamp: str
     processing_ms: int
+    disclaimer: str | None = None
+    related_endpoints: list[RelatedEndpoint] = Field(default_factory=list)
 
 
 class AttestationReceipt(BaseModel):
@@ -128,7 +137,9 @@ class GovernanceCertifyResponse(GovernanceAuditResponse):
 
 class BatchValidationRequest(BaseModel):
     actions: list[str] = Field(
-        ..., min_length=1, max_length=BATCH_MAX_ACTIONS,
+        ...,
+        min_length=1,
+        max_length=BATCH_MAX_ACTIONS,
         description=f"1-{BATCH_MAX_ACTIONS} actions to validate",
     )
     agent_id: str = Field(default="anonymous")
@@ -140,6 +151,8 @@ class BatchValidationResponse(BaseModel):
     summary: dict[str, int]
     total_actions: int
     processing_ms: int
+    disclaimer: str | None = None
+    related_endpoints: list[RelatedEndpoint] = Field(default_factory=list)
 
 
 class EndpointPrice(BaseModel):
@@ -152,6 +165,7 @@ class EndpointPrice(BaseModel):
 
 class X402PricingInfo(BaseModel):
     endpoints: list[EndpointPrice]
+    journeys: list[PricingJourney]
     network: str
     asset: str
     facilitator_url: str
@@ -159,14 +173,37 @@ class X402PricingInfo(BaseModel):
     constitutional_hash: str
 
 
+class PricingJourneyStep(BaseModel):
+    endpoint: str
+    method: str
+    price_usd: str
+    description: str
+
+
+class PricingJourney(BaseModel):
+    name: str
+    question: str
+    steps: list[PricingJourneyStep]
+
+
+X402PricingInfo.model_rebuild()
+
+
 # ---------------------------------------------------------------------------
 # Dangerous patterns & risk keywords
 # ---------------------------------------------------------------------------
 
 _DANGEROUS_PATTERNS: list[str] = [
-    "delete all", "drop table", "rm -rf", "format disk",
-    "transfer all funds", "drain wallet", "self-destruct",
-    "disable governance", "bypass security", "ignore policy",
+    "delete all",
+    "drop table",
+    "rm -rf",
+    "format disk",
+    "transfer all funds",
+    "drain wallet",
+    "self-destruct",
+    "disable governance",
+    "bypass security",
+    "ignore policy",
 ]
 
 _RISK_KEYWORDS: dict[str, list[str]] = {
@@ -177,8 +214,12 @@ _RISK_KEYWORDS: dict[str, list[str]] = {
 }
 
 _FALLBACK_INJECTION_PATTERNS: list[str] = [
-    "ignore all previous", "you are now", "forget everything",
-    "system prompt", "jailbreak", "dan mode",
+    "ignore all previous",
+    "you are now",
+    "forget everything",
+    "system prompt",
+    "jailbreak",
+    "dan mode",
 ]
 
 # ---------------------------------------------------------------------------
@@ -227,9 +268,7 @@ def _evaluate_action(
         if detailed or score > 0:
             risk_breakdown[category] = clamped
         if score > 0.6:
-            violations.append(
-                f"high_risk_{category}: action exceeds category threshold"
-            )
+            violations.append(f"high_risk_{category}: action exceeds category threshold")
 
     total_risk = sum(risk_breakdown.values())
 
@@ -272,21 +311,15 @@ def _evaluate_action(
 
         recommendations: list[str] = []
         if risk_breakdown.get("financial", 0) > 0:
-            recommendations.append(
-                "Add multi-sig approval for financial operations"
-            )
+            recommendations.append("Add multi-sig approval for financial operations")
         if risk_breakdown.get("access", 0) > 0:
             recommendations.append("Implement least-privilege access controls")
         if risk_breakdown.get("data", 0) > 0:
             recommendations.append("Apply data classification and DLP policies")
         if risk_breakdown.get("governance", 0) > 0:
-            recommendations.append(
-                "Route policy changes through MACI separation-of-powers"
-            )
+            recommendations.append("Route policy changes through MACI separation-of-powers")
         if not violations and not recommendations:
-            recommendations.append(
-                "Action complies with all constitutional governance rules"
-            )
+            recommendations.append("Action complies with all constitutional governance rules")
         result["recommendations"] = recommendations
 
     return result
@@ -302,7 +335,7 @@ def _sign_receipt(data: dict[str, Any]) -> AttestationReceipt:
     canonical = json.dumps(data, sort_keys=True, separators=(",", ":"))
     receipt_hash = hashlib.sha256(canonical.encode()).hexdigest()
     signature = hmac.new(
-        _ATTESTATION_SECRET.encode(), canonical.encode(), hashlib.sha256
+        ensure_attestation_secret_config().encode(), canonical.encode(), hashlib.sha256
     ).hexdigest()
     return AttestationReceipt(
         receipt_hash=receipt_hash,
@@ -313,6 +346,239 @@ def _sign_receipt(data: dict[str, Any]) -> AttestationReceipt:
     )
 
 
+def _validate_related_endpoints(decision: str) -> list[RelatedEndpoint]:
+    if decision == "BLOCKED":
+        return [
+            build_related_endpoint(
+                endpoint="/x402/audit",
+                method="POST",
+                price_usd=X402_PRICE_AUDIT,
+                relation="deeper_analysis",
+                reason="Get category-level risk breakdown and recommendations.",
+            ),
+            build_related_endpoint(
+                endpoint="/x402/scan",
+                method="POST",
+                price_usd=os.getenv("X402_PRICE_SCAN", "0.03"),
+                relation="security_analysis",
+                reason="Check the action for prompt-injection patterns.",
+            ),
+        ]
+    return [
+        build_related_endpoint(
+            endpoint="/x402/certify",
+            method="POST",
+            price_usd=X402_PRICE_CERTIFY,
+            relation="trust_proof",
+            reason="Convert this validation into a signed attestation.",
+        ),
+        build_related_endpoint(
+            endpoint="/x402/audit",
+            method="POST",
+            price_usd=X402_PRICE_AUDIT,
+            relation="deeper_analysis",
+            reason="Request a full audit before high-impact execution.",
+        ),
+    ]
+
+
+def _audit_related_endpoints(decision: str, risk_level: str) -> list[RelatedEndpoint]:
+    endpoints = _validate_related_endpoints(decision)
+    if risk_level in {"HIGH", "CRITICAL"}:
+        endpoints.append(
+            build_related_endpoint(
+                endpoint="/x402/simulate",
+                method="POST",
+                price_usd=os.getenv("X402_PRICE_SIMULATE", "0.15"),
+                relation="policy_testing",
+                reason="Test stricter governance policies against similar actions.",
+            )
+        )
+    return endpoints
+
+
+def _quick_check_related_endpoints(has_violation: bool) -> list[dict[str, str]]:
+    if has_violation:
+        endpoints = [
+            build_related_endpoint(
+                endpoint="/x402/validate",
+                method="POST",
+                price_usd=X402_PRICE_VALIDATE,
+                relation="full_result",
+                reason="Retrieve the full violations list for remediation.",
+            ),
+            build_related_endpoint(
+                endpoint="/x402/audit",
+                method="POST",
+                price_usd=X402_PRICE_AUDIT,
+                relation="deeper_analysis",
+                reason="Inspect risk breakdown and recommended safeguards.",
+            ),
+            build_related_endpoint(
+                endpoint="/x402/scan",
+                method="POST",
+                price_usd=os.getenv("X402_PRICE_SCAN", "0.03"),
+                relation="security_analysis",
+                reason="Check for prompt injection or override patterns.",
+            ),
+        ]
+    else:
+        endpoints = [
+            build_related_endpoint(
+                endpoint="/x402/certify",
+                method="POST",
+                price_usd=X402_PRICE_CERTIFY,
+                relation="trust_proof",
+                reason="Generate a signed receipt other agents can verify.",
+            ),
+            build_related_endpoint(
+                endpoint="/x402/compliance",
+                method="POST",
+                price_usd=os.getenv("X402_PRICE_COMPLIANCE", "0.25"),
+                relation="framework_assessment",
+                reason="Evaluate the action across multiple compliance frameworks.",
+            ),
+        ]
+    return [item.model_dump() for item in endpoints]
+
+
+def _pricing_journeys() -> list[PricingJourney]:
+    return [
+        PricingJourney(
+            name="Safety Check",
+            question="Is this action safe to run right now?",
+            steps=[
+                PricingJourneyStep(
+                    endpoint="/x402/check",
+                    method="GET",
+                    price_usd="0",
+                    description="Quick pass/fail governance check.",
+                ),
+                PricingJourneyStep(
+                    endpoint="/x402/scan",
+                    method="POST",
+                    price_usd=os.getenv("X402_PRICE_SCAN", "0.03"),
+                    description="Prompt injection detection for the input.",
+                ),
+                PricingJourneyStep(
+                    endpoint="/x402/validate",
+                    method="POST",
+                    price_usd=X402_PRICE_VALIDATE,
+                    description="Full validation with detailed violations.",
+                ),
+            ],
+        ),
+        PricingJourney(
+            name="Risk Analysis",
+            question="How serious is the risk and what should change?",
+            steps=[
+                PricingJourneyStep(
+                    endpoint="/x402/audit",
+                    method="POST",
+                    price_usd=X402_PRICE_AUDIT,
+                    description="Risk breakdown and remediation guidance.",
+                ),
+                PricingJourneyStep(
+                    endpoint="/x402/classify-risk",
+                    method="POST",
+                    price_usd=os.getenv("X402_PRICE_CLASSIFY_RISK", "0.10"),
+                    description="EU AI Act risk classification.",
+                ),
+                PricingJourneyStep(
+                    endpoint="/x402/compliance",
+                    method="POST",
+                    price_usd=os.getenv("X402_PRICE_COMPLIANCE", "0.25"),
+                    description="Multi-framework compliance assessment.",
+                ),
+            ],
+        ),
+        PricingJourney(
+            name="Trust & Proof",
+            question="Can I prove this action was governed?",
+            steps=[
+                PricingJourneyStep(
+                    endpoint="/x402/certify",
+                    method="POST",
+                    price_usd=X402_PRICE_CERTIFY,
+                    description="Signed attestation proving governance review.",
+                ),
+                PricingJourneyStep(
+                    endpoint="/x402/verify",
+                    method="GET",
+                    price_usd="0",
+                    description="Free verification of attestation receipts.",
+                ),
+            ],
+        ),
+        PricingJourney(
+            name="Monitoring",
+            question="How do I monitor agent behavior over time?",
+            steps=[
+                PricingJourneyStep(
+                    endpoint="/x402/trust",
+                    method="POST",
+                    price_usd=os.getenv("X402_PRICE_TRUST", "0.02"),
+                    description="Track or query agent trust scores.",
+                ),
+                PricingJourneyStep(
+                    endpoint="/x402/anomaly",
+                    method="POST",
+                    price_usd=os.getenv("X402_PRICE_ANOMALY", "0.03"),
+                    description="Detect anomalous governance patterns.",
+                ),
+                PricingJourneyStep(
+                    endpoint="/x402/circuit-breaker",
+                    method="POST",
+                    price_usd=os.getenv("X402_PRICE_CIRCUIT", "0.10"),
+                    description="Trip or inspect governance safety limits.",
+                ),
+            ],
+        ),
+        PricingJourney(
+            name="Policy Ops",
+            question="How do I tune or harden policy before rollout?",
+            steps=[
+                PricingJourneyStep(
+                    endpoint="/x402/simulate",
+                    method="POST",
+                    price_usd=os.getenv("X402_PRICE_SIMULATE", "0.15"),
+                    description="Simulate candidate policy changes.",
+                ),
+                PricingJourneyStep(
+                    endpoint="/x402/policy-lint",
+                    method="POST",
+                    price_usd=os.getenv("X402_PRICE_POLICY_LINT", "0.05"),
+                    description="Lint rules for contradictions or gaps.",
+                ),
+                PricingJourneyStep(
+                    endpoint="/x402/explain",
+                    method="POST",
+                    price_usd=os.getenv("X402_PRICE_EXPLAIN", "0.05"),
+                    description="Explain why a decision was made.",
+                ),
+            ],
+        ),
+        PricingJourney(
+            name="Regulatory",
+            question="What supports regulated audit readiness?",
+            steps=[
+                PricingJourneyStep(
+                    endpoint="/x402/eu-ai-log",
+                    method="POST",
+                    price_usd=os.getenv("X402_PRICE_EU_AI_LOG", "0.10"),
+                    description="EU AI Act Article 12 record-keeping.",
+                ),
+                PricingJourneyStep(
+                    endpoint="/x402/compliance",
+                    method="POST",
+                    price_usd=os.getenv("X402_PRICE_COMPLIANCE", "0.25"),
+                    description="Multi-framework compliance scoring.",
+                ),
+            ],
+        ),
+    ]
+
+
 # ===================================================================
 # FREE ENDPOINTS — funnel entry, discovery, verification
 # ===================================================================
@@ -320,9 +586,7 @@ def _sign_receipt(data: dict[str, Any]) -> AttestationReceipt:
 
 @router.get("/check")
 async def quick_check(
-    action: str = Query(
-        ..., max_length=2000, description="Action to check"
-    ),
+    action: str = Query(..., max_length=2000, description="Action to check"),
 ) -> dict[str, Any]:
     """
     Free governance check — pass/fail only.
@@ -337,22 +601,11 @@ async def quick_check(
         "decision": result["decision"],
         "risk_level": result["risk_level"],
         "constitutional_hash": CONSTITUTIONAL_HASH,
+        "related_endpoints": _quick_check_related_endpoints(bool(first_violation)),
     }
     if first_violation:
         response["first_violation"] = first_violation
         response["total_violations"] = len(result["violations"])
-        response["upgrade"] = {
-            "details": "POST /x402/validate ($0.01) — full violations list",
-            "audit": "POST /x402/audit ($0.05) — risk breakdown",
-            "scan": "POST /x402/scan ($0.03) — injection detection",
-        }
-    else:
-        response["upgrade"] = {
-            "certify": "POST /x402/certify ($0.50) — signed attestation",
-            "compliance": (
-                "POST /x402/compliance ($0.25) — 8-framework assessment"
-            ),
-        }
     return response
 
 
@@ -362,97 +615,171 @@ async def get_pricing() -> X402PricingInfo:
     return X402PricingInfo(
         endpoints=[
             EndpointPrice(
-                endpoint="/x402/check", method="GET",
-                price_usd="0", auth="none",
+                endpoint="/x402/check",
+                method="GET",
+                price_usd="0",
+                auth="none",
                 description="Quick pass/fail governance check (free)",
             ),
             EndpointPrice(
-                endpoint="/x402/validate", method="POST",
-                price_usd=X402_PRICE_VALIDATE, auth="x402-payment",
+                endpoint="/x402/validate",
+                method="POST",
+                price_usd=X402_PRICE_VALIDATE,
+                auth="x402-payment",
                 description="Full governance validation with violations list",
             ),
             EndpointPrice(
-                endpoint="/x402/audit", method="POST",
-                price_usd=X402_PRICE_AUDIT, auth="x402-payment",
+                endpoint="/x402/audit",
+                method="POST",
+                price_usd=X402_PRICE_AUDIT,
+                auth="x402-payment",
                 description="Compliance audit: risk breakdown + recommendations",
             ),
             EndpointPrice(
-                endpoint="/x402/certify", method="POST",
-                price_usd=X402_PRICE_CERTIFY, auth="x402-payment",
+                endpoint="/x402/certify",
+                method="POST",
+                price_usd=X402_PRICE_CERTIFY,
+                auth="x402-payment",
                 description="Signed attestation: verifiable compliance proof",
             ),
             EndpointPrice(
-                endpoint="/x402/batch", method="POST",
-                price_usd=X402_PRICE_BATCH, auth="x402-payment",
+                endpoint="/x402/batch",
+                method="POST",
+                price_usd=X402_PRICE_BATCH,
+                auth="x402-payment",
                 description=f"Bulk validation: up to {BATCH_MAX_ACTIONS} actions",
             ),
             EndpointPrice(
-                endpoint="/x402/treasury", method="POST",
-                price_usd=X402_PRICE_TREASURY, auth="x402-payment",
+                endpoint="/x402/treasury",
+                method="POST",
+                price_usd=X402_PRICE_TREASURY,
+                auth="x402-payment",
                 description="DAO treasury intelligence and risk analysis",
             ),
             EndpointPrice(
-                endpoint="/x402/verify", method="GET",
-                price_usd="0", auth="none",
+                endpoint="/x402/verify",
+                method="GET",
+                price_usd="0",
+                auth="none",
                 description="Verify attestation receipt authenticity (free)",
             ),
             # Marketplace endpoints
             EndpointPrice(
-                endpoint="/x402/scan", method="POST",
-                price_usd="0.03", auth="x402-payment",
+                endpoint="/x402/scan",
+                method="POST",
+                price_usd="0.03",
+                auth="x402-payment",
                 description="Prompt injection detection",
             ),
             EndpointPrice(
-                endpoint="/x402/classify-risk", method="POST",
-                price_usd="0.10", auth="x402-payment",
+                endpoint="/x402/classify-risk",
+                method="POST",
+                price_usd="0.10",
+                auth="x402-payment",
                 description="EU AI Act risk classification",
             ),
             EndpointPrice(
-                endpoint="/x402/compliance", method="POST",
-                price_usd="0.25", auth="x402-payment",
+                endpoint="/x402/compliance",
+                method="POST",
+                price_usd="0.25",
+                auth="x402-payment",
                 description="Multi-framework compliance (8 frameworks)",
             ),
             EndpointPrice(
-                endpoint="/x402/simulate", method="POST",
-                price_usd="0.15", auth="x402-payment",
+                endpoint="/x402/simulate",
+                method="POST",
+                price_usd="0.15",
+                auth="x402-payment",
                 description="Policy change simulation",
             ),
             EndpointPrice(
-                endpoint="/x402/trust", method="POST",
-                price_usd="0.02", auth="x402-payment",
+                endpoint="/x402/trust",
+                method="POST",
+                price_usd="0.02",
+                auth="x402-payment",
                 description="Agent trust scoring",
             ),
             EndpointPrice(
-                endpoint="/x402/anomaly", method="POST",
-                price_usd="0.03", auth="x402-payment",
+                endpoint="/x402/anomaly",
+                method="POST",
+                price_usd="0.03",
+                auth="x402-payment",
                 description="Governance anomaly detection",
             ),
             EndpointPrice(
-                endpoint="/x402/explain", method="POST",
-                price_usd="0.05", auth="x402-payment",
+                endpoint="/x402/explain",
+                method="POST",
+                price_usd="0.05",
+                auth="x402-payment",
                 description="Decision explainability",
             ),
             EndpointPrice(
-                endpoint="/x402/invariant-guard", method="POST",
-                price_usd="0.10", auth="x402-payment",
+                endpoint="/x402/invariant-guard",
+                method="POST",
+                price_usd="0.10",
+                auth="x402-payment",
                 description="Three-tier invariant enforcement",
             ),
             EndpointPrice(
-                endpoint="/x402/circuit-breaker", method="POST",
-                price_usd="0.10", auth="x402-payment",
+                endpoint="/x402/circuit-breaker",
+                method="POST",
+                price_usd="0.10",
+                auth="x402-payment",
                 description="Governance circuit breaker",
             ),
             EndpointPrice(
-                endpoint="/x402/policy-lint", method="POST",
-                price_usd="0.05", auth="x402-payment",
+                endpoint="/x402/policy-lint",
+                method="POST",
+                price_usd="0.05",
+                auth="x402-payment",
                 description="Policy quality & security scan",
             ),
             EndpointPrice(
-                endpoint="/x402/eu-ai-log", method="POST",
-                price_usd="0.10", auth="x402-payment",
+                endpoint="/x402/eu-ai-log",
+                method="POST",
+                price_usd="0.10",
+                auth="x402-payment",
                 description="EU AI Act Article 12 logging",
             ),
+            # Bundle endpoints
+            EndpointPrice(
+                endpoint="/x402/bundle/scout",
+                method="POST",
+                price_usd=os.getenv("X402_PRICE_BUNDLE_SCOUT", "0.05"),
+                auth="x402-payment",
+                description="Scout bundle: check + validate + scan",
+            ),
+            EndpointPrice(
+                endpoint="/x402/bundle/shield",
+                method="POST",
+                price_usd=os.getenv("X402_PRICE_BUNDLE_SHIELD", "0.25"),
+                auth="x402-payment",
+                description="Shield bundle: 8-endpoint risk analysis",
+            ),
+            EndpointPrice(
+                endpoint="/x402/bundle/fortress",
+                method="POST",
+                price_usd=os.getenv("X402_PRICE_BUNDLE_FORTRESS", "1.00"),
+                auth="x402-payment",
+                description="Fortress bundle: 15-endpoint enterprise suite",
+            ),
+            # Free discovery endpoints
+            EndpointPrice(
+                endpoint="/x402/bundles",
+                method="GET",
+                price_usd="0",
+                auth="none",
+                description="List available bundles with pricing and savings",
+            ),
+            EndpointPrice(
+                endpoint="/x402/facilitator-health",
+                method="GET",
+                price_usd="0",
+                auth="none",
+                description="Facilitator pool health status",
+            ),
         ],
+        journeys=_pricing_journeys(),
         network=X402_NETWORK,
         asset="USDC",
         facilitator_url=X402_FACILITATOR,
@@ -476,7 +803,7 @@ async def verify_receipt(
     # Recompute HMAC and compare
     expected_hash = hashlib.sha256(data.encode()).hexdigest()
     expected_sig = hmac.new(
-        _ATTESTATION_SECRET.encode(), data.encode(), hashlib.sha256
+        ensure_attestation_secret_config().encode(), data.encode(), hashlib.sha256
     ).hexdigest()
 
     hash_valid = hmac.compare_digest(receipt_hash, expected_hash)
@@ -488,6 +815,11 @@ async def verify_receipt(
         "signature_match": sig_valid,
         "signer": "acgs2-governance",
         "constitutional_hash": CONSTITUTIONAL_HASH,
+        "discovery": {
+            "check": "/x402/check",
+            "pricing": "/x402/pricing",
+            "certify": "/x402/certify",
+        },
     }
 
 
@@ -539,7 +871,21 @@ async def validate_governance(
         processing_ms=result["processing_ms"],
     )
 
-    response = GovernanceValidationResponse(**result)
+    response = GovernanceValidationResponse(
+        **result,
+        disclaimer=PAID_RESPONSE_DISCLAIMER,
+        related_endpoints=_validate_related_endpoints(result["decision"]),
+    )
+    await emit_revenue_event(RevenueEvent(
+        endpoint="/x402/validate",
+        price_usd=X402_PRICE_VALIDATE,
+        agent_id=body.agent_id,
+        decision=result["decision"],
+        timestamp=result["timestamp"],
+        processing_ms=result["processing_ms"],
+        network=X402_NETWORK,
+        wallet_address=X402_PAY_TO,
+    ))
     return response
 
 
@@ -563,7 +909,22 @@ async def audit_governance(
         processing_ms=result["processing_ms"],
     )
 
-    return GovernanceAuditResponse(**result)
+    response = GovernanceAuditResponse(
+        **result,
+        disclaimer=PAID_RESPONSE_DISCLAIMER,
+        related_endpoints=_audit_related_endpoints(result["decision"], result["risk_level"]),
+    )
+    await emit_revenue_event(RevenueEvent(
+        endpoint="/x402/audit",
+        price_usd=X402_PRICE_AUDIT,
+        agent_id=body.agent_id,
+        decision=result["decision"],
+        timestamp=result["timestamp"],
+        processing_ms=result["processing_ms"],
+        network=X402_NETWORK,
+        wallet_address=X402_PAY_TO,
+    ))
+    return response
 
 
 @router.post("/certify")
@@ -593,7 +954,23 @@ async def certify_governance(
         processing_ms=result["processing_ms"],
     )
 
-    return GovernanceCertifyResponse(**result, attestation=attestation)
+    response = GovernanceCertifyResponse(
+        **result,
+        attestation=attestation,
+        disclaimer=PAID_RESPONSE_DISCLAIMER,
+        related_endpoints=_audit_related_endpoints(result["decision"], result["risk_level"]),
+    )
+    await emit_revenue_event(RevenueEvent(
+        endpoint="/x402/certify",
+        price_usd=X402_PRICE_CERTIFY,
+        agent_id=body.agent_id,
+        decision=result["decision"],
+        timestamp=result["timestamp"],
+        processing_ms=result["processing_ms"],
+        network=X402_NETWORK,
+        wallet_address=X402_PAY_TO,
+    ))
+    return response
 
 
 @router.post("/batch")
@@ -627,12 +1004,30 @@ async def batch_validate(
         processing_ms=int(elapsed.total_seconds() * 1000),
     )
 
-    return BatchValidationResponse(
+    batch_ms = int(elapsed.total_seconds() * 1000)
+    response = BatchValidationResponse(
         results=results,
         summary=counts,
         total_actions=len(body.actions),
-        processing_ms=int(elapsed.total_seconds() * 1000),
+        processing_ms=batch_ms,
+        disclaimer=PAID_RESPONSE_DISCLAIMER,
+        related_endpoints=(
+            _validate_related_endpoints("BLOCKED")
+            if counts.get("BLOCKED", 0)
+            else _validate_related_endpoints("APPROVED")
+        ),
     )
+    await emit_revenue_event(RevenueEvent(
+        endpoint="/x402/batch",
+        price_usd=X402_PRICE_BATCH,
+        agent_id=body.agent_id,
+        decision=f"batch:{len(body.actions)}",
+        timestamp=datetime.now(UTC).isoformat(),
+        processing_ms=batch_ms,
+        network=X402_NETWORK,
+        wallet_address=X402_PAY_TO,
+    ))
+    return response
 
 
 @router.post("/treasury")
@@ -662,11 +1057,10 @@ async def treasury_overview(
     return {
         "dao": dao_name,
         "status": "query_accepted",
-        "note": (
-            "Full treasury analysis available via "
-            "neural-mcp dao_treasury_overview tool"
-        ),
+        "note": ("Full treasury analysis available via neural-mcp dao_treasury_overview tool"),
         "constitutional_hash": CONSTITUTIONAL_HASH,
+        "disclaimer": PAID_RESPONSE_DISCLAIMER,
+        "related_endpoints": [],
     }
 
 

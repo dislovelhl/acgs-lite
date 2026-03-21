@@ -157,7 +157,7 @@ async def test_llm_skipped_for_high_confidence():
     classifier._llm_client_initialized = True
 
     with patch(
-        "core.enhanced_agent_bus.deliberation_layer.intent_classifier.litellm.acompletion",
+        "enhanced_agent_bus.deliberation_layer.intent_classifier.litellm.acompletion",
         new_callable=AsyncMock,
     ) as mock_acompletion:
         # Query with strong factual keywords - high confidence
@@ -185,11 +185,11 @@ async def test_llm_fallback_on_error():
 
     # Force LITELLM_AVAILABLE to True for tests
     with patch(
-        "core.enhanced_agent_bus.deliberation_layer.intent_classifier.LITELLM_AVAILABLE", True
+        "enhanced_agent_bus.deliberation_layer.intent_classifier.LITELLM_AVAILABLE", True
     ):
         # Test Case 1: LLM raises an exception
         with patch(
-            "core.enhanced_agent_bus.deliberation_layer.intent_classifier.litellm.acompletion",
+            "enhanced_agent_bus.deliberation_layer.intent_classifier.litellm.acompletion",
             new_callable=AsyncMock,
             side_effect=RuntimeError("API connection error"),
         ):
@@ -208,7 +208,7 @@ async def test_llm_fallback_on_error():
 
         # Test Case 2: LLM returns empty response
         with patch(
-            "core.enhanced_agent_bus.deliberation_layer.intent_classifier.litellm.acompletion",
+            "enhanced_agent_bus.deliberation_layer.intent_classifier.litellm.acompletion",
             new_callable=AsyncMock,
             return_value={"choices": []},  # Empty choices
         ):
@@ -220,7 +220,7 @@ async def test_llm_fallback_on_error():
 
         # Test Case 3: LLM returns malformed response
         with patch(
-            "core.enhanced_agent_bus.deliberation_layer.intent_classifier.litellm.acompletion",
+            "enhanced_agent_bus.deliberation_layer.intent_classifier.litellm.acompletion",
             new_callable=AsyncMock,
             return_value={"choices": [{"message": {"content": "invalid json"}}]},
         ):

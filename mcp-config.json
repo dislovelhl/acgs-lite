@@ -52,8 +52,13 @@
       "POST /x402/circuit-breaker": {"price": "$0.10", "description": "Governance circuit breaker"},
       "POST /x402/policy-lint": {"price": "$0.05", "description": "Policy quality & security scan"},
       "POST /x402/eu-ai-log": {"price": "$0.10", "description": "EU AI Act Article 12 logging"},
+      "POST /x402/bundle/scout": {"price": "$0.05", "description": "Scout bundle: check + validate + scan"},
+      "POST /x402/bundle/shield": {"price": "$0.25", "description": "Shield bundle: 8-endpoint risk analysis"},
+      "POST /x402/bundle/fortress": {"price": "$1.00", "description": "Fortress bundle: 15-endpoint enterprise suite"},
       "GET /x402/verify": {"price": "free", "description": "Verify attestation receipts"},
       "GET /x402/pricing": {"price": "free", "description": "Endpoint discovery for agents"},
+      "GET /x402/bundles": {"price": "free", "description": "List available bundles with savings"},
+      "GET /x402/facilitator-health": {"price": "free", "description": "Facilitator pool health"},
       "GET /x402/health": {"price": "free", "description": "Service health check"}
     }
   }

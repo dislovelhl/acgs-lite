@@ -472,7 +472,7 @@ class TestLLMAssistantInit:
 
         assistant = LLMAssistant(api_key=None)
         # Without langchain or valid key, llm may be None or mock
-        assert assistant.model_name == "gpt-5.2"
+        assert assistant.model_name == "gpt-5.4"
 
 
 class TestLLMAssistantFallbackAnalysis:
@@ -1372,14 +1372,16 @@ class TestDemocraticGovernanceStabilityWithMHC:
 
     async def test_stability_constraint_with_mhc_mock(self):
         """Test the mHC stability path by mocking ManifoldHC and torch."""
-        import enhanced_agent_bus.governance.democratic_governance as mod
         from enhanced_agent_bus.governance.democratic_governance import (
             DemocraticConstitutionalGovernance,
         )
 
-        saved_mhc = mod.ManifoldHC
-        saved_torch_avail = mod.TORCH_AVAILABLE
-        saved_torch = getattr(mod, "torch", None)
+        # Get the actual module that the class method reads globals from
+        method_globals = DemocraticConstitutionalGovernance._apply_stability_constraint.__globals__
+
+        saved_mhc = method_globals.get("ManifoldHC")
+        saved_torch_avail = method_globals.get("TORCH_AVAILABLE")
+        saved_torch = method_globals.get("torch")
         try:
             # Mock ManifoldHC class and instance
             mock_mhc_class = MagicMock()
@@ -1404,10 +1406,10 @@ class TestDemocraticGovernanceStabilityWithMHC:
             mock_no_grad.__exit__ = MagicMock(return_value=False)
             mock_torch.no_grad.return_value = mock_no_grad
 
-            # Patch at module level
-            mod.ManifoldHC = mock_mhc_class
-            mod.TORCH_AVAILABLE = True
-            mod.torch = mock_torch
+            # Patch at the actual method globals level
+            method_globals["ManifoldHC"] = mock_mhc_class
+            method_globals["TORCH_AVAILABLE"] = True
+            method_globals["torch"] = mock_torch
 
             gov = DemocraticConstitutionalGovernance.__new__(DemocraticConstitutionalGovernance)
             gov.stability_layer = mock_mhc_instance
@@ -1415,32 +1417,32 @@ class TestDemocraticGovernanceStabilityWithMHC:
             result = await gov._apply_stability_constraint([0.5, 0.7, 0.3], [0.8, 0.6, 0.7])
             assert result == [0.6, 0.7, 0.4]
         finally:
-            mod.ManifoldHC = saved_mhc
-            mod.TORCH_AVAILABLE = saved_torch_avail
+            method_globals["ManifoldHC"] = saved_mhc
+            method_globals["TORCH_AVAILABLE"] = saved_torch_avail
             if saved_torch is not None:
-                mod.torch = saved_torch
-            elif hasattr(mod, "torch"):
-                delattr(mod, "torch")
+                method_globals["torch"] = saved_torch
+            elif "torch" in method_globals:
+                del method_globals["torch"]
 
     async def test_stability_constraint_error_fallback(self):
         """Test that stability constraint errors fall back to original scores."""
-        import enhanced_agent_bus.governance.democratic_governance as mod
         from enhanced_agent_bus.governance.democratic_governance import (
             DemocraticConstitutionalGovernance,
         )
 
-        saved_mhc = mod.ManifoldHC
-        saved_torch_avail = mod.TORCH_AVAILABLE
-        saved_torch = getattr(mod, "torch", None)
+        method_globals = DemocraticConstitutionalGovernance._apply_stability_constraint.__globals__
+        saved_mhc = method_globals.get("ManifoldHC")
+        saved_torch_avail = method_globals.get("TORCH_AVAILABLE")
+        saved_torch = method_globals.get("torch")
         try:
             mock_mhc_class = MagicMock()
-            mod.ManifoldHC = mock_mhc_class
-            mod.TORCH_AVAILABLE = True
+            method_globals["ManifoldHC"] = mock_mhc_class
+            method_globals["TORCH_AVAILABLE"] = True
 
             mock_torch = MagicMock()
             mock_torch.tensor.side_effect = RuntimeError("tensor error")
             mock_torch.float32 = "float32"
-            mod.torch = mock_torch
+            method_globals["torch"] = mock_torch
 
             gov = DemocraticConstitutionalGovernance.__new__(DemocraticConstitutionalGovernance)
             gov.stability_layer = MagicMock()
@@ -1449,23 +1451,23 @@ class TestDemocraticGovernanceStabilityWithMHC:
             result = await gov._apply_stability_constraint([0.5, 0.7, 0.3])
             assert result == [0.5, 0.7, 0.3]
         finally:
-            mod.ManifoldHC = saved_mhc
-            mod.TORCH_AVAILABLE = saved_torch_avail
+            method_globals["ManifoldHC"] = saved_mhc
+            method_globals["TORCH_AVAILABLE"] = saved_torch_avail
             if saved_torch is not None:
-                mod.torch = saved_torch
-            elif hasattr(mod, "torch"):
-                delattr(mod, "torch")
+                method_globals["torch"] = saved_torch
+            elif "torch" in method_globals:
+                del method_globals["torch"]
 
     async def test_stability_constraint_resize(self):
         """Test the mHC resize path when dim changes."""
-        import enhanced_agent_bus.governance.democratic_governance as mod
         from enhanced_agent_bus.governance.democratic_governance import (
             DemocraticConstitutionalGovernance,
         )
 
-        saved_mhc = mod.ManifoldHC
-        saved_torch_avail = mod.TORCH_AVAILABLE
-        saved_torch = getattr(mod, "torch", None)
+        method_globals = DemocraticConstitutionalGovernance._apply_stability_constraint.__globals__
+        saved_mhc = method_globals.get("ManifoldHC")
+        saved_torch_avail = method_globals.get("TORCH_AVAILABLE")
+        saved_torch = method_globals.get("torch")
         try:
             mock_mhc_class = MagicMock()
             new_instance = MagicMock()
@@ -1487,9 +1489,9 @@ class TestDemocraticGovernanceStabilityWithMHC:
             mock_no_grad.__exit__ = MagicMock(return_value=False)
             mock_torch.no_grad.return_value = mock_no_grad
 
-            mod.ManifoldHC = mock_mhc_class
-            mod.TORCH_AVAILABLE = True
-            mod.torch = mock_torch
+            method_globals["ManifoldHC"] = mock_mhc_class
+            method_globals["TORCH_AVAILABLE"] = True
+            method_globals["torch"] = mock_torch
 
             gov = DemocraticConstitutionalGovernance.__new__(DemocraticConstitutionalGovernance)
             # stability_layer has dim=5 but we pass 2 scores -> triggers resize
@@ -1499,15 +1501,14 @@ class TestDemocraticGovernanceStabilityWithMHC:
 
             result = await gov._apply_stability_constraint([0.5, 0.6])
             assert result == [0.5, 0.6]
-            # ManifoldHC should have been called with dim=2
             mock_mhc_class.assert_called_with(dim=2)
         finally:
-            mod.ManifoldHC = saved_mhc
-            mod.TORCH_AVAILABLE = saved_torch_avail
+            method_globals["ManifoldHC"] = saved_mhc
+            method_globals["TORCH_AVAILABLE"] = saved_torch_avail
             if saved_torch is not None:
-                mod.torch = saved_torch
-            elif hasattr(mod, "torch"):
-                delattr(mod, "torch")
+                method_globals["torch"] = saved_torch
+            elif "torch" in method_globals:
+                del method_globals["torch"]
 
 
 class TestDemocraticGovernanceDetermineConsensus:

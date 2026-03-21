@@ -157,8 +157,12 @@ def _get_webhook_handler() -> GitLabWebhookHandler | None:
     if bot is None:
         return None
 
-    secret = _GITLAB_WEBHOOK_SECRET or "default-secret"
-    _webhook_handler = GitLabWebhookHandler(webhook_secret=secret, bot=bot)
+    if not _GITLAB_WEBHOOK_SECRET:
+        logger.error(
+            "GITLAB_WEBHOOK_SECRET not set — refusing to start webhook handler with default secret"
+        )
+        return None
+    _webhook_handler = GitLabWebhookHandler(webhook_secret=_GITLAB_WEBHOOK_SECRET, bot=bot)
     return _webhook_handler
 
 

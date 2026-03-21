@@ -1,63 +1,59 @@
 # Shared Core
 
-> Scope: `src/core/shared/` — Cross-cutting infrastructure used by API Gateway and all services.
+> Scope: `src/core/shared/` — cross-cutting infrastructure shared across services.
 
 ## Structure
 
 ```
 shared/
-├── types/                  # Pydantic models, enums, type definitions
-├── config/                 # Settings factory (Pydantic BaseSettings)
-├── auth/                   # JWT, SAML, SSO (WorkOS), cert binding
-├── security/               # CORS, rate limiting, PII, crypto, CSRF (see security/AGENTS.md)
-├── acgs_logging/           # Structured logging + audit logger (Redis-backed)
-├── metrics/                # Prometheus instrumentation (fire-and-forget)
-├── errors/                 # Error hierarchy + deprecated logging module
-├── cache/                  # Caching abstractions
+├── types/                  # Shared types and protocols
+├── config/                 # Settings and configuration factories
+├── auth/                   # OIDC, SAML, provisioning, WorkOS helpers
+├── security/               # Auth, CORS, crypto, rate limiting, PII, retention
+├── acgs_logging/           # Structured logging and audit events
+├── metrics/                # Metrics helpers
+├── cache/                  # Cache abstractions and models
 ├── crypto/                 # Cryptographic utilities
-├── database/               # DB connection pooling
-├── resilience/             # Retry, circuit breaker patterns
-├── orchestration/          # Service orchestration utilities
-├── policy/                 # Policy evaluation helpers
-├── event_schemas/          # Event-driven architecture schemas
-├── utilities/              # General-purpose helpers
-├── constants.py            # Constitutional hash, version strings
-├── constitutional_hash.py  # Hash validation with version deprecation
-├── di_container.py         # Dependency injection container
-├── enums.py                # Shared enumerations
-├── fastapi_base.py         # Base FastAPI app factory
-├── feature_flags.py        # Feature flag evaluation
-├── http_client.py          # HTTPX client wrapper
-├── interfaces.py           # Abstract protocols
-├── redis_config.py         # Redis connection config
-├── structured_logging.py   # Structlog setup (canonical)
-└── type_guards.py          # Runtime type narrowing
+├── database/               # DB session and middleware helpers
+├── errors/                 # Shared error definitions
+├── event_schemas/          # Event payload schemas
+├── orchestration/          # Orchestration utilities
+├── policy/                 # Policy helpers and models
+├── resilience/             # Retry helpers
+├── utilities/              # General utilities
+├── constants.py
+├── constitutional_hash.py
+├── di_container.py
+├── fastapi_base.py
+├── feature_flags.py
+├── http_client.py
+├── redis_config.py
+└── structured_logging.py
 ```
 
 ## Where to Look
 
-| Task                       | Location                     |
-| -------------------------- | ---------------------------- |
-| Add shared type/model      | `types/`                     |
-| Change config settings     | `config/` (Pydantic)         |
-| Auth middleware             | `auth/`, `security/auth.py`  |
-| Rate limiting              | `security/rate_limiter.py`   |
-| Structured logging         | `structured_logging.py`      |
-| Prometheus metrics         | `metrics/__init__.py`        |
-| Constitutional hash verify | `constitutional_hash.py`     |
-| Feature flags              | `feature_flags.py`           |
+| Task | Location |
+| ---- | -------- |
+| Add shared type/model | `types/` |
+| Change settings/config | `config/` |
+| Auth helpers | `auth/`, `security/auth.py`, `security/auth_dependency.py` |
+| Rate limiting | `security/rate_limiter.py` |
+| Structured logging | `structured_logging.py`, `acgs_logging/` |
+| Metrics helpers | `metrics/` |
+| Constitutional hash verification | `constitutional_hash.py`, `constants.py` |
+| Feature flags | `feature_flags.py` |
 
 ## Conventions
 
-- All config via Pydantic `BaseSettings` — never raw `os.environ`.
-- Metrics are fire-and-forget — failures NEVER block the application.
-- Audit queries ALWAYS scoped to requesting tenant (no cross-tenant access).
-- `structured_logging.py` is canonical — `errors/logging.py` is deprecated (zero consumers).
-- `PYTHONPATH=src/` required for imports to resolve.
+- Prefer typed settings and shared helpers over ad hoc environment access in service code.
+- Keep tenant scoping explicit in audit and security-sensitive paths.
+- `structured_logging.py` is the canonical logging setup.
+- Reuse shared Redis, HTTP, and DI helpers instead of open-coding those concerns in services.
 
 ## Anti-Patterns
 
-- Do not use `errors/logging.py` — use `structured_logging.py` instead.
-- Do not access metrics `.labels()` on `None` — check `METRICS_ENABLED` first.
-- Do not hardcode config values — use `config/` settings factory.
-- Do not create Redis connections directly — use `redis_config.py`.
+- Do not add new call sites to deprecated logging helpers when `structured_logging.py` already
+  covers the need.
+- Do not hardcode service configuration values in callers.
+- Do not create ad hoc Redis connections when shared config/helpers exist.

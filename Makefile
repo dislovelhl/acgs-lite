@@ -2,6 +2,11 @@
 
 PYTHON ?= python3
 PIP ?= $(PYTHON) -m pip
+ROOT_DIR := $(CURDIR)
+WORKSPACE_PYTHONPATH := $(ROOT_DIR)/packages:$(ROOT_DIR)/src:$(ROOT_DIR)
+export PYTHONPATH := $(WORKSPACE_PYTHONPATH)$(if $(PYTHONPATH),:$(PYTHONPATH))
+PYTEST_TARGETS ?=
+PYTEST_ARGS ?=
 
 help:
 	@echo "ACGS — Advanced Constitutional Governance System"
@@ -35,21 +40,21 @@ setup:
 
 # === Testing ===
 test:
-	$(PYTHON) -m pytest --import-mode=importlib -v
+	$(PYTHON) -m pytest --import-mode=importlib -v $(PYTEST_TARGETS) $(PYTEST_ARGS)
 	cd packages/propriety-ai && npm run test
 
 test-quick:
-	$(PYTHON) -m pytest --import-mode=importlib -m "not slow" -x -v
+	$(PYTHON) -m pytest --import-mode=importlib -m "not slow" -x -v $(PYTEST_TARGETS) $(PYTEST_ARGS)
 	cd packages/propriety-ai && npm run test:unit
 
 test-lite:
-	$(PYTHON) -m pytest packages/acgs-lite/tests/ -v --import-mode=importlib
+	$(PYTHON) -m pytest $(or $(PYTEST_TARGETS),packages/acgs-lite/tests/) -v --import-mode=importlib $(PYTEST_ARGS)
 
 test-bus:
-	$(PYTHON) -m pytest packages/enhanced_agent_bus/tests/ -v --import-mode=importlib
+	$(PYTHON) -m pytest $(or $(PYTEST_TARGETS),packages/enhanced_agent_bus/tests/) -v --import-mode=importlib $(PYTEST_ARGS)
 
 test-gw:
-	$(PYTHON) -m pytest src/core/services/api_gateway/tests/ -v --import-mode=importlib
+	$(PYTHON) -m pytest $(or $(PYTEST_TARGETS),src/core/services/api_gateway/tests/) -v --import-mode=importlib $(PYTEST_ARGS)
 
 # === Code Quality ===
 lint:

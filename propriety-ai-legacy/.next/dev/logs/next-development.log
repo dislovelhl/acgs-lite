@@ -1,0 +1,699 @@
+[00:00:00.576] Server  LOG     
+[00:00:00.576] Server  LOG        We detected TypeScript in your project and reconfigured your tsconfig.json file for you.
+[00:00:00.576] Server  LOG        The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+
+[00:00:00.576] Server  LOG        	- include was updated to add '.next/dev/types/**/*.ts'
+[00:00:00.576] Server  LOG     
+[00:00:00.577] Server  LOG        The following mandatory changes were made to your tsconfig.json:
+
+[00:00:00.577] Server  LOG        	- jsx was set to react-jsx (next.js uses the React automatic runtime)
+[00:00:00.577] Server  LOG     
+[00:00:00.653] Server  LOG      ✓ Ready in 448ms
+[00:00:03.237] Server  ERROR    ⨯ ./Documents/acgs-clean/propriety-ai/app/page.tsx:6:25
+Ecmascript file had an error
+   4 | import { DifferentiationGrid } from "@/components/differentiation-grid"
+   5 |
+>  6 | const PolicyLogStream = dynamic(
+     |                         ^^^^^^^^
+>  7 |   () => import("@/components/policy-log-stream").then((m) => m.PolicyLogStream),
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  8 |   { ssr: false }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  9 | )
+     | ^^
+  10 |
+  11 | export default function Home() {
+  12 |   return (
+
+`ssr: false` is not allowed with `next/dynamic` in Server Components. Please move it into a Client Component.
+
+
+[00:00:04.118] Browser ERROR   uncaughtError: Error: ./Documents/acgs-clean/propriety-ai/app/page.tsx:6:25
+Ecmascript file had an error
+   4 | import { DifferentiationGrid } from "@/components/differentiation-grid"
+   5 |
+>  6 | const PolicyLogStream = dynamic(
+     |                         ^^^^^^^^
+>  7 |   () => import("@/components/policy-log-stream").then((m) => m.PolicyLogStream),
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  8 |   { ssr: false }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  9 | )
+     | ^^
+  10 |
+  11 | export default function Home() {
+  12 |   return (
+
+`ssr: false` is not allowed with `next/dynamic` in Server Components. Please move it into a Client Component.
+
+
+[00:00:04.367] Browser ERROR   ./Documents/acgs-clean/propriety-ai/app/page.tsx:6:25
+Ecmascript file had an error
+   4 | import { DifferentiationGrid } from "@/components/differentiation-grid"
+   5 |
+>  6 | const PolicyLogStream = dynamic(
+     |                         ^^^^^^^^
+>  7 |   () => import("@/components/policy-log-stream").then((m) => m.PolicyLogStream),
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  8 |   { ssr: false }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  9 | )
+     | ^^
+  10 |
+  11 | export default function Home() {
+  12 |   return (
+
+`ssr: false` is not allowed with `next/dynamic` in Server Components. Please move it into a Client Component.
+[00:00:04.367] Browser ERROR   ./Documents/acgs-clean/propriety-ai/app/page.tsx:6:25
+Ecmascript file had an error
+   4 | import { DifferentiationGrid } from "@/components/differentiation-grid"
+   5 |
+>  6 | const PolicyLogStream = dynamic(
+     |                         ^^^^^^^^
+>  7 |   () => import("@/components/policy-log-stream").then((m) => m.PolicyLogStream),
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  8 |   { ssr: false }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  9 | )
+     | ^^
+  10 |
+  11 | export default function Home() {
+  12 |   return (
+
+`ssr: false` is not allowed with `next/dynamic` in Server Components. Please move it into a Client Component.
+[00:00:09.897] Browser ERROR   ./Documents/acgs-clean/propriety-ai/app/page.tsx:6:25
+Ecmascript file had an error
+   4 | import { DifferentiationGrid } from "@/components/differentiation-grid"
+   5 |
+>  6 | const PolicyLogStream = dynamic(
+     |                         ^^^^^^^^
+>  7 |   () => import("@/components/policy-log-stream").then((m) => m.PolicyLogStream),
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  8 |   { ssr: false }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  9 | )
+     | ^^
+  10 |
+  11 | export default function Home() {
+  12 |   return (
+
+`ssr: false` is not allowed with `next/dynamic` in Server Components. Please move it into a Client Component.
+[00:00:10.778] Browser ERROR   ./Documents/acgs-clean/propriety-ai/app/page.tsx:6:25
+Ecmascript file had an error
+   4 | import { DifferentiationGrid } from "@/components/differentiation-grid"
+   5 |
+>  6 | const PolicyLogStream = dynamic(
+     |                         ^^^^^^^^
+>  7 |   () => import("@/components/policy-log-stream").then((m) => m.PolicyLogStream),
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  8 |   { ssr: false }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  9 | )
+     | ^^
+  10 |
+  11 | export default function Home() {
+  12 |   return (
+
+`ssr: false` is not allowed with `next/dynamic` in Server Components. Please move it into a Client Component.
+[00:00:10.778] Browser ERROR   ./Documents/acgs-clean/propriety-ai/app/page.tsx:6:25
+Ecmascript file had an error
+   4 | import { DifferentiationGrid } from "@/components/differentiation-grid"
+   5 |
+>  6 | const PolicyLogStream = dynamic(
+     |                         ^^^^^^^^
+>  7 |   () => import("@/components/policy-log-stream").then((m) => m.PolicyLogStream),
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  8 |   { ssr: false }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  9 | )
+     | ^^
+  10 |
+  11 | export default function Home() {
+  12 |   return (
+
+`ssr: false` is not allowed with `next/dynamic` in Server Components. Please move it into a Client Component.
+[00:00:11.383] Browser ERROR   ./Documents/acgs-clean/propriety-ai/app/page.tsx:6:25
+Ecmascript file had an error
+   4 | import { DifferentiationGrid } from "@/components/differentiation-grid"
+   5 |
+>  6 | const PolicyLogStream = dynamic(
+     |                         ^^^^^^^^
+>  7 |   () => import("@/components/policy-log-stream").then((m) => m.PolicyLogStream),
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  8 |   { ssr: false }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  9 | )
+     | ^^
+  10 |
+  11 | export default function Home() {
+  12 |   return (
+
+`ssr: false` is not allowed with `next/dynamic` in Server Components. Please move it into a Client Component.
+[00:00:47.778] Browser ERROR   ./Documents/acgs-clean/propriety-ai/app/page.tsx:6:25
+Ecmascript file had an error
+   4 | import { DifferentiationGrid } from "@/components/differentiation-grid"
+   5 |
+>  6 | const PolicyLogStream = dynamic(
+     |                         ^^^^^^^^
+>  7 |   () => import("@/components/policy-log-stream").then((m) => m.PolicyLogStream),
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  8 |   { ssr: false }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  9 | )
+     | ^^
+  10 |
+  11 | export default function Home() {
+  12 |   return (
+
+`ssr: false` is not allowed with `next/dynamic` in Server Components. Please move it into a Client Component.
+[00:00:52.778] Browser ERROR   ./Documents/acgs-clean/propriety-ai/app/page.tsx:6:25
+Ecmascript file had an error
+   4 | import { DifferentiationGrid } from "@/components/differentiation-grid"
+   5 |
+>  6 | const PolicyLogStream = dynamic(
+     |                         ^^^^^^^^
+>  7 |   () => import("@/components/policy-log-stream").then((m) => m.PolicyLogStream),
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  8 |   { ssr: false }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  9 | )
+     | ^^
+  10 |
+  11 | export default function Home() {
+  12 |   return (
+
+`ssr: false` is not allowed with `next/dynamic` in Server Components. Please move it into a Client Component.
+[00:00:54.778] Browser ERROR   ./Documents/acgs-clean/propriety-ai/app/page.tsx:6:25
+Ecmascript file had an error
+   4 | import { DifferentiationGrid } from "@/components/differentiation-grid"
+   5 |
+>  6 | const PolicyLogStream = dynamic(
+     |                         ^^^^^^^^
+>  7 |   () => import("@/components/policy-log-stream").then((m) => m.PolicyLogStream),
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  8 |   { ssr: false }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  9 | )
+     | ^^
+  10 |
+  11 | export default function Home() {
+  12 |   return (
+
+`ssr: false` is not allowed with `next/dynamic` in Server Components. Please move it into a Client Component.
+[00:00:54.778] Browser ERROR   ./Documents/acgs-clean/propriety-ai/app/page.tsx:6:25
+Ecmascript file had an error
+   4 | import { DifferentiationGrid } from "@/components/differentiation-grid"
+   5 |
+>  6 | const PolicyLogStream = dynamic(
+     |                         ^^^^^^^^
+>  7 |   () => import("@/components/policy-log-stream").then((m) => m.PolicyLogStream),
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  8 |   { ssr: false }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  9 | )
+     | ^^
+  10 |
+  11 | export default function Home() {
+  12 |   return (
+
+`ssr: false` is not allowed with `next/dynamic` in Server Components. Please move it into a Client Component.
+[00:00:54.778] Browser ERROR   ./Documents/acgs-clean/propriety-ai/app/page.tsx:6:25
+Ecmascript file had an error
+   4 | import { DifferentiationGrid } from "@/components/differentiation-grid"
+   5 |
+>  6 | const PolicyLogStream = dynamic(
+     |                         ^^^^^^^^
+>  7 |   () => import("@/components/policy-log-stream").then((m) => m.PolicyLogStream),
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  8 |   { ssr: false }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  9 | )
+     | ^^
+  10 |
+  11 | export default function Home() {
+  12 |   return (
+
+`ssr: false` is not allowed with `next/dynamic` in Server Components. Please move it into a Client Component.
+[00:00:55.509] Server  LOG      ✓ Compiled in 58ms
+[00:01:52.461] Browser WARN    Please ensure that the container has a non-static position, like 'relative', 'fixed', or 'absolute' to ensure scroll offset is calculated correctly.
+[00:03:07.598] Server  LOG      ✓ Compiled in 37ms
+[00:03:09.831] Browser WARN    Please ensure that the container has a non-static position, like 'relative', 'fixed', or 'absolute' to ensure scroll offset is calculated correctly.
+[00:03:14.544] Browser WARN    Please ensure that the container has a non-static position, like 'relative', 'fixed', or 'absolute' to ensure scroll offset is calculated correctly.
+[00:03:24.481] Server  LOG      ✓ Compiled in 26ms
+[00:03:50.313] Browser WARN    Please ensure that the container has a non-static position, like 'relative', 'fixed', or 'absolute' to ensure scroll offset is calculated correctly.
+[00:03:50.313] Browser WARN    'oklch(0.08 0.005 250 / 0)' is not an animatable color. Use the equivalent color code instead.. For more information and steps for solving, visit https://motion.dev/troubleshooting/color-not-animatable
+[00:03:54.012] Server  ERROR   React does not recognize the `offsetDistance` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `offsetdistance` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+[00:03:54.278] Browser ERROR   React does not recognize the `%s` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `%s` instead. If you accidentally passed it from a parent component, remove it from the DOM element. offsetDistance offsetdistance
+[00:03:54.278] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <RedirectBoundary>
+      <RedirectErrorBoundary router={{...}}>
+        <InnerLayoutRouter url="/assessment" tree={[...]} params={{}} cacheNode={{lazyData:null, ...}} ...>
+          <SegmentViewNode type="page" pagePath="/Documents...">
+            <SegmentTrieNode>
+            <Assessment>
+              <AssessmentPage>
+                <main className="min-h-scre...">
+                  <PageHero>
+                  <section id="assessment" className="py-24 px-6...">
+                    <div>
+                    <TracingBeam>
+                      <div ref={{current:null}} className={"relative "}>
+                        <div className="absolute l...">
+                          <svg viewBox="0 0 20 0" width={20} height={0} className="overflow-v...">
+                            <path>
+                            <motion.path>
+                            <motion.circle cx="10" cy={0} r="4" fill="oklch(0.65..." style={{filter:"dr...", ...}}>
+                              <circle
+                                cx="10"
+                                cy={0}
+                                r="4"
+                                fill="oklch(0.65 0.18 160)"
+                                style={{filter:"drop-shado..."}}
++                               offsetDistance={0}
+-                               offsetDistance="0"
+                                ref={function useMotionRef.useCallback}
+                              >
+                        ...
+                  ...
+          ...
+        ...
+
+[00:03:54.278] Browser WARN    Please ensure that the container has a non-static position, like 'relative', 'fixed', or 'absolute' to ensure scroll offset is calculated correctly.
+[00:03:54.278] Browser WARN    'oklch(0.08 0.005 250 / 0)' is not an animatable color. Use the equivalent color code instead.. For more information and steps for solving, visit https://motion.dev/troubleshooting/color-not-animatable
+[00:03:54.604] Browser WARN    Please ensure that the container has a non-static position, like 'relative', 'fixed', or 'absolute' to ensure scroll offset is calculated correctly.
+[00:03:54.604] Browser WARN    'oklch(0.08 0.005 250 / 0)' is not an animatable color. Use the equivalent color code instead.. For more information and steps for solving, visit https://motion.dev/troubleshooting/color-not-animatable
+[00:03:55.680] Browser ERROR   React does not recognize the `%s` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `%s` instead. If you accidentally passed it from a parent component, remove it from the DOM element. offsetDistance offsetdistance
+[00:03:55.680] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/assessment" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="/Documents...">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en" className="dark">
+                          <body
+                            className="geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-module__8Li5zG__var..."
+-                           data-new-gr-c-s-check-loaded="14.1277.0"
+-                           data-gr-ext-installed=""
+                          >
+                            <Nav>
+                            ...
+                              <svg viewBox="0 0 20 0" width={20} height={0} className="overflow-v...">
+                                <path>
+                                <motion.path>
+                                <motion.circle cx="10" cy={0} r="4" fill="oklch(0.65..." style={{filter:"dr...", ...}}>
+                                  <circle
+                                    cx="10"
+                                    cy={0}
+                                    r="4"
+                                    fill="oklch(0.65 0.18 160)"
+                                    style={{filter:"drop-shado..."}}
++                                   offsetDistance={0}
+-                                   offsetDistance="0"
+                                    ref={function useMotionRef.useCallback}
+                                  >
+                            ...
+                  ...
+
+[00:03:55.680] Browser WARN    Please ensure that the container has a non-static position, like 'relative', 'fixed', or 'absolute' to ensure scroll offset is calculated correctly.
+[00:03:55.680] Browser WARN    'oklch(0.08 0.005 250 / 0)' is not an animatable color. Use the equivalent color code instead.. For more information and steps for solving, visit https://motion.dev/troubleshooting/color-not-animatable
+[00:04:01.195] Browser WARN    Please ensure that the container has a non-static position, like 'relative', 'fixed', or 'absolute' to ensure scroll offset is calculated correctly.
+[00:04:01.195] Browser WARN    'oklch(0.08 0.005 250 / 0)' is not an animatable color. Use the equivalent color code instead.. For more information and steps for solving, visit https://motion.dev/troubleshooting/color-not-animatable
+[00:04:03.914] Browser ERROR   React does not recognize the `%s` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `%s` instead. If you accidentally passed it from a parent component, remove it from the DOM element. offsetDistance offsetdistance
+[00:04:03.914] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <RedirectBoundary>
+      <RedirectErrorBoundary router={{...}}>
+        <InnerLayoutRouter url="/assessment" tree={[...]} params={{}} cacheNode={{lazyData:null, ...}} ...>
+          <SegmentViewNode type="page" pagePath="/Documents...">
+            <SegmentTrieNode>
+            <Assessment>
+              <AssessmentPage>
+                <main className="min-h-scre...">
+                  <PageHero>
+                  <section id="assessment" className="py-24 px-6...">
+                    <div>
+                    <TracingBeam>
+                      <div ref={{current:null}} className={"relative "}>
+                        <div className="absolute l...">
+                          <svg viewBox="0 0 20 0" width={20} height={0} className="overflow-v...">
+                            <path>
+                            <motion.path>
+                            <motion.circle cx="10" cy={0} r="4" fill="oklch(0.65..." style={{filter:"dr...", ...}}>
+                              <circle
+                                cx="10"
+                                cy={0}
+                                r="4"
+                                fill="oklch(0.65 0.18 160)"
+                                style={{filter:"drop-shado..."}}
++                               offsetDistance={0}
+-                               offsetDistance="0"
+                                ref={function useMotionRef.useCallback}
+                              >
+                        ...
+                  ...
+          ...
+        ...
+
+[00:04:03.914] Browser WARN    Please ensure that the container has a non-static position, like 'relative', 'fixed', or 'absolute' to ensure scroll offset is calculated correctly.
+[00:04:03.914] Browser WARN    'oklch(0.08 0.005 250 / 0)' is not an animatable color. Use the equivalent color code instead.. For more information and steps for solving, visit https://motion.dev/troubleshooting/color-not-animatable
+[00:04:04.976] Browser ERROR   React does not recognize the `%s` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `%s` instead. If you accidentally passed it from a parent component, remove it from the DOM element. offsetDistance offsetdistance
+[00:04:04.976] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <RedirectBoundary>
+      <RedirectErrorBoundary router={{...}}>
+        <InnerLayoutRouter url="/assessment" tree={[...]} params={{}} cacheNode={{lazyData:null, ...}} ...>
+          <SegmentViewNode type="page" pagePath="/Documents...">
+            <SegmentTrieNode>
+            <Assessment>
+              <AssessmentPage>
+                <main className="min-h-scre...">
+                  <PageHero>
+                  <section id="assessment" className="py-24 px-6...">
+                    <div>
+                    <TracingBeam>
+                      <div ref={{current:null}} className={"relative "}>
+                        <div className="absolute l...">
+                          <svg viewBox="0 0 20 0" width={20} height={0} className="overflow-v...">
+                            <path>
+                            <motion.path>
+                            <motion.circle cx="10" cy={0} r="4" fill="oklch(0.65..." style={{filter:"dr...", ...}}>
+                              <circle
+                                cx="10"
+                                cy={0}
+                                r="4"
+                                fill="oklch(0.65 0.18 160)"
+                                style={{filter:"drop-shado..."}}
++                               offsetDistance={0}
+-                               offsetDistance="0"
+                                ref={function useMotionRef.useCallback}
+                              >
+                        ...
+                  ...
+          ...
+        ...
+
+[00:04:04.976] Browser WARN    Please ensure that the container has a non-static position, like 'relative', 'fixed', or 'absolute' to ensure scroll offset is calculated correctly.
+[00:04:04.976] Browser WARN    'oklch(0.08 0.005 250 / 0)' is not an animatable color. Use the equivalent color code instead.. For more information and steps for solving, visit https://motion.dev/troubleshooting/color-not-animatable
+[00:04:05.586] Browser WARN    Please ensure that the container has a non-static position, like 'relative', 'fixed', or 'absolute' to ensure scroll offset is calculated correctly.
+[00:04:05.586] Browser WARN    'oklch(0.08 0.005 250 / 0)' is not an animatable color. Use the equivalent color code instead.. For more information and steps for solving, visit https://motion.dev/troubleshooting/color-not-animatable
+[00:04:11.981] Browser ERROR   React does not recognize the `%s` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `%s` instead. If you accidentally passed it from a parent component, remove it from the DOM element. offsetDistance offsetdistance
+[00:04:11.981] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <RedirectBoundary>
+      <RedirectErrorBoundary router={{...}}>
+        <InnerLayoutRouter url="/assessment" tree={[...]} params={{}} cacheNode={{lazyData:null, ...}} ...>
+          <SegmentViewNode type="page" pagePath="/Documents...">
+            <SegmentTrieNode>
+            <Assessment>
+              <AssessmentPage>
+                <main className="min-h-scre...">
+                  <PageHero>
+                  <section id="assessment" className="py-24 px-6...">
+                    <div>
+                    <TracingBeam>
+                      <div ref={{current:null}} className={"relative "}>
+                        <div className="absolute l...">
+                          <svg viewBox="0 0 20 0" width={20} height={0} className="overflow-v...">
+                            <path>
+                            <motion.path>
+                            <motion.circle cx="10" cy={0} r="4" fill="oklch(0.65..." style={{filter:"dr...", ...}}>
+                              <circle
+                                cx="10"
+                                cy={0}
+                                r="4"
+                                fill="oklch(0.65 0.18 160)"
+                                style={{filter:"drop-shado..."}}
++                               offsetDistance={0}
+-                               offsetDistance="0"
+                                ref={function useMotionRef.useCallback}
+                              >
+                        ...
+                  ...
+          ...
+        ...
+
+[00:04:11.981] Browser WARN    Please ensure that the container has a non-static position, like 'relative', 'fixed', or 'absolute' to ensure scroll offset is calculated correctly.
+[00:04:11.981] Browser WARN    'oklch(0.08 0.005 250 / 0)' is not an animatable color. Use the equivalent color code instead.. For more information and steps for solving, visit https://motion.dev/troubleshooting/color-not-animatable
+[00:04:17.862] Browser WARN    Please ensure that the container has a non-static position, like 'relative', 'fixed', or 'absolute' to ensure scroll offset is calculated correctly.
+[00:04:17.862] Browser WARN    'oklch(0.08 0.005 250 / 0)' is not an animatable color. Use the equivalent color code instead.. For more information and steps for solving, visit https://motion.dev/troubleshooting/color-not-animatable
+[00:04:20.313] Browser ERROR   React does not recognize the `%s` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `%s` instead. If you accidentally passed it from a parent component, remove it from the DOM element. offsetDistance offsetdistance
+[00:04:20.313] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <RedirectBoundary>
+      <RedirectErrorBoundary router={{...}}>
+        <InnerLayoutRouter url="/assessment" tree={[...]} params={{}} cacheNode={{lazyData:null, ...}} ...>
+          <SegmentViewNode type="page" pagePath="/Documents...">
+            <SegmentTrieNode>
+            <Assessment>
+              <AssessmentPage>
+                <main className="min-h-scre...">
+                  <PageHero>
+                  <section id="assessment" className="py-24 px-6...">
+                    <div>
+                    <TracingBeam>
+                      <div ref={{current:null}} className={"relative "}>
+                        <div className="absolute l...">
+                          <svg viewBox="0 0 20 0" width={20} height={0} className="overflow-v...">
+                            <path>
+                            <motion.path>
+                            <motion.circle cx="10" cy={0} r="4" fill="oklch(0.65..." style={{filter:"dr...", ...}}>
+                              <circle
+                                cx="10"
+                                cy={0}
+                                r="4"
+                                fill="oklch(0.65 0.18 160)"
+                                style={{filter:"drop-shado..."}}
++                               offsetDistance={0}
+-                               offsetDistance="0"
+                                ref={function useMotionRef.useCallback}
+                              >
+                        ...
+                  ...
+          ...
+        ...
+
+[00:04:20.313] Browser WARN    Please ensure that the container has a non-static position, like 'relative', 'fixed', or 'absolute' to ensure scroll offset is calculated correctly.
+[00:04:20.313] Browser WARN    'oklch(0.08 0.005 250 / 0)' is not an animatable color. Use the equivalent color code instead.. For more information and steps for solving, visit https://motion.dev/troubleshooting/color-not-animatable
+[00:04:21.262] Browser ERROR   React does not recognize the `%s` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `%s` instead. If you accidentally passed it from a parent component, remove it from the DOM element. offsetDistance offsetdistance
+[00:04:21.262] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/assessment" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="/Documents...">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en" className="dark">
+                          <body
+                            className="geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-module__8Li5zG__var..."
+-                           data-new-gr-c-s-check-loaded="14.1277.0"
+-                           data-gr-ext-installed=""
+                          >
+                            <Nav>
+                            ...
+                              <svg viewBox="0 0 20 0" width={20} height={0} className="overflow-v...">
+                                <path>
+                                <motion.path>
+                                <motion.circle cx="10" cy={0} r="4" fill="oklch(0.65..." style={{filter:"dr...", ...}}>
+                                  <circle
+                                    cx="10"
+                                    cy={0}
+                                    r="4"
+                                    fill="oklch(0.65 0.18 160)"
+                                    style={{filter:"drop-shado..."}}
++                                   offsetDistance={0}
+-                                   offsetDistance="0"
+                                    ref={function useMotionRef.useCallback}
+                                  >
+                            ...
+                  ...
+
+[00:04:21.262] Browser WARN    Please ensure that the container has a non-static position, like 'relative', 'fixed', or 'absolute' to ensure scroll offset is calculated correctly.
+[00:04:21.262] Browser WARN    'oklch(0.08 0.005 250 / 0)' is not an animatable color. Use the equivalent color code instead.. For more information and steps for solving, visit https://motion.dev/troubleshooting/color-not-animatable
+[00:04:22.298] Browser WARN    Please ensure that the container has a non-static position, like 'relative', 'fixed', or 'absolute' to ensure scroll offset is calculated correctly.
+[00:04:22.298] Browser WARN    'oklch(0.08 0.005 250 / 0)' is not an animatable color. Use the equivalent color code instead.. For more information and steps for solving, visit https://motion.dev/troubleshooting/color-not-animatable
+[00:07:17.324] Server  LOG      ✓ Compiled in 19ms
+[00:07:42.267] Server  LOG      ✓ Compiled in 0ms
+[00:08:01.444] Server  LOG      ✓ Compiled in 42ms
+[00:08:13.350] Server  LOG      ✓ Compiled in 167ms
+[00:08:18.700] Server  LOG      ✓ Compiled in 14ms
+[00:10:23.481] Browser WARN    Please ensure that the container has a non-static position, like 'relative', 'fixed', or 'absolute' to ensure scroll offset is calculated correctly.
+[00:10:23.481] Browser WARN    'oklch(0.08 0.005 250 / 0)' is not an animatable color. Use the equivalent color code instead.. For more information and steps for solving, visit https://motion.dev/troubleshooting/color-not-animatable
+[00:10:26.482] Browser ERROR   React does not recognize the `%s` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `%s` instead. If you accidentally passed it from a parent component, remove it from the DOM element. offsetDistance offsetdistance
+[00:10:26.482] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <RedirectBoundary>
+      <RedirectErrorBoundary router={{...}}>
+        <InnerLayoutRouter url="/assessment" tree={[...]} params={{}} cacheNode={{lazyData:null, ...}} ...>
+          <SegmentViewNode type="page" pagePath="/Documents...">
+            <SegmentTrieNode>
+            <Assessment>
+              <AssessmentPage>
+                <main className="min-h-scre...">
+                  <PageHero>
+                  <section id="assessment" className="py-24 px-6...">
+                    <div>
+                    <TracingBeam>
+                      <div ref={{current:null}} className={"relative "}>
+                        <div className="absolute l...">
+                          <svg viewBox="0 0 20 0" width={20} height={0} className="overflow-v...">
+                            <path>
+                            <motion.path>
+                            <motion.circle cx="10" cy={0} r="4" fill="oklch(0.65..." style={{filter:"dr...", ...}}>
+                              <circle
+                                cx="10"
+                                cy={0}
+                                r="4"
+                                fill="oklch(0.65 0.18 160)"
+                                style={{filter:"drop-shado..."}}
++                               offsetDistance={0}
+-                               offsetDistance="0"
+                                ref={function useMotionRef.useCallback}
+                              >
+                        ...
+                  ...
+          ...
+        ...
+
+[00:10:26.482] Browser WARN    Please ensure that the container has a non-static position, like 'relative', 'fixed', or 'absolute' to ensure scroll offset is calculated correctly.
+[00:10:26.482] Browser WARN    'oklch(0.08 0.005 250 / 0)' is not an animatable color. Use the equivalent color code instead.. For more information and steps for solving, visit https://motion.dev/troubleshooting/color-not-animatable
+[00:11:50.265] Browser WARN    Please ensure that the container has a non-static position, like 'relative', 'fixed', or 'absolute' to ensure scroll offset is calculated correctly.
+[00:11:50.265] Browser WARN    'oklch(0.08 0.005 250 / 0)' is not an animatable color. Use the equivalent color code instead.. For more information and steps for solving, visit https://motion.dev/troubleshooting/color-not-animatable
+[00:14:17.869] Browser WARN    Please ensure that the container has a non-static position, like 'relative', 'fixed', or 'absolute' to ensure scroll offset is calculated correctly.
+[00:14:17.869] Browser WARN    'oklch(0.08 0.005 250 / 0)' is not an animatable color. Use the equivalent color code instead.. For more information and steps for solving, visit https://motion.dev/troubleshooting/color-not-animatable
+[00:14:40.852] Server  ERROR    ⨯ ReferenceError: geistSans is not defined
+[00:14:40.869] Server  ERROR    ⨯ ReferenceError: geistSans is not defined
+[00:14:41.778] Browser ERROR   uncaughtError: ReferenceError: geistSans is not defined
+[00:14:55.652] Server  LOG      ✓ Compiled in 74ms
+[00:15:00.928] Server  LOG      ✓ Compiled in 63ms
+[00:15:08.890] Server  LOG      ✓ Compiled in 74ms
+[00:15:33.500] Server  LOG      ✓ Compiled in 54ms
+[00:15:38.160] Browser WARN    'oklch(0.08 0.005 250 / 0)' is not an animatable color. Use the equivalent color code instead.. For more information and steps for solving, visit https://motion.dev/troubleshooting/color-not-animatable
+[00:15:49.573] Server  LOG      ✓ Compiled in 29ms
+[00:15:57.533] Server  LOG      ✓ Compiled in 29ms
+[00:16:10.078] Server  LOG      ✓ Compiled in 25ms
+[00:16:16.440] Server  LOG      ✓ Compiled in 12ms
+[00:16:34.166] Server  LOG      ✓ Compiled in 0ms
+[00:16:53.397] Server  LOG      ✓ Compiled in 33ms
+[00:17:07.752] Browser WARN    'oklch(0.08 0.005 250 / 0)' is not an animatable color. Use the equivalent color code instead.. For more information and steps for solving, visit https://motion.dev/troubleshooting/color-not-animatable
+[00:17:17.439] Server  LOG      ✓ Compiled in 34ms
+[00:20:00.455] Server  LOG      ✓ Compiled in 366ms
+[00:20:26.371] Server  LOG      ✓ Compiled in 0ms
+[00:20:35.452] Server  LOG      ✓ Compiled in 143ms

@@ -35,9 +35,15 @@ from pydantic import BaseModel, Field
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.structured_logging import get_logger
 
+from ._x402_common import PAID_RESPONSE_DISCLAIMER, build_related_endpoint
+from ._x402_revenue import RevenueEvent, emit_revenue_event
+
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/x402", tags=["x402-marketplace"])
+
+X402_NETWORK = os.getenv("X402_NETWORK", "eip155:84532")
+X402_PAY_TO = os.getenv("EVM_ADDRESS", "")
 
 # ---------------------------------------------------------------------------
 # Configurable pricing — env vars override defaults
@@ -75,6 +81,7 @@ def _get_injection_detector():
             from enhanced_agent_bus.security.injection_detector import (
                 PromptInjectionDetector,
             )
+
             _injection_detector = PromptInjectionDetector(strict_mode=True)
         except ImportError:
             logger.warning("PromptInjectionDetector unavailable")
@@ -86,6 +93,7 @@ def _get_risk_classifier():
     if _risk_classifier is None:
         try:
             from acgs_lite.eu_ai_act.risk_classification import RiskClassifier
+
             _risk_classifier = RiskClassifier()
         except ImportError:
             logger.warning("RiskClassifier unavailable")
@@ -97,6 +105,7 @@ def _get_trust_manager():
     if _trust_manager is None:
         try:
             from acgs_lite.constitution.trust_score import TrustScoreManager
+
             _trust_manager = TrustScoreManager()
         except ImportError:
             logger.warning("TrustScoreManager unavailable")
@@ -108,6 +117,7 @@ def _get_anomaly_detector():
     if _anomaly_detector is None:
         try:
             from acgs_lite.constitution.anomaly import GovernanceAnomalyDetector
+
             _anomaly_detector = GovernanceAnomalyDetector()
         except ImportError:
             logger.warning("GovernanceAnomalyDetector unavailable")
@@ -119,6 +129,7 @@ def _get_invariant_guard():
     if _invariant_guard is None:
         try:
             from acgs_lite.constitution.invariant import InvariantGuard
+
             _invariant_guard = InvariantGuard()
         except ImportError:
             logger.warning("InvariantGuard unavailable")
@@ -132,6 +143,7 @@ def _get_circuit_breaker():
             from acgs_lite.constitution.circuit_breaker import (
                 GovernanceCircuitBreaker,
             )
+
             _circuit_breaker = GovernanceCircuitBreaker()
         except ImportError:
             logger.warning("GovernanceCircuitBreaker unavailable")
@@ -143,6 +155,7 @@ def _get_policy_linter():
     if _policy_linter is None:
         try:
             from acgs_lite.constitution.policy_linter import PolicyLinter
+
             _policy_linter = PolicyLinter()
         except ImportError:
             logger.warning("PolicyLinter unavailable")
@@ -154,6 +167,7 @@ def _get_article12_logger():
     if _article12_logger is None:
         try:
             from acgs_lite.eu_ai_act.article12_logger import Article12Logger
+
             _article12_logger = Article12Logger()
         except ImportError:
             logger.warning("Article12Logger unavailable")
@@ -208,7 +222,9 @@ class ComplianceRequest(BaseModel):
 
 class SimulateRequest(BaseModel):
     actions: list[str] = Field(
-        ..., min_length=1, max_length=50,
+        ...,
+        min_length=1,
+        max_length=50,
         description="Actions to simulate against policy change",
     )
     context: dict[str, Any] = Field(default_factory=dict)
@@ -217,7 +233,8 @@ class SimulateRequest(BaseModel):
 class TrustRequest(BaseModel):
     agent_id: str = Field(..., max_length=200)
     compliant: bool | None = Field(
-        default=None, description="Record a decision (null = query only)",
+        default=None,
+        description="Record a decision (null = query only)",
     )
     severity: str = Field(default="medium")
 
@@ -239,7 +256,8 @@ class InvariantGuardRequest(BaseModel):
     action: str = Field(..., max_length=5000, description="Action to check")
     agent_id: str = Field(default="anonymous", max_length=200)
     tier: str = Field(
-        default="all", pattern="^(constitutional|operational|runtime|all)$",
+        default="all",
+        pattern="^(constitutional|operational|runtime|all)$",
         description="Invariant tier to enforce",
     )
     context: dict[str, Any] = Field(default_factory=dict)
@@ -254,7 +272,9 @@ class CircuitBreakerRequest(BaseModel):
 
 class PolicyLintRequest(BaseModel):
     rules: list[str] = Field(
-        ..., min_length=1, max_length=100,
+        ...,
+        min_length=1,
+        max_length=100,
         description="Policy rules to lint",
     )
     strict: bool = Field(default=False, description="Enable strict mode")
@@ -269,88 +289,197 @@ class EUAIActLogRequest(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Cross-sell hint builder
+# Machine-readable discovery metadata
 # ---------------------------------------------------------------------------
 
 
-def _cross_sell(
+def _related_endpoints(
     current: str,
     decision: str | None = None,
     risk_level: str | None = None,
-) -> dict[str, str]:
-    """Return contextual upgrade hints based on endpoint and result."""
-    hints: dict[str, str] = {}
+) -> list[dict[str, str]]:
+    hints = []
 
     if current == "scan":
-        hints["next"] = "POST /x402/validate ($0.01) — governance check"
+        hints.append(
+            build_related_endpoint(
+                endpoint="/x402/validate",
+                method="POST",
+                price_usd=os.getenv("X402_PRICE_VALIDATE", "0.01"),
+                relation="full_result",
+                reason="Run a full governance validation after the security scan.",
+            )
+        )
         if decision == "BLOCKED":
-            hints["deeper"] = (
-                "POST /x402/explain ($0.05) — why it was blocked"
+            hints.append(
+                build_related_endpoint(
+                    endpoint="/x402/explain",
+                    method="POST",
+                    price_usd=X402_PRICE_EXPLAIN,
+                    relation="explanation",
+                    reason="Explain why the content was blocked.",
+                )
             )
     elif current == "validate":
         if decision == "BLOCKED":
-            hints["deeper"] = (
-                "POST /x402/audit ($0.05) — risk breakdown"
-            )
-            hints["security"] = (
-                "POST /x402/scan ($0.03) — injection detection"
+            hints.extend(
+                [
+                    build_related_endpoint(
+                        endpoint="/x402/audit",
+                        method="POST",
+                        price_usd="0.05",
+                        relation="deeper_analysis",
+                        reason="Inspect the blocked action with category-level risk data.",
+                    ),
+                    build_related_endpoint(
+                        endpoint="/x402/scan",
+                        method="POST",
+                        price_usd=X402_PRICE_SCAN,
+                        relation="security_analysis",
+                        reason="Check whether injection patterns triggered the failure.",
+                    ),
+                ]
             )
         else:
-            hints["certify"] = (
-                "POST /x402/certify ($0.50) — signed attestation"
+            hints.append(
+                build_related_endpoint(
+                    endpoint="/x402/certify",
+                    method="POST",
+                    price_usd="0.50",
+                    relation="trust_proof",
+                    reason="Produce a signed governance attestation for downstream verifiers.",
+                )
             )
     elif current == "audit":
         if risk_level in ("HIGH", "CRITICAL"):
-            hints["certify"] = (
-                "POST /x402/certify ($0.50) — verifiable proof"
-            )
-            hints["simulate"] = (
-                "POST /x402/simulate ($0.15) — test policy changes"
+            hints.extend(
+                [
+                    build_related_endpoint(
+                        endpoint="/x402/certify",
+                        method="POST",
+                        price_usd="0.50",
+                        relation="trust_proof",
+                        reason="Capture the audited result as a verifiable attestation.",
+                    ),
+                    build_related_endpoint(
+                        endpoint="/x402/simulate",
+                        method="POST",
+                        price_usd=X402_PRICE_SIMULATE,
+                        relation="policy_testing",
+                        reason="Test tighter policy controls against similar actions.",
+                    ),
+                ]
             )
     elif current == "classify-risk":
-        hints["compliance"] = (
-            "POST /x402/compliance ($0.25) — 8-framework assessment"
-        )
-        hints["eu_logging"] = (
-            "POST /x402/eu-ai-log ($0.10) — Article 12 record-keeping"
+        hints.extend(
+            [
+                build_related_endpoint(
+                    endpoint="/x402/compliance",
+                    method="POST",
+                    price_usd=X402_PRICE_COMPLIANCE,
+                    relation="framework_assessment",
+                    reason="Assess the system against multiple compliance frameworks.",
+                ),
+                build_related_endpoint(
+                    endpoint="/x402/eu-ai-log",
+                    method="POST",
+                    price_usd=X402_PRICE_EU_AI_LOG,
+                    relation="record_keeping",
+                    reason="Log the decision for Article 12 record-keeping.",
+                ),
+            ]
         )
     elif current == "compliance":
-        hints["certify"] = (
-            "POST /x402/certify ($0.50) — signed attestation"
-        )
-        hints["simulate"] = (
-            "POST /x402/simulate ($0.15) — test policy changes"
+        hints.extend(
+            [
+                build_related_endpoint(
+                    endpoint="/x402/certify",
+                    method="POST",
+                    price_usd="0.50",
+                    relation="trust_proof",
+                    reason="Create a signed proof of the compliance assessment.",
+                ),
+                build_related_endpoint(
+                    endpoint="/x402/simulate",
+                    method="POST",
+                    price_usd=X402_PRICE_SIMULATE,
+                    relation="policy_testing",
+                    reason="Test policy changes before rollout.",
+                ),
+            ]
         )
     elif current == "trust":
-        hints["anomaly"] = (
-            "POST /x402/anomaly ($0.03) — detect behavioral patterns"
+        hints.append(
+            build_related_endpoint(
+                endpoint="/x402/anomaly",
+                method="POST",
+                price_usd=X402_PRICE_ANOMALY,
+                relation="behavior_monitoring",
+                reason="Inspect agent behavior for anomalous governance patterns.",
+            )
         )
     elif current == "anomaly":
-        hints["circuit_breaker"] = (
-            "POST /x402/circuit-breaker ($0.10) — enforce safety limits"
+        hints.append(
+            build_related_endpoint(
+                endpoint="/x402/circuit-breaker",
+                method="POST",
+                price_usd=X402_PRICE_CIRCUIT,
+                relation="fail_safe",
+                reason="Escalate detected anomalies into active safety controls.",
+            )
         )
     elif current == "explain":
-        hints["compliance"] = (
-            "POST /x402/compliance ($0.25) — full framework assessment"
+        hints.append(
+            build_related_endpoint(
+                endpoint="/x402/compliance",
+                method="POST",
+                price_usd=X402_PRICE_COMPLIANCE,
+                relation="framework_assessment",
+                reason="Extend the explanation into a broader compliance assessment.",
+            )
         )
     elif current == "invariant-guard":
-        hints["circuit_breaker"] = (
-            "POST /x402/circuit-breaker ($0.10) — fail-safe enforcement"
+        hints.append(
+            build_related_endpoint(
+                endpoint="/x402/circuit-breaker",
+                method="POST",
+                price_usd=X402_PRICE_CIRCUIT,
+                relation="fail_safe",
+                reason="Escalate invariant violations into circuit-breaker enforcement.",
+            )
         )
     elif current == "circuit-breaker":
-        hints["anomaly"] = (
-            "POST /x402/anomaly ($0.03) — detect anomalous patterns"
+        hints.append(
+            build_related_endpoint(
+                endpoint="/x402/anomaly",
+                method="POST",
+                price_usd=X402_PRICE_ANOMALY,
+                relation="behavior_monitoring",
+                reason="Review the anomaly signals that informed the breaker state.",
+            )
         )
     elif current == "policy-lint":
-        hints["simulate"] = (
-            "POST /x402/simulate ($0.15) — test policy changes"
+        hints.append(
+            build_related_endpoint(
+                endpoint="/x402/simulate",
+                method="POST",
+                price_usd=X402_PRICE_SIMULATE,
+                relation="policy_testing",
+                reason="Test the linted policy changes before rollout.",
+            )
         )
     elif current == "eu-ai-log":
-        hints["classify_risk"] = (
-            "POST /x402/classify-risk ($0.10) — risk classification"
+        hints.append(
+            build_related_endpoint(
+                endpoint="/x402/classify-risk",
+                method="POST",
+                price_usd=X402_PRICE_CLASSIFY_RISK,
+                relation="risk_analysis",
+                reason="Tie the log entry back to a formal EU AI Act risk level.",
+            )
         )
 
-    return hints
+    return [item.model_dump() for item in hints]
 
 
 # ===================================================================
@@ -384,24 +513,30 @@ async def scan_injection(request: Request, body: ScanRequest) -> dict[str, Any]:
     )
 
     decision = "BLOCKED" if result.is_injection else "CLEAN"
+    ms = int(elapsed.total_seconds() * 1000)
+    await emit_revenue_event(RevenueEvent(
+        endpoint="/x402/scan", price_usd=X402_PRICE_SCAN, agent_id="anonymous",
+        decision=decision, timestamp=datetime.now(UTC).isoformat(),
+        processing_ms=ms, network=X402_NETWORK, wallet_address=X402_PAY_TO,
+    ))
     return {
         "is_injection": result.is_injection,
         "severity": result.severity.value if result.severity else None,
-        "injection_type": (
-            result.injection_type.value if result.injection_type else None
-        ),
+        "injection_type": (result.injection_type.value if result.injection_type else None),
         "confidence": result.confidence,
         "matched_patterns": result.matched_patterns,
         "sanitized_content": result.sanitized_content,
         "constitutional_hash": CONSTITUTIONAL_HASH,
-        "processing_ms": int(elapsed.total_seconds() * 1000),
-        "upgrade": _cross_sell("scan", decision=decision),
+        "processing_ms": ms,
+        "disclaimer": PAID_RESPONSE_DISCLAIMER,
+        "related_endpoints": _related_endpoints("scan", decision=decision),
     }
 
 
 @router.post("/classify-risk")
 async def classify_risk(
-    request: Request, body: RiskClassifyRequest,
+    request: Request,
+    body: RiskClassifyRequest,
 ) -> dict[str, Any]:
     """
     EU AI Act risk classification — $0.10/call.
@@ -445,16 +580,25 @@ async def classify_risk(
         processing_ms=int(elapsed.total_seconds() * 1000),
     )
 
+    ms = int(elapsed.total_seconds() * 1000)
     output = result.to_dict()
     output["constitutional_hash"] = CONSTITUTIONAL_HASH
-    output["processing_ms"] = int(elapsed.total_seconds() * 1000)
-    output["upgrade"] = _cross_sell("classify-risk")
+    output["processing_ms"] = ms
+    output["disclaimer"] = PAID_RESPONSE_DISCLAIMER
+    output["related_endpoints"] = _related_endpoints("classify-risk")
+    await emit_revenue_event(RevenueEvent(
+        endpoint="/x402/classify-risk", price_usd=X402_PRICE_CLASSIFY_RISK,
+        agent_id=body.system_id, decision=result.level.value,
+        timestamp=datetime.now(UTC).isoformat(), processing_ms=ms,
+        network=X402_NETWORK, wallet_address=X402_PAY_TO,
+    ))
     return output
 
 
 @router.post("/compliance")
 async def assess_compliance(
-    request: Request, body: ComplianceRequest,
+    request: Request,
+    body: ComplianceRequest,
 ) -> dict[str, Any]:
     """
     Multi-framework compliance assessment — $0.25/call.
@@ -491,16 +635,25 @@ async def assess_compliance(
         processing_ms=int(elapsed.total_seconds() * 1000),
     )
 
+    ms = int(elapsed.total_seconds() * 1000)
     output = report.to_dict()
     output["constitutional_hash"] = CONSTITUTIONAL_HASH
-    output["processing_ms"] = int(elapsed.total_seconds() * 1000)
-    output["upgrade"] = _cross_sell("compliance")
+    output["processing_ms"] = ms
+    output["disclaimer"] = PAID_RESPONSE_DISCLAIMER
+    output["related_endpoints"] = _related_endpoints("compliance")
+    await emit_revenue_event(RevenueEvent(
+        endpoint="/x402/compliance", price_usd=X402_PRICE_COMPLIANCE,
+        agent_id=body.system_id, decision=f"score:{report.overall_score}",
+        timestamp=datetime.now(UTC).isoformat(), processing_ms=ms,
+        network=X402_NETWORK, wallet_address=X402_PAY_TO,
+    ))
     return output
 
 
 @router.post("/simulate")
 async def simulate_policy(
-    request: Request, body: SimulateRequest,
+    request: Request,
+    body: SimulateRequest,
 ) -> dict[str, Any]:
     """
     Policy change simulation — $0.15/call.
@@ -539,10 +692,18 @@ async def simulate_policy(
         processing_ms=int(elapsed.total_seconds() * 1000),
     )
 
+    ms = int(elapsed.total_seconds() * 1000)
     output = report.to_dict()
     output["constitutional_hash"] = CONSTITUTIONAL_HASH
-    output["processing_ms"] = int(elapsed.total_seconds() * 1000)
-    output["upgrade"] = _cross_sell("simulate")
+    output["processing_ms"] = ms
+    output["disclaimer"] = PAID_RESPONSE_DISCLAIMER
+    output["related_endpoints"] = _related_endpoints("simulate")
+    await emit_revenue_event(RevenueEvent(
+        endpoint="/x402/simulate", price_usd=X402_PRICE_SIMULATE,
+        agent_id="anonymous", decision=report.recommendation,
+        timestamp=datetime.now(UTC).isoformat(), processing_ms=ms,
+        network=X402_NETWORK, wallet_address=X402_PAY_TO,
+    ))
     return output
 
 
@@ -562,7 +723,9 @@ async def trust_score(request: Request, body: TrustRequest) -> dict[str, Any]:
 
     if body.compliant is not None:
         event = manager.record_decision(
-            body.agent_id, compliant=body.compliant, severity=body.severity,
+            body.agent_id,
+            compliant=body.compliant,
+            severity=body.severity,
         )
         result = {
             "agent_id": body.agent_id,
@@ -582,13 +745,24 @@ async def trust_score(request: Request, body: TrustRequest) -> dict[str, Any]:
     elapsed = datetime.now(UTC) - start
     result["constitutional_hash"] = CONSTITUTIONAL_HASH
     result["processing_ms"] = int(elapsed.total_seconds() * 1000)
-    result["upgrade"] = _cross_sell("trust")
+    result["disclaimer"] = PAID_RESPONSE_DISCLAIMER
+    result["related_endpoints"] = _related_endpoints("trust")
 
     logger.info(
         "x402 trust score",
-        **{k: v for k, v in result.items()
-           if k not in ("constitutional_hash", "upgrade")},
+        **{
+            k: v
+            for k, v in result.items()
+            if k not in ("constitutional_hash", "disclaimer", "related_endpoints")
+        },
     )
+    await emit_revenue_event(RevenueEvent(
+        endpoint="/x402/trust", price_usd=X402_PRICE_TRUST,
+        agent_id=body.agent_id, decision=result.get("action", "query"),
+        timestamp=datetime.now(UTC).isoformat(),
+        processing_ms=result["processing_ms"],
+        network=X402_NETWORK, wallet_address=X402_PAY_TO,
+    ))
     return result
 
 
@@ -622,13 +796,21 @@ async def detect_anomaly(request: Request, body: AnomalyRequest) -> dict[str, An
         processing_ms=int(elapsed.total_seconds() * 1000),
     )
 
+    ms = int(elapsed.total_seconds() * 1000)
+    await emit_revenue_event(RevenueEvent(
+        endpoint="/x402/anomaly", price_usd=X402_PRICE_ANOMALY,
+        agent_id=body.agent_id, decision=f"anomalies:{len(signals)}",
+        timestamp=datetime.now(UTC).isoformat(), processing_ms=ms,
+        network=X402_NETWORK, wallet_address=X402_PAY_TO,
+    ))
     return {
         "anomalies": [s.to_dict() for s in signals],
         "anomaly_count": len(signals),
         "stats": detector.stats(),
         "constitutional_hash": CONSTITUTIONAL_HASH,
-        "processing_ms": int(elapsed.total_seconds() * 1000),
-        "upgrade": _cross_sell("anomaly"),
+        "processing_ms": ms,
+        "disclaimer": PAID_RESPONSE_DISCLAIMER,
+        "related_endpoints": _related_endpoints("anomaly"),
     }
 
 
@@ -649,7 +831,9 @@ async def explain_decision(request: Request, body: ExplainRequest) -> dict[str, 
         constitution = Constitution.from_template("default")
         result = constitution.validate(body.action, body.context)
         explanation = _explain(
-            result, constitution=constitution, detail_level=body.detail_level,
+            result,
+            constitution=constitution,
+            detail_level=body.detail_level,
         )
     except ImportError as exc:
         raise HTTPException(503, "Decision explainer unavailable") from exc
@@ -664,14 +848,22 @@ async def explain_decision(request: Request, body: ExplainRequest) -> dict[str, 
         processing_ms=int(elapsed.total_seconds() * 1000),
     )
 
+    ms = int(elapsed.total_seconds() * 1000)
     output = (
         explanation.to_dict()
         if hasattr(explanation, "to_dict")
         else {"explanation": str(explanation)}
     )
     output["constitutional_hash"] = CONSTITUTIONAL_HASH
-    output["processing_ms"] = int(elapsed.total_seconds() * 1000)
-    output["upgrade"] = _cross_sell("explain")
+    output["processing_ms"] = ms
+    output["disclaimer"] = PAID_RESPONSE_DISCLAIMER
+    output["related_endpoints"] = _related_endpoints("explain")
+    await emit_revenue_event(RevenueEvent(
+        endpoint="/x402/explain", price_usd=X402_PRICE_EXPLAIN,
+        agent_id="anonymous", decision="explained",
+        timestamp=datetime.now(UTC).isoformat(), processing_ms=ms,
+        network=X402_NETWORK, wallet_address=X402_PAY_TO,
+    ))
     return output
 
 
@@ -682,7 +874,8 @@ async def explain_decision(request: Request, body: ExplainRequest) -> dict[str, 
 
 @router.post("/invariant-guard")
 async def invariant_guard(
-    request: Request, body: InvariantGuardRequest,
+    request: Request,
+    body: InvariantGuardRequest,
 ) -> dict[str, Any]:
     """
     Three-tier invariant enforcement — $0.10/call.
@@ -708,12 +901,11 @@ async def invariant_guard(
         raise HTTPException(422, f"Invariant check failed: {exc}") from exc
 
     elapsed = datetime.now(UTC) - start
-    output = (
-        result.to_dict() if hasattr(result, "to_dict") else {"result": str(result)}
-    )
+    output = result.to_dict() if hasattr(result, "to_dict") else {"result": str(result)}
     output["constitutional_hash"] = CONSTITUTIONAL_HASH
     output["processing_ms"] = int(elapsed.total_seconds() * 1000)
-    output["upgrade"] = _cross_sell("invariant-guard")
+    output["disclaimer"] = PAID_RESPONSE_DISCLAIMER
+    output["related_endpoints"] = _related_endpoints("invariant-guard")
 
     logger.info(
         "x402 invariant guard",
@@ -721,12 +913,20 @@ async def invariant_guard(
         tier=body.tier,
         processing_ms=output["processing_ms"],
     )
+    await emit_revenue_event(RevenueEvent(
+        endpoint="/x402/invariant-guard", price_usd=X402_PRICE_INVARIANT,
+        agent_id=body.agent_id, decision="checked",
+        timestamp=datetime.now(UTC).isoformat(),
+        processing_ms=output["processing_ms"],
+        network=X402_NETWORK, wallet_address=X402_PAY_TO,
+    ))
     return output
 
 
 @router.post("/circuit-breaker")
 async def circuit_breaker(
-    request: Request, body: CircuitBreakerRequest,
+    request: Request,
+    body: CircuitBreakerRequest,
 ) -> dict[str, Any]:
     """
     Governance circuit breaker — $0.10/call.
@@ -752,24 +952,31 @@ async def circuit_breaker(
         raise HTTPException(422, f"Circuit breaker failed: {exc}") from exc
 
     elapsed = datetime.now(UTC) - start
-    output = (
-        result.to_dict() if hasattr(result, "to_dict") else {"result": str(result)}
-    )
+    output = result.to_dict() if hasattr(result, "to_dict") else {"result": str(result)}
     output["constitutional_hash"] = CONSTITUTIONAL_HASH
     output["processing_ms"] = int(elapsed.total_seconds() * 1000)
-    output["upgrade"] = _cross_sell("circuit-breaker")
+    output["disclaimer"] = PAID_RESPONSE_DISCLAIMER
+    output["related_endpoints"] = _related_endpoints("circuit-breaker")
 
     logger.info(
         "x402 circuit breaker",
         agent_id=body.agent_id,
         processing_ms=output["processing_ms"],
     )
+    await emit_revenue_event(RevenueEvent(
+        endpoint="/x402/circuit-breaker", price_usd=X402_PRICE_CIRCUIT,
+        agent_id=body.agent_id, decision="evaluated",
+        timestamp=datetime.now(UTC).isoformat(),
+        processing_ms=output["processing_ms"],
+        network=X402_NETWORK, wallet_address=X402_PAY_TO,
+    ))
     return output
 
 
 @router.post("/policy-lint")
 async def policy_lint(
-    request: Request, body: PolicyLintRequest,
+    request: Request,
+    body: PolicyLintRequest,
 ) -> dict[str, Any]:
     """
     Policy quality & security scan — $0.05/call.
@@ -790,12 +997,11 @@ async def policy_lint(
         raise HTTPException(422, f"Policy lint failed: {exc}") from exc
 
     elapsed = datetime.now(UTC) - start
-    output = (
-        result.to_dict() if hasattr(result, "to_dict") else {"result": str(result)}
-    )
+    output = result.to_dict() if hasattr(result, "to_dict") else {"result": str(result)}
     output["constitutional_hash"] = CONSTITUTIONAL_HASH
     output["processing_ms"] = int(elapsed.total_seconds() * 1000)
-    output["upgrade"] = _cross_sell("policy-lint")
+    output["disclaimer"] = PAID_RESPONSE_DISCLAIMER
+    output["related_endpoints"] = _related_endpoints("policy-lint")
 
     logger.info(
         "x402 policy lint",
@@ -803,12 +1009,20 @@ async def policy_lint(
         strict=body.strict,
         processing_ms=output["processing_ms"],
     )
+    await emit_revenue_event(RevenueEvent(
+        endpoint="/x402/policy-lint", price_usd=X402_PRICE_POLICY_LINT,
+        agent_id="anonymous", decision="linted",
+        timestamp=datetime.now(UTC).isoformat(),
+        processing_ms=output["processing_ms"],
+        network=X402_NETWORK, wallet_address=X402_PAY_TO,
+    ))
     return output
 
 
 @router.post("/eu-ai-log")
 async def eu_ai_act_log(
-    request: Request, body: EUAIActLogRequest,
+    request: Request,
+    body: EUAIActLogRequest,
 ) -> dict[str, Any]:
     """
     EU AI Act Article 12 logging — $0.10/call.
@@ -836,12 +1050,11 @@ async def eu_ai_act_log(
         raise HTTPException(422, f"Article 12 logging failed: {exc}") from exc
 
     elapsed = datetime.now(UTC) - start
-    output = (
-        result.to_dict() if hasattr(result, "to_dict") else {"result": str(result)}
-    )
+    output = result.to_dict() if hasattr(result, "to_dict") else {"result": str(result)}
     output["constitutional_hash"] = CONSTITUTIONAL_HASH
     output["processing_ms"] = int(elapsed.total_seconds() * 1000)
-    output["upgrade"] = _cross_sell("eu-ai-log")
+    output["disclaimer"] = PAID_RESPONSE_DISCLAIMER
+    output["related_endpoints"] = _related_endpoints("eu-ai-log")
 
     logger.info(
         "x402 eu ai act article 12 log",
@@ -849,4 +1062,11 @@ async def eu_ai_act_log(
         risk_level=body.risk_level,
         processing_ms=output["processing_ms"],
     )
+    await emit_revenue_event(RevenueEvent(
+        endpoint="/x402/eu-ai-log", price_usd=X402_PRICE_EU_AI_LOG,
+        agent_id=body.agent_id, decision=f"logged:{body.risk_level}",
+        timestamp=datetime.now(UTC).isoformat(),
+        processing_ms=output["processing_ms"],
+        network=X402_NETWORK, wallet_address=X402_PAY_TO,
+    ))
     return output

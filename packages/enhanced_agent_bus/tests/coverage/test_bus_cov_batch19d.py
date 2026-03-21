@@ -304,28 +304,80 @@ class TestInitializeWorkflowComponents:
             assert repo is mock_repo
             mock_repo.initialize.assert_awaited_once()
 
-    async def test_returns_none_on_import_error(self):
+    async def test_returns_none_on_import_error_non_dev(self):
+        """In non-dev environments, ImportError yields (None, None)."""
         from enhanced_agent_bus.api.app import _initialize_workflow_components
 
         mock_app = MagicMock()
-        with patch(
-            "enhanced_agent_bus.api.app.PostgresWorkflowRepository",
-            side_effect=ImportError("no asyncpg"),
+        with (
+            patch(
+                "enhanced_agent_bus.api.app.PostgresWorkflowRepository",
+                side_effect=ImportError("no asyncpg"),
+            ),
+            patch(
+                "enhanced_agent_bus.api.app._is_development_like_environment",
+                return_value=False,
+            ),
         ):
             executor, repo = await _initialize_workflow_components(mock_app)
             assert executor is None
             assert repo is None
 
-    async def test_returns_none_on_generic_error(self):
+    async def test_falls_back_to_in_memory_on_import_error_in_dev(self):
+        """In dev environments, ImportError falls back to in-memory executor."""
         from enhanced_agent_bus.api.app import _initialize_workflow_components
 
         mock_app = MagicMock()
-        with patch(
-            "enhanced_agent_bus.api.app.PostgresWorkflowRepository",
-            side_effect=Exception("connection refused"),
+        with (
+            patch(
+                "enhanced_agent_bus.api.app.PostgresWorkflowRepository",
+                side_effect=ImportError("no asyncpg"),
+            ),
+            patch(
+                "enhanced_agent_bus.api.app._is_development_like_environment",
+                return_value=True,
+            ),
+        ):
+            executor, repo = await _initialize_workflow_components(mock_app)
+            assert executor is not None
+            assert repo is None
+
+    async def test_returns_none_on_generic_error_non_dev(self):
+        """In non-dev environments, generic errors yield (None, None)."""
+        from enhanced_agent_bus.api.app import _initialize_workflow_components
+
+        mock_app = MagicMock()
+        with (
+            patch(
+                "enhanced_agent_bus.api.app.PostgresWorkflowRepository",
+                side_effect=Exception("connection refused"),
+            ),
+            patch(
+                "enhanced_agent_bus.api.app._is_development_like_environment",
+                return_value=False,
+            ),
         ):
             executor, repo = await _initialize_workflow_components(mock_app)
             assert executor is None
+            assert repo is None
+
+    async def test_falls_back_to_in_memory_on_generic_error_in_dev(self):
+        """In dev environments, generic errors fall back to in-memory executor."""
+        from enhanced_agent_bus.api.app import _initialize_workflow_components
+
+        mock_app = MagicMock()
+        with (
+            patch(
+                "enhanced_agent_bus.api.app.PostgresWorkflowRepository",
+                side_effect=Exception("connection refused"),
+            ),
+            patch(
+                "enhanced_agent_bus.api.app._is_development_like_environment",
+                return_value=True,
+            ),
+        ):
+            executor, repo = await _initialize_workflow_components(mock_app)
+            assert executor is not None
             assert repo is None
 
 

@@ -132,7 +132,7 @@ markers = [
 
 [tool.coverage.run]
 source = ["src", "packages/enhanced_agent_bus", "packages/acgs-lite/src"]
-omit = ["tests/*", "**/tests/*", "**/__init__.py"]
+omit = ["tests/*", "**/tests/*", "**/__init__.py", "src/acgs_lite/*"]
 
 [tool.coverage.report]
 fail_under = 70

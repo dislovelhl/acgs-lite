@@ -35,7 +35,7 @@ from enhanced_agent_bus.llm_adapters.config import AzureOpenAIAdapterConfig
 def _make_config(**overrides):
     """Create an AzureOpenAIAdapterConfig with sensible test defaults."""
     defaults = {
-        "model": "gpt-5.2",
+        "model": "gpt-5.4",
         "deployment_name": "test-deployment",
         "azure_endpoint": "https://test.openai.azure.com",
         "api_version": "2024-02-15-preview",
@@ -72,14 +72,14 @@ def _mock_openai_response():
     response = MagicMock()
     response.choices = [choice]
     response.usage = usage
-    response.model = "gpt-5.2"
+    response.model = "gpt-5.4"
     response.id = "chatcmpl-test"
     response.created = 1234567890
     response.prompt_filter_results = None
     response.model_dump.return_value = {
         "id": "chatcmpl-test",
         "object": "chat.completion",
-        "model": "gpt-5.2",
+        "model": "gpt-5.4",
         "choices": [
             {
                 "index": 0,
@@ -104,7 +104,7 @@ def _mock_openai_response():
 class TestAzureOpenAIAdapterInit:
     def test_init_with_config(self):
         adapter = _make_adapter()
-        assert adapter.model == "gpt-5.2"
+        assert adapter.model == "gpt-5.4"
         assert adapter.deployment_name == "test-deployment"
         assert adapter.api_key == "test-api-key"
 
@@ -123,7 +123,7 @@ class TestAzureOpenAIAdapterInit:
                 deployment_name="my-deploy",
                 api_key="key",
             )
-            assert adapter.model == "gpt-5.2"
+            assert adapter.model == "gpt-5.4"
 
     def test_provider_name(self):
         adapter = _make_adapter()

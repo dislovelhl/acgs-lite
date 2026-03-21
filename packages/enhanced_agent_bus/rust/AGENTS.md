@@ -1,59 +1,57 @@
 # AGENTS.md - Enhanced Agent Bus (Rust Kernels)
 
-Scope: `src/core/enhanced_agent_bus/rust/`
+Scope: `packages/enhanced_agent_bus/rust/`
 
-## OVERVIEW
+## Overview
 
-Performance-critical Rust extensions for the Enhanced Agent Bus. These kernels provide SIMD-accelerated security scanning, parallel governance validation, and geometric tensor projections (Sinkhorn-Knopp) to ensure sub-millisecond P99 latency.
+Rust kernels for performance-sensitive enhanced-agent-bus paths. This workspace contains the PyO3
+extension crate plus benches and supporting modules for security scanning, optimization, OPA, and
+deliberation-related helpers.
 
-## STRUCTURE
+## Structure
 
-- `src/lib.rs`: PyO3 entry point; implements the `MessageProcessor` orchestration logic.
-- `src/tensor_ops.rs`: Parallel BERT embedding pooling using Rayon.
-- `src/optimization.rs`: Birkhoff stabilization via Sinkhorn-Knopp algorithm.
-- `src/opa.rs`: High-throughput OPA client with Moka-based in-memory caching.
-- `src/security.rs`: SIMD-optimized prompt injection detection.
-- `src/deliberation.rs`: Adaptive routing and impact scoring logic.
+- `src/lib.rs`: PyO3 entrypoint and exported module surface.
+- `src/crypto.rs`: constitutional hash and crypto helpers.
+- `src/audit.rs`: audit-related helpers.
+- `src/opa.rs`: OPA client helpers.
+- `src/security.rs`, `src/prompt_guard.rs`: security and prompt-injection checks.
+- `src/optimization.rs`, `src/parallel_optimizer.rs`, `src/tensor_ops.rs`, `src/simd_ops.rs`:
+  optimization and numerical kernels.
+- `src/deliberation.rs`: deliberation helpers.
+- `src/metrics.rs`, `src/error.rs`: metrics and error plumbing.
+- `benches/kernel_benchmarks.rs`: Rust benchmarks.
 
-## WHERE TO LOOK
+## Where to Look
 
-- Parallel Validation: `MessageProcessor::validate_message_parallel` in `lib.rs`.
-- Prompt Injection (primary): `PromptGuard::detect` in `prompt_guard.rs` — full 3-phase scan (Aho-Corasick → regex → heuristics).
-- Prompt Injection (legacy): `detect_prompt_injection` in `security.rs` — kept for backward-compat; `process_internal` now runs both.
-- Geometric Projections: `sinkhorn_knopp_stabilize` in `optimization.rs`.
-- In-Memory Cache: `OpaClient` implementation in `opa.rs`.
+- PyO3 surface: `src/lib.rs`
+- Constitutional hash handling: `src/crypto.rs`
+- Prompt guard logic: `src/prompt_guard.rs`
+- Security scanning: `src/security.rs`
+- Optimization kernels: `src/optimization.rs`, `src/parallel_optimizer.rs`
+- OPA helpers: `src/opa.rs`
 
-## CONVENTIONS
+## Conventions
 
-- **Parallelism**: Use `Rayon` for all CPU-bound tensor/validation operations.
-- **Safety**: Prefer safe Rust; `unsafe` is strictly for SIMD/FFI performance and must be documented.
-- **Interop**: Map all internal errors to `PyErr` via `thiserror` for seamless Python integration.
-- **Compliance**: `CONSTITUTIONAL_HASH` is defined **once** in `src/crypto.rs` and re-exported via `lib.rs`. Do not re-define it in other modules — import it with `use crate::crypto::CONSTITUTIONAL_HASH;`.
-- **Lints**: The crate root has `#![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]`. All `unwrap()` usages require explicit `#[allow]` with a justification comment.
+- Prefer safe Rust; justify every `unsafe` block.
+- Map Rust failures cleanly into Python-facing errors.
+- Keep constitutional-hash handling centralized.
+- Avoid copying large data in hot paths when references or shared ownership work.
 
-## ANTI-PATTERNS
+## Anti-Patterns
 
-- **Tokio Block**: Do not perform heavy CPU operations directly in async tasks; use `spawn_blocking`.
-- **Large Clones**: Avoid cloning `AgentMessage` in the hot path; use `Arc` or references.
-- **Panic**: Never use `unwrap()` or `panic!`; always return `Result` for Python bubble-up.
-- **Duplicate CONSTITUTIONAL_HASH**: Adding `pub const CONSTITUTIONAL_HASH = ...` to any module is now a compile error — import from `crate::crypto` instead.
-- **Scanning only `content`**: All injection detection must iterate both `message.content.values()` and `message.payload.values()`.
+- Do not duplicate constitutional-hash constants across modules.
+- Do not assume async contexts are the right place for heavy CPU work.
+- Do not introduce panic-driven error handling on Python-facing paths.
 
-## BUILD & TEST
+## Build & Test
 
 ```bash
-# Type-check (fast, no Python needed)
+cd packages/enhanced_agent_bus/rust
 cargo check
-
-# Compile tests (no Python needed)
 cargo check --tests
-
-# Full build + Python extension (requires maturin)
-pip install maturin
 maturin develop --release
-
-# Run tests via Python after maturin develop
-pytest tests/
+python -m pytest packages/enhanced_agent_bus/tests/ -v --import-mode=importlib
 ```
 
-Note: `cargo test` fails to link because PyO3 `extension-module` crates defer Python symbol resolution to Python's runtime loader. Use `maturin develop` + pytest for integration testing.
+`cargo test` is not the primary verification path for the Python extension integration. Validate
+through `maturin develop --release` plus pytest when the Python boundary matters.

@@ -86,6 +86,8 @@ class AzureOpenAIAdapter(BaseLLMAdapter):
 
     # Model pricing per 1M tokens (USD) - same as OpenAI
     MODEL_PRICING: ClassVar[dict] = {
+        "gpt-5.4": {"prompt": 2.00, "completion": 16.00},
+        "gpt-5.3": {"prompt": 1.75, "completion": 14.00},
         "gpt-5.2": {"prompt": 1.75, "completion": 14.00},
         "gpt-5.1": {"prompt": 1.25, "completion": 10.00},
         "gpt-5": {"prompt": 1.25, "completion": 10.00},
@@ -126,7 +128,7 @@ class AzureOpenAIAdapter(BaseLLMAdapter):
             if deployment_name is None:
                 raise ValueError("deployment_name is required when config is not provided")
             if model is None:
-                model = "gpt-5.2"
+                model = "gpt-5.4"
             config = AzureOpenAIAdapterConfig.from_environment(
                 deployment_name=deployment_name,
                 model=model,
@@ -722,7 +724,7 @@ class AzureOpenAIAdapter(BaseLLMAdapter):
         # Default to GPT-5.2 pricing if model not found
         if pricing is None:
             logger.warning(f"Pricing not found for model {self.model}, using GPT-5.2 pricing")
-            pricing = self.MODEL_PRICING["gpt-5.2"]
+            pricing = self.MODEL_PRICING["gpt-5.4"]
 
         # Calculate costs (pricing is per 1K tokens)
         prompt_cost = (prompt_tokens / 1000.0) * pricing["prompt"]

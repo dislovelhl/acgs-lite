@@ -1,50 +1,39 @@
 # Constitutional Amendment Engine
 
-> Scope: `src/core/enhanced_agent_bus/constitutional/` — 31 files. Constitutional lifecycle: proposals, reviews, activation, rollback.
+> Scope: `packages/enhanced_agent_bus/constitutional/` — constitutional lifecycle, invariants,
+> review, activation, rollback, and storage.
 
-## STRUCTURE
+## Structure
 
-```
-constitutional/
-├── proposal_engine.py       # Amendment proposal creation and validation
-├── council.py               # Constitutional council evaluation
-├── review_api.py            # FastAPI review endpoints (HTTP_403_FORBIDDEN for unauthorized)
-├── activation_saga.py       # Distributed activation saga (multi-step, compensating)
-├── rollback_engine.py       # Safe rollback of failed amendments
-├── diff_engine.py           # Constitutional diff computation
-├── version_model.py         # Version metadata (Pydantic)
-├── version_history.py       # Immutable version history log
-├── amendment_model.py       # Amendment data model
-├── hitl_integration.py      # HITL review gates for constitutional changes
-├── opa_updater.py           # Push amendments to OPA runtime
-├── degradation_detector.py  # Detect governance degradation post-amendment
-├── metrics_collector.py     # Amendment pipeline metrics
-├── storage.py               # Amendment persistence (abstract)
-├── storage/                 # Concrete storage backends
-├── storage_infra/           # Storage infrastructure (migrations, schemas)
-└── tests/                   # Constitutional amendment tests
-```
+- `proposal_engine.py`: proposal creation and validation
+- `council.py`: review/evaluation logic
+- `review_api.py`: review-facing API surface
+- `activation_saga.py`: activation workflow
+- `rollback_engine.py`: rollback safety path
+- `invariants.py`, `invariant_guard.py`: invariant enforcement
+- `opa_updater.py`: policy/runtime propagation
+- `storage.py`, `storage/`, `storage_infra/`: persistence and storage helpers
+- `version_history.py`, `version_model.py`, `amendment_model.py`: core models/history
 
-## WHERE TO LOOK
+## Where to Look
 
-| Task                         | Location                      |
-| ---------------------------- | ----------------------------- |
-| Create new amendment type    | `amendment_model.py`          |
-| Change proposal validation   | `proposal_engine.py`          |
-| Modify review workflow       | `review_api.py`, `council.py` |
-| Add rollback safety check    | `rollback_engine.py`          |
-| Update OPA policy deployment | `opa_updater.py`              |
-| Storage backend changes      | `storage/`, `storage_infra/`  |
+| Task | Location |
+| ---- | -------- |
+| Add amendment fields/types | `amendment_model.py`, `version_model.py` |
+| Change proposal validation | `proposal_engine.py` |
+| Modify review flow | `council.py`, `review_api.py`, `hitl_integration.py` |
+| Activation/rollback behavior | `activation_saga.py`, `rollback_engine.py` |
+| Invariant enforcement | `invariants.py`, `invariant_guard.py` |
+| Storage/backend work | `storage.py`, `storage/`, `storage_infra/` |
 
-## CONVENTIONS
+## Conventions
 
-- Constitutional changes follow saga pattern: propose → review → activate → verify.
-- `version_history.py` is append-only — **we NEVER rewrite history**.
-- All amendments require HITL review via `hitl_integration.py` (no autonomous constitutional changes).
-- `degradation_detector.py` runs post-activation to catch regressions.
+- Constitutional changes go through proposal, review, activation, and verification stages.
+- Keep version history append-only.
+- Preserve independent review and HITL gates for constitutional changes.
 
-## ANTI-PATTERNS
+## Anti-Patterns
 
-- Do not bypass `council.py` for amendment approval — MACI separation requires independent validation.
-- Do not modify `storage_infra/` schemas without migration scripts.
-- Do not push OPA updates directly — always via `opa_updater.py` with rollback capability.
+- Do not bypass council/review paths for amendment approval.
+- Do not mutate storage schemas without updating the matching storage layer.
+- Do not push runtime policy changes outside the controlled updater/rollback path.

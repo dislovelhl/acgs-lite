@@ -1,0 +1,17 @@
+{
+  "app": {
+    "[project]/Documents/acgs-clean/propriety-ai/app/assessment/page": [
+      "static/media/caa3a2e1cccd8315-s.p.853070df.woff2",
+      "static/media/797e433ab948586e-s.p.dbea232f.woff2"
+    ],
+    "[project]/Documents/acgs-clean/propriety-ai/app/page": [
+      "static/media/8bd76523131fa0fc-s.p.eb17b6b9.woff2",
+      "static/media/01e4147cff8141ee-s.p.7787e134.woff2",
+      "static/media/5c285b27cdda1fe8-s.p.a62025f2.woff2",
+      "static/media/797e433ab948586e-s.p.dbea232f.woff2"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pages": {},
+  "pagesUsingSizeAdjust": false
+}

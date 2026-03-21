@@ -13,6 +13,14 @@ _project_root = os.path.dirname(os.path.abspath(__file__))
 if _project_root not in sys.path:
     sys.path.insert(0, _project_root)
 
+# CRITICAL: Insert acgs-clean/packages at the FRONT of sys.path before any
+# conftest or test imports enhanced_agent_bus. Without this, Python may find
+# the package from acgs-main/packages (which is in the user-level sys.path)
+# instead of acgs-clean/packages, causing import failures.
+_packages_dir = os.path.join(_project_root, "packages")
+if _packages_dir not in sys.path:
+    sys.path.insert(0, _packages_dir)
+
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # Pre-cache the project-level `tests` package in sys.modules so that sub-directory
