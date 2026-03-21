@@ -76,6 +76,7 @@ from .routes import (
     proxy_router,
     sso_router,
     x402_governance_router,
+    x402_marketplace_router,
 )
 
 try:
@@ -104,9 +105,9 @@ app = create_acgs_app(
     title="ACGS-2 API Gateway",
     description="Development API Gateway for ACGS-2 services with constitutional governance",
     version="1.0.0",
-    docs_url="/docs" if is_development else None,
-    redoc_url="/redoc" if is_development else None,
-    openapi_url="/openapi.json" if is_development else None,
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
     default_response_class=ORJSONResponse,
     include_default_health_routes=False,
     lifespan=lifespan,
@@ -202,6 +203,22 @@ app.add_middleware(
             "/api/v1/sso/saml/acs",
             "/api/v1/sso/saml/sls",
             "/api/v1/sso/workos/webhooks/events",
+            "/x402/validate",
+            "/x402/audit",
+            "/x402/certify",
+            "/x402/batch",
+            "/x402/treasury",
+            "/x402/scan",
+            "/x402/classify-risk",
+            "/x402/compliance",
+            "/x402/simulate",
+            "/x402/trust",
+            "/x402/anomaly",
+            "/x402/explain",
+            "/x402/invariant-guard",
+            "/x402/circuit-breaker",
+            "/x402/policy-lint",
+            "/x402/eu-ai-log",
         ),
         session_cookie_name="acgs2_session",
     ),
@@ -254,6 +271,26 @@ if ENABLE_RATE_LIMITING:
             window_seconds=60,
             scope=RateLimitScope.IP,
             endpoints=["/health"],
+        ),
+        # x402 free endpoints — prevent enumeration/DDoS
+        RateLimitRule(
+            requests=30,
+            window_seconds=60,
+            scope=RateLimitScope.IP,
+            endpoints=["/x402/check", "/x402/verify", "/x402/pricing", "/x402/health"],
+        ),
+        # x402 paid endpoints — generous but bounded (payment = auth)
+        RateLimitRule(
+            requests=500,
+            window_seconds=60,
+            scope=RateLimitScope.IP,
+            endpoints=[
+                "/x402/validate", "/x402/audit", "/x402/certify", "/x402/batch",
+                "/x402/treasury", "/x402/scan", "/x402/classify-risk",
+                "/x402/compliance", "/x402/simulate", "/x402/trust",
+                "/x402/anomaly", "/x402/explain", "/x402/invariant-guard",
+                "/x402/circuit-breaker", "/x402/policy-lint", "/x402/eu-ai-log",
+            ],
         ),
         # Default for other endpoints
         RateLimitRule(
@@ -402,10 +439,167 @@ app.include_router(pqc_phase5_router, prefix="/api/v1/admin/pqc", tags=["PQC Pha
 logger.info("PQC Phase 5 admin routes configured: /api/v1/admin/pqc/pqc-only-mode/*")
 
 # Include x402 Governance-as-a-Service routes (pay-per-call constitutional validation)
-# Endpoints: /x402/pricing, /x402/validate, /x402/health
+# Endpoints: /x402/pricing, /x402/validate, /x402/treasury, /x402/health
 # Constitutional Hash: cdd01ef066bc6cf2
 app.include_router(x402_governance_router)
-logger.info("x402 governance routes configured: /x402/validate, /x402/pricing, /x402/health")
+app.include_router(x402_marketplace_router)
+logger.info(
+    "x402 routes configured: governance (check/validate/audit/certify/batch/treasury) "
+    "+ marketplace (scan/classify-risk/compliance/simulate/trust/anomaly/explain)"
+)
+
+# x402 Payment Middleware — activates only when EVM_ADDRESS is set
+_x402_pay_to = os.getenv("EVM_ADDRESS", "")
+if _x402_pay_to:
+    try:
+        from x402 import FacilitatorConfig
+        from x402.http import HTTPFacilitatorClient
+        from x402.http.middleware.fastapi import PaymentMiddlewareASGI
+        from x402.http.types import PaymentOption
+        from x402.http.types import RouteConfig as X402RouteConfig
+        from x402.mechanisms.evm.exact import ExactEvmServerScheme
+        from x402.server import x402ResourceServer
+
+        _x402_network = os.getenv("X402_NETWORK", "eip155:84532")
+        _price_validate = os.getenv("X402_PRICE_VALIDATE", "0.01")
+        _price_audit = os.getenv("X402_PRICE_AUDIT", "0.05")
+        _price_certify = os.getenv("X402_PRICE_CERTIFY", "0.50")
+        _price_batch = os.getenv("X402_PRICE_BATCH", "0.10")
+        _price_treasury = os.getenv("X402_PRICE_TREASURY", "0.05")
+        _x402_facilitator_url = os.getenv(
+            "FACILITATOR_URL", "https://facilitator.xpay.sh"
+        )
+
+        _facilitator_cfg = FacilitatorConfig(url=_x402_facilitator_url)
+        _facilitator_client = HTTPFacilitatorClient(_facilitator_cfg)
+        _x402_server = x402ResourceServer([_facilitator_client])
+        _x402_server.register(_x402_network, ExactEvmServerScheme())
+
+        def _make_option(price: str) -> PaymentOption:
+            return PaymentOption(
+                scheme="exact",
+                pay_to=_x402_pay_to,
+                price=f"${price}",
+                network=_x402_network,
+            )
+
+        _bazaar_meta = {
+            "bazaar": {
+                "category": "governance",
+                "tags": ["ai", "compliance", "constitutional", "maci"],
+            },
+        }
+
+        _x402_routes = {
+            "POST /x402/validate": X402RouteConfig(
+                accepts=[_make_option(_price_validate)],
+                description="Governance validation ($" + _price_validate + ")",
+                extensions=_bazaar_meta,
+            ),
+            "POST /x402/audit": X402RouteConfig(
+                accepts=[_make_option(_price_audit)],
+                description="Compliance audit with risk breakdown ($" + _price_audit + ")",
+                extensions=_bazaar_meta,
+            ),
+            "POST /x402/certify": X402RouteConfig(
+                accepts=[_make_option(_price_certify)],
+                description="Signed attestation — verifiable compliance proof ($" + _price_certify + ")",
+                extensions=_bazaar_meta,
+            ),
+            "POST /x402/batch": X402RouteConfig(
+                accepts=[_make_option(_price_batch)],
+                description="Bulk validation up to 20 actions ($" + _price_batch + ")",
+                extensions=_bazaar_meta,
+            ),
+            "POST /x402/treasury": X402RouteConfig(
+                accepts=[_make_option(_price_treasury)],
+                description="DAO treasury intelligence ($" + _price_treasury + ")",
+                extensions=_bazaar_meta,
+            ),
+            # Marketplace endpoints (market-rate pricing)
+            "POST /x402/scan": X402RouteConfig(
+                accepts=[_make_option(os.getenv("X402_PRICE_SCAN", "0.03"))],
+                description="Prompt injection detection ($0.03)",
+                extensions=_bazaar_meta,
+            ),
+            "POST /x402/classify-risk": X402RouteConfig(
+                accepts=[_make_option(os.getenv("X402_PRICE_CLASSIFY_RISK", "0.10"))],
+                description="EU AI Act risk classification ($0.10)",
+                extensions=_bazaar_meta,
+            ),
+            "POST /x402/compliance": X402RouteConfig(
+                accepts=[_make_option(os.getenv("X402_PRICE_COMPLIANCE", "0.25"))],
+                description="Multi-framework compliance — 8 frameworks ($0.25)",
+                extensions=_bazaar_meta,
+            ),
+            "POST /x402/simulate": X402RouteConfig(
+                accepts=[_make_option(os.getenv("X402_PRICE_SIMULATE", "0.15"))],
+                description="Policy change simulation ($0.15)",
+                extensions=_bazaar_meta,
+            ),
+            "POST /x402/trust": X402RouteConfig(
+                accepts=[_make_option(os.getenv("X402_PRICE_TRUST", "0.02"))],
+                description="Agent trust scoring ($0.02)",
+                extensions=_bazaar_meta,
+            ),
+            "POST /x402/anomaly": X402RouteConfig(
+                accepts=[_make_option(os.getenv("X402_PRICE_ANOMALY", "0.03"))],
+                description="Governance anomaly detection ($0.03)",
+                extensions=_bazaar_meta,
+            ),
+            "POST /x402/explain": X402RouteConfig(
+                accepts=[_make_option(os.getenv("X402_PRICE_EXPLAIN", "0.05"))],
+                description="Decision explainability ($0.05)",
+                extensions=_bazaar_meta,
+            ),
+            # Premium endpoints
+            "POST /x402/invariant-guard": X402RouteConfig(
+                accepts=[_make_option(os.getenv("X402_PRICE_INVARIANT", "0.10"))],
+                description="Three-tier invariant enforcement ($0.10)",
+                extensions=_bazaar_meta,
+            ),
+            "POST /x402/circuit-breaker": X402RouteConfig(
+                accepts=[_make_option(os.getenv("X402_PRICE_CIRCUIT", "0.10"))],
+                description="Governance circuit breaker ($0.10)",
+                extensions=_bazaar_meta,
+            ),
+            "POST /x402/policy-lint": X402RouteConfig(
+                accepts=[_make_option(os.getenv("X402_PRICE_POLICY_LINT", "0.05"))],
+                description="Policy quality & security scan ($0.05)",
+                extensions=_bazaar_meta,
+            ),
+            "POST /x402/eu-ai-log": X402RouteConfig(
+                accepts=[_make_option(os.getenv("X402_PRICE_EU_AI_LOG", "0.10"))],
+                description="EU AI Act Article 12 logging ($0.10)",
+                extensions=_bazaar_meta,
+            ),
+        }
+
+        app.add_middleware(
+            PaymentMiddlewareASGI,
+            routes=_x402_routes,
+            server=_x402_server,
+        )
+        logger.info(
+            "x402 payment middleware ACTIVE",
+            network=_x402_network,
+            prices={
+                "validate": _price_validate,
+                "audit": _price_audit,
+                "certify": _price_certify,
+                "batch": _price_batch,
+                "treasury": _price_treasury,
+            },
+            facilitator=_x402_facilitator_url,
+            pay_to=_x402_pay_to[:10] + "...",
+        )
+    except ImportError:
+        logger.warning(
+            "EVM_ADDRESS set but x402[evm] not installed — "
+            "payment middleware disabled. Run: pip install 'x402[evm]'"
+        )
+else:
+    logger.info("x402 payment middleware disabled (EVM_ADDRESS not set)")
 
 # Proxy catch-all MUST be included LAST so it does not shadow other routes
 app.include_router(proxy_router)

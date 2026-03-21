@@ -20,6 +20,7 @@ from .feedback import gateway_v1_router
 from .proxy import proxy_router
 from .sso import router as sso_router
 from .x402_governance import router as x402_governance_router
+from .x402_marketplace import router as x402_marketplace_router
 
 __all__ = [
     "admin_sso_router",
@@ -33,4 +34,5 @@ __all__ = [
     "proxy_router",
     "sso_router",
     "x402_governance_router",
+    "x402_marketplace_router",
 ]
