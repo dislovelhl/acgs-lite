@@ -615,11 +615,11 @@ class Constitution(BaseModel):
         return [r for r in self.active_non_deprecated() if r.is_valid_at(timestamp)]
 
     def deprecation_report(self) -> dict[str, Any]:
-        """See :mod:`lifecycle`."""
+        """Deprecation status summary. See :mod:`lifecycle`."""
         return lifecycle.deprecation_report(self)
 
     def deprecation_migration_report(self) -> dict[str, Any]:
-        """See :mod:`lifecycle`."""
+        """Per-rule migration guidance for deprecated rules. See :mod:`lifecycle`."""
         return lifecycle.deprecation_migration_report(self)
 
     def rule_provenance_graph(self) -> dict[str, Any]:
@@ -751,7 +751,7 @@ class Constitution(BaseModel):
         before: Constitution,
         after: Constitution,
     ) -> dict[str, Any]:
-        """See :mod:`comparison`."""
+        """Compare two constitutions and return structured differences. See :mod:`comparison`."""
         return comparison.compare(before, after)
 
     def governance_summary(self) -> dict[str, Any]:
@@ -762,7 +762,7 @@ class Constitution(BaseModel):
         return workflow_analytics.analyze_workflow_distribution(self)
 
     def validate_integrity(self) -> dict[str, Any]:
-        """See :mod:`dependency_analysis`."""
+        """Structural consistency checks (unique IDs, cycles, workflows). See :mod:`dependency_analysis`."""
         return dependency_analysis.validate_integrity(self)
 
     @staticmethod
@@ -770,7 +770,7 @@ class Constitution(BaseModel):
         superset: Constitution,
         subset: Constitution,
     ) -> dict[str, Any]:
-        """See :mod:`comparison`."""
+        """Check whether one constitution fully subsumes another. See :mod:`comparison`."""
         return comparison.subsumes(superset, subset)
 
     def counterfactual(
@@ -781,15 +781,15 @@ class Constitution(BaseModel):
         context: dict[str, Any] | None = None,
         agent_id: str = "counterfactual",
     ) -> dict[str, Any]:
-        """See :mod:`comparison`."""
+        """Evaluate how removing rules would change a decision. See :mod:`comparison`."""
         return comparison.counterfactual(self, action, remove_rules=remove_rules, context=context, agent_id=agent_id)
 
     def dependency_graph(self) -> dict[str, Any]:
-        """See :mod:`dependency_analysis`."""
+        """Inter-rule dependency graph (edges, roots, orphans). See :mod:`dependency_analysis`."""
         return dependency_analysis.dependency_graph(self)
 
     def rule_dependencies(self) -> dict[str, Any]:
-        """See :mod:`dependency_analysis`."""
+        """Implicit semantic dependency analysis. See :mod:`dependency_analysis`."""
         return dependency_analysis.rule_dependencies(self)
 
     def resolve_conflicts(self, conflicts: list[dict[str, Any]]) -> dict[str, Any]:
@@ -898,11 +898,11 @@ class Constitution(BaseModel):
         )
 
     def diff(self, other: Constitution) -> dict[str, Any]:
-        """See :mod:`comparison`."""
+        """Structured diff between two constitutions. See :mod:`comparison`."""
         return comparison.diff(self, other)
 
     def get_governance_metrics(self) -> dict[str, Any]:
-        """See :mod:`reporting`."""
+        """Real-time governance performance metrics dashboard. See :mod:`reporting`."""
         return reporting.get_governance_metrics(self)
 
     def merge(
@@ -914,35 +914,35 @@ class Constitution(BaseModel):
         acknowledged_tensions: Sequence[AcknowledgedTension] | None = None,
         allow_hardcoded_override: bool = False,
     ) -> dict[str, Any]:
-        """See :mod:`merging_advanced`."""
+        """Merge two constitutions with conflict detection and resolution. See :mod:`merging_advanced`."""
         return merging_advanced.merge(self, other, strategy=strategy, name=name, acknowledged_tensions=acknowledged_tensions, allow_hardcoded_override=allow_hardcoded_override)
 
     def set_rule_lifecycle_state(self, rule_id: str, state: str, reason: str = "") -> bool:
-        """See :mod:`lifecycle`."""
+        """Set lifecycle state (draft/active/deprecated) for a rule. See :mod:`lifecycle`."""
         return lifecycle.set_rule_lifecycle_state(self, rule_id, state, reason)
 
     def get_rule_lifecycle_states(self) -> dict[str, dict[str, Any]]:
-        """See :mod:`lifecycle`."""
+        """Return lifecycle state summary for all rules. See :mod:`lifecycle`."""
         return lifecycle.get_rule_lifecycle_states(self)
 
     def lifecycle_transition_rules(self, from_state: str, to_state: str) -> list[str]:
-        """See :mod:`lifecycle`."""
+        """Find rules eligible for a lifecycle state transition. See :mod:`lifecycle`."""
         return lifecycle.lifecycle_transition_rules(self, from_state, to_state)
 
     def cascade(self, child: Constitution, *, name: str = "") -> Constitution:
-        """See :mod:`merging_advanced`."""
+        """Parent-authoritative federation of two constitutions. See :mod:`merging_advanced`."""
         return merging_advanced.cascade(self, child, name=name)
 
     def set_rule_tenants(self, rule_id: str, tenants: list[str]) -> bool:
-        """See :mod:`lifecycle`."""
+        """Assign tenant scoping to a rule. See :mod:`lifecycle`."""
         return lifecycle.set_rule_tenants(self, rule_id, tenants)
 
     def get_tenant_rules(self, tenant_id: str | None = None) -> list[Rule]:
-        """See :mod:`lifecycle`."""
+        """Filter rules by tenant ID. See :mod:`lifecycle`."""
         return lifecycle.get_tenant_rules(self, tenant_id)
 
     def tenant_isolation_report(self) -> dict[str, Any]:
-        """See :mod:`lifecycle`."""
+        """Tenant isolation statistics and conflict detection. See :mod:`lifecycle`."""
         return lifecycle.tenant_isolation_report(self)
 
     def detect_conflicts(self) -> dict[str, Any]:
@@ -1048,20 +1048,20 @@ class Constitution(BaseModel):
         return provenance.provenance_graph(self)
 
     def to_yaml(self) -> str:
-        """See :mod:`serialization`."""
+        """Serialize constitution to YAML string. See :mod:`serialization`."""
         return serialization.to_yaml(self)
 
     def to_bundle(self) -> dict[str, Any]:
-        """See :mod:`serialization`."""
+        """Export constitution as a JSON-serializable bundle. See :mod:`serialization`."""
         return serialization.to_bundle(self)
 
     def to_rego(self, package_name: str = "acgs.governance") -> str:
-        """See :mod:`serialization`."""
+        """Export constitution as OPA Rego policy. See :mod:`serialization`."""
         return serialization.to_rego(self, package_name=package_name)
 
     @classmethod
     def from_bundle(cls, bundle: dict[str, Any]) -> Constitution:
-        """See :mod:`serialization`."""
+        """Reconstruct constitution from a bundle dict. See :mod:`serialization`."""
         return serialization.from_bundle(bundle)
 
     def regulatory_alignment(
@@ -1076,7 +1076,7 @@ class Constitution(BaseModel):
         threshold: float = 0.7,
         include_disabled: bool = False,
     ) -> list[dict[str, Any]]:
-        """See :mod:`similarity`."""
+        """Find near-duplicate rules by Jaccard keyword overlap. See :mod:`similarity`."""
         return similarity.find_similar_rules(self, threshold=threshold, include_disabled=include_disabled)
 
     def cosine_similar_rules(
@@ -1084,7 +1084,7 @@ class Constitution(BaseModel):
         threshold: float = 0.8,
         min_dim: int = 4,
     ) -> list[dict[str, Any]]:
-        """See :mod:`similarity`."""
+        """Find similar rules by cosine similarity. See :mod:`similarity`."""
         return similarity.cosine_similar_rules(self, threshold=threshold, min_dim=min_dim)
 
     def semantic_search(
@@ -1093,7 +1093,7 @@ class Constitution(BaseModel):
         top_k: int = 5,
         threshold: float = 0.5,
     ) -> list[dict[str, Any]]:
-        """See :mod:`similarity`."""
+        """Retrieve rules by embedding similarity. See :mod:`similarity`."""
         return similarity.semantic_search(self, query_embedding=query_embedding, top_k=top_k, threshold=threshold)
 
     def full_report(
@@ -1103,7 +1103,7 @@ class Constitution(BaseModel):
         similarity_threshold: float = 0.7,
         include_similar_rules: bool = True,
     ) -> dict[str, Any]:
-        """See :mod:`reporting`."""
+        """Comprehensive governance report combining all analytical dimensions. See :mod:`reporting`."""
         return reporting.full_report(
             self,
             regulatory_framework=regulatory_framework,
@@ -1112,7 +1112,7 @@ class Constitution(BaseModel):
         )
 
     def compliance_report(self, *, framework: str = "soc2") -> dict[str, Any]:
-        """See :mod:`reporting`."""
+        """Regulatory-focused compliance report for audit consumers. See :mod:`reporting`."""
         return reporting.compliance_report(self, framework=framework)
 
     @staticmethod
@@ -1284,7 +1284,7 @@ class Constitution(BaseModel):
         return sorted({r.category for r in self.rules if r.category})
 
     def blast_radius(self, rule_id: str) -> dict[str, Any]:
-        """See :mod:`dependency_analysis`."""
+        """Change-impact analysis for a single rule. See :mod:`dependency_analysis`."""
         return dependency_analysis.blast_radius(self, rule_id)
 
     def get_version_info(self) -> dict[str, Any]:
@@ -1300,15 +1300,15 @@ class Constitution(BaseModel):
         }
 
     def maturity_level(self) -> dict[str, Any]:
-        """See :mod:`reporting`."""
+        """Score governance maturity on a 1-5 capability scale. See :mod:`reporting`."""
         return reporting.maturity_level(self)
 
     def coverage_gaps(self) -> dict[str, Any]:
-        """See :mod:`reporting`."""
+        """Identify governance domains with thin or zero coverage. See :mod:`reporting`."""
         return reporting.coverage_gaps(self)
 
     def health_score(self) -> dict[str, Any]:
-        """See :mod:`reporting`."""
+        """Composite governance quality metric (0.0-1.0). See :mod:`reporting`."""
         return reporting.health_score(self)
 
     def dead_rules(
@@ -1317,11 +1317,11 @@ class Constitution(BaseModel):
         *,
         include_deprecated: bool = False,
     ) -> dict[str, Any]:
-        """See :mod:`similarity`."""
+        """Detect rules that never fire against a corpus of actions. See :mod:`similarity`."""
         return similarity.dead_rules(self, corpus, include_deprecated=include_deprecated)
 
     def posture_score(self, ci_threshold: float = 0.70) -> dict[str, Any]:
-        """See :mod:`reporting`."""
+        """Unified governance posture score for CI/CD gates. See :mod:`reporting`."""
         return reporting.posture_score(self, ci_threshold=ci_threshold)
 
     def changelog_summary(self) -> dict[str, Any]:
