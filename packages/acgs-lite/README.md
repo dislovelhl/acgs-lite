@@ -29,7 +29,7 @@ The EU AI Act takes full enforcement August 2026. Fines up to 7% of global annua
 ## The Solution
 
 ```python
-from acgs_lite import Constitution, GovernedAgent
+from acgs import Constitution, GovernedAgent
 
 constitution = Constitution.from_yaml("rules.yaml")
 agent = GovernedAgent(my_agent, constitution=constitution)
@@ -70,8 +70,8 @@ governance:
       import asyncio
       import os
       import sys
-      from acgs_lite import Constitution
-      from acgs_lite.integrations.gitlab import GitLabGovernanceBot
+      from acgs import Constitution
+      from acgs.integrations.gitlab import GitLabGovernanceBot
 
       async def main() -> int:
           constitution = Constitution.from_yaml('rules.yaml')
@@ -105,7 +105,7 @@ Exposes five governance tools: `validate_action`, `get_constitution`, `get_audit
 ### Webhook Handler
 
 ```python
-from acgs_lite.integrations.gitlab import GitLabGovernanceBot, GitLabWebhookHandler
+from acgs.integrations.gitlab import GitLabGovernanceBot, GitLabWebhookHandler
 
 bot = GitLabGovernanceBot(
     token=os.environ["GITLAB_TOKEN"],
@@ -201,7 +201,7 @@ rules:
 ### 3. Govern Your Agent
 
 ```python
-from acgs_lite import Constitution, GovernedAgent
+from acgs import Constitution, GovernedAgent
 
 constitution = Constitution.from_yaml("rules.yaml")
 agent = GovernedAgent(my_agent, constitution=constitution)
@@ -215,7 +215,7 @@ That is it. Constitutional governance in three steps.
 **Or use a pre-built template (zero YAML required):**
 
 ```python
-from acgs_lite import Constitution, GovernanceEngine
+from acgs import Constitution, GovernanceEngine
 
 # Instant governance for GitLab, healthcare, finance, security, or general AI
 constitution = Constitution.from_template("gitlab")
@@ -233,7 +233,7 @@ print(report.summary)  # "FAIL: 1/3 actions blocked, compliance=66.7%"
 **Or build programmatically:**
 
 ```python
-from acgs_lite import ConstitutionBuilder
+from acgs import ConstitutionBuilder
 
 constitution = (
     ConstitutionBuilder("my-governance", version="2.0.0")
@@ -295,7 +295,7 @@ Not just EU AI Act. The most comprehensive AI compliance coverage in a single li
 **125 compliance checklist items. 72 auto-populated by ACGS.**
 
 ```python
-from acgs_lite.compliance import MultiFrameworkAssessor
+from acgs.compliance import MultiFrameworkAssessor
 
 assessor = MultiFrameworkAssessor()
 report = assessor.assess({"jurisdiction": "EU", "domain": "healthcare"})

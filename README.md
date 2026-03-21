@@ -9,7 +9,7 @@ pip install acgs
 ```
 
 ```python
-from acgs_lite import Constitution, GovernedAgent
+from acgs import Constitution, GovernedAgent
 
 constitution = Constitution.from_yaml("rules.yaml")
 agent = GovernedAgent(my_agent, constitution=constitution)
@@ -146,7 +146,7 @@ rules:
 ### Use a Pre-Built Template
 
 ```python
-from acgs_lite import Constitution, GovernanceEngine
+from acgs import Constitution, GovernanceEngine
 
 constitution = Constitution.from_template("gitlab")
 engine = GovernanceEngine(constitution)
@@ -162,7 +162,7 @@ print(report.summary)  # "FAIL: 1/3 actions blocked, compliance=66.7%"
 ### Build Programmatically
 
 ```python
-from acgs_lite import ConstitutionBuilder
+from acgs import ConstitutionBuilder
 
 constitution = (
     ConstitutionBuilder("my-governance", version="2.0.0")
