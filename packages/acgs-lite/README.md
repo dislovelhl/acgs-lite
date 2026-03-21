@@ -1,4 +1,4 @@
-# ACGS-Lite
+# ACGS
 
 ### If Machines Are Deciding Our Fate, Who Constrains the Machines?
 
@@ -6,7 +6,7 @@
 
 ---
 
-**Low-latency** validation | **Rule-based governance** | **9** regulatory frameworks | **11** integrations | **Current tests in repo** | **125** checklist items | **Apache-2.0**
+**560ns** validation | **Rule-based governance** | **9** regulatory frameworks | **11** integrations | **3,133** tests passing | **125** checklist items | **Apache-2.0**
 
 ---
 
@@ -24,7 +24,7 @@ These are not hypotheticals. They are happening now. At scale. Billions of conse
 
 The EU AI Act takes full enforcement August 2026. Fines up to 7% of global annual revenue. Most companies have zero governance infrastructure. The liability is shifting from "who built the model" to "who deployed it." Deployment without provable governance is becoming uninsurable.
 
-**ACGS-Lite is HTTPS for AI** -- the early web could not scale commercially until SSL/TLS provided cryptographic proof that transactions were secure. AI cannot scale into regulated, high-stakes domains without the equivalent: cryptographic proof that decisions are constitutionally compliant. Five lines of code. Benchmark the current checkout before quoting latency.
+**ACGS is HTTPS for AI** -- the early web could not scale commercially until SSL/TLS provided cryptographic proof that transactions were secure. AI cannot scale into regulated, high-stakes domains without the equivalent: cryptographic proof that decisions are constitutionally compliant. Five lines of code. Benchmark the current checkout before quoting latency.
 
 ## The Solution
 
@@ -42,7 +42,7 @@ Every action validated against constitutional rules. Every decision recorded in 
 
 ## GitLab Duo Integration
 
-ACGS-Lite integrates directly into the GitLab development workflow as a governance layer for merge requests, CI/CD pipelines, and Duo Chat.
+ACGS integrates directly into the GitLab development workflow as a governance layer for merge requests, CI/CD pipelines, and Duo Chat.
 
 ### How It Works
 
@@ -63,7 +63,7 @@ governance:
   stage: test
   image: python:3.11-slim
   before_script:
-    - pip install acgs-lite
+    - pip install acgs
   script:
     - |
       python3 -c "
@@ -94,7 +94,7 @@ governance:
 
 ### MCP Server for Duo Chat
 
-ACGS-Lite ships as a Model Context Protocol server. Connect it to GitLab Duo Chat and any MCP-compatible client:
+ACGS ships as a Model Context Protocol server. Connect it to GitLab Duo Chat and any MCP-compatible client:
 
 ```bash
 python -m acgs_lite.integrations.mcp_server
@@ -170,7 +170,7 @@ scenario counts, or compliance percentages.
 ### 1. Install
 
 ```bash
-pip install acgs-lite
+pip install acgs
 ```
 
 ### 2. Define Your Constitution
@@ -280,7 +280,7 @@ constitution = (
 
 Not just EU AI Act. The most comprehensive AI compliance coverage in a single library.
 
-| Framework | Jurisdiction | Status | Penalty | ACGS-Lite Coverage |
+| Framework | Jurisdiction | Status | Penalty | ACGS Coverage |
 |---|---|---|---|---|
 | **EU AI Act** | EU (27 states) | Enacted, Aug 2026 | 7% global revenue | 5/9 items auto |
 | **NIST AI RMF** | US (federal) | Voluntary | Procurement gate | 7/16 items auto |
@@ -292,7 +292,7 @@ Not just EU AI Act. The most comprehensive AI compliance coverage in a single li
 | **NYC LL 144** | New York City | Enacted (2023) | $1,500/day | 6/12 items auto |
 | **OECD AI** | 46 countries | Adopted | Baseline standard | 10/15 items auto |
 
-**125 compliance checklist items. 72 auto-populated by ACGS-Lite.**
+**125 compliance checklist items. 72 auto-populated by ACGS.**
 
 ```python
 from acgs_lite.compliance import MultiFrameworkAssessor
@@ -318,16 +318,16 @@ print(report.cross_framework_gaps) # Items needing manual evidence
 
 | Platform | Install | What It Does |
 |----------|---------|-------------|
-| OpenAI | `acgs-lite[openai]` | Governed drop-in for `OpenAI()` |
-| Anthropic | `acgs-lite[anthropic]` | Governed Claude client |
-| LangChain | `acgs-lite[langchain]` | Chain/agent governance wrapper |
-| LiteLLM | `acgs-lite[litellm]` | Multi-provider governance |
-| Google GenAI | `acgs-lite[google]` | Governed Gemini client |
-| LlamaIndex | `acgs-lite[llamaindex]` | Query engine governance |
-| AutoGen | `acgs-lite[autogen]` | Multi-agent governance |
-| CrewAI | `acgs-lite[crewai]` | Crew task governance |
-| MCP | `acgs-lite[mcp]` | Model Context Protocol server |
-| A2A | `acgs-lite[a2a]` | Google Agent-to-Agent protocol |
+| OpenAI | `acgs[openai]` | Governed drop-in for `OpenAI()` |
+| Anthropic | `acgs[anthropic]` | Governed Claude client |
+| LangChain | `acgs[langchain]` | Chain/agent governance wrapper |
+| LiteLLM | `acgs[litellm]` | Multi-provider governance |
+| Google GenAI | `acgs[google]` | Governed Gemini client |
+| LlamaIndex | `acgs[llamaindex]` | Query engine governance |
+| AutoGen | `acgs[autogen]` | Multi-agent governance |
+| CrewAI | `acgs[crewai]` | Crew task governance |
+| MCP | `acgs[mcp]` | Model Context Protocol server |
+| A2A | `acgs[a2a]` | Google Agent-to-Agent protocol |
 
 ---
 
@@ -379,7 +379,7 @@ The system that constrains the machines was built by the machines. And that is e
 
 ## License
 
-MIT -- Use it freely. Govern responsibly.
+Apache-2.0 -- Use it freely. Govern responsibly.
 
 ---
 

@@ -1,11 +1,11 @@
-# ACGS-Lite -- HTTPS for AI
+# ACGS -- HTTPS for AI
 
 **Constitutional governance infrastructure for AI agents. Five lines of code. Nine regulatory frameworks. Tamper-evident audit trail.**
 
-The EU AI Act takes full enforcement **August 2026**. Fines up to **7% of global annual revenue**. Deployment without provable governance is becoming uninsurable. ACGS-Lite gives you cryptographic proof that AI decisions are constitutionally compliant.
+The EU AI Act takes full enforcement **August 2026**. Fines up to **7% of global annual revenue**. Deployment without provable governance is becoming uninsurable. ACGS gives you cryptographic proof that AI decisions are constitutionally compliant.
 
 ```bash
-pip install acgs-lite
+pip install acgs
 ```
 
 ```python
@@ -77,16 +77,16 @@ Self-validation prevention, action risk classification (LOW/MEDIUM/HIGH/CRITICAL
 
 | Platform | Install | Status |
 |----------|---------|--------|
-| **Anthropic** | `acgs-lite[anthropic]` | Production |
-| **MCP** | `acgs-lite[mcp]` | Production |
-| OpenAI | `acgs-lite[openai]` | Maintained |
-| LangChain | `acgs-lite[langchain]` | Maintained |
-| LiteLLM | `acgs-lite[litellm]` | Maintained |
-| Google GenAI | `acgs-lite[google]` | Experimental |
-| LlamaIndex | `acgs-lite[llamaindex]` | Experimental |
-| AutoGen | `acgs-lite[autogen]` | Experimental |
-| CrewAI | `acgs-lite[crewai]` | Experimental |
-| A2A | `acgs-lite[a2a]` | Experimental |
+| **Anthropic** | `acgs[anthropic]` | Production |
+| **MCP** | `acgs[mcp]` | Production |
+| OpenAI | `acgs[openai]` | Maintained |
+| LangChain | `acgs[langchain]` | Maintained |
+| LiteLLM | `acgs[litellm]` | Maintained |
+| Google GenAI | `acgs[google]` | Experimental |
+| LlamaIndex | `acgs[llamaindex]` | Experimental |
+| AutoGen | `acgs[autogen]` | Experimental |
+| CrewAI | `acgs[crewai]` | Experimental |
+| A2A | `acgs[a2a]` | Experimental |
 
 ---
 

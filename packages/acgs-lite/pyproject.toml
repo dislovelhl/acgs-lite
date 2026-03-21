@@ -4,7 +4,7 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "acgs-lite"
+name = "acgs"
 version = "1.0.0"
 description = "Constitutional AI governance for any agent. Wrap any LLM agent in enforceable rules, audit trails, and separation of powers — in 5 lines of code."
 readme = "README.md"
