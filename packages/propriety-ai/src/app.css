@@ -55,10 +55,18 @@
 	transform: translateY(30px);
 	transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
 	            transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	animation: fallback-appear 0s 1.5s forwards;
 }
 .fade-in.visible {
 	opacity: 1;
 	transform: translateY(0);
+	animation: none;
+}
+@keyframes fallback-appear {
+	to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+	.fade-in { opacity: 1; transform: none; animation: none; }
 }
 
 /* Gradient line animation */

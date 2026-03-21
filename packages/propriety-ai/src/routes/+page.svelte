@@ -115,7 +115,7 @@
 	<!-- Top left -->
 	<div class="fade-in relative z-10" use:observe>
 		<p class="mb-2 font-mono text-xs tracking-[0.3em] text-fg-muted">01 — GOVERNANCE</p>
-		<h2 class="font-sans text-4xl font-light tracking-tight md:text-6xl lg:text-7xl">
+		<h2 class="font-sans text-4xl font-light tracking-tight text-white/70 md:text-6xl lg:text-7xl">
 			HTTPS
 			<br />
 			<span class="italic">for AI</span>
@@ -131,12 +131,15 @@
 			pip install acgs
 			<span class="absolute -right-1 -top-1 h-2 w-2 animate-pulse rounded-full bg-accent"></span>
 		</button>
+		<p class="mt-4 text-center font-mono text-xs tracking-wider text-fg-muted">
+			Constitutional governance for AI agents. 9 frameworks. 3,133 tests. 560ns.
+		</p>
 	</div>
 
 	<!-- Bottom right -->
 	<div class="fade-in relative z-10 self-end text-right" use:observe>
 		<p class="mb-2 font-mono text-xs tracking-[0.3em] text-fg-muted">02 — COMPLIANCE</p>
-		<h2 class="font-sans text-4xl font-light tracking-tight md:text-6xl lg:text-7xl">
+		<h2 class="font-sans text-4xl font-light tracking-tight text-white/70 md:text-6xl lg:text-7xl">
 			NINE
 			<br />
 			<span class="italic">Frameworks</span>
