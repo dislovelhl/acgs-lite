@@ -1,10 +1,46 @@
-rust/target/
+# Build artifacts
+**/target/
 dist/
+build/
+
+# Python
 __pycache__/
 *.pyc
-.ruff_cache/
+*.pyo
 *.egg-info/
-.mypy_cache/
 *.so
+.ruff_cache/
+.mypy_cache/
+
+# Coverage
+.coverage
+coverage.json
+htmlcov/
+
+# Databases / local state
+*.db
+mlruns/
+
+# Codex CLI
+.codex-home/
+.codex-readiness-unit-test/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Legacy one-off scripts
 src/fix_imports.py
 src/split_engine.py
