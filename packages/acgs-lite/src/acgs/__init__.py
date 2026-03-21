@@ -1,5 +1,9 @@
 """ACGS: Constitutional AI Governance for Any Agent.
 
+Copyright (C) 2024-2026 ACGS Contributors
+Licensed under AGPL-3.0-or-later. See LICENSE for details.
+Commercial license available at https://acgs.ai for proprietary use.
+
 This module re-exports the full acgs_lite public API so users can write:
 
     from acgs import Constitution, GovernedAgent

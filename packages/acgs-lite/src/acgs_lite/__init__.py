@@ -1,10 +1,14 @@
-"""ACGS-Lite: Constitutional AI Governance for Any Agent.
+"""ACGS: Constitutional AI Governance for Any Agent.
+
+Copyright (C) 2024-2026 ACGS Contributors
+Licensed under AGPL-3.0-or-later. See LICENSE for details.
+Commercial license available at https://acgs.ai for proprietary use.
 
 Constitutional Hash: cdd01ef066bc6cf2
 
 Usage::
 
-    from acgs_lite import Constitution, GovernedAgent
+    from acgs import Constitution, GovernedAgent
 
     constitution = Constitution.from_yaml("rules.yaml")
     agent = GovernedAgent(my_agent, constitution=constitution)
@@ -31,7 +35,7 @@ from acgs_lite.governed import GovernedAgent, GovernedCallable
 from acgs_lite.licensing import LicenseInfo, LicenseManager, Tier
 from acgs_lite.maci import MACIEnforcer, MACIRole
 
-__version__ = "1.2.0"
+__version__ = "2.0.0"
 
 
 def set_license(key: str) -> LicenseInfo:
