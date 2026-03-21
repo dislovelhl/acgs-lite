@@ -479,12 +479,21 @@ logger.info("PQC Phase 5 admin routes configured: /api/v1/admin/pqc/pqc-only-mod
 # Constitutional Hash: cdd01ef066bc6cf2
 ensure_attestation_secret_config()
 app.include_router(x402_governance_router)
-app.include_router(x402_marketplace_router)
 app.include_router(x402_bundles_router)
 app.include_router(x402_facilitator_router)
 app.include_router(x402_revenue_router)
+
+# x402 Marketplace (premium endpoints) — opt-in via X402_MARKETPLACE=true
+# Disabled by default to focus GTM on core governance endpoints.
+X402_MARKETPLACE_ENABLED = os.getenv("X402_MARKETPLACE", "false").lower() == "true"
+if X402_MARKETPLACE_ENABLED:
+    app.include_router(x402_marketplace_router)
+    logger.info("x402 marketplace routes enabled (X402_MARKETPLACE=true)")
+else:
+    logger.info("x402 marketplace routes disabled (set X402_MARKETPLACE=true to enable)")
+
 logger.info(
-    "x402 routes configured: governance + marketplace + bundles + facilitator + revenue"
+    "x402 routes configured: governance + bundles + facilitator + revenue"
 )
 
 # x402 Payment Middleware — activates only when EVM_ADDRESS is set
