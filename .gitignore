@@ -41,6 +41,7 @@ node_modules/
 .DS_Store
 Thumbs.db
 
-# Legacy one-off scripts
+# Legacy / stale copies
+src/acgs_lite/
 src/fix_imports.py
 src/split_engine.py
