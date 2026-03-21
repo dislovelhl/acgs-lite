@@ -63,8 +63,8 @@ dev = [
 "acgs-lite" = "acgs_lite.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/acgs-ai/acgs-lite"
-Documentation = "https://acgs.dev/docs/lite"
+Homepage = "https://acgs.ai"
+Documentation = "https://acgs.ai/docs"
 Repository = "https://github.com/acgs-ai/acgs-lite"
 
 [tool.setuptools.packages.find]
