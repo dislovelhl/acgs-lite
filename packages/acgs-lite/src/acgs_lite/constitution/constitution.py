@@ -761,7 +761,7 @@ class Constitution(BaseModel):
         return workflow_analytics.analyze_workflow_distribution(self)
 
     def validate_integrity(self) -> dict[str, Any]:
-        """Structural consistency checks (unique IDs, cycles, workflows). See :mod:`dependency_analysis`."""
+        """Structural consistency checks. See :mod:`dependency_analysis`."""
         return dependency_analysis.validate_integrity(self)
 
     @staticmethod
@@ -781,7 +781,10 @@ class Constitution(BaseModel):
         agent_id: str = "counterfactual",
     ) -> dict[str, Any]:
         """Evaluate how removing rules would change a decision. See :mod:`comparison`."""
-        return comparison.counterfactual(self, action, remove_rules=remove_rules, context=context, agent_id=agent_id)
+        return comparison.counterfactual(
+            self, action, remove_rules=remove_rules,
+            context=context, agent_id=agent_id,
+        )
 
     def dependency_graph(self) -> dict[str, Any]:
         """Inter-rule dependency graph (edges, roots, orphans). See :mod:`dependency_analysis`."""
@@ -914,7 +917,11 @@ class Constitution(BaseModel):
         allow_hardcoded_override: bool = False,
     ) -> dict[str, Any]:
         """Merge two constitutions with conflict detection and resolution. See :mod:`merging`."""
-        return merging.merge(self, other, strategy=strategy, name=name, acknowledged_tensions=acknowledged_tensions, allow_hardcoded_override=allow_hardcoded_override)
+        return merging.merge(
+            self, other, strategy=strategy, name=name,
+            acknowledged_tensions=acknowledged_tensions,
+            allow_hardcoded_override=allow_hardcoded_override,
+        )
 
     def set_rule_lifecycle_state(self, rule_id: str, state: str, reason: str = "") -> bool:
         """Set lifecycle state (draft/active/deprecated) for a rule. See :mod:`lifecycle`."""
@@ -1076,7 +1083,9 @@ class Constitution(BaseModel):
         include_disabled: bool = False,
     ) -> list[dict[str, Any]]:
         """Find near-duplicate rules by Jaccard keyword overlap. See :mod:`similarity`."""
-        return similarity.find_similar_rules(self, threshold=threshold, include_disabled=include_disabled)
+        return similarity.find_similar_rules(
+            self, threshold=threshold, include_disabled=include_disabled,
+        )
 
     def cosine_similar_rules(
         self,
@@ -1093,7 +1102,10 @@ class Constitution(BaseModel):
         threshold: float = 0.5,
     ) -> list[dict[str, Any]]:
         """Retrieve rules by embedding similarity. See :mod:`similarity`."""
-        return similarity.semantic_search(self, query_embedding=query_embedding, top_k=top_k, threshold=threshold)
+        return similarity.semantic_search(
+            self, query_embedding=query_embedding,
+            top_k=top_k, threshold=threshold,
+        )
 
     def full_report(
         self,
@@ -1102,7 +1114,7 @@ class Constitution(BaseModel):
         similarity_threshold: float = 0.7,
         include_similar_rules: bool = True,
     ) -> dict[str, Any]:
-        """Comprehensive governance report combining all analytical dimensions. See :mod:`reporting`."""
+        """Comprehensive governance report. See :mod:`reporting`."""
         return reporting.full_report(
             self,
             regulatory_framework=regulatory_framework,
