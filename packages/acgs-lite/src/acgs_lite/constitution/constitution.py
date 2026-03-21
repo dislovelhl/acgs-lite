@@ -6,12 +6,10 @@ import hashlib
 from collections.abc import Sequence
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 import yaml
 from pydantic import BaseModel, Field
-
-from acgs_lite.errors import ConstitutionalViolationError
 
 from . import (
     comparison,
@@ -32,7 +30,7 @@ from . import (
     similarity,
     workflow_analytics,
 )
-from .rule import AcknowledgedTension, Rule, Severity, _cosine_sim
+from .rule import AcknowledgedTension, Rule, Severity
 
 if TYPE_CHECKING:
     from .templates import ConstitutionBuilder
