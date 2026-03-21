@@ -38,7 +38,7 @@ class BatchValidationResult:
         summary: Human-readable one-line summary of the batch result.
     """
 
-    results: "tuple[ValidationResult, ...]"  # frozen
+    results: tuple[ValidationResult, ...]  # frozen
     total: int
     allowed: int
     denied: int
@@ -83,7 +83,7 @@ class BatchValidationMixin:
         *,
         agent_id: str = "anonymous",
         context: dict[str, Any] | None = None,
-    ) -> "ValidationResult":
+    ) -> ValidationResult:
         raise NotImplementedError  # pragma: no cover
 
     def validate_batch(
@@ -91,7 +91,7 @@ class BatchValidationMixin:
         actions: list[str],
         *,
         agent_id: str = "anonymous",
-    ) -> "list[ValidationResult]":
+    ) -> list[ValidationResult]:
         """Validate multiple actions without raising in strict mode."""
         old_strict = self.strict
         self.strict = False

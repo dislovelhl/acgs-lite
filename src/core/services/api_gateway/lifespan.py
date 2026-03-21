@@ -6,7 +6,6 @@ Extracted from main.py: startup/shutdown lifecycle for the FastAPI application.
 
 import os
 from collections.abc import AsyncGenerator
-from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
