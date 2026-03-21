@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "acgs"
-version = "1.1.0"
+version = "1.2.0"
 description = "Constitutional AI governance for any agent. Wrap any LLM agent in enforceable rules, audit trails, and separation of powers — in 5 lines of code."
 readme = "README.md"
 license = "Apache-2.0"
@@ -60,12 +60,15 @@ dev = [
 ]
 
 [project.scripts]
-"acgs-lite" = "acgs_lite.cli:main"
+"acgs" = "acgs_lite.cli:main"
 
 [project.urls]
 Homepage = "https://acgs.ai"
-Documentation = "https://acgs.ai/docs"
-Repository = "https://github.com/acgs-ai/acgs-lite"
+Documentation = "https://acgs.ai"
+Repository = "https://github.com/acgs2_admin/acgs"
+Issues = "https://github.com/acgs2_admin/acgs/issues"
+Changelog = "https://github.com/acgs2_admin/acgs/releases"
+PyPI = "https://pypi.org/project/acgs/"
 
 [tool.setuptools.packages.find]
 where = ["src"]
