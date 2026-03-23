@@ -14,6 +14,7 @@ is restricted to admin callers.
 from __future__ import annotations
 
 import asyncio
+import hmac
 import json
 import os
 from dataclasses import asdict, dataclass, field
@@ -202,7 +203,7 @@ async def revenue_summary_endpoint(request: Request) -> RevenueSummary:
         logger.warning("x402_revenue_admin_key_not_configured")
         raise HTTPException(status_code=403, detail="Admin access not configured")
 
-    if auth_header != admin_key:
+    if not hmac.compare_digest(auth_header, admin_key):
         raise HTTPException(status_code=403, detail="Invalid admin credentials")
 
     return await get_revenue_summary()

@@ -49,7 +49,7 @@ class TestVerifyConstitutionalHashAtStartup:
     def test_production_no_env_hash_raises(self):
         import src.core.services.api_gateway.lifespan as mod
 
-        with patch.object(mod, "is_development", False):
+        with patch.object(mod, "_is_development_environment", return_value=False):
             with patch.dict(os.environ, {"ENVIRONMENT": "production"}, clear=True):
                 with pytest.raises(RuntimeError, match="CONSTITUTIONAL_HASH must be set"):
                     self._call()
@@ -57,7 +57,7 @@ class TestVerifyConstitutionalHashAtStartup:
     def test_production_matching_hash_succeeds(self):
         import src.core.services.api_gateway.lifespan as mod
 
-        with patch.object(mod, "is_development", False):
+        with patch.object(mod, "_is_development_environment", return_value=False):
             env = {"CONSTITUTIONAL_HASH": CONSTITUTIONAL_HASH}
             with patch.dict(os.environ, env, clear=True):
                 self._call()
@@ -65,7 +65,7 @@ class TestVerifyConstitutionalHashAtStartup:
     def test_production_mismatched_hash_raises(self):
         import src.core.services.api_gateway.lifespan as mod
 
-        with patch.object(mod, "is_development", False):
+        with patch.object(mod, "_is_development_environment", return_value=False):
             env = {"CONSTITUTIONAL_HASH": "wrong_hash_value"}
             with patch.dict(os.environ, env, clear=True):
                 with pytest.raises(RuntimeError, match="Constitutional hash mismatch"):
@@ -74,14 +74,14 @@ class TestVerifyConstitutionalHashAtStartup:
     def test_dev_no_env_hash_warns_but_continues(self):
         import src.core.services.api_gateway.lifespan as mod
 
-        with patch.object(mod, "is_development", True):
+        with patch.object(mod, "_is_development_environment", return_value=True):
             with patch.dict(os.environ, {}, clear=True):
                 self._call()
 
     def test_dev_mismatched_hash_warns_but_continues(self):
         import src.core.services.api_gateway.lifespan as mod
 
-        with patch.object(mod, "is_development", True):
+        with patch.object(mod, "_is_development_environment", return_value=True):
             env = {"CONSTITUTIONAL_HASH": "wrong_hash_value"}
             with patch.dict(os.environ, env, clear=True):
                 self._call()
@@ -89,9 +89,29 @@ class TestVerifyConstitutionalHashAtStartup:
     def test_test_environment_is_development_mode(self):
         import src.core.services.api_gateway.lifespan as mod
 
-        with patch.object(mod, "is_development", True):
+        with patch.object(mod, "_is_development_environment", return_value=True):
             with patch.dict(os.environ, {}, clear=True):
                 self._call()
+
+    def test_runtime_environment_prefers_environment_over_defaulted_settings_env(self, monkeypatch):
+        import src.core.services.api_gateway.lifespan as mod
+
+        monkeypatch.setattr(mod.settings, "env", "development")
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.setenv("ENVIRONMENT", "production")
+
+        assert mod._runtime_environment() == "production"
+
+    def test_environment_only_production_still_requires_constitutional_hash(self, monkeypatch):
+        import src.core.services.api_gateway.lifespan as mod
+
+        monkeypatch.setattr(mod.settings, "env", "development")
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.setenv("ENVIRONMENT", "production")
+        monkeypatch.delenv("CONSTITUTIONAL_HASH", raising=False)
+
+        with pytest.raises(RuntimeError, match="CONSTITUTIONAL_HASH must be set"):
+            self._call()
 
 
 # ---------------------------------------------------------------------------
@@ -113,22 +133,15 @@ class TestLifespan:
         mock_control = _mock_control_plane()
 
         with patch.dict(os.environ, env, clear=False), \
-             patch.object(lifespan_mod, "is_development", True), \
+             patch.object(lifespan_mod, "_is_development_environment", return_value=True), \
              _patch_create_control_plane(lifespan_mod, mock_control), \
              patch.object(lifespan_mod, "close_proxy_client", new_callable=AsyncMock), \
              patch.object(lifespan_mod, "_close_feedback_redis", new_callable=AsyncMock):
             mock_app = MagicMock()
             mock_app.state = MagicMock()
 
-            gen = lifespan_mod.lifespan(mock_app)
-            await gen.__anext__()
-
-            assert hasattr(mock_app.state, "hitl_client")
-
-            try:
-                await gen.__anext__()
-            except StopAsyncIteration:
-                pass
+            async with lifespan_mod.lifespan(mock_app):
+                assert hasattr(mock_app.state, "hitl_client")
 
     @pytest.mark.asyncio
     async def test_lifespan_shutdown_closes_clients(self):
@@ -144,18 +157,14 @@ class TestLifespan:
         mock_close_feedback = AsyncMock()
 
         with patch.dict(os.environ, env, clear=False), \
-             patch.object(lifespan_mod, "is_development", True), \
+             patch.object(lifespan_mod, "_is_development_environment", return_value=True), \
              _patch_create_control_plane(lifespan_mod, mock_control), \
              patch.object(lifespan_mod, "close_proxy_client", mock_close_proxy), \
              patch.object(lifespan_mod, "_close_feedback_redis", mock_close_feedback):
             mock_app = MagicMock()
             mock_app.state = MagicMock()
 
-            gen = lifespan_mod.lifespan(mock_app)
-            await gen.__anext__()
-            try:
-                await gen.__anext__()
-            except StopAsyncIteration:
+            async with lifespan_mod.lifespan(mock_app):
                 pass
 
             mock_close_proxy.assert_awaited_once()
@@ -173,19 +182,14 @@ class TestLifespan:
         mock_control = _mock_control_plane()
 
         with patch.dict(os.environ, env, clear=False), \
-             patch.object(lifespan_mod, "is_development", True), \
+             patch.object(lifespan_mod, "_is_development_environment", return_value=True), \
              _patch_create_control_plane(lifespan_mod, mock_control), \
              patch.object(lifespan_mod, "close_proxy_client", new_callable=AsyncMock), \
              patch.object(lifespan_mod, "_close_feedback_redis", new_callable=AsyncMock):
             mock_app = MagicMock()
             mock_app.state = MagicMock()
 
-            gen = lifespan_mod.lifespan(mock_app)
-            await gen.__anext__()
-
-            try:
-                await gen.__anext__()
-            except StopAsyncIteration:
+            async with lifespan_mod.lifespan(mock_app):
                 pass
 
             mock_control.aclose.assert_awaited_once()
@@ -201,18 +205,13 @@ class TestLifespan:
         }
 
         with patch.dict(os.environ, env, clear=False), \
-             patch.object(lifespan_mod, "is_development", True), \
+             patch.object(lifespan_mod, "_is_development_environment", return_value=True), \
              _patch_create_control_plane(lifespan_mod, None), \
              patch.object(lifespan_mod, "close_proxy_client", new_callable=AsyncMock), \
              patch.object(lifespan_mod, "_close_feedback_redis", new_callable=AsyncMock):
             mock_app = MagicMock()
             mock_app.state = MagicMock()
 
-            gen = lifespan_mod.lifespan(mock_app)
-            await gen.__anext__()
-            # Ensure control plane is None on the state for shutdown path
-            mock_app.state.research_operator_control_plane = None
-            try:
-                await gen.__anext__()
-            except StopAsyncIteration:
-                pass
+            async with lifespan_mod.lifespan(mock_app):
+                # Ensure control plane is None on the state for shutdown path
+                mock_app.state.research_operator_control_plane = None

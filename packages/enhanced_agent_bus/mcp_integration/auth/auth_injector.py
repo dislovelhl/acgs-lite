@@ -745,7 +745,9 @@ class AuthInjector:
             "configured_tools": list(self._tool_auth_configs.keys()),
             "credential_stats": self._credential_manager.get_stats(),
             "token_refresh_stats": self._token_refresher.get_stats(),
-            "audit_stats": self._audit_logger.get_stats() if self._audit_logger else None,
+            "audit_stats": (
+                self._audit_logger.get_stats_snapshot().to_dict() if self._audit_logger else None
+            ),
             "constitutional_hash": CONSTITUTIONAL_HASH,
         }
 

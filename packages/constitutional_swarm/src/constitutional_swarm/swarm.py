@@ -10,23 +10,19 @@ from __future__ import annotations
 import threading
 import uuid
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import Any, Callable
+from typing import Any
 
 from constitutional_swarm.artifact import Artifact, ArtifactStore
 from constitutional_swarm.capability import Capability, CapabilityRegistry
-from constitutional_swarm.contract import ContractStatus, TaskContract
+from constitutional_swarm.execution import (
+    ContractStatus,
+    ExecutionStatus,
+    WorkReceipt,
+    contract_status_from_execution,
+)
 
 
-class NodeStatus(Enum):
-    """Execution status of a DAG node."""
-
-    BLOCKED = "blocked"
-    READY = "ready"
-    CLAIMED = "claimed"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
+NodeStatus = ExecutionStatus
 
 
 @dataclass
@@ -45,7 +41,7 @@ class TaskNode:
     depends_on: tuple[str, ...] = ()
     priority: int = 0
     max_budget_tokens: int = 0
-    status: NodeStatus = NodeStatus.BLOCKED
+    status: ExecutionStatus = ExecutionStatus.BLOCKED
     claimed_by: str | None = None
     artifact_id: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
@@ -64,6 +60,17 @@ class TaskDAG:
     goal: str = ""
     nodes: dict[str, TaskNode] = field(default_factory=dict)
 
+    def _dependencies_completed(self, node: TaskNode) -> bool:
+        """Check whether a node's dependencies exist and are completed."""
+        missing = tuple(dep for dep in node.depends_on if dep not in self.nodes)
+        if missing:
+            raise KeyError(
+                f"Node {node.node_id} depends on missing node(s): {', '.join(missing)}"
+            )
+        return all(
+            self.nodes[dep].status == ExecutionStatus.COMPLETED for dep in node.depends_on
+        )
+
     def add_node(self, node: TaskNode) -> TaskDAG:
         """Add a node to the DAG. Returns new DAG (immutable pattern)."""
         new_nodes = dict(self.nodes)
@@ -77,14 +84,9 @@ class TaskDAG:
         """
         ready = []
         for node in self.nodes.values():
-            if node.status != NodeStatus.BLOCKED:
+            if node.status != ExecutionStatus.BLOCKED:
                 continue
-            deps_met = all(
-                self.nodes[dep].status == NodeStatus.COMPLETED
-                for dep in node.depends_on
-                if dep in self.nodes
-            )
-            if deps_met:
+            if self._dependencies_completed(node):
                 ready.append(node)
         return ready
 
@@ -92,14 +94,9 @@ class TaskDAG:
         """Update all blocked nodes with satisfied dependencies to READY."""
         new_nodes = dict(self.nodes)
         for nid, node in new_nodes.items():
-            if node.status != NodeStatus.BLOCKED:
+            if node.status != ExecutionStatus.BLOCKED:
                 continue
-            deps_met = all(
-                new_nodes[dep].status == NodeStatus.COMPLETED
-                for dep in node.depends_on
-                if dep in new_nodes
-            )
-            if deps_met:
+            if self._dependencies_completed(node):
                 new_nodes[nid] = TaskNode(
                     node_id=node.node_id,
                     title=node.title,
@@ -109,7 +106,7 @@ class TaskDAG:
                     depends_on=node.depends_on,
                     priority=node.priority,
                     max_budget_tokens=node.max_budget_tokens,
-                    status=NodeStatus.READY,
+                    status=ExecutionStatus.READY,
                     metadata=dict(node.metadata),
                 )
         return TaskDAG(dag_id=self.dag_id, goal=self.goal, nodes=new_nodes)
@@ -119,7 +116,7 @@ class TaskDAG:
         node = self.nodes.get(node_id)
         if node is None:
             raise KeyError(f"Node {node_id} not found")
-        if node.status != NodeStatus.READY:
+        if node.status != ExecutionStatus.READY:
             raise ValueError(f"Node {node_id} is {node.status.value}, not ready")
         new_nodes = dict(self.nodes)
         new_nodes[node_id] = TaskNode(
@@ -131,7 +128,7 @@ class TaskDAG:
             depends_on=node.depends_on,
             priority=node.priority,
             max_budget_tokens=node.max_budget_tokens,
-            status=NodeStatus.CLAIMED,
+            status=ExecutionStatus.CLAIMED,
             claimed_by=agent_id,
             metadata=dict(node.metadata),
         )
@@ -142,6 +139,8 @@ class TaskDAG:
         node = self.nodes.get(node_id)
         if node is None:
             raise KeyError(f"Node {node_id} not found")
+        if node.status not in (ExecutionStatus.CLAIMED, ExecutionStatus.RUNNING):
+            raise ValueError(f"Node {node_id} is {node.status.value}, not claimed")
         new_nodes = dict(self.nodes)
         new_nodes[node_id] = TaskNode(
             node_id=node.node_id,
@@ -152,7 +151,7 @@ class TaskDAG:
             depends_on=node.depends_on,
             priority=node.priority,
             max_budget_tokens=node.max_budget_tokens,
-            status=NodeStatus.COMPLETED,
+            status=ExecutionStatus.COMPLETED,
             claimed_by=node.claimed_by,
             artifact_id=artifact_id,
             metadata=dict(node.metadata),
@@ -162,7 +161,7 @@ class TaskDAG:
     @property
     def is_complete(self) -> bool:
         """Check if all nodes in the DAG are completed."""
-        return all(n.status == NodeStatus.COMPLETED for n in self.nodes.values())
+        return all(n.status == ExecutionStatus.COMPLETED for n in self.nodes.values())
 
     @property
     def progress(self) -> dict[str, int]:
@@ -172,10 +171,10 @@ class TaskDAG:
             counts[node.status.value] = counts.get(node.status.value, 0) + 1
         return counts
 
-    def to_contracts(self, constitutional_hash: str = "") -> list[TaskContract]:
-        """Convert DAG nodes to task contracts for the swarm."""
+    def to_contracts(self, constitutional_hash: str = "") -> list[WorkReceipt]:
+        """Convert DAG nodes to immutable work receipts for the swarm."""
         return [
-            TaskContract(
+            WorkReceipt(
                 task_id=node.node_id,
                 title=node.title,
                 description=node.description,
@@ -183,6 +182,7 @@ class TaskDAG:
                 required_capabilities=node.required_capabilities,
                 priority=node.priority,
                 max_budget_tokens=node.max_budget_tokens,
+                status=contract_status_from_execution(node.status),
                 constitutional_hash=constitutional_hash,
             )
             for node in self.nodes.values()
@@ -229,7 +229,7 @@ class SwarmExecutor:
 
             available = []
             for node in self._dag.nodes.values():
-                if node.status != NodeStatus.READY:
+                if node.status != ExecutionStatus.READY:
                     continue
                 if not node.required_capabilities:
                     available.append(node)
@@ -243,14 +243,14 @@ class SwarmExecutor:
 
             return sorted(available, key=lambda n: -n.priority)
 
-    def claim(self, node_id: str, agent_id: str) -> TaskContract:
-        """Agent claims a task. Returns the contract. Thread-safe."""
+    def claim(self, node_id: str, agent_id: str) -> WorkReceipt:
+        """Agent claims a task. Returns the immutable work receipt."""
         with self._lock:
             if self._dag is None:
                 raise RuntimeError("No DAG loaded")
             self._dag = self._dag.claim_node(node_id, agent_id)
             node = self._dag.nodes[node_id]
-            return TaskContract(
+            return WorkReceipt(
                 task_id=node.node_id,
                 title=node.title,
                 description=node.description,

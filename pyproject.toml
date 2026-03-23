@@ -71,7 +71,7 @@ managed = true
 package = true
 
 [tool.uv.workspace]
-members = ["packages/enhanced_agent_bus", "packages/acgs-lite"]
+members = ["packages/enhanced_agent_bus", "packages/acgs-lite", "packages/acgs-deliberation"]
 
 [tool.ruff]
 line-length = 100
@@ -101,7 +101,7 @@ ignore = [
 max-complexity = 15
 
 [tool.ruff.lint.isort]
-known-first-party = ["src", "packages", "acgs_lite", "enhanced_agent_bus"]
+known-first-party = ["src", "packages", "acgs_lite", "enhanced_agent_bus", "acgs_deliberation"]
 
 [tool.mypy]
 python_version = "3.11"
@@ -112,7 +112,14 @@ exclude = ["build", "dist", ".codex-home", ".venv", "tests"]
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "--import-mode=importlib"
-testpaths = ["tests", "packages/enhanced_agent_bus/tests", "packages/acgs-lite/tests", "src/core/shared/tests"]
+testpaths = [
+    "tests",
+    "packages/enhanced_agent_bus",
+    "packages/acgs-lite/tests",
+    "packages/acgs-deliberation/tests",
+    "src/core/shared",
+    "src/core/services/api_gateway/tests",
+]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
@@ -128,10 +135,14 @@ markers = [
     "maci: marks MACI enforcement tests",
     "chaos: marks chaos engineering tests",
     "pqc: marks post-quantum cryptography tests",
+    "pqc_deprecation: marks PQC deprecation and migration tests",
+    "compliance: marks compliance validation tests",
+    "e2e: marks end-to-end tests",
+    "postgres: marks tests requiring PostgreSQL-specific behavior",
 ]
 
 [tool.coverage.run]
-source = ["src", "packages/enhanced_agent_bus", "packages/acgs-lite/src"]
+source = ["src", "packages/enhanced_agent_bus", "packages/acgs-lite/src", "packages/acgs-deliberation/src"]
 omit = ["tests/*", "**/tests/*", "**/__init__.py", "src/acgs_lite/*"]
 
 [tool.coverage.report]

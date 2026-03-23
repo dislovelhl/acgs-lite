@@ -603,6 +603,7 @@ class TestSendMessage:
         bus._running = True
 
         msg = _make_msg()
+        msg.metadata["prevalidated"] = True
         with patch.object(
             bus._message_validator, "validate_and_normalize_tenant", return_value=True
         ):

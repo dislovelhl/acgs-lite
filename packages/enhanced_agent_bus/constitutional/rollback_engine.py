@@ -115,6 +115,16 @@ class RollbackStepSpec:
     is_optional: bool = False
 
 
+@dataclass(frozen=True)
+class _PreparedRollbackVersions:
+    current_version_id: str
+    current_version: str
+    target_version_id: str
+    target_version: str
+    target_hash: str
+    amendment_id: str | None
+
+
 ROLLBACK_STEP_SPECS: tuple[RollbackStepSpec, ...] = (
     RollbackStepSpec(
         name="detect_degradation",
@@ -279,6 +289,178 @@ class RollbackSagaActivities:
         self._opa_client: object | None = None
         self._audit_client: object | None = None
 
+    @staticmethod
+    def _extract_saga_context(input: JSONDict) -> tuple[str, JSONDict]:
+        return input["saga_id"], input["context"]
+
+    async def _collect_degradation_snapshots(
+        self,
+        *,
+        current_version_id: str,
+        time_window: TimeWindow,
+    ) -> tuple[object, object]:
+        baseline_snapshot = await self.metrics_collector.get_baseline_snapshot(current_version_id)
+        if not baseline_snapshot:
+            logger.warning(
+                "[%s] No baseline snapshot found for version %s",
+                CONSTITUTIONAL_HASH,
+                current_version_id,
+            )
+            baseline_snapshot = await self.metrics_collector.collect_snapshot(
+                constitutional_version=current_version_id,
+                window_seconds=time_window.to_seconds(),
+            )
+
+        current_snapshot = await self.metrics_collector.collect_snapshot(
+            constitutional_version=current_version_id,
+            window_seconds=time_window.to_seconds(),
+        )
+        return baseline_snapshot, current_snapshot
+
+    async def _resolve_rollback_versions(
+        self,
+        *,
+        current_version_id: str,
+        amendment_id: str | None,
+    ) -> _PreparedRollbackVersions:
+        current_version = await self.storage.get_version(current_version_id)
+        if not current_version:
+            raise RollbackEngineError(f"Current version {current_version_id} not found")
+
+        if not current_version.predecessor_version:
+            raise RollbackEngineError(
+                f"Current version {current_version_id} has no predecessor, cannot rollback"
+            )
+
+        target_version = await self.storage.get_version(current_version.predecessor_version)
+        if not target_version:
+            raise RollbackEngineError(
+                f"Predecessor version {current_version.predecessor_version} not found"
+            )
+
+        if amendment_id:
+            await self.storage.get_amendment(amendment_id)
+
+        return _PreparedRollbackVersions(
+            current_version_id=current_version.version_id,
+            current_version=current_version.version,
+            target_version_id=target_version.version_id,
+            target_version=target_version.version,
+            target_hash=target_version.constitutional_hash,
+            amendment_id=amendment_id,
+        )
+
+    async def _send_hitl_notifications(
+        self,
+        *,
+        saga_id: str,
+        severity: str,
+        rollback_reason: str,
+        preparation_result: JSONDict,
+        degradation_summary: str,
+    ) -> list[str]:
+        notifications_sent: list[str] = []
+        if severity not in ("critical", "high"):
+            return notifications_sent
+
+        if not self.hitl_integration or not hasattr(self.hitl_integration, "_send_slack_notification"):
+            return notifications_sent
+
+        title = f"🔴 Constitutional Rollback - {severity.upper()}"
+        message = (
+            f"Automatic rollback triggered for constitutional version "
+            f"{preparation_result.get('current_version')}\n\n"
+            f"**Reason:** {rollback_reason}\n"
+            f"**Severity:** {severity}\n"
+            f"**Target Version:** {preparation_result.get('target_version')}\n"
+            f"**Degradation:** {degradation_summary}"
+        )
+
+        try:
+            await self.hitl_integration._send_slack_notification(
+                title=title,
+                message=message,
+                priority="critical",
+                action_url=f"#/constitutional/rollback/{saga_id}",
+            )
+            notifications_sent.append("slack")
+        except (RuntimeError, ValueError, TypeError) as e:
+            logger.warning("[%s] Failed to send Slack notification: %s", CONSTITUTIONAL_HASH, e)
+
+        if severity == "critical":
+            try:
+                await self.hitl_integration._send_pagerduty_notification(
+                    title="Critical Constitutional Rollback",
+                    message=(
+                        "Automatic rollback from "
+                        f"{preparation_result.get('current_version')}"
+                    ),
+                    severity="critical",
+                )
+                notifications_sent.append("pagerduty")
+            except (RuntimeError, ValueError, TypeError) as e:
+                logger.warning(
+                    "[%s] Failed to send PagerDuty notification: %s", CONSTITUTIONAL_HASH, e
+                )
+
+        return notifications_sent
+
+    async def _mark_amendment_rolled_back(
+        self,
+        *,
+        amendment_id: str | None,
+        saga_id: str,
+    ) -> bool:
+        if not amendment_id:
+            return False
+
+        amendment = await self.storage.get_amendment(amendment_id)
+        if not amendment:
+            return False
+
+        amendment.status = AmendmentStatus.ROLLED_BACK
+        amendment.metadata = amendment.metadata or {}
+        amendment.metadata["rolled_back_at"] = datetime.now(UTC).isoformat()
+        amendment.metadata["rollback_saga_id"] = saga_id
+        await self.storage.save_amendment(amendment)
+        return True
+
+    def _build_rollback_audit_event(
+        self,
+        *,
+        saga_id: str,
+        context: JSONDict,
+        detection_result: JSONDict,
+        preparation_result: JSONDict,
+        restoration_result: JSONDict,
+        notification_result: JSONDict,
+    ) -> JSONDict:
+        return {
+            "audit_id": str(uuid4()),
+            "event_type": "constitutional_version_rolled_back",
+            "saga_id": saga_id,
+            "rollback_reason": context.get("rollback_reason", RollbackReason.AUTOMATIC_DEGRADATION),
+            "amendment_id": context.get("amendment_id"),
+            "previous_version": preparation_result.get("current_version"),
+            "previous_version_id": preparation_result.get("current_version_id"),
+            "restored_version": restoration_result.get("restored_version"),
+            "restored_version_id": restoration_result.get("restored_version_id"),
+            "constitutional_hash": CONSTITUTIONAL_HASH,
+            "degradation_report": detection_result.get("report"),
+            "severity": detection_result.get("severity"),
+            "confidence_score": detection_result.get("confidence_score"),
+            "degradation_summary": detection_result.get("degradation_summary"),
+            "critical_metrics": detection_result.get("critical_metrics", []),
+            "notifications_sent": notification_result.get("notifications_sent", []),
+            "timestamp": datetime.now(UTC).isoformat(),
+            "metadata": {
+                "detection": detection_result,
+                "preparation": preparation_result,
+                "restoration": restoration_result,
+                "notification": notification_result,
+            },
+        }
+
     async def initialize(self) -> None:
         """Initialize clients and connections."""
         # HTTP client for OPA
@@ -321,7 +503,7 @@ class RollbackSagaActivities:
             await self._http_client.aclose()
 
         if self._redis_client:
-            await self._redis_client.close()
+            await self._redis_client.aclose()
 
         if self._opa_client:
             await self._opa_client.close()
@@ -337,9 +519,7 @@ class RollbackSagaActivities:
         Returns:
             Degradation detection result with report, severity, recommendation
         """
-        saga_id = input["saga_id"]
-        context = input["context"]
-
+        saga_id, context = self._extract_saga_context(input)
         current_version_id = context.get("current_version_id")
         amendment_id = context.get("amendment_id")
         time_window = context.get("time_window", TimeWindow.ONE_HOUR)
@@ -352,23 +532,9 @@ class RollbackSagaActivities:
             time_window,
         )
 
-        # Get baseline metrics for the version
-        baseline_snapshot = await self.metrics_collector.get_baseline_snapshot(current_version_id)
-
-        if not baseline_snapshot:
-            logger.warning(
-                "[%s] No baseline snapshot found for version %s",
-                CONSTITUTIONAL_HASH,
-                current_version_id,
-            )
-            # Create a synthetic baseline from current metrics
-            baseline_snapshot = await self.metrics_collector.collect_snapshot(
-                constitutional_version=current_version_id, window_seconds=time_window.to_seconds()
-            )
-
-        # Collect current metrics
-        current_snapshot = await self.metrics_collector.collect_snapshot(
-            constitutional_version=current_version_id, window_seconds=time_window.to_seconds()
+        baseline_snapshot, current_snapshot = await self._collect_degradation_snapshots(
+            current_version_id=current_version_id,
+            time_window=time_window,
         )
 
         # Analyze degradation
@@ -414,9 +580,7 @@ class RollbackSagaActivities:
         Returns:
             Preparation result with target_version_id, current_version, validation status
         """
-        saga_id = input["saga_id"]
-        context = input["context"]
-
+        saga_id, context = self._extract_saga_context(input)
         current_version_id = context.get("current_version_id")
         amendment_id = context.get("amendment_id")
 
@@ -427,26 +591,10 @@ class RollbackSagaActivities:
             current_version_id,
         )
 
-        # Get current version
-        current_version = await self.storage.get_version(current_version_id)
-        if not current_version:
-            raise RollbackEngineError(f"Current version {current_version_id} not found")
-
-        # Get predecessor version (rollback target)
-        if not current_version.predecessor_version:
-            raise RollbackEngineError(
-                f"Current version {current_version_id} has no predecessor, cannot rollback"
-            )
-
-        target_version = await self.storage.get_version(current_version.predecessor_version)
-        if not target_version:
-            raise RollbackEngineError(
-                f"Predecessor version {current_version.predecessor_version} not found"
-            )
-
-        # Get amendment if provided
-        if amendment_id:
-            await self.storage.get_amendment(amendment_id)
+        versions = await self._resolve_rollback_versions(
+            current_version_id=current_version_id,
+            amendment_id=amendment_id,
+        )
 
         preparation_id = str(uuid4())
 
@@ -454,18 +602,18 @@ class RollbackSagaActivities:
             "[%s] Saga %s: Rollback prepared - target version: %s (%s)",
             CONSTITUTIONAL_HASH,
             saga_id,
-            target_version.version,
-            target_version.version_id,
+            versions.target_version,
+            versions.target_version_id,
         )
 
         return {
             "preparation_id": preparation_id,
-            "current_version_id": current_version.version_id,
-            "current_version": current_version.version,
-            "target_version_id": target_version.version_id,
-            "target_version": target_version.version,
-            "target_hash": target_version.constitutional_hash,
-            "amendment_id": amendment_id,
+            "current_version_id": versions.current_version_id,
+            "current_version": versions.current_version,
+            "target_version_id": versions.target_version_id,
+            "target_version": versions.target_version,
+            "target_hash": versions.target_hash,
+            "amendment_id": versions.amendment_id,
             "is_valid": True,
             "timestamp": datetime.now(UTC).isoformat(),
         }
@@ -486,9 +634,7 @@ class RollbackSagaActivities:
         Returns:
             Notification result with channels, status
         """
-        saga_id = input["saga_id"]
-        context = input["context"]
-
+        saga_id, context = self._extract_saga_context(input)
         detection_result = context.get("detect_degradation", {})
         preparation_result = context.get("prepare_rollback", {})
 
@@ -503,48 +649,13 @@ class RollbackSagaActivities:
         )
 
         notification_id = str(uuid4())
-        notifications_sent = []
-
-        # Only send notifications for critical or high severity
-        if severity in ("critical", "high"):  # noqa: SIM102
-            if self.hitl_integration and hasattr(self.hitl_integration, "_send_slack_notification"):
-                try:
-                    # Send Slack notification
-                    title = f"🔴 Constitutional Rollback - {severity.upper()}"
-                    message = (
-                        f"Automatic rollback triggered for constitutional version "
-                        f"{preparation_result.get('current_version')}\n\n"
-                        f"**Reason:** {rollback_reason}\n"
-                        f"**Severity:** {severity}\n"
-                        f"**Target Version:** {preparation_result.get('target_version')}\n"
-                        f"**Degradation:** {detection_result.get('degradation_summary', 'N/A')}"
-                    )
-
-                    await self.hitl_integration._send_slack_notification(
-                        title=title,
-                        message=message,
-                        priority="critical",
-                        action_url=f"#/constitutional/rollback/{saga_id}",
-                    )
-                    notifications_sent.append("slack")
-                except (RuntimeError, ValueError, TypeError) as e:
-                    logger.warning(
-                        "[%s] Failed to send Slack notification: %s", CONSTITUTIONAL_HASH, e
-                    )
-
-                try:
-                    # Send PagerDuty notification for critical severity
-                    if severity == "critical":
-                        await self.hitl_integration._send_pagerduty_notification(
-                            title="Critical Constitutional Rollback",
-                            message=f"Automatic rollback from {preparation_result.get('current_version')}",  # noqa: E501
-                            severity="critical",
-                        )
-                        notifications_sent.append("pagerduty")
-                except (RuntimeError, ValueError, TypeError) as e:
-                    logger.warning(
-                        "[%s] Failed to send PagerDuty notification: %s", CONSTITUTIONAL_HASH, e
-                    )
+        notifications_sent = await self._send_hitl_notifications(
+            saga_id=saga_id,
+            severity=severity,
+            rollback_reason=rollback_reason,
+            preparation_result=preparation_result,
+            degradation_summary=detection_result.get("degradation_summary", "N/A"),
+        )
 
         return {
             "notification_id": notification_id,
@@ -696,9 +807,7 @@ class RollbackSagaActivities:
         Returns:
             Restoration result with restored_version_id, status
         """
-        saga_id = input["saga_id"]
-        context = input["context"]
-
+        saga_id, context = self._extract_saga_context(input)
         preparation_result = context.get("prepare_rollback", {})
         target_version_id = preparation_result.get("target_version_id")
         amendment_id = context.get("amendment_id")
@@ -713,15 +822,10 @@ class RollbackSagaActivities:
         # Activate the target version (this also deactivates current)
         await self.storage.activate_version(target_version_id)
 
-        # Update amendment status to ROLLED_BACK if applicable
-        if amendment_id:
-            amendment = await self.storage.get_amendment(amendment_id)
-            if amendment:
-                amendment.status = AmendmentStatus.ROLLED_BACK
-                amendment.metadata = amendment.metadata or {}
-                amendment.metadata["rolled_back_at"] = datetime.now(UTC).isoformat()
-                amendment.metadata["rollback_saga_id"] = saga_id
-                await self.storage.save_amendment(amendment)
+        amendment_rolled_back = await self._mark_amendment_rolled_back(
+            amendment_id=amendment_id,
+            saga_id=saga_id,
+        )
 
         logger.info("[%s] Saga %s: Version restored successfully", CONSTITUTIONAL_HASH, saga_id)
 
@@ -730,7 +834,7 @@ class RollbackSagaActivities:
             "restored_version_id": target_version_id,
             "restored_version": preparation_result.get("target_version"),
             "previous_version_id": preparation_result.get("current_version_id"),
-            "amendment_rolled_back": amendment_id is not None,
+            "amendment_rolled_back": amendment_rolled_back,
             "restored": True,
             "timestamp": datetime.now(UTC).isoformat(),
         }
@@ -831,9 +935,7 @@ class RollbackSagaActivities:
         Returns:
             Audit result with audit_id, event_type, status
         """
-        saga_id = input["saga_id"]
-        context = input["context"]
-
+        saga_id, context = self._extract_saga_context(input)
         detection_result = context.get("detect_degradation", {})
         preparation_result = context.get("prepare_rollback", {})
         restoration_result = context.get("restore_previous_version", {})
@@ -841,34 +943,14 @@ class RollbackSagaActivities:
 
         logger.info("[%s] Saga %s: Logging rollback audit", CONSTITUTIONAL_HASH, saga_id)
 
-        audit_id = str(uuid4())
-
-        # Build audit event
-        audit_event = {
-            "audit_id": audit_id,
-            "event_type": "constitutional_version_rolled_back",
-            "saga_id": saga_id,
-            "rollback_reason": context.get("rollback_reason", RollbackReason.AUTOMATIC_DEGRADATION),
-            "amendment_id": context.get("amendment_id"),
-            "previous_version": preparation_result.get("current_version"),
-            "previous_version_id": preparation_result.get("current_version_id"),
-            "restored_version": restoration_result.get("restored_version"),
-            "restored_version_id": restoration_result.get("restored_version_id"),
-            "constitutional_hash": CONSTITUTIONAL_HASH,
-            "degradation_report": detection_result.get("report"),
-            "severity": detection_result.get("severity"),
-            "confidence_score": detection_result.get("confidence_score"),
-            "degradation_summary": detection_result.get("degradation_summary"),
-            "critical_metrics": detection_result.get("critical_metrics", []),
-            "notifications_sent": notification_result.get("notifications_sent", []),
-            "timestamp": datetime.now(UTC).isoformat(),
-            "metadata": {
-                "detection": detection_result,
-                "preparation": preparation_result,
-                "restoration": restoration_result,
-                "notification": notification_result,
-            },
-        }
+        audit_event = self._build_rollback_audit_event(
+            saga_id=saga_id,
+            context=context,
+            detection_result=detection_result,
+            preparation_result=preparation_result,
+            restoration_result=restoration_result,
+            notification_result=notification_result,
+        )
 
         # Submit to audit service
         if self._audit_client:
@@ -1014,6 +1096,79 @@ def _add_rollback_saga_steps(saga, activities: RollbackSagaActivities) -> None:
         )
 
 
+def _build_rollback_activities(
+    *,
+    storage: ConstitutionalStorageService,
+    metrics_collector: GovernanceMetricsCollector,
+    degradation_detector: DegradationDetector,
+    opa_url: str,
+    audit_service_url: str,
+    redis_url: str | None,
+    hitl_integration: object | None,
+) -> RollbackSagaActivities:
+    return RollbackSagaActivities(
+        storage=storage,
+        metrics_collector=metrics_collector,
+        degradation_detector=degradation_detector,
+        opa_url=opa_url,
+        audit_service_url=audit_service_url,
+        redis_url=redis_url,
+        hitl_integration=hitl_integration,
+    )
+
+
+def _create_saga_shell(current_version_id: str) -> "ConstitutionalSagaWorkflowType":
+    if not ConstitutionalSagaWorkflow:
+        raise ImportError(
+            "ConstitutionalSagaWorkflow not available. "
+            "Ensure deliberation_layer.workflows.constitutional_saga is installed."
+        )
+
+    saga_id = f"rollback-{current_version_id[:8]}-{str(uuid4())[:8]}"
+    return ConstitutionalSagaWorkflow(saga_id=saga_id)
+
+
+def _get_saga_activities(saga) -> RollbackSagaActivities | None:
+    if not hasattr(saga, "_steps") or not saga._steps:
+        return None
+
+    first_step = saga._steps[0]
+    execute = getattr(first_step, "execute", None)
+    activities = getattr(execute, "__self__", None)
+    return activities if isinstance(activities, RollbackSagaActivities) else None
+
+
+async def _initialize_saga_activities(saga) -> None:
+    activities = _get_saga_activities(saga)
+    if activities is not None:
+        await activities.initialize()
+
+
+async def _close_saga_activities(saga) -> None:
+    activities = _get_saga_activities(saga)
+    if activities is not None:
+        await activities.close()
+
+
+def _build_rollback_context(
+    *,
+    saga_id: str,
+    current_version_id: str,
+    amendment_id: str | None,
+    rollback_reason: str,
+    time_window: TimeWindow,
+):
+    if not SagaContext:
+        raise ImportError("SagaContext not available")
+
+    context = SagaContext(saga_id=saga_id, constitutional_hash=CONSTITUTIONAL_HASH)
+    context.set_step_result("current_version_id", current_version_id)
+    context.set_step_result("amendment_id", amendment_id)
+    context.set_step_result("rollback_reason", rollback_reason)
+    context.set_step_result("time_window", time_window)
+    return context
+
+
 def create_rollback_saga(
     current_version_id: str,
     storage: ConstitutionalStorageService,
@@ -1077,14 +1232,8 @@ def create_rollback_saga(
         else:
         ```
     """
-    if not ConstitutionalSagaWorkflow:
-        raise ImportError(
-            "ConstitutionalSagaWorkflow not available. "
-            "Ensure deliberation_layer.workflows.constitutional_saga is installed."
-        )
-
-    saga_id = f"rollback-{current_version_id[:8]}-{str(uuid4())[:8]}"
-    activities = RollbackSagaActivities(
+    saga = _create_saga_shell(current_version_id)
+    activities = _build_rollback_activities(
         storage=storage,
         metrics_collector=metrics_collector,
         degradation_detector=degradation_detector,
@@ -1093,11 +1242,7 @@ def create_rollback_saga(
         redis_url=redis_url,
         hitl_integration=hitl_integration,
     )
-
-    saga = ConstitutionalSagaWorkflow(saga_id=saga_id)
-
     _add_rollback_saga_steps(saga, activities)
-
     return saga
 
 
@@ -1161,7 +1306,6 @@ async def rollback_amendment(
     if not SagaContext:
         raise ImportError("SagaContext not available")
 
-    # Create saga
     saga = create_rollback_saga(
         current_version_id=current_version_id,
         storage=storage,
@@ -1175,34 +1319,20 @@ async def rollback_amendment(
         redis_url=redis_url,
         hitl_integration=hitl_integration,
     )
-
-    # Initialize activities
-    if hasattr(saga, "_steps") and saga._steps:
-        first_step = saga._steps[0]
-        if hasattr(first_step.execute, "__self__"):
-            activities = first_step.execute.__self__
-            if isinstance(activities, RollbackSagaActivities):
-                await activities.initialize()
-
-    # Create context
-    context = SagaContext(saga_id=saga.saga_id, constitutional_hash=CONSTITUTIONAL_HASH)
-    context.set_step_result("current_version_id", current_version_id)
-    context.set_step_result("amendment_id", amendment_id)
-    context.set_step_result("rollback_reason", rollback_reason)
-    context.set_step_result("time_window", time_window)
+    await _initialize_saga_activities(saga)
+    context = _build_rollback_context(
+        saga_id=saga.saga_id,
+        current_version_id=current_version_id,
+        amendment_id=amendment_id,
+        rollback_reason=rollback_reason,
+        time_window=time_window,
+    )
 
     try:
-        # Execute saga
         result = await saga.execute(context)
         return result
     finally:
-        # Cleanup activities
-        if hasattr(saga, "_steps") and saga._steps:
-            first_step = saga._steps[0]
-            if hasattr(first_step.execute, "__self__"):
-                activities = first_step.execute.__self__
-                if isinstance(activities, RollbackSagaActivities):
-                    await activities.close()
+        await _close_saga_activities(saga)
 
 
 __all__ = [

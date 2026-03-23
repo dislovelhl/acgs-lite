@@ -18,6 +18,9 @@ from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from pydantic import ValidationError as PydanticValidationError
+from src.core.shared.constants import MACIRole
+from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 
 # ---------------------------------------------------------------------------
 # mcp.client
@@ -33,16 +36,15 @@ from enhanced_agent_bus.mcp.client import (
     _role_may_call_tool,
     create_mcp_client,
 )
-from enhanced_agent_bus.mcp.types import MCPTool, MCPToolResult, MCPToolStatus
 
 # ---------------------------------------------------------------------------
 # mcp.config
 # ---------------------------------------------------------------------------
 from enhanced_agent_bus.mcp.config import (
-    MCPConfig,
-    MCPServerConfig,
     NEURAL_MCP_SERVER_NAME,
     TOOLBOX_SERVER_NAME,
+    MCPConfig,
+    MCPServerConfig,
     _default_neural_mcp_server,
     _default_toolbox_server,
     get_mcp_config,
@@ -50,6 +52,7 @@ from enhanced_agent_bus.mcp.config import (
     load_from_env,
     load_from_yaml,
 )
+from enhanced_agent_bus.mcp.types import MCPTool, MCPToolResult, MCPToolStatus
 
 # ---------------------------------------------------------------------------
 # orchestration.market_based
@@ -60,22 +63,21 @@ from enhanced_agent_bus.orchestration.market_based import (
     TaskAuction,
 )
 
-
 # =========================================================================
 # _role_may_call_tool
 # =========================================================================
 
 
 class TestRoleMayCallTool:
-    def test_empty_role_allows_everything(self):
+    def test_empty_role_uses_legacy_fallback(self):
         allowed, reason = _role_may_call_tool("", "execute_task")
         assert allowed is True
         assert reason == ""
 
-    def test_unrestricted_role_allows_everything(self):
+    def test_unknown_role_is_rejected(self):
         allowed, reason = _role_may_call_tool("unknown_role", "execute_task")
-        assert allowed is True
-        assert reason == ""
+        assert allowed is False
+        assert "unknown or unmapped" in reason
 
     def test_judicial_cannot_execute(self):
         allowed, reason = _role_may_call_tool("judicial", "execute_command")
@@ -134,6 +136,20 @@ class TestRoleMayCallTool:
     def test_case_insensitive_tool(self):
         allowed, _ = _role_may_call_tool("judicial", "EXECUTE_task")
         assert allowed is False
+
+    def test_canonical_role_enum_is_accepted(self):
+        allowed, _ = _role_may_call_tool(MACIRole.EXECUTIVE, "execute_task")
+        assert allowed is True
+
+    def test_unmapped_canonical_role_defaults_to_allow(self):
+        allowed, reason = _role_may_call_tool(MACIRole.CONTROLLER, "policy_apply_v2")
+        assert allowed is True
+        assert reason == ""
+
+    def test_legislative_role_defaults_to_allow_when_not_restricted(self):
+        allowed, reason = _role_may_call_tool("legislative", "query_policy_state")
+        assert allowed is True
+        assert reason == ""
 
 
 # =========================================================================
@@ -372,11 +388,27 @@ class TestMCPClient:
             )
             assert result.status == MCPToolStatus.SUCCESS
 
-    async def test_call_tool_no_role_skips_maci(self):
+    async def test_call_tool_no_role_uses_legacy_fallback(self):
         async with MCPClient() as client:
             client._do_call_tool = AsyncMock(return_value="ok")  # type: ignore[assignment]
             result = await client.call_tool("execute_command", maci_role="")
             assert result.status == MCPToolStatus.SUCCESS
+            assert result.error is None
+
+    async def test_call_tool_unknown_role_is_forbidden(self):
+        async with MCPClient() as client:
+            client._do_call_tool = AsyncMock(return_value="ok")  # type: ignore[assignment]
+            result = await client.call_tool("execute_command", maci_role="unknown_role")
+            assert result.status == MCPToolStatus.FORBIDDEN
+            assert "unknown or unmapped" in (result.error or "")
+
+    @pytest.mark.parametrize("maci_role", [MACIRole.CONTROLLER, "legislative"])
+    async def test_call_tool_allows_unmapped_canonical_roles(self, maci_role: object):
+        async with MCPClient() as client:
+            client._do_call_tool = AsyncMock(return_value="ok")  # type: ignore[assignment]
+            result = await client.call_tool("query_policy_state", maci_role=maci_role)
+            assert result.status == MCPToolStatus.SUCCESS
+            assert result.content == "ok"
 
     async def test_call_tool_timeout(self):
         async with MCPClient(MCPClientConfig(call_timeout=0.01)) as client:
@@ -385,7 +417,7 @@ class TestMCPClient:
                 await asyncio.sleep(10)
 
             client._do_call_tool = slow_tool  # type: ignore[assignment]
-            result = await client.call_tool("slow_tool")
+            result = await client.call_tool("slow_tool", maci_role="executive")
             assert result.status == MCPToolStatus.TIMEOUT
             assert "timed out" in (result.error or "")
 
@@ -400,7 +432,7 @@ class TestMCPClient:
                 raise ValueError("transient error")
 
             client._do_call_tool = fail_tool  # type: ignore[assignment]
-            result = await client.call_tool("flaky_tool")
+            result = await client.call_tool("flaky_tool", maci_role="executive")
             assert result.status == MCPToolStatus.ERROR
             assert "transient error" in (result.error or "")
             assert call_count == 2  # 1 initial + 1 retry
@@ -418,7 +450,7 @@ class TestMCPClient:
                 return "recovered"
 
             client._do_call_tool = flaky_tool  # type: ignore[assignment]
-            result = await client.call_tool("flaky_tool")
+            result = await client.call_tool("flaky_tool", maci_role="executive")
             assert result.status == MCPToolStatus.SUCCESS
             assert result.content == "recovered"
 
@@ -427,6 +459,7 @@ class TestMCPClient:
             client._do_call_tool = AsyncMock(return_value="ok")  # type: ignore[assignment]
             result = await client.call_tool(
                 "test_tool",
+                maci_role="executive",
                 metadata={"trace_id": "abc"},
             )
             assert result.status == MCPToolStatus.SUCCESS
@@ -435,7 +468,7 @@ class TestMCPClient:
     async def test_call_tool_custom_timeout(self):
         async with MCPClient() as client:
             client._do_call_tool = AsyncMock(return_value="fast")  # type: ignore[assignment]
-            result = await client.call_tool("test_tool", timeout=1.0)
+            result = await client.call_tool("test_tool", timeout=1.0, maci_role="executive")
             assert result.status == MCPToolStatus.SUCCESS
 
     async def test_require_connected_guard(self):
@@ -513,7 +546,7 @@ class TestMCPServerConfig:
         assert cfg.name == "test-server"
 
     def test_blank_name_rejected(self):
-        with pytest.raises(Exception):
+        with pytest.raises(PydanticValidationError):
             MCPServerConfig(name="   ", transport="stdio", command=["node"])
 
     def test_url_trailing_slash_stripped(self):
@@ -807,7 +840,7 @@ class TestLoadFromYaml:
         """)
         yaml_file = tmp_path / "bad.yaml"
         yaml_file.write_text(yaml_content)
-        with pytest.raises(Exception):
+        with pytest.raises(ACGSValidationError):
             load_from_yaml(yaml_file)
 
 

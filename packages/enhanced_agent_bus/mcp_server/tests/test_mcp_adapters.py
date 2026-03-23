@@ -160,6 +160,25 @@ class TestAgentBusAdapter:
         assert result["compliant"] is False
         assert result["fail_closed"] is True
 
+    async def test_submit_governance_request_returns_error_on_unexpected_exception(self):
+        """Test governance requests return a stable error payload on unexpected failures."""
+        mock_bus = MagicMock()
+        mock_bus.register_agent = AsyncMock()
+        mock_bus.send_message = AsyncMock(side_effect=Exception("Connection error"))
+
+        adapter = AgentBusAdapter(agent_bus=mock_bus)
+        await adapter.connect()
+
+        result = await adapter.submit_governance_request(
+            action="deploy_model",
+            context={},
+            priority="high",
+            requester_id="test-agent",
+        )
+
+        assert result["status"] == "error"
+        assert result["error"] == "Connection error"
+
     def test_get_metrics(self):
         """Test getting adapter metrics."""
         adapter = AgentBusAdapter()

@@ -1237,7 +1237,7 @@ def test_validate_jwt_token_valid_controller_role(monkeypatch: pytest.MonkeyPatc
     """Valid JWT with CONTROLLER role returns payload (lines 230-251)."""
     import jwt as _jwt
 
-    secret = "test-jwt-secret-for-coverage"  # noqa: S105
+    secret = "test-jwt-secret-for-coverage-32-bytes"  # noqa: S105
     monkeypatch.setattr(_tenants_mod, "JWT_SECRET_KEY", secret)
     monkeypatch.setattr(_tenants_mod, "JWT_ALGORITHM", "HS256")
     monkeypatch.setattr(_tenants_mod, "JWT_ISSUER", "acgs2-agent-runtime")
@@ -1265,7 +1265,7 @@ def test_validate_jwt_token_valid_admin_permission(monkeypatch: pytest.MonkeyPat
     """Valid JWT with ADMIN permission returns payload."""
     import jwt as _jwt
 
-    secret = "test-jwt-secret-admin"  # noqa: S105
+    secret = "test-jwt-secret-admin-32-bytes-long"  # noqa: S105
     monkeypatch.setattr(_tenants_mod, "JWT_SECRET_KEY", secret)
     monkeypatch.setattr(_tenants_mod, "JWT_ALGORITHM", "HS256")
     monkeypatch.setattr(_tenants_mod, "JWT_ISSUER", "acgs2-agent-runtime")
@@ -1291,7 +1291,7 @@ def test_validate_jwt_token_lacks_permission(monkeypatch: pytest.MonkeyPatch):
     """JWT without admin role/permission returns None (line 253-258)."""
     import jwt as _jwt
 
-    secret = "test-jwt-secret-noperm"  # noqa: S105
+    secret = "test-jwt-secret-noperm-32-bytes-long"  # noqa: S105
     monkeypatch.setattr(_tenants_mod, "JWT_SECRET_KEY", secret)
     monkeypatch.setattr(_tenants_mod, "JWT_ALGORITHM", "HS256")
     monkeypatch.setattr(_tenants_mod, "JWT_ISSUER", "acgs2-agent-runtime")
@@ -1317,7 +1317,7 @@ def test_validate_jwt_token_hash_mismatch(monkeypatch: pytest.MonkeyPatch):
     """JWT with wrong constitutional hash returns None (lines 237-243)."""
     import jwt as _jwt
 
-    secret = "test-jwt-secret-hash"  # noqa: S105
+    secret = "test-jwt-secret-hash-32-bytes-longxx"  # noqa: S105
     monkeypatch.setattr(_tenants_mod, "JWT_SECRET_KEY", secret)
     monkeypatch.setattr(_tenants_mod, "JWT_ALGORITHM", "HS256")
     monkeypatch.setattr(_tenants_mod, "JWT_ISSUER", "acgs2-agent-runtime")
@@ -1346,7 +1346,7 @@ def test_validate_jwt_token_expired(monkeypatch: pytest.MonkeyPatch):
 
     import jwt as _jwt
 
-    secret = "test-jwt-secret-exp"  # noqa: S105
+    secret = "test-jwt-secret-exp-32-bytes-longxxx"  # noqa: S105
     monkeypatch.setattr(_tenants_mod, "JWT_SECRET_KEY", secret)
     monkeypatch.setattr(_tenants_mod, "JWT_ALGORITHM", "HS256")
     monkeypatch.setattr(_tenants_mod, "JWT_ISSUER", "acgs2-agent-runtime")
@@ -1371,7 +1371,7 @@ def test_validate_jwt_token_invalid_signature(monkeypatch: pytest.MonkeyPatch):
     """JWT with wrong secret returns None (line 266-267)."""
     import jwt as _jwt
 
-    monkeypatch.setattr(_tenants_mod, "JWT_SECRET_KEY", "correct-secret")
+    monkeypatch.setattr(_tenants_mod, "JWT_SECRET_KEY", "correct-secret-32-bytes-long-key")
     monkeypatch.setattr(_tenants_mod, "JWT_ALGORITHM", "HS256")
     monkeypatch.setattr(_tenants_mod, "JWT_ISSUER", "acgs2-agent-runtime")
     monkeypatch.setattr(_tenants_mod, "JWT_AUDIENCE", "acgs2-services")
@@ -1385,7 +1385,7 @@ def test_validate_jwt_token_invalid_signature(monkeypatch: pytest.MonkeyPatch):
         "iat": datetime.now(UTC),
         "exp": datetime.now(UTC) + timedelta(hours=1),
     }
-    token = _jwt.encode(payload, "wrong-secret", algorithm="HS256")
+    token = _jwt.encode(payload, "wrong-secret-32-bytes-long-secret", algorithm="HS256")
 
     result = _tenants_mod._validate_jwt_token(token)
     assert result is None
@@ -1395,7 +1395,7 @@ def test_auth_via_jwt_bearer_token(monkeypatch: pytest.MonkeyPatch):
     """Authenticated request using Bearer JWT token succeeds (lines 312-323)."""
     import jwt as _jwt
 
-    secret = "bearer-test-secret"  # noqa: S105
+    secret = "bearer-test-secret-32-bytes-longxx"  # noqa: S105
     monkeypatch.setattr(_tenants_mod, "JWT_SECRET_KEY", secret)
     monkeypatch.setattr(_tenants_mod, "JWT_ALGORITHM", "HS256")
     monkeypatch.setattr(_tenants_mod, "JWT_ISSUER", "acgs2-agent-runtime")
@@ -1428,7 +1428,7 @@ def test_auth_via_jwt_bearer_token_invalid(monkeypatch: pytest.MonkeyPatch):
     """Invalid Bearer JWT returns 401 (lines 324-338)."""
     import jwt as _jwt
 
-    monkeypatch.setattr(_tenants_mod, "JWT_SECRET_KEY", "real-secret")
+    monkeypatch.setattr(_tenants_mod, "JWT_SECRET_KEY", "real-secret-32-bytes-long-keyyyy")
     monkeypatch.setattr(_tenants_mod, "JWT_ALGORITHM", "HS256")
     monkeypatch.setattr(_tenants_mod, "JWT_ISSUER", "acgs2-agent-runtime")
     monkeypatch.setattr(_tenants_mod, "JWT_AUDIENCE", "acgs2-services")
@@ -1445,7 +1445,7 @@ def test_auth_via_jwt_bearer_token_invalid(monkeypatch: pytest.MonkeyPatch):
         "iat": datetime.now(UTC),
         "exp": datetime.now(UTC) + timedelta(hours=1),
     }
-    token = _jwt.encode(payload, "wrong-secret", algorithm="HS256")
+    token = _jwt.encode(payload, "wrong-secret-32-bytes-long-secret", algorithm="HS256")
 
     resp = client.get(
         "/api/v1/tenants",
@@ -1516,7 +1516,7 @@ def test_validate_jwt_token_tenant_manage_permission(monkeypatch: pytest.MonkeyP
     """TENANT_MANAGE permission grants access (line 250)."""
     import jwt as _jwt
 
-    secret = "tenant-manage-secret"  # noqa: S105
+    secret = "tenant-manage-secret-32-bytes-long"  # noqa: S105
     monkeypatch.setattr(_tenants_mod, "JWT_SECRET_KEY", secret)
     monkeypatch.setattr(_tenants_mod, "JWT_ALGORITHM", "HS256")
     monkeypatch.setattr(_tenants_mod, "JWT_ISSUER", "acgs2-agent-runtime")

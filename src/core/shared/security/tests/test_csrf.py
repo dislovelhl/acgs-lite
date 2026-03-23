@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
+import pytest
 from starlette.middleware.sessions import SessionMiddleware
 
 from src.core.shared.security.csrf import CSRFConfig, CSRFMiddleware
@@ -91,3 +92,15 @@ def test_exempt_path_skips_csrf_enforcement() -> None:
 
     assert response.status_code == 200
     assert response.json() == {"ok": True}
+
+
+def test_csrf_secret_required_when_only_environment_is_production(monkeypatch) -> None:
+    from src.core.shared.security import csrf
+
+    monkeypatch.setattr(csrf.settings, "env", "development")
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.setenv("ENVIRONMENT", "production")
+    monkeypatch.delenv("CSRF_SECRET", raising=False)
+
+    with pytest.raises(OSError, match="CSRF_SECRET environment variable is required"):
+        CSRFConfig().get_secret()

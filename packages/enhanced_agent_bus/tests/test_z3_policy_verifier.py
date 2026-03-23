@@ -155,7 +155,7 @@ class TestPolicyVerificationRequest:
         assert r.policy_id == ""
         assert r.policy_text == ""
         assert r.timeout_ms == 5000
-        assert r.use_heuristic_fallback is True
+        assert r.use_heuristic_fallback is False
         assert r.require_proof is True
 
     def test_to_dict_with_constraints(self):
@@ -481,13 +481,13 @@ class TestZ3PolicyVerifier:
     def verifier(self):
         return Z3PolicyVerifier(
             default_timeout_ms=1000,
-            enable_heuristic_fallback=True,
+            enable_heuristic_fallback=False,
             heuristic_threshold=0.75,
         )
 
     def test_initialization(self, verifier):
         assert verifier.default_timeout_ms == 1000
-        assert verifier.enable_heuristic_fallback is True
+        assert verifier.enable_heuristic_fallback is False
         assert verifier.heuristic_threshold == 0.75
         assert verifier._verification_history == []
 
@@ -545,8 +545,8 @@ class TestZ3PolicyVerifier:
         "enhanced_agent_bus.verification_layer.z3_policy_verifier.Z3_AVAILABLE",
         False,
     )
-    async def test_verify_policy_z3_unavailable_uses_heuristic(self, verifier):
-        """When Z3 is not available, falls back to heuristic."""
+    async def test_verify_policy_z3_unavailable_fails_closed_by_default(self, verifier):
+        """When Z3 is not available, verification fails closed by default."""
         c = PolicyConstraint(
             name="Obligation: test",
             confidence=0.85,
@@ -557,9 +557,33 @@ class TestZ3PolicyVerifier:
             constraints=[c],
         )
         result = await verifier.verify_policy(request)
-        assert result.status == Z3VerificationStatus.HEURISTIC_FALLBACK
-        assert "Z3 not available" in result.warnings[0]
+        assert result.status == Z3VerificationStatus.ERROR
+        assert result.is_verified is False
+        assert any(v["type"] == "z3_unavailable" for v in result.violations)
+        assert "failed closed" in result.warnings[0].lower()
         assert result.proof is not None
+        assert result.proof.heuristic_score is None
+
+    @pytest.mark.asyncio
+    @patch(
+        "enhanced_agent_bus.verification_layer.z3_policy_verifier.Z3_AVAILABLE",
+        False,
+    )
+    async def test_verify_policy_z3_unavailable_uses_heuristic_when_enabled(self):
+        """Heuristic fallback remains available when explicitly enabled."""
+        verifier = Z3PolicyVerifier(enable_heuristic_fallback=True)
+        c = PolicyConstraint(
+            name="Obligation: test",
+            confidence=0.85,
+            is_mandatory=True,
+        )
+        request = PolicyVerificationRequest(
+            policy_id="p3b",
+            constraints=[c],
+            use_heuristic_fallback=True,
+        )
+        result = await verifier.verify_policy(request)
+        assert result.status == Z3VerificationStatus.HEURISTIC_FALLBACK
         assert result.proof.heuristic_score is not None
 
     @pytest.mark.asyncio
@@ -637,8 +661,8 @@ class TestZ3PolicyVerifier:
         "enhanced_agent_bus.verification_layer.z3_policy_verifier.Z3_AVAILABLE",
         True,
     )
-    async def test_verify_with_z3_unknown_falls_back_to_heuristic(self, verifier):
-        """Z3 UNKNOWN triggers heuristic fallback."""
+    async def test_verify_with_z3_unknown_fails_closed_by_default(self, verifier):
+        """Z3 UNKNOWN must fail closed by default."""
         mock_wrapper = MagicMock()
         mock_wrapper.add_constraint.return_value = True
         mock_wrapper.check.return_value = (
@@ -660,20 +684,55 @@ class TestZ3PolicyVerifier:
             request = PolicyVerificationRequest(
                 policy_id="p6",
                 constraints=[c],
-                use_heuristic_fallback=True,
             )
             result = await verifier.verify_policy(request)
 
-        assert result.status == Z3VerificationStatus.HEURISTIC_FALLBACK
-        assert "heuristic fallback" in result.warnings[-1].lower()
+        assert result.status == Z3VerificationStatus.UNKNOWN
+        assert result.is_verified is False
+        assert any(v["type"] == "z3_inconclusive" for v in result.violations)
 
     @pytest.mark.asyncio
     @patch(
         "enhanced_agent_bus.verification_layer.z3_policy_verifier.Z3_AVAILABLE",
         True,
     )
-    async def test_verify_with_z3_timeout_falls_back(self, verifier):
-        """Z3 TIMEOUT triggers heuristic fallback."""
+    async def test_verify_with_z3_unknown_uses_heuristic_when_enabled(self):
+        """UNKNOWN can use heuristic fallback only when explicitly enabled."""
+        verifier = Z3PolicyVerifier(enable_heuristic_fallback=True)
+        mock_wrapper = MagicMock()
+        mock_wrapper.add_constraint.return_value = True
+        mock_wrapper.check.return_value = (
+            Z3VerificationStatus.UNKNOWN,
+            None,
+            None,
+        )
+
+        with patch(
+            "enhanced_agent_bus.verification_layer.z3_policy_verifier.Z3SolverWrapper",
+            return_value=mock_wrapper,
+        ):
+            c = PolicyConstraint(
+                name="Obligation: ambiguous",
+                confidence=0.85,
+                expression="(assert x)",
+                variables={"x": "Bool"},
+            )
+            request = PolicyVerificationRequest(
+                policy_id="p6b",
+                constraints=[c],
+                use_heuristic_fallback=True,
+            )
+            result = await verifier.verify_policy(request)
+
+        assert result.status == Z3VerificationStatus.HEURISTIC_FALLBACK
+
+    @pytest.mark.asyncio
+    @patch(
+        "enhanced_agent_bus.verification_layer.z3_policy_verifier.Z3_AVAILABLE",
+        True,
+    )
+    async def test_verify_with_z3_timeout_fails_closed_by_default(self, verifier):
+        """Z3 TIMEOUT must fail closed by default."""
         mock_wrapper = MagicMock()
         mock_wrapper.add_constraint.return_value = True
         mock_wrapper.check.return_value = (
@@ -695,11 +754,12 @@ class TestZ3PolicyVerifier:
             request = PolicyVerificationRequest(
                 policy_id="p7",
                 constraints=[c],
-                use_heuristic_fallback=True,
             )
             result = await verifier.verify_policy(request)
 
-        assert result.status == Z3VerificationStatus.HEURISTIC_FALLBACK
+        assert result.status == Z3VerificationStatus.TIMEOUT
+        assert result.is_verified is False
+        assert any(v["type"] == "z3_inconclusive" for v in result.violations)
 
     @pytest.mark.asyncio
     @patch(
@@ -708,7 +768,7 @@ class TestZ3PolicyVerifier:
     )
     async def test_verify_with_z3_unknown_no_fallback(self, verifier):
         """Z3 UNKNOWN without fallback enabled stays UNKNOWN."""
-        verifier_no_fb = Z3PolicyVerifier(enable_heuristic_fallback=True)
+        verifier_no_fb = Z3PolicyVerifier(enable_heuristic_fallback=False)
         mock_wrapper = MagicMock()
         mock_wrapper.add_constraint.return_value = True
         mock_wrapper.check.return_value = (
@@ -867,7 +927,7 @@ class TestCreateZ3Verifier:
         v = create_z3_verifier()
         assert isinstance(v, Z3PolicyVerifier)
         assert v.default_timeout_ms == 5000
-        assert v.enable_heuristic_fallback is True
+        assert v.enable_heuristic_fallback is False
 
     def test_custom_creation(self):
         v = create_z3_verifier(timeout_ms=2000, enable_heuristic_fallback=False)

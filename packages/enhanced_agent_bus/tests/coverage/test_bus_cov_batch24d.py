@@ -12,6 +12,7 @@ Constitutional Hash: cdd01ef066bc6cf2
 from __future__ import annotations
 
 import time
+from types import SimpleNamespace
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -733,7 +734,8 @@ class TestRateLimitMiddleware:
         mw = self._make_middleware()
         rule = RateLimitRule(requests=10)
         request = MagicMock()
-        request.client.host = "1.2.3.4"
+        request.client = SimpleNamespace(host="1.2.3.4")
+        request.state = SimpleNamespace(tenant_id=None, auth_claims=None, user=None)
         key = mw._build_key(request, rule)
         assert "1.2.3.4" in key
         assert "ratelimit:ip" in key
@@ -792,14 +794,14 @@ class TestRateLimitMiddleware:
         request.state = state
         assert mw._get_tenant_id(request) == "user-tenant"
 
-    def test_get_tenant_id_from_header_fallback(self):
+    def test_get_tenant_id_does_not_trust_raw_header(self):
         mw = self._make_middleware()
         request = MagicMock(spec=["state", "headers", "url", "client"])
         request.state = MagicMock(spec=[])  # no tenant_id, auth_claims, or user
         request.headers = {"X-Tenant-ID": "header-tenant"}
         request.url.path = "/api/test"
         request.client.host = "1.2.3.4"
-        assert mw._get_tenant_id(request) == "header-tenant"
+        assert mw._get_tenant_id(request) is None
 
     def test_get_tenant_id_none(self):
         mw = self._make_middleware()
@@ -1247,8 +1249,22 @@ class TestVaultSettings:
 class TestSSOSettings:
     """Test SSOSettings."""
 
-    def test_defaults(self):
+    def test_defaults(self, monkeypatch: pytest.MonkeyPatch):
         from src.core.shared.config.security import SSOSettings
+
+        for env_var in (
+            "SSO_ENABLED",
+            "OIDC_ENABLED",
+            "OIDC_USE_PKCE",
+            "SAML_ENABLED",
+            "SAML_SIGN_REQUESTS",
+            "SAML_WANT_ASSERTIONS_SIGNED",
+            "SAML_WANT_ASSERTIONS_ENCRYPTED",
+            "SSO_AUTO_PROVISION",
+            "SSO_DEFAULT_ROLE",
+            "WORKOS_ENABLED",
+        ):
+            monkeypatch.delenv(env_var, raising=False)
 
         s = SSOSettings()
         assert s.enabled is True

@@ -69,7 +69,7 @@ class TestLayerTimeoutError:
 
         data = error.to_dict()
 
-        assert data["error"] == "LayerTimeoutError"
+        assert data["error"] == "LAYER_TIMEOUT"
         assert data["layer_name"] == "layer3_policy"
         assert data["budget_ms"] == 10.0
         assert data["elapsed_ms"] == 15.0

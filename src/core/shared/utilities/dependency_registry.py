@@ -249,7 +249,7 @@ class DependencyRegistry:
             feature: Feature flag to require
 
         Raises:
-            RuntimeError: If feature is not available
+            ServiceUnavailableError: If feature is not available
 
         Example:
             DependencyRegistry.require(FeatureFlag.REDIS)

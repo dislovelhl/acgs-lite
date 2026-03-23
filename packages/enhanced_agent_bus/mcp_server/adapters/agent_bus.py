@@ -142,22 +142,13 @@ class AgentBusAdapter:
 
         except _AGENT_BUS_ADAPTER_ERRORS as e:
             logger.error(f"Agent bus validation error: {e}")
-
             if strict_mode:
-                # Fail closed
-                return {
-                    "compliant": False,
-                    "confidence": 0.0,
-                    "violations": [
-                        {
-                            "principle": "system",
-                            "severity": "high",
-                            "description": f"Validation system error: {e}",
-                        }
-                    ],
-                    "recommendations": ["Retry validation when system recovers"],
-                    "fail_closed": True,
-                }
+                return self._build_fail_closed_validation_result(str(e))
+            raise
+        except Exception as e:
+            logger.exception(f"Unexpected agent bus validation error: {e}")
+            if strict_mode:
+                return self._build_fail_closed_validation_result(str(e))
             raise
 
     async def _validate_standalone(
@@ -295,6 +286,30 @@ class AgentBusAdapter:
                 "validation_result": None,
                 "conditions": [],
             }
+        except Exception as e:
+            logger.exception(f"Unexpected governance request error: {e}")
+            return {
+                "status": "error",
+                "error": str(e),
+                "validation_result": None,
+                "conditions": [],
+            }
+
+    def _build_fail_closed_validation_result(self, error_message: str) -> JSONDict:
+        """Return the canonical fail-closed response for validation errors."""
+        return {
+            "compliant": False,
+            "confidence": 0.0,
+            "violations": [
+                {
+                    "principle": "system",
+                    "severity": "high",
+                    "description": f"Validation system error: {error_message}",
+                }
+            ],
+            "recommendations": ["Retry validation when system recovers"],
+            "fail_closed": True,
+        }
 
     def get_metrics(self) -> JSONDict:
         """Get adapter metrics."""

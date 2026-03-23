@@ -732,6 +732,7 @@ class TestIntegrationWorkflowE2E:
                 priority=Priority.MEDIUM,
                 constitutional_hash=CONSTITUTIONAL_HASH,
                 tenant_id=None,
+                metadata={"prevalidated": True},
             )
 
             result = await bus.send_message(message)

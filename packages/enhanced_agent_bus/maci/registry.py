@@ -149,11 +149,21 @@ class MACIRoleRegistry:
         """Initialize the MACI role registry."""
         self._agents: dict[str, MACIAgentRecord] = {}
         self._out_to_ag: dict[str, str] = {}
+        self._session_out_to_ag: dict[str, dict[str, str]] = {}
         self._session_agents: dict[
             str, dict[str, MACIAgentRecord]
         ] = {}  # session_id -> {agent_id -> record}
         self._lock = asyncio.Lock()
         self.constitutional_hash = CONSTITUTIONAL_HASH
+
+    def _get_agent_locked(
+        self,
+        agent_id: str,
+        session_id: str | None = None,
+    ) -> MACIAgentRecord | None:
+        if session_id is not None:
+            return self._session_agents.get(session_id, {}).get(agent_id)
+        return self._agents.get(agent_id)
 
     async def register_agent(
         self,
@@ -177,37 +187,54 @@ class MACIRoleRegistry:
             # Ensure metadata is a valid dict
             safe_metadata: JSONDict = metadata if metadata is not None else {}
             rec = MACIAgentRecord(agent_id, role, metadata=safe_metadata, session_id=session_id)
-            # Global registration (always)
-            self._agents[agent_id] = rec
-            # Session-scoped registration (if session_id provided)
             if session_id:
                 if session_id not in self._session_agents:
                     self._session_agents[session_id] = {}
+                if session_id not in self._session_out_to_ag:
+                    self._session_out_to_ag[session_id] = {}
                 self._session_agents[session_id][agent_id] = rec
                 logger.debug(f"Registered agent {agent_id} with session {session_id}")
+            else:
+                self._agents[agent_id] = rec
             return rec
 
-    async def unregister_agent(self, agent_id: str) -> MACIAgentRecord | None:
+    async def unregister_agent(
+        self,
+        agent_id: str,
+        session_id: str | None = None,
+    ) -> MACIAgentRecord | None:
         """Unregister an agent from the registry.
 
         Args:
             agent_id: Agent identifier to unregister
+            session_id: Optional session scope for session-registered agents
 
         Returns:
             MACIAgentRecord if agent was registered, None otherwise
         """
         async with self._lock:
-            if agent_id in self._agents:
-                rec = self._agents.pop(agent_id)
-                to_del = [oid for oid, owner in self._out_to_ag.items() if owner == agent_id]
-                for oid in to_del:
-                    del self._out_to_ag[oid]
-                # Also remove from session-scoped registry
-                if rec.session_id and rec.session_id in self._session_agents:  # noqa: SIM102
-                    if agent_id in self._session_agents[rec.session_id]:
-                        del self._session_agents[rec.session_id][agent_id]
+            if session_id is not None:
+                session_agents = self._session_agents.get(session_id)
+                if not session_agents or agent_id not in session_agents:
+                    return None
+                rec = session_agents.pop(agent_id)
+                session_outputs = self._session_out_to_ag.get(session_id, {})
+                for output_id in list(session_outputs):
+                    if session_outputs[output_id] == agent_id:
+                        del session_outputs[output_id]
+                if not session_agents:
+                    self._session_agents.pop(session_id, None)
+                if not session_outputs:
+                    self._session_out_to_ag.pop(session_id, None)
                 return rec
-            return None
+
+            rec = self._agents.pop(agent_id, None)
+            if rec is None:
+                return None
+            for output_id in list(self._out_to_ag):
+                if self._out_to_ag[output_id] == agent_id:
+                    del self._out_to_ag[output_id]
+            return rec
 
     async def get_agent(
         self, agent_id: str, session_id: str | None = None
@@ -222,14 +249,7 @@ class MACIRoleRegistry:
             MACIAgentRecord if found, None otherwise
         """
         async with self._lock:
-            # If session_id provided, first check session-scoped registry
-            if session_id and session_id in self._session_agents:
-                session_rec = self._session_agents[session_id].get(agent_id)
-                if session_rec:
-                    return session_rec
-
-            # Fallback to global registry
-            return self._agents.get(agent_id)
+            return self._get_agent_locked(agent_id, session_id=session_id)
 
     async def get_agents_by_role(
         self, role: MACIRole, session_id: str | None = None
@@ -244,8 +264,12 @@ class MACIRoleRegistry:
             list of agents with the specified role
         """
         async with self._lock:
-            if session_id and session_id in self._session_agents:
-                return [a for a in self._session_agents[session_id].values() if a.role == role]
+            if session_id is not None:
+                return [
+                    agent
+                    for agent in self._session_agents.get(session_id, {}).values()
+                    if agent.role == role
+                ]
             return [a for a in self._agents.values() if a.role == role]
 
     async def get_session_agents(self, session_id: str) -> dict[str, MACIAgentRecord]:
@@ -258,7 +282,7 @@ class MACIRoleRegistry:
             Dictionary of agent_id to MACIAgentRecord for the session
         """
         async with self._lock:
-            return self._session_agents.get(session_id, {})
+            return dict(self._session_agents.get(session_id, {}))
 
     async def clear_session(self, session_id: str) -> int:
         """Clear all agents registered for a session.
@@ -274,67 +298,98 @@ class MACIRoleRegistry:
                 return 0
 
             session_agents = self._session_agents.pop(session_id)
+            self._session_out_to_ag.pop(session_id, None)
             count = len(session_agents)
-
-            # Also remove from global registry
-            for agent_id in session_agents:
-                if agent_id in self._agents:
-                    del self._agents[agent_id]
-                # Remove output mappings
-                to_del = [oid for oid, owner in self._out_to_ag.items() if owner == agent_id]
-                for oid in to_del:
-                    del self._out_to_ag[oid]
 
             logger.info(f"Cleared {count} agents from session {session_id}")
             return count
 
-    async def record_output(self, agent_id: str, output_id: str) -> None:
+    async def record_output(
+        self,
+        agent_id: str,
+        output_id: str,
+        session_id: str | None = None,
+    ) -> None:
         """Record an output produced by an agent.
 
         Args:
             agent_id: Agent identifier
             output_id: Output identifier to record
+            session_id: Optional session scope for session-registered agents
         """
         async with self._lock:
-            if agent_id in self._agents:
-                self._agents[agent_id].add_output(output_id)
+            agent_record = self._get_agent_locked(agent_id, session_id=session_id)
+            if agent_record is None:
+                return
+            agent_record.add_output(output_id)
+            if session_id is not None:
+                if session_id not in self._session_out_to_ag:
+                    self._session_out_to_ag[session_id] = {}
+                self._session_out_to_ag[session_id][output_id] = agent_id
+            else:
                 self._out_to_ag[output_id] = agent_id
 
-    async def get_output_producer(self, output_id: str) -> str | None:
+    async def get_output_producer(
+        self,
+        output_id: str,
+        session_id: str | None = None,
+    ) -> str | None:
         """Get the agent ID that produced a specific output.
 
         Args:
             output_id: Output identifier
+            session_id: Optional session scope for session-registered agents
 
         Returns:
             Agent ID if output was produced, None otherwise
         """
+        if session_id is not None:
+            return self._session_out_to_ag.get(session_id, {}).get(output_id)
         return self._out_to_ag.get(output_id)
 
-    async def is_self_output(self, agent_id: str, output_id: str) -> bool:
+    async def is_self_output(
+        self,
+        agent_id: str,
+        output_id: str,
+        session_id: str | None = None,
+    ) -> bool:
         """Check if an output was produced by a specific agent.
 
         Args:
             agent_id: Agent identifier
             output_id: Output identifier
+            session_id: Optional session scope for session-registered agents
 
         Returns:
             True if agent produced this output, False otherwise
         """
-        rec = self._agents.get(agent_id)
+        rec = self._get_agent_locked(agent_id, session_id=session_id)
         return rec.owns_output(output_id) if rec else False
 
-    async def batch_record_outputs(self, agent_id: str, output_ids: list[str]) -> None:
+    async def batch_record_outputs(
+        self,
+        agent_id: str,
+        output_ids: list[str],
+        session_id: str | None = None,
+    ) -> None:
         """Optimized batch recording of outputs.
 
         Args:
             agent_id: Agent identifier
             output_ids: list of output identifiers to record
+            session_id: Optional session scope for session-registered agents
         """
         async with self._lock:
-            if agent_id in self._agents:
-                agent_rec = self._agents[agent_id]
-                for oid in output_ids:
-                    if oid not in agent_rec.outputs:
-                        agent_rec.outputs.append(oid)
-                    self._out_to_ag[oid] = agent_id
+            agent_rec = self._get_agent_locked(agent_id, session_id=session_id)
+            if agent_rec is None:
+                return
+            if session_id is not None:
+                if session_id not in self._session_out_to_ag:
+                    self._session_out_to_ag[session_id] = {}
+                output_map = self._session_out_to_ag[session_id]
+            else:
+                output_map = self._out_to_ag
+            for oid in output_ids:
+                if oid not in agent_rec.outputs:
+                    agent_rec.outputs.append(oid)
+                output_map[oid] = agent_id

@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from src.core.shared.constants import MACIRole
 
 from ..maci_verifier import (
     CONSTITUTIONAL_HASH,
@@ -74,6 +75,14 @@ class TestMACIAgentRoles:
         assert MACIAgentRole.MONITOR.value == "monitor"
         assert MACIAgentRole.AUDITOR.value == "auditor"
 
+    def test_parse_accepts_canonical_roles(self):
+        assert MACIAgentRole.parse(MACIRole.EXECUTIVE) == MACIAgentRole.EXECUTIVE
+        assert MACIAgentRole.parse("AUDITOR") == MACIAgentRole.AUDITOR
+
+    def test_parse_rejects_unsupported_canonical_roles(self):
+        with pytest.raises(ValueError):
+            MACIAgentRole.parse(MACIRole.CONTROLLER)
+
     def test_role_permissions_defined(self):
         """Test that role permissions are properly defined."""
         assert MACIAgentRole.EXECUTIVE in ROLE_PERMISSIONS
@@ -123,6 +132,28 @@ class TestValidationConstraints:
     def test_auditor_can_validate_judicial(self):
         """Test that auditor can validate judicial outputs."""
         assert MACIAgentRole.JUDICIAL in VALIDATION_CONSTRAINTS[MACIAgentRole.AUDITOR]
+
+    async def test_cross_role_validation_accepts_canonical_roles(self):
+        verifier = MACIVerifier()
+        permitted = await verifier.verify_cross_role_action(
+            validator_agent_id="judicial-001",
+            validator_role=MACIRole.JUDICIAL,
+            target_agent_id="executive-001",
+            target_role=MACIRole.EXECUTIVE,
+            target_output_id="out-1",
+        )
+        assert permitted is True
+
+    async def test_cross_role_validation_rejects_unsupported_projection(self):
+        verifier = MACIVerifier()
+        permitted = await verifier.verify_cross_role_action(
+            validator_agent_id="controller-001",
+            validator_role=MACIRole.CONTROLLER,
+            target_agent_id="executive-001",
+            target_role=MACIRole.EXECUTIVE,
+            target_output_id="out-1",
+        )
+        assert permitted is False
 
 
 class TestExecutiveAgent:

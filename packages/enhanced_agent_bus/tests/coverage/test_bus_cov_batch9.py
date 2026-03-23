@@ -1433,7 +1433,22 @@ class TestMCPPoolListTools:
         await pool.connect_all()
 
         tools = await pool.list_tools(maci_role="")
-        assert len(tools) >= 1
+        assert tools == []
+
+    @pytest.mark.asyncio
+    async def test_list_tools_unknown_role(self):
+        pool = MCPClientPool()
+        client = _make_mock_client("srv-a")
+
+        async def fake_connect():
+            client.is_connected = True
+
+        client.connect = AsyncMock(side_effect=fake_connect)
+        pool.register_client(client)
+        await pool.connect_all()
+
+        tools = await pool.list_tools(maci_role="unknown_role")
+        assert tools == []
 
 
 class TestMCPPoolCallTool:

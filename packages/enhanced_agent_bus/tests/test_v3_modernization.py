@@ -141,6 +141,7 @@ async def test_chaos_inject_failure(bus, p_failure):
         content={"data": "test"},
         priority=Priority.MEDIUM,
         constitutional_hash=CONSTITUTIONAL_HASH,
+        metadata={"prevalidated": True},
     )
 
     # Try sending 10 messages and check if we handle the AlignmentViolationError
@@ -169,6 +170,7 @@ async def test_alignment_error_handling(bus):
         content={"data": "test"},
         priority=Priority.MEDIUM,
         constitutional_hash=CONSTITUTIONAL_HASH,
+        metadata={"prevalidated": True},
     )
 
     # When processor fails with AlignmentViolationError, the bus falls back to DEGRADED mode

@@ -25,9 +25,18 @@ import re
 import sys
 from pathlib import Path
 
+from results_utils import (
+    KEPT_STATUSES,
+    best_kept_row,
+    comparable_rows,
+    ensure_results_tsv,
+    infer_scope,
+    load_rows,
+    scoped_description,
+    serialize_row,
+)
+
 RESULTS_TSV = Path(__file__).parent / "results.tsv"
-TSV_HEADER = "commit\tcomposite\tcompliance\tp99_ms\tstatus\tdescription\n"
-SIDECAR_MARKER = "[sidecar]"
 
 METRIC_PATTERNS: dict[str, re.Pattern[str]] = {
     "composite_score": re.compile(r"^composite_score:\s+([\d.]+)", re.MULTILINE),
@@ -38,7 +47,6 @@ METRIC_PATTERNS: dict[str, re.Pattern[str]] = {
     "errors": re.compile(r"^errors:\s+(\d+)", re.MULTILINE),
 }
 
-KEPT_STATUSES = {"improved", "neutral-kept", "baseline"}
 COMPOSITE_TIE_BAND = 0.0005
 MATERIAL_P99_IMPROVEMENT_MS = 0.0003
 
@@ -54,54 +62,6 @@ def parse_log(log_text: str) -> dict[str, float] | None:
     return metrics
 
 
-def load_rows() -> list[dict[str, str]]:
-    if not RESULTS_TSV.exists():
-        return []
-    rows: list[dict[str, str]] = []
-    with RESULTS_TSV.open() as f:
-        headers = f.readline().rstrip("\n").split("\t")
-        for line in f:
-            parts = line.rstrip("\n").split("\t")
-            if len(parts) >= len(headers):
-                rows.append(dict(zip(headers, parts, strict=False)))
-    return rows
-
-
-def normalize_status(status: str | None) -> str:
-    if status in KEPT_STATUSES:
-        return status
-    if status in {"neutral", "reverted"}:
-        return "discard"
-    return status or ""
-
-
-def infer_scope(row: dict[str, str]) -> str:
-    explicit_scope = row.get("scope", "").strip()
-    if explicit_scope in {"hot-path", "sidecar"}:
-        return explicit_scope
-
-    description = row.get("description", "").strip()
-    if description.startswith(SIDECAR_MARKER):
-        return "sidecar"
-    if "zero hot-path overhead" in description.lower():
-        return "sidecar"
-    return "hot-path"
-
-
-def comparable_rows(rows: list[dict[str, str]], scope: str) -> list[dict[str, str]]:
-    kept = [row for row in rows if normalize_status(row.get("status")) in KEPT_STATUSES]
-    if scope == "any":
-        return kept
-    return [row for row in kept if infer_scope(row) == scope]
-
-
-def best_kept_row(rows: list[dict[str, str]], scope: str) -> dict[str, str] | None:
-    kept = comparable_rows(rows, scope)
-    if not kept:
-        return None
-    return max(kept, key=lambda row: float(row.get("composite", "0")))
-
-
 def best_kept_composite(rows: list[dict[str, str]], scope: str) -> float | None:
     best = best_kept_row(rows, scope)
     if best is None:
@@ -114,13 +74,6 @@ def best_kept_p99(rows: list[dict[str, str]], scope: str) -> float | None:
     if best is None:
         return None
     return float(best.get("p99_ms", "0"))
-
-
-def scoped_description(description: str, scope: str) -> str:
-    stripped = description.strip()
-    if scope == "sidecar" and not stripped.startswith(SIDECAR_MARKER):
-        return f"{SIDECAR_MARKER} {stripped}".strip()
-    return stripped
 
 
 def compute_status(
@@ -162,23 +115,29 @@ def compute_status(
     return "discard"
 
 
-def ensure_tsv_header() -> None:
-    if not RESULTS_TSV.exists() or RESULTS_TSV.stat().st_size == 0:
-        RESULTS_TSV.write_text(TSV_HEADER)
-
-
 def append_row(
     commit: str,
     composite: float,
     compliance: float,
     p99_ms: float,
+    scope: str,
     status: str,
     description: str,
 ) -> None:
-    ensure_tsv_header()
-    row = f"{commit}\t{composite:.6f}\t{compliance:.6f}\t{p99_ms:.6f}\t{status}\t{description}\n"
+    ensure_results_tsv(RESULTS_TSV)
+    row = serialize_row(
+        {
+            "commit": commit,
+            "composite": f"{composite:.6f}",
+            "compliance": f"{compliance:.6f}",
+            "p99_ms": f"{p99_ms:.6f}",
+            "scope": scope,
+            "status": status,
+            "description": description,
+        }
+    )
     with RESULTS_TSV.open("a") as f:
-        f.write(row)
+        f.write(row + "\n")
 
 
 def main() -> int:
@@ -228,7 +187,8 @@ def main() -> int:
 
     log_text = log_path.read_text()
     metrics = parse_log(log_text)
-    rows = load_rows()
+    ensure_results_tsv(RESULTS_TSV)
+    rows = load_rows(RESULTS_TSV)
 
     if metrics is None:
         if args.recommend:
@@ -237,7 +197,7 @@ def main() -> int:
         print("ERROR: no parseable summary block in log. Benchmark may have crashed.", file=sys.stderr)
         print(f"  Check: tail -n 50 {log_path}", file=sys.stderr)
         description = scoped_description(args.description or "crash", args.scope)
-        append_row(args.commit, 0.0, 0.0, 0.0, "crash", description)
+        append_row(args.commit, 0.0, 0.0, 0.0, args.scope, "crash", description)
         print(f"Logged crash row for commit {args.commit}.", file=sys.stderr)
         return 1
 
@@ -259,7 +219,7 @@ def main() -> int:
         return 0
 
     description = scoped_description(args.description, args.scope)
-    append_row(args.commit, composite, compliance, p99_ms, status, description)
+    append_row(args.commit, composite, compliance, p99_ms, args.scope, status, description)
 
     best_before = best_kept_row(rows, args.scope)
     delta_str = ""

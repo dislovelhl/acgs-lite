@@ -20,18 +20,21 @@ operators can tune per-endpoint pricing without breaking bundle math.
 from __future__ import annotations
 
 import asyncio
+import json
 import os
+import time
 from datetime import UTC, datetime
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.structured_logging import get_logger
 
 from ._x402_common import PAID_RESPONSE_DISCLAIMER
+from ._x402_revenue import RevenueEvent, emit_revenue_event
 
 logger = get_logger(__name__)
 
@@ -153,6 +156,13 @@ class BundleRequest(BaseModel):
     )
     agent_id: str = Field(default="anonymous", max_length=200)
     context: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("context")
+    @classmethod
+    def cap_context_size(cls, v: dict[str, Any]) -> dict[str, Any]:
+        if len(json.dumps(v, separators=(",", ":"))) > 50_000:
+            raise ValueError("context payload exceeds 50KB limit")
+        return v
 
 
 class BundleResultResponse(BaseModel):
@@ -412,8 +422,9 @@ async def _eval_invariant_guard(
             context=context or None,
         )
         return result.to_dict() if hasattr(result, "to_dict") else {"result": str(result)}
-    except Exception as exc:
-        return {"error": f"Invariant check failed: {exc}"}
+    except Exception:
+        logger.exception("invariant_guard_eval_failed")
+        return {"error": "Invariant check failed"}
 
 
 async def _eval_circuit_breaker(
@@ -434,8 +445,9 @@ async def _eval_circuit_breaker(
             context=context or None,
         )
         return result.to_dict() if hasattr(result, "to_dict") else {"result": str(result)}
-    except Exception as exc:
-        return {"error": f"Circuit breaker failed: {exc}"}
+    except Exception:
+        logger.exception("circuit_breaker_eval_failed")
+        return {"error": "Circuit breaker evaluation failed"}
 
 
 async def _eval_policy_lint(
@@ -451,8 +463,9 @@ async def _eval_policy_lint(
     try:
         result = linter.lint(rules=[action], strict=False)
         return result.to_dict() if hasattr(result, "to_dict") else {"result": str(result)}
-    except Exception as exc:
-        return {"error": f"Policy lint failed: {exc}"}
+    except Exception:
+        logger.exception("policy_lint_eval_failed")
+        return {"error": "Policy lint failed"}
 
 
 async def _eval_eu_ai_log(
@@ -474,8 +487,9 @@ async def _eval_eu_ai_log(
             context=context or None,
         )
         return result.to_dict() if hasattr(result, "to_dict") else {"result": str(result)}
-    except Exception as exc:
-        return {"error": f"Article 12 logging failed: {exc}"}
+    except Exception:
+        logger.exception("eu_ai_log_eval_failed")
+        return {"error": "Article 12 logging failed"}
 
 
 # ---------------------------------------------------------------------------
@@ -547,7 +561,7 @@ async def execute_bundle(
             detail=f"Bundle '{bundle_name}' not found. Available: {available}",
         )
 
-    start = datetime.now(UTC)
+    t0 = time.monotonic()
     results: dict[str, Any] = {}
     succeeded = 0
     failed = 0
@@ -561,8 +575,9 @@ async def execute_bundle(
             result = await evaluator(body.action, body.context)
             has_error = isinstance(result, dict) and "error" in result
             return endpoint, result, not has_error
-        except Exception as exc:
-            return endpoint, {"error": str(exc)}, False
+        except Exception:
+            logger.exception("bundle_evaluator_failed", endpoint=endpoint)
+            return endpoint, {"error": "Evaluator failed"}, False
 
     tasks = [_run_one(ep) for ep in bundle.endpoints]
     completed = await asyncio.gather(*tasks)
@@ -574,8 +589,7 @@ async def execute_bundle(
         else:
             failed += 1
 
-    elapsed = datetime.now(UTC) - start
-    processing_ms = int(elapsed.total_seconds() * 1000)
+    processing_ms = int((time.monotonic() - t0) * 1000)
 
     logger.info(
         "x402 bundle execution",
@@ -587,6 +601,19 @@ async def execute_bundle(
         agent_id=body.agent_id,
         processing_ms=processing_ms,
     )
+
+    x402_network = os.getenv("X402_NETWORK", "eip155:84532")
+    x402_pay_to = os.getenv("EVM_ADDRESS", "")
+    await emit_revenue_event(RevenueEvent(
+        endpoint=f"/x402/bundle/{bundle_key}",
+        price_usd=bundle.price_usd,
+        agent_id=body.agent_id,
+        decision=f"bundle:{succeeded}/{bundle.endpoint_count}",
+        timestamp=datetime.now(UTC).isoformat(),
+        processing_ms=processing_ms,
+        network=x402_network,
+        wallet_address=x402_pay_to,
+    ))
 
     return BundleResultResponse(
         bundle=bundle_key,

@@ -474,15 +474,13 @@ class TestConstitutionalHashEnforcement:
             opa_url="http://localhost:8181",
         )
 
-        # Validation should still pass but log warning about mismatched hash
         input_data = {
             "saga_id": "saga-001",
             "context": {"amendment_id": "amendment-123"},
         }
 
-        result = await activities.validate_activation(input_data)
-        # Validation passes (hash mismatch is logged as warning, not error)
-        assert result["is_valid"] is True
+        with pytest.raises(ActivationSagaError, match="constitutional hash"):
+            await activities.validate_activation(input_data)
 
 
 if __name__ == "__main__":

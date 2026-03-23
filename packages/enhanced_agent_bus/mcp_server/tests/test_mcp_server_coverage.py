@@ -240,8 +240,8 @@ class TestAdapterLifecycle:
         await server.disconnect_adapters()
 
 
-# The module name as seen by importlib (without 'src.' prefix)
-_SERVER_MODULE = "core.enhanced_agent_bus.mcp_server.server"
+# Resolve the real import path from the imported server class to avoid stale module aliases.
+_SERVER_MODULE = MCPServer.__module__
 
 
 # ---------------------------------------------------------------------------
@@ -738,7 +738,7 @@ class TestMain:
             mock_server = AsyncMock()
             mock_factory.return_value = mock_server
 
-            with patch(f"{_SERVER_MODULE}.logging.basicConfig") as mock_logging:
+            with patch("logging.basicConfig") as mock_logging:
                 await main()
 
             mock_logging.assert_called_once()

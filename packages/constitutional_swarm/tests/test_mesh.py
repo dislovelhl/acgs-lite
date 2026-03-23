@@ -266,6 +266,38 @@ class TestCryptographicProof:
         )
         assert tampered.verify() is False
 
+    def test_proof_tamper_decision_detection(self, mesh: ConstitutionalMesh) -> None:
+        result = mesh.full_validation("agent-00", "safe output", "art-13b")
+        assert result.proof is not None
+
+        tampered = MeshProof(
+            assignment_id=result.proof.assignment_id,
+            content_hash=result.proof.content_hash,
+            constitutional_hash=result.proof.constitutional_hash,
+            vote_hashes=result.proof.vote_hashes,
+            root_hash=result.proof.root_hash,
+            accepted=not result.proof.accepted,
+            timestamp=result.proof.timestamp,
+        )
+        assert tampered.verify() is False
+
+    def test_proof_tamper_assignment_detection(
+        self, mesh: ConstitutionalMesh
+    ) -> None:
+        result = mesh.full_validation("agent-00", "another safe output", "art-13c")
+        assert result.proof is not None
+
+        tampered = MeshProof(
+            assignment_id="other-assignment",
+            content_hash=result.proof.content_hash,
+            constitutional_hash=result.proof.constitutional_hash,
+            vote_hashes=result.proof.vote_hashes,
+            root_hash=result.proof.root_hash,
+            accepted=result.proof.accepted,
+            timestamp=result.proof.timestamp,
+        )
+        assert tampered.verify() is False
+
 
 # ---------------------------------------------------------------------------
 # Reputation
@@ -472,3 +504,16 @@ class TestManifoldIntegration:
         assert summary is not None
         assert summary["is_stable"] is True
         assert summary["converged"] is True
+
+    def test_unregister_rebuilds_manifold_to_active_agents(
+        self, manifold_mesh: ConstitutionalMesh
+    ) -> None:
+        matrix_before = manifold_mesh.trust_matrix
+        assert matrix_before is not None
+        assert len(matrix_before) == 5
+
+        manifold_mesh.unregister_agent("agent-04")
+        matrix_after = manifold_mesh.trust_matrix
+        assert matrix_after is not None
+        assert manifold_mesh.agent_count == 4
+        assert len(matrix_after) == 4

@@ -1,8 +1,11 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-
 	// Intersection observer for scroll animations
 	function observe(node: HTMLElement) {
+		if (typeof IntersectionObserver === 'undefined') {
+			node.classList.add('visible');
+			return { destroy: () => {} };
+		}
+
 		const observer = new IntersectionObserver(
 			(entries) => {
 				entries.forEach((e) => {

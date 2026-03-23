@@ -14,6 +14,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import httpx
 import pytest
 from src.core.shared.constants import CONSTITUTIONAL_HASH
+from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 
 from enhanced_agent_bus.guardrails.audit_log import (
     AuditLog,
@@ -232,7 +233,7 @@ class TestSplunkHECProvider:
             endpoint_url="https://test.com",
             auth_token="token",  # noqa: S106
         )
-        with pytest.raises(ValueError, match="SPLUNK"):
+        with pytest.raises(ACGSValidationError, match="SPLUNK"):
             SplunkHECProvider(config)
 
 
@@ -349,7 +350,7 @@ class TestElasticsearchProvider:
             endpoint_url="https://test.com",
             auth_token="token",  # noqa: S106
         )
-        with pytest.raises(ValueError, match="ELASTICSEARCH"):
+        with pytest.raises(ACGSValidationError, match="ELASTICSEARCH"):
             ElasticsearchProvider(config)
 
 
@@ -382,7 +383,7 @@ class TestCreateSIEMProvider:
         config = MagicMock()
         config.provider_type = "unknown"
 
-        with pytest.raises(ValueError, match="Unsupported"):
+        with pytest.raises(ACGSValidationError, match="Unsupported"):
             create_siem_provider(config)
 
 
@@ -542,7 +543,7 @@ class TestAuditLogSIEMIntegration:
         audit_log = AuditLog(config=config)
 
         mock_provider = MagicMock()
-        mock_provider.send_event = AsyncMock(side_effect=Exception("Provider error"))
+        mock_provider.send_event = AsyncMock(side_effect=RuntimeError("Provider error"))
         mock_provider.__class__.__name__ = "ExceptionProvider"
         audit_log._siem_providers = [mock_provider]
 

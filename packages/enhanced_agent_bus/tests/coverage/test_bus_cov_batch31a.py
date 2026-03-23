@@ -520,6 +520,34 @@ class TestMCPIntegration:
             result = await mp.handle_tool_request("agent-1", "tool_x", {"arg": 1})
             assert result is mock_pool_result
 
+    async def test_handle_tool_request_agent_not_in_registry_preserves_legacy_fallback(self):
+        from enhanced_agent_bus.message_processor import MessageProcessor
+
+        mp = MessageProcessor(isolated_mode=True)
+        mock_pool = AsyncMock()
+        mock_pool_result = MagicMock()
+        mock_pool_result.status.value = "success"
+        mock_pool.call_tool.return_value = mock_pool_result
+        mp._mcp_pool = mock_pool
+
+        mock_registry = AsyncMock()
+        mock_registry.get_agent.return_value = None
+        mp._maci_registry = mock_registry
+
+        with (
+            patch("enhanced_agent_bus.message_processor._MCP_AVAILABLE", True),
+            patch("enhanced_agent_bus.message_processor.MCPToolResult", MagicMock()),
+        ):
+            result = await mp.handle_tool_request("agent-1", "tool_x", {"arg": 1})
+
+        assert result is mock_pool_result
+        mock_pool.call_tool.assert_awaited_once_with(
+            "tool_x",
+            arguments={"arg": 1},
+            agent_id="agent-1",
+            agent_role="",
+        )
+
 
 class TestRecordAgentWorkflowEvent:
     """Cover _record_agent_workflow_event branches."""

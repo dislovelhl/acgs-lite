@@ -34,8 +34,10 @@ from src.core.shared.api_versioning import (
     VersioningConfig,
 )
 from src.core.shared.config import settings
+from src.core.shared.config.runtime_environment import resolve_runtime_environment
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.fastapi_base import create_acgs_app
+from src.core.shared.metrics import set_service_info
 
 try:
     from src.core.shared.otel_config import init_otel
@@ -63,6 +65,7 @@ from src.core.shared.structured_logging import configure_logging, get_logger
 
 from .health import create_health_router
 from .lifespan import lifespan
+from .metrics import MetricsMiddleware, create_metrics_endpoint
 from .middleware.autonomy_tier import AutonomyTierEnforcementMiddleware
 from .middleware.pqc_only_mode import PQCOnlyModeMiddleware
 from .routes import (
@@ -82,6 +85,7 @@ from .routes import (
     x402_marketplace_router,
     x402_revenue_router,
 )
+from .routes._x402_common import configure_x402_payment_middleware
 from .routes.x402_governance import ensure_attestation_secret_config
 
 try:
@@ -101,12 +105,28 @@ logger = get_logger(__name__)
 if not _OTEL_CONFIG_AVAILABLE:
     logger.warning("OpenTelemetry config unavailable; tracing initialization disabled")
 
-environment = os.getenv("ENVIRONMENT", "production").strip().lower()
+
+def _runtime_environment() -> str:
+    return resolve_runtime_environment(getattr(settings, "env", None))
+
+
+environment = _runtime_environment()
 is_development = environment in {"development", "dev", "test", "testing", "ci"}
+
+
+def _parse_bool_env(value: str | None) -> bool | None:
+    if value is None:
+        return None
+    normalized = value.strip().lower()
+    if normalized in {"true", "1", "yes", "on"}:
+        return True
+    if normalized in {"false", "0", "no", "off"}:
+        return False
+    return None
 
 app = create_acgs_app(
     "api-gateway",
-    environment=settings.env,
+    environment=environment,
     title="ACGS-2 API Gateway",
     description="Development API Gateway for ACGS-2 services with constitutional governance",
     version="1.0.0",
@@ -119,11 +139,14 @@ app = create_acgs_app(
     logger=logger,
     trusted_hosts=settings.sso.trusted_hosts,
 )
+set_service_info("api-gateway", "1.0.0")
 
 # GZip compression for responses > 1KB (60-70% bandwidth reduction for JSON payloads)
 from starlette.middleware.gzip import GZipMiddleware
 
 app.add_middleware(GZipMiddleware, minimum_size=1000)
+app.add_middleware(MetricsMiddleware, service_name="api_gateway")
+app.add_api_route("/metrics", create_metrics_endpoint(), include_in_schema=False)
 
 # ============================================================================
 # API Versioning Configuration (Constitutional Hash: cdd01ef066bc6cf2)
@@ -163,13 +186,9 @@ logger.info("Deprecation notice middleware enabled for legacy endpoints")
 # Initialize OTel tracing
 init_otel("api-gateway", app=app, export_to_console=settings.debug)
 
-# Add SessionMiddleware for OAuth state management
-# Use JWT secret if available, otherwise generate a secure random key for development
-env = os.getenv("ENVIRONMENT", os.getenv("ENV", "development")).lower()
-
 # Add security headers middleware (CSP, X-Frame-Options, HSTS, etc.)
-add_security_headers(app, environment=env)
-is_production = env in ("production", "prod", "staging")
+add_security_headers(app, environment=environment)
+is_production = environment in ("production", "prod", "staging")
 
 if settings.security.jwt_secret:
     session_secret = settings.security.jwt_secret.get_secret_value()
@@ -192,14 +211,14 @@ app.add_middleware(
     max_age=settings.sso.session_lifetime_seconds,
     # SAML ACS uses cross-site POST; SameSite=None is required for the state cookie.
     same_site=("none" if settings.sso.saml_enabled else "lax"),
-    https_only=(settings.env == "production" or settings.sso.saml_enabled),
+    https_only=(is_production or settings.sso.saml_enabled),
 )
 logger.info("SessionMiddleware configured for OAuth state management")
 
 app.add_middleware(
     CSRFMiddleware,
     config=CSRFConfig(
-        cookie_secure=(settings.env == "production" or settings.sso.saml_enabled),
+        cookie_secure=(is_production or settings.sso.saml_enabled),
         exempt_paths=(
             "/health",
             "/health/live",
@@ -336,15 +355,37 @@ if ENABLE_RATE_LIMITING:
         ),
     ]
 
+    configured_memory_fallback = _parse_bool_env(os.getenv("RATE_LIMIT_FALLBACK_TO_MEMORY"))
+    if configured_memory_fallback is None:
+        fallback_to_memory = is_development
+    else:
+        fallback_to_memory = configured_memory_fallback
+
     rate_limit_config = RateLimitConfig(
         rules=rate_limit_rules,
         redis_url=os.getenv("REDIS_URL", "redis://localhost:6379"),
-        fallback_to_memory=True,
+        fallback_to_memory=fallback_to_memory,
         enabled=True,
+        fail_open=is_development,
         exempt_paths=["/docs", "/openapi.json", "/redoc", "/favicon.ico"],
     )
 
-    app.add_middleware(RateLimitMiddleware, config=rate_limit_config)
+    _rate_limit_redis_client = None
+    try:
+        import redis.asyncio as _rate_limit_redis_async
+
+        _rate_limit_redis_client = _rate_limit_redis_async.from_url(
+            rate_limit_config.redis_url,
+            decode_responses=True,
+        )
+    except Exception:
+        _rate_limit_redis_client = None
+
+    app.add_middleware(
+        RateLimitMiddleware,
+        config=rate_limit_config,
+        redis_client=_rate_limit_redis_client,
+    )
     logger.info(
         "Redis-backed rate limiting enabled with strict auth limits",
         extra={
@@ -352,6 +393,8 @@ if ENABLE_RATE_LIMITING:
             "login_limit": "5 req/min",
             "logout_limit": "20 req/min",
             "redis_url": os.getenv("REDIS_URL", "redis://localhost:6379"),
+            "backend_mode": "redis" if _rate_limit_redis_client is not None else "memory",
+            "fallback_to_memory": fallback_to_memory,
             "constitutional_hash": CONSTITUTIONAL_HASH,  # pragma: allowlist secret
         },
     )
@@ -496,174 +539,7 @@ logger.info(
     "x402 routes configured: governance + bundles + facilitator + revenue"
 )
 
-# x402 Payment Middleware — activates only when EVM_ADDRESS is set
-_x402_pay_to = os.getenv("EVM_ADDRESS", "")
-if _x402_pay_to:
-    try:
-        from x402 import FacilitatorConfig
-        from x402.http import HTTPFacilitatorClient
-        from x402.http.middleware.fastapi import PaymentMiddlewareASGI
-        from x402.http.types import PaymentOption
-        from x402.http.types import RouteConfig as X402RouteConfig
-        from x402.mechanisms.evm.exact import ExactEvmServerScheme
-        from x402.server import x402ResourceServer
-
-        _x402_network = os.getenv("X402_NETWORK", "eip155:84532")
-        _price_validate = os.getenv("X402_PRICE_VALIDATE", "0.01")
-        _price_audit = os.getenv("X402_PRICE_AUDIT", "0.05")
-        _price_certify = os.getenv("X402_PRICE_CERTIFY", "0.50")
-        _price_batch = os.getenv("X402_PRICE_BATCH", "0.10")
-        _price_treasury = os.getenv("X402_PRICE_TREASURY", "0.05")
-        _x402_facilitator_url = os.getenv("FACILITATOR_URL", "https://facilitator.xpay.sh")
-
-        _facilitator_cfg = FacilitatorConfig(url=_x402_facilitator_url)
-        _facilitator_client = HTTPFacilitatorClient(_facilitator_cfg)
-        _x402_server = x402ResourceServer([_facilitator_client])
-        _x402_server.register(_x402_network, ExactEvmServerScheme())
-
-        def _make_option(price: str) -> PaymentOption:
-            return PaymentOption(
-                scheme="exact",
-                pay_to=_x402_pay_to,
-                price=f"${price}",
-                network=_x402_network,
-            )
-
-        _bazaar_meta = {
-            "bazaar": {
-                "category": "governance",
-                "tags": ["ai", "compliance", "constitutional", "maci"],
-            },
-        }
-
-        _x402_routes = {
-            "POST /x402/validate": X402RouteConfig(
-                accepts=[_make_option(_price_validate)],
-                description="Governance validation ($" + _price_validate + ")",
-                extensions=_bazaar_meta,
-            ),
-            "POST /x402/audit": X402RouteConfig(
-                accepts=[_make_option(_price_audit)],
-                description="Compliance audit with risk breakdown ($" + _price_audit + ")",
-                extensions=_bazaar_meta,
-            ),
-            "POST /x402/certify": X402RouteConfig(
-                accepts=[_make_option(_price_certify)],
-                description="Signed attestation — verifiable compliance proof ($"
-                + _price_certify
-                + ")",
-                extensions=_bazaar_meta,
-            ),
-            "POST /x402/batch": X402RouteConfig(
-                accepts=[_make_option(_price_batch)],
-                description="Bulk validation up to 20 actions ($" + _price_batch + ")",
-                extensions=_bazaar_meta,
-            ),
-            "POST /x402/treasury": X402RouteConfig(
-                accepts=[_make_option(_price_treasury)],
-                description="DAO treasury intelligence ($" + _price_treasury + ")",
-                extensions=_bazaar_meta,
-            ),
-            # Marketplace endpoints (market-rate pricing)
-            "POST /x402/scan": X402RouteConfig(
-                accepts=[_make_option(os.getenv("X402_PRICE_SCAN", "0.03"))],
-                description="Prompt injection detection ($0.03)",
-                extensions=_bazaar_meta,
-            ),
-            "POST /x402/classify-risk": X402RouteConfig(
-                accepts=[_make_option(os.getenv("X402_PRICE_CLASSIFY_RISK", "0.10"))],
-                description="EU AI Act risk classification ($0.10)",
-                extensions=_bazaar_meta,
-            ),
-            "POST /x402/compliance": X402RouteConfig(
-                accepts=[_make_option(os.getenv("X402_PRICE_COMPLIANCE", "0.25"))],
-                description="Multi-framework compliance — 8 frameworks ($0.25)",
-                extensions=_bazaar_meta,
-            ),
-            "POST /x402/simulate": X402RouteConfig(
-                accepts=[_make_option(os.getenv("X402_PRICE_SIMULATE", "0.15"))],
-                description="Policy change simulation ($0.15)",
-                extensions=_bazaar_meta,
-            ),
-            "POST /x402/trust": X402RouteConfig(
-                accepts=[_make_option(os.getenv("X402_PRICE_TRUST", "0.02"))],
-                description="Agent trust scoring ($0.02)",
-                extensions=_bazaar_meta,
-            ),
-            "POST /x402/anomaly": X402RouteConfig(
-                accepts=[_make_option(os.getenv("X402_PRICE_ANOMALY", "0.03"))],
-                description="Governance anomaly detection ($0.03)",
-                extensions=_bazaar_meta,
-            ),
-            "POST /x402/explain": X402RouteConfig(
-                accepts=[_make_option(os.getenv("X402_PRICE_EXPLAIN", "0.05"))],
-                description="Decision explainability ($0.05)",
-                extensions=_bazaar_meta,
-            ),
-            # Premium endpoints
-            "POST /x402/invariant-guard": X402RouteConfig(
-                accepts=[_make_option(os.getenv("X402_PRICE_INVARIANT", "0.10"))],
-                description="Three-tier invariant enforcement ($0.10)",
-                extensions=_bazaar_meta,
-            ),
-            "POST /x402/circuit-breaker": X402RouteConfig(
-                accepts=[_make_option(os.getenv("X402_PRICE_CIRCUIT", "0.10"))],
-                description="Governance circuit breaker ($0.10)",
-                extensions=_bazaar_meta,
-            ),
-            "POST /x402/policy-lint": X402RouteConfig(
-                accepts=[_make_option(os.getenv("X402_PRICE_POLICY_LINT", "0.05"))],
-                description="Policy quality & security scan ($0.05)",
-                extensions=_bazaar_meta,
-            ),
-            "POST /x402/eu-ai-log": X402RouteConfig(
-                accepts=[_make_option(os.getenv("X402_PRICE_EU_AI_LOG", "0.10"))],
-                description="EU AI Act Article 12 logging ($0.10)",
-                extensions=_bazaar_meta,
-            ),
-            # Bundle endpoints
-            "POST /x402/bundle/scout": X402RouteConfig(
-                accepts=[_make_option(os.getenv("X402_PRICE_BUNDLE_SCOUT", "0.05"))],
-                description="Scout bundle: check + validate + scan ($0.05)",
-                extensions=_bazaar_meta,
-            ),
-            "POST /x402/bundle/shield": X402RouteConfig(
-                accepts=[_make_option(os.getenv("X402_PRICE_BUNDLE_SHIELD", "0.25"))],
-                description="Shield bundle: 8-endpoint risk analysis ($0.25)",
-                extensions=_bazaar_meta,
-            ),
-            "POST /x402/bundle/fortress": X402RouteConfig(
-                accepts=[_make_option(os.getenv("X402_PRICE_BUNDLE_FORTRESS", "1.00"))],
-                description="Fortress bundle: 15-endpoint enterprise suite ($1.00)",
-                extensions=_bazaar_meta,
-            ),
-        }
-
-        app.add_middleware(
-            PaymentMiddlewareASGI,
-            routes=_x402_routes,
-            server=_x402_server,
-        )
-        logger.info(
-            "x402 payment middleware ACTIVE",
-            network=_x402_network,
-            prices={
-                "validate": _price_validate,
-                "audit": _price_audit,
-                "certify": _price_certify,
-                "batch": _price_batch,
-                "treasury": _price_treasury,
-            },
-            facilitator=_x402_facilitator_url,
-            pay_to=_x402_pay_to[:10] + "...",
-        )
-    except ImportError:
-        logger.warning(
-            "EVM_ADDRESS set but x402[evm] not installed — "
-            "payment middleware disabled. Run: pip install 'x402[evm]'"
-        )
-else:
-    logger.info("x402 payment middleware disabled (EVM_ADDRESS not set)")
+configure_x402_payment_middleware(app, environ=os.environ)
 
 # Proxy catch-all MUST be included LAST so it does not shadow other routes
 app.include_router(proxy_router)
@@ -673,7 +549,7 @@ logger.info("Proxy catch-all route configured: /{path:path}")
 if __name__ == "__main__":
     import uvicorn
 
-    environment = os.getenv("ENVIRONMENT", "production").strip().lower()
+    environment = _runtime_environment()
     is_development = environment in {"development", "dev", "test", "testing", "ci"}
     uvicorn.run(
         "main:app",

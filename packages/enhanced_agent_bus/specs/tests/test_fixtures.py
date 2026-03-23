@@ -760,7 +760,7 @@ class TestSpecMetricsRegistry:
         registry = SpecMetricsRegistry()
         registry.increment_counter("requests")
 
-        assert registry.get_counter_total("requests") == 2
+        assert registry.get_counter_total("requests") == 1
 
     def test_latency_recording(self):
         """Test latency recording."""

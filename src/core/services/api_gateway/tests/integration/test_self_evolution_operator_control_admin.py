@@ -8,10 +8,10 @@ from collections.abc import Iterator
 import pytest
 from fastapi.testclient import TestClient
 
-from src.core.self_evolution.research.operator_control import (
-    ResearchRuntimeState,
-    create_research_operator_control_plane,
-)
+_operator_control = pytest.importorskip("src.core.self_evolution.research.operator_control")
+
+ResearchRuntimeState = _operator_control.ResearchRuntimeState
+create_research_operator_control_plane = _operator_control.create_research_operator_control_plane
 from src.core.services.api_gateway.main import app
 from src.core.shared.security.auth import UserClaims, get_current_user
 

@@ -327,8 +327,8 @@ class TestValidateActivationWarningPaths:
                 {"saga_id": "s1", "context": {"amendment_id": "amendment-123"}}
             )
 
-    async def test_hash_mismatch_warns_but_passes(self):
-        """validate_activation warns about hash mismatch but still validates."""
+    async def test_hash_mismatch_blocks_activation(self):
+        """validate_activation fails closed on constitutional hash mismatch."""
         mock_storage = AsyncMock(spec=ConstitutionalStorageService)
         amendment = _make_amendment()
         target = _make_version(constitutional_hash="deadbeef00000001")
@@ -339,10 +339,10 @@ class TestValidateActivationWarningPaths:
         mock_storage.get_active_version.return_value = active
 
         activities = _make_activities(mock_storage)
-        result = await activities.validate_activation(
-            {"saga_id": "s1", "context": {"amendment_id": "amendment-123"}}
-        )
-        assert result["is_valid"] is True
+        with pytest.raises(ActivationSagaError, match="constitutional hash"):
+            await activities.validate_activation(
+                {"saga_id": "s1", "context": {"amendment_id": "amendment-123"}}
+            )
 
 
 # ---------------------------------------------------------------------------

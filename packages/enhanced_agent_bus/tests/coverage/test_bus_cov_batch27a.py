@@ -12,7 +12,7 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from __future__ import annotations
 
-import asyncio
+import inspect
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
@@ -565,7 +565,7 @@ class TestVerifyIntegration:
 
     async def test_function_is_async(self):
         """verify_proven_integration must be a coroutine function."""
-        assert asyncio.iscoroutinefunction(verify_proven_integration)
+        assert inspect.iscoroutinefunction(verify_proven_integration)
 
 
 # ===================================================================

@@ -1,10 +1,16 @@
 from __future__ import annotations
 
+import sys
 import uuid
 from datetime import UTC, datetime
 from enum import StrEnum
 
 from pydantic import BaseModel, Field, field_validator
+
+_module = sys.modules.get(__name__)
+if _module is not None:
+    sys.modules.setdefault("enhanced_agent_bus.policy_copilot.models", _module)
+    sys.modules.setdefault("packages.enhanced_agent_bus.policy_copilot.models", _module)
 
 try:
     from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
@@ -154,12 +160,16 @@ class ImproveResponse(BaseModel):
 
 
 class TestRequest(BaseModel):
+    __test__ = False
+
     policy: str = Field(min_length=1)
     test_input: dict
     tenant_id: str | None = None
 
 
 class TestResult(BaseModel):
+    __test__ = False
+
     allowed: bool
     decision_path: list[str] = Field(default_factory=list)
     trace: dict = Field(default_factory=dict)

@@ -1290,7 +1290,7 @@ class TestHotlContentNormalization:
         result = await layer.process_message(msg)
 
         assert result["success"] is True
-        assert result["lane"] == "hotl"
+        assert result["lane"] == "deliberation"
 
 
 class TestGuardResultInFinalize:

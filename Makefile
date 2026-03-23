@@ -1,18 +1,25 @@
-.PHONY: help setup test test-quick test-lite test-bus test-gw lint format clean bench cov cov-html codex-doctor autoresearch-promote agent-commit
+.PHONY: help setup lock-sync lock-validate test test-quick test-lite test-bus test-gw lint format clean bench cov cov-html codex-doctor autoresearch-promote agent-commit
 
-PYTHON ?= python3
-PIP ?= $(PYTHON) -m pip
+LOCK_PYTHON ?= 3.11
+UV ?= uv
 ROOT_DIR := $(CURDIR)
+UV_CACHE_DIR ?= $(ROOT_DIR)/.uv-cache
+VENV_PYTHON := $(ROOT_DIR)/.venv/bin/python
+PYTHON ?= $(if $(wildcard $(VENV_PYTHON)),$(VENV_PYTHON),python3)
+PIP ?= $(PYTHON) -m pip
 WORKSPACE_PYTHONPATH := $(ROOT_DIR)/packages:$(ROOT_DIR)/src:$(ROOT_DIR)
 export PYTHONPATH := $(WORKSPACE_PYTHONPATH)$(if $(PYTHONPATH),:$(PYTHONPATH))
 PYTEST_TARGETS ?=
 PYTEST_ARGS ?=
+UV_SYNC_ARGS ?= --frozen --all-packages --extra dev --extra test --python $(LOCK_PYTHON) --no-python-downloads
 
 help:
 	@echo "ACGS — Advanced Constitutional Governance System"
 	@echo ""
 	@echo "  Setup:"
 	@echo "    make setup        Install deps + pre-commit"
+	@echo "    make lock-sync    Rebuild the project .venv from uv.lock on Python $(LOCK_PYTHON)"
+	@echo "    make lock-validate Verify the locked .venv and run environment smoke tests"
 	@echo "    make codex-doctor  Run repo-local Codex readiness checks"
 	@echo ""
 	@echo "  Testing:"
@@ -28,15 +35,27 @@ help:
 	@echo "    make clean        Remove cache files"
 	@echo ""
 	@echo "  Benchmarks:"
-	@echo "    make bench        Run autoresearch benchmark"
+	@echo "    make bench        Run acgs-lite benchmark suite"
 
 # === Setup ===
 setup:
 	$(PIP) install -e ".[dev,test]"
 	$(PIP) install -e packages/acgs-lite[dev]
 	$(PIP) install -e packages/enhanced_agent_bus[dev]
+	$(PIP) install -e packages/acgs-deliberation[dev]
 	pre-commit install
 	cd packages/propriety-ai && npm install
+
+lock-sync:
+	UV_CACHE_DIR=$(UV_CACHE_DIR) $(UV) sync $(UV_SYNC_ARGS)
+
+lock-validate: lock-sync
+	UV_CACHE_DIR=$(UV_CACHE_DIR) $(UV) sync $(UV_SYNC_ARGS) --check
+	$(PYTHON) -c "import acgs_lite, sys; print(sys.executable); print(sys.version.split()[0]); print(acgs_lite.__file__)"
+	$(PYTHON) -m pytest --import-mode=importlib -q \
+		tests/test_testclient_compat.py \
+		src/core/shared/tests/test_runtime_environment.py \
+		src/core/services/api_gateway/tests/unit/test_lifespan.py::TestVerifyConstitutionalHashAtStartup::test_environment_only_production_still_requires_constitutional_hash
 
 # === Testing ===
 test:
@@ -92,7 +111,7 @@ cov-html:
 
 # === Benchmarks ===
 bench:
-	cd packages/acgs-lite && $(PYTHON) -m pytest tests/ -m benchmark -v --import-mode=importlib
+	$(PYTHON) -m pytest packages/acgs-lite/tests/test_benchmark_engine.py -m benchmark -v --import-mode=importlib
 
 # === Codex Bootstrap ===
 codex-doctor:

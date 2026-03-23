@@ -32,6 +32,8 @@ def test_cors_config_production_credentials_wildcard_rejection():
 
 def test_cors_config_environment_detection(monkeypatch):
     """Test environment detection from multiple variables."""
+    monkeypatch.delenv("CORS_ENVIRONMENT", raising=False)
+    monkeypatch.delenv("AGENT_RUNTIME_ENVIRONMENT", raising=False)
     monkeypatch.setenv("ENVIRONMENT", "production")
     from src.core.shared.security.cors_config import detect_environment
 
@@ -39,6 +41,8 @@ def test_cors_config_environment_detection(monkeypatch):
 
     monkeypatch.setenv("ENV", "staging")
     monkeypatch.delenv("ENVIRONMENT")
+    monkeypatch.delenv("CORS_ENVIRONMENT", raising=False)
+    monkeypatch.delenv("AGENT_RUNTIME_ENVIRONMENT", raising=False)
     assert detect_environment() == CORSEnvironment.STAGING
 
 

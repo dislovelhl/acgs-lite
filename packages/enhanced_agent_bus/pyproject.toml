@@ -92,6 +92,7 @@ addopts = [
 ]
 markers = [
     "asyncio: mark test as async",
+    "unit: marks tests as unit tests",
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests requiring external services",
     "constitutional: marks tests for constitutional validation",

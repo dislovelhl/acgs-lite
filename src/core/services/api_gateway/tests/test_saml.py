@@ -444,6 +444,8 @@ class TestSAMLACSFlow:
             mock_acs.return_value = mock_user_info
 
             saml_response = create_mock_saml_response()
+            for cookie in cookies.jar:
+                client.cookies.set(cookie.name, cookie.value)
 
             response = client.post(
                 "/api/v1/sso/saml/acs",
@@ -451,7 +453,6 @@ class TestSAMLACSFlow:
                     "SAMLResponse": saml_response,
                     "RelayState": "",
                 },
-                cookies=cookies,
             )
 
             assert response.status_code == 200

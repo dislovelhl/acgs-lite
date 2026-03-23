@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 from types import SimpleNamespace
 from typing import Any
+from unittest.mock import patch
 
 import pytest
 
@@ -64,7 +65,8 @@ class FakeChatEngine:
 
 class TestGovernedQueryEngine:
     def _make(self, **kwargs: Any) -> GovernedQueryEngine:
-        return GovernedQueryEngine(FakeQueryEngine(), **kwargs)
+        with patch("acgs_lite.integrations.llamaindex.LLAMAINDEX_AVAILABLE", True):
+            return GovernedQueryEngine(FakeQueryEngine(), **kwargs)
 
     def test_query(self) -> None:
         engine = self._make(strict=False)
@@ -90,7 +92,8 @@ class TestGovernedQueryEngine:
 
 class TestGovernedChatEngine:
     def _make(self, **kwargs: Any) -> GovernedChatEngine:
-        return GovernedChatEngine(FakeChatEngine(), **kwargs)
+        with patch("acgs_lite.integrations.llamaindex.LLAMAINDEX_AVAILABLE", True):
+            return GovernedChatEngine(FakeChatEngine(), **kwargs)
 
     def test_chat(self) -> None:
         engine = self._make(strict=False)
@@ -122,7 +125,8 @@ class TestGovernedChatEngine:
 
     def test_chat_history_empty_when_missing(self) -> None:
         bare = SimpleNamespace()
-        engine = GovernedChatEngine(bare)
+        with patch("acgs_lite.integrations.llamaindex.LLAMAINDEX_AVAILABLE", True):
+            engine = GovernedChatEngine(bare)
         assert engine.chat_history == []
 
     def test_stats(self) -> None:

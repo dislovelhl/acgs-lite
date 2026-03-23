@@ -49,6 +49,7 @@ TRANSITION_EXECUTION_ERRORS = (
     KeyError,
     AttributeError,
     asyncio.TimeoutError,
+    Exception,
 )
 TRANSITION_ROLLBACK_ERRORS = (
     RuntimeError,

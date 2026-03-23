@@ -5,7 +5,8 @@ Extracted from main.py: startup/shutdown lifecycle for the FastAPI application.
 """
 
 import os
-from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+from inspect import isawaitable
 
 from fastapi import FastAPI
 
@@ -20,6 +21,8 @@ except ImportError:
     async def create_research_operator_control_plane(**kwargs: object) -> None:
         """Stub when self_evolution module is not installed."""
 
+from src.core.shared.config import settings
+from src.core.shared.config.runtime_environment import resolve_runtime_environment
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.redis_config import get_redis_url
 from src.core.shared.structured_logging import get_logger
@@ -30,8 +33,18 @@ from .routes.proxy import close_proxy_client
 
 logger = get_logger(__name__)
 
-environment = os.getenv("ENVIRONMENT", "production").strip().lower()
-is_development = environment in {"development", "dev", "test", "testing", "ci"}
+
+def _runtime_environment() -> str:
+    """Resolve the current runtime environment at call time.
+
+    Tests in this repo mutate ENVIRONMENT repeatedly, so import-time snapshots
+    can become stale and incorrectly force production startup checks.
+    """
+    return resolve_runtime_environment(getattr(settings, "env", None))
+
+
+def _is_development_environment() -> bool:
+    return _runtime_environment() in {"development", "dev", "test", "testing", "ci"}
 
 
 def _verify_constitutional_hash_at_startup() -> None:
@@ -45,7 +58,7 @@ def _verify_constitutional_hash_at_startup() -> None:
     """
     env_hash = os.getenv("CONSTITUTIONAL_HASH")
     if not env_hash:
-        if not is_development:
+        if not _is_development_environment():
             logger.error(
                 "CONSTITUTIONAL_HASH env var not set in production — "
                 "governance integrity cannot be verified; refusing to start",
@@ -66,7 +79,7 @@ def _verify_constitutional_hash_at_startup() -> None:
             f"Constitutional hash mismatch — env={env_hash!r} code={CONSTITUTIONAL_HASH!r}. "
             "Deployment may be tampered or misconfigured."
         )
-        if not is_development:
+        if not _is_development_environment():
             logger.error(msg)
             raise RuntimeError(msg)
         logger.warning(msg + " (dev mode — continuing)")
@@ -77,7 +90,8 @@ def _verify_constitutional_hash_at_startup() -> None:
         )
 
 
-async def lifespan(app_instance: FastAPI) -> AsyncGenerator[None, None]:
+@asynccontextmanager
+async def lifespan(app_instance: FastAPI):
     """Manage shared client lifecycle (startup/shutdown)."""
     # Startup: verify constitutional hash integrity (M-5)
     _verify_constitutional_hash_at_startup()
@@ -93,11 +107,14 @@ async def lifespan(app_instance: FastAPI) -> AsyncGenerator[None, None]:
         "SELF_EVOLUTION_OPERATOR_CONTROL_KEY_PREFIX",
         DEFAULT_RESEARCH_OPERATOR_CONTROL_KEY_PREFIX,
     )
-    app_instance.state.research_operator_control_plane = create_research_operator_control_plane(
+    operator_control_plane = create_research_operator_control_plane(
         backend=operator_control_backend,
         redis_url=operator_control_redis_url if operator_control_backend == "redis" else None,
         key_prefix=operator_control_key_prefix,
     )
+    if isawaitable(operator_control_plane):
+        operator_control_plane = await operator_control_plane
+    app_instance.state.research_operator_control_plane = operator_control_plane
     logger.info(
         "AutonomyTierEnforcementMiddleware initialized",
         hitl_url=hitl_url,
@@ -108,15 +125,21 @@ async def lifespan(app_instance: FastAPI) -> AsyncGenerator[None, None]:
         backend=operator_control_backend,
         key_prefix=operator_control_key_prefix,
     )
-    yield
-    # Shutdown: close all shared clients gracefully
-    research_operator_control_plane = getattr(
-        app_instance.state,
-        "research_operator_control_plane",
-        None,
-    )
-    if research_operator_control_plane is not None:
-        await research_operator_control_plane.aclose()
-    await close_proxy_client()
-    await _close_feedback_redis()
-    logger.info("API Gateway shut down cleanly")
+    try:
+        yield
+    finally:
+        # Shutdown: close all shared clients gracefully
+        research_operator_control_plane = getattr(
+            app_instance.state,
+            "research_operator_control_plane",
+            None,
+        )
+        if research_operator_control_plane is not None:
+            close_fn = getattr(research_operator_control_plane, "aclose", None)
+            if callable(close_fn):
+                close_result = close_fn()
+                if isawaitable(close_result):
+                    await close_result
+        await close_proxy_client()
+        await _close_feedback_redis()
+        logger.info("API Gateway shut down cleanly")

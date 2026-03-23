@@ -52,12 +52,12 @@ from enhanced_agent_bus.llm_adapters.llm_failover import (
 )
 
 # =============================================================================
-# LLMProviderType — all 9 values
+# LLMProviderType — all declared values
 # =============================================================================
 
 
 class TestLLMProviderTypeAllValues:
-    """Test all 9 enum values of LLMProviderType."""
+    """Test all enum values of LLMProviderType."""
 
     def test_all_provider_types_exist(self) -> None:
         expected = {
@@ -70,6 +70,7 @@ class TestLLMProviderTypeAllValues:
             "MISTRAL",
             "KIMI",
             "LOCAL",
+            "OPENCLAW",
         }
         actual = {m.name for m in LLMProviderType}
         assert actual == expected
@@ -101,6 +102,9 @@ class TestLLMProviderTypeAllValues:
 
     def test_local_value(self) -> None:
         assert LLMProviderType.LOCAL == "local"
+
+    def test_openclaw_value(self) -> None:
+        assert LLMProviderType.OPENCLAW == "openclaw"
 
     def test_provider_type_is_str(self) -> None:
         """LLMProviderType inherits str so comparisons work."""

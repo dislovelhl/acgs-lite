@@ -1012,7 +1012,7 @@ class TestMACISessionAwareRegistry:
         session_id = "session-004"
         await maci_registry.register_agent("agent-1", MACIRole.EXECUTIVE, session_id=session_id)
 
-        await maci_registry.unregister_agent("agent-1")
+        await maci_registry.unregister_agent("agent-1", session_id=session_id)
 
         session_agents = await maci_registry.get_session_agents(session_id)
         assert "agent-1" not in session_agents
@@ -1029,6 +1029,35 @@ class TestMACISessionAwareRegistry:
         )
         assert len(session_executives) == 2
         assert all(r.session_id == session_id for r in session_executives)
+
+    async def test_session_lookup_does_not_fall_back_to_global_registry(self, maci_registry):
+        """Session-scoped lookups must not resolve globally registered agents."""
+        session_id = "session-006"
+        await maci_registry.register_agent("shared-agent", MACIRole.EXECUTIVE)
+
+        record = await maci_registry.get_agent("shared-agent", session_id=session_id)
+
+        assert record is None
+
+    async def test_clearing_session_does_not_remove_same_agent_id_from_global_registry(
+        self,
+        maci_registry,
+    ):
+        """Clearing a session must not delete an unrelated global registration."""
+        session_id = "session-007"
+        await maci_registry.register_agent("shared-agent", MACIRole.JUDICIAL)
+        await maci_registry.register_agent(
+            "shared-agent",
+            MACIRole.EXECUTIVE,
+            session_id=session_id,
+        )
+
+        count = await maci_registry.clear_session(session_id)
+
+        assert count == 1
+        global_agent = await maci_registry.get_agent("shared-agent")
+        assert global_agent is not None
+        assert global_agent.role == MACIRole.JUDICIAL
 
 
 class TestMACISessionAwareEnforcer:
@@ -1067,8 +1096,8 @@ class TestMACISessionAwareEnforcer:
         """Test filtering validation log by session_id."""
         session_1 = "session-012"
         session_2 = "session-013"
-        await maci_registry.register_agent("exec-1", MACIRole.EXECUTIVE)
-        await maci_registry.register_agent("exec-2", MACIRole.EXECUTIVE)
+        await maci_registry.register_agent("exec-1", MACIRole.EXECUTIVE, session_id=session_1)
+        await maci_registry.register_agent("exec-2", MACIRole.EXECUTIVE, session_id=session_2)
 
         await maci_enforcer.validate_action("exec-1", MACIAction.PROPOSE, session_id=session_1)
         await maci_enforcer.validate_action("exec-1", MACIAction.QUERY, session_id=session_1)
@@ -1086,7 +1115,8 @@ class TestMACISessionAwareEnforcer:
         """Test clearing validation log by session_id."""
         session_1 = "session-014"
         session_2 = "session-015"
-        await maci_registry.register_agent("exec-1", MACIRole.EXECUTIVE)
+        await maci_registry.register_agent("exec-1", MACIRole.EXECUTIVE, session_id=session_1)
+        await maci_registry.register_agent("exec-1", MACIRole.EXECUTIVE, session_id=session_2)
 
         await maci_enforcer.validate_action("exec-1", MACIAction.PROPOSE, session_id=session_1)
         await maci_enforcer.validate_action("exec-1", MACIAction.QUERY, session_id=session_2)
@@ -1162,7 +1192,7 @@ class TestMACISessionBypassPrevention:
         """Test self-validation is blocked even when using session context."""
         session_id = "session-023"
         await maci_registry.register_agent("jud-1", MACIRole.JUDICIAL, session_id=session_id)
-        await maci_registry.record_output("jud-1", "jud-output-1")
+        await maci_registry.record_output("jud-1", "jud-output-1", session_id=session_id)
 
         # Self-validation should be blocked regardless of session
         # Use validate_action directly since validate_session_bypass re-raises MACISelfValidationError  # noqa: E501
@@ -1243,7 +1273,7 @@ class TestMACIValidationStrategySession:
 
     async def test_validate_extracts_session_from_message(self, maci_strategy, maci_registry):
         """Test validation strategy extracts session_id from message metadata."""
-        await maci_registry.register_agent("exec-1", MACIRole.EXECUTIVE)
+        await maci_registry.register_agent("exec-1", MACIRole.EXECUTIVE, session_id="session-040")
 
         message = AgentMessage(
             message_id="msg-001",
@@ -1261,7 +1291,11 @@ class TestMACIValidationStrategySession:
 
     async def test_validate_uses_explicit_session_id(self, maci_strategy, maci_registry):
         """Test validation strategy uses explicitly provided session_id."""
-        await maci_registry.register_agent("exec-1", MACIRole.EXECUTIVE)
+        await maci_registry.register_agent(
+            "exec-1",
+            MACIRole.EXECUTIVE,
+            session_id="explicit-session",
+        )
 
         message = AgentMessage(
             message_id="msg-001",
@@ -1281,7 +1315,7 @@ class TestMACISessionAwareMiddleware:
 
     async def test_middleware_extracts_session(self, maci_enforcer, maci_registry):
         """Test middleware extracts session from message."""
-        await maci_registry.register_agent("exec-1", MACIRole.EXECUTIVE)
+        await maci_registry.register_agent("exec-1", MACIRole.EXECUTIVE, session_id="session-050")
 
         def session_extractor(msg):
             return msg.metadata.get("session_id") if msg.metadata else None
@@ -1298,6 +1332,7 @@ class TestMACISessionAwareMiddleware:
             message_type=MessageType.GOVERNANCE_REQUEST,
             content={"action": "Test"},
             constitutional_hash=CONSTITUTIONAL_HASH,
+            session_id="session-050",
             metadata={"session_id": "session-050"},
         )
 

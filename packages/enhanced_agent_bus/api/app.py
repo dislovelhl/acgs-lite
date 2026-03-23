@@ -125,6 +125,14 @@ def _load_copilot_router() -> APIRouter | None:
     return router if isinstance(router, APIRouter) else None
 
 
+def _load_sessions_module() -> Any | None:
+    """Load optional sessions module when available."""
+    try:
+        return import_module("..routes.sessions", package=__package__)
+    except ImportError:
+        return None
+
+
 visual_studio_router = _load_visual_studio_router()
 copilot_router = _load_copilot_router()
 
@@ -137,6 +145,24 @@ batch_processor: BatchMessageProcessor | None = None
 message_circuit_breaker: pybreaker.CircuitBreaker | None = None
 workflow_executor: DurableWorkflowExecutor | None = None
 workflow_repository: PostgresWorkflowRepository | None = None
+
+
+_CORE_ROUTERS: tuple[APIRouter, ...] = (
+    health_router,
+    agent_health_router,
+    messages_router,
+    batch_router,
+    policies_router,
+    governance_router,
+    public_v1_router,
+    badge_router,
+    signup_router,
+    stats_router,
+    usage_router,
+    widget_js_router,
+    workflows_router,
+    z3_router,
+)
 
 
 def _register_builtin_workflows(executor: DurableWorkflowExecutor) -> DurableWorkflowExecutor:
@@ -243,16 +269,21 @@ def _initialize_batch_processor_state(
 
 async def _initialize_session_manager_if_available() -> None:
     """Initialize session manager when router dependency is installed."""
-    try:
-        from ..routes.sessions import init_session_manager
-
-        redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
-        if await init_session_manager(redis_url=redis_url):
-            logger.info(f"Session context manager connected to Redis at {redis_url}")
-        else:
-            logger.warning("Session context manager failed to connect to Redis")
-    except ImportError:
+    sessions_module = _load_sessions_module()
+    if sessions_module is None:
         logger.debug("Session Governance API router not available")
+        return
+
+    init_session_manager = getattr(sessions_module, "init_session_manager", None)
+    if init_session_manager is None:
+        logger.debug("Session Governance API router not available")
+        return
+
+    redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+    if await init_session_manager(redis_url=redis_url):
+        logger.info(f"Session context manager connected to Redis at {redis_url}")
+    else:
+        logger.warning("Session context manager failed to connect to Redis")
 
 
 async def _stop_cache_warmer_if_running() -> None:
@@ -273,9 +304,17 @@ async def _stop_cache_warmer_if_running() -> None:
 
 async def _shutdown_session_manager_if_available() -> None:
     """Shutdown session manager when dependency is installed."""
-    try:
-        from ..routes.sessions import shutdown_session_manager
+    sessions_module = _load_sessions_module()
+    if sessions_module is None:
+        logger.debug("Session Governance API router not available on shutdown")
+        return
 
+    shutdown_session_manager = getattr(sessions_module, "shutdown_session_manager", None)
+    if shutdown_session_manager is None:
+        logger.debug("Session Governance API router not available on shutdown")
+        return
+
+    try:
         await shutdown_session_manager()
         logger.info("Session context manager disconnected")
     except ImportError:
@@ -294,22 +333,14 @@ async def _close_workflow_repository_if_available(
         logger.error(f"Error closing Workflow Repository: {e}")
 
 
-@asynccontextmanager
-async def _lifespan_context(app: FastAPI):
-    """Manage application startup and shutdown lifecycle."""
-    global \
-        agent_bus, \
-        batch_processor, \
-        message_circuit_breaker, \
-        workflow_executor, \
-        workflow_repository
+def _bind_runtime_state(app: FastAPI, *, bus: MessageProcessor | dict) -> None:
+    """Bind initialized runtime dependencies onto FastAPI state."""
+    global agent_bus, batch_processor, message_circuit_breaker
 
-    agent_bus = _initialize_agent_bus_state()
-    app.state.agent_bus = agent_bus
+    agent_bus = bus
+    app.state.agent_bus = bus
 
-    workflow_executor, workflow_repository = await _initialize_workflow_components(app)
-
-    batch_processor = _initialize_batch_processor_state(agent_bus)
+    batch_processor = _initialize_batch_processor_state(bus)
     app.state.batch_processor = batch_processor
 
     message_circuit_breaker = pybreaker.CircuitBreaker(
@@ -320,14 +351,72 @@ async def _lifespan_context(app: FastAPI):
     app.state.message_circuit_breaker = message_circuit_breaker
     logger.info("Circuit breaker enabled for message processing")
 
+
+async def _startup_runtime(app: FastAPI) -> None:
+    """Initialize runtime state required during application startup."""
+    global workflow_executor, workflow_repository
+
+    bus = _initialize_agent_bus_state()
+    _bind_runtime_state(app, bus=bus)
+    workflow_executor, workflow_repository = await _initialize_workflow_components(app)
     await _initialize_session_manager_if_available()
 
-    yield
 
+async def _shutdown_runtime() -> None:
+    """Shutdown runtime state in the inverse order of startup."""
     await _stop_cache_warmer_if_running()
     await _shutdown_session_manager_if_available()
     await _close_workflow_repository_if_available(workflow_repository)
     logger.info("Enhanced Agent Bus stopped")
+
+
+def _configure_application_state(application: FastAPI) -> None:
+    """Initialize non-runtime FastAPI application state."""
+    application.state.limiter = limiter
+    application.state.failed_tasks = []
+
+
+def _register_core_routers(application: FastAPI) -> None:
+    """Register the stable built-in router set."""
+    for router in _CORE_ROUTERS:
+        application.include_router(router)
+
+
+def _register_feature_routers(application: FastAPI) -> None:
+    """Register optional feature routers when present."""
+    if visual_studio_router is not None:
+        application.include_router(visual_studio_router)
+        logger.info("Visual Studio API router registered")
+
+    if copilot_router is not None:
+        application.include_router(copilot_router)
+        logger.info("Policy Copilot API router registered")
+
+    _register_optional_routers(application)
+
+
+def _configure_application(application: FastAPI) -> FastAPI:
+    """Apply state, middleware, exception handlers, and routers to the app."""
+    _configure_application_state(application)
+    setup_all_middleware(application)
+    _register_exception_handlers(application)
+    application.middleware("http")(correlation_id_middleware)
+    application.exception_handler(Exception)(global_exception_handler)
+    _register_core_routers(application)
+    _register_feature_routers(application)
+    return application
+
+
+@asynccontextmanager
+async def _lifespan_context(app: FastAPI):
+    """Manage application startup and shutdown lifecycle."""
+    global workflow_executor, workflow_repository
+
+    await _startup_runtime(app)
+
+    yield
+
+    await _shutdown_runtime()
 
 
 def _register_exception_handlers(app: FastAPI) -> None:
@@ -378,12 +467,12 @@ def _register_optional_routers(application: FastAPI) -> None:
     except ImportError:
         logger.debug("Circuit Breaker Health router not available")
 
-    try:
-        from ..routes.sessions import router as sessions_router
-
+    sessions_module = _load_sessions_module()
+    sessions_router = getattr(sessions_module, "router", None) if sessions_module else None
+    if isinstance(sessions_router, APIRouter):
         application.include_router(sessions_router)
         logger.info("Session Governance API router registered")
-    except ImportError:
+    else:
         logger.debug("Session Governance API router not available")
 
 
@@ -397,47 +486,7 @@ def create_app() -> FastAPI:
         default_response_class=ORJSONResponse,
         lifespan=_lifespan_context,
     )
-    application.state.limiter = limiter
-    application.state.failed_tasks = []
-
-    setup_all_middleware(application)
-    _register_exception_handlers(application)
-
-    application.middleware("http")(correlation_id_middleware)
-    application.exception_handler(Exception)(global_exception_handler)
-
-    # Core routers
-    for router in [
-        health_router,
-        agent_health_router,
-        messages_router,
-        batch_router,
-        policies_router,
-        governance_router,
-        public_v1_router,
-        badge_router,
-        signup_router,
-        stats_router,
-        usage_router,
-        widget_js_router,
-        workflows_router,
-        z3_router,
-    ]:
-        application.include_router(router)
-
-    # Visual Studio router
-    if visual_studio_router is not None:
-        application.include_router(visual_studio_router)
-        logger.info("Visual Studio API router registered")
-
-    # Copilot router
-    if copilot_router is not None:
-        application.include_router(copilot_router)
-        logger.info("Policy Copilot API router registered")
-
-    _register_optional_routers(application)
-
-    return application
+    return _configure_application(application)
 
 
 # Create the default app instance

@@ -370,14 +370,27 @@ class TestResourcesWithAdapters:
     """Tests for resources with external adapters."""
 
     async def test_principles_with_policy_adapter(self):
-        """Test principles resource with get_principles_tool."""
+        """Test principles resource returns tool-provided JSON content unchanged."""
         mock_tool = MagicMock()
+        payload = {
+            "principles": [
+                {
+                    "id": "P001",
+                    "name": "safety",
+                    "category": "core",
+                    "enforcement_level": "strict",
+                    "description": "Test",
+                    "active": True,
+                }
+            ],
+            "constitutional_hash": CONSTITUTIONAL_HASH,
+        }
         mock_tool.execute = AsyncMock(
             return_value={
                 "content": [
                     {
                         "type": "text",
-                        "text": '{"principles": [{"id": "P001", "name": "safety", "category": "core", "enforcement_level": "strict", "description": "Test", "active": true}], "constitutional_hash": CONSTITUTIONAL_HASH}',  # noqa: E501
+                        "text": json.dumps(payload),
                     }
                 ]
             }
@@ -389,20 +402,19 @@ class TestResourcesWithAdapters:
         data = json.loads(content)
 
         assert "principles" in data
+        assert data["constitutional_hash"] == CONSTITUTIONAL_HASH
 
     async def test_decisions_with_audit_adapter(self):
-        """Test decisions resource with submit_governance_tool."""
+        """Test decisions resource reads completed requests from the governance tool."""
         mock_tool = MagicMock()
-        mock_tool.execute = AsyncMock(
-            return_value={
-                "content": [
-                    {
-                        "type": "text",
-                        "text": '{"request": {"request_id": "REQ-001", "status": "approved"}, "constitutional_hash": CONSTITUTIONAL_HASH}',  # noqa: E501
-                    }
-                ]
-            }
-        )
+        mock_request = MagicMock()
+        mock_request.to_dict.return_value = {
+            "id": "REQ-001",
+            "status": "approved",
+            "action": "deploy_model",
+            "timestamp": "2024-12-30T12:00:00Z",
+        }
+        mock_tool._completed_requests = {"REQ-001": mock_request}
 
         resource = DecisionsResource(submit_governance_tool=mock_tool)
 
@@ -410,3 +422,4 @@ class TestResourcesWithAdapters:
         data = json.loads(content)
 
         assert "decisions" in data
+        assert data["decisions"][0]["id"] == "REQ-001"

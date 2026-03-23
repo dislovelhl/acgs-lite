@@ -21,10 +21,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+from results_utils import best_kept_row, ensure_results_tsv, load_rows, recent_rows
+
 RESULTS_TSV = Path(__file__).parent / "results.tsv"
-KEPT_STATUSES = {"improved", "neutral-kept", "baseline"}
-RECENT_ROWS = 5
-SIDECAR_MARKER = "[sidecar]"
 
 
 def _git(*args: str) -> str:
@@ -37,78 +36,16 @@ def _git_check(*args: str) -> bool:
     return result.returncode == 0
 
 
-def load_results() -> list[dict[str, str]]:
-    if not RESULTS_TSV.exists():
-        return []
-    rows: list[dict[str, str]] = []
-    with RESULTS_TSV.open() as f:
-        headers = f.readline().rstrip("\n").split("\t")
-        for line in f:
-            parts = line.rstrip("\n").split("\t")
-            if len(parts) >= len(headers):
-                rows.append(dict(zip(headers, parts, strict=False)))
-    return rows
-
-
-def normalize_status(status: str | None) -> str:
-    if status in KEPT_STATUSES:
-        return status
-    if status in {"neutral", "reverted"}:
-        return "discard"
-    return status or ""
-
-
-def infer_scope(row: dict[str, str]) -> str:
-    explicit_scope = row.get("scope", "").strip()
-    if explicit_scope in {"hot-path", "sidecar"}:
-        return explicit_scope
-
-    description = row.get("description", "").strip()
-    if description.startswith(SIDECAR_MARKER):
-        return "sidecar"
-    if "zero hot-path overhead" in description.lower():
-        return "sidecar"
-    return "hot-path"
-
-
-def kept_rows(rows: list[dict[str, str]], scope: str = "any") -> list[dict[str, str]]:
-    kept = [row for row in rows if normalize_status(row.get("status")) in KEPT_STATUSES]
-    if scope == "any":
-        return kept
-    return [row for row in kept if infer_scope(row) == scope]
-
-
-def best_kept(rows: list[dict[str, str]], scope: str = "any") -> dict[str, str] | None:
-    kept = kept_rows(rows, scope)
-    if not kept:
-        return None
-    return max(kept, key=lambda row: float(row.get("composite", "0")))
-
-
 def format_row(row: dict[str, str]) -> str:
     return (
         f"  commit={row.get('commit', '?')[:12]}"
         f"  composite={float(row.get('composite', '0')):.6f}"
         f"  compliance={float(row.get('compliance', '0')):.6f}"
         f"  p99_ms={float(row.get('p99_ms', '0')):.3f}"
-        f"  status={normalize_status(row.get('status')) or row.get('status', '?')}"
+        f"  scope={row.get('scope', 'hot-path')}"
+        f"  status={row.get('status', '?')}"
         f"  {row.get('description', '')}"
     )
-
-
-def recent_rows(
-    rows: list[dict[str, str]],
-    *,
-    scope: str,
-    statuses: set[str],
-    limit: int = RECENT_ROWS,
-) -> list[dict[str, str]]:
-    filtered = [
-        row
-        for row in rows
-        if infer_scope(row) == scope and normalize_status(row.get("status")) in statuses
-    ]
-    return filtered[-limit:]
 
 
 def print_rows(title: str, rows: list[dict[str, str]]) -> None:
@@ -170,7 +107,8 @@ def main() -> int:
     else:
         print("\nWorking tree: CLEAN")
 
-    rows = load_results()
+    ensure_results_tsv(RESULTS_TSV)
+    rows = load_rows(RESULTS_TSV)
     print(f"\nresults.tsv  : {len(rows)} rows")
 
     for scope, label in (
@@ -178,7 +116,7 @@ def main() -> int:
         ("hot-path", "Best hot-path row"),
         ("sidecar", "Best sidecar row"),
     ):
-        best = best_kept(rows, scope)
+        best = best_kept_row(rows, scope)
         if best:
             print(f"\n{label}:\n{format_row(best)}")
         else:

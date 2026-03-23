@@ -4,9 +4,11 @@
 
 **Constitutional governance infrastructure for AI agents. The missing safety layer between your LLM and production.**
 
-`ACGS 2.0.0` | `AGPL-3.0` | `560ns P50 validation` | `3,133 tests passing`
+`ACGS 2.0.0` | `AGPL-3.0` | `up to 560ns P50 on benchmark Rust path` | `3,133 tests passing`
 
-> **Note:** Performance numbers are from the local benchmark suite (`make bench`). Run benchmarks on your own hardware before quoting exact latency. The import path is `from acgs import ...` (preferred) or `from acgs_lite import ...` (legacy, still supported).
+[![Demo Video](https://img.youtube.com/vi/do9BCPn29_Q/maxresdefault.jpg)](https://youtu.be/do9BCPn29_Q)
+
+> **Note:** Performance numbers are from the local benchmark suite (`make bench`) and the fastest figures refer to the optional Rust/PyO3 hot path under benchmark conditions. Python-only and mixed integration paths will be slower. The benchmark target runs focused `pytest-benchmark` microbenchmarks for engine construction and steady-state validation. Run benchmarks on your own hardware before quoting exact latency. The import path is `from acgs import ...` (preferred) or `from acgs_lite import ...` (legacy, still supported).
 >
 > **License:** AGPL-3.0 for open-source use. [Commercial license](COMMERCIAL_LICENSE.md) available for proprietary/SaaS use.
 
@@ -69,7 +71,7 @@ PROPOSER          VALIDATOR          EXECUTOR          OBSERVER
 Generates the    Validates against   Only triggers    Cryptographically
 proposed action. immutable YAML      if Validator     chains every
 Cannot execute.  constitution        explicitly       boundary check.
-                 in 560ns.           approves.
+                 in benchmarked Rust paths. approves.
 ```
 
 **The Critical Structural Boundary:** The Proposer can never act as its own Validator.

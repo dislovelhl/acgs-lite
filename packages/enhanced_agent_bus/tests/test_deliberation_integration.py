@@ -288,7 +288,8 @@ class TestExecuteRouting:
 
     @pytest.mark.asyncio
     async def test_fast_lane_routing(self):
-        router = AsyncMock()
+        router = MagicMock()
+        router.set_impact_threshold = MagicMock()
         router.route_message = AsyncMock(return_value={"lane": "fast"})
         layer = _build_layer(adaptive_router=router)
         msg = _make_message(impact_score=0.1)

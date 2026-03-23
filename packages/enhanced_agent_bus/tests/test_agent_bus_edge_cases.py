@@ -192,6 +192,7 @@ class TestDegradedMode:
             content={"action": "test"},
             priority=Priority.MEDIUM,
             constitutional_hash=constitutional_hash,
+            metadata={"prevalidated": True},
             tenant_id=None,
         )
 

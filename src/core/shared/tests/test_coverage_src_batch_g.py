@@ -10,6 +10,7 @@ import base64
 import os
 import threading
 import time
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -488,6 +489,16 @@ class TestIsProductionEnvironment:
             mock_settings.env = "production"
             assert ad_mod._is_production_environment() is True
 
+    def test_missing_settings_env_defaults_to_non_production(self):
+        with (
+            patch.object(ad_mod, "settings", SimpleNamespace()),
+            patch.dict(os.environ, {}, clear=True),
+        ):
+            os.environ.pop("AGENT_RUNTIME_ENVIRONMENT", None)
+            os.environ.pop("ENVIRONMENT", None)
+            os.environ.pop("ACGS2_ENV", None)
+            assert ad_mod._is_production_environment() is False
+
 
 class TestAuthDisabledRequested:
     def test_disabled_true(self):
@@ -583,11 +594,11 @@ class TestRequireAuth:
             assert exc_info.value.status_code == 401
 
     @pytest.mark.asyncio
-    async def test_no_jwt_secret_raises_500(self):
+    async def test_no_jwt_verification_material_raises_500(self):
         creds = HTTPAuthorizationCredentials(scheme="Bearer", credentials="tok")
         with (
             patch.object(ad_mod, "_auth_disabled_requested", return_value=False),
-            patch.object(ad_mod, "has_jwt_secret", return_value=False),
+            patch.object(ad_mod, "has_jwt_verification_material", return_value=False),
         ):
             with pytest.raises(HTTPException) as exc_info:
                 await require_auth(credentials=creds)
@@ -605,7 +616,7 @@ class TestRequireAuth:
         }
         with (
             patch.object(ad_mod, "_auth_disabled_requested", return_value=False),
-            patch.object(ad_mod, "has_jwt_secret", return_value=True),
+            patch.object(ad_mod, "has_jwt_verification_material", return_value=True),
             patch.object(ad_mod, "verify_token", return_value=mock_claims),
             patch.object(ad_mod, "_check_revocation", new_callable=AsyncMock) as mock_revoke,
         ):
@@ -619,9 +630,9 @@ class TestRequireAuthOptional:
         result = require_auth_optional(credentials=None)
         assert result is None
 
-    def test_no_jwt_secret_returns_none(self):
+    def test_no_jwt_verification_material_returns_none(self):
         creds = HTTPAuthorizationCredentials(scheme="Bearer", credentials="tok")
-        with patch.object(ad_mod, "has_jwt_secret", return_value=False):
+        with patch.object(ad_mod, "has_jwt_verification_material", return_value=False):
             result = require_auth_optional(credentials=creds)
             assert result is None
 
@@ -630,7 +641,7 @@ class TestRequireAuthOptional:
         mock_claims = MagicMock()
         mock_claims.model_dump.return_value = {"sub": "user1"}
         with (
-            patch.object(ad_mod, "has_jwt_secret", return_value=True),
+            patch.object(ad_mod, "has_jwt_verification_material", return_value=True),
             patch.object(ad_mod, "verify_token", return_value=mock_claims),
         ):
             result = require_auth_optional(credentials=creds)
@@ -639,7 +650,7 @@ class TestRequireAuthOptional:
     def test_invalid_token_raises_401(self):
         creds = HTTPAuthorizationCredentials(scheme="Bearer", credentials="bad")
         with (
-            patch.object(ad_mod, "has_jwt_secret", return_value=True),
+            patch.object(ad_mod, "has_jwt_verification_material", return_value=True),
             patch.object(
                 ad_mod, "verify_token",
                 side_effect=HTTPException(status_code=401, detail="expired"),
@@ -652,7 +663,7 @@ class TestRequireAuthOptional:
     def test_server_error_re_raises(self):
         creds = HTTPAuthorizationCredentials(scheme="Bearer", credentials="bad")
         with (
-            patch.object(ad_mod, "has_jwt_secret", return_value=True),
+            patch.object(ad_mod, "has_jwt_verification_material", return_value=True),
             patch.object(
                 ad_mod, "verify_token",
                 side_effect=HTTPException(status_code=500, detail="boom"),

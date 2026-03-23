@@ -233,7 +233,7 @@ class TestClose:
         act._http_client = MagicMock()
         act._http_client.aclose = AsyncMock()
         act._redis_client = MagicMock()
-        act._redis_client.close = AsyncMock()
+        act._redis_client.aclose = AsyncMock()
         act._opa_client = MagicMock()
         act._opa_client.close = AsyncMock()
         act._audit_client = MagicMock()
@@ -242,7 +242,7 @@ class TestClose:
         await act.close()
 
         act._http_client.aclose.assert_awaited_once()
-        act._redis_client.close.assert_awaited_once()
+        act._redis_client.aclose.assert_awaited_once()
         act._opa_client.close.assert_awaited_once()
         act._audit_client.stop.assert_awaited_once()
 

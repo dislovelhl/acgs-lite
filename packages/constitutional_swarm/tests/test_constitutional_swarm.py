@@ -16,6 +16,7 @@ from acgs_lite import (
 from constitutional_swarm.artifact import Artifact, ArtifactStore
 from constitutional_swarm.capability import Capability, CapabilityRegistry
 from constitutional_swarm.contract import ContractStatus, TaskContract
+from constitutional_swarm.execution import ExecutionStatus, WorkReceipt
 from constitutional_swarm.dna import AgentDNA, DNAValidationResult, constitutional_dna
 from constitutional_swarm.swarm import NodeStatus, SwarmExecutor, TaskDAG, TaskNode
 
@@ -147,6 +148,22 @@ class TestConstitutionalDNADecorator:
         assert hasattr(my_agent, "_dna")
         assert my_agent._dna.agent_id == "test-dna"
 
+    def test_decorator_validate_output_false_is_respected(self) -> None:
+        rules = [
+            Rule(
+                id="CUSTOM-OUT-001",
+                text="Must not emit secrets",
+                severity="critical",
+                keywords=["secret"],
+            ),
+        ]
+
+        @constitutional_dna(rules=rules, validate_output=False)
+        def my_agent(input: str) -> str:
+            return "secret"
+
+        assert my_agent("safe input") == "secret"
+
     @pytest.mark.asyncio
     async def test_async_decorator(self) -> None:
         @constitutional_dna(agent_id="async-01")
@@ -239,6 +256,18 @@ class TestCapabilityRegistry:
         assert s["capabilities"] == 2
         assert s["domains"] == 2
 
+    def test_reregister_replaces_stale_indexes(self) -> None:
+        reg = CapabilityRegistry()
+        reg.register("agent-01", [Capability(name="legacy", domain="old")])
+        reg.register("agent-01", [Capability(name="current", domain="new")])
+
+        assert [c.name for c in reg.get_agent_capabilities("agent-01")] == ["current"]
+        assert reg.find_by_domain("old") == []
+        assert reg.find_by_name("legacy") == []
+        assert [(aid, cap.name) for aid, cap in reg.find_by_domain("new")] == [
+            ("agent-01", "current")
+        ]
+
 
 # ---------------------------------------------------------------------------
 # Task Contracts
@@ -278,6 +307,22 @@ class TestTaskContract:
         claimed = original.claim("a1")
         assert original.status == ContractStatus.PENDING
         assert claimed.status == ContractStatus.CLAIMED
+
+    def test_contract_status_aliases_shared_execution_model(self) -> None:
+        contract = TaskContract(title="Task")
+        claimed = contract.claim("agent-01")
+
+        assert contract.execution_status is ExecutionStatus.READY
+        assert claimed.execution_status is ExecutionStatus.CLAIMED
+        assert NodeStatus.READY is ExecutionStatus.READY
+
+    def test_task_contract_is_work_receipt_alias(self) -> None:
+        contract = TaskContract(title="Task")
+        assert isinstance(contract, WorkReceipt)
+
+    def test_contract_status_values_remain_backward_compatible(self) -> None:
+        assert ContractStatus.PENDING.value == "pending"
+        assert ContractStatus.IN_PROGRESS.value == "in_progress"
 
 
 # ---------------------------------------------------------------------------
@@ -397,6 +442,12 @@ class TestTaskDAG:
         )
         return dag
 
+    def test_to_contracts_maps_blocked_nodes_to_pending_receipts(self) -> None:
+        dag = self._sample_dag()
+        receipts = dag.to_contracts()
+        assert {receipt.task_id for receipt in receipts} == {"A", "B", "C", "D"}
+        assert all(receipt.status == ContractStatus.PENDING for receipt in receipts)
+
     def test_ready_nodes_root(self) -> None:
         dag = self._sample_dag().mark_ready()
         ready = [n for n in dag.nodes.values() if n.status == NodeStatus.READY]
@@ -442,6 +493,14 @@ class TestTaskDAG:
         contracts = dag.to_contracts(constitutional_hash="abc123")
         assert len(contracts) == 4
         assert all(c.constitutional_hash == "abc123" for c in contracts)
+
+    def test_missing_dependency_raises_on_mark_ready(self) -> None:
+        dag = TaskDAG(goal="Broken DAG").add_node(
+            TaskNode(node_id="A", title="A", depends_on=("missing",))
+        )
+
+        with pytest.raises(KeyError, match="missing"):
+            dag.mark_ready()
 
 
 class TestSwarmExecutor:
@@ -558,6 +617,30 @@ class TestSwarmExecutor:
         assert executor.is_complete
         assert store.count == 4
         assert executor.progress == {"completed": 4}
+
+    def test_submit_requires_claim(self) -> None:
+        registry = CapabilityRegistry()
+        registry.register("backend-01", [Capability(name="implement", domain="backend")])
+        store = ArtifactStore()
+        executor = SwarmExecutor(registry, store)
+
+        dag = TaskDAG(goal="Build feature").add_node(
+            TaskNode(node_id="B", title="Backend", domain="backend")
+        )
+        executor.load_dag(dag)
+
+        with pytest.raises(ValueError, match="not claimed"):
+            executor.submit(
+                "B",
+                Artifact(
+                    artifact_id="art-B",
+                    task_id="B",
+                    agent_id="backend-01",
+                    content_type="code",
+                    content="Backend implementation",
+                    domain="backend",
+                ),
+            )
 
 
 # ---------------------------------------------------------------------------

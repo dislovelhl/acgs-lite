@@ -29,9 +29,14 @@ mlruns/
 .env
 .env.*
 !.env.example
+.venv/
+.uv-cache/
 
 # Node
 node_modules/
+
+# Wrangler (Cloudflare Workers local state)
+.wrangler/
 
 # IDE
 .vscode/
@@ -46,6 +51,12 @@ constitutional-sentinel-demo/
 # OS
 .DS_Store
 Thumbs.db
+
+# Screenshots (local captures)
+screenshot*.png
+
+# Revenue logs (operational data)
+x402_revenue.jsonl
 
 # Legacy / stale copies
 src/acgs_lite/

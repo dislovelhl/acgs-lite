@@ -47,6 +47,8 @@ class CapabilityRegistry:
 
     def register(self, agent_id: str, capabilities: list[Capability]) -> None:
         """Register an agent's capabilities."""
+        if agent_id in self._by_agent:
+            self.unregister(agent_id)
         self._by_agent[agent_id] = list(capabilities)
         for cap in capabilities:
             domain_list = self._by_domain.setdefault(cap.domain, [])

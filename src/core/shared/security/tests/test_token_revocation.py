@@ -99,6 +99,15 @@ class TestInit:
         svc = _make_service(None)
         assert svc._use_redis is False
 
+    def test_runtime_environment_prefers_environment_over_defaulted_settings_env(self, monkeypatch):
+        from src.core.shared.security import token_revocation
+
+        monkeypatch.setattr(token_revocation.settings, "env", "development")
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.setenv("ENVIRONMENT", "production")
+
+        assert token_revocation._runtime_environment() == "production"
+
 
 # ---------------------------------------------------------------------------
 # close()

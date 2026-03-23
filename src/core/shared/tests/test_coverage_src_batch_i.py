@@ -1605,6 +1605,7 @@ class TestJITProvisionerORM:
 
         mock_session = AsyncMock()
         mock_session.execute.return_value = mock_result
+        mock_session.add = MagicMock()
 
         p = JITProvisioner(default_roles=["viewer"])
         p1, p2, p3 = _provisioning_orm_patches(mock_user_module)

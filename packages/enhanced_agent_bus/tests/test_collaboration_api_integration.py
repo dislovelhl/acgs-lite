@@ -3,8 +3,8 @@
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
+import importlib
 import os
-import sys
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -12,18 +12,16 @@ import pytest
 # The api_integration module imports CollaborationConfig from the collaboration
 # __init__.py, which may not re-export it.  Patch the collaboration package to
 # expose CollaborationConfig before importing the module under test.
-from enhanced_agent_bus.collaboration.models import CollaborationConfig
-
 import enhanced_agent_bus.collaboration as _collab_pkg
+from enhanced_agent_bus.collaboration.models import CollaborationConfig
 
 if not hasattr(_collab_pkg, "CollaborationConfig"):
     _collab_pkg.CollaborationConfig = CollaborationConfig  # type: ignore[attr-defined]
 
-from enhanced_agent_bus.collaboration.api_integration import (
-    CollaborationAPI,
-    _ALLOWED_JWT_ALGORITHMS,
-    create_collaboration_app,
-)
+_api_integration = importlib.import_module("enhanced_agent_bus.collaboration.api_integration")
+CollaborationAPI = _api_integration.CollaborationAPI
+_ALLOWED_JWT_ALGORITHMS = _api_integration._ALLOWED_JWT_ALGORITHMS
+create_collaboration_app = _api_integration.create_collaboration_app
 
 
 # ---------------------------------------------------------------------------
@@ -347,14 +345,44 @@ class TestRouteRegistration:
         assert mock_app.get.call_count >= 4
         assert mock_app.post.call_count >= 2
 
-    def test_mount_to_app_registers_routes(self):
+    def test_mount_to_app_registers_routes_and_lifecycle_handlers(self):
         api = _make_api()
         mock_app = MagicMock()
         mock_app.get.return_value = lambda f: f
         mock_app.post.return_value = lambda f: f
-        mock_app.on_event.return_value = lambda f: f
+        lifecycle_handlers: dict[str, object] = {}
+        mock_app.add_event_handler.side_effect = lifecycle_handlers.__setitem__
         api.mount_to_app(mock_app)
         assert mock_app.get.call_count >= 4
+        assert set(lifecycle_handlers) == {"startup", "shutdown"}
+
+    @pytest.mark.asyncio
+    async def test_mount_to_app_startup_initializes_and_mounts_socket_app(self):
+        api = _make_api()
+        mock_app = MagicMock()
+        mock_app.get.return_value = lambda f: f
+        mock_app.post.return_value = lambda f: f
+        lifecycle_handlers: dict[str, object] = {}
+        mock_app.add_event_handler.side_effect = lifecycle_handlers.__setitem__
+
+        socket_app = MagicMock()
+        mock_server = MagicMock()
+        mock_server.get_asgi_app.return_value = socket_app
+
+        async def initialize_server() -> None:
+            api.server = mock_server
+
+        api.initialize = AsyncMock(side_effect=initialize_server)
+        api.shutdown = AsyncMock()
+
+        api.mount_to_app(mock_app, path="/embedded-collaboration")
+
+        await lifecycle_handlers["startup"]()
+        api.initialize.assert_awaited_once()
+        mock_app.mount.assert_called_once_with("/embedded-collaboration", socket_app)
+
+        await lifecycle_handlers["shutdown"]()
+        api.shutdown.assert_awaited_once()
 
 
 # ---------------------------------------------------------------------------

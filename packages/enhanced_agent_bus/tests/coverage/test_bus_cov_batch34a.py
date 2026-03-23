@@ -157,12 +157,13 @@ class TestValidateIntegrity:
         result = c.validate_integrity()
         assert any("unknown workflow_action" in w for w in result["warnings"])
 
-    def test_no_keywords_rejected_on_construction(self):
-        """Rules with no keywords are caught at construction time."""
-        with pytest.raises(Exception, match="no keywords"):
-            Constitution(rules=[
-                Rule(id="BARE", text="No signals", severity=Severity.LOW),
-            ])
+    def test_no_keywords_warn_via_integrity_validation(self):
+        """Rules with no keywords are accepted, but flagged as non-matching."""
+        c = Constitution(rules=[
+            Rule(id="BARE", text="No signals", severity=Severity.LOW),
+        ])
+        result = c.validate_integrity()
+        assert any("no keywords or patterns" in w for w in result["warnings"])
 
     def test_no_workflow_action_warning(self):
         rules = [_simple_rule("NW1", workflow_action="")]

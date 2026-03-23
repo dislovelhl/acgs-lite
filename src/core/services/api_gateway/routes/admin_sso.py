@@ -31,6 +31,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field, field_validator
 
 from src.core.shared.config import settings
+from src.core.shared.config.runtime_environment import resolve_runtime_environment
 from src.core.shared.structured_logging import get_logger
 from src.core.shared.types import JSONDict
 
@@ -51,6 +52,10 @@ security = HTTPBearer(auto_error=False)
 # This mimics database storage until proper database sessions are wired up
 _sso_providers: dict[str, JSONDict] = {}
 _role_mappings: dict[str, JSONDict] = {}
+
+
+def _runtime_environment() -> str:
+    return resolve_runtime_environment(getattr(settings, "env", None))
 
 
 # ========================================
@@ -337,7 +342,7 @@ async def get_current_admin(
     # Check for development mode bypass — requires explicit opt-in via env var
     # to prevent accidental activation in non-development environments.
     dev_bypass_enabled = os.getenv("ACGS_DEV_ADMIN_BYPASS", "").lower() in ("1", "true", "yes")
-    if dev_bypass_enabled and settings.env == "development" and settings.sso.enabled is False:
+    if dev_bypass_enabled and _runtime_environment() == "development" and settings.sso.enabled is False:
         logger.warning(
             "Development admin bypass enabled - SSO disabled (ACGS_DEV_ADMIN_BYPASS=true)",
             extra={"constitutional_hash": CONSTITUTIONAL_HASH},

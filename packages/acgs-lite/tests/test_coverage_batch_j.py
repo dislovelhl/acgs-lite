@@ -790,7 +790,7 @@ class TestCloudRunServer:
             srv._bot = original_bot
 
     def test_get_webhook_handler_default_secret(self):
-        """Uses default-secret when GITLAB_WEBHOOK_SECRET is empty."""
+        """When GITLAB_WEBHOOK_SECRET is empty, handler is NOT created (security hardening)."""
         import acgs_lite.integrations.cloud_run_server as srv
 
         mock_bot = MagicMock()
@@ -803,9 +803,8 @@ class TestCloudRunServer:
             with patch.object(srv, "_GITLAB_WEBHOOK_SECRET", ""), \
                  patch.object(srv, "GitLabWebhookHandler", mock_handler_cls):
                 srv._get_webhook_handler()
-            call_kwargs = mock_handler_cls.call_args
-            assert call_kwargs[1]["webhook_secret"] == "default-secret" or \
-                   call_kwargs[0][0] == "default-secret" if call_kwargs[0] else True
+            # Security hardening: empty secret → handler must NOT be instantiated
+            mock_handler_cls.assert_not_called()
         finally:
             srv._webhook_handler = original_wh
             srv._bot = original_bot

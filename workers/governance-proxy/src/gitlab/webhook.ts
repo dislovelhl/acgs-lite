@@ -6,7 +6,7 @@
 import type { Env, GovernanceResult } from "../types.ts";
 import { loadConstitution } from "../governance/constitution-store.ts";
 import { buildProofHeader, createProof } from "../governance/proof.ts";
-import { writeAuditRecord } from "../audit/d1-audit-log.ts";
+import { persistAuditWithPolicy } from "../audit/d1-audit-log.ts";
 import { generateRequestId } from "../util/ids.ts";
 
 interface MergeRequestEvent {
@@ -30,6 +30,23 @@ interface DiffEntry {
   diff: string;
 }
 
+function isLegacyWebhookSecretFallbackEnabled(env: Env): boolean {
+  const raw = env.ALLOW_LEGACY_UPSTREAM_WEBHOOK_SECRET?.trim().toLowerCase();
+  return raw === "true" || raw === "1" || raw === "yes";
+}
+
+function resolveWebhookSecret(env: Env): string | null {
+  if (env.GITLAB_WEBHOOK_SECRET) {
+    return env.GITLAB_WEBHOOK_SECRET;
+  }
+
+  if (isLegacyWebhookSecretFallbackEnabled(env) && env.UPSTREAM_API_KEY) {
+    return env.UPSTREAM_API_KEY;
+  }
+
+  return null;
+}
+
 /// Handle a GitLab MR webhook event.
 export async function handleGitLabWebhook(
   request: Request,
@@ -39,8 +56,16 @@ export async function handleGitLabWebhook(
 ): Promise<Response> {
   // Verify webhook secret
   const secret = request.headers.get("x-gitlab-token");
-  const expectedSecret = env.UPSTREAM_API_KEY; // reuse this env var for webhook secret
-  if (expectedSecret && secret !== expectedSecret) {
+  const expectedSecret = resolveWebhookSecret(env);
+
+  if (!expectedSecret) {
+    return new Response(JSON.stringify({ error: "GitLab webhook secret not configured" }), {
+      status: 503,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  if (secret !== expectedSecret) {
     return new Response(JSON.stringify({ error: "Invalid webhook token" }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
@@ -178,20 +203,33 @@ export async function handleGitLabWebhook(
   }
 
   // Audit log
-  ctx.waitUntil(
-    writeAuditRecord(env.AUDIT_DB, {
-      request_id: requestId,
-      phase: "request",
-      valid: passed,
-      violations_json: JSON.stringify(allViolations),
-      constitutional_hash: constHash,
-      timestamp: new Date().toISOString(),
-      tenant_id: `gitlab:${projectId}`,
-      endpoint: "webhook",
-      model: "gitlab-duo",
-      latency_ms: latency,
-    }),
-  );
+  const auditResult = await persistAuditWithPolicy(env, ctx, {
+    request_id: requestId,
+    phase: "request",
+    valid: passed,
+    violations_json: JSON.stringify(allViolations),
+    constitutional_hash: constHash,
+    timestamp: new Date().toISOString(),
+    tenant_id: `gitlab:${projectId}`,
+    endpoint: "webhook",
+    model: "gitlab-duo",
+    latency_ms: latency,
+  });
+  if (auditResult && !auditResult.persisted) {
+    return new Response(
+      JSON.stringify({
+        error: "Governance audit unavailable",
+        detail: auditResult.error ?? "Audit persistence failed",
+      }),
+      {
+        status: 503,
+        headers: {
+          "Content-Type": "application/json",
+          "X-Request-Id": requestId,
+        },
+      },
+    );
+  }
 
   const proof = createProof(requestId, "request", constHash, passed, totalRulesChecked);
 

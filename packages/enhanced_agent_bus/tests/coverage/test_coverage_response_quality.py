@@ -13,7 +13,7 @@ Tests:
 
 from __future__ import annotations
 
-import asyncio
+import inspect
 import time
 from typing import Any
 from unittest.mock import AsyncMock, patch
@@ -326,7 +326,7 @@ class _TestAdapter:
 
             async def _execute(self, request: str) -> str:
                 fn = self._exec_fn
-                if asyncio.iscoroutinefunction(fn):
+                if inspect.iscoroutinefunction(fn):
                     return await fn(request)
                 return fn(request)
 

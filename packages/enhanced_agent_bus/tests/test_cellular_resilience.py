@@ -42,6 +42,7 @@ class TestCellularResilience:
                 from_agent="tester",
                 to_agent="worker",
                 constitutional_hash=CONSTITUTIONAL_HASH,
+                metadata={"prevalidated": True},
             )
 
             result = await bus.send_message(message)
@@ -119,6 +120,7 @@ class TestCellularResilience:
                     from_agent="tester",
                     to_agent="worker",
                     constitutional_hash=CONSTITUTIONAL_HASH,
+                    metadata={"prevalidated": True},
                 )
                 tasks.append(bus.send_message(msg))
 

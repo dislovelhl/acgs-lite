@@ -76,8 +76,6 @@ def validate_rules(constitution: Any) -> list[str]:
         if len(rule.text) > 1000:
             errors.append(f"Rule {rule.id}: text too long (>1000 chars)")
 
-        if not rule.keywords:
-            errors.append(f"Rule {rule.id}: no keywords defined")
         if len(rule.keywords) > 50:
             errors.append(f"Rule {rule.id}: too many keywords (>50)")
 

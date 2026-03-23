@@ -41,3 +41,8 @@ export function invalidateCache(): void {
   cachedConfig = null;
   cachedHash = null;
 }
+
+/// Test helper to inspect the isolate cache state.
+export function getCachedConstitutionHash(): string | null {
+  return cachedHash;
+}

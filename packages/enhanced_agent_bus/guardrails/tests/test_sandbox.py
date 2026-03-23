@@ -161,10 +161,12 @@ class TestDockerSandboxProvider:
             assert config["name"] == "test-container"
             assert config["working_dir"] == "/test"
             assert config["user"] == "1000:1000"
-            assert config["host_config"]["read_only"] is True
-            assert config["host_config"]["network_mode"] == "none"
-            assert config["host_config"]["mem_limit"] == "1024m"
-            assert config["host_config"]["nano_cpus"] == 1_000_000_000
+            assert config["read_only"] is True
+            assert config["network_mode"] == "none"
+            assert config["mem_limit"] == "1024m"
+            assert config["nano_cpus"] == 1_000_000_000
+            assert config["cap_drop"] == ["ALL"]
+            assert "no-new-privileges:true" in config["security_opt"]
 
     async def test_script_generation(self):
         """Test execution script generation."""
@@ -465,7 +467,7 @@ class TestToolRunnerSandbox:
 
         result = await sandbox.process(
             data={"test": "value"},
-            context={"trace_id": "test-trace"},
+            context={"trace_id": "test-trace", "should_sandbox": True},
         )
 
         assert result.allowed is True
@@ -484,7 +486,7 @@ class TestToolRunnerSandbox:
 
         result = await sandbox.process(
             data={"test": "value"},
-            context={"trace_id": "test-trace"},
+            context={"trace_id": "test-trace", "should_sandbox": True},
         )
 
         assert result.allowed is True
@@ -514,7 +516,7 @@ class TestToolRunnerSandbox:
 
         result = await sandbox.process(
             data={"test": "value"},
-            context={"trace_id": "test-trace"},
+            context={"trace_id": "test-trace", "should_sandbox": True},
         )
 
         assert result.allowed is False
@@ -540,7 +542,7 @@ class TestToolRunnerSandbox:
 
         result = await sandbox.process(
             data={"test": "value"},
-            context={"trace_id": "test-trace"},
+            context={"trace_id": "test-trace", "should_sandbox": True},
         )
 
         assert result.allowed is False

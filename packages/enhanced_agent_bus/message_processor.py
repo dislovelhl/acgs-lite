@@ -244,20 +244,7 @@ class MessageProcessor:
         )
         self.constitutional_hash = CONSTITUTIONAL_HASH
         self._audit_client = kwargs.get("audit_client")
-        self._opa_client = None
-        if not self._isolated_mode:
-            try:
-                self._opa_client = get_opa_client()
-            except Exception:
-                if _OPAClient is not None:
-                    try:
-                        self._opa_client = _OPAClient()
-                    except Exception:
-                        logger.debug(
-                            "OPA client unavailable during message processor initialization"
-                        )
-                else:
-                    logger.debug("OPA client unavailable during message processor initialization")
+        self._opa_client = self._initialize_opa_client()
         self._constitutional_verifier = kwargs.get("constitutional_verifier")
         # OPTIMIZATION: Increased cache size from 1000 to 10000 for enterprise scale
         # At 6,471 RPS, 1000 entries caused high cache churn (~seconds to evict)
@@ -280,13 +267,7 @@ class MessageProcessor:
         self._pqc_service = kwargs.get("pqc_service")
         self._pqc_config = None
 
-        if self._enable_pqc and not self._pqc_service:
-            self._pqc_service = build_pqc_service(self.config)
-            if not self._pqc_service:
-                self._enable_pqc = False
-
-        if self._pqc_service:
-            self._pqc_config = getattr(self._pqc_service, "config", None)
+        self._configure_pqc(build_pqc_service)
 
         self._processing_strategy = (
             kwargs.get("processing_strategy") or self._auto_select_strategy()
@@ -303,18 +284,7 @@ class MessageProcessor:
         self._enable_session_governance = (
             self.config.enable_session_governance and not self._isolated_mode
         )
-        self._session_context_manager: SessionContextManager | None = None
-        if self._enable_session_governance:
-            try:
-                # Initialize session context manager with config TTL
-                self._session_context_manager = SessionContextManager(
-                    cache_size=1000,
-                    cache_ttl=self.config.session_policy_cache_ttl,
-                )
-                logger.info("Session governance enabled for message processor")
-            except (AttributeError, OSError, RuntimeError, TypeError, ValueError) as e:
-                logger.warning(f"Failed to initialize session context manager: {e}")
-                self._enable_session_governance = False
+        self._session_context_manager = self._initialize_session_context_manager()
 
         # Session resolution metrics (GIL-protected, no lock needed for simple increments)
         self._session_resolved_count = 0
@@ -337,27 +307,11 @@ class MessageProcessor:
         self._agent_workflow_metrics = (
             get_agent_workflow_metrics_collector() if AGENT_WORKFLOW_METRICS_AVAILABLE else None
         )
-        self._session_resolver = kwargs.get("session_resolver") or SessionContextResolver(
-            config=self.config,
-            manager=self._session_context_manager,
-        )
+        self._session_resolver = kwargs.get("session_resolver") or self._build_session_resolver()
         self._security_scanner = kwargs.get("security_scanner") or MessageSecurityScanner()
-        self._verification_orchestrator = kwargs.get("verification_orchestrator")
-        if self._verification_orchestrator is None:
-            self._verification_orchestrator = VerificationOrchestrator(
-                config=self.config,
-                enable_pqc=self._enable_pqc,
-            )
-        self._verification_orchestrator.intent_classifier = self.intent_classifier
-        self._verification_orchestrator.asc_verifier = self.asc_verifier
-        self._verification_orchestrator.graph_check = self.graph_check
-        self._verification_orchestrator.pacar_verifier = self.pacar_verifier
-        self._verification_orchestrator.evolution_controller = self.evolution_controller
-        self._verification_orchestrator.ampo_engine = self.ampo_engine
-        self._verification_orchestrator._IntentType = self._IntentType
-        self._verification_orchestrator._enable_pqc = self._enable_pqc
-        self._verification_orchestrator._pqc_service = self._pqc_service
-        self._verification_orchestrator._pqc_config = self._pqc_config
+        self._verification_orchestrator = self._build_verification_orchestrator(
+            kwargs.get("verification_orchestrator")
+        )
 
         # MCP integration — initialised lazily via initialize_mcp(); None until then
         self._mcp_pool: MCPClientPool | None = None  # type: ignore[type-arg]
@@ -366,6 +320,76 @@ class MessageProcessor:
                 "cache_hash_mode=fast requested but acgs2_perf.fast_hash unavailable; "
                 "falling back to sha256"
             )
+
+    def _initialize_opa_client(self) -> object | None:
+        if self._isolated_mode:
+            return None
+        try:
+            return get_opa_client()
+        except Exception:
+            if _OPAClient is not None:
+                try:
+                    return _OPAClient()
+                except Exception:
+                    logger.debug("OPA client unavailable during message processor initialization")
+                    return None
+            logger.debug("OPA client unavailable during message processor initialization")
+            return None
+
+    def _configure_pqc(
+        self,
+        build_pqc_service_func: Callable[[BusConfiguration], object | None],
+    ) -> None:
+        if self._enable_pqc and not self._pqc_service:
+            self._pqc_service = build_pqc_service_func(self.config)
+            if not self._pqc_service:
+                self._enable_pqc = False
+
+        if self._pqc_service:
+            self._pqc_config = getattr(self._pqc_service, "config", None)
+
+    def _initialize_session_context_manager(self) -> SessionContextManager | None:
+        if not self._enable_session_governance:
+            return None
+        try:
+            manager = SessionContextManager(
+                cache_size=1000,
+                cache_ttl=self.config.session_policy_cache_ttl,
+            )
+            logger.info("Session governance enabled for message processor")
+            return manager
+        except (AttributeError, OSError, RuntimeError, TypeError, ValueError) as e:
+            logger.warning(f"Failed to initialize session context manager: {e}")
+            self._enable_session_governance = False
+            return None
+
+    def _build_session_resolver(self) -> SessionContextResolver:
+        return SessionContextResolver(
+            config=self.config,
+            manager=self._session_context_manager,
+        )
+
+    def _build_verification_orchestrator(
+        self,
+        orchestrator: object | None,
+    ) -> VerificationOrchestrator:
+        verification_orchestrator = orchestrator
+        if verification_orchestrator is None:
+            verification_orchestrator = VerificationOrchestrator(
+                config=self.config,
+                enable_pqc=self._enable_pqc,
+            )
+        verification_orchestrator.intent_classifier = self.intent_classifier
+        verification_orchestrator.asc_verifier = self.asc_verifier
+        verification_orchestrator.graph_check = self.graph_check
+        verification_orchestrator.pacar_verifier = self.pacar_verifier
+        verification_orchestrator.evolution_controller = self.evolution_controller
+        verification_orchestrator.ampo_engine = self.ampo_engine
+        verification_orchestrator._IntentType = self._IntentType
+        verification_orchestrator._enable_pqc = self._enable_pqc
+        verification_orchestrator._pqc_service = self._pqc_service
+        verification_orchestrator._pqc_config = self._pqc_config
+        return verification_orchestrator  # type: ignore[return-value]
 
     def _record_agent_workflow_event(
         self,
@@ -404,29 +428,63 @@ class MessageProcessor:
         py_proc = PythonProcessingStrategy(StaticHashValidationStrategy(strict=True))
         if self._isolated_mode:
             return py_proc
+        base = self._build_base_processing_strategy(
+            default_strategy=py_proc,
+            composite_strategy_cls=CompositeProcessingStrategy,
+            rust_strategy_cls=RustProcessingStrategy,
+            opa_strategy_cls=OPAProcessingStrategy,
+            python_strategy_cls=PythonProcessingStrategy,
+            static_hash_validation_cls=StaticHashValidationStrategy,
+        )
+        return self._wrap_processing_strategy_with_maci(
+            base_strategy=base,
+            maci_strategy_cls=MACIProcessingStrategy,
+        )
+
+    def _build_base_processing_strategy(
+        self,
+        *,
+        default_strategy: ProcessingStrategy,
+        composite_strategy_cls: type,
+        rust_strategy_cls: type,
+        opa_strategy_cls: type,
+        python_strategy_cls: type,
+        static_hash_validation_cls: type,
+    ) -> ProcessingStrategy:
         strategies: list[ProcessingStrategy] = []
         if self._rust_processor and self._use_rust:
-            strategies.append(RustProcessingStrategy(self._rust_processor, rust_bus))
+            strategies.append(rust_strategy_cls(self._rust_processor, rust_bus))
         if self._use_dynamic_policy and self._opa_client:
-            strategies.append(OPAProcessingStrategy(self._opa_client))
-
-        # Add Constitutional Verifier if available
+            strategies.append(opa_strategy_cls(self._opa_client))
         if self._constitutional_verifier:
             strategies.append(
-                PythonProcessingStrategy(
-                    StaticHashValidationStrategy(
+                python_strategy_cls(
+                    static_hash_validation_cls(
                         strict=True
                     )  # ConstitutionalValidationStrategy not available as ValidStrategy
                 )
             )
+        strategies.append(default_strategy)
+        return (
+            composite_strategy_cls(strategies)
+            if len(strategies) > 1
+            else strategies[0]
+        )
 
-        strategies.append(py_proc)
-        base = CompositeProcessingStrategy(strategies) if len(strategies) > 1 else strategies[0]
-        if self._enable_maci:
-            return MACIProcessingStrategy(
-                base, self._maci_registry, self._maci_enforcer, self._maci_strict_mode
-            )
-        return base
+    def _wrap_processing_strategy_with_maci(
+        self,
+        *,
+        base_strategy: ProcessingStrategy,
+        maci_strategy_cls: type,
+    ) -> ProcessingStrategy:
+        if not self._enable_maci:
+            return base_strategy
+        return maci_strategy_cls(
+            base_strategy,
+            self._maci_registry,
+            self._maci_enforcer,
+            self._maci_strict_mode,
+        )
 
     @timed("extract_session_context")
     async def _extract_session_context(self, msg: AgentMessage) -> SessionContext | None:
@@ -907,17 +965,14 @@ class MessageProcessor:
             Dictionary containing processed count, failed count, success rate,
             strategy information, and feature flags.
         """
+        metrics = self._build_base_metrics()
+        self._apply_metrics_enrichment(metrics)
+        return metrics
+
+    def _build_base_metrics(self) -> JSONDict:
         total = self._processed_count + self._failed_count
         success_rate = self._processed_count / max(1, total) if total > 0 else 0.0
-
-        # Calculate session resolution metrics
-        session_resolution_rate = calculate_session_resolution_rate(
-            self._session_resolved_count,
-            self._session_not_found_count,
-            self._session_error_count,
-        )
-
-        metrics = {
+        return {
             "processed_count": self._processed_count,
             "failed_count": self._failed_count,
             "success_rate": success_rate,
@@ -936,7 +991,12 @@ class MessageProcessor:
             "pqc_migration_phase": self._pqc_config.migration_phase if self._pqc_config else None,
         }
 
-        # Add session governance metrics
+    def _apply_metrics_enrichment(self, metrics: JSONDict) -> None:
+        session_resolution_rate = calculate_session_resolution_rate(
+            self._session_resolved_count,
+            self._session_not_found_count,
+            self._session_error_count,
+        )
         apply_session_governance_metrics(
             metrics,
             enabled=self._enable_session_governance,
@@ -945,14 +1005,10 @@ class MessageProcessor:
             error_count=self._session_error_count,
             resolution_rate=session_resolution_rate,
         )
-
         enrich_metrics_with_opa_stats(metrics, self._opa_client)
-
         collector = getattr(self, "_agent_workflow_metrics", None)
         if collector is not None and not enrich_metrics_with_workflow_telemetry(metrics, collector):
             logger.debug("Unable to enrich metrics with workflow telemetry", exc_info=True)
-
-        return metrics
 
     def _set_strategy(self, strategy: ProcessingStrategy) -> None:
         self._processing_strategy = strategy

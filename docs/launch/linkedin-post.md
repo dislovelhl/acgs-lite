@@ -12,9 +12,7 @@ I spent two years building the solution:
 
 Five lines of Python. Nine regulatory frameworks. Tamper-evident audit trail.
 
-```
 pip install acgs
-```
 
 What it covers:
 → EU AI Act (Articles 12, 13, 14)
@@ -39,7 +37,10 @@ I have no CS degree. I built this entirely with Claude (Anthropic's AI assistant
 
 That's the democratization that matters.
 
+Watch the 7-minute walkthrough: https://youtu.be/do9BCPn29_Q
+
+Website: https://acgs.ai
 PyPI: https://pypi.org/project/acgs/
-GitHub: https://github.com/acgs-ai/acgs-lite
+GitHub: https://github.com/acgs2_admin/acgs
 
 #AIGovernance #EUAIAct #AI #Compliance #OpenSource

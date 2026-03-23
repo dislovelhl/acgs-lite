@@ -92,6 +92,7 @@ class AgentDNA:
         agent_id: str = "anonymous",
         maci_role: MACIRole | None = None,
         strict: bool = True,
+        validate_output: bool = True,
     ) -> AgentDNA:
         """Create DNA from a list of rules."""
         return cls(
@@ -99,6 +100,7 @@ class AgentDNA:
             agent_id=agent_id,
             maci_role=maci_role,
             strict=strict,
+            validate_output=validate_output,
         )
 
     @classmethod
@@ -109,6 +111,7 @@ class AgentDNA:
         agent_id: str = "anonymous",
         maci_role: MACIRole | None = None,
         strict: bool = True,
+        validate_output: bool = True,
     ) -> AgentDNA:
         """Create DNA from a YAML constitution file."""
         return cls(
@@ -116,6 +119,7 @@ class AgentDNA:
             agent_id=agent_id,
             maci_role=maci_role,
             strict=strict,
+            validate_output=validate_output,
         )
 
     @classmethod
@@ -124,12 +128,14 @@ class AgentDNA:
         *,
         agent_id: str = "anonymous",
         maci_role: MACIRole | None = None,
+        validate_output: bool = True,
     ) -> AgentDNA:
         """Create DNA with the default ACGS constitution."""
         return cls(
             constitution=Constitution.default(),
             agent_id=agent_id,
             maci_role=maci_role,
+            validate_output=validate_output,
         )
 
     def disable(self) -> None:
@@ -285,13 +291,25 @@ def constitutional_dna(
             )
         if rules is not None:
             return AgentDNA.from_rules(
-                rules, agent_id=agent_id, maci_role=maci_role, strict=strict
+                rules,
+                agent_id=agent_id,
+                maci_role=maci_role,
+                strict=strict,
+                validate_output=validate_output,
             )
         if yaml_path is not None:
             return AgentDNA.from_yaml(
-                yaml_path, agent_id=agent_id, maci_role=maci_role, strict=strict
+                yaml_path,
+                agent_id=agent_id,
+                maci_role=maci_role,
+                strict=strict,
+                validate_output=validate_output,
             )
-        return AgentDNA.default(agent_id=agent_id, maci_role=maci_role)
+        return AgentDNA.default(
+            agent_id=agent_id,
+            maci_role=maci_role,
+            validate_output=validate_output,
+        )
 
     def decorator(f: F) -> F:
         dna = _build_dna()

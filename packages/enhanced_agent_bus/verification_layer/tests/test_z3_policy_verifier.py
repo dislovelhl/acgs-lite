@@ -65,7 +65,7 @@ class TestZ3PolicyVerifierCreation:
         verifier = create_z3_verifier()
         assert verifier is not None
         assert verifier.default_timeout_ms == 5000
-        assert verifier.enable_heuristic_fallback
+        assert not verifier.enable_heuristic_fallback
 
     def test_custom_timeout(self):
         """Test verifier with custom timeout."""
@@ -300,7 +300,7 @@ class TestPolicyVerificationRequest:
         assert request.policy_id == "policy-001"
         assert request.policy_text == "Users must authenticate."
         assert request.timeout_ms == 5000
-        assert request.use_heuristic_fallback
+        assert not request.use_heuristic_fallback
         assert request.constitutional_hash == CONSTITUTIONAL_HASH
 
     def test_request_with_constraints(self):

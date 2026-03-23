@@ -28,6 +28,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
 from src.core.shared.config import settings
+from src.core.shared.config.runtime_environment import resolve_runtime_environment
 from src.core.shared.structured_logging import get_logger
 
 logger = get_logger(__name__)
@@ -35,8 +36,12 @@ _SAFE_METHODS = frozenset({"GET", "HEAD", "OPTIONS", "TRACE"})
 _NON_PRODUCTION_ENVS = frozenset({"development", "dev", "test", "testing", "local", "ci"})
 
 
+def _runtime_environment() -> str:
+    return resolve_runtime_environment(getattr(settings, "env", None))
+
+
 def _is_production_like_environment() -> bool:
-    return settings.env not in _NON_PRODUCTION_ENVS
+    return _runtime_environment() not in _NON_PRODUCTION_ENVS
 
 
 def _parse_bool_env(value: str | None) -> bool:
@@ -94,7 +99,7 @@ class CSRFConfig:
         if _is_production_like_environment():
             raise OSError(
                 "CSRF_SECRET environment variable is required in production-like environments. "
-                f"Current environment: {settings.env!r}"
+                f"Current environment: {_runtime_environment()!r}"
             )
         if not (
             _parse_bool_env(os.getenv("CSRF_ALLOW_EPHEMERAL_SECRET"))

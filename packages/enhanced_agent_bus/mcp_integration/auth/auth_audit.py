@@ -535,6 +535,27 @@ class AuthAuditLogger:
         since = since or datetime.now(UTC) - timedelta(hours=24)
         until = until or datetime.now(UTC)
 
+        async with self._lock:
+            entries = list(self._entries)
+
+        return self._build_stats(entries, since, until)
+
+    def get_stats_snapshot(
+        self,
+        since: datetime | None = None,
+        until: datetime | None = None,
+    ) -> AuthAuditStats:
+        """Return a synchronous in-memory stats snapshot for diagnostics."""
+        since = since or datetime.now(UTC) - timedelta(hours=24)
+        until = until or datetime.now(UTC)
+        return self._build_stats(list(self._entries), since, until)
+
+    def _build_stats(
+        self,
+        entries: list[AuthAuditEntry],
+        since: datetime,
+        until: datetime,
+    ) -> AuthAuditStats:
         events_by_type: dict[str, int] = defaultdict(int)
         events_by_severity: dict[str, int] = defaultdict(int)
         agents: set[str] = set()
@@ -543,24 +564,23 @@ class AuthAuditLogger:
         failures = 0
         total = 0
 
-        async with self._lock:
-            for entry in self._entries:
-                if entry.timestamp < since or entry.timestamp > until:
-                    continue
+        for entry in entries:
+            if entry.timestamp < since or entry.timestamp > until:
+                continue
 
-                total += 1
-                events_by_type[entry.event_type.value] += 1
-                events_by_severity[entry.severity.value] += 1
+            total += 1
+            events_by_type[entry.event_type.value] += 1
+            events_by_severity[entry.severity.value] += 1
 
-                if entry.success:
-                    successes += 1
-                else:
-                    failures += 1
+            if entry.success:
+                successes += 1
+            else:
+                failures += 1
 
-                if entry.agent_id:
-                    agents.add(entry.agent_id)
-                if entry.tool_name:
-                    tools.add(entry.tool_name)
+            if entry.agent_id:
+                agents.add(entry.agent_id)
+            if entry.tool_name:
+                tools.add(entry.tool_name)
 
         return AuthAuditStats(
             total_events=total,

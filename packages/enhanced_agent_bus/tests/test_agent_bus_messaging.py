@@ -16,6 +16,7 @@ try:
         get_agent_bus,
         reset_agent_bus,
     )
+    from enhanced_agent_bus.bus.messaging import MessageHandler
     from enhanced_agent_bus.exceptions import (
         BusNotStartedError,
         ConstitutionalHashMismatchError,
@@ -33,6 +34,7 @@ except ImportError:
 
     sys.path.insert(0, "/home/martin/ACGS")
     from enhanced_agent_bus.agent_bus import EnhancedAgentBus
+    from enhanced_agent_bus.bus.messaging import MessageHandler
     from enhanced_agent_bus.models import (
         CONSTITUTIONAL_HASH,
         AgentMessage,
@@ -211,6 +213,53 @@ class TestMessageSending:
 
         updated_metrics = started_agent_bus.get_metrics()
         assert updated_metrics["messages_failed"] == initial_metrics["messages_failed"] + 1
+
+
+class TestMessageHandlerFallback:
+    async def test_fallback_denies_without_explicit_prevalidation(self, sample_message):
+        processor = MagicMock()
+        processor.process = AsyncMock(side_effect=RuntimeError("processor down"))
+        handler = MessageHandler(
+            processor=processor,
+            router_component=MagicMock(),
+            registry_manager=MagicMock(),
+            governance=MagicMock(),
+            validator=MagicMock(),
+            message_queue=MagicMock(),
+            deliberation_queue=None,
+            metering_manager=MagicMock(),
+            kafka_bus=None,
+            metrics={},
+            config={},
+        )
+
+        result = await handler.process_message_with_fallback(sample_message)
+
+        assert result.is_valid is False
+        assert result.decision == "DENY"
+
+    async def test_fallback_allows_when_explicitly_prevalidated(self, sample_message):
+        processor = MagicMock()
+        processor.process = AsyncMock(side_effect=RuntimeError("processor down"))
+        sample_message.metadata["prevalidated"] = True
+        handler = MessageHandler(
+            processor=processor,
+            router_component=MagicMock(),
+            registry_manager=MagicMock(),
+            governance=MagicMock(),
+            validator=MagicMock(),
+            message_queue=MagicMock(),
+            deliberation_queue=None,
+            metering_manager=MagicMock(),
+            kafka_bus=None,
+            metrics={},
+            config={},
+        )
+
+        result = await handler.process_message_with_fallback(sample_message)
+
+        assert result.is_valid is True
+        assert result.decision == "ALLOW"
 
 
 # =============================================================================

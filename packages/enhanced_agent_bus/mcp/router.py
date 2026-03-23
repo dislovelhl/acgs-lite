@@ -80,6 +80,7 @@ except ImportError:
 from enhanced_agent_bus.bus_types import JSONDict
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
+from .client import _validate_maci_role
 from .pool import MCPClientPool
 from .types import MCPTool, MCPToolResult, MCPToolStatus
 
@@ -640,6 +641,26 @@ class MCPRouter:
                 constitutional_hash=CONSTITUTIONAL_HASH,
             )
 
+            valid_role, role_or_reason = _validate_maci_role(request.maci_role)
+            if not valid_role:
+                latency_ms = _elapsed_ms(t_start)
+                logger.warning(
+                    "mcp_router_invalid_maci_role",
+                    tool_name=request.tool_name,
+                    agent_id=request.agent_id,
+                    maci_role=request.maci_role,
+                    request_id=request_id,
+                    reason=role_or_reason,
+                    constitutional_hash=CONSTITUTIONAL_HASH,
+                )
+                return _build_forbidden_response(
+                    request=request,
+                    server_id=request.server_id or "<unresolved>",
+                    error=role_or_reason,
+                    latency_ms=latency_ms,
+                    request_id=request_id,
+                )
+
             # -- Resolve server id and category ----------------------------
             server_id, tool = self._resolve_server_id(request)
 
@@ -960,6 +981,29 @@ def _build_error_response(
         latency_ms=latency_ms,
         constitutional_hash=CONSTITUTIONAL_HASH,
         circuit_breaker_state=circuit_breaker_state,
+        metadata={**request.metadata, "request_id": request_id},
+    )
+
+
+def _build_forbidden_response(
+    *,
+    request: ToolRequest,
+    server_id: str,
+    error: str,
+    latency_ms: float,
+    request_id: str,
+) -> ToolResponse:
+    """Construct a uniform forbidden :class:`ToolResponse`."""
+    return ToolResponse(
+        request_id=request_id,
+        tool_name=request.tool_name,
+        server_id=server_id,
+        status=MCPToolStatus.FORBIDDEN.value,
+        error=error,
+        category=ToolCategory.GENERAL.value,
+        latency_ms=latency_ms,
+        constitutional_hash=CONSTITUTIONAL_HASH,
+        circuit_breaker_state=_CircuitState.CLOSED.value,
         metadata={**request.metadata, "request_id": request_id},
     )
 

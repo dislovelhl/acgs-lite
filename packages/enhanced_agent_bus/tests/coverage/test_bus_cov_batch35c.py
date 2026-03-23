@@ -305,12 +305,16 @@ class TestCircuitBreakerFallback:
         # Put a request that will fail into the queue
         req = QueuedRequest(id="req-drop", args=(), kwargs={}, queued_at=time.time())
         cb._retry_queue.append(req)
+        injected_filler = False
 
         async def fail_and_fill(*args, **kwargs):
+            nonlocal injected_filler
             # After the handler is called, inject another item so the queue is full
             # when the re-queue attempt happens (len=1 >= max_size=1)
-            filler = QueuedRequest(id="filler", args=(), kwargs={}, queued_at=time.time())
-            cb._retry_queue.append(filler)
+            if not injected_filler:
+                filler = QueuedRequest(id="filler", args=(), kwargs={}, queued_at=time.time())
+                cb._retry_queue.append(filler)
+                injected_filler = True
             raise RuntimeError("fail")
 
         results = await cb.process_retry_queue(fail_and_fill)

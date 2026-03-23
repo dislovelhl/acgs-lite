@@ -586,8 +586,42 @@ class TestSecurityPydanticSettings:
 
     # -- SSOSettings ------------------------------------------------------
 
-    def test_sso_settings_defaults(self):
+    def test_sso_settings_defaults(self, monkeypatch: pytest.MonkeyPatch):
         mod = _import_security_pydantic()
+        for env_var in (
+            "SSO_ENABLED",
+            "OIDC_ENABLED",
+            "OIDC_CLIENT_ID",
+            "OIDC_CLIENT_SECRET",
+            "OIDC_ISSUER_URL",
+            "OIDC_SCOPES",
+            "OIDC_USE_PKCE",
+            "SAML_ENABLED",
+            "SAML_ENTITY_ID",
+            "SAML_SIGN_REQUESTS",
+            "SAML_WANT_ASSERTIONS_SIGNED",
+            "SAML_WANT_ASSERTIONS_ENCRYPTED",
+            "SAML_SP_CERTIFICATE",
+            "SAML_SP_PRIVATE_KEY",
+            "SAML_IDP_METADATA_URL",
+            "SAML_IDP_SSO_URL",
+            "SAML_IDP_SLO_URL",
+            "SAML_IDP_CERTIFICATE",
+            "SSO_AUTO_PROVISION",
+            "SSO_DEFAULT_ROLE",
+            "SSO_ALLOWED_DOMAINS",
+            "WORKOS_ENABLED",
+            "WORKOS_API_BASE_URL",
+            "WORKOS_CLIENT_ID",
+            "WORKOS_API_KEY",
+            "WORKOS_WEBHOOK_SECRET",
+            "WORKOS_WEBHOOK_DEDUPE_TTL_SECONDS",
+            "WORKOS_WEBHOOK_FAIL_CLOSED",
+            "WORKOS_PORTAL_DEFAULT_INTENT",
+            "WORKOS_PORTAL_RETURN_URL",
+            "WORKOS_PORTAL_SUCCESS_URL",
+        ):
+            monkeypatch.delenv(env_var, raising=False)
         s = mod.SSOSettings()
         assert s.enabled is True
         assert s.session_lifetime_seconds == 3600
@@ -853,8 +887,42 @@ class TestSecurityDataclassFallback:
 
     # -- SSOSettings (dataclass) ------------------------------------------
 
-    def test_sso_settings_defaults(self):
+    def test_sso_settings_defaults(self, monkeypatch: pytest.MonkeyPatch):
         mod = _import_security_dataclass()
+        for env_var in (
+            "SSO_ENABLED",
+            "OIDC_ENABLED",
+            "OIDC_CLIENT_ID",
+            "OIDC_CLIENT_SECRET",
+            "OIDC_ISSUER_URL",
+            "OIDC_SCOPES",
+            "OIDC_USE_PKCE",
+            "SAML_ENABLED",
+            "SAML_ENTITY_ID",
+            "SAML_SIGN_REQUESTS",
+            "SAML_WANT_ASSERTIONS_SIGNED",
+            "SAML_WANT_ASSERTIONS_ENCRYPTED",
+            "SAML_SP_CERTIFICATE",
+            "SAML_SP_PRIVATE_KEY",
+            "SAML_IDP_METADATA_URL",
+            "SAML_IDP_SSO_URL",
+            "SAML_IDP_SLO_URL",
+            "SAML_IDP_CERTIFICATE",
+            "SSO_AUTO_PROVISION",
+            "SSO_DEFAULT_ROLE",
+            "SSO_ALLOWED_DOMAINS",
+            "WORKOS_ENABLED",
+            "WORKOS_API_BASE_URL",
+            "WORKOS_CLIENT_ID",
+            "WORKOS_API_KEY",
+            "WORKOS_WEBHOOK_SECRET",
+            "WORKOS_WEBHOOK_DEDUPE_TTL_SECONDS",
+            "WORKOS_WEBHOOK_FAIL_CLOSED",
+            "WORKOS_PORTAL_DEFAULT_INTENT",
+            "WORKOS_PORTAL_RETURN_URL",
+            "WORKOS_PORTAL_SUCCESS_URL",
+        ):
+            monkeypatch.delenv(env_var, raising=False)
         s = mod.SSOSettings()
         assert s.enabled is True
         assert s.session_lifetime_seconds == 3600

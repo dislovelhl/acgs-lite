@@ -6,8 +6,19 @@ export interface Env {
   CONSTITUTIONS: KVNamespace;
   AUDIT_DB: D1Database;
   CONSTITUTIONAL_HASH: string;
+  AUDIT_FAIL_CLOSED?: string;
   UPSTREAM_API_KEY?: string;
+  GITLAB_WEBHOOK_SECRET?: string;
+  ALLOW_LEGACY_UPSTREAM_WEBHOOK_SECRET?: string;
   ADMIN_SECRET?: string;
+}
+
+export interface AuditStatus {
+  tenant_id: string;
+  degraded: boolean;
+  last_error: string | null;
+  updated_at: string;
+  last_chain_hash: string | null;
 }
 
 export interface GovernanceContext {
@@ -44,6 +55,7 @@ export interface AuditRecord {
   valid: boolean;
   violations_json: string;
   constitutional_hash: string;
+  prev_chain_hash?: string;
   chain_hash: string;
   timestamp: string;
   tenant_id: string;

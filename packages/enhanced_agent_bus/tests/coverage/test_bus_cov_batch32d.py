@@ -453,7 +453,10 @@ class TestVerifyPolicyHeuristicFallbackZ3Unavailable:
         False,
     )
     async def test_z3_unavailable_heuristic_with_violations(self):
-        verifier = Z3PolicyVerifier(heuristic_threshold=0.99)
+        verifier = Z3PolicyVerifier(
+            enable_heuristic_fallback=True,
+            heuristic_threshold=0.99,
+        )
         constraint = PolicyConstraint(
             name="Obligation: strict",
             confidence=0.5,
@@ -462,6 +465,7 @@ class TestVerifyPolicyHeuristicFallbackZ3Unavailable:
         request = PolicyVerificationRequest(
             policy_id="heur1",
             constraints=[constraint],
+            use_heuristic_fallback=True,
         )
         result = await verifier.verify_policy(request)
         assert result.status == Z3VerificationStatus.HEURISTIC_FALLBACK
@@ -474,7 +478,10 @@ class TestVerifyPolicyHeuristicFallbackZ3Unavailable:
         False,
     )
     async def test_z3_unavailable_heuristic_verified(self):
-        verifier = Z3PolicyVerifier(heuristic_threshold=0.5)
+        verifier = Z3PolicyVerifier(
+            enable_heuristic_fallback=True,
+            heuristic_threshold=0.5,
+        )
         constraint = PolicyConstraint(
             name="Obligation: easy",
             confidence=0.85,
@@ -483,6 +490,7 @@ class TestVerifyPolicyHeuristicFallbackZ3Unavailable:
         request = PolicyVerificationRequest(
             policy_id="heur2",
             constraints=[constraint],
+            use_heuristic_fallback=True,
         )
         result = await verifier.verify_policy(request)
         assert result.status == Z3VerificationStatus.HEURISTIC_FALLBACK

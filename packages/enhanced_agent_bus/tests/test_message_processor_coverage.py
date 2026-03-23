@@ -165,6 +165,36 @@ class TestMessageProcessorInit:
         assert processor._maci_enforcer == mock_enforcer
         assert processor._maci_strict_mode is False
 
+    def test_session_governance_disables_on_manager_init_failure(self):
+        """Session governance fails closed when the context manager cannot initialize."""
+        with patch(
+            "enhanced_agent_bus.message_processor.SessionContextManager",
+            side_effect=RuntimeError("boom"),
+        ):
+            processor = MessageProcessor()
+
+        assert processor._enable_session_governance is False
+        assert processor._session_context_manager is None
+
+    def test_custom_verification_orchestrator_is_wired_with_runtime_dependencies(self):
+        """Injected orchestrator still receives verifier and PQC wiring."""
+        orchestrator = MagicMock()
+        processor = MessageProcessor(
+            isolated_mode=True,
+            enable_pqc=False,
+            verification_orchestrator=orchestrator,
+        )
+
+        assert processor._verification_orchestrator is orchestrator
+        assert orchestrator.intent_classifier is processor.intent_classifier
+        assert orchestrator.asc_verifier is processor.asc_verifier
+        assert orchestrator.graph_check is processor.graph_check
+        assert orchestrator.pacar_verifier is processor.pacar_verifier
+        assert orchestrator.evolution_controller is processor.evolution_controller
+        assert orchestrator.ampo_engine is processor.ampo_engine
+        assert orchestrator._IntentType is processor._IntentType
+        assert orchestrator._enable_pqc is processor._enable_pqc
+
 
 class TestMessageProcessorHandlers:
     """Tests for handler registration."""
@@ -281,6 +311,33 @@ class TestMessageProcessorMetrics:
 
         # Should not raise, uses max(1, ...) to prevent division by zero
         assert metrics["success_rate"] == 0.0
+
+    def test_metrics_enrichment_includes_session_and_workflow_telemetry(self):
+        """Metrics enrichment preserves session governance and workflow telemetry fields."""
+        processor = MessageProcessor(isolated_mode=True, enable_pqc=False)
+        processor._enable_session_governance = True
+        processor._session_resolved_count = 4
+        processor._session_not_found_count = 1
+        processor._session_error_count = 1
+        collector = MagicMock()
+        collector.snapshot.return_value = {
+            "intervention_rate": 0.25,
+            "gate_failures_total": 2,
+            "rollback_triggers_total": 1,
+            "autonomous_actions_total": 9,
+        }
+        processor._agent_workflow_metrics = collector
+
+        metrics = processor.get_metrics()
+
+        assert metrics["session_governance_enabled"] is True
+        assert metrics["session_resolved_count"] == 4
+        assert metrics["session_not_found_count"] == 1
+        assert metrics["session_error_count"] == 1
+        assert "session_resolution_rate" in metrics
+        assert metrics["workflow_intervention_rate"] == 0.25
+        assert metrics["workflow_gate_failures_total"] == 2
+        collector.snapshot.assert_called_once()
 
 
 class TestPromptInjectionDetection:
@@ -577,3 +634,13 @@ class TestMessageProcessorProcessingStrategy:
             or "isolated" in strategy_name.lower()
             or strategy_name is not None
         )
+
+    def test_wrap_processing_strategy_with_maci_disabled_returns_base(self):
+        """MACI wrapper helper returns base strategy unchanged when disabled."""
+        processor = MessageProcessor(isolated_mode=True, enable_maci=False)
+        base_strategy = MagicMock()
+        wrapped = processor._wrap_processing_strategy_with_maci(
+            base_strategy=base_strategy,
+            maci_strategy_cls=MagicMock(),
+        )
+        assert wrapped is base_strategy

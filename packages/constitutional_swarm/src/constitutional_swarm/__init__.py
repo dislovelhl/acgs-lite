@@ -15,6 +15,7 @@ Four breakthrough patterns:
 
 from constitutional_swarm.dna import constitutional_dna, AgentDNA, DNADisabledError
 from constitutional_swarm.capability import Capability, CapabilityRegistry
+from constitutional_swarm.execution import WorkReceipt, ExecutionStatus
 from constitutional_swarm.contract import TaskContract, ContractStatus
 from constitutional_swarm.artifact import Artifact, ArtifactStore
 from constitutional_swarm.swarm import SwarmExecutor, TaskDAG, TaskNode
@@ -29,6 +30,8 @@ __all__ = [
     "DNADisabledError",
     "Capability",
     "CapabilityRegistry",
+    "WorkReceipt",
+    "ExecutionStatus",
     "TaskContract",
     "ContractStatus",
     "Artifact",

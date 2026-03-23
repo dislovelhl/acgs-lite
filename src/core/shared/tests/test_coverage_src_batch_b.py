@@ -499,14 +499,14 @@ class TestRateLimitMiddleware:
         del request.state.user
         assert mw._get_tenant_id(request) == "tenant-xyz"
 
-    def test_get_tenant_id_from_header(self):
+    def test_get_tenant_id_ignores_untrusted_header(self):
         mw = RateLimitMiddleware(MagicMock(), config=RateLimitConfig())
         request = MagicMock()
         request.state = MagicMock(spec=[])  # No attributes on state
         request.headers = {"X-Tenant-ID": "header-tenant"}
         request.url.path = "/api"
         request.client.host = "127.0.0.1"
-        assert mw._get_tenant_id(request) == "header-tenant"
+        assert mw._get_tenant_id(request) is None
 
     def test_get_tenant_id_none(self):
         mw = RateLimitMiddleware(MagicMock(), config=RateLimitConfig())

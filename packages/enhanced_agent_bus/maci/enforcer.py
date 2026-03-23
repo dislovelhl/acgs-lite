@@ -259,7 +259,10 @@ class MACIEnforcer:
         session_id: str | None,
     ) -> None:
         """Validate self-validation and cross-role constraints for output ownership."""
-        producer_id = await self.registry.get_output_producer(target_output_id)
+        producer_id = await self.registry.get_output_producer(
+            target_output_id,
+            session_id=session_id,
+        )
         if producer_id == agent_id or target_output_id in rec.outputs:
             result = MACIValidationResult(
                 is_valid=False,

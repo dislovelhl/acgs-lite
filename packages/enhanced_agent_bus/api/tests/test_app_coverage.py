@@ -12,9 +12,9 @@ import sys
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from httpx import ASGITransport, AsyncClient
 from fastapi import FastAPI
 from fastapi.routing import APIRouter
-from fastapi.testclient import TestClient
 
 # Import the module under test. We use importlib to get the actual module
 # object (not the FastAPI `app` instance that `api/__init__.py` re-exports
@@ -751,6 +751,7 @@ class TestLifespanStartup:
             patch.object(app_module, "PostgresWorkflowRepository", return_value=fake_repo),
             patch.object(app_module, "DurableWorkflowExecutor", return_value=MagicMock()),
             patch.object(app_module, "logger", mock_logger),
+            patch.object(app_module, "_load_sessions_module", return_value=None),
             patch.dict(
                 "os.environ",
                 {
@@ -759,14 +760,8 @@ class TestLifespanStartup:
                 },
             ),
         ):
-            # Remove sessions from sys.modules to force ImportError in lifespan
-            saved = sys.modules.pop("enhanced_agent_bus.routes.sessions", None)
-            try:
-                async with app_module._lifespan_context(fake_app):
-                    assert fake_app.state.agent_bus is fake_mp
-            finally:
-                if saved is not None:
-                    sys.modules["enhanced_agent_bus.routes.sessions"] = saved
+            async with app_module._lifespan_context(fake_app):
+                assert fake_app.state.agent_bus is fake_mp
 
 
 # ---------------------------------------------------------------------------
@@ -846,7 +841,7 @@ class TestLifespanShutdown:
         fake_bus_mod.CACHE_WARMING_AVAILABLE = True
         fake_bus_mod.get_cache_warmer = MagicMock(return_value=fake_warmer)
 
-        with patch.dict(sys.modules, {"packages.enhanced_agent_bus": fake_bus_mod}):
+        with patch.dict(sys.modules, {"enhanced_agent_bus": fake_bus_mod}):
             await self._run_full_lifespan(fake_app)
 
         fake_warmer.cancel.assert_called_once()
@@ -861,7 +856,7 @@ class TestLifespanShutdown:
         fake_bus_mod.CACHE_WARMING_AVAILABLE = True
         fake_bus_mod.get_cache_warmer = MagicMock(return_value=fake_warmer)
 
-        with patch.dict(sys.modules, {"packages.enhanced_agent_bus": fake_bus_mod}):
+        with patch.dict(sys.modules, {"enhanced_agent_bus": fake_bus_mod}):
             await self._run_full_lifespan(fake_app)
 
         fake_warmer.cancel.assert_not_called()
@@ -873,7 +868,7 @@ class TestLifespanShutdown:
         fake_bus_mod.CACHE_WARMING_AVAILABLE = False
         fake_bus_mod.get_cache_warmer = None
 
-        with patch.dict(sys.modules, {"packages.enhanced_agent_bus": fake_bus_mod}):
+        with patch.dict(sys.modules, {"enhanced_agent_bus": fake_bus_mod}):
             await self._run_full_lifespan(fake_app)
         # No exception expected
 
@@ -929,7 +924,7 @@ class TestLifespanShutdown:
 
         with (
             patch.object(app_module, "logger", mock_logger),
-            patch.dict(sys.modules, {"packages.enhanced_agent_bus": fake_bus_mod}),
+            patch.dict(sys.modules, {"enhanced_agent_bus": fake_bus_mod}),
         ):
             # Should not raise
             await self._run_full_lifespan(fake_app)
@@ -1027,14 +1022,18 @@ class TestLifespanShutdown:
 
 
 class TestAppHealthEndpoint:
-    def test_health_endpoint_accessible(self):
+    @pytest.mark.asyncio
+    async def test_health_endpoint_accessible(self):
         """Verify the app can respond to /health."""
-        client = TestClient(app_module.app, raise_server_exceptions=False)
-        response = client.get("/health")
+        transport = ASGITransport(app=app_module.app)
+        async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+            response = await client.get("/health")
         assert response.status_code in (200, 503, 422, 404)
 
-    def test_docs_endpoint_accessible(self):
+    @pytest.mark.asyncio
+    async def test_docs_endpoint_accessible(self):
         """Verify the OpenAPI docs endpoint is accessible."""
-        client = TestClient(app_module.app, raise_server_exceptions=False)
-        response = client.get("/openapi.json")
+        transport = ASGITransport(app=app_module.app)
+        async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+            response = await client.get("/openapi.json")
         assert response.status_code in (200, 404)

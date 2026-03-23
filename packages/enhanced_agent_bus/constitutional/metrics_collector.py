@@ -8,6 +8,7 @@ throughput) for constitutional amendment monitoring and automated rollback.
 
 import json
 import sys
+from collections.abc import Mapping
 from datetime import UTC, datetime, timezone
 
 from pydantic import BaseModel, Field
@@ -647,7 +648,8 @@ class GovernanceMetricsCollector:
     async def _get_request_counters(self) -> dict[str, int]:
         """Get request counters."""
         try:
-            counters = await self.redis_client.hgetall("governance:metrics:requests")
+            counters_raw = await self.redis_client.hgetall("governance:metrics:requests")
+            counters = counters_raw if isinstance(counters_raw, Mapping) else {}
             return {
                 "total": int(counters.get("total", 0)),
                 "approved": int(counters.get("approved", 0)),
@@ -687,7 +689,8 @@ class GovernanceMetricsCollector:
     async def _get_deliberation_metrics(self) -> JSONDict:
         """Get deliberation metrics."""
         try:
-            counters = await self.redis_client.hgetall("governance:metrics:deliberations")
+            counters_raw = await self.redis_client.hgetall("governance:metrics:deliberations")
+            counters = counters_raw if isinstance(counters_raw, Mapping) else {}
             total = int(counters.get("total", 0))
             success = int(counters.get("success", 0))
             failed = int(counters.get("failed", 0))

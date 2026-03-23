@@ -390,8 +390,18 @@ class TestGracefulDegradation:
     def test_without_redis_fails_closed_in_production_like_env(self, monkeypatch):
         from src.core.shared.config import settings
 
-        # _allow_degraded_mode_without_redis() reads settings.env, not env vars.
         monkeypatch.setattr(settings, "env", "production")
+        monkeypatch.delenv("OAUTH_STATE_ALLOW_DEGRADED_MODE", raising=False)
+
+        with pytest.raises(OSError, match="Redis is required for OAuth2StateManager"):
+            OAuth2StateManager(redis_client=None)
+
+    def test_without_redis_fails_closed_when_only_environment_is_production(self, monkeypatch):
+        from src.core.shared.config import settings
+
+        monkeypatch.setattr(settings, "env", "development")
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.setenv("ENVIRONMENT", "production")
         monkeypatch.delenv("OAUTH_STATE_ALLOW_DEGRADED_MODE", raising=False)
 
         with pytest.raises(OSError, match="Redis is required for OAuth2StateManager"):

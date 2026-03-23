@@ -651,10 +651,10 @@ class TestDegradedMode:
     async def test_degraded_mode_still_validates_hash(
         self, started_agent_bus, constitutional_hash, mock_processor
     ):
-        """Test that degraded mode still validates constitutional hash."""
+        """Test degraded mode denies fallback without explicit prevalidation."""
         mock_processor.process = AsyncMock(side_effect=Exception("Processor failure"))
 
-        # Message with correct hash should pass
+        # Correct hash alone is insufficient without explicit prevalidation metadata.
         message_valid = AgentMessage(
             message_id=str(uuid.uuid4()),
             from_agent="sender",
@@ -667,7 +667,30 @@ class TestDegradedMode:
         )
 
         result = await started_agent_bus.send_message(message_valid)
+        assert result.is_valid is False
+        assert "explicit prevalidation" in result.errors[0]
+
+    async def test_degraded_mode_allows_prevalidated_message(
+        self, started_agent_bus, constitutional_hash, mock_processor
+    ):
+        """Test degraded mode allows explicitly prevalidated messages with valid hash."""
+        mock_processor.process = AsyncMock(side_effect=Exception("Processor failure"))
+
+        message_valid = AgentMessage(
+            message_id=str(uuid.uuid4()),
+            from_agent="sender",
+            to_agent="receiver",
+            message_type=MessageType.GOVERNANCE_REQUEST,
+            content={"action": "test"},
+            priority=Priority.MEDIUM,
+            constitutional_hash=constitutional_hash,
+            tenant_id=None,
+            metadata={"prevalidated": True},
+        )
+
+        result = await started_agent_bus.send_message(message_valid)
         assert result.is_valid is True
+        assert result.metadata.get("governance_mode") == "DEGRADED"
 
     async def test_degraded_mode_rejects_invalid_hash(self, started_agent_bus, mock_processor):
         """Test that degraded mode rejects invalid constitutional hash."""

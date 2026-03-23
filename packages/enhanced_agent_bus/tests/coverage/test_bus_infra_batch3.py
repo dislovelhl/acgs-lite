@@ -24,6 +24,7 @@ from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from src.core.shared.constants import MACIRole
 
 # ---------------------------------------------------------------------------
 # agent_health/detectors.py
@@ -700,9 +701,9 @@ class TestMACIToolFilter:
         flt = create_maci_tool_filter(strict_mode=True, audit_denials=False)
         assert flt.check_access("unknown_role", "anything") is False
 
-    def test_unknown_role_non_strict_permits(self):
+    def test_unknown_role_non_strict_still_denies(self):
         flt = create_maci_tool_filter(strict_mode=False, audit_denials=False)
-        assert flt.check_access("unknown_role", "anything") is True
+        assert flt.check_access("unknown_role", "anything") is False
 
     def test_filter_tools_preserves_order(self):
         flt = create_maci_tool_filter(audit_denials=False)
@@ -747,6 +748,11 @@ class TestMACIToolFilter:
     def test_string_role_coercion(self):
         flt = create_maci_tool_filter()
         assert flt.check_access("proposer", "audit_query_logs") is True
+
+    def test_canonical_role_projection(self):
+        flt = create_maci_tool_filter()
+        assert flt.check_access(MACIRole.EXECUTIVE, "audit_query_logs") is True
+        assert flt.check_access(MACIRole.CONTROLLER, "policy_apply_v2") is True
 
     def test_check_access_with_extra_context(self):
         flt = create_maci_tool_filter(audit_denials=True)

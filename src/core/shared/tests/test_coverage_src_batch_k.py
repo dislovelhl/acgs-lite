@@ -131,8 +131,24 @@ class TestVaultSettings:
 
 
 class TestSSOSettings:
-    def test_sso_defaults(self):
+    def test_sso_defaults(self, monkeypatch: pytest.MonkeyPatch):
         from src.core.shared.config.security import SSOSettings
+
+        for env_var in (
+            "SSO_ENABLED",
+            "OIDC_ENABLED",
+            "OIDC_USE_PKCE",
+            "SAML_ENABLED",
+            "SAML_SIGN_REQUESTS",
+            "SAML_WANT_ASSERTIONS_SIGNED",
+            "SAML_WANT_ASSERTIONS_ENCRYPTED",
+            "SSO_AUTO_PROVISION",
+            "SSO_DEFAULT_ROLE",
+            "WORKOS_ENABLED",
+            "WORKOS_API_BASE_URL",
+            "SSO_TRUSTED_HOSTS",
+        ):
+            monkeypatch.delenv(env_var, raising=False)
 
         s = SSOSettings()
         assert s.enabled is True

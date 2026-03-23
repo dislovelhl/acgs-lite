@@ -15,7 +15,7 @@ ACGS is a multi-package governance codebase:
 - **Frontend and edge** (`packages/propriety-ai/`, `workers/governance-proxy/`) — SvelteKit UI
   and a Cloudflare Worker proxy.
 
-Constitutional hash: `cdd01ef066bc6cf2`.
+Constitutional hash: `608508a9bd224290`.
 
 Primary languages: Python first, TypeScript second, Rust for hot paths, Markdown for operating
 docs.
@@ -88,6 +88,12 @@ Preferred defaults:
 Avoid:
 - `--dangerously-bypass-approvals-and-sandbox`
 - Running Codex outside repo root
+
+## Evals
+
+Eval definitions live in `.claude/evals/`. Dashboard: `.claude/evals/DASHBOARD.md`.
+Four suites: MCP server, GitLab pipeline, Cloud Run, demo project.
+Run evals with the bash snippets in each eval `.md` file from repo root.
 
 ## Architecture
 

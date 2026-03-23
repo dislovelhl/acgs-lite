@@ -1441,8 +1441,8 @@ class TestMACIProcessingStrategy:
         )
         msg = _make_agent_message()
         result = await strat.process(msg, {})
-        # Non-tuple treated as (True, None)
-        assert result.is_valid is True
+        assert result.is_valid is False
+        assert result.errors == ["TypeError: Unsupported MACI validation result contract"]
 
     async def test_maci_no_validate_method(self):
         from enhanced_agent_bus.processing_strategies import MACIProcessingStrategy
@@ -1457,7 +1457,8 @@ class TestMACIProcessingStrategy:
         )
         msg = _make_agent_message()
         result = await strat.process(msg, {})
-        assert result.is_valid is True
+        assert result.is_valid is False
+        assert result.errors == ["RuntimeError: MACI validator does not expose validate(msg)"]
 
     async def test_maci_validator_exception_strict(self):
         from enhanced_agent_bus.processing_strategies import MACIProcessingStrategy

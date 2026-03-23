@@ -5,6 +5,8 @@ Constitutional Hash: cdd01ef066bc6cf2
 """
 
 import json
+import importlib
+import sys
 from dataclasses import dataclass
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -250,6 +252,49 @@ class TestGovernedGenAI:
 
 @pytest.mark.integration
 class TestMCPServer:
+    @pytest.fixture(autouse=True)
+    def _ensure_real_mcp(self):
+        """Reload the pip-installed MCP package even when bus paths shadow it."""
+        saved_mcp_modules = {
+            key: sys.modules[key]
+            for key in list(sys.modules)
+            if key == "mcp" or key.startswith("mcp.")
+        }
+
+        for key in list(sys.modules):
+            if key == "mcp" or key.startswith("mcp."):
+                del sys.modules[key]
+
+        real_mcp_spec = importlib.util.find_spec("mcp")
+        if real_mcp_spec is None or (
+            real_mcp_spec.origin and "enhanced_agent_bus" in real_mcp_spec.origin
+        ):
+            bus_paths = [path for path in sys.path if "enhanced_agent_bus" in path]
+            for path in bus_paths:
+                sys.path.remove(path)
+            try:
+                for key in list(sys.modules):
+                    if key == "mcp" or key.startswith("mcp."):
+                        del sys.modules[key]
+                import mcp  # noqa: F401
+            finally:
+                for path in reversed(bus_paths):
+                    sys.path.insert(0, path)
+        else:
+            import mcp  # noqa: F401
+
+        if "acgs_lite.integrations.mcp_server" in sys.modules:
+            importlib.reload(sys.modules["acgs_lite.integrations.mcp_server"])
+
+        yield
+
+        for key in list(sys.modules):
+            if key == "mcp" or key.startswith("mcp."):
+                del sys.modules[key]
+        sys.modules.update(saved_mcp_modules)
+        if "acgs_lite.integrations.mcp_server" in sys.modules:
+            importlib.reload(sys.modules["acgs_lite.integrations.mcp_server"])
+
     def test_create_server(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 

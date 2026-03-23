@@ -617,10 +617,25 @@ class AdaptiveGovernanceEngine:
         if decision.impact_level in (ImpactLevel.HIGH, ImpactLevel.CRITICAL):
             return decision
 
+        # Keep the escalated decision internally consistent with downstream validation.
+        escalated_risk_score = min(
+            1.0,
+            max(
+                float(decision.features_used.risk_score),
+                float(risk_score),
+                float(decision.recommended_threshold) + 1e-6,
+            ),
+        )
+        escalated_features = dataclasses.replace(
+            decision.features_used,
+            risk_score=escalated_risk_score,
+        )
+
         return dataclasses.replace(
             decision,
             impact_level=ImpactLevel.HIGH,
             action_allowed=False,
+            features_used=escalated_features,
             reasoning=(
                 f"{decision.reasoning} | DTMC trajectory risk={risk_score:.3f}"
                 " exceeds intervention threshold — escalated to deliberation."

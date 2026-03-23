@@ -33,6 +33,7 @@ from ..rollback_engine import (
     RollbackSagaActivities,
     RollbackStepSpec,
     RollbackTriggerConfig,
+    _build_rollback_context,
     _resolve_rollback_activity_callable,
     create_rollback_saga,
     rollback_amendment,
@@ -353,7 +354,7 @@ class TestInitializeClose:
         await activities.close()
 
         http_mock.aclose.assert_called_once()
-        redis_mock.close.assert_called_once()
+        redis_mock.aclose.assert_called_once()
         opa_mock.close.assert_called_once()
         audit_mock.stop.assert_called_once()
 
@@ -1505,6 +1506,34 @@ class TestCreateRollbackSaga:
 
 
 class TestRollbackAmendment:
+    def test_build_rollback_context_sets_expected_step_results(self):
+        class MockContext:
+            def __init__(self, saga_id, constitutional_hash):
+                self.saga_id = saga_id
+                self.constitutional_hash = constitutional_hash
+                self.values = {}
+
+            def set_step_result(self, key, value):
+                self.values[key] = value
+
+        with patch("enhanced_agent_bus.constitutional.rollback_engine.SagaContext", MockContext):
+            context = _build_rollback_context(
+                saga_id="rollback-123",
+                current_version_id="v-1.1.0",
+                amendment_id="amend-7",
+                rollback_reason=RollbackReason.MANUAL_REQUEST,
+                time_window=TimeWindow.SIX_HOURS,
+            )
+
+        assert context.saga_id == "rollback-123"
+        assert context.constitutional_hash == CONSTITUTIONAL_HASH
+        assert context.values == {
+            "current_version_id": "v-1.1.0",
+            "amendment_id": "amend-7",
+            "rollback_reason": RollbackReason.MANUAL_REQUEST,
+            "time_window": TimeWindow.SIX_HOURS,
+        }
+
     async def test_raises_when_saga_context_unavailable(
         self, mock_storage, mock_metrics_collector, mock_degradation_detector
     ):
@@ -1516,6 +1545,61 @@ class TestRollbackAmendment:
                     metrics_collector=mock_metrics_collector,
                     degradation_detector=mock_degradation_detector,
                 )
+
+    async def test_initializes_executes_and_closes_saga_lifecycle(
+        self, mock_storage, mock_metrics_collector, mock_degradation_detector
+    ):
+        class MockContext:
+            def __init__(self, saga_id, constitutional_hash):
+                self.saga_id = saga_id
+                self.constitutional_hash = constitutional_hash
+                self.values = {}
+
+            def set_step_result(self, key, value):
+                self.values[key] = value
+
+        mock_result = object()
+        captured = {}
+
+        class MockSaga:
+            saga_id = "rollback-saga-42"
+
+            async def execute(self, context):
+                captured["context"] = context
+                return mock_result
+
+        init_mock = AsyncMock()
+        close_mock = AsyncMock()
+
+        with patch("enhanced_agent_bus.constitutional.rollback_engine.SagaContext", MockContext):
+            with patch(
+                "enhanced_agent_bus.constitutional.rollback_engine.create_rollback_saga",
+                return_value=MockSaga(),
+            ):
+                with patch(
+                    "enhanced_agent_bus.constitutional.rollback_engine._initialize_saga_activities",
+                    init_mock,
+                ):
+                    with patch(
+                        "enhanced_agent_bus.constitutional.rollback_engine._close_saga_activities",
+                        close_mock,
+                    ):
+                        result = await rollback_amendment(
+                            current_version_id="v-1.1.0",
+                            storage=mock_storage,
+                            metrics_collector=mock_metrics_collector,
+                            degradation_detector=mock_degradation_detector,
+                            amendment_id="amend-9",
+                            rollback_reason=RollbackReason.EMERGENCY_OVERRIDE,
+                            time_window=TimeWindow.ONE_HOUR,
+                        )
+
+        assert result is mock_result
+        init_mock.assert_awaited_once()
+        close_mock.assert_awaited_once()
+        assert captured["context"].values["current_version_id"] == "v-1.1.0"
+        assert captured["context"].values["amendment_id"] == "amend-9"
+        assert captured["context"].values["rollback_reason"] == RollbackReason.EMERGENCY_OVERRIDE
 
 
 # ---------------------------------------------------------------------------

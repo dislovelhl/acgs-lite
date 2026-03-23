@@ -269,10 +269,37 @@ class TestMCPRouterDiscovery:
 
 class TestMCPRouterExecution:
     @pytest.mark.asyncio
+    async def test_execute_tool_requires_maci_role(self):
+        tool = _make_tool(name="my_tool")
+        pool = _make_pool_mock(tools=[tool])
+        router = MCPRouter(pool=pool)
+        await router.discover_tools()
+
+        resp = await router.execute_tool(ToolRequest(tool_name="my_tool"))
+        assert resp.status == MCPToolStatus.FORBIDDEN.value
+        error = resp.error or ""
+        assert "maci role" in error.lower()
+        assert "required" in error or "unknown or unmapped" in error
+        pool.call_tool.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_execute_tool_rejects_unknown_maci_role(self):
+        tool = _make_tool(name="my_tool")
+        pool = _make_pool_mock(tools=[tool])
+        router = MCPRouter(pool=pool)
+        await router.discover_tools()
+
+        req = ToolRequest(tool_name="my_tool", maci_role="unknown_role")
+        resp = await router.execute_tool(req)
+        assert resp.status == MCPToolStatus.FORBIDDEN.value
+        assert "unknown or unmapped" in (resp.error or "")
+        pool.call_tool.assert_not_awaited()
+
+    @pytest.mark.asyncio
     async def test_execute_tool_not_found(self):
         pool = _make_pool_mock()
         router = MCPRouter(pool=pool)
-        req = ToolRequest(tool_name="nonexistent")
+        req = ToolRequest(tool_name="nonexistent", maci_role="executive")
         resp = await router.execute_tool(req)
         assert resp.status == MCPToolStatus.ERROR.value
         assert "not found" in (resp.error or "")
@@ -291,7 +318,7 @@ class TestMCPRouterExecution:
         router = MCPRouter(pool=pool)
         await router.discover_tools()
 
-        req = ToolRequest(tool_name="my_tool", agent_id="a1")
+        req = ToolRequest(tool_name="my_tool", agent_id="a1", maci_role="executive")
         resp = await router.execute_tool(req)
         assert resp.is_success is True
         assert resp.content == {"result": 42}
@@ -310,7 +337,7 @@ class TestMCPRouterExecution:
         router = MCPRouter(pool=pool)
         await router.discover_tools()
 
-        req = ToolRequest(tool_name="my_tool")
+        req = ToolRequest(tool_name="my_tool", maci_role="executive")
         resp = await router.execute_tool(req)
         assert resp.status == MCPToolStatus.ERROR.value
 
@@ -325,7 +352,7 @@ class TestMCPRouterExecution:
         router = MCPRouter(pool=pool)
         await router.discover_tools()
 
-        req = ToolRequest(tool_name="my_tool")
+        req = ToolRequest(tool_name="my_tool", maci_role="executive")
         resp = await router.execute_tool(req)
         assert resp.status == MCPToolStatus.ERROR.value
         assert "connection refused" in (resp.error or "")
@@ -341,7 +368,7 @@ class TestMCPRouterExecution:
         for _ in range(_CB_FAILURE_THRESHOLD):
             breaker.record_failure()
 
-        req = ToolRequest(tool_name="my_tool")
+        req = ToolRequest(tool_name="my_tool", maci_role="executive")
         resp = await router.execute_tool(req)
         assert resp.status == MCPToolStatus.ERROR.value
         assert "Circuit breaker OPEN" in (resp.error or "")
@@ -360,7 +387,7 @@ class TestMCPRouterExecution:
         router = MCPRouter(pool=pool)
         await router.discover_tools()
 
-        req = ToolRequest(tool_name="my_tool", server_id="specific")
+        req = ToolRequest(tool_name="my_tool", server_id="specific", maci_role="executive")
         resp = await router.execute_tool(req)
         assert resp.is_success
 
@@ -380,7 +407,7 @@ class TestMCPRouterExecution:
         # Add a failure first
         router._get_breaker("srv1").record_failure()
 
-        req = ToolRequest(tool_name="my_tool")
+        req = ToolRequest(tool_name="my_tool", maci_role="executive")
         await router.execute_tool(req)
         assert router._get_breaker("srv1")._failure_count == 0
 

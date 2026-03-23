@@ -82,11 +82,11 @@ class TestBlockchainLedger:
         assert genesis["constitutional_hash"] == CONSTITUTIONAL_HASH
         assert len(genesis["hash"]) == 64
 
-    def test_add_entry_creates_new_block(self, blockchain_ledger, sample_audit_entry):
+    async def test_add_entry_creates_new_block(self, blockchain_ledger, sample_audit_entry):
         """Adding entry should create new block with proper linkage."""
         genesis = blockchain_ledger.get_latest_block()
 
-        block = blockchain_ledger.add_entry(sample_audit_entry)
+        block = await blockchain_ledger.add_entry(sample_audit_entry)
 
         assert block["index"] == 1
         assert block["data"] == sample_audit_entry
@@ -95,17 +95,17 @@ class TestBlockchainLedger:
         assert len(block["hash"]) == 64
         assert len(blockchain_ledger.blocks) == 2
 
-    def test_chain_integrity_verification(self, blockchain_ledger, sample_audit_entry):
+    async def test_chain_integrity_verification(self, blockchain_ledger, sample_audit_entry):
         """Chain should maintain cryptographic integrity."""
-        blockchain_ledger.add_entry(sample_audit_entry)
-        blockchain_ledger.add_entry({"test": "entry2"})
+        await blockchain_ledger.add_entry(sample_audit_entry)
+        await blockchain_ledger.add_entry({"test": "entry2"})
 
         assert blockchain_ledger._verify_chain_integrity() is True
 
-    def test_chain_integrity_failure_detection(self, blockchain_ledger, sample_audit_entry):
+    async def test_chain_integrity_failure_detection(self, blockchain_ledger, sample_audit_entry):
         """Chain should detect tampering."""
-        blockchain_ledger.add_entry(sample_audit_entry)
-        blockchain_ledger.add_entry({"test": "entry2"})
+        await blockchain_ledger.add_entry(sample_audit_entry)
+        await blockchain_ledger.add_entry({"test": "entry2"})
 
         block_1 = blockchain_ledger.blocks[1]
         original_hash = block_1["hash"]
@@ -114,18 +114,18 @@ class TestBlockchainLedger:
 
         assert blockchain_ledger._verify_chain_integrity() is False
 
-    def test_persistence_to_disk(self, blockchain_ledger, sample_audit_entry):
+    async def test_persistence_to_disk(self, blockchain_ledger, sample_audit_entry):
         """Blocks should be persisted to disk."""
-        blockchain_ledger.add_entry(sample_audit_entry)
+        await blockchain_ledger.add_entry(sample_audit_entry)
 
         ledger2 = BlockchainLedger(storage_path=blockchain_ledger.storage_path)
 
         assert len(ledger2.blocks) == 2
         assert ledger2.blocks[1]["data"] == sample_audit_entry
 
-    def test_get_block_by_index(self, blockchain_ledger, sample_audit_entry):
+    async def test_get_block_by_index(self, blockchain_ledger, sample_audit_entry):
         """Should retrieve block by index."""
-        blockchain_ledger.add_entry(sample_audit_entry)
+        await blockchain_ledger.add_entry(sample_audit_entry)
 
         block = blockchain_ledger.get_block_by_index(1)
 
@@ -137,9 +137,9 @@ class TestBlockchainLedger:
         block = blockchain_ledger.get_block_by_index(999)
         assert block is None
 
-    def test_verify_entry_by_hash(self, blockchain_ledger, sample_audit_entry):
+    async def test_verify_entry_by_hash(self, blockchain_ledger, sample_audit_entry):
         """Should verify entry existence by hash."""
-        block = blockchain_ledger.add_entry(sample_audit_entry)
+        block = await blockchain_ledger.add_entry(sample_audit_entry)
 
         assert blockchain_ledger.verify_entry(block["hash"]) is True
         assert blockchain_ledger.verify_entry("nonexistent_hash") is False
@@ -344,10 +344,10 @@ class TestBlockchainConstitutionalCompliance:
         genesis = blockchain_ledger.blocks[0]
         assert genesis["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    def test_all_blocks_include_constitutional_hash(self, blockchain_ledger):
+    async def test_all_blocks_include_constitutional_hash(self, blockchain_ledger):
         """All blocks must include constitutional hash."""
-        blockchain_ledger.add_entry({"test": "entry1"})
-        blockchain_ledger.add_entry({"test": "entry2"})
+        await blockchain_ledger.add_entry({"test": "entry1"})
+        await blockchain_ledger.add_entry({"test": "entry2"})
 
         for block in blockchain_ledger.blocks:
             assert block["constitutional_hash"] == CONSTITUTIONAL_HASH

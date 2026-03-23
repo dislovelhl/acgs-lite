@@ -38,6 +38,7 @@ import os
 from datetime import UTC, datetime
 
 from src.core.shared.config import settings
+from src.core.shared.config.runtime_environment import resolve_runtime_environment
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 from src.core.shared.structured_logging import get_logger
@@ -47,7 +48,7 @@ logger = get_logger(__name__)
 
 
 def _runtime_environment() -> str:
-    return settings.env
+    return resolve_runtime_environment(getattr(settings, "env", None))
 
 
 def _parse_bool_env(value: str | None) -> bool | None:

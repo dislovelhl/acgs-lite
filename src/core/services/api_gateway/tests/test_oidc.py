@@ -364,10 +364,11 @@ class TestOIDCCallbackFlow:
 
         with patch.object(handler, "handle_callback", new_callable=AsyncMock) as mock_callback:
             mock_callback.return_value = mock_user_info
+            for cookie in cookies.jar:
+                client.cookies.set(cookie.name, cookie.value)
 
             response = client.get(
                 f"/api/v1/sso/oidc/callback?code=mock-auth-code&state={state}",
-                cookies=cookies,
             )
 
             assert response.status_code == 200

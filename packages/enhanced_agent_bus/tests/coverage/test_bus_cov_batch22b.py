@@ -213,7 +213,7 @@ class TestRedisRateLimiter:
         rl._redis = mock_redis
         rl._connected = True
         await rl.close()
-        mock_redis.close.assert_awaited_once()
+        mock_redis.aclose.assert_awaited_once()
         assert rl._redis is None
         assert rl._connected is False
 
@@ -515,6 +515,10 @@ class TestBatchMessageProcessor:
         assert bp.circuit_breaker_enabled is True
         assert bp.circuit_breaker_threshold == 0.7
         assert bp.circuit_breaker_cooldown == 60.0
+
+    def test_legacy_item_timeout_seconds_are_converted_to_ms(self):
+        bp = BatchMessageProcessor(item_timeout=1.5)
+        assert bp.item_timeout_ms == 1500
 
     def test_invalid_kwargs_use_defaults(self):
         bp = BatchMessageProcessor(

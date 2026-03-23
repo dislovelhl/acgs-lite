@@ -83,6 +83,7 @@ class MambaConfig:
     max_context_length: int = 4_000_000  # 4M tokens
     critical_sections_repeat: int = 3
     memory_efficient_mode: bool = False
+    constitutional_hash: str = CONSTITUTIONAL_HASH
 
 
 class MambaSSM(_ModuleBase):  # type: ignore[misc, valid-type]
@@ -159,21 +160,19 @@ class MambaSSM(_ModuleBase):  # type: ignore[misc, valid-type]
         # In practice, this would use the full Mamba-2 SSM implementation
         batch_size, seq_len, d_inner = x.shape
 
-        # Initialize state
-        h = torch.zeros(
-            batch_size, self.d_state, d_inner // self.d_state, device=x.device, dtype=x.dtype
-        )
+        # Keep a per-channel recurrent state so the simplified implementation
+        # preserves the expected `(batch, seq, d_inner)` contract.
+        state = torch.zeros(batch_size, d_inner, device=x.device, dtype=x.dtype)
+        B_scale = torch.sigmoid(B.mean(dim=-1, keepdim=True))
+        C_scale = torch.sigmoid(C.mean(dim=-1, keepdim=True))
 
         outputs = []
         for t in range(seq_len):
-            # State update (simplified)
             x_t = x[:, t, :]
             dt_t = dt[:, t, :]
-
-            # Matrix multiplications for SSM
-            h = h * (1 - dt_t.unsqueeze(-1).unsqueeze(-1)) + x_t.unsqueeze(-1) * B.unsqueeze(-1)
-            y_t = torch.matmul(h, C.unsqueeze(-1)).squeeze(-1)
-
+            decay = torch.exp(-dt_t).clamp(min=0.0, max=1.0)
+            state = state * decay + x_t * B_scale[:, t, :]
+            y_t = state * C_scale[:, t, :]
             outputs.append(y_t)
 
         return torch.stack(outputs, dim=1)
@@ -381,6 +380,7 @@ class ConstitutionalMambaHybrid(_ModuleBase):  # type: ignore[misc, valid-type]
             Processed tensor with maintained context
         """
         _batch_size, seq_len, _d_model = x.shape
+        original_seq_len = seq_len
 
         # Validate context length
         if seq_len > self.config.max_context_length:
@@ -415,6 +415,9 @@ class ConstitutionalMambaHybrid(_ModuleBase):  # type: ignore[misc, valid-type]
             if self.shared_attention is not None and use_attention and (i + 1) % 2 == 0:
                 # Only use attention on portions with critical sections
                 x = self.shared_attention(x)
+
+        if x.shape[1] != original_seq_len:
+            x = x[:, :original_seq_len, :]
 
         return x
 

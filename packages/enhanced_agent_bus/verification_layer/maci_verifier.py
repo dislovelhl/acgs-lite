@@ -37,7 +37,9 @@ except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.interfaces import RecommendationPlannerProtocol
+from enhanced_agent_bus.maci_role_projection import project_to_verification_role
 from enhanced_agent_bus.observability.structured_logging import get_logger
+from src.core.shared.constants import MACIRole
 
 from ..governance_constants import (
     VERIFIER_BASE_RISK_SCORE,
@@ -79,6 +81,21 @@ class MACIAgentRole(Enum):
     JUDICIAL = "judicial"
     MONITOR = "monitor"
     AUDITOR = "auditor"
+
+    @classmethod
+    def parse(cls, value: "MACIAgentRole | MACIRole | str") -> "MACIAgentRole":
+        """Parse verifier roles from verifier-native or canonical MACI roles."""
+        if isinstance(value, cls):
+            return value
+
+        projected_role = project_to_verification_role(value)
+        if projected_role is not None:
+            return cls(projected_role)
+
+        if isinstance(value, str):
+            return cls(value.strip().lower())
+
+        raise ValueError(f"Unsupported MACI verifier role: {value!r}")
 
 
 class VerificationPhase(Enum):
@@ -243,9 +260,9 @@ VALIDATION_CONSTRAINTS: dict[MACIAgentRole, set[MACIAgentRole]] = {
 class MACIAgentBase:
     """Base class for MACI agents with common functionality."""
 
-    def __init__(self, agent_id: str, role: MACIAgentRole):
+    def __init__(self, agent_id: str, role: MACIAgentRole | MACIRole | str):
         self.agent_id = agent_id
-        self.role = role
+        self.role = MACIAgentRole.parse(role)
         self.output_registry: dict[str, str] = {}  # output_id -> hash
         self.constitutional_hash = CONSTITUTIONAL_HASH
 
@@ -1052,9 +1069,9 @@ class MACIVerifier:
     async def verify_cross_role_action(
         self,
         validator_agent_id: str,
-        validator_role: MACIAgentRole,
+        validator_role: MACIAgentRole | MACIRole | str,
         target_agent_id: str,
-        target_role: MACIAgentRole,
+        target_role: MACIAgentRole | MACIRole | str,
         target_output_id: str,
     ) -> bool:
         """
@@ -1067,6 +1084,13 @@ class MACIVerifier:
         Returns:
             True if validation is permitted, False otherwise
         """
+        try:
+            resolved_validator_role = MACIAgentRole.parse(validator_role)
+            resolved_target_role = MACIAgentRole.parse(target_role)
+        except ValueError as exc:
+            logger.warning(f"Unsupported verifier role mapping: {exc}")
+            return False
+
         # Self-validation check (Godel bypass prevention)
         if validator_agent_id == target_agent_id:
             logger.warning(
@@ -1076,11 +1100,11 @@ class MACIVerifier:
             return False
 
         # Check role permissions
-        permitted_targets = VALIDATION_CONSTRAINTS.get(validator_role, set())
-        if target_role not in permitted_targets:
+        permitted_targets = VALIDATION_CONSTRAINTS.get(resolved_validator_role, set())
+        if resolved_target_role not in permitted_targets:
             logger.warning(
-                f"Role constraint violation: {validator_role.value} "
-                f"cannot validate {target_role.value}"
+                f"Role constraint violation: {resolved_validator_role.value} "
+                f"cannot validate {resolved_target_role.value}"
             )
             return False
 

@@ -28,9 +28,16 @@
 }
 
 /* Scrollbar */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #050505; }
-::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 2px; }
+::-webkit-scrollbar {
+	width: 4px;
+}
+::-webkit-scrollbar-track {
+	background: #050505;
+}
+::-webkit-scrollbar-thumb {
+	background: #1a1a1a;
+	border-radius: 2px;
+}
 
 ::selection {
 	background: var(--color-accent);
@@ -39,22 +46,35 @@
 
 /* Marquee */
 @keyframes marquee-left {
-	from { transform: translateX(0); }
-	to { transform: translateX(-50%); }
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(-50%);
+	}
 }
 @keyframes marquee-right {
-	from { transform: translateX(-50%); }
-	to { transform: translateX(0); }
+	from {
+		transform: translateX(-50%);
+	}
+	to {
+		transform: translateX(0);
+	}
 }
-.animate-marquee-left { animation: marquee-left 60s linear infinite; }
-.animate-marquee-right { animation: marquee-right 60s linear infinite; }
+.animate-marquee-left {
+	animation: marquee-left 60s linear infinite;
+}
+.animate-marquee-right {
+	animation: marquee-right 60s linear infinite;
+}
 
 /* Fade in on scroll */
 .fade-in {
 	opacity: 0;
 	transform: translateY(30px);
-	transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-	            transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	transition:
+		opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+		transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 	animation: fallback-appear 0s 1.5s forwards;
 }
 .fade-in.visible {
@@ -63,34 +83,60 @@
 	animation: none;
 }
 @keyframes fallback-appear {
-	to { opacity: 1; transform: translateY(0); }
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 @media (prefers-reduced-motion: reduce) {
-	.fade-in { opacity: 1; transform: none; animation: none; }
+	.fade-in {
+		opacity: 1;
+		transform: none;
+		animation: none;
+	}
 }
 
 /* Gradient line animation */
 @keyframes gradient-shift {
-	0% { background-position: 0% 50%; }
-	100% { background-position: 200% 50%; }
+	0% {
+		background-position: 0% 50%;
+	}
+	100% {
+		background-position: 200% 50%;
+	}
 }
 .gradient-line {
 	height: 1px;
-	background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
 	background-size: 200% 100%;
 	animation: gradient-shift 4s linear infinite;
 }
 
 /* Pulse ring */
 @keyframes pulse-ring {
-	0% { transform: scale(1); opacity: 0.6; }
-	100% { transform: scale(2.5); opacity: 0; }
+	0% {
+		transform: scale(1);
+		opacity: 0.6;
+	}
+	100% {
+		transform: scale(2.5);
+		opacity: 0;
+	}
 }
 
 /* Glow sphere */
 @keyframes sphere-drift {
-	0%, 100% { transform: translate(0, 0) scale(1); }
-	25% { transform: translate(30px, -20px) scale(1.05); }
-	50% { transform: translate(-10px, 20px) scale(0.95); }
-	75% { transform: translate(-30px, -10px) scale(1.02); }
+	0%,
+	100% {
+		transform: translate(0, 0) scale(1);
+	}
+	25% {
+		transform: translate(30px, -20px) scale(1.05);
+	}
+	50% {
+		transform: translate(-10px, 20px) scale(0.95);
+	}
+	75% {
+		transform: translate(-30px, -10px) scale(1.02);
+	}
 }

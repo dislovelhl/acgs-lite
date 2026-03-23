@@ -121,7 +121,11 @@ class MeshProof:
         it matches the stored root.
         """
         recomputed = _compute_merkle_root(
-            self.content_hash, self.constitutional_hash, self.vote_hashes
+            self.assignment_id,
+            self.content_hash,
+            self.constitutional_hash,
+            self.vote_hashes,
+            self.accepted,
         )
         return recomputed == self.root_hash
 
@@ -202,7 +206,7 @@ class ConstitutionalMesh:
         self._agent_indices: dict[str, int] = {}
         self._settled_assignments: set[str] = set()
         self._settled_voters: dict[str, set[str]] = {}
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self._halted = False
 
     def _check_halted(self) -> None:
@@ -228,7 +232,8 @@ class ConstitutionalMesh:
     @property
     def is_halted(self) -> bool:
         """Whether the mesh is currently halted."""
-        return self._halted
+        with self._lock:
+            return self._halted
 
     @property
     def constitutional_hash(self) -> str:
@@ -238,7 +243,8 @@ class ConstitutionalMesh:
     @property
     def agent_count(self) -> int:
         """Number of registered agents."""
-        return len(self._agents)
+        with self._lock:
+            return len(self._agents)
 
     # -- Agent management --------------------------------------------------
 
@@ -254,13 +260,27 @@ class ConstitutionalMesh:
         """Remove an agent from the mesh."""
         with self._lock:
             self._agents.pop(agent_id, None)
+            if self._use_manifold and agent_id in self._agent_indices:
+                remaining_ids = [
+                    existing_agent_id
+                    for existing_agent_id, _ in sorted(
+                        self._agent_indices.items(), key=lambda item: item[1]
+                    )
+                    if existing_agent_id != agent_id and existing_agent_id in self._agents
+                ]
+                self._agent_indices = {
+                    existing_agent_id: idx
+                    for idx, existing_agent_id in enumerate(remaining_ids)
+                }
+                self._rebuild_manifold()
 
     def get_reputation(self, agent_id: str) -> float:
         """Get an agent's reputation score."""
-        info = self._agents.get(agent_id)
-        if info is None:
-            raise KeyError(f"Agent {agent_id} not registered")
-        return info.reputation
+        with self._lock:
+            info = self._agents.get(agent_id)
+            if info is None:
+                raise KeyError(f"Agent {agent_id} not registered")
+            return info.reputation
 
     # -- Validation flow ---------------------------------------------------
 
@@ -283,38 +303,39 @@ class ConstitutionalMesh:
             KeyError: Producer not registered.
             MeshHaltedError: Mesh is halted.
         """
-        self._check_halted()
-        if producer_id not in self._agents:
-            raise KeyError(f"Producer {producer_id} not registered")
+        with self._lock:
+            self._check_halted()
+            if producer_id not in self._agents:
+                raise KeyError(f"Producer {producer_id} not registered")
 
-        # Step 1: DNA pre-check — fail fast on constitutional violations
-        self._dna.validate(content)
+            # Step 1: DNA pre-check — fail fast on constitutional violations
+            self._dna.validate(content)
 
-        # Step 2: Select peers (exclude producer — MACI)
-        available = [aid for aid in self._agents if aid != producer_id]
-        needed = min(self._peers_per_validation, len(available))
-        if needed < self._quorum:
-            raise InsufficientPeersError(
-                f"Need {self._quorum} peers for quorum, only {needed} available"
+            # Step 2: Select peers (exclude producer — MACI)
+            available = [aid for aid in self._agents if aid != producer_id]
+            needed = min(self._peers_per_validation, len(available))
+            if needed < self._quorum:
+                raise InsufficientPeersError(
+                    f"Need {self._quorum} peers for quorum, only {needed} available"
+                )
+            peers = tuple(self._rng.sample(available, k=needed))
+
+            # Step 3: Create assignment with content hash
+            content_hash = hashlib.sha256(content.encode()).hexdigest()[:32]
+            assignment = PeerAssignment(
+                assignment_id=uuid.uuid4().hex[:12],
+                producer_id=producer_id,
+                artifact_id=artifact_id,
+                content=content,
+                content_hash=content_hash,
+                peers=peers,
+                constitutional_hash=self.constitutional_hash,
+                timestamp=time.time(),
             )
-        peers = tuple(self._rng.sample(available, k=needed))
-
-        # Step 3: Create assignment with content hash
-        content_hash = hashlib.sha256(content.encode()).hexdigest()[:32]
-        assignment = PeerAssignment(
-            assignment_id=uuid.uuid4().hex[:12],
-            producer_id=producer_id,
-            artifact_id=artifact_id,
-            content=content,
-            content_hash=content_hash,
-            peers=peers,
-            constitutional_hash=self.constitutional_hash,
-            timestamp=time.time(),
-        )
-        self._assignments[assignment.assignment_id] = assignment
-        self._votes[assignment.assignment_id] = []
-        self._agents[producer_id].validations_received += 1
-        return assignment
+            self._assignments[assignment.assignment_id] = assignment
+            self._votes[assignment.assignment_id] = []
+            self._agents[producer_id].validations_received += 1
+            return assignment
 
     def submit_vote(
         self,
@@ -335,39 +356,40 @@ class ConstitutionalMesh:
             DuplicateVoteError: Voter already voted.
             MeshHaltedError: Mesh is halted.
         """
-        self._check_halted()
-        assignment = self._assignments.get(assignment_id)
-        if assignment is None:
-            raise KeyError(f"Assignment {assignment_id} not found")
-        if voter_id not in assignment.peers:
-            raise UnauthorizedVoterError(
-                f"{voter_id} is not assigned to validation {assignment_id}"
+        with self._lock:
+            self._check_halted()
+            assignment = self._assignments.get(assignment_id)
+            if assignment is None:
+                raise KeyError(f"Assignment {assignment_id} not found")
+            if voter_id not in assignment.peers:
+                raise UnauthorizedVoterError(
+                    f"{voter_id} is not assigned to validation {assignment_id}"
+                )
+
+            existing = self._votes.get(assignment_id, [])
+            if any(v.voter_id == voter_id for v in existing):
+                raise DuplicateVoteError(
+                    f"{voter_id} already voted on {assignment_id}"
+                )
+
+            vote = ValidationVote(
+                assignment_id=assignment_id,
+                voter_id=voter_id,
+                approved=approved,
+                reason=reason,
+                constitutional_hash=self.constitutional_hash,
+                content_hash=assignment.content_hash,
+                timestamp=time.time(),
             )
+            self._votes[assignment_id] = [*existing, vote]
 
-        existing = self._votes.get(assignment_id, [])
-        if any(v.voter_id == voter_id for v in existing):
-            raise DuplicateVoteError(
-                f"{voter_id} already voted on {assignment_id}"
-            )
+            if voter_id in self._agents:
+                self._agents[voter_id].validations_performed += 1
 
-        vote = ValidationVote(
-            assignment_id=assignment_id,
-            voter_id=voter_id,
-            approved=approved,
-            reason=reason,
-            constitutional_hash=self.constitutional_hash,
-            content_hash=assignment.content_hash,
-            timestamp=time.time(),
-        )
-        self._votes[assignment_id] = [*existing, vote]
+            # Update reputations if quorum reached
+            self._maybe_settle_reputations(assignment_id)
 
-        if voter_id in self._agents:
-            self._agents[voter_id].validations_performed += 1
-
-        # Update reputations if quorum reached
-        self._maybe_settle_reputations(assignment_id)
-
-        return vote
+            return vote
 
     def get_result(self, assignment_id: str) -> MeshResult:
         """Get the validation result for an assignment.
@@ -375,49 +397,53 @@ class ConstitutionalMesh:
         Returns result with cryptographic proof once votes are cast.
         Quorum is met when enough votes agree to decide.
         """
-        assignment = self._assignments.get(assignment_id)
-        if assignment is None:
-            raise KeyError(f"Assignment {assignment_id} not found")
+        with self._lock:
+            assignment = self._assignments.get(assignment_id)
+            if assignment is None:
+                raise KeyError(f"Assignment {assignment_id} not found")
 
-        votes = self._votes.get(assignment_id, [])
-        votes_for = sum(1 for v in votes if v.approved)
-        votes_against = sum(1 for v in votes if not v.approved)
-        total_peers = len(assignment.peers)
-        pending = total_peers - len(votes)
+            votes = self._votes.get(assignment_id, [])
+            votes_for = sum(1 for v in votes if v.approved)
+            votes_against = sum(1 for v in votes if not v.approved)
+            total_peers = len(assignment.peers)
+            pending = total_peers - len(votes)
 
-        accepted = votes_for >= self._quorum
-        rejected = votes_against > (total_peers - self._quorum)
-        quorum_met = accepted or rejected
+            accepted = votes_for >= self._quorum
+            rejected = votes_against > (total_peers - self._quorum)
+            quorum_met = accepted or rejected
 
-        # Build cryptographic proof
-        proof: MeshProof | None = None
-        if votes:
-            vote_hashes = tuple(v.vote_hash for v in votes)
-            root_hash = _compute_merkle_root(
-                assignment.content_hash,
-                assignment.constitutional_hash,
-                vote_hashes,
-            )
-            proof = MeshProof(
+            # Build cryptographic proof
+            proof: MeshProof | None = None
+            if votes:
+                vote_hashes = tuple(v.vote_hash for v in votes)
+                decision = accepted and quorum_met
+                root_hash = _compute_merkle_root(
+                    assignment_id,
+                    assignment.content_hash,
+                    assignment.constitutional_hash,
+                    vote_hashes,
+                    decision,
+                )
+                proof = MeshProof(
+                    assignment_id=assignment_id,
+                    content_hash=assignment.content_hash,
+                    constitutional_hash=assignment.constitutional_hash,
+                    vote_hashes=vote_hashes,
+                    root_hash=root_hash,
+                    accepted=decision,
+                    timestamp=time.time(),
+                )
+
+            return MeshResult(
                 assignment_id=assignment_id,
-                content_hash=assignment.content_hash,
-                constitutional_hash=assignment.constitutional_hash,
-                vote_hashes=vote_hashes,
-                root_hash=root_hash,
-                accepted=accepted and quorum_met,
-                timestamp=time.time(),
+                accepted=accepted,
+                votes_for=votes_for,
+                votes_against=votes_against,
+                quorum_met=quorum_met,
+                pending_votes=pending,
+                constitutional_hash=self.constitutional_hash,
+                proof=proof,
             )
-
-        return MeshResult(
-            assignment_id=assignment_id,
-            accepted=accepted,
-            votes_for=votes_for,
-            votes_against=votes_against,
-            quorum_met=quorum_met,
-            pending_votes=pending,
-            constitutional_hash=self.constitutional_hash,
-            proof=proof,
-        )
 
     def validate_and_vote(
         self,
@@ -430,16 +456,18 @@ class ConstitutionalMesh:
         If it passes, they vote approved. If it fails, they vote rejected
         with the violation as the reason.
         """
-        assignment = self._assignments.get(assignment_id)
-        if assignment is None:
-            raise KeyError(f"Assignment {assignment_id} not found")
+        with self._lock:
+            assignment = self._assignments.get(assignment_id)
+            if assignment is None:
+                raise KeyError(f"Assignment {assignment_id} not found")
+            content = assignment.content
 
         voter_dna = AgentDNA(
             constitution=self._constitution,
             agent_id=voter_id,
             strict=False,
         )
-        result = voter_dna.validate(assignment.content)
+        result = voter_dna.validate(content)
 
         if result.valid:
             return self.submit_vote(
@@ -474,41 +502,40 @@ class ConstitutionalMesh:
 
     def summary(self) -> dict[str, Any]:
         """Mesh statistics."""
-        total_validations = len(self._assignments)
-        total_votes = sum(len(v) for v in self._votes.values())
-        settled = sum(
-            1
-            for aid in self._assignments
-            if self.get_result(aid).quorum_met
-        )
-        return {
-            "agents": self.agent_count,
-            "constitutional_hash": self.constitutional_hash,
-            "total_validations": total_validations,
-            "settled": settled,
-            "pending": total_validations - settled,
-            "total_votes": total_votes,
-            "avg_reputation": (
-                sum(a.reputation for a in self._agents.values()) / len(self._agents)
-                if self._agents
-                else 0.0
-            ),
-        }
+        with self._lock:
+            total_validations = len(self._assignments)
+            total_votes = sum(len(v) for v in self._votes.values())
+            settled = sum(1 for aid in self._assignments if self.get_result(aid).quorum_met)
+            return {
+                "agents": len(self._agents),
+                "constitutional_hash": self.constitutional_hash,
+                "total_validations": total_validations,
+                "settled": settled,
+                "pending": total_validations - settled,
+                "total_votes": total_votes,
+                "avg_reputation": (
+                    sum(a.reputation for a in self._agents.values()) / len(self._agents)
+                    if self._agents
+                    else 0.0
+                ),
+            }
 
     # -- Manifold integration ----------------------------------------------
 
     @property
     def trust_matrix(self) -> tuple[tuple[float, ...], ...] | None:
         """The projected doubly stochastic trust matrix, or None if manifold disabled."""
-        if self._manifold is None:
-            return None
-        return self._manifold.trust_matrix
+        with self._lock:
+            if self._manifold is None:
+                return None
+            return self._manifold.trust_matrix
 
     def manifold_summary(self) -> dict[str, Any] | None:
         """Manifold statistics, or None if manifold disabled."""
-        if self._manifold is None:
-            return None
-        return self._manifold.summary()
+        with self._lock:
+            if self._manifold is None:
+                return None
+            return self._manifold.summary()
 
     def _rebuild_manifold(self) -> None:
         """Rebuild the manifold with the current number of agents."""
@@ -573,15 +600,17 @@ class ConstitutionalMesh:
 
 
 def _compute_merkle_root(
+    assignment_id: str,
     content_hash: str,
     constitutional_hash: str,
     vote_hashes: tuple[str, ...],
+    accepted: bool,
 ) -> str:
     """Compute the Merkle root for a validation proof.
 
     Structure:
         root
-        ├── leaf: content_hash + constitutional_hash
+        ├── leaf: assignment_id + content_hash + constitutional_hash + accepted
         └── votes_root
             ├── vote_hash_0
             ├── vote_hash_1
@@ -591,9 +620,9 @@ def _compute_merkle_root(
     constitutional hash, and vote hashes, anyone can recompute
     the root and verify the proof.
     """
-    # Leaf: content + constitutional hash
+    # Leaf: assignment identity + content + constitutional hash + final decision
     leaf = hashlib.sha256(
-        f"{content_hash}:{constitutional_hash}".encode()
+        f"{assignment_id}:{content_hash}:{constitutional_hash}:{accepted}".encode()
     ).hexdigest()[:32]
 
     # Votes subtree: iterative hashing of vote hashes

@@ -217,6 +217,20 @@ class TestRateLimitConfig:
             config = RateLimitConfig.from_env()
             assert config.fail_open is True
 
+    def test_from_env_environment_only_production_disables_fail_open(self):
+        from src.core.shared.config import settings
+
+        with (
+            patch.object(settings, "env", "development"),
+            patch.dict("os.environ", {"ENVIRONMENT": "production"}, clear=False),
+        ):
+            import os
+
+            os.environ.pop("APP_ENV", None)
+            os.environ.pop("RATE_LIMIT_FAIL_OPEN", None)
+            config = RateLimitConfig.from_env()
+            assert config.fail_open is False
+
     def test_from_env_zero_requests(self):
         """When requests_per_minute is 0, burst_multiplier should default to 1.5."""
         with patch.dict(
@@ -662,6 +676,29 @@ class TestRateLimitMiddleware:
                     break
             assert found_429
 
+    async def test_strict_mode_returns_503_when_backend_unavailable(self):
+        app = AsyncMock()
+        config = RateLimitConfig(
+            rules=[RateLimitRule(requests=10)],
+            redis_url="redis://localhost:6379",
+            fallback_to_memory=False,
+            fail_open=False,
+        )
+        mw = RateLimitMiddleware(app, config=config)
+
+        scope = _make_asgi_scope()
+        send = AsyncMock()
+        with patch.object(RateLimitMiddleware, "_ensure_initialized", side_effect=RuntimeError("down")):
+            await mw(scope, AsyncMock(), send)
+
+        found_503 = False
+        for call in send.call_args_list:
+            msg = call[0][0]
+            if msg.get("type") == "http.response.start" and msg.get("status") == 503:
+                found_503 = True
+                break
+        assert found_503
+
     async def test_is_exempt_path(self):
         app = AsyncMock()
         mw = RateLimitMiddleware(app)
@@ -682,6 +719,17 @@ class TestRateLimitMiddleware:
         limiter1 = mw.limiter
         await mw._ensure_initialized()
         assert mw.limiter is limiter1
+
+    async def test_ensure_initialized_uses_injected_redis_client(self):
+        app = AsyncMock()
+        redis_client = AsyncMock()
+        mw = RateLimitMiddleware(app, redis_client=redis_client)
+
+        await mw._ensure_initialized()
+
+        assert mw.redis is redis_client
+        assert mw.limiter is not None
+        assert mw.limiter.redis_client is redis_client
 
     async def test_check_rule_match_with_endpoints(self):
         app = AsyncMock()
@@ -710,6 +758,45 @@ class TestRateLimitMiddleware:
         key = mw._build_key(request, rule)
         assert "10.0.0.1" in key
 
+    async def test_build_key_includes_trusted_tenant(self):
+        app = AsyncMock()
+        mw = RateLimitMiddleware(app)
+        scope = _make_asgi_scope(client=("10.0.0.1", 5000))
+        scope["state"] = {"tenant_id": "tenant-42"}
+        from starlette.requests import Request
+
+        request = Request(scope)
+        rule = RateLimitRule(requests=10, scope=RateLimitScope.IP)
+        key = mw._build_key(request, rule)
+        assert "tenant-42" in key
+        assert "10.0.0.1" in key
+
+    async def test_build_key_shares_bucket_for_grouped_multi_endpoint_rules(self):
+        app = AsyncMock()
+        mw = RateLimitMiddleware(app)
+        from starlette.requests import Request
+
+        rule = RateLimitRule(
+            requests=10,
+            scope=RateLimitScope.IP,
+            endpoints=["/x402/validate", "/x402/audit"],
+        )
+        validate_request = Request(_make_asgi_scope(path="/x402/validate", client=("10.0.0.1", 5000)))
+        audit_request = Request(_make_asgi_scope(path="/x402/audit", client=("10.0.0.1", 5000)))
+
+        assert mw._build_key(validate_request, rule) == mw._build_key(audit_request, rule)
+
+    async def test_build_key_includes_endpoint_for_endpoint_scope_rules(self):
+        app = AsyncMock()
+        mw = RateLimitMiddleware(app)
+        scope = _make_asgi_scope(path="/api/v1/auth/login", client=("10.0.0.1", 5000))
+        from starlette.requests import Request
+
+        request = Request(scope)
+        rule = RateLimitRule(requests=10, scope=RateLimitScope.ENDPOINT, endpoints=["/api/v1/auth/"])
+        key = mw._build_key(request, rule)
+        assert "/api/v1/auth/" in key
+
 
 # ============================================================================
 # RateLimitMiddleware - tenant rate limiting
@@ -725,9 +812,8 @@ class TestMiddlewareTenantRateLimiting:
         mw = RateLimitMiddleware(app, config=config, tenant_quota_provider=provider)
         await mw._ensure_initialized()
 
-        scope = _make_asgi_scope(
-            headers=[(b"x-tenant-id", b"tenant-1")],
-        )
+        scope = _make_asgi_scope()
+        scope["state"] = {"tenant_id": "tenant-1"}
         send = AsyncMock()
         await mw(scope, AsyncMock(), send)
         # With 100 request limit and first request, should pass through
@@ -809,7 +895,7 @@ class TestGetTenantId:
         mw = RateLimitMiddleware(app)
         scope = _make_asgi_scope(headers=[(b"x-tenant-id", b"header-tenant")])
         request = self._make_request(scope)
-        assert mw._get_tenant_id(request) == "header-tenant"
+        assert mw._get_tenant_id(request) is None
 
     def test_no_tenant(self):
         app = AsyncMock()

@@ -851,7 +851,11 @@ class OIDCHandler:
             claims.validate()
 
             return dict(claims)
+        except OIDCTokenError:
+            raise
         except _OIDC_OPERATION_ERRORS as e:
+            raise OIDCTokenError(f"Failed to validate ID token: {e}") from e
+        except Exception as e:
             raise OIDCTokenError(f"Failed to validate ID token: {e}") from e
 
     async def _fetch_userinfo(

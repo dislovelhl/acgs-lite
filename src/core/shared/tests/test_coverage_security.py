@@ -1926,12 +1926,12 @@ class TestCSRFMiddleware:
         get_resp = client.get("/api")
         csrf_token = get_resp.cookies.get("csrf_token")
         assert csrf_token is not None
+        client.cookies.set("csrf_token", csrf_token)
 
         # POST with matching cookie and header
         resp = client.post(
             "/api",
             headers={"X-CSRF-Token": csrf_token},
-            cookies={"csrf_token": csrf_token},
         )
         assert resp.status_code == 200
 
@@ -1955,12 +1955,12 @@ class TestCSRFMiddleware:
 
         get_resp = client.get("/api")
         csrf_token = get_resp.cookies.get("csrf_token")
+        client.cookies.set("csrf_token", csrf_token)
 
         # POST with mismatched header
         resp = client.post(
             "/api",
             headers={"X-CSRF-Token": "wrong-token"},
-            cookies={"csrf_token": csrf_token},
         )
         assert resp.status_code == 403
 

@@ -8,7 +8,7 @@ import pytest
 from acgs_lite import Constitution, ConstitutionalViolationError
 
 from constitutional_swarm.dna import AgentDNA, DNADisabledError
-from constitutional_swarm.mesh import ConstitutionalMesh, MeshHaltedError
+from constitutional_swarm.mesh import ConstitutionalMesh, DuplicateVoteError, MeshHaltedError
 
 
 # ---------------------------------------------------------------------------
@@ -192,3 +192,35 @@ class TestMeshThreadSafety:
         assert len(errors) == 0
         assert len(results) == 40
         assert all(results)
+
+    def test_concurrent_duplicate_vote_same_voter(self) -> None:
+        mesh = ConstitutionalMesh(Constitution.default(), seed=11)
+        for i in range(5):
+            mesh.register_agent(f"agent-{i:02d}")
+
+        assignment = mesh.request_validation("agent-00", "safe content", "art-dup")
+        voter = assignment.peers[0]
+        errors: list[Exception] = []
+        successes = 0
+        barrier = threading.Barrier(2)
+        lock = threading.Lock()
+
+        def submit_vote() -> None:
+            nonlocal successes
+            try:
+                barrier.wait()
+                mesh.submit_vote(assignment.assignment_id, voter, approved=True)
+                with lock:
+                    successes += 1
+            except DuplicateVoteError as exc:
+                with lock:
+                    errors.append(exc)
+
+        threads = [threading.Thread(target=submit_vote) for _ in range(2)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+
+        assert successes == 1
+        assert len(errors) == 1

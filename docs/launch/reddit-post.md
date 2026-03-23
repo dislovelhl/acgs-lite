@@ -32,8 +32,11 @@ pip install acgs
 
 I built this entirely with Claude (Anthropic's AI). No CS background. Two years of daily conversations with AI, learning to code by building governance infrastructure.
 
+7-minute walkthrough: https://youtu.be/do9BCPn29_Q
+
 Links:
+- Website: https://acgs.ai
 - PyPI: https://pypi.org/project/acgs/
-- GitHub: https://github.com/acgs-ai/acgs-lite
+- GitHub: https://github.com/acgs2_admin/acgs
 
 Feedback welcome — especially on which regulatory frameworks matter most to your work.

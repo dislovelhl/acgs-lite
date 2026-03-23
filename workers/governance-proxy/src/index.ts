@@ -16,10 +16,11 @@ import {
 } from "./openai/normalize.ts";
 import { governanceDeniedResponse } from "./openai/errors.ts";
 import { proxyToUpstream, resolveUpstream } from "./openai/proxy.ts";
-import { loadConstitution } from "./governance/constitution-store.ts";
+import { invalidateCache, loadConstitution } from "./governance/constitution-store.ts";
 import { validate } from "./governance/wasm-validator.ts";
 import { buildProofHeader, createProof } from "./governance/proof.ts";
-import { writeAuditRecord } from "./audit/d1-audit-log.ts";
+import { compactAuditChain, listAuditRecords, persistAuditWithPolicy } from "./audit/d1-audit-log.ts";
+import { parseAdminAuditQuery, resolveAuditTenantId } from "./audit/tenant.ts";
 import { generateRequestId } from "./util/ids.ts";
 import { handleGitLabWebhook } from "./gitlab/webhook.ts";
 import wasmModule from "../wasm/acgs_validator_wasm_bg.wasm";
@@ -29,6 +30,25 @@ import initWasm, { WasmValidator } from "../wasm/acgs_validator_wasm.js";
 let wasmValidator: WasmValidator | null = null;
 let wasmHash: string | null = null;
 let wasmInitialized = false;
+
+function auditUnavailableResponse(requestId: string, detail: string): Response {
+  return new Response(
+    JSON.stringify({
+      error: {
+        message: `Governance audit unavailable: ${detail}`,
+        type: "server_error",
+        code: "governance_audit_unavailable",
+      },
+    }),
+    {
+      status: 503,
+      headers: {
+        "Content-Type": "application/json",
+        "X-Request-Id": requestId,
+      },
+    },
+  );
+}
 
 async function initValidator(
   configJson: string,
@@ -97,6 +117,7 @@ export default {
           "constitution:active",
           JSON.stringify({ hash, version: "1.0.0", updated_at: new Date().toISOString() }),
         );
+        invalidateCache();
         return new Response(
           JSON.stringify({ ok: true, hash, rules: config.rule_data?.length ?? 0 }),
           { status: 200, headers: { "Content-Type": "application/json" } },
@@ -112,15 +133,41 @@ export default {
 
     // Admin: query audit log
     if (url.pathname === "/admin/audit" && request.method === "GET") {
-      const limit = parseInt(url.searchParams.get("limit") ?? "20", 10);
-      const result = await env.AUDIT_DB
-        .prepare("SELECT * FROM audit_log ORDER BY id DESC LIMIT ?")
-        .bind(limit)
-        .all();
-      return new Response(JSON.stringify(result.results), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
+      try {
+        const { tenantId, limit } = parseAdminAuditQuery(url);
+        const auditData = await listAuditRecords(env, tenantId, limit);
+        return new Response(JSON.stringify({ tenant_id: tenantId, ...auditData }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Invalid audit query";
+        return new Response(JSON.stringify({ error: message }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    // Admin: compact orphaned audit rows not reachable from the current durable head
+    if (url.pathname === "/admin/audit/compact" && request.method === "POST") {
+      try {
+        const tenantId = url.searchParams.get("tenant_id")?.trim();
+        if (!tenantId) {
+          throw new Error("tenant_id is required");
+        }
+        const result = await compactAuditChain(env, tenantId);
+        return new Response(JSON.stringify(result), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Audit compaction failed";
+        return new Response(JSON.stringify({ error: message }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
     }
 
     // GitLab webhook endpoint
@@ -178,6 +225,7 @@ export default {
       const actionText = extractRequestText(body);
       const model = extractModel(body);
       const systemPrompt = extractSystemPrompt(body);
+      const tenantId = await resolveAuditTenantId(request);
 
       // Build context for validation
       const context: [string, string][] = [
@@ -201,22 +249,26 @@ export default {
         requestResult.rules_checked,
       );
 
-      // Audit the request validation (async, off critical path)
+      // Audit the request validation. Governance-critical deployments may require persistence.
       const requestLatency = performance.now() - startTime;
-      ctx.waitUntil(
-        writeAuditRecord(env.AUDIT_DB, {
-          request_id: requestId,
-          phase: "request",
-          valid: requestResult.valid,
-          violations_json: JSON.stringify(requestResult.violations),
-          constitutional_hash: constHash,
-          timestamp: new Date().toISOString(),
-          tenant_id: "default",
-          endpoint,
-          model,
-          latency_ms: requestLatency,
-        }),
-      );
+      const requestAuditResult = await persistAuditWithPolicy(env, ctx, {
+        request_id: requestId,
+        phase: "request",
+        valid: requestResult.valid,
+        violations_json: JSON.stringify(requestResult.violations),
+        constitutional_hash: constHash,
+        timestamp: new Date().toISOString(),
+        tenant_id: tenantId,
+        endpoint,
+        model,
+        latency_ms: requestLatency,
+      });
+      if (requestAuditResult && !requestAuditResult.persisted) {
+        return auditUnavailableResponse(
+          requestId,
+          requestAuditResult.error ?? "Audit persistence failed",
+        );
+      }
 
       // If request is blocked, return 403
       if (requestResult.blocking) {
@@ -276,22 +328,26 @@ export default {
         responseResult.rules_checked,
       );
 
-      // Audit the response validation (async)
+      // Audit the response validation. Governance-critical deployments may require persistence.
       const totalLatency = performance.now() - startTime;
-      ctx.waitUntil(
-        writeAuditRecord(env.AUDIT_DB, {
-          request_id: requestId,
-          phase: "response",
-          valid: responseResult.valid,
-          violations_json: JSON.stringify(responseResult.violations),
-          constitutional_hash: constHash,
-          timestamp: new Date().toISOString(),
-          tenant_id: "default",
-          endpoint,
-          model,
-          latency_ms: totalLatency,
-        }),
-      );
+      const responseAuditResult = await persistAuditWithPolicy(env, ctx, {
+        request_id: requestId,
+        phase: "response",
+        valid: responseResult.valid,
+        violations_json: JSON.stringify(responseResult.violations),
+        constitutional_hash: constHash,
+        timestamp: new Date().toISOString(),
+        tenant_id: tenantId,
+        endpoint,
+        model,
+        latency_ms: totalLatency,
+      });
+      if (responseAuditResult && !responseAuditResult.persisted) {
+        return auditUnavailableResponse(
+          requestId,
+          responseAuditResult.error ?? "Audit persistence failed",
+        );
+      }
 
       // If response is blocked, return governance error
       if (responseResult.blocking) {

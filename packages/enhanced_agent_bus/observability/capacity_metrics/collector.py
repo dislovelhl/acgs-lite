@@ -275,7 +275,11 @@ class EnhancedAgentBusCapacityMetrics:
                 memory_bytes=mem_info.rss,
                 thread_count=process.num_threads(),
                 open_connections=(
-                    len(process.connections()) if hasattr(process, "connections") else 0
+                    len(process.net_connections())
+                    if hasattr(process, "net_connections")
+                    else len(process.connections())
+                    if hasattr(process, "connections")
+                    else 0
                 ),
                 gc_collections=0,  # Would need gc module
             )

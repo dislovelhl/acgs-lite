@@ -15,6 +15,7 @@ Classes:
 from __future__ import annotations
 
 import asyncio
+import inspect
 import os
 from collections.abc import Awaitable, Callable
 from typing import Any, Protocol, runtime_checkable
@@ -138,9 +139,10 @@ class GracefulRestarter:
         )
 
         drained = False
+        drain_operation = self._bus.drain(agent_id)
         try:
             await asyncio.wait_for(
-                self._bus.drain(agent_id),
+                drain_operation,
                 timeout=timeout,
             )
             drained = True
@@ -154,6 +156,9 @@ class GracefulRestarter:
                 agent_id=agent_id,
                 drain_timeout_seconds=timeout,
             )
+        finally:
+            if inspect.iscoroutine(drain_operation) and drain_operation.cr_frame is not None:
+                drain_operation.close()
 
         # ------------------------------------------------------------------
         # Step 3 (timeout path only): Requeue remaining in-flight messages.
@@ -240,9 +245,10 @@ class QuarantineManager:
         )
 
         # Step 2: Signal bus to re-route within 500ms (FR-006).
+        reroute_operation = self._bus.reroute_agent(agent_id)
         try:
             await asyncio.wait_for(
-                self._bus.reroute_agent(agent_id),
+                reroute_operation,
                 timeout=_QUARANTINE_REROUTE_TIMEOUT,
             )
             logger.info(
@@ -254,6 +260,9 @@ class QuarantineManager:
                 "QuarantineManager: bus reroute timed out (>500ms); quarantine persists",
                 agent_id=agent_id,
             )
+        finally:
+            if inspect.iscoroutine(reroute_operation) and reroute_operation.cr_frame is not None:
+                reroute_operation.close()
 
 
 # ---------------------------------------------------------------------------

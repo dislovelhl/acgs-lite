@@ -9,6 +9,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
+from enhanced_agent_bus.maci.enforcer import MACIEnforcer
+from enhanced_agent_bus.maci.models import MACIRole
+from enhanced_agent_bus.maci.registry import MACIRoleRegistry
 from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage, MessageType
 from enhanced_agent_bus.processing_strategies import (
     CompositeProcessingStrategy,
@@ -760,6 +763,31 @@ class TestMACIProcessingStrategy:
             # If MACI not available, delegates to inner
             result = await maci.process(valid_message, mock_handlers)
             inner.process.assert_called_once()
+
+    async def test_real_enforcer_denies_rejected_action(
+        self, valid_message: AgentMessage, mock_handlers: dict
+    ) -> None:
+        """A raw MACIEnforcer must be adapted and deny invalid actions."""
+        inner = MagicMock()
+        inner.is_available = MagicMock(return_value=True)
+        inner.get_name = MagicMock(return_value="inner")
+        inner.process = AsyncMock(return_value=ValidationResult(is_valid=True))
+
+        registry = MACIRoleRegistry()
+        await registry.register_agent(valid_message.from_agent, MACIRole.EXECUTIVE)
+        enforcer = MACIEnforcer(registry=registry, strict_mode=True)
+        maci = MACIProcessingStrategy(
+            inner_strategy=inner,
+            maci_registry=registry,
+            maci_enforcer=enforcer,
+            strict_mode=True,
+        )
+        valid_message.message_type = MessageType.CONSTITUTIONAL_VALIDATION
+
+        result = await maci.process(valid_message, mock_handlers)
+
+        assert result.is_valid is False
+        inner.process.assert_not_called()
 
 
 # =============================================================================

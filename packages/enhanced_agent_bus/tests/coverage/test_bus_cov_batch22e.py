@@ -174,7 +174,7 @@ class TestPolicyVerificationRequest:
         req = PolicyVerificationRequest()
         assert req.policy_id == ""
         assert req.timeout_ms == 5000
-        assert req.use_heuristic_fallback is True
+        assert req.use_heuristic_fallback is False
         assert req.require_proof is True
 
     def test_to_dict(self):
@@ -528,6 +528,7 @@ class TestZ3PolicyVerifier:
             req = PolicyVerificationRequest(
                 policy_id="p1",
                 policy_text="The system must enforce access controls.",
+                use_heuristic_fallback=True,
             )
             result = await verifier.verify_policy(req)
             assert result.status == Z3VerificationStatus.HEURISTIC_FALLBACK
@@ -613,7 +614,7 @@ class TestCreateZ3Verifier:
     def test_factory_defaults(self):
         v = create_z3_verifier()
         assert v.default_timeout_ms == 5000
-        assert v.enable_heuristic_fallback is True
+        assert v.enable_heuristic_fallback is False
 
     def test_factory_custom(self):
         v = create_z3_verifier(timeout_ms=2000, enable_heuristic_fallback=False)

@@ -3,8 +3,9 @@ Tests for constitutional review API endpoints.
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
+from contextlib import contextmanager
 from datetime import UTC, datetime
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from fastapi import HTTPException
@@ -22,11 +23,14 @@ from enhanced_agent_bus.constitutional.review_api import (
     RejectionRequest,
     RollbackRequest,
     RollbackResponse,
+    approve_amendment,
+    reject_amendment,
     health_check,
-    list_amendments,
     get_amendment,
+    list_amendments,
     router,
 )
+from enhanced_agent_bus.maci.models import MACIValidationResult
 
 
 def _make_amendment(**kwargs):
@@ -39,6 +43,25 @@ def _make_amendment(**kwargs):
     }
     defaults.update(kwargs)
     return AmendmentProposal(**defaults)
+
+
+_MISSING = object()
+
+
+@contextmanager
+def _review_api_patch(name: str, value=_MISSING):
+    globals_dict = list_amendments.__globals__
+    had_original = name in globals_dict
+    original = globals_dict.get(name)
+    replacement = MagicMock(name=name) if value is _MISSING else value
+    globals_dict[name] = replacement
+    try:
+        yield replacement
+    finally:
+        if had_original:
+            globals_dict[name] = original
+        else:
+            globals_dict.pop(name, None)
 
 
 # ---------------------------------------------------------------------------
@@ -193,62 +216,57 @@ async def test_health_check():
 
 
 @pytest.mark.asyncio
-@patch("enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService")
-async def test_list_amendments_invalid_status(mock_storage_cls):
-    mock_storage_cls.return_value = AsyncMock()
-    with pytest.raises(HTTPException) as exc_info:
-        await list_amendments(status="invalid_status_xyz")
+async def test_list_amendments_invalid_status():
+    with _review_api_patch("ConstitutionalStorageService", MagicMock(return_value=AsyncMock())):
+        with pytest.raises(HTTPException) as exc_info:
+            await list_amendments(status="invalid_status_xyz")
     assert exc_info.value.status_code == 400
     assert "Invalid status" in exc_info.value.detail
 
 
 @pytest.mark.asyncio
-@patch("enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService")
-async def test_list_amendments_invalid_order_by(mock_storage_cls):
-    mock_storage_cls.return_value = AsyncMock()
-    with pytest.raises(HTTPException) as exc_info:
-        await list_amendments(
-            status=None,
-            proposer_agent_id=None,
-            limit=50,
-            offset=0,
-            order_by="nonexistent_field",
-            order="desc",
-        )
+async def test_list_amendments_invalid_order_by():
+    with _review_api_patch("ConstitutionalStorageService", MagicMock(return_value=AsyncMock())):
+        with pytest.raises(HTTPException) as exc_info:
+            await list_amendments(
+                status=None,
+                proposer_agent_id=None,
+                limit=50,
+                offset=0,
+                order_by="nonexistent_field",
+                order="desc",
+            )
     assert exc_info.value.status_code == 400
 
 
 @pytest.mark.asyncio
-@patch("enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService")
-async def test_list_amendments_invalid_order(mock_storage_cls):
-    mock_storage_cls.return_value = AsyncMock()
-    with pytest.raises(HTTPException) as exc_info:
-        await list_amendments(
+async def test_list_amendments_invalid_order():
+    with _review_api_patch("ConstitutionalStorageService", MagicMock(return_value=AsyncMock())):
+        with pytest.raises(HTTPException) as exc_info:
+            await list_amendments(
+                status=None,
+                proposer_agent_id=None,
+                limit=50,
+                offset=0,
+                order_by="created_at",
+                order="sideways",
+            )
+    assert exc_info.value.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_list_amendments_success():
+    mock_storage = AsyncMock()
+    mock_storage.list_amendments.return_value = ([], 0)
+    with _review_api_patch("ConstitutionalStorageService", MagicMock(return_value=mock_storage)):
+        result = await list_amendments(
             status=None,
             proposer_agent_id=None,
             limit=50,
             offset=0,
             order_by="created_at",
-            order="sideways",
+            order="desc",
         )
-    assert exc_info.value.status_code == 400
-
-
-@pytest.mark.asyncio
-@patch("enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService")
-async def test_list_amendments_success(mock_storage_cls):
-    mock_storage = AsyncMock()
-    mock_storage.list_amendments.return_value = ([], 0)
-    mock_storage_cls.return_value = mock_storage
-
-    result = await list_amendments(
-        status=None,
-        proposer_agent_id=None,
-        limit=50,
-        offset=0,
-        order_by="created_at",
-        order="desc",
-    )
     assert isinstance(result, AmendmentListResponse)
     assert result.total == 0
     assert result.amendments == []
@@ -257,33 +275,27 @@ async def test_list_amendments_success(mock_storage_cls):
 
 
 @pytest.mark.asyncio
-@patch("enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService")
-async def test_list_amendments_storage_failure(mock_storage_cls):
+async def test_list_amendments_storage_failure():
     mock_storage = AsyncMock()
     mock_storage.connect.side_effect = RuntimeError("DB down")
-    mock_storage_cls.return_value = mock_storage
-
-    with pytest.raises(HTTPException) as exc_info:
-        await list_amendments()
+    with _review_api_patch("ConstitutionalStorageService", MagicMock(return_value=mock_storage)):
+        with pytest.raises(HTTPException) as exc_info:
+            await list_amendments()
     assert exc_info.value.status_code == 500
 
 
 @pytest.mark.asyncio
-@patch("enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService")
-async def test_get_amendment_not_found(mock_storage_cls):
+async def test_get_amendment_not_found():
     mock_storage = AsyncMock()
     mock_storage.get_amendment.return_value = None
-    mock_storage_cls.return_value = mock_storage
-
-    with pytest.raises(HTTPException) as exc_info:
-        await get_amendment("nonexistent-id")
+    with _review_api_patch("ConstitutionalStorageService", MagicMock(return_value=mock_storage)):
+        with pytest.raises(HTTPException) as exc_info:
+            await get_amendment("nonexistent-id")
     assert exc_info.value.status_code == 404
 
 
 @pytest.mark.asyncio
-@patch("enhanced_agent_bus.constitutional.review_api.ConstitutionalDiffEngine")
-@patch("enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService")
-async def test_get_amendment_success(mock_storage_cls, mock_diff_cls):
+async def test_get_amendment_success():
     amendment = _make_amendment(
         governance_metrics_before={"health": 0.9},
         governance_metrics_after={"health": 0.85},
@@ -292,25 +304,74 @@ async def test_get_amendment_success(mock_storage_cls, mock_diff_cls):
     mock_storage = AsyncMock()
     mock_storage.get_amendment.return_value = amendment
     mock_storage.get_version.return_value = None  # skip diff to avoid Pydantic issues
-    mock_storage_cls.return_value = mock_storage
-
-    result = await get_amendment("amend-1", include_diff=False, include_target_version=False)
+    with (
+        _review_api_patch("ConstitutionalStorageService", MagicMock(return_value=mock_storage)),
+        _review_api_patch("ConstitutionalDiffEngine", MagicMock()),
+    ):
+        result = await get_amendment("amend-1", include_diff=False, include_target_version=False)
     assert isinstance(result, AmendmentDetailResponse)
     assert result.governance_metrics_delta["health"] == pytest.approx(-0.05)
 
 
 @pytest.mark.asyncio
-@patch("enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService")
-async def test_get_amendment_storage_failure(mock_storage_cls):
+async def test_get_amendment_storage_failure():
     mock_storage = AsyncMock()
     mock_storage.connect.side_effect = RuntimeError("fail")
-    mock_storage_cls.return_value = mock_storage
-
-    with pytest.raises(HTTPException) as exc_info:
-        await get_amendment("amend-1")
+    with _review_api_patch("ConstitutionalStorageService", MagicMock(return_value=mock_storage)):
+        with pytest.raises(HTTPException) as exc_info:
+            await get_amendment("amend-1")
     assert exc_info.value.status_code == 500
 
 
 def test_router_prefix():
     assert router.prefix == "/api/v1/constitutional"
     assert "constitutional-amendments" in router.tags
+
+
+@pytest.mark.asyncio
+async def test_approve_amendment_accepts_typed_maci_result():
+    amendment = _make_amendment(status=AmendmentStatus.PROPOSED, approval_chain=[])
+    mock_maci = AsyncMock()
+    mock_maci.validate_action = AsyncMock(return_value=MACIValidationResult(is_valid=True))
+    mock_maci_cls = MagicMock(return_value=mock_maci)
+
+    mock_storage = AsyncMock()
+    mock_storage.get_amendment.return_value = amendment
+    mock_storage_cls = MagicMock(return_value=mock_storage)
+
+    mock_hitl = MagicMock()
+    mock_hitl._determine_approval_chain.return_value = MagicMock(required_approvals=1)
+    mock_hitl_cls = MagicMock(return_value=mock_hitl)
+
+    with (
+        _review_api_patch("MACIEnforcer", mock_maci_cls),
+        _review_api_patch("ConstitutionalStorageService", mock_storage_cls),
+        _review_api_patch("ConstitutionalHITLIntegration", mock_hitl_cls),
+        _review_api_patch("AuditClient", MagicMock(return_value=AsyncMock())),
+    ):
+        result = await approve_amendment(
+            "amend-1",
+            ApprovalRequest(approver_agent_id="judge-1", comments="approved"),
+            x_agent_id="judge-1",
+        )
+
+    assert result.success is True
+    assert result.amendment.status == AmendmentStatus.APPROVED
+
+
+@pytest.mark.asyncio
+async def test_reject_amendment_denies_typed_maci_result():
+    mock_maci = AsyncMock()
+    mock_maci.validate_action = AsyncMock(return_value=MACIValidationResult(is_valid=False))
+    with _review_api_patch("MACIEnforcer", MagicMock(return_value=mock_maci)):
+        with pytest.raises(HTTPException) as exc_info:
+            await reject_amendment(
+                "amend-1",
+                RejectionRequest(
+                    rejector_agent_id="exec-1",
+                    reason="This violates principle X and must be revised",
+                ),
+                x_agent_id="exec-1",
+            )
+
+    assert exc_info.value.status_code == 403

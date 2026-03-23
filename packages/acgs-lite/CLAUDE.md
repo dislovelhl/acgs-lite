@@ -46,6 +46,8 @@ surface, not only the Rust workspace.
 
 ## Gotchas
 
+- `GovernanceEngine.validate()` raises `ConstitutionalViolationError` on violations — it does
+  not return a result with `valid=False`. Catch the exception to inspect violations.
 - Package minimum runtime is Python 3.10.
 - Many integrations are optional extras; preserve lazy import behavior.
 - Rust acceleration is optional and should not become mandatory for baseline tests.

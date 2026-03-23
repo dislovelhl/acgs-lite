@@ -571,8 +571,19 @@ class TestSecurity:
         assert v.timeout == 30.0
         assert v.verify_tls is True
 
-    def test_sso_settings_defaults(self):
+    def test_sso_settings_defaults(self, monkeypatch: pytest.MonkeyPatch):
         from src.core.shared.config.security import SSOSettings
+
+        for env_var in (
+            "SSO_ENABLED",
+            "OIDC_ENABLED",
+            "OIDC_USE_PKCE",
+            "SAML_ENABLED",
+            "SAML_SIGN_REQUESTS",
+            "SSO_AUTO_PROVISION",
+            "SSO_DEFAULT_ROLE",
+        ):
+            monkeypatch.delenv(env_var, raising=False)
 
         sso = SSOSettings()
         assert sso.enabled is True
