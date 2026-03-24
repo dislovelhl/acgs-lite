@@ -14,6 +14,7 @@ from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from src.core.shared.errors.exceptions import ServiceUnavailableError
 
 from enhanced_agent_bus.config import BusConfiguration
 from enhanced_agent_bus.mcp_server.config import MCPConfig
@@ -726,7 +727,7 @@ class TestMCPHandlerRegistration:
             description="blocked",
             inputSchema=ToolInputSchema(),
         )
-        with pytest.raises(Exception):
+        with pytest.raises(ServiceUnavailableError):
             handler.register_tool(tool_def, AsyncMock())
 
     def test_lock_registration_blocks_resource(self, handler):
@@ -736,13 +737,13 @@ class TestMCPHandlerRegistration:
             name="blocked",
             description="blocked",
         )
-        with pytest.raises(Exception):
+        with pytest.raises(ServiceUnavailableError):
             handler.register_resource(res_def, AsyncMock())
 
     def test_lock_registration_blocks_prompt(self, handler):
         handler.lock_registration()
         prompt_def = PromptDefinition(name="blocked", description="blocked")
-        with pytest.raises(Exception):
+        with pytest.raises(ServiceUnavailableError):
             handler.register_prompt(prompt_def, AsyncMock())
 
 

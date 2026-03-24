@@ -483,7 +483,7 @@ class TestWorkOSWebhookSignature:
             _parse_workos_signature_header,
         )
 
-        with pytest.raises(WorkOSWebhookVerificationError, match="t.*v1"):
+        with pytest.raises(WorkOSWebhookVerificationError, match=r"t.*v1"):
             _parse_workos_signature_header("v1=abc")
 
     def test_parse_signature_header_missing_v1(self):

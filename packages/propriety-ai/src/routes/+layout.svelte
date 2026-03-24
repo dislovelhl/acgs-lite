@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { onMount } from 'svelte';
 	import '../app.css';
 	let { children } = $props();
@@ -37,29 +38,51 @@
 		{scrolled ? 'bg-bg/80 backdrop-blur-md border-b border-border' : ''}"
 >
 	<nav class="flex items-center justify-between px-6 py-4 md:px-12 md:py-5 max-w-[1600px] mx-auto">
-		<a href="/" class="group flex items-center gap-2">
+			<a href={resolve('/')} class="group flex items-center gap-2">
 			<span class="font-mono text-xs tracking-widest text-fg-muted">ACGS</span>
 			<span
 				class="h-1.5 w-1.5 rounded-full bg-accent transition-transform duration-300 group-hover:scale-150"
 			></span>
-		</a>
+			</a>
 
-		<ul class="hidden items-center gap-8 md:flex">
-			{#each [['Frameworks', '/#frameworks'], ['How It Works', '/#works'], ['Pricing', '/pricing']] as [label, href], i}
-				<li>
-					<a
-						{href}
-						class="group relative font-mono text-xs tracking-wider text-fg-muted transition-colors duration-300 hover:text-fg"
-					>
-						<span class="mr-1 text-accent">0{i + 1}</span>
-						{label.toUpperCase()}
+			<ul class="hidden items-center gap-8 md:flex">
+					<li>
+						<a
+							href={resolve('/#frameworks')}
+							class="group relative font-mono text-xs tracking-wider text-fg-muted transition-colors duration-300 hover:text-fg"
+						>
+						<span class="mr-1 text-accent">01</span>
+						FRAMEWORKS
 						<span
 							class="absolute -bottom-1 left-0 h-px w-0 bg-fg transition-all duration-300 group-hover:w-full"
 						></span>
 					</a>
 				</li>
-			{/each}
-		</ul>
+					<li>
+						<a
+							href={resolve('/#works')}
+							class="group relative font-mono text-xs tracking-wider text-fg-muted transition-colors duration-300 hover:text-fg"
+						>
+						<span class="mr-1 text-accent">02</span>
+						HOW IT WORKS
+						<span
+							class="absolute -bottom-1 left-0 h-px w-0 bg-fg transition-all duration-300 group-hover:w-full"
+						></span>
+					</a>
+				</li>
+				<li>
+					<a
+						href={resolve('/pricing')}
+						class="group relative font-mono text-xs tracking-wider text-fg-muted transition-colors duration-300 hover:text-fg"
+					>
+						<span class="mr-1 text-accent">03</span>
+						PRICING
+						<span
+							class="absolute -bottom-1 left-0 h-px w-0 bg-fg transition-all duration-300 group-hover:w-full"
+						></span>
+					</a>
+				</li>
+			</ul>
 
 		<div class="hidden items-center gap-3 md:flex">
 			<span class="relative flex h-2 w-2">
@@ -119,18 +142,24 @@
 				<span class="mr-2">CONSTITUTIONAL HASH</span>
 				<span class="tabular-nums text-fg">cdd01ef066bc6cf2</span>
 			</div>
-			<div class="flex gap-8">
-				{#each [['PyPI', 'https://pypi.org/project/acgs/'], ['GitHub', 'https://github.com/acgs-ai/acgs-lite']] as [label, href]}
+				<div class="flex gap-8">
 					<a
-						{href}
+						href="https://pypi.org/project/acgs/"
 						target="_blank"
 						rel="noopener"
 						class="font-mono text-xs tracking-widest text-fg-muted transition-colors duration-300 hover:text-fg"
 					>
-						{label}
+						PyPI
 					</a>
-				{/each}
-			</div>
+					<a
+						href="https://github.com/acgs-ai/acgs-lite"
+						target="_blank"
+						rel="noopener"
+						class="font-mono text-xs tracking-widest text-fg-muted transition-colors duration-300 hover:text-fg"
+					>
+						GitHub
+					</a>
+				</div>
 			<div class="font-mono text-xs tracking-widest text-fg-muted">
 				<span class="mr-2">LOCAL TIME</span>
 				<span class="tabular-nums text-fg">{time}</span>

@@ -17,6 +17,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import pytest
+from pydantic import ValidationError
 
 from enhanced_agent_bus.constitutional.amendment_model import (
     AmendmentProposal,
@@ -126,7 +127,7 @@ class TestProposalRequest:
     def test_invalid_version_pattern(self):
         from enhanced_agent_bus.constitutional.proposal_engine import ProposalRequest
 
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             ProposalRequest(
                 proposed_changes={"x": 1},
                 justification="This is a valid justification text",

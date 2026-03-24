@@ -185,7 +185,7 @@ class ConstitutionalMesh:
         self._dna = AgentDNA(constitution=constitution, agent_id="mesh-validator")
         self._peers_per_validation = peers_per_validation
         self._quorum = quorum
-        self._rng = random.Random(seed)
+        self._rng = random.Random(seed)  # noqa: S311 - deterministic peer assignment only
         self._agents: dict[str, _AgentInfo] = {}
         self._assignments: dict[str, PeerAssignment] = {}
         self._votes: dict[str, list[ValidationVote]] = {}

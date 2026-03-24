@@ -66,7 +66,7 @@ class PipelineMetricsResponse(BaseModel):
 
 
 def _jitter(base: float, pct: float = 0.15) -> float:
-    return base * (1.0 + (random.random() - 0.5) * 2.0 * pct)
+    return base * (1.0 + (random.random() - 0.5) * 2.0 * pct)  # noqa: S311 - UI demo jitter
 
 
 def _status_for(p99: float, budget: float) -> str:

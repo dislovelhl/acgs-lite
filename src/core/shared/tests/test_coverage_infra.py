@@ -174,7 +174,7 @@ class TestBulkOperations:
         table.name = "test_table"
         values = [{"name": "no_id_field"}]
 
-        with pytest.raises(ACGSValidationError, match="missing.*id.*field"):
+        with pytest.raises(ACGSValidationError, match=r"missing.*id.*field"):
             await BulkOperations.bulk_update(session, table, values, id_column="id")
 
     @pytest.mark.asyncio
@@ -1753,7 +1753,7 @@ class TestRedisConfig:
         mock_client = AsyncMock()
         mock_client.ping = AsyncMock(return_value=True)
 
-        is_healthy, latency = await config.health_check_async(redis_client=mock_client)
+        is_healthy, _latency = await config.health_check_async(redis_client=mock_client)
         assert is_healthy is True
 
     @pytest.mark.asyncio
@@ -1764,7 +1764,7 @@ class TestRedisConfig:
         mock_client = AsyncMock()
         mock_client.ping = AsyncMock(side_effect=ConnectionError("down"))
 
-        is_healthy, latency = await config.health_check_async(redis_client=mock_client)
+        is_healthy, _latency = await config.health_check_async(redis_client=mock_client)
         assert is_healthy is False
 
     def test_callback_invoked_on_state_change(self):

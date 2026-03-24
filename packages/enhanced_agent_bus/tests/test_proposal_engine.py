@@ -6,6 +6,7 @@ Constitutional Hash: cdd01ef066bc6cf2
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from pydantic import ValidationError
 
 from enhanced_agent_bus.constitutional.proposal_engine import (
     AmendmentProposalEngine,
@@ -40,7 +41,7 @@ class TestProposalRequest:
         assert req.proposed_changes == {}
 
     def test_short_justification_rejected(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             ProposalRequest(
                 proposed_changes={"a": 1},
                 justification="short",
@@ -48,7 +49,7 @@ class TestProposalRequest:
             )
 
     def test_invalid_version_format(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             ProposalRequest(
                 proposed_changes={"a": 1},
                 justification="This is a valid justification text",

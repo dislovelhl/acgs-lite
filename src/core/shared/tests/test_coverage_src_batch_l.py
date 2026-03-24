@@ -171,7 +171,7 @@ class TestStructuredJSONFormatterUncovered:
         output = formatter.format(record)
         parsed = json.loads(output)
         # stack_info may be under different keys or omitted by some formatters
-        output_str = json.dumps(parsed)
+        json.dumps(parsed)
         # The stack info should appear somewhere in the output if the formatter handles it
         assert parsed is not None  # At minimum, valid JSON was produced
 
@@ -475,7 +475,10 @@ class TestN1MiddlewareUncovered:
             detector = N1QueryDetector(threshold=2)
             # Fire the same query pattern many times to trigger N+1
             for i in range(10):
-                detector.record_query(f"SELECT * FROM orders WHERE user_id = {i}", "req-1")
+                detector.record_query(
+                    f"SELECT * FROM orders WHERE user_id = {i}",  # noqa: S608 - synthetic query string for detector tests
+                    "req-1",
+                )
 
             report = detector.get_report()
             assert report is not None
@@ -742,7 +745,7 @@ class TestGenerateSamlSpCertificate:
         """Generate with custom common_name and validity."""
         from src.core.shared.auth.certs.generate_certs import generate_saml_sp_certificate
 
-        cert_pem, key_pem = generate_saml_sp_certificate(
+        cert_pem, _key_pem = generate_saml_sp_certificate(
             common_name="test-cn",
             key_size=2048,
             validity_days=30,
@@ -767,7 +770,7 @@ class TestGenerateSamlSpCertificate:
         from src.core.shared.auth.certs.generate_certs import generate_saml_sp_certificate
 
         nested = tmp_path / "a" / "b" / "c"
-        cert_pem, key_pem = generate_saml_sp_certificate(output_dir=str(nested))
+        _cert_pem, _key_pem = generate_saml_sp_certificate(output_dir=str(nested))
         assert nested.exists()
         assert (nested / "sp.crt").exists()
 
@@ -1450,7 +1453,7 @@ class TestFactorySettingsPydantic:
         sec = SecuritySettings()
         # Bypass SecuritySettings validator to set forbidden value directly
         object.__setattr__(sec, "jwt_secret", SecretStr("dev-secret"))
-        with pytest.raises(ValueError, match="dev-secret.*forbidden"):
+        with pytest.raises(ValueError, match=r"dev-secret.*forbidden"):
             Settings.model_validate({"APP_ENV": "production", "security": sec})
 
     def test_validate_production_security_short_jwt(self, monkeypatch):
@@ -1671,7 +1674,7 @@ class TestFactoryDataclassFallback:
         mod = self._load_fallback_module()
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
-            s = mod.Settings()
+            mod.Settings()
             tls_warnings = [x for x in w if "TLS" in str(x.message)]
             assert len(tls_warnings) >= 1
 
@@ -1680,7 +1683,7 @@ class TestFactoryDataclassFallback:
         mod = self._load_fallback_module()
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
-            s = mod.Settings()
+            mod.Settings()
             tls_warnings = [x for x in w if "TLS" in str(x.message)]
             assert len(tls_warnings) >= 1
 
@@ -1689,7 +1692,7 @@ class TestFactoryDataclassFallback:
         mod = self._load_fallback_module()
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
-            s = mod.Settings()
+            mod.Settings()
             tls_warnings = [x for x in w if "TLS" in str(x.message)]
             assert len(tls_warnings) == 0
 

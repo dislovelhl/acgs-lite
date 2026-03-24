@@ -88,7 +88,7 @@ class _WorkerThreadRunner:
                 factory, future = item
                 try:
                     result = runner.run(factory())
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001 - test shim must surface arbitrary app errors
                     future.set_exception(exc)
                 else:
                     future.set_result(result)
@@ -103,7 +103,7 @@ class _WorkerThreadRunner:
         self._thread.join(timeout=5)
 
 
-class _CompatSyncTransport(httpx.BaseTransport):
+class _CompatSyncTransport(httpx.BaseTransport):  # type: ignore[misc]
     """Sync ASGI transport that avoids AnyIO's blocking portal."""
 
     def __init__(
@@ -306,7 +306,12 @@ class CompatTestClient:
             self._context_worker.run(self._lifespan_cm.__aenter__)
         return self
 
-    def __exit__(self, exc_type, exc, tb) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        tb: object | None,
+    ) -> None:
         try:
             if self._lifespan_cm is not None and self._context_worker is not None:
                 self._context_worker.run(lambda: self._lifespan_cm.__aexit__(exc_type, exc, tb))
@@ -319,31 +324,17 @@ class CompatTestClient:
             self._context_worker.close()
             self._context_worker = None
 
+    def __del__(self) -> None:
+        with contextlib.suppress(Exception):
+            self.close()
+
     def _run_async(self, factory: Any) -> Any:
-        if self._context_worker is not None:
-            return self._context_worker.run(factory)
-
-        try:
-            asyncio.get_running_loop()
-        except RuntimeError:
-            return asyncio.run(factory())
-
-        result_box: dict[str, Any] = {}
-        error_box: dict[str, BaseException] = {}
-
-        def invoke() -> None:
-            try:
-                result_box["value"] = asyncio.run(factory())
-            except Exception as exc:
-                error_box["error"] = exc
-
-        thread = threading.Thread(target=invoke, name="pytest-testclient-call", daemon=True)
-        thread.start()
-        thread.join()
-
-        if "error" in error_box:
-            raise error_box["error"]
-        return result_box["value"]
+        if self._context_worker is None:
+            # Reuse a dedicated worker for plain TestClient instances too. This
+            # avoids asyncio.run() loop-shutdown hangs on some apps and keeps
+            # repeated request tests from paying per-request thread startup.
+            self._context_worker = _WorkerThreadRunner()
+        return self._context_worker.run(factory)
 
     def request(self, method: str, url: str, **kwargs: Any) -> httpx.Response:
         request_kwargs = dict(kwargs)

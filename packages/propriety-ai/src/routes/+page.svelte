@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
+
 	// Intersection observer for scroll animations
 	function observe(node: HTMLElement) {
 		if (typeof IntersectionObserver === 'undefined') {
@@ -212,7 +214,7 @@
 				class="animate-marquee-left flex gap-16 whitespace-nowrap px-8 md:gap-24 md:px-12"
 				style="width: fit-content;"
 			>
-				{#each ['Most AI deployments have zero governance.', 'EU AI Act: 7% of global revenue.', 'No audit trail. No appeal. No accountability.', 'Deployment without governance is uninsurable.', 'Most AI deployments have zero governance.', 'EU AI Act: 7% of global revenue.', 'No audit trail. No appeal. No accountability.', 'Deployment without governance is uninsurable.'] as statement, i}
+					{#each ['Most AI deployments have zero governance.', 'EU AI Act: 7% of global revenue.', 'No audit trail. No appeal. No accountability.', 'Deployment without governance is uninsurable.', 'Most AI deployments have zero governance.', 'EU AI Act: 7% of global revenue.', 'No audit trail. No appeal. No accountability.', 'Deployment without governance is uninsurable.'] as statement, i (`${statement}-${i}`)}
 					<p
 						class="font-sans text-5xl font-light tracking-tight md:text-7xl lg:text-8xl"
 						style={i % 2 === 0
@@ -239,7 +241,7 @@
 
 		<!-- Code steps as project list -->
 		<div class="flex flex-col gap-12">
-			{#each [{ step: 'Define', title: 'Constitution', code: `rules:\n  - id: SAFE-001\n    text: No financial advice\n    severity: critical\n    keywords: [invest, buy stocks]`, tag: 'YAML' }, { step: 'Govern', title: 'Your Agent', code: `from acgs import Constitution, GovernedAgent\n\nconstitution = Constitution.from_yaml("rules.yaml")\nagent = GovernedAgent(my_agent, constitution=constitution)\nresult = agent.run("process this request")`, tag: 'PYTHON' }, { step: 'Audit', title: 'Every Decision', code: `ALLOW  "check weather"       hash: a3f8..c291\nDENY   "invest in crypto"    rule: SAFE-001\n                              hash: b7e2..d104`, tag: 'OUTPUT' }] as item, i}
+				{#each [{ step: 'Define', title: 'Constitution', code: `rules:\n  - id: SAFE-001\n    text: No financial advice\n    severity: critical\n    keywords: [invest, buy stocks]`, tag: 'YAML' }, { step: 'Govern', title: 'Your Agent', code: `from acgs import Constitution, GovernedAgent\n\nconstitution = Constitution.from_yaml("rules.yaml")\nagent = GovernedAgent(my_agent, constitution=constitution)\nresult = agent.run("process this request")`, tag: 'PYTHON' }, { step: 'Audit', title: 'Every Decision', code: `ALLOW  "check weather"       hash: a3f8..c291\nDENY   "invest in crypto"    rule: SAFE-001\n                              hash: b7e2..d104`, tag: 'OUTPUT' }] as item (item.title)}
 				<div class="fade-in border-t border-border/50 pt-12 md:pt-16" use:observe>
 					<div class="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
 						<div class="flex-1 lg:max-w-md">
@@ -315,7 +317,7 @@
 		<div
 			class="grid gap-px border border-border/50 bg-border/50 lg:grid-cols-4 rounded-xl overflow-hidden shadow-2xl"
 		>
-			{#each [{ label: 'Validation', value: '560ns', sub: 'P50 latency' }, { label: 'Frameworks', value: '9', sub: 'regulatory bodies' }, { label: 'Tests', value: '3,133', sub: 'passing' }, { label: 'Checklist', value: '72/125', sub: 'auto-populated' }] as stat}
+				{#each [{ label: 'Validation', value: '560ns', sub: 'P50 latency' }, { label: 'Frameworks', value: '9', sub: 'regulatory bodies' }, { label: 'Tests', value: '3,133', sub: 'passing' }, { label: 'Checklist', value: '72/125', sub: 'auto-populated' }] as stat (stat.label)}
 				<div class="bg-[#0a0a0a] p-10 text-center transition-colors hover:bg-[#0c0c0c]">
 					<div class="font-mono text-xs tracking-widest text-accent">
 						{stat.label.toUpperCase()}
@@ -357,7 +359,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each frameworks as fw}
+						{#each frameworks as fw (fw.name)}
 						<tr class="group transition-colors duration-300 hover:bg-white/[0.03]">
 							<td
 								class="py-5 pl-8 pr-6 font-sans text-lg font-light border-b border-border/20 {fw.hot
@@ -399,7 +401,7 @@
 		<!-- Frameworks row -->
 		<div class="relative overflow-hidden py-2">
 			<div class="animate-marquee-left flex gap-12" style="width: fit-content;">
-				{#each [...marqueeTop, ...marqueeTop, ...marqueeTop, ...marqueeTop] as item}
+					{#each [...marqueeTop, ...marqueeTop, ...marqueeTop, ...marqueeTop] as item, i (`top-${item}-${i}`)}
 					<span
 						role="presentation"
 						class="cursor-default whitespace-nowrap font-sans text-6xl font-light tracking-tight transition-all duration-300 md:text-8xl"
@@ -424,7 +426,7 @@
 		<!-- Integrations row -->
 		<div class="relative overflow-hidden py-2">
 			<div class="animate-marquee-right flex gap-12" style="width: fit-content;">
-				{#each [...marqueeBottom, ...marqueeBottom, ...marqueeBottom, ...marqueeBottom] as item}
+					{#each [...marqueeBottom, ...marqueeBottom, ...marqueeBottom, ...marqueeBottom] as item, i (`bottom-${item}-${i}`)}
 					<span
 						role="presentation"
 						class="cursor-default whitespace-nowrap font-sans text-6xl font-light tracking-tight transition-all duration-300 md:text-8xl"
@@ -457,7 +459,7 @@
 		</div>
 
 		<div class="grid gap-6 md:grid-cols-2">
-			{#each [{ title: 'MACI Separation of Powers', desc: 'Prove to regulators that no single agent controls decisions. Four roles with enforced boundaries. Self-validation prevention built in.' }, { title: 'Tamper-Evident Audit Chain', desc: 'Show your auditor exactly what your AI decided and why. SHA-256 chain verification. Constitutional hash: cdd01ef066bc6cf2.' }, { title: 'Zero Performance Impact', desc: 'Rule-based, not LLM-based. Aho-Corasick single-pass scanning. Optional Rust acceleration. Governance that vanishes into the critical path.' }, { title: 'Pass Your Next Audit', desc: '125 compliance checklist items. 72 auto-populated. Enterprise compliance consulting costs $50K+. ACGS: pip install.' }] as feature}
+				{#each [{ title: 'MACI Separation of Powers', desc: 'Prove to regulators that no single agent controls decisions. Four roles with enforced boundaries. Self-validation prevention built in.' }, { title: 'Tamper-Evident Audit Chain', desc: 'Show your auditor exactly what your AI decided and why. SHA-256 chain verification. Constitutional hash: cdd01ef066bc6cf2.' }, { title: 'Zero Performance Impact', desc: 'Rule-based, not LLM-based. Aho-Corasick single-pass scanning. Optional Rust acceleration. Governance that vanishes into the critical path.' }, { title: 'Pass Your Next Audit', desc: '125 compliance checklist items. 72 auto-populated. Enterprise compliance consulting costs $50K+. ACGS: pip install.' }] as feature (feature.title)}
 				<div
 					class="fade-in group rounded-xl border border-border/50 bg-[#0a0a0a] p-10 transition-all duration-300 hover:bg-[#0f0f0f] hover:border-border hover:shadow-2xl"
 					use:observe
@@ -490,10 +492,10 @@
 					You pay for compliance proof. Not governance.
 				</p>
 			</div>
-			<a
-				href="/pricing"
-				class="group relative overflow-hidden inline-flex items-center gap-4 rounded-full border border-border px-10 py-5 font-mono text-sm tracking-widest uppercase transition-all duration-500 hover:border-white hover:bg-white hover:text-black"
-			>
+				<a
+					href={resolve('/pricing')}
+					class="group relative overflow-hidden inline-flex items-center gap-4 rounded-full border border-border px-10 py-5 font-mono text-sm tracking-widest uppercase transition-all duration-500 hover:border-white hover:bg-white hover:text-black"
+				>
 				<span class="relative z-10">View pricing</span>
 				<svg
 					class="relative z-10 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1"

@@ -20,6 +20,7 @@ from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
+from src.core.shared.security.pqc import UnsupportedPQCAlgorithmError
 
 # ---------------------------------------------------------------------------
 # 2. caching
@@ -1522,7 +1523,7 @@ class TestCheckEnforcementForCreate:
         config = AsyncMock()
         config.get_mode = AsyncMock(return_value="strict")
 
-        with pytest.raises(Exception):
+        with pytest.raises(UnsupportedPQCAlgorithmError):
             await check_enforcement_for_create(
                 key_type="pqc",
                 key_algorithm="UNSUPPORTED-ALGO",

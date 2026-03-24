@@ -19,6 +19,7 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from pydantic import ValidationError
 
 # ---------------------------------------------------------------------------
 # Stub the drift_detector module so security_integration can import
@@ -466,11 +467,11 @@ class TestDataSplitConfig:
         assert cfg.random_seed is None
 
     def test_validation_eval_size_min(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             DataSplitConfig(eval_size=5)  # ge=10
 
     def test_validation_val_ratio_max(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             DataSplitConfig(val_ratio=1.0)  # lt=1.0
 
 
@@ -489,7 +490,7 @@ class TestICLConfig:
         assert cfg.max_examples == 10
 
     def test_validation_context_length_too_small(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             ICLConfig(max_context_length=100)
 
 
@@ -506,7 +507,7 @@ class TestTrainingConfig:
         assert cfg.lora_dropout == 0.1
 
     def test_validation_learning_rate_zero(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             TrainingConfig(learning_rate=0.0)  # gt=0.0
 
     def test_custom(self):
@@ -556,7 +557,7 @@ class TestCandidateModel:
         assert m.gpu_requirements == 4
 
     def test_gpu_validation(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             CandidateModel(model_name="x", gpu_requirements=10)  # le=8
 
 
@@ -611,11 +612,11 @@ class TestFlywheelConfig:
         assert len(cfg.candidate_models) == 2
 
     def test_log_retention_validation(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             FlywheelConfig(log_retention_days=0)  # ge=1
 
     def test_sample_rate_validation(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             FlywheelConfig(sample_rate=1.5)  # le=1.0
 
     def test_from_attributes(self):

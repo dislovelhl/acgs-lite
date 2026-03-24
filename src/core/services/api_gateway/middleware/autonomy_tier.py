@@ -207,7 +207,7 @@ class AutonomyTierEnforcementMiddleware(BaseHTTPMiddleware):
             try:
                 return verify_token(auth[7:])
             except Exception:
-                pass
+                logger.debug("Bearer token verification failed during autonomy-tier resolution")
         return None
 
     @staticmethod

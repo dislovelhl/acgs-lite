@@ -17,6 +17,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from src.core.shared.security.pqc import UnsupportedPQCAlgorithmError
 
 # ---------------------------------------------------------------------------
 # Governance engine imports
@@ -652,7 +653,7 @@ class TestCheckEnforcementForCreate:
 
         config = AsyncMock()
         config.get_mode.return_value = "strict"
-        with pytest.raises(Exception):
+        with pytest.raises(UnsupportedPQCAlgorithmError):
             await check_enforcement_for_create(
                 key_type="pqc",
                 key_algorithm="INVALID-ALG",

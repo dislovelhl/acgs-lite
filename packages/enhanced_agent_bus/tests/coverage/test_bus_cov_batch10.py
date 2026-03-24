@@ -18,6 +18,7 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 
 # =============================================================================
 # Module 1: response_quality.models
@@ -526,13 +527,13 @@ class TestDimensionSpec:
     def test_invalid_threshold(self):
         from enhanced_agent_bus.response_quality.validator import DimensionSpec
 
-        with pytest.raises(Exception):
+        with pytest.raises(ACGSValidationError):
             DimensionSpec(name="test", threshold=1.5)
 
     def test_negative_weight(self):
         from enhanced_agent_bus.response_quality.validator import DimensionSpec
 
-        with pytest.raises(Exception):
+        with pytest.raises(ACGSValidationError):
             DimensionSpec(name="test", threshold=0.5, weight=-1.0)
 
     def test_defaults(self):

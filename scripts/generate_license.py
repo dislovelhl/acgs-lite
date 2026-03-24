@@ -80,7 +80,7 @@ Examples:
 
     if not args.quiet:
         print(
-            f"Generating {args.count} × {args.tier} key(s)  "
+            f"Generating {args.count} x {args.tier} key(s)  "
             f"({'no expiry' if args.days == 0 else f'{args.days} days'})"
         )
         if using_default:

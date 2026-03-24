@@ -489,7 +489,7 @@ class UnifiedVerifiedPolicyGenerator:
 
             try:
                 # Run dafny verify
-                result = subprocess.run(
+                result = subprocess.run(  # noqa: S603 - trusted local CLI
                     [self.dafny_path, "verify", tmp_path],
                     capture_output=True,
                     text=True,

@@ -118,7 +118,7 @@
 		</div>
 
 		<div class="fade-in mt-16 grid gap-6 md:grid-cols-2 xl:grid-cols-4" use:observe>
-			{#each tiers as tier}
+				{#each tiers as tier (tier.name)}
 				<div
 					class="relative flex flex-col rounded-2xl border bg-[#0a0a0a] p-10 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1
 					{tier.highlight
@@ -151,21 +151,43 @@
 
 					<p class="mt-4 text-sm leading-relaxed text-fg-muted/90">{tier.desc}</p>
 
-					<a
-						href={tier.ctaHref}
-						target={tier.ctaHref.startsWith('http') ? '_blank' : undefined}
-						rel={tier.ctaHref.startsWith('http') ? 'noopener' : undefined}
-						class="mt-10 block w-full rounded-lg border py-3.5 text-center font-mono text-sm tracking-wider transition-all duration-300
-							{tier.highlight
-							? 'border-accent bg-accent text-white hover:bg-white hover:text-black hover:border-white shadow-lg shadow-accent/20'
-							: 'border-border/60 bg-transparent text-fg hover:bg-white/10 hover:border-white/20'}"
-					>
-						{tier.cta}
-					</a>
+						{#if tier.ctaHref === 'https://pypi.org/project/acgs/'}
+							<a
+								href="https://pypi.org/project/acgs/"
+								target="_blank"
+								rel="noopener"
+								class="mt-10 block w-full rounded-lg border py-3.5 text-center font-mono text-sm tracking-wider transition-all duration-300
+									{tier.highlight
+									? 'border-accent bg-accent text-white hover:bg-white hover:text-black hover:border-white shadow-lg shadow-accent/20'
+									: 'border-border/60 bg-transparent text-fg hover:bg-white/10 hover:border-white/20'}"
+							>
+								{tier.cta}
+							</a>
+						{:else if tier.ctaHref === 'mailto:hello@acgs.ai'}
+							<a
+								href="mailto:hello@acgs.ai"
+								class="mt-10 block w-full rounded-lg border py-3.5 text-center font-mono text-sm tracking-wider transition-all duration-300
+									{tier.highlight
+									? 'border-accent bg-accent text-white hover:bg-white hover:text-black hover:border-white shadow-lg shadow-accent/20'
+									: 'border-border/60 bg-transparent text-fg hover:bg-white/10 hover:border-white/20'}"
+							>
+								{tier.cta}
+							</a>
+						{:else}
+							<a
+								href="#"
+								class="mt-10 block w-full rounded-lg border py-3.5 text-center font-mono text-sm tracking-wider transition-all duration-300
+									{tier.highlight
+									? 'border-accent bg-accent text-white hover:bg-white hover:text-black hover:border-white shadow-lg shadow-accent/20'
+									: 'border-border/60 bg-transparent text-fg hover:bg-white/10 hover:border-white/20'}"
+							>
+								{tier.cta}
+							</a>
+						{/if}
 
 					<div class="mt-10 border-t border-border/30 pt-8 flex-grow">
 						<ul class="space-y-4">
-							{#each tier.items as item}
+								{#each tier.items as item (item)}
 								<li class="flex items-start gap-3 text-sm text-fg-muted">
 									<svg
 										class="mt-0.5 h-4 w-4 shrink-0 {tier.highlight ? 'text-accent' : 'text-fg-dim'}"

@@ -1266,16 +1266,18 @@ class TestOPAClientCoreEvaluateHTTP:
         assert result["allowed"] is True
 
     async def test_evaluate_http_not_initialized(self):
+        from enhanced_agent_bus.exceptions import OPANotInitializedError
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
         client._http_client = None
-        with pytest.raises(Exception, match="HTTP policy evaluation"):
+        with pytest.raises(OPANotInitializedError, match="HTTP policy evaluation"):
             await client._evaluate_http({}, "data.acgs.allow")
 
     async def test_evaluate_http_connect_error(self):
         from httpx import ConnectError as HTTPConnectError
 
+        from enhanced_agent_bus.exceptions import OPAConnectionError
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
@@ -1283,12 +1285,13 @@ class TestOPAClientCoreEvaluateHTTP:
         mock_http.post.side_effect = HTTPConnectError("refused")
         client._http_client = mock_http
         with patch.object(client, "_sanitize_error", return_value="err"):
-            with pytest.raises(Exception):
+            with pytest.raises(OPAConnectionError):
                 await client._evaluate_http({}, "data.acgs.allow")
 
     async def test_evaluate_http_timeout(self):
         from httpx import TimeoutException as HTTPTimeoutException
 
+        from enhanced_agent_bus.exceptions import OPAConnectionError
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
@@ -1296,12 +1299,13 @@ class TestOPAClientCoreEvaluateHTTP:
         mock_http.post.side_effect = HTTPTimeoutException("timeout")
         client._http_client = mock_http
         with patch.object(client, "_sanitize_error", return_value="err"):
-            with pytest.raises(Exception):
+            with pytest.raises(OPAConnectionError):
                 await client._evaluate_http({}, "data.acgs.allow")
 
     async def test_evaluate_http_status_error(self):
         import httpx
 
+        from enhanced_agent_bus.exceptions import PolicyEvaluationError
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
@@ -1314,12 +1318,13 @@ class TestOPAClientCoreEvaluateHTTP:
         )
         client._http_client = mock_http
         with patch.object(client, "_sanitize_error", return_value="err"):
-            with pytest.raises(Exception):
+            with pytest.raises(PolicyEvaluationError):
                 await client._evaluate_http({}, "data.acgs.allow")
 
     async def test_evaluate_http_json_decode_error(self):
         import json
 
+        from enhanced_agent_bus.exceptions import PolicyEvaluationError
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
@@ -1329,20 +1334,22 @@ class TestOPAClientCoreEvaluateHTTP:
         mock_http = AsyncMock()
         mock_http.post.return_value = mock_response
         client._http_client = mock_http
-        with pytest.raises(Exception):
+        with pytest.raises(PolicyEvaluationError):
             await client._evaluate_http({}, "data.acgs.allow")
 
 
 class TestOPAClientCoreEvaluateEmbedded:
     async def test_not_initialized(self):
+        from enhanced_agent_bus.exceptions import OPANotInitializedError
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore.__new__(OPAClientCore)
         client._embedded_opa = None
-        with pytest.raises(Exception, match="embedded policy evaluation"):
+        with pytest.raises(OPANotInitializedError, match="embedded policy evaluation"):
             await client._evaluate_embedded({}, "data.acgs.allow")
 
     async def test_success(self):
+        from enhanced_agent_bus.exceptions import PolicyEvaluationError
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore.__new__(OPAClientCore)
@@ -1355,6 +1362,7 @@ class TestOPAClientCoreEvaluateEmbedded:
         assert result["allowed"] is True
 
     async def test_runtime_error(self):
+        from enhanced_agent_bus.exceptions import PolicyEvaluationError
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore.__new__(OPAClientCore)
@@ -1363,10 +1371,11 @@ class TestOPAClientCoreEvaluateEmbedded:
         mock_opa.evaluate.side_effect = RuntimeError("crash")
         client._embedded_opa = mock_opa
         with patch.object(client, "_sanitize_error", return_value="err"):
-            with pytest.raises(Exception):
+            with pytest.raises(PolicyEvaluationError):
                 await client._evaluate_embedded({}, "data.acgs.allow")
 
     async def test_type_error(self):
+        from enhanced_agent_bus.exceptions import PolicyEvaluationError
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore.__new__(OPAClientCore)
@@ -1374,7 +1383,7 @@ class TestOPAClientCoreEvaluateEmbedded:
         mock_opa = MagicMock()
         mock_opa.evaluate.side_effect = TypeError("bad type")
         client._embedded_opa = mock_opa
-        with pytest.raises(Exception):
+        with pytest.raises(PolicyEvaluationError):
             await client._evaluate_embedded({}, "data.acgs.allow")
 
 

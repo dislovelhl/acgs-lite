@@ -17,6 +17,7 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from pydantic import ValidationError
 
 # =============================================================================
 # Module 1: src.core.shared.security.rate_limiter
@@ -462,7 +463,7 @@ class TestSlidingWindowRateLimiter:
         from src.core.shared.security.rate_limiter import SlidingWindowRateLimiter
 
         limiter = SlidingWindowRateLimiter()
-        for i in range(5):
+        for _i in range(5):
             result = await limiter.is_allowed("test:deny", limit=5, window_seconds=60)
         # 6th request should be denied
         result = await limiter.is_allowed("test:deny", limit=5, window_seconds=60)
@@ -1129,7 +1130,7 @@ class TestSecuritySettings:
         from src.core.shared.config.security import HAS_PYDANTIC_SETTINGS, SecuritySettings
 
         if HAS_PYDANTIC_SETTINGS:
-            with pytest.raises(Exception):
+            with pytest.raises(ValidationError):
                 with patch.dict("os.environ", {"JWT_SECRET": "PLACEHOLDER"}, clear=False):
                     SecuritySettings()
 

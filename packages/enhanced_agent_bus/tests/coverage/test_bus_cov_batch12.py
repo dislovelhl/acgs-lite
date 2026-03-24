@@ -279,7 +279,7 @@ class TestPersistenceManagerDisconnect:
 
         await pm.disconnect()
 
-        pm.engine is None
+        assert pm.engine is None
 
     @pytest.mark.asyncio
     async def test_disconnect_without_engine(self):

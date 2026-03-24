@@ -28,6 +28,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from cryptography.hazmat.primitives.asymmetric import ed25519
+from src.core.shared.errors.exceptions import (
+    ConstitutionalViolationError as ACGSConstitutionalViolationError,
+)
 
 # ---------------------------------------------------------------------------
 # bundle_registry imports
@@ -340,7 +343,7 @@ class TestOCIRegistryClientPushPull:
         manifest = _make_manifest()
         # Forcibly change the hash after creation
         object.__setattr__(manifest, "constitutional_hash", "wrong-hash")
-        with pytest.raises(Exception):
+        with pytest.raises(ACGSConstitutionalViolationError):
             await client.push_bundle("acgs/test", "v1.0.0", "/tmp/fake.tar.gz", manifest)
 
     async def test_pull_bundle_success(self):

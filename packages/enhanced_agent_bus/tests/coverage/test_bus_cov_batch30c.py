@@ -601,7 +601,7 @@ class TestJsonDumps:
 
     def test_dumps_boolean(self):
         result = dumps(True)
-        assert json.loads(result) == True
+        assert json.loads(result)
 
     def test_dumps_null(self):
         result = dumps(None)
@@ -675,7 +675,7 @@ class TestJsonLoads:
         assert result == {"a": {"b": [1, 2]}}
 
     def test_loads_invalid_json_raises(self):
-        with pytest.raises(Exception):
+        with pytest.raises(json.JSONDecodeError):
             loads("{invalid")
 
     def test_loads_empty_object(self):

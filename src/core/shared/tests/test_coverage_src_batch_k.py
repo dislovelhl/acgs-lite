@@ -235,7 +235,7 @@ class TestSettingsFactory:
         """Production requires JWT_SECRET (lines 94-109)."""
         from src.core.shared.config.factory import Settings
 
-        with pytest.raises(Exception, match="JWT_SECRET.*mandatory.*production"):
+        with pytest.raises(Exception, match=r"JWT_SECRET.*mandatory.*production"):
             Settings.model_validate({"APP_ENV": "production"})
 
     def test_production_validation_dev_secret(self):
@@ -261,7 +261,7 @@ class TestSettingsFactory:
         from src.core.shared.config.security import SecuritySettings
 
         sec = SecuritySettings.model_validate({"JWT_SECRET": "x" * 40})
-        with pytest.raises(Exception, match="API_KEY_INTERNAL.*mandatory"):
+        with pytest.raises(Exception, match=r"API_KEY_INTERNAL.*mandatory"):
             Settings.model_validate({"APP_ENV": "production", "security": sec})
 
     def test_production_validation_placeholder_public_key(self):
@@ -272,7 +272,7 @@ class TestSettingsFactory:
             "JWT_SECRET": "x" * 40,
             "API_KEY_INTERNAL": "k" * 40,
         })
-        with pytest.raises(Exception, match="JWT_PUBLIC_KEY.*configured.*production"):
+        with pytest.raises(Exception, match=r"JWT_PUBLIC_KEY.*configured.*production"):
             Settings.model_validate({"APP_ENV": "production", "security": sec})
 
     def test_production_validation_redis_tls_warning(self):
@@ -712,11 +712,10 @@ class TestGenerateKeyPair:
         mock_variant = MagicMock()
         mock_variant.__str__ = lambda self: "FAKE_ALG"
 
-        mock_approved = set()
         mock_error_cls = type("UnsupportedAlgorithmError", (Exception,), {
             "__init__": lambda self, msg, details=None: Exception.__init__(self, msg)
         })
-        mock_alg_variant = MagicMock()
+        MagicMock()
 
         with patch.dict("sys.modules", {}):
             with patch(

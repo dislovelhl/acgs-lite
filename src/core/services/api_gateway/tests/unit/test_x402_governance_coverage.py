@@ -11,6 +11,7 @@ certify, batch, treasury).
 import hashlib
 import hmac
 import json
+from typing import ClassVar
 
 import pytest
 from fastapi import FastAPI
@@ -152,7 +153,7 @@ class TestEvaluateAction:
 
         class _Result:
             is_injection = True
-            matched_patterns = ["test_pattern"]
+            matched_patterns: ClassVar[list[str]] = ["test_pattern"]
 
         class _Detector:
             def detect(self, action, context):

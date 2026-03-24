@@ -13,6 +13,7 @@ from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from pydantic import ValidationError
 
 # ---------------------------------------------------------------------------
 # enterprise_sso.integration
@@ -832,11 +833,11 @@ class TestFunctionDefinition:
         assert fd.name == "get_weather"
 
     def test_invalid_name(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             FunctionDefinition(name="", description="bad")
 
     def test_invalid_name_special(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             FunctionDefinition(name="foo bar", description="bad")
 
     def test_to_dict(self):
@@ -889,7 +890,7 @@ class TestToolCallFunction:
         assert tcf.get_arguments_dict() == {"x": 1}
 
     def test_invalid_json(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             ToolCallFunction(name="fn", arguments="not json")
 
     def test_to_dict(self):
@@ -928,7 +929,7 @@ class TestToolCall:
 
 class TestLLMRequest:
     def test_empty_messages_raises(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             LLMRequest(messages=[])
 
     def test_minimal(self):

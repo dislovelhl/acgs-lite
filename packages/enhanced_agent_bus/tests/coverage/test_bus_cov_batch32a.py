@@ -20,6 +20,8 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
+from src.core.shared.errors.exceptions import ConfigurationError
+from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 
 from enhanced_agent_bus.models import (
     CONSTITUTIONAL_HASH,
@@ -260,7 +262,7 @@ class TestSSLContext:
 
         client = OPAClientCore(opa_url="https://opa.example.com", ssl_verify=False)
         with patch.dict(os.environ, {"ENVIRONMENT": "prod"}):
-            with pytest.raises(Exception):
+            with pytest.raises(ConfigurationError):
                 client._build_ssl_context_if_needed()
 
     def test_ssl_disabled_in_live_raises(self):
@@ -268,7 +270,7 @@ class TestSSLContext:
 
         client = OPAClientCore(opa_url="https://opa.example.com", ssl_verify=False)
         with patch.dict(os.environ, {"ENVIRONMENT": "live"}):
-            with pytest.raises(Exception):
+            with pytest.raises(ConfigurationError):
                 client._build_ssl_context_if_needed()
 
     def test_ssl_disabled_in_dev_warns_but_succeeds(self):
@@ -386,7 +388,7 @@ class TestValidatePolicyPath:
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
-        with pytest.raises(Exception):
+        with pytest.raises(ACGSValidationError):
             client._validate_policy_path("data.acgs; DROP TABLE")
 
 

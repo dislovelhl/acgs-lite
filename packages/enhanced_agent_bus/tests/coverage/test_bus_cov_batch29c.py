@@ -15,6 +15,7 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 
 # ---------------------------------------------------------------------------
 # governance imports
@@ -188,7 +189,7 @@ class TestSyncEngineFilterValidation:
         engine = _make_sync_engine()
         # "col = 1 AND  AND ..." splits into ["col = 1", "", "col2 = 2"] but
         # the regex split may not produce an empty string; use explicit empty clause
-        with pytest.raises(Exception):
+        with pytest.raises(ACGSValidationError):
             engine._validate_filter_condition("AND")
 
     def test_validate_filter_invalid_grammar(self):

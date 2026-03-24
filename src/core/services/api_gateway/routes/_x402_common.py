@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from src.core.shared.structured_logging import get_logger
 
-DEFAULT_ATTESTATION_SECRET: Final[str] = "acgs2-dev-key"
+DEFAULT_ATTESTATION_DEV_KEY: Final[str] = "acgs2-dev-key"
 PAID_RESPONSE_DISCLAIMER: Final[str] = (
     "Informational governance signal only. Not legal advice or a substitute for "
     "professional compliance assessment."
@@ -46,13 +46,13 @@ def build_related_endpoint(
 
 
 def resolve_attestation_secret() -> str:
-    return os.getenv("ATTESTATION_SECRET") or os.getenv("JWT_SECRET") or DEFAULT_ATTESTATION_SECRET
+    return os.getenv("ATTESTATION_SECRET") or os.getenv("JWT_SECRET") or DEFAULT_ATTESTATION_DEV_KEY
 
 
 def ensure_attestation_secret_config() -> str:
     secret = resolve_attestation_secret()
     environment = os.getenv("ENVIRONMENT", os.getenv("ENV", "development")).strip().lower()
-    if environment in _STRICT_ENVIRONMENTS and secret == DEFAULT_ATTESTATION_SECRET:
+    if environment in _STRICT_ENVIRONMENTS and secret == DEFAULT_ATTESTATION_DEV_KEY:
         raise RuntimeError(
             "ATTESTATION_SECRET must be set to a non-default value in production/staging"
         )

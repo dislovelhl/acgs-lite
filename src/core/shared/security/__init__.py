@@ -1,7 +1,5 @@
 from typing import TYPE_CHECKING
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
 """
 ACGS-2 Security Module
 Constitutional Hash: cdd01ef066bc6cf2

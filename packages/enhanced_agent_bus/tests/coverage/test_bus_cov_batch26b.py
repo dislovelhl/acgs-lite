@@ -13,7 +13,7 @@ import sys
 from unittest.mock import patch
 
 import pytest
-from pydantic import SecretStr
+from pydantic import SecretStr, ValidationError
 
 _PATCHED_MODS = (
     "src.core.shared.config.integrations",
@@ -469,7 +469,7 @@ class TestSecurityPydanticSettings:
         """Forbidden placeholder values must raise ValidationError."""
         mod = _import_security_pydantic()
         for placeholder in ["PLACEHOLDER", "CHANGE_ME", "DANGEROUS_DEFAULT", "dev-secret"]:
-            with pytest.raises(Exception):
+            with pytest.raises(ValidationError):
                 with patch.dict(os.environ, {"JWT_SECRET": placeholder}, clear=False):
                     mod.SecuritySettings()
 

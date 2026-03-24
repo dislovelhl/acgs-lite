@@ -19,6 +19,7 @@ from enhanced_agent_bus.chaos.experiments import (
 )
 from enhanced_agent_bus.chaos.scenarios import BaseScenario, ScenarioResult, ScenarioStatus
 from enhanced_agent_bus.chaos.steady_state import SteadyStateValidator, ValidationResult
+from enhanced_agent_bus.exceptions import ConstitutionalHashMismatchError
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -110,7 +111,7 @@ class TestChaosExperiment:
     def test_init_bad_constitutional_hash(self):
         scenario = FakeScenario()
         validator = _make_validator()
-        with pytest.raises(Exception):
+        with pytest.raises(ConstitutionalHashMismatchError):
             ChaosExperiment(
                 name="bad",
                 hypothesis="h",

@@ -1138,7 +1138,7 @@ class TestPolisRunClustering:
         with patch("enhanced_agent_bus.governance.polis_engine.KMeans") as mock_km:
             mock_km.return_value.fit_predict.side_effect = RuntimeError("KMeans fail")
             labels = engine._run_clustering(X, 3, 2)
-        assert all(l == 0 for l in labels)
+        assert all(label == 0 for label in labels)
 
 
 # ===========================================================================
