@@ -67,8 +67,8 @@ CLASS_INTERNAL = "internal"
 CLASS_CONFIDENTIAL = "confidential"
 CLASS_PII = "PII"
 CLASS_PHI = "PHI"
-CLASS_SECRET = "secret"
-CLASS_TOP_SECRET = "top_secret"
+CLASS_SECRET = "secret"  # noqa: S105 — classification label, not a password
+CLASS_TOP_SECRET = "top_secret"  # noqa: S105 — classification label, not a password
 
 # deployment_region (ISO 3166 + regulatory zones)
 REGION_EU = "EU"

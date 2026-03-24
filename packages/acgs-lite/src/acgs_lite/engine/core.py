@@ -133,7 +133,7 @@ class _NoopRecorder:
     def __init__(self) -> None:
         self._count = 0
 
-    def append(self, item: object) -> None:  # noqa: ARG002
+    def append(self, item: object) -> None:
         self._count += 1
 
     def __len__(self) -> int:
@@ -592,16 +592,16 @@ class GovernanceEngine(BatchValidationMixin):
                     "classify decisions as trade secrets",  # escalate (keyword only)
                     "bypass content filtering system",  # escalate (neg keyword)
                     "implement differential privacy",  # allow (pos-verb, no match)
-                    # exp104: prime Rust AC automaton for longer action strings (edge_cases_exa style)  # noqa: E501
-                    "AI coding agent executed terraform destroy on production infrastructure without human approval",  # noqa: E501
-                    "analyze production AI system resilience through comprehensive chaos engineering tests",  # noqa: E501
-                    "evaluate model performance metrics against fairness benchmarks for quarterly compliance report",  # noqa: E501
+                    # exp104: prime Rust AC automaton for longer action strings (edge_cases_exa style)
+                    "AI coding agent executed terraform destroy on production infrastructure without human approval",
+                    "analyze production AI system resilience through comprehensive chaos engineering tests",
+                    "evaluate model performance metrics against fairness benchmarks for quarterly compliance report",
                 )
                 # exp98: 3× iterations exceeds CPython 3.12 specialization threshold (~16 hits)
                 # for all bytecodes in the no-context hot path. Reduces first-call cold penalty.
                 for _ in range(3):
                     for _wa in _no_ctx_warmup:
-                        try:  # noqa: SIM105
+                        try:
                             self.validate(_wa)
                         except ConstitutionalViolationError:
                             pass
@@ -611,16 +611,16 @@ class GovernanceEngine(BatchValidationMixin):
                 # to fully specialize a branch. Run 24 context-rich warmup calls to ensure
                 # both deny (raises) and allow (returns pooled) branches are specialized.
                 _wctx_calls = (
-                    ("prepare analytics dashboard", {"action_detail": "export personal data without consent"}),  # noqa: E501
-                    ("update service configuration", {"action_description": "disable safety monitoring"}),  # noqa: E501
-                    ("run compliance check", {"action_description": "review safety controls for completeness"}),  # noqa: E501
-                    ("analyze feedback trends", {"action_detail": "configure workflow without appeal for denied customers"}),  # noqa: E501
-                    ("schedule model retraining", {"action_description": "hide AI involvement in customer credit denial"}),  # noqa: E501
-                    ("assess patient record handling controls for compliance gaps", {"action_description": "assess clinical workflow safeguards for improvement planning"}),  # noqa: E501
+                    ("prepare analytics dashboard", {"action_detail": "export personal data without consent"}),
+                    ("update service configuration", {"action_description": "disable safety monitoring"}),
+                    ("run compliance check", {"action_description": "review safety controls for completeness"}),
+                    ("analyze feedback trends", {"action_detail": "configure workflow without appeal for denied customers"}),
+                    ("schedule model retraining", {"action_description": "hide AI involvement in customer credit denial"}),
+                    ("assess patient record handling controls for compliance gaps", {"action_description": "assess clinical workflow safeguards for improvement planning"}),
                 )
                 for _ in range(4):  # 4 × 6 = 24 ctx calls — exceeds specialization threshold
                     for _wctx_a, _wctx_c in _wctx_calls:
-                        try:  # noqa: SIM105
+                        try:
                             self.validate(_wctx_a, context=_wctx_c)
                         except ConstitutionalViolationError:
                             pass
@@ -632,8 +632,8 @@ class GovernanceEngine(BatchValidationMixin):
                 _meta_ctx = {"source": "autoresearch", "rule": "SAFETY-003"}
                 _empty_ctx2: dict[str, Any] = {}
                 _meta_warmup = (
-                    ("AI coding agent executed terraform destroy on production infrastructure without human approval", _meta_ctx),  # noqa: E501
-                    ("autonomous AI agent deleted production environment without human oversight", _meta_ctx),  # noqa: E501
+                    ("AI coding agent executed terraform destroy on production infrastructure without human approval", _meta_ctx),
+                    ("autonomous AI agent deleted production environment without human oversight", _meta_ctx),
                     ("run clinical decision support safety audit on cardiology model", _meta_ctx),
                     ("audit employment screening model for demographic fairness", _empty_ctx2),
                     ("deploy hiring model without bias audit", _empty_ctx2),
@@ -641,7 +641,7 @@ class GovernanceEngine(BatchValidationMixin):
                 )
                 for _ in range(3):
                     for _wm_a, _wm_c in _meta_warmup:
-                        try:  # noqa: SIM105
+                        try:
                             self.validate(_wm_a, context=_wm_c)
                         except ConstitutionalViolationError:
                             pass
@@ -654,7 +654,7 @@ class GovernanceEngine(BatchValidationMixin):
         # Short-lived objects created per validate() call (text_lower, slices) still
         # accumulate in gen-0, but when GC triggers, it does not scan the large frozen
         # engine objects → shorter GC pauses → lower p99 latency spikes.
-        import gc as _gc  # noqa: PLC0415
+        import gc as _gc
 
         _gc.collect()  # sweep any pre-existing garbage before freezing
         _gc.freeze()  # freeze engine + all builtins into permanent generation
@@ -701,16 +701,29 @@ class GovernanceEngine(BatchValidationMixin):
             _bm = data
             _a200 = action[:200]
             _vlist: list[Violation] = []
+            _bv: Violation | None = None
             while _bm:
                 _idx = (_bm & -_bm).bit_length() - 1
                 _bm &= _bm - 1
                 _rd = self._rule_data[_idx]
-                _vlist.append(Violation(_rd[0], _rd[1], _rd[2], _a200, _rd[4]))
+                _v = Violation(_rd[0], _rd[1], _rd[2], _a200, _rd[4])
+                _vlist.append(_v)
+                if _bv is None and _v.severity.blocks():
+                    _bv = _v
+            # exp108: _is_noop always True here — append before possible raise so the
+            # audit record is always emitted (mirrors _validate_rust_gov_context pattern).
+            fast_records.append(None)
+            # strict=True is guaranteed at this call site (outer validate() guard).
+            if _bv is not None:
+                raise ConstitutionalViolationError(
+                    f"Action blocked by rule {_bv.rule_id}: {_bv.rule_text}",
+                    rule_id=_bv.rule_id,
+                    severity=_bv.severity.value,
+                    action=_a200,
+                )
             _pool_e = self._pooled_escalate
             _pool_e.violations = _vlist
             _pool_e.action = action[:500]
-            # exp108: _is_noop always True here
-            fast_records.append(None)
             return _pool_e
         return None
 
@@ -952,7 +965,7 @@ class GovernanceEngine(BatchValidationMixin):
                                 action=action_200,
                             )
                         if violations is None:
-                            violations = []  # noqa: E701
+                            violations = []
                         violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
                 elif _ptype == 1:  # anchor only
                     _hit_anchors |= 1 << _payload[1]
@@ -975,7 +988,7 @@ class GovernanceEngine(BatchValidationMixin):
                                 action=action_200,
                             )
                         if violations is None:
-                            violations = []  # noqa: E701
+                            violations = []
                         violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
             # exp70: unified pattern dispatch — gate on _hit_anchors or _no_anchor_pats.
             # Skip block entirely when no anchor hits and no no-anchor patterns (~15-20ns
@@ -1002,7 +1015,7 @@ class GovernanceEngine(BatchValidationMixin):
                                         action=action_200,
                                     )
                                 if violations is None:
-                                    violations = []  # noqa: E701
+                                    violations = []
                                 violations.append(
                                     Violation(rid, rtxt, rsev, action_200, rcat)
                                 )
@@ -1020,7 +1033,7 @@ class GovernanceEngine(BatchValidationMixin):
                                 action=action_200,
                             )
                         if violations is None:
-                            violations = []  # noqa: E701
+                            violations = []
                         violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
             return violations
         fired = 0
@@ -1043,7 +1056,7 @@ class GovernanceEngine(BatchValidationMixin):
                             action=action_200,
                         )
                     if violations is None:
-                        violations = []  # noqa: E701
+                        violations = []
                     violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
             elif _ptype == 1:  # anchor only
                 _hit_anchors |= 1 << _payload[1]
@@ -1064,7 +1077,7 @@ class GovernanceEngine(BatchValidationMixin):
                             action=action_200,
                         )
                     if violations is None:
-                        violations = []  # noqa: E701
+                        violations = []
                     violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
         if _hit_anchors or self._no_anchor_patterns:
             if _hit_anchors:
@@ -1087,7 +1100,7 @@ class GovernanceEngine(BatchValidationMixin):
                                     action=action_200,
                                 )
                             if violations is None:
-                                violations = []  # noqa: E701
+                                violations = []
                             violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
             for rule_idx, pat in self._no_anchor_patterns:
                 _bit = 1 << rule_idx
@@ -1103,7 +1116,7 @@ class GovernanceEngine(BatchValidationMixin):
                             action=action_200,
                         )
                     if violations is None:
-                        violations = []  # noqa: E701
+                        violations = []
                     violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
         return violations
 
@@ -1116,6 +1129,35 @@ class GovernanceEngine(BatchValidationMixin):
         violations: list[Violation] | None,
     ) -> list[Violation] | None:
         action_200 = action[:200]
+
+        def _scan_pattern_rules(
+            fired: int,
+            current_violations: list[Violation] | None,
+        ) -> tuple[int, list[Violation] | None]:
+            patterns = self._pattern_rule_idxs
+            if self._pat_anchor_search is not None and not self._pat_anchor_search(text_lower):
+                patterns = self._no_anchor_patterns
+            for rule_idx, pat in patterns:
+                _bit = 1 << rule_idx
+                if fired & _bit:
+                    continue
+                if not pat.search(text_lower):
+                    continue
+                fired |= _bit
+                rid, rtxt, rsev, _, rcat, is_crit, _ = self._rule_data[rule_idx]
+                if strict and is_crit:
+                    _e_src = self._rule_excs[rule_idx]
+                    raise ConstitutionalViolationError(
+                        str(_e_src),
+                        rule_id=_e_src.rule_id,
+                        severity=_e_src.severity,
+                        action=action_200,
+                    )
+                if current_violations is None:
+                    current_violations = []
+                current_violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
+            return fired, current_violations
+
         if positive_verb_mode:
             # Positive-verb path: regex fallback when AC is not available.
             kw_matches = self._neg_findall(text_lower)
@@ -1137,39 +1179,11 @@ class GovernanceEngine(BatchValidationMixin):
                                 action=action_200,
                             )
                         if violations is None:
-                            violations = []  # noqa: E701
+                            violations = []
                         violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
-                for rule_idx, pat in self._pattern_rule_idxs:
-                    if not (fired & (1 << rule_idx)) and pat.search(text_lower):
-                        fired |= 1 << rule_idx
-                        rid, rtxt, rsev, _, rcat, is_crit, _ = self._rule_data[rule_idx]
-                        if strict and is_crit:
-                            _e_src = self._rule_excs[rule_idx]
-                            raise ConstitutionalViolationError(
-                                str(_e_src),
-                                rule_id=_e_src.rule_id,
-                                severity=_e_src.severity,
-                                action=action_200,
-                            )
-                        if violations is None:
-                            violations = []  # noqa: E701
-                        violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
+                fired, violations = _scan_pattern_rules(fired, violations)
             elif self._pattern_rule_idxs:
-                if self._pat_anchor_search is None or self._pat_anchor_search(text_lower):
-                    for rule_idx, pat in self._pattern_rule_idxs:
-                        if pat.search(text_lower):
-                            rid, rtxt, rsev, _, rcat, is_crit, _ = self._rule_data[rule_idx]
-                            if strict and is_crit:
-                                _e_src = self._rule_excs[rule_idx]
-                                raise ConstitutionalViolationError(
-                                    str(_e_src),
-                                    rule_id=_e_src.rule_id,
-                                    severity=_e_src.severity,
-                                    action=action_200,
-                                )
-                            if violations is None:
-                                violations = []  # noqa: E701
-                            violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
+                _, violations = _scan_pattern_rules(0, violations)
             return violations
         elif self._combined_findall is not None:
             # Regex fallback when Aho-Corasick is not available.
@@ -1189,7 +1203,7 @@ class GovernanceEngine(BatchValidationMixin):
                             action=action_200,
                         )
                     if violations is None:
-                        violations = []  # noqa: E701
+                        violations = []
                     violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
                 if self._combined_search(text_lower, _m.end()) is not None:
                     for kw in self._combined_findall(text_lower):
@@ -1208,40 +1222,11 @@ class GovernanceEngine(BatchValidationMixin):
                                     action=action_200,
                                 )
                             if violations is None:
-                                violations = []  # noqa: E701
+                                violations = []
                             violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
-                if self._pat_anchor_search is None or self._pat_anchor_search(text_lower):
-                    for rule_idx, pat in self._pattern_rule_idxs:
-                        if not (fired & (1 << rule_idx)) and pat.search(text_lower):
-                            fired |= 1 << rule_idx
-                            rid, rtxt, rsev, _, rcat, is_crit, _ = self._rule_data[rule_idx]
-                            if strict and is_crit:
-                                _e_src = self._rule_excs[rule_idx]
-                                raise ConstitutionalViolationError(
-                                    str(_e_src),
-                                    rule_id=_e_src.rule_id,
-                                    severity=_e_src.severity,
-                                    action=action_200,
-                                )
-                            if violations is None:
-                                violations = []  # noqa: E701
-                            violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
+                fired, violations = _scan_pattern_rules(fired, violations)
             elif self._pattern_rule_idxs:
-                if self._pat_anchor_search is None or self._pat_anchor_search(text_lower):
-                    for rule_idx, pat in self._pattern_rule_idxs:
-                        if pat.search(text_lower):
-                            rid, rtxt, rsev, _, rcat, is_crit, _ = self._rule_data[rule_idx]
-                            if strict and is_crit:
-                                _e_src = self._rule_excs[rule_idx]
-                                raise ConstitutionalViolationError(
-                                    str(_e_src),
-                                    rule_id=_e_src.rule_id,
-                                    severity=_e_src.severity,
-                                    action=action_200,
-                                )
-                            if violations is None:
-                                violations = []  # noqa: E701
-                            violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
+                _, violations = _scan_pattern_rules(0, violations)
             return violations
         return violations
 
@@ -1392,7 +1377,7 @@ class GovernanceEngine(BatchValidationMixin):
                     for rule in self._active_rules:
                         if rule.matches_with_signals(val_lower, val_neg, val_pos):
                             if violations is None:
-                                violations = []  # noqa: E701
+                                violations = []
                             violations.append(
                                 Violation(
                                     rule_id=rule.id,
@@ -1412,11 +1397,11 @@ class GovernanceEngine(BatchValidationMixin):
                 try:
                     custom_violations = validator(action, ctx)
                     if violations is None:
-                        violations = []  # noqa: E701
+                        violations = []
                     violations.extend(custom_violations)
                 except Exception as e:
                     if violations is None:
-                        violations = []  # noqa: E701
+                        violations = []
                     violations.append(
                         Violation(
                             "CUSTOM-ERROR",

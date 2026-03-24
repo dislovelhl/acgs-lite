@@ -43,7 +43,7 @@ class GateType(str, Enum):
 
     MIN_APPROVALS = "min_approvals"
     LINT_CLEAN = "lint_clean"
-    TEST_SUITE_PASS = "test_suite_pass"
+    TEST_SUITE_PASS = "test_suite_pass"  # noqa: S105 — pass/fail status string, not a password
     BLAST_RADIUS_BELOW = "blast_radius_below"
     ATTESTATION_REQUIRED = "attestation_required"
 

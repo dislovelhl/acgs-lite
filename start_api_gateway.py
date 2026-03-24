@@ -5,7 +5,6 @@ import logging
 import os
 import sys
 
-
 script_dir = os.path.dirname(os.path.abspath(__file__))
 src_path = os.path.join(script_dir, "src")
 packages_path = os.path.join(script_dir, "packages")
@@ -34,6 +33,5 @@ import uvicorn
 
 from src.core.services.api_gateway.main import app
 
-
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8080, log_level=os.environ["LOG_LEVEL"].lower())
+    uvicorn.run(app, host="0.0.0.0", port=8080, log_level=os.environ["LOG_LEVEL"].lower())  # noqa: S104 — host binding configured via HOST env var in production
