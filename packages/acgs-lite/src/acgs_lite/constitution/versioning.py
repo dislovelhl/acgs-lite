@@ -68,7 +68,7 @@ class RuleSnapshot:
             change_reason=change_reason,
         )
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Serialise snapshot to a JSON-compatible dict."""
         return {
             "rule_id": self.rule_id,

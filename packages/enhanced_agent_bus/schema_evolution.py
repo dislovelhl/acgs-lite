@@ -9,15 +9,15 @@ from __future__ import annotations
 
 import hashlib
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
 from functools import total_ordering
-from typing import Callable
 
 from pydantic import BaseModel, Field
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -451,9 +451,9 @@ __all__ = [
     "AGENT_MESSAGE_SCHEMA_V1_1",
     "AGENT_MESSAGE_SCHEMA_V1_2",
     "CONSTITUTIONAL_HASH",
+    "FAST_HASH_AVAILABLE",
     "CompatibilityChecker",
     "EvolutionType",
-    "FAST_HASH_AVAILABLE",
     "MigrationStatus",
     "SchemaCompatibility",
     "SchemaDefinition",

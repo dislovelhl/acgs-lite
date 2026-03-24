@@ -594,7 +594,7 @@ class DurableWorkflowExecutor:
                 current_instance = await self.repository.get_workflow(context.workflow_instance.id)
                 if current_instance and current_instance.status == WorkflowStatus.CANCELLED:
                     raise asyncio.CancelledError(
-                        f"Workflow {context.workflow_instance.workflow_id} was cancelled during step {step_name}"  # noqa: E501
+                        f"Workflow {context.workflow_instance.workflow_id} was cancelled during step {step_name}"
                     )
 
                 await self._complete_step(context, step, step_name, result, idempotency_key, span)

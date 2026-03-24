@@ -1,0 +1,228 @@
+- generic [active] [ref=e1]:
+  - region "labs.google/fx uses cookies to deliver and enhance the quality of its services and to analyze traffic. If you agree, cookies are also used to serve advertising and to personalize the content and advertisements that you see." [ref=e2]:
+    - paragraph [ref=e3]:
+      - text: labs.google/fx uses cookies to deliver and enhance the quality of its services and to analyze traffic. If you agree, cookies are also used to serve advertising and to personalize the content and advertisements that you see.
+      - link "Learn more about how Google uses cookies. Opens in a new tab." [ref=e4] [cursor=pointer]:
+        - /url: https://policies.google.com/technologies/cookies?hl=en
+        - text: Learn more
+    - button "Agree" [ref=e5] [cursor=pointer]
+    - button "No thanks" [ref=e6] [cursor=pointer]
+  - generic [ref=e7]:
+    - region "Notifications alt+T"
+    - generic [ref=e9]:
+      - banner [ref=e10]:
+        - navigation [ref=e11]:
+          - img "Google Logo" [ref=e12]
+          - generic [ref=e13]:
+            - link "Overview" [ref=e14] [cursor=pointer]:
+              - /url: "#overview"
+            - link "Capabilities" [ref=e15] [cursor=pointer]:
+              - /url: "#capabilities"
+            - link "Partners" [ref=e16] [cursor=pointer]:
+              - /url: "#partners"
+            - link "Gallery" [ref=e17] [cursor=pointer]:
+              - /url: "#gallery"
+            - link "Pricing" [ref=e18] [cursor=pointer]:
+              - /url: "#pricing"
+          - generic [ref=e19]:
+            - link "X (Twitter) Logo" [ref=e20] [cursor=pointer]:
+              - /url: https://x.com/FlowbyGoogle
+              - img "X (Twitter) Logo" [ref=e21]
+            - link "Instagram Logo" [ref=e22] [cursor=pointer]:
+              - /url: https://www.instagram.com/flowbygoogle
+              - img "Instagram Logo" [ref=e23]
+            - link "Discord Logo" [ref=e24] [cursor=pointer]:
+              - /url: https://discord.com/invite/googlelabs
+              - img "Discord Logo" [ref=e25]
+            - generic [ref=e26] [cursor=pointer]: more_vert
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - generic [ref=e30]:
+            - img [ref=e31]
+            - img "Flow"
+          - generic [ref=e33]:
+            - paragraph [ref=e34]: Where the next wave of storytelling happens
+            - button "Create with Flow" [ref=e35] [cursor=pointer]:
+              - generic [ref=e36]: Create with Flow
+            - paragraph [ref=e37]:
+              - generic [ref=e38]:
+                - text: Explore
+                - link "Google AI Subscriptions" [ref=e39] [cursor=pointer]:
+                  - /url: https://one.google.com/ai?utm_source=flow&utm_medium=web&utm_campaign=vfx_landing_page_offer
+                - text: . See
+                - link "FAQ" [ref=e40] [cursor=pointer]:
+                  - /url: https://labs.google/fx/tools/flow/faq
+                - text: .
+          - generic: Scroll to Explore
+        - generic [ref=e41]:
+          - generic: Your browser does not support the video tag.
+      - heading "Flow is an AI creative studio, built with and for creatives Create, refine, and compose your videos, images, and stories with Google’s most advanced AI models." [level=2] [ref=e43]:
+        - paragraph [ref=e44]: Flow is an AI creative studio, built with and for creatives
+        - generic [ref=e45]: Create, refine, and compose your videos, images, and stories with Google’s most advanced AI models.
+      - generic [ref=e46]:
+        - generic:
+          - img "Background for section"
+        - button "Play Video" [ref=e49] [cursor=pointer]
+      - generic [ref=e53]:
+        - generic [ref=e55]:
+          - button "Create" [ref=e57]
+          - button "Refine" [ref=e59]
+          - button "Compose" [ref=e61]
+        - generic [ref=e62]:
+          - generic: Turn imagination into reality. Generate high-fidelity images and videos from scratch, or transform visuals into entirely new concepts.
+          - generic: Iterate with control. Seamlessly swap objects, extend scenes, and direct camera movement to match your creative vision.
+          - generic: Build without boundaries. Gather and manage your assets in a unified space that keeps you in the flow.
+        - generic [ref=e65]:
+          - group "1 / 10" [ref=e66]:
+            - generic [ref=e69]: Ingredients to video
+          - group "2 / 10" [ref=e70]:
+            - generic [ref=e73]: Add ingredients by tagging
+          - group "3 / 10" [ref=e74]:
+            - generic [ref=e77]: Animate an image
+          - group "4 / 10" [ref=e78]:
+            - generic [ref=e81]: Insert object
+          - group "5 / 10" [ref=e82]:
+            - generic [ref=e85]: Remove object
+          - group "6 / 10" [ref=e86]:
+            - generic [ref=e89]: Extend a video
+          - group "7 / 10" [ref=e90]:
+            - generic [ref=e93]: Control camera angle
+          - group "8 / 10" [ref=e94]:
+            - generic [ref=e97]: Create collections
+          - group "9 / 10" [ref=e98]:
+            - generic [ref=e101]: Change view
+          - group "10 / 10" [ref=e102]:
+            - generic [ref=e105]: Drag and drop
+      - generic [ref=e106]:
+        - heading "See how filmmakers are using Flow" [level=2] [ref=e107]
+        - generic [ref=e108]:
+          - link "Junie Lau" [ref=e110] [cursor=pointer]:
+            - /url: https://labs.google/flow/tv/short-films?utm_source=flow-about&utm_medium=web&utm_campaign=launch
+            - heading "Junie Lau" [level=2] [ref=e111]
+          - link "Dave Clark" [ref=e113] [cursor=pointer]:
+            - /url: https://labs.google/flow/tv/short-films?utm_source=flow-about&utm_medium=web&utm_campaign=launch
+            - heading "Dave Clark" [level=2] [ref=e114]
+          - link "Henry Daubrez" [ref=e116] [cursor=pointer]:
+            - /url: https://labs.google/flow/tv/short-films?utm_source=flow-about&utm_medium=web&utm_campaign=launch
+            - heading "Henry Daubrez" [level=2] [ref=e117]
+        - link "tv Watch Short Films" [ref=e118] [cursor=pointer]:
+          - /url: https://labs.google/flow/tv/short-films?utm_source=flow-about&utm_medium=web&utm_campaign=launch
+          - button "tv Watch Short Films" [ref=e119]:
+            - generic [ref=e120]: tv
+            - text: Watch Short Films
+      - generic [ref=e121]:
+        - generic [ref=e122]:
+          - generic [ref=e124]:
+            - generic [ref=e129]: FIT CHECK
+            - generic [ref=e134]: THE DEGENERATES
+            - generic [ref=e139]: Alt Spectrum
+            - generic [ref=e144]: ZOO BREAK
+            - generic [ref=e149]: FIT CHECK
+            - generic [ref=e154]: THE DEGENERATES
+            - generic [ref=e159]: Alt Spectrum
+            - generic [ref=e164]: ZOO BREAK
+          - generic [ref=e166]:
+            - generic [ref=e171]: PASSENGERS
+            - generic [ref=e176]: It's all yarn
+            - generic [ref=e181]: MICROVERSE
+            - generic [ref=e186]: Mobile Homes
+            - generic [ref=e191]: PASSENGERS
+            - generic [ref=e196]: It's all yarn
+            - generic [ref=e201]: MICROVERSE
+            - generic [ref=e206]: Mobile Homes
+          - generic [ref=e208]:
+            - generic [ref=e213]: Off season Santa
+            - generic [ref=e218]: MUNDO QUESO
+            - generic [ref=e223]: ULTRA WIDE
+            - generic [ref=e228]: WINDOW SEAT
+            - generic [ref=e233]: Off season Santa
+            - generic [ref=e238]: MUNDO QUESO
+            - generic [ref=e243]: ULTRA WIDE
+            - generic [ref=e248]: WINDOW SEAT
+        - link "tv Watch Flow TV" [ref=e249] [cursor=pointer]:
+          - /url: https://labs.google/flow/tv?utm_source=flow-about&utm_medium=web&utm_campaign=launch
+          - button "tv Watch Flow TV" [ref=e250]:
+            - generic [ref=e251]: tv
+            - text: Watch Flow TV
+      - generic [ref=e252]:
+        - heading "Start creating" [level=2] [ref=e253]
+        - generic [ref=e254]:
+          - generic [ref=e255]:
+            - heading "Without a Google AI Subscription" [level=3] [ref=e256]
+            - generic [ref=e260]: Free
+            - button "Get Started" [ref=e263] [cursor=pointer]: Get Started
+            - generic [ref=e264]:
+              - paragraph [ref=e265]: Receive 100 credits free of charge and 50 credits daily
+              - paragraph [ref=e266]: Nano Banana Pro
+              - paragraph [ref=e267]: Veo 3.1
+              - paragraph [ref=e268]: Text to Video
+              - paragraph [ref=e269]: Frames to Video
+              - paragraph [ref=e270]: Ingredients to Video
+              - paragraph [ref=e271]: Video Extension
+              - paragraph [ref=e272]: Insert and Remove Object
+              - paragraph [ref=e273]: Scenebuilder
+              - paragraph [ref=e274]: 2K image upscaling
+          - generic [ref=e277]:
+            - heading "Google AI Pro" [level=3] [ref=e278]
+            - generic [ref=e280]:
+              - generic [ref=e281]:
+                - generic [ref=e282]: $19.99
+                - generic [ref=e283]: $0/mo
+              - generic [ref=e284]: for 1 month
+            - link "Get Started" [ref=e286] [cursor=pointer]:
+              - /url: http://one.google.com/ai?utm_source=flow&utm_medium=web&utm_campaign=vfx_landing_page_offer
+              - button "Get Started" [ref=e287]: Get Started
+            - generic [ref=e288]:
+              - paragraph [ref=e289]: 1,000 monthly credits
+              - paragraph [ref=e290]: Everything for free users
+              - paragraph [ref=e291]: +
+              - paragraph [ref=e292]: 1080p upscaling
+              - paragraph [ref=e293]: Higher image generation limits
+              - paragraph [ref=e294]: Top-up credits available
+            - generic [ref=e295]:
+              - paragraph [ref=e296]: "Also included in this plan:"
+              - paragraph
+              - paragraph [ref=e297]: Gemini app with 3.1 Pro
+              - paragraph [ref=e298]: Gemini in Gmail, Docs, and more
+              - paragraph [ref=e299]: 2 TB of total storage for Photos, Drive, and Gmail
+              - paragraph [ref=e300]: And other AI Pro benefits
+          - generic [ref=e302]:
+            - heading "Google AI Ultra" [level=3] [ref=e303]
+            - generic [ref=e305]:
+              - generic [ref=e306]:
+                - generic [ref=e307]: $249.99
+                - generic [ref=e308]: $124.99/mo
+              - generic [ref=e309]: for 3 months
+            - link "Get Started" [ref=e311] [cursor=pointer]:
+              - /url: http://one.google.com/ai?utm_source=flow&utm_medium=web&utm_campaign=vfx_landing_page_offer
+              - button "Get Started" [ref=e312]: Get Started
+            - generic [ref=e313]:
+              - paragraph [ref=e314]: 25,000 monthly credits
+              - paragraph [ref=e315]: Everything in AI Pro
+              - paragraph [ref=e316]: +
+              - paragraph [ref=e317]: 4K image and video upscaling
+            - generic [ref=e318]:
+              - paragraph [ref=e319]: "Also included in this plan:"
+              - paragraph
+              - paragraph [ref=e320]: Gemini app with 3.1 Pro Deep Think
+              - paragraph [ref=e321]: Youtube Premium
+              - paragraph [ref=e322]: 30 TB of total storage for Photos, Drive, and Gmail
+              - paragraph [ref=e323]: And other AI Ultra benefits
+        - generic [ref=e325]:
+          - text: Available in over 149 countries. See
+          - link "FAQ." [ref=e326] [cursor=pointer]:
+            - /url: https://labs.google/fx/tools/flow/faq
+          - text: Looking for AI solutions for your business or work account?
+          - link "Get started" [ref=e327] [cursor=pointer]:
+            - /url: https://support.google.com/a/answer/16345165?uj=entrypoint-gafb-flowmarketing&utm_source=labs.google&utm_medium=referral&utm_campaign=FY26-Q1-flowsmarketing-crosslink&utm_term=-&utm_content=-&ms=pt:1377;s:940;vp:9
+      - generic [ref=e329]:
+        - generic [ref=e330]: "Disclaimer: AI outputs may be offensive or inaccurate."
+        - generic [ref=e331]:
+          - text: This site is protected by reCAPTCHA. The Google
+          - link "Privacy Policy" [ref=e332] [cursor=pointer]:
+            - /url: https://policies.google.com/privacy
+          - text: and
+          - link "Terms of Service" [ref=e333] [cursor=pointer]:
+            - /url: https://policies.google.com/terms
+          - text: apply.
+  - alert [ref=e334]

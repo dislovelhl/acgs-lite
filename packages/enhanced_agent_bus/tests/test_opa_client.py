@@ -25,16 +25,16 @@ if not RUN_EAB_OPA_CLIENT_TESTS:
         )
     )
 
-from enhanced_agent_bus.models import CONSTITUTIONAL_HASH  # noqa: E402
+from enhanced_agent_bus.models import CONSTITUTIONAL_HASH
 
 # Use package-relative imports to maintain class identity
-from enhanced_agent_bus.opa_client import (  # noqa: E402
+from enhanced_agent_bus.opa_client import (
     OPAClient,
     close_opa_client,
     get_opa_client,
     initialize_opa_client,
 )
-from enhanced_agent_bus.validators import ValidationResult  # noqa: E402
+from enhanced_agent_bus.validators import ValidationResult
 
 
 class TestOPAClient:
@@ -66,21 +66,18 @@ class TestOPAClient:
         yield client
         await client.close()
 
-    @pytest.mark.asyncio
     async def test_initialization(self, opa_client):
         """Test OPA client initialization."""
         assert opa_client is not None
         assert opa_client.mode == "fallback"
         assert opa_client.enable_cache is True
 
-    @pytest.mark.asyncio
     async def test_context_manager(self):
         """Test OPA client as context manager."""
         async with OPAClient(mode="fallback") as client:
             assert client is not None
             assert client._http_client is not None
 
-    @pytest.mark.asyncio
     async def test_evaluate_policy_fallback(self, opa_client):
         """Test policy evaluation in fallback mode.
 
@@ -103,7 +100,6 @@ class TestOPAClient:
         assert result["metadata"]["mode"] == "fallback"
         assert result["metadata"]["security"] == "fail-closed"
 
-    @pytest.mark.asyncio
     async def test_evaluate_policy_invalid_hash(self, opa_client):
         """Test policy evaluation with invalid constitutional hash."""
         input_data = {
@@ -118,7 +114,6 @@ class TestOPAClient:
         assert result["allowed"] is False
         assert "Invalid constitutional hash" in result["reason"]
 
-    @pytest.mark.asyncio
     async def test_validate_constitutional_valid(self, opa_client):
         """Test constitutional validation with valid message.
 
@@ -145,7 +140,6 @@ class TestOPAClient:
             "fail-closed" in result.errors[0].lower() or "unavailable" in result.errors[0].lower()
         )
 
-    @pytest.mark.asyncio
     async def test_validate_constitutional_invalid(self, opa_client):
         """Test constitutional validation with invalid hash."""
         message = {
@@ -163,7 +157,6 @@ class TestOPAClient:
         assert result.is_valid is False
         assert len(result.errors) > 0
 
-    @pytest.mark.asyncio
     async def test_check_agent_authorization(self, opa_client):
         """Test agent authorization check.
 
@@ -180,7 +173,6 @@ class TestOPAClient:
         # FAIL-CLOSED: Denied when OPA unavailable
         assert authorized is False
 
-    @pytest.mark.asyncio
     async def test_check_agent_authorization_denied(self, opa_client):
         """Test agent authorization denial."""
         authorized = await opa_client.check_agent_authorization(
@@ -193,7 +185,6 @@ class TestOPAClient:
         # Invalid hash should deny authorization
         assert authorized is False
 
-    @pytest.mark.asyncio
     async def test_cache_functionality(self):
         """Test caching of policy results.
 
@@ -216,7 +207,6 @@ class TestOPAClient:
 
         await client.close()
 
-    @pytest.mark.asyncio
     async def test_health_check(self, opa_client):
         """Test health check."""
         health = await opa_client.health_check()
@@ -226,7 +216,6 @@ class TestOPAClient:
         assert "mode" in health
         assert health["mode"] == "fallback"
 
-    @pytest.mark.asyncio
     async def test_get_stats(self, opa_client):
         """Test statistics retrieval."""
         stats = opa_client.get_stats()
@@ -237,7 +226,6 @@ class TestOPAClient:
         assert stats["mode"] == "fallback"
         assert stats["cache_enabled"] is True
 
-    @pytest.mark.asyncio
     async def test_http_mode_with_mock(self, http_opa_client):
         """Test HTTP mode with mocked responses."""
         # Mock the HTTP client - use MagicMock for response since .json() is sync
@@ -256,7 +244,6 @@ class TestOPAClient:
         assert result["allowed"] is True
         assert result["metadata"]["mode"] == "http"
 
-    @pytest.mark.asyncio
     async def test_load_policy(self, http_opa_client):
         """Test policy loading."""
         # Mock the HTTP client
@@ -279,7 +266,6 @@ class TestOPAClient:
 
         assert success is True
 
-    @pytest.mark.asyncio
     async def test_global_client_singleton(self):
         """Test global client singleton pattern."""
         client1 = get_opa_client()
@@ -289,7 +275,6 @@ class TestOPAClient:
 
         await close_opa_client()
 
-    @pytest.mark.asyncio
     async def test_initialize_global_client(self):
         """Test global client initialization."""
         client = await initialize_opa_client(opa_url="http://localhost:8181", mode="fallback")
@@ -299,7 +284,6 @@ class TestOPAClient:
 
         await close_opa_client()
 
-    @pytest.mark.asyncio
     async def test_error_handling_network_failure(self, http_opa_client):
         """Test error handling for network failures."""
         # Mock network failure
@@ -315,7 +299,6 @@ class TestOPAClient:
         assert result["allowed"] is False
         assert "error" in result["metadata"]
 
-    @pytest.mark.asyncio
     async def test_cache_key_generation(self, opa_client):
         """Test cache key generation."""
         input_data1 = {"agent_id": "test", "action": "read"}
@@ -332,7 +315,6 @@ class TestOPAClient:
         key3 = opa_client._generate_cache_key("data.acgs.allow", input_data3)
         assert key1 != key3
 
-    @pytest.mark.asyncio
     async def test_cache_expiration(self):
         """Test cache expiration."""
         client = OPAClient(mode="fallback", enable_cache=True, cache_ttl=1)
@@ -353,7 +335,6 @@ class TestOPAClient:
 
         await client.close()
 
-    @pytest.mark.asyncio
     async def test_authorization_with_context(self, opa_client):
         """Test authorization with additional context.
 
@@ -373,7 +354,6 @@ class TestOPAClient:
         # FAIL-CLOSED: Denied when OPA unavailable
         assert authorized is False
 
-    @pytest.mark.asyncio
     async def test_multiple_concurrent_evaluations(self, opa_client):
         """Test concurrent policy evaluations."""
         input_data = {"agent_id": "test_agent", "constitutional_hash": CONSTITUTIONAL_HASH}
@@ -392,7 +372,6 @@ class TestOPAClient:
 class TestOPAClientEdgeCases:
     """Test edge cases and error conditions."""
 
-    @pytest.mark.asyncio
     async def test_empty_input_data(self):
         """Test with empty input data."""
         async with OPAClient(mode="fallback") as client:
@@ -400,7 +379,6 @@ class TestOPAClientEdgeCases:
             # Should handle gracefully
             assert result is not None
 
-    @pytest.mark.asyncio
     async def test_invalid_policy_path(self):
         """Test with invalid policy path."""
         async with OPAClient(mode="fallback") as client:
@@ -409,7 +387,6 @@ class TestOPAClientEdgeCases:
             # Should still return a result
             assert result is not None
 
-    @pytest.mark.asyncio
     async def test_large_input_data(self):
         """Test with large input data."""
         async with OPAClient(mode="fallback") as client:
@@ -421,7 +398,6 @@ class TestOPAClientEdgeCases:
             result = await client.evaluate_policy(large_input, "data.acgs.allow")
             assert result is not None
 
-    @pytest.mark.asyncio
     async def test_special_characters_in_input(self):
         """Test with special characters in input."""
         async with OPAClient(mode="fallback") as client:

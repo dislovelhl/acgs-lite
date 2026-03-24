@@ -61,7 +61,6 @@ class TestAsyncPipelineOptimizer:
     def pipeline(self) -> AsyncPipelineOptimizer:
         return AsyncPipelineOptimizer(max_concurrency=4)
 
-    @pytest.mark.asyncio
     async def test_single_stage_execution(self, pipeline: AsyncPipelineOptimizer):
         """Single stage should execute correctly."""
 
@@ -81,7 +80,6 @@ class TestAsyncPipelineOptimizer:
         assert len(results) >= 1
         assert results[0].success is True
 
-    @pytest.mark.asyncio
     async def test_multiple_parallel_stages(self, pipeline: AsyncPipelineOptimizer):
         """Parallel stages should execute concurrently."""
         execution_times = []
@@ -110,7 +108,6 @@ class TestAsyncPipelineOptimizer:
         # Parallel execution should be faster than sequential
         assert total_time < 0.3
 
-    @pytest.mark.asyncio
     async def test_stage_error_handling(self, pipeline: AsyncPipelineOptimizer):
         """Errors in stages should be captured."""
 
@@ -132,12 +129,10 @@ class TestAsyncPipelineOptimizer:
         assert results[0].success is False
         assert "Intentional failure" in (results[0].error or "")
 
-    @pytest.mark.asyncio
     async def test_constitutional_hash_present(self, pipeline: AsyncPipelineOptimizer):
         """Pipeline should include constitutional hash."""
         assert pipeline.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_stats_tracking(self, pipeline: AsyncPipelineOptimizer):
         """Pipeline should track execution stats."""
 
@@ -180,7 +175,6 @@ class TestResourcePool:
             min_size=1,
         )
 
-    @pytest.mark.asyncio
     async def test_acquire_release(self, pool: ResourcePool):
         """Resources should be acquired and released correctly."""
         resource = await pool.acquire()
@@ -190,7 +184,6 @@ class TestResourcePool:
         await pool.release(resource)
         await pool.close()
 
-    @pytest.mark.asyncio
     async def test_pool_limit(self, pool: ResourcePool):
         """Pool should respect max size."""
         resources = []
@@ -205,7 +198,6 @@ class TestResourcePool:
 
         await pool.close()
 
-    @pytest.mark.asyncio
     async def test_context_manager(self, pool: ResourcePool):
         """Pool should work as async context manager."""
         async with pool.resource() as resource:
@@ -229,7 +221,6 @@ class TestMemoryOptimizer:
             default_ttl_seconds=60,
         )
 
-    @pytest.mark.asyncio
     async def test_cache_put_get(self, optimizer: MemoryOptimizer):
         """Cache should store and retrieve values."""
         await optimizer.put("key1", {"data": "value1"})
@@ -238,13 +229,11 @@ class TestMemoryOptimizer:
         assert result is not None
         assert result["data"] == "value1"
 
-    @pytest.mark.asyncio
     async def test_cache_miss(self, optimizer: MemoryOptimizer):
         """Cache miss should return None."""
         result = await optimizer.get("nonexistent")
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_cache_eviction(self, optimizer: MemoryOptimizer):
         """Cache should evict old entries."""
         for i in range(150):
@@ -253,7 +242,6 @@ class TestMemoryOptimizer:
         stats = optimizer.get_stats()
         assert stats["cache_entries"] <= 100
 
-    @pytest.mark.asyncio
     async def test_cache_clear(self, optimizer: MemoryOptimizer):
         """Cache should clear all entries."""
         await optimizer.put("key1", "value1")
@@ -282,7 +270,6 @@ class TestLatencyReducer:
         )
         return LatencyReducer(batch_config=config)
 
-    @pytest.mark.asyncio
     async def test_submit_items(self, reducer: LatencyReducer):
         """Items should be submitted to batches."""
         await reducer.submit("test-topic", {"id": 1})
@@ -294,7 +281,6 @@ class TestLatencyReducer:
 
         await reducer.close()
 
-    @pytest.mark.asyncio
     async def test_flush_batch(self, reducer: LatencyReducer):
         """Batches should flush correctly."""
         await reducer.submit("test-topic", {"id": 1})
@@ -306,7 +292,6 @@ class TestLatencyReducer:
 
         await reducer.close()
 
-    @pytest.mark.asyncio
     async def test_flush_all(self, reducer: LatencyReducer):
         """All batches should flush together."""
         await reducer.submit("topic-1", {"id": 1})
@@ -331,7 +316,6 @@ class TestFactoryFunctions:
         pipeline = create_async_pipeline(max_concurrency=8)
         assert pipeline.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_create_resource_pool(self):
         """Factory should create configured pool."""
 
@@ -361,7 +345,6 @@ class TestFactoryFunctions:
 class TestPerformanceOptimizationIntegration:
     """Integration tests for performance optimization components."""
 
-    @pytest.mark.asyncio
     async def test_pipeline_with_memory_optimizer(self):
         """Pipeline should work with memory optimizer."""
         optimizer = create_memory_optimizer(max_entries=100)
@@ -389,7 +372,6 @@ class TestPerformanceOptimizationIntegration:
         assert len(results) >= 1
         assert results[0].success is True
 
-    @pytest.mark.asyncio
     async def test_reducer_with_optimizer(self):
         """Latency reducer should work with memory optimizer."""
         optimizer = create_memory_optimizer(max_entries=100)

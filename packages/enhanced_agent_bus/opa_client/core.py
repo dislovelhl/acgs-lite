@@ -38,7 +38,7 @@ from httpx import (
 )
 
 try:
-    from src.core.shared.errors.exceptions import ConfigurationError  # noqa: E402
+    from src.core.shared.errors.exceptions import ConfigurationError
 except ImportError:
     class ConfigurationError(Exception):  # type: ignore[no-redef]
         def __init__(self, message: str = "", error_code: str = "") -> None:
@@ -47,7 +47,7 @@ except ImportError:
 from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

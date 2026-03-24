@@ -1,36 +1,35 @@
 # MCP Integration
 
-> Scope: `src/core/enhanced_agent_bus/mcp/` — 10 files. Model Context Protocol client, routing, MACI filtering.
+> Scope: `packages/enhanced_agent_bus/mcp/` — client, routing, pooling, MACI filtering, and
+> transports.
 
-## STRUCTURE
+## Structure
 
-```
-mcp/
-├── client.py        # MCP client for tool invocation
-├── router.py        # Route MCP requests to appropriate tools
-├── pool.py          # Connection pool management
-├── config.py        # MCP server configuration
-├── types.py         # MCP type definitions (includes FORBIDDEN status for MACI restrictions)
-├── maci_filter.py   # MACI role enforcement — agents NEVER validate their own output
-└── transports/      # Transport layer implementations (stdio, SSE, etc.)
-```
+- `client.py`: MCP client logic
+- `router.py`: routing requests to tools/servers
+- `pool.py`: connection pooling
+- `config.py`: configuration
+- `types.py`: shared MCP types
+- `maci_filter.py`: MACI-aware request filtering
+- `shared_bridge.py`: bridge helpers for shared integration
+- `transports/`: transport implementations
 
-## WHERE TO LOOK
+## Where to Look
 
-| Task                   | Location         |
-| ---------------------- | ---------------- |
-| Add MCP tool           | `router.py`      |
-| Change transport       | `transports/`    |
-| Modify MACI filtering  | `maci_filter.py` |
-| Connection pool tuning | `pool.py`        |
+| Task | Location |
+| ---- | -------- |
+| Add/change tool routing | `router.py` |
+| Transport work | `transports/` |
+| Pool behavior | `pool.py` |
+| MACI restrictions | `maci_filter.py` |
+| Shared MCP data/types | `types.py`, `shared_bridge.py` |
 
-## CONVENTIONS
+## Conventions
 
-- `maci_filter.py` enforces separation of powers — independent validator, never self-validates.
-- `types.py` defines `FORBIDDEN` status for MACI role restriction responses.
-- Connection pooling mandatory — never create one-off MCP connections.
+- Keep separation-of-powers checks in the filtering path.
+- Reuse pooled connections instead of one-off clients.
 
-## ANTI-PATTERNS
+## Anti-Patterns
 
-- Do not bypass `maci_filter.py` for tool invocations.
-- Do not import MCP types from `_ext_mcp.py` directly — use this module's `types.py`.
+- Do not bypass `maci_filter.py`.
+- Do not invent parallel MCP type definitions outside `types.py`.

@@ -8,7 +8,7 @@ Cost-related enumerations for LLM provider cost management.
 from enum import Enum
 
 
-class CostTier(str, Enum):  # noqa: UP042
+class CostTier(str, Enum):
     """Cost tier classification for providers."""
 
     FREE = "free"  # No cost (free tier)
@@ -18,7 +18,7 @@ class CostTier(str, Enum):  # noqa: UP042
     ENTERPRISE = "enterprise"  # Enterprise pricing
 
 
-class QualityLevel(str, Enum):  # noqa: UP042
+class QualityLevel(str, Enum):
     """Quality level for output requirements."""
 
     MINIMAL = "minimal"  # Fastest, cheapest
@@ -28,7 +28,7 @@ class QualityLevel(str, Enum):  # noqa: UP042
     MAXIMUM = "maximum"  # Best possible quality
 
 
-class UrgencyLevel(str, Enum):  # noqa: UP042
+class UrgencyLevel(str, Enum):
     """Urgency level for request prioritization."""
 
     BATCH = "batch"  # Can be batched, very low priority

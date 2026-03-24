@@ -34,7 +34,6 @@ class _CaptureRegistry:
         return True
 
 
-@pytest.mark.asyncio
 @pytest.mark.constitutional
 async def test_register_agent_builds_non_anonymous_identity() -> None:
     manager = RegistryManager(config={}, registry_backend=_CaptureRegistry())
@@ -60,7 +59,6 @@ async def test_register_agent_builds_non_anonymous_identity() -> None:
     assert identity["scopes"] == ["analyze", "validate"]
 
 
-@pytest.mark.asyncio
 @pytest.mark.constitutional
 async def test_register_agent_identity_includes_extra_scopes_and_metadata() -> None:
     capture = _CaptureRegistry()
@@ -71,7 +69,7 @@ async def test_register_agent_identity_includes_extra_scopes_and_metadata() -> N
         constitutional_hash=CONSTITUTIONAL_HASH,
         capabilities=["analyze"],
         tenant_id="tenant-a",
-        auth_token="opaque-token",  # noqa: S106
+        auth_token="opaque-token",
         identity_scopes=["governance:execute", "analyze"],
         identity_metadata={"issuer": "unit-test"},
     )
@@ -89,7 +87,6 @@ async def test_register_agent_identity_includes_extra_scopes_and_metadata() -> N
     assert len(scopes) == 2
 
 
-@pytest.mark.asyncio
 @pytest.mark.constitutional
 async def test_get_agent_info_refreshes_identity_constitutional_hash() -> None:
     manager = RegistryManager(config={}, registry_backend=_CaptureRegistry())
@@ -109,7 +106,6 @@ async def test_get_agent_info_refreshes_identity_constitutional_hash() -> None:
     assert identity["constitutional_hash"] == "new-hash"
 
 
-@pytest.mark.asyncio
 @pytest.mark.constitutional
 async def test_register_agent_rejects_blank_agent_id() -> None:
     manager = RegistryManager(config={}, registry_backend=_CaptureRegistry())

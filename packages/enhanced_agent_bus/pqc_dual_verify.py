@@ -27,7 +27,7 @@ from typing import Any, Literal
 import httpx
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 from src.core.tools.pqc_migration.phase4.exceptions import DualVerifyWindowError

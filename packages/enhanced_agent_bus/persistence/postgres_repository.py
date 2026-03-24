@@ -6,6 +6,7 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from __future__ import annotations
 
+import json
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
@@ -108,7 +109,23 @@ CREATE INDEX IF NOT EXISTS idx_workflow_steps_idempotency ON workflow_steps(work
 CREATE INDEX IF NOT EXISTS idx_workflow_events_instance_seq ON workflow_events(workflow_instance_id, sequence_number);
 CREATE INDEX IF NOT EXISTS idx_workflow_compensations_instance ON workflow_compensations(workflow_instance_id);
 CREATE INDEX IF NOT EXISTS idx_workflow_checkpoints_instance ON workflow_checkpoints(workflow_instance_id);
-"""  # noqa: E501
+"""
+
+
+def _serialize_json_value(value: object) -> str | None:
+    """Serialize dict/list JSON payloads for asyncpg JSONB columns."""
+    if value is None:
+        return None
+    if isinstance(value, str):
+        return value
+    return json.dumps(value)
+
+
+def _deserialize_json_value(value: object) -> object:
+    """Deserialize JSONB payloads returned as strings by asyncpg."""
+    if isinstance(value, str):
+        return json.loads(value)
+    return value
 
 
 class PostgresWorkflowRepository(WorkflowRepository):
@@ -164,8 +181,8 @@ class PostgresWorkflowRepository(WorkflowRepository):
                 instance.workflow_id,
                 instance.tenant_id,
                 instance.status,
-                instance.input,
-                instance.output,
+                _serialize_json_value(instance.input),
+                _serialize_json_value(instance.output),
                 instance.error,
                 instance.started_at,
                 instance.completed_at,
@@ -211,8 +228,8 @@ class PostgresWorkflowRepository(WorkflowRepository):
                 step.step_name,
                 step.step_type,
                 step.status,
-                step.input,
-                step.output,
+                _serialize_json_value(step.input),
+                _serialize_json_value(step.output),
                 step.error,
                 step.idempotency_key,
                 step.attempt_count,
@@ -257,7 +274,7 @@ class PostgresWorkflowRepository(WorkflowRepository):
                 """,
                 event.workflow_instance_id,
                 event.event_type,
-                event.event_data,
+                _serialize_json_value(event.event_data),
                 event.sequence_number,
                 event.timestamp,
             )
@@ -310,8 +327,8 @@ class PostgresWorkflowRepository(WorkflowRepository):
                 compensation.step_id,
                 compensation.compensation_name,
                 compensation.status,
-                compensation.input,
-                compensation.output,
+                _serialize_json_value(compensation.input),
+                _serialize_json_value(compensation.output),
                 compensation.error,
                 compensation.executed_at,
                 compensation.created_at,
@@ -345,7 +362,7 @@ class PostgresWorkflowRepository(WorkflowRepository):
                 checkpoint.checkpoint_id,
                 checkpoint.workflow_instance_id,
                 checkpoint.step_index,
-                checkpoint.state,
+                _serialize_json_value(checkpoint.state),
                 checkpoint.created_at,
             )
 
@@ -389,8 +406,8 @@ class PostgresWorkflowRepository(WorkflowRepository):
             workflow_id=row["workflow_id"],
             tenant_id=row["tenant_id"],
             status=WorkflowStatus(row["status"]),
-            input=row["input"],
-            output=row["output"],
+            input=_deserialize_json_value(row["input"]),
+            output=_deserialize_json_value(row["output"]),
             error=row["error"],
             started_at=row["started_at"],
             completed_at=row["completed_at"],
@@ -406,8 +423,8 @@ class PostgresWorkflowRepository(WorkflowRepository):
             step_name=row["step_name"],
             step_type=StepType(row["step_type"]),
             status=StepStatus(row["status"]),
-            input=row["input"],
-            output=row["output"],
+            input=_deserialize_json_value(row["input"]),
+            output=_deserialize_json_value(row["output"]),
             error=row["error"],
             idempotency_key=row["idempotency_key"],
             attempt_count=row["attempt_count"],
@@ -421,7 +438,7 @@ class PostgresWorkflowRepository(WorkflowRepository):
             id=row["id"],
             workflow_instance_id=row["workflow_instance_id"],
             event_type=EventType(row["event_type"]),
-            event_data=row["event_data"],
+            event_data=_deserialize_json_value(row["event_data"]),
             sequence_number=row["sequence_number"],
             timestamp=row["timestamp"],
         )
@@ -433,8 +450,8 @@ class PostgresWorkflowRepository(WorkflowRepository):
             step_id=row["step_id"],
             compensation_name=row["compensation_name"],
             status=StepStatus(row["status"]),
-            input=row["input"],
-            output=row["output"],
+            input=_deserialize_json_value(row["input"]),
+            output=_deserialize_json_value(row["output"]),
             error=row["error"],
             executed_at=row["executed_at"],
             created_at=row["created_at"],
@@ -445,6 +462,6 @@ class PostgresWorkflowRepository(WorkflowRepository):
             workflow_instance_id=row["workflow_instance_id"],
             checkpoint_id=row["id"],
             step_index=row["step_index"],
-            state=row["state"],
+            state=_deserialize_json_value(row["state"]),
             created_at=row["created_at"],
         )

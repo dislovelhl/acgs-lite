@@ -18,6 +18,9 @@ Usage:
     embeddings = optimizer.infer(text)
 """
 
+from __future__ import annotations
+
+import importlib.util
 import time
 from pathlib import Path
 from typing import cast
@@ -33,7 +36,7 @@ except ImportError:
     NUMPY_AVAILABLE = False
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -53,10 +56,12 @@ except ImportError:
     pass
 
 try:
+    if importlib.util.find_spec("torch") is None:
+        raise ImportError("torch is not installed")
     import torch as _torch
 
     torch = _torch
-except ImportError:
+except (ImportError, ValueError):
     pass
 
 try:
@@ -720,7 +725,7 @@ def optimize_distilbert(force: bool = False) -> JSONDict:
     try:
         results["benchmark"] = optimizer.benchmark(num_samples=50)
         steps_completed.append("benchmark")
-    except (AttributeError, OSError, RuntimeError, TypeError, ValueError) as e:
+    except (AttributeError, ImportError, OSError, RuntimeError, TypeError, ValueError) as e:
         results["benchmark_error"] = str(e)
 
     results["final_status"] = optimizer.status.copy()

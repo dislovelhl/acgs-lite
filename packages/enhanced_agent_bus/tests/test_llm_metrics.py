@@ -11,7 +11,6 @@ import pytest
 from enhanced_agent_bus.deliberation_layer.llm_assistant import LLMAssistant
 
 
-@pytest.mark.asyncio
 async def test_llm_metrics_recording():
     # 1. Setup
     assistant = LLMAssistant(model_name="test-model")
@@ -57,7 +56,6 @@ async def test_llm_metrics_recording():
         )
 
 
-@pytest.mark.asyncio
 async def test_llm_metrics_failure_recording():
     # 1. Setup
     assistant = LLMAssistant(model_name="test-model")

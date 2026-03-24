@@ -180,7 +180,7 @@ class InMemoryWorkflowRepository(WorkflowRepository):
     ) -> list[WorkflowInstance]:
         results = []
         for wf in self._workflows.values():
-            if wf.tenant_id == tenant_id:  # noqa: SIM102
+            if wf.tenant_id == tenant_id:
                 if status is None or wf.status == status:
                     results.append(wf)
 

@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from .constitution import Constitution
 
 
-_REGULATORY_FRAMEWORKS: dict[str, dict[str, list[dict[str, list[str]]]]] = {
+_REGULATORY_FRAMEWORKS: dict[str, dict[str, list[dict[str, str | list[str]]]]] = {
     "soc2": {
         "controls": [
             {
@@ -138,9 +138,9 @@ def regulatory_alignment(
     control_detail: dict[str, Any] = {}
 
     for control in controls:
-        control_name: str = control["name"]
-        control_categories: list[str] = control.get("categories", [])
-        control_keywords: list[str] = control.get("keywords", [])
+        control_name = str(control["name"])
+        control_categories: list[str] = list(control.get("categories", []))
+        control_keywords: list[str] = list(control.get("keywords", []))
 
         matched: list[str] = []
         for rule in active:

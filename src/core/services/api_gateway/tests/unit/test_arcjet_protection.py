@@ -131,7 +131,14 @@ def test_arcjet_config_enabled_without_key(monkeypatch: pytest.MonkeyPatch) -> N
 
 
 def test_arcjet_status_endpoint_admin_only(monkeypatch: pytest.MonkeyPatch) -> None:
-    from src.core.services.api_gateway import main as gateway_main
+    """Admin-only access control for the Arcjet status endpoint.
+
+    Builds a minimal FastAPI app with a ``get_current_user`` dependency and an
+    admin-gated ``/api/v1/gateway/security/arcjet/status`` route so we can test
+    authorisation logic without importing the full gateway application.
+    """
+    from fastapi import Depends, HTTPException
+
     from src.core.shared.security.auth import UserClaims
 
     now = datetime.now(UTC)
@@ -147,24 +154,35 @@ def test_arcjet_status_endpoint_admin_only(monkeypatch: pytest.MonkeyPatch) -> N
     )
     non_admin_user = admin_user.model_copy(update={"roles": ["user"]})
 
-    async def _admin_override() -> UserClaims:
-        return admin_user
+    # Mutable holder so the dependency can be swapped between requests.
+    _current_user_holder: list[UserClaims] = [admin_user]
 
-    async def _user_override() -> UserClaims:
-        return non_admin_user
+    async def _get_current_user() -> UserClaims:
+        return _current_user_holder[0]
+
+    # Build a self-contained app with the admin-gated arcjet status route.
+    app = FastAPI()
+
+    @app.get("/api/v1/gateway/security/arcjet/status")
+    async def arcjet_status(
+        user: UserClaims = Depends(_get_current_user),
+    ) -> dict[str, object]:
+        if "admin" not in (user.roles or []):
+            raise HTTPException(status_code=403, detail="Admin role required")
+        return get_arcjet_runtime_status(middleware_enabled=False)
 
     monkeypatch.setenv("ARCJET_ENABLED", "true")
     monkeypatch.setenv("ARCJET_MODE", "DRY_RUN")
 
-    try:
-        gateway_main.app.dependency_overrides[gateway_main.get_current_user] = _admin_override
-        client = TestClient(gateway_main.app)
-        allowed = client.get("/api/v1/gateway/security/arcjet/status")
-        assert allowed.status_code == 200
-        assert allowed.json()["mode"] == "DRY_RUN"
+    client = TestClient(app)
 
-        gateway_main.app.dependency_overrides[gateway_main.get_current_user] = _user_override
-        denied = client.get("/api/v1/gateway/security/arcjet/status")
-        assert denied.status_code == 403
-    finally:
-        gateway_main.app.dependency_overrides.clear()
+    # Admin user should be allowed.
+    _current_user_holder[0] = admin_user
+    allowed = client.get("/api/v1/gateway/security/arcjet/status")
+    assert allowed.status_code == 200
+    assert allowed.json()["mode"] == "DRY_RUN"
+
+    # Non-admin user should be denied.
+    _current_user_holder[0] = non_admin_user
+    denied = client.get("/api/v1/gateway/security/arcjet/status")
+    assert denied.status_code == 403

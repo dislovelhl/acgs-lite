@@ -4,11 +4,11 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "acgs-lite"
-version = "0.2.0"
+name = "acgs"
+version = "2.0.1"
 description = "Constitutional AI governance for any agent. Wrap any LLM agent in enforceable rules, audit trails, and separation of powers — in 5 lines of code."
 readme = "README.md"
-license = {text = "Apache-2.0"}
+license = "AGPL-3.0-or-later"
 requires-python = ">=3.10"
 authors = [
     {name = "ACGS Team", email = "hello@acgs.dev"},
@@ -19,7 +19,6 @@ classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Legal Industry",
     "Intended Audience :: Information Technology",
-    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -50,8 +49,9 @@ llamaindex = ["llama-index-core>=0.10"]
 autogen = ["autogen-core>=0.4", "autogen-agentchat>=0.4"]
 mcp = ["mcp>=1.0"]
 crewai = ["crewai>=0.30"]
+gitlab = ["httpx>=0.27", "starlette>=0.37"]
 google-cloud = ["google-cloud-logging>=3.0"]
-all = ["acgs-lite[a2a,openai,anthropic,langchain,litellm,google,llamaindex,autogen,mcp]"]
+all = ["acgs[a2a,openai,anthropic,langchain,litellm,google,llamaindex,autogen,mcp,crewai,gitlab,google-cloud]"]
 dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.24",
@@ -61,12 +61,16 @@ dev = [
 ]
 
 [project.scripts]
+"acgs" = "acgs_lite.cli:main"
 "acgs-lite" = "acgs_lite.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/acgs-ai/acgs-lite"
-Documentation = "https://acgs.dev/docs/lite"
-Repository = "https://github.com/acgs-ai/acgs-lite"
+Homepage = "https://acgs.ai"
+Documentation = "https://acgs.ai"
+Repository = "https://github.com/acgs2_admin/acgs"
+Issues = "https://github.com/acgs2_admin/acgs/issues"
+Changelog = "https://github.com/acgs2_admin/acgs/releases"
+PyPI = "https://pypi.org/project/acgs/"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -74,7 +78,7 @@ where = ["src"]
 [tool.ruff]
 line-length = 100
 target-version = "py310"
-exclude = ["examples"]
+exclude = ["examples", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM"]
@@ -87,14 +91,40 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+addopts = "-m 'not e2e'"
 markers = [
     "unit: Fast tests with no I/O and no external services",
     "integration: Tests requiring mocked external services",
     "compliance: Regulatory framework tests",
     "constitutional: Governance engine validation tests",
     "benchmark: Performance tests",
+    "e2e: End-to-end governance scenarios requiring stable fixture baselines",
+]
+filterwarnings = [
+    "ignore:.*_UnionGenericAlias.*deprecated.*:DeprecationWarning:google\\.genai\\.types",
+    "ignore:.*Core Pydantic V1 functionality isn't compatible with Python 3\\.14.*:UserWarning:langchain_core\\._api\\.deprecation",
 ]
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 strict = true
+files = ["src/acgs_lite"]
+exclude = "(?x)(^tests/|^examples/|^src/split_engine\\.py$)"
+ignore_missing_imports = true
+warn_unused_ignores = false
+allow_untyped_decorators = true
+disable_error_code = ["import-untyped", "import-not-found", "no-untyped-call", "misc", "type-arg", "no-any-return"]
+
+[[tool.mypy.overrides]]
+module = [
+    "acgs_lite.constitution.constitution",
+    "acgs_lite.constitution.memoization",
+    "acgs_lite.constitution.policy_export",
+    "acgs_lite.constitution.regulatory",
+    "acgs_lite.constitution.rule",
+    "acgs_lite.engine.batch",
+    "acgs_lite.engine.core",
+    "acgs_lite.integrations.a2a",
+    "acgs_lite.integrations.anthropic",
+]
+ignore_errors = true

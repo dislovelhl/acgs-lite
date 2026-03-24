@@ -18,7 +18,6 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
 
 class TestMCPClientConnectWithValidator:
-    @pytest.mark.asyncio
     async def test_connect_validator_passes(self):
         validator = MagicMock()
         validation_result = MagicMock()
@@ -31,7 +30,6 @@ class TestMCPClientConnectWithValidator:
         assert result is True
         validator.validate.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_connect_validator_fails_raises(self):
         validator = MagicMock()
         issue = MagicMock()
@@ -46,14 +44,12 @@ class TestMCPClientConnectWithValidator:
             with pytest.raises(MCPConnectionError, match="Connection validation failed"):
                 await client.connect()
 
-    @pytest.mark.asyncio
     async def test_connect_no_validator_skips_validation(self):
         with patch("enhanced_agent_bus.mcp_integration.client.VALIDATORS_AVAILABLE", True):
             client = _make_client(validator=None)
             result = await client.connect()
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_connect_validators_not_available_skips(self):
         validator = MagicMock()
         validator.validate = AsyncMock()
@@ -67,7 +63,6 @@ class TestMCPClientConnectWithValidator:
 
 
 class TestMCPClientToolRegistry:
-    @pytest.mark.asyncio
     async def test_tool_registry_discover_called(self):
         registry = MagicMock()
         registry.discover_tools = AsyncMock()
@@ -83,7 +78,6 @@ class TestMCPClientToolRegistry:
         assert call_kwargs["server_id"] == client.server_id
         assert call_kwargs["agent_id"] == client.agent_id
 
-    @pytest.mark.asyncio
     async def test_tool_registry_not_available_skips(self):
         registry = MagicMock()
         registry.discover_tools = AsyncMock()
@@ -96,7 +90,6 @@ class TestMCPClientToolRegistry:
 
         registry.discover_tools.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_no_tool_registry_no_error(self):
         client = _make_client(tool_registry=None)
         result = await client.connect()

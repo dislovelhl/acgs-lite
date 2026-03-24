@@ -1,78 +1,64 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-*.egg-info/
+# Build artifacts
+**/target/
 dist/
 build/
-*.egg
 
-# Virtual environments
-.venv/
-venv/
-ENV/
-.codex-home/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Testing
-.pytest_cache/
-.coverage
-.coverage.*
-htmlcov/
-coverage.xml
-coverage.json
-
-# Type checking
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+*.so
+.ruff_cache/
 .mypy_cache/
 
-# Linting
-.ruff_cache/
+# Coverage
+.coverage
+coverage.json
+htmlcov/
 
-# Rust
-packages/acgs-lite/rust/target/
+# Databases / local state
+*.db
+mlruns/
 
-# OS
-.DS_Store
-Thumbs.db
+# Codex CLI
+.codex-home/
+.codex-readiness-unit-test/
 
 # Environment
 .env
 .env.*
 !.env.example
+.venv/
+.uv-cache/
 
-# Node (PM2)
+# Node
 node_modules/
 
-# Benchmarks
-.benchmarks/
+# Wrangler (Cloudflare Workers local state)
+.wrangler/
 
-# Claude Code (local IDE state, agent skills, worktrees)
-.agents/
-.claude/
+# IDE
+.vscode/
+.idea/
 
-# Codex readiness test harness
-.codex-readiness-unit-test/
+# Claude Code worktrees (embedded git repos — not submodules)
+.claude/worktrees/
 
-# Memory databases
-.safla_memory.db
+# Demo harnesses (local only)
+constitutional-sentinel-demo/
 
-# Research/design docs (not production)
-claudedocs/
+# OS
+.DS_Store
+Thumbs.db
 
-# Generated hooks
-generated-hooks/
+# Screenshots (local captures)
+screenshot*.png
 
-# Frontend build artifacts
-propriety-ai/
+# Revenue logs (operational data)
+x402_revenue.jsonl
 
-# Policy bundles
-runtime/
-
-# SDK build artifacts
-sdk/
+# Legacy / stale copies
+src/acgs_lite/
+src/fix_imports.py
+src/split_engine.py

@@ -11,16 +11,16 @@ from enum import Enum
 from pydantic import BaseModel, ConfigDict, Field
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
 
-class VoteDecision(str, Enum):  # noqa: UP042
+class VoteDecision(str, Enum):
     """Vote decision types."""
 
     APPROVE = "APPROVE"
@@ -28,7 +28,7 @@ class VoteDecision(str, Enum):  # noqa: UP042
     ABSTAIN = "ABSTAIN"
 
 
-class VoteEventType(str, Enum):  # noqa: UP042
+class VoteEventType(str, Enum):
     """Types of vote events for audit trail."""
 
     ELECTION_CREATED = "election_created"

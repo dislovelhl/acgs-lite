@@ -70,7 +70,7 @@ async def test_engine():
 
     await engine.dispose()
     # Clean up the temporary database file
-    try:  # noqa: SIM105
+    try:
         os.unlink(db_path)
     except OSError:
         pass
@@ -217,13 +217,11 @@ class TestSystemTenantDefaults:
 class TestSystemTenantDatabaseOperations:
     """Tests for system tenant database operations."""
 
-    @pytest.mark.asyncio
     async def test_get_system_tenant_not_exists(self, repository: DatabaseTenantRepository):
         """Test get_system_tenant returns None when not created."""
         tenant = await get_system_tenant(repository)
         assert tenant is None
 
-    @pytest.mark.asyncio
     async def test_ensure_system_tenant_creates(self, repository: DatabaseTenantRepository):
         """Test ensure_system_tenant creates the system tenant."""
         tenant = await ensure_system_tenant(repository)
@@ -232,7 +230,6 @@ class TestSystemTenantDatabaseOperations:
         assert tenant.slug == SYSTEM_TENANT_SLUG
         assert tenant.name == SYSTEM_TENANT_NAME
 
-    @pytest.mark.asyncio
     async def test_ensure_system_tenant_idempotent(self, repository: DatabaseTenantRepository):
         """Test ensure_system_tenant is idempotent."""
         tenant1 = await ensure_system_tenant(repository)
@@ -241,7 +238,6 @@ class TestSystemTenantDatabaseOperations:
         # Should return the same tenant
         assert tenant1.tenant_id == tenant2.tenant_id
 
-    @pytest.mark.asyncio
     async def test_get_system_tenant_after_ensure(self, repository: DatabaseTenantRepository):
         """Test get_system_tenant works after ensure."""
         await ensure_system_tenant(repository)
@@ -269,7 +265,6 @@ class TestSystemTenantConstitutionalCompliance:
         assert "slug" in data
         assert "status" in data
 
-    @pytest.mark.asyncio
     async def test_ensure_system_tenant_constitutional_hash(
         self, repository: DatabaseTenantRepository
     ):

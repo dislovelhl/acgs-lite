@@ -1,5 +1,5 @@
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -9,11 +9,11 @@ MCP Server Configuration for ACGS-2 Constitutional Governance.
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-from dataclasses import dataclass, field  # noqa: E402
-from enum import Enum  # noqa: E402
+from dataclasses import dataclass, field
+from enum import Enum
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

@@ -20,6 +20,8 @@ Key Features:
 - Thread-safe operation with locking mechanisms
 """
 
+from __future__ import annotations
+
 import asyncio
 import dataclasses
 import time
@@ -39,7 +41,7 @@ try:
         JSONDict,
         MessagePayload,
         PolicyContext,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     MessagePayload = dict  # type: ignore[misc,assignment]
@@ -430,7 +432,7 @@ class AdaptiveGovernanceEngine:
         self.running = False
         if self.learning_task and not self.learning_task.done():
             self.learning_task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await asyncio.wait_for(self.learning_task, timeout=5)
             except (TimeoutError, asyncio.CancelledError):
                 pass
@@ -617,10 +619,25 @@ class AdaptiveGovernanceEngine:
         if decision.impact_level in (ImpactLevel.HIGH, ImpactLevel.CRITICAL):
             return decision
 
+        # Keep the escalated decision internally consistent with downstream validation.
+        escalated_risk_score = min(
+            1.0,
+            max(
+                float(decision.features_used.risk_score),
+                float(risk_score),
+                float(decision.recommended_threshold) + 1e-6,
+            ),
+        )
+        escalated_features = dataclasses.replace(
+            decision.features_used,
+            risk_score=escalated_risk_score,
+        )
+
         return dataclasses.replace(
             decision,
             impact_level=ImpactLevel.HIGH,
             action_allowed=False,
+            features_used=escalated_features,
             reasoning=(
                 f"{decision.reasoning} | DTMC trajectory risk={risk_score:.3f}"
                 " exceeds intervention threshold — escalated to deliberation."
@@ -750,7 +767,7 @@ class AdaptiveGovernanceEngine:
                 feedback_type = FeedbackType.NEGATIVE
 
             # Determine outcome status
-            if outcome_success:  # noqa: SIM108
+            if outcome_success:
                 outcome_status = OutcomeStatus.SUCCESS
             else:
                 outcome_status = OutcomeStatus.FAILURE

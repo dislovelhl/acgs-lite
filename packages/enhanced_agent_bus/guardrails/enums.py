@@ -6,7 +6,7 @@ Constitutional Hash: cdd01ef066bc6cf2
 from enum import Enum
 
 
-class GuardrailLayer(str, Enum):  # noqa: UP042
+class GuardrailLayer(str, Enum):
     """OWASP-compliant guardrail layers."""
 
     INPUT_SANITIZER = "input_sanitizer"
@@ -17,7 +17,7 @@ class GuardrailLayer(str, Enum):  # noqa: UP042
     RATE_LIMITER = "rate_limiter"
 
 
-class SafetyAction(str, Enum):  # noqa: UP042
+class SafetyAction(str, Enum):
     """Safety actions the guardrails can take."""
 
     ALLOW = "allow"
@@ -28,7 +28,7 @@ class SafetyAction(str, Enum):  # noqa: UP042
     AUDIT = "audit"
 
 
-class ViolationSeverity(str, Enum):  # noqa: UP042
+class ViolationSeverity(str, Enum):
     """Severity levels for violations."""
 
     LOW = "low"

@@ -72,7 +72,6 @@ async def aggregator_with_registry(registry):
         await aggregator.stop()
 
 
-@pytest.mark.asyncio
 class TestHealthAggregatorIntegration:
     """Integration tests with real circuit breaker registry."""
 
@@ -124,7 +123,7 @@ class TestHealthAggregatorIntegration:
 
         # Trigger failures
         for _ in range(6):  # Default fail_max is 5
-            try:  # noqa: SIM105
+            try:
                 cb1.call(failing_func)
             except (ValueError, pybreaker.CircuitBreakerError):
                 # Catch both the original error and CircuitBreakerError when breaker opens
@@ -251,7 +250,7 @@ class TestHealthAggregatorIntegration:
             raise ConnectionError("Database unavailable")
 
         for _ in range(4):  # Exceed fail_max of 3
-            try:  # noqa: SIM105
+            try:
                 breakers["database"].call(db_failure)
             except (ConnectionError, pybreaker.CircuitBreakerError):
                 # Catch both the original error and CircuitBreakerError when breaker opens
@@ -274,7 +273,7 @@ class TestHealthAggregatorIntegration:
             raise TimeoutError("Notification timeout")
 
         for _ in range(3):  # Exceed fail_max of 2
-            try:  # noqa: SIM105
+            try:
                 breakers["notification"].call(notification_failure)
             except (TimeoutError, pybreaker.CircuitBreakerError):
                 # Catch both the original error and CircuitBreakerError when breaker opens
@@ -381,7 +380,6 @@ class TestHealthAggregatorIntegration:
         await aggregator_with_registry.stop()
 
 
-@pytest.mark.asyncio
 class TestGlobalSingletonIntegration:
     """Test global singleton integration."""
 

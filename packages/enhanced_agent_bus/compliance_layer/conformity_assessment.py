@@ -15,13 +15,13 @@ from typing import ClassVar
 from uuid import UUID, uuid4
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.json_utils import dumps as json_dumps
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -30,7 +30,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 logger = get_logger(__name__)
 
 
-class AssessmentStatus(str, Enum):  # noqa: UP042
+class AssessmentStatus(str, Enum):
     """Conformity assessment status."""
 
     PENDING = "pending"
@@ -40,7 +40,7 @@ class AssessmentStatus(str, Enum):  # noqa: UP042
     REQUIRES_REMEDIATION = "requires_remediation"
 
 
-class EvidenceType(str, Enum):  # noqa: UP042
+class EvidenceType(str, Enum):
     """Types of compliance evidence."""
 
     AUDIT_LOG = "audit_log"
@@ -207,7 +207,7 @@ class ConformityAssessment:
                 self.evidence_bank.append(evidence)
 
         logger.info(
-            f"[{self.CONSTITUTIONAL_HASH}] Collected {len(collected)} evidence items from audit logs"  # noqa: E501
+            f"[{self.CONSTITUTIONAL_HASH}] Collected {len(collected)} evidence items from audit logs"
         )
         return collected
 
@@ -371,7 +371,7 @@ class ConformityAssessment:
             "",
             "## Executive Summary",
             "",
-            f"This conformity assessment evaluates {len(self.requirements)} EU AI Act requirements.",  # noqa: E501
+            f"This conformity assessment evaluates {len(self.requirements)} EU AI Act requirements.",
             f"Total evidence items collected: {len(self.evidence_bank)}",
             "",
             "## Requirement Assessment Results",

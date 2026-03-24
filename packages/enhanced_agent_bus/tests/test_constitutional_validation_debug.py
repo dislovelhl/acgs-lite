@@ -76,7 +76,6 @@ class TestMessageProcessorDebug:
         logger.info(f"  - Status: {msg.status}")
         return msg
 
-    @pytest.mark.asyncio
     async def test_process_valid_message_debug(self, processor, valid_message):
         """Test processing a valid message with debug output."""
         logger.debug("\n[DEBUG] Processing valid message...")
@@ -98,7 +97,6 @@ class TestMessageProcessorDebug:
 
         logger.debug("\n[DEBUG] ✓ Test passed")
 
-    @pytest.mark.asyncio
     async def test_process_invalid_hash_message_debug(self, processor, invalid_hash_message):
         """Test processing message with invalid constitutional hash."""
         logger.debug("\n[DEBUG] Processing invalid hash message...")
@@ -112,7 +110,7 @@ class TestMessageProcessorDebug:
         if result.errors:
             logger.error(f"  - First error: {result.errors[0]}")
             logger.info(
-                f"  - Contains 'Constitutional hash mismatch': {'Constitutional hash mismatch' in result.errors[0]}"  # noqa: E501
+                f"  - Contains 'Constitutional hash mismatch': {'Constitutional hash mismatch' in result.errors[0]}"
             )
 
         # Original assertions with detailed error messages
@@ -124,7 +122,6 @@ class TestMessageProcessorDebug:
 
         logger.debug("\n[DEBUG] ✓ Test passed")
 
-    @pytest.mark.asyncio
     async def test_handler_registration_debug(self, processor, valid_message):
         """Test handler registration and execution."""
         logger.debug("\n[DEBUG] Testing handler registration...")

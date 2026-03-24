@@ -225,7 +225,6 @@ class TestTimeoutBudgetManager:
         assert elapsed >= 10.0
         assert manager.total_remaining_ms == manager.total_budget_ms - elapsed
 
-    @pytest.mark.asyncio
     async def test_execute_with_budget_success(self):
         """execute_with_budget succeeds within budget.
 
@@ -268,7 +267,6 @@ class TestTimeoutBudgetManager:
 
         assert result == "success"
 
-    @pytest.mark.asyncio
     async def test_execute_with_budget_timeout(self):
         """execute_with_budget raises on timeout."""
         manager = TimeoutBudgetManager()
@@ -287,7 +285,6 @@ class TestTimeoutBudgetManager:
         assert exc_info.value.layer_name == "layer1_validation"
         assert exc_info.value.operation == "slow_test"
 
-    @pytest.mark.asyncio
     async def test_execute_with_budget_non_strict(self):
         """Non-strict layer raises asyncio.TimeoutError."""
         manager = TimeoutBudgetManager()
@@ -347,7 +344,6 @@ class TestTimeoutBudgetManager:
                 failing_sync,
             )
 
-    @pytest.mark.asyncio
     async def test_execute_async_exception_passthrough(self):
         """execute_with_budget passes through exceptions."""
         manager = TimeoutBudgetManager()

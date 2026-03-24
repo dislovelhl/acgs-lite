@@ -1,0 +1,101 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - img [ref=e8]
+        - generic [ref=e12] [cursor=pointer]:
+          - img [ref=e14]
+          - img [ref=e17]
+      - generic [ref=e27]:
+        - link "Create New create new video" [ref=e1101] [cursor=pointer]:
+          - /url: /workspace/49ec7107-8e3b-495c-b640-f978954edc4e/v40-copilot
+          - generic [ref=e1102]:
+            - paragraph [ref=e1103]: Create New
+            - img "create new video" [ref=e1104]
+        - button "Upgrade" [ref=e28] [cursor=pointer]:
+          - img [ref=e29]
+          - generic [ref=e31]: Upgrade
+        - img [ref=e35] [cursor=pointer]
+  - generic [ref=e36]:
+    - generic [ref=e37]:
+      - generic [ref=e38]:
+        - img [ref=e40] [cursor=pointer]
+        - generic [ref=e44] [cursor=pointer]:
+          - img [ref=e46]
+          - img [ref=e49]
+      - generic [ref=e59]:
+        - generic [ref=e60]:
+          - generic [ref=e61] [cursor=pointer]:
+            - img [ref=e62]
+            - generic [ref=e68]: Home
+          - generic [ref=e69] [cursor=pointer]:
+            - img [ref=e70]
+            - generic [ref=e73]: Media Library
+          - generic [ref=e74] [cursor=pointer]:
+            - img [ref=e75]
+            - generic [ref=e78]: Generative Picks
+        - separator [ref=e80]
+        - generic [ref=e81]:
+          - generic [ref=e82]: Plugins
+          - generic [ref=e83]:
+            - generic [ref=e84] [cursor=pointer]:
+              - img [ref=e85]
+              - generic [ref=e89]: AI Photo to avatar
+            - generic [ref=e90] [cursor=pointer]:
+              - img [ref=e91]
+              - generic [ref=e96]: Motion graphics
+            - generic [ref=e97] [cursor=pointer]:
+              - img [ref=e98]
+              - generic [ref=e103]: Text to clip
+            - generic [ref=e104] [cursor=pointer]:
+              - img [ref=e105]
+              - generic [ref=e111]: Text to image
+            - generic [ref=e112] [cursor=pointer]:
+              - img [ref=e113]
+              - generic [ref=e118]: Photo to clip
+            - generic [ref=e119] [cursor=pointer]:
+              - img [ref=e120]
+              - generic [ref=e124]: Text to title clip
+            - generic [ref=e125] [cursor=pointer]:
+              - img [ref=e126]
+              - generic [ref=e131]: Preset library
+        - separator [ref=e133]
+        - generic [ref=e1106]:
+          - generic [ref=e1107]: History
+          - generic [ref=e1108]:
+            - button "New Video" [ref=e1109]:
+              - generic [ref=e1111] [cursor=pointer]: New Video
+            - button "New Video" [ref=e1112]:
+              - generic [ref=e1114] [cursor=pointer]: New Video
+        - separator [ref=e1116]
+        - generic [ref=e134]:
+          - separator [ref=e136]
+          - generic [ref=e137] [cursor=pointer]:
+            - img [ref=e138]
+            - generic [ref=e141]:
+              - generic [ref=e142]: "Credits: 0.00/5"
+              - img [ref=e143]
+    - generic [ref=e146]:
+      - generic [ref=e1117]:
+        - heading "Discover Sheet" [level=2]:
+          - generic [ref=e1118]: Discover Sheet
+        - generic [ref=e1119]:
+          - generic [ref=e1121]:
+            - generic [ref=e1122]:
+              - img [ref=e1124]
+              - paragraph [ref=e1126]: "Create a 15-second vertical Instagram Reel for developers about ACGS. Use a clean modern tech style with bold captions and enterprise AI visuals. Voiceover script: Most agent stacks still let the same system generate an action and validate it. That is an architecture bug. ACGS enforces proposer, validator, executor separation and runs constitutional validation before action at 560ns median local latency. Governance stays inline without becoming the bottleneck. End with on-screen text: Governed AI starts with architecture. Keep it factual, fast-paced, captioned, and suitable for Reels."
+            - generic [ref=e1127]:
+              - img [ref=e1128]
+              - generic [ref=e1131]:
+                - paragraph [ref=e1132]: "Title: Fixing AI Agent Stacks with ACGS"
+                - img [ref=e1159]
+              - generic [ref=e1161]:
+                - paragraph [ref=e1162]: This video is about ACGS for devs, researching what ACGS is.
+                - img [ref=e1168]
+              - paragraph [ref=e1171]: Still researching...
+          - generic [ref=e1140]: invideo AI may make mistakes. Check important details.
+      - generic [ref=e1141]:
+        - img [ref=e1143] [cursor=pointer]
+        - img [ref=e1147] [cursor=pointer]
+        - img [ref=e1151] [cursor=pointer]
+        - img [ref=e1156] [cursor=pointer]

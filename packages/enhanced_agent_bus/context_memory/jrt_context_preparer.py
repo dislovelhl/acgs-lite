@@ -20,7 +20,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -38,7 +38,7 @@ from .models import (
 logger = get_logger(__name__)
 
 
-class JRTRetrievalStrategy(str, Enum):  # noqa: UP042
+class JRTRetrievalStrategy(str, Enum):
     """Retrieval strategies for JRT context preparation."""
 
     RELEVANCE_FIRST = "relevance_first"  # Sort by relevance score

@@ -18,7 +18,7 @@ from abc import ABC, abstractmethod
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -133,7 +133,7 @@ class StateIntegrityValidator(CheckpointValidator):
             # Verify version continuity
             if checkpoint.state.version <= 0 and checkpoint.step_index > 0:
                 violations.append(
-                    f"Invalid state version {checkpoint.state.version} at step {checkpoint.step_index}"  # noqa: E501
+                    f"Invalid state version {checkpoint.state.version} at step {checkpoint.step_index}"
                 )
 
         except _CHECKPOINT_OPERATION_ERRORS as e:

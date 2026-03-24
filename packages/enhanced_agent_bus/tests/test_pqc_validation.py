@@ -95,7 +95,6 @@ def mock_constitutional_validator():
 class TestPQCValidationStrategy:
     """Tests for PQCValidationStrategy."""
 
-    @pytest.mark.asyncio
     async def test_pqc_validation_without_signature_uses_fallback(
         self, pqc_validator, sample_agent_message
     ):
@@ -106,7 +105,6 @@ class TestPQCValidationStrategy:
         assert is_valid is True
         assert error is None
 
-    @pytest.mark.asyncio
     @pytest.mark.skipif(
         not PQC_AVAILABLE, reason="quantum_research.post_quantum_crypto not installed"
     )
@@ -120,7 +118,6 @@ class TestPQCValidationStrategy:
         assert is_valid is False
         assert "PQC signature required" in error
 
-    @pytest.mark.asyncio
     @pytest.mark.skipif(
         not PQC_AVAILABLE, reason="quantum_research.post_quantum_crypto not installed"
     )
@@ -138,7 +135,6 @@ class TestPQCValidationStrategy:
         assert is_valid is False
         assert "PQC validation error" in error or "PQC signature" in error
 
-    @pytest.mark.asyncio
     async def test_pqc_validation_unavailable_fallback(self, sample_agent_message):
         """Test PQC validation when validator is not available in strict mode."""
         # Use strict mode (hybrid_mode=False) - in hybrid mode it would fall back
@@ -156,7 +152,6 @@ class TestPQCValidationStrategy:
 class TestCompositeValidationStrategyPQC:
     """Tests for CompositeValidationStrategy with PQC integration."""
 
-    @pytest.mark.asyncio
     async def test_composite_auto_enables_pqc(self):
         """Test that CompositeValidationStrategy auto-enables PQC."""
         composite = CompositeValidationStrategy(enable_pqc=True)
@@ -165,7 +160,6 @@ class TestCompositeValidationStrategyPQC:
         pqc_strategies = [s for s in composite._strategies if isinstance(s, PQCValidationStrategy)]
         assert len(pqc_strategies) == 1
 
-    @pytest.mark.asyncio
     async def test_composite_pqc_disabled(self):
         """Test CompositeValidationStrategy with PQC disabled."""
         composite = CompositeValidationStrategy(enable_pqc=False)
@@ -174,7 +168,6 @@ class TestCompositeValidationStrategyPQC:
         pqc_strategies = [s for s in composite._strategies if isinstance(s, PQCValidationStrategy)]
         assert len(pqc_strategies) == 0
 
-    @pytest.mark.asyncio
     async def test_composite_pqc_prioritization(self, sample_agent_message):
         """Test that PQC validation is prioritized when signature present."""
         composite = CompositeValidationStrategy(enable_pqc=True)
@@ -191,7 +184,6 @@ class TestCompositeValidationStrategyPQC:
                     assert is_valid is False
                     assert "PQC:" in error
 
-    @pytest.mark.asyncio
     async def test_composite_fallback_behavior(self, sample_agent_message):
         """Test composite validation fallback behavior."""
         # Create composite with static hash and PQC
@@ -261,7 +253,6 @@ class TestAgentMessagePQCExtensions:
 class TestPQCHybridModeIntegration:
     """Tests for PQC hybrid mode integration."""
 
-    @pytest.mark.asyncio
     async def test_hybrid_mode_static_hash_fallback(self, sample_agent_message):
         """Test hybrid mode falls back to static hash validation."""
         validator = PQCValidationStrategy(hybrid_mode=True)
@@ -285,7 +276,6 @@ class TestPQCHybridModeIntegration:
 class TestPQCPerformanceBenchmarks:
     """Performance benchmarks for PQC validation."""
 
-    @pytest.mark.asyncio
     async def test_pqc_validation_performance_baseline(self, benchmark):
         """Benchmark PQC validation performance."""
         validator = PQCValidationStrategy(hybrid_mode=True)
@@ -298,7 +288,6 @@ class TestPQCPerformanceBenchmarks:
         result = await benchmark(validate_message)
         assert result[0] is True  # Should pass (hybrid mode fallback)
 
-    @pytest.mark.asyncio
     async def test_composite_validation_performance(self, benchmark):
         """Benchmark composite validation with PQC."""
         composite = CompositeValidationStrategy(enable_pqc=True)
@@ -315,7 +304,6 @@ class TestPQCPerformanceBenchmarks:
 class TestPQCSecurityProperties:
     """Tests for PQC security properties."""
 
-    @pytest.mark.asyncio
     async def test_pqc_signature_verification_logic(self):
         """Test the PQC signature verification logic."""
         # Create a mock validator and pass it directly to the constructor
@@ -398,7 +386,6 @@ class TestHybridModeValidateSignature:
         for p in reversed(parents_to_clean):
             sys.modules.pop(p, None)
 
-    @pytest.mark.asyncio
     @pytest.mark.unit
     async def test_ed25519_accepted_in_hybrid_mode(self):
         """Ed25519 key accepted when HYBRID_MODE_ENABLED=True; audit key_type='classical'."""
@@ -419,7 +406,6 @@ class TestHybridModeValidateSignature:
         assert result["key_type"] == "classical"
         assert result["algorithm"] == "Ed25519"
 
-    @pytest.mark.asyncio
     @pytest.mark.unit
     async def test_ml_dsa_accepted_in_hybrid_mode(self):
         """ML-DSA-65 key accepted when HYBRID_MODE_ENABLED=True; audit key_type='pqc'."""
@@ -436,7 +422,6 @@ class TestHybridModeValidateSignature:
         assert result["key_type"] == "pqc"
         assert result["algorithm"] == "ML-DSA-65"
 
-    @pytest.mark.asyncio
     @pytest.mark.unit
     async def test_ed25519_rejected_in_pqc_only_mode(self):
         """Ed25519 raises ClassicalKeyRejectedError when hybrid mode is off."""
@@ -455,7 +440,6 @@ class TestHybridModeValidateSignature:
             )
         assert "classical-key-not-accepted" in str(exc_info.value.details)
 
-    @pytest.mark.asyncio
     @pytest.mark.unit
     async def test_legacy_alias_normalized(self):
         """Legacy alias 'dilithium3' normalised to 'ML-DSA-65'."""
@@ -471,7 +455,6 @@ class TestHybridModeValidateSignature:
         assert result["algorithm"] == "ML-DSA-65"
         assert result["key_type"] == "pqc"
 
-    @pytest.mark.asyncio
     @pytest.mark.unit
     async def test_revoked_key_status_from_registry(self):
         """Revoked key in registry returns key_status=revoked in result."""
@@ -499,7 +482,6 @@ class TestHybridModeValidateSignature:
             )
         assert result["key_status"] == "revoked"
 
-    @pytest.mark.asyncio
     @pytest.mark.unit
     async def test_key_registry_503_fails_closed(self):
         """Key Registry returning 503/error causes fail-closed KeyRegistryUnavailableError."""

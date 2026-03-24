@@ -15,7 +15,7 @@ from src.core.shared.errors.exceptions import (
 )
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -220,7 +220,7 @@ class MCPHandler:
             tool_name = params.get("name", "")
             tool_def = self._tools.get(tool_name)
 
-            if tool_def and tool_def.constitutional_required:  # noqa: SIM102
+            if tool_def and tool_def.constitutional_required:
                 # Validate constitutional hash is present in context
                 if "constitutional_hash" not in params.get("arguments", {}):
                     # Auto-inject constitutional hash

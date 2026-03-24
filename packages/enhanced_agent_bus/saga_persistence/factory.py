@@ -25,7 +25,7 @@ try:
     from src.core.shared.constants import (
         CONSTITUTIONAL_HASH,
         DEFAULT_REDIS_URL,
-    )  # noqa: E402
+    )
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
     DEFAULT_REDIS_URL = "redis://localhost:6379"
@@ -45,7 +45,7 @@ SAGA_BACKEND_OPERATION_ERRORS = (
 )
 
 
-class SagaBackend(str, Enum):  # noqa: UP042
+class SagaBackend(str, Enum):
     """Supported saga persistence backends."""
 
     REDIS = "redis"

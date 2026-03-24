@@ -6,6 +6,8 @@ API endpoints for reviewing, approving, and rejecting constitutional amendments
 with MACI enforcement, governance metrics comparison, and HITL integration.
 """
 
+import sys
+from dataclasses import dataclass
 from datetime import UTC, datetime, timezone
 
 from fastapi import APIRouter, Header, HTTPException, Query
@@ -14,13 +16,13 @@ from pydantic import BaseModel, Field
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.security.error_sanitizer import safe_error_detail
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -31,6 +33,10 @@ from .diff_engine import ConstitutionalDiffEngine, SemanticDiff
 from .hitl_integration import ConstitutionalHITLIntegration
 from .storage import ConstitutionalStorageService  # type: ignore[attr-defined]
 from .version_model import ConstitutionalVersion
+
+_MODULE = sys.modules[__name__]
+sys.modules.setdefault("enhanced_agent_bus.constitutional.review_api", _MODULE)
+sys.modules.setdefault("packages.enhanced_agent_bus.constitutional.review_api", _MODULE)
 
 # Import rollback engine and related components
 try:
@@ -71,6 +77,7 @@ except ImportError:
     class MACIAction:  # type: ignore[no-redef]
         APPROVE: str = "approve"
         REJECT: str = "reject"
+        VALIDATE: str = "validate"
 
     class MACIEnforcer:  # type: ignore[no-redef]
         def __init__(self, *args, **kwargs):
@@ -121,6 +128,125 @@ router = APIRouter(
         500: {"description": "Internal server error"},
     },
 )
+
+
+def _maci_allowed(result: object) -> bool:
+    """Normalize MACI validation results from typed and legacy callers."""
+    if hasattr(result, "is_valid"):
+        return bool(result.is_valid)
+    if isinstance(result, dict):
+        return bool(result.get("allowed", False) or result.get("is_valid", False))
+    raise TypeError("Unsupported MACI validation result contract")
+
+
+def _review_maci_action(action_name: str) -> object:
+    """Resolve review operations onto the available MACI action surface."""
+    explicit_action = getattr(MACIAction, action_name.upper(), None)
+    if explicit_action is not None:
+        return explicit_action
+    return MACIAction.VALIDATE
+
+
+@dataclass(slots=True)
+class _ReviewDependencies:
+    storage: ConstitutionalStorageService
+    audit_client: AuditClient
+    hitl: ConstitutionalHITLIntegration | None = None
+
+
+@dataclass(slots=True)
+class _PreparedReviewAction:
+    agent_id: str
+    amendment: AmendmentProposal
+    dependencies: _ReviewDependencies
+
+
+async def _authorize_judicial_action(
+    *,
+    agent_id: str,
+    action_name: str,
+    target_output_id: str,
+    failure_detail: str,
+) -> None:
+    maci_enforcer = MACIEnforcer()
+    maci_result = await maci_enforcer.validate_action(
+        agent_id=agent_id,
+        action=_review_maci_action(action_name),
+        target_output_id=target_output_id,
+    )
+    if not _maci_allowed(maci_result):
+        raise HTTPException(
+            status_code=http_status.HTTP_403_FORBIDDEN,
+            detail=failure_detail,
+        )
+
+
+async def _create_review_dependencies(*, include_hitl: bool = False) -> _ReviewDependencies:
+    storage = ConstitutionalStorageService()
+    await storage.connect()
+    audit_client = AuditClient(config=AuditClientConfig())
+    hitl = ConstitutionalHITLIntegration(storage=storage) if include_hitl else None
+    return _ReviewDependencies(storage=storage, audit_client=audit_client, hitl=hitl)
+
+
+async def _close_review_dependencies(dependencies: _ReviewDependencies | None) -> None:
+    if dependencies is None:
+        return
+    await dependencies.storage.disconnect()
+
+
+async def _get_amendment_or_404(
+    storage: ConstitutionalStorageService,
+    amendment_id: str,
+) -> AmendmentProposal:
+    amendment = await storage.get_amendment(amendment_id)
+    if not amendment:
+        raise HTTPException(
+            status_code=http_status.HTTP_404_NOT_FOUND,
+            detail=f"Amendment not found: {amendment_id}",
+        )
+    return amendment
+
+
+def _validate_amendment_review_status(
+    amendment: AmendmentProposal,
+    *,
+    operation: str,
+) -> None:
+    if amendment.status not in [AmendmentStatus.UNDER_REVIEW, AmendmentStatus.PROPOSED]:
+        raise HTTPException(
+            status_code=http_status.HTTP_400_BAD_REQUEST,
+            detail=(
+                f"Cannot {operation} amendment in status: {amendment.status}. "
+                "Must be PROPOSED or UNDER_REVIEW."
+            ),
+        )
+
+
+async def _prepare_review_action(
+    *,
+    amendment_id: str,
+    actor_id: str,
+    header_agent_id: str | None,
+    action_name: str,
+    failure_detail: str,
+    include_hitl: bool = False,
+) -> _PreparedReviewAction:
+    agent_id = header_agent_id or actor_id
+    await _authorize_judicial_action(
+        agent_id=agent_id,
+        action_name=action_name,
+        target_output_id=amendment_id,
+        failure_detail=failure_detail,
+    )
+    dependencies = await _create_review_dependencies(include_hitl=include_hitl)
+    amendment = await _get_amendment_or_404(dependencies.storage, amendment_id)
+    _validate_amendment_review_status(amendment, operation=action_name)
+    return _PreparedReviewAction(
+        agent_id=agent_id,
+        amendment=amendment,
+        dependencies=dependencies,
+    )
 
 # =============================================================================
 # Request/Response Models
@@ -285,7 +411,7 @@ async def list_amendments(
             except ValueError:
                 raise HTTPException(
                     status_code=http_status.HTTP_400_BAD_REQUEST,
-                    detail=f"Invalid status: {status}. Must be one of: {[s.value for s in AmendmentStatus]}",  # noqa: E501
+                    detail=f"Invalid status: {status}. Must be one of: {[s.value for s in AmendmentStatus]}",
                 ) from None
 
         # Validate order_by field
@@ -337,7 +463,7 @@ async def list_amendments(
     "/amendments/{amendment_id}",
     response_model=AmendmentDetailResponse,
     summary="Get amendment details",
-    description="Get detailed information about a constitutional amendment including diff preview and governance metrics",  # noqa: E501
+    description="Get detailed information about a constitutional amendment including diff preview and governance metrics",
 )
 async def get_amendment(
     amendment_id: str,
@@ -476,44 +602,21 @@ async def approve_amendment(
         HTTPException: 403 if MACI validation fails, 404 if amendment not found,
                       400 if amendment in wrong status, 500 if service fails
     """
+    dependencies: _ReviewDependencies | None = None
     try:
-        # MACI validation - only JUDICIAL role can approve amendments
-        agent_id = x_agent_id or approval_request.approver_agent_id
-        maci_enforcer = MACIEnforcer()
-
-        maci_result = await maci_enforcer.validate_action(
-            agent_id=agent_id,
-            action=MACIAction.APPROVE,  # type: ignore[attr-defined]
-            target_output_id=amendment_id,
+        prepared = await _prepare_review_action(
+            amendment_id=amendment_id,
+            actor_id=approval_request.approver_agent_id,
+            header_agent_id=x_agent_id,
+            action_name="approve",
+            failure_detail=(
+                "MACI authorization failed: Only JUDICIAL role can approve amendments. "
+                f"Agent {(x_agent_id or approval_request.approver_agent_id)} lacks required permissions."
+            ),
+            include_hitl=True,
         )
-
-        if not maci_result.get("allowed", False):  # type: ignore[attr-defined]
-            raise HTTPException(
-                status_code=http_status.HTTP_403_FORBIDDEN,
-                detail=f"MACI authorization failed: Only JUDICIAL role can approve amendments. Agent {agent_id} lacks required permissions.",  # noqa: E501
-            )
-
-        # Initialize services
-        storage = ConstitutionalStorageService()
-        await storage.connect()
-
-        audit_client = AuditClient(config=AuditClientConfig())
-        hitl = ConstitutionalHITLIntegration(storage=storage)
-
-        # Fetch amendment proposal
-        amendment = await storage.get_amendment(amendment_id)
-        if not amendment:
-            raise HTTPException(
-                status_code=http_status.HTTP_404_NOT_FOUND,
-                detail=f"Amendment not found: {amendment_id}",
-            )
-
-        # Validate amendment status
-        if amendment.status not in [AmendmentStatus.UNDER_REVIEW, AmendmentStatus.PROPOSED]:
-            raise HTTPException(
-                status_code=http_status.HTTP_400_BAD_REQUEST,
-                detail=f"Cannot approve amendment in status: {amendment.status}. Must be PROPOSED or UNDER_REVIEW.",  # noqa: E501
-            )
+        dependencies = prepared.dependencies
+        amendment = prepared.amendment
 
         # Record approval in approval chain
         approval_record = {
@@ -526,7 +629,7 @@ async def approve_amendment(
         amendment.approval_chain.append(approval_record)
 
         # Determine required approvals from HITL chain config based on impact score
-        chain_config = hitl._determine_approval_chain(amendment)
+        chain_config = dependencies.hitl._determine_approval_chain(amendment)
         required_approvals = chain_config.required_approvals
         approvals_received = len(amendment.approval_chain)
         approval_status: JSONDict = {
@@ -553,10 +656,10 @@ async def approve_amendment(
             )
 
         # Save updated amendment
-        await storage.save_amendment(amendment)
+        await dependencies.storage.save_amendment(amendment)
 
         # Audit log the approval
-        await audit_client.log_event(  # type: ignore[attr-defined]
+        await dependencies.audit_client.log_event(  # type: ignore[attr-defined]
             event_type="constitutional_amendment_approved",
             agent_id=approval_request.approver_agent_id,
             data={
@@ -567,8 +670,6 @@ async def approve_amendment(
                 "constitutional_hash": CONSTITUTIONAL_HASH,
             },
         )
-
-        await storage.disconnect()
 
         return ApprovalResponse(
             success=True,
@@ -586,6 +687,8 @@ async def approve_amendment(
             status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=safe_error_detail(e, "approve amendment"),
         ) from e
+    finally:
+        await _close_review_dependencies(dependencies)
 
 
 @router.post(
@@ -629,43 +732,21 @@ async def reject_amendment(
         HTTPException: 403 if MACI validation fails, 404 if amendment not found,
                       400 if amendment in wrong status, 500 if service fails
     """
+    dependencies: _ReviewDependencies | None = None
     try:
-        # MACI validation - only JUDICIAL role can reject amendments
-        agent_id = x_agent_id or rejection_request.rejector_agent_id
-        maci_enforcer = MACIEnforcer()
-
-        maci_result = await maci_enforcer.validate_action(
-            agent_id=agent_id,
-            action=MACIAction.REJECT,  # type: ignore[attr-defined]
-            target_output_id=amendment_id,
+        prepared = await _prepare_review_action(
+            amendment_id=amendment_id,
+            actor_id=rejection_request.rejector_agent_id,
+            header_agent_id=x_agent_id,
+            action_name="reject",
+            failure_detail=(
+                "MACI authorization failed: Only JUDICIAL role can reject amendments. "
+                f"Agent {(x_agent_id or rejection_request.rejector_agent_id)} lacks required permissions."
+            ),
+            include_hitl=False,
         )
-
-        if not maci_result.get("allowed", False):  # type: ignore[attr-defined]
-            raise HTTPException(
-                status_code=http_status.HTTP_403_FORBIDDEN,
-                detail=f"MACI authorization failed: Only JUDICIAL role can reject amendments. Agent {agent_id} lacks required permissions.",  # noqa: E501
-            )
-
-        # Initialize services
-        storage = ConstitutionalStorageService()
-        await storage.connect()
-
-        audit_client = AuditClient(config=AuditClientConfig())
-
-        # Fetch amendment proposal
-        amendment = await storage.get_amendment(amendment_id)
-        if not amendment:
-            raise HTTPException(
-                status_code=http_status.HTTP_404_NOT_FOUND,
-                detail=f"Amendment not found: {amendment_id}",
-            )
-
-        # Validate amendment status
-        if amendment.status not in [AmendmentStatus.UNDER_REVIEW, AmendmentStatus.PROPOSED]:
-            raise HTTPException(
-                status_code=http_status.HTTP_400_BAD_REQUEST,
-                detail=f"Cannot reject amendment in status: {amendment.status}. Must be PROPOSED or UNDER_REVIEW.",  # noqa: E501
-            )
+        dependencies = prepared.dependencies
+        amendment = prepared.amendment
 
         # Record rejection in approval chain
         rejection_record = {
@@ -686,10 +767,10 @@ async def reject_amendment(
         # The amendment status update above handles the rejection state
 
         # Save updated amendment
-        await storage.save_amendment(amendment)
+        await dependencies.storage.save_amendment(amendment)
 
         # Audit log the rejection
-        await audit_client.log_event(  # type: ignore[attr-defined]
+        await dependencies.audit_client.log_event(  # type: ignore[attr-defined]
             event_type="constitutional_amendment_rejected",
             agent_id=rejection_request.rejector_agent_id,
             data={
@@ -700,8 +781,6 @@ async def reject_amendment(
             },
         )
 
-        await storage.disconnect()
-
         next_steps = [
             "Amendment rejected - proposal terminated",
             "Proposer may submit a new amended proposal addressing the rejection reason",
@@ -710,7 +789,7 @@ async def reject_amendment(
         return ApprovalResponse(
             success=True,
             amendment=amendment,
-            message=f"Amendment {amendment_id} rejected by {rejection_request.rejector_agent_id}: {rejection_request.reason}",  # noqa: E501
+            message=f"Amendment {amendment_id} rejected by {rejection_request.rejector_agent_id}: {rejection_request.reason}",
             next_steps=next_steps,
             constitutional_hash=CONSTITUTIONAL_HASH,
         )
@@ -723,13 +802,15 @@ async def reject_amendment(
             status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=safe_error_detail(e, "reject amendment"),
         ) from e
+    finally:
+        await _close_review_dependencies(dependencies)
 
 
 @router.post(
     "/versions/{version_id}/rollback",
     response_model=RollbackResponse,
     summary="Manual constitutional rollback",
-    description="Manually rollback to a specific constitutional version (requires JUDICIAL MACI role)",  # noqa: E501
+    description="Manually rollback to a specific constitutional version (requires JUDICIAL MACI role)",
 )
 async def rollback_to_version(
     version_id: str,
@@ -772,24 +853,18 @@ async def rollback_to_version(
             detail="Rollback functionality not available. Missing required dependencies.",
         )
 
+    dependencies: _ReviewDependencies | None = None
     try:
-        # MACI validation - only JUDICIAL role can trigger manual rollback
         agent_id = x_agent_id or rollback_request.requester_agent_id
-        maci_enforcer = MACIEnforcer()
-
-        # Use REJECT action as a proxy for rollback authorization
-        # (JUDICIAL role can reject amendments and trigger rollbacks)
-        maci_result = await maci_enforcer.validate_action(
+        await _authorize_judicial_action(
             agent_id=agent_id,
-            action=MACIAction.REJECT,  # type: ignore[attr-defined]  # JUDICIAL role required
+            action_name="rollback",
             target_output_id=version_id,
+            failure_detail=(
+                "MACI authorization failed: Only JUDICIAL role can trigger manual rollback. "
+                f"Agent {agent_id} lacks required permissions."
+            ),
         )
-
-        if not maci_result.get("allowed", False):  # type: ignore[attr-defined]
-            raise HTTPException(
-                status_code=http_status.HTTP_403_FORBIDDEN,
-                detail=f"MACI authorization failed: Only JUDICIAL role can trigger manual rollback. Agent {agent_id} lacks required permissions.",  # noqa: E501
-            )
 
         # Validate justification length
         if len(rollback_request.justification) < 20:
@@ -798,16 +873,12 @@ async def rollback_to_version(
                 detail="Justification must be at least 20 characters",
             )
 
-        # Initialize services
-        storage = ConstitutionalStorageService()
-        await storage.connect()
-
-        audit_client = AuditClient(config=AuditClientConfig())
+        dependencies = await _create_review_dependencies()
+        storage = dependencies.storage
 
         # Fetch target version (version to rollback to)
         target_version = await storage.get_version(version_id)
         if not target_version:
-            await storage.disconnect()
             raise HTTPException(
                 status_code=http_status.HTTP_404_NOT_FOUND,
                 detail=f"Target version not found: {version_id}",
@@ -816,7 +887,6 @@ async def rollback_to_version(
         # Fetch current active version
         current_version = await storage.get_active_version()
         if not current_version:
-            await storage.disconnect()
             raise HTTPException(
                 status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="No active constitutional version found",
@@ -824,7 +894,6 @@ async def rollback_to_version(
 
         # Validate we're not rolling back to the current version
         if current_version.version_id == target_version.version_id:
-            await storage.disconnect()
             raise HTTPException(
                 status_code=http_status.HTTP_400_BAD_REQUEST,
                 detail=f"Target version {version_id} is already the active version",
@@ -894,7 +963,7 @@ async def rollback_to_version(
                 current_version.predecessor_version = original_predecessor
                 await storage.update_version(current_version)
 
-                error_msg = f"Rollback saga failed: {saga_result.errors if hasattr(saga_result, 'errors') else 'Unknown error'}"  # noqa: E501
+                error_msg = f"Rollback saga failed: {saga_result.errors if hasattr(saga_result, 'errors') else 'Unknown error'}"
                 logger.error(f"[{CONSTITUTIONAL_HASH}] {error_msg}")
                 raise HTTPException(
                     status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR, detail=error_msg
@@ -904,7 +973,7 @@ async def rollback_to_version(
             await metrics_collector.disconnect()
 
         # Audit log the manual rollback
-        await audit_client.log_event(  # type: ignore[attr-defined]
+        await dependencies.audit_client.log_event(  # type: ignore[attr-defined]
             event_type="constitutional_manual_rollback",
             agent_id=rollback_request.requester_agent_id,
             data={
@@ -921,10 +990,8 @@ async def rollback_to_version(
             },
         )
 
-        await storage.disconnect()
-
         logger.warning(
-            f"CONSTITUTIONAL_MANUAL_ROLLBACK: {current_version.version} -> {target_version.version} "  # noqa: E501
+            f"CONSTITUTIONAL_MANUAL_ROLLBACK: {current_version.version} -> {target_version.version} "
             f"by {agent_id} (justification: {rollback_request.justification[:100]}...)"
         )
 
@@ -934,7 +1001,7 @@ async def rollback_to_version(
             previous_version=current_version.version,
             restored_version=target_version.version,
             diff=revert_diff,
-            message=f"Successfully rolled back from {current_version.version} to {target_version.version}",  # noqa: E501
+            message=f"Successfully rolled back from {current_version.version} to {target_version.version}",
             justification=rollback_request.justification,
             degradation_detected=False,  # Manual rollback, not triggered by degradation
             constitutional_hash=CONSTITUTIONAL_HASH,
@@ -948,6 +1015,8 @@ async def rollback_to_version(
             status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=safe_error_detail(e, "execute rollback"),
         ) from e
+    finally:
+        await _close_review_dependencies(dependencies)
 
 
 # Health check for constitutional review API

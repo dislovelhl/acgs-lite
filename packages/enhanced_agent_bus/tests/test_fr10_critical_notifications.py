@@ -185,7 +185,6 @@ class TestSIEMIntegrationConfiguration:
         assert config.enable_alerting is True
         assert config.include_constitutional_hash is True
 
-    @pytest.mark.asyncio
     async def test_siem_integration_with_custom_endpoint(self):
         """Test SIEM integration with custom endpoint configuration."""
         mock_endpoint = MockSIEMEndpoint()
@@ -216,7 +215,6 @@ class TestSIEMIntegrationConfiguration:
         finally:
             await siem.stop()
 
-    @pytest.mark.asyncio
     async def test_siem_supports_multiple_formats(self):
         """Verify SIEM supports all required formats for different platforms."""
         formats = [SIEMFormat.JSON, SIEMFormat.CEF, SIEMFormat.LEEF, SIEMFormat.SYSLOG]
@@ -250,7 +248,6 @@ class TestSIEMIntegrationConfiguration:
 class TestPagerDutyAlerting:
     """Tests for FR-10 Section 5.2: PagerDuty Alerting."""
 
-    @pytest.mark.asyncio
     async def test_alert_callback_invoked_on_critical_event(self):
         """Verify alert callback is invoked for critical events."""
         pagerduty = MockPagerDutyClient()
@@ -305,7 +302,6 @@ class TestPagerDutyAlerting:
         finally:
             await siem.stop()
 
-    @pytest.mark.asyncio
     async def test_alert_escalation_levels(self):
         """Verify alert escalation from NOTIFY to PAGE to ESCALATE to CRITICAL."""
         escalation_levels: list[AlertLevel] = []
@@ -345,7 +341,6 @@ class TestPagerDutyAlerting:
         # Verify escalation occurred
         assert len(escalation_levels) >= 1
 
-    @pytest.mark.asyncio
     async def test_pagerduty_event_contains_constitutional_hash(self):
         """Verify PagerDuty events include constitutional hash for audit trail."""
         pagerduty = MockPagerDutyClient()
@@ -401,7 +396,6 @@ class TestPagerDutyAlerting:
 class TestConstitutionalViolationEscalation:
     """Tests for FR-10 Section 5.3: Constitutional Violation Escalation."""
 
-    @pytest.mark.asyncio
     async def test_constitutional_hash_mismatch_triggers_critical_alert(self):
         """Verify constitutional hash mismatch immediately triggers CRITICAL alert."""
         alerts_triggered: list[AlertLevel] = []
@@ -423,7 +417,6 @@ class TestConstitutionalViolationEscalation:
         assert result == AlertLevel.CRITICAL
         assert AlertLevel.CRITICAL in alerts_triggered
 
-    @pytest.mark.asyncio
     async def test_constitutional_violation_bypasses_threshold(self):
         """Verify constitutional violations trigger on first occurrence (threshold=1)."""
         threshold = DEFAULT_ALERT_THRESHOLDS[0]  # Constitutional hash mismatch
@@ -442,7 +435,6 @@ class TestConstitutionalViolationEscalation:
 
         assert result == AlertLevel.CRITICAL
 
-    @pytest.mark.asyncio
     async def test_constitutional_violation_event_correlation(self):
         """Verify constitutional violations are properly correlated."""
         config = SIEMConfig(
@@ -473,7 +465,6 @@ class TestConstitutionalViolationEscalation:
         finally:
             await siem.stop()
 
-    @pytest.mark.asyncio
     async def test_prompt_injection_escalation(self):
         """Verify prompt injection attempts trigger appropriate escalation."""
         prompt_injection_threshold = None
@@ -523,7 +514,6 @@ class TestHealthDegradationAlerts:
             critical_threshold=0.5,
         )
 
-    @pytest.mark.asyncio
     async def test_health_degradation_triggers_callback(self, mock_registry, health_config):
         """Verify health degradation triggers callback notification."""
         if not CIRCUIT_BREAKER_AVAILABLE:
@@ -564,7 +554,6 @@ class TestHealthDegradationAlerts:
         finally:
             await aggregator.stop()
 
-    @pytest.mark.asyncio
     async def test_critical_health_status_detection(self, mock_registry, health_config):
         """Verify critical health status is detected when multiple circuits open."""
         if not CIRCUIT_BREAKER_AVAILABLE:
@@ -585,7 +574,6 @@ class TestHealthDegradationAlerts:
         assert len(report.critical_services) == 2
         assert report.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_health_score_below_degraded_threshold(self, mock_registry, health_config):
         """Verify degraded status when health score drops below threshold."""
         if not CIRCUIT_BREAKER_AVAILABLE:
@@ -605,7 +593,6 @@ class TestHealthDegradationAlerts:
         assert report.health_score == 0.6
         assert report.status == SystemHealthStatus.DEGRADED
 
-    @pytest.mark.asyncio
     async def test_health_metrics_include_constitutional_hash(self, mock_registry, health_config):
         """Verify all health metrics include constitutional hash."""
         aggregator = HealthAggregator(config=health_config, registry=mock_registry)
@@ -631,7 +618,6 @@ class TestHealthDegradationAlerts:
 class TestCriticalNotificationIntegration:
     """End-to-end integration tests for critical notification system."""
 
-    @pytest.mark.asyncio
     async def test_full_notification_pipeline(self):
         """Test complete flow from event to alert to notification."""
         pagerduty = MockPagerDutyClient()
@@ -695,7 +681,6 @@ class TestCriticalNotificationIntegration:
         finally:
             await siem.stop()
 
-    @pytest.mark.asyncio
     async def test_multi_event_type_notification(self):
         """Test notifications for multiple event types in sequence."""
         alerts_by_type: dict[str, list[AlertLevel]] = {}
@@ -742,7 +727,6 @@ class TestCriticalNotificationIntegration:
         finally:
             await siem.stop()
 
-    @pytest.mark.asyncio
     async def test_health_siem_integration(self):
         """Test integration between health monitoring and SIEM alerting."""
         if not CIRCUIT_BREAKER_AVAILABLE:
@@ -814,7 +798,6 @@ class TestCriticalNotificationIntegration:
 class TestAlertStateAndMetrics:
     """Tests for alert state management and metrics collection."""
 
-    @pytest.mark.asyncio
     async def test_alert_states_tracking(self):
         """Verify alert states are properly tracked."""
         manager = AlertManager()
@@ -850,7 +833,6 @@ class TestAlertStateAndMetrics:
             == "CRITICAL"
         )
 
-    @pytest.mark.asyncio
     async def test_siem_metrics_collection(self):
         """Verify comprehensive SIEM metrics are collected."""
         config = SIEMConfig(
@@ -889,7 +871,6 @@ class TestAlertStateAndMetrics:
         finally:
             await siem.stop()
 
-    @pytest.mark.asyncio
     async def test_alert_reset_functionality(self):
         """Verify alert states can be reset."""
         manager = AlertManager()

@@ -1,0 +1,13 @@
+commit	passed	coverage	status	description
+baseline	20694	56.47	baseline	Full suite: 20694 passed, 549 skipped, 56.47% coverage
+exp01	20888	57.31	IMPROVED	add tests for 5 zero-coverage modules (+393 tests)
+exp02	21057	57.94	IMPROVED	add tests for saml, cache/warming, graph_rag, context_inference, opal_client
+exp03	21327	58.68	IMPROVED	add tests for audit_logger, decision_store, policy_resolver, llm_failover, collab/server
+exp04	21847	60.21	IMPROVED	add tests for constitution.py, opa_client/core, batch/governance, governance_engine, metrics
+exp05	22073	60.93	IMPROVED	add tests for tensorrt, z3_verifier, rate_limiter, maci_verifier, rollback_engine
+exp06	22570	63.03	IMPROVED	add tests for 15 modules across 3 batches (+636 tests)
+exp07	23175	64.53	IMPROVED	add tests for 15 modules: engine/core, deliberation, context_opt, azure, db_repo, review_api, etc
+exp08	23601	66.20	IMPROVED	add tests for 15 modules: anthropic, mamba, drift, dialog, chaos, pqc, hitl, etc
+exp09	24080	67.52	IMPROVED	add tests for 15 modules: oauth2, saml_config, ai_core, oidc, z3, loco, etc
+exp10	24543	69.13	IMPROVED	add tests for 15 modules: mamba, opa_health, refoundation, siem, matcher, etc
+exp11	24959	70.07	IMPROVED	add tests for 14 modules — TARGET 70% REACHED

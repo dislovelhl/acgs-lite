@@ -166,6 +166,24 @@ class TestSIEMEventFormatter:
             result = formatter.format(event)
             assert result  # Should not raise
 
+    def test_format_cef_with_correlation_id(self, sample_event):
+        """Test CEF format includes correlation ID."""
+        formatter = SIEMEventFormatter(format_type=SIEMFormat.CEF)
+        result = formatter.format(sample_event, correlation_id="corr-abc")
+        assert "CorrelationID=corr-abc" in result
+
+    def test_format_leef_with_correlation_id(self, sample_event):
+        """Test LEEF format includes correlation ID."""
+        formatter = SIEMEventFormatter(format_type=SIEMFormat.LEEF)
+        result = formatter.format(sample_event, correlation_id="corr-xyz")
+        assert "correlationId=corr-xyz" in result
+
+    def test_format_syslog_with_correlation_id(self, sample_event):
+        """Test Syslog format includes correlation ID."""
+        formatter = SIEMEventFormatter(format_type=SIEMFormat.SYSLOG)
+        result = formatter.format(sample_event, correlation_id="corr-999")
+        assert 'correlation_id="corr-999"' in result
+
 
 # --- AlertManager Tests ---
 
@@ -173,7 +191,6 @@ class TestSIEMEventFormatter:
 class TestAlertManager:
     """Tests for alert threshold management."""
 
-    @pytest.mark.asyncio
     async def test_no_alert_below_threshold(self, sample_event):
         """Test that no alert is triggered below threshold."""
         threshold = AlertThreshold(
@@ -189,7 +206,6 @@ class TestAlertManager:
             result = await manager.process_event(sample_event)
             assert result is None
 
-    @pytest.mark.asyncio
     async def test_alert_at_threshold(self, sample_event):
         """Test that alert is triggered at threshold."""
         threshold = AlertThreshold(
@@ -208,7 +224,6 @@ class TestAlertManager:
             else:
                 assert result == AlertLevel.NOTIFY
 
-    @pytest.mark.asyncio
     async def test_alert_cooldown(self, sample_event):
         """Test that cooldown prevents repeated alerts."""
         threshold = AlertThreshold(
@@ -230,7 +245,6 @@ class TestAlertManager:
         result = await manager.process_event(sample_event)
         assert result is None  # Cooldown active
 
-    @pytest.mark.asyncio
     async def test_alert_callback_invoked(self, sample_event):
         """Test that callback is invoked on alert."""
         callback = AsyncMock()
@@ -249,7 +263,6 @@ class TestAlertManager:
         assert call_args[0][0] == AlertLevel.PAGE
         assert "authentication_failure" in call_args[0][1].lower()
 
-    @pytest.mark.asyncio
     async def test_critical_event_immediate_alert(self, critical_event):
         """Test that critical events trigger immediate alerts."""
         manager = AlertManager()  # Use default thresholds
@@ -263,7 +276,6 @@ class TestAlertManager:
         states = manager.get_alert_states()
         assert isinstance(states, dict)
 
-    @pytest.mark.asyncio
     async def test_reset_alert_state(self, sample_event):
         """Test resetting alert state."""
         threshold = AlertThreshold(
@@ -284,6 +296,67 @@ class TestAlertManager:
         result = await manager.process_event(sample_event)
         assert result is None
 
+    async def test_sync_callback_invoked(self, sample_event):
+        """Test that synchronous callbacks also work."""
+        called = {"value": False}
+
+        def sync_callback(level, message, context):
+            called["value"] = True
+
+        threshold = AlertThreshold(
+            event_type=SecurityEventType.AUTHENTICATION_FAILURE,
+            count_threshold=1,
+            time_window_seconds=60,
+            alert_level=AlertLevel.NOTIFY,
+        )
+        manager = AlertManager(thresholds=[threshold], callback=sync_callback)
+        await manager.process_event(sample_event)
+        assert called["value"] is True
+
+    async def test_escalation_multiplier(self, sample_event):
+        """Test alert level escalation with multiplier."""
+        threshold = AlertThreshold(
+            event_type=SecurityEventType.AUTHENTICATION_FAILURE,
+            count_threshold=2,
+            time_window_seconds=60,
+            alert_level=AlertLevel.NOTIFY,
+            cooldown_seconds=0,
+            escalation_multiplier=2,
+        )
+        manager = AlertManager(thresholds=[threshold])
+        # Process enough events to trigger escalation
+        for _ in range(6):
+            result = await manager.process_event(sample_event)
+        # Should have escalated above NOTIFY
+        assert result is not None
+        assert result.value >= AlertLevel.NOTIFY.value
+
+    async def test_no_threshold_no_critical_returns_none(self):
+        """Test event with no matching threshold and not critical returns None."""
+        manager = AlertManager(thresholds=[])
+        event = SecurityEvent(
+            event_type=SecurityEventType.INVALID_INPUT,
+            severity=SecuritySeverity.LOW,
+            message="low severity",
+        )
+        result = await manager.process_event(event)
+        assert result is None
+
+    async def test_escalation_multiplier_one_no_escalation(self, sample_event):
+        """Test that escalation_multiplier<=1 doesn't escalate."""
+        threshold = AlertThreshold(
+            event_type=SecurityEventType.AUTHENTICATION_FAILURE,
+            count_threshold=1,
+            time_window_seconds=60,
+            alert_level=AlertLevel.NOTIFY,
+            cooldown_seconds=0,
+            escalation_multiplier=1,
+        )
+        manager = AlertManager(thresholds=[threshold])
+        for _ in range(5):
+            result = await manager.process_event(sample_event)
+        assert result == AlertLevel.NOTIFY
+
 
 # --- EventCorrelator Tests ---
 
@@ -291,7 +364,6 @@ class TestAlertManager:
 class TestEventCorrelator:
     """Tests for event correlation and pattern detection."""
 
-    @pytest.mark.asyncio
     async def test_tenant_attack_pattern(self):
         """Test detection of tenant attack pattern."""
         correlator = EventCorrelator(window_seconds=60)
@@ -309,7 +381,6 @@ class TestEventCorrelator:
         # Should detect pattern after 3rd event
         assert result is not None
 
-    @pytest.mark.asyncio
     async def test_distributed_attack_pattern(self):
         """Test detection of distributed attack pattern."""
         correlator = EventCorrelator(window_seconds=60)
@@ -326,14 +397,12 @@ class TestEventCorrelator:
 
         assert result is not None
 
-    @pytest.mark.asyncio
     async def test_no_pattern_single_event(self, sample_event):
         """Test that single events don't trigger correlation."""
         correlator = EventCorrelator()
         result = await correlator.add_event(sample_event)
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_get_correlated_events(self):
         """Test retrieving correlated events."""
         correlator = EventCorrelator(window_seconds=60)
@@ -387,6 +456,25 @@ class TestEventCorrelator:
         assert len(result) == 16
         int(result, 16)
 
+    async def test_get_correlated_events_unknown_id(self):
+        """Test retrieving events for unknown correlation ID."""
+        correlator = EventCorrelator()
+        result = correlator.get_correlated_events("unknown-id")
+        assert result == []
+
+    async def test_window_expiry(self):
+        """Test that events outside window are pruned."""
+        correlator = EventCorrelator(window_seconds=0)
+        event = SecurityEvent(
+            event_type=SecurityEventType.AUTHENTICATION_FAILURE,
+            severity=SecuritySeverity.HIGH,
+            message="Test",
+            tenant_id="tenant-test",
+        )
+        await correlator.add_event(event)
+        # After adding, old events should be pruned (window=0)
+        assert len(correlator._events) <= 1
+
 
 # --- SIEMIntegration Tests ---
 
@@ -394,7 +482,6 @@ class TestEventCorrelator:
 class TestSIEMIntegration:
     """Tests for the main SIEM integration class."""
 
-    @pytest.mark.asyncio
     async def test_start_stop(self, siem_config):
         """Test starting and stopping SIEM integration."""
         siem = SIEMIntegration(siem_config)
@@ -405,7 +492,6 @@ class TestSIEMIntegration:
         await siem.stop()
         assert not siem._running
 
-    @pytest.mark.asyncio
     async def test_log_event(self, siem_integration, sample_event):
         """Test logging an event."""
         await siem_integration.log_event(sample_event)
@@ -413,7 +499,6 @@ class TestSIEMIntegration:
         metrics = siem_integration.get_metrics()
         assert metrics["events_logged"] >= 1
 
-    @pytest.mark.asyncio
     async def test_log_multiple_events(self, siem_integration):
         """Test logging multiple events."""
         for i in range(10):
@@ -427,7 +512,6 @@ class TestSIEMIntegration:
         metrics = siem_integration.get_metrics()
         assert metrics["events_logged"] == 10
 
-    @pytest.mark.asyncio
     async def test_queue_overflow_drops(self):
         """Test that queue overflow drops events when configured."""
         config = SIEMConfig(
@@ -453,7 +537,6 @@ class TestSIEMIntegration:
         finally:
             await siem.stop()
 
-    @pytest.mark.asyncio
     async def test_alert_triggers_on_threshold(self, siem_config, critical_event):
         """Test that alerts are triggered when threshold reached."""
         siem = SIEMIntegration(siem_config)
@@ -468,7 +551,6 @@ class TestSIEMIntegration:
         finally:
             await siem.stop()
 
-    @pytest.mark.asyncio
     async def test_correlation_detection(self, siem_config):
         """Test that event correlation is detected."""
         siem = SIEMIntegration(siem_config)
@@ -491,7 +573,6 @@ class TestSIEMIntegration:
         finally:
             await siem.stop()
 
-    @pytest.mark.asyncio
     async def test_get_metrics(self, siem_integration):
         """Test getting SIEM metrics."""
         metrics = siem_integration.get_metrics()
@@ -503,14 +584,12 @@ class TestSIEMIntegration:
         assert "running" in metrics
         assert metrics["running"] is True
 
-    @pytest.mark.asyncio
     async def test_get_alert_states(self, siem_integration, sample_event):
         """Test getting alert states."""
         await siem_integration.log_event(sample_event)
         states = siem_integration.get_alert_states()
         assert isinstance(states, dict)
 
-    @pytest.mark.asyncio
     async def test_flush_on_stop(self, siem_config, sample_event):
         """Test that events are flushed on stop."""
         siem = SIEMIntegration(siem_config)
@@ -522,6 +601,34 @@ class TestSIEMIntegration:
         await siem.stop()
         # Queue should be empty after stop
 
+    async def test_start_idempotent(self, siem_config):
+        """Test that starting twice is safe."""
+        siem = SIEMIntegration(siem_config)
+        await siem.start()
+        await siem.start()  # Should not raise
+        assert siem._running is True
+        await siem.stop()
+
+    async def test_stop_idempotent(self, siem_config):
+        """Test that stopping twice is safe."""
+        siem = SIEMIntegration(siem_config)
+        await siem.start()
+        await siem.stop()
+        await siem.stop()  # Should not raise
+        assert siem._running is False
+
+    async def test_alerting_disabled(self, sample_event):
+        """Test that alerts are not triggered when alerting is disabled."""
+        config = SIEMConfig(enable_alerting=False, flush_interval_seconds=0.1)
+        siem = SIEMIntegration(config)
+        await siem.start()
+        try:
+            await siem.log_event(sample_event)
+            metrics = siem.get_metrics()
+            assert metrics["alerts_triggered"] == 0
+        finally:
+            await siem.stop()
+
 
 # --- Global SIEM Functions Tests ---
 
@@ -529,7 +636,6 @@ class TestSIEMIntegration:
 class TestGlobalSIEMFunctions:
     """Tests for global SIEM management functions."""
 
-    @pytest.mark.asyncio
     async def test_initialize_siem(self):
         """Test global SIEM initialization."""
         try:
@@ -540,7 +646,6 @@ class TestGlobalSIEMFunctions:
             await close_siem()
             assert get_siem_integration() is None
 
-    @pytest.mark.asyncio
     async def test_log_security_event_function(self):
         """Test convenience log function."""
         try:
@@ -558,7 +663,6 @@ class TestGlobalSIEMFunctions:
         finally:
             await close_siem()
 
-    @pytest.mark.asyncio
     async def test_log_security_event_without_siem(self):
         """Test that log function works without SIEM initialized."""
         await close_siem()  # Ensure not initialized
@@ -570,6 +674,15 @@ class TestGlobalSIEMFunctions:
             message="Test without SIEM",
         )
 
+    async def test_initialize_siem_idempotent(self):
+        """Test that initialize returns the same instance on second call."""
+        try:
+            siem1 = await initialize_siem()
+            siem2 = await initialize_siem()
+            assert siem1 is siem2
+        finally:
+            await close_siem()
+
 
 # --- Security Audit Decorator Tests ---
 
@@ -577,7 +690,6 @@ class TestGlobalSIEMFunctions:
 class TestSecurityAuditDecorator:
     """Tests for the security_audit decorator."""
 
-    @pytest.mark.asyncio
     async def test_audit_successful_function(self):
         """Test auditing a successful function call."""
         try:
@@ -599,7 +711,6 @@ class TestSecurityAuditDecorator:
         finally:
             await close_siem()
 
-    @pytest.mark.asyncio
     async def test_audit_failed_function(self):
         """Test auditing a failed function call."""
         try:
@@ -629,7 +740,6 @@ class TestSecurityAuditDecorator:
 class TestSIEMIntegrationE2E:
     """End-to-end integration tests."""
 
-    @pytest.mark.asyncio
     async def test_full_event_flow(self):
         """Test complete event flow from logging to shipping."""
         callback = AsyncMock()
@@ -666,7 +776,6 @@ class TestSIEMIntegrationE2E:
         finally:
             await siem.stop()
 
-    @pytest.mark.asyncio
     async def test_multiple_event_types(self):
         """Test handling multiple event types."""
         config = SIEMConfig(
@@ -701,7 +810,6 @@ class TestSIEMIntegrationE2E:
         finally:
             await siem.stop()
 
-    @pytest.mark.asyncio
     async def test_high_volume_events(self):
         """Test handling high volume of events."""
         config = SIEMConfig(

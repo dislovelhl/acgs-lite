@@ -85,7 +85,6 @@ class TestConstitutionalCompliance:
         )
         assert task.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_orchestrator_validates_constitutional_hash(self):
         """Test orchestrator validates constitutional hash on start."""
         orchestrator = RecoveryOrchestrator()
@@ -351,7 +350,6 @@ class TestRecoveryOrchestrator:
         orchestrator = RecoveryOrchestrator(default_policy=policy)
         assert orchestrator.default_policy.max_retry_attempts == 10
 
-    @pytest.mark.asyncio
     async def test_orchestrator_start_stop(self):
         """Test starting and stopping orchestrator."""
         orchestrator = RecoveryOrchestrator()
@@ -364,7 +362,6 @@ class TestRecoveryOrchestrator:
         await orchestrator.stop()
         assert not orchestrator._running
 
-    @pytest.mark.asyncio
     async def test_orchestrator_double_start_raises(self):
         """Test starting already running orchestrator raises error."""
         orchestrator = RecoveryOrchestrator()
@@ -375,7 +372,6 @@ class TestRecoveryOrchestrator:
 
         await orchestrator.stop()
 
-    @pytest.mark.asyncio
     async def test_schedule_recovery_basic(self):
         """Test scheduling basic recovery."""
         orchestrator = RecoveryOrchestrator()
@@ -393,7 +389,6 @@ class TestRecoveryOrchestrator:
 
         await orchestrator.stop()
 
-    @pytest.mark.asyncio
     async def test_schedule_recovery_with_priority(self):
         """Test recovery respects priority ordering."""
         orchestrator = RecoveryOrchestrator()
@@ -410,7 +405,6 @@ class TestRecoveryOrchestrator:
 
         await orchestrator.stop()
 
-    @pytest.mark.asyncio
     async def test_schedule_recovery_with_custom_policy(self):
         """Test scheduling recovery with custom policy."""
         orchestrator = RecoveryOrchestrator()
@@ -433,7 +427,6 @@ class TestRecoveryOrchestrator:
 
         await orchestrator.stop()
 
-    @pytest.mark.asyncio
     async def test_execute_recovery_not_found(self):
         """Test executing recovery for non-existent service raises error."""
         orchestrator = RecoveryOrchestrator()
@@ -444,7 +437,6 @@ class TestRecoveryOrchestrator:
 
         await orchestrator.stop()
 
-    @pytest.mark.asyncio
     async def test_execute_recovery_success(self):
         """Test successful recovery execution."""
         orchestrator = RecoveryOrchestrator()
@@ -464,7 +456,6 @@ class TestRecoveryOrchestrator:
 
         await orchestrator.stop()
 
-    @pytest.mark.asyncio
     async def test_execute_recovery_with_health_check(self):
         """Test recovery with health check function."""
         orchestrator = RecoveryOrchestrator()
@@ -493,7 +484,6 @@ class TestRecoveryOrchestrator:
 
         await orchestrator.stop()
 
-    @pytest.mark.asyncio
     async def test_execute_recovery_health_check_fails(self):
         """Test recovery fails when health check fails."""
         orchestrator = RecoveryOrchestrator()
@@ -521,7 +511,6 @@ class TestRecoveryOrchestrator:
 
         await orchestrator.stop()
 
-    @pytest.mark.asyncio
     async def test_cancel_recovery(self):
         """Test cancelling recovery."""
         orchestrator = RecoveryOrchestrator()
@@ -537,14 +526,12 @@ class TestRecoveryOrchestrator:
 
         await orchestrator.stop()
 
-    @pytest.mark.asyncio
     async def test_cancel_nonexistent_recovery(self):
         """Test cancelling non-existent recovery returns False."""
         orchestrator = RecoveryOrchestrator()
         cancelled = orchestrator.cancel_recovery("nonexistent_service")
         assert cancelled is False
 
-    @pytest.mark.asyncio
     async def test_set_recovery_policy(self):
         """Test setting service-specific recovery policy."""
         orchestrator = RecoveryOrchestrator()
@@ -555,7 +542,6 @@ class TestRecoveryOrchestrator:
         retrieved_policy = orchestrator.get_recovery_policy("test_service")
         assert retrieved_policy.max_retry_attempts == 10
 
-    @pytest.mark.asyncio
     async def test_get_recovery_policy_default(self):
         """Test getting default recovery policy for service."""
         orchestrator = RecoveryOrchestrator()
@@ -563,7 +549,6 @@ class TestRecoveryOrchestrator:
         policy = orchestrator.get_recovery_policy("unknown_service")
         assert policy == orchestrator.default_policy
 
-    @pytest.mark.asyncio
     async def test_get_recovery_status_structure(self):
         """Test recovery status structure."""
         orchestrator = RecoveryOrchestrator()
@@ -583,7 +568,6 @@ class TestRecoveryOrchestrator:
 
         await orchestrator.stop()
 
-    @pytest.mark.asyncio
     async def test_recovery_history_tracking(self):
         """Test recovery history is tracked."""
         orchestrator = RecoveryOrchestrator()
@@ -607,7 +591,6 @@ class TestRecoveryOrchestrator:
 class TestExponentialBackoffTiming:
     """Test exponential backoff timing calculations."""
 
-    @pytest.mark.asyncio
     async def test_exponential_backoff_calculation(self):
         """Test exponential backoff delay calculation."""
         orchestrator = RecoveryOrchestrator()
@@ -645,7 +628,6 @@ class TestExponentialBackoffTiming:
 
         await orchestrator.stop()
 
-    @pytest.mark.asyncio
     async def test_exponential_backoff_max_delay(self):
         """Test exponential backoff respects max delay."""
         orchestrator = RecoveryOrchestrator()
@@ -683,7 +665,6 @@ class TestExponentialBackoffTiming:
 class TestLinearBackoffTiming:
     """Test linear backoff timing calculations."""
 
-    @pytest.mark.asyncio
     async def test_linear_backoff_calculation(self):
         """Test linear backoff delay calculation."""
         orchestrator = RecoveryOrchestrator()
@@ -728,7 +709,6 @@ class TestLinearBackoffTiming:
 class TestImmediateStrategy:
     """Test immediate recovery strategy."""
 
-    @pytest.mark.asyncio
     async def test_immediate_strategy_no_delay(self):
         """Test immediate strategy has no delay."""
         orchestrator = RecoveryOrchestrator()
@@ -759,7 +739,6 @@ class TestImmediateStrategy:
 class TestPriorityQueueOrdering:
     """Test priority queue ordering."""
 
-    @pytest.mark.asyncio
     async def test_priority_queue_ordering(self):
         """Test services are processed in priority order."""
         orchestrator = RecoveryOrchestrator()
@@ -780,7 +759,6 @@ class TestPriorityQueueOrdering:
 
         await orchestrator.stop()
 
-    @pytest.mark.asyncio
     async def test_same_priority_ordering(self):
         """Test services with same priority."""
         orchestrator = RecoveryOrchestrator()
@@ -805,7 +783,6 @@ class TestPriorityQueueOrdering:
 class TestConstitutionalValidationBeforeRecovery:
     """Test constitutional validation is performed before recovery."""
 
-    @pytest.mark.asyncio
     async def test_schedule_validates_constitutional_hash(self):
         """Test scheduling recovery validates constitutional hash."""
         orchestrator = RecoveryOrchestrator()
@@ -816,7 +793,6 @@ class TestConstitutionalValidationBeforeRecovery:
 
         await orchestrator.stop()
 
-    @pytest.mark.asyncio
     async def test_execute_validates_constitutional_hash(self):
         """Test executing recovery validates constitutional hash."""
         orchestrator = RecoveryOrchestrator()
@@ -829,7 +805,6 @@ class TestConstitutionalValidationBeforeRecovery:
 
         await orchestrator.stop()
 
-    @pytest.mark.asyncio
     async def test_set_policy_validates_constitutional_hash(self):
         """Test setting policy validates constitutional hash."""
         orchestrator = RecoveryOrchestrator()
@@ -901,7 +876,6 @@ class TestModuleExports:
 class TestRecoveryOrchestratorIntegration:
     """Integration tests for recovery orchestrator."""
 
-    @pytest.mark.asyncio
     async def test_full_recovery_workflow(self):
         """Test complete recovery workflow."""
         orchestrator = RecoveryOrchestrator()
@@ -927,7 +901,6 @@ class TestRecoveryOrchestratorIntegration:
 
         await orchestrator.stop()
 
-    @pytest.mark.asyncio
     async def test_multiple_service_recovery(self):
         """Test recovering multiple services."""
         orchestrator = RecoveryOrchestrator()
@@ -945,7 +918,6 @@ class TestRecoveryOrchestratorIntegration:
 
         await orchestrator.stop()
 
-    @pytest.mark.asyncio
     async def test_recovery_with_max_retries_exhausted(self):
         """Test recovery when max retries are exhausted."""
         orchestrator = RecoveryOrchestrator()

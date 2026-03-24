@@ -6,6 +6,8 @@ Non-blocking async metering integration for production billing.
 Designed to maintain P99 latency < 1.31ms by using fire-and-forget patterns.
 """
 
+from __future__ import annotations
+
 import asyncio
 import time
 from collections.abc import Callable
@@ -14,7 +16,7 @@ from functools import wraps
 from typing import TypeVar
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -158,7 +160,7 @@ class AsyncMeteringQueue:
 
         if self._flush_task:
             self._flush_task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._flush_task
             except asyncio.CancelledError:
                 pass

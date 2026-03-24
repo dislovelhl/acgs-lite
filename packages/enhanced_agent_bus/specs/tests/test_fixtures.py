@@ -630,7 +630,6 @@ class TestSpecCircuitBreaker:
 class TestSpecChaosController:
     """Tests for SpecChaosController fixture."""
 
-    @pytest.mark.asyncio
     async def test_inject_failure(self):
         """Test failure injection."""
         controller = SpecChaosController()
@@ -639,7 +638,6 @@ class TestSpecChaosController:
         assert controller.is_failed("component")
         assert injection.component == "component"
 
-    @pytest.mark.asyncio
     async def test_recover_component(self):
         """Test component recovery."""
         controller = SpecChaosController()
@@ -650,7 +648,6 @@ class TestSpecChaosController:
         assert not controller.is_failed("component")
         assert injection.recovered
 
-    @pytest.mark.asyncio
     async def test_reset_all(self):
         """Test resetting all failures."""
         controller = SpecChaosController()
@@ -666,7 +663,6 @@ class TestSpecChaosController:
 class TestSpecSagaManager:
     """Tests for SpecSagaManager fixture."""
 
-    @pytest.mark.asyncio
     async def test_saga_execution(self):
         """Test saga step execution."""
         manager = SpecSagaManager()
@@ -678,7 +674,6 @@ class TestSpecSagaManager:
         assert manager.steps[0].executed
         assert manager.steps[1].executed
 
-    @pytest.mark.asyncio
     async def test_lifo_compensation(self):
         """Test LIFO compensation order."""
         manager = SpecSagaManager()
@@ -691,7 +686,6 @@ class TestSpecSagaManager:
 
         assert order == ["C", "B", "A"]
 
-    @pytest.mark.asyncio
     async def test_compensation_callback(self):
         """Test compensation with callbacks."""
         compensated = []
@@ -766,7 +760,7 @@ class TestSpecMetricsRegistry:
         registry = SpecMetricsRegistry()
         registry.increment_counter("requests")
 
-        assert registry.get_counter_total("requests") == 2
+        assert registry.get_counter_total("requests") == 1
 
     def test_latency_recording(self):
         """Test latency recording."""

@@ -1,3 +1,8 @@
+# ACGS - Constitutional AI Governance
+# Copyright (C) 2024-2026 ACGS Contributors
+# Licensed under AGPL-3.0-or-later. See LICENSE for details.
+# Commercial license: https://acgs.ai
+
 """GovernedAgent — Wrap any agent/callable in constitutional governance.
 
 This is the main user-facing API. Wrap any agent, function, or callable

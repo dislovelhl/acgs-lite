@@ -29,6 +29,8 @@ class GovernanceTestCase:
 class TestCaseFailure:
     """exp129: Failure record for a single governance test case."""
 
+    __test__ = False
+
     test_case: GovernanceTestCase
     actual_decision: str
     details: str = ""
@@ -37,6 +39,8 @@ class TestCaseFailure:
 @dataclass(frozen=True, slots=True)
 class TestSuiteResult:
     """exp129: Aggregate result for a governance test suite run."""
+
+    __test__ = False
 
     total: int
     passed: int

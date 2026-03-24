@@ -11,7 +11,7 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -132,7 +132,7 @@ class BatchProcessor:
                         processing_time_ms=0.0,
                     ),
                     constitutional_hash=CONSTITUTIONAL_HASH,
-                    errors=["Tenant isolation violation: Not all items belong to the same tenant"]  # noqa: RUF005
+                    errors=["Tenant isolation violation: Not all items belong to the same tenant"]
                     + tenant_errors[:5],
                     completed_at=datetime.now(UTC),
                 )

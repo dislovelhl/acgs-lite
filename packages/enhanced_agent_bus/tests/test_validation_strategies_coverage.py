@@ -54,7 +54,6 @@ class TestStaticHashValidationStrategy:
             msg.message_id = message_id
         return msg
 
-    @pytest.mark.asyncio
     async def test_valid_message_strict(self, strategy):
         """Valid message passes strict validation."""
         msg = self.create_message()
@@ -62,7 +61,6 @@ class TestStaticHashValidationStrategy:
         assert is_valid is True
         assert error is None
 
-    @pytest.mark.asyncio
     async def test_invalid_hash_strict(self, strategy):
         """Invalid hash fails in strict mode."""
         msg = self.create_message()
@@ -72,7 +70,6 @@ class TestStaticHashValidationStrategy:
         assert error is not None
         assert "hash" in error.lower()
 
-    @pytest.mark.asyncio
     async def test_invalid_hash_non_strict(self, non_strict_strategy):
         """Invalid hash passes in non-strict mode with warning."""
         msg = self.create_message()
@@ -81,7 +78,6 @@ class TestStaticHashValidationStrategy:
         # Non-strict mode allows through with warning
         assert is_valid is True
 
-    @pytest.mark.asyncio
     async def test_none_content(self, strategy):
         """None content fails validation."""
         msg = self.create_message()
@@ -90,7 +86,6 @@ class TestStaticHashValidationStrategy:
         assert is_valid is False
         assert "content" in error.lower()
 
-    @pytest.mark.asyncio
     async def test_empty_message_id(self, strategy):
         """Empty message_id fails validation."""
         msg = self.create_message()
@@ -108,7 +103,6 @@ class TestDynamicPolicyValidationStrategy:
         """Create strategy with mock policy client."""
         return DynamicPolicyValidationStrategy(policy_client=None)
 
-    @pytest.mark.asyncio
     async def test_no_policy_client(self, strategy):
         """Strategy without policy client falls back to default."""
         msg = AgentMessage(
@@ -120,7 +114,6 @@ class TestDynamicPolicyValidationStrategy:
         # With no policy client, should use default validation
         assert isinstance(is_valid, bool)
 
-    @pytest.mark.asyncio
     async def test_with_mock_policy_client(self):
         """Strategy with policy client uses it for validation."""
         mock_client = MagicMock()
@@ -140,7 +133,6 @@ class TestDynamicPolicyValidationStrategy:
 class TestRustValidationStrategy:
     """Tests for RustValidationStrategy."""
 
-    @pytest.mark.asyncio
     async def test_no_rust_processor(self):
         """Strategy without Rust processor falls back gracefully."""
         strategy = RustValidationStrategy(rust_processor=None)
@@ -153,7 +145,6 @@ class TestRustValidationStrategy:
         # Without Rust processor, should fail closed
         assert is_valid is False
 
-    @pytest.mark.asyncio
     async def test_with_mock_rust_processor_bool_result(self):
         """Rust processor returning bool is handled."""
         mock_processor = MagicMock()
@@ -168,7 +159,6 @@ class TestRustValidationStrategy:
         is_valid, _error = await strategy.validate(msg)
         assert is_valid is True
 
-    @pytest.mark.asyncio
     async def test_with_mock_rust_processor_dict_result(self):
         """Rust processor returning dict is handled."""
         mock_processor = MagicMock()
@@ -185,7 +175,6 @@ class TestRustValidationStrategy:
         is_valid, _error = await strategy.validate(msg)
         assert is_valid is True
 
-    @pytest.mark.asyncio
     async def test_rust_processor_validation_failure(self):
         """Rust processor validation failure is handled."""
         mock_processor = MagicMock()
@@ -201,7 +190,6 @@ class TestRustValidationStrategy:
         assert is_valid is False
         assert "rejected" in error.lower() or "rust" in error.lower()
 
-    @pytest.mark.asyncio
     async def test_rust_processor_dict_failure(self):
         """Rust processor dict failure is handled."""
         mock_processor = MagicMock()
@@ -219,7 +207,6 @@ class TestRustValidationStrategy:
         assert is_valid is False
         assert "custom error" in error
 
-    @pytest.mark.asyncio
     async def test_rust_processor_exception(self):
         """Rust processor exception is handled securely."""
         mock_processor = MagicMock()
@@ -236,7 +223,6 @@ class TestRustValidationStrategy:
         assert is_valid is False
         assert "error" in error.lower()
 
-    @pytest.mark.asyncio
     async def test_sync_validate_method(self):
         """Rust processor with synchronous validate method."""
         mock_processor = MagicMock()
@@ -253,7 +239,6 @@ class TestRustValidationStrategy:
         is_valid, _error = await strategy.validate(msg)
         assert is_valid is True
 
-    @pytest.mark.asyncio
     async def test_constitutional_validate_method(self):
         """Rust processor with constitutional_validate method."""
         mock_processor = MagicMock()

@@ -490,6 +490,14 @@ class TestExtractMessageSessionId:
 class TestComputeCacheKey:
     """Tests for _compute_cache_key helper."""
 
+    @staticmethod
+    def _expected_suffix(processor: MessageProcessor) -> str:
+        return (
+            f":{processor._governance_core_mode}:"
+            f"{int(processor._governance_peer_validation_enabled)}:"
+            f"{int(processor._governance_manifold_enabled)}"
+        )
+
     def test_rejects_invalid_cache_hash_mode(self):
         """Test that invalid cache hash mode is rejected."""
         with pytest.raises(ValueError, match="Invalid cache_hash_mode"):
@@ -502,9 +510,10 @@ class TestComputeCacheKey:
 
         # Assert
         assert isinstance(result, str)
-        assert len(result) == 64  # SHA-256 hash length
-        # Verify it's a valid hex string
-        int(result, 16)
+        base_hash, suffix = result.split(":", 1)
+        assert len(base_hash) == 64  # SHA-256 hash length
+        int(base_hash, 16)
+        assert suffix == self._expected_suffix(processor)[1:]
 
     def test_cache_key_consistent_for_same_message(self, processor, sample_message):
         """Test that cache key is consistent for the same message."""
@@ -551,7 +560,9 @@ class TestComputeCacheKey:
 
         # Assert
         assert isinstance(result, str)
-        assert len(result) == 64
+        base_hash, suffix = result.split(":", 1)
+        assert len(base_hash) == 64
+        assert suffix == self._expected_suffix(processor)[1:]
 
     def test_cache_key_handles_none_autonomy_tier(self, processor, sample_message):
         """Test that cache key handles None autonomy tier."""
@@ -563,7 +574,9 @@ class TestComputeCacheKey:
 
         # Assert
         assert isinstance(result, str)
-        assert len(result) == 64
+        base_hash, suffix = result.split(":", 1)
+        assert len(base_hash) == 64
+        assert suffix == self._expected_suffix(processor)[1:]
 
     def test_cache_key_calculation_logic(self, processor):
         """Test cache key calculation with known values."""
@@ -585,7 +598,9 @@ class TestComputeCacheKey:
         cache_dimensions = (
             f"test content:{CONSTITUTIONAL_HASH}:test-tenant:test-agent:command:bounded"
         )
-        expected = hashlib.sha256(cache_dimensions.encode()).hexdigest()
+        expected = hashlib.sha256(cache_dimensions.encode()).hexdigest() + self._expected_suffix(
+            processor
+        )
 
         assert result == expected
 
@@ -598,7 +613,10 @@ class TestComputeMessageCacheKey:
             fast_hash_available=False,
         )
 
-        assert result == processor._compute_cache_key(sample_message)
+        assert processor._compute_cache_key(sample_message) == (
+            result
+            + TestComputeCacheKey._expected_suffix(processor)
+        )
 
     def test_helper_uses_fast_hash_when_available(self, sample_message):
         called = {"value": False}
@@ -629,7 +647,6 @@ class TestPrepareMessageContentString:
 
         assert prepare_message_content_string(sample_message) == str({"nested": [1, 2, 3]})
 
-    @pytest.mark.asyncio
     async def test_execute_verification_passes_normalized_content(self, processor, sample_message):
         sample_message.content = {"nested": [1, 2, 3]}
         verification_result = Mock(
@@ -668,7 +685,6 @@ class TestMergeVerificationMetadata:
         assert result == {"sdpc": "ok"}
         assert result is not sdpc_metadata
 
-    @pytest.mark.asyncio
     async def test_execute_verification_applies_merged_metadata_to_result(
         self, processor, sample_message
     ):
@@ -698,7 +714,6 @@ class TestExtractPqcFailureResult:
 
         assert extract_pqc_failure_result(verification_result) is None
 
-    @pytest.mark.asyncio
     async def test_execute_verification_returns_pqc_failure_and_increments_count(
         self, processor, sample_message
     ):
@@ -729,7 +744,6 @@ class TestApplyLatencyMetadata:
 
         assert result.metadata["latency_ms"] == 12.5
 
-    @pytest.mark.asyncio
     async def test_execute_verification_applies_latency_metadata(self, processor, sample_message):
         verification_result = Mock(
             sdpc_metadata={},
@@ -749,7 +763,6 @@ class TestApplyLatencyMetadata:
         assert "latency_ms" in result.metadata
         assert isinstance(result.metadata["latency_ms"], float)
 
-    @pytest.mark.asyncio
     async def test_execute_verification_passes_same_latency_to_success_handler(
         self, processor, sample_message
     ):
@@ -900,7 +913,6 @@ class TestEnrichMetricsWithWorkflowTelemetry:
 
 
 class TestRunMessageValidationGates:
-    @pytest.mark.asyncio
     async def test_returns_autonomy_result_and_increments_failure(self, sample_message):
         autonomy_result = ValidationResult(
             is_valid=False,
@@ -927,7 +939,6 @@ class TestRunMessageValidationGates:
         independent_gate.assert_not_called()
         prompt_injection_gate.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_returns_security_result_without_extra_failure_increment(self, sample_message):
         security_result = ValidationResult(
             is_valid=False,
@@ -948,7 +959,6 @@ class TestRunMessageValidationGates:
         assert result == security_result
         increment_failure.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_returns_independent_validator_result_and_increments_failure(
         self, sample_message
     ):
@@ -973,7 +983,6 @@ class TestRunMessageValidationGates:
         increment_failure.assert_called_once_with()
         prompt_injection_gate.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_returns_prompt_injection_result_and_increments_failure(self, sample_message):
         injection_result = ValidationResult(
             is_valid=False,
@@ -994,7 +1003,6 @@ class TestRunMessageValidationGates:
         assert result == injection_result
         increment_failure.assert_called_once_with()
 
-    @pytest.mark.asyncio
     async def test_returns_none_when_all_gates_pass(self, sample_message):
         increment_failure = Mock()
 
@@ -1012,7 +1020,6 @@ class TestRunMessageValidationGates:
 
 
 class TestScheduleBackgroundTask:
-    @pytest.mark.asyncio
     async def test_tracks_and_discards_completed_task(self):
         background_tasks: set[asyncio.Task[object]] = set()
 
@@ -1028,7 +1035,6 @@ class TestScheduleBackgroundTask:
 
 
 class TestBackgroundTaskSchedulingIntegration:
-    @pytest.mark.asyncio
     async def test_successful_processing_uses_scheduler_for_metering(
         self, monkeypatch, processor, sample_message
     ):
@@ -1048,7 +1054,6 @@ class TestBackgroundTaskSchedulingIntegration:
 
         assert len(scheduled) == 1
 
-    @pytest.mark.asyncio
     async def test_failed_processing_uses_scheduler_for_dlq(
         self, monkeypatch, processor, sample_message
     ):
@@ -1095,7 +1100,7 @@ class TestBackgroundTaskSchedulingIntegration:
         result = processor._compute_cache_key(sample_message)
 
         assert called["value"] is True
-        assert result == "fast:000000000000beef"
+        assert result == "fast:000000000000beef:legacy:1:0"
 
     def test_cache_key_fast_mode_falls_back_to_sha256(self, monkeypatch):
         """Test that fast mode falls back to SHA-256 when kernel unavailable."""
@@ -1115,7 +1120,7 @@ class TestBackgroundTaskSchedulingIntegration:
         cache_dimensions = (
             f"test content:{CONSTITUTIONAL_HASH}:test-tenant:test-agent:command:bounded"
         )
-        expected = hashlib.sha256(cache_dimensions.encode()).hexdigest()
+        expected = hashlib.sha256(cache_dimensions.encode()).hexdigest() + ":legacy:1:0"
         assert result == expected
 
 

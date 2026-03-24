@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from typing import cast
 
 try:
-    from src.core.shared.types import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.types import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"  # type: ignore[misc,assignment]
 
@@ -32,7 +32,7 @@ class AlertRule:
 ALERT_RULES: list[AlertRule] = [
     AlertRule(
         name="TransactionCoordinatorHighFailureRate",
-        condition='rate(acgs_transactions_failed_total[5m]) / rate(acgs_transactions_total{status="started"}[5m]) > 0.01',  # noqa: E501
+        condition='rate(acgs_transactions_failed_total[5m]) / rate(acgs_transactions_total{status="started"}[5m]) > 0.01',
         severity="critical",
         duration="2m",
         description="Transaction failure rate exceeds 1%",
@@ -40,7 +40,7 @@ ALERT_RULES: list[AlertRule] = [
     ),
     AlertRule(
         name="TransactionCoordinatorLatencyP99",
-        condition="histogram_quantile(0.99, sum(rate(acgs_transaction_latency_seconds_bucket[5m])) by (le)) > 5",  # noqa: E501
+        condition="histogram_quantile(0.99, sum(rate(acgs_transaction_latency_seconds_bucket[5m])) by (le)) > 5",
         severity="warning",
         duration="5m",
         description="Transaction P99 latency exceeds 5 seconds",

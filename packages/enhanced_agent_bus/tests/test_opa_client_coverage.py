@@ -118,7 +118,6 @@ class TestOPAClientCaching:
 class TestOPAClientContextManager:
     """Tests for context manager behavior."""
 
-    @pytest.mark.asyncio
     async def test_aenter_initializes(self):
         """__aenter__ initializes the client."""
         client = OPAClient()
@@ -128,7 +127,6 @@ class TestOPAClientContextManager:
             mock_init.assert_called_once()
             assert result is client
 
-    @pytest.mark.asyncio
     async def test_aexit_closes(self):
         """__aexit__ closes the client."""
         client = OPAClient()
@@ -141,7 +139,6 @@ class TestOPAClientContextManager:
 class TestOPAClientInitializeClose:
     """Tests for initialize and close methods."""
 
-    @pytest.mark.asyncio
     async def test_initialize_creates_http_client(self):
         """Initialize creates HTTP client if none exists."""
         client = OPAClient()
@@ -153,7 +150,6 @@ class TestOPAClientInitializeClose:
         finally:
             await client.close()
 
-    @pytest.mark.asyncio
     async def test_initialize_idempotent(self):
         """Initialize is idempotent."""
         client = OPAClient()
@@ -169,7 +165,6 @@ class TestOPAClientInitializeClose:
         finally:
             await client.close()
 
-    @pytest.mark.asyncio
     async def test_close_clears_http_client(self):
         """Close closes and clears HTTP client."""
         client = OPAClient()
@@ -180,7 +175,6 @@ class TestOPAClientInitializeClose:
         await client.close()
         assert client._http_client is None
 
-    @pytest.mark.asyncio
     async def test_close_safe_when_not_initialized(self):
         """Close is safe when client not initialized."""
         client = OPAClient()
@@ -198,7 +192,6 @@ class TestOPAClientEvaluatePolicy:
         """Create client for testing."""
         return OPAClient()
 
-    @pytest.mark.asyncio
     async def test_evaluate_returns_cached_result(self, client):
         """evaluate_policy returns cached result when available."""
         policy_path = "data.test.allow"
@@ -215,7 +208,6 @@ class TestOPAClientEvaluatePolicy:
         result = await client.evaluate_policy(input_data, policy_path)
         assert result == expected
 
-    @pytest.mark.asyncio
     async def test_evaluate_fail_closed_on_error(self):
         """evaluate_policy fails closed on error (security default)."""
         client = OPAClient()  # fail_closed is always True for security
@@ -234,7 +226,6 @@ class TestOPAClientEvaluatePolicy:
             or "denied" in str(result).lower()
         )
 
-    @pytest.mark.asyncio
     async def test_fail_open_not_supported(self):
         """Verify fail-open mode is NOT supported (security measure VULN-002).
 
@@ -270,7 +261,6 @@ class TestOPAClientValidateConstitutional:
         """Create client for testing."""
         return OPAClient()
 
-    @pytest.mark.asyncio
     async def test_validate_with_correct_hash(self, client):
         """validate_constitutional passes with correct hash."""
         # Mock evaluate_policy to return success
@@ -295,7 +285,6 @@ class TestOPAClientCheckAgentAuthorization:
         """Create client for testing."""
         return OPAClient()
 
-    @pytest.mark.asyncio
     async def test_check_authorization(self, client):
         """check_agent_authorization returns authorization result."""
         with patch.object(client, "evaluate_policy", new_callable=AsyncMock) as mock_eval:
@@ -315,7 +304,6 @@ class TestOPAClientCheckAgentAuthorization:
 class TestOPAClientHealthCheck:
     """Tests for health_check method."""
 
-    @pytest.mark.asyncio
     async def test_health_check_success(self):
         """Health check returns healthy on success."""
         client = OPAClient()
@@ -332,7 +320,6 @@ class TestOPAClientHealthCheck:
 
         assert result.get("status") == "healthy" or result.get("healthy", False) is True
 
-    @pytest.mark.asyncio
     async def test_health_check_connection_error(self):
         """Health check returns unhealthy on connection error."""
         import httpx
@@ -347,7 +334,6 @@ class TestOPAClientHealthCheck:
 
         assert result.get("status") == "unhealthy" or result.get("healthy", False) is False
 
-    @pytest.mark.asyncio
     async def test_health_check_timeout(self):
         """Health check returns unhealthy on timeout."""
         import httpx
@@ -371,7 +357,6 @@ class TestOPAClientLoadPolicy:
         """Create client for testing."""
         return OPAClient()
 
-    @pytest.mark.asyncio
     async def test_load_policy_success(self, client):
         """load_policy uploads policy successfully."""
         mock_response = MagicMock()
@@ -388,7 +373,6 @@ class TestOPAClientLoadPolicy:
         assert result is True
         mock_http.put.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_load_policy_failure(self, client):
         """load_policy handles failure gracefully."""
         mock_http = MagicMock()
@@ -433,13 +417,11 @@ class TestGetRedisUrl:
 class TestModuleFunctions:
     """Tests for module-level functions."""
 
-    @pytest.mark.asyncio
     async def test_get_opa_client_returns_client(self):
         """get_opa_client returns an OPAClient instance."""
         client = get_opa_client()
         assert isinstance(client, OPAClient)
 
-    @pytest.mark.asyncio
     async def test_initialize_and_close_opa_client(self):
         """initialize_opa_client and close_opa_client work correctly."""
         client = await initialize_opa_client()
@@ -469,7 +451,6 @@ class TestOPAClientEvaluationMethods:
         """Create client for testing."""
         return OPAClient()
 
-    @pytest.mark.asyncio
     async def test_evaluate_http_success(self, client):
         """_evaluate_http successfully evaluates via HTTP."""
         mock_response = MagicMock()
@@ -486,7 +467,6 @@ class TestOPAClientEvaluationMethods:
         assert result is not None
         mock_http.post.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_evaluate_fallback(self, client):
         """_evaluate_fallback returns appropriate result."""
         # Test fail-closed behavior
@@ -517,7 +497,6 @@ class TestOPAClientBundleLoading:
         """Create client for testing."""
         return OPAClient()
 
-    @pytest.mark.asyncio
     async def test_load_bundle_from_url_success(self, client):
         """load_bundle_from_url successfully loads bundle."""
         mock_response = MagicMock()
@@ -538,7 +517,6 @@ class TestOPAClientBundleLoading:
             # Should succeed or at least not crash
             assert isinstance(result, bool)
 
-    @pytest.mark.asyncio
     async def test_load_bundle_from_url_failure(self, client):
         """load_bundle_from_url handles failure and rollback fails."""
         mock_http = MagicMock()
@@ -554,7 +532,6 @@ class TestOPAClientBundleLoading:
 
             assert result is False
 
-    @pytest.mark.asyncio
     async def test_verify_bundle_returns_bool(self, client):
         """_verify_bundle returns a boolean."""
         import os

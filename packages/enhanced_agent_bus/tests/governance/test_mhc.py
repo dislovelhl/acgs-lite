@@ -15,7 +15,7 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 # Add project root to sys.path
 sys.path.append("/home/martin/ACGS")
 
-from enhanced_agent_bus.governance.stability import mhc as mhc_module  # noqa: E402
+from enhanced_agent_bus.governance.stability import mhc as mhc_module
 
 if not mhc_module.TORCH_AVAILABLE:
     pytest.skip("mHC governance tests require PyTorch", allow_module_level=True)

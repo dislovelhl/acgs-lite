@@ -29,8 +29,6 @@ from enum import Enum
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
-import pytest
-
 from enhanced_agent_bus.feedback_handler.enums import FeedbackType, OutcomeStatus
 from enhanced_agent_bus.feedback_handler.models import StoredFeedbackEvent
 

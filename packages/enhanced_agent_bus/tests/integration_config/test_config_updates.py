@@ -5,7 +5,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 Task 7.6: PATCH /tenants/{tenant_id}/integrations/{integration_id} for config updates
 """
 
-import pytest
 
 from .conftest import (
     IntegrationStatus,
@@ -16,7 +15,6 @@ from .conftest import (
 class TestConfigurationUpdates:
     """Tests for updating integration configurations."""
 
-    @pytest.mark.asyncio
     async def test_update_name(self, integration_service):
         """Test updating integration name."""
         integration = await integration_service.create_integration(
@@ -34,7 +32,6 @@ class TestConfigurationUpdates:
 
         assert updated.name == "New Name"
 
-    @pytest.mark.asyncio
     async def test_update_enabled_status(self, integration_service):
         """Test enabling/disabling integration."""
         integration = await integration_service.create_integration(
@@ -52,7 +49,6 @@ class TestConfigurationUpdates:
 
         assert updated.enabled is False
 
-    @pytest.mark.asyncio
     async def test_update_status(self, integration_service):
         """Test updating integration status."""
         integration = await integration_service.create_integration(
@@ -70,7 +66,6 @@ class TestConfigurationUpdates:
 
         assert updated.status == IntegrationStatus.ACTIVE
 
-    @pytest.mark.asyncio
     async def test_update_config_non_sensitive(self, integration_service):
         """Test updating non-sensitive config fields."""
         integration = await integration_service.create_integration(
@@ -88,7 +83,6 @@ class TestConfigurationUpdates:
 
         assert updated.config["server_url"] == "ldap://new.example.com"
 
-    @pytest.mark.asyncio
     async def test_update_config_sensitive(self, integration_service):
         """Test updating sensitive config fields encrypts them."""
         integration = await integration_service.create_integration(
@@ -105,10 +99,9 @@ class TestConfigurationUpdates:
         )
 
         # New password should be encrypted
-        assert integration.config["bind_password"] != "new-password"  # noqa: S105
+        assert integration.config["bind_password"] != "new-password"
         assert "bind_password" in integration.encrypted_fields
 
-    @pytest.mark.asyncio
     async def test_update_updates_timestamp(self, integration_service):
         """Test that update modifies updated_at timestamp."""
         integration = await integration_service.create_integration(
@@ -128,7 +121,6 @@ class TestConfigurationUpdates:
 
         assert integration.updated_at >= original_updated
 
-    @pytest.mark.asyncio
     async def test_update_nonexistent(self, integration_service):
         """Test updating non-existent integration returns None."""
         result = await integration_service.update_integration(

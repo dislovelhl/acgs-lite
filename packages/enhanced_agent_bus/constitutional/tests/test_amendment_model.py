@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 
 import pytest
 from src.core.shared.constants import CONSTITUTIONAL_HASH
+from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 
 from ..amendment_model import AmendmentProposal, AmendmentStatus
 
@@ -132,7 +133,7 @@ class TestAmendmentStatusTransitions:
         """Test submitting for review from invalid state."""
         proposal.status = AmendmentStatus.APPROVED
 
-        with pytest.raises(ValueError, match="PROPOSED status"):
+        with pytest.raises(ACGSValidationError, match="PROPOSED status"):
             proposal.submit_for_review()
 
     def test_approve_proposal(self, proposal):
@@ -150,7 +151,7 @@ class TestAmendmentStatusTransitions:
 
     def test_approve_invalid_state(self, proposal):
         """Test approving from invalid state."""
-        with pytest.raises(ValueError, match="UNDER_REVIEW status"):
+        with pytest.raises(ACGSValidationError, match="UNDER_REVIEW status"):
             proposal.approve(approver_id="agent-001")
 
     def test_reject_proposal(self, proposal):
@@ -171,7 +172,7 @@ class TestAmendmentStatusTransitions:
 
     def test_reject_invalid_state(self, proposal):
         """Test rejecting from invalid state."""
-        with pytest.raises(ValueError, match="UNDER_REVIEW status"):
+        with pytest.raises(ACGSValidationError, match="UNDER_REVIEW status"):
             proposal.reject(reviewer_id="agent-001", reason="Invalid")
 
     def test_activate_proposal(self, proposal):
@@ -193,7 +194,7 @@ class TestAmendmentStatusTransitions:
 
     def test_activate_invalid_state(self, proposal):
         """Test activating from invalid state."""
-        with pytest.raises(ValueError, match="APPROVED status"):
+        with pytest.raises(ACGSValidationError, match="APPROVED status"):
             proposal.activate()
 
     def test_rollback_proposal(self, proposal):
@@ -221,7 +222,7 @@ class TestAmendmentStatusTransitions:
 
     def test_rollback_invalid_state(self, proposal):
         """Test rolling back from invalid state."""
-        with pytest.raises(ValueError, match="ACTIVE status"):
+        with pytest.raises(ACGSValidationError, match="ACTIVE status"):
             proposal.rollback(reason="Invalid")
 
     def test_withdraw_proposal(self, proposal):
@@ -244,7 +245,7 @@ class TestAmendmentStatusTransitions:
         proposal.submit_for_review()
         proposal.approve(approver_id="agent-001")
 
-        with pytest.raises(ValueError, match="pending proposals"):
+        with pytest.raises(ACGSValidationError, match="pending proposals"):
             proposal.withdraw()
 
 

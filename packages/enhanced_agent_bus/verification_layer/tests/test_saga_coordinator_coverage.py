@@ -60,7 +60,6 @@ class TestSagaCompensationToDict:
 class TestExecuteSagaStateGuard:
     """Test execute_saga raises when not in INITIALIZED state (line 403)."""
 
-    @pytest.mark.asyncio
     async def test_execute_saga_wrong_state_raises(self):
         """Test ValueError when saga is not in INITIALIZED state."""
         coordinator = create_saga_coordinator()
@@ -70,7 +69,6 @@ class TestExecuteSagaStateGuard:
         with pytest.raises(ValueError, match="Cannot execute saga in state"):
             await coordinator.execute_saga(saga)
 
-    @pytest.mark.asyncio
     async def test_execute_saga_completed_state_raises(self):
         """Test ValueError when saga is in COMPLETED state."""
         coordinator = create_saga_coordinator()
@@ -84,7 +82,6 @@ class TestExecuteSagaStateGuard:
 class TestDependencyCheck:
     """Test dependency handling (lines 418-423)."""
 
-    @pytest.mark.asyncio
     async def test_step_skipped_when_dependency_not_completed(self):
         """Test step is skipped when its dependency step is not completed."""
         coordinator = create_saga_coordinator()
@@ -114,7 +111,6 @@ class TestDependencyCheck:
         # step2 should not have been executed
         assert "step2" not in executed_steps
 
-    @pytest.mark.asyncio
     async def test_step_with_nonexistent_dependency_proceeds(self):
         """Test step with dependency that references a non-existent step still runs."""
         coordinator = create_saga_coordinator()
@@ -144,7 +140,6 @@ class TestDependencyCheck:
 class TestCompensationStrategies:
     """Test parallel and selective compensation strategies (lines 528-571)."""
 
-    @pytest.mark.asyncio
     async def test_parallel_compensation_strategy(self):
         """Test parallel compensation strategy (lines 528-529, 555-556)."""
         coordinator = create_saga_coordinator()
@@ -178,7 +173,6 @@ class TestCompensationStrategies:
         assert "step1" in compensated
         assert "step2" in compensated
 
-    @pytest.mark.asyncio
     async def test_selective_compensation_strategy(self):
         """Test selective compensation strategy (lines 530-531, 564-571)."""
         coordinator = create_saga_coordinator()
@@ -216,7 +210,6 @@ class TestCompensationStrategies:
         assert not success
         assert saga.state == SagaState.COMPENSATED
 
-    @pytest.mark.asyncio
     async def test_selective_compensation_no_dependencies(self):
         """Test selective compensation when steps have no dependencies."""
         coordinator = create_saga_coordinator()
@@ -248,7 +241,6 @@ class TestCompensationStrategies:
 class TestCompensationWithNoFunc:
     """Test compensation when step has no compensation function (lines 580-588)."""
 
-    @pytest.mark.asyncio
     async def test_compensation_log_no_compensation_func_via_lifo(self):
         """Test compensation logs 'no_compensation' when step has no comp func.
 
@@ -273,7 +265,6 @@ class TestCompensationWithNoFunc:
         assert len(saga.compensation_log) == 1
         assert saga.compensation_log[0]["status"] == "no_compensation"
 
-    @pytest.mark.asyncio
     async def test_execute_compensation_with_null_compensation(self):
         """Test _execute_compensation directly when step has no compensation."""
         coordinator = create_saga_coordinator()
@@ -292,7 +283,6 @@ class TestCompensationWithNoFunc:
 class TestCompensationError:
     """Test error handling in _execute_compensation (lines 623-634)."""
 
-    @pytest.mark.asyncio
     async def test_compensation_func_raises_logs_error(self):
         """Test that compensation error is logged when comp func raises."""
         coordinator = create_saga_coordinator()
@@ -320,7 +310,6 @@ class TestCompensationError:
         assert len(failed_entries) > 0
         assert "Compensation failed!" in failed_entries[0]["error"]
 
-    @pytest.mark.asyncio
     async def test_compensation_func_raises_directly(self):
         """Test _execute_compensation directly when comp func raises."""
         coordinator = create_saga_coordinator()
@@ -348,14 +337,12 @@ class TestCompensationError:
 class TestAbortSaga:
     """Tests for abort_saga edge cases (lines 640-645)."""
 
-    @pytest.mark.asyncio
     async def test_abort_nonexistent_saga_returns_false(self):
         """Test aborting a saga that doesn't exist returns False (line 640-641)."""
         coordinator = create_saga_coordinator()
         result = await coordinator.abort_saga("nonexistent-id", "Test abort")
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_abort_completed_saga_returns_false(self):
         """Test aborting a completed saga returns False (lines 644-645)."""
         coordinator = create_saga_coordinator()
@@ -371,7 +358,6 @@ class TestAbortSaga:
         result = await coordinator.abort_saga(saga.saga_id, "Try abort")
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_abort_compensated_saga_returns_false(self):
         """Test aborting a saga that's in COMPENSATED state."""
         coordinator = create_saga_coordinator()
@@ -388,7 +374,6 @@ class TestAbortSaga:
 class TestSagaTimeoutBranch:
     """Test asyncio.TimeoutError branch in execute_saga (lines 449-454)."""
 
-    @pytest.mark.asyncio
     async def test_saga_level_timeout(self):
         """Test that saga timeout causes compensation (lines 449-454).
 
@@ -423,7 +408,6 @@ class TestSagaTimeoutBranch:
 class TestSagaExecuteOperationError:
     """Test operation error branch in execute_saga (lines 457-462)."""
 
-    @pytest.mark.asyncio
     async def test_saga_operation_error_triggers_compensation(self):
         """Test that operation errors are caught and trigger compensation.
 
@@ -459,7 +443,6 @@ class TestSagaExecuteOperationError:
 class TestStepRetryTimeout:
     """Test step-level timeout retry logic (lines 497-504)."""
 
-    @pytest.mark.asyncio
     async def test_step_timeout_all_retries_exhausted(self):
         """Test that step fails after all timeouts exhaust retries."""
         coordinator = create_saga_coordinator()
@@ -484,7 +467,6 @@ class TestStepRetryTimeout:
         assert saga.steps[0].state == StepState.FAILED
         assert saga.steps[0].error == "Step timeout"
 
-    @pytest.mark.asyncio
     async def test_step_operation_error_retry_exhausted(self):
         """Test step operation error with retry exhaustion reaching return False (line 516)."""
         coordinator = create_saga_coordinator()
@@ -526,7 +508,6 @@ class TestGetSagaNotFound:
 class TestSagaContextManagerSuccess:
     """Test saga_context with auto_execute=True and successful saga (line 737)."""
 
-    @pytest.mark.asyncio
     async def test_context_manager_auto_execute_success(self):
         """Test context manager with auto_execute=True and successful saga."""
         coordinator = create_saga_coordinator()
@@ -544,7 +525,6 @@ class TestSagaContextManagerSuccess:
 
         assert saga.state == SagaState.COMPLETED
 
-    @pytest.mark.asyncio
     async def test_context_manager_auto_execute_false(self):
         """Test context manager with auto_execute=False does not execute."""
         coordinator = create_saga_coordinator()
@@ -566,7 +546,6 @@ class TestSagaContextManagerSuccess:
 class TestSagaContextManagerErrorHandling:
     """Test saga_context error handling branches (lines 743-744)."""
 
-    @pytest.mark.asyncio
     async def test_context_manager_sets_failed_state_on_initialized_saga(self):
         """Test that context manager sets FAILED state on an INITIALIZED saga when error occurs."""
         coordinator = create_saga_coordinator()
@@ -584,7 +563,6 @@ class TestSagaContextManagerErrorHandling:
         assert saga.state == SagaState.FAILED
         assert "Error inside context" in saga.failure_reason
 
-    @pytest.mark.asyncio
     async def test_context_manager_does_not_override_running_state(self):
         """Test context manager does not override state if saga is already running."""
         coordinator = create_saga_coordinator()
@@ -735,7 +713,6 @@ class TestCheckpointStore:
 class TestSagaListAndStatus:
     """Test coordinator listing and status methods."""
 
-    @pytest.mark.asyncio
     async def test_coordinator_status_with_completed_and_compensated(self):
         """Test coordinator status with both completed and compensated sagas."""
         coordinator = create_saga_coordinator()
@@ -793,7 +770,6 @@ class TestSagaListAndStatus:
 class TestAbortSagaWithCompensation:
     """Test abort saga with compensation for ABORTED state preservation."""
 
-    @pytest.mark.asyncio
     async def test_abort_initialized_saga(self):
         """Test aborting an INITIALIZED saga triggers compensation."""
         coordinator = create_saga_coordinator()
@@ -817,7 +793,6 @@ class TestAbortSagaWithCompensation:
         assert saga.failure_reason == "Test abort reason"
         assert saga.failed_at is not None
 
-    @pytest.mark.asyncio
     async def test_abort_preserves_aborted_state_after_compensation(self):
         """Test that abort state is preserved even after _compensate_saga is called."""
         coordinator = create_saga_coordinator()
@@ -841,7 +816,6 @@ class TestAbortSagaWithCompensation:
 class TestSagaExecutionEdgeCases:
     """Edge cases for saga execution."""
 
-    @pytest.mark.asyncio
     async def test_execute_saga_with_no_steps(self):
         """Test executing a saga with no steps completes successfully."""
         coordinator = create_saga_coordinator()
@@ -852,7 +826,6 @@ class TestSagaExecutionEdgeCases:
         assert success
         assert saga.state == SagaState.COMPLETED
 
-    @pytest.mark.asyncio
     async def test_completed_saga_moved_to_completed_store(self):
         """Test that completed saga is moved from active to completed store (lines 440-443)."""
         coordinator = create_saga_coordinator()
@@ -872,7 +845,6 @@ class TestSagaExecutionEdgeCases:
         assert saga_id not in coordinator._active_sagas
         assert saga_id in coordinator._completed_sagas
 
-    @pytest.mark.asyncio
     async def test_step_retry_count_updated(self):
         """Test that step retry_count is updated on each attempt."""
         coordinator = create_saga_coordinator()
@@ -894,7 +866,6 @@ class TestSagaExecutionEdgeCases:
         # retry_count should be 1 (second attempt, zero-indexed)
         assert saga.steps[0].retry_count == 1
 
-    @pytest.mark.asyncio
     async def test_step_duration_recorded(self):
         """Test that step duration is recorded after execution."""
         coordinator = create_saga_coordinator()
@@ -909,7 +880,6 @@ class TestSagaExecutionEdgeCases:
 
         assert saga.steps[0].duration_ms >= 0
 
-    @pytest.mark.asyncio
     async def test_saga_total_duration_recorded(self):
         """Test that saga total duration is recorded after completion."""
         coordinator = create_saga_coordinator()

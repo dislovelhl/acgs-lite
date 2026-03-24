@@ -26,14 +26,15 @@ from enum import Enum
 from typing import Any
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
+from enhanced_agent_bus.maci_role_projection import project_to_mcp_tool_role
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
@@ -46,7 +47,7 @@ logger = get_logger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class MACIToolRole(str, Enum):  # noqa: UP042
+class MACIToolRole(str, Enum):
     """The three canonical MACI roles for tool-level access control."""
 
     PROPOSER = "proposer"
@@ -97,8 +98,8 @@ class ToolFilterConfig:
     Attributes:
         role_tool_matrix: Mapping of role → list of allowed glob patterns.
             Defaults to ``ROLE_TOOL_MATRIX`` when ``None``.
-        strict_mode: If ``True`` (default) an unknown role is denied.
-            If ``False`` unknown roles are passed through (open).
+        strict_mode: Deprecated compatibility flag retained for config
+            stability. Unknown roles are always denied.
         constitutional_hash: Governance hash embedded in every audit record.
         audit_denials: If ``True`` (default) every denial is emitted to the
             structured logger.
@@ -120,7 +121,8 @@ class ToolFilterConfig:
         Recognised variables:
 
         ``MACI_FILTER_STRICT_MODE``
-            ``"true"`` (default) or ``"false"``.
+            Deprecated compatibility flag. Unknown roles are denied
+            regardless of this setting.
 
         ``MACI_FILTER_AUDIT_DENIALS``
             ``"true"`` (default) or ``"false"``.
@@ -377,7 +379,10 @@ class MACIToolFilter:
         try:
             return MACIToolRole(str(role).lower())
         except ValueError:
-            return None
+            projected_role = project_to_mcp_tool_role(role)
+            if projected_role is None:
+                return None
+            return MACIToolRole(projected_role)
 
     def _evaluate(
         self,
@@ -390,13 +395,9 @@ class MACIToolFilter:
 
         # Unknown role handling
         if resolved_role is None:
-            reason = (
-                f"unknown_role: '{role}' is not a registered MACI tool role; "
-                f"{'denied (strict_mode=True)' if self._config.strict_mode else 'permitted (strict_mode=False)'}"  # noqa: E501
-            )
-            permitted = not self._config.strict_mode
+            reason = f"unknown_role: '{role}' is not a registered MACI tool role; denied"
             return ToolFilterResult(
-                permitted=permitted,
+                permitted=False,
                 role=str(role),
                 tool_name=tool_name,
                 reason=reason,
@@ -462,8 +463,8 @@ def create_maci_tool_filter(
     Args:
         role_tool_matrix: Custom role → pattern mapping.  Falls back to the
             default ``ROLE_TOOL_MATRIX`` when ``None``.
-        strict_mode: Deny unknown roles when ``True`` (default); permit when
-            ``False``.
+        strict_mode: Deprecated compatibility flag retained for config
+            stability. Unknown roles are always denied.
         audit_denials: Log denials to the structured logger (default ``True``).
         constitutional_hash: Governance hash for audit records.
 

@@ -14,7 +14,7 @@ try:
     from src.core.shared.types import (
         JSONDict,
         JSONValue,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]
@@ -29,6 +29,14 @@ from .governance_constants import (
     DEFAULT_CB_RESET_TIMEOUT,
     DEFAULT_LRU_CACHE_SIZE,
     IMPACT_DELIBERATION_THRESHOLD,
+)
+from .governance_core import (
+    GovernanceDecision,
+    GovernanceInput,
+    GovernanceReceipt,
+    LegacyGovernanceCore,
+    SwarmGovernanceCore,
+    normalize_governance_core_mode,
 )
 
 # Feature flags
@@ -117,9 +125,9 @@ except ImportError:
     MCPConfig = None  # type: ignore[assignment, misc]
     MCPToolResult = None  # type: ignore[assignment, misc]
 
-from .interfaces import ProcessingStrategy  # noqa: E402
-from .memory_profiler import ProfilingLevel, get_memory_profiler  # noqa: E402
-from .message_processor_components import (  # noqa: E402
+from .interfaces import ProcessingStrategy
+from .memory_profiler import ProfilingLevel, get_memory_profiler
+from .message_processor_components import (
     apply_latency_metadata,
     apply_session_governance_metrics,
     build_dlq_entry,
@@ -136,7 +144,7 @@ from .message_processor_components import (  # noqa: E402
     run_message_validation_gates,
     schedule_background_task,
 )
-from .models import (  # noqa: E402
+from .models import (
     CONSTITUTIONAL_HASH,
     AgentMessage,
     AutonomyTier,
@@ -145,17 +153,20 @@ from .models import (  # noqa: E402
     Priority,
     get_enum_value,
 )
-from .performance_monitor import timed  # noqa: E402
-from .runtime_security import get_runtime_security_scanner  # noqa: E402
-from .security_scanner import (  # noqa: E402
+from .performance_monitor import timed
+from .runtime_security import get_runtime_security_scanner
+from .security_scanner import (
     PROMPT_INJECTION_PATTERNS,
     MessageSecurityScanner,
 )
-from .session_context import SessionContext, SessionContextManager  # noqa: E402
-from .session_context_resolver import SessionContextResolver  # noqa: E402
-from .utils import LRUCache  # noqa: E402
-from .validators import ValidationResult  # noqa: E402
-from .verification_orchestrator import VerificationOrchestrator  # noqa: E402
+from .session_context import SessionContext, SessionContextManager
+from .session_context_resolver import SessionContextResolver
+from .utils import LRUCache
+from .validators import ValidationResult
+from .verification_orchestrator import (
+    VerificationOrchestrator,
+    VerificationRuntimeDependencies,
+)
 
 logger = get_logger(__name__)
 DEFAULT_CACHE_HASH_MODE = "sha256"
@@ -243,21 +254,37 @@ class MessageProcessor:
             else None
         )
         self.constitutional_hash = CONSTITUTIONAL_HASH
+        self._governance_core_mode = normalize_governance_core_mode(
+            kwargs.get(
+                "governance_core_mode",
+                getattr(self.config, "governance_core_mode", "legacy"),
+            )
+        )
+        self._governance_peer_validation_enabled = bool(
+            kwargs.get(
+                "governance_swarm_peer_validation_enabled",
+                getattr(self.config, "governance_swarm_peer_validation_enabled", True),
+            )
+        )
+        self._governance_manifold_enabled = bool(
+            kwargs.get(
+                "governance_swarm_use_manifold",
+                getattr(self.config, "governance_swarm_use_manifold", False),
+            )
+        )
+        self._governance_shadow_matches = 0
+        self._governance_shadow_mismatches = 0
+        self._governance_shadow_errors = 0
+        self._legacy_governance_core = LegacyGovernanceCore(
+            expected_constitutional_hash=self.constitutional_hash
+        )
+        self._swarm_governance_core = kwargs.get("governance_core") or SwarmGovernanceCore(
+            expected_constitutional_hash=self.constitutional_hash,
+            enable_peer_validation=self._governance_peer_validation_enabled,
+            use_manifold=self._governance_manifold_enabled,
+        )
         self._audit_client = kwargs.get("audit_client")
-        self._opa_client = None
-        if not self._isolated_mode:
-            try:
-                self._opa_client = get_opa_client()
-            except Exception:
-                if _OPAClient is not None:
-                    try:
-                        self._opa_client = _OPAClient()
-                    except Exception:
-                        logger.debug(
-                            "OPA client unavailable during message processor initialization"
-                        )
-                else:
-                    logger.debug("OPA client unavailable during message processor initialization")
+        self._opa_client = self._initialize_opa_client()
         self._constitutional_verifier = kwargs.get("constitutional_verifier")
         # OPTIMIZATION: Increased cache size from 1000 to 10000 for enterprise scale
         # At 6,471 RPS, 1000 entries caused high cache churn (~seconds to evict)
@@ -280,13 +307,7 @@ class MessageProcessor:
         self._pqc_service = kwargs.get("pqc_service")
         self._pqc_config = None
 
-        if self._enable_pqc and not self._pqc_service:
-            self._pqc_service = build_pqc_service(self.config)
-            if not self._pqc_service:
-                self._enable_pqc = False
-
-        if self._pqc_service:
-            self._pqc_config = getattr(self._pqc_service, "config", None)
+        self._configure_pqc(build_pqc_service)
 
         self._processing_strategy = (
             kwargs.get("processing_strategy") or self._auto_select_strategy()
@@ -303,18 +324,7 @@ class MessageProcessor:
         self._enable_session_governance = (
             self.config.enable_session_governance and not self._isolated_mode
         )
-        self._session_context_manager: SessionContextManager | None = None
-        if self._enable_session_governance:
-            try:
-                # Initialize session context manager with config TTL
-                self._session_context_manager = SessionContextManager(
-                    cache_size=1000,
-                    cache_ttl=self.config.session_policy_cache_ttl,
-                )
-                logger.info("Session governance enabled for message processor")
-            except (AttributeError, OSError, RuntimeError, TypeError, ValueError) as e:
-                logger.warning(f"Failed to initialize session context manager: {e}")
-                self._enable_session_governance = False
+        self._session_context_manager = self._initialize_session_context_manager()
 
         # Session resolution metrics (GIL-protected, no lock needed for simple increments)
         self._session_resolved_count = 0
@@ -337,27 +347,11 @@ class MessageProcessor:
         self._agent_workflow_metrics = (
             get_agent_workflow_metrics_collector() if AGENT_WORKFLOW_METRICS_AVAILABLE else None
         )
-        self._session_resolver = kwargs.get("session_resolver") or SessionContextResolver(
-            config=self.config,
-            manager=self._session_context_manager,
-        )
+        self._session_resolver = kwargs.get("session_resolver") or self._build_session_resolver()
         self._security_scanner = kwargs.get("security_scanner") or MessageSecurityScanner()
-        self._verification_orchestrator = kwargs.get("verification_orchestrator")
-        if self._verification_orchestrator is None:
-            self._verification_orchestrator = VerificationOrchestrator(
-                config=self.config,
-                enable_pqc=self._enable_pqc,
-            )
-        self._verification_orchestrator.intent_classifier = self.intent_classifier
-        self._verification_orchestrator.asc_verifier = self.asc_verifier
-        self._verification_orchestrator.graph_check = self.graph_check
-        self._verification_orchestrator.pacar_verifier = self.pacar_verifier
-        self._verification_orchestrator.evolution_controller = self.evolution_controller
-        self._verification_orchestrator.ampo_engine = self.ampo_engine
-        self._verification_orchestrator._IntentType = self._IntentType
-        self._verification_orchestrator._enable_pqc = self._enable_pqc
-        self._verification_orchestrator._pqc_service = self._pqc_service
-        self._verification_orchestrator._pqc_config = self._pqc_config
+        self._verification_orchestrator = self._build_verification_orchestrator(
+            kwargs.get("verification_orchestrator")
+        )
 
         # MCP integration — initialised lazily via initialize_mcp(); None until then
         self._mcp_pool: MCPClientPool | None = None  # type: ignore[type-arg]
@@ -366,6 +360,109 @@ class MessageProcessor:
                 "cache_hash_mode=fast requested but acgs2_perf.fast_hash unavailable; "
                 "falling back to sha256"
             )
+
+    def _initialize_opa_client(self) -> object | None:
+        if self._isolated_mode:
+            return None
+        try:
+            return get_opa_client()
+        except Exception:
+            if _OPAClient is not None:
+                try:
+                    return _OPAClient()
+                except Exception:
+                    logger.debug("OPA client unavailable during message processor initialization")
+                    return None
+            logger.debug("OPA client unavailable during message processor initialization")
+            return None
+
+    def _configure_pqc(
+        self,
+        build_pqc_service_func: Callable[[BusConfiguration], object | None],
+    ) -> None:
+        if self._enable_pqc and not self._pqc_service:
+            self._pqc_service = build_pqc_service_func(self.config)
+            if not self._pqc_service:
+                self._enable_pqc = False
+
+        if self._pqc_service:
+            self._pqc_config = getattr(self._pqc_service, "config", None)
+
+    def _initialize_session_context_manager(self) -> SessionContextManager | None:
+        if not self._enable_session_governance:
+            return None
+        try:
+            manager = SessionContextManager(
+                cache_size=1000,
+                cache_ttl=self.config.session_policy_cache_ttl,
+            )
+            logger.info("Session governance enabled for message processor")
+            return manager
+        except (AttributeError, OSError, RuntimeError, TypeError, ValueError) as e:
+            logger.warning(f"Failed to initialize session context manager: {e}")
+            self._enable_session_governance = False
+            return None
+
+    def _build_session_resolver(self) -> SessionContextResolver:
+        return SessionContextResolver(
+            config=self.config,
+            manager=self._session_context_manager,
+        )
+
+    def _build_verification_orchestrator(
+        self,
+        orchestrator: object | None,
+    ) -> VerificationOrchestrator:
+        verification_orchestrator = orchestrator
+        if verification_orchestrator is None:
+            verification_orchestrator = VerificationOrchestrator(
+                config=self.config,
+                enable_pqc=self._enable_pqc,
+            )
+        runtime_dependencies = self._build_verification_runtime_dependencies()
+        configure_runtime_dependencies = getattr(
+            type(verification_orchestrator),
+            "configure_runtime_dependencies",
+            None,
+        )
+        if callable(configure_runtime_dependencies):
+            configure_runtime_dependencies(verification_orchestrator, runtime_dependencies)
+        else:
+            self._apply_verification_runtime_dependencies_legacy(
+                verification_orchestrator,
+                runtime_dependencies,
+            )
+        return verification_orchestrator  # type: ignore[return-value]
+
+    def _build_verification_runtime_dependencies(self) -> VerificationRuntimeDependencies:
+        return VerificationRuntimeDependencies(
+            intent_classifier=self.intent_classifier,
+            asc_verifier=self.asc_verifier,
+            graph_check=self.graph_check,
+            pacar_verifier=self.pacar_verifier,
+            evolution_controller=self.evolution_controller,
+            ampo_engine=self.ampo_engine,
+            intent_type=self._IntentType,
+            enable_pqc=self._enable_pqc,
+            pqc_service=self._pqc_service,
+            pqc_config=self._pqc_config,
+        )
+
+    @staticmethod
+    def _apply_verification_runtime_dependencies_legacy(
+        verification_orchestrator: object,
+        runtime_dependencies: VerificationRuntimeDependencies,
+    ) -> None:
+        verification_orchestrator.intent_classifier = runtime_dependencies.intent_classifier
+        verification_orchestrator.asc_verifier = runtime_dependencies.asc_verifier
+        verification_orchestrator.graph_check = runtime_dependencies.graph_check
+        verification_orchestrator.pacar_verifier = runtime_dependencies.pacar_verifier
+        verification_orchestrator.evolution_controller = runtime_dependencies.evolution_controller
+        verification_orchestrator.ampo_engine = runtime_dependencies.ampo_engine
+        verification_orchestrator._IntentType = runtime_dependencies.intent_type
+        verification_orchestrator._enable_pqc = runtime_dependencies.enable_pqc
+        verification_orchestrator._pqc_service = runtime_dependencies.pqc_service
+        verification_orchestrator._pqc_config = runtime_dependencies.pqc_config
 
     def _record_agent_workflow_event(
         self,
@@ -404,29 +501,63 @@ class MessageProcessor:
         py_proc = PythonProcessingStrategy(StaticHashValidationStrategy(strict=True))
         if self._isolated_mode:
             return py_proc
+        base = self._build_base_processing_strategy(
+            default_strategy=py_proc,
+            composite_strategy_cls=CompositeProcessingStrategy,
+            rust_strategy_cls=RustProcessingStrategy,
+            opa_strategy_cls=OPAProcessingStrategy,
+            python_strategy_cls=PythonProcessingStrategy,
+            static_hash_validation_cls=StaticHashValidationStrategy,
+        )
+        return self._wrap_processing_strategy_with_maci(
+            base_strategy=base,
+            maci_strategy_cls=MACIProcessingStrategy,
+        )
+
+    def _build_base_processing_strategy(
+        self,
+        *,
+        default_strategy: ProcessingStrategy,
+        composite_strategy_cls: type,
+        rust_strategy_cls: type,
+        opa_strategy_cls: type,
+        python_strategy_cls: type,
+        static_hash_validation_cls: type,
+    ) -> ProcessingStrategy:
         strategies: list[ProcessingStrategy] = []
         if self._rust_processor and self._use_rust:
-            strategies.append(RustProcessingStrategy(self._rust_processor, rust_bus))
+            strategies.append(rust_strategy_cls(self._rust_processor, rust_bus))
         if self._use_dynamic_policy and self._opa_client:
-            strategies.append(OPAProcessingStrategy(self._opa_client))
-
-        # Add Constitutional Verifier if available
+            strategies.append(opa_strategy_cls(self._opa_client))
         if self._constitutional_verifier:
             strategies.append(
-                PythonProcessingStrategy(
-                    StaticHashValidationStrategy(
+                python_strategy_cls(
+                    static_hash_validation_cls(
                         strict=True
                     )  # ConstitutionalValidationStrategy not available as ValidStrategy
                 )
             )
+        strategies.append(default_strategy)
+        return (
+            composite_strategy_cls(strategies)
+            if len(strategies) > 1
+            else strategies[0]
+        )
 
-        strategies.append(py_proc)
-        base = CompositeProcessingStrategy(strategies) if len(strategies) > 1 else strategies[0]
-        if self._enable_maci:
-            return MACIProcessingStrategy(
-                base, self._maci_registry, self._maci_enforcer, self._maci_strict_mode
-            )
-        return base
+    def _wrap_processing_strategy_with_maci(
+        self,
+        *,
+        base_strategy: ProcessingStrategy,
+        maci_strategy_cls: type,
+    ) -> ProcessingStrategy:
+        if not self._enable_maci:
+            return base_strategy
+        return maci_strategy_cls(
+            base_strategy,
+            self._maci_registry,
+            self._maci_enforcer,
+            self._maci_strict_mode,
+        )
 
     @timed("extract_session_context")
     async def _extract_session_context(self, msg: AgentMessage) -> SessionContext | None:
@@ -659,13 +790,16 @@ class MessageProcessor:
             # Phase 2: Run validation gates (early returns)
             gate_result = await self._run_validation_gates(msg)
             if gate_result:
+                self._schedule_governance_audit_event(msg, gate_result)
                 return gate_result
 
         # Phase 3: Check validation cache
         cache_key = self._compute_cache_key(msg)
         cached = self._validation_cache.get(cache_key)
         if cached:
-            return cached  # type: ignore[no-any-return]
+            cached_result = self._clone_validation_result(cached)
+            self._attach_governance_metadata(msg, cached_result)
+            return cached_result  # type: ignore[no-any-return]
 
         # Phase 4-6: Verification and processing
         return await self._execute_verification_and_processing(msg, cache_key, start)
@@ -696,8 +830,21 @@ class MessageProcessor:
     def _increment_failed_count(self) -> None:
         self._failed_count += 1
 
+    @staticmethod
+    def _clone_validation_result(result: ValidationResult) -> ValidationResult:
+        return ValidationResult(
+            is_valid=result.is_valid,
+            errors=list(result.errors),
+            warnings=list(result.warnings),
+            metadata=dict(result.metadata),
+            decision=result.decision,
+            status=result.status,
+            constitutional_hash=result.constitutional_hash,
+            pqc_metadata=result.pqc_metadata,
+        )
+
     async def _run_validation_gates(self, msg: AgentMessage) -> ValidationResult | None:
-        return await run_message_validation_gates(
+        gate_result = await run_message_validation_gates(
             msg=msg,
             autonomy_gate=self._enforce_autonomy_tier,
             security_scan=self._perform_security_scan,
@@ -705,14 +852,290 @@ class MessageProcessor:
             prompt_injection_gate=self._detect_prompt_injection,
             increment_failure=self._increment_failed_count,
         )
+        if gate_result is not None:
+            return gate_result
+        return await self._run_governance_core(msg)
+
+    def _build_governance_input(self, msg: AgentMessage) -> GovernanceInput:
+        metadata = msg.metadata if isinstance(msg.metadata, dict) else {}
+        producer_role = metadata.get("maci_role")
+        if not isinstance(producer_role, str) or not producer_role.strip():
+            security_role = (
+                msg.security_context.get("maci_role")
+                if isinstance(msg.security_context, dict)
+                else None
+            )
+            producer_role = security_role if isinstance(security_role, str) else None
+
+        validator_ids: list[str] = []
+        for key in ("validated_by_agent", "independent_validator_id"):
+            raw_validator = metadata.get(key)
+            if isinstance(raw_validator, str) and raw_validator.strip():
+                validator_ids.append(raw_validator.strip())
+
+        content_str = prepare_message_content_string(msg)
+        content_hash = hashlib.sha256(content_str.encode()).hexdigest()[:32]
+        requires_independent_validator = (
+            self._require_independent_validator and self._requires_independent_validation(msg)
+        )
+
+        return GovernanceInput(
+            tenant_id=msg.tenant_id,
+            trace_id=msg.message_id,
+            message_id=msg.message_id,
+            producer_id=msg.from_agent or "unknown-producer",
+            producer_role=producer_role,
+            action_type=get_enum_value(msg.message_type),
+            content=content_str,
+            content_hash=content_hash,
+            constitutional_hash=msg.constitutional_hash,
+            autonomy_tier=get_enum_value(msg.autonomy_tier) if msg.autonomy_tier else None,
+            requires_independent_validator=requires_independent_validator,
+            security_scan_result="passed",
+            validator_ids=tuple(dict.fromkeys(validator_ids)),
+        )
+
+    async def _run_governance_core(self, msg: AgentMessage) -> ValidationResult | None:
+        governance_input = self._build_governance_input(msg)
+        legacy_decision = await self._legacy_governance_core.validate_local(governance_input)
+        legacy_receipt = self._legacy_governance_core.build_receipt(governance_input, legacy_decision)
+
+        selected_decision = legacy_decision
+        selected_receipt = legacy_receipt
+        shadow_metadata: JSONDict | None = None
+
+        if self._governance_core_mode in {"shadow", "swarm_enforced"}:
+            if self._governance_core_mode == "shadow" and not self._swarm_governance_core.is_available():
+                swarm_error = getattr(self._swarm_governance_core, "_constitution_error", None)
+                self._governance_shadow_errors += 1
+                shadow_metadata = {
+                    "mode": "shadow",
+                    "status": "error",
+                    "legacy_allowed": legacy_decision.allowed,
+                    "swarm_allowed": None,
+                    "error": swarm_error if isinstance(swarm_error, str) and swarm_error else "swarm unavailable",
+                }
+                self._store_governance_artifacts(
+                    msg=msg,
+                    decision=selected_decision,
+                    receipt=selected_receipt,
+                    shadow_metadata=shadow_metadata,
+                )
+                if selected_decision.allowed:
+                    return None
+                self._increment_failed_count()
+                return self._build_governance_failure_result(
+                    governance_input=governance_input,
+                    decision=selected_decision,
+                    receipt=selected_receipt,
+                    shadow_metadata=shadow_metadata,
+                )
+            try:
+                swarm_decision = await self._swarm_governance_core.validate_local(governance_input)
+                peer_validation = (
+                    await self._swarm_governance_core.validate_peer(governance_input)
+                    if swarm_decision.allowed
+                    else None
+                )
+                trust_score = (
+                    await self._swarm_governance_core.score_governance(
+                        governance_input,
+                        peer_validation,
+                    )
+                    if swarm_decision.allowed
+                    else None
+                )
+                swarm_decision = GovernanceDecision(
+                    allowed=(
+                        swarm_decision.allowed
+                        and (peer_validation.approved if peer_validation is not None else True)
+                    ),
+                    blocking_stage=(
+                        swarm_decision.blocking_stage
+                        or (
+                            "peer_validation"
+                            if peer_validation is not None and not peer_validation.approved
+                            else None
+                        )
+                    ),
+                    reasons=(
+                        swarm_decision.reasons
+                        if peer_validation is None or peer_validation.approved
+                        else tuple(
+                            reason
+                            for reason in (*swarm_decision.reasons, peer_validation.reason)
+                            if reason
+                        )
+                    ),
+                    rule_hits=swarm_decision.rule_hits,
+                    peer_votes=(
+                        peer_validation.to_metadata() if peer_validation is not None else {}
+                    ),
+                    trust_score=trust_score,
+                    constitutional_hash=swarm_decision.constitutional_hash,
+                    swarm_constitutional_hash=swarm_decision.swarm_constitutional_hash,
+                    engine_mode=swarm_decision.engine_mode,
+                )
+                swarm_receipt = self._swarm_governance_core.build_receipt(
+                    governance_input,
+                    swarm_decision,
+                )
+            except (
+                AttributeError,
+                KeyError,
+                OSError,
+                RuntimeError,
+                TypeError,
+                ValueError,
+            ) as exc:
+                logger.warning("Swarm governance core failed", exc_info=True)
+                if self._governance_core_mode == "swarm_enforced":
+                    self._increment_failed_count()
+                    return self._build_governance_failure_result(
+                        governance_input=governance_input,
+                        decision=GovernanceDecision(
+                            allowed=False,
+                            blocking_stage="swarm_error",
+                            reasons=(str(exc),),
+                            constitutional_hash=self.constitutional_hash,
+                            engine_mode="swarm",
+                        ),
+                        receipt=GovernanceReceipt(
+                            receipt_id=f"swarm:{governance_input.message_id}",
+                            engine_mode="swarm",
+                            message_id=governance_input.message_id,
+                            producer_id=governance_input.producer_id,
+                            content_hash=governance_input.content_hash,
+                            constitutional_hash=governance_input.constitutional_hash,
+                            allowed=False,
+                            blocking_stage="swarm_error",
+                            reasons=(str(exc),),
+                        ),
+                    )
+                self._governance_shadow_errors += 1
+                shadow_metadata = {
+                    "mode": "shadow",
+                    "status": "error",
+                    "legacy_allowed": legacy_decision.allowed,
+                    "swarm_allowed": None,
+                    "error": str(exc),
+                }
+            else:
+                parity_status = (
+                    "match" if legacy_decision.allowed == swarm_decision.allowed else "mismatch"
+                )
+                if parity_status == "match":
+                    self._governance_shadow_matches += 1
+                else:
+                    self._governance_shadow_mismatches += 1
+                shadow_metadata = {
+                    "mode": "shadow",
+                    "status": parity_status,
+                    "legacy_allowed": legacy_decision.allowed,
+                    "swarm_allowed": swarm_decision.allowed,
+                    "legacy_receipt": legacy_receipt.to_metadata(),
+                    "swarm_receipt": swarm_receipt.to_metadata(),
+                }
+                if self._governance_core_mode == "swarm_enforced":
+                    selected_decision = swarm_decision
+                    selected_receipt = swarm_receipt
+
+        self._store_governance_artifacts(
+            msg=msg,
+            decision=selected_decision,
+            receipt=selected_receipt,
+            shadow_metadata=shadow_metadata,
+        )
+        if selected_decision.allowed:
+            return None
+
+        self._increment_failed_count()
+        return self._build_governance_failure_result(
+            governance_input=governance_input,
+            decision=selected_decision,
+            receipt=selected_receipt,
+            shadow_metadata=shadow_metadata,
+        )
+
+    def _store_governance_artifacts(
+        self,
+        *,
+        msg: AgentMessage,
+        decision: GovernanceDecision,
+        receipt: GovernanceReceipt,
+        shadow_metadata: JSONDict | None,
+    ) -> None:
+        msg._governance_decision = decision  # type: ignore[attr-defined]
+        msg._governance_receipt = receipt  # type: ignore[attr-defined]
+        msg._governance_shadow_metadata = shadow_metadata  # type: ignore[attr-defined]
+
+    def _attach_governance_metadata(
+        self,
+        msg: AgentMessage,
+        result: ValidationResult,
+    ) -> None:
+        decision = getattr(msg, "_governance_decision", None)
+        receipt = getattr(msg, "_governance_receipt", None)
+        shadow_metadata = getattr(msg, "_governance_shadow_metadata", None)
+
+        result.metadata["governance_core_mode"] = self._governance_core_mode
+        decision_metadata = self._to_governance_metadata(decision)
+        receipt_metadata = self._to_governance_metadata(receipt)
+        if decision_metadata is not None:
+            result.metadata["governance_decision"] = decision_metadata
+        if receipt_metadata is not None:
+            result.metadata["governance_receipt"] = receipt_metadata
+        if isinstance(shadow_metadata, dict):
+            result.metadata["governance_shadow"] = shadow_metadata
+
+    @staticmethod
+    def _to_governance_metadata(value: object) -> JSONDict | None:
+        to_metadata = getattr(value, "to_metadata", None)
+        if not callable(to_metadata):
+            return None
+        metadata = to_metadata()
+        return metadata if isinstance(metadata, dict) else None
+
+    def _build_governance_failure_result(
+        self,
+        *,
+        governance_input: GovernanceInput,
+        decision: GovernanceDecision,
+        receipt: GovernanceReceipt,
+        shadow_metadata: JSONDict | None = None,
+    ) -> ValidationResult:
+        failure_result = ValidationResult(
+            is_valid=False,
+            errors=list(decision.reasons) or ["Governance validation rejected the message"],
+            metadata={
+                "rejection_reason": decision.blocking_stage or "governance_core_rejected",
+                "governance_core_mode": self._governance_core_mode,
+                "governance_decision": decision.to_metadata(),
+                "governance_receipt": receipt.to_metadata(),
+                "governance_input": {
+                    "message_id": governance_input.message_id,
+                    "producer_id": governance_input.producer_id,
+                    "action_type": governance_input.action_type,
+                    "constitutional_hash": governance_input.constitutional_hash,
+                },
+            },
+        )
+        if shadow_metadata is not None:
+            failure_result.metadata["governance_shadow"] = shadow_metadata
+        return failure_result
 
     def _compute_cache_key(self, msg: AgentMessage) -> str:
         """Compute SHA-256 cache key with security dimensions for tenant isolation."""
-        return compute_message_cache_key(
+        base_key = compute_message_cache_key(
             msg,
             cache_hash_mode=self._cache_hash_mode,
             fast_hash_available=FAST_HASH_AVAILABLE,
             fast_hash_func=fast_hash if FAST_HASH_AVAILABLE else None,
+        )
+        return (
+            f"{base_key}:{self._governance_core_mode}:"
+            f"{int(self._governance_peer_validation_enabled)}:"
+            f"{int(self._governance_manifold_enabled)}"
         )
 
     async def _execute_verification_and_processing(
@@ -738,6 +1161,7 @@ class MessageProcessor:
         # Strategy-based processing
         res = await self._processing_strategy.process(msg, self._handlers)
         res.metadata.update(sdpc_metadata)
+        self._attach_governance_metadata(msg, res)
 
         # Calculate latency and handle results
         latency_ms = (time.perf_counter() - start_time) * 1000
@@ -754,8 +1178,9 @@ class MessageProcessor:
         self, msg: AgentMessage, result: ValidationResult, cache_key: str, latency_ms: float
     ) -> None:
         """Handle successful message processing with caching and metrics."""
-        self._validation_cache.set(cache_key, result)
+        self._validation_cache.set(cache_key, self._clone_validation_result(result))
         self._processed_count += 1
+        self._schedule_governance_audit_event(msg, result)
 
         if not self._requires_independent_validation(msg):
             self._record_agent_workflow_event(
@@ -773,6 +1198,7 @@ class MessageProcessor:
         """Handle failed message processing with DLQ and metrics."""
         self._failed_count += 1
         rejection_reason = self._extract_rejection_reason(result)
+        self._schedule_governance_audit_event(msg, result)
 
         self._record_agent_workflow_event(
             event_type="gate_failure",
@@ -802,6 +1228,63 @@ class MessageProcessor:
             )
         except (AttributeError, OSError, RuntimeError, TypeError, ValueError) as e:
             logger.warning(f"Metering callback failed: {e}")
+
+    def _schedule_governance_audit_event(
+        self,
+        msg: AgentMessage,
+        result: ValidationResult,
+    ) -> None:
+        metadata = result.metadata if isinstance(result.metadata, dict) else {}
+        if self._audit_client is None:
+            return
+        if "governance_decision" not in metadata or "governance_receipt" not in metadata:
+            return
+        schedule_background_task(
+            self._emit_governance_audit_event(msg, result),
+            self._background_tasks,
+        )
+
+    async def _emit_governance_audit_event(
+        self,
+        msg: AgentMessage,
+        result: ValidationResult,
+    ) -> None:
+        audit_client = self._audit_client
+        if audit_client is None:
+            return
+
+        metadata = result.metadata if isinstance(result.metadata, dict) else {}
+        details: JSONDict = {
+            "message_id": msg.message_id,
+            "tenant_id": msg.tenant_id,
+            "from_agent": msg.from_agent,
+            "to_agent": msg.to_agent,
+            "message_type": get_enum_value(msg.message_type),
+            "constitutional_hash": msg.constitutional_hash,
+            "result_valid": result.is_valid,
+            "rejection_reason": self._extract_rejection_reason(result) if not result.is_valid else None,
+            "governance_core_mode": metadata.get("governance_core_mode", self._governance_core_mode),
+            "governance_decision": metadata.get("governance_decision"),
+            "governance_receipt": metadata.get("governance_receipt"),
+            "governance_shadow": metadata.get("governance_shadow"),
+        }
+
+        try:
+            if hasattr(audit_client, "log_event"):
+                await audit_client.log_event(
+                    event_type="message_processor.governance_decision",
+                    details=details,
+                    correlation_id=msg.message_id,
+                )
+            elif hasattr(audit_client, "log"):
+                await audit_client.log(
+                    action="message_processor.governance_decision",
+                    resource_type="agent_message",
+                    resource_id=msg.message_id,
+                    details=details,
+                )
+        except (AttributeError, OSError, RuntimeError, TypeError, ValueError) as e:
+            logger.warning("governance_audit_event_failed", message_id=msg.message_id, error=str(e))
 
     async def _get_dlq_redis(self) -> object:
         """Get or create a cached Redis client for DLQ writes."""
@@ -907,17 +1390,14 @@ class MessageProcessor:
             Dictionary containing processed count, failed count, success rate,
             strategy information, and feature flags.
         """
+        metrics = self._build_base_metrics()
+        self._apply_metrics_enrichment(metrics)
+        return metrics
+
+    def _build_base_metrics(self) -> JSONDict:
         total = self._processed_count + self._failed_count
         success_rate = self._processed_count / max(1, total) if total > 0 else 0.0
-
-        # Calculate session resolution metrics
-        session_resolution_rate = calculate_session_resolution_rate(
-            self._session_resolved_count,
-            self._session_not_found_count,
-            self._session_error_count,
-        )
-
-        metrics = {
+        return {
             "processed_count": self._processed_count,
             "failed_count": self._failed_count,
             "success_rate": success_rate,
@@ -934,9 +1414,25 @@ class MessageProcessor:
                 self._pqc_config.verification_mode if self._pqc_config else None
             ),
             "pqc_migration_phase": self._pqc_config.migration_phase if self._pqc_config else None,
+            "governance_core_mode": self._governance_core_mode,
+            "governance_swarm_available": getattr(
+                self._swarm_governance_core,
+                "is_available",
+                lambda: False,
+            )(),
+            "governance_swarm_peer_validation_enabled": self._governance_peer_validation_enabled,
+            "governance_swarm_use_manifold": self._governance_manifold_enabled,
+            "governance_shadow_matches": self._governance_shadow_matches,
+            "governance_shadow_mismatches": self._governance_shadow_mismatches,
+            "governance_shadow_errors": self._governance_shadow_errors,
         }
 
-        # Add session governance metrics
+    def _apply_metrics_enrichment(self, metrics: JSONDict) -> None:
+        session_resolution_rate = calculate_session_resolution_rate(
+            self._session_resolved_count,
+            self._session_not_found_count,
+            self._session_error_count,
+        )
         apply_session_governance_metrics(
             metrics,
             enabled=self._enable_session_governance,
@@ -945,14 +1441,10 @@ class MessageProcessor:
             error_count=self._session_error_count,
             resolution_rate=session_resolution_rate,
         )
-
         enrich_metrics_with_opa_stats(metrics, self._opa_client)
-
         collector = getattr(self, "_agent_workflow_metrics", None)
         if collector is not None and not enrich_metrics_with_workflow_telemetry(metrics, collector):
             logger.debug("Unable to enrich metrics with workflow telemetry", exc_info=True)
-
-        return metrics
 
     def _set_strategy(self, strategy: ProcessingStrategy) -> None:
         self._processing_strategy = strategy

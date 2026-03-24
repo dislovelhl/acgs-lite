@@ -5,7 +5,6 @@ import time
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 from src.core.shared.constants import CONSTITUTIONAL_HASH as CONST_HASH
 
 from enhanced_agent_bus.adaptive_governance.governance_engine import (
@@ -26,7 +25,7 @@ _MLFLOW_PATCH = "mlflow.set_tracking_uri"
 _IMPACT_MLFLOW = (
     "enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
 )
-_THRESH_MLFLOW = "enhanced_agent_bus.adaptive_governance.threshold_manager.AdaptiveThresholds._initialize_mlflow"  # noqa: E501
+_THRESH_MLFLOW = "enhanced_agent_bus.adaptive_governance.threshold_manager.AdaptiveThresholds._initialize_mlflow"
 
 
 class TestInstantiation:
@@ -34,7 +33,7 @@ class TestInstantiation:
 
         assert engine.constitutional_hash == CONST_HASH
         assert engine.mode == GovernanceMode.ADAPTIVE
-        assert engine.decision_history == []
+        assert len(engine.decision_history) == 0
         assert engine.running is False
         assert engine.learning_task is None
 
@@ -528,7 +527,7 @@ class TestLifecycle:
         # Clean up
         engine.running = False
         engine.learning_task.cancel()
-        try:  # noqa: SIM105
+        try:
             await engine.learning_task
         except asyncio.CancelledError:
             pass

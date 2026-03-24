@@ -23,11 +23,11 @@ from pathlib import Path
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -55,20 +55,20 @@ CREDENTIAL_OPERATION_ERRORS = (
 )
 
 
-class CredentialType(str, Enum):  # noqa: UP042
+class CredentialType(str, Enum):
     """Type of credential."""
 
     API_KEY = "api_key"
-    OAUTH2_TOKEN = "oauth2_token"  # noqa: S105
+    OAUTH2_TOKEN = "oauth2_token"
     BASIC_AUTH = "basic_auth"
-    BEARER_TOKEN = "bearer_token"  # noqa: S105
+    BEARER_TOKEN = "bearer_token"
     CLIENT_CREDENTIALS = "client_credentials"
     CERTIFICATE = "certificate"
-    HMAC_SECRET = "hmac_secret"  # noqa: S105
+    HMAC_SECRET = "hmac_secret"
     CUSTOM = "custom"
 
 
-class CredentialScope(str, Enum):  # noqa: UP042
+class CredentialScope(str, Enum):
     """Scope of credential access."""
 
     GLOBAL = "global"  # Available to all tools
@@ -78,7 +78,7 @@ class CredentialScope(str, Enum):  # noqa: UP042
     SESSION = "session"  # Session-scoped
 
 
-class CredentialStatus(str, Enum):  # noqa: UP042
+class CredentialStatus(str, Enum):
     """Status of a credential."""
 
     ACTIVE = "active"

@@ -7,8 +7,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from enhanced_agent_bus.batch_processor_infra.orchestrator import (
     BatchProcessorOrchestrator,
 )
@@ -23,7 +21,6 @@ from enhanced_agent_bus.validators import ValidationResult
 
 
 class TestBatchProcessorOrchestrator:
-    @pytest.mark.asyncio
     async def test_process_batch_full_flow(self):
         orchestrator = BatchProcessorOrchestrator(max_concurrency=5)
 
@@ -46,7 +43,6 @@ class TestBatchProcessorOrchestrator:
         assert response.stats.successful_items == 3
         assert response.stats.processing_time_ms > 0
 
-    @pytest.mark.asyncio
     async def test_process_batch_governance_fail(self):
         orchestrator = BatchProcessorOrchestrator()
 
@@ -63,7 +59,6 @@ class TestBatchProcessorOrchestrator:
         assert response.error is not None
         assert response.stats.failed_items == 1  # One item that failed governance
 
-    @pytest.mark.asyncio
     async def test_process_batch_with_deduplication(self):
         orchestrator = BatchProcessorOrchestrator()
 

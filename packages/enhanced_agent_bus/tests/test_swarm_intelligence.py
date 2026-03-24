@@ -17,8 +17,6 @@ import asyncio
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from ..swarm_intelligence import (
     # Constants
     CONSTITUTIONAL_HASH,
@@ -512,7 +510,6 @@ class TestConsensusMechanism:
         consensus = ConsensusMechanism()
         assert consensus is not None
 
-    @pytest.mark.asyncio
     async def test_create_proposal(self):
         """Can create consensus proposal."""
         consensus = ConsensusMechanism()
@@ -529,7 +526,6 @@ class TestConsensusMechanism:
         assert proposal.required_type == ConsensusType.MAJORITY
         assert proposal.result is None
 
-    @pytest.mark.asyncio
     async def test_vote_on_proposal(self):
         """Can vote on a proposal."""
         consensus = ConsensusMechanism()
@@ -545,7 +541,6 @@ class TestConsensusMechanism:
         assert result is True
         assert proposal.votes["agent-002"] is True
 
-    @pytest.mark.asyncio
     async def test_vote_after_deadline(self):
         """Cannot vote after deadline."""
         consensus = ConsensusMechanism()
@@ -664,7 +659,6 @@ class TestMessageBus:
         bus = MessageBus()
         assert bus is not None
 
-    @pytest.mark.asyncio
     async def test_send_message(self):
         """Can send point-to-point message."""
         bus = MessageBus()
@@ -684,7 +678,6 @@ class TestMessageBus:
         assert messages[0].sender_id == "agent-001"
         assert messages[0].payload == {"data": "test"}
 
-    @pytest.mark.asyncio
     async def test_broadcast_message(self):
         """Can broadcast to multiple recipients."""
         bus = MessageBus()
@@ -704,7 +697,6 @@ class TestMessageBus:
         assert len(messages2) == 1
         assert len(messages3) == 1
 
-    @pytest.mark.asyncio
     async def test_subscribe_publish(self):
         """Pub/sub messaging works."""
         bus = MessageBus()
@@ -727,7 +719,6 @@ class TestMessageBus:
         assert len(messages2) == 1
         assert messages1[0].message_type == "topic:updates"
 
-    @pytest.mark.asyncio
     async def test_unsubscribe(self):
         """Can unsubscribe from topic."""
         bus = MessageBus()
@@ -743,7 +734,6 @@ class TestMessageBus:
 
         assert count == 0
 
-    @pytest.mark.asyncio
     async def test_receive_filtered_by_type(self):
         """Can filter received messages by type."""
         bus = MessageBus()
@@ -756,7 +746,6 @@ class TestMessageBus:
         assert len(messages) == 1
         assert messages[0].message_type == "type_a"
 
-    @pytest.mark.asyncio
     async def test_acknowledge_message(self):
         """Can acknowledge message receipt."""
         bus = MessageBus()
@@ -790,7 +779,6 @@ class TestSwarmCoordinator:
         coordinator = create_swarm_coordinator(max_agents=10)
         assert coordinator.max_agents == 10
 
-    @pytest.mark.asyncio
     async def test_spawn_agent(self):
         """Can spawn new agents."""
         coordinator = SwarmCoordinator()
@@ -804,7 +792,6 @@ class TestSwarmCoordinator:
         assert agent.name == "Coder"
         assert agent.state == AgentState.READY
 
-    @pytest.mark.asyncio
     async def test_spawn_respects_max_agents(self):
         """Cannot spawn beyond max_agents limit."""
         coordinator = SwarmCoordinator(max_agents=2)
@@ -815,7 +802,6 @@ class TestSwarmCoordinator:
 
         assert agent3 is None
 
-    @pytest.mark.asyncio
     async def test_terminate_agent(self):
         """Can terminate agents."""
         coordinator = SwarmCoordinator()
@@ -826,7 +812,6 @@ class TestSwarmCoordinator:
         assert result is True
         assert coordinator.get_agent(agent.id) is None
 
-    @pytest.mark.asyncio
     async def test_submit_task(self):
         """Can submit tasks to swarm."""
         coordinator = SwarmCoordinator()
@@ -840,7 +825,6 @@ class TestSwarmCoordinator:
         assert task_id is not None
         assert coordinator.get_task(task_id) is not None
 
-    @pytest.mark.asyncio
     async def test_submit_task_with_decomposition(self):
         """Tasks can be decomposed on submission."""
         coordinator = SwarmCoordinator()
@@ -857,7 +841,6 @@ class TestSwarmCoordinator:
         stats = coordinator.get_stats()
         assert stats["metrics"]["tasks_submitted"] == 4  # 4 subtasks from code_generation
 
-    @pytest.mark.asyncio
     async def test_assign_tasks(self):
         """Can assign tasks to available agents."""
         coordinator = SwarmCoordinator()
@@ -877,7 +860,6 @@ class TestSwarmCoordinator:
 
         assert assigned == 1
 
-    @pytest.mark.asyncio
     async def test_complete_task(self):
         """Can complete tasks."""
         coordinator = SwarmCoordinator()
@@ -902,7 +884,6 @@ class TestSwarmCoordinator:
         assert task.completed_at is not None
         assert task.result == {"status": "done"}
 
-    @pytest.mark.asyncio
     async def test_request_consensus(self):
         """Can request consensus from swarm."""
         coordinator = SwarmCoordinator()
@@ -919,7 +900,6 @@ class TestSwarmCoordinator:
         assert proposal is not None
         assert proposal.action == "deploy"
 
-    @pytest.mark.asyncio
     async def test_vote_on_consensus(self):
         """Can vote on consensus proposals."""
         coordinator = SwarmCoordinator()
@@ -942,7 +922,6 @@ class TestSwarmCoordinator:
         # With 2 agents, 1 approval is not enough for majority
         assert is_decided is False
 
-    @pytest.mark.asyncio
     async def test_send_message(self):
         """Can send messages between agents."""
         coordinator = SwarmCoordinator()
@@ -958,7 +937,6 @@ class TestSwarmCoordinator:
         stats = coordinator.get_stats()
         assert stats["metrics"]["messages_sent"] == 1
 
-    @pytest.mark.asyncio
     async def test_broadcast_message(self):
         """Can broadcast messages to all agents."""
         coordinator = SwarmCoordinator()
@@ -987,7 +965,6 @@ class TestSwarmCoordinator:
         assert "metrics" in stats
         assert stats["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_shutdown(self):
         """Can gracefully shutdown swarm."""
         coordinator = SwarmCoordinator()
@@ -999,7 +976,6 @@ class TestSwarmCoordinator:
 
         assert len(coordinator.get_active_agents()) == 0
 
-    @pytest.mark.asyncio
     async def test_get_active_agents(self):
         """Can get list of active agents."""
         coordinator = SwarmCoordinator()
@@ -1013,7 +989,6 @@ class TestSwarmCoordinator:
         assert agent1 in active
         assert agent2 in active
 
-    @pytest.mark.asyncio
     async def test_get_available_agents(self):
         """Can get list of available (ready) agents."""
         coordinator = SwarmCoordinator()

@@ -13,6 +13,8 @@ Performance Targets:
 - Support for high-throughput batch operations
 """
 
+from __future__ import annotations
+
 import asyncio
 import json
 import time
@@ -41,11 +43,11 @@ class _DecisionStoreMetrics(TypedDict, total=False):
 
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -58,7 +60,7 @@ except ImportError:
     DecisionExplanationV1 = None  # type: ignore[misc, assignment]
     create_decision_explanation = None  # type: ignore[misc, assignment]
 
-from .redis_pool import (  # noqa: E402
+from .redis_pool import (
     REDIS_AVAILABLE,
     RedisConnectionPool,
     get_shared_pool,

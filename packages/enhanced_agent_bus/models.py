@@ -26,7 +26,7 @@ if _module is not None:
 
 # Import constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -60,10 +60,10 @@ except ImportError:
 
 # Re-export enums
 # Re-export agent models
-from .agent_models import SwarmAgent  # noqa: E402
+from .agent_models import SwarmAgent
 
 # Re-export batch models
-from .batch_models import (  # noqa: E402
+from .batch_models import (
     BatchRequest,
     BatchRequestItem,
     BatchResponse,
@@ -72,7 +72,7 @@ from .batch_models import (  # noqa: E402
 )
 
 # Re-export core models
-from .core_models import (  # noqa: E402
+from .core_models import (
     AgentMessage,
     ConversationMessage,
     ConversationState,
@@ -83,7 +83,7 @@ from .core_models import (  # noqa: E402
     RoutingContext,
     get_enum_value,
 )
-from .enums import (  # noqa: E402
+from .enums import (
     AgentCapability,
     AutonomyTier,
     BatchItemStatus,
@@ -97,7 +97,7 @@ from .enums import (  # noqa: E402
 )
 
 # Re-export schema evolution (T012: Event Schema Evolution)
-from .schema_evolution import (  # noqa: E402
+from .schema_evolution import (
     AGENT_MESSAGE_SCHEMA_V1,
     AGENT_MESSAGE_SCHEMA_V1_1,
     AGENT_MESSAGE_SCHEMA_V1_2,
@@ -117,14 +117,14 @@ from .schema_evolution import (  # noqa: E402
 )
 
 # Re-export session models
-from .session_models import (  # noqa: E402
+from .session_models import (
     SessionContext,
     SessionGovernanceConfig,
 )
 
 # Re-export LangGraph orchestration models for backward compatibility
 try:
-    from .langgraph_orchestration.models import (  # noqa: E402
+    from .langgraph_orchestration.models import (
         Checkpoint,
         CheckpointStatus,
         ConditionalEdge,

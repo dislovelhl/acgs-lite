@@ -182,6 +182,7 @@ class GovernanceRunnable:
 
     @property
     def stats(self) -> dict[str, Any]:
+        """Return governance statistics for this runnable."""
         return {
             **self.engine.stats,
             "agent_id": self.agent_id,

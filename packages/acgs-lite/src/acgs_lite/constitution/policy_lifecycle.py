@@ -43,7 +43,7 @@ class GateType(str, Enum):
 
     MIN_APPROVALS = "min_approvals"
     LINT_CLEAN = "lint_clean"
-    TEST_SUITE_PASS = "test_suite_pass"
+    TEST_SUITE_PASS = "test_suite_pass"  # noqa: S105 — pass/fail status string, not a password
     BLAST_RADIUS_BELOW = "blast_radius_below"
     ATTESTATION_REQUIRED = "attestation_required"
 
@@ -534,10 +534,14 @@ class PolicyLifecycleOrchestrator:
         if gate.gate_type == GateType.BLAST_RADIUS_BELOW:
             if policy.blast_radius_pct is None:
                 return False, "blast radius not assessed"
-            threshold = float(gate.threshold or 50.0)
-            if policy.blast_radius_pct <= threshold:
+            blast_radius_threshold = float(gate.threshold or 50.0)
+            if policy.blast_radius_pct <= blast_radius_threshold:
                 return True, ""
-            return False, f"blast radius {policy.blast_radius_pct:.1f}% > limit {threshold:.1f}%"
+            return (
+                False,
+                f"blast radius {policy.blast_radius_pct:.1f}% > limit "
+                f"{blast_radius_threshold:.1f}%",
+            )
 
         if gate.gate_type == GateType.ATTESTATION_REQUIRED:
             if policy.attestation_present:

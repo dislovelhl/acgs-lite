@@ -15,7 +15,7 @@ try:
     from src.core.shared.types import (
         JSONDict,
         JSONValue,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]
@@ -289,7 +289,7 @@ class IntentClassifier:
 User input: {content}
 
 Respond with ONLY a JSON object in this exact format:
-{{"intent": "FACTUAL|CREATIVE|REASONING|GENERAL", "confidence": 0.0-1.0, "reasoning": "brief explanation"}}"""  # noqa: E501
+{{"intent": "FACTUAL|CREATIVE|REASONING|GENERAL", "confidence": 0.0-1.0, "reasoning": "brief explanation"}}"""
 
     # Maximum content length to send to LLM (to control costs)
     MAX_CONTENT_LENGTH: int = 2000

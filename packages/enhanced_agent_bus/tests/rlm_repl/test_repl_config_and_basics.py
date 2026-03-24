@@ -6,8 +6,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 import logging
 from unittest.mock import patch
 
-import pytest
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 REPL_MODULE = "enhanced_agent_bus.rlm_repl"

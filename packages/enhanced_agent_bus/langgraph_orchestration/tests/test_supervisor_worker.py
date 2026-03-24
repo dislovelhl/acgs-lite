@@ -164,7 +164,6 @@ class TestWorkerNode:
 
         assert worker.can_handle(task) is False
 
-    @pytest.mark.asyncio
     async def test_execute_task_with_handler(self):
         """Test executing task with registered handler."""
         worker = WorkerNode(worker_id="worker1")
@@ -183,7 +182,6 @@ class TestWorkerNode:
         assert result.output == {"result": 10}
         assert worker.tasks_completed == 1
 
-    @pytest.mark.asyncio
     async def test_execute_task_async_handler(self):
         """Test executing task with async handler."""
         worker = WorkerNode(worker_id="worker1")
@@ -202,7 +200,6 @@ class TestWorkerNode:
         assert result.success is True
         assert result.output == {"async_result": "done"}
 
-    @pytest.mark.asyncio
     async def test_execute_task_failure(self):
         """Test executing task that fails."""
         worker = WorkerNode(worker_id="worker1")
@@ -221,7 +218,6 @@ class TestWorkerNode:
         assert "Intentional error" in result.error
         assert worker.tasks_failed == 1
 
-    @pytest.mark.asyncio
     async def test_execute_task_passthrough(self):
         """Test executing task without handler (passthrough)."""
         worker = WorkerNode(worker_id="worker1")
@@ -301,7 +297,6 @@ class TestWorkerPool:
 
         assert available is None
 
-    @pytest.mark.asyncio
     async def test_submit_task(self):
         """Test submitting single task."""
         worker = WorkerNode(worker_id="worker1")
@@ -316,7 +311,6 @@ class TestWorkerPool:
         assert result.success is True
         assert result.output == {"done": True}
 
-    @pytest.mark.asyncio
     async def test_submit_tasks_parallel(self):
         """Test submitting multiple tasks in parallel."""
         workers = [WorkerNode(worker_id=f"worker{i}") for i in range(3)]
@@ -333,7 +327,6 @@ class TestWorkerPool:
         assert len(results) == 3
         assert all(r.success for r in results)
 
-    @pytest.mark.asyncio
     async def test_submit_tasks_priority_order(self):
         """Test tasks are sorted by priority."""
         worker = WorkerNode(worker_id="worker1")
@@ -419,7 +412,6 @@ class TestSupervisorNode:
 
         assert supervisor._critic is critic
 
-    @pytest.mark.asyncio
     async def test_plan_default(self):
         """Test default planning."""
         supervisor = SupervisorNode(supervisor_id="supervisor1")
@@ -430,7 +422,6 @@ class TestSupervisorNode:
         assert len(tasks) == 1
         assert tasks[0].name == "passthrough"
 
-    @pytest.mark.asyncio
     async def test_plan_custom(self):
         """Test custom planning function."""
         supervisor = SupervisorNode(supervisor_id="supervisor1")
@@ -448,7 +439,6 @@ class TestSupervisorNode:
 
         assert len(tasks) == 2
 
-    @pytest.mark.asyncio
     async def test_aggregate_results_default(self):
         """Test default result aggregation."""
         supervisor = SupervisorNode(supervisor_id="supervisor1")
@@ -468,7 +458,6 @@ class TestSupervisorNode:
         assert new_state.data["existing"] == "data"
         assert new_state.data["new"] == "value"
 
-    @pytest.mark.asyncio
     async def test_critique_default(self):
         """Test default critique."""
         supervisor = SupervisorNode(supervisor_id="supervisor1")
@@ -479,7 +468,6 @@ class TestSupervisorNode:
         assert is_acceptable is True
         assert suggestions is None
 
-    @pytest.mark.asyncio
     async def test_should_continue_max_iterations(self):
         """Test continuation check with max iterations."""
         supervisor = SupervisorNode(
@@ -493,7 +481,6 @@ class TestSupervisorNode:
 
         assert should_continue is False
 
-    @pytest.mark.asyncio
     async def test_execute_simple(self):
         """Test simple execution cycle."""
         # Create worker
@@ -536,7 +523,6 @@ class TestSupervisorNode:
 class TestSupervisorWorkerOrchestrator:
     """Tests for SupervisorWorkerOrchestrator."""
 
-    @pytest.mark.asyncio
     async def test_run_successful(self):
         """Test successful orchestration run."""
         # Create worker
@@ -566,7 +552,6 @@ class TestSupervisorWorkerOrchestrator:
         assert result.status == ExecutionStatus.COMPLETED
         assert result.final_state.data["processed"] is True
 
-    @pytest.mark.asyncio
     async def test_run_with_persistence(self):
         """Test orchestration with persistence."""
         worker = WorkerNode(worker_id="worker1")

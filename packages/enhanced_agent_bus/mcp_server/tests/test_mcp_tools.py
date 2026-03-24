@@ -9,7 +9,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 import json
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 from ..tools.get_metrics import GetMetricsTool
@@ -75,7 +74,6 @@ class TestValidateComplianceTool:
         assert "context" in properties
         assert "action" in required or "context" in required
 
-    @pytest.mark.asyncio
     async def test_validate_compliant_action(self):
         """Test validating a compliant action."""
         tool = ValidateComplianceTool()
@@ -96,7 +94,6 @@ class TestValidateComplianceTool:
         assert data["confidence"] > 0.5
         assert len(data.get("violations", [])) == 0
 
-    @pytest.mark.asyncio
     async def test_validate_non_compliant_action(self):
         """Test validating a non-compliant action."""
         tool = ValidateComplianceTool()
@@ -116,7 +113,6 @@ class TestValidateComplianceTool:
         assert data["compliant"] is False
         assert len(data.get("violations", [])) > 0
 
-    @pytest.mark.asyncio
     async def test_validate_with_specific_principles(self):
         """Test validation with specific principles."""
         tool = ValidateComplianceTool()
@@ -134,7 +130,6 @@ class TestValidateComplianceTool:
         assert "constitutional_hash" in data
         assert data["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_validate_rejects_invalid_hash(self):
         """Test that validation with invalid hash still works but returns result."""
         tool = ValidateComplianceTool()
@@ -151,7 +146,6 @@ class TestValidateComplianceTool:
         data = extract_content(result)
         assert "constitutional_hash" in data  # Should include the correct hash
 
-    @pytest.mark.asyncio
     async def test_metrics_tracking(self):
         """Test that metrics are tracked."""
         tool = ValidateComplianceTool()
@@ -181,7 +175,6 @@ class TestGetPrinciplesTool:
         assert "category" in properties
         assert "enforcement_level" in properties
 
-    @pytest.mark.asyncio
     async def test_get_all_principles(self):
         """Test getting all active principles."""
         tool = GetPrinciplesTool()
@@ -193,7 +186,6 @@ class TestGetPrinciplesTool:
         assert len(data["principles"]) > 0
         assert data["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_filter_by_category(self):
         """Test filtering principles by category."""
         tool = GetPrinciplesTool()
@@ -209,7 +201,6 @@ class TestGetPrinciplesTool:
         for principle in data["principles"]:
             assert principle["category"] == "safety"
 
-    @pytest.mark.asyncio
     async def test_filter_by_enforcement_level(self):
         """Test filtering by enforcement level."""
         tool = GetPrinciplesTool()
@@ -225,7 +216,6 @@ class TestGetPrinciplesTool:
         for principle in data["principles"]:
             assert principle["enforcement_level"] == "strict"
 
-    @pytest.mark.asyncio
     async def test_get_specific_principles(self):
         """Test getting specific principles by ID."""
         tool = GetPrinciplesTool()
@@ -255,7 +245,6 @@ class TestQueryPrecedentsTool:
         assert "action_type" in properties
         assert "outcome" in properties
 
-    @pytest.mark.asyncio
     async def test_query_all_precedents(self):
         """Test querying all precedents."""
         tool = QueryPrecedentsTool()
@@ -266,7 +255,6 @@ class TestQueryPrecedentsTool:
         assert "precedents" in data
         assert data["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_query_by_action_type(self):
         """Test querying by action type."""
         tool = QueryPrecedentsTool()
@@ -280,7 +268,6 @@ class TestQueryPrecedentsTool:
         data = extract_content(result)
         assert "precedents" in data
 
-    @pytest.mark.asyncio
     async def test_query_by_outcome(self):
         """Test querying by outcome."""
         tool = QueryPrecedentsTool()
@@ -297,7 +284,6 @@ class TestQueryPrecedentsTool:
         for precedent in data.get("precedents", []):
             assert precedent.get("outcome") == "denied"
 
-    @pytest.mark.asyncio
     async def test_query_with_date_range(self):
         """Test querying with date range."""
         tool = QueryPrecedentsTool()
@@ -312,7 +298,6 @@ class TestQueryPrecedentsTool:
         data = extract_content(result)
         assert "precedents" in data
 
-    @pytest.mark.asyncio
     async def test_query_with_limit(self):
         """Test querying with result limit."""
         tool = QueryPrecedentsTool()
@@ -341,7 +326,6 @@ class TestSubmitGovernanceTool:
         assert "action" in required
         assert "context" in required
 
-    @pytest.mark.asyncio
     async def test_submit_request(self):
         """Test submitting a governance request."""
         tool = SubmitGovernanceTool()
@@ -363,7 +347,6 @@ class TestSubmitGovernanceTool:
         assert "status" in request_data
         assert data["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_submit_with_wait(self):
         """Test submitting request with wait for approval."""
         tool = SubmitGovernanceTool()
@@ -383,7 +366,6 @@ class TestSubmitGovernanceTool:
         assert "request_id" in request_data
         assert "status" in request_data
 
-    @pytest.mark.asyncio
     async def test_submit_high_priority(self):
         """Test submitting high priority request."""
         tool = SubmitGovernanceTool()
@@ -414,7 +396,6 @@ class TestGetMetricsTool:
         properties = get_schema_properties(definition)
         assert "time_range" in properties
 
-    @pytest.mark.asyncio
     async def test_get_all_metrics(self):
         """Test getting all metrics."""
         tool = GetMetricsTool()
@@ -426,7 +407,6 @@ class TestGetMetricsTool:
         assert "constitutional_hash" in data
         assert data["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_get_metrics_with_time_range(self):
         """Test getting metrics with time range."""
         tool = GetMetricsTool()
@@ -440,7 +420,6 @@ class TestGetMetricsTool:
         data = extract_content(result)
         assert "constitutional_hash" in data
 
-    @pytest.mark.asyncio
     async def test_get_specific_metric_types(self):
         """Test getting specific metric types."""
         tool = GetMetricsTool()
@@ -454,7 +433,6 @@ class TestGetMetricsTool:
         data = extract_content(result)
         assert "constitutional_hash" in data
 
-    @pytest.mark.asyncio
     async def test_metrics_include_performance(self):
         """Test that metrics include performance data."""
         tool = GetMetricsTool()
@@ -469,7 +447,6 @@ class TestGetMetricsTool:
 class TestToolsWithAdapters:
     """Tests for tools with external adapters."""
 
-    @pytest.mark.asyncio
     async def test_validate_with_agent_bus_adapter(self):
         """Test validation with agent bus adapter."""
         mock_adapter = MagicMock()
@@ -498,7 +475,6 @@ class TestToolsWithAdapters:
         assert data["compliant"] is True
         mock_adapter.validate_action.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_precedents_with_audit_client(self):
         """Test precedent queries with audit client adapter."""
         mock_adapter = MagicMock()

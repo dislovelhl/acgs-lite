@@ -5,6 +5,7 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 import pytest
 
+from src.core.shared.errors.exceptions import ServiceUnavailableError
 from src.core.shared.utilities import DependencyRegistry, FeatureFlag
 
 
@@ -149,7 +150,7 @@ class TestDependencyRegistryRequire:
             import_name="Something",
             feature_flag=FeatureFlag.RUST,
         )
-        with pytest.raises(RuntimeError) as exc_info:
+        with pytest.raises(ServiceUnavailableError) as exc_info:
             DependencyRegistry.require(FeatureFlag.RUST)
         assert "RUST" in str(exc_info.value)
 

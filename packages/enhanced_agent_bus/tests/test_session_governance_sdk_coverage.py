@@ -218,8 +218,8 @@ class TestConcurrencyCheckResult:
 
 class TestSessionToken:
     def test_default_values(self):
-        token = SessionToken(access_token="tok123")  # noqa: S106
-        assert token.token_type == "Bearer"  # noqa: S105
+        token = SessionToken(access_token="tok123")
+        assert token.token_type == "Bearer"
         assert token.expires_in == 3600
         assert token.refresh_token is None
         assert token.scope is None
@@ -729,7 +729,7 @@ class TestSessionTokenManager:
         manager = SessionTokenManager(private_key=TEST_PRIVATE_KEY)
         token = await manager.generate_access_token("sid1", "t1", "u1", ["admin", "viewer"])
         assert token.access_token != ""
-        assert token.token_type == "Bearer"  # noqa: S105
+        assert token.token_type == "Bearer"
         assert token.expires_in == 60 * 60
         assert token.constitutional_hash == CONSTITUTIONAL_HASH
 

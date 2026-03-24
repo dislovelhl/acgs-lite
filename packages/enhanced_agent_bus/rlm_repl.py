@@ -326,7 +326,7 @@ class RLMREPLEnvironment:
                         return self._namespace["_"]
                     output = buffer.getvalue()
                     return output[: self.config.max_output_length]
-                return eval(compiled_eval, self._namespace, self._namespace)
+                return eval(compiled_eval, self._namespace, self._namespace)  # noqa: S307 — sandboxed REPL with ExecutionTimeout guard and isolated namespace
         except ExecutionTimeout as exc:
             raise RuntimeError("Execution exceeded allowed time") from exc
 

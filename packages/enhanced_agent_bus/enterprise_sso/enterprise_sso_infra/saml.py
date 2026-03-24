@@ -10,7 +10,7 @@ from urllib.parse import urlencode
 from uuid import uuid4
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -163,7 +163,7 @@ class SAML2Handler(BaseProtocolHandler):
                     )
                     return ProtocolValidationResult(
                         success=False,
-                        error="SAML signature verification required but no IdP certificate configured. "  # noqa: E501
+                        error="SAML signature verification required but no IdP certificate configured. "
                         "Set x509_certificate to the IdP's signing certificate.",
                         error_code="MISSING_IDP_CERTIFICATE",
                     )

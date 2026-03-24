@@ -25,7 +25,7 @@ import pytest
 # Governance and constitutional compliance test markers
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
-from ..enterprise_sso.policy_converter import (  # noqa: E402
+from ..enterprise_sso.policy_converter import (
     CONSTITUTIONAL_HASH,
     ConversionReport,
     ConversionResult,

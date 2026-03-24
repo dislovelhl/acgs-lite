@@ -18,13 +18,14 @@ Each step has corresponding compensation for automatic rollback on failure.
 
 import hashlib
 import json
+from dataclasses import dataclass
 from datetime import UTC, datetime, timezone
 from uuid import uuid4
 
 import httpx
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import ACGSBaseError
@@ -40,7 +41,7 @@ except ImportError:
     REDIS_AVAILABLE = False
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -72,6 +73,69 @@ except ImportError:
     SagaResult = None  # type: ignore[assignment]
 
 logger = get_logger(__name__)
+
+
+@dataclass(frozen=True)
+class ActivationStepSpec:
+    name: str
+    description: str
+    execute_attr: str
+    compensation_name: str
+    compensation_description: str
+    compensation_execute_attr: str
+    timeout_seconds: int
+    is_optional: bool = False
+
+
+ACTIVATION_STEP_SPECS: tuple[ActivationStepSpec, ...] = (
+    ActivationStepSpec(
+        name="validate_activation",
+        description="Validate amendment can be activated",
+        execute_attr="validate_activation",
+        compensation_name="log_validation_failure",
+        compensation_description="Log validation failure",
+        compensation_execute_attr="log_validation_failure",
+        timeout_seconds=30,
+    ),
+    ActivationStepSpec(
+        name="backup_current_version",
+        description="Backup current active constitutional version",
+        execute_attr="backup_current_version",
+        compensation_name="restore_backup",
+        compensation_description="Restore backed up version",
+        compensation_execute_attr="restore_backup",
+        timeout_seconds=30,
+    ),
+    ActivationStepSpec(
+        name="update_opa_policies",
+        description="Update OPA constitutional policies",
+        execute_attr="update_opa_policies",
+        compensation_name="revert_opa_policies",
+        compensation_description="Revert OPA policies to previous version",
+        compensation_execute_attr="revert_opa_policies",
+        timeout_seconds=60,
+        is_optional=True,
+    ),
+    ActivationStepSpec(
+        name="update_cache",
+        description="Invalidate cache and activate new version",
+        execute_attr="update_cache",
+        compensation_name="revert_cache",
+        compensation_description="Revert cache to previous version",
+        compensation_execute_attr="revert_cache",
+        timeout_seconds=30,
+    ),
+    ActivationStepSpec(
+        name="audit_activation",
+        description="Log activation to audit trail",
+        execute_attr="audit_activation",
+        compensation_name="mark_audit_failed",
+        compensation_description="Mark audit as failed/compensated",
+        compensation_execute_attr="mark_audit_failed",
+        timeout_seconds=30,
+        is_optional=True,
+    ),
+)
 
 
 class ActivationSagaError(ACGSBaseError):
@@ -115,6 +179,10 @@ class ActivationSagaActivities:
         self._redis_client: object | None = None
         self._opa_client: object | None = None
         self._audit_client: object | None = None
+
+    @staticmethod
+    def _extract_saga_context(input: JSONDict) -> tuple[str, JSONDict]:
+        return input["saga_id"], input["context"]
 
     def _compute_constitutional_hash(self, content: JSONDict) -> str:
         """Compute SHA256 hash of constitutional content.
@@ -193,8 +261,7 @@ class ActivationSagaActivities:
         Returns:
             Validation result with amendment_id, version_id, validation status
         """
-        saga_id = input["saga_id"]
-        context = input["context"]
+        saga_id, context = self._extract_saga_context(input)
 
         amendment_id = context.get("amendment_id")
         if not amendment_id:
@@ -229,10 +296,15 @@ class ActivationSagaActivities:
 
         # Validate constitutional hash
         if target_version.constitutional_hash != CONSTITUTIONAL_HASH:
-            logger.warning(
-                "Target version hash %s does not match current hash %s",
-                target_version.constitutional_hash,
-                CONSTITUTIONAL_HASH,
+            logger.error(
+                "activation_hash_mismatch",
+                target_version_hash=target_version.constitutional_hash,
+                current_constitutional_hash=CONSTITUTIONAL_HASH,
+                amendment_id=amendment_id,
+                target_version=target_version.version,
+            )
+            raise ActivationSagaError(
+                "Target version constitutional hash does not match the active runtime hash"
             )
 
         validation_id = str(uuid4())
@@ -297,8 +369,7 @@ class ActivationSagaActivities:
 
         This reverts the activation by restoring the previous active version.
         """
-        saga_id = input["saga_id"]
-        context = input["context"]
+        saga_id, context = self._extract_saga_context(input)
 
         backup_data = context.get("backup_current_version")
         if not backup_data:
@@ -328,8 +399,7 @@ class ActivationSagaActivities:
         Returns:
             Update result with policy_id, hash, status
         """
-        saga_id = input["saga_id"]
-        context = input["context"]
+        saga_id, context = self._extract_saga_context(input)
 
         validation_result = context.get("validate_activation", {})
         new_version = validation_result.get("new_version")
@@ -386,8 +456,7 @@ class ActivationSagaActivities:
 
         Restores OPA policy data to the backed up version's hash.
         """
-        saga_id = input["saga_id"]
-        context = input["context"]
+        saga_id, context = self._extract_saga_context(input)
 
         backup_data = context.get("backup_current_version", {})
         previous_hash = backup_data.get("constitutional_hash", CONSTITUTIONAL_HASH)
@@ -438,8 +507,7 @@ class ActivationSagaActivities:
         Returns:
             Cache update result with cache_invalidated, new_version_id
         """
-        saga_id = input["saga_id"]
-        context = input["context"]
+        saga_id, context = self._extract_saga_context(input)
 
         validation_result = context.get("validate_activation", {})
         amendment_id = context.get("amendment_id")
@@ -536,8 +604,7 @@ class ActivationSagaActivities:
         Returns:
             Audit result with audit_id, event_type, status
         """
-        saga_id = input["saga_id"]
-        context = input["context"]
+        saga_id, context = self._extract_saga_context(input)
 
         validation_result = context.get("validate_activation", {})
         backup_data = context.get("backup_current_version", {})
@@ -599,8 +666,7 @@ class ActivationSagaActivities:
 
         Logs a compensation audit event indicating activation was rolled back.
         """
-        saga_id = input["saga_id"]
-        context = input["context"]
+        saga_id, context = self._extract_saga_context(input)
 
         audit_data = context.get("audit_activation", {})
         audit_id = audit_data.get("audit_id", "unknown")
@@ -632,6 +698,110 @@ class ActivationSagaActivities:
         )
 
         return True
+
+
+def _build_activation_step(
+    *,
+    name: str,
+    description: str,
+    execute,
+    compensation_name: str,
+    compensation_description: str,
+    compensation_execute,
+    timeout_seconds: int,
+    is_optional: bool = False,
+):
+    if SagaStep is None or SagaCompensation is None:
+        raise ImportError(
+            "Constitutional saga step types not available. "
+            "Ensure deliberation_layer.workflows.constitutional_saga is installed."
+        )
+
+    return SagaStep(
+        name=name,
+        description=description,
+        execute=execute,
+        compensation=SagaCompensation(
+            name=compensation_name,
+            description=compensation_description,
+            execute=compensation_execute,
+        ),
+        timeout_seconds=timeout_seconds,
+        is_optional=is_optional,
+    )
+
+
+def _add_activation_saga_steps(saga, activities: ActivationSagaActivities) -> None:
+    for step_spec in ACTIVATION_STEP_SPECS:
+        saga.add_step(
+            _build_activation_step(
+                name=step_spec.name,
+                description=step_spec.description,
+                execute=getattr(activities, step_spec.execute_attr),
+                compensation_name=step_spec.compensation_name,
+                compensation_description=step_spec.compensation_description,
+                compensation_execute=getattr(activities, step_spec.compensation_execute_attr),
+                timeout_seconds=step_spec.timeout_seconds,
+                is_optional=step_spec.is_optional,
+            )
+        )
+
+
+def _build_activation_activities(
+    *,
+    storage: ConstitutionalStorageService,
+    opa_url: str,
+    audit_service_url: str,
+    redis_url: str | None,
+) -> ActivationSagaActivities:
+    return ActivationSagaActivities(
+        storage=storage,
+        opa_url=opa_url,
+        audit_service_url=audit_service_url,
+        redis_url=redis_url,
+    )
+
+
+def _create_activation_saga_shell(amendment_id: str) -> "ConstitutionalSagaWorkflow":
+    if not ConstitutionalSagaWorkflow:
+        raise ImportError(
+            "ConstitutionalSagaWorkflow not available. "
+            "Ensure deliberation_layer.workflows.constitutional_saga is installed."
+        )
+
+    saga_id = f"activation-{amendment_id}-{str(uuid4())[:8]}"
+    return ConstitutionalSagaWorkflow(saga_id=saga_id)
+
+
+def _get_activation_activities(saga) -> ActivationSagaActivities | None:
+    if not hasattr(saga, "_steps") or not saga._steps:
+        return None
+
+    first_step = saga._steps[0]
+    execute = getattr(first_step, "execute", None)
+    activities = getattr(execute, "__self__", None)
+    return activities if isinstance(activities, ActivationSagaActivities) else None
+
+
+async def _initialize_activation_activities(saga) -> None:
+    activities = _get_activation_activities(saga)
+    if activities is not None:
+        await activities.initialize()
+
+
+async def _close_activation_activities(saga) -> None:
+    activities = _get_activation_activities(saga)
+    if activities is not None:
+        await activities.close()
+
+
+def _build_activation_context(*, saga_id: str, amendment_id: str):
+    if not SagaContext:
+        raise ImportError("SagaContext not available")
+
+    context = SagaContext(saga_id=saga_id, constitutional_hash=CONSTITUTIONAL_HASH)
+    context.set_step_result("amendment_id", amendment_id)
+    return context
 
 
 def create_activation_saga(
@@ -682,96 +852,14 @@ def create_activation_saga(
         else:
         ```
     """
-    if not ConstitutionalSagaWorkflow:
-        raise ImportError(
-            "ConstitutionalSagaWorkflow not available. "
-            "Ensure deliberation_layer.workflows.constitutional_saga is installed."
-        )
-
-    saga_id = f"activation-{amendment_id}-{str(uuid4())[:8]}"
-    activities = ActivationSagaActivities(
-        storage=storage, opa_url=opa_url, audit_service_url=audit_service_url, redis_url=redis_url
+    saga = _create_activation_saga_shell(amendment_id)
+    activities = _build_activation_activities(
+        storage=storage,
+        opa_url=opa_url,
+        audit_service_url=audit_service_url,
+        redis_url=redis_url,
     )
-
-    saga = ConstitutionalSagaWorkflow(saga_id=saga_id)
-
-    # Step 1: Validate
-    saga.add_step(
-        SagaStep(
-            name="validate_activation",
-            description="Validate amendment can be activated",
-            execute=activities.validate_activation,
-            compensation=SagaCompensation(
-                name="log_validation_failure",
-                description="Log validation failure",
-                execute=activities.log_validation_failure,
-            ),
-            timeout_seconds=30,
-        )
-    )
-
-    # Step 2: Backup Current
-    saga.add_step(
-        SagaStep(
-            name="backup_current_version",
-            description="Backup current active constitutional version",
-            execute=activities.backup_current_version,
-            compensation=SagaCompensation(
-                name="restore_backup",
-                description="Restore backed up version",
-                execute=activities.restore_backup,
-            ),
-            timeout_seconds=30,
-        )
-    )
-
-    # Step 3: Update OPA
-    saga.add_step(
-        SagaStep(
-            name="update_opa_policies",
-            description="Update OPA constitutional policies",
-            execute=activities.update_opa_policies,
-            compensation=SagaCompensation(
-                name="revert_opa_policies",
-                description="Revert OPA policies to previous version",
-                execute=activities.revert_opa_policies,
-            ),
-            timeout_seconds=60,
-            is_optional=True,  # OPA update is not critical
-        )
-    )
-
-    # Step 4: Update Cache
-    saga.add_step(
-        SagaStep(
-            name="update_cache",
-            description="Invalidate cache and activate new version",
-            execute=activities.update_cache,
-            compensation=SagaCompensation(
-                name="revert_cache",
-                description="Revert cache to previous version",
-                execute=activities.revert_cache,
-            ),
-            timeout_seconds=30,
-        )
-    )
-
-    # Step 5: Audit
-    saga.add_step(
-        SagaStep(
-            name="audit_activation",
-            description="Log activation to audit trail",
-            execute=activities.audit_activation,
-            compensation=SagaCompensation(
-                name="mark_audit_failed",
-                description="Mark audit as failed/compensated",
-                execute=activities.mark_audit_failed,
-            ),
-            timeout_seconds=30,
-            is_optional=True,  # Audit is not critical for activation
-        )
-    )
-
+    _add_activation_saga_steps(saga, activities)
     return saga
 
 
@@ -818,7 +906,6 @@ async def activate_amendment(
     if not SagaContext:
         raise ImportError("SagaContext not available")
 
-    # Create saga
     saga = create_activation_saga(
         amendment_id=amendment_id,
         storage=storage,
@@ -826,29 +913,11 @@ async def activate_amendment(
         audit_service_url=audit_service_url,
         redis_url=redis_url,
     )
-
-    # Initialize activities
-    if hasattr(saga, "_steps") and saga._steps:
-        # Get activities from first step (they're all the same instance)
-        first_step = saga._steps[0]
-        if hasattr(first_step.execute, "__self__"):
-            activities = first_step.execute.__self__
-            if isinstance(activities, ActivationSagaActivities):
-                await activities.initialize()
-
-    # Create context
-    context = SagaContext(saga_id=saga.saga_id, constitutional_hash=CONSTITUTIONAL_HASH)
-    context.set_step_result("amendment_id", amendment_id)
+    await _initialize_activation_activities(saga)
+    context = _build_activation_context(saga_id=saga.saga_id, amendment_id=amendment_id)
 
     try:
-        # Execute saga
         result = await saga.execute(context)
         return result
     finally:
-        # Cleanup activities
-        if hasattr(saga, "_steps") and saga._steps:
-            first_step = saga._steps[0]
-            if hasattr(first_step.execute, "__self__"):
-                activities = first_step.execute.__self__
-                if isinstance(activities, ActivationSagaActivities):
-                    await activities.close()
+        await _close_activation_activities(saga)

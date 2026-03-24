@@ -169,7 +169,6 @@ class TestSessionContextResolver:
         """Create a SessionContextResolver instance."""
         return SessionContextResolver(config=session_config, manager=mock_manager)
 
-    @pytest.mark.asyncio
     async def test_resolve_from_session_id_field(self, resolver: "SessionContextResolver") -> None:
         """Session ID from message field takes highest priority."""
         # Arrange
@@ -190,7 +189,6 @@ class TestSessionContextResolver:
         assert result is not None
         assert result.session_id == "test-session-123"
 
-    @pytest.mark.asyncio
     async def test_resolve_from_headers(self, resolver: "SessionContextResolver") -> None:
         """Session ID extracted from X-Session-ID header."""
         # Arrange
@@ -211,7 +209,6 @@ class TestSessionContextResolver:
         assert result is not None
         assert result.session_id == "test-session-123"
 
-    @pytest.mark.asyncio
     async def test_resolve_from_metadata(self, resolver: "SessionContextResolver") -> None:
         """Session ID extracted from message metadata dict."""
         # Arrange
@@ -232,7 +229,6 @@ class TestSessionContextResolver:
         assert result is not None
         assert result.session_id == "test-session-123"
 
-    @pytest.mark.asyncio
     async def test_resolve_from_content_dict(self, resolver: "SessionContextResolver") -> None:
         """Session ID extracted from content dict."""
         # Arrange
@@ -252,7 +248,6 @@ class TestSessionContextResolver:
         assert result is not None
         assert result.session_id == "test-session-123"
 
-    @pytest.mark.asyncio
     async def test_resolve_already_attached(self, resolver: "SessionContextResolver") -> None:
         """If session_context is already on message, return it directly."""
         # Arrange
@@ -272,7 +267,6 @@ class TestSessionContextResolver:
         # Assert
         assert result is mock_ctx
 
-    @pytest.mark.asyncio
     async def test_resolve_cross_tenant_rejected(
         self,
         session_config: BusConfiguration,
@@ -299,7 +293,6 @@ class TestSessionContextResolver:
         # Assert — must be rejected
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_resolve_not_found_returns_none(self, session_config: BusConfiguration) -> None:
         """When session not in store, return None gracefully."""
         # Arrange
@@ -324,7 +317,6 @@ class TestSessionContextResolver:
         metrics = resolver.get_metrics()
         assert metrics["not_found_count"] == 1
 
-    @pytest.mark.asyncio
     async def test_resolve_error_returns_none(self, session_config: BusConfiguration) -> None:
         """On manager error, return None gracefully."""
         # Arrange
@@ -349,7 +341,6 @@ class TestSessionContextResolver:
         metrics = resolver.get_metrics()
         assert metrics["error_count"] == 1
 
-    @pytest.mark.asyncio
     async def test_resolve_no_tenant_returns_none(self, resolver: "SessionContextResolver") -> None:
         """If message has no tenant_id, cannot resolve session."""
         # Arrange
@@ -427,7 +418,6 @@ class TestMessageSecurityScanner:
         """Create a scanner with mocked runtime scanner."""
         return MessageSecurityScanner()
 
-    @pytest.mark.asyncio
     async def test_scan_passes_clean_message(self, sample_message: AgentMessage) -> None:
         """Clean messages should pass security scan."""
         # Arrange
@@ -448,7 +438,6 @@ class TestMessageSecurityScanner:
             # Assert — None means passed
             assert result is None
 
-    @pytest.mark.asyncio
     async def test_scan_blocks_flagged_message(self, sample_message: AgentMessage) -> None:
         """Blocked messages return ValidationResult(is_valid=False)."""
         # Arrange
@@ -518,7 +507,6 @@ class TestMessageSecurityScanner:
         # Assert
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_scan_returns_security_events_metadata(
         self, sample_message: AgentMessage
     ) -> None:
@@ -564,7 +552,6 @@ class TestVerificationOrchestrator:
         """Create orchestrator with PQC disabled."""
         return VerificationOrchestrator(config=bus_config, enable_pqc=False)
 
-    @pytest.mark.asyncio
     async def test_verify_returns_result_dataclass(
         self,
         orchestrator: "VerificationOrchestrator",
@@ -579,7 +566,6 @@ class TestVerificationOrchestrator:
         assert hasattr(result, "pqc_result")
         assert isinstance(result.sdpc_metadata, dict)
 
-    @pytest.mark.asyncio
     async def test_sdpc_skipped_for_low_impact(
         self,
         orchestrator: "VerificationOrchestrator",
@@ -645,7 +631,6 @@ class TestVerificationOrchestrator:
 
         return stack, mocks
 
-    @pytest.mark.asyncio
     async def test_sdpc_runs_asc_graph_for_factual_intent(
         self,
         orchestrator: "VerificationOrchestrator",
@@ -670,7 +655,6 @@ class TestVerificationOrchestrator:
         assert result.sdpc_metadata.get("sdpc_asc_valid") is True
         assert result.sdpc_metadata.get("sdpc_graph_grounded") is True
 
-    @pytest.mark.asyncio
     async def test_sdpc_runs_pacar_for_high_impact(
         self,
         orchestrator: "VerificationOrchestrator",
@@ -694,7 +678,6 @@ class TestVerificationOrchestrator:
         # Assert — PACAR should be present
         assert result.sdpc_metadata.get("sdpc_pacar_valid") is True
 
-    @pytest.mark.asyncio
     async def test_pqc_disabled_returns_none(
         self,
         orchestrator: "VerificationOrchestrator",
@@ -715,7 +698,6 @@ class TestVerificationOrchestrator:
         # Assert — should gracefully disable PQC
         assert orch is not None
 
-    @pytest.mark.asyncio
     async def test_evolution_feedback_recorded(
         self,
         orchestrator: "VerificationOrchestrator",
@@ -767,7 +749,6 @@ class TestMessageProcessorMetrics:
         assert snapshot["failed_count"] == 0
         assert snapshot["success_rate"] == 0.0
 
-    @pytest.mark.asyncio
     async def test_record_processed_increments(self, metrics: "MessageProcessorMetrics") -> None:
         """record_processed increments processed counter."""
         # Act
@@ -777,7 +758,6 @@ class TestMessageProcessorMetrics:
         snapshot = metrics.get_snapshot()
         assert snapshot["processed_count"] == 2
 
-    @pytest.mark.asyncio
     async def test_record_failed_increments(self, metrics: "MessageProcessorMetrics") -> None:
         """record_failed increments failed counter."""
         # Act
@@ -787,7 +767,6 @@ class TestMessageProcessorMetrics:
         snapshot = metrics.get_snapshot()
         assert snapshot["failed_count"] == 1
 
-    @pytest.mark.asyncio
     async def test_success_rate_calculation(self, metrics: "MessageProcessorMetrics") -> None:
         """Success rate = processed / (processed + failed)."""
         # Arrange
@@ -800,7 +779,6 @@ class TestMessageProcessorMetrics:
         # Assert — 3 out of 4 = 0.75
         assert snapshot["success_rate"] == pytest.approx(0.75)
 
-    @pytest.mark.asyncio
     async def test_concurrent_increments_thread_safe(
         self, metrics: "MessageProcessorMetrics"
     ) -> None:
@@ -859,7 +837,6 @@ class TestMessageProcessorBackwardCompat:
         assert proc is not None
         assert proc.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_process_returns_validation_result(
         self, isolated_processor: MessageProcessor
     ) -> None:

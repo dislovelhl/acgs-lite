@@ -40,7 +40,6 @@ from enhanced_agent_bus.deliberation_layer.workflows.constitutional_saga import 
 class TestConcurrency:
     """Tests for concurrent saga execution."""
 
-    @pytest.mark.asyncio
     async def test_multiple_sagas_concurrent(self):
         """Test multiple sagas can execute concurrently."""
 
@@ -62,7 +61,6 @@ class TestConcurrency:
             assert result.status == SagaStatus.COMPLETED
             assert result.saga_id == f"concurrent-{i}"
 
-    @pytest.mark.asyncio
     async def test_saga_isolation(self):
         """Test sagas are isolated from each other."""
         saga1_ctx = None

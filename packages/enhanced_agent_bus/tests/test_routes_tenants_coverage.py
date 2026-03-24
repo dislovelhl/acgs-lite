@@ -252,7 +252,6 @@ class TestTenantRouteHelpers:
     def test_check_tenant_scope_allows_system_admin_account(self):
         _check_tenant_scope("system-admin", "tenant-002")
 
-    @pytest.mark.asyncio
     async def test_get_tenant_or_404_returns_tenant(self):
         manager = MagicMock()
         tenant = _make_tenant()
@@ -262,7 +261,6 @@ class TestTenantRouteHelpers:
 
         assert result is tenant
 
-    @pytest.mark.asyncio
     async def test_get_tenant_or_404_raises(self):
         manager = MagicMock()
         manager.get_tenant = AsyncMock(return_value=None)
@@ -528,7 +526,7 @@ class TestValidateJwtToken:
                     # Python raises ImportError when module is None in sys.modules
                     result = _validate_jwt_token("token")
                     # Either None (handled) or raises — both are acceptable paths
-        except Exception:  # noqa: S110
+        except Exception:
             pass
         finally:
             if original is not None:

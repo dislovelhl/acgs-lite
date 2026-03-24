@@ -167,7 +167,6 @@ def _make_engine(
 
 
 @pytest.mark.constitutional
-@pytest.mark.asyncio
 class TestAdvisoryTier:
     """ADVISORY: quarantine + HITL request; graceful restart never called."""
 
@@ -281,7 +280,7 @@ class TestAdvisoryTier:
         supervisor_notifier,
         thresholds,
     ) -> None:
-        """Spec edge case 2: engine calls HITLRequestor exactly once (requestor handles dedup internally)."""  # noqa: E501
+        """Spec edge case 2: engine calls HITLRequestor exactly once (requestor handles dedup internally)."""
         engine = _make_engine(
             store,
             audit_log_client,
@@ -374,7 +373,6 @@ class TestAdvisoryTier:
 
 
 @pytest.mark.constitutional
-@pytest.mark.asyncio
 class TestBoundedTier:
     """BOUNDED: supervisor notify → wait for approval; escalate to ADVISORY on SLA timeout."""
 
@@ -558,7 +556,6 @@ class TestBoundedTier:
 
 
 @pytest.mark.constitutional
-@pytest.mark.asyncio
 class TestHumanApprovedTier:
     """HUMAN_APPROVED: autonomously calls GracefulRestarter; no HITL or supervisor."""
 
@@ -639,7 +636,6 @@ class TestHumanApprovedTier:
 
 
 @pytest.mark.constitutional
-@pytest.mark.asyncio
 class TestOverrides:
     """Operator overrides bypass tier routing."""
 
@@ -818,7 +814,6 @@ class TestOverrides:
 
 
 @pytest.mark.constitutional
-@pytest.mark.asyncio
 class TestConstitutionalHashValidation:
     async def test_handle_validates_constitutional_hash(
         self,

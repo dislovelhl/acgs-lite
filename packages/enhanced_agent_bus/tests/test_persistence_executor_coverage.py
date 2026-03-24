@@ -70,7 +70,6 @@ async def _simple_activity(ctx, input_data):
 
 
 class TestWorkflowContextProperties:
-    @pytest.mark.asyncio
     async def test_tenant_id_property(self, repository, executor):
         """WorkflowContext.tenant_id returns the tenant from the instance."""
         instance = WorkflowInstance(
@@ -82,7 +81,6 @@ class TestWorkflowContextProperties:
         ctx = WorkflowContext(instance, repository, executor)
         assert ctx.tenant_id == "tenant-abc"
 
-    @pytest.mark.asyncio
     async def test_input_property_with_data(self, repository, executor):
         """WorkflowContext.input returns input data from the instance."""
         instance = WorkflowInstance(
@@ -95,7 +93,6 @@ class TestWorkflowContextProperties:
         ctx = WorkflowContext(instance, repository, executor)
         assert ctx.input == {"key": "value"}
 
-    @pytest.mark.asyncio
     async def test_input_property_none(self, repository, executor):
         """WorkflowContext.input returns None when no input provided."""
         instance = WorkflowInstance(
@@ -114,13 +111,11 @@ class TestWorkflowContextProperties:
 
 
 class TestStartWorkflow:
-    @pytest.mark.asyncio
     async def test_unknown_workflow_type_raises(self, executor):
         """start_workflow raises ValueError for unregistered workflow type."""
         with pytest.raises(ValueError, match="Unknown workflow type: no-such-type"):
             await executor.start_workflow("no-such-type", "wf-x", "t1")
 
-    @pytest.mark.asyncio
     async def test_already_running_returns_existing(self, executor, repository):
         """start_workflow returns the existing instance when it is PENDING/RUNNING."""
 
@@ -136,7 +131,6 @@ class TestStartWorkflow:
         instance2 = await executor.start_workflow("dup-wf", "wf-dup", "t1")
         assert instance2.id == instance.id
 
-    @pytest.mark.asyncio
     async def test_already_running_status_running(self, executor, repository):
         """start_workflow also deduplicates when existing status is RUNNING."""
 
@@ -158,7 +152,6 @@ class TestStartWorkflow:
 
 
 class TestExecuteWorkflow:
-    @pytest.mark.asyncio
     async def test_constitutional_hash_mismatch_raises(self, executor):
         """execute_workflow raises ValueError on hash mismatch."""
 
@@ -175,7 +168,6 @@ class TestExecuteWorkflow:
         with pytest.raises(ValueError, match="Constitutional hash mismatch"):
             await executor.execute_workflow(instance)
 
-    @pytest.mark.asyncio
     async def test_unknown_workflow_func_raises(self, executor):
         """execute_workflow raises ValueError when workflow_type not in registry."""
         instance = WorkflowInstance(
@@ -187,7 +179,6 @@ class TestExecuteWorkflow:
         with pytest.raises(ValueError, match="Unknown workflow type: ghost-wf"):
             await executor.execute_workflow(instance)
 
-    @pytest.mark.asyncio
     async def test_execute_workflow_cancelled_error(self, executor):
         """execute_workflow handles asyncio.CancelledError and marks CANCELLED."""
 
@@ -201,7 +192,6 @@ class TestExecuteWorkflow:
         assert result.status == WorkflowStatus.CANCELLED
         assert "cancelled by test" in result.error
 
-    @pytest.mark.asyncio
     async def test_execute_workflow_runtime_error(self, executor):
         """execute_workflow handles RuntimeError and runs compensations."""
 
@@ -222,13 +212,11 @@ class TestExecuteWorkflow:
 
 
 class TestResumeWorkflow:
-    @pytest.mark.asyncio
     async def test_resume_not_found_raises(self, executor):
         """resume_workflow raises ValueError when workflow does not exist."""
         with pytest.raises(ValueError, match="Workflow not found: wf-missing"):
             await executor.resume_workflow("wf-missing", "t1")
 
-    @pytest.mark.asyncio
     async def test_resume_completed_workflow_returns_immediately(self, executor, repository):
         """resume_workflow returns instance unchanged when status is COMPLETED."""
 
@@ -244,7 +232,6 @@ class TestResumeWorkflow:
         resumed = await executor.resume_workflow("wf-done", "t1")
         assert resumed.status == WorkflowStatus.COMPLETED
 
-    @pytest.mark.asyncio
     async def test_resume_cancelled_workflow_returns_immediately(self, executor, repository):
         """resume_workflow returns instance unchanged when status is CANCELLED."""
 
@@ -259,7 +246,6 @@ class TestResumeWorkflow:
         resumed = await executor.resume_workflow("wf-cr", "t1")
         assert resumed.status == WorkflowStatus.CANCELLED
 
-    @pytest.mark.asyncio
     async def test_resume_with_checkpoint_id(self, executor, repository):
         """resume_workflow accepts a checkpoint_id without error (no-op branch)."""
 
@@ -275,7 +261,6 @@ class TestResumeWorkflow:
         result = await executor.resume_workflow("wf-cid", "t1", checkpoint_id="some-checkpoint-id")
         assert result.status == WorkflowStatus.COMPLETED
 
-    @pytest.mark.asyncio
     async def test_resume_with_existing_checkpoint_logs(self, executor, repository):
         """resume_workflow logs checkpoint info when a checkpoint exists."""
 
@@ -303,7 +288,6 @@ class TestResumeWorkflow:
 
 
 class TestExecuteActivityCaching:
-    @pytest.mark.asyncio
     async def test_redis_cache_hit_returns_early(self, executor, repository):
         """execute_activity returns cached result from Redis without calling activity."""
         instance = WorkflowInstance(
@@ -333,7 +317,6 @@ class TestExecuteActivityCaching:
         assert result == cached_value
         assert call_count == 0  # Activity was NOT called
 
-    @pytest.mark.asyncio
     async def test_repo_cache_hit_with_output(self, executor, repository):
         """execute_activity returns repo-cached result and updates Redis."""
         instance = WorkflowInstance(
@@ -376,7 +359,6 @@ class TestExecuteActivityCaching:
         assert result == {"cached": "value"}
         assert call_count == 0
 
-    @pytest.mark.asyncio
     async def test_repo_cache_hit_without_output(self, executor, repository):
         """execute_activity handles repo-cached step with no output (None output)."""
         instance = WorkflowInstance(
@@ -411,7 +393,6 @@ class TestExecuteActivityCaching:
         # Returns None (the stored output), set_step_result NOT called because output is None
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_custom_idempotency_key(self, executor, repository):
         """execute_activity uses the caller-supplied idempotency_key."""
         instance = WorkflowInstance(
@@ -444,7 +425,6 @@ class TestExecuteActivityCaching:
 
 
 class TestExecuteActivityCancellation:
-    @pytest.mark.asyncio
     async def test_cancel_before_execution_raises(self, executor_no_retry, repository):
         """execute_activity raises CancelledError when workflow is cancelled before step."""
         instance = WorkflowInstance(
@@ -465,7 +445,6 @@ class TestExecuteActivityCancellation:
             with pytest.raises(asyncio.CancelledError):
                 await executor_no_retry.execute_activity(ctx, "some-step", _simple_activity)
 
-    @pytest.mark.asyncio
     async def test_cancel_during_execution(self, executor_no_retry, repository):
         """execute_activity raises CancelledError when cancelled mid-execution."""
         instance = WorkflowInstance(
@@ -491,7 +470,6 @@ class TestExecuteActivityCancellation:
             with pytest.raises(asyncio.CancelledError):
                 await executor_no_retry.execute_activity(ctx, "mid-step", cancel_during)
 
-    @pytest.mark.asyncio
     async def test_cancelled_error_in_activity_breaks_retry(self, executor, repository):
         """execute_activity stops retrying on asyncio.CancelledError."""
         instance = WorkflowInstance(
@@ -528,7 +506,6 @@ class TestExecuteActivityCancellation:
 
 
 class TestExecuteActivityTimeout:
-    @pytest.mark.asyncio
     async def test_timeout_exhaust_retries_raises(self, executor_no_retry, repository):
         """execute_activity raises TimeoutError after exhausting retries on timeout."""
         instance = WorkflowInstance(
@@ -554,7 +531,6 @@ class TestExecuteActivityTimeout:
                     ctx, "slow-step", slow_activity, timeout=0.01
                 )
 
-    @pytest.mark.asyncio
     async def test_timeout_with_retry_succeeds_on_second_attempt(self, repository):
         """execute_activity retries after timeout and succeeds on second attempt."""
         executor_with_retry = DurableWorkflowExecutor(repository, max_retries=2, retry_delay=0.0)
@@ -594,7 +570,6 @@ class TestExecuteActivityTimeout:
 
 
 class TestExecuteActivityResultWrapping:
-    @pytest.mark.asyncio
     async def test_non_dict_result_wrapped_in_result_key(self, executor_no_retry, repository):
         """execute_activity wraps non-dict results in {'result': value}."""
         instance = WorkflowInstance(
@@ -632,7 +607,6 @@ class TestExecuteActivityResultWrapping:
 
 
 class TestRunCompensations:
-    @pytest.mark.asyncio
     async def test_skip_non_pending_compensation(self, executor, repository):
         """_run_compensations skips compensations not in PENDING status."""
         instance = WorkflowInstance(
@@ -667,7 +641,6 @@ class TestRunCompensations:
 
         assert call_count == 0  # Handler was not called
 
-    @pytest.mark.asyncio
     async def test_compensation_with_no_handler(self, executor, repository):
         """_run_compensations logs warning and continues when handler is missing."""
         instance = WorkflowInstance(
@@ -697,7 +670,6 @@ class TestRunCompensations:
         comps = await repository.get_compensations(instance.id)
         assert comps[0].status == StepStatus.COMPENSATED
 
-    @pytest.mark.asyncio
     async def test_compensation_handler_failure(self, executor, repository):
         """_run_compensations marks compensation as COMPENSATION_FAILED on handler error."""
         instance = WorkflowInstance(
@@ -730,7 +702,6 @@ class TestRunCompensations:
         assert comps[0].status == StepStatus.COMPENSATION_FAILED
         assert "Compensation failed badly" in comps[0].error
 
-    @pytest.mark.asyncio
     async def test_compensation_non_dict_result(self, executor, repository):
         """_run_compensations wraps non-dict handler result in {'result': value}."""
         instance = WorkflowInstance(
@@ -770,7 +741,6 @@ class TestRunCompensations:
 
 
 class TestCreateCheckpoint:
-    @pytest.mark.asyncio
     async def test_create_checkpoint_persists(self, executor, repository):
         """create_checkpoint saves snapshot and records event."""
         instance = WorkflowInstance(
@@ -807,7 +777,6 @@ class TestCreateCheckpoint:
 
 
 class TestGetWorkflowStatus:
-    @pytest.mark.asyncio
     async def test_get_workflow_status_returns_instance(self, executor, repository):
         """get_workflow_status returns the running instance by business ID."""
 
@@ -821,7 +790,6 @@ class TestGetWorkflowStatus:
         assert found is not None
         assert found.id == instance.id
 
-    @pytest.mark.asyncio
     async def test_get_workflow_status_returns_none_when_missing(self, executor):
         """get_workflow_status returns None for non-existent workflow."""
         result = await executor.get_workflow_status("no-such-wf", "t1")
@@ -834,13 +802,11 @@ class TestGetWorkflowStatus:
 
 
 class TestCancelWorkflow:
-    @pytest.mark.asyncio
     async def test_cancel_not_found_returns_none(self, executor):
         """cancel_workflow returns None when workflow does not exist."""
         result = await executor.cancel_workflow("wf-ghost", "t1")
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_cancel_completed_workflow_returns_unchanged(self, executor, repository):
         """cancel_workflow returns instance unchanged when already COMPLETED."""
 
@@ -855,7 +821,6 @@ class TestCancelWorkflow:
         assert result is not None
         assert result.status == WorkflowStatus.COMPLETED  # Unchanged
 
-    @pytest.mark.asyncio
     async def test_cancel_failed_workflow_returns_unchanged(self, executor, repository):
         """cancel_workflow returns instance unchanged when already FAILED."""
 
@@ -871,7 +836,6 @@ class TestCancelWorkflow:
         assert cancelled_result is not None
         assert cancelled_result.status == WorkflowStatus.FAILED
 
-    @pytest.mark.asyncio
     async def test_cancel_pending_workflow_succeeds(self, executor, repository):
         """cancel_workflow sets CANCELLED status on a PENDING workflow."""
 
@@ -887,7 +851,6 @@ class TestCancelWorkflow:
         assert result.status == WorkflowStatus.CANCELLED
         assert result.error == "Manual cancel"
 
-    @pytest.mark.asyncio
     async def test_cancel_workflow_with_default_reason(self, executor, repository):
         """cancel_workflow uses default reason when none provided."""
 
@@ -909,7 +872,6 @@ class TestCancelWorkflow:
 
 
 class TestRegisterCompensation:
-    @pytest.mark.asyncio
     async def test_register_compensation_stores_handler(self, executor, repository):
         """register_compensation stores the handler and saves to repository."""
         instance = WorkflowInstance(
@@ -981,7 +943,6 @@ class TestGetIdempotencyKey:
 
 
 class TestFullWorkflowIntegration:
-    @pytest.mark.asyncio
     async def test_workflow_with_compensation_registered_via_activity(self, executor, repository):
         """Full workflow: activity with compensation registers and runs on failure."""
         comp_called = False

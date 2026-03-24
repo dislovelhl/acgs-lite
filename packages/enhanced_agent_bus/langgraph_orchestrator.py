@@ -15,7 +15,7 @@ from enum import Enum
 from typing import TypeVar
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -25,7 +25,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 T = TypeVar("T")
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -506,7 +506,7 @@ def create_governance_workflow() -> WorkflowDefinition:
     workflow = WorkflowDefinition(
         workflow_id="governance_standard",
         name="Standard Governaflow",
-        description="Complete governance workflow with classification, validation, deliberation, and execution",  # noqa: E501
+        description="Complete governance workflow with classification, validation, deliberation, and execution",
     )
 
     # Create nodes
@@ -585,7 +585,7 @@ def create_governance_workflow() -> WorkflowDefinition:  # type: ignore[no-redef
     workflow = WorkflowDefinition(
         workflow_id="governance_standard",
         name="Standard Governance Workflow",
-        description="Complete governance workflow with classification, validation, deliberation, and execution",  # noqa: E501
+        description="Complete governance workflow with classification, validation, deliberation, and execution",
         entry_point="classifier",  # Set proper entry point
     )
 

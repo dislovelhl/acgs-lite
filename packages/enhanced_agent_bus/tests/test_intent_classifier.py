@@ -5,8 +5,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from unittest.mock import AsyncMock, patch
 
-import pytest
-
 from enhanced_agent_bus.deliberation_layer.intent_classifier import (
     ClassificationResult,
     IntentClassifier,
@@ -42,14 +40,12 @@ def test_classify_general():
     assert classifier.classify("Remind me to buy milk") == IntentType.GENERAL
 
 
-@pytest.mark.asyncio
 async def test_classify_async_heuristic():
     classifier = IntentClassifier()
     result = await classifier.classify_async("What happened in 1989?")
     assert result == IntentType.FACTUAL
 
 
-@pytest.mark.asyncio
 async def test_llm_classification_ambiguous():
     """Test LLM classification is invoked for ambiguous low-confidence inputs."""
     # Create classifier with LLM enabled and low threshold to trigger LLM path
@@ -65,7 +61,7 @@ async def test_llm_classification_ambiguous():
         "choices": [
             {
                 "message": {
-                    "content": '{"intent": "REASONING", "confidence": 0.85, "reasoning": "Query requires analysis"}'  # noqa: E501
+                    "content": '{"intent": "REASONING", "confidence": 0.85, "reasoning": "Query requires analysis"}'
                 }
             }
         ]
@@ -91,7 +87,6 @@ async def test_llm_classification_ambiguous():
         assert result == IntentType.REASONING
 
 
-@pytest.mark.asyncio
 async def test_llm_classification_fallback_on_failure():
     """Test fallback to rule-based when LLM fails."""
     classifier = IntentClassifier(
@@ -117,7 +112,6 @@ async def test_llm_classification_fallback_on_failure():
         assert result == IntentType.GENERAL
 
 
-@pytest.mark.asyncio
 async def test_llm_classification_with_metadata():
     """Test classify_async_with_metadata returns proper routing metadata."""
     classifier = IntentClassifier(
@@ -130,7 +124,7 @@ async def test_llm_classification_with_metadata():
         "choices": [
             {
                 "message": {
-                    "content": '{"intent": "CREATIVE", "confidence": 0.9, "reasoning": "Creative request"}'  # noqa: E501
+                    "content": '{"intent": "CREATIVE", "confidence": 0.9, "reasoning": "Creative request"}'
                 }
             }
         ]
@@ -154,7 +148,6 @@ async def test_llm_classification_with_metadata():
         assert result.llm_reasoning == "Creative request"
 
 
-@pytest.mark.asyncio
 async def test_llm_skipped_for_high_confidence():
     """Test LLM is NOT invoked when rule-based confidence is high."""
     classifier = IntentClassifier(
@@ -164,7 +157,7 @@ async def test_llm_skipped_for_high_confidence():
     classifier._llm_client_initialized = True
 
     with patch(
-        "core.enhanced_agent_bus.deliberation_layer.intent_classifier.litellm.acompletion",
+        "enhanced_agent_bus.deliberation_layer.intent_classifier.litellm.acompletion",
         new_callable=AsyncMock,
     ) as mock_acompletion:
         # Query with strong factual keywords - high confidence
@@ -177,7 +170,6 @@ async def test_llm_skipped_for_high_confidence():
         assert result == IntentType.FACTUAL
 
 
-@pytest.mark.asyncio
 async def test_llm_fallback_on_error():
     """Test LLM fallback to rule-based when LLM returns an error.
 
@@ -193,11 +185,11 @@ async def test_llm_fallback_on_error():
 
     # Force LITELLM_AVAILABLE to True for tests
     with patch(
-        "core.enhanced_agent_bus.deliberation_layer.intent_classifier.LITELLM_AVAILABLE", True
+        "enhanced_agent_bus.deliberation_layer.intent_classifier.LITELLM_AVAILABLE", True
     ):
         # Test Case 1: LLM raises an exception
         with patch(
-            "core.enhanced_agent_bus.deliberation_layer.intent_classifier.litellm.acompletion",
+            "enhanced_agent_bus.deliberation_layer.intent_classifier.litellm.acompletion",
             new_callable=AsyncMock,
             side_effect=RuntimeError("API connection error"),
         ):
@@ -216,7 +208,7 @@ async def test_llm_fallback_on_error():
 
         # Test Case 2: LLM returns empty response
         with patch(
-            "core.enhanced_agent_bus.deliberation_layer.intent_classifier.litellm.acompletion",
+            "enhanced_agent_bus.deliberation_layer.intent_classifier.litellm.acompletion",
             new_callable=AsyncMock,
             return_value={"choices": []},  # Empty choices
         ):
@@ -228,7 +220,7 @@ async def test_llm_fallback_on_error():
 
         # Test Case 3: LLM returns malformed response
         with patch(
-            "core.enhanced_agent_bus.deliberation_layer.intent_classifier.litellm.acompletion",
+            "enhanced_agent_bus.deliberation_layer.intent_classifier.litellm.acompletion",
             new_callable=AsyncMock,
             return_value={"choices": [{"message": {"content": "invalid json"}}]},
         ):

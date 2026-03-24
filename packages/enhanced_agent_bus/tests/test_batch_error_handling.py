@@ -16,8 +16,6 @@ from datetime import datetime, timezone
 from typing import Optional
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 # Import centralized constitutional hash
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 
@@ -32,7 +30,6 @@ def create_batch_request(items, tenant_id="test-tenant", **kwargs):
 class TestPartialFailureHandling:
     """Test Phase 5-Task 1: Partial failure handling."""
 
-    @pytest.mark.asyncio
     async def test_continues_processing_on_individual_item_failure(self):
         """Test that batch processing continues when individual items fail."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -68,7 +65,6 @@ class TestPartialFailureHandling:
         # All items should be processed (not stopped by failure)
         assert len(response.items) == 3
 
-    @pytest.mark.asyncio
     async def test_tracks_success_failure_count(self):
         """Test that success/failure counts are tracked in metrics."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -96,7 +92,6 @@ class TestPartialFailureHandling:
         assert "total_items_failed" in metrics
         assert "success_rate" in metrics
 
-    @pytest.mark.asyncio
     async def test_returns_partial_results_with_error_details(self):
         """Test that partial results include error details for failed items."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -129,7 +124,6 @@ class TestPartialFailureHandling:
             assert item.request_id is not None
             assert item.status is not None
 
-    @pytest.mark.asyncio
     async def test_preserves_order_with_partial_failures(self):
         """Test that result order matches input order even with failures."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -157,7 +151,6 @@ class TestPartialFailureHandling:
         for i, result in enumerate(response.items):
             assert result.request_id == items[i].request_id
 
-    @pytest.mark.asyncio
     async def test_batch_response_has_stats(self):
         """Test that batch response includes statistics."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -186,7 +179,6 @@ class TestPartialFailureHandling:
 class TestDetailedErrorReporting:
     """Test Phase 5-Task 2: Detailed error reporting per batch item."""
 
-    @pytest.mark.asyncio
     async def test_includes_error_code_per_item(self):
         """Test that each failed item has an error code."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -216,7 +208,6 @@ class TestDetailedErrorReporting:
                 assert isinstance(result.error_code, str)
                 assert len(result.error_code) > 0
 
-    @pytest.mark.asyncio
     async def test_includes_error_message_per_item(self):
         """Test that each failed item has an error message."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -243,7 +234,6 @@ class TestDetailedErrorReporting:
                 assert isinstance(result.error_message, str)
                 assert len(result.error_message) > 0
 
-    @pytest.mark.asyncio
     async def test_stack_trace_included_in_dev_mode(self):
         """Test that stack traces are included in development mode."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -266,7 +256,6 @@ class TestDetailedErrorReporting:
         # Processor should accept include_stack_traces parameter
         assert processor.include_stack_traces is True
 
-    @pytest.mark.asyncio
     async def test_stack_trace_excluded_in_prod_mode(self):
         """Test that stack traces are excluded in production mode."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -298,7 +287,6 @@ class TestDetailedErrorReporting:
                         "Traceback should not be exposed in production mode"
                     )
 
-    @pytest.mark.asyncio
     async def test_sanitizes_sensitive_data_in_errors(self):
         """Test that sensitive data is sanitized in error messages."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -341,7 +329,6 @@ class TestDetailedErrorReporting:
 class TestRetryMechanism:
     """Test Phase 5-Task 3: Retry mechanism for transient failures."""
 
-    @pytest.mark.asyncio
     async def test_configurable_retry_count(self):
         """Test that retry count is configurable."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -354,7 +341,6 @@ class TestRetryMechanism:
         processor2 = BatchMessageProcessor(max_retries=5)
         assert processor2.max_retries == 5
 
-    @pytest.mark.asyncio
     async def test_configurable_retry_backoff(self):
         """Test that retry backoff is configurable."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -369,7 +355,6 @@ class TestRetryMechanism:
         assert processor.retry_max_delay == 2.0
         assert processor.retry_exponential_base == 2.0
 
-    @pytest.mark.asyncio
     async def test_default_retry_values(self):
         """Test default retry configuration values."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -381,7 +366,6 @@ class TestRetryMechanism:
         assert processor.retry_base_delay == 0.1
         assert processor.retry_max_delay == 10.0
 
-    @pytest.mark.asyncio
     async def test_retries_only_transient_errors(self):
         """Test that only transient errors are retried."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -405,7 +389,6 @@ class TestRetryMechanism:
         # Validation errors should not be retried - check response is immediate
         assert len(response.items) >= 0  # May have items or not based on validation
 
-    @pytest.mark.asyncio
     async def test_tracks_retry_attempts_per_item(self):
         """Test that retry attempts are tracked per item."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -432,7 +415,6 @@ class TestRetryMechanism:
 class TestCircuitBreaker:
     """Test Phase 5-Task 4: Circuit breaker for batch operations."""
 
-    @pytest.mark.asyncio
     async def test_circuit_breaker_disabled_by_default(self):
         """Test that circuit breaker is disabled by default."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -440,7 +422,6 @@ class TestCircuitBreaker:
         processor = BatchMessageProcessor()
         assert processor.circuit_breaker_enabled is False
 
-    @pytest.mark.asyncio
     async def test_circuit_opens_on_high_failure_rate(self):
         """Test that circuit opens when failure rate exceeds threshold."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -470,7 +451,6 @@ class TestCircuitBreaker:
         # After many failures, circuit should be open or half-open
         assert circuit_state in ["open", "half-open", "closed"]
 
-    @pytest.mark.asyncio
     async def test_configurable_failure_threshold(self):
         """Test that failure threshold is configurable."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -482,7 +462,6 @@ class TestCircuitBreaker:
 
         assert processor.circuit_breaker_threshold == 0.75
 
-    @pytest.mark.asyncio
     async def test_graceful_degradation_mode(self):
         """Test graceful degradation when circuit is open."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -510,7 +489,6 @@ class TestCircuitBreaker:
         # Should get results (may be degraded/cached)
         assert results is not None
 
-    @pytest.mark.asyncio
     async def test_circuit_resets_after_cooldown(self):
         """Test that circuit resets after cooldown period."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -545,7 +523,6 @@ class TestCircuitBreaker:
 class TestErrorCategorization:
     """Test error categorization for different failure types."""
 
-    @pytest.mark.asyncio
     async def test_timeout_error_code(self):
         """Test that timeout failures have specific error code."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -575,7 +552,6 @@ class TestErrorCategorization:
                 )
                 assert is_timeout_or_other
 
-    @pytest.mark.asyncio
     async def test_processing_error_has_error_code(self):
         """Test that processing errors have error codes."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -602,7 +578,6 @@ class TestErrorCategorization:
 class TestMetricsIntegration:
     """Test metrics integration with error handling."""
 
-    @pytest.mark.asyncio
     async def test_error_metrics_tracking(self):
         """Test that error metrics are properly tracked."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -634,7 +609,6 @@ class TestMetricsIntegration:
         )
         assert has_error_metrics, "Metrics should include error tracking"
 
-    @pytest.mark.asyncio
     async def test_retry_metrics_tracking(self):
         """Test that retry metrics are tracked."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -666,7 +640,6 @@ class TestMetricsIntegration:
         )
         assert has_retry_metrics
 
-    @pytest.mark.asyncio
     async def test_circuit_breaker_metrics(self):
         """Test that circuit breaker metrics are tracked."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -688,7 +661,6 @@ class TestMetricsIntegration:
 class TestFailClosedBehavior:
     """Test fail-closed security behavior."""
 
-    @pytest.mark.asyncio
     async def test_handles_empty_agent_gracefully(self):
         """Test that empty agent is handled gracefully."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor
@@ -712,7 +684,6 @@ class TestFailClosedBehavior:
         # Should handle gracefully without crashing
         assert response is not None
 
-    @pytest.mark.asyncio
     async def test_returns_response_even_on_failures(self):
         """Test that a response is always returned."""
         from enhanced_agent_bus.batch_processor import BatchMessageProcessor

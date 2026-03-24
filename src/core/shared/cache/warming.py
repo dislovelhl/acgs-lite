@@ -37,7 +37,8 @@ Example:
 import asyncio
 import threading
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
+from contextlib import nullcontext
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -447,18 +448,24 @@ class CacheWarmer:
         try:
             cache_manager = self._get_cache_manager()
 
-            # Access L3 cache keys (in-memory simulation)
-            if hasattr(cache_manager, "_l3_cache"):
-                with cache_manager._l3_lock:
-                    l3_keys = list(cache_manager._l3_cache.keys())
+            # Access L3 cache keys (in-memory simulation). Use __dict__ lookups
+            # so AsyncMock-based tests do not auto-create coroutine attributes.
+            cache_manager_dict = getattr(cache_manager, "__dict__", {})
+            l3_cache = cache_manager_dict.get("_l3_cache")
+            if isinstance(l3_cache, Mapping):
+                l3_lock = cache_manager_dict.get("_l3_lock")
+                with (l3_lock if l3_lock is not None else nullcontext()):
+                    l3_keys = list(l3_cache.keys())
 
                 # Sort by access frequency if available
-                if hasattr(cache_manager, "_access_records"):
-                    with cache_manager._access_lock:
+                access_records = cache_manager_dict.get("_access_records")
+                if isinstance(access_records, Mapping):
+                    access_lock = cache_manager_dict.get("_access_lock")
+                    with (access_lock if access_lock is not None else nullcontext()):
                         sorted_keys = sorted(
                             l3_keys,
                             key=lambda k: (
-                                cache_manager._access_records.get(
+                                access_records.get(
                                     k, type("obj", (object,), {"accesses_per_minute": 0})()
                                 ).accesses_per_minute
                             ),

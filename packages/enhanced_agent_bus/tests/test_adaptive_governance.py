@@ -15,8 +15,8 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
 
-from ab_testing import ABTestRouter  # noqa: E402
-from enhanced_agent_bus.adaptive_governance import (  # noqa: E402
+from ab_testing import ABTestRouter
+from enhanced_agent_bus.adaptive_governance import (
     AdaptiveGovernanceEngine,
     AdaptiveThresholds,
     GovernanceDecision,
@@ -112,7 +112,6 @@ class TestAdaptiveGovernance:
         assert GovernanceMode.ADAPTIVE.value == "adaptive"
         assert GovernanceMode.EVOLVING.value == "evolving"
 
-    @pytest.mark.asyncio
     async def test_adaptive_thresholds_initialization(self, constitutional_hash):
         """Test AdaptiveThresholds initialization."""
         thresholds = AdaptiveThresholds(constitutional_hash)
@@ -131,7 +130,6 @@ class TestAdaptiveGovernance:
         assert thresholds.base_thresholds[ImpactLevel.HIGH] == 0.8
         assert thresholds.base_thresholds[ImpactLevel.CRITICAL] == 0.95
 
-    @pytest.mark.asyncio
     async def test_impact_scorer_initialization(self, constitutional_hash):
         """Test ImpactScorer initialization."""
         scorer = ImpactScorer(constitutional_hash)
@@ -140,7 +138,6 @@ class TestAdaptiveGovernance:
         assert not scorer.model_trained
         assert len(scorer.training_samples) == 0
 
-    @pytest.mark.asyncio
     async def test_impact_scorer_rule_based_scoring(self, constitutional_hash, sample_features):
         """Test rule-based impact scoring."""
         scorer = ImpactScorer(constitutional_hash)
@@ -154,7 +151,6 @@ class TestAdaptiveGovernance:
         high_risk_score = scorer._rule_based_risk_score(high_risk_features)
         assert high_risk_score > risk_score
 
-    @pytest.mark.asyncio
     async def test_governance_engine_initialization(self, constitutional_hash):
         """Test AdaptiveGovernanceEngine initialization."""
         engine = AdaptiveGovernanceEngine(constitutional_hash)
@@ -163,7 +159,6 @@ class TestAdaptiveGovernance:
         assert engine.mode == GovernanceMode.ADAPTIVE
         assert len(engine.decision_history) == 0
 
-    @pytest.mark.asyncio
     async def test_governance_engine_evaluate_decision(
         self, constitutional_hash, sample_message, sample_context
     ):
@@ -213,7 +208,6 @@ class TestAdaptiveGovernance:
         assert decision.recommended_threshold == 0.4
         assert decision.features_used == sample_features
 
-    @pytest.mark.asyncio
     async def test_global_governance_functions(
         self, constitutional_hash, sample_message, sample_context
     ):
@@ -243,7 +237,6 @@ class TestAdaptiveGovernance:
         assert engine._classify_impact_level(0.7) == ImpactLevel.HIGH
         assert engine._classify_impact_level(0.9) == ImpactLevel.CRITICAL
 
-    @pytest.mark.asyncio
     async def test_governance_engine_feedback(self, constitutional_hash):
         """Test feedback mechanism in governance engine."""
         engine = AdaptiveGovernanceEngine(constitutional_hash)
@@ -278,7 +271,6 @@ class TestAdaptiveGovernance:
         # Check that feedback was recorded (implementation would update models)
         assert len(engine.decision_history) >= 1
 
-    @pytest.mark.asyncio
     async def test_adaptive_thresholds_learning(self, constitutional_hash, sample_features):
         """Test adaptive thresholds learning capability."""
         thresholds = AdaptiveThresholds(constitutional_hash)
@@ -321,7 +313,6 @@ class TestAdaptiveGovernance:
         # Should be clamped to valid range
         assert 0.0 <= threshold <= 1.0
 
-    @pytest.mark.asyncio
     async def test_governance_engine_shutdown(self, constitutional_hash):
         """Test governance engine shutdown."""
         engine = AdaptiveGovernanceEngine(constitutional_hash)
@@ -332,7 +323,6 @@ class TestAdaptiveGovernance:
         # Should be able to shutdown multiple times safely
         await engine.shutdown()
 
-    @pytest.mark.asyncio
     async def test_metrics_update(self, constitutional_hash, sample_features):
         """Test metrics update functionality."""
         engine = AdaptiveGovernanceEngine(constitutional_hash)
@@ -357,7 +347,6 @@ class TestAdaptiveGovernance:
         assert engine.metrics.average_response_time > 0
         assert len(engine.decision_history) == 1
 
-    @pytest.mark.asyncio
     async def test_reasoning_generation(self, constitutional_hash, sample_features):
         """Test reasoning generation for decisions."""
         engine = AdaptiveGovernanceEngine(constitutional_hash)
@@ -385,7 +374,6 @@ class TestAdaptiveGovernance:
         assert "risk score" in reasoning.lower()
 
     @pytest.mark.integration
-    @pytest.mark.asyncio
     async def test_full_governance_workflow(
         self, constitutional_hash, sample_message, sample_context
     ):

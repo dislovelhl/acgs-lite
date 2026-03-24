@@ -59,14 +59,14 @@ _PostgresError = sys.modules["asyncpg"].PostgresError  # type: ignore[attr-defin
 # Now import the modules under test (deferred so coverage instruments them).
 # ---------------------------------------------------------------------------
 
-from enhanced_agent_bus.saga_persistence.models import (  # noqa: E402
+from enhanced_agent_bus.saga_persistence.models import (
     PersistedSagaState,
     SagaState,
 )
-from enhanced_agent_bus.saga_persistence.postgres.queries import (  # noqa: E402
+from enhanced_agent_bus.saga_persistence.postgres.queries import (
     PostgresQueryOperations,
 )
-from enhanced_agent_bus.saga_persistence.repository import (  # noqa: E402
+from enhanced_agent_bus.saga_persistence.repository import (
     RepositoryError,
 )
 

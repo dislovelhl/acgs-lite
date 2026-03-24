@@ -13,7 +13,6 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 class TestErrorHandling:
     """Tests for error handling."""
 
-    @pytest.mark.asyncio
     async def test_client_connection_error_handling(self):
         """Test client handles connection errors gracefully."""
         from ...mcp_integration.client import (
@@ -32,7 +31,6 @@ class TestErrorHandling:
         await client.connect()
         assert client.is_connected is True
 
-    @pytest.mark.asyncio
     async def test_server_handles_malformed_request(self):
         """Test server handles malformed requests."""
         from ...mcp_integration.server import (
@@ -58,7 +56,6 @@ class TestErrorHandling:
 
         await server.stop()
 
-    @pytest.mark.asyncio
     async def test_validator_handles_exceptions(self):
         """Test validator handles exceptions gracefully."""
         from ...mcp_integration.validators import (

@@ -20,7 +20,6 @@ class TestDeliberationWorkflowOptimized:
     def activities(self):
         return DefaultDeliberationActivities()
 
-    @pytest.mark.asyncio
     async def test_collect_votes_with_mock_redis(self, activities):
         """Test collect_votes with mocked election store."""
         # Mock election store (the actual function called by collect_votes)

@@ -40,7 +40,6 @@ class TestTokenRevocationIntegration:
             result = _get_revocation_service()
             assert result is None
 
-    @pytest.mark.asyncio
     async def test_get_current_user_checks_revocation(self):
         """get_current_user should check is_token_revoked after JWT validation."""
         from src.core.shared.security.auth import UserClaims, get_current_user
@@ -76,7 +75,6 @@ class TestTokenRevocationIntegration:
             assert result.sub == "user-1"
             mock_revocation.is_token_revoked.assert_awaited_once_with("token-jti-123")
 
-    @pytest.mark.asyncio
     async def test_get_current_user_rejects_revoked_token(self):
         """Revoked tokens should cause 401."""
         from fastapi import HTTPException
@@ -114,6 +112,36 @@ class TestTokenRevocationIntegration:
                 await get_current_user(credentials=mock_creds)
             assert exc_info.value.status_code == 401
             assert "revoked" in exc_info.value.detail.lower()
+
+    async def test_get_current_user_fails_closed_when_revocation_backend_missing_in_production(self):
+        """Production auth must reject when revocation backend is unavailable."""
+        from fastapi import HTTPException
+
+        from src.core.shared.security.auth import UserClaims, get_current_user
+
+        mock_creds = MagicMock()
+        mock_creds.credentials = "test-token"
+
+        claims = UserClaims(
+            sub="user-1",
+            jti="token-jti-123",
+            aud="acgs2-api",
+            iss="acgs2",
+            exp=int(datetime.now(UTC).timestamp()) + 3600,
+            iat=int(datetime.now(UTC).timestamp()),
+            tenant_id="tenant-1",
+            roles=["user"],
+            permissions=["read"],
+        )
+
+        with (
+            patch("src.core.shared.security.auth.verify_token", return_value=claims),
+            patch("src.core.shared.security.auth._get_revocation_service", return_value=None),
+            patch("src.core.shared.security.auth._is_production_environment", return_value=True),
+        ):
+            with pytest.raises(HTTPException) as exc_info:
+                await get_current_user(credentials=mock_creds)
+            assert exc_info.value.status_code == 503
 
 
 # ── C-2: Service auth env var mismatch ──────────────────────────────

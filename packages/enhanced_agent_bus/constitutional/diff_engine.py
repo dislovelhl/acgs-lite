@@ -12,7 +12,7 @@ try:
     from src.core.shared.types import (
         JSONDict,
         JSONList,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONList = list  # type: ignore[misc,assignment]
@@ -38,22 +38,22 @@ class _CumulativeDiff(TypedDict):
     total_changes: int
 
 
-from pydantic import BaseModel, Field  # noqa: E402
+from pydantic import BaseModel, Field
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.json_utils import dumps as json_dumps  # noqa: E402
+from src.core.shared.json_utils import dumps as json_dumps
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
-from .storage import ConstitutionalStorageService  # type: ignore[attr-defined]  # noqa: E402
-from .version_model import ConstitutionalVersion  # noqa: E402
+from .storage import ConstitutionalStorageService  # type: ignore[attr-defined]
+from .version_model import ConstitutionalVersion
 
 logger = get_logger(__name__)
 

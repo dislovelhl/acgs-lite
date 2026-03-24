@@ -28,7 +28,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
@@ -50,7 +50,7 @@ _ENV_NEURAL_MCP_ENABLED = "NEURAL_MCP_ENABLED"
 _ENV_NEURAL_MCP_COMMAND = "NEURAL_MCP_COMMAND"  # JSON-encoded list
 _ENV_TOOLBOX_ENABLED = "TOOLBOX_ENABLED"
 _ENV_TOOLBOX_URL = "TOOLBOX_URL"
-_ENV_TOOLBOX_AUTH_TOKEN = "TOOLBOX_AUTH_TOKEN"  # noqa: S105
+_ENV_TOOLBOX_AUTH_TOKEN = "TOOLBOX_AUTH_TOKEN"
 _ENV_TOOLBOX_TIMEOUT = "TOOLBOX_TIMEOUT"
 
 # Default server identifiers
@@ -158,7 +158,7 @@ class MCPServerConfig(BaseModel):
                     f"MCPServerConfig '{self.name}': transport={self.transport!r} "
                     "requires 'url' to be set."
                 )
-        elif self.transport == "stdio":  # noqa: SIM102
+        elif self.transport == "stdio":
             if not self.command:
                 raise ValueError(
                     f"MCPServerConfig '{self.name}': transport='stdio' "

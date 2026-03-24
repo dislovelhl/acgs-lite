@@ -31,7 +31,7 @@ from enum import Enum
 
 # Constitutional hash - all events must include this
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
@@ -39,7 +39,7 @@ try:
         CorrelationID,
         JSONDict,
         TenantID,
-    )  # noqa: E402
+    )
 except ImportError:
     CorrelationID = object  # type: ignore[misc,assignment]
     JSONDict = dict  # type: ignore[misc,assignment]
@@ -411,7 +411,7 @@ class SecurityEventLogger:
 
         if self._flush_task:
             self._flush_task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._flush_task
             except asyncio.CancelledError:
                 pass

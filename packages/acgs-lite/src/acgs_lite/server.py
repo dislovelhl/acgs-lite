@@ -1,3 +1,8 @@
+# ACGS - Constitutional AI Governance
+# Copyright (C) 2024-2026 ACGS Contributors
+# Licensed under AGPL-3.0-or-later. See LICENSE for details.
+# Commercial license: https://acgs.ai
+
 """FastAPI microservice wrapper for GovernanceEngine."""
 
 from __future__ import annotations
@@ -36,12 +41,12 @@ def create_governance_app(constitution: Constitution | None = None) -> FastAPI:
         result = engine.validate(
             action,
             agent_id=agent_id,
-            context=cast(dict[str, Any], context),
+            context=context,
         )
-        return cast(dict[str, Any], result.to_dict())
+        return result.to_dict()
 
     @app.get("/stats")  # type: ignore[untyped-decorator]
     def get_stats() -> dict[str, Any]:
-        return cast(dict[str, Any], engine.stats)
+        return engine.stats
 
     return app

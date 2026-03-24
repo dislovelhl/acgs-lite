@@ -20,20 +20,20 @@ from datetime import UTC, datetime, timezone
 from enum import Enum
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
     from src.core.shared.types import (
         JSONDict,
         JSONValue,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]
 
 
-class SagaState(str, Enum):  # noqa: UP042
+class SagaState(str, Enum):
     """
     States of a Saga transaction.
 
@@ -60,7 +60,7 @@ class SagaState(str, Enum):  # noqa: UP042
         return self in (SagaState.RUNNING, SagaState.COMPENSATING)
 
 
-class StepState(str, Enum):  # noqa: UP042
+class StepState(str, Enum):
     """
     States of individual saga steps.
 
@@ -91,7 +91,7 @@ class StepState(str, Enum):  # noqa: UP042
         return self == StepState.COMPLETED
 
 
-class CompensationStrategy(str, Enum):  # noqa: UP042
+class CompensationStrategy(str, Enum):
     """
     Compensation execution strategies.
 

@@ -15,6 +15,11 @@ from starlette.responses import Response
 
 # Constitutional Hash for governance validation
 from src.core.shared.constants import CONSTITUTIONAL_HASH
+from src.core.shared.metrics import (
+    HTTP_REQUEST_DURATION,
+    HTTP_REQUESTS_IN_PROGRESS,
+    HTTP_REQUESTS_TOTAL,
+)
 from src.core.shared.structured_logging import get_logger
 from src.core.shared.types import JSONDict
 
@@ -174,41 +179,8 @@ def _get_or_create_gauge(name: str, description: str, labels: list):
 # API Gateway Specific Metrics
 # ============================================================================
 
-# HTTP request metrics with sub-millisecond precision buckets for P99 tracking
-HTTP_REQUEST_DURATION = _get_or_create_histogram(
-    "http_request_duration_seconds",
-    "HTTP request latency in seconds",
-    ["method", "endpoint", "service", "status_code"],
-    # Buckets optimized for P99 < 1ms target
-    buckets=[
-        0.0001,  # 0.1ms
-        0.00025,  # 0.25ms
-        0.0005,  # 0.5ms
-        0.00075,  # 0.75ms
-        0.001,  # 1ms (target P99)
-        0.0025,  # 2.5ms
-        0.005,  # 5ms
-        0.01,  # 10ms
-        0.025,  # 25ms
-        0.05,  # 50ms
-        0.1,  # 100ms
-        0.25,  # 250ms
-        0.5,  # 500ms
-        1.0,  # 1s
-    ],
-)
-
-HTTP_REQUESTS_TOTAL = _get_or_create_counter(
-    "http_requests_total",
-    "Total HTTP requests",
-    ["method", "endpoint", "service", "status_code"],
-)
-
-HTTP_REQUESTS_IN_PROGRESS = _get_or_create_gauge(
-    "http_requests_in_progress",
-    "Number of HTTP requests currently being processed",
-    ["method", "service"],
-)
+# Reuse the shared HTTP metric schema so this gateway-specific middleware stays
+# compatible with the process-wide Prometheus registry.
 
 # Cache metrics for >98% hit rate tracking
 CACHE_HITS_TOTAL = _get_or_create_counter(
@@ -294,6 +266,7 @@ class MetricsMiddleware(BaseHTTPMiddleware):
         # Track in-progress requests
         HTTP_REQUESTS_IN_PROGRESS.labels(
             method=method,
+            endpoint=endpoint,
             service=self.service_name,
         ).inc()
 
@@ -315,7 +288,6 @@ class MetricsMiddleware(BaseHTTPMiddleware):
                 method=method,
                 endpoint=endpoint,
                 service=self.service_name,
-                status_code=status_code,
             ).observe(duration)
 
             # Increment total requests counter
@@ -323,12 +295,13 @@ class MetricsMiddleware(BaseHTTPMiddleware):
                 method=method,
                 endpoint=endpoint,
                 service=self.service_name,
-                status_code=status_code,
+                status=status_code,
             ).inc()
 
             # Decrement in-progress counter
             HTTP_REQUESTS_IN_PROGRESS.labels(
                 method=method,
+                endpoint=endpoint,
                 service=self.service_name,
             ).dec()
 

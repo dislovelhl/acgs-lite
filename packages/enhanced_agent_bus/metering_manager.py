@@ -15,11 +15,11 @@ if TYPE_CHECKING:
 
 # Import centralized constitutional hash with fallback
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -168,7 +168,7 @@ class MeteringManager:
                     "constitutional_hash": self._constitutional_hash,
                 },
             )
-        except Exception as e:  # noqa: BLE001 - metering hooks are optional third-party callbacks
+        except Exception as e:
             # Never let metering errors affect the critical path
             logger.warning(f"Metering recording failed: {e}")
 
@@ -203,7 +203,7 @@ class MeteringManager:
                     "constitutional_hash": self._constitutional_hash,
                 },
             )
-        except Exception as e:  # noqa: BLE001 - metering hooks are optional third-party callbacks
+        except Exception as e:
             # Never let metering errors affect the critical path
             logger.warning(f"Metering recording failed: {e}")
 
@@ -238,7 +238,7 @@ class MeteringManager:
                     "constitutional_hash": self._constitutional_hash,
                 },
             )
-        except Exception as e:  # noqa: BLE001 - metering hooks are optional third-party callbacks
+        except Exception as e:
             # Never let metering errors affect the critical path
             logger.warning(f"Metering recording failed: {e}")
 

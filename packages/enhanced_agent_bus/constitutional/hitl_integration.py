@@ -15,11 +15,11 @@ import httpx
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -42,7 +42,7 @@ _HITL_OPERATION_ERRORS = (
 )
 
 
-class NotificationChannel(str, Enum):  # noqa: UP042
+class NotificationChannel(str, Enum):
     """Supported notification channels."""
 
     SLACK = "slack"
@@ -50,7 +50,7 @@ class NotificationChannel(str, Enum):  # noqa: UP042
     TEAMS = "teams"
 
 
-class ApprovalPriority(str, Enum):  # noqa: UP042
+class ApprovalPriority(str, Enum):
     """Approval priority levels for HITL requests."""
 
     LOW = "low"

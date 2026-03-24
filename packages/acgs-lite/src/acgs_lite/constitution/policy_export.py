@@ -26,6 +26,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+from collections.abc import Callable
 from typing import Any
 
 from .core import Constitution
@@ -189,7 +190,7 @@ class PolicyExporter:
             raise ValueError(
                 f"Unsupported format '{fmt}'. Choose from: {sorted(_SUPPORTED_FORMATS)}"
             )
-        dispatch = {
+        dispatch: dict[str, Callable[[], str]] = {
             "json": self.to_json,
             "yaml": self.to_yaml,
             "csv": self.to_csv,

@@ -16,11 +16,11 @@ from fastapi import Header, HTTPException, status
 from pydantic import BaseModel
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -42,7 +42,7 @@ except (ImportError, ValueError):
         USING_FALLBACKS = True
 
         # Define minimal models for standalone testing
-        class RiskLevel(str, Enum):  # type: ignore[no-redef]  # noqa: UP042
+        class RiskLevel(str, Enum):  # type: ignore[no-redef]
             LOW = "low"
             MEDIUM = "medium"
             HIGH = "high"

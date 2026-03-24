@@ -239,7 +239,6 @@ class TestRedisBackedRateLimiting:
     """Test Redis-backed rate limiting (requires Redis)."""
 
     @pytest.mark.skip(reason="Requires --redis flag and running Redis instance")
-    @pytest.mark.asyncio
     async def test_redis_backed_rate_limiting(self):
         """Test Redis-backed rate limiting for distributed scenarios."""
         from src.core.shared.security.rate_limiter import SlidingWindowRateLimiter

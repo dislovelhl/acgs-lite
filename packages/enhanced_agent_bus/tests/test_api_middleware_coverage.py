@@ -13,13 +13,12 @@ Covers all branches:
 - setup_all_middleware (orchestration)
 - Module-level imports (SECURITY_HEADERS_AVAILABLE, API_VERSIONING_AVAILABLE)
 - correlation_id_middleware re-export from api_exceptions
-"""  # noqa: E501
+"""
 
 from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-import pytest
 from fastapi import FastAPI
 
 import enhanced_agent_bus.api.middleware as mw_mod

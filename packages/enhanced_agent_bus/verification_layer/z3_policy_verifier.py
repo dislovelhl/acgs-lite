@@ -29,11 +29,11 @@ from enum import Enum
 
 # Constitutional hash for immutable validation
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -197,7 +197,7 @@ class PolicyVerificationRequest:
     constraints: list[PolicyConstraint] = field(default_factory=list)
     context: JSONDict = field(default_factory=dict)
     timeout_ms: int = 5000
-    use_heuristic_fallback: bool = True
+    use_heuristic_fallback: bool = False
     require_proof: bool = True
     metadata: JSONDict = field(default_factory=dict)
     constitutional_hash: str = CONSTITUTIONAL_HASH
@@ -648,7 +648,7 @@ class Z3PolicyVerifier:
     def __init__(
         self,
         default_timeout_ms: int = 5000,
-        enable_heuristic_fallback: bool = True,
+        enable_heuristic_fallback: bool = False,
         heuristic_threshold: float = 0.75,
     ):
         self.default_timeout_ms = default_timeout_ms
@@ -736,8 +736,40 @@ class Z3PolicyVerifier:
                 proof.solve_time_ms = z3_result.get("solve_time_ms", 0.0)
 
             else:
-                # Z3 not available, use heuristic directly
-                result.warnings.append("Z3 not available, using heuristic verification")
+                if request.use_heuristic_fallback and self.enable_heuristic_fallback:
+                    result.warnings.append("Z3 not available, using heuristic verification")
+                    result.status = Z3VerificationStatus.HEURISTIC_FALLBACK
+
+                    heuristic_result = await self._verify_with_heuristic(
+                        constraints,
+                        request.context,
+                        proof,
+                    )
+
+                    result.is_verified = heuristic_result["is_verified"]
+                    result.satisfied_constraints = heuristic_result.get("satisfied", 0)
+                    result.violations = heuristic_result.get("violations", [])
+                    proof.heuristic_score = heuristic_result.get("score", 0.0)
+                else:
+                    result.status = Z3VerificationStatus.ERROR
+                    result.is_verified = False
+                    result.violations.append(
+                        {
+                            "type": "z3_unavailable",
+                            "description": "Z3 solver unavailable and heuristic fallback disabled",
+                        }
+                    )
+                    result.warnings.append(
+                        "Z3 solver unavailable; verification failed closed"
+                    )
+
+            # Fallback to heuristic if Z3 timed out or returned unknown
+            if (
+                result.status in (Z3VerificationStatus.TIMEOUT, Z3VerificationStatus.UNKNOWN)
+                and request.use_heuristic_fallback
+                and self.enable_heuristic_fallback
+            ):
+                result.warnings.append("Z3 verification inconclusive, using heuristic fallback")
                 result.status = Z3VerificationStatus.HEURISTIC_FALLBACK
 
                 heuristic_result = await self._verify_with_heuristic(
@@ -750,23 +782,24 @@ class Z3PolicyVerifier:
                 result.satisfied_constraints = heuristic_result.get("satisfied", 0)
                 result.violations = heuristic_result.get("violations", [])
                 proof.heuristic_score = heuristic_result.get("score", 0.0)
-
-            # Fallback to heuristic if Z3 timed out or returned unknown
-            if (
-                result.status in (Z3VerificationStatus.TIMEOUT, Z3VerificationStatus.UNKNOWN)
-                and request.use_heuristic_fallback
+            elif result.status in (
+                Z3VerificationStatus.TIMEOUT,
+                Z3VerificationStatus.UNKNOWN,
             ):
-                result.warnings.append("Z3 verification inconclusive, using heuristic fallback")
-                result.status = Z3VerificationStatus.HEURISTIC_FALLBACK
-
-                heuristic_result = await self._verify_with_heuristic(
-                    constraints,
-                    request.context,
-                    proof,
+                result.is_verified = False
+                result.violations.append(
+                    {
+                        "type": "z3_inconclusive",
+                        "description": (
+                            "Formal verification was inconclusive and heuristic fallback "
+                            "is disabled"
+                        ),
+                        "status": result.status.value,
+                    }
                 )
-
-                result.is_verified = heuristic_result["is_verified"]
-                proof.heuristic_score = heuristic_result.get("score", 0.0)
+                result.warnings.append(
+                    "Formal verification was inconclusive; request failed closed"
+                )
 
             # Generate recommendations
             result.recommendations = self._generate_recommendations(result, constraints)
@@ -948,6 +981,7 @@ class Z3PolicyVerifier:
             policy_text=policy_text,
             context=context or {},
             timeout_ms=timeout_ms or self.default_timeout_ms,
+            use_heuristic_fallback=self.enable_heuristic_fallback,
         )
 
         return await self.verify_policy(request)
@@ -986,7 +1020,7 @@ class Z3PolicyVerifier:
 
 def create_z3_verifier(
     timeout_ms: int = 5000,
-    enable_heuristic_fallback: bool = True,
+    enable_heuristic_fallback: bool = False,
 ) -> Z3PolicyVerifier:
     """Factory function to create a Z3 policy verifier."""
     return Z3PolicyVerifier(

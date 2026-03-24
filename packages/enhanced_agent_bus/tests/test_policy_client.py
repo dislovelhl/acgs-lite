@@ -94,7 +94,7 @@ globals()["AgentMessage"] = AgentMessage
 globals()["ValidationResult"] = ValidationResult
 
 # Create our own PolicyRegistryClient class for testing
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 
 class PolicyRegistryClientForTest:
@@ -261,7 +261,6 @@ class TestPolicyRegistryClientInit:
 class TestPolicyRegistryClientContextManager:
     """Test async context manager protocol."""
 
-    @pytest.mark.asyncio
     async def test_aenter_initializes_client(self):
         """Test __aenter__ initializes HTTP client."""
         with patch.object(PolicyRegistryClient, "initialize", new_callable=AsyncMock) as mock_init:
@@ -270,7 +269,6 @@ class TestPolicyRegistryClientContextManager:
             assert result is client
             mock_init.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_aexit_closes_client(self):
         """Test __aexit__ closes HTTP client."""
         with patch.object(PolicyRegistryClient, "close", new_callable=AsyncMock) as mock_close:
@@ -282,7 +280,6 @@ class TestPolicyRegistryClientContextManager:
 class TestPolicyRegistryClientInitializeClose:
     """Test initialize and close methods."""
 
-    @pytest.mark.asyncio
     async def test_initialize_creates_http_client(self):
         """Test initialize creates httpx client."""
         client = PolicyRegistryClient()
@@ -297,7 +294,6 @@ class TestPolicyRegistryClientInitializeClose:
             mock_client_class.assert_called_once()
             assert client._http_client is mock_instance
 
-    @pytest.mark.asyncio
     async def test_initialize_idempotent(self):
         """Test initialize is idempotent."""
         client = PolicyRegistryClient()
@@ -315,7 +311,6 @@ class TestPolicyRegistryClientInitializeClose:
             assert mock_client_class.call_count == 1
             assert client._http_client is first_client
 
-    @pytest.mark.asyncio
     async def test_close_closes_http_client(self):
         """Test close closes the HTTP client."""
         client = PolicyRegistryClient()
@@ -327,7 +322,6 @@ class TestPolicyRegistryClientInitializeClose:
         mock_http.aclose.assert_called_once()
         assert client._http_client is None
 
-    @pytest.mark.asyncio
     async def test_close_when_no_client(self):
         """Test close is safe when no client exists."""
         client = PolicyRegistryClient()
@@ -340,7 +334,6 @@ class TestPolicyRegistryClientInitializeClose:
 class TestPolicyRegistryClientGetPolicyContent:
     """Test get_policy_content method."""
 
-    @pytest.mark.asyncio
     async def test_get_policy_content_success(self):
         """Test successful policy content retrieval."""
         client = PolicyRegistryClient()
@@ -356,7 +349,6 @@ class TestPolicyRegistryClientGetPolicyContent:
             assert result == {"max_length": 1000}
             mock_http.get.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_get_policy_content_with_client_id(self):
         """Test policy content retrieval with client ID."""
         client = PolicyRegistryClient()
@@ -373,7 +365,6 @@ class TestPolicyRegistryClientGetPolicyContent:
             call_args = mock_http.get.call_args
             assert call_args[1]["params"] == {"client_id": "client_123"}
 
-    @pytest.mark.asyncio
     async def test_get_policy_content_uses_cache(self):
         """Test that cached results are returned."""
         client = PolicyRegistryClient(cache_ttl=300)
@@ -388,7 +379,6 @@ class TestPolicyRegistryClientGetPolicyContent:
             assert result == {"cached": True}
             mock_http.get.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_get_policy_content_cache_expired(self):
         """Test that expired cache is refreshed."""
         client = PolicyRegistryClient(cache_ttl=300)
@@ -410,7 +400,6 @@ class TestPolicyRegistryClientGetPolicyContent:
 class TestPolicyRegistryClientValidateMessageSignature:
     """Test validate_message_signature method."""
 
-    @pytest.mark.asyncio
     async def test_validate_message_success(self):
         """Test successful message validation."""
         client = PolicyRegistryClient()
@@ -434,7 +423,6 @@ class TestPolicyRegistryClientValidateMessageSignature:
             assert result.is_valid is True
             assert len(result.errors) == 0
 
-    @pytest.mark.asyncio
     async def test_validate_message_exceeds_max_length(self):
         """Test validation fails for messages exceeding max length."""
         client = PolicyRegistryClient()
@@ -458,7 +446,6 @@ class TestPolicyRegistryClientValidateMessageSignature:
             assert result.is_valid is False
             assert any("maximum length" in e for e in result.errors)
 
-    @pytest.mark.asyncio
     async def test_validate_message_prohibited_content(self):
         """Test validation fails for prohibited content."""
         client = PolicyRegistryClient()
@@ -482,7 +469,6 @@ class TestPolicyRegistryClientValidateMessageSignature:
             assert result.is_valid is False
             assert any("prohibited content" in e.lower() for e in result.errors)
 
-    @pytest.mark.asyncio
     async def test_validate_message_topic_warning(self):
         """Test validation warns about topics not in allowed list."""
         client = PolicyRegistryClient()
@@ -506,7 +492,6 @@ class TestPolicyRegistryClientValidateMessageSignature:
             assert result.is_valid is True
             assert any("topic" in w.lower() for w in result.warnings)
 
-    @pytest.mark.asyncio
     async def test_validate_message_no_policy_fallback(self):
         """Test validation fallback when no policy available."""
         client = PolicyRegistryClient()
@@ -530,7 +515,6 @@ class TestPolicyRegistryClientValidateMessageSignature:
 class TestPolicyRegistryClientGetCurrentPublicKey:
     """Test get_current_public_key method."""
 
-    @pytest.mark.asyncio
     async def test_get_public_key_success(self):
         """Test successful public key retrieval."""
         client = PolicyRegistryClient()
@@ -545,7 +529,6 @@ class TestPolicyRegistryClientGetCurrentPublicKey:
         assert result == "-----BEGIN PUBLIC KEY-----..."
         mock_http.get.assert_called_with(f"{client.registry_url}/api/v1/public-keys")
 
-    @pytest.mark.asyncio
     async def test_get_public_key_error_returns_none(self):
         """Test error returns None."""
         client = PolicyRegistryClient()
@@ -562,7 +545,6 @@ class TestPolicyRegistryClientGetCurrentPublicKey:
 class TestPolicyRegistryClientHealthCheck:
     """Test health_check method."""
 
-    @pytest.mark.asyncio
     async def test_health_check_success(self):
         """Test successful health check."""
         client = PolicyRegistryClient()
@@ -577,7 +559,6 @@ class TestPolicyRegistryClientHealthCheck:
         assert result == {"status": "healthy"}
         mock_http.get.assert_called_with(f"{client.registry_url}/health/ready")
 
-    @pytest.mark.asyncio
     async def test_health_check_http_error(self):
         """Test health check HTTP error handling."""
         client = PolicyRegistryClient()
@@ -598,7 +579,6 @@ class TestPolicyRegistryClientHealthCheck:
         assert result["status"] == "unhealthy"
         assert "503" in result["error"]
 
-    @pytest.mark.asyncio
     async def test_health_check_timeout_error(self):
         """Test health check timeout error handling."""
         client = PolicyRegistryClient()
@@ -614,7 +594,6 @@ class TestPolicyRegistryClientHealthCheck:
         assert result["status"] == "unhealthy"
         assert "TimeoutException" in result["error"]
 
-    @pytest.mark.asyncio
     async def test_health_check_connect_error(self):
         """Test health check connection error handling."""
         client = PolicyRegistryClient()
@@ -630,7 +609,6 @@ class TestPolicyRegistryClientHealthCheck:
         assert result["status"] == "unhealthy"
         assert "ConnectError" in result["error"]
 
-    @pytest.mark.asyncio
     async def test_health_check_value_error(self):
         """Test health check value error handling."""
         client = PolicyRegistryClient()

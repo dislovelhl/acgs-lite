@@ -6,6 +6,8 @@ Intelligent response generation with template-based and LLM-powered
 options, personality application, and constitutional validation.
 """
 
+from __future__ import annotations
+
 import random
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -13,11 +15,11 @@ from datetime import UTC, datetime, timezone
 
 # Import centralized constitutional hash with fallback
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

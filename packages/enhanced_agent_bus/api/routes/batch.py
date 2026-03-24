@@ -77,7 +77,7 @@ def _validate_batch_request_safety(batch_request: BatchRequest, tenant_id: str) 
     if size_error := validate_item_sizes(batch_request):
         logger.warning("Batch size validation failed: %s", size_error)
         raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
             detail="Request payload too large",
         )
 

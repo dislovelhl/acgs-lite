@@ -34,7 +34,6 @@ class TestActualHITLManager:
         manager = HITLManager(real_queue)
         return manager
 
-    @pytest.mark.asyncio
     async def test_real_hitl_manager_init(self, real_queue):
         """Test real HITLManager initialization."""
         from enhanced_agent_bus.deliberation_layer.hitl_manager import HITLManager
@@ -43,7 +42,6 @@ class TestActualHITLManager:
         assert manager.queue is real_queue
         assert manager.audit_ledger is not None
 
-    @pytest.mark.asyncio
     async def test_real_request_approval_with_message(self, real_queue, caplog):
         """Test request_approval with a real AgentMessage."""
         import logging
@@ -76,7 +74,6 @@ class TestActualHITLManager:
         task = real_queue.get_task(item_id)
         assert task.status.value == DeliberationStatus.UNDER_REVIEW.value
 
-    @pytest.mark.asyncio
     async def test_real_request_approval_item_not_found(self, real_queue, caplog):
         """Test request_approval when item doesn't exist."""
         import logging
@@ -90,7 +87,6 @@ class TestActualHITLManager:
 
         assert "not found" in caplog.text
 
-    @pytest.mark.asyncio
     async def test_real_request_approval_teams_channel(self, real_queue, caplog):
         """Test request_approval with Teams channel."""
         import logging
@@ -114,7 +110,6 @@ class TestActualHITLManager:
 
         assert "teams" in caplog.text
 
-    @pytest.mark.asyncio
     async def test_real_process_approval_approve(self, real_queue, caplog):
         """Test process_approval with approve decision."""
         import logging
@@ -147,7 +142,6 @@ class TestActualHITLManager:
         assert "Decision for" in caplog.text
         assert "recorded" in caplog.text
 
-    @pytest.mark.asyncio
     async def test_real_process_approval_reject(self, real_queue, caplog):
         """Test process_approval with reject decision."""
         import logging
@@ -177,7 +171,6 @@ class TestActualHITLManager:
 
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_real_process_approval_invalid_item(self, real_queue):
         """Test process_approval with invalid item_id."""
         from enhanced_agent_bus.deliberation_layer.hitl_manager import HITLManager
@@ -190,7 +183,6 @@ class TestActualHITLManager:
 
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_real_process_approval_not_under_review(self, real_queue):
         """Test process_approval fails if item not under review."""
         from enhanced_agent_bus.deliberation_layer.hitl_manager import HITLManager

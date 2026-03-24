@@ -31,11 +31,11 @@ class _InternalMetrics(TypedDict):
 
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
-from ..protocol.types import ToolDefinition, ToolInputSchema  # noqa: E402
+from ..protocol.types import ToolDefinition, ToolInputSchema
 
 logger = get_logger(__name__)
 

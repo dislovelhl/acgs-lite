@@ -21,7 +21,7 @@ from typing import (
 )
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -46,7 +46,7 @@ if TYPE_CHECKING:
     from .integration import EnterpriseSSOService
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -286,10 +286,10 @@ class SSOMiddlewareConfig:
     )
 
     # Header name for session token
-    token_header: str = "Authorization"  # noqa: S105
+    token_header: str = "Authorization"
 
     # Token prefix (e.g., "Bearer")
-    token_prefix: str = "Bearer"  # noqa: S105
+    token_prefix: str = "Bearer"
 
     # Cookie name for session token (alternative to header)
     session_cookie: str = "acgs_sso_session"
@@ -559,7 +559,7 @@ if FASTAPI_AVAILABLE:
         ) -> Response:
             """Handle automatic session refresh if needed."""
             try:
-                if session.time_until_expiry < self.config.refresh_threshold_seconds:  # noqa: SIM102
+                if session.time_until_expiry < self.config.refresh_threshold_seconds:
                     # Attempt to refresh session
                     if session.refresh_token:
                         new_token = self.sso_service.refresh_session(
@@ -623,7 +623,7 @@ if FASTAPI_AVAILABLE:
             @app.get("/api/protected")
             async def protected_endpoint(session: SSOSessionContext = Depends(require_sso_session_dependency)):
                 return {"user_id": session.user_id}
-        """  # noqa: E501
+        """
         session = get_current_sso_session()
         if session is None:
             raise HTTPException(

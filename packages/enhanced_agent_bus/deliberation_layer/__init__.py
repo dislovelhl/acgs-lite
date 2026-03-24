@@ -56,7 +56,7 @@ def _get_impact_scorer_module():
             _impact_scorer_module = _module
         except ImportError as e:
             raise ImportError(
-                f"impact_scorer requires numpy. Install with: pip install enhanced-agent-bus[ml]. Error: {e}"  # noqa: E501
+                f"impact_scorer requires numpy. Install with: pip install enhanced-agent-bus[ml]. Error: {e}"
             ) from e
     return _impact_scorer_module
 

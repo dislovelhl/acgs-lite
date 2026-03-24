@@ -12,8 +12,6 @@ import asyncio
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 # ---------------------------------------------------------------------------
 # Helpers to build a minimal EnhancedAgentBus with full mock injections
 # ---------------------------------------------------------------------------
@@ -605,6 +603,7 @@ class TestSendMessage:
         bus._running = True
 
         msg = _make_msg()
+        msg.metadata["prevalidated"] = True
         with patch.object(
             bus._message_validator, "validate_and_normalize_tenant", return_value=True
         ):
@@ -977,13 +976,13 @@ class TestValidateAgentIdentity:
 
     async def test_token_with_dot(self) -> None:
         bus = _build_bus()
-        result, errors = await bus._validate_agent_identity(token="header.payload.sig")  # noqa: S106
+        result, errors = await bus._validate_agent_identity(token="header.payload.sig")
         assert result == "header.payload.sig"
         assert errors == []
 
     async def test_token_without_dot(self) -> None:
         bus = _build_bus()
-        result, errors = await bus._validate_agent_identity(token="simpletoken")  # noqa: S106
+        result, errors = await bus._validate_agent_identity(token="simpletoken")
         assert result == "default"
         assert errors == []
 

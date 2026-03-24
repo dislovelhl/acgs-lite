@@ -64,7 +64,6 @@ async def state_manager_no_redis(monkeypatch):
 class TestStateGeneration:
     """Test state parameter generation and entropy."""
 
-    @pytest.mark.asyncio
     async def test_create_state_generates_high_entropy(self, state_manager):
         """Test that generated state has sufficient entropy (256-bit minimum)."""
         state = await state_manager.create_state(
@@ -87,7 +86,6 @@ class TestStateGeneration:
         assert "/" not in state
         assert state.replace("-", "").replace("_", "").isalnum()
 
-    @pytest.mark.asyncio
     async def test_create_state_stores_metadata_in_redis(self, state_manager, mock_redis):
         """Test that state metadata is stored in Redis with correct structure."""
         state = await state_manager.create_state(
@@ -121,7 +119,6 @@ class TestStateGeneration:
         # Check TTL is 5 minutes (300 seconds)
         assert call_args[1]["ex"] == 300
 
-    @pytest.mark.asyncio
     async def test_create_state_unique_values(self, state_manager):
         """Test that consecutive calls generate unique state values."""
         states = []
@@ -137,7 +134,6 @@ class TestStateGeneration:
         # All states should be unique
         assert len(set(states)) == 10, "Generated states are not unique"
 
-    @pytest.mark.asyncio
     async def test_create_state_validates_inputs(self, state_manager):
         """Test that create_state validates input parameters."""
         with pytest.raises((ValueError, ACGSValidationError), match="client_ip cannot be empty"):
@@ -176,7 +172,6 @@ class TestStateGeneration:
 class TestStateValidation:
     """Test state validation and retrieval."""
 
-    @pytest.mark.asyncio
     async def test_validate_state_returns_stored_data(self, state_manager, mock_redis):
         """Test successful state validation returns stored metadata."""
         # Setup: Create state
@@ -212,7 +207,6 @@ class TestStateValidation:
         assert result["callback_url"] == "/sso/callback"
         assert result["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_validate_state_fails_on_ip_mismatch(self, state_manager, mock_redis):
         """Test state validation fails when client IP doesn't match."""
         state = await state_manager.create_state(
@@ -243,7 +237,6 @@ class TestStateValidation:
                 user_agent="Chrome/120.0",
             )
 
-    @pytest.mark.asyncio
     async def test_validate_state_fails_on_user_agent_mismatch(self, state_manager, mock_redis):
         """Test state validation fails when user agent doesn't match."""
         state = await state_manager.create_state(
@@ -274,7 +267,6 @@ class TestStateValidation:
                 user_agent="Chrome/120.0",  # Different user agent
             )
 
-    @pytest.mark.asyncio
     async def test_validate_state_fails_on_not_found(self, state_manager, mock_redis):
         """Test state validation fails when state not found in Redis."""
         # Mock Redis to return None (state not found)
@@ -287,7 +279,6 @@ class TestStateValidation:
                 user_agent="Test",
             )
 
-    @pytest.mark.asyncio
     async def test_validate_state_fails_after_expiry(self, state_manager, mock_redis):
         """Test state validation fails after TTL expiry (5 minutes)."""
         # Create state with expired timestamp
@@ -311,7 +302,6 @@ class TestStateValidation:
                 user_agent="Test",
             )
 
-    @pytest.mark.asyncio
     async def test_state_one_time_use(self, state_manager, mock_redis):
         """Test state is invalidated after first successful validation (one-time use)."""
         state = await state_manager.create_state(
@@ -358,7 +348,6 @@ class TestStateValidation:
 class TestStateInvalidation:
     """Test manual state invalidation."""
 
-    @pytest.mark.asyncio
     async def test_invalidate_state_removes_from_redis(self, state_manager, mock_redis):
         """Test that invalidate_state removes state from Redis."""
         state = "test_state_12345"
@@ -372,7 +361,6 @@ class TestStateInvalidation:
         # Verify Redis delete was called
         mock_redis.delete.assert_called_once_with(f"oauth:state:{state}")
 
-    @pytest.mark.asyncio
     async def test_invalidate_state_returns_false_if_not_found(self, state_manager, mock_redis):
         """Test invalidate_state returns False if state doesn't exist."""
         # Mock Redis delete to return 0 (key didn't exist)
@@ -385,7 +373,6 @@ class TestStateInvalidation:
 class TestGracefulDegradation:
     """Test graceful degradation when Redis is unavailable."""
 
-    @pytest.mark.asyncio
     async def test_graceful_degradation_without_redis(self, state_manager_no_redis):
         """Test service operates in degraded mode without Redis."""
         # Create state should still work (logged only)
@@ -403,8 +390,18 @@ class TestGracefulDegradation:
     def test_without_redis_fails_closed_in_production_like_env(self, monkeypatch):
         from src.core.shared.config import settings
 
-        # _allow_degraded_mode_without_redis() reads settings.env, not env vars.
         monkeypatch.setattr(settings, "env", "production")
+        monkeypatch.delenv("OAUTH_STATE_ALLOW_DEGRADED_MODE", raising=False)
+
+        with pytest.raises(OSError, match="Redis is required for OAuth2StateManager"):
+            OAuth2StateManager(redis_client=None)
+
+    def test_without_redis_fails_closed_when_only_environment_is_production(self, monkeypatch):
+        from src.core.shared.config import settings
+
+        monkeypatch.setattr(settings, "env", "development")
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.setenv("ENVIRONMENT", "production")
         monkeypatch.delenv("OAUTH_STATE_ALLOW_DEGRADED_MODE", raising=False)
 
         with pytest.raises(OSError, match="Redis is required for OAuth2StateManager"):
@@ -419,7 +416,6 @@ class TestGracefulDegradation:
         manager = OAuth2StateManager(redis_client=None)
         assert manager is not None
 
-    @pytest.mark.asyncio
     async def test_degraded_mode_validation_fails_gracefully(self, state_manager_no_redis):
         """Test validation fails gracefully without Redis (no crash)."""
         with pytest.raises(OAuth2StateNotFoundError, match="Redis unavailable"):
@@ -429,13 +425,11 @@ class TestGracefulDegradation:
                 user_agent="Test",
             )
 
-    @pytest.mark.asyncio
     async def test_invalidate_state_without_redis(self, state_manager_no_redis):
         """Test invalidate_state returns False without Redis."""
         result = await state_manager_no_redis.invalidate_state("any_state")
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_redis_connection_failure_during_create(self, mock_redis):
         """Test graceful handling of Redis connection failure during create_state."""
         # Mock Redis to raise connection error
@@ -452,7 +446,6 @@ class TestGracefulDegradation:
                 callback_url="/callback",
             )
 
-    @pytest.mark.asyncio
     async def test_redis_connection_failure_during_validate(self, mock_redis):
         """Test graceful handling of Redis connection failure during validation."""
         # Mock Redis to raise connection error
@@ -467,7 +460,6 @@ class TestGracefulDegradation:
                 user_agent="Test",
             )
 
-    @pytest.mark.asyncio
     async def test_redis_delete_failure_during_validation(self, mock_redis):
         """Test that validation succeeds even if delete fails (one-time use enforcement)."""
         import json
@@ -494,7 +486,6 @@ class TestGracefulDegradation:
         )
         assert result["provider"] == "okta"
 
-    @pytest.mark.asyncio
     async def test_invalidate_state_redis_error(self, mock_redis):
         """Test invalidate_state handles Redis errors gracefully."""
         mock_redis.delete.side_effect = ConnectionError("Redis connection lost")
@@ -509,7 +500,6 @@ class TestGracefulDegradation:
 class TestConstitutionalCompliance:
     """Test constitutional hash validation and logging."""
 
-    @pytest.mark.asyncio
     async def test_stored_data_includes_constitutional_hash(self, state_manager, mock_redis):
         """Test that stored state data includes constitutional hash."""
         await state_manager.create_state(
@@ -528,7 +518,6 @@ class TestConstitutionalCompliance:
         assert "constitutional_hash" in stored_data
         assert stored_data["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_validation_checks_constitutional_hash(self, state_manager, mock_redis):
         """Test that validation fails if constitutional hash is missing or wrong."""
         import json
@@ -562,7 +551,6 @@ class TestConstitutionalCompliance:
                 user_agent="Test",
             )
 
-    @pytest.mark.asyncio
     async def test_validation_without_created_at(self, state_manager, mock_redis):
         """Test validation succeeds if created_at is missing (edge case)."""
         import json
@@ -590,7 +578,6 @@ class TestConstitutionalCompliance:
 class TestEdgeCases:
     """Test edge cases and security scenarios."""
 
-    @pytest.mark.asyncio
     async def test_concurrent_state_creation(self, state_manager):
         """Test concurrent state creation doesn't cause collisions."""
         # Create multiple states concurrently
@@ -609,7 +596,6 @@ class TestEdgeCases:
         # All states should be unique
         assert len(set(states)) == 50
 
-    @pytest.mark.asyncio
     async def test_state_with_special_characters_in_metadata(self, state_manager, mock_redis):
         """Test state creation/validation with special characters in metadata."""
         state = await state_manager.create_state(
@@ -622,7 +608,6 @@ class TestEdgeCases:
         # Should not crash, special chars should be JSON-encoded properly
         assert isinstance(state, str)
 
-    @pytest.mark.asyncio
     async def test_replay_attack_prevention(self, state_manager, mock_redis):
         """Test that replay attacks are prevented by one-time use."""
         import json
@@ -658,7 +643,6 @@ class TestEdgeCases:
                 user_agent="Chrome",
             )
 
-    @pytest.mark.asyncio
     async def test_empty_string_state_validation(self, state_manager):
         """Test validation with empty state string."""
         with pytest.raises((ValueError, ACGSValidationError), match="state cannot be empty"):
@@ -668,7 +652,6 @@ class TestEdgeCases:
                 user_agent="Test",
             )
 
-    @pytest.mark.asyncio
     async def test_malformed_json_in_redis(self, state_manager, mock_redis):
         """Test handling of malformed JSON in Redis."""
         # Mock Redis to return invalid JSON

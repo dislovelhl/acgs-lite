@@ -22,7 +22,7 @@ from datetime import UTC, datetime, timezone
 from enum import Enum
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -36,7 +36,7 @@ except ImportError:
 logger = get_logger(__name__)
 # Constitutional Hash for all MACI operations
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -489,7 +489,7 @@ class RoleMappingService:
     ) -> bool:
         """Check if a mapping matches the resolution criteria."""
         # Filter by tenant
-        if tenant_id is not None and mapping.tenant_id != tenant_id:  # noqa: SIM102
+        if tenant_id is not None and mapping.tenant_id != tenant_id:
             if mapping.tenant_id is not None:  # Skip non-global mappings
                 return False
 

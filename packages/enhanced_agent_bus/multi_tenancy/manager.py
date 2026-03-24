@@ -18,7 +18,7 @@ try:
     from src.core.shared.types import (
         JSONDict,
         JSONList,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONList = list  # type: ignore[misc,assignment]
@@ -42,7 +42,7 @@ TENANT_EVENT_HANDLER_ERRORS = (
 )
 
 
-class TenantEvent(str, Enum):  # noqa: UP042
+class TenantEvent(str, Enum):
     """Tenant lifecycle events for publishing."""
 
     CREATED = "tenant.created"

@@ -104,7 +104,6 @@ class TestActivationSagaActivities:
 
         assert hash1 == hash2
 
-    @pytest.mark.asyncio
     async def test_validate_activation_success(
         self, activities, mock_storage, mock_amendment, mock_target_version, mock_active_version
     ):
@@ -126,7 +125,6 @@ class TestActivationSagaActivities:
         assert result["new_version"] == "1.1.0"
         assert "validation_id" in result
 
-    @pytest.mark.asyncio
     async def test_validate_activation_missing_amendment_id(self, activities):
         """Test validation fails without amendment_id."""
         input_data = {
@@ -137,7 +135,6 @@ class TestActivationSagaActivities:
         with pytest.raises(ActivationSagaError, match="Missing amendment_id"):
             await activities.validate_activation(input_data)
 
-    @pytest.mark.asyncio
     async def test_validate_activation_amendment_not_found(self, activities, mock_storage):
         """Test validation fails when amendment not found."""
         mock_storage.get_amendment.return_value = None
@@ -150,7 +147,6 @@ class TestActivationSagaActivities:
         with pytest.raises(ActivationSagaError, match="not found"):
             await activities.validate_activation(input_data)
 
-    @pytest.mark.asyncio
     async def test_validate_activation_wrong_status(self, activities, mock_storage, mock_amendment):
         """Test validation fails when amendment is not approved."""
         mock_amendment.status = AmendmentStatus.PROPOSED
@@ -164,7 +160,6 @@ class TestActivationSagaActivities:
         with pytest.raises(ActivationSagaError, match="not approved"):
             await activities.validate_activation(input_data)
 
-    @pytest.mark.asyncio
     async def test_backup_current_version_success(
         self, activities, mock_storage, mock_active_version
     ):
@@ -183,7 +178,6 @@ class TestActivationSagaActivities:
         assert result["version"] == "1.0.0"
         assert result["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_backup_current_version_no_active(self, activities, mock_storage):
         """Test backup fails when no active version exists."""
         mock_storage.get_active_version.return_value = None
@@ -196,7 +190,6 @@ class TestActivationSagaActivities:
         with pytest.raises(ActivationSagaError, match="No active constitutional version"):
             await activities.backup_current_version(input_data)
 
-    @pytest.mark.asyncio
     async def test_restore_backup_success(self, activities, mock_storage):
         """Test successful backup restoration (compensation)."""
         mock_storage.activate_version.return_value = None
@@ -216,7 +209,6 @@ class TestActivationSagaActivities:
         assert result is True
         mock_storage.activate_version.assert_called_once_with("version-1.0.0")
 
-    @pytest.mark.asyncio
     async def test_restore_backup_no_backup_data(self, activities, mock_storage):
         """Test restoration fails without backup data."""
         input_data = {
@@ -228,7 +220,6 @@ class TestActivationSagaActivities:
 
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_update_opa_policies_success(
         self, activities, mock_storage, mock_amendment, mock_target_version
     ):
@@ -256,7 +247,6 @@ class TestActivationSagaActivities:
         assert "new_hash" in result
         assert result["new_version"] == "1.1.0"
 
-    @pytest.mark.asyncio
     async def test_update_cache_success(
         self, activities, mock_storage, mock_amendment, mock_target_version
     ):
@@ -292,7 +282,6 @@ class TestActivationSagaActivities:
         mock_storage.activate_version.assert_called_once()
         mock_storage.save_amendment.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_audit_activation_success(self, activities):
         """Test successful audit logging."""
         activities._audit_client = AsyncMock()
@@ -316,7 +305,6 @@ class TestActivationSagaActivities:
         assert result["previous_version"] == "1.0.0"
         assert result["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_log_validation_failure_compensation(self, activities):
         """Test validation failure logging (compensation)."""
         input_data = {"saga_id": "saga-001", "context": {}}
@@ -325,7 +313,6 @@ class TestActivationSagaActivities:
 
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_mark_audit_failed_compensation(self, activities):
         """Test marking audit as failed (compensation)."""
         activities._audit_client = AsyncMock()
@@ -413,7 +400,6 @@ class TestActivationSagaIntegration:
 
         return storage
 
-    @pytest.mark.asyncio
     async def test_full_activation_flow(self, mock_storage):
         """Test complete activation flow through activities."""
         activities = ActivationSagaActivities(
@@ -457,7 +443,6 @@ class TestConstitutionalHashEnforcement:
         computed_hash = activities._compute_constitutional_hash(content)
         assert len(computed_hash) == 64  # Valid SHA256
 
-    @pytest.mark.asyncio
     async def test_hash_validation_during_activation(self):
         """Test constitutional hash validation during activation."""
         mock_storage = AsyncMock(spec=ConstitutionalStorageService)
@@ -489,15 +474,13 @@ class TestConstitutionalHashEnforcement:
             opa_url="http://localhost:8181",
         )
 
-        # Validation should still pass but log warning about mismatched hash
         input_data = {
             "saga_id": "saga-001",
             "context": {"amendment_id": "amendment-123"},
         }
 
-        result = await activities.validate_activation(input_data)
-        # Validation passes (hash mismatch is logged as warning, not error)
-        assert result["is_valid"] is True
+        with pytest.raises(ActivationSagaError, match="constitutional hash"):
+            await activities.validate_activation(input_data)
 
 
 if __name__ == "__main__":

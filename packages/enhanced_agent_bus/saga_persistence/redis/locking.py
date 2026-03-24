@@ -15,11 +15,11 @@ from datetime import UTC, datetime
 import redis.asyncio as redis
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -285,7 +285,7 @@ class RedisLockManager(RedisKeyMixin):
                         or saga.created_at
                     )
 
-                    if check_time < older_than:  # noqa: SIM102
+                    if check_time < older_than:
                         if await self.delete(saga_id_str):
                             deleted_count += 1
 

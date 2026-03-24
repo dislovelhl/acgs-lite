@@ -8,7 +8,7 @@ Enumerations for feedback types and outcome statuses.
 from enum import Enum
 
 
-class FeedbackType(str, Enum):  # noqa: UP042
+class FeedbackType(str, Enum):
     """Type of feedback provided by user."""
 
     POSITIVE = "positive"  # Thumbs up - decision was correct
@@ -17,7 +17,7 @@ class FeedbackType(str, Enum):  # noqa: UP042
     CORRECTION = "correction"  # User provides explicit correction
 
 
-class OutcomeStatus(str, Enum):  # noqa: UP042
+class OutcomeStatus(str, Enum):
     """Status of the governance decision outcome."""
 
     SUCCESS = "success"  # Decision led to successful outcome

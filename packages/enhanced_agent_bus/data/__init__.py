@@ -33,7 +33,7 @@ def get_baseline_path() -> Path:
         return BASELINE_CSV_PATH
     else:
         raise FileNotFoundError(
-            f"Baseline dataset not found. Expected at {BASELINE_PARQUET_PATH} or {BASELINE_CSV_PATH}"  # noqa: E501
+            f"Baseline dataset not found. Expected at {BASELINE_PARQUET_PATH} or {BASELINE_CSV_PATH}"
         )
 
 

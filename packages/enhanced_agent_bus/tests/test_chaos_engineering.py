@@ -237,7 +237,6 @@ class TestSteadyStateValidator:
                 constitutional_hash="invalid_hash",
             )
 
-    @pytest.mark.asyncio
     async def test_validate_passing(self, validator):
         """Test validation when metrics pass."""
         validator.record_metric("latency_ms", 3.0)
@@ -248,7 +247,6 @@ class TestSteadyStateValidator:
         assert all(r.valid for r in results)
         assert validator.is_valid()
 
-    @pytest.mark.asyncio
     async def test_validate_failing(self, validator):
         """Test validation when metrics fail."""
         validator.record_metric("latency_ms", 10.0)  # Exceeds threshold
@@ -260,7 +258,6 @@ class TestSteadyStateValidator:
         assert len(violations) > 0
         assert not validator.is_valid()
 
-    @pytest.mark.asyncio
     async def test_consecutive_failures_tolerance(self, validator):
         """Test tolerance for consecutive failures."""
         validator.record_metric("latency_ms", 10.0)  # Exceeds threshold
@@ -318,7 +315,6 @@ class TestNetworkPartitionScenario:
                 constitutional_hash="invalid",
             )
 
-    @pytest.mark.asyncio
     async def test_execute_scenario(self):
         """Test executing a network partition scenario."""
         scenario = NetworkPartitionScenario(
@@ -361,7 +357,6 @@ class TestNetworkPartitionScenario:
         # Should allow requests FROM redis
         assert scenario.is_partitioned("redis", "app") is False
 
-    @pytest.mark.asyncio
     async def test_rollback(self):
         """Test scenario rollback."""
         scenario = NetworkPartitionScenario(
@@ -421,7 +416,6 @@ class TestLatencyInjectionScenario:
         latency = scenario.get_latency()
         assert latency == 0
 
-    @pytest.mark.asyncio
     async def test_execute_scenario(self):
         """Test executing a latency injection scenario."""
         scenario = LatencyInjectionScenario(
@@ -459,7 +453,6 @@ class TestMemoryPressureScenario:
 
         assert scenario.target_percent == 80.0  # Capped to max
 
-    @pytest.mark.asyncio
     async def test_execute_scenario(self):
         """Test executing a memory pressure scenario."""
         scenario = MemoryPressureScenario(
@@ -497,7 +490,6 @@ class TestCPUStressScenario:
 
         assert scenario.target_percent == 90.0  # Capped to max
 
-    @pytest.mark.asyncio
     async def test_execute_scenario(self):
         """Test executing a CPU stress scenario."""
         scenario = CPUStressScenario(
@@ -554,7 +546,6 @@ class TestDependencyFailureScenario:
         assert isinstance(error, ConnectionError)
         assert "redis" in str(error).lower()
 
-    @pytest.mark.asyncio
     async def test_execute_scenario(self):
         """Test executing a dependency failure scenario."""
         scenario = DependencyFailureScenario(
@@ -577,7 +568,6 @@ class TestScenarioExecutor:
         """Create a fresh executor."""
         return ScenarioExecutor()
 
-    @pytest.mark.asyncio
     async def test_execute_scenario(self, executor):
         """Test executing a scenario through executor."""
         scenario = LatencyInjectionScenario(
@@ -591,7 +581,6 @@ class TestScenarioExecutor:
         assert result.status == ScenarioStatus.COMPLETED
         assert len(executor.get_results()) == 1
 
-    @pytest.mark.asyncio
     async def test_rollback_all(self, executor):
         """Test rolling back all scenarios."""
         scenario = LatencyInjectionScenario(
@@ -680,7 +669,6 @@ class TestChaosExperiment:
                 constitutional_hash="invalid",
             )
 
-    @pytest.mark.asyncio
     async def test_run_experiment(self, validator, scenario):
         """Test running a complete experiment."""
         experiment = ChaosExperiment(
@@ -703,7 +691,6 @@ class TestChaosExperiment:
         assert len(result.observations) > 0
         assert result.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_experiment_abort(self, validator, scenario):
         """Test aborting an experiment."""
         experiment = ChaosExperiment(
@@ -835,7 +822,6 @@ class TestConstitutionalCompliance:
 
 
 @pytest.mark.chaos
-@pytest.mark.asyncio
 async def test_full_chaos_experiment_lifecycle():
     """Test a complete chaos experiment lifecycle."""
     # Create steady state validator
@@ -880,7 +866,6 @@ async def test_full_chaos_experiment_lifecycle():
 
 
 @pytest.mark.chaos
-@pytest.mark.asyncio
 async def test_multiple_concurrent_scenarios():
     """Test running multiple scenarios concurrently."""
     executor = ScenarioExecutor()

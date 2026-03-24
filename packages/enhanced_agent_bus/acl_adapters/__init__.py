@@ -30,6 +30,7 @@ from .z3_adapter import (
 )
 
 __all__ = [
+    "CONSTITUTIONAL_HASH",
     "ACLAdapter",
     "AdapterCircuitOpenError",
     "AdapterConfig",
@@ -37,7 +38,6 @@ __all__ = [
     "AdapterResult",
     "AdapterState",
     "AdapterTimeoutError",
-    "CONSTITUTIONAL_HASH",
     "OPAAdapter",
     "OPAAdapterConfig",
     "OPARequest",

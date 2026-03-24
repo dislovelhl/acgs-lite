@@ -16,13 +16,13 @@ from datetime import UTC, datetime, timezone
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -181,7 +181,7 @@ class ProviderConfig:
             tenant = self.tenant_id or "common"
             return f"https://login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize"
 
-        if self.provider_type == ProviderType.OKTA:  # noqa: SIM102
+        if self.provider_type == ProviderType.OKTA:
             if self.okta_domain:
                 return f"https://{self.okta_domain}/oauth2/v1/authorize"
 
@@ -245,9 +245,9 @@ class ManagedProviderToken:
 
 
 # Import these here to avoid circular imports in MCPAuthProviderConfig
-from ..auth_audit import AuditLoggerConfig  # noqa: E402
-from ..credential_manager import CredentialManagerConfig  # noqa: E402
-from ..token_refresh import RefreshConfig  # noqa: E402
+from ..auth_audit import AuditLoggerConfig
+from ..credential_manager import CredentialManagerConfig
+from ..token_refresh import RefreshConfig
 
 
 @dataclass

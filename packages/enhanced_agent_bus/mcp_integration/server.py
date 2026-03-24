@@ -19,7 +19,7 @@ from enum import Enum
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -542,7 +542,7 @@ class MCPIntegrationServer:
                         return self._error_response(
                             request_id,
                             -32001,
-                            f"Constitutional validation failed: {[i.message for i in validation.issues]}",  # noqa: E501
+                            f"Constitutional validation failed: {[i.message for i in validation.issues]}",
                         )
 
             # Execute handler
@@ -848,7 +848,7 @@ class MCPIntegrationServer:
                 )
 
         # Check data sensitivity
-        if context.get("data_sensitivity") in ["confidential", "restricted"]:  # noqa: SIM102
+        if context.get("data_sensitivity") in ["confidential", "restricted"]:
             if not context.get("consent_obtained"):
                 compliant = False
                 violations.append(

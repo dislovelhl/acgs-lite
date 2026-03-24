@@ -9,8 +9,6 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
-
 try:
     from enhanced_agent_bus.pqc_audit import (
         write_mode_change_audit_event,
@@ -41,7 +39,6 @@ def _redis_mock() -> AsyncMock:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_verification_event_includes_required_fields():
     """Event payload contains key_type, key_algorithm, enforcement_mode, hash_valid."""
     event = await write_verification_audit_event(
@@ -58,7 +55,6 @@ async def test_verification_event_includes_required_fields():
     assert "timestamp" in event
 
 
-@pytest.mark.asyncio
 async def test_verification_pqc_increments_redis_counters():
     """PQC verification increments pqc_verified_count for all three windows."""
     redis = _redis_mock()
@@ -78,7 +74,6 @@ async def test_verification_pqc_increments_redis_counters():
         assert call.args[2] == 1
 
 
-@pytest.mark.asyncio
 async def test_verification_classical_increments_redis_counters():
     """Classical verification increments classical_verified_count for all three windows."""
     redis = _redis_mock()
@@ -94,7 +89,6 @@ async def test_verification_classical_increments_redis_counters():
         assert call.args[1] == "classical_verified_count"
 
 
-@pytest.mark.asyncio
 async def test_verification_calls_audit_writer():
     """Audit writer callable is invoked with the event payload."""
     writer = MagicMock()
@@ -113,7 +107,6 @@ async def test_verification_calls_audit_writer():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_mode_change_event_fields():
     """Mode change event includes event_type, from_mode, to_mode, operator_id."""
     event = await write_mode_change_audit_event(
@@ -128,7 +121,6 @@ async def test_mode_change_event_fields():
     assert "timestamp" in event
 
 
-@pytest.mark.asyncio
 async def test_downgrade_emits_warning(caplog):
     """Downgrade from strict to permissive emits a WARNING log."""
     import logging

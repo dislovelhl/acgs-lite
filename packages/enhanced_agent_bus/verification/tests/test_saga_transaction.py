@@ -89,7 +89,6 @@ class TestSagaTransaction:
         tx.add_step("step1", AsyncMock()).add_step("step2", AsyncMock())
         assert len(tx.steps) == 2
 
-    @pytest.mark.asyncio
     async def test_execute_single_step_success(self):
         action = AsyncMock(return_value="result-1")
         tx = SagaTransaction()
@@ -98,7 +97,6 @@ class TestSagaTransaction:
         assert result == "result-1"
         assert tx.status == SagaStatus.COMPLETED
 
-    @pytest.mark.asyncio
     async def test_execute_multiple_steps_in_order(self):
         order = []
 
@@ -116,7 +114,6 @@ class TestSagaTransaction:
         assert order == ["a", "b"]
         assert result == "b"
 
-    @pytest.mark.asyncio
     async def test_execute_passes_last_result_to_next_step(self):
         received = {}
 
@@ -132,7 +129,6 @@ class TestSagaTransaction:
         await tx.execute()
         assert received["last"] == "value-from-a"
 
-    @pytest.mark.asyncio
     async def test_execute_step_failure_triggers_compensation(self):
         compensated = []
 
@@ -154,7 +150,6 @@ class TestSagaTransaction:
 
         assert "comp-a" in compensated
 
-    @pytest.mark.asyncio
     async def test_compensation_is_lifo(self):
         comp_order = []
 
@@ -183,7 +178,6 @@ class TestSagaTransaction:
 
         assert comp_order == ["comp-b", "comp-a"]
 
-    @pytest.mark.asyncio
     async def test_status_after_failure_is_rolled_back(self):
         async def failing_step(**kwargs):
             raise ValueError("Oops")
@@ -196,7 +190,6 @@ class TestSagaTransaction:
 
         assert tx.status == SagaStatus.ROLLED_BACK
 
-    @pytest.mark.asyncio
     async def test_step_without_compensation_skipped_during_rollback(self):
         """Steps without compensation should not raise during rollback."""
 
@@ -216,7 +209,6 @@ class TestSagaTransaction:
         # If no exception raised during compensation, test passes
         assert tx.status == SagaStatus.ROLLED_BACK
 
-    @pytest.mark.asyncio
     async def test_compensation_failure_does_not_raise(self):
         """Compensation failure should be logged but not re-raised."""
 
@@ -237,7 +229,6 @@ class TestSagaTransaction:
         with pytest.raises(RuntimeError, match="Primary failure"):
             await tx.execute()
 
-    @pytest.mark.asyncio
     async def test_execute_sets_step_statuses(self):
         async def step_a(**kwargs):
             return "a"
@@ -247,7 +238,6 @@ class TestSagaTransaction:
         await tx.execute()
         assert tx.steps[0].status == SagaStatus.COMPLETED
 
-    @pytest.mark.asyncio
     async def test_failed_step_stores_error(self):
         async def step_fail(**kwargs):
             raise ValueError("Explicit error")
@@ -261,14 +251,12 @@ class TestSagaTransaction:
         assert tx.steps[0].error == "Explicit error"
         assert tx.steps[0].status == SagaStatus.FAILED
 
-    @pytest.mark.asyncio
     async def test_execute_with_no_steps_returns_none(self):
         tx = SagaTransaction()
         result = await tx.execute()
         assert result is None
         assert tx.status == SagaStatus.COMPLETED
 
-    @pytest.mark.asyncio
     async def test_kwargs_passed_through_to_action(self):
         received = {}
 
@@ -301,7 +289,6 @@ class TestConstitutionalSaga:
         saga = ConstitutionalSaga()
         assert isinstance(saga, SagaTransaction)
 
-    @pytest.mark.asyncio
     async def test_execute_governance_with_steps(self):
         result_holder = {}
 
@@ -314,13 +301,11 @@ class TestConstitutionalSaga:
         result = await saga.execute_governance(decision_data={"policy": "allow_all"})
         assert result_holder["data"] == {"policy": "allow_all"}
 
-    @pytest.mark.asyncio
     async def test_execute_governance_empty_returns_none(self):
         saga = ConstitutionalSaga()
         result = await saga.execute_governance(decision_data={})
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_execute_governance_propagates_failure(self):
         async def failing_step(**kwargs):
             raise RuntimeError("governance failure")

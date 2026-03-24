@@ -33,14 +33,14 @@ except ImportError:
 
 # Import centralized constitutional hash with fallback
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
     from src.core.shared.types import (
         JSONDict,
         JSONValue,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]
@@ -336,7 +336,7 @@ class AgentBusIntegration:
             # Create policy specification from NLU result
             spec = PolicySpecification(
                 spec_id=f"gov_{uuid.uuid4().hex[:8]}",
-                natural_language=f"Verify if intent '{intent_name}' is allowed for user {context.user_id}",  # noqa: E501
+                natural_language=f"Verify if intent '{intent_name}' is allowed for user {context.user_id}",
                 context={
                     "user_id": context.user_id,
                     "session_id": context.session_id,

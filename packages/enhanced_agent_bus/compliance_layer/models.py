@@ -9,16 +9,16 @@ from enum import Enum
 from pydantic import BaseModel, Field
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
 
-class ComplianceFramework(str, Enum):  # noqa: UP042
+class ComplianceFramework(str, Enum):
     NIST_AI_RMF = "nist_ai_rmf"
     SOC2_TYPE_II = "soc2_type_ii"
     EU_AI_ACT = "eu_ai_act"
@@ -26,7 +26,7 @@ class ComplianceFramework(str, Enum):  # noqa: UP042
     GDPR = "gdpr"
 
 
-class ComplianceStatus(str, Enum):  # noqa: UP042
+class ComplianceStatus(str, Enum):
     COMPLIANT = "compliant"
     NON_COMPLIANT = "non_compliant"
     PARTIAL = "partial"
@@ -35,7 +35,7 @@ class ComplianceStatus(str, Enum):  # noqa: UP042
     EXEMPT = "exempt"
 
 
-class RiskSeverity(str, Enum):  # noqa: UP042
+class RiskSeverity(str, Enum):
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
@@ -43,7 +43,7 @@ class RiskSeverity(str, Enum):  # noqa: UP042
     INFORMATIONAL = "informational"
 
 
-class ThreatCategory(str, Enum):  # noqa: UP042
+class ThreatCategory(str, Enum):
     DATA_POISONING = "data_poisoning"
     MODEL_EXTRACTION = "model_extraction"
     ADVERSARIAL_INPUT = "adversarial_input"
@@ -55,7 +55,7 @@ class ThreatCategory(str, Enum):  # noqa: UP042
     GOVERNANCE_EVASION = "governance_evasion"
 
 
-class DataClassification(str, Enum):  # noqa: UP042
+class DataClassification(str, Enum):
     PUBLIC = "public"
     INTERNAL = "internal"
     CONFIDENTIAL = "confidential"
@@ -64,7 +64,7 @@ class DataClassification(str, Enum):  # noqa: UP042
     PHI = "phi"
 
 
-class HumanOversightLevel(str, Enum):  # noqa: UP042
+class HumanOversightLevel(str, Enum):
     HUMAN_IN_THE_LOOP = "human_in_the_loop"
     HUMAN_ON_THE_LOOP = "human_on_the_loop"
     HUMAN_IN_COMMAND = "human_in_command"

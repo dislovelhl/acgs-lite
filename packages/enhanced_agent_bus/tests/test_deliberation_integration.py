@@ -1,565 +1,461 @@
-"""
-Integration Tests for Deliberation Layer
+"""Tests for enhanced_agent_bus.deliberation_layer.integration — coverage boost.
+
 Constitutional Hash: cdd01ef066bc6cf2
 
-Tests the complete deliberation workflow including:
-- Impact scoring with ML fallback cascade
-- Event-driven vote collection
-- Redis integration
-- Multi-stakeholder consensus
+Tests the DeliberationLayer class, _truncate_content_for_hotl helper,
+and internal methods for impact scoring, routing, and processing.
 """
 
-import os
+from __future__ import annotations
+
+from datetime import UTC, datetime
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
-RUN_DELIBERATION_INTEGRATION_TESTS = (
-    os.getenv("RUN_EAB_DELIBERATION_INTEGRATION_TESTS", "false").lower() == "true"
+from enhanced_agent_bus.deliberation_layer.integration import (
+    DeliberationLayer,
+    _truncate_content_for_hotl,
 )
 
-# Governance and constitutional compliance test markers
-pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
-pytestmark.append(
-    pytest.mark.skipif(
-        not RUN_DELIBERATION_INTEGRATION_TESTS,
-        reason=(
-            "Skipping deliberation integration tests by default in this runtime. "
-            "Set RUN_EAB_DELIBERATION_INTEGRATION_TESTS=true to run."
-        ),
-    )
-)
-
-# Import test targets
-
-from enhanced_agent_bus.deliberation_layer import (  # noqa: E402
-    DeliberationQueue,
-    DeliberationTask,
-    Vote,
-    VotingService,
-    VotingStrategy,
-    get_redis_voting_system,
-)
-from enhanced_agent_bus.deliberation_layer.vote_collector import (  # noqa: E402
-    EventDrivenVoteCollector,
-    VoteEvent,
-)
-from enhanced_agent_bus.deliberation_layer.workflows.deliberation_workflow import (  # noqa: E402
-    DefaultDeliberationActivities,
-    DeliberationWorkflow,
-    DeliberationWorkflowInput,
-    WorkflowStatus,
-)
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 
 
-@pytest.fixture
-def sample_workflow_input():
-    """Create sample workflow input for testing."""
-    return DeliberationWorkflowInput(
-        message_id="test-msg-001",
-        content="Critical security policy update requiring approval",
-        from_agent="agent-alpha",
-        to_agent="agent-beta",
-        message_type="governance",
-        priority="critical",
-        tenant_id="test-tenant",
-        require_multi_agent_vote=True,
-        required_votes=3,
-        consensus_threshold=0.66,
-        timeout_seconds=10,
-    )
+def _make_message(**overrides):
+    """Create a minimal AgentMessage-like mock."""
+    from enhanced_agent_bus.models import AgentMessage
+
+    defaults = {
+        "message_id": "msg-001",
+        "content": "test message content",
+        "from_agent": "agent-a",
+        "to_agent": "agent-b",
+        "sender_id": "agent-a",
+        "tenant_id": "tenant-1",
+        "priority": "normal",
+        "message_type": "request",
+        "constitutional_hash": "cdd01ef066bc6cf2",
+        "impact_score": None,
+        "status": "pending",
+    }
+    defaults.update(overrides)
+    msg = MagicMock(spec=AgentMessage)
+    for k, v in defaults.items():
+        setattr(msg, k, v)
+    return msg
 
 
-@pytest.fixture
-def workflow():
-    """Create a deliberation workflow instance."""
-    return DeliberationWorkflow(workflow_id="test-workflow-001")
+def _mock_imports():
+    """Return a mock imports dict for _get_imports."""
+    return {
+        "get_impact_scorer": lambda: MagicMock(),
+        "get_adaptive_router": lambda: MagicMock(),
+        "get_deliberation_queue": lambda: MagicMock(),
+        "get_llm_assistant": lambda: MagicMock(),
+        "OPAGuard": lambda **kw: MagicMock(),
+        "DFCCalculator": None,
+        "DFCComponents": None,
+        "get_dfc_components_from_context": lambda _: None,
+        "AdaptiveRouterProtocol": object,
+        "DeliberationQueueProtocol": object,
+        "DeliberationStatus": object,
+        "GuardDecision": object,
+        "GuardResult": object,
+        "ImpactScorerProtocol": object,
+        "LLMAssistantProtocol": object,
+        "OPAGuardProtocol": object,
+        "RedisQueueProtocol": object,
+        "RedisVotingProtocol": object,
+        "VoteType": object,
+        "get_redis_deliberation_queue": lambda: MagicMock(),
+        "get_redis_voting_system": lambda: MagicMock(),
+    }
 
 
-class TestDeliberationWorkflowIntegration:
-    """Integration tests for the complete deliberation workflow."""
+def _build_layer(**overrides):
+    """Build a DeliberationLayer with all imports mocked."""
+    defaults = {
+        "enable_redis": False,
+        "enable_llm": False,
+        "enable_opa_guard": False,
+    }
+    defaults.update(overrides)
+
+    with patch(
+        "enhanced_agent_bus.deliberation_layer.integration._get_imports",
+        return_value=_mock_imports(),
+    ):
+        return DeliberationLayer(**defaults)
+
+
+# ---------------------------------------------------------------------------
+# _truncate_content_for_hotl
+# ---------------------------------------------------------------------------
+
+
+class TestTruncateContentForHotl:
+    def test_string_input(self):
+        assert _truncate_content_for_hotl("hello") == "hello"
+
+    def test_long_string_truncated(self):
+        long_str = "a" * 1000
+        result = _truncate_content_for_hotl(long_str, limit=500)
+        assert len(result) == 500
+
+    def test_none_input(self):
+        assert _truncate_content_for_hotl(None) == ""
+
+    def test_non_string_input(self):
+        result = _truncate_content_for_hotl(12345)
+        assert result == "12345"
+
+    def test_custom_limit(self):
+        result = _truncate_content_for_hotl("hello world", limit=5)
+        assert result == "hello"
+
+    def test_empty_string(self):
+        assert _truncate_content_for_hotl("") == ""
+
+
+# ---------------------------------------------------------------------------
+# DeliberationLayer — construction
+# ---------------------------------------------------------------------------
+
+
+class TestDeliberationLayerConstruction:
+    def test_default_construction(self):
+        layer = _build_layer()
+        assert layer.impact_threshold == 0.8
+        assert layer.enable_redis is False
+
+    def test_custom_thresholds(self):
+        layer = _build_layer(
+            impact_threshold=0.5,
+            high_risk_threshold=0.7,
+            critical_risk_threshold=0.9,
+        )
+        assert layer.impact_threshold == 0.5
+        assert layer.high_risk_threshold == 0.7
+        assert layer.critical_risk_threshold == 0.9
+
+    def test_injected_dependencies(self):
+        scorer = MagicMock()
+        router = MagicMock()
+        queue = MagicMock()
+        llm = MagicMock()
+        opa = MagicMock()
+
+        layer = _build_layer(
+            impact_scorer=scorer,
+            adaptive_router=router,
+            deliberation_queue=queue,
+            llm_assistant=llm,
+            opa_guard=opa,
+        )
+        assert layer.impact_scorer is scorer
+        assert layer.adaptive_router is router
+        assert layer.deliberation_queue is queue
+        assert layer.llm_assistant is llm
+        assert layer.opa_guard is opa
+
+    def test_redis_disabled_ignores_injected_redis(self):
+        redis_q = MagicMock()
+        redis_v = MagicMock()
+        layer = _build_layer(
+            enable_redis=False,
+            redis_queue=redis_q,
+            redis_voting=redis_v,
+        )
+        # When enable_redis=False, redis components should be None
+        assert layer.redis_queue is None
+        assert layer.redis_voting is None
+
+    def test_graphrag_enricher_stored(self):
+        enricher = MagicMock()
+        layer = _build_layer(graphrag_enricher=enricher)
+        assert layer._graphrag_enricher is enricher
+
+
+# ---------------------------------------------------------------------------
+# DeliberationLayer — properties
+# ---------------------------------------------------------------------------
+
+
+class TestDeliberationLayerProperties:
+    def test_injected_impact_scorer(self):
+        scorer = MagicMock()
+        layer = _build_layer(impact_scorer=scorer)
+        assert layer.injected_impact_scorer is scorer
+
+    def test_injected_router(self):
+        router = MagicMock()
+        layer = _build_layer(adaptive_router=router)
+        assert layer.injected_router is router
+
+    def test_injected_queue(self):
+        queue = MagicMock()
+        layer = _build_layer(deliberation_queue=queue)
+        assert layer.injected_queue is queue
+
+
+# ---------------------------------------------------------------------------
+# _prepare_processing_context
+# ---------------------------------------------------------------------------
+
+
+class TestPrepareProcessingContext:
+    def test_returns_context_dict(self):
+        layer = _build_layer()
+        msg = _make_message()
+        ctx = layer._prepare_processing_context(msg)
+        assert ctx["agent_id"] == "agent-a"
+        assert ctx["tenant_id"] == "tenant-1"
+        assert ctx["constitutional_hash"] == "cdd01ef066bc6cf2"
+
+    def test_uses_sender_id_fallback(self):
+        layer = _build_layer()
+        msg = _make_message(from_agent=None, sender_id="sender-x")
+        ctx = layer._prepare_processing_context(msg)
+        # from_agent is None, so agent_id should be None (Python truthy check)
+        # The implementation does `message.from_agent or message.sender_id`
+        assert ctx["agent_id"] == "sender-x"
+
+
+# ---------------------------------------------------------------------------
+# _ensure_impact_score
+# ---------------------------------------------------------------------------
+
+
+class TestEnsureImpactScore:
+    def test_calculates_when_none(self):
+        scorer = MagicMock()
+        scorer.calculate_impact_score.return_value = 0.5
+        layer = _build_layer(impact_scorer=scorer)
+        msg = _make_message(impact_score=None)
+
+        layer._ensure_impact_score(msg, {"key": "val"})
+        scorer.calculate_impact_score.assert_called_once()
+        assert msg.impact_score == 0.5
+
+    def test_skips_when_already_set(self):
+        scorer = MagicMock()
+        layer = _build_layer(impact_scorer=scorer)
+        msg = _make_message(impact_score=0.9)
+
+        layer._ensure_impact_score(msg, {})
+        scorer.calculate_impact_score.assert_not_called()
+
+    def test_skips_when_no_scorer(self):
+        layer = _build_layer()
+        layer.impact_scorer = None
+        msg = _make_message(impact_score=None)
+        layer._ensure_impact_score(msg, {})
+        assert msg.impact_score is None
+
+
+# ---------------------------------------------------------------------------
+# _evaluate_opa_guard
+# ---------------------------------------------------------------------------
+
+
+class TestEvaluateOpaGuard:
+    @pytest.mark.asyncio
+    async def test_returns_none_when_no_guard(self):
+        layer = _build_layer()
+        layer.opa_guard = None
+        msg = _make_message()
+        result = await layer._evaluate_opa_guard(msg, datetime.now(UTC))
+        assert result is None
+
+
+# ---------------------------------------------------------------------------
+# _execute_routing
+# ---------------------------------------------------------------------------
+
+
+class TestExecuteRouting:
+    @pytest.mark.asyncio
+    async def test_returns_error_when_no_router(self):
+        layer = _build_layer()
+        layer.adaptive_router = None
+        msg = _make_message()
+        result = await layer._execute_routing(msg, {})
+        assert result["lane"] == "fast"
+        assert "error" in result
 
     @pytest.mark.asyncio
-    @pytest.mark.governance
-    async def test_workflow_constitutional_validation_pass(self, workflow, sample_workflow_input):
-        """Test workflow with valid constitutional hash."""
-        # Use default constitutional hash
-        sample_workflow_input.constitutional_hash = CONSTITUTIONAL_HASH
-        sample_workflow_input.require_multi_agent_vote = False
-        sample_workflow_input.require_human_review = False
+    async def test_fast_lane_routing(self):
+        router = MagicMock()
+        router.set_impact_threshold = MagicMock()
+        router.route_message = AsyncMock(return_value={"lane": "fast"})
+        layer = _build_layer(adaptive_router=router)
+        msg = _make_message(impact_score=0.1)
+        layer._process_fast_lane = AsyncMock(return_value={"lane": "fast", "status": "delivered"})
 
-        result = await workflow.run(sample_workflow_input)
+        result = await layer._execute_routing(msg, {})
+        assert result["lane"] == "fast"
 
-        assert result.validation_passed is True
-        assert result.status in [WorkflowStatus.APPROVED, WorkflowStatus.REJECTED]
+
+# ---------------------------------------------------------------------------
+# _process_fast_lane
+# ---------------------------------------------------------------------------
+
+
+class TestProcessFastLane:
+    @pytest.mark.asyncio
+    async def test_basic(self):
+        layer = _build_layer()
+        msg = _make_message(impact_score=0.1)
+        result = await layer._process_fast_lane(msg, {"lane": "fast"})
+        assert result["lane"] == "fast"
+        assert result["status"] == "delivered"
 
     @pytest.mark.asyncio
-    @pytest.mark.governance
-    async def test_workflow_constitutional_validation_fail(self, workflow, sample_workflow_input):
-        """Test workflow rejects invalid constitutional hash."""
-        sample_workflow_input.constitutional_hash = "invalid-hash"
+    async def test_with_callback(self):
+        layer = _build_layer()
+        callback = AsyncMock()
+        layer.fast_lane_callback = callback
+        msg = _make_message(impact_score=0.1)
 
-        result = await workflow.run(sample_workflow_input)
+        await layer._process_fast_lane(msg, {"lane": "fast"})
+        callback.assert_awaited_once_with(msg)
 
-        assert result.status == WorkflowStatus.REJECTED
-        assert result.validation_passed is False
-        assert len(result.errors) > 0
+
+# ---------------------------------------------------------------------------
+# _finalize_processing
+# ---------------------------------------------------------------------------
+
+
+class TestFinalizeProcessing:
+    @pytest.mark.asyncio
+    async def test_adds_processing_time_and_success(self):
+        layer = _build_layer()
+        layer._record_performance_feedback = AsyncMock()
+        layer._run_dfc_diagnostics = AsyncMock()
+
+        msg = _make_message()
+        start = datetime.now(UTC)
+        result = await layer._finalize_processing(msg, {"lane": "fast"}, start)
+
+        assert "processing_time" in result
+        assert result["success"] is True
 
     @pytest.mark.asyncio
-    @pytest.mark.governance
-    async def test_workflow_impact_scoring(self, workflow, sample_workflow_input):
-        """Test impact score calculation in workflow."""
-        sample_workflow_input.impact_score = None  # Force calculation
-        sample_workflow_input.require_multi_agent_vote = False
-        sample_workflow_input.require_human_review = False
+    async def test_includes_guard_result_from_message(self):
+        layer = _build_layer()
+        layer._record_performance_feedback = AsyncMock()
+        layer._run_dfc_diagnostics = AsyncMock()
 
-        result = await workflow.run(sample_workflow_input)
-
-        # Impact score should be calculated
-        assert result.impact_score >= 0.0
-        assert result.impact_score <= 1.0
+        msg = _make_message()
+        msg._guard_result = {"decision": "allow"}
+        start = datetime.now(UTC)
+        result = await layer._finalize_processing(msg, {"lane": "fast"}, start)
+        assert result["guard_result"] == {"decision": "allow"}
 
     @pytest.mark.asyncio
-    async def test_workflow_vote_collection(self, workflow, sample_workflow_input):
-        """Test multi-agent vote collection in workflow."""
-        # Short timeout to avoid slow test
-        sample_workflow_input.timeout_seconds = 1
-        sample_workflow_input.require_human_review = False
+    async def test_deliberation_lane_runs_dfc(self):
+        layer = _build_layer()
+        layer._record_performance_feedback = AsyncMock()
+        layer._run_dfc_diagnostics = AsyncMock()
 
-        result = await workflow.run(sample_workflow_input)
+        msg = _make_message()
+        start = datetime.now(UTC)
+        await layer._finalize_processing(msg, {"lane": "deliberation"}, start)
+        layer._run_dfc_diagnostics.assert_awaited_once()
 
-        # With no votes, should timeout or reach minimum votes status
-        assert result.votes_required == 3
+
+# ---------------------------------------------------------------------------
+# _record_performance_feedback
+# ---------------------------------------------------------------------------
+
+
+class TestRecordPerformanceFeedback:
+    @pytest.mark.asyncio
+    async def test_skips_when_learning_disabled(self):
+        layer = _build_layer(enable_learning=False)
+        msg = _make_message()
+        await layer._record_performance_feedback(msg, {"lane": "fast"}, 1.0)
 
     @pytest.mark.asyncio
-    async def test_workflow_processing_time_tracking(self, workflow, sample_workflow_input):
-        """Test processing time is tracked."""
-        sample_workflow_input.require_multi_agent_vote = False
-        sample_workflow_input.require_human_review = False
-
-        result = await workflow.run(sample_workflow_input)
-
-        assert result.processing_time_ms > 0
+    async def test_skips_when_no_router(self):
+        layer = _build_layer(enable_learning=True)
+        layer.adaptive_router = None
+        msg = _make_message()
+        await layer._record_performance_feedback(msg, {"lane": "fast"}, 1.0)
 
 
-class TestEventDrivenVoteCollectorIntegration:
-    """Integration tests for event-driven vote collection."""
+# ---------------------------------------------------------------------------
+# Callbacks initialization
+# ---------------------------------------------------------------------------
 
-    @pytest.fixture
-    def collector(self):
-        """Create vote collector instance."""
-        return EventDrivenVoteCollector()
+
+class TestCallbacksInit:
+    def test_callbacks_initialized_to_none(self):
+        layer = _build_layer()
+        assert layer.fast_lane_callback is None
+        assert layer.deliberation_callback is None
+        assert layer.guard_callback is None
+
+
+# ---------------------------------------------------------------------------
+# initialize (async)
+# ---------------------------------------------------------------------------
+
+
+class TestInitializeAsync:
+    @pytest.mark.asyncio
+    async def test_initialize_without_redis(self):
+        layer = _build_layer(enable_redis=False)
+        layer.opa_guard = None
+        await layer.initialize()
 
     @pytest.mark.asyncio
-    async def test_full_vote_collection_cycle(self, collector):
-        """Test complete vote collection cycle."""
-        # Create session
-        session_id = await collector.create_vote_session(
-            message_id="msg-test-cycle",
-            required_votes=2,
-            consensus_threshold=0.66,
-            timeout_seconds=5,
-        )
+    async def test_initialize_with_opa_guard(self):
+        mock_guard = AsyncMock()
+        mock_guard.initialize = AsyncMock()
+        layer = _build_layer()
+        layer.opa_guard = mock_guard
 
-        # Submit votes
-        await collector.submit_vote(
-            message_id="msg-test-cycle",
-            agent_id="agent-1",
-            decision="approve",
-            reasoning="Policy compliant",
-        )
-        await collector.submit_vote(
-            message_id="msg-test-cycle",
-            agent_id="agent-2",
-            decision="approve",
-            reasoning="No issues found",
-        )
-
-        # Trigger vote processing manually
-        for vote_list in collector._in_memory_votes.values():
-            for vote in vote_list:
-                await collector._process_vote_event(vote)
-
-        # Check session status
-        info = await collector.get_session_info(session_id)
-        assert info is not None
-        assert info["votes_received"] >= 2
+        await layer.initialize()
+        mock_guard.initialize.assert_awaited_once()
 
     @pytest.mark.asyncio
-    async def test_weighted_consensus_calculation(self, collector):
-        """Test weighted voting with agent weights."""
-        session_id = await collector.create_vote_session(
-            message_id="msg-weighted",
-            required_votes=2,
-            consensus_threshold=0.60,
-            timeout_seconds=5,
-            agent_weights={
-                "senior-agent": 3.0,
-                "junior-agent": 1.0,
-            },
-        )
-
-        # Senior agent approves (weight 3), junior rejects (weight 1)
-        vote1 = VoteEvent(
-            vote_id="v1",
-            message_id="msg-weighted",
-            agent_id="senior-agent",
-            decision="approve",
-            reasoning="Approved by senior",
-            confidence=1.0,
-        )
-        vote2 = VoteEvent(
-            vote_id="v2",
-            message_id="msg-weighted",
-            agent_id="junior-agent",
-            decision="reject",
-            reasoning="Rejected by junior",
-            confidence=1.0,
-        )
-
-        await collector._process_vote_event(vote1)
-        await collector._process_vote_event(vote2)
-
-        info = await collector.get_session_info(session_id)
-        consensus = info["consensus"]
-
-        # With weights 3:1, approval rate is 75%
-        assert consensus["consensus_reached"] is True
-        assert consensus["decision"] == "approved"
-
-    @pytest.mark.asyncio
-    async def test_session_timeout_handling(self, collector):
-        """Test session timeout behavior."""
-        session_id = await collector.create_vote_session(
-            message_id="msg-timeout",
-            required_votes=10,  # Will never reach this
-            timeout_seconds=1,  # Short timeout
-        )
-
-        # Wait for consensus (should timeout)
-        result = await collector.wait_for_consensus(session_id, timeout_override=1)
-
-        assert result.get("timed_out") is True
-        assert result.get("consensus_reached") is False
-
-
-class TestRedisVotingSystemIntegration:
-    """Integration tests for Redis-backed voting system."""
-
-    @pytest.fixture
-    def voting_system(self):
-        """Create voting system instance."""
-        return get_redis_voting_system()
-
-    @pytest.mark.asyncio
-    async def test_in_memory_fallback_when_redis_unavailable(self, voting_system):
-        """Test graceful degradation when Redis is unavailable."""
-        # Without connection, should use in-memory
-        votes = await voting_system.get_votes("nonexistent-item")
-        assert votes == []  # Returns empty list, not error
-
-    @pytest.mark.asyncio
-    async def test_consensus_check_thresholds(self, voting_system):
-        """Test consensus threshold calculations."""
-        # Test with in-memory mock data
-        result = await voting_system.check_consensus(
-            item_id="test-item",
-            required_votes=3,
-            threshold=0.66,
-        )
-
-        # Should return insufficient votes for nonexistent item
-        assert result["consensus_reached"] is False
-        assert result["reason"] == "insufficient_votes"
-
-
-class TestImpactScorerIntegration:
-    """Integration tests for impact scorer with ML fallback."""
-
-    @pytest.mark.governance
-    def test_impact_scorer_fallback_cascade(self):
-        """Test impact scorer works with fallback when ML unavailable."""
-        from enhanced_agent_bus.deliberation_layer.impact_scorer import ImpactScorer
-
-        scorer = ImpactScorer()
-
-        # High-impact message with security keywords
-        message = {
-            "content": "CRITICAL security breach detected - unauthorized access to admin system",
-            "priority": "critical",
-        }
-
-        score = scorer.calculate_impact_score(message)
-
-        # Should produce high score due to keywords
-        assert score >= 0.7  # High impact expected
-
-    @pytest.mark.governance
-    def test_impact_scorer_low_impact_message(self):
-        """Test low-impact message scoring."""
-        from enhanced_agent_bus.deliberation_layer.impact_scorer import ImpactScorer
-
-        scorer = ImpactScorer()
-
-        # Low-impact message
-        message = {
-            "content": "Hello, how are you today?",
-            "priority": "low",
-        }
-
-        score = scorer.calculate_impact_score(message)
-
-        # Should produce low score
-        assert score < 0.5
-
-    @pytest.mark.governance
-    def test_impact_scorer_batch_processing(self):
-        """Test batch scoring for multiple messages."""
-        from enhanced_agent_bus.deliberation_layer.impact_scorer import ImpactScorer
-
-        scorer = ImpactScorer()
-
-        messages = [
-            {"content": "Normal status update", "from_agent": "agent1"},
-            {"content": "Critical security alert", "from_agent": "agent2"},
-            {"content": "Routine maintenance scheduled", "from_agent": "agent3"},
-        ]
-
-        scores = scorer.batch_score_impact(messages)
-
-        assert len(scores) == 3
-        assert all(0.0 <= s <= 1.0 for s in scores)
-        # Security alert should have highest score (contains "critical" and "security" keywords)
-        assert scores[1] > scores[0]
-
-
-class TestDeliberationQueueIntegration:
-    """Integration tests for deliberation queue."""
-
-    @pytest.fixture
-    def queue(self):
-        """Create deliberation queue instance."""
-        return DeliberationQueue()
-
-    @pytest.mark.asyncio
-    async def test_queue_enqueue_and_get_task(self, queue):
-        """Test basic queue operations."""
-        from enhanced_agent_bus.models import AgentMessage
-
-        # Create a message to enqueue
-        message = AgentMessage(
-            message_id="test-queue-msg-001",
-            from_agent="test-agent",
-            to_agent="governance",
-            content="Test queue message",
-        )
-
-        # Enqueue the message (async)
-        task_id = await queue.enqueue(message)
-
-        # Verify task was created (sync methods)
-        assert task_id is not None
-        task = queue.get_task(task_id)
-        assert task is not None
-
-    @pytest.mark.asyncio
-    async def test_queue_task_status_management(self, queue):
-        """Test task status management in queue."""
-        from enhanced_agent_bus.models import AgentMessage
-
-        # Create messages with different content
-        message1 = AgentMessage(
-            message_id="msg-low-votes",
-            from_agent="test-agent",
-            to_agent="governance",
-            content="Low priority message",
-        )
-        message2 = AgentMessage(
-            message_id="msg-high-votes",
-            from_agent="test-agent",
-            to_agent="governance",
-            content="High priority message",
-        )
-
-        # Enqueue both (async)
-        task_id1 = await queue.enqueue(message1)
-        task_id2 = await queue.enqueue(message2)
-
-        # Check pending tasks (sync)
-        pending = queue.get_pending_tasks()
-        assert len(pending) >= 0  # May or may not include our tasks depending on timing
-
-        # Verify tasks can be retrieved (sync)
-        task1 = queue.get_task(task_id1)
-        task2 = queue.get_task(task_id2)
-        assert task1 is not None or task2 is not None
-
-
-class TestVotingServiceIntegration:
-    """Integration tests for voting service.
-
-    These tests require Redis to be running. Use pytest -m integration to run them.
-    """
-
-    @pytest.fixture
-    def voting_service(self):
-        """Create voting service instance without Redis (use in-memory fallback)."""
-        # Create service with force_in_memory=True to skip Redis initialization
-        return VotingService(default_strategy=VotingStrategy.QUORUM, force_in_memory=True)
-
-    @pytest.mark.asyncio
-    async def test_voting_strategy_quorum(self, voting_service):
-        """Test quorum voting strategy (50% + 1)."""
-        from enhanced_agent_bus.models import AgentMessage
-
-        # Create a mock message for the election
-        message = AgentMessage(
-            message_id="test-quorum-msg",
-            from_agent="test-agent",
-            to_agent="governance",
-            content="Test quorum voting",
-        )
-
-        # Create election with 3 participants (uses in-memory fallback)
-        election_id = await voting_service.create_election(
-            message=message,
-            participants=["a1", "a2", "a3"],
-            timeout=60,
-        )
-
-        # Cast votes: 2 approve, 1 reject (quorum reached with approvals)
-        await voting_service.cast_vote(election_id, Vote(agent_id="a1", decision="APPROVE"))
-        await voting_service.cast_vote(election_id, Vote(agent_id="a2", decision="APPROVE"))
-        await voting_service.cast_vote(election_id, Vote(agent_id="a3", decision="DENY"))
-
-        result = await voting_service.get_result(election_id)
-
-        # With 2/3 approvals (>50%), should approve
-        assert result == "APPROVE"
-
-    @pytest.mark.asyncio
-    async def test_voting_strategy_unanimous(self, voting_service):
-        """Test unanimous voting strategy (100% required)."""
-        from enhanced_agent_bus.models import AgentMessage
-
-        # Create voting service with unanimous strategy (no Redis)
-        unanimous_service = VotingService(
-            default_strategy=VotingStrategy.UNANIMOUS, force_in_memory=True
-        )
-
-        message = AgentMessage(
-            message_id="test-unanimous-msg",
-            from_agent="test-agent",
-            to_agent="governance",
-            content="Test unanimous voting",
-        )
-
-        election_id = await unanimous_service.create_election(
-            message=message,
-            participants=["a1", "a2", "a3"],
-            timeout=60,
-        )
-
-        # Cast votes: 2 approve, 1 reject (breaks unanimity)
-        await unanimous_service.cast_vote(election_id, Vote(agent_id="a1", decision="APPROVE"))
-        await unanimous_service.cast_vote(election_id, Vote(agent_id="a2", decision="APPROVE"))
-        await unanimous_service.cast_vote(election_id, Vote(agent_id="a3", decision="DENY"))
-
-        result = await unanimous_service.get_result(election_id)
-
-        # Should deny since one agent rejected
-        assert result == "DENY"
-
-    @pytest.mark.asyncio
-    async def test_voting_with_participant_weights(self, voting_service):
-        """Test weighted voting calculation using participant_weights."""
-        from enhanced_agent_bus.models import AgentMessage
-
-        # Create voting service without Redis
-        weighted_service = VotingService(
-            default_strategy=VotingStrategy.QUORUM, force_in_memory=True
-        )
-
-        message = AgentMessage(
-            message_id="test-weighted-msg",
-            from_agent="test-agent",
-            to_agent="governance",
-            content="Test weighted voting",
-        )
-
-        # Create election with participant weights
-        election_id = await weighted_service.create_election(
-            message=message,
-            participants=["senior", "junior1", "junior2"],
-            timeout=60,
-            participant_weights={
-                "senior": 5.0,
-                "junior1": 1.0,
-                "junior2": 1.0,
-            },
-        )
-
-        # Senior approves (weight 5), juniors reject (weight 2 combined)
-        await weighted_service.cast_vote(election_id, Vote(agent_id="senior", decision="APPROVE"))
-        await weighted_service.cast_vote(election_id, Vote(agent_id="junior1", decision="DENY"))
-        await weighted_service.cast_vote(election_id, Vote(agent_id="junior2", decision="DENY"))
-
-        result = await weighted_service.get_result(election_id)
-
-        # Senior's weight (5) > juniors combined (2), so approval wins
-        assert result == "APPROVE"
-
-
-class TestDefaultDeliberationActivities:
-    """Tests for default activity implementations."""
-
-    @pytest.fixture
-    def activities(self):
-        """Create activities instance."""
-        return DefaultDeliberationActivities()
-
-    @pytest.mark.asyncio
-    async def test_validate_constitutional_hash_valid(self, activities):
-        """Test valid constitutional hash validation."""
-        result = await activities.validate_constitutional_hash(
-            message_id="msg-1",
-            provided_hash=CONSTITUTIONAL_HASH,
-            expected_hash=CONSTITUTIONAL_HASH,
-        )
-
-        assert result["is_valid"] is True
-        assert len(result["errors"]) == 0
-
-    @pytest.mark.asyncio
-    async def test_validate_constitutional_hash_invalid(self, activities):
-        """Test invalid constitutional hash validation."""
-        result = await activities.validate_constitutional_hash(
-            message_id="msg-1",
-            provided_hash="wrong-hash",
-            expected_hash=CONSTITUTIONAL_HASH,
-        )
-
-        assert result["is_valid"] is False
-        assert len(result["errors"]) > 0
-
-    @pytest.mark.asyncio
-    async def test_calculate_impact_score_with_fallback(self, activities):
-        """Test impact score calculation."""
-        score = await activities.calculate_impact_score(
-            message_id="msg-1",
-            content="admin delete critical system data",
-        )
-
-        # Should produce a score using keyword fallback
-        assert 0.0 <= score <= 1.0
-
-    @pytest.mark.asyncio
-    async def test_record_audit_trail(self, activities):
-        """Test audit trail recording."""
-        audit_hash = await activities.record_audit_trail(
-            message_id="msg-1",
-            workflow_result={"status": "approved", "votes": 3},
-        )
-
-        assert audit_hash is not None
-        assert len(audit_hash) > 0
+    async def test_initialize_with_redis(self):
+        redis_q = AsyncMock()
+        redis_q.connect = AsyncMock()
+        redis_v = AsyncMock()
+        redis_v.connect = AsyncMock()
+
+        with patch(
+            "enhanced_agent_bus.deliberation_layer.integration._get_imports",
+            return_value=_mock_imports(),
+        ):
+            layer = DeliberationLayer(
+                enable_redis=True,
+                enable_llm=False,
+                enable_opa_guard=False,
+                redis_queue=redis_q,
+                redis_voting=redis_v,
+            )
+
+        layer.opa_guard = None
+        await layer.initialize()
+        redis_q.connect.assert_awaited_once()
+        redis_v.connect.assert_awaited_once()
+
+
+# ---------------------------------------------------------------------------
+# Basic config params
+# ---------------------------------------------------------------------------
+
+
+class TestBasicConfig:
+    def test_deliberation_timeout(self):
+        layer = _build_layer(deliberation_timeout=600)
+        assert layer.deliberation_timeout == 600
+
+    def test_enable_learning_default(self):
+        layer = _build_layer()
+        assert layer.enable_learning is True

@@ -182,7 +182,6 @@ class TestSyncEngine:
         )
         return engine
 
-    @pytest.mark.asyncio
     async def test_initialize_document(self):
         engine = SyncEngine()
         await engine.initialize_document("doc-456", {"title": "New Doc", "items": []})
@@ -191,7 +190,6 @@ class TestSyncEngine:
         assert doc["title"] == "New Doc"
         assert doc["items"] == []
 
-    @pytest.mark.asyncio
     async def test_apply_set_property_operation(self, sync_engine):
         session = CollaborationSession(
             document_id="doc-123",
@@ -214,7 +212,6 @@ class TestSyncEngine:
         assert doc["title"] == "Updated Title"
         assert session.version == 1
 
-    @pytest.mark.asyncio
     async def test_apply_nested_set_property(self, sync_engine):
         session = CollaborationSession(
             document_id="doc-123",
@@ -236,7 +233,6 @@ class TestSyncEngine:
         doc = await sync_engine.get_document("doc-123")
         assert doc["metadata"]["author"] == "John Doe"
 
-    @pytest.mark.asyncio
     async def test_apply_delete_property(self, sync_engine):
         # First add a property
         session = CollaborationSession(
@@ -274,7 +270,6 @@ class TestSyncEngine:
         doc = await sync_engine.get_document("doc-123")
         assert "temp" not in doc
 
-    @pytest.mark.asyncio
     async def test_get_operation_history(self, sync_engine):
         session = CollaborationSession(
             document_id="doc-123",
@@ -298,7 +293,6 @@ class TestSyncEngine:
         history = await sync_engine.get_operation_history("doc-123", since_version=2)
         assert len(history) == 3  # versions 3, 4, 5
 
-    @pytest.mark.asyncio
     async def test_batch_apply_operations(self, sync_engine):
         session = CollaborationSession(
             document_id="doc-123",
@@ -326,7 +320,6 @@ class TestSyncEngine:
         for i in range(3):
             assert doc[f"prop{i}"] == f"value{i}"
 
-    @pytest.mark.asyncio
     async def test_undo_last_operation(self, sync_engine):
         session = CollaborationSession(
             document_id="doc-123",
@@ -353,7 +346,6 @@ class TestSyncEngine:
         doc = await sync_engine.get_document("doc-123")
         assert "temp" not in doc
 
-    @pytest.mark.asyncio
     async def test_undo_empty_history(self, sync_engine):
         session = CollaborationSession(
             document_id="doc-123",
@@ -368,7 +360,6 @@ class TestSyncEngine:
 class TestSyncEngineConcurrency:
     """Test concurrent operations."""
 
-    @pytest.mark.asyncio
     async def test_concurrent_edits_transformed(self):
         """Test that concurrent edits are properly transformed."""
         engine = SyncEngine()

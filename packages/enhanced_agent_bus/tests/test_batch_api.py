@@ -14,51 +14,64 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 import os
 import sys
-
-# CRITICAL: Set environment variables BEFORE any imports
-os.environ["TENANT_CONTEXT_ENABLED"] = "false"
-os.environ["TENANT_CONTEXT_REQUIRED"] = "false"
-os.environ["TENANT_FAIL_OPEN"] = "true"
-os.environ.setdefault("ENVIRONMENT", "testing")
+from unittest.mock import patch
 
 # Add parent directory to path for imports
 _parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _parent_dir not in sys.path:
     sys.path.insert(0, _parent_dir)
 
-from datetime import datetime, timezone  # noqa: E402
-from unittest.mock import AsyncMock, MagicMock, patch  # noqa: E402
-from uuid import uuid4  # noqa: E402
+_IMPORT_ENV_OVERRIDES = {
+    "TENANT_CONTEXT_ENABLED": "false",
+    "TENANT_CONTEXT_REQUIRED": "false",
+    "TENANT_FAIL_OPEN": "true",
+}
+if "ENVIRONMENT" not in os.environ:
+    _IMPORT_ENV_OVERRIDES["ENVIRONMENT"] = "testing"
 
-import pytest  # noqa: E402
-from src.core.shared.types import JSONDict  # noqa: E402
+with patch.dict(os.environ, _IMPORT_ENV_OVERRIDES, clear=False):
+    from datetime import datetime, timezone
+    from unittest.mock import AsyncMock, MagicMock
+    from uuid import uuid4
 
-# Create a test-specific FastAPI app without problematic middleware
-try:
-    from fastapi import Body, Depends, FastAPI, Header, HTTPException, Request, status
-    from fastapi.responses import ORJSONResponse
-    from fastapi.testclient import TestClient
+    import pytest
+    from src.core.shared.types import JSONDict
 
-    from enhanced_agent_bus.batch_processor import BatchMessageProcessor
-    from enhanced_agent_bus.models import (
-        BatchRequest,
-        BatchRequestItem,
-        BatchResponse,
-        BatchResponseItem,
-        BatchResponseStats,
-        Priority,
-    )
+    try:
+        from fastapi import Body, Depends, FastAPI, Header, HTTPException, Request, status
+        from fastapi.responses import ORJSONResponse
+        from fastapi.testclient import TestClient
 
-    # Create a minimal test app without the BaseHTTPMiddleware-based middleware
+        from enhanced_agent_bus.batch_processor import BatchMessageProcessor
+        from enhanced_agent_bus.models import (
+            BatchRequest,
+            BatchRequestItem,
+            BatchResponse,
+            BatchResponseItem,
+            BatchResponseStats,
+            Priority,
+        )
+        IMPORTS_AVAILABLE = True
+    except ImportError as e:
+        import traceback
+
+        traceback.print_exc()
+        IMPORTS_AVAILABLE = False
+        TestClient = None
+
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+
+_mock_batch_processor = None
+
+
+if IMPORTS_AVAILABLE:
     batch_app = FastAPI(
         title="ACGS-2 Enhanced Agent Bus Test API",
         description="Test API without problematic middleware",
         version="1.0.0-test",
         default_response_class=ORJSONResponse,
     )
-
-    # Mock batch processor for the test app
-    _mock_batch_processor = None
 
     def get_tenant_id(
         x_tenant_id: str = Header(None, alias="X-Tenant-ID"),
@@ -104,18 +117,8 @@ try:
     async def health_test():
         """Health check endpoint."""
         return {"status": "healthy"}
-
-    IMPORTS_AVAILABLE = True
-except ImportError as e:
-    import traceback
-
-    traceback.print_exc()
-    IMPORTS_AVAILABLE = False
+else:
     batch_app = None
-    TestClient = None
-
-
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
 
 
 def _create_mock_batch_response(

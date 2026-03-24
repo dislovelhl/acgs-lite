@@ -12,11 +12,11 @@ from datetime import UTC, datetime
 from typing import ClassVar
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -260,13 +260,13 @@ class DecisionExplainer:
         primary_name = primary.factor_name if primary else "analysis"
 
         if verdict.upper() == "ALLOW":
-            return f"Decision: ALLOW. Impact score {impact_score:.2f} below threshold. Primary factor: {primary_name}."  # noqa: E501
+            return f"Decision: ALLOW. Impact score {impact_score:.2f} below threshold. Primary factor: {primary_name}."
         elif verdict.upper() == "DENY":
-            return f"Decision: DENY. Impact score {impact_score:.2f} exceeds threshold. Primary factor: {primary_name}."  # noqa: E501
+            return f"Decision: DENY. Impact score {impact_score:.2f} exceeds threshold. Primary factor: {primary_name}."
         elif verdict.upper() == "CONDITIONAL":
-            return f"Decision: CONDITIONAL. Impact score {impact_score:.2f} requires review. Primary factor: {primary_name}."  # noqa: E501
+            return f"Decision: CONDITIONAL. Impact score {impact_score:.2f} requires review. Primary factor: {primary_name}."
         else:
-            return f"Decision: {verdict}. Impact score {impact_score:.2f}. Primary factor: {primary_name}."  # noqa: E501
+            return f"Decision: {verdict}. Impact score {impact_score:.2f}. Primary factor: {primary_name}."
 
     def _generate_detailed_reasoning(
         self,

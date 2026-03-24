@@ -390,7 +390,6 @@ class TestSagaLLMEngineExecute:
     def setup_method(self):
         self.engine = SagaLLMEngine()
 
-    @pytest.mark.asyncio
     async def test_execute_empty_transaction_succeeds(self):
         txn = self.engine.create_transaction("Empty")
         result = await self.engine.execute_transaction(txn)
@@ -398,7 +397,6 @@ class TestSagaLLMEngineExecute:
         assert txn.state == TransactionState.COMPLETED
         assert txn.completed_at is not None
 
-    @pytest.mark.asyncio
     async def test_execute_moves_to_completed(self):
         txn = self.engine.create_transaction("Test")
         self.engine.add_action(
@@ -410,20 +408,17 @@ class TestSagaLLMEngineExecute:
         assert txn.transaction_id in self.engine._completed_transactions
         assert txn.transaction_id not in self.engine._active_transactions
 
-    @pytest.mark.asyncio
     async def test_execute_sets_started_at(self):
         txn = self.engine.create_transaction("T")
         await self.engine.execute_transaction(txn)
         assert txn.started_at is not None
 
-    @pytest.mark.asyncio
     async def test_execute_raises_if_not_initialized(self):
         txn = self.engine.create_transaction("T")
         txn.state = TransactionState.ACTIVE
         with pytest.raises(ValueError, match="Cannot execute transaction"):
             await self.engine.execute_transaction(txn)
 
-    @pytest.mark.asyncio
     async def test_execute_action_failure_triggers_compensation(self):
         txn = self.engine.create_transaction("T")
         execute = AsyncMock(side_effect=ValueError("execute failed"))
@@ -440,7 +435,6 @@ class TestSagaLLMEngineExecute:
         assert result is False
         assert txn.state == TransactionState.COMPENSATED
 
-    @pytest.mark.asyncio
     async def test_execute_timeout_triggers_compensation(self):
         txn = self.engine.create_transaction("T")
 
@@ -459,7 +453,6 @@ class TestSagaLLMEngineExecute:
         assert result is False
         assert txn.state in (TransactionState.TIMED_OUT, TransactionState.COMPENSATED)
 
-    @pytest.mark.asyncio
     async def test_execute_multi_action_all_succeed(self):
         txn = self.engine.create_transaction("Multi")
         for _ in range(3):
@@ -470,7 +463,6 @@ class TestSagaLLMEngineExecute:
         assert result is True
         assert all(a.executed_at is not None for a in txn.actions)
 
-    @pytest.mark.asyncio
     async def test_execute_partial_failure_compensates_executed(self):
         txn = self.engine.create_transaction("Partial")
         compensate_1 = AsyncMock(return_value="comp1")
@@ -494,7 +486,6 @@ class TestSagaLLMEngineExecute:
         # First action was executed, so compensation should have been attempted
         compensate_1.assert_awaited()
 
-    @pytest.mark.asyncio
     async def test_execute_operation_error_triggers_compensation(self):
         txn = self.engine.create_transaction("T")
         self.engine.add_action(
@@ -508,7 +499,6 @@ class TestSagaLLMEngineExecute:
         assert result is False
         assert txn.state == TransactionState.COMPENSATED
 
-    @pytest.mark.asyncio
     async def test_execute_timeout_error_sets_timed_out_state(self):
         """Cover lines 302-306: TimeoutError raised in the for-loop body."""
         txn = self.engine.create_transaction("timeout_outer")
@@ -527,7 +517,6 @@ class TestSagaLLMEngineExecute:
         assert result is False
         assert txn.state == TransactionState.COMPENSATED  # compensate runs after TIMED_OUT set
 
-    @pytest.mark.asyncio
     async def test_execute_operation_error_outer_handler(self):
         """Cover lines 308-315: RuntimeError propagated from _execute_action_with_retry."""
         txn = self.engine.create_transaction("op_error_outer")
@@ -569,7 +558,6 @@ class TestExecuteActionWithRetry:
         )
         return txn, action
 
-    @pytest.mark.asyncio
     async def test_success_first_attempt(self):
         execute = AsyncMock(return_value="done")
         txn, action = self._make_txn_action(execute)
@@ -580,7 +568,6 @@ class TestExecuteActionWithRetry:
         assert action.retry_count == 0
         execute.assert_awaited_once()
 
-    @pytest.mark.asyncio
     async def test_retry_on_value_error(self):
         execute = AsyncMock(side_effect=[ValueError("fail"), "ok"])
         txn, action = self._make_txn_action(execute, max_retries=1)
@@ -588,7 +575,6 @@ class TestExecuteActionWithRetry:
             result = await self.engine._execute_action_with_retry(txn, action, 0)
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_fail_after_max_retries_value_error(self):
         execute = AsyncMock(side_effect=ValueError("always fails"))
         txn, action = self._make_txn_action(execute, max_retries=1)
@@ -597,7 +583,6 @@ class TestExecuteActionWithRetry:
         assert result is False
         assert execute.await_count == 2  # initial + 1 retry
 
-    @pytest.mark.asyncio
     async def test_fail_after_max_retries_timeout(self):
         # Patch asyncio.wait_for in the module to always raise TimeoutError,
         # and asyncio.sleep to skip backoff.  max_retries=1 → 2 TimeoutErrors → False.
@@ -618,7 +603,6 @@ class TestExecuteActionWithRetry:
             result = await self.engine._execute_action_with_retry(txn, action, 0)
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_zero_max_retries_fails_immediately(self):
         execute = AsyncMock(side_effect=RuntimeError("fail"))
         txn, action = self._make_txn_action(execute, max_retries=0)
@@ -636,7 +620,6 @@ class TestCompensateTransaction:
     def setup_method(self):
         self.engine = SagaLLMEngine()
 
-    @pytest.mark.asyncio
     async def test_compensation_lifo_order(self):
         order = []
         txn = self.engine.create_transaction("lifo")
@@ -653,7 +636,6 @@ class TestCompensateTransaction:
         await self.engine._compensate_transaction(txn)
         assert order == [2, 1, 0]  # LIFO
 
-    @pytest.mark.asyncio
     async def test_compensation_skips_unexecuted_actions(self):
         compensate = AsyncMock()
         txn = self.engine.create_transaction("T")
@@ -664,7 +646,6 @@ class TestCompensateTransaction:
         await self.engine._compensate_transaction(txn)
         compensate.assert_not_awaited()
 
-    @pytest.mark.asyncio
     async def test_compensation_no_compensate_func(self):
         txn = self.engine.create_transaction("T")
         action = self.engine.add_action(
@@ -675,7 +656,6 @@ class TestCompensateTransaction:
         assert txn.state == TransactionState.COMPENSATED
         assert any(e["status"] == "no_compensation" for e in txn.compensation_log)
 
-    @pytest.mark.asyncio
     async def test_compensation_failure_logged(self):
         txn = self.engine.create_transaction("T")
         action = self.engine.add_action(
@@ -690,13 +670,11 @@ class TestCompensateTransaction:
         assert txn.state == TransactionState.COMPENSATED
         assert any(e["status"] == "compensation_failed" for e in txn.compensation_log)
 
-    @pytest.mark.asyncio
     async def test_compensation_sets_state_compensated(self):
         txn = self.engine.create_transaction("T")
         await self.engine._compensate_transaction(txn)
         assert txn.state == TransactionState.COMPENSATED
 
-    @pytest.mark.asyncio
     async def test_compensation_sets_compensated_at(self):
         txn = self.engine.create_transaction("T")
         compensate = AsyncMock(return_value="done")
@@ -723,7 +701,6 @@ class TestSagaLLMEngineQueryMethods:
         found = self.engine.get_transaction(txn.transaction_id)
         assert found is txn
 
-    @pytest.mark.asyncio
     async def test_get_transaction_completed(self):
         txn = self.engine.create_transaction("T")
         await self.engine.execute_transaction(txn)
@@ -741,14 +718,12 @@ class TestSagaLLMEngineQueryMethods:
         assert t1 in active
         assert t2 in active
 
-    @pytest.mark.asyncio
     async def test_list_completed_transactions(self):
         txn = self.engine.create_transaction("T")
         await self.engine.execute_transaction(txn)
         completed = self.engine.list_completed_transactions()
         assert txn in completed
 
-    @pytest.mark.asyncio
     async def test_get_engine_status(self):
         self.engine.create_transaction("Active T")
         status = await self.engine.get_engine_status()
@@ -757,14 +732,12 @@ class TestSagaLLMEngineQueryMethods:
         assert status["active_transactions"] >= 1
         assert status["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_engine_status_counts_completed(self):
         txn = self.engine.create_transaction("T")
         await self.engine.execute_transaction(txn)
         status = await self.engine.get_engine_status()
         assert status["completed_transactions"] >= 1
 
-    @pytest.mark.asyncio
     async def test_engine_status_includes_config(self):
         engine = SagaLLMEngine(max_transaction_time=99.0)
         status = await engine.get_engine_status()
@@ -777,7 +750,6 @@ class TestSagaLLMEngineQueryMethods:
 
 
 class TestSagaTransactionContextManager:
-    @pytest.mark.asyncio
     async def test_context_manager_success(self):
         engine = SagaLLMEngine()
         async with saga_transaction(engine, "ctx test") as txn:
@@ -789,14 +761,12 @@ class TestSagaTransactionContextManager:
             )
         assert txn.state == TransactionState.COMPLETED
 
-    @pytest.mark.asyncio
     async def test_context_manager_creates_transaction(self):
         engine = SagaLLMEngine()
         async with saga_transaction(engine, "metadata test", {"k": "v"}) as txn:
             pass
         assert txn.metadata == {"k": "v"}
 
-    @pytest.mark.asyncio
     async def test_context_manager_raises_on_failure(self):
         engine = SagaLLMEngine()
         with pytest.raises(RuntimeError, match="failed and was compensated"):
@@ -809,7 +779,6 @@ class TestSagaTransactionContextManager:
                     max_retries=0,
                 )
 
-    @pytest.mark.asyncio
     async def test_context_manager_propagates_sagallm_errors(self):
         engine = SagaLLMEngine()
         with pytest.raises(RuntimeError):
@@ -823,14 +792,12 @@ class TestSagaTransactionContextManager:
 
 
 class TestCreateGovernanceTransaction:
-    @pytest.mark.asyncio
     async def test_creates_transaction_with_actions(self):
         engine = SagaLLMEngine()
         txn = await create_governance_transaction(engine, "approve policy X")
         assert txn.description == "Governance Decision: approve policy X"
         assert len(txn.actions) == 3
 
-    @pytest.mark.asyncio
     async def test_action_types(self):
         engine = SagaLLMEngine()
         txn = await create_governance_transaction(engine, "test decision")
@@ -839,14 +806,12 @@ class TestCreateGovernanceTransaction:
         assert TransactionAction.GOVERNANCE_DECISION in types
         assert TransactionAction.AUDIT_LOGGING in types
 
-    @pytest.mark.asyncio
     async def test_transaction_has_governance_metadata(self):
         engine = SagaLLMEngine()
         txn = await create_governance_transaction(engine, "my decision")
         assert txn.metadata.get("type") == "governance"
         assert txn.metadata.get("decision") == "my decision"
 
-    @pytest.mark.asyncio
     async def test_execute_governance_transaction(self):
         engine = SagaLLMEngine()
         txn = await create_governance_transaction(engine, "execute test")
@@ -854,7 +819,6 @@ class TestCreateGovernanceTransaction:
         assert result is True
         assert txn.state == TransactionState.COMPLETED
 
-    @pytest.mark.asyncio
     async def test_audit_action_has_no_compensate(self):
         engine = SagaLLMEngine()
         txn = await create_governance_transaction(engine, "audit test")
@@ -863,7 +827,6 @@ class TestCreateGovernanceTransaction:
         )
         assert audit_action.compensate_func is None
 
-    @pytest.mark.asyncio
     async def test_compensation_closures_execute(self):
         """Cover lines 501/517: compensate_validation and compensate_decision closures."""
         engine = SagaLLMEngine()

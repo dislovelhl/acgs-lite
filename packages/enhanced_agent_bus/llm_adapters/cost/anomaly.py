@@ -136,7 +136,7 @@ class CostAnomalyDetector:
                 detected_at=datetime.now(UTC),
                 anomaly_type="spike",
                 severity=severity,
-                description=f"Cost spike detected: ${current_cost:.4f} vs expected ${mean:.4f} (z-score: {z_score:.2f})",  # noqa: E501
+                description=f"Cost spike detected: ${current_cost:.4f} vs expected ${mean:.4f} (z-score: {z_score:.2f})",
                 expected_cost=mean,
                 actual_cost=current_cost,
                 deviation_percentage=deviation_pct,
@@ -167,7 +167,7 @@ class CostAnomalyDetector:
                 detected_at=datetime.now(UTC),
                 anomaly_type="budget_warning",
                 severity=severity,
-                description=f"Budget warning: {usage_ratio * 100:.1f}% of limit used (${current_usage:.2f}/${limit:.2f})",  # noqa: E501
+                description=f"Budget warning: {usage_ratio * 100:.1f}% of limit used (${current_usage:.2f}/${limit:.2f})",
                 expected_cost=limit * self._warning_threshold,
                 actual_cost=current_usage,
                 deviation_percentage=(usage_ratio - self._warning_threshold) * 100,

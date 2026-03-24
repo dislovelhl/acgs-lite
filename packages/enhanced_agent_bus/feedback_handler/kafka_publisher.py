@@ -15,7 +15,7 @@ from datetime import datetime
 from enum import Enum
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -97,7 +97,7 @@ class FeedbackKafkaPublisher:
                 await self._producer.start()
                 self._running = True
                 logger.info(
-                    f"FeedbackKafkaPublisher started: servers={self._sanitize_bootstrap(self.bootstrap_servers)}, "  # noqa: E501
+                    f"FeedbackKafkaPublisher started: servers={self._sanitize_bootstrap(self.bootstrap_servers)}, "
                     f"topic={self.topic}"
                 )
                 return True

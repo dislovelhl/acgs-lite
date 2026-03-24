@@ -293,9 +293,8 @@ class TestBasicAuthProvider:
     def test_password_decryption(self):
         """Password can be decrypted."""
         provider = BasicAuthProvider("testuser", "testpass")
-        assert provider.password == "testpass"  # noqa: S105
+        assert provider.password == "testpass"
 
-    @pytest.mark.asyncio
     async def test_get_token(self):
         """get_token returns base64 encoded credentials."""
         import base64
@@ -306,7 +305,6 @@ class TestBasicAuthProvider:
         decoded = base64.b64decode(token).decode()
         assert decoded == "user:pass"
 
-    @pytest.mark.asyncio
     async def test_get_token_cached(self):
         """get_token caches the token."""
         provider = BasicAuthProvider("user", "pass")
@@ -315,7 +313,6 @@ class TestBasicAuthProvider:
 
         assert token1 == token2
 
-    @pytest.mark.asyncio
     async def test_refresh_token(self):
         """refresh_token clears and regenerates token."""
         provider = BasicAuthProvider("user", "pass")
@@ -424,7 +421,6 @@ class TestOCIRegistryClient:
         stats = client.get_stats()
         assert stats["type"] == "ecr"
 
-    @pytest.mark.asyncio
     async def test_context_manager(self):
         """Client works as async context manager."""
         async with OCIRegistryClient("https://registry.example.com") as client:
@@ -432,7 +428,6 @@ class TestOCIRegistryClient:
 
         assert client._session is None
 
-    @pytest.mark.asyncio
     async def test_initialize_creates_session(self):
         """initialize creates aiohttp session."""
         client = OCIRegistryClient("https://registry.example.com")
@@ -441,7 +436,6 @@ class TestOCIRegistryClient:
         assert client._session is not None
         await client.close()
 
-    @pytest.mark.asyncio
     async def test_close_clears_session(self):
         """close clears aiohttp session."""
         client = OCIRegistryClient("https://registry.example.com")
@@ -514,7 +508,6 @@ class TestModuleFunctions:
         result = get_distribution_service()
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_initialize_distribution_service(self):
         """initialize_distribution_service creates service."""
         import bundle_registry
@@ -532,7 +525,6 @@ class TestModuleFunctions:
             # Cleanup
             bundle_registry._distribution_service = None
 
-    @pytest.mark.asyncio
     async def test_close_distribution_service(self):
         """close_distribution_service cleans up properly."""
 
@@ -596,7 +588,6 @@ class TestAuthProviderAbstract:
 class TestClientHeaders:
     """Tests for OCIRegistryClient header generation."""
 
-    @pytest.mark.asyncio
     async def test_headers_without_auth(self):
         """Headers without auth provider."""
         client = OCIRegistryClient("https://registry.example.com")
@@ -610,7 +601,6 @@ class TestClientHeaders:
 
         await client.close()
 
-    @pytest.mark.asyncio
     async def test_headers_with_basic_auth(self):
         """Headers with basic auth provider."""
         auth = BasicAuthProvider("user", "pass")
@@ -624,12 +614,11 @@ class TestClientHeaders:
 
         await client.close()
 
-    @pytest.mark.asyncio
     async def test_headers_with_ecr_auth(self):
         """Headers with ECR auth use Basic prefix."""
         auth = AWSECRAuthProvider()
         auth.refresh_token = AsyncMock(return_value="test_token")
-        auth._token = "test_token"  # Mock token  # noqa: S105
+        auth._token = "test_token"  # Mock token
 
         client = OCIRegistryClient(
             "https://ecr.aws.com", auth_provider=auth, registry_type=RegistryType.ECR

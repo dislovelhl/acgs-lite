@@ -13,14 +13,14 @@ from dataclasses import dataclass
 from enum import Enum
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
     from src.core.shared.types import (
         JSONDict,
         SupportsAudit,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     SupportsAudit = object  # type: ignore[misc,assignment]

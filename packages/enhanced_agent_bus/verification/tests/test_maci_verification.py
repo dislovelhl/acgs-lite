@@ -180,7 +180,6 @@ class TestExecutiveAgent:
         limitations = executive.capabilities.limitations
         assert "Cannot validate own decisions" in limitations
 
-    @pytest.mark.asyncio
     async def test_propose_decision(self, executive):
         """Test proposing a governance decision."""
         context = {"involves_sensitive_data": True}
@@ -194,7 +193,6 @@ class TestExecutiveAgent:
         assert decision.decision_id.startswith("exec_")
         assert "risk_assessment" in decision.proposed_action
 
-    @pytest.mark.asyncio
     async def test_risk_assessment_sensitive_data(self, executive):
         """Test risk assessment increases for sensitive data."""
         context_normal = {}
@@ -231,7 +229,6 @@ class TestLegislativeAgent:
         """Test that core constitutional principles are defined."""
         assert len(legislative.core_principles) >= 5
 
-    @pytest.mark.asyncio
     async def test_extract_rules(self, legislative):
         """Test extracting constitutional rules."""
         decision = GovernanceDecision(
@@ -248,7 +245,6 @@ class TestLegislativeAgent:
         assert len(rules.rules) > 0
         assert rules.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_extract_rules_for_access_control(self, legislative):
         """Test rule extraction for access control decisions."""
         decision = GovernanceDecision(
@@ -282,7 +278,6 @@ class TestJudicialAgent:
         limitations = judicial.capabilities.limitations
         assert "Cannot propose decisions" in limitations
 
-    @pytest.mark.asyncio
     async def test_validate_compliant_decision(self, judicial):
         """Test validating a compliant decision."""
         decision = GovernanceDecision(
@@ -311,7 +306,6 @@ class TestJudicialAgent:
         assert result.is_valid is True
         assert result.validated_by == AgentRole.JUDICIAL
 
-    @pytest.mark.asyncio
     async def test_validate_non_compliant_decision(self, judicial):
         """Test validating a non-compliant decision."""
         decision = GovernanceDecision(
@@ -356,7 +350,6 @@ class TestConstitutionalVerificationPipeline:
         assert isinstance(pipeline.legislative, LegislativeAgent)
         assert isinstance(pipeline.judicial, JudicialAgent)
 
-    @pytest.mark.asyncio
     async def test_get_pipeline_status(self, pipeline):
         """Test getting pipeline status."""
         status = await pipeline.get_pipeline_status()
@@ -365,7 +358,6 @@ class TestConstitutionalVerificationPipeline:
         assert status["constitutional_hash"] == CONSTITUTIONAL_HASH
         assert "executive" in status["agents"]
 
-    @pytest.mark.asyncio
     async def test_verify_governance_decision(self, pipeline):
         """Test full verification pipeline."""
         context = {
@@ -383,7 +375,6 @@ class TestConstitutionalVerificationPipeline:
         assert isinstance(result, ValidationResult)
         assert result.validated_by == AgentRole.JUDICIAL
 
-    @pytest.mark.asyncio
     async def test_pipeline_handles_errors(self, pipeline):
         """Test that pipeline handles errors gracefully."""
         pipeline.executive.propose_decision = AsyncMock(side_effect=RuntimeError("Test error"))
@@ -405,7 +396,6 @@ class TestMACIConvenienceFunctions:
         pipeline = get_maci_pipeline()
         assert isinstance(pipeline, ConstitutionalVerificationPipeline)
 
-    @pytest.mark.asyncio
     async def test_verify_decision_maci(self):
         """Test the verify_decision_maci convenience function."""
         result = await verify_decision_maci(
@@ -417,7 +407,6 @@ class TestMACIConvenienceFunctions:
         assert isinstance(result, dict)
         assert "is_valid" in result
 
-    @pytest.mark.asyncio
     async def test_verify_decision_maci_invalid_type(self):
         """Test verify_decision_maci with invalid decision type."""
         result = await verify_decision_maci(
@@ -452,7 +441,6 @@ class TestRoleSeparation:
         limitations = pipeline.judicial.capabilities.limitations
         assert "Cannot propose decisions" in limitations
 
-    @pytest.mark.asyncio
     async def test_role_separation_enforced(self, pipeline):
         """Test that role separation is enforced in pipeline."""
         context = {"policy_compliant": True}

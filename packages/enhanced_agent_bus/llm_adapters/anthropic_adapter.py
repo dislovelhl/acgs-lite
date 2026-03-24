@@ -11,7 +11,7 @@ from collections.abc import AsyncIterator, Iterator
 from typing import ClassVar
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -121,6 +121,30 @@ class AnthropicAdapter(BaseLLMAdapter):
         self.config = config
         self._client: object | None = None
         self._async_client: object | None = None
+
+    def validate_constitutional_compliance(self, **kwargs: object) -> None:
+        """Validate constitutional compliance for Anthropic adapter.
+
+        Checks that:
+        - The constitutional hash is correctly set
+        - The adapter config has a valid model and API key source
+
+        Raises:
+            ValueError: If constitutional compliance requirements are not met.
+        """
+        if not self.constitutional_hash:
+            raise ValueError(
+                "Constitutional hash is required for Anthropic adapter compliance."
+            )
+        if self.constitutional_hash != CONSTITUTIONAL_HASH:
+            logger.warning(
+                "Anthropic adapter using non-standard constitutional hash: %s",
+                self.constitutional_hash,
+            )
+        if not self.config.model:
+            raise ValueError(
+                "Anthropic adapter constitutional compliance requires a model to be configured."
+            )
 
     def _get_client(self) -> object:
         """Get or create synchronous Anthropic client.

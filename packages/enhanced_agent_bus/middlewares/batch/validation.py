@@ -218,7 +218,7 @@ class BatchValidationMiddleware(BaseMiddleware):
 
     def _validate_priority_field(self, item: BatchRequestItem, errors: list[str]) -> None:
         """Validate priority field range and type."""
-        if item.priority is not None:  # noqa: SIM102
+        if item.priority is not None:
             if not isinstance(item.priority, int) or item.priority < 0 or item.priority > 3:
                 errors.append(f"priority must be 0-3, got {item.priority}")
 

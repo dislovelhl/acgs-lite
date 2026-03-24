@@ -15,8 +15,6 @@ import asyncio
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from ..swarm_intelligence import (
     CONSTITUTIONAL_HASH,
     AgentCapability,
@@ -45,7 +43,6 @@ from ..swarm_intelligence import (
 class TestByzantineConsensusV31:
     """Tests for enhanced Byzantine consensus with fault tolerance."""
 
-    @pytest.mark.asyncio
     async def test_consensus_timeout_recovery(self):
         """Consensus should auto-resolve on timeout with default=False."""
         consensus = ConsensusMechanism()
@@ -69,7 +66,6 @@ class TestByzantineConsensusV31:
         assert result is False  # Default to rejection on timeout
         assert proposal.result is False
 
-    @pytest.mark.asyncio
     async def test_byzantine_fault_detection(self):
         """Detect Byzantine fault when voter changes their vote."""
         consensus = ConsensusMechanism()
@@ -92,7 +88,6 @@ class TestByzantineConsensusV31:
         faulty = consensus.get_faulty_voters()
         assert "agent-002" in faulty
 
-    @pytest.mark.asyncio
     async def test_consensus_proposal_expiration_cleanup(self):
         """Expired proposals should be cleaned up automatically."""
         consensus = ConsensusMechanism(max_proposal_age_minutes=0)
@@ -117,7 +112,6 @@ class TestByzantineConsensusV31:
         # Old proposal should be cleaned up
         assert consensus.get_proposal(proposal.id) is None
 
-    @pytest.mark.asyncio
     async def test_consensus_force_resolve(self):
         """Should be able to forcefully resolve a proposal."""
         consensus = ConsensusMechanism()
@@ -152,7 +146,6 @@ class TestByzantineConsensusV31:
 class TestMessageBusV31:
     """Tests for enhanced MessageBus with TTL, priority, and patterns."""
 
-    @pytest.mark.asyncio
     async def test_message_ttl_expiration(self):
         """Messages should expire after TTL."""
         bus = MessageBus(default_ttl_seconds=1)
@@ -173,7 +166,6 @@ class TestMessageBusV31:
         messages = await bus.receive("agent-002")
         assert len(messages) == 0  # Expired messages filtered out
 
-    @pytest.mark.asyncio
     async def test_message_priority_ordering(self):
         """Messages should be returned in priority order."""
         bus = MessageBus()
@@ -191,7 +183,6 @@ class TestMessageBusV31:
         assert messages[1].payload["p"] == 3
         assert messages[2].payload["p"] == 5
 
-    @pytest.mark.asyncio
     async def test_pattern_based_subscription(self):
         """Pattern subscriptions should match multiple topics."""
         bus = MessageBus()
@@ -208,7 +199,6 @@ class TestMessageBusV31:
         assert count2 == 1
         assert count3 == 0
 
-    @pytest.mark.asyncio
     async def test_dead_letter_queue(self):
         """Expired unacknowledged messages should go to dead letter queue."""
         bus = MessageBus(default_ttl_seconds=0)
@@ -232,7 +222,6 @@ class TestMessageBusV31:
         dlq = await bus.get_dead_letter_queue()
         assert len(dlq) >= 1
 
-    @pytest.mark.asyncio
     async def test_persistent_message_replay(self):
         """Persistent messages should be replayable."""
         bus = MessageBus()
@@ -251,7 +240,6 @@ class TestMessageBusV31:
         assert len(replayed) == 1
         assert replayed[0].payload["data"] == "persistent"
 
-    @pytest.mark.asyncio
     async def test_message_stats(self):
         """Should provide message statistics."""
         bus = MessageBus()
@@ -276,7 +264,6 @@ class TestMessageBusV31:
 class TestSelfHealingHealth:
     """Tests for self-healing agent health monitoring."""
 
-    @pytest.mark.asyncio
     async def test_health_check_detects_stuck_task(self):
         """Health check should detect agents stuck on tasks."""
         coordinator = SwarmCoordinator()
@@ -304,7 +291,6 @@ class TestSelfHealingHealth:
         assert health["healthy"] is False, f"Expected unhealthy but got: {health}"
         assert "stuck" in str(health["issues"]).lower() or "task" in str(health["issues"]).lower()
 
-    @pytest.mark.asyncio
     async def test_health_check_high_failure_rate(self):
         """Health check should detect high failure rate."""
         coordinator = SwarmCoordinator()
@@ -321,7 +307,6 @@ class TestSelfHealingHealth:
         assert health["action"] == "terminate"
         assert "failure rate" in str(health["issues"]).lower()
 
-    @pytest.mark.asyncio
     async def test_self_healing_terminate_action(self):
         """Self-healing should terminate unhealthy agents."""
         coordinator = SwarmCoordinator()
@@ -340,7 +325,6 @@ class TestSelfHealingHealth:
         # Agent should be terminated
         assert coordinator.get_agent(agent.id) is None
 
-    @pytest.mark.asyncio
     async def test_run_health_checks_batch(self):
         """Should run health checks on all agents."""
         coordinator = SwarmCoordinator()
@@ -500,7 +484,6 @@ class TestPredictiveDecomposition:
 class TestDashboardMetrics:
     """Tests for dashboard metrics endpoint."""
 
-    @pytest.mark.asyncio
     async def test_dashboard_metrics_structure(self):
         """Dashboard should return comprehensive metrics structure."""
         coordinator = create_swarm_coordinator()
@@ -538,7 +521,6 @@ class TestDashboardMetrics:
         # Check health section
         assert "health" in dashboard
 
-    @pytest.mark.asyncio
     async def test_dashboard_metrics_with_agents(self):
         """Dashboard should reflect actual agent state."""
         coordinator = create_swarm_coordinator()
@@ -562,7 +544,6 @@ class TestDashboardMetrics:
 class TestSwarmV31Integration:
     """Integration tests for v3.1 features working together."""
 
-    @pytest.mark.asyncio
     async def test_full_task_lifecycle_with_predictions(self):
         """Full task lifecycle should use predictive decomposition."""
         coordinator = create_swarm_coordinator()
@@ -587,7 +568,6 @@ class TestSwarmV31Integration:
             f"Expected at least 3 subtasks, got {len(tasks)}: {[t.description for t in tasks]}"
         )
 
-    @pytest.mark.asyncio
     async def test_health_monitoring_with_messaging(self):
         """Health monitoring should work with message bus."""
         coordinator = create_swarm_coordinator()

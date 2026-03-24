@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -305,7 +305,7 @@ def validate_role_name(role: str) -> str:
     return validate_sql_identifier(role, identifier_type="role name")
 
 
-class RLSPolicyType(str, Enum):  # noqa: UP042
+class RLSPolicyType(str, Enum):
     """Types of RLS policies."""
 
     SELECT = "select"

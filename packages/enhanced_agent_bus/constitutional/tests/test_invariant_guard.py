@@ -198,7 +198,6 @@ class TestInvariantClassifier:
 class TestProposalInvariantValidator:
     """Tests for the async ProposalInvariantValidator."""
 
-    @pytest.mark.asyncio()
     async def test_hard_invariant_raises(self, mixed_manifest: InvariantManifest) -> None:
         validator = ProposalInvariantValidator(mixed_manifest)
 
@@ -211,7 +210,6 @@ class TestProposalInvariantValidator:
         assert exc_info.value.classification.blocked is True
         assert "INV-001" in exc_info.value.classification.touched_invariant_ids
 
-    @pytest.mark.asyncio()
     async def test_meta_invariant_raises(self, mixed_manifest: InvariantManifest) -> None:
         validator = ProposalInvariantValidator(mixed_manifest)
 
@@ -221,7 +219,6 @@ class TestProposalInvariantValidator:
                 affected_paths=["amendment.process"],
             )
 
-    @pytest.mark.asyncio()
     async def test_soft_invariant_returns_classification(
         self, mixed_manifest: InvariantManifest
     ) -> None:
@@ -235,7 +232,6 @@ class TestProposalInvariantValidator:
         assert result.blocked is False
         assert "INV-003" in result.touched_invariant_ids
 
-    @pytest.mark.asyncio()
     async def test_clean_path_returns_clean(self, mixed_manifest: InvariantManifest) -> None:
         validator = ProposalInvariantValidator(mixed_manifest)
         result = await validator.validate_proposal(
@@ -246,7 +242,6 @@ class TestProposalInvariantValidator:
         assert result.touches_invariants is False
         assert result.blocked is False
 
-    @pytest.mark.asyncio()
     async def test_empty_manifest_raises(self, empty_manifest: InvariantManifest) -> None:
         """Fail-closed: empty manifest raises for any proposal."""
         validator = ProposalInvariantValidator(empty_manifest)

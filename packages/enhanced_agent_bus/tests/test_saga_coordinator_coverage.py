@@ -1303,7 +1303,7 @@ class TestEdgeCases:
         coord.add_step(saga, "s1", _ok)
         result = await coord.execute_saga(saga, context=None)
         assert result is True
-        # context starts as {} but gets step output keys added during execution — just verify success  # noqa: E501
+        # context starts as {} but gets step output keys added during execution — just verify success
         assert isinstance(saga.context, dict)
 
     async def test_selective_compensation_no_failed_steps(self):
@@ -1357,7 +1357,7 @@ class TestEdgeCases:
             "sel_direct_fail", compensation_strategy=CompensationStrategy.SELECTIVE
         )
         step = coord.add_step(saga, "s_failed", exec_fn, comp)
-        # Mark the step as COMPLETED so it appears in completed_steps passed to _compensate_selective  # noqa: E501
+        # Mark the step as COMPLETED so it appears in completed_steps passed to _compensate_selective
         step.state = StepState.COMPLETED
         saga.state = SagaState.COMPENSATING
 
@@ -1371,7 +1371,7 @@ class TestEdgeCases:
     async def test_execute_saga_dependency_not_completed_logs_warning(self):
         """Lines 421-423: dep_step exists but is not COMPLETED → logger.warning + step.state=SKIPPED set inside inner loop.
         Note: the continue only exits the inner dep_id loop; execution still proceeds for the step.
-        This test verifies the dependency check branch is reached."""  # noqa: E501
+        This test verifies the dependency check branch is reached."""
         coord = SagaCoordinator()
         saga = coord.create_saga("dep_warning")
         s1 = coord.add_step(saga, "s1", _ok)
@@ -1385,8 +1385,8 @@ class TestEdgeCases:
         # To hit line 421: dep_step must exist AND be not COMPLETED.
         # We add s3 that depends on s2; then execute; s2 runs first (is completed);
         # by the time s3 runs, s2 is COMPLETED → no warning.
-        # To truly hit line 421, we need a step added with a dep on a step that will be PENDING at check.  # noqa: E501
-        # We achieve this by adding steps in reverse dependency order so the dep step hasn't run yet.  # noqa: E501
+        # To truly hit line 421, we need a step added with a dep on a step that will be PENDING at check.
+        # We achieve this by adding steps in reverse dependency order so the dep step hasn't run yet.
         saga2 = coord.create_saga("dep_warning2")
         # s_dep is added AFTER s_dependent, so when s_dependent is checked, s_dep is PENDING
         s_dependent = coord.add_step(saga2, "s_dependent", _ok)

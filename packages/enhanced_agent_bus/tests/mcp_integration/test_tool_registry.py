@@ -154,7 +154,6 @@ class TestMCPToolRegistry:
             capabilities=[ToolCapability.VALIDATION],
         )
 
-    @pytest.mark.asyncio
     async def test_register_tool(self, registry, sample_tool):
         """Test registering a tool."""
         result = await registry.register_tool(
@@ -166,7 +165,6 @@ class TestMCPToolRegistry:
         assert result.tool_name == "sample_tool"
         assert result.tool_id is not None
 
-    @pytest.mark.asyncio
     async def test_unregister_tool(self, registry, sample_tool):
         """Test unregistering a tool."""
         reg_result = await registry.register_tool(sample_tool, "test-agent")
@@ -177,7 +175,6 @@ class TestMCPToolRegistry:
         assert success is True
         assert registry.get_tool(tool_id) is None
 
-    @pytest.mark.asyncio
     async def test_get_tool_by_name(self, registry, sample_tool):
         """Test getting a tool by name."""
         await registry.register_tool(sample_tool, "test-agent")
@@ -187,7 +184,6 @@ class TestMCPToolRegistry:
         assert tool is not None
         assert tool.name == "sample_tool"
 
-    @pytest.mark.asyncio
     async def test_discover_tools(self, registry):
         """Test tool discovery from server."""
         tool_definitions = [
@@ -214,7 +210,6 @@ class TestMCPToolRegistry:
         assert result.tools_registered == 2
         assert len(result.tools) == 2
 
-    @pytest.mark.asyncio
     async def test_list_tools_by_server(self, registry, sample_tool):
         """Test listing tools by server."""
         await registry.register_tool(sample_tool, "test-agent")
@@ -224,7 +219,6 @@ class TestMCPToolRegistry:
         assert len(tools) == 1
         assert tools[0].server_id == "test-server"
 
-    @pytest.mark.asyncio
     async def test_list_tools_by_capability(self, registry, sample_tool):
         """Test listing tools by capability."""
         from ...mcp_integration.tool_registry import ToolCapability
@@ -243,7 +237,6 @@ class TestMCPToolRegistry:
         assert "total_servers" in metrics
         assert metrics["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_max_tools_limit(self, registry):
         """Test maximum tools per server limit."""
         from ...mcp_integration.tool_registry import (

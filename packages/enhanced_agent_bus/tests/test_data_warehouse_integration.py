@@ -15,15 +15,15 @@ Tests for:
 - Cron-based sync scheduling
 """
 
-import asyncio  # noqa: E402
-from datetime import UTC, datetime, timezone  # noqa: E402
-from unittest.mock import AsyncMock, MagicMock, patch  # noqa: E402
+import asyncio
+from datetime import UTC, datetime, timezone
+from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest  # noqa: E402
-from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError  # noqa: E402
+import pytest
+from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 
-from enhanced_agent_bus.enterprise_sso.data_warehouse import (  # noqa: E402
-    CONSTITUTIONAL_HASH,  # noqa: F811
+from enhanced_agent_bus.enterprise_sso.data_warehouse import (
+    CONSTITUTIONAL_HASH,
     BigQueryConfig,
     BigQueryConnector,
     DataSyncEngine,
@@ -184,7 +184,6 @@ class TestSnowflakeConnector:
         assert "snowflake://" in conn_str
         assert "test_account" in conn_str
 
-    @pytest.mark.asyncio
     async def test_snowflake_connect(self, snowflake_config):
         """Test connecting to Snowflake."""
         connector = SnowflakeConnector(snowflake_config)
@@ -196,7 +195,6 @@ class TestSnowflakeConnector:
         await connector.disconnect()
         assert not connector.is_connected
 
-    @pytest.mark.asyncio
     async def test_snowflake_execute_query(self, snowflake_config):
         """Test executing query on Snowflake."""
         connector = SnowflakeConnector(snowflake_config)
@@ -208,7 +206,6 @@ class TestSnowflakeConnector:
 
         await connector.disconnect()
 
-    @pytest.mark.asyncio
     async def test_snowflake_execute_batch(self, snowflake_config):
         """Test batch execution on Snowflake."""
         connector = SnowflakeConnector(snowflake_config)
@@ -220,7 +217,6 @@ class TestSnowflakeConnector:
 
         await connector.disconnect()
 
-    @pytest.mark.asyncio
     async def test_snowflake_get_table_schema(self, snowflake_config):
         """Test getting table schema from Snowflake."""
         connector = SnowflakeConnector(snowflake_config)
@@ -233,7 +229,6 @@ class TestSnowflakeConnector:
 
         await connector.disconnect()
 
-    @pytest.mark.asyncio
     async def test_snowflake_health_check(self, snowflake_config):
         """Test Snowflake health check."""
         connector = SnowflakeConnector(snowflake_config)
@@ -250,7 +245,6 @@ class TestSnowflakeConnector:
 
         await connector.disconnect()
 
-    @pytest.mark.asyncio
     async def test_snowflake_not_connected_raises(self, snowflake_config):
         """Test that operations on disconnected connector raise error."""
         connector = SnowflakeConnector(snowflake_config)
@@ -279,7 +273,6 @@ class TestRedshiftConnector:
         assert "jdbc:redshift://" in conn_str
         assert "5439" in conn_str
 
-    @pytest.mark.asyncio
     async def test_redshift_connect(self, redshift_config):
         """Test connecting to Redshift."""
         connector = RedshiftConnector(redshift_config)
@@ -290,7 +283,6 @@ class TestRedshiftConnector:
 
         await connector.disconnect()
 
-    @pytest.mark.asyncio
     async def test_redshift_execute_query(self, redshift_config):
         """Test executing query on Redshift."""
         connector = RedshiftConnector(redshift_config)
@@ -301,7 +293,6 @@ class TestRedshiftConnector:
 
         await connector.disconnect()
 
-    @pytest.mark.asyncio
     async def test_redshift_execute_batch(self, redshift_config):
         """Test batch execution on Redshift."""
         connector = RedshiftConnector(redshift_config)
@@ -313,7 +304,6 @@ class TestRedshiftConnector:
 
         await connector.disconnect()
 
-    @pytest.mark.asyncio
     async def test_redshift_get_table_schema(self, redshift_config):
         """Test getting table schema from Redshift."""
         connector = RedshiftConnector(redshift_config)
@@ -325,7 +315,6 @@ class TestRedshiftConnector:
 
         await connector.disconnect()
 
-    @pytest.mark.asyncio
     async def test_redshift_copy_from_s3(self, redshift_config):
         """Test COPY command from S3."""
         connector = RedshiftConnector(redshift_config)
@@ -340,7 +329,6 @@ class TestRedshiftConnector:
 
         await connector.disconnect()
 
-    @pytest.mark.asyncio
     async def test_redshift_unload_to_s3(self, redshift_config):
         """Test UNLOAD command to S3."""
         connector = RedshiftConnector(redshift_config)
@@ -376,7 +364,6 @@ class TestBigQueryConnector:
         assert "bigquery://" in conn_str
         assert "my-project-123" in conn_str
 
-    @pytest.mark.asyncio
     async def test_bigquery_connect(self, bigquery_config):
         """Test connecting to BigQuery."""
         connector = BigQueryConnector(bigquery_config)
@@ -387,7 +374,6 @@ class TestBigQueryConnector:
 
         await connector.disconnect()
 
-    @pytest.mark.asyncio
     async def test_bigquery_execute_query(self, bigquery_config):
         """Test executing query on BigQuery."""
         connector = BigQueryConnector(bigquery_config)
@@ -398,7 +384,6 @@ class TestBigQueryConnector:
 
         await connector.disconnect()
 
-    @pytest.mark.asyncio
     async def test_bigquery_streaming_insert(self, bigquery_config):
         """Test streaming insert on BigQuery."""
         connector = BigQueryConnector(bigquery_config)
@@ -410,7 +395,6 @@ class TestBigQueryConnector:
 
         await connector.disconnect()
 
-    @pytest.mark.asyncio
     async def test_bigquery_batch_insert(self, bigquery_config):
         """Test batch insert on BigQuery (non-streaming)."""
         bigquery_config.use_streaming = False
@@ -423,7 +407,6 @@ class TestBigQueryConnector:
 
         await connector.disconnect()
 
-    @pytest.mark.asyncio
     async def test_bigquery_get_table_schema(self, bigquery_config):
         """Test getting table schema from BigQuery."""
         connector = BigQueryConnector(bigquery_config)
@@ -594,7 +577,6 @@ class TestSchemaEvolution:
         assert data["action"] == "rename_column"
         assert data["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_schema_evolution_manager_detect_changes(self, snowflake_config):
         """Test detecting schema differences."""
         connector = SnowflakeConnector(snowflake_config)
@@ -625,7 +607,6 @@ class TestSchemaEvolution:
 
         await connector.disconnect()
 
-    @pytest.mark.asyncio
     async def test_schema_evolution_apply_dry_run(self, snowflake_config):
         """Test applying schema changes in dry run mode."""
         connector = SnowflakeConnector(snowflake_config)
@@ -648,7 +629,6 @@ class TestSchemaEvolution:
 
         await connector.disconnect()
 
-    @pytest.mark.asyncio
     async def test_schema_evolution_apply_changes(self, snowflake_config):
         """Test applying schema changes."""
         connector = SnowflakeConnector(snowflake_config)
@@ -698,7 +678,6 @@ class TestSchemaEvolution:
 class TestDataSyncEngine:
     """Tests for data sync engine."""
 
-    @pytest.mark.asyncio
     async def test_create_sync_engine(self, snowflake_config, redshift_config):
         """Test creating sync engine."""
         source = SnowflakeConnector(snowflake_config)
@@ -709,7 +688,6 @@ class TestDataSyncEngine:
         assert engine.target == target
         assert engine.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_sync_table_full(self, snowflake_config, redshift_config, sync_config):
         """Test full table sync."""
         source = SnowflakeConnector(snowflake_config)
@@ -729,7 +707,6 @@ class TestDataSyncEngine:
         await source.disconnect()
         await target.disconnect()
 
-    @pytest.mark.asyncio
     async def test_sync_table_incremental(self, snowflake_config, redshift_config, sync_config):
         """Test incremental table sync."""
         source = SnowflakeConnector(snowflake_config)
@@ -749,7 +726,6 @@ class TestDataSyncEngine:
         await source.disconnect()
         await target.disconnect()
 
-    @pytest.mark.asyncio
     async def test_check_schema_compatibility(self, snowflake_config, redshift_config, sync_config):
         """Test schema compatibility check."""
         source = SnowflakeConnector(snowflake_config)
@@ -769,7 +745,6 @@ class TestDataSyncEngine:
         await source.disconnect()
         await target.disconnect()
 
-    @pytest.mark.asyncio
     async def test_evolve_schema(self, snowflake_config, redshift_config, sync_config):
         """Test schema evolution."""
         source = SnowflakeConnector(snowflake_config)
@@ -911,7 +886,6 @@ class TestDataSyncEngine:
 class TestSyncScheduler:
     """Tests for sync scheduler."""
 
-    @pytest.mark.asyncio
     async def test_create_scheduler(self, snowflake_config, redshift_config):
         """Test creating scheduler."""
         source = SnowflakeConnector(snowflake_config)
@@ -1019,7 +993,6 @@ class TestSyncScheduler:
         result = scheduler.should_run(schedule_config, now)
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_scheduler_start_stop(self, snowflake_config, redshift_config):
         """Test starting and stopping scheduler."""
         source = SnowflakeConnector(snowflake_config)
@@ -1164,7 +1137,6 @@ class TestErrorHandling:
 class TestMockConnection:
     """Tests for mock connection."""
 
-    @pytest.mark.asyncio
     async def test_mock_connection_lifecycle(self):
         """Test mock connection connect/disconnect."""
         conn = MockConnection(
@@ -1184,7 +1156,6 @@ class TestMockConnection:
         await conn.close()
         assert not conn._connected
 
-    @pytest.mark.asyncio
     async def test_mock_connection_execute(self):
         """Test mock connection query execution."""
         conn = MockConnection(
@@ -1201,7 +1172,6 @@ class TestMockConnection:
         assert len(result) > 0
         assert result[0]["result"] == 1
 
-    @pytest.mark.asyncio
     async def test_mock_connection_batch(self):
         """Test mock connection batch execution."""
         conn = MockConnection(
@@ -1227,7 +1197,6 @@ class TestMockConnection:
 class TestIntegrationPatterns:
     """Tests for common integration patterns."""
 
-    @pytest.mark.asyncio
     async def test_snowflake_to_redshift_sync(self, snowflake_config, redshift_config, sync_config):
         """Test Snowflake to Redshift sync pattern."""
         engine = create_sync_engine(snowflake_config, redshift_config)
@@ -1243,7 +1212,6 @@ class TestIntegrationPatterns:
         await engine.source.disconnect()
         await engine.target.disconnect()
 
-    @pytest.mark.asyncio
     async def test_bigquery_to_snowflake_sync(self, bigquery_config, snowflake_config, sync_config):
         """Test BigQuery to Snowflake sync pattern."""
         source = BigQueryConnector(bigquery_config)
@@ -1260,7 +1228,6 @@ class TestIntegrationPatterns:
         await source.disconnect()
         await target.disconnect()
 
-    @pytest.mark.asyncio
     async def test_incremental_sync_with_transform(self, snowflake_config, redshift_config):
         """Test incremental sync with transformation function."""
 
@@ -1287,7 +1254,6 @@ class TestIntegrationPatterns:
         await engine.source.disconnect()
         await engine.target.disconnect()
 
-    @pytest.mark.asyncio
     async def test_sync_with_column_mapping(self, snowflake_config, redshift_config):
         """Test sync with column mapping."""
         config = SyncConfig(
@@ -1464,7 +1430,6 @@ class TestSQLInjectionPrevention:
 
     # ---- Connector get_table_schema injection tests ----
 
-    @pytest.mark.asyncio
     async def test_snowflake_get_table_schema_rejects_injection(self, snowflake_config):
         """Snowflake get_table_schema must reject injected table names."""
         connector = SnowflakeConnector(snowflake_config)
@@ -1475,7 +1440,6 @@ class TestSQLInjectionPrevention:
 
         await connector.disconnect()
 
-    @pytest.mark.asyncio
     async def test_redshift_get_table_schema_rejects_injection(self, redshift_config):
         """Redshift get_table_schema must reject injected table names."""
         connector = RedshiftConnector(redshift_config)
@@ -1486,7 +1450,6 @@ class TestSQLInjectionPrevention:
 
         await connector.disconnect()
 
-    @pytest.mark.asyncio
     async def test_bigquery_get_table_schema_rejects_injection(self, bigquery_config):
         """BigQuery get_table_schema must reject injected table names."""
         connector = BigQueryConnector(bigquery_config)

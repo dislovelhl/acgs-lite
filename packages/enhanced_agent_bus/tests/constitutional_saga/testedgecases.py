@@ -37,7 +37,6 @@ from enhanced_agent_bus.deliberation_layer.workflows.constitutional_saga import 
 class TestEdgeCases:
     """Tests for edge cases and error handling."""
 
-    @pytest.mark.asyncio
     async def test_saga_with_none_context(self):
         """Test saga creates context if None provided."""
         saga = ConstitutionalSagaWorkflow(saga_id="none-ctx")
@@ -52,7 +51,6 @@ class TestEdgeCases:
         assert result.context is not None
         assert result.context.saga_id == "none-ctx"
 
-    @pytest.mark.asyncio
     async def test_saga_exception_during_execution(self):
         """Test saga handles unexpected exceptions."""
         saga = ConstitutionalSagaWorkflow(saga_id="exception-test")
@@ -78,7 +76,6 @@ class TestEdgeCases:
         assert len(result.errors) > 0
         assert "Unexpected error" in result.errors[0]
 
-    @pytest.mark.asyncio
     async def test_compensation_receives_correct_context(self):
         """Test compensations receive correct context data."""
         received_comp_ctx = {}
@@ -110,7 +107,6 @@ class TestEdgeCases:
         assert "idempotency_key" in received_comp_ctx
         assert received_comp_ctx["context"]["step1"]["key1"] == "value1"
 
-    @pytest.mark.asyncio
     async def test_idempotency_key_in_compensation(self):
         """Test idempotency key is passed to compensation."""
         received_key = {"key": None}
@@ -140,7 +136,6 @@ class TestEdgeCases:
 
         assert received_key["key"] == "custom-idem-key"
 
-    @pytest.mark.asyncio
     async def test_default_idempotency_key_format(self):
         """Test default idempotency key format."""
         received_key = {"key": None}
@@ -166,7 +161,6 @@ class TestEdgeCases:
 
         assert received_key["key"] == "default-idem-test:comp"
 
-    @pytest.mark.asyncio
     async def test_result_to_dict_with_errors(self):
         """Test result to_dict includes errors."""
 

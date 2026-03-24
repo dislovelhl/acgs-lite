@@ -107,7 +107,7 @@ async def _dispatch_compliance_ingest(command_body: str, author: str) -> AgentMe
             message_type=MessageType.RESPONSE,
             content={
                 "status": "success",
-                "message": f"Successfully started ingestion for {filename}. Job ID: {result['job_id']}",  # noqa: E501
+                "message": f"Successfully started ingestion for {filename}. Job ID: {result['job_id']}",
                 "job_id": result["job_id"],
                 "author": author,
             },

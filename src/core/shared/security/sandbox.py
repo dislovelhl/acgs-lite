@@ -171,7 +171,7 @@ class ProcessSandbox:
         env.update(config.env_vars)
 
         try:
-            result = subprocess.run(  # noqa: S603
+            result = subprocess.run(
                 ["/usr/bin/python3", str(code_file)],
                 capture_output=True,
                 timeout=config.timeout_seconds,

@@ -74,19 +74,21 @@ def test_redis_configuration():
     rate_limit_config = RateLimitConfig(
         rules=rate_limit_rules,
         redis_url=os.getenv("REDIS_URL", "redis://localhost:6379"),
-        fallback_to_memory=True,
+        fallback_to_memory=is_development,
         enabled=True,
+        fail_open=is_development,
         exempt_paths=["/docs", "/openapi.json", "/redoc", "/favicon.ico"],
     )
     """
 
     assert "redis_url=" in redis_config_snippet
-    assert "fallback_to_memory=True" in redis_config_snippet
+    assert "fallback_to_memory=is_development" in redis_config_snippet
     assert "enabled=True" in redis_config_snippet
+    assert "fail_open=is_development" in redis_config_snippet
 
     logger.info("Redis configuration validation passed")
     logger.info("  Redis URL: from REDIS_URL env var")
-    logger.info("  Fallback to memory: enabled")
+    logger.info("  Fallback to memory: development-only")
     logger.info("  Rate limiting: enabled")
 
 

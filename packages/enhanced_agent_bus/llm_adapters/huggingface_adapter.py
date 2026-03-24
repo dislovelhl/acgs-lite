@@ -13,7 +13,7 @@ from collections.abc import AsyncIterator, Iterator
 from typing import ClassVar, Protocol, cast
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -171,6 +171,18 @@ class HuggingFaceAdapter(BaseLLMAdapter):
         self._tokenizer: _HFTokenizer | None = None
         self._local_model: object | None = None
         self._local_pipeline: object | None = None
+
+    def validate_constitutional_compliance(self, **kwargs: object) -> None:
+        """Validate constitutional compliance for HuggingFace adapter."""
+        if not self.constitutional_hash:
+            raise ValueError("Constitutional hash is required for HuggingFace adapter compliance.")
+        if self.constitutional_hash != CONSTITUTIONAL_HASH:
+            logger.warning(
+                "HuggingFace adapter using non-standard constitutional hash: %s",
+                self.constitutional_hash,
+            )
+        if not self.model:
+            raise ValueError("HuggingFace adapter constitutional compliance requires a model.")
 
     def _get_client(self) -> _HFInferenceClient:
         """Get or create synchronous Hugging Face Inference client.
@@ -548,7 +560,7 @@ class HuggingFaceAdapter(BaseLLMAdapter):
             cost = self.estimate_cost(prompt_tokens, completion_tokens)
 
             # Build response
-            response_messages = messages + [LLMMessage(role="assistant", content=generated_text)]  # noqa: RUF005
+            response_messages = messages + [LLMMessage(role="assistant", content=generated_text)]
 
             return LLMResponse(
                 content=generated_text,
@@ -662,7 +674,7 @@ class HuggingFaceAdapter(BaseLLMAdapter):
             cost = self.estimate_cost(prompt_tokens, completion_tokens)
 
             # Build response
-            response_messages = messages + [LLMMessage(role="assistant", content=generated_text)]  # noqa: RUF005
+            response_messages = messages + [LLMMessage(role="assistant", content=generated_text)]
 
             return LLMResponse(
                 content=generated_text,

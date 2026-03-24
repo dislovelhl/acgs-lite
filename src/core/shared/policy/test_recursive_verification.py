@@ -6,13 +6,10 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 import asyncio
 
-import pytest
-
 from src.core.shared.policy.models import PolicySpecification, VerificationStatus
 from src.core.shared.policy.unified_generator import UnifiedVerifiedPolicyGenerator
 
 
-@pytest.mark.asyncio
 async def test_recursive_policy_generation():
     """
     Verifies that for a recursive/hierarchical spec, the generator

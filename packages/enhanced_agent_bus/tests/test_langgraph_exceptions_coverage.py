@@ -21,10 +21,10 @@ if _PKG not in sys.modules:
     _stub.__package__ = _PKG
     sys.modules[_PKG] = _stub
 
-import pytest  # noqa: E402
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+import pytest
+from src.core.shared.constants import CONSTITUTIONAL_HASH
 
-from enhanced_agent_bus.langgraph_orchestration.exceptions import (  # noqa: E402
+from enhanced_agent_bus.langgraph_orchestration.exceptions import (
     CheckpointError,
     ConstitutionalViolationError,
     CyclicDependencyError,

@@ -273,7 +273,6 @@ class TestWorkflowContext:
         queue2 = workflow_context.get_signal_queue("test_signal")
         assert queue is queue2
 
-    @pytest.mark.asyncio
     async def test_send_and_wait_for_signal(self, workflow_context: WorkflowContext) -> None:
         """Test signal send and receive."""
 
@@ -289,7 +288,6 @@ class TestWorkflowContext:
         data = await workflow_context.wait_for_signal("task_ready", timeout=1.0)
         assert isinstance(data, dict) and data["task_id"] == "123"
 
-    @pytest.mark.asyncio
     async def test_signal_timeout(self, workflow_context: WorkflowContext) -> None:
         """Test signal wait timeout."""
         result = await workflow_context.wait_for_signal("missing_signal", timeout=0.1)
@@ -358,7 +356,6 @@ class TestInitializeAgentActivity:
         assert activity.name == "initialize_agent"
         assert activity.timeout_seconds == 30.0
 
-    @pytest.mark.asyncio
     async def test_successful_initialization(
         self, agent_config: AgentConfig, workflow_context: WorkflowContext
     ) -> None:
@@ -371,7 +368,6 @@ class TestInitializeAgentActivity:
         assert "compute" in result["capabilities"]
         assert result["constitutional_hash"] == CONSTITUTIONAL_HASH  # pragma: allowlist secret
 
-    @pytest.mark.asyncio
     async def test_constitutional_hash_mismatch(self, workflow_context: WorkflowContext) -> None:
         """Test initialization fails with wrong constitutional hash."""
         config = AgentConfig(
@@ -394,7 +390,6 @@ class TestExecuteTaskActivity:
         assert activity.name == "execute_task"
         assert activity.timeout_seconds == 300.0
 
-    @pytest.mark.asyncio
     async def test_successful_task_execution(
         self, sample_task: Task, workflow_context: WorkflowContext
     ) -> None:
@@ -407,7 +402,6 @@ class TestExecuteTaskActivity:
         assert result.result["processed"] is True
         assert result.duration_ms > 0
 
-    @pytest.mark.asyncio
     async def test_task_constitutional_hash_mismatch(
         self, workflow_context: WorkflowContext
     ) -> None:
@@ -433,7 +427,6 @@ class TestCheckpointAgentActivity:
         assert activity.name == "checkpoint_agent"
         assert activity.timeout_seconds == 10.0
 
-    @pytest.mark.asyncio
     async def test_create_checkpoint(self, workflow_context: WorkflowContext) -> None:
         """Test checkpoint creation."""
         status = AgentStatus(
@@ -460,7 +453,6 @@ class TestShutdownAgentActivity:
         assert activity.name == "shutdown_agent"
         assert activity.timeout_seconds == 30.0
 
-    @pytest.mark.asyncio
     async def test_shutdown(self, workflow_context: WorkflowContext) -> None:
         """Test agent shutdown."""
         activity = ShutdownAgentActivity()
@@ -516,7 +508,6 @@ class TestAgentEntityWorkflowInitialization:
 class TestAgentEntityWorkflowLifecycle:
     """Tests for AgentEntityWorkflow lifecycle."""
 
-    @pytest.mark.asyncio
     async def test_basic_lifecycle(
         self,
         workflow_executor: InMemoryWorkflowExecutor,
@@ -547,7 +538,6 @@ class TestAgentEntityWorkflowLifecycle:
         assert result.agent_id == "test-agent-001"
         assert result.final_state == AgentState.TERMINATED
 
-    @pytest.mark.asyncio
     async def test_task_processing(
         self,
         workflow_executor: InMemoryWorkflowExecutor,
@@ -581,7 +571,6 @@ class TestAgentEntityWorkflowLifecycle:
         assert result is not None and isinstance(result, AgentResult)
         assert result.total_tasks_completed >= 1
 
-    @pytest.mark.asyncio
     async def test_suspend_and_resume(
         self,
         workflow_executor: InMemoryWorkflowExecutor,
@@ -621,7 +610,6 @@ class TestAgentEntityWorkflowLifecycle:
         await workflow_executor.send_signal("wf-suspend-test", "shutdown")
         await workflow_executor.get_result("wf-suspend-test", timeout=5.0)
 
-    @pytest.mark.asyncio
     async def test_multiple_tasks(
         self,
         workflow_executor: InMemoryWorkflowExecutor,
@@ -664,7 +652,6 @@ class TestAgentEntityWorkflowLifecycle:
 class TestAgentEntityWorkflowSignals:
     """Tests for AgentEntityWorkflow signal handlers."""
 
-    @pytest.mark.asyncio
     async def test_assign_task_signal(self) -> None:
         """Test assign_task signal handler."""
         workflow = AgentEntityWorkflow()
@@ -676,7 +663,6 @@ class TestAgentEntityWorkflowSignals:
         pending = workflow.get_pending_tasks()
         assert pending == 1
 
-    @pytest.mark.asyncio
     async def test_shutdown_signal(self) -> None:
         """Test shutdown signal handler."""
         workflow = AgentEntityWorkflow()
@@ -687,7 +673,6 @@ class TestAgentEntityWorkflowSignals:
         assert workflow._shutdown_requested is True
         assert workflow._shutdown_reason == "test_shutdown"
 
-    @pytest.mark.asyncio
     async def test_update_config_signal(self, agent_config: AgentConfig) -> None:
         """Test update_config signal handler."""
         workflow = AgentEntityWorkflow()
@@ -764,7 +749,6 @@ class TestAgentEntityWorkflowQueries:
 class TestInMemoryWorkflowExecutor:
     """Tests for InMemoryWorkflowExecutor."""
 
-    @pytest.mark.asyncio
     async def test_start_workflow(
         self,
         workflow_executor: InMemoryWorkflowExecutor,
@@ -780,7 +764,6 @@ class TestInMemoryWorkflowExecutor:
         # Cleanup
         await workflow_executor.cancel("test-wf")
 
-    @pytest.mark.asyncio
     async def test_cancel_workflow(
         self,
         workflow_executor: InMemoryWorkflowExecutor,
@@ -795,7 +778,6 @@ class TestInMemoryWorkflowExecutor:
         status = workflow_executor.get_status("cancel-wf")
         assert status == WorkflowStatus.CANCELLED
 
-    @pytest.mark.asyncio
     async def test_query_nonexistent_workflow(
         self, workflow_executor: InMemoryWorkflowExecutor
     ) -> None:
@@ -803,7 +785,6 @@ class TestInMemoryWorkflowExecutor:
         with pytest.raises((ValueError, ACGSValidationError, ACGSResourceNotFoundError)):
             await workflow_executor.query("nonexistent", "get_status")
 
-    @pytest.mark.asyncio
     async def test_send_signal_nonexistent_workflow(
         self, workflow_executor: InMemoryWorkflowExecutor
     ) -> None:
@@ -811,7 +792,6 @@ class TestInMemoryWorkflowExecutor:
         with pytest.raises((ValueError, ACGSValidationError, ACGSResourceNotFoundError)):
             await workflow_executor.send_signal("nonexistent", "shutdown")
 
-    @pytest.mark.asyncio
     async def test_get_context(
         self,
         workflow_executor: InMemoryWorkflowExecutor,
@@ -870,7 +850,6 @@ class TestEdgeCases:
         assert checkpoint_agent_activity is not None
         assert shutdown_agent_activity is not None
 
-    @pytest.mark.asyncio
     async def test_workflow_without_context(self) -> None:
         """Test workflow access without context raises error."""
         workflow = AgentEntityWorkflow()
@@ -884,7 +863,6 @@ class TestEdgeCases:
         assert config.agent_id == ""
         assert config.constitutional_hash == CONSTITUTIONAL_HASH  # pragma: allowlist secret
 
-    @pytest.mark.asyncio
     async def test_task_with_retry(
         self,
         workflow_executor: InMemoryWorkflowExecutor,
@@ -945,7 +923,6 @@ class TestConstitutionalCompliance:
 class TestWorkflowIntegration:
     """Integration tests for workflow system."""
 
-    @pytest.mark.asyncio
     async def test_full_workflow_cycle(self, workflow_executor: InMemoryWorkflowExecutor) -> None:
         """Test complete workflow cycle with all operations."""
         config = AgentConfig(

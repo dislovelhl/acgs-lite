@@ -15,7 +15,7 @@ from datetime import UTC
 from typing import TYPE_CHECKING
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -329,7 +329,7 @@ __all__ = [
     "MACIRoleViolationError",
     "MACISelfValidationError",
     "MessageType",
-    "get_enum_value",  # noqa: F822
+    "get_enum_value",
     # Utilities
     "get_iso_timestamp",
     # Global settings

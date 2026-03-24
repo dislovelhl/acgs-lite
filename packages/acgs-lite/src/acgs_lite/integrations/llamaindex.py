@@ -137,6 +137,7 @@ class GovernedQueryEngine:
 
     @property
     def stats(self) -> dict[str, Any]:
+        """Return governance statistics."""
         return {
             **self.gov_engine.stats,
             "agent_id": self.agent_id,
@@ -236,6 +237,7 @@ class GovernedChatEngine:
 
     @property
     def stats(self) -> dict[str, Any]:
+        """Return governance statistics."""
         return {
             **self.gov_engine.stats,
             "agent_id": self.agent_id,

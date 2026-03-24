@@ -26,7 +26,7 @@ from functools import wraps
 from typing import NoReturn
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -471,7 +471,7 @@ class ChaosEngine:
             scenario.active = False
 
             # Cleanup based on scenario type
-            if scenario.chaos_type == ChaosType.CIRCUIT_BREAKER:  # noqa: SIM102
+            if scenario.chaos_type == ChaosType.CIRCUIT_BREAKER:
                 if get_circuit_breaker:
                     try:
                         cb = get_circuit_breaker(scenario.target)

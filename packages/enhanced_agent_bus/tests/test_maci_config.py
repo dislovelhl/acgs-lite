@@ -351,7 +351,6 @@ agents:
 class TestApplyMACIConfig:
     """Test apply_maci_config function."""
 
-    @pytest.mark.asyncio
     async def test_apply_config_to_registry(self):
         """Test applying configuration to a registry."""
         registry = MACIRoleRegistry()
@@ -381,7 +380,6 @@ class TestApplyMACIConfig:
         assert legis_record is not None
         assert legis_record.role == MACIRole.LEGISLATIVE
 
-    @pytest.mark.asyncio
     async def test_apply_empty_config(self):
         """Test applying empty configuration."""
         registry = MACIRoleRegistry()
@@ -391,7 +389,6 @@ class TestApplyMACIConfig:
 
         assert count == 0
 
-    @pytest.mark.asyncio
     async def test_apply_config_with_metadata(self):
         """Test that metadata is preserved when applying config."""
         registry = MACIRoleRegistry()
@@ -418,7 +415,6 @@ class TestApplyMACIConfig:
 class TestMACIConfigIntegration:
     """Integration tests for MACI configuration."""
 
-    @pytest.mark.asyncio
     async def test_full_config_workflow(self):
         """Test complete configuration workflow."""
         # 1. Create configuration

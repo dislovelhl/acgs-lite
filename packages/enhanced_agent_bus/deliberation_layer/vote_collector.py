@@ -38,7 +38,7 @@ except ImportError:
     NUMPY_AVAILABLE = False
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -355,7 +355,7 @@ class EventDrivenVoteCollector:
 
         if self._subscriber_task:
             self._subscriber_task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._subscriber_task
             except asyncio.CancelledError:
                 pass

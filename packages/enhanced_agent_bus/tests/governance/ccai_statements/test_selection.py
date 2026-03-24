@@ -18,7 +18,6 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 class TestRepresentativeStatementSelection:
     """Test suite for select_representative_statements() method."""
 
-    @pytest.mark.asyncio
     async def test_select_top_n_representatives(self, engine, sample_cluster):
         """Test selection of top N representative statements."""
         statements = []
@@ -52,14 +51,12 @@ class TestRepresentativeStatementSelection:
         assert representatives[0] == "stmt-0", "Highest centrality should be first"
         assert "stmt-3" not in representatives, "Lowest centrality should not be selected"
 
-    @pytest.mark.asyncio
     async def test_select_with_empty_cluster(self, engine, empty_cluster):
         """Test selection with empty cluster returns empty list."""
         representatives = await engine.select_representative_statements(empty_cluster, top_n=5)
 
         assert representatives == [], f"Expected empty list, got {representatives}"
 
-    @pytest.mark.asyncio
     async def test_select_with_no_votes(self, engine, sample_cluster):
         """Test selection when no statements have votes returns empty list."""
         for i in range(3):
@@ -77,7 +74,6 @@ class TestRepresentativeStatementSelection:
 
         assert representatives == [], f"Expected empty list, got {representatives}"
 
-    @pytest.mark.asyncio
     async def test_select_fewer_statements_than_top_n(self, engine, sample_cluster):
         """Test selection when fewer statements available than requested."""
         for i in range(2):
@@ -99,7 +95,6 @@ class TestRepresentativeStatementSelection:
 
         assert len(representatives) == 2, f"Expected 2 representatives, got {len(representatives)}"
 
-    @pytest.mark.asyncio
     async def test_select_with_invalid_top_n(self, engine, sample_cluster):
         """Test selection with invalid top_n values."""
         statement_id = "stmt-valid"
@@ -122,7 +117,6 @@ class TestRepresentativeStatementSelection:
         representatives = await engine.select_representative_statements(sample_cluster, top_n=15)
         assert len(representatives) == 1, "Should return available statements"
 
-    @pytest.mark.asyncio
     async def test_select_ranking_order(self, engine, sample_cluster):
         """Test that representatives are ranked by centrality score (descending)."""
         for i in range(5):

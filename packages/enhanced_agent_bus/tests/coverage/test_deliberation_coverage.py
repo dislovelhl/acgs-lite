@@ -20,7 +20,7 @@ import pytest
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
 # Constitutional Hash - Required for all governance operations
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # =============================================================================
 # Additional Edge Case Tests
@@ -30,7 +30,6 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
 class TestMessageProcessorAdditional:
     """Additional message processor coverage tests."""
 
-    @pytest.mark.asyncio
     async def test_prompt_injection_detection(self) -> None:
         """Test prompt injection detection path."""
         from enhanced_agent_bus.message_processor import MessageProcessor
@@ -52,7 +51,6 @@ class TestMessageProcessorAdditional:
         # Should process regardless (injection detection may log warning)
         assert hasattr(result, "is_valid")
 
-    @pytest.mark.asyncio
     async def test_metering_constitutional_validation(self) -> None:
         """Test metering of constitutional validation."""
         from enhanced_agent_bus.message_processor import MessageProcessor
@@ -89,7 +87,6 @@ class TestMessageProcessorAdditional:
 class TestOPAClientAdditional:
     """Additional OPA client coverage tests."""
 
-    @pytest.mark.asyncio
     async def test_opa_client_with_custom_url(self) -> None:
         """Test OPA client with custom URL."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -103,7 +100,6 @@ class TestOPAClientAdditional:
         )
         assert client.opa_url == "http://custom-opa:8181"
 
-    @pytest.mark.asyncio
     async def test_opa_client_fallback_mode(self) -> None:
         """Test OPA client in fallback mode."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -111,7 +107,6 @@ class TestOPAClientAdditional:
         client = OPAClient(mode="fallback")
         assert client.mode == "fallback"
 
-    @pytest.mark.asyncio
     async def test_evaluate_policy_timeout(self) -> None:
         """Test policy evaluation with timeout."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -124,7 +119,6 @@ class TestOPAClientAdditional:
             result = await client._evaluate_fallback({"test": "input"}, "test/policy")
             assert result["allowed"] is False
 
-    @pytest.mark.asyncio
     async def test_opa_health_check(self) -> None:
         """Test OPA health check."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -138,7 +132,6 @@ class TestOPAClientAdditional:
         except (RuntimeError, ConnectionError, TimeoutError):
             pass  # Expected if OPA not available
 
-    @pytest.mark.asyncio
     async def test_opa_client_close(self) -> None:
         """Test OPA client close method."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -147,7 +140,6 @@ class TestOPAClientAdditional:
         await client.close()
         # Should handle closing without error
 
-    @pytest.mark.asyncio
     async def test_opa_client_embedded_mode(self) -> None:
         """Test OPA client embedded mode."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -156,7 +148,6 @@ class TestOPAClientAdditional:
         # May fallback to http if SDK not available
         assert client.mode in ["embedded", "http"]
 
-    @pytest.mark.asyncio
     async def test_opa_evaluate_with_cache(self) -> None:
         """Test OPA evaluation with caching."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -170,7 +161,6 @@ class TestOPAClientAdditional:
         except (RuntimeError, ConnectionError, TimeoutError):
             pass  # Expected if OPA not available
 
-    @pytest.mark.asyncio
     async def test_opa_evaluate_without_cache(self) -> None:
         """Test OPA evaluation without caching."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -183,7 +173,6 @@ class TestOPAClientAdditional:
         except (RuntimeError, ConnectionError, TimeoutError):
             pass  # Expected if OPA not available
 
-    @pytest.mark.asyncio
     async def test_opa_memory_cache(self) -> None:
         """Test OPA memory cache functionality."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -194,7 +183,6 @@ class TestOPAClientAdditional:
         assert hasattr(client, "_memory_cache")
         assert isinstance(client._memory_cache, dict)
 
-    @pytest.mark.asyncio
     async def test_opa_cache_get_from_memory(self) -> None:
         """Test OPA getting from memory cache."""
 
@@ -214,7 +202,6 @@ class TestOPAClientAdditional:
         assert result is not None
         assert result["allowed"] is True
 
-    @pytest.mark.asyncio
     async def test_opa_cache_set_to_memory(self) -> None:
         """Test OPA setting to memory cache."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -230,7 +217,6 @@ class TestOPAClientAdditional:
         assert cache_key in client._memory_cache
         assert client._memory_cache[cache_key]["result"] == result
 
-    @pytest.mark.asyncio
     async def test_opa_cache_expired(self) -> None:
         """Test OPA cache expiration."""
 
@@ -251,7 +237,6 @@ class TestOPAClientAdditional:
         # Expired entry should be removed
         assert cache_key not in client._memory_cache
 
-    @pytest.mark.asyncio
     async def test_opa_cache_disabled(self) -> None:
         """Test OPA with cache disabled."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -266,7 +251,6 @@ class TestOPAClientAdditional:
         await client._set_to_cache("any_key", {"test": True})
         assert "any_key" not in client._memory_cache
 
-    @pytest.mark.asyncio
     async def test_opa_redis_cache_get(self) -> None:
         """Test OPA getting from Redis cache."""
 
@@ -287,7 +271,6 @@ class TestOPAClientAdditional:
         assert result["allowed"] is True
         mock_redis.get.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_opa_redis_cache_set(self) -> None:
         """Test OPA setting to Redis cache."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -305,7 +288,6 @@ class TestOPAClientAdditional:
         await client._set_to_cache("opa:policy_path:redis_set_key", {"allowed": True})
         mock_redis.setex.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_opa_redis_cache_error(self) -> None:
         """Test OPA Redis cache error handling."""
         from redis.exceptions import RedisError
@@ -347,7 +329,6 @@ class TestEdgeCases:
         # Constitutional hash should be the system constant
         assert processor.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_opa_client_init(self) -> None:
         """Test OPAClient initialization."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -355,7 +336,6 @@ class TestEdgeCases:
         client = OPAClient()
         assert client is not None
 
-    @pytest.mark.asyncio
     async def test_deliberation_queue_stop(self) -> None:
         """Test DeliberationQueue stop method."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -367,7 +347,6 @@ class TestEdgeCases:
 
         # Should complete without error
 
-    @pytest.mark.asyncio
     async def test_deliberation_queue_get_pending_tasks(self) -> None:
         """Test get_pending_tasks method."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -400,7 +379,6 @@ class TestEdgeCases:
 class TestDeliberationQueueExtended:
     """Extended deliberation queue tests for higher coverage."""
 
-    @pytest.mark.asyncio
     async def test_submit_agent_vote_success(self) -> None:
         """Test successful agent vote submission."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -436,7 +414,6 @@ class TestDeliberationQueueExtended:
         assert len(task.current_votes) == 1
         await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_submit_agent_vote_duplicate_replaces(self) -> None:
         """Test that duplicate votes from same agent are replaced."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -478,7 +455,6 @@ class TestDeliberationQueueExtended:
         assert task.current_votes[0].vote == VoteType.REJECT
         await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_submit_agent_vote_on_completed_task(self) -> None:
         """Test voting on completed task fails."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -513,7 +489,6 @@ class TestDeliberationQueueExtended:
         assert result is False
         await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_consensus_reached_auto_approve(self) -> None:
         """Test that consensus triggers automatic approval."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -558,7 +533,6 @@ class TestDeliberationQueueExtended:
         assert task.status == DeliberationStatus.APPROVED
         await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_submit_human_decision_not_under_review(self) -> None:
         """Test human decision fails if not under review."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -589,7 +563,6 @@ class TestDeliberationQueueExtended:
         assert result is False
         await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_submit_human_decision_success(self) -> None:
         """Test successful human decision submission."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -627,7 +600,6 @@ class TestDeliberationQueueExtended:
         assert task.human_reviewer == "human-1"
         await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_submit_human_decision_rejection(self) -> None:
         """Test human rejection counts stats correctly."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -659,7 +631,6 @@ class TestDeliberationQueueExtended:
         assert queue.stats["rejected"] >= 1
         await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_get_item_details(self) -> None:
         """Test get_item_details method."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -687,7 +658,6 @@ class TestDeliberationQueueExtended:
         assert "updated_at" in details
         await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_get_item_details_nonexistent(self) -> None:
         """Test get_item_details for non-existent item."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -698,7 +668,6 @@ class TestDeliberationQueueExtended:
         details = queue.get_item_details("nonexistent-id")
         assert details is None
 
-    @pytest.mark.asyncio
     async def test_get_queue_status(self) -> None:
         """Test get_queue_status method."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -725,7 +694,6 @@ class TestDeliberationQueueExtended:
         assert status["queue_size"] >= 1
         await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_voting_deadline_property(self) -> None:
         """Test voting_deadline property of DeliberationTask."""
         from datetime import timedelta
@@ -757,7 +725,6 @@ class TestDeliberationQueueExtended:
 class TestOPAClientExtended:
     """Extended OPA client tests for higher coverage."""
 
-    @pytest.mark.asyncio
     async def test_evaluate_http_bool_result(self) -> None:
         """Test HTTP evaluation with boolean result."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -778,7 +745,6 @@ class TestOPAClientExtended:
         assert result["allowed"] is True
         assert result["metadata"]["mode"] == "http"
 
-    @pytest.mark.asyncio
     async def test_evaluate_http_dict_result(self) -> None:
         """Test HTTP evaluation with dict result."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -805,7 +771,6 @@ class TestOPAClientExtended:
         assert result["reason"] == "Policy passed"
         assert result["metadata"]["extra"] == "info"
 
-    @pytest.mark.asyncio
     async def test_evaluate_http_unexpected_type(self) -> None:
         """Test HTTP evaluation with unexpected result type."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -825,7 +790,6 @@ class TestOPAClientExtended:
         assert result["allowed"] is False
         assert "Unexpected result type" in result["reason"]
 
-    @pytest.mark.asyncio
     async def test_evaluate_http_exception(self) -> None:
         """Test HTTP evaluation with exception."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -839,7 +803,6 @@ class TestOPAClientExtended:
         with pytest.raises(Exception, match="Network error"):
             await client._evaluate_http({"test": "data"}, "test/policy")
 
-    @pytest.mark.asyncio
     async def test_evaluate_policy_with_caching(self) -> None:
         """Test evaluate_policy with caching behavior."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -860,7 +823,6 @@ class TestOPAClientExtended:
         assert result is not None
         assert result["allowed"] is True
 
-    @pytest.mark.asyncio
     async def test_get_stats(self) -> None:
         """Test get_stats method."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -874,7 +836,6 @@ class TestOPAClientExtended:
         assert "cache_backend" in stats
         assert "fail_closed" in stats
 
-    @pytest.mark.asyncio
     async def test_generate_cache_key(self) -> None:
         """Test cache key generation."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -891,7 +852,6 @@ class TestOPAClientExtended:
 class TestMessageProcessorExtended:
     """Extended message processor tests for higher coverage."""
 
-    @pytest.mark.asyncio
     async def test_process_high_priority_message(self) -> None:
         """Test processing high priority message."""
         from enhanced_agent_bus.message_processor import MessageProcessor
@@ -911,7 +871,6 @@ class TestMessageProcessorExtended:
         result = await processor.process(message)
         assert hasattr(result, "is_valid")
 
-    @pytest.mark.asyncio
     async def test_process_query_message(self) -> None:
         """Test processing query type message."""
         from enhanced_agent_bus.message_processor import MessageProcessor
@@ -930,7 +889,6 @@ class TestMessageProcessorExtended:
         result = await processor.process(message)
         assert hasattr(result, "is_valid")
 
-    @pytest.mark.asyncio
     async def test_process_event_message(self) -> None:
         """Test processing event type message."""
         from enhanced_agent_bus.message_processor import MessageProcessor
@@ -949,7 +907,6 @@ class TestMessageProcessorExtended:
         result = await processor.process(message)
         assert hasattr(result, "is_valid")
 
-    @pytest.mark.asyncio
     async def test_process_with_headers(self) -> None:
         """Test processing message with headers (metadata via headers field)."""
         from enhanced_agent_bus.message_processor import MessageProcessor
@@ -969,7 +926,6 @@ class TestMessageProcessorExtended:
         result = await processor.process(message)
         assert hasattr(result, "is_valid")
 
-    @pytest.mark.asyncio
     async def test_decision_log_creation(self) -> None:
         """Test that decision logs are created correctly."""
         from enhanced_agent_bus.message_processor import MessageProcessor
@@ -1004,7 +960,6 @@ class TestMessageProcessorExtended:
 class TestIntegrationScenarios:
     """Integration scenario tests for comprehensive coverage."""
 
-    @pytest.mark.asyncio
     async def test_full_deliberation_workflow(self) -> None:
         """Test complete deliberation workflow."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -1054,7 +1009,6 @@ class TestIntegrationScenarios:
         assert details["votes"] == 5
         await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_message_processor_with_opa_fallback(self) -> None:
         """Test message processor when OPA falls back."""
         from enhanced_agent_bus.message_processor import MessageProcessor
@@ -1075,7 +1029,6 @@ class TestIntegrationScenarios:
         result = await processor.process(message)
         assert hasattr(result, "is_valid")
 
-    @pytest.mark.asyncio
     async def test_deliberation_queue_persistence_roundtrip(self) -> None:
         """Test persistence save and load roundtrip."""
         import asyncio

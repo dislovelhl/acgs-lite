@@ -9,7 +9,6 @@ Tests cover:
 - Integration with related components
 """
 
-import pytest
 
 from .hitl_test_helpers import (
     MockAuditLedger,
@@ -21,7 +20,6 @@ from .hitl_test_helpers import (
 class TestRequestApproval:
     """Tests for request_approval method."""
 
-    @pytest.mark.asyncio
     async def test_request_approval_valid_item(self, mock_queue: MockDeliberationQueue) -> None:
         """Test request_approval with a valid queue item."""
 
@@ -43,7 +41,6 @@ class TestRequestApproval:
         assert result is not None
         assert result.status == MockDeliberationStatus.UNDER_REVIEW
 
-    @pytest.mark.asyncio
     async def test_request_approval_missing_item(self, mock_queue: MockDeliberationQueue) -> None:
         """Test request_approval with a missing queue item."""
 
@@ -64,7 +61,6 @@ class TestRequestApproval:
 
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_request_approval_teams_channel(self, mock_queue: MockDeliberationQueue) -> None:
         """Test request_approval with Teams channel."""
 

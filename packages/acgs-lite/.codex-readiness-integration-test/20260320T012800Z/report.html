@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='utf-8'>
+<title>Codex Readiness Integration Test Report</title>
+<style>
+body{font-family:Arial,sans-serif;margin:24px;color:#222;background:#fafafa;}
+.badge{display:inline-block;padding:4px 10px;border-radius:12px;color:#fff;font-size:12px;text-transform:uppercase;}
+.pass{background:#2e7d32;} .warn{background:#f9a825;} .fail{background:#c62828;} .not_run{background:#546e7a;}
+table{border-collapse:collapse;width:100%;margin:12px 0 20px;background:#fff;table-layout:fixed;}
+th,td{border:1px solid #ddd;padding:8px;font-size:13px;vertical-align:top;word-break:break-word;}
+th{background:#f1f1f1;text-align:left;}
+h3{margin:12px 0 6px;}
+h2{margin-top:24px;}
+</style>
+</head>
+<body>
+<h1>Codex Readiness Integration Test Report</h1>
+<h2>/home/martin/Documents/acgs-clean/packages/acgs-lite/.codex-readiness-integration-test/20260320T012800Z/report.html</h2>
+<p>Overall score: <strong>45</strong> <span class='badge fail'>FAIL</span></p>
+<h2>Prompt</h2>
+<table>
+<tr><th>Change prompt</th></tr>
+<tr><td>Improve constitution merge provenance so merged constitutions preserve governance-level metadata instead of only returning conflict bookkeeping. Update the merge path to carry forward the strictest permission ceiling from the inputs, preserve version_name when one side provides it, and append a merge changelog entry plus summary metadata describing merge sources, conflict counts, and acknowledged versus unacknowledged tensions. Add or update focused tests that cover both the returned merge report and the merged Constitution object.</td></tr>
+</table>
+<h2>Acceptance criteria</h2>
+<table>
+<tr><th>Criteria</th></tr>
+<tr><td>Constitution.merge() preserves the strictest permission ceiling across the two input constitutions in the returned merged Constitution object.</td></tr>
+<tr><td>Constitution.merge() preserves a non-empty version_name from either input constitution when the merged constitution would otherwise lose that release label.</td></tr>
+<tr><td>The merged Constitution object records merge provenance in its metadata and changelog without removing the existing conflict report fields returned by merge().</td></tr>
+<tr><td>Focused tests verify acknowledged and unacknowledged tension reporting as well as the new merged-constitution provenance fields.</td></tr>
+</table>
+<h2>Checks</h2>
+<table>
+<tr><th>Check</th><th>Status</th><th>Rationale</th></tr>
+<tr><td>P0: Agentic loop success</td><td><span class='badge warn'>WARN</span></td><td>LLM evaluator returned invalid JSON after json_fix.</td></tr>
+<tr><td>P0: Agentic loop execution</td><td><span class='badge fail'>FAIL</span></td><td>Agentic loop did not complete successfully.</td></tr>
+<tr><td>P0: Change quality evaluation</td><td><span class='badge warn'>WARN</span></td><td>LLM evaluator returned invalid JSON after json_fix.</td></tr>
+<tr><td>P0: Planning signal before code changes</td><td><span class='badge warn'>WARN</span></td><td>No file update entries found in agentic.log.</td></tr>
+<tr><td>P0: Build/test execution status</td><td><span class='badge fail'>FAIL</span></td><td>execution summary status is FAIL.</td></tr>
+<tr><td>P0: Verification after code changes</td><td><span class='badge warn'>WARN</span></td><td>No file update entries found in agentic.log.</td></tr>
+<tr><td>P1: Repo-root-only changes</td><td><span class='badge pass'>PASS</span></td><td>All git diff paths resolve under repo root.</td></tr>
+<tr><td>P2: Execution logs show no obvious errors</td><td><span class='badge pass'>PASS</span></td><td>No obvious error markers found in execution logs.</td></tr>
+</table>
+</body></html>

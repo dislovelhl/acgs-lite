@@ -12,7 +12,7 @@ from enum import Enum
 from uuid import uuid4
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import (
@@ -23,7 +23,7 @@ from src.core.shared.errors.exceptions import (
 )
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -32,7 +32,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 logger = get_logger(__name__)
 
 
-class IdPProviderType(str, Enum):  # noqa: UP042
+class IdPProviderType(str, Enum):
     """Supported Identity Provider types."""
 
     OKTA = "okta"
@@ -46,7 +46,7 @@ class IdPProviderType(str, Enum):  # noqa: UP042
     CUSTOM_OIDC = "custom_oidc"
 
 
-class SSOProtocolType(str, Enum):  # noqa: UP042
+class SSOProtocolType(str, Enum):
     """SSO protocol types."""
 
     SAML_2_0 = "saml"
@@ -130,7 +130,7 @@ class OIDCConfig:
     scopes: list[str] = field(default_factory=lambda: ["openid", "profile", "email"])
     response_type: str = "code"
     use_pkce: bool = True
-    token_endpoint_auth_method: str = "client_secret_post"  # noqa: S105
+    token_endpoint_auth_method: str = "client_secret_post"
 
     def to_dict(self) -> JSONDict:
         """Serialize to dictionary (excludes secrets)."""
@@ -778,7 +778,7 @@ def create_google_workspace_idp_config(
             client_id=client_id,
             client_secret=client_secret,
             authorization_endpoint="https://accounts.google.com/o/oauth2/v2/auth",
-            token_endpoint="https://oauth2.googleapis.com/token",  # noqa: S106
+            token_endpoint="https://oauth2.googleapis.com/token",
             userinfo_endpoint="https://openidconnect.googleapis.com/v1/userinfo",
             jwks_uri="https://www.googleapis.com/oauth2/v3/certs",
             scopes=["openid", "profile", "email"],

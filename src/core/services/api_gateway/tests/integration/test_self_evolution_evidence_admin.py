@@ -9,12 +9,16 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 
-from src.core.self_evolution.api.evidence import set_evidence_store_path
-from src.core.self_evolution.research.experiment_evidence_store import (
-    DEFAULT_BOUNDED_EXPERIMENT_EVIDENCE_PATH,
-    BoundedExperimentEvidenceRecord,
-    BoundedExperimentEvidenceStore,
+_evidence_api = pytest.importorskip("src.core.self_evolution.api.evidence")
+_evidence_store = pytest.importorskip(
+    "src.core.self_evolution.research.experiment_evidence_store"
 )
+
+set_evidence_store_path = _evidence_api.set_evidence_store_path
+DEFAULT_BOUNDED_EXPERIMENT_EVIDENCE_PATH = _evidence_store.DEFAULT_BOUNDED_EXPERIMENT_EVIDENCE_PATH
+BoundedExperimentEvidenceRecord = _evidence_store.BoundedExperimentEvidenceRecord
+BoundedExperimentEvidenceStore = _evidence_store.BoundedExperimentEvidenceStore
+
 from src.core.services.api_gateway.main import app
 from src.core.shared.security.auth import UserClaims, get_current_user
 

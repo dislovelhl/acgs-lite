@@ -9,12 +9,12 @@ from dataclasses import dataclass
 from enum import Enum
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
 
-class OptimizationStrategy(str, Enum):  # noqa: UP042
+class OptimizationStrategy(str, Enum):
     """Strategy for context window optimization."""
 
     LATENCY_FIRST = "latency_first"  # Minimize latency

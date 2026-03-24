@@ -119,7 +119,7 @@ try:
     from src.core.shared.types import (
         JSONDict,
         JSONList,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONList = list  # type: ignore[misc,assignment]
@@ -962,7 +962,7 @@ class DeliberationLayer(OPAGuardMixin):
         """
         try:
             # Handle enum objects by extracting value (avoids cross-module enum identity issues)
-            if hasattr(decision, "value"):  # noqa: SIM108
+            if hasattr(decision, "value"):
                 decision_str = decision.value
             else:
                 decision_str = str(decision).lower()

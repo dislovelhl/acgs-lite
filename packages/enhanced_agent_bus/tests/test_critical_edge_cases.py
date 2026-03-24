@@ -79,7 +79,6 @@ class TestConstitutionalValidationEdgeCases:
     # -------------------------------------------------------------------------
     # Test 1: Malformed Request
     # -------------------------------------------------------------------------
-    @pytest.mark.asyncio
     async def test_malformed_request_invalid_json(self):
         """
         Test: Malformed Constitutional Request
@@ -102,7 +101,6 @@ class TestConstitutionalValidationEdgeCases:
         assert result["status"] == 400
         assert result["error"] == "Invalid JSON format"
 
-    @pytest.mark.asyncio
     async def test_malformed_request_missing_required_fields(self):
         """
         Test malformed request with missing required fields.
@@ -119,7 +117,6 @@ class TestConstitutionalValidationEdgeCases:
     # -------------------------------------------------------------------------
     # Test 2: Hash Collision Attack
     # -------------------------------------------------------------------------
-    @pytest.mark.asyncio
     async def test_hash_collision_attack(self):
         """
         Test: Hash Collision Attack
@@ -155,7 +152,6 @@ class TestConstitutionalValidationEdgeCases:
     # -------------------------------------------------------------------------
     # Test 3: Empty Content Validation
     # -------------------------------------------------------------------------
-    @pytest.mark.asyncio
     async def test_empty_content_validation(self):
         """
         Test: Empty Content Validation
@@ -174,7 +170,6 @@ class TestConstitutionalValidationEdgeCases:
         assert result["status"] == 400
         assert result["error"] == "Content cannot be empty"
 
-    @pytest.mark.asyncio
     async def test_whitespace_only_content(self):
         """
         Test content with only whitespace characters.
@@ -192,7 +187,6 @@ class TestConstitutionalValidationEdgeCases:
     # -------------------------------------------------------------------------
     # Test 4: Oversized Content
     # -------------------------------------------------------------------------
-    @pytest.mark.asyncio
     async def test_oversized_content(self):
         """
         Test: Content Size Limit
@@ -218,7 +212,6 @@ class TestConstitutionalValidationEdgeCases:
         assert result["error"] == "Content exceeds maximum length"
         assert result["max_length"] == 10000
 
-    @pytest.mark.asyncio
     async def test_content_at_exact_limit(self):
         """
         Test content at exactly the maximum length (boundary condition).
@@ -252,7 +245,6 @@ class TestPerformanceEdgeCases:
     # -------------------------------------------------------------------------
     # Test 5: Burst Traffic
     # -------------------------------------------------------------------------
-    @pytest.mark.asyncio
     @pytest.mark.slow
     async def test_burst_traffic_graceful_degradation(self):
         """
@@ -294,7 +286,6 @@ class TestPerformanceEdgeCases:
     # -------------------------------------------------------------------------
     # Test 6: Cold Cache Storm (Cache Stampede Prevention)
     # -------------------------------------------------------------------------
-    @pytest.mark.asyncio
     async def test_cold_cache_storm_prevention(self):
         """
         Test: Cache Stampede Prevention
@@ -348,7 +339,6 @@ class TestPerformanceEdgeCases:
     # -------------------------------------------------------------------------
     # Test 7: Sustained High Load
     # -------------------------------------------------------------------------
-    @pytest.mark.asyncio
     @pytest.mark.slow
     async def test_sustained_load_stability(self):
         """
@@ -416,7 +406,6 @@ class TestSecurityEdgeCases:
     # -------------------------------------------------------------------------
     # Test 8: JWT Expiry Boundary
     # -------------------------------------------------------------------------
-    @pytest.mark.asyncio
     async def test_jwt_expiry_boundary(self):
         """
         Test: JWT at Exact Expiry
@@ -451,7 +440,6 @@ class TestSecurityEdgeCases:
     # -------------------------------------------------------------------------
     # Test 9: Concurrent Policy Update
     # -------------------------------------------------------------------------
-    @pytest.mark.asyncio
     async def test_concurrent_policy_update(self):
         """
         Test: Policy Update During Validation
@@ -494,7 +482,6 @@ class TestSecurityEdgeCases:
     # -------------------------------------------------------------------------
     # Test 10: SQL Injection Attempt
     # -------------------------------------------------------------------------
-    @pytest.mark.asyncio
     async def test_sql_injection_attempt(self):
         """
         Test: SQL Injection in Agent ID
@@ -529,7 +516,6 @@ class TestSecurityEdgeCases:
                 # This should always be blocked by the pattern
                 assert not re.match(agent_id_pattern, malicious_agent_id)
 
-    @pytest.mark.asyncio
     async def test_sql_injection_variations(self):
         """
         Test various SQL injection patterns are blocked.
@@ -564,7 +550,6 @@ class TestDistributedSystemEdgeCases:
     # -------------------------------------------------------------------------
     # Test 11: Redis Network Partition
     # -------------------------------------------------------------------------
-    @pytest.mark.asyncio
     async def test_redis_network_partition(self):
         """
         Test: Redis Network Partition
@@ -622,7 +607,6 @@ class TestDistributedSystemEdgeCases:
     # -------------------------------------------------------------------------
     # Test 12: OPA Cluster Split Brain
     # -------------------------------------------------------------------------
-    @pytest.mark.asyncio
     async def test_opa_split_brain(self):
         """
         Test: OPA Cluster Split Brain

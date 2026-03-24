@@ -94,38 +94,32 @@ class TestMockGraphManager:
         """Test that MockGraphManager is a GraphDatabaseManager."""
         assert isinstance(manager, GraphDatabaseManager)
 
-    @pytest.mark.asyncio
     async def test_connect_returns_true(self, manager):
         """Test that connect returns True."""
         result = await manager.connect()
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_disconnect_returns_none(self, manager):
         """Test that disconnect returns None (no error)."""
         result = await manager.disconnect()
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_query_returns_empty_list(self, manager):
         """Test that query returns empty list by default."""
         result = await manager.query("MATCH (n) RETURN n")
         assert result == []
         assert isinstance(result, list)
 
-    @pytest.mark.asyncio
     async def test_query_with_params(self, manager):
         """Test query with parameters."""
         result = await manager.query("MATCH (n {name: $name}) RETURN n", params={"name": "test"})
         assert isinstance(result, list)
 
-    @pytest.mark.asyncio
     async def test_query_default_params(self, manager):
         """Test query with default None params."""
         result = await manager.query("MATCH (n) RETURN n")
         assert isinstance(result, list)
 
-    @pytest.mark.asyncio
     async def test_add_relationships_returns_true(self, manager):
         """Test that add_relationships returns True."""
         entities = [{"id": "1", "type": "Person", "name": "Alice"}]
@@ -134,13 +128,11 @@ class TestMockGraphManager:
         result = await manager.add_relationships(entities, relationships)
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_add_relationships_empty_lists(self, manager):
         """Test add_relationships with empty lists."""
         result = await manager.add_relationships([], [])
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_add_relationships_multiple_entities(self, manager):
         """Test add_relationships with multiple entities."""
         entities = [
@@ -165,7 +157,6 @@ class TestMultiHopContext:
         """Create a MockGraphManager instance for testing."""
         return MockGraphManager()
 
-    @pytest.mark.asyncio
     async def test_get_multi_hop_context_supply_chain(self, manager):
         """Test multi-hop context for supply chain entity."""
         result = await manager.get_multi_hop_context("supply chain")
@@ -179,7 +170,6 @@ class TestMultiHopContext:
         assert "relation" in first_result
         assert "target" in first_result
 
-    @pytest.mark.asyncio
     async def test_get_multi_hop_context_supply_chain_case_insensitive(self, manager):
         """Test that supply chain matching is case insensitive."""
         variations = ["Supply Chain", "SUPPLY CHAIN", "supply chain"]
@@ -188,26 +178,22 @@ class TestMultiHopContext:
             result = await manager.get_multi_hop_context(variation)
             assert len(result) > 0, f"Failed for: {variation}"
 
-    @pytest.mark.asyncio
     async def test_get_multi_hop_context_unknown_entity(self, manager):
         """Test multi-hop context for unknown entity returns empty list."""
         result = await manager.get_multi_hop_context("unknown_entity")
         assert result == []
 
-    @pytest.mark.asyncio
     async def test_get_multi_hop_context_default_hops(self, manager):
         """Test multi-hop context with default hops value."""
         result = await manager.get_multi_hop_context("supply chain")
         # Default hops is 2, should return data
         assert isinstance(result, list)
 
-    @pytest.mark.asyncio
     async def test_get_multi_hop_context_custom_hops(self, manager):
         """Test multi-hop context with custom hops value."""
         result = await manager.get_multi_hop_context("supply chain", hops=3)
         assert isinstance(result, list)
 
-    @pytest.mark.asyncio
     async def test_get_multi_hop_context_supply_chain_relations(self, manager):
         """Test that supply chain returns expected relations."""
         result = await manager.get_multi_hop_context("supply chain")
@@ -216,7 +202,6 @@ class TestMultiHopContext:
         assert "EXTENDS_TO" in relations
         assert "HAS_RISK" in relations
 
-    @pytest.mark.asyncio
     async def test_get_multi_hop_context_structure(self, manager):
         """Test structure of multi-hop context results."""
         result = await manager.get_multi_hop_context("supply chain")
@@ -268,7 +253,6 @@ class TestConnectionLifecycle:
         """Create a MockGraphManager instance for testing."""
         return MockGraphManager()
 
-    @pytest.mark.asyncio
     async def test_full_lifecycle(self, manager):
         """Test full connection lifecycle."""
         # Connect
@@ -283,7 +267,6 @@ class TestConnectionLifecycle:
         await manager.disconnect()
         # No error means success
 
-    @pytest.mark.asyncio
     async def test_multiple_queries_after_connect(self, manager):
         """Test multiple queries in single session."""
         await manager.connect()
@@ -304,7 +287,6 @@ class TestConnectionLifecycle:
 class TestConcurrentOperations:
     """Test concurrent database operations."""
 
-    @pytest.mark.asyncio
     async def test_concurrent_queries(self):
         """Test multiple concurrent queries."""
         manager = MockGraphManager()
@@ -319,7 +301,6 @@ class TestConcurrentOperations:
 
         await manager.disconnect()
 
-    @pytest.mark.asyncio
     async def test_concurrent_multi_hop_queries(self):
         """Test concurrent multi-hop context queries."""
         manager = MockGraphManager()
@@ -330,7 +311,6 @@ class TestConcurrentOperations:
 
         assert len(results) == 3
 
-    @pytest.mark.asyncio
     async def test_concurrent_add_relationships(self):
         """Test concurrent add_relationships calls."""
         manager = MockGraphManager()
@@ -355,19 +335,16 @@ class TestQueryParameters:
         """Create a MockGraphManager instance for testing."""
         return MockGraphManager()
 
-    @pytest.mark.asyncio
     async def test_query_with_string_param(self, manager):
         """Test query with string parameter."""
         result = await manager.query("MATCH (n {name: $name}) RETURN n", params={"name": "Alice"})
         assert isinstance(result, list)
 
-    @pytest.mark.asyncio
     async def test_query_with_int_param(self, manager):
         """Test query with integer parameter."""
         result = await manager.query("MATCH (n) WHERE n.age = $age RETURN n", params={"age": 30})
         assert isinstance(result, list)
 
-    @pytest.mark.asyncio
     async def test_query_with_multiple_params(self, manager):
         """Test query with multiple parameters."""
         result = await manager.query(
@@ -376,7 +353,6 @@ class TestQueryParameters:
         )
         assert isinstance(result, list)
 
-    @pytest.mark.asyncio
     async def test_query_with_list_param(self, manager):
         """Test query with list parameter."""
         result = await manager.query(
@@ -393,7 +369,6 @@ class TestRelationshipOperations:
         """Create a MockGraphManager instance for testing."""
         return MockGraphManager()
 
-    @pytest.mark.asyncio
     async def test_add_single_entity_single_relationship(self, manager):
         """Test adding single entity with single relationship."""
         entities = [{"id": "1", "type": "Person", "name": "Alice"}]
@@ -402,7 +377,6 @@ class TestRelationshipOperations:
         result = await manager.add_relationships(entities, relationships)
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_add_complex_graph_structure(self, manager):
         """Test adding complex graph structure."""
         entities = [
@@ -421,7 +395,6 @@ class TestRelationshipOperations:
         result = await manager.add_relationships(entities, relationships)
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_add_entities_only(self, manager):
         """Test adding entities without relationships."""
         entities = [
@@ -445,7 +418,6 @@ class TestConstitutionalCompliance:
 
         assert CONSTITUTIONAL_HASH in graph_database.__doc__
 
-    @pytest.mark.asyncio
     async def test_operations_succeed_with_valid_data(self):
         """Test that all operations succeed with valid input."""
         manager = MockGraphManager()
@@ -481,38 +453,32 @@ class TestEdgeCases:
         """Create a MockGraphManager instance for testing."""
         return MockGraphManager()
 
-    @pytest.mark.asyncio
     async def test_empty_query_string(self, manager):
         """Test query with empty string."""
         result = await manager.query("")
         assert result == []
 
-    @pytest.mark.asyncio
     async def test_very_long_query(self, manager):
         """Test query with very long string."""
         long_query = "MATCH " + "(n)-[r]->(m)" * 100 + " RETURN n"
         result = await manager.query(long_query)
         assert isinstance(result, list)
 
-    @pytest.mark.asyncio
     async def test_special_characters_in_query(self, manager):
         """Test query with special characters."""
         result = await manager.query("MATCH (n {name: '!@#$%^&*()'}) RETURN n")
         assert isinstance(result, list)
 
-    @pytest.mark.asyncio
     async def test_unicode_in_query(self, manager):
         """Test query with unicode characters."""
         result = await manager.query("MATCH (n {name: '\u4e2d\u6587\u6d4b\u8bd5'}) RETURN n")
         assert isinstance(result, list)
 
-    @pytest.mark.asyncio
     async def test_multi_hop_with_zero_hops(self, manager):
         """Test multi-hop context with zero hops."""
         result = await manager.get_multi_hop_context("supply chain", hops=0)
         assert isinstance(result, list)
 
-    @pytest.mark.asyncio
     async def test_multi_hop_with_large_hops(self, manager):
         """Test multi-hop context with large number of hops."""
         result = await manager.get_multi_hop_context("supply chain", hops=100)

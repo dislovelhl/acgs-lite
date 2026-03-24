@@ -14,11 +14,11 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -177,7 +177,7 @@ class ImmutableStateReducer(BaseStateReducer):
             last_updated=datetime.now(UTC),
             last_node_id=node_id,
             constitutional_hash=self.constitutional_hash,
-            mutation_history=current_state.mutation_history  # noqa: RUF005
+            mutation_history=current_state.mutation_history
             + [
                 {
                     "operation": "replace",

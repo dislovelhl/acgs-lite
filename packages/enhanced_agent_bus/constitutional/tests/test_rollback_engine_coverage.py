@@ -33,6 +33,7 @@ from ..rollback_engine import (
     RollbackSagaActivities,
     RollbackStepSpec,
     RollbackTriggerConfig,
+    _build_rollback_context,
     _resolve_rollback_activity_callable,
     create_rollback_saga,
     rollback_amendment,
@@ -300,7 +301,6 @@ class TestRollbackSagaActivitiesInit:
 
 
 class TestInitializeClose:
-    @pytest.mark.asyncio
     async def test_initialize_creates_http_client(self, activities):
         with patch("httpx.AsyncClient") as mock_client_cls:
             mock_client = AsyncMock()
@@ -308,7 +308,6 @@ class TestInitializeClose:
             await activities.initialize()
             assert mock_client_cls.called
 
-    @pytest.mark.asyncio
     async def test_initialize_http_client_is_set(
         self, mock_storage, mock_metrics_collector, mock_degradation_detector
     ):
@@ -325,7 +324,6 @@ class TestInitializeClose:
         assert isinstance(acts._http_client, httpx.AsyncClient)
         await acts.close()
 
-    @pytest.mark.asyncio
     async def test_initialize_redis_available_sets_client(
         self, mock_storage, mock_metrics_collector, mock_degradation_detector
     ):
@@ -342,7 +340,6 @@ class TestInitializeClose:
         # What matters is no exception was raised
         await acts.close()
 
-    @pytest.mark.asyncio
     async def test_close_with_all_clients(self, activities):
         http_mock = AsyncMock()
         redis_mock = AsyncMock()
@@ -357,11 +354,10 @@ class TestInitializeClose:
         await activities.close()
 
         http_mock.aclose.assert_called_once()
-        redis_mock.close.assert_called_once()
+        redis_mock.aclose.assert_called_once()
         opa_mock.close.assert_called_once()
         audit_mock.stop.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_close_with_no_clients(self, activities):
         """close() should not raise when no clients are set."""
         await activities.close()  # no error expected
@@ -373,7 +369,6 @@ class TestInitializeClose:
 
 
 class TestDetectDegradation:
-    @pytest.mark.asyncio
     async def test_detect_degradation_with_baseline(
         self,
         activities,
@@ -404,7 +399,6 @@ class TestDetectDegradation:
         assert "detection_id" in result
         assert "timestamp" in result
 
-    @pytest.mark.asyncio
     async def test_detect_degradation_no_baseline(
         self,
         activities,
@@ -431,7 +425,6 @@ class TestDetectDegradation:
         # collect_snapshot called twice: synthetic baseline + current
         assert mock_metrics_collector.collect_snapshot.call_count == 2
 
-    @pytest.mark.asyncio
     async def test_detect_degradation_default_time_window(
         self,
         activities,
@@ -451,7 +444,6 @@ class TestDetectDegradation:
 
         assert result["severity"] == "high"
 
-    @pytest.mark.asyncio
     async def test_detect_degradation_critical_severity(
         self,
         activities,
@@ -480,7 +472,6 @@ class TestDetectDegradation:
         assert result["severity"] == "critical"
         assert result["confidence_score"] == pytest.approx(0.99)
 
-    @pytest.mark.asyncio
     async def test_detect_degradation_no_degradation(
         self,
         activities,
@@ -516,7 +507,6 @@ class TestDetectDegradation:
 
 
 class TestPrepareRollback:
-    @pytest.mark.asyncio
     async def test_success(self, activities, mock_storage, current_version, target_version):
         mock_storage.get_version.side_effect = [current_version, target_version]
 
@@ -534,7 +524,6 @@ class TestPrepareRollback:
         assert result["target_hash"] == CONSTITUTIONAL_HASH
         assert "preparation_id" in result
 
-    @pytest.mark.asyncio
     async def test_version_not_found(self, activities, mock_storage):
         mock_storage.get_version.return_value = None
 
@@ -543,7 +532,6 @@ class TestPrepareRollback:
                 {"saga_id": "s1", "context": {"current_version_id": "v-missing"}}
             )
 
-    @pytest.mark.asyncio
     async def test_no_predecessor(self, activities, mock_storage):
         version_no_predecessor = ConstitutionalVersion(
             version_id="v-first",
@@ -560,7 +548,6 @@ class TestPrepareRollback:
                 {"saga_id": "s1", "context": {"current_version_id": "v-first"}}
             )
 
-    @pytest.mark.asyncio
     async def test_predecessor_not_in_storage(self, activities, mock_storage, current_version):
         mock_storage.get_version.side_effect = [current_version, None]
 
@@ -569,7 +556,6 @@ class TestPrepareRollback:
                 {"saga_id": "s1", "context": {"current_version_id": "v-1.1.0"}}
             )
 
-    @pytest.mark.asyncio
     async def test_prepare_without_amendment_id(
         self, activities, mock_storage, current_version, target_version
     ):
@@ -583,7 +569,6 @@ class TestPrepareRollback:
         assert result["is_valid"] is True
         assert result["amendment_id"] is None
 
-    @pytest.mark.asyncio
     async def test_prepare_fetches_amendment_when_provided(
         self, activities, mock_storage, current_version, target_version
     ):
@@ -605,7 +590,6 @@ class TestPrepareRollback:
 
 
 class TestNotifyHitl:
-    @pytest.mark.asyncio
     async def test_critical_severity_with_hitl_sends_slack_and_pagerduty(self, activities):
         mock_hitl = AsyncMock()
         activities.hitl_integration = mock_hitl
@@ -625,7 +609,6 @@ class TestNotifyHitl:
         assert "pagerduty" in result["notifications_sent"]
         assert result["severity"] == "critical"
 
-    @pytest.mark.asyncio
     async def test_high_severity_with_hitl_sends_slack_only(self, activities):
         mock_hitl = AsyncMock()
         activities.hitl_integration = mock_hitl
@@ -643,7 +626,6 @@ class TestNotifyHitl:
         assert "slack" in result["notifications_sent"]
         assert "pagerduty" not in result["notifications_sent"]
 
-    @pytest.mark.asyncio
     async def test_low_severity_no_notification(self, activities):
         result = await activities.notify_hitl(
             {
@@ -657,7 +639,6 @@ class TestNotifyHitl:
 
         assert result["notifications_sent"] == []
 
-    @pytest.mark.asyncio
     async def test_none_severity_no_notification(self, activities):
         result = await activities.notify_hitl(
             {
@@ -671,7 +652,6 @@ class TestNotifyHitl:
 
         assert result["notifications_sent"] == []
 
-    @pytest.mark.asyncio
     async def test_critical_severity_no_hitl_integration(self, activities):
         """No hitl_integration → no notifications, no error."""
         activities.hitl_integration = None
@@ -689,7 +669,6 @@ class TestNotifyHitl:
         assert result["notifications_sent"] == []
         assert "notification_id" in result
 
-    @pytest.mark.asyncio
     async def test_slack_notification_failure_is_swallowed(self, activities):
         """Slack send failure is caught and the method continues."""
         mock_hitl = AsyncMock()
@@ -709,7 +688,6 @@ class TestNotifyHitl:
         # slack failed but no exception raised
         assert result["severity"] == "high"
 
-    @pytest.mark.asyncio
     async def test_pagerduty_failure_is_swallowed(self, activities):
         mock_hitl = AsyncMock()
         mock_hitl._send_pagerduty_notification.side_effect = RuntimeError("pd down")
@@ -728,7 +706,6 @@ class TestNotifyHitl:
         # slack may have been sent; pagerduty failed silently
         assert isinstance(result["notifications_sent"], list)
 
-    @pytest.mark.asyncio
     async def test_unknown_severity_no_notification(self, activities):
         result = await activities.notify_hitl(
             {
@@ -749,7 +726,6 @@ class TestNotifyHitl:
 
 
 class TestUpdateOpaToPrevious:
-    @pytest.mark.asyncio
     async def test_success_200(self, activities):
         activities._http_client = AsyncMock()
         activities._http_client.put.return_value = MagicMock(status_code=200)
@@ -770,7 +746,6 @@ class TestUpdateOpaToPrevious:
         assert result["previous_hash"] == CONSTITUTIONAL_HASH
         assert result["previous_version"] == "1.0.0"
 
-    @pytest.mark.asyncio
     async def test_success_204(self, activities):
         activities._http_client = AsyncMock()
         activities._http_client.put.return_value = MagicMock(status_code=204)
@@ -789,7 +764,6 @@ class TestUpdateOpaToPrevious:
 
         assert result["updated"] is True
 
-    @pytest.mark.asyncio
     async def test_opa_non_200_still_returns_updated_true(self, activities):
         """OPA update failure is non-critical; updated flag stays True."""
         activities._http_client = AsyncMock()
@@ -804,7 +778,6 @@ class TestUpdateOpaToPrevious:
 
         assert result["updated"] is True
 
-    @pytest.mark.asyncio
     async def test_http_exception_is_caught(self, activities):
         activities._http_client = AsyncMock()
         activities._http_client.put.side_effect = RuntimeError("network error")
@@ -818,7 +791,6 @@ class TestUpdateOpaToPrevious:
 
         assert result["updated"] is True  # continues anyway
 
-    @pytest.mark.asyncio
     async def test_no_http_client(self, activities):
         """If no HTTP client, method returns updated=True without making request."""
         activities._http_client = None
@@ -839,7 +811,6 @@ class TestUpdateOpaToPrevious:
 
 
 class TestRevertOpaToCurrent:
-    @pytest.mark.asyncio
     async def test_success(self, activities):
         activities._http_client = AsyncMock()
         activities._http_client.put.return_value = MagicMock(status_code=200)
@@ -853,7 +824,6 @@ class TestRevertOpaToCurrent:
 
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_non_200_returns_false(self, activities):
         activities._http_client = AsyncMock()
         activities._http_client.put.return_value = MagicMock(status_code=500)
@@ -864,7 +834,6 @@ class TestRevertOpaToCurrent:
 
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_exception_returns_false(self, activities):
         activities._http_client = AsyncMock()
         activities._http_client.put.side_effect = RuntimeError("conn failed")
@@ -875,7 +844,6 @@ class TestRevertOpaToCurrent:
 
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_no_http_client_returns_true(self, activities):
         activities._http_client = None
 
@@ -892,7 +860,6 @@ class TestRevertOpaToCurrent:
 
 
 class TestRestorePreviousVersion:
-    @pytest.mark.asyncio
     async def test_success_with_amendment(self, activities, mock_storage, mock_amendment):
         mock_storage.get_amendment.return_value = mock_amendment
 
@@ -916,7 +883,6 @@ class TestRestorePreviousVersion:
         mock_storage.activate_version.assert_called_with("v-1.0.0")
         mock_storage.save_amendment.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_success_without_amendment(self, activities, mock_storage):
         result = await activities.restore_previous_version(
             {
@@ -935,7 +901,6 @@ class TestRestorePreviousVersion:
         assert result["amendment_rolled_back"] is False
         mock_storage.get_amendment.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_amendment_not_found_in_storage(self, activities, mock_storage):
         """If amendment not found in storage, still completes (amendment = None guard)."""
         mock_storage.get_amendment.return_value = None
@@ -957,7 +922,6 @@ class TestRestorePreviousVersion:
         assert result["restored"] is True
         mock_storage.save_amendment.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_amendment_metadata_set(self, activities, mock_storage, mock_amendment):
         """Amendment metadata is updated with rollback info."""
         mock_amendment.metadata = None
@@ -989,7 +953,6 @@ class TestRestorePreviousVersion:
 
 
 class TestRevertVersionRestoration:
-    @pytest.mark.asyncio
     async def test_success(self, activities, mock_storage):
         result = await activities.revert_version_restoration(
             {
@@ -1001,7 +964,6 @@ class TestRevertVersionRestoration:
         assert result is True
         mock_storage.activate_version.assert_called_with("v-1.1.0")
 
-    @pytest.mark.asyncio
     async def test_storage_error_returns_false(self, activities, mock_storage):
         mock_storage.activate_version.side_effect = RuntimeError("db error")
 
@@ -1021,7 +983,6 @@ class TestRevertVersionRestoration:
 
 
 class TestInvalidateCache:
-    @pytest.mark.asyncio
     async def test_success(self, activities):
         activities._redis_client = AsyncMock()
         activities._redis_client.delete.return_value = 1
@@ -1031,7 +992,6 @@ class TestInvalidateCache:
         assert result["cache_invalidated"] is True
         activities._redis_client.delete.assert_called_with("constitutional:active_version")
 
-    @pytest.mark.asyncio
     async def test_no_redis(self, activities):
         activities._redis_client = None
 
@@ -1039,7 +999,6 @@ class TestInvalidateCache:
 
         assert result["cache_invalidated"] is False
 
-    @pytest.mark.asyncio
     async def test_redis_exception_swallowed(self, activities):
         activities._redis_client = AsyncMock()
         activities._redis_client.delete.side_effect = RuntimeError("redis down")
@@ -1056,7 +1015,6 @@ class TestInvalidateCache:
 
 
 class TestRestoreCache:
-    @pytest.mark.asyncio
     async def test_success(self, activities):
         activities._redis_client = AsyncMock()
 
@@ -1065,7 +1023,6 @@ class TestRestoreCache:
         assert result is True
         activities._redis_client.delete.assert_called_with("constitutional:active_version")
 
-    @pytest.mark.asyncio
     async def test_no_redis(self, activities):
         activities._redis_client = None
 
@@ -1073,7 +1030,6 @@ class TestRestoreCache:
 
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_redis_error_returns_false(self, activities):
         activities._redis_client = AsyncMock()
         activities._redis_client.delete.side_effect = RuntimeError("redis down")
@@ -1089,7 +1045,6 @@ class TestRestoreCache:
 
 
 class TestAuditRollback:
-    @pytest.mark.asyncio
     async def test_audit_without_audit_client(self, activities):
         activities._audit_client = None
 
@@ -1124,7 +1079,6 @@ class TestAuditRollback:
         assert result["rollback_reason"] == RollbackReason.AUTOMATIC_DEGRADATION
         assert result["severity"] == "high"
 
-    @pytest.mark.asyncio
     async def test_audit_with_audit_client(self, activities):
         activities._audit_client = AsyncMock()
 
@@ -1157,7 +1111,6 @@ class TestAuditRollback:
         activities._audit_client.log.assert_called_once()
         assert result["amendment_id"] == "a-002"
 
-    @pytest.mark.asyncio
     async def test_audit_client_error_swallowed(self, activities):
         activities._audit_client = AsyncMock()
         activities._audit_client.log.side_effect = RuntimeError("audit down")
@@ -1176,7 +1129,6 @@ class TestAuditRollback:
 
         assert result["event_type"] == "constitutional_version_rolled_back"
 
-    @pytest.mark.asyncio
     async def test_audit_emergency_override_reason(self, activities):
         activities._audit_client = None
 
@@ -1195,7 +1147,6 @@ class TestAuditRollback:
 
         assert result["rollback_reason"] == RollbackReason.EMERGENCY_OVERRIDE
 
-    @pytest.mark.asyncio
     async def test_audit_default_rollback_reason(self, activities):
         """When rollback_reason missing from context, defaults to AUTOMATIC_DEGRADATION."""
         activities._audit_client = None
@@ -1221,7 +1172,6 @@ class TestAuditRollback:
 
 
 class TestMarkRollbackAuditFailed:
-    @pytest.mark.asyncio
     async def test_no_audit_client(self, activities):
         activities._audit_client = None
 
@@ -1231,7 +1181,6 @@ class TestMarkRollbackAuditFailed:
 
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_with_audit_client(self, activities):
         activities._audit_client = AsyncMock()
 
@@ -1242,7 +1191,6 @@ class TestMarkRollbackAuditFailed:
         assert result is True
         activities._audit_client.log.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_audit_client_error_swallowed(self, activities):
         activities._audit_client = AsyncMock()
         activities._audit_client.log.side_effect = RuntimeError("fail")
@@ -1253,7 +1201,6 @@ class TestMarkRollbackAuditFailed:
 
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_missing_audit_id(self, activities):
         activities._audit_client = None
 
@@ -1269,15 +1216,12 @@ class TestMarkRollbackAuditFailed:
 
 
 class TestCompensationMethods:
-    @pytest.mark.asyncio
     async def test_log_detection_failure(self, activities):
         assert await activities.log_detection_failure({"saga_id": "s1", "context": {}}) is True
 
-    @pytest.mark.asyncio
     async def test_cancel_preparation(self, activities):
         assert await activities.cancel_preparation({"saga_id": "s1", "context": {}}) is True
 
-    @pytest.mark.asyncio
     async def test_cancel_hitl_notification(self, activities):
         assert await activities.cancel_hitl_notification({"saga_id": "s1", "context": {}}) is True
 
@@ -1562,7 +1506,34 @@ class TestCreateRollbackSaga:
 
 
 class TestRollbackAmendment:
-    @pytest.mark.asyncio
+    def test_build_rollback_context_sets_expected_step_results(self):
+        class MockContext:
+            def __init__(self, saga_id, constitutional_hash):
+                self.saga_id = saga_id
+                self.constitutional_hash = constitutional_hash
+                self.values = {}
+
+            def set_step_result(self, key, value):
+                self.values[key] = value
+
+        with patch("enhanced_agent_bus.constitutional.rollback_engine.SagaContext", MockContext):
+            context = _build_rollback_context(
+                saga_id="rollback-123",
+                current_version_id="v-1.1.0",
+                amendment_id="amend-7",
+                rollback_reason=RollbackReason.MANUAL_REQUEST,
+                time_window=TimeWindow.SIX_HOURS,
+            )
+
+        assert context.saga_id == "rollback-123"
+        assert context.constitutional_hash == CONSTITUTIONAL_HASH
+        assert context.values == {
+            "current_version_id": "v-1.1.0",
+            "amendment_id": "amend-7",
+            "rollback_reason": RollbackReason.MANUAL_REQUEST,
+            "time_window": TimeWindow.SIX_HOURS,
+        }
+
     async def test_raises_when_saga_context_unavailable(
         self, mock_storage, mock_metrics_collector, mock_degradation_detector
     ):
@@ -1575,6 +1546,61 @@ class TestRollbackAmendment:
                     degradation_detector=mock_degradation_detector,
                 )
 
+    async def test_initializes_executes_and_closes_saga_lifecycle(
+        self, mock_storage, mock_metrics_collector, mock_degradation_detector
+    ):
+        class MockContext:
+            def __init__(self, saga_id, constitutional_hash):
+                self.saga_id = saga_id
+                self.constitutional_hash = constitutional_hash
+                self.values = {}
+
+            def set_step_result(self, key, value):
+                self.values[key] = value
+
+        mock_result = object()
+        captured = {}
+
+        class MockSaga:
+            saga_id = "rollback-saga-42"
+
+            async def execute(self, context):
+                captured["context"] = context
+                return mock_result
+
+        init_mock = AsyncMock()
+        close_mock = AsyncMock()
+
+        with patch("enhanced_agent_bus.constitutional.rollback_engine.SagaContext", MockContext):
+            with patch(
+                "enhanced_agent_bus.constitutional.rollback_engine.create_rollback_saga",
+                return_value=MockSaga(),
+            ):
+                with patch(
+                    "enhanced_agent_bus.constitutional.rollback_engine._initialize_saga_activities",
+                    init_mock,
+                ):
+                    with patch(
+                        "enhanced_agent_bus.constitutional.rollback_engine._close_saga_activities",
+                        close_mock,
+                    ):
+                        result = await rollback_amendment(
+                            current_version_id="v-1.1.0",
+                            storage=mock_storage,
+                            metrics_collector=mock_metrics_collector,
+                            degradation_detector=mock_degradation_detector,
+                            amendment_id="amend-9",
+                            rollback_reason=RollbackReason.EMERGENCY_OVERRIDE,
+                            time_window=TimeWindow.ONE_HOUR,
+                        )
+
+        assert result is mock_result
+        init_mock.assert_awaited_once()
+        close_mock.assert_awaited_once()
+        assert captured["context"].values["current_version_id"] == "v-1.1.0"
+        assert captured["context"].values["amendment_id"] == "amend-9"
+        assert captured["context"].values["rollback_reason"] == RollbackReason.EMERGENCY_OVERRIDE
+
 
 # ---------------------------------------------------------------------------
 # Constitutional hash enforcement
@@ -1585,7 +1611,6 @@ class TestConstitutionalHashEnforcement:
     def test_constitutional_hash_value(self):
         assert CONSTITUTIONAL_HASH == CONSTITUTIONAL_HASH  # pragma: allowlist secret
 
-    @pytest.mark.asyncio
     async def test_audit_event_includes_hash(self, activities):
         activities._audit_client = None
         result = await activities.audit_rollback(
@@ -1601,7 +1626,6 @@ class TestConstitutionalHashEnforcement:
         )
         assert result["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_mark_audit_failed_includes_hash(self, activities):
         activities._audit_client = AsyncMock()
 
@@ -1620,7 +1644,6 @@ class TestConstitutionalHashEnforcement:
 
 
 class TestEndToEndActivityChain:
-    @pytest.mark.asyncio
     async def test_full_happy_path(
         self,
         mock_storage,
@@ -1725,7 +1748,6 @@ class TestEndToEndActivityChain:
         )
         assert audit_result["event_type"] == "constitutional_version_rolled_back"
 
-    @pytest.mark.asyncio
     async def test_compensation_chain(self, activities, mock_storage):
         """All compensation methods return True and can be chained."""
         base_input = {"saga_id": "s1", "context": {}}

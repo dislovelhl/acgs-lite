@@ -31,7 +31,7 @@ class TestTenantNormalizerNormalize:
     def test_normalize_unicode_nfkc(self) -> None:
         """Test that Unicode is normalized to NFKC form."""
         # Full-width characters should normalize
-        assert TenantNormalizer.normalize("ｔｅｎａｎｔ") == "tenant"  # noqa: RUF001
+        assert TenantNormalizer.normalize("\uff54\uff45\uff4e\uff41\uff4e\uff54") == "tenant"
 
 
 class TestTenantNormalizerValidate:

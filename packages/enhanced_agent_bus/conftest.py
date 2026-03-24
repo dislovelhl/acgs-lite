@@ -14,12 +14,13 @@ import pytest
 # Add the enhanced_agent_bus directory to sys.path for proper module discovery
 # This must happen BEFORE any coverage collection starts
 _root_dir = os.path.dirname(os.path.abspath(__file__))
-# Ensure repo root and src are importable (supports `import src.*` and `import core.*`).
+# Ensure repo root is importable (supports `import src.*` since src/__init__.py exists).
+# Do NOT add _src_dir directly — that would shadow packages/acgs-lite/src/acgs_lite/
+# with the legacy src/acgs_lite/ copy and break acgs-lite test collection.
 _repo_root = Path(_root_dir).parents[1]
 _src_dir = _repo_root / "src"
-for _path in (str(_repo_root), str(_src_dir)):
-    if _path not in sys.path:
-        sys.path.insert(0, _path)
+if str(_repo_root) not in sys.path:
+    sys.path.insert(0, str(_repo_root))
 if _root_dir not in sys.path:
     sys.path.insert(0, _root_dir)
 

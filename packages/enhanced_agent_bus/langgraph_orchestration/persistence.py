@@ -14,7 +14,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -473,7 +473,7 @@ class RedisStatePersistence(StatePersistence):
             if isinstance(cp_id, bytes):
                 cp_id = cp_id.decode()
             checkpoint = await self.load_checkpoint(cp_id)
-            if checkpoint:  # noqa: SIM102
+            if checkpoint:
                 if run_id is None or checkpoint.run_id == run_id:
                     checkpoints.append(checkpoint)
 

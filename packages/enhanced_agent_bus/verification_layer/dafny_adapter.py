@@ -1,5 +1,5 @@
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -10,11 +10,11 @@ Constitutional Hash: cdd01ef066bc6cf2
 Provides a bridge between Python governance cycles and Dafny formal proofs.
 """
 
-import asyncio  # noqa: E402
-import os  # noqa: E402
-from dataclasses import dataclass  # noqa: E402
+import asyncio
+import os
+from dataclasses import dataclass
 
-from enhanced_agent_bus.observability.structured_logging import get_logger  # noqa: E402
+from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
 DAFNY_VERIFICATION_ERRORS = (

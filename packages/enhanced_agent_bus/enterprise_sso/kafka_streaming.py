@@ -23,10 +23,10 @@ from enum import Enum
 _JsonValue = str | int | float | bool | None | dict | list
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.errors.exceptions import ACGSBaseError  # noqa: E402
+from src.core.shared.errors.exceptions import ACGSBaseError
 
 KAFKA_STREAMING_OPERATION_ERRORS = (
     AttributeError,
@@ -294,7 +294,7 @@ class KafkaConnectionPool:
             return
 
         for producer in self._producers:
-            try:  # noqa: SIM105
+            try:
                 await self._close_producer(producer)
             except (RuntimeError, ConnectionError, OSError):
                 pass  # Ignore close errors during shutdown

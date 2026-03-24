@@ -523,10 +523,9 @@ class TestSlackNotificationChannel:
         """Create a Slack notification channel."""
         return SlackNotificationChannel(
             webhook_url="https://hooks.slack.com/test",
-            bot_token="xoxb-test-token",  # noqa: S106
+            bot_token="xoxb-test-token",
         )
 
-    @pytest.mark.asyncio
     async def test_send_approval_request(
         self,
         slack_channel: SlackNotificationChannel,
@@ -537,7 +536,6 @@ class TestSlackNotificationChannel:
         result = await slack_channel.send_approval_request(sample_request, [sample_approver])
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_send_decision_notification(
         self, slack_channel: SlackNotificationChannel, sample_request: ApprovalRequest
     ) -> None:
@@ -551,7 +549,6 @@ class TestSlackNotificationChannel:
         result = await slack_channel.send_decision_notification(sample_request, decision)
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_send_escalation_notification(
         self, slack_channel: SlackNotificationChannel, sample_request: ApprovalRequest
     ) -> None:
@@ -583,7 +580,6 @@ class TestTeamsNotificationChannel:
         """Create a Teams notification channel."""
         return TeamsNotificationChannel(webhook_url="https://teams.microsoft.com/test")
 
-    @pytest.mark.asyncio
     async def test_send_approval_request(
         self,
         teams_channel: TeamsNotificationChannel,
@@ -594,7 +590,6 @@ class TestTeamsNotificationChannel:
         result = await teams_channel.send_approval_request(sample_request, [sample_approver])
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_send_decision_notification(
         self, teams_channel: TeamsNotificationChannel, sample_request: ApprovalRequest
     ) -> None:
@@ -608,7 +603,6 @@ class TestTeamsNotificationChannel:
         result = await teams_channel.send_decision_notification(sample_request, decision)
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_send_escalation_notification(
         self, teams_channel: TeamsNotificationChannel, sample_request: ApprovalRequest
     ) -> None:
@@ -648,7 +642,6 @@ class TestMultiApproverWorkflowEngine:
         assert "critical_deployment" in workflow_engine._policies
         assert "standard_request" in workflow_engine._policies
 
-    @pytest.mark.asyncio
     async def test_start_and_stop(self, workflow_engine: MultiApproverWorkflowEngine) -> None:
         """Test engine start and stop."""
         await workflow_engine.start()
@@ -673,7 +666,6 @@ class TestMultiApproverWorkflowEngine:
         workflow_engine.register_policy("custom_policy", sample_policy)
         assert "custom_policy" in workflow_engine._policies
 
-    @pytest.mark.asyncio
     async def test_create_request(
         self, workflow_engine: MultiApproverWorkflowEngine, sample_approver: Approver
     ) -> None:
@@ -694,7 +686,6 @@ class TestMultiApproverWorkflowEngine:
         assert request.id in workflow_engine._requests
         assert request.status == ApprovalStatus.PENDING
 
-    @pytest.mark.asyncio
     async def test_create_request_auto_approve_low_risk(
         self, workflow_engine: MultiApproverWorkflowEngine
     ) -> None:
@@ -713,7 +704,6 @@ class TestMultiApproverWorkflowEngine:
 
         assert request.status == ApprovalStatus.APPROVED
 
-    @pytest.mark.asyncio
     async def test_create_request_unknown_policy(
         self, workflow_engine: MultiApproverWorkflowEngine
     ) -> None:
@@ -732,7 +722,6 @@ class TestMultiApproverWorkflowEngine:
             )
         assert "Unknown policy" in str(exc_info.value)
 
-    @pytest.mark.asyncio
     async def test_submit_decision_approved(
         self, workflow_engine: MultiApproverWorkflowEngine, sample_approver: Approver
     ) -> None:
@@ -761,7 +750,6 @@ class TestMultiApproverWorkflowEngine:
         assert success is True
         # Note: May not be fully approved if policy requires more approvers
 
-    @pytest.mark.asyncio
     async def test_submit_decision_rejected(
         self, workflow_engine: MultiApproverWorkflowEngine, sample_approver: Approver
     ) -> None:
@@ -790,7 +778,6 @@ class TestMultiApproverWorkflowEngine:
         assert "rejected" in message.lower()
         assert workflow_engine.get_request(request.id).status == ApprovalStatus.REJECTED
 
-    @pytest.mark.asyncio
     async def test_submit_decision_request_not_found(
         self, workflow_engine: MultiApproverWorkflowEngine, sample_approver: Approver
     ) -> None:
@@ -807,7 +794,6 @@ class TestMultiApproverWorkflowEngine:
         assert success is False
         assert "not found" in message.lower()
 
-    @pytest.mark.asyncio
     async def test_submit_decision_approver_not_registered(
         self, workflow_engine: MultiApproverWorkflowEngine
     ) -> None:
@@ -833,7 +819,6 @@ class TestMultiApproverWorkflowEngine:
         assert success is False
         assert "not registered" in message.lower()
 
-    @pytest.mark.asyncio
     async def test_submit_decision_duplicate(
         self, workflow_engine: MultiApproverWorkflowEngine, sample_approver: Approver
     ) -> None:
@@ -870,7 +855,6 @@ class TestMultiApproverWorkflowEngine:
         assert success is False
         assert "already submitted" in message.lower()
 
-    @pytest.mark.asyncio
     async def test_submit_decision_reasoning_required(
         self, workflow_engine: MultiApproverWorkflowEngine, sample_approver: Approver
     ) -> None:
@@ -898,7 +882,6 @@ class TestMultiApproverWorkflowEngine:
         assert success is False
         assert "reasoning is required" in message.lower()
 
-    @pytest.mark.asyncio
     async def test_cancel_request(self, workflow_engine: MultiApproverWorkflowEngine) -> None:
         """Test cancelling a request."""
         request = await workflow_engine.create_request(
@@ -917,7 +900,6 @@ class TestMultiApproverWorkflowEngine:
         assert result is True
         assert workflow_engine.get_request(request.id).status == ApprovalStatus.CANCELLED
 
-    @pytest.mark.asyncio
     async def test_cancel_nonexistent_request(
         self, workflow_engine: MultiApproverWorkflowEngine
     ) -> None:
@@ -929,7 +911,6 @@ class TestMultiApproverWorkflowEngine:
         """Test get_request returns None for nonexistent."""
         assert workflow_engine.get_request("nonexistent") is None
 
-    @pytest.mark.asyncio
     async def test_get_pending_requests(self, workflow_engine: MultiApproverWorkflowEngine) -> None:
         """Test getting pending requests."""
         # Create multiple requests
@@ -948,7 +929,6 @@ class TestMultiApproverWorkflowEngine:
         pending = workflow_engine.get_pending_requests()
         assert len(pending) == 3
 
-    @pytest.mark.asyncio
     async def test_get_pending_requests_filtered_by_tenant(
         self, workflow_engine: MultiApproverWorkflowEngine
     ) -> None:
@@ -1024,7 +1004,6 @@ class TestModuleFunctions:
 
         assert get_workflow_engine() is None
 
-    @pytest.mark.asyncio
     async def test_initialize_and_shutdown_workflow_engine(self) -> None:
         """Test initializing and shutting down the global engine."""
         engine = await initialize_workflow_engine()
@@ -1045,7 +1024,6 @@ class TestModuleFunctions:
 class TestMultiApproverIntegration:
     """Integration tests for multi-approver workflow."""
 
-    @pytest.mark.asyncio
     async def test_full_approval_workflow(self) -> None:
         """Test a complete approval workflow."""
         engine = MultiApproverWorkflowEngine(notification_channels=[])
@@ -1107,7 +1085,6 @@ class TestMultiApproverIntegration:
         assert final_request.status == ApprovalStatus.APPROVED
         assert len(final_request.decisions) == 2
 
-    @pytest.mark.asyncio
     async def test_rejection_stops_workflow(self) -> None:
         """Test that a single rejection stops the workflow."""
         engine = MultiApproverWorkflowEngine(notification_channels=[])
@@ -1140,7 +1117,6 @@ class TestMultiApproverIntegration:
 
         assert engine.get_request(request.id).status == ApprovalStatus.REJECTED
 
-    @pytest.mark.asyncio
     async def test_audit_callback_invoked(self) -> None:
         """Test that audit callback is invoked on decisions."""
         audit_records: list[tuple] = []

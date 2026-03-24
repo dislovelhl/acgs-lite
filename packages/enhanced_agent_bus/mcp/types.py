@@ -16,14 +16,14 @@ from enum import Enum
 from typing import Any
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
 from enhanced_agent_bus.bus_types import JSONDict
 
 
-class MCPToolStatus(str, Enum):  # noqa: UP042
+class MCPToolStatus(str, Enum):
     """Outcome status of a tool invocation."""
 
     SUCCESS = "success"

@@ -9,8 +9,6 @@ from collections import OrderedDict
 from datetime import UTC, timezone
 from unittest.mock import patch
 
-import pytest
-
 from enhanced_agent_bus.utils import (
     LRUCache,
     TTLCache,

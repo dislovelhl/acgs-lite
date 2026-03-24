@@ -98,7 +98,7 @@ from acgs_lite_rust import ALLOW, DENY, DENY_CRITICAL
 
 ## Fallback Behavior
 
-When the Rust extension is not available (build failure, Python version mismatch), the system falls back to the pure Python implementation in `src/core/shared/governance/engine.py`. The Python fallback maintains feature parity with the Rust version.
+When the Rust extension is not available (build failure, Python version mismatch), the system falls back to the pure Python implementation in `packages/acgs-lite/src/acgs_lite/engine/core.py`. The Python fallback maintains feature parity with the Rust version.
 
 ## Performance
 

@@ -174,7 +174,7 @@ class TestPipelineMetricsRecordVerification:
         m.record_verification(5.0)
         assert m.verification_time_ms == 10.0
 
-    def test_accumulates(self):  # noqa: F811
+    def test_accumulates(self):
         m = PipelineMetrics()
         m.record_verification(5.0)
         m.record_verification(5.0)

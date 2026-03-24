@@ -103,7 +103,7 @@ class TestLLMAssistantInitialization:
         """Test default initialization without API key."""
         assistant = LLMAssistant()
 
-        assert assistant.model_name == "gpt-5.2"
+        assert assistant.model_name == "gpt-5.4"
         # LLM may or may not be initialized depending on environment
 
     def test_custom_model_name(self):
@@ -142,7 +142,6 @@ class TestFallbackAnalysis:
             content={"action": "test_action"},
         )
 
-    @pytest.mark.asyncio
     async def test_fallback_analysis_basic(self, assistant, test_message):
         """Test fallback analysis returns valid structure."""
         result = await assistant.analyze_message_impact(test_message)
@@ -155,7 +154,6 @@ class TestFallbackAnalysis:
         assert "impact_areas" in result
         assert result["analyzed_by"] == "enhanced_fallback_analyzer"
 
-    @pytest.mark.asyncio
     async def test_fallback_analysis_low_risk(self, assistant):
         """Test enhanced fallback analysis for low-risk content."""
         message = AgentMessage(
@@ -173,7 +171,6 @@ class TestFallbackAnalysis:
         assert result["requires_human_review"] is False
         assert result["recommended_decision"] == "approve"
 
-    @pytest.mark.asyncio
     async def test_fallback_analysis_high_risk(self, assistant):
         """Test enhanced fallback analysis for high-risk content.
 
@@ -195,7 +192,6 @@ class TestFallbackAnalysis:
         assert result["requires_human_review"] is True
         assert result["recommended_decision"] == "review"
 
-    @pytest.mark.asyncio
     async def test_fallback_analysis_emergency(self, assistant):
         """Test fallback analysis for emergency content."""
         message = AgentMessage(
@@ -233,7 +229,6 @@ class TestFallbackReasoning:
             content={"action": "test_action"},
         )
 
-    @pytest.mark.asyncio
     async def test_fallback_reasoning_no_votes(self, assistant, test_message):
         """Test fallback reasoning with no votes."""
         votes = []
@@ -247,7 +242,6 @@ class TestFallbackReasoning:
         assert "final_recommendation" in result
         assert result["generated_by"] == "enhanced_fallback_reasoner"
 
-    @pytest.mark.asyncio
     async def test_fallback_reasoning_with_votes(self, assistant, test_message):
         """Test enhanced fallback reasoning with votes."""
         votes = [
@@ -264,7 +258,6 @@ class TestFallbackReasoning:
         assert "66.7%" in result["consensus_analysis"]
         assert result["final_recommendation"] == "approve"  # 66% approval - moderate consensus
 
-    @pytest.mark.asyncio
     async def test_fallback_reasoning_with_human_decision(self, assistant, test_message):
         """Test fallback reasoning respects human decision."""
         votes = [
@@ -277,7 +270,6 @@ class TestFallbackReasoning:
 
         assert result["final_recommendation"] == "rejected"
 
-    @pytest.mark.asyncio
     async def test_fallback_reasoning_low_approval(self, assistant, test_message):
         """Test fallback reasoning with low approval rate."""
         votes = [
@@ -304,7 +296,6 @@ class TestTrendAnalysis:
         assistant.llm = None
         return assistant
 
-    @pytest.mark.asyncio
     async def test_trend_analysis_empty_history(self, assistant):
         """Test trend analysis with no history."""
         result = await assistant.analyze_deliberation_trends([])
@@ -313,7 +304,6 @@ class TestTrendAnalysis:
         assert "threshold_recommendations" in result
         assert result["threshold_recommendations"] == "Maintain current threshold"
 
-    @pytest.mark.asyncio
     async def test_trend_analysis_high_approval(self, assistant):
         """Test trend analysis with high approval rate."""
         history = [{"outcome": "approved", "impact_score": 0.7} for _ in range(10)]
@@ -323,7 +313,6 @@ class TestTrendAnalysis:
         # High approval rate should suggest lowering threshold
         assert "lower" in result["threshold_recommendations"].lower()
 
-    @pytest.mark.asyncio
     async def test_trend_analysis_low_approval(self, assistant):
         """Test trend analysis with low approval rate."""
         history = [{"outcome": "rejected", "impact_score": 0.8} for _ in range(8)] + [
@@ -490,7 +479,6 @@ class TestFallbackAnalysisKeywords:
         assistant.llm = None
         return assistant
 
-    @pytest.mark.asyncio
     async def test_critical_keyword(self, assistant):
         """Test 'critical' keyword triggers high risk."""
         message = AgentMessage(
@@ -505,7 +493,6 @@ class TestFallbackAnalysisKeywords:
 
         assert result["risk_level"] == "high"
 
-    @pytest.mark.asyncio
     async def test_security_keyword(self, assistant):
         """Test 'security' keyword triggers high risk."""
         message = AgentMessage(
@@ -520,7 +507,6 @@ class TestFallbackAnalysisKeywords:
 
         assert result["risk_level"] == "high"
 
-    @pytest.mark.asyncio
     async def test_breach_keyword(self, assistant):
         """Test 'breach' keyword triggers critical risk.
 
@@ -539,7 +525,6 @@ class TestFallbackAnalysisKeywords:
         # 'breach' is now critical tier
         assert result["risk_level"] == "critical"
 
-    @pytest.mark.asyncio
     async def test_violation_keyword(self, assistant):
         """Test 'violation' keyword triggers high risk."""
         message = AgentMessage(

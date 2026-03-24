@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -234,7 +234,7 @@ class SnowflakeConnector(DataWarehouseConnector):
         validated_table = validate_identifier(table_name, "table_name")
         validated_schema = validate_identifier(self.snowflake_config.schema_name, "schema_name")
         query = (
-            "SELECT column_name, data_type, is_nullable, column_default"  # noqa: S608
+            "SELECT column_name, data_type, is_nullable, column_default"
             " FROM information_schema.columns"
             f" WHERE table_name = '{validated_table.upper()}'"  # nosec B608
             f" AND table_schema = '{validated_schema.upper()}'"  # nosec B608
@@ -266,16 +266,16 @@ class SnowflakeConnector(DataWarehouseConnector):
         if change.action == SchemaAction.ADD_COLUMN:
             nullable = "" if change.nullable else " NOT NULL"
             default = f" DEFAULT {change.default_value}" if change.default_value else ""
-            return f'ALTER TABLE {table} ADD COLUMN "{change.column_name}" {change.data_type}{nullable}{default}'  # noqa: E501
+            return f'ALTER TABLE {table} ADD COLUMN "{change.column_name}" {change.data_type}{nullable}{default}'
 
         elif change.action == SchemaAction.DROP_COLUMN:
             return f'ALTER TABLE {table} DROP COLUMN "{change.column_name}"'
 
         elif change.action == SchemaAction.MODIFY_TYPE:
-            return f'ALTER TABLE {table} ALTER COLUMN "{change.column_name}" SET DATA TYPE {change.data_type}'  # noqa: E501
+            return f'ALTER TABLE {table} ALTER COLUMN "{change.column_name}" SET DATA TYPE {change.data_type}'
 
         elif change.action == SchemaAction.RENAME_COLUMN:
-            return f'ALTER TABLE {table} RENAME COLUMN "{change.column_name}" TO "{change.new_column_name}"'  # noqa: E501
+            return f'ALTER TABLE {table} RENAME COLUMN "{change.column_name}" TO "{change.new_column_name}"'
 
         raise SchemaEvolutionError(f"Unsupported action: {change.action}")
 
@@ -286,7 +286,7 @@ class SnowflakeConnector(DataWarehouseConnector):
         # 2. PUT the file to an internal/external stage
         # 3. COPY INTO the target table
         safe_table = validate_identifier(target_table, "target_table")
-        return await self.execute_batch(f"INSERT INTO {safe_table} VALUES (%s)", data)  # nosec B608  # noqa: S608
+        return await self.execute_batch(f"INSERT INTO {safe_table} VALUES (%s)", data)  # nosec B608
 
 
 # ============================================================================
@@ -346,7 +346,7 @@ class RedshiftConnector(DataWarehouseConnector):
         validated_table = validate_identifier(table_name, "table_name")
         validated_schema = validate_identifier(self.redshift_config.schema_name, "schema_name")
         query = (
-            "SELECT column_name, data_type, is_nullable, column_default"  # noqa: S608
+            "SELECT column_name, data_type, is_nullable, column_default"
             " FROM svv_columns"
             f" WHERE table_name = '{validated_table}'"  # nosec B608
             f" AND table_schema = '{validated_schema}'"  # nosec B608
@@ -378,13 +378,13 @@ class RedshiftConnector(DataWarehouseConnector):
         if change.action == SchemaAction.ADD_COLUMN:
             nullable = "" if change.nullable else " NOT NULL"
             default = f" DEFAULT {change.default_value}" if change.default_value else ""
-            return f'ALTER TABLE {table} ADD COLUMN "{change.column_name}" {change.data_type}{nullable}{default}'  # noqa: E501
+            return f'ALTER TABLE {table} ADD COLUMN "{change.column_name}" {change.data_type}{nullable}{default}'
 
         elif change.action == SchemaAction.DROP_COLUMN:
             return f'ALTER TABLE {table} DROP COLUMN "{change.column_name}"'
 
         elif change.action == SchemaAction.RENAME_COLUMN:
-            return f'ALTER TABLE {table} RENAME COLUMN "{change.column_name}" TO "{change.new_column_name}"'  # noqa: E501
+            return f'ALTER TABLE {table} RENAME COLUMN "{change.column_name}" TO "{change.new_column_name}"'
 
         # Redshift doesn't support MODIFY TYPE directly
         raise SchemaEvolutionError(f"Unsupported action for Redshift: {change.action}")
@@ -509,8 +509,8 @@ class BigQueryConnector(DataWarehouseConnector):
         """Get BigQuery table schema."""
         validated_table = validate_identifier(table_name, "table_name")
         query = (
-            "SELECT column_name, data_type, is_nullable"  # noqa: S608
-            f" FROM `{self.bq_config.project_id}.{self.bq_config.dataset}.INFORMATION_SCHEMA.COLUMNS`"  # noqa: E501
+            "SELECT column_name, data_type, is_nullable"
+            f" FROM `{self.bq_config.project_id}.{self.bq_config.dataset}.INFORMATION_SCHEMA.COLUMNS`"
             f" WHERE table_name = '{validated_table}'"  # nosec B608
             " ORDER BY ordinal_position"
         )
@@ -544,7 +544,7 @@ class BigQueryConnector(DataWarehouseConnector):
             return f"ALTER TABLE {table} DROP COLUMN `{change.column_name}`"
 
         elif change.action == SchemaAction.RENAME_COLUMN:
-            return f"ALTER TABLE {table} RENAME COLUMN `{change.column_name}` TO `{change.new_column_name}`"  # noqa: E501
+            return f"ALTER TABLE {table} RENAME COLUMN `{change.column_name}` TO `{change.new_column_name}`"
 
         raise SchemaEvolutionError(f"Unsupported action for BigQuery: {change.action}")
 

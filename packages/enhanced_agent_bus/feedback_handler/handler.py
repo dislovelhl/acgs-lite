@@ -14,7 +14,7 @@ from datetime import UTC, datetime
 from typing import Protocol
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -111,7 +111,7 @@ class FeedbackHandler:
 
         if not POSTGRES_ML_PASSWORD:
             logger.warning(
-                "POSTGRES_ML_PASSWORD is not configured; using in-memory storage for feedback handler"  # noqa: E501
+                "POSTGRES_ML_PASSWORD is not configured; using in-memory storage for feedback handler"
             )
             return None
 

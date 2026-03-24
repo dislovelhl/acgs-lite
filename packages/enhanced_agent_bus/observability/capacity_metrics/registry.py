@@ -29,7 +29,7 @@ from enum import Enum
 from threading import Lock
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -189,7 +189,7 @@ def _get_cache_miss_reasons() -> Counter:
     return _cache_miss_reasons
 
 
-class CacheLayer(str, Enum):  # noqa: UP042
+class CacheLayer(str, Enum):
     """Cache layer identifiers."""
 
     L1 = "L1"
@@ -197,7 +197,7 @@ class CacheLayer(str, Enum):  # noqa: UP042
     L3 = "L3"
 
 
-class CacheMissReason(str, Enum):  # noqa: UP042
+class CacheMissReason(str, Enum):
     """Cache miss reason types."""
 
     EXPIRED = "expired"
@@ -388,7 +388,7 @@ def _get_constitutional_validation_rate() -> Counter:
     return _constitutional_validation_rate
 
 
-class ValidationResult(str, Enum):  # noqa: UP042
+class ValidationResult(str, Enum):
     """Constitutional validation result types."""
 
     SUCCESS = "success"

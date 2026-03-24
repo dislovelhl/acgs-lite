@@ -35,7 +35,7 @@ pytestmark = [pytest.mark.unit]
 # Import module under test
 # ---------------------------------------------------------------------------
 
-from enhanced_agent_bus.deliberation_layer.vote_consumer import (  # noqa: E402
+from enhanced_agent_bus.deliberation_layer.vote_consumer import (
     _VOTE_CONSUMER_OPERATION_ERRORS,
     KAFKA_AVAILABLE,
     VoteEventConsumer,

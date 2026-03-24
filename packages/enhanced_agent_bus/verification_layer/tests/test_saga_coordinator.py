@@ -207,7 +207,6 @@ class TestSagaSteps:
 class TestSagaExecution:
     """Tests for saga execution."""
 
-    @pytest.mark.asyncio
     async def test_execute_simple_saga(self):
         """Test executing a simple saga."""
         coordinator = create_saga_coordinator()
@@ -224,7 +223,6 @@ class TestSagaExecution:
         assert saga.state == SagaState.COMPLETED
         assert saga.completed_at is not None
 
-    @pytest.mark.asyncio
     async def test_execute_multiple_steps(self):
         """Test executing saga with multiple steps."""
         coordinator = create_saga_coordinator()
@@ -254,7 +252,6 @@ class TestSagaExecution:
         assert execution_order == [1, 2, 3]
         assert all(s.state == StepState.COMPLETED for s in saga.steps)
 
-    @pytest.mark.asyncio
     async def test_execution_with_context(self):
         """Test saga execution passes context."""
         coordinator = create_saga_coordinator()
@@ -276,7 +273,6 @@ class TestSagaExecution:
         assert success
         assert received_context.get("key") == "value"
 
-    @pytest.mark.asyncio
     async def test_step_output_available_in_context(self):
         """Test that step output is available to subsequent steps."""
         coordinator = create_saga_coordinator()
@@ -305,7 +301,6 @@ class TestSagaExecution:
 class TestSagaCompensation:
     """Tests for saga compensation."""
 
-    @pytest.mark.asyncio
     async def test_compensation_on_failure(self):
         """Test compensation executes on failure."""
         coordinator = create_saga_coordinator()
@@ -336,7 +331,6 @@ class TestSagaCompensation:
         assert saga.state == SagaState.COMPENSATED
         assert 1 in compensated  # Step 1 was compensated
 
-    @pytest.mark.asyncio
     async def test_lifo_compensation_order(self):
         """Test LIFO compensation order."""
         coordinator = create_saga_coordinator()
@@ -368,7 +362,6 @@ class TestSagaCompensation:
         assert not success
         assert compensation_order == [2, 1]  # LIFO order
 
-    @pytest.mark.asyncio
     async def test_compensation_log(self):
         """Test compensation log is populated."""
         coordinator = create_saga_coordinator()
@@ -448,7 +441,6 @@ class TestSagaCheckpoints:
 class TestSagaAbort:
     """Tests for saga abort functionality."""
 
-    @pytest.mark.asyncio
     async def test_abort_running_saga(self):
         """Test aborting a running saga."""
         coordinator = create_saga_coordinator()
@@ -478,7 +470,7 @@ class TestSagaAbort:
 
         # Cancel the background task
         exec_task.cancel()
-        try:  # noqa: SIM105
+        try:
             await exec_task
         except asyncio.CancelledError:
             pass
@@ -487,7 +479,6 @@ class TestSagaAbort:
 class TestSagaTimeout:
     """Tests for saga timeout handling."""
 
-    @pytest.mark.asyncio
     async def test_step_timeout(self):
         """Test step timeout handling."""
         coordinator = create_saga_coordinator()
@@ -518,7 +509,6 @@ class TestSagaTimeout:
 class TestSagaRetry:
     """Tests for saga retry logic."""
 
-    @pytest.mark.asyncio
     async def test_step_retry_on_failure(self):
         """Test that steps are retried on failure."""
         coordinator = create_saga_coordinator()
@@ -545,7 +535,6 @@ class TestSagaRetry:
         assert success
         assert attempt_count[0] == 3
 
-    @pytest.mark.asyncio
     async def test_max_retries_exhausted(self):
         """Test failure after max retries exhausted."""
         coordinator = create_saga_coordinator()
@@ -571,7 +560,6 @@ class TestSagaRetry:
 class TestSagaContextManager:
     """Tests for saga context manager."""
 
-    @pytest.mark.asyncio
     async def test_context_manager_success(self):
         """Test context manager with successful saga."""
         coordinator = create_saga_coordinator()
@@ -588,7 +576,6 @@ class TestSagaContextManager:
 
         assert saga.state == SagaState.INITIALIZED
 
-    @pytest.mark.asyncio
     async def test_context_manager_failure(self):
         """Test context manager with failing saga."""
         coordinator = create_saga_coordinator()
@@ -636,7 +623,6 @@ class TestSagaStatus:
 
         assert len(active) == 2
 
-    @pytest.mark.asyncio
     async def test_coordinator_status(self):
         """Test coordinator status."""
         coordinator = create_saga_coordinator()

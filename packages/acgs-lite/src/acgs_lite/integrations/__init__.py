@@ -168,7 +168,7 @@ class GovernedOpenAI:
                 "The 'openai' package is required. Install with: pip install acgs-lite[openai]"
             )
 
-        self._client = OpenAI(api_key=api_key, **openai_kwargs)  # type: ignore[operator]
+        self._client = OpenAI(api_key=api_key, **openai_kwargs)
         self.constitution = constitution or Constitution.default()
         self.audit_log = AuditLog()
         self.engine = GovernanceEngine(

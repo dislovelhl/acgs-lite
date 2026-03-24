@@ -8,17 +8,18 @@ throughput) for constitutional amendment monitoring and automated rollback.
 
 import json
 import sys
+from collections.abc import Mapping
 from datetime import UTC, datetime, timezone
 
 from pydantic import BaseModel, Field
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -221,14 +222,14 @@ class MetricsComparison(BaseModel):
         if self.latency_p99_delta > max(1.0, self.baseline.governance_latency_p99 * 0.2):
             reasons.append(
                 f"P99 latency increased by {self.latency_p99_delta:.2f}ms "
-                f"({self.baseline.governance_latency_p99:.2f}ms -> {self.current.governance_latency_p99:.2f}ms)"  # noqa: E501
+                f"({self.baseline.governance_latency_p99:.2f}ms -> {self.current.governance_latency_p99:.2f}ms)"
             )
 
         # Check deliberation success rate decrease
         if self.deliberation_success_rate_delta < -0.05:  # More than 5% decrease
             reasons.append(
-                f"Deliberation success rate decreased by {abs(self.deliberation_success_rate_delta):.2%} "  # noqa: E501
-                f"({self.baseline.deliberation_success_rate:.2%} -> {self.current.deliberation_success_rate:.2%})"  # noqa: E501
+                f"Deliberation success rate decreased by {abs(self.deliberation_success_rate_delta):.2%} "
+                f"({self.baseline.deliberation_success_rate:.2%} -> {self.current.deliberation_success_rate:.2%})"
             )
 
         # Check MACI violations increase
@@ -521,7 +522,7 @@ class GovernanceMetricsCollector:
             logger.info(
                 f"[{CONSTITUTIONAL_HASH}] Collected metrics snapshot: "
                 f"violations={violations_rate:.2%}, p99={p99:.2f}ms, "
-                f"deliberation={deliberation['success_rate']:.2%}, health={snapshot.health_score:.2%}"  # noqa: E501
+                f"deliberation={deliberation['success_rate']:.2%}, health={snapshot.health_score:.2%}"
             )
 
             return snapshot
@@ -625,7 +626,7 @@ class GovernanceMetricsCollector:
                 // 24,  # Retain for same period as snapshots
             )
             logger.info(
-                f"[{CONSTITUTIONAL_HASH}] Stored baseline snapshot for version {constitutional_version}"  # noqa: E501
+                f"[{CONSTITUTIONAL_HASH}] Stored baseline snapshot for version {constitutional_version}"
             )
         except (RuntimeError, ValueError, TypeError) as e:
             logger.error(f"[{CONSTITUTIONAL_HASH}] Error storing baseline snapshot: {e}")
@@ -647,7 +648,8 @@ class GovernanceMetricsCollector:
     async def _get_request_counters(self) -> dict[str, int]:
         """Get request counters."""
         try:
-            counters = await self.redis_client.hgetall("governance:metrics:requests")
+            counters_raw = await self.redis_client.hgetall("governance:metrics:requests")
+            counters = counters_raw if isinstance(counters_raw, Mapping) else {}
             return {
                 "total": int(counters.get("total", 0)),
                 "approved": int(counters.get("approved", 0)),
@@ -687,7 +689,8 @@ class GovernanceMetricsCollector:
     async def _get_deliberation_metrics(self) -> JSONDict:
         """Get deliberation metrics."""
         try:
-            counters = await self.redis_client.hgetall("governance:metrics:deliberations")
+            counters_raw = await self.redis_client.hgetall("governance:metrics:deliberations")
+            counters = counters_raw if isinstance(counters_raw, Mapping) else {}
             total = int(counters.get("total", 0))
             success = int(counters.get("success", 0))
             failed = int(counters.get("failed", 0))

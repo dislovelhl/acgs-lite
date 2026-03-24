@@ -23,34 +23,34 @@ if enhanced_agent_bus_dir not in sys.path:
 
 # Import context_memory components
 
-from context_memory.constitutional_context_cache import (  # noqa: E402
+from context_memory.constitutional_context_cache import (
     CacheConfig,
     CacheEntry,
     CacheStats,
     CacheTier,
     ConstitutionalContextCache,
 )
-from context_memory.hybrid_context_manager import (  # noqa: E402
+from context_memory.hybrid_context_manager import (
     HybridContextConfig,
     HybridContextManager,
     HybridProcessingResult,
     ProcessingMode,
     SharedAttentionProcessor,
 )
-from context_memory.jrt_context_preparer import (  # noqa: E402
+from context_memory.jrt_context_preparer import (
     CriticalSectionMarker,
     JRTContextPreparer,
     JRTPreparationResult,
     JRTRetrievalStrategy,
 )
-from context_memory.long_term_memory import (  # noqa: E402
+from context_memory.long_term_memory import (
     ConsolidationStrategy,
     LongTermMemoryConfig,
     LongTermMemoryStore,
     MemorySearchResult,
     MemoryTier,
 )
-from context_memory.mamba_processor import (  # noqa: E402
+from context_memory.mamba_processor import (
     NUMPY_AVAILABLE,
     TORCH_AVAILABLE,
     Mamba2SSMLayer,
@@ -58,7 +58,7 @@ from context_memory.mamba_processor import (  # noqa: E402
     MambaProcessorConfig,
     ProcessingResult,
 )
-from context_memory.models import (  # noqa: E402
+from context_memory.models import (
     CONSTITUTIONAL_HASH,
     ContextChunk,
     ContextPriority,
@@ -389,7 +389,6 @@ class TestHybridContextManager:
         mode = manager._auto_select_mode(window)
         assert mode == ProcessingMode.HYBRID
 
-    @pytest.mark.asyncio
     async def test_process_ssm_only(self, hybrid_config, sample_context_chunks):
         """Test SSM-only processing mode."""
         manager = HybridContextManager(config=hybrid_config)
@@ -399,7 +398,6 @@ class TestHybridContextManager:
         assert result.processing_mode == ProcessingMode.SSM_ONLY
         assert result.ssm_processed_tokens > 0
 
-    @pytest.mark.asyncio
     async def test_process_attention_only(self, hybrid_config, sample_context_chunks):
         """Test attention-only processing mode."""
         manager = HybridContextManager(config=hybrid_config)
@@ -409,7 +407,6 @@ class TestHybridContextManager:
         assert result.processing_mode == ProcessingMode.ATTENTION_ONLY
         assert result.attention_processed_tokens > 0
 
-    @pytest.mark.asyncio
     async def test_process_hybrid(self, hybrid_config, sample_context_chunks):
         """Test hybrid processing mode."""
         manager = HybridContextManager(config=hybrid_config)
@@ -419,7 +416,6 @@ class TestHybridContextManager:
         result = await manager._process_hybrid(window)
         assert result.processing_mode == ProcessingMode.HYBRID
 
-    @pytest.mark.asyncio
     async def test_process_with_caching(self, hybrid_config, sample_context_chunks):
         """Test processing with caching enabled."""
         hybrid_config.enable_caching = True
@@ -498,7 +494,6 @@ class TestJRTContextPreparer:
         ordered = preparer._apply_strategy(scored, JRTRetrievalStrategy.PRIORITY_FIRST)
         assert ordered[0].priority.value >= ordered[-1].priority.value
 
-    @pytest.mark.asyncio
     async def test_prepare_context(self, jrt_config, sample_context_chunks):
         """Test full context preparation."""
         preparer = JRTContextPreparer(config=jrt_config)
@@ -509,7 +504,6 @@ class TestJRTContextPreparer:
         assert isinstance(result, JRTPreparationResult)
         assert result.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_prepare_context_with_repetitions(self, jrt_config, sample_context_chunks):
         """Test context preparation with critical section repetitions."""
         jrt_config.repetition_factor = 2
@@ -560,7 +554,6 @@ class TestLongTermMemory:
         with pytest.raises(ValueError, match="Invalid constitutional hash"):
             LongTermMemoryStore(config=ltm_config, constitutional_hash="invalid")
 
-    @pytest.mark.asyncio
     async def test_store_episodic(self, ltm_config):
         """Test storing episodic memory."""
         store = LongTermMemoryStore(config=ltm_config)
@@ -573,7 +566,6 @@ class TestLongTermMemory:
         assert entry_id != ""
         await store.shutdown()
 
-    @pytest.mark.asyncio
     async def test_retrieve_episodic(self, ltm_config):
         """Test retrieving episodic memory."""
         store = LongTermMemoryStore(config=ltm_config)
@@ -587,7 +579,6 @@ class TestLongTermMemory:
         assert len(entries) > 0
         await store.shutdown()
 
-    @pytest.mark.asyncio
     async def test_store_semantic(self, ltm_config):
         """Test storing semantic memory."""
         store = LongTermMemoryStore(config=ltm_config)
@@ -600,7 +591,6 @@ class TestLongTermMemory:
         assert entry_id != ""
         await store.shutdown()
 
-    @pytest.mark.asyncio
     async def test_search_semantic(self, ltm_config):
         """Test searching semantic memory."""
         store = LongTermMemoryStore(config=ltm_config)
@@ -614,7 +604,6 @@ class TestLongTermMemory:
         assert isinstance(result, MemorySearchResult)
         await store.shutdown()
 
-    @pytest.mark.asyncio
     async def test_consolidation_time_based(self, ltm_config):
         """Test time-based memory consolidation."""
         store = LongTermMemoryStore(config=ltm_config)
@@ -629,7 +618,6 @@ class TestLongTermMemory:
         assert result.constitutional_hash == CONSTITUTIONAL_HASH
         await store.shutdown()
 
-    @pytest.mark.asyncio
     async def test_consolidation_access_based(self, ltm_config):
         """Test access-based memory consolidation."""
         store = LongTermMemoryStore(config=ltm_config)
@@ -670,7 +658,6 @@ class TestConstitutionalContextCache:
         with pytest.raises(ValueError, match="Invalid constitutional hash"):
             ConstitutionalContextCache(config=cache_config, constitutional_hash="invalid")
 
-    @pytest.mark.asyncio
     async def test_cache_set_get(self, cache_config):
         """Test basic cache set and get."""
         cache = ConstitutionalContextCache(config=cache_config)
@@ -678,14 +665,12 @@ class TestConstitutionalContextCache:
         value = await cache.get("key1")
         assert value == "value1"
 
-    @pytest.mark.asyncio
     async def test_cache_miss(self, cache_config):
         """Test cache miss returns default."""
         cache = ConstitutionalContextCache(config=cache_config)
         value = await cache.get("nonexistent", default="default")
         assert value == "default"
 
-    @pytest.mark.asyncio
     async def test_cache_expiration(self, cache_config):
         """Test cache entry expiration."""
         cache_config.l1_ttl_seconds = 1
@@ -695,7 +680,6 @@ class TestConstitutionalContextCache:
         value = await cache.get("key1")
         assert value is None
 
-    @pytest.mark.asyncio
     async def test_cache_eviction(self, cache_config):
         """Test LRU cache eviction."""
         cache_config.l1_max_entries = 3
@@ -707,7 +691,6 @@ class TestConstitutionalContextCache:
         value = await cache.get("key1")
         assert value is None
 
-    @pytest.mark.asyncio
     async def test_set_constitutional_context(self, cache_config, sample_context_chunks):
         """Test setting constitutional context."""
         cache = ConstitutionalContextCache(config=cache_config)
@@ -715,14 +698,12 @@ class TestConstitutionalContextCache:
         chunks = await cache.get_constitutional_context()
         assert len(chunks) == 1
 
-    @pytest.mark.asyncio
     async def test_warm_cache(self, cache_config, sample_context_chunks):
         """Test cache warming."""
         cache = ConstitutionalContextCache(config=cache_config)
         warmed = await cache.warm_cache(sample_context_chunks)
         assert warmed == len(sample_context_chunks)
 
-    @pytest.mark.asyncio
     async def test_invalidate_pattern(self, cache_config):
         """Test pattern-based invalidation."""
         cache = ConstitutionalContextCache(config=cache_config)
@@ -756,7 +737,6 @@ class TestConstitutionalContextCache:
 class TestIntegration:
     """Integration tests for context/memory components."""
 
-    @pytest.mark.asyncio
     async def test_full_pipeline(self, hybrid_config, jrt_config, sample_context_chunks):
         """Test full context processing pipeline."""
         # Prepare context
@@ -773,7 +753,6 @@ class TestIntegration:
         assert proc_result.constitutional_validated
         assert proc_result.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_cache_with_ltm(self, cache_config, ltm_config):
         """Test cache integration with long-term memory."""
         cache = ConstitutionalContextCache(config=cache_config)
@@ -794,7 +773,6 @@ class TestIntegration:
         assert value == "Test policy"
         await store.shutdown()
 
-    @pytest.mark.asyncio
     async def test_constitutional_context_flow(
         self, cache_config, jrt_config, sample_context_chunks
     ):
@@ -816,7 +794,6 @@ class TestIntegration:
         # Constitutional should still be present
         assert result.constitutional_context_present
 
-    @pytest.mark.asyncio
     async def test_performance_under_load(self, cache_config):
         """Test cache performance under load."""
         cache = ConstitutionalContextCache(config=cache_config)

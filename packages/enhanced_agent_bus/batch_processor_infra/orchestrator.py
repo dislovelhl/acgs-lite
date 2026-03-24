@@ -9,7 +9,7 @@ import time
 from collections.abc import Awaitable, Callable
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -35,6 +35,7 @@ class BatchProcessorOrchestrator:
     def __init__(
         self,
         max_concurrency: int = 100,
+        item_timeout_ms: int = 30000,
         max_retries: int = 0,
         retry_base_delay: float = 0.1,
         retry_exponential_base: float = 2.0,
@@ -43,6 +44,7 @@ class BatchProcessorOrchestrator:
         self.metrics = BatchMetrics()
         self.workers = WorkerPool(
             max_concurrency=max_concurrency,
+            item_timeout_ms=item_timeout_ms,
             max_retries=max_retries,
             retry_base_delay=retry_base_delay,
             retry_exponential_base=retry_exponential_base,

@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import logging
+import sys
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field, field_validator
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import ValidationError
@@ -30,6 +31,11 @@ from .models import (
 )
 
 logger = logging.getLogger(__name__)
+
+_module = sys.modules.get(__name__)
+if _module is not None:
+    sys.modules.setdefault("enhanced_agent_bus.policy_copilot.api", _module)
+    sys.modules.setdefault("packages.enhanced_agent_bus.policy_copilot.api", _module)
 
 router = APIRouter(
     prefix="/api/v1/policy-copilot",

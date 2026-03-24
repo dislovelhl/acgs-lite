@@ -9,7 +9,8 @@ import sys
 
 import numpy as np
 import pytest
-import torch
+
+torch = pytest.importorskip("torch")
 
 # Ensure we can import the project modules
 sys.path.append("/home/martin/ACGS")

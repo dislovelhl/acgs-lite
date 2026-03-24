@@ -6,6 +6,12 @@ Self-evolving constitutional systems with version control, amendment workflows,
 and automated rollback capabilities.
 """
 
+import sys
+
+_MODULE = sys.modules[__name__]
+sys.modules.setdefault("enhanced_agent_bus.constitutional", _MODULE)
+sys.modules.setdefault("packages.enhanced_agent_bus.constitutional", _MODULE)
+
 from .activation_saga import (
     ActivationSagaActivities,
     ActivationSagaError,

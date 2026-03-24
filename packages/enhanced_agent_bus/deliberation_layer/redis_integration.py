@@ -11,7 +11,7 @@ from datetime import UTC, datetime, timezone
 from typing import Protocol
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

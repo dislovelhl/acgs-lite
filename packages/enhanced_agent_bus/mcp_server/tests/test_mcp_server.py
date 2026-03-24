@@ -8,7 +8,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from unittest.mock import MagicMock
 
-import pytest
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 from ..config import MCPConfig
@@ -146,7 +145,6 @@ class TestMCPServerMetrics:
 class TestMCPServerLifecycle:
     """Tests for MCP Server lifecycle management."""
 
-    @pytest.mark.asyncio
     async def test_connect_adapters(self):
         """Test connecting adapters."""
         server = MCPServer()
@@ -154,7 +152,6 @@ class TestMCPServerLifecycle:
 
         assert result is True  # Server runs in standalone mode
 
-    @pytest.mark.asyncio
     async def test_disconnect_adapters(self):
         """Test disconnecting adapters."""
         server = MCPServer()
@@ -163,7 +160,6 @@ class TestMCPServerLifecycle:
 
         # Should complete without errors
 
-    @pytest.mark.asyncio
     async def test_stop_not_running(self):
         """Test stopping server that's not running."""
         server = MCPServer()
@@ -175,7 +171,6 @@ class TestMCPServerLifecycle:
 class TestMCPServerRequestHandling:
     """Tests for MCP request handling."""
 
-    @pytest.mark.asyncio
     async def test_handle_initialize_request(self):
         """Test handling initialize request."""
         server = MCPServer()
@@ -200,7 +195,6 @@ class TestMCPServerRequestHandling:
         assert "serverInfo" in response.result
         assert response.result["serverInfo"]["name"] == "acgs2-governance"
 
-    @pytest.mark.asyncio
     async def test_handle_tools_list_request(self):
         """Test handling tools/list request."""
         server = MCPServer()
@@ -219,7 +213,6 @@ class TestMCPServerRequestHandling:
         assert "tools" in response.result
         assert len(response.result["tools"]) == 5
 
-    @pytest.mark.asyncio
     async def test_handle_resources_list_request(self):
         """Test handling resources/list request."""
         server = MCPServer()
@@ -238,7 +231,6 @@ class TestMCPServerRequestHandling:
         assert "resources" in response.result
         assert len(response.result["resources"]) == 4
 
-    @pytest.mark.asyncio
     async def test_handle_tool_call(self):
         """Test handling a tool call."""
         server = MCPServer()
@@ -263,7 +255,6 @@ class TestMCPServerRequestHandling:
         assert response.error is None
         assert "content" in response.result
 
-    @pytest.mark.asyncio
     async def test_handle_resource_read(self):
         """Test handling a resource read."""
         server = MCPServer()
@@ -283,7 +274,6 @@ class TestMCPServerRequestHandling:
         assert response.error is None
         assert "contents" in response.result
 
-    @pytest.mark.asyncio
     async def test_handle_unknown_method(self):
         """Test handling unknown method."""
         server = MCPServer()
@@ -301,7 +291,6 @@ class TestMCPServerRequestHandling:
         assert response.error is not None
         assert response.error.code == -32601  # Method not found
 
-    @pytest.mark.asyncio
     async def test_request_count_incremented(self):
         """Test that request count is incremented."""
         server = MCPServer()
@@ -360,7 +349,6 @@ class TestMCPServerConstitutionalCompliance:
         assert server.CONSTITUTIONAL_HASH == CONSTITUTIONAL_HASH
         assert server.config.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_tool_call_validates_hash(self):
         """Test that tool calls validate constitutional hash."""
         server = MCPServer()
@@ -383,7 +371,6 @@ class TestMCPServerConstitutionalCompliance:
         response = await server.handle_request(request)
         assert response.error is None
 
-    @pytest.mark.asyncio
     async def test_tool_call_rejects_invalid_hash(self):
         """Test that tool calls reject invalid constitutional hash."""
         server = MCPServer()

@@ -15,7 +15,7 @@ from enum import Enum
 from src.core.shared.constants import MACIRole
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -106,7 +106,7 @@ class MACIAgentRoleConfig:
     def __post_init__(self) -> None:
         """Normalize role string to MACIRole enum if needed."""
         if isinstance(self.role, str):
-            try:  # noqa: SIM105
+            try:
                 self.role = MACIRole.parse(self.role)
             except ValueError:
                 pass

@@ -102,14 +102,12 @@ class TestReplayEngineInit:
 
 
 class TestReplayWorkflow:
-    @pytest.mark.asyncio
     async def test_replay_raises_when_no_events(self, engine, repository):
         """replay_workflow raises ValueError when no events exist."""
         instance_id = uuid4()
         with pytest.raises(ValueError, match=f"No events found for workflow {instance_id}"):
             await engine.replay_workflow(instance_id)
 
-    @pytest.mark.asyncio
     async def test_replay_raises_when_no_started_event(self, engine, repository):
         """replay_workflow raises ValueError when WORKFLOW_STARTED event is missing."""
         instance_id = uuid4()
@@ -127,7 +125,6 @@ class TestReplayWorkflow:
         ):
             await engine.replay_workflow(instance_id)
 
-    @pytest.mark.asyncio
     async def test_replay_basic_started_workflow(self, engine, repository):
         """replay_workflow reconstructs a RUNNING workflow from STARTED event only."""
         instance_id = uuid4()
@@ -145,7 +142,6 @@ class TestReplayWorkflow:
         assert result.status == WorkflowStatus.RUNNING
         assert result.input == {"key": "val"}
 
-    @pytest.mark.asyncio
     async def test_replay_completed_workflow(self, engine, repository):
         """replay_workflow reconstructs COMPLETED status from events."""
         instance_id = uuid4()
@@ -165,7 +161,6 @@ class TestReplayWorkflow:
         assert result.status == WorkflowStatus.COMPLETED
         assert result.output == {"result": "success"}
 
-    @pytest.mark.asyncio
     async def test_replay_failed_workflow(self, engine, repository):
         """replay_workflow reconstructs FAILED status from events."""
         instance_id = uuid4()
@@ -184,7 +179,6 @@ class TestReplayWorkflow:
         assert result.status == WorkflowStatus.FAILED
         assert result.error == "something went wrong"
 
-    @pytest.mark.asyncio
     async def test_replay_cancelled_workflow(self, engine, repository):
         """replay_workflow reconstructs CANCELLED status from events."""
         instance_id = uuid4()
@@ -203,7 +197,6 @@ class TestReplayWorkflow:
         assert result.status == WorkflowStatus.CANCELLED
         assert result.error == "user request"
 
-    @pytest.mark.asyncio
     async def test_replay_up_to_sequence_filters_events(self, engine, repository):
         """replay_workflow filters events up to the given sequence number."""
         instance_id = uuid4()
@@ -223,7 +216,6 @@ class TestReplayWorkflow:
 
         assert result.status == WorkflowStatus.RUNNING
 
-    @pytest.mark.asyncio
     async def test_replay_up_to_sequence_includes_target(self, engine, repository):
         """replay_workflow includes event exactly at up_to_sequence."""
         instance_id = uuid4()
@@ -242,7 +234,6 @@ class TestReplayWorkflow:
 
         assert result.status == WorkflowStatus.COMPLETED
 
-    @pytest.mark.asyncio
     async def test_replay_up_to_sequence_none_replays_all(self, engine, repository):
         """replay_workflow with up_to_sequence=None replays all events."""
         instance_id = uuid4()
@@ -260,7 +251,6 @@ class TestReplayWorkflow:
 
         assert result.status == WorkflowStatus.COMPLETED
 
-    @pytest.mark.asyncio
     async def test_replay_ignores_non_status_events(self, engine, repository):
         """replay_workflow ignores intermediate step events (STEP_STARTED, etc)."""
         instance_id = uuid4()
@@ -287,7 +277,6 @@ class TestReplayWorkflow:
 
         assert result.status == WorkflowStatus.RUNNING
 
-    @pytest.mark.asyncio
     async def test_replay_with_missing_fields_in_started_event(self, engine, repository):
         """replay_workflow handles WORKFLOW_STARTED events with missing fields gracefully."""
         instance_id = uuid4()
@@ -308,7 +297,6 @@ class TestReplayWorkflow:
         assert result.tenant_id == "default"
         assert result.input is None
 
-    @pytest.mark.asyncio
     async def test_replay_status_events_ignored_when_no_instance(self, engine, repository):
         """COMPLETED/FAILED/CANCELLED events before STARTED are safely ignored."""
         instance_id = uuid4()
@@ -343,7 +331,6 @@ class TestReplayWorkflow:
 
 
 class TestVerifyDeterminism:
-    @pytest.mark.asyncio
     async def test_verify_determinism_returns_true_when_output_matches(self, engine, repository):
         """verify_determinism returns True when replayed output matches expected."""
         instance_id = uuid4()
@@ -362,7 +349,6 @@ class TestVerifyDeterminism:
         )
         assert is_deterministic is True
 
-    @pytest.mark.asyncio
     async def test_verify_determinism_returns_false_when_output_differs(self, engine, repository):
         """verify_determinism returns False when replayed output differs from expected."""
         instance_id = uuid4()
@@ -381,11 +367,10 @@ class TestVerifyDeterminism:
         )
         assert is_deterministic is False
 
-    @pytest.mark.asyncio
     async def test_verify_determinism_running_workflow_vs_nonempty_expected(
         self, engine, repository
     ):
-        """verify_determinism returns False for running workflow (output=None) vs non-None expected."""  # noqa: E501
+        """verify_determinism returns False for running workflow (output=None) vs non-None expected."""
         instance_id = uuid4()
         await _populate_started_events(repository, instance_id)
 
@@ -395,7 +380,6 @@ class TestVerifyDeterminism:
         )
         assert is_deterministic is False
 
-    @pytest.mark.asyncio
     async def test_verify_determinism_both_none(self, engine, repository):
         """verify_determinism returns True when both output and expected are None."""
         instance_id = uuid4()
@@ -412,14 +396,12 @@ class TestVerifyDeterminism:
 
 
 class TestGetReplayTimeline:
-    @pytest.mark.asyncio
     async def test_timeline_empty_when_no_events(self, engine, repository):
         """get_replay_timeline returns empty list when no events."""
         instance_id = uuid4()
         timeline = await engine.get_replay_timeline(instance_id)
         assert timeline == []
 
-    @pytest.mark.asyncio
     async def test_timeline_raises_on_stored_str_event_type(self, engine, repository):
         """get_replay_timeline hits AttributeError because pydantic use_enum_values=True
         serializes EventType to a plain str, and the code calls .value on it.
@@ -435,7 +417,6 @@ class TestGetReplayTimeline:
         with pytest.raises(AttributeError):
             await engine.get_replay_timeline(instance_id)
 
-    @pytest.mark.asyncio
     async def test_timeline_with_mock_repository_avoids_enum_bug(self, repository):
         """get_replay_timeline works correctly when event_type has a .value attribute.
 
@@ -471,7 +452,6 @@ class TestGetReplayTimeline:
         assert timeline[0]["type"] == EventType.WORKFLOW_STARTED.value
         assert timeline[1]["type"] == EventType.WORKFLOW_COMPLETED.value
 
-    @pytest.mark.asyncio
     async def test_timeline_entry_has_required_fields(self, repository):
         """get_replay_timeline entries contain sequence, timestamp, type, and data fields."""
 
@@ -502,7 +482,6 @@ class TestGetReplayTimeline:
         # Can be parsed back
         datetime.fromisoformat(entry["timestamp"])
 
-    @pytest.mark.asyncio
     async def test_timeline_includes_all_event_types(self, repository):
         """get_replay_timeline handles all EventType enum members correctly."""
 
@@ -541,7 +520,6 @@ class TestGetReplayTimeline:
         assert EventType.COMPENSATION_STARTED.value in types_in_timeline
         assert EventType.WORKFLOW_FAILED.value in types_in_timeline
 
-    @pytest.mark.asyncio
     async def test_timeline_data_preserved(self, repository):
         """get_replay_timeline preserves event_data in the 'data' field."""
 
@@ -569,7 +547,6 @@ class TestGetReplayTimeline:
 
 
 class TestReplayIntegration:
-    @pytest.mark.asyncio
     async def test_full_workflow_replay_round_trip(self, engine, repository):
         """Full round-trip: populate events for a complete workflow, verify replay."""
         instance_id = uuid4()
@@ -632,7 +609,6 @@ class TestReplayIntegration:
         assert result.status == WorkflowStatus.COMPLETED
         assert result.output == {"order_status": "confirmed"}
 
-    @pytest.mark.asyncio
     async def test_replay_compensation_workflow(self, engine, repository):
         """Replay reconstructs a compensated (failed) workflow correctly."""
         instance_id = uuid4()
@@ -675,14 +651,13 @@ class TestReplayIntegration:
         assert result.status == WorkflowStatus.FAILED
         assert result.error == "payment declined"
 
-    @pytest.mark.asyncio
     async def test_replay_timeline_sequence_order_independent_of_insertion(self, repository):
         """get_replay_timeline returns events in sequence order regardless of insertion order."""
 
         instance_id = uuid4()
         now = datetime.now(UTC)
 
-        # Create mock events in reverse order — repo returns them sorted, so we test descending input  # noqa: E501
+        # Create mock events in reverse order — repo returns them sorted, so we test descending input
         mock_events = []
         for seq, et in [
             (3, EventType.WORKFLOW_COMPLETED),

@@ -1,0 +1,34 @@
+- generic [ref=e6]:
+  - generic [ref=e7]:
+    - img [ref=e9]
+    - generic [ref=e14]: Welcome to invideo AI
+  - generic [ref=e15]:
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - generic: Email address
+          - generic [ref=e20]:
+            - textbox "Email address" [ref=e21]
+            - group:
+              - generic: Email address
+        - button "Continue" [ref=e22] [cursor=pointer]:
+          - generic [ref=e23]: Continue
+      - generic [ref=e24]:
+        - generic [ref=e25]: Don't have an account?
+        - generic [ref=e26] [cursor=pointer]: Sign up
+    - generic [ref=e29]: OR
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - button [disabled] [ref=e33]:
+          - img [ref=e34]
+        - button "Continue with Apple" [ref=e36] [cursor=pointer]:
+          - img [ref=e37]
+          - generic [ref=e39]: Continue with Apple
+      - generic [ref=e40]:
+        - link "Terms of Use" [ref=e41] [cursor=pointer]:
+          - /url: /terms-and-conditions
+          - generic [ref=e42]: Terms of Use
+        - generic [ref=e43]: "|"
+        - link "Privacy Policy" [ref=e44] [cursor=pointer]:
+          - /url: /privacy-policy
+          - generic [ref=e45]: Privacy Policy

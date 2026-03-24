@@ -188,7 +188,7 @@ class OIDCTokenResponse:
     """
 
     access_token: str
-    token_type: str = "Bearer"  # noqa: S105
+    token_type: str = "Bearer"  # noqa: S105 - OAuth token type literal
     expires_in: int | None = None
     refresh_token: str | None = None
     id_token: str | None = None
@@ -812,14 +812,18 @@ class OIDCHandler:
             OIDCTokenError: If validation fails
         """
         try:
-            if not HAS_AUTHLIB:
-                raise OIDCTokenError("authlib library is required for ID token validation")
-
-            # Fetch JWKS from provider metadata
+            # Surface provider metadata/configuration errors even when authlib is unavailable.
             metadata = await self._fetch_metadata(provider)
             jwks_uri = metadata.get("jwks_uri")
             if not jwks_uri:
                 raise OIDCTokenError(f"JWKS URI not found for provider '{provider.name}'")
+
+            issuer = metadata.get("issuer")
+            if not issuer:
+                raise OIDCTokenError(f"Issuer not found for provider '{provider.name}'")
+
+            if not HAS_AUTHLIB:
+                raise OIDCTokenError("authlib library is required for ID token validation")
 
             client = await self._get_http_client()
             resp = await client.get(jwks_uri)
@@ -830,10 +834,6 @@ class OIDCHandler:
             from authlib.jose import JsonWebKey, JWTClaims
 
             jwk_set = JsonWebKey.import_key_set(jwks_data)
-
-            issuer = metadata.get("issuer")
-            if not issuer:
-                raise OIDCTokenError(f"Issuer not found for provider '{provider.name}'")
 
             # Decode and validate token
             claims = jwt.decode(
@@ -851,7 +851,11 @@ class OIDCHandler:
             claims.validate()
 
             return dict(claims)
+        except OIDCTokenError:
+            raise
         except _OIDC_OPERATION_ERRORS as e:
+            raise OIDCTokenError(f"Failed to validate ID token: {e}") from e
+        except Exception as e:
             raise OIDCTokenError(f"Failed to validate ID token: {e}") from e
 
     async def _fetch_userinfo(

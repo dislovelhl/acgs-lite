@@ -151,18 +151,22 @@ class _LRUCache:
 
     @property
     def hits(self) -> int:
+        """Return the number of cache hits."""
         return self._hits
 
     @property
     def misses(self) -> int:
+        """Return the number of cache misses."""
         return self._misses
 
     @property
     def currsize(self) -> int:
+        """Return the current number of cached entries."""
         return len(self._cache)
 
     @property
     def maxsize(self) -> int:
+        """Return the maximum cache capacity."""
         return self._maxsize
 
 
@@ -237,7 +241,7 @@ class MemoizedConstitution:
         key = _cache_key(action, ctx)
         found, cached = self._cache.get(key)
         if found:
-            return cached
+            return cached  # type: ignore[no-any-return]
 
         # Cache miss — delegate to engine
         # Use the engine directly if available, else explain()
@@ -245,7 +249,7 @@ class MemoizedConstitution:
             from acgs_lite.engine import GovernanceEngine
 
             engine = GovernanceEngine(self._constitution)
-            result = engine.validate(action, ctx)
+            result: dict[str, Any] = engine.validate(action, context=ctx).to_dict()
         except Exception:
             # Fallback: use explain() which always works
             result = self._constitution.explain(action)
@@ -272,7 +276,7 @@ class MemoizedConstitution:
         key = _cache_key(f"__explain__{action}", ctx)
         found, cached = self._cache.get(key)
         if found:
-            return cached
+            return cached  # type: ignore[no-any-return]
 
         if ctx:
             result = self._constitution.explain_rendered(action, ctx)
@@ -357,8 +361,8 @@ class MemoizedConstitution:
             found, _ = self._cache.get(key)
             if found:
                 # Undo the hit count increment (warming shouldn't inflate stats)
-                self._cache._hits -= 1  # noqa: SLF001
-                self._cache._misses -= 0  # no-op, just for clarity  # noqa: SLF001
+                self._cache._hits -= 1
+                self._cache._misses -= 0  # no-op, just for clarity
                 already_cached += 1
                 continue
             try:

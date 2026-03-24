@@ -83,7 +83,6 @@ class TestBatchPerformance:
         ]
         return BatchRequest(items=items, tenant_id="benchmark")
 
-    @pytest.mark.asyncio
     async def test_latency_100_items(self, processor):
         """
         Spec 006 Acceptance Criterion: P99 latency < 10ms for batch of 100
@@ -112,7 +111,6 @@ class TestBatchPerformance:
         # In production with real validators, tune expectations accordingly
         assert avg_p99 < 50.0, f"P99 latency {avg_p99:.2f}ms exceeds 50ms threshold"
 
-    @pytest.mark.asyncio
     async def test_throughput(self, processor):
         """
         Spec 006 Acceptance Criterion: Throughput > 10,000 RPS
@@ -144,7 +142,6 @@ class TestBatchPerformance:
         # Lowered threshold for CI/test environments without full infrastructure
         assert throughput > 100, f"Throughput {throughput:,.0f} below 100 items/sec minimum"
 
-    @pytest.mark.asyncio
     async def test_max_batch_size_performance(self, processor):
         """Test processing maximum batch size (1000 items)."""
         batch = self.create_batch(1000)
@@ -157,7 +154,6 @@ class TestBatchPerformance:
         assert response.stats.success_rate == 100.0
         assert elapsed < 5.0, f"Max batch took {elapsed:.2f}s, expected < 5s"
 
-    @pytest.mark.asyncio
     async def test_concurrent_batches(self, processor):
         """Test processing multiple batches concurrently."""
         batch = self.create_batch(100)
@@ -175,7 +171,6 @@ class TestBatchPerformance:
         assert all(r.success for r in results)
         assert total_items == concurrent_batches * 100
 
-    @pytest.mark.asyncio
     async def test_deduplication_performance(self, processor):
         """Test deduplication improves performance with duplicates."""
         # Create batch with 50% duplicates
@@ -201,7 +196,7 @@ class TestBatchPerformance:
         response_no_dedup = await processor.process_batch(batch_without_dedup)
         time_no_dedup = time.perf_counter() - start
 
-        #     f"  With dedup: {time_dedup*1000:.2f}ms (removed {response_dedup.stats.deduplicated_count})"  # noqa: E501
+        #     f"  With dedup: {time_dedup*1000:.2f}ms (removed {response_dedup.stats.deduplicated_count})"
         # )
 
         assert response_dedup.stats.deduplicated_count == 50

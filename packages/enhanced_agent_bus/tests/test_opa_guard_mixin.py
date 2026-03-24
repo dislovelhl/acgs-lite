@@ -13,7 +13,7 @@ import pytest
 # Governance and constitutional compliance test markers
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
-from enhanced_agent_bus.deliberation_layer.opa_guard_mixin import OPAGuardMixin  # noqa: E402
+from enhanced_agent_bus.deliberation_layer.opa_guard_mixin import OPAGuardMixin
 
 # =============================================================================
 # Test Class Implementation
@@ -71,7 +71,6 @@ def mixin_without_guard() -> _OPAGuardMixinImpl:
 class TestVerifyAction:
     """Tests for verify_action method."""
 
-    @pytest.mark.asyncio
     async def test_verify_action_with_guard(
         self, mixin_with_guard: _OPAGuardMixinImpl, mock_opa_guard: MagicMock
     ) -> None:
@@ -95,7 +94,6 @@ class TestVerifyAction:
             context=context,
         )
 
-    @pytest.mark.asyncio
     async def test_verify_action_without_context(
         self, mixin_with_guard: _OPAGuardMixinImpl, mock_opa_guard: MagicMock
     ) -> None:
@@ -110,7 +108,6 @@ class TestVerifyAction:
             context={},  # Default empty dict
         )
 
-    @pytest.mark.asyncio
     async def test_verify_action_guard_disabled(
         self, mixin_without_guard: _OPAGuardMixinImpl
     ) -> None:
@@ -131,7 +128,6 @@ class TestVerifyAction:
 class TestCollectSignatures:
     """Tests for collect_signatures method."""
 
-    @pytest.mark.asyncio
     async def test_collect_signatures_with_guard(
         self, mixin_with_guard: _OPAGuardMixinImpl, mock_opa_guard: MagicMock
     ) -> None:
@@ -154,7 +150,6 @@ class TestCollectSignatures:
             timeout=45,
         )
 
-    @pytest.mark.asyncio
     async def test_collect_signatures_default_timeout(
         self, mixin_with_guard: _OPAGuardMixinImpl, mock_opa_guard: MagicMock
     ) -> None:
@@ -169,7 +164,6 @@ class TestCollectSignatures:
         call_args = mock_opa_guard.collect_signatures.call_args
         assert call_args.kwargs["timeout"] == 60  # deliberation_timeout
 
-    @pytest.mark.asyncio
     async def test_collect_signatures_guard_disabled(
         self, mixin_without_guard: _OPAGuardMixinImpl
     ) -> None:
@@ -190,7 +184,6 @@ class TestCollectSignatures:
 class TestSubmitSignature:
     """Tests for submit_signature method."""
 
-    @pytest.mark.asyncio
     async def test_submit_signature_with_guard(
         self, mixin_with_guard: _OPAGuardMixinImpl, mock_opa_guard: MagicMock
     ) -> None:
@@ -210,7 +203,6 @@ class TestSubmitSignature:
             confidence=0.95,
         )
 
-    @pytest.mark.asyncio
     async def test_submit_signature_guard_disabled(
         self, mixin_without_guard: _OPAGuardMixinImpl
     ) -> None:
@@ -231,7 +223,6 @@ class TestSubmitSignature:
 class TestSubmitForReview:
     """Tests for submit_for_review method."""
 
-    @pytest.mark.asyncio
     async def test_submit_for_review_with_guard(
         self, mixin_with_guard: _OPAGuardMixinImpl, mock_opa_guard: MagicMock
     ) -> None:
@@ -258,7 +249,6 @@ class TestSubmitForReview:
             timeout=120,
         )
 
-    @pytest.mark.asyncio
     async def test_submit_for_review_default_timeout(
         self, mixin_with_guard: _OPAGuardMixinImpl, mock_opa_guard: MagicMock
     ) -> None:
@@ -272,7 +262,6 @@ class TestSubmitForReview:
         call_args = mock_opa_guard.submit_for_review.call_args
         assert call_args.kwargs["timeout"] == 60  # deliberation_timeout
 
-    @pytest.mark.asyncio
     async def test_submit_for_review_guard_disabled(
         self, mixin_without_guard: _OPAGuardMixinImpl
     ) -> None:
@@ -293,7 +282,6 @@ class TestSubmitForReview:
 class TestSubmitCriticReview:
     """Tests for submit_critic_review method."""
 
-    @pytest.mark.asyncio
     async def test_submit_critic_review_with_guard(
         self, mixin_with_guard: _OPAGuardMixinImpl, mock_opa_guard: MagicMock
     ) -> None:
@@ -319,7 +307,6 @@ class TestSubmitCriticReview:
             confidence=0.9,
         )
 
-    @pytest.mark.asyncio
     async def test_submit_critic_review_minimal_args(
         self, mixin_with_guard: _OPAGuardMixinImpl, mock_opa_guard: MagicMock
     ) -> None:
@@ -337,7 +324,6 @@ class TestSubmitCriticReview:
         assert call_args.kwargs["recommendations"] is None
         assert call_args.kwargs["confidence"] == 1.0
 
-    @pytest.mark.asyncio
     async def test_submit_critic_review_guard_disabled(
         self, mixin_without_guard: _OPAGuardMixinImpl
     ) -> None:
@@ -472,7 +458,6 @@ class TestGetGuardAuditLog:
 class TestOPAGuardMixinIntegration:
     """Integration tests for OPAGuardMixin."""
 
-    @pytest.mark.asyncio
     async def test_full_verification_workflow(self, mock_opa_guard: MagicMock) -> None:
         """Test complete verification workflow."""
         mixin = _OPAGuardMixinImpl(opa_guard=mock_opa_guard, deliberation_timeout=30)

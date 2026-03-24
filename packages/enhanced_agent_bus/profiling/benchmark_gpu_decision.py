@@ -30,7 +30,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -174,7 +174,7 @@ class GPUBenchmark:
     def run_concurrent_benchmark(self, scorer) -> float:
         """Run concurrent (multi-threaded) benchmark."""
         logger.info(
-            f"🚀 Running concurrent benchmark ({self.num_samples} samples, {self.concurrency} threads)..."  # noqa: E501
+            f"🚀 Running concurrent benchmark ({self.num_samples} samples, {self.concurrency} threads)..."
         )
 
         def process_message(_):

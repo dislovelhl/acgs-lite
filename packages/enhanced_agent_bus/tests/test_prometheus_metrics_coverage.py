@@ -36,7 +36,7 @@ def _fresh_module():
 # Import the module once for the majority of tests
 # ---------------------------------------------------------------------------
 
-import enhanced_agent_bus.observability.prometheus_metrics as pm  # noqa: E402
+import enhanced_agent_bus.observability.prometheus_metrics as pm
 
 # ---------------------------------------------------------------------------
 # _get_constitutional_validations_counter — already-initialised path

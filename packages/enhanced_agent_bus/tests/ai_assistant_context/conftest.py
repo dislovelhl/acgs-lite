@@ -13,7 +13,7 @@ import importlib.util
 import pytest
 
 _TORCH_AVAILABLE = False
-try:  # noqa: SIM105
+try:
     _TORCH_AVAILABLE = importlib.util.find_spec("torch") is not None
 except (ValueError, ModuleNotFoundError):
     pass

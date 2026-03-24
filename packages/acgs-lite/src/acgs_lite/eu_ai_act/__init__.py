@@ -91,7 +91,7 @@ from acgs_lite.licensing import LicenseError, LicenseManager, Tier
 def _gated(tier: Tier, original_cls: type, feature: str = "") -> type:
     """Return a subclass whose __init__ checks the license tier first."""
 
-    class _Gated(original_cls):  # type: ignore[valid-type]
+    class _Gated(original_cls):  # type: ignore[misc]
         def __init__(self, *args: Any, **kwargs: Any) -> None:
             # Always resolve the current singleton so test resets work correctly
             LicenseManager().require(tier, feature or original_cls.__name__)

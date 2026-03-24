@@ -45,7 +45,7 @@ def classify_risk_tier(impact_score: float) -> RiskTier:
     return RiskTier.MEDIUM
 
 
-class MACIRole(str, enum.Enum):  # noqa: UP042
+class MACIRole(str, enum.Enum):
     """Multi-Agent Constitutional Intelligence roles (separation of powers).
 
     Values are UPPERCASE to match the JWT payload contract used by agent_runtime.

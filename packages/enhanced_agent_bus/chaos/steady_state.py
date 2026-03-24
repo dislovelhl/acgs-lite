@@ -24,11 +24,11 @@ from enum import Enum
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -46,7 +46,7 @@ STEADY_STATE_COLLECTION_ERRORS = (
 )
 
 
-class MetricOperator(str, Enum):  # noqa: UP042
+class MetricOperator(str, Enum):
     """Operators for metric comparison."""
 
     LESS_THAN = "<"

@@ -12,7 +12,6 @@ import sys
 from types import ModuleType
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH

@@ -5,7 +5,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from datetime import UTC, datetime, timezone
 
-import pytest
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 from enhanced_agent_bus.deliberation_layer.adaptive_router import AdaptiveRouter
@@ -13,7 +12,6 @@ from enhanced_agent_bus.deliberation_layer.intent_classifier import IntentType
 from enhanced_agent_bus.models import AgentMessage, MessageStatus, MessageType, Priority
 
 
-@pytest.mark.asyncio
 async def test_adaptive_router_intent_routing():
     router = AdaptiveRouter(impact_threshold=0.8)
 

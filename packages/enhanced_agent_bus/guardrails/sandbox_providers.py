@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import Any, ClassVar
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -29,7 +29,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 logger = get_logger(__name__)
 
 
-class SandboxProviderType(str, Enum):  # noqa: UP042
+class SandboxProviderType(str, Enum):
     """Available sandbox provider types."""
 
     DOCKER = "docker"
@@ -313,7 +313,7 @@ class DockerSandboxProvider(SandboxProvider):
         except TimeoutError:
             return SandboxExecutionResult(
                 success=False,
-                error_message=f"Execution timed out after {request.resource_limits.timeout_seconds}s",  # noqa: E501
+                error_message=f"Execution timed out after {request.resource_limits.timeout_seconds}s",
                 container_id=container_name,
                 trace_id=request.trace_id,
                 execution_time_ms=request.resource_limits.timeout_seconds * 1000,
@@ -394,14 +394,14 @@ class DockerSandboxProvider(SandboxProvider):
 
             # Block string constants containing dunder names (indirect escape vectors)
             # e.g. getattr(x, '__class__') or '__' + 'class' + '__'
-            if isinstance(node, _ast.Constant) and isinstance(node.value, str):  # noqa: SIM102
+            if isinstance(node, _ast.Constant) and isinstance(node.value, str):
                 if node.value.startswith("__") and node.value.endswith("__"):
                     raise ValueError(
                         f"String containing dunder name {node.value!r} is blocked in sandbox code"
                     )
 
             # Block calls to dangerous builtins: getattr(...), type(...), etc.
-            if isinstance(node, _ast.Call) and isinstance(node.func, _ast.Name):  # noqa: SIM102
+            if isinstance(node, _ast.Call) and isinstance(node.func, _ast.Name):
                 if node.func.id in DockerSandboxProvider._BLOCKED_BUILTINS:
                     raise ValueError(f"Call to {node.func.id!r} is blocked in sandbox code")
 
@@ -519,7 +519,7 @@ if __name__ == "__main__":
 
         # Build security options
         security_opt = []
-        if sec.enable_seccomp:  # noqa: SIM102
+        if sec.enable_seccomp:
             if sec.seccomp_profile:
                 security_opt.append(f"seccomp={sec.seccomp_profile}")
 
@@ -545,7 +545,7 @@ if __name__ == "__main__":
             "read_only": sec.read_only_root,
             "cap_drop": ["ALL"] if sec.drop_all_capabilities else None,
             "tmpfs": {
-                "/tmp": "noexec,nosuid,size=100m",  # nosec B108 - container sandbox tmpfs mount  # noqa: S108
+                "/tmp": "noexec,nosuid,size=100m",  # nosec B108 - container sandbox tmpfs mount
             },
             "volumes": {
                 host_temp_dir: {

@@ -55,14 +55,15 @@ def create_mcp_server(
     if not MCP_AVAILABLE:
         raise ImportError("mcp package is required. Install with: pip install acgs-lite[mcp]")
 
-    constitution = constitution or Constitution.default()
+    constitution = constitution if constitution is not None else Constitution.default()
     audit_log = AuditLog()
     engine = GovernanceEngine(constitution, audit_log=audit_log, strict=strict)
 
     server = Server(server_name)
 
-    @server.list_tools()
+    @server.list_tools()  # type: ignore[no-untyped-call,untyped-decorator]
     async def list_tools() -> list[types.Tool]:
+        """Return the list of available governance tools."""
         return [
             types.Tool(
                 name="validate_action",
@@ -140,9 +141,9 @@ def create_mcp_server(
             ),
         ]
 
-    @server.call_tool()
+    @server.call_tool()  # type: ignore[untyped-decorator]
     async def call_tool(name: str, arguments: dict[str, Any]) -> list[types.TextContent]:
-
+        """Dispatch a governance tool call by name."""
         if name == "validate_action":
             action = arguments.get("action", "")
             agent_id = arguments.get("agent_id", "mcp-client")

@@ -145,6 +145,7 @@ class DuplicationReport:
 
     @property
     def has_duplicates(self) -> bool:
+        """Return True if any duplicate or near-duplicate rules were found."""
         return bool(self.exact_groups or self.subset_pairs or self.near_duplicate_pairs)
 
     @property

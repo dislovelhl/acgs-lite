@@ -1,5 +1,5 @@
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -9,15 +9,15 @@ Multi-Agent Planning - Task decomposition, capability matching, and plan verific
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-import hashlib  # noqa: E402
-from collections.abc import Callable  # noqa: E402
-from dataclasses import dataclass, field  # noqa: E402
-from datetime import UTC, datetime  # noqa: E402
-from enum import Enum  # noqa: E402
-from typing import Protocol  # noqa: E402
+import hashlib
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
+from enum import Enum
+from typing import Protocol
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -359,7 +359,7 @@ class CapabilityMatcher:
             if cap.capability_type != capability_type:
                 continue
 
-            if constraints:  # noqa: SIM102
+            if constraints:
                 if not all(c in cap.constraints for c in constraints):
                     continue
 
@@ -492,7 +492,7 @@ class PlanVerifier:
 
         # Check each unvisited step for cycles
         for step in plan.steps:
-            if step.step_id not in visited:  # noqa: SIM102
+            if step.step_id not in visited:
                 if has_cycle(step.step_id):
                     return False, "Circular dependency detected"
 
@@ -532,7 +532,7 @@ class PlanVerifier:
                             "type": "invalid_assignment",
                             "step_id": step.step_id,
                             "agent_id": step.assigned_agent,
-                            "message": f"Agent {step.assigned_agent} cannot perform {step.capability_type.value}",  # noqa: E501
+                            "message": f"Agent {step.assigned_agent} cannot perform {step.capability_type.value}",
                         }
                     )
 

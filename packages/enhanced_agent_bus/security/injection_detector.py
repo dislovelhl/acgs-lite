@@ -14,7 +14,7 @@ from typing import ClassVar, Protocol, runtime_checkable
 from src.core.shared.type_guards import is_json_dict, is_str
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -357,7 +357,7 @@ class PromptInjectionDetector:
 
         if is_injection:
             logger.warning(
-                f"Prompt injection detected: type={primary_type.value if primary_type else 'unknown'}, "  # noqa: E501
+                f"Prompt injection detected: type={primary_type.value if primary_type else 'unknown'}, "
                 f"severity={max_severity.value if max_severity else 'unknown'}, "
                 f"confidence={confidence_score:.2f}, patterns={len(matched_patterns)}"
             )

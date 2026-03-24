@@ -225,7 +225,6 @@ class TestMessageProcessor:
         message.constitutional_hash = "invalid_hash"
         return message
 
-    @pytest.mark.asyncio
     async def test_process_valid_message(self, processor, valid_message):
         """Test processing a valid message."""
         result = await processor.process(valid_message)
@@ -233,7 +232,6 @@ class TestMessageProcessor:
         assert result.is_valid
         assert valid_message.status == MessageStatus.DELIVERED
 
-    @pytest.mark.asyncio
     async def test_process_invalid_hash_message(self, processor, invalid_hash_message):
         """Test processing message with invalid constitutional hash."""
         result = await processor.process(invalid_hash_message)
@@ -241,7 +239,6 @@ class TestMessageProcessor:
         assert not result.is_valid
         assert "Constitutional hash mismatch" in result.errors[0]
 
-    @pytest.mark.asyncio
     async def test_handler_registration(self, processor, valid_message):
         """Test handler registration and execution."""
         handler_called = False
@@ -255,7 +252,6 @@ class TestMessageProcessor:
 
         assert handler_called
 
-    @pytest.mark.asyncio
     async def test_sync_handler(self, processor, valid_message):
         """Test synchronous handler execution."""
         handler_called = False
@@ -269,7 +265,6 @@ class TestMessageProcessor:
 
         assert handler_called
 
-    @pytest.mark.asyncio
     async def test_processed_count(self, processor, valid_message):
         """Test processed message count."""
         initial_count = processor.processed_count
@@ -278,7 +273,6 @@ class TestMessageProcessor:
 
         assert processor.processed_count == initial_count + 1
 
-    @pytest.mark.asyncio
     async def test_handler_error_handling(self, processor, valid_message):
         """Test handler error is properly caught and reported."""
 
@@ -317,7 +311,6 @@ class TestEnhancedAgentBus:
             content={"action": "test"},
         )
 
-    @pytest.mark.asyncio
     async def test_start_stop(self, agent_bus):
         """Test starting and stopping the agent bus."""
         await agent_bus.start()
@@ -326,7 +319,6 @@ class TestEnhancedAgentBus:
         await agent_bus.stop()
         assert not agent_bus._running
 
-    @pytest.mark.asyncio
     async def test_agent_registration(self, agent_bus):
         """Test agent registration."""
         result = await agent_bus.register_agent(
@@ -338,7 +330,6 @@ class TestEnhancedAgentBus:
         assert result
         assert "test_agent" in agent_bus.get_registered_agents()
 
-    @pytest.mark.asyncio
     async def test_agent_unregistration(self, agent_bus):
         """Test agent unregistration."""
         await agent_bus.register_agent("test_agent")
@@ -348,13 +339,11 @@ class TestEnhancedAgentBus:
         assert result
         assert "test_agent" not in agent_bus.get_registered_agents()
 
-    @pytest.mark.asyncio
     async def test_unregister_nonexistent_agent(self, agent_bus):
         """Test unregistering nonexistent agent returns False."""
         result = await agent_bus.unregister_agent("nonexistent_agent")
         assert not result
 
-    @pytest.mark.asyncio
     async def test_send_valid_message(self, agent_bus, valid_message):
         """Test sending a valid message."""
         result = await agent_bus.send_message(valid_message)
@@ -362,7 +351,6 @@ class TestEnhancedAgentBus:
         assert result.is_valid
         assert agent_bus._metrics["messages_sent"] == 1
 
-    @pytest.mark.asyncio
     async def test_send_invalid_hash_message(self, agent_bus):
         """Test sending message with invalid constitutional hash."""
         message = AgentMessage(
@@ -379,7 +367,6 @@ class TestEnhancedAgentBus:
         assert not result.is_valid
         assert agent_bus._metrics["messages_failed"] == 1
 
-    @pytest.mark.asyncio
     async def test_receive_message(self, agent_bus, valid_message):
         """Test receiving a message from the queue."""
         await agent_bus.send_message(valid_message)
@@ -390,13 +377,11 @@ class TestEnhancedAgentBus:
         assert received.message_id == valid_message.message_id
         assert agent_bus._metrics["messages_received"] == 1
 
-    @pytest.mark.asyncio
     async def test_receive_message_timeout(self, agent_bus):
         """Test receive timeout returns None."""
         received = await agent_bus.receive_message(timeout=0.1)
         assert received is None
 
-    @pytest.mark.asyncio
     async def test_get_metrics(self, agent_bus, valid_message):
         """Test getting bus metrics."""
         await agent_bus.register_agent("test_agent")
@@ -408,7 +393,6 @@ class TestEnhancedAgentBus:
         assert metrics["messages_sent"] == 1
         assert metrics["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_constitutional_hash_in_registration(self, agent_bus):
         """Test that registered agents have constitutional hash."""
         await agent_bus.register_agent("test_agent")

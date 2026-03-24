@@ -145,7 +145,6 @@ class TestMessageProcessorExtended:
         assert metrics["rust_enabled"] is False
         assert metrics["dynamic_policy_enabled"] is False
 
-    @pytest.mark.asyncio
     async def test_process_python_invalid_hash(self):
         """Test Python processing with invalid constitutional hash."""
         message = AgentMessage(
@@ -161,7 +160,6 @@ class TestMessageProcessorExtended:
         assert result.is_valid is False
         assert "hash mismatch" in result.errors[0].lower()
 
-    @pytest.mark.asyncio
     async def test_run_handlers_sync(self):
         """Test running synchronous handlers."""
         call_log = []
@@ -187,7 +185,6 @@ class TestMessageProcessorExtended:
         assert len(call_log) == 1
         assert "sync:MessageType.COMMAND" in call_log[0]
 
-    @pytest.mark.asyncio
     async def test_run_handlers_async(self):
         """Test running asynchronous handlers."""
         call_log = []
@@ -256,7 +253,6 @@ class TestEnhancedAgentBusExtended:
         bus = SimpleBus(redis_url="redis://custom:6380/1")
         assert bus.redis_url == "redis://custom:6380/1"
 
-    @pytest.mark.asyncio
     async def test_bus_start_sets_running(self):
         """Test that start sets running flag."""
 
@@ -275,7 +271,6 @@ class TestEnhancedAgentBusExtended:
         assert bus._running is True
         assert bus._metrics["started_at"] is not None
 
-    @pytest.mark.asyncio
     async def test_bus_stop_clears_running(self):
         """Test that stop clears running flag."""
 
@@ -291,7 +286,6 @@ class TestEnhancedAgentBusExtended:
 
         assert bus._running is False
 
-    @pytest.mark.asyncio
     async def test_register_agent_basic(self):
         """Test basic agent registration."""
 
@@ -328,7 +322,6 @@ class TestEnhancedAgentBusExtended:
         assert bus.agents["agent1"]["tenant_id"] == "tenant1"
         assert "process" in bus.agents["agent1"]["capabilities"]
 
-    @pytest.mark.asyncio
     async def test_unregister_agent(self):
         """Test agent unregistration."""
 
@@ -352,7 +345,6 @@ class TestEnhancedAgentBusExtended:
         assert result is True
         assert "agent1" not in bus.agents
 
-    @pytest.mark.asyncio
     async def test_unregister_nonexistent_agent(self):
         """Test unregistering non-existent agent."""
 
@@ -371,7 +363,6 @@ class TestEnhancedAgentBusExtended:
 
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_send_message_updates_metrics(self):
         """Test that sending message updates metrics."""
 
@@ -400,7 +391,6 @@ class TestEnhancedAgentBusExtended:
         assert result.is_valid is True
         assert bus._metrics["messages_sent"] == 1
 
-    @pytest.mark.asyncio
     async def test_receive_message_with_timeout(self):
         """Test message receive with timeout."""
 
@@ -528,7 +518,6 @@ class TestValidationResultExtended:
 class TestMessageQueueOperations:
     """Tests for message queue operations."""
 
-    @pytest.mark.asyncio
     async def test_queue_put_get(self):
         """Test basic queue put/get operations."""
         queue = asyncio.Queue()
@@ -546,7 +535,6 @@ class TestMessageQueueOperations:
         assert retrieved.message_id == message.message_id
         assert retrieved.content == message.content
 
-    @pytest.mark.asyncio
     async def test_queue_priority_ordering(self):
         """Test queue with priority-based ordering simulation."""
         messages = [
@@ -581,7 +569,6 @@ class TestMessageQueueOperations:
         assert sorted_msgs[0].content["priority"] == "critical"
         assert sorted_msgs[2].content["priority"] == "low"
 
-    @pytest.mark.asyncio
     async def test_queue_empty_check(self):
         """Test checking if queue is empty."""
         queue = asyncio.Queue()
@@ -599,7 +586,6 @@ class TestMessageQueueOperations:
 class TestErrorHandling:
     """Tests for error handling scenarios."""
 
-    @pytest.mark.asyncio
     async def test_handler_type_error_caught(self):
         """Test that TypeError in handler is caught."""
         errors = []
@@ -622,7 +608,6 @@ class TestErrorHandling:
         assert len(errors) == 1
         assert "Invalid type" in errors[0]
 
-    @pytest.mark.asyncio
     async def test_handler_value_error_caught(self):
         """Test that ValueError in handler is caught."""
         errors = []
@@ -638,7 +623,6 @@ class TestErrorHandling:
         assert len(errors) == 1
         assert "Invalid value" in errors[0]
 
-    @pytest.mark.asyncio
     async def test_handler_runtime_error_caught(self):
         """Test that RuntimeError in handler is caught."""
         errors = []
@@ -654,7 +638,6 @@ class TestErrorHandling:
         assert len(errors) == 1
         assert "Runtime failure" in errors[0]
 
-    @pytest.mark.asyncio
     async def test_cancelled_error_propagates(self):
         """Test that CancelledError is not suppressed."""
 

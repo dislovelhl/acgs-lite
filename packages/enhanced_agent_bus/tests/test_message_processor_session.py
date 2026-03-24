@@ -68,7 +68,6 @@ def message_processor(bus_config):
 class TestSessionContextExtraction:
     """Test session context extraction from messages."""
 
-    @pytest.mark.asyncio
     async def test_extract_from_session_id_field(self, message_processor, mock_session_context):
         """Test extracting session context from message session_id field."""
         # Arrange
@@ -94,7 +93,6 @@ class TestSessionContextExtraction:
             assert result.governance_config.tenant_id == "test-tenant"
             assert message_processor._session_resolved_count == 1
 
-    @pytest.mark.asyncio
     async def test_extract_from_headers(self, message_processor, mock_session_context):
         """Test extracting session context from message headers."""
         # Arrange
@@ -118,7 +116,6 @@ class TestSessionContextExtraction:
             assert result is not None
             assert result.session_id == "test-session-123"
 
-    @pytest.mark.asyncio
     async def test_extract_from_metadata(self, message_processor, mock_session_context):
         """Test extracting session context from message metadata."""
         # Arrange
@@ -142,7 +139,6 @@ class TestSessionContextExtraction:
             assert result is not None
             assert result.session_id == "test-session-123"
 
-    @pytest.mark.asyncio
     async def test_extract_from_content_dict(self, message_processor, mock_session_context):
         """Test extracting session context from message content (dict)."""
         # Arrange
@@ -165,7 +161,6 @@ class TestSessionContextExtraction:
             assert result is not None
             assert result.session_id == "test-session-123"
 
-    @pytest.mark.asyncio
     async def test_session_already_attached(self, message_processor, mock_session_context):
         """Test when session_context is already attached to message."""
         # Arrange
@@ -191,7 +186,6 @@ class TestSessionContextExtraction:
 class TestSessionContextGracefulFallback:
     """Test graceful fallback when session not found."""
 
-    @pytest.mark.asyncio
     async def test_no_session_id_graceful_fallback(self, message_processor):
         """Test graceful fallback when no session_id found in message."""
         # Arrange
@@ -213,7 +207,6 @@ class TestSessionContextGracefulFallback:
         assert message_processor._session_not_found_count == 0
         assert message_processor._session_error_count == 0
 
-    @pytest.mark.asyncio
     async def test_session_not_found_graceful_fallback(self, message_processor):
         """Test graceful fallback when session context not found in store."""
         # Arrange
@@ -236,7 +229,6 @@ class TestSessionContextGracefulFallback:
             assert result is None
             assert message_processor._session_not_found_count == 1
 
-    @pytest.mark.asyncio
     async def test_session_load_error_graceful_fallback(self, message_processor):
         """Test graceful fallback when error occurs loading session context."""
         # Arrange
@@ -263,7 +255,6 @@ class TestSessionContextGracefulFallback:
 class TestSessionContextMetrics:
     """Test metrics tracking for session resolution."""
 
-    @pytest.mark.asyncio
     async def test_metrics_included_when_enabled(self, message_processor):
         """Test that session metrics are included when session governance is enabled."""
         # Act
@@ -291,7 +282,6 @@ class TestSessionContextMetrics:
         assert "session_governance_enabled" in metrics
         assert metrics["session_governance_enabled"] is False
 
-    @pytest.mark.asyncio
     async def test_session_resolution_rate_calculation(
         self, message_processor, mock_session_context
     ):
@@ -374,7 +364,6 @@ class TestSessionContextDisabled:
         assert processor._enable_session_governance is False
         assert processor._session_context_manager is None
 
-    @pytest.mark.asyncio
     async def test_extract_session_context_returns_none_when_disabled(self):
         """Test that _extract_session_context returns None when disabled."""
         # Arrange

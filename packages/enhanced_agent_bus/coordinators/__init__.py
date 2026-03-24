@@ -12,11 +12,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -123,22 +123,22 @@ class MACICoordinatorProtocol(Protocol):
     def is_enabled(self) -> bool: ...
 
 
-from .context_coordinator import (  # noqa: E402
+from .context_coordinator import (
     ContextCoordinator,
     ContextCoordinatorProtocol,
     ContextProcessingResult,
 )
-from .maci_coordinator import MACICoordinator  # noqa: E402
-from .memory_coordinator import MemoryCoordinator  # noqa: E402
-from .research_coordinator import ResearchCoordinator  # noqa: E402
-from .swarm_coordinator import SwarmCoordinator  # noqa: E402
-from .task_coordinator import (  # noqa: E402
+from .maci_coordinator import MACICoordinator
+from .memory_coordinator import MemoryCoordinator
+from .research_coordinator import ResearchCoordinator
+from .swarm_coordinator import SwarmCoordinator
+from .task_coordinator import (
     TaskCoordinator,
     TaskCoordinatorProtocol,
     TaskExecutionOptions,
     TaskResult,
 )
-from .workflow_coordinator import WorkflowCoordinator  # noqa: E402
+from .workflow_coordinator import WorkflowCoordinator
 
 __all__ = [
     "ContextCoordinator",

@@ -303,7 +303,7 @@ class ACLAdapter(ABC, Generic[RequestT, ResponseT]):
                 )
             except asyncio.TimeoutError:
                 last_error = AdapterTimeoutError(self.name, self.config.timeout_ms)
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:
                 last_error = exc
             self.circuit_breaker.record_failure()
             if attempt < self.config.max_retries:
@@ -378,13 +378,13 @@ class ACLAdapter(ABC, Generic[RequestT, ResponseT]):
 
 
 __all__ = [
+    "CONSTITUTIONAL_HASH",
     "ACLAdapter",
     "AdapterCircuitOpenError",
     "AdapterConfig",
     "AdapterResult",
     "AdapterState",
     "AdapterTimeoutError",
-    "CONSTITUTIONAL_HASH",
     "RateLimitExceededError",
     "SimpleCircuitBreaker",
     "TokenBucketRateLimiter",

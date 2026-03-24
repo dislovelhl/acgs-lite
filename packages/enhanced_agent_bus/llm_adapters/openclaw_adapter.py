@@ -116,9 +116,15 @@ class OpenClawAdapter(BaseLLMAdapter):
         "anthropic/claude-sonnet-4-6": {"prompt": 3.00, "completion": 15.00},
         "anthropic/claude-haiku-4-5-20251001": {"prompt": 1.00, "completion": 5.00},
         # OpenAI models via OpenClaw
+        "openai/gpt-5.4": {"prompt": 2.00, "completion": 16.00},
+        "openai/gpt-5.3": {"prompt": 1.75, "completion": 14.00},
         "openai/gpt-5.2": {"prompt": 1.75, "completion": 14.00},
         "openai/gpt-5.1": {"prompt": 1.25, "completion": 10.00},
         "openai/gpt-5-mini": {"prompt": 0.25, "completion": 2.00},
+        # xAI models via OpenClaw
+        "xai/grok-4-1-fast": {"prompt": 0.20, "completion": 0.50},
+        "xai/grok-4.20": {"prompt": 2.00, "completion": 6.00},
+        "xai/grok-4": {"prompt": 3.00, "completion": 15.00},
         # Google models via OpenClaw
         "google/gemini-2.0-flash": {"prompt": 0.0, "completion": 0.0},
     }
@@ -158,6 +164,18 @@ class OpenClawAdapter(BaseLLMAdapter):
         self.config = config
         self._client: _OpenAIClientProtocol | None = None
         self._async_client: _AsyncOpenAIClientProtocol | None = None
+
+    def validate_constitutional_compliance(self, **kwargs: object) -> None:
+        """Validate constitutional compliance for OpenClaw adapter."""
+        if not self.constitutional_hash:
+            raise ValueError("Constitutional hash is required for OpenClaw adapter compliance.")
+        if self.constitutional_hash != CONSTITUTIONAL_HASH:
+            logger.warning(
+                "OpenClaw adapter using non-standard constitutional hash: %s",
+                self.constitutional_hash,
+            )
+        if not self.model:
+            raise ValueError("OpenClaw adapter constitutional compliance requires a model.")
 
     def _get_client(self) -> _OpenAIClientProtocol:
         """Get or create synchronous OpenAI-compatible client.

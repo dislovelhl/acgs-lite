@@ -225,7 +225,7 @@ class RedisRateLimiter:
         """Close Redis connection."""
         if self._redis is not None:
             try:
-                await self._redis.close()
+                await self._redis.aclose()
             except REDIS_CLOSE_ERRORS as e:
                 logger.debug(f"Error closing Redis connection: {e}")
             finally:

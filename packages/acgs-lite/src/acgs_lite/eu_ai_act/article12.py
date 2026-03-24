@@ -270,6 +270,7 @@ class Article12Logger:
 
     @property
     def record_count(self) -> int:
+        """Return the number of records in the audit log."""
         return len(self._records)
 
     def export_jsonl(self, path: str | Path, *, append: bool = True) -> None:

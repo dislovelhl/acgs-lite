@@ -1,13 +1,25 @@
-.PHONY: help setup test test-quick test-lite test-bus test-gw lint format clean bench codex-doctor autoresearch-promote agent-commit
+.PHONY: help setup lock-sync lock-validate test test-quick test-lite test-bus test-gw health-manifest health-overview health-lite health-bus health-bus-governance health-gw health-constitutional-swarm health-frontend health-worker lint format clean bench cov cov-html codex-doctor autoresearch-promote agent-commit
 
-PYTHON ?= python3
+LOCK_PYTHON ?= 3.11
+UV ?= uv
+ROOT_DIR := $(CURDIR)
+UV_CACHE_DIR ?= $(ROOT_DIR)/.uv-cache
+VENV_PYTHON := $(ROOT_DIR)/.venv/bin/python
+PYTHON ?= $(if $(wildcard $(VENV_PYTHON)),$(VENV_PYTHON),python3)
 PIP ?= $(PYTHON) -m pip
+WORKSPACE_PYTHONPATH := $(ROOT_DIR)/packages/enhanced_agent_bus:$(ROOT_DIR)/packages/acgs-lite/src:$(ROOT_DIR)/packages/acgs-deliberation/src:$(ROOT_DIR)/packages/constitutional_swarm/src:$(ROOT_DIR)/packages/mhc/src:$(ROOT_DIR)/src:$(ROOT_DIR)
+export PYTHONPATH := $(WORKSPACE_PYTHONPATH)$(if $(PYTHONPATH),:$(PYTHONPATH))
+PYTEST_TARGETS ?=
+PYTEST_ARGS ?=
+UV_SYNC_ARGS ?= --frozen --all-packages --extra dev --extra test --extra postgres --extra ml --extra messaging --extra all --python $(LOCK_PYTHON) --no-python-downloads
 
 help:
 	@echo "ACGS — Advanced Constitutional Governance System"
 	@echo ""
 	@echo "  Setup:"
 	@echo "    make setup        Install deps + pre-commit"
+	@echo "    make lock-sync    Rebuild the project .venv from uv.lock on Python $(LOCK_PYTHON)"
+	@echo "    make lock-validate Verify the locked .venv and run environment smoke tests"
 	@echo "    make codex-doctor  Run repo-local Codex readiness checks"
 	@echo ""
 	@echo "  Testing:"
@@ -17,41 +29,109 @@ help:
 	@echo "    make test-bus     Enhanced Agent Bus tests only"
 	@echo "    make test-gw      API Gateway tests only"
 	@echo ""
+	@echo "  Package Health:"
+	@echo "    make health-manifest Validate package health metadata"
+	@echo "    make health-overview Show per-package owners, namespaces, and verification commands"
+	@echo "    make health-lite    First-class acgs-lite health gate"
+	@echo "    make health-bus     First-class enhanced-agent-bus health gate"
+	@echo "    make health-bus-governance Governance-core slice for enhanced-agent-bus"
+	@echo "    make health-gw      First-class API Gateway health gate"
+	@echo "    make health-constitutional-swarm First-class constitutional-swarm health gate"
+	@echo "    make health-frontend First-class propriety-ai health gate"
+	@echo "    make health-worker  First-class governance-proxy worker health gate"
+	@echo ""
 	@echo "  Code Quality:"
 	@echo "    make lint         Ruff + MyPy"
 	@echo "    make format       Auto-fix formatting"
 	@echo "    make clean        Remove cache files"
 	@echo ""
 	@echo "  Benchmarks:"
-	@echo "    make bench        Run autoresearch benchmark"
+	@echo "    make bench        Run acgs-lite benchmark suite"
 
 # === Setup ===
-setup:
-	$(PIP) install -e ".[dev,test]"
-	$(PIP) install -e packages/acgs-lite[dev]
-	$(PIP) install -e packages/enhanced_agent_bus[dev]
-	pre-commit install
+setup: lock-sync
+	@if [ "$${CI:-}" = "true" ]; then \
+		echo "Skipping pre-commit install in CI"; \
+	elif git config --get core.hooksPath >/dev/null 2>&1; then \
+		echo "Skipping pre-commit install because git core.hooksPath is set"; \
+	else \
+		pre-commit install; \
+	fi
+	cd packages/propriety-ai && npm install
+
+lock-sync:
+	UV_CACHE_DIR=$(UV_CACHE_DIR) $(UV) sync $(UV_SYNC_ARGS)
+
+lock-validate: lock-sync
+	UV_CACHE_DIR=$(UV_CACHE_DIR) $(UV) sync $(UV_SYNC_ARGS) --check
+	$(PYTHON) -c "import acgs_lite, sys; print(sys.executable); print(sys.version.split()[0]); print(acgs_lite.__file__)"
+	$(PYTHON) -m pytest --import-mode=importlib -q \
+		tests/test_testclient_compat.py \
+		src/core/shared/tests/test_runtime_environment.py \
+		src/core/services/api_gateway/tests/unit/test_lifespan.py::TestVerifyConstitutionalHashAtStartup::test_environment_only_production_still_requires_constitutional_hash
 
 # === Testing ===
 test:
-	$(PYTHON) -m pytest --import-mode=importlib -v
+	$(PYTHON) -m pytest --import-mode=importlib -v $(PYTEST_TARGETS) $(PYTEST_ARGS)
+	cd packages/propriety-ai && npm run test
 
 test-quick:
-	$(PYTHON) -m pytest --import-mode=importlib -m "not slow" -x -v
+	$(PYTHON) -m pytest --import-mode=importlib -m "not slow" -x -v $(PYTEST_TARGETS) $(PYTEST_ARGS)
+	cd packages/propriety-ai && npm run test:unit
 
 test-lite:
-	$(PYTHON) -m pytest packages/acgs-lite/tests/ -v --import-mode=importlib
+	$(PYTHON) -m pytest $(or $(PYTEST_TARGETS),packages/acgs-lite/tests/) -v --import-mode=importlib $(PYTEST_ARGS)
 
 test-bus:
-	$(PYTHON) -m pytest packages/enhanced_agent_bus/tests/ -v --import-mode=importlib
+	$(PYTHON) -m pytest $(or $(PYTEST_TARGETS),packages/enhanced_agent_bus/tests/) -v --import-mode=importlib $(PYTEST_ARGS)
 
 test-gw:
-	$(PYTHON) -m pytest src/core/services/api_gateway/tests/ -v --import-mode=importlib
+	$(PYTHON) -m pytest $(or $(PYTEST_TARGETS),src/core/services/api_gateway/tests/) -v --import-mode=importlib $(PYTEST_ARGS)
+
+health-manifest:
+	$(PYTHON) scripts/package_health.py validate
+
+health-overview: health-manifest
+	$(PYTHON) scripts/package_health.py list
+
+health-lite: test-lite
+
+health-bus: test-bus
+
+health-bus-governance:
+	ruff check \
+		packages/enhanced_agent_bus/governance_core.py \
+		packages/enhanced_agent_bus/message_processor.py \
+		packages/enhanced_agent_bus/verification_orchestrator.py \
+		packages/enhanced_agent_bus/config.py \
+		packages/enhanced_agent_bus/tests/test_governance_core.py \
+		packages/enhanced_agent_bus/tests/test_config.py
+	python3 -m pytest --import-mode=importlib -q \
+		packages/enhanced_agent_bus/tests/test_governance_core.py \
+		packages/enhanced_agent_bus/tests/test_config.py \
+		packages/enhanced_agent_bus/tests/test_message_processor_coverage.py \
+		packages/enhanced_agent_bus/tests/test_processor_redesign.py::TestMessageProcessorBackwardCompat \
+		packages/enhanced_agent_bus/tests/test_environment_check.py \
+		packages/enhanced_agent_bus/tests/test_security_defaults.py \
+		packages/enhanced_agent_bus/tests/test_message_processor_independent_validator_gate.py
+
+health-gw: test-gw
+
+health-constitutional-swarm:
+	$(PYTHON) -m ruff check packages/constitutional_swarm
+	$(PYTHON) -c "import constitutional_swarm"
+	$(PYTHON) -m pytest --import-mode=importlib packages/constitutional_swarm/tests -v
+
+health-frontend:
+	cd packages/propriety-ai && npm run test
+
+health-worker:
+	cd workers/governance-proxy && npm run test
 
 # === Code Quality ===
 lint:
-	ruff check --extend-exclude .codex-home .
-	mypy \
+	$(PYTHON) -m ruff check --extend-exclude .codex-home .
+	$(PYTHON) -m mypy \
 		conftest.py \
 		src/core/shared/cache/models.py \
 		src/core/shared/acgs_logging/agent_workflow_events.py \
@@ -67,14 +147,24 @@ lint:
 		packages/enhanced_agent_bus/multi_tenancy/__init__.py \
 		--ignore-missing-imports \
 		--follow-imports skip
+	cd packages/propriety-ai && npm run check && npm run lint
 
 format:
 	ruff check --fix .
 	ruff format .
+	cd packages/propriety-ai && npm run format
+
+# === Coverage ===
+cov:
+	$(PYTHON) -m pytest --import-mode=importlib --cov --cov-report=term-missing -m "not slow" -x
+
+cov-html:
+	$(PYTHON) -m pytest --import-mode=importlib --cov --cov-report=html -m "not slow"
+	@echo "Coverage report: htmlcov/index.html"
 
 # === Benchmarks ===
 bench:
-	cd packages/acgs-lite && $(PYTHON) -m pytest tests/ -m benchmark -v --import-mode=importlib
+	$(PYTHON) -m pytest packages/acgs-lite/tests/test_benchmark_engine.py -m benchmark -v --import-mode=importlib
 
 # === Codex Bootstrap ===
 codex-doctor:

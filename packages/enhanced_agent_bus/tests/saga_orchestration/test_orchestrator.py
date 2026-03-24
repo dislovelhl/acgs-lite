@@ -30,7 +30,6 @@ class TestSagaOrchestrator:
         assert retrieved.name == "simple_saga"
         assert len(retrieved.steps) == 2
 
-    @pytest.mark.asyncio
     async def test_create_saga(
         self, orchestrator: SagaOrchestrator, simple_saga_definition: SagaDefinition
     ):
@@ -50,7 +49,6 @@ class TestSagaOrchestrator:
         assert saga.context.data["key"] == "value"
         assert len(saga.steps) == 2
 
-    @pytest.mark.asyncio
     async def test_create_saga_unknown_definition(self, orchestrator: SagaOrchestrator):
         """Test creating a saga with unknown definition."""
         with pytest.raises(ValueError, match="Unknown saga definition"):
@@ -59,7 +57,6 @@ class TestSagaOrchestrator:
                 tenant_id="tenant-001",
             )
 
-    @pytest.mark.asyncio
     async def test_execute_successful_saga(
         self, orchestrator: SagaOrchestrator, simple_saga_definition: SagaDefinition
     ):
@@ -80,7 +77,6 @@ class TestSagaOrchestrator:
         assert "step2" in result.completed_steps
         assert result.failed_step is None
 
-    @pytest.mark.asyncio
     async def test_execute_failing_saga_with_compensation(
         self,
         orchestrator: SagaOrchestrator,
@@ -102,13 +98,11 @@ class TestSagaOrchestrator:
         assert result.failed_step == "step2"
         assert "step1" in result.compensated_steps
 
-    @pytest.mark.asyncio
     async def test_execute_nonexistent_saga(self, orchestrator: SagaOrchestrator):
         """Test executing a non-existent saga."""
         with pytest.raises(ValueError, match="Saga not found"):
             await orchestrator.execute("nonexistent-saga")
 
-    @pytest.mark.asyncio
     async def test_saga_step_results_stored_in_context(
         self,
         orchestrator: SagaOrchestrator,
@@ -130,7 +124,6 @@ class TestSagaOrchestrator:
         assert "step1" in updated_saga.context.step_results
         assert "step2" in updated_saga.context.step_results
 
-    @pytest.mark.asyncio
     async def test_saga_events_recorded(
         self,
         orchestrator: SagaOrchestrator,
@@ -155,7 +148,6 @@ class TestSagaOrchestrator:
         assert SagaEventType.STEP_STARTED in event_types
         assert SagaEventType.STEP_COMPLETED in event_types
 
-    @pytest.mark.asyncio
     async def test_cancel_pending_saga(
         self,
         orchestrator: SagaOrchestrator,
@@ -176,7 +168,6 @@ class TestSagaOrchestrator:
         assert updated_saga is not None
         assert updated_saga.status == SagaStatus.COMPENSATED
 
-    @pytest.mark.asyncio
     async def test_cancel_completed_saga_fails(
         self,
         orchestrator: SagaOrchestrator,
@@ -195,7 +186,6 @@ class TestSagaOrchestrator:
         result = await orchestrator.cancel_saga(saga.saga_id)
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_list_sagas(
         self,
         orchestrator: SagaOrchestrator,

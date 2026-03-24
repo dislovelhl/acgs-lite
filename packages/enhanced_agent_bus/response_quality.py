@@ -23,11 +23,11 @@ from enum import Enum
 from typing import Any, ClassVar
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -43,7 +43,7 @@ RESPONSE_QUALITY_AVAILABLE = True
 # =============================================================================
 
 
-class ValidationStage(str, Enum):  # noqa: UP042
+class ValidationStage(str, Enum):
     """Stages in the multi-stage response validation pipeline.
 
     Constitutional Hash: cdd01ef066bc6cf2
@@ -75,7 +75,7 @@ class ValidationResult:
             raise ValueError(f"Confidence must be between 0.0 and 1.0, got {self.confidence}")
 
 
-class QualityDimension(str, Enum):  # noqa: UP042
+class QualityDimension(str, Enum):
     """Quality dimensions used by the multi-dimension scorer.
 
     Constitutional Hash: cdd01ef066bc6cf2
@@ -540,7 +540,7 @@ class ResponseValidationPipeline:
                     issues=[f"Stage {stage.value!r} validation timed out"],
                     confidence=0.0,
                 )
-            except Exception as exc:  # noqa: BLE001 - validator plugins may raise arbitrary errors
+            except Exception as exc:
                 logger.exception(
                     f"[{CONSTITUTIONAL_HASH}] Validation stage {stage.value!r} error: {exc}"
                 )
@@ -1021,7 +1021,7 @@ class ResponseRefiner:
                         f"at iteration {iteration}"
                     )
                     break
-                except Exception as exc:  # noqa: BLE001 - refinement callback is user-supplied
+                except Exception as exc:
                     logger.error(f"[{CONSTITUTIONAL_HASH}] Refinement callback error: {exc}")
                     break
             else:

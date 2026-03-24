@@ -337,7 +337,6 @@ class TestAuthorizationDenialEvent:
         assert event.denial_reason == "insufficient_permissions"
 
 
-@pytest.mark.asyncio
 class TestSecurityEventLogger:
     """Test SecurityEventLogger class."""
 
@@ -603,7 +602,6 @@ class TestSecurityEventLogger:
         await logger.stop()
 
 
-@pytest.mark.asyncio
 class TestGlobalSecurityEventLogger:
     """Test global SecurityEventLogger singleton functions."""
 

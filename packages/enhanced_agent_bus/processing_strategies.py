@@ -35,7 +35,7 @@ Example:
         ])
         result = await composite.process(message, handlers)
 # pyright: reportMissingImports=false, reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportArgumentType=false, reportAssignmentType=false
-"""  # noqa: E501
+"""
 
 from __future__ import annotations
 
@@ -96,6 +96,11 @@ except (ImportError, ValueError):
     from validators import ValidationResult  # type: ignore[no-redef]
 
 logger = get_logger(__name__)
+try:
+    from .maci_imports import MACIError
+except (ImportError, ValueError):
+    MACIError = RuntimeError  # type: ignore[assignment,misc]
+
 _PROCESSING_STRATEGY_ERRORS = (
     RuntimeError,
     ValueError,
@@ -104,6 +109,7 @@ _PROCESSING_STRATEGY_ERRORS = (
     LookupError,
     OSError,
     asyncio.TimeoutError,
+    MACIError,
 )
 
 
@@ -810,7 +816,65 @@ class MACIProcessingStrategy:
         self._enforcer = maci_enforcer
         self._strict: bool = strict_mode
         self._maci_available: bool = maci_registry is not None and maci_enforcer is not None
-        self._maci_strategy = maci_enforcer
+        self._maci_strategy = self._build_maci_validator(maci_enforcer)
+
+    @staticmethod
+    def _build_maci_validator(maci_enforcer: object | None) -> object | None:
+        """Normalize MACI enforcement onto a validator-style interface.
+
+        Accepts either a validation strategy exposing ``validate(msg)`` or a raw
+        enforcer exposing ``validate_action(...)``. Raw enforcers are wrapped in
+        ``MACIValidationStrategy`` so the processing path always consumes one
+        validation contract.
+        """
+        if maci_enforcer is None:
+            return None
+
+        validator = getattr(maci_enforcer, "validate", None)
+        if callable(validator):
+            return maci_enforcer
+
+        validate_action = getattr(maci_enforcer, "validate_action", None)
+        if callable(validate_action):
+            try:
+                from .maci.strategy import MACIValidationStrategy
+
+                return MACIValidationStrategy(maci_enforcer)
+            except (ImportError, ValueError):
+                return maci_enforcer
+
+        return maci_enforcer
+
+    async def _validate_message(self, msg: AgentMessage) -> tuple[bool, str | None]:
+        """Run MACI validation and normalize the result."""
+        if self._maci_strategy is None:
+            raise RuntimeError("MACI validator unavailable")
+
+        validator = getattr(self._maci_strategy, "validate", None)
+        if callable(validator):
+            maybe_result = validator(msg)
+            if asyncio.iscoroutine(maybe_result):
+                maybe_result = await cast(Awaitable[object], maybe_result)
+            return self._coerce_validation_result(maybe_result)
+
+        raise RuntimeError("MACI validator does not expose validate(msg)")
+
+    @staticmethod
+    def _coerce_validation_result(result: object) -> tuple[bool, str | None]:
+        """Coerce supported MACI result shapes into ``(is_valid, error)``."""
+        if isinstance(result, tuple) and len(result) == 2:
+            valid = bool(result[0])
+            error = result[1] if isinstance(result[1], str) else None
+            return valid, error
+
+        if hasattr(result, "is_valid"):
+            valid = bool(result.is_valid)
+            error_message = getattr(result, "error_message", None)
+            violation_type = getattr(result, "violation_type", None)
+            error = error_message or violation_type
+            return valid, error if isinstance(error, str) else None
+
+        raise TypeError("Unsupported MACI validation result contract")
 
     @property
     def registry(self):
@@ -855,21 +919,8 @@ class MACIProcessingStrategy:
         """
         if self._maci_available and self._maci_strategy:
             try:
-                valid: bool
-                error: str | None
-                validator = getattr(self._maci_strategy, "validate", None)
-                if callable(validator):
-                    maybe_result = validator(msg)
-                    if asyncio.iscoroutine(maybe_result):
-                        maybe_result = await cast(Awaitable[object], maybe_result)
-                    if isinstance(maybe_result, tuple) and len(maybe_result) == 2:
-                        valid = bool(maybe_result[0])
-                        error = maybe_result[1] if isinstance(maybe_result[1], str) else None
-                    else:
-                        valid, error = (True, None)
-                else:
-                    valid, error = (True, None)
-                if not valid:  # noqa: SIM102
+                valid, error = await self._validate_message(msg)
+                if not valid:
                     if self._strict:
                         return ValidationResult(
                             is_valid=False,
@@ -879,7 +930,7 @@ class MACIProcessingStrategy:
                                 else ["MACIRoleViolationError: MACI violation"]
                             ),
                         )
-            except _PROCESSING_STRATEGY_ERRORS as e:
+            except Exception as e:
                 if self._strict:
                     return ValidationResult(is_valid=False, errors=[f"{type(e).__name__}: {e!s}"])
 

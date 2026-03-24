@@ -9,7 +9,7 @@ from collections import defaultdict
 from collections.abc import Callable
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -112,7 +112,7 @@ class LocalEventBus:
                 msg_data = await q.get()
                 await handler(msg_data)
                 q.task_done()
-            except Exception as e:  # noqa: BLE001 - subscriber handlers are user-provided callables
+            except Exception as e:
                 logger.error(f"[Lite] Error in local message handler: {e}")
                 if not self._running:
                     break

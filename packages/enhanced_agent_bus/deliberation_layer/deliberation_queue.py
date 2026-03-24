@@ -47,7 +47,7 @@ try:
     from src.core.shared.types import (
         JSONDict,
         JSONValue,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]
@@ -311,7 +311,7 @@ class DeliberationQueue:
         finally:
             # Clean up task reference
             if current_task and current_task in self.processing_tasks:
-                try:  # noqa: SIM105
+                try:
                     self.processing_tasks.remove(current_task)
                 except ValueError:
                     pass  # Already removed
@@ -348,7 +348,7 @@ class DeliberationQueue:
         async with self._lock:
             if task_id in self.tasks:
                 if isinstance(status, str):
-                    try:  # noqa: SIM105
+                    try:
                         status = DeliberationStatus(status.lower())
                     except ValueError:
                         # Fallback for manual string statuses
@@ -506,7 +506,7 @@ class DeliberationQueue:
                 return
             self._run_async_io(self._write_persistence_file(path, json.dumps(storage)))
             logger.info(
-                f"Successfully persisted {len(storage)} deliberation tasks to {self.persistence_path}"  # noqa: E501
+                f"Successfully persisted {len(storage)} deliberation tasks to {self.persistence_path}"
             )
         except DELIBERATION_PERSISTENCE_ERRORS as e:
             logger.error(f"Failed to persist deliberation tasks to {self.persistence_path}: {e}")

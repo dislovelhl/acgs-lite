@@ -6,7 +6,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 from datetime import datetime, timezone
 from unittest.mock import MagicMock
 
-import pytest
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 from enhanced_agent_bus.langgraph_orchestration.models import (

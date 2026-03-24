@@ -127,7 +127,7 @@ class StaticHashValidationStrategy:
             return False, "Message ID is required"
 
         # Validate constitutional hash if strict mode
-        if self._strict:  # noqa: SIM102
+        if self._strict:
             if message.constitutional_hash != self._constitutional_hash:
                 return False, f"Constitutional hash mismatch: expected {self._constitutional_hash}"
 
@@ -423,7 +423,7 @@ class PQCValidationStrategy:
 
         except _VALIDATION_DATA_ERRORS as e:
             logger.error(f"PQC validation error: {e}")
-            if self._hybrid_mode:  # noqa: SIM102
+            if self._hybrid_mode:
                 # Fall back to static hash in case of PQC errors
                 if message.constitutional_hash == self._constitutional_hash:
                     return True, None

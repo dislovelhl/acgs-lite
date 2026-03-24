@@ -85,7 +85,7 @@ class IFCMiddleware(BaseMiddleware):
 
             context.add_violation("ifc", violation.to_dict())
 
-            if not self.ifc_config.audit_only:  # noqa: SIM102
+            if not self.ifc_config.audit_only:
                 if self.config.fail_closed:
                     raise SecurityException(
                         message="Information Flow Control policy violation",

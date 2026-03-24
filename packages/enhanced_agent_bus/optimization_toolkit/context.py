@@ -8,7 +8,7 @@ Reference: SPEC_ACGS2_ENHANCED_v2.3 Section 16.3 (Context Management)
 import re
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -101,7 +101,7 @@ class ContextWindowOptimizer:
         if current_middle_tokens > target_middle_tokens and len(distilled_middle) > 50:
             keep_count = max(10, len(distilled_middle) // 2)
             distilled_middle = (
-                distilled_middle[: keep_count // 2]  # noqa: RUF005
+                distilled_middle[: keep_count // 2]
                 + ["... [distilled] ..."]
                 + distilled_middle[-keep_count // 2 :]
             )
@@ -193,7 +193,7 @@ class ContextWindowOptimizer:
             r"^\s*$",  # Empty lines
             r"^#.*$",  # Comments (in some contexts)
             r"^(HTTP/|GET |POST |PUT |DELETE )",  # HTTP Request/Response lines
-            r"^(Host:|User-Agent:|Accept:|Content-Type:|Content-Length:|Authorization:|X-)",  # HTTP Headers  # noqa: E501
+            r"^(Host:|User-Agent:|Accept:|Content-Type:|Content-Length:|Authorization:|X-)",  # HTTP Headers
             r"^[.*]{10,}$",  # Repetitive punctuation noise
             r"^(\+\+\+|---) ",  # Diff markers (if not critical)
         ]

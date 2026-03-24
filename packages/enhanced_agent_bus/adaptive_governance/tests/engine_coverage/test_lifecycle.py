@@ -140,7 +140,7 @@ class TestInstantiation:
 
         assert engine.constitutional_hash == CONST_HASH
         assert engine.mode == GovernanceMode.ADAPTIVE
-        assert engine.decision_history == []
+        assert len(engine.decision_history) == 0
         assert engine.running is False
         assert engine.learning_task is None
 
@@ -634,7 +634,7 @@ class TestLifecycle:
         # Clean up
         engine.running = False
         engine.learning_task.cancel()
-        try:  # noqa: SIM105
+        try:
             await engine.learning_task
         except asyncio.CancelledError:
             pass

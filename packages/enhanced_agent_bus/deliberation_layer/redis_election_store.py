@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from typing import cast
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -48,7 +48,7 @@ class RedisElectionStore:
         Args:
             redis_url: Redis connection URL (defaults to settings.redis.url)
             election_prefix: Redis key prefix for elections (defaults to settings.voting.redis_election_prefix)
-        """  # noqa: E501
+        """
         self.redis_url = redis_url or settings.redis.url
         self.election_prefix = election_prefix or settings.voting.redis_election_prefix
         self.redis_client: object | None = None
@@ -314,7 +314,7 @@ class RedisElectionStore:
         datetime_fields = ["created_at", "expires_at", "timestamp"]
         for key, value in deserialized.items():
             if key in datetime_fields and isinstance(value, str):
-                try:  # noqa: SIM105
+                try:
                     deserialized[key] = datetime.fromisoformat(value.replace("Z", "+00:00"))
                 except (ValueError, AttributeError):
                     pass

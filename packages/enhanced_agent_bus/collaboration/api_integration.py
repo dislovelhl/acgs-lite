@@ -7,12 +7,13 @@ Constitutional Hash: cdd01ef066bc6cf2
 from __future__ import annotations
 
 import os
+from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -316,6 +317,19 @@ class CollaborationAPI:
 
         return route_func
 
+    def _socket_app_is_mounted(self, app: FastAPI, path: str) -> bool:
+        """Return True when *path* is already mounted on *app*."""
+        routes = getattr(getattr(app, "router", None), "routes", None)
+        if not isinstance(routes, list):
+            return False
+        return any(getattr(route, "path", None) == path for route in routes)
+
+    def _mount_socket_app(self, app: FastAPI, path: str) -> None:
+        """Mount the Socket.IO ASGI app when the collaboration server is ready."""
+        if self.server is None or self._socket_app_is_mounted(app, path):
+            return
+        app.mount(path, self.server.get_asgi_app())
+
     def mount_to_app(self, app: FastAPI, path: str = "/collaboration") -> None:
         """
         Mount the collaboration server to a FastAPI app.
@@ -325,18 +339,19 @@ class CollaborationAPI:
         # Register HTTP routes
         self.register_routes(app)
 
-        # Mount Socket.io ASGI app
-        if self.server:
-            app.mount(path, self.server.get_asgi_app())
+        # Mount immediately when the caller pre-initialized the server.
+        self._mount_socket_app(app, path)
 
-        # Add lifecycle events
-        @app.on_event("startup")
-        async def startup():
-            await self.initialize()
+        async def startup() -> None:
+            if self.server is None:
+                await self.initialize()
+            self._mount_socket_app(app, path)
 
-        @app.on_event("shutdown")
-        async def shutdown():
+        async def shutdown() -> None:
             await self.shutdown()
+
+        app.add_event_handler("startup", startup)
+        app.add_event_handler("shutdown", shutdown)
 
 
 # ============================================================================
@@ -357,12 +372,6 @@ def create_collaboration_app(
         app = create_collaboration_app()
         uvicorn.run(app, host="0.0.0.0", port=8001)
     """
-    app = FastAPI(
-        title="ACGS-2 Collaboration Service",
-        description="Real-time collaboration for policy and workflow editing",
-        version="1.0.0",
-    )
-
     api = CollaborationAPI(
         config=config,
         redis_client=redis_client,
@@ -370,7 +379,23 @@ def create_collaboration_app(
         secret_key=secret_key,
     )
 
-    api.mount_to_app(app)
+    @asynccontextmanager
+    async def app_lifespan(app: FastAPI):
+        await api.initialize()
+        api._mount_socket_app(app, "/collaboration")
+        try:
+            yield
+        finally:
+            await api.shutdown()
+
+    app = FastAPI(
+        title="ACGS-2 Collaboration Service",
+        description="Real-time collaboration for policy and workflow editing",
+        version="1.0.0",
+        lifespan=app_lifespan,
+    )
+
+    api.register_routes(app)
 
     return app
 

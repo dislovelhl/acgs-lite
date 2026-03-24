@@ -7,6 +7,8 @@ and MACI framework for comprehensive jailbreak prevention.
 Targets 95% jailbreak prevention with sub-5ms inference latency.
 """
 
+from __future__ import annotations
+
 import asyncio
 import time
 from collections import OrderedDict
@@ -15,11 +17,11 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 from typing_extensions import TypedDict
@@ -38,21 +40,21 @@ class _JailbreakTestResults(TypedDict):
     constitutional_hash: str
 
 
-from .detector import (  # noqa: E402
+from .detector import (
     DetectionDecision,
     DetectionMode,
     DetectionResult,
     ThreatDetector,
     get_threat_detector,
 )
-from .patterns import (  # noqa: E402
+from .patterns import (
     PatternMatchResult,
     ThreatCategory,
     ThreatPatternRegistry,
     ThreatSeverity,
     get_threat_pattern_registry,
 )
-from .scoring import (  # noqa: E402
+from .scoring import (
     ComplianceScore,
     ComplianceScoringEngine,
     get_scoring_engine,
@@ -473,7 +475,7 @@ class ConstitutionalClassifierV2:
             rules = policy_result.policy.get("rules", {})
             if isinstance(rules, dict):
                 policy_threshold = rules.get("constitutional_threshold")
-                if policy_threshold is not None:  # noqa: SIM102
+                if policy_threshold is not None:
                     if (
                         isinstance(policy_threshold, (int, float))
                         and 0.0 <= policy_threshold <= 1.0
@@ -563,7 +565,7 @@ class ConstitutionalClassifierV2:
         """Build context for threat detection."""
         detection_context = dict(context) if context else {}
 
-        if session_context:  # noqa: SIM102
+        if session_context:
             if hasattr(session_context, "governance_config") and session_context.governance_config:
                 gc = session_context.governance_config
                 detection_context["tenant_id"] = gc.tenant_id

@@ -5,6 +5,8 @@ Constitutional Hash: cdd01ef066bc6cf2
 Re-exports online learning components for backwards compatibility.
 """
 
+import sys
+
 from .config import LearningStatus, ModelType
 from .models import (
     ConsumerStats,
@@ -13,6 +15,10 @@ from .models import (
     PipelineStats,
     PredictionResult,
 )
+
+_MODULE = sys.modules[__name__]
+sys.modules.setdefault("enhanced_agent_bus.online_learning_infra", _MODULE)
+sys.modules.setdefault("packages.enhanced_agent_bus.online_learning_infra", _MODULE)
 
 __all__ = [
     "ConsumerStats",

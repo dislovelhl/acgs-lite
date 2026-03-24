@@ -10,8 +10,6 @@ import json
 import logging
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from ..structured_logging import (
     CONSTITUTIONAL_HASH,
     LOG_LEVEL_CONFIG,
@@ -95,7 +93,7 @@ class TestPIIRedaction:
 
     def test_jwt_token_redaction(self):
         """Test JWT tokens are redacted."""
-        jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U"  # noqa: E501
+        jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U"
         text = f"Token: {jwt}"
         result = redact_sensitive_data(text)
         assert jwt not in result
@@ -176,9 +174,9 @@ class TestDictRedaction:
         }
         result = redact_dict(data)
         assert result["username"] == "testuser"
-        assert result["password"] == "[REDACTED]"  # noqa: S105
+        assert result["password"] == "[REDACTED]"
         assert result["api_key"] == "[REDACTED]"
-        assert result["token"] == "[REDACTED]"  # noqa: S105
+        assert result["token"] == "[REDACTED]"
 
     def test_redact_dict_nested(self):
         """Test nested dictionaries are redacted."""
@@ -189,7 +187,7 @@ class TestDictRedaction:
             }
         }
         result = redact_dict(data)
-        assert result["user"]["secret"] == "[REDACTED]"  # noqa: S105
+        assert result["user"]["secret"] == "[REDACTED]"
 
     def test_redact_dict_lists(self):
         """Test lists in dictionaries are processed."""

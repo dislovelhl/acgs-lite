@@ -80,7 +80,7 @@ class BatchOptimizer:
                 for rid in batch_requests
                 if rid in self._pending_requests
             )
-            if datetime.now(UTC) - oldest_time > self._max_wait_time:  # noqa: SIM102
+            if datetime.now(UTC) - oldest_time > self._max_wait_time:
                 if len(batch_requests) >= self._min_batch_size:
                     return await self._execute_batch(batch_key)
 

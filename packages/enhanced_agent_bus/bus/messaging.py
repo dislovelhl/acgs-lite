@@ -11,7 +11,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -122,6 +122,22 @@ class MessageHandler:
             return await self._processor.process(msg)
         except Exception as e:
             logger.warning(f"Processor fallback activated: {e}")
+            metadata = msg.metadata if isinstance(getattr(msg, "metadata", None), dict) else {}
+            has_explicit_prevalidation = bool(
+                metadata.get("prevalidated")
+                or metadata.get("prevalidated_result")
+                or metadata.get("validated_by_agent")
+                or metadata.get("independent_validator_id")
+            )
+            if not has_explicit_prevalidation:
+                return ValidationResult(
+                    is_valid=False,
+                    errors=["Processor fallback denied: message lacks explicit prevalidation"],
+                    metadata={"governance_mode": "DEGRADED", "fallback_reason": str(e)},
+                    decision="DENY",
+                    status=MessageStatus.FAILED,
+                    constitutional_hash=CONSTITUTIONAL_HASH,
+                )
             return ValidationResult(
                 is_valid=True,
                 metadata={"governance_mode": "DEGRADED", "fallback_reason": str(e)},

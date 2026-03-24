@@ -12,8 +12,6 @@ import uuid
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from enterprise_sso.migration_job_api import (
     MigrationJobConfig,
     MigrationJobManager,

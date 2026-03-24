@@ -186,7 +186,7 @@ class ProposalInvariantValidator:
 
     async def validate_proposal(
         self,
-        proposed_changes: dict,  # noqa: ARG002 — reserved for future predicate checks
+        proposed_changes: dict,
         affected_paths: list[str],
     ) -> ChangeClassification:
         """Validate a proposal against invariants.

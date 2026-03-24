@@ -24,9 +24,9 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.structured_logging import get_logger  # noqa: E402
+    from src.core.shared.structured_logging import get_logger
 except ImportError:
-    import logging  # noqa: E402
+    import logging
 
     def get_logger(name: str) -> logging.Logger:
         return logging.getLogger(name)

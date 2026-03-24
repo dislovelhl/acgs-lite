@@ -129,7 +129,7 @@ class GovernedLiteLLM:
         """Governed litellm.completion()."""
         messages = kwargs.get("messages", [])
         self._validate_input(messages)
-        response = _litellm.completion(**kwargs)  # type: ignore[union-attr]
+        response = _litellm.completion(**kwargs)
         self._validate_output(response)
         return response
 
@@ -137,13 +137,13 @@ class GovernedLiteLLM:
         """Governed litellm.acompletion()."""
         messages = kwargs.get("messages", [])
         self._validate_input(messages)
-        response = await _litellm.acompletion(**kwargs)  # type: ignore[union-attr]
+        response = await _litellm.acompletion(**kwargs)
         self._validate_output(response)
         return response
 
     def embedding(self, **kwargs: Any) -> Any:
         """Pass-through litellm.embedding() (no governance needed)."""
-        return _litellm.embedding(**kwargs)  # type: ignore[union-attr]
+        return _litellm.embedding(**kwargs)
 
     @property
     def stats(self) -> dict[str, Any]:

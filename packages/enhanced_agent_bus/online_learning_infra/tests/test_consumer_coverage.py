@@ -76,7 +76,7 @@ class TestModuleLevelImportFallback:
                     spec.loader.exec_module(module)  # type: ignore[union-attr]
                     assert module.KAFKA_AVAILABLE is False
                     assert module.AIOKafkaConsumer is None
-                except Exception:  # noqa: S110
+                except Exception:
                     # If exec_module fails for any reason, that's acceptable —
                     # the important thing is the fallback code path is exercised.
                     pass

@@ -2,6 +2,8 @@ from types import SimpleNamespace
 
 import jwt
 import pytest
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from fastapi import HTTPException
 
 from src.core.shared.errors.exceptions import ConfigurationError
@@ -10,9 +12,23 @@ from src.core.shared.security.testing import create_test_token
 
 TEST_JWT_SECRET = "test-secret-key-that-is-at-least-32-chars"
 EXPECTED_RSA_KEYS_ERROR = (
-    "RS256 requested but RSA keys (JWT_PRIVATE_KEY, JWT_PUBLIC_KEY) are not configured. "
-    "Set keys or change JWT_ALGORITHM to HS256."
+    "RS256 requested but RSA verification keys are not configured. Set JWT_PUBLIC_KEY for "
+    "verification, JWT_PRIVATE_KEY for signing, or change JWT_ALGORITHM to HS256."
 )
+
+
+def _generate_rsa_keypair() -> tuple[str, str]:
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    private_pem = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.TraditionalOpenSSL,
+        encryption_algorithm=serialization.NoEncryption(),
+    ).decode()
+    public_pem = private_key.public_key().public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    ).decode()
+    return private_pem, public_pem
 
 
 def _make_settings(
@@ -78,12 +94,48 @@ def test_verify_token_surfaces_rsa_key_configuration_error(monkeypatch):
     monkeypatch.setenv("JWT_PRIVATE_KEY", "")
     monkeypatch.setenv("JWT_PUBLIC_KEY", "")
     monkeypatch.setattr(auth, "settings", _make_settings())
+    monkeypatch.setattr(auth, "_current_jwt_private_key", lambda: None)
+    monkeypatch.setattr(auth, "_current_jwt_public_key", lambda: None)
 
     with pytest.raises(HTTPException) as exc_info:
         auth.verify_token("invalid-token")
 
     assert exc_info.value.status_code == 500
     assert exc_info.value.detail == EXPECTED_RSA_KEYS_ERROR
+
+
+def test_verify_token_accepts_public_key_only_for_rs256(monkeypatch):
+    private_key, public_key = _generate_rsa_keypair()
+    token = jwt.encode(
+        {
+            "sub": "user-1",
+            "tenant_id": "tenant-1",
+            "roles": ["user"],
+            "permissions": ["read"],
+            "exp": 4_102_444_800,
+            "iat": 1_700_000_000,
+            "iss": "acgs2",
+            "aud": "acgs2-api",
+            "jti": "test-jti-123",
+            "constitutional_hash": auth.CONSTITUTIONAL_HASH,
+        },
+        private_key,
+        algorithm="RS256",
+    )
+
+    monkeypatch.setenv("JWT_ALGORITHM", "RS256")
+    monkeypatch.setenv("JWT_PRIVATE_KEY", "")
+    monkeypatch.setenv("JWT_PUBLIC_KEY", public_key)
+    monkeypatch.setattr(
+        auth,
+        "settings",
+        _make_settings(jwt_algorithm="RS256", jwt_private_key="", jwt_public_key=public_key),
+    )
+
+    claims = auth.verify_token(token)
+
+    assert claims.sub == "user-1"
+    assert auth.has_jwt_verification_material() is True
 
 
 def test_create_test_token_uses_testing_helper(monkeypatch):
@@ -105,3 +157,41 @@ def test_create_test_token_uses_testing_helper(monkeypatch):
     assert payload["permissions"] == ["read"]
     assert payload["iss"] == "acgs2"
     assert payload["constitutional_hash"] == auth.CONSTITUTIONAL_HASH
+
+
+def test_is_production_environment_prefers_environment_over_defaulted_settings_env(monkeypatch):
+    monkeypatch.setattr(auth.settings, "env", "development")
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.setenv("ENVIRONMENT", "production")
+
+    assert auth._is_production_environment() is True
+
+
+@pytest.mark.asyncio
+async def test_get_current_user_fails_closed_when_only_environment_is_production(monkeypatch):
+    from unittest.mock import MagicMock
+
+    claims = auth.UserClaims(
+        sub="user-1",
+        tenant_id="tenant-1",
+        roles=["user"],
+        permissions=["read"],
+        exp=4_102_444_800,
+        iat=1_700_000_000,
+        aud="acgs2-api",
+        iss="acgs2",
+        jti="test-jti-123",
+    )
+    credentials = MagicMock()
+    credentials.credentials = "test-token"
+
+    monkeypatch.setattr(auth.settings, "env", "development")
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.setenv("ENVIRONMENT", "production")
+    monkeypatch.setattr(auth, "verify_token", lambda _token: claims)
+    monkeypatch.setattr(auth, "_get_revocation_service", lambda: None)
+
+    with pytest.raises(HTTPException) as exc_info:
+        await auth.get_current_user(credentials=credentials)
+
+    assert exc_info.value.status_code == 503

@@ -16,7 +16,6 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from src.core.shared.constants import CONSTITUTIONAL_HASH

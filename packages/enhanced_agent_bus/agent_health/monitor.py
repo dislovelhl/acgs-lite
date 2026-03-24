@@ -110,7 +110,7 @@ class AgentHealthMonitor:
         """Cancel and await the background monitoring task."""
         if self._task is not None and not self._task.done():
             self._task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._task
             except asyncio.CancelledError:
                 pass

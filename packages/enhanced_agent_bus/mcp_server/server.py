@@ -8,12 +8,13 @@ Constitutional Hash: cdd01ef066bc6cf2
 """
 
 import asyncio
+import inspect
 import json
 import sys
 from dataclasses import dataclass, field
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -280,10 +281,15 @@ class MCPServer:
         while self._running and not self._shutdown_event.is_set():
             try:
                 # Read line from stdin
-                line = await asyncio.wait_for(
-                    reader.readline(),
-                    timeout=1.0,
-                )
+                read_operation = reader.readline()
+                try:
+                    line = await asyncio.wait_for(
+                        read_operation,
+                        timeout=1.0,
+                    )
+                finally:
+                    if inspect.iscoroutine(read_operation) and read_operation.cr_frame is not None:
+                        read_operation.close()
 
                 if not line:
                     continue

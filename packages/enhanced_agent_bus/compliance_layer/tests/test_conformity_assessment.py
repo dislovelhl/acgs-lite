@@ -2,12 +2,10 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 """Tests for Conformity Assessment automation."""
 
-import json  # noqa: E402
-from datetime import UTC, datetime, timedelta, timezone  # noqa: E402
+import json
+from datetime import UTC, datetime, timedelta, timezone
 
-import pytest  # noqa: E402
-
-from enhanced_agent_bus.compliance_layer.conformity_assessment import (  # noqa: E402
+from enhanced_agent_bus.compliance_layer.conformity_assessment import (
     AssessmentStatus,
     ComplianceEvidence,
     ConformityAssessment,

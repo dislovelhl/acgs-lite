@@ -143,12 +143,11 @@ class TestUpdateMetrics:
     def test_history_trimmed_when_over_max(self, engine):
         from enhanced_agent_bus.governance_constants import GOVERNANCE_HISTORY_MAX
 
-        # Fill exactly at max + 1; _update_metrics pops one entry
+        # _update_metrics computes compliance over a trimmed window but does not mutate history.
         engine.decision_history = [_make_decision() for _ in range(GOVERNANCE_HISTORY_MAX + 1)]
         initial_len = len(engine.decision_history)
         engine._update_metrics(_make_decision(), response_time=0.001)
-        # One item should have been popped from the front
-        assert len(engine.decision_history) == initial_len - 1
+        assert len(engine.decision_history) == initial_len
 
     def test_compliance_rate_calculated(self, engine):
         # Add decisions with high confidence

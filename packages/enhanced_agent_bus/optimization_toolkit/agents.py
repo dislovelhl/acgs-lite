@@ -241,7 +241,7 @@ class CachePerformanceAgent(PerformanceProfiler):
         # Try to get stats from a default/known cache manager
         try:
             # Note: In a real system, we'd probably have a registry of cache managers
-            # Here we'll try to instantiate/access a common one or use the TieredCacheManager directly  # noqa: E501
+            # Here we'll try to instantiate/access a common one or use the TieredCacheManager directly
             manager = TieredCacheManager(name="bus_validation")
             stats = manager.get_stats()
 
@@ -250,7 +250,7 @@ class CachePerformanceAgent(PerformanceProfiler):
 
             profile = PerformanceProfile(
                 domain=OptimizationDomain.CACHE,
-                latency_p50_ms=0.1,  # Still somewhat simulated as it's hard to get from manager easily  # noqa: E501
+                latency_p50_ms=0.1,  # Still somewhat simulated as it's hard to get from manager easily
                 latency_p95_ms=0.3,
                 latency_p99_ms=0.8,
                 throughput_rps=50000.0,

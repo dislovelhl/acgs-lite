@@ -103,7 +103,6 @@ def create_processor_with_mock() -> BatchMessageProcessor:
     )
 
 
-@pytest.mark.asyncio
 @pytest.mark.slow
 class TestLargeBatchProcessing:
     """Test batch processing with large item counts."""
@@ -187,7 +186,6 @@ class TestLargeBatchProcessing:
             pass
 
 
-@pytest.mark.asyncio
 @pytest.mark.slow
 class TestSustainedThroughput:
     """Test sustained batch processing over time."""
@@ -273,7 +271,6 @@ class TestSustainedThroughput:
         throughput = total_items / (elapsed_ms / 1000)
 
 
-@pytest.mark.asyncio
 @pytest.mark.slow
 class TestMemoryUsage:
     """Test memory behavior during load."""
@@ -340,7 +337,6 @@ class TestMemoryUsage:
         assert growth_per_batch < 5000, f"Object growth too high: {growth_per_batch:.1f} per batch"
 
 
-@pytest.mark.asyncio
 @pytest.mark.slow
 class TestErrorRatesUnderStress:
     """Test error handling under high load conditions."""
@@ -429,7 +425,6 @@ class TestErrorRatesUnderStress:
         assert response.stats.successful_items == 80
 
 
-@pytest.mark.asyncio
 @pytest.mark.slow
 class TestLatencyDistribution:
     """Test latency characteristics under load."""
@@ -453,7 +448,7 @@ class TestLatencyDistribution:
             if response.stats.p99_latency_ms is not None:
                 assert response.stats.p99_latency_ms >= response.stats.p95_latency_ms
 
-        if response.stats.p50_latency_ms is not None:  # noqa: SIM102
+        if response.stats.p50_latency_ms is not None:
             if response.stats.p99_latency_ms is not None:
                 pass
 
@@ -485,7 +480,6 @@ class TestLatencyDistribution:
         assert variance_ratio < 5, f"Latency variance too high: {variance_ratio:.1f}x"
 
 
-@pytest.mark.asyncio
 class TestQuickLoadValidation:
     """Quick load validation tests (not marked as slow)."""
 

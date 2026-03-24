@@ -20,11 +20,11 @@ from datetime import UTC, datetime, timedelta
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -354,7 +354,7 @@ class OIDCProvider:
         # Ensure openid scope
         scopes = scopes or self.config.default_scopes
         if "openid" not in scopes:
-            scopes = ["openid"] + scopes  # noqa: RUF005
+            scopes = ["openid"] + scopes
 
         # Get PKCE verifier if state provided
         code_verifier = None
@@ -634,7 +634,7 @@ class OIDCProvider:
             return None
 
         # Check cache
-        if self._jwks_cache:  # noqa: SIM102
+        if self._jwks_cache:
             if datetime.now(UTC) < self._jwks_cache.expires_at:
                 return self._jwks_cache.keys
 

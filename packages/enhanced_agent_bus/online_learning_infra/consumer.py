@@ -13,7 +13,7 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -159,7 +159,7 @@ class FeedbackKafkaConsumer:
 
             if self._consume_task:
                 self._consume_task.cancel()
-                try:  # noqa: SIM105
+                try:
                     await self._consume_task
                 except asyncio.CancelledError:
                     pass

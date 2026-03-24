@@ -20,6 +20,6 @@ class RateLimitScope(StrEnum):
 class RateLimitAlgorithm(StrEnum):
     """Rate limiting algorithms."""
 
-    TOKEN_BUCKET = "token_bucket"  # noqa: S105
+    TOKEN_BUCKET = "token_bucket"  # noqa: S105 - algorithm label, not a secret
     SLIDING_WINDOW = "sliding_window"
     FIXED_WINDOW = "fixed_window"

@@ -14,18 +14,18 @@ from pydantic import BaseModel, Field, field_serializer, field_validator
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
 
-class AmendmentStatus(str, Enum):  # noqa: UP042
+class AmendmentStatus(str, Enum):
     """Amendment proposal status enumeration.
 
     Constitutional Hash: cdd01ef066bc6cf2

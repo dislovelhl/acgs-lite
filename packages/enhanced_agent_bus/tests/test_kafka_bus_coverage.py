@@ -147,7 +147,7 @@ class TestCreateSslContext:
         mock_ctx.load_cert_chain.assert_called_once_with(
             certfile="/cert.pem",
             keyfile="/key.pem",
-            password="secret",  # noqa: S106
+            password="secret",
         )
         assert result is mock_ctx
 

@@ -74,7 +74,7 @@ except HTTPException as exc:
     else:
         env.pop("PYTEST_CURRENT_TEST", None)
 
-    return subprocess.run(  # noqa: S603
+    return subprocess.run(
         [sys.executable, "-c", test_code],
         capture_output=True,
         text=True,
@@ -144,7 +144,7 @@ except (RuntimeError, ValueError, TypeError, AssertionError) as e:
         os.path.dirname(test_dir)
     )  # Go up from tests/ to enhanced_agent_bus/ to src/core/
 
-    result = subprocess.run(  # noqa: S603
+    result = subprocess.run(
         [sys.executable, "-c", test_code],
         capture_output=True,
         text=True,

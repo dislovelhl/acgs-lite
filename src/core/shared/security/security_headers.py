@@ -44,6 +44,7 @@ from starlette.responses import Response
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from src.core.shared.config import settings
+from src.core.shared.config.runtime_environment import resolve_runtime_environment
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.structured_logging import get_logger
 
@@ -53,7 +54,7 @@ logger = get_logger(__name__)
 
 
 def _detect_environment() -> str:
-    return settings.env
+    return resolve_runtime_environment(getattr(settings, "env", None))
 
 
 @dataclass

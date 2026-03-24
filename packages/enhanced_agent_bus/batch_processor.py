@@ -14,7 +14,7 @@ try:
     from src.core.shared.types import (
         JSONDict,
         JSONValue,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]
@@ -120,7 +120,13 @@ class BatchMessageProcessor:
 
         # Store config for test compatibility
         self._max_concurrency: int = _max_concurrency
-        _item_timeout = kwargs.get("item_timeout_ms", 30000)
+        _item_timeout = kwargs.get("item_timeout_ms")
+        if not isinstance(_item_timeout, (int, float)):
+            legacy_item_timeout = kwargs.get("item_timeout")
+            if isinstance(legacy_item_timeout, (int, float)):
+                _item_timeout = float(legacy_item_timeout) * 1000.0
+            else:
+                _item_timeout = 30000
         self._item_timeout_ms: int = (
             int(_item_timeout) if isinstance(_item_timeout, (int, float)) else 30000
         )
@@ -147,6 +153,7 @@ class BatchMessageProcessor:
 
         self._orchestrator = BatchProcessorOrchestrator(
             max_concurrency=_max_concurrency,
+            item_timeout_ms=self._item_timeout_ms,
             max_retries=self._max_retries,
             retry_base_delay=self._retry_base_delay,
             retry_exponential_base=self._retry_exponential_base,

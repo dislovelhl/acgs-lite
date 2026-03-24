@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from ..adapters.audit_client import AuditClientAdapter
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -146,7 +146,7 @@ class QueryPrecedentsTool:
                 context_summary="Processing sensitive health data for analytics",
                 outcome=DecisionOutcome.DENIED,
                 principles_applied=["P007", "P002"],  # privacy, non-maleficence
-                reasoning="Denied due to insufficient anonymization and potential re-identification risk",  # noqa: E501
+                reasoning="Denied due to insufficient anonymization and potential re-identification risk",
                 timestamp="2024-12-20T16:00:00Z",
                 confidence_score=0.94,
                 appeal_count=1,
@@ -171,7 +171,7 @@ class QueryPrecedentsTool:
                 properties={
                     "action_type": {
                         "type": "string",
-                        "description": "Filter by action type (e.g., 'data_access', 'automated_decision')",  # noqa: E501
+                        "description": "Filter by action type (e.g., 'data_access', 'automated_decision')",
                     },
                     "outcome": {
                         "type": "string",

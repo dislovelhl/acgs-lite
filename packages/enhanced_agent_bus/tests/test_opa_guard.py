@@ -366,7 +366,6 @@ class TestOPAGuardInit:
 class TestOPAGuardLifecycle:
     """Test OPAGuard lifecycle methods."""
 
-    @pytest.mark.asyncio
     async def test_initialize(self):
         """Test guard initialization."""
         guard = OPAGuard()
@@ -375,7 +374,6 @@ class TestOPAGuardLifecycle:
         assert guard.opa_client is not None
         assert guard.opa_client._initialized is True
 
-    @pytest.mark.asyncio
     async def test_initialize_with_existing_client(self):
         """Test initialization with existing OPA client."""
         mock_client = MockOPAClient()
@@ -385,7 +383,6 @@ class TestOPAGuardLifecycle:
         assert guard.opa_client is mock_client
         assert mock_client._initialized is True
 
-    @pytest.mark.asyncio
     async def test_close(self):
         """Test guard cleanup."""
         guard = OPAGuard()
@@ -408,7 +405,6 @@ class TestOPAGuardLifecycle:
 class TestConstitutionalCompliance:
     """Test constitutional compliance checking."""
 
-    @pytest.mark.asyncio
     async def test_valid_constitutional_hash(self):
         """Test valid constitutional hash passes."""
         guard = OPAGuard()
@@ -418,7 +414,6 @@ class TestConstitutionalCompliance:
 
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_invalid_constitutional_hash(self):
         """Test invalid constitutional hash fails."""
         guard = OPAGuard()
@@ -428,7 +423,6 @@ class TestConstitutionalCompliance:
 
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_no_constitutional_hash(self):
         """Test missing constitutional hash passes."""
         guard = OPAGuard()
@@ -498,7 +492,6 @@ class TestRiskCalculation:
 class TestActionVerification:
     """Test action verification."""
 
-    @pytest.mark.asyncio
     async def test_allow_low_risk_action(self):
         """Test low risk action is allowed."""
         guard = OPAGuard()
@@ -515,7 +508,6 @@ class TestActionVerification:
         assert result.decision == GuardDecision.ALLOW
         assert result.is_allowed is True
 
-    @pytest.mark.asyncio
     async def test_require_signatures_high_risk(self):
         """Test high risk action requires signatures."""
         guard = OPAGuard(high_risk_threshold=0.5, critical_risk_threshold=0.9)
@@ -535,7 +527,6 @@ class TestActionVerification:
         assert result.is_allowed is False
         assert result.requires_signatures is True
 
-    @pytest.mark.asyncio
     async def test_require_review_critical_risk(self):
         """Test critical risk action requires review."""
         guard = OPAGuard(critical_risk_threshold=0.7)
@@ -555,7 +546,6 @@ class TestActionVerification:
         assert result.requires_signatures is True
         assert result.requires_review is True
 
-    @pytest.mark.asyncio
     async def test_deny_policy_denied(self):
         """Test action denied by policy."""
         guard = OPAGuard()
@@ -575,7 +565,6 @@ class TestActionVerification:
         assert len(result.validation_errors) > 0
         assert "Policy denied" in result.validation_errors[0]
 
-    @pytest.mark.asyncio
     async def test_deny_constitutional_failure(self):
         """Test action denied due to constitutional failure."""
         guard = OPAGuard()
@@ -592,7 +581,6 @@ class TestActionVerification:
         assert result.is_allowed is False
         assert result.constitutional_valid is False
 
-    @pytest.mark.asyncio
     async def test_stats_updated(self):
         """Test statistics are updated after verification."""
         guard = OPAGuard()
@@ -678,7 +666,6 @@ class TestStatistics:
 class TestAuditLog:
     """Test audit logging."""
 
-    @pytest.mark.asyncio
     async def test_log_decision(self):
         """Test logging a decision."""
         guard = OPAGuard()

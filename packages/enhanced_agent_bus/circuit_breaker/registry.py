@@ -7,15 +7,17 @@ This module implements the circuit breaker registry for managing service-specifi
 circuit breakers and provides global access functions.
 """
 
+from __future__ import annotations
+
 import asyncio
 from datetime import UTC, datetime, timezone
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -113,7 +115,7 @@ class ServiceCircuitBreakerRegistry:
                     critical_open.append(name)
 
         # Calculate health score
-        if total == 0:  # noqa: SIM108
+        if total == 0:
             health_score = 1.0
         else:
             health_score = (closed_count + (half_open_count * 0.5)) / total

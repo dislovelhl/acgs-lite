@@ -124,8 +124,8 @@ class CloudLoggingAuditExporter:
                 "Install with: pip install acgs-lite[google-cloud]"
             )
 
-        self._client = cloud_logging.Client(project=project_id)  # type: ignore[union-attr]
-        self._logger = self._client.logger(log_name)
+        self._client = cloud_logging.Client(project=project_id)  # type: ignore[no-untyped-call]
+        self._logger = self._client.logger(log_name)  # type: ignore[no-untyped-call]
         self._log_name = log_name
         self._exported_count = 0
 

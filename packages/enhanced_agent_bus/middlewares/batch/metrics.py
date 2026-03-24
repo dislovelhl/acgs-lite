@@ -12,7 +12,7 @@ import time
 from typing import cast
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -30,11 +30,11 @@ _BATCH_METRICS_OPERATION_ERRORS = (
     ConnectionError,
 )
 
-from ...batch_models import BatchResponseItem  # noqa: E402
-from ...pipeline.context import PipelineContext  # noqa: E402
-from ...pipeline.middleware import BaseMiddleware, MiddlewareConfig  # noqa: E402
-from .context import BatchPipelineContext  # noqa: E402
-from .exceptions import BatchMetricsException  # noqa: E402
+from ...batch_models import BatchResponseItem
+from ...pipeline.context import PipelineContext
+from ...pipeline.middleware import BaseMiddleware, MiddlewareConfig
+from .context import BatchPipelineContext
+from .exceptions import BatchMetricsException
 
 
 class BatchMetricsMiddleware(BaseMiddleware):

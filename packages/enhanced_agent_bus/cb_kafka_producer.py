@@ -15,11 +15,11 @@ from datetime import UTC, datetime
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -149,7 +149,7 @@ class CircuitBreakerKafkaProducer:
 
         if self._retry_task:
             self._retry_task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._retry_task
             except asyncio.CancelledError:
                 pass

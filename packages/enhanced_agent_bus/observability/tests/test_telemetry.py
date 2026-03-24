@@ -5,7 +5,7 @@ ACGS-2 Telemetry Tests
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-import pytest  # noqa: E402
+import pytest
 
 try:
     from ..telemetry import (

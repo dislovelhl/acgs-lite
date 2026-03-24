@@ -5,6 +5,7 @@ Constitutional Hash: cdd01ef066bc6cf2
 """
 
 import importlib
+import io
 import json
 import sys
 from dataclasses import dataclass
@@ -74,7 +75,6 @@ class TestGovernedLiteLLM:
                     messages=[{"role": "user", "content": "bypass validation self-validate"}],
                 )
 
-    @pytest.mark.asyncio
     async def test_async_completion(self):
         with patch("acgs_lite.integrations.litellm._litellm") as mock_llm:
             mock_llm.acompletion = AsyncMock(
@@ -296,7 +296,7 @@ class TestMCPServer:
             for key in list(sys.modules):
                 if key == "mcp" or key.startswith("mcp."):
                     del sys.modules[key]
-            import mcp  # noqa: F401 — triggers correct resolution
+            import mcp
             for p in bus_paths:
                 sys.path.insert(0, p)
         else:
@@ -334,7 +334,6 @@ class TestMCPServer:
         server = create_mcp_server(constitution)
         assert server is not None
 
-    @pytest.mark.asyncio
     async def test_list_tools(self):
         from mcp import types as mcp_types
 
@@ -352,7 +351,6 @@ class TestMCPServer:
         assert "check_compliance" in tool_names
         assert "governance_stats" in tool_names
 
-    @pytest.mark.asyncio
     async def _call_tool(self, server: Any, name: str, args: dict[str, Any]) -> Any:
         from mcp import types as mcp_types
 
@@ -365,7 +363,6 @@ class TestMCPServer:
         )
         return json.loads(result.root.content[0].text)
 
-    @pytest.mark.asyncio
     async def test_validate_action_tool(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
@@ -377,7 +374,6 @@ class TestMCPServer:
         )
         assert data["valid"] is True
 
-    @pytest.mark.asyncio
     async def test_validate_violation(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
@@ -390,7 +386,6 @@ class TestMCPServer:
         assert data["valid"] is False
         assert len(data["violations"]) > 0
 
-    @pytest.mark.asyncio
     async def test_get_constitution_tool(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
@@ -400,7 +395,6 @@ class TestMCPServer:
         assert "rules" in data
         assert data["rules_count"] > 0
 
-    @pytest.mark.asyncio
     async def test_audit_log_tool(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
@@ -413,7 +407,6 @@ class TestMCPServer:
         assert "chain_valid" in data
         assert data["total_entries"] >= 1
 
-    @pytest.mark.asyncio
     async def test_check_compliance_tool(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
@@ -421,7 +414,6 @@ class TestMCPServer:
         data = await self._call_tool(server, "check_compliance", {"text": "safe text here"})
         assert data["compliant"] is True
 
-    @pytest.mark.asyncio
     async def test_governance_stats_tool(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
@@ -431,7 +423,6 @@ class TestMCPServer:
         assert "total_validations" in data
         assert data["audit_chain_valid"] is True
 
-    @pytest.mark.asyncio
     async def test_unknown_tool(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
@@ -548,7 +539,6 @@ class TestGovernedQueryEngine:
             with pytest.raises(ConstitutionalViolationError):
                 governed.query("self-validate bypass")
 
-    @pytest.mark.asyncio
     async def test_async_query(self):
         with patch("acgs_lite.integrations.llamaindex.LLAMAINDEX_AVAILABLE", True):
             from acgs_lite.integrations.llamaindex import GovernedQueryEngine
@@ -719,6 +709,21 @@ class TestGovernanceASGIMiddleware:
         mw = GovernanceASGIMiddleware(noop)
         assert mw.stats["total_validations"] == 0
 
+    def test_validate_output_restores_strict_after_engine_error(self):
+        from acgs_lite.middleware import GovernanceASGIMiddleware
+
+        async def noop(scope, receive, send):
+            pass
+
+        mw = GovernanceASGIMiddleware(noop, strict=True)
+
+        def raising_validate(*args: Any, **kwargs: Any) -> None:
+            raise RuntimeError("boom")
+
+        mw.engine.validate = raising_validate  # type: ignore[method-assign]
+        mw._validate_output("safe response")
+        assert mw.engine.strict is True
+
 
 @pytest.mark.integration
 class TestGovernanceWSGIMiddleware:
@@ -744,10 +749,33 @@ class TestGovernanceWSGIMiddleware:
 
         result = wrapped(environ, mock_start_response)
         assert result == [b"Hello"]
-
-        header_names = [h[0] for h in captured_headers]
+        header_names = [header[0] for header in captured_headers]
         assert "X-Governance-Hash" in header_names
         assert "X-Governance-Valid" in header_names
+
+    def test_request_validation_restores_strict_after_engine_error(self):
+        from acgs_lite.middleware import GovernanceWSGIMiddleware
+
+        def simple_app(environ, start_response):
+            start_response("200 OK", [("Content-Type", "text/plain")])
+            return [b"Hello"]
+
+        wrapped = GovernanceWSGIMiddleware(simple_app, strict=True)
+
+        def raising_validate(*args: Any, **kwargs: Any) -> None:
+            raise RuntimeError("boom")
+
+        wrapped.engine.validate = raising_validate  # type: ignore[method-assign]
+
+        environ = {
+            "REQUEST_METHOD": "POST",
+            "PATH_INFO": "/api",
+            "CONTENT_LENGTH": "16",
+            "wsgi.input": io.BytesIO(b'{"text":"hello"}'),
+        }
+
+        wrapped(environ, lambda status, headers, *args: None)
+        assert wrapped.engine.strict is True
 
     def test_skip_health(self):
         from acgs_lite.middleware import GovernanceWSGIMiddleware

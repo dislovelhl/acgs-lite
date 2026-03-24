@@ -1,51 +1,55 @@
-# ACGS-Lite (Constitutional Governance Engine)
+# ACGS-Lite
 
-**For project-wide instructions, see the root `/CLAUDE.md`.**
+For repo-wide rules, see `/CLAUDE.md`.
 
 ## Structure
 
 ```
 src/acgs_lite/
-  ├── constitution/     # Core governance: Rule, Constitution, analytics, metrics, versioning
-  ├── engine/           # Validation engine (Python + Rust/PyO3 backend)
-  ├── maci.py           # MACI role enforcement
-  ├── compliance/       # Compliance mapping, regulatory alignment
-  └── eu_ai_act/        # EU AI Act risk classification
+├── constitution/     # Constitution models, loading, templates, export
+├── engine/           # Validation engine and execution helpers
+├── compliance/       # Compliance mapping and assessment helpers
+├── integrations/     # External ecosystem adapters
+├── audit.py          # Audit trail
+├── governed.py       # Governed wrappers
+├── maci.py           # MACI enforcement
+└── server.py         # FastAPI wrapper
 
-rust/src/               # PyO3 native extension (6 modules)
-  ├── validator.rs      # Core rule validation
-  ├── severity.rs       # Severity enum + ordering
-  ├── verbs.rs          # Action verb parsing
-  ├── result.rs         # Validation result types
-  ├── context.rs        # Governance context
-  └── hash.rs           # Constitutional hash computation
+src/eu_ai_act_tool/   # EU AI Act assessment app
+
+rust/
+├── core/             # Core Rust crate
+├── pyo3/             # Python bindings crate
+├── wasm/             # WASM target
+└── src.legacy/       # Legacy Rust sources kept for reference/migration
 ```
 
 ## Testing
 
 ```bash
-python -m pytest packages/acgs-lite/tests/ -v --import-mode=importlib   # Python tests (from project root)
-cd packages/acgs-lite/rust && cargo test                                 # Rust tests
-cd packages/acgs-lite/rust && cargo bench                                # Benchmarks (560ns P50)
+python -m pytest packages/acgs-lite/tests/ -v --import-mode=importlib
+cd packages/acgs-lite/rust && maturin develop --release
 ```
+
+Use `maturin develop --release` before pytest when your change affects the Python-facing Rust
+extension path.
 
 ## Rust Build
 
 ```bash
 cd packages/acgs-lite/rust
-maturin develop --release    # Build PyO3 extension into venv
-cargo clippy                 # Lint
-cargo audit                  # Security audit (4 ignored CVEs in CI)
+maturin develop --release
 ```
 
-## Autoresearch
-
-The autoresearch system runs governance-quality experiments against the constitution engine.
-See `autoresearch/program.md` for the experiment loop and `autoresearch/results.tsv` for history.
+If you add Rust-only logic, keep the Python fallback behavior intact and verify the Python test
+surface, not only the Rust workspace.
 
 ## Gotchas
 
-- **Python 3.10+ minimum** (more permissive than root project's 3.11+)
-- **`constitution/__init__.py`** uses `__getattr__` lazy loading — imports are deferred until accessed
-- **Rust extension optional** — Python fallback exists, but Rust is 100-1000x faster for hot paths
-- **Cargo audit ignores**: RUSTSEC-2025-0123, RUSTSEC-2024-0387, RUSTSEC-2024-0436, RUSTSEC-2025-0134 in CI
+- `GovernanceEngine.validate()` raises `ConstitutionalViolationError` on violations — it does
+  not return a result with `valid=False`. Catch the exception to inspect violations.
+- Package minimum runtime is Python 3.10.
+- Many integrations are optional extras; preserve lazy import behavior.
+- Rust acceleration is optional and should not become mandatory for baseline tests.
+- Benchmarks and latency claims in docs drift quickly; prefer measured results over hard-coded
+  numbers when updating docs.

@@ -1,60 +1,68 @@
 # API Gateway
 
-> Scope: `src/core/services/api_gateway/` — Port 8080. Unified ingress, auth, rate limiting, SSO.
+> Scope: `src/core/services/api_gateway/` — unified ingress, auth, rate limiting, and SSO.
 
 ## Structure
 
 ```
 api_gateway/
-├── main.py              # FastAPI entrypoint, middleware wiring, service init
-├── health.py            # Health checks (/health, /health/live, /health/ready)
-├── metrics.py           # Prometheus /metrics endpoint
-├── redis_backend.py     # Redis state management
+├── main.py                 # FastAPI entrypoint
+├── lifespan.py             # Startup/shutdown wiring
+├── health.py               # Health endpoints and checks
+├── metrics.py              # Metrics endpoint
+├── redis_backend.py        # Redis-backed state helpers
+├── workos_event_ingestion.py
 ├── middleware/
-│   └── load_shedding.py # Priority-based load shedding (NEVER_SHED governance/health)
+│   ├── load_shedding.py
+│   ├── autonomy_tier.py
+│   └── pqc_only_mode.py
 ├── routes/
-│   ├── compliance.py        # Compliance endpoints
-│   ├── x402_governance.py   # Governance/payment routing
-│   ├── decisions.py         # Decision APIs
-│   ├── admin_workos.py      # WorkOS admin APIs
-│   ├── sso/workos.py        # WorkOS SSO handlers
-│   └── ...
-├── tests/
-│   └── unit/            # API Gateway unit tests
-├── Dockerfile.dev       # Development Docker image
-├── requirements.txt     # Core dependencies
-└── requirements-sso.txt # SSO/SAML dependencies (pysaml2, xmlsec1)
+│   ├── admin_sso.py
+│   ├── admin_workos.py
+│   ├── autonomy_tiers.py
+│   ├── compliance.py
+│   ├── data_subject.py
+│   ├── decisions.py
+│   ├── evolution_control.py
+│   ├── feedback.py
+│   ├── pipeline_metrics.py
+│   ├── pqc_phase5.py
+│   ├── proxy.py
+│   └── x402_governance.py
+├── models/                 # Gateway-local models
+├── repositories/           # Gateway persistence helpers
+├── schemas/                # Gateway schemas
+└── tests/                  # Gateway test suite
 ```
 
 ## Where to Look
 
-| Task                       | Location                                     |
-| -------------------------- | -------------------------------------------- |
-| Add API route              | `routes/` (follow existing pattern)          |
-| Auth middleware             | `src/core/shared/security/auth.py` (canonical)|
-| Rate limiting              | `src/core/shared/security/rate_limiter.py`   |
-| CORS config                | `src/core/shared/security/cors_config.py`    |
-| Load shedding              | `middleware/load_shedding.py`                |
-| WorkOS SSO                 | `routes/sso/workos.py`                       |
-| Health probes              | `health.py`                                  |
+| Task | Location |
+| ---- | -------- |
+| Add API route | `routes/` |
+| Auth dependency | `src/core/shared/security/auth_dependency.py` |
+| Rate limiting | `src/core/shared/security/rate_limiter.py` |
+| CORS config | `src/core/shared/security/cors_config.py` |
+| Load shedding | `middleware/load_shedding.py` |
+| WorkOS flows | `routes/admin_workos.py`, `workos_event_ingestion.py` |
+| Health probes | `health.py` |
 
 ## Conventions
 
-- `PYTHONPATH=src/` required for all imports.
-- JWT auth on all protected routes via FastAPI `Depends()`.
-- Rate limiting via shared `rate_limiter.py` (not gateway-local).
-- Load shedding `NEVER_SHED` frozenset: governance and health requests are never shed (CI-2).
-- WorkOS endpoints gated by `WORKOS_ENABLED=true`.
+- Reuse shared security/auth code from `src/core/shared/security/`.
+- Keep protected-route auth explicit through FastAPI dependencies.
+- Preserve governance/health load-shedding invariants.
+- Keep SSO-specific dependencies isolated to the documented SSO surfaces.
 
 ## Anti-Patterns
 
-- Do not create gateway-local auth — use `src/core/shared/security/`.
-- Do not use `allow_origins=["*"]` — explicit allowlists only (raises `ValueError` in prod).
-- Do not shed governance or health requests — `NEVER_SHED` invariant is constitutional.
+- Do not create gateway-local replacements for shared auth/security modules.
+- Do not use wildcard CORS with credentials.
+- Do not treat governance or health traffic as shed-safe by default.
 
 ## Commands
 
 ```bash
-make test-gw                                    # Gateway tests
-pytest src/core/services/api_gateway/tests/ -v  # Direct
+make test-gw
+python -m pytest src/core/services/api_gateway/tests/ -v --import-mode=importlib
 ```

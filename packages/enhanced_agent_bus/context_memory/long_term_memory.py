@@ -21,7 +21,7 @@ from enum import Enum
 from pathlib import Path
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.json_utils import dumps as json_dumps
@@ -31,7 +31,7 @@ try:
     from src.core.shared.types import (
         JSONDict,
         JSONList,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONList = list  # type: ignore[misc,assignment]
@@ -56,7 +56,7 @@ _LTM_PERSISTENCE_ERRORS = (
 )
 
 
-class MemoryTier(str, Enum):  # noqa: UP042
+class MemoryTier(str, Enum):
     """Memory storage tiers."""
 
     WORKING = "working"  # Fast, volatile memory
@@ -65,7 +65,7 @@ class MemoryTier(str, Enum):  # noqa: UP042
     ARCHIVAL = "archival"  # Historical data
 
 
-class ConsolidationStrategy(str, Enum):  # noqa: UP042
+class ConsolidationStrategy(str, Enum):
     """Strategies for memory consolidation."""
 
     TIME_BASED = "time_based"  # Consolidate based on age

@@ -19,11 +19,12 @@ from enum import Enum
 from typing import Any
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
 from enhanced_agent_bus.bus_types import JSONDict
+from enhanced_agent_bus.maci_role_projection import parse_canonical_maci_role
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from .types import MCPTool, MCPToolResult, MCPToolStatus
@@ -79,18 +80,50 @@ _ROLE_TOOL_RESTRICTIONS: dict[str, set[str]] = {
 }
 
 
-def _role_may_call_tool(maci_role: str, tool_name: str) -> tuple[bool, str]:
+def _normalize_maci_role(maci_role: object) -> str:
+    """Return a canonical, case-insensitive MACI role identifier."""
+    canonical_role = parse_canonical_maci_role(maci_role)
+    if canonical_role is not None:
+        return canonical_role.value.lower()
+    if isinstance(maci_role, str):
+        return maci_role.strip().lower()
+    return ""
+
+
+def _validate_maci_role(maci_role: object) -> tuple[bool, str]:
+    """Validate that *maci_role* is recognized in this enforcement layer."""
+    canonical_role = parse_canonical_maci_role(maci_role)
+    if canonical_role is not None:
+        return True, canonical_role.value.lower()
+
+    role_key = _normalize_maci_role(maci_role)
+    if role_key in _ROLE_TOOL_RESTRICTIONS:
+        return True, role_key
+
+    return (
+        False,
+        (
+            f"MACI role '{maci_role}' is unknown or unmapped for MCP tool access"
+        ),
+    )
+
+
+def _role_may_call_tool(maci_role: object, tool_name: str) -> tuple[bool, str]:
     """Check whether *maci_role* is permitted to invoke *tool_name*.
 
     Returns:
         (allowed, reason) — reason is empty when allowed=True.
     """
-    if not maci_role:
-        # No role supplied; allow (governance via downstream OPA if needed)
+    if not _normalize_maci_role(maci_role):
+        # Legacy/dynamic agents may not be registered in the MACI registry yet.
+        # Preserve the historical fallback path and rely on downstream controls.
         return True, ""
 
-    role_key = maci_role.lower()
-    restrictions = _ROLE_TOOL_RESTRICTIONS.get(role_key, set())
+    valid, role_or_reason = _validate_maci_role(maci_role)
+    if not valid:
+        return False, role_or_reason
+
+    restrictions = _ROLE_TOOL_RESTRICTIONS.get(role_or_reason, set())
     tool_lower = tool_name.lower()
 
     for prefix in restrictions:
@@ -111,7 +144,7 @@ def _role_may_call_tool(maci_role: str, tool_name: str) -> tuple[bool, str]:
 # ---------------------------------------------------------------------------
 
 
-class MCPClientState(str, Enum):  # noqa: UP042
+class MCPClientState(str, Enum):
     """Lifecycle state of an MCPClient instance."""
 
     DISCONNECTED = "disconnected"
@@ -426,8 +459,9 @@ class MCPClient:
             tool_name: Name of the tool to invoke.
             arguments: Input parameters for the tool (defaults to empty dict).
             agent_id: Identifier of the calling agent (for audit logging).
-            maci_role: MACI role of the calling agent.  Empty string disables
-                role-level enforcement (downstream OPA still applies).
+            maci_role: MACI role of the calling agent.  An empty value keeps
+                the historical fallback path for legacy agents; non-empty
+                roles must be mapped in this enforcement layer.
             timeout: Per-call timeout in seconds; falls back to
                 ``config.call_timeout``.
             raise_on_forbidden: When True, raise instead of returning a
@@ -465,7 +499,7 @@ class MCPClient:
         )
 
         # ---- MACI role enforcement ----------------------------------------
-        if self._config.enforce_maci and maci_role:
+        if self._config.enforce_maci:
             allowed, reason = _role_may_call_tool(maci_role, tool_name)
             if not allowed:
                 logger.warning(

@@ -11,16 +11,20 @@ This breakthrough addresses Challenge 1: Attention & Context Solutions
 by enabling unlimited context length with maintained performance.
 """
 
+from __future__ import annotations
+
+import importlib.util
 import math
+from contextlib import nullcontext
 from dataclasses import dataclass
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -35,7 +39,16 @@ MAMBA_MODEL_LOAD_ERRORS = (
     OSError,
 )
 
+def _has_real_torch() -> bool:
+    try:
+        return importlib.util.find_spec("torch") is not None
+    except (ImportError, ValueError):
+        return False
+
+
 try:
+    if not _has_real_torch():
+        raise ImportError("torch is not installed")
     import torch
     import torch.nn as nn
     import torch.nn.functional as F
@@ -46,6 +59,20 @@ except (ImportError, OSError, RuntimeError, Exception):
     nn = None  # type: ignore[assignment]
     F = None  # type: ignore[assignment]
     TORCH_AVAILABLE = False
+
+if TORCH_AVAILABLE:
+    torch_no_grad = torch.no_grad
+    torch_no_grad_context = torch.no_grad
+else:
+
+    def torch_no_grad():
+        def decorator(func):
+            return func
+
+        return decorator
+
+    def torch_no_grad_context():
+        return nullcontext()
 
 # Conditional base class for when torch is unavailable
 _ModuleBase = nn.Module if TORCH_AVAILABLE else object  # type: ignore[misc]
@@ -83,6 +110,7 @@ class MambaConfig:
     max_context_length: int = 4_000_000  # 4M tokens
     critical_sections_repeat: int = 3
     memory_efficient_mode: bool = False
+    constitutional_hash: str = CONSTITUTIONAL_HASH
 
 
 class MambaSSM(_ModuleBase):  # type: ignore[misc, valid-type]
@@ -159,21 +187,19 @@ class MambaSSM(_ModuleBase):  # type: ignore[misc, valid-type]
         # In practice, this would use the full Mamba-2 SSM implementation
         batch_size, seq_len, d_inner = x.shape
 
-        # Initialize state
-        h = torch.zeros(
-            batch_size, self.d_state, d_inner // self.d_state, device=x.device, dtype=x.dtype
-        )
+        # Keep a per-channel recurrent state so the simplified implementation
+        # preserves the expected `(batch, seq, d_inner)` contract.
+        state = torch.zeros(batch_size, d_inner, device=x.device, dtype=x.dtype)
+        B_scale = torch.sigmoid(B.mean(dim=-1, keepdim=True))
+        C_scale = torch.sigmoid(C.mean(dim=-1, keepdim=True))
 
         outputs = []
         for t in range(seq_len):
-            # State update (simplified)
             x_t = x[:, t, :]
             dt_t = dt[:, t, :]
-
-            # Matrix multiplications for SSM
-            h = h * (1 - dt_t.unsqueeze(-1).unsqueeze(-1)) + x_t.unsqueeze(-1) * B.unsqueeze(-1)
-            y_t = torch.matmul(h, C.unsqueeze(-1)).squeeze(-1)
-
+            decay = torch.exp(-dt_t).clamp(min=0.0, max=1.0)
+            state = state * decay + x_t * B_scale[:, t, :]
+            y_t = state * C_scale[:, t, :]
             outputs.append(y_t)
 
         return torch.stack(outputs, dim=1)
@@ -360,7 +386,7 @@ class ConstitutionalMambaHybrid(_ModuleBase):  # type: ignore[misc, valid-type]
 
         return sorted(list(set(critical_positions)))
 
-    @torch.no_grad()
+    @torch_no_grad()
     def forward(
         self,
         x: torch.Tensor,
@@ -381,11 +407,12 @@ class ConstitutionalMambaHybrid(_ModuleBase):  # type: ignore[misc, valid-type]
             Processed tensor with maintained context
         """
         _batch_size, seq_len, _d_model = x.shape
+        original_seq_len = seq_len
 
         # Validate context length
         if seq_len > self.config.max_context_length:
             logger.warning(
-                f"Sequence length {seq_len:,} exceeds max context {self.config.max_context_length:,}"  # noqa: E501
+                f"Sequence length {seq_len:,} exceeds max context {self.config.max_context_length:,}"
             )
             # Truncate if necessary (though Mamba should handle long contexts)
             x = x[:, : self.config.max_context_length]
@@ -415,6 +442,9 @@ class ConstitutionalMambaHybrid(_ModuleBase):  # type: ignore[misc, valid-type]
             if self.shared_attention is not None and use_attention and (i + 1) % 2 == 0:
                 # Only use attention on portions with critical sections
                 x = self.shared_attention(x)
+
+        if x.shape[1] != original_seq_len:
+            x = x[:, :original_seq_len, :]
 
         return x
 
@@ -454,11 +484,15 @@ class MambaHybridManager:
     def __init__(self, config: MambaConfig | None = None):
         self.config = config or MambaConfig()
         self.model: ConstitutionalMambaHybrid | None = None
-        self.device = torch.device(self.config.device)
+        self.device = torch.device(self.config.device) if TORCH_AVAILABLE else self.config.device
         self.is_loaded = False
 
     def load_model(self) -> bool:
         """Load the Mamba Hybrid model."""
+        if not TORCH_AVAILABLE:
+            logger.warning("PyTorch not available; Mamba Hybrid Processor remains disabled")
+            return False
+
         try:
             logger.info("Loading Constitutional Mamba Hybrid Processor...")
             self.model = ConstitutionalMambaHybrid(self.config)
@@ -501,7 +535,7 @@ class MambaHybridManager:
         if not self.is_loaded or self.model is None:
             raise RuntimeError("Mamba Hybrid Processor not loaded")
 
-        with torch.no_grad():
+        with torch_no_grad_context():
             # Ensure input is on correct device
             input_tensor = input_tensor.to(self.device)
             if input_ids is not None:
@@ -544,7 +578,7 @@ class MambaHybridManager:
             del self.model
             self.model = None
 
-        if torch.cuda.is_available():
+        if TORCH_AVAILABLE and torch.cuda.is_available():
             torch.cuda.empty_cache()
 
         self.is_loaded = False

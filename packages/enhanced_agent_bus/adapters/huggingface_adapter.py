@@ -9,7 +9,7 @@ Supports Llama, Mistral, and other open source models.
 from collections.abc import AsyncIterator
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

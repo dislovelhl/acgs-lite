@@ -4,7 +4,6 @@ Module.
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-import pytest
 
 from enhanced_agent_bus.agent_bus import EnhancedAgentBus
 from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage, MessageType
@@ -14,7 +13,6 @@ from enhanced_agent_bus.registry import DirectMessageRouter, InMemoryAgentRegist
 class TestTenantIsolation:
     """Tests for tenant isolation in routing and delivery."""
 
-    @pytest.mark.asyncio
     async def test_send_message_denies_cross_tenant_recipient(self):
         bus = EnhancedAgentBus()
         await bus.register_agent("sender", "worker", tenant_id="tenant_A")
@@ -34,7 +32,6 @@ class TestTenantIsolation:
         assert not result.is_valid
         assert any("recipient tenant_id 'tenant_b'" in error.lower() for error in result.errors)
 
-    @pytest.mark.asyncio
     async def test_send_message_denies_missing_message_tenant_for_sender(self):
         bus = EnhancedAgentBus()
         await bus.register_agent("sender", "worker", tenant_id="tenant_A")
@@ -53,7 +50,6 @@ class TestTenantIsolation:
         assert not result.is_valid
         assert any("sender tenant_id 'tenant_a'" in error.lower() for error in result.errors)
 
-    @pytest.mark.asyncio
     async def test_direct_message_router_denies_cross_tenant(self):
         registry = InMemoryAgentRegistry()
         await registry.register(
@@ -75,7 +71,6 @@ class TestTenantIsolation:
 
         assert route is None
 
-    @pytest.mark.asyncio
     async def test_direct_message_router_allows_same_tenant(self):
         registry = InMemoryAgentRegistry()
         await registry.register(

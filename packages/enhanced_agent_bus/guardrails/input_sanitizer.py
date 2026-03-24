@@ -16,11 +16,11 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -182,7 +182,7 @@ class InputSanitizer(GuardrailComponent):
                     layer=self.get_layer(),
                     violation_type="input_too_large",
                     severity=ViolationSeverity.HIGH,
-                    message=f"Input size {len(data)} exceeds maximum {self.config.max_input_length}",  # noqa: E501
+                    message=f"Input size {len(data)} exceeds maximum {self.config.max_input_length}",
                     trace_id=trace_id,
                 )
             )

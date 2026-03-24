@@ -9,7 +9,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from enhanced_agent_bus.exceptions import InterruptError, TimeoutError
+from enhanced_agent_bus.langgraph_orchestration.exceptions import InterruptError, TimeoutError
 from enhanced_agent_bus.models import (
     CONSTITUTIONAL_HASH,
     ExecutionContext,
@@ -198,7 +198,6 @@ class TestInMemoryHITLHandler:
         handler = InMemoryHITLHandler(auto_response=HITLAction.CONTINUE)
         assert handler.auto_response == HITLAction.CONTINUE
 
-    @pytest.mark.asyncio
     async def test_auto_response(self):
         """Test automatic response."""
         handler = InMemoryHITLHandler(auto_response=HITLAction.CONTINUE)
@@ -213,7 +212,6 @@ class TestInMemoryHITLHandler:
         assert response.action == HITLAction.CONTINUE
         assert response.responded_by == "auto_responder"
 
-    @pytest.mark.asyncio
     async def test_manual_response(self):
         """Test manual response through respond method."""
         handler = InMemoryHITLHandler()
@@ -246,7 +244,6 @@ class TestInMemoryHITLHandler:
         assert result.action == HITLAction.ABORT
         assert result.responded_by == "tester"
 
-    @pytest.mark.asyncio
     async def test_timeout(self):
         """Test request timeout."""
         handler = InMemoryHITLHandler()
@@ -260,7 +257,6 @@ class TestInMemoryHITLHandler:
         with pytest.raises(TimeoutError):
             await handler.request_human_input(request)
 
-    @pytest.mark.asyncio
     async def test_notify_timeout(self):
         """Test timeout notification."""
         handler = InMemoryHITLHandler()
@@ -291,7 +287,6 @@ class TestHITLInterruptHandler:
         handler = HITLInterruptHandler(config=config)
         assert handler.config.enabled is False
 
-    @pytest.mark.asyncio
     async def test_create_interrupt(self):
         """Test creating interrupt request."""
         handler = HITLInterruptHandler()
@@ -310,7 +305,6 @@ class TestHITLInterruptHandler:
         assert request.node_id == "node1"
         assert request.reason == "Approval required"
 
-    @pytest.mark.asyncio
     async def test_create_interrupt_disabled(self):
         """Test creating interrupt when HITL disabled."""
         config = HITLConfig(enabled=False)
@@ -327,7 +321,6 @@ class TestHITLInterruptHandler:
                 state=state,
             )
 
-    @pytest.mark.asyncio
     async def test_rate_limit(self):
         """Test rate limiting."""
         config = HITLConfig(max_requests_per_workflow=2, cooldown_ms=1.0)
@@ -356,7 +349,6 @@ class TestHITLInterruptHandler:
                 state=state,
             )
 
-    @pytest.mark.asyncio
     async def test_handle_interrupt_success(self):
         """Test handling interrupt successfully."""
         inner_handler = InMemoryHITLHandler(auto_response=HITLAction.CONTINUE)
@@ -376,7 +368,6 @@ class TestHITLInterruptHandler:
 
         assert response.action == HITLAction.CONTINUE
 
-    @pytest.mark.asyncio
     async def test_handle_interrupt_auto_continue_on_timeout(self):
         """Test auto-continue on timeout."""
         inner_handler = InMemoryHITLHandler()  # No auto-response
@@ -398,7 +389,6 @@ class TestHITLInterruptHandler:
         assert response.action == HITLAction.CONTINUE
         assert response.responded_by == "timeout_handler"
 
-    @pytest.mark.asyncio
     async def test_handle_interrupt_auto_abort_on_timeout(self):
         """Test auto-abort on timeout."""
         inner_handler = InMemoryHITLHandler()

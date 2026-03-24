@@ -3,7 +3,6 @@ Tests for Edge Cases and Integration Type Specific Tests.
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-import pytest
 
 from .conftest import (
     IntegrationType,
@@ -13,7 +12,6 @@ from .conftest import (
 class TestEdgeCasesAndErrors:
     """Tests for edge cases and error handling."""
 
-    @pytest.mark.asyncio
     async def test_empty_config(self, integration_service):
         """Test creating integration with empty config."""
         integration = await integration_service.create_integration(
@@ -26,7 +24,6 @@ class TestEdgeCasesAndErrors:
         assert integration.config == {}
         assert len(integration.encrypted_fields) == 0
 
-    @pytest.mark.asyncio
     async def test_large_config(self, integration_service):
         """Test handling large configuration objects."""
         large_config = {f"field_{i}": f"value_{i}" for i in range(100)}
@@ -40,7 +37,6 @@ class TestEdgeCasesAndErrors:
 
         assert len(integration.config) == 100
 
-    @pytest.mark.asyncio
     async def test_special_characters_in_values(self, integration_service):
         """Test handling special characters in config values."""
         config = {
@@ -59,7 +55,6 @@ class TestEdgeCasesAndErrors:
         assert integration.config["server_url"] == config["server_url"]
         assert integration.config["filter"] == config["filter"]
 
-    @pytest.mark.asyncio
     async def test_unicode_in_config(self, integration_service):
         """Test handling unicode in configuration."""
         config = {
@@ -76,7 +71,6 @@ class TestEdgeCasesAndErrors:
 
         assert integration.config["display_name"] == "Enterprise LDAP"
 
-    @pytest.mark.asyncio
     async def test_nested_config_values(self, integration_service):
         """Test handling nested configuration objects."""
         config = {
@@ -104,7 +98,6 @@ class TestEdgeCasesAndErrors:
 class TestIntegrationTypes:
     """Tests for specific integration types."""
 
-    @pytest.mark.asyncio
     async def test_kafka_integration(self, integration_service):
         """Test Kafka integration configuration."""
         config = {
@@ -125,7 +118,6 @@ class TestIntegrationTypes:
         assert integration.integration_type == IntegrationType.KAFKA
         assert "sasl_password" in integration.encrypted_fields
 
-    @pytest.mark.asyncio
     async def test_siem_integration(self, integration_service):
         """Test SIEM integration configuration."""
         config = {
@@ -143,7 +135,6 @@ class TestIntegrationTypes:
 
         assert integration.integration_type == IntegrationType.SIEM
 
-    @pytest.mark.asyncio
     async def test_data_warehouse_integration(self, integration_service):
         """Test data warehouse integration configuration."""
         config = {
@@ -164,7 +155,6 @@ class TestIntegrationTypes:
         assert integration.integration_type == IntegrationType.DATA_WAREHOUSE
         assert "password" in integration.encrypted_fields
 
-    @pytest.mark.asyncio
     async def test_vault_integration(self, integration_service):
         """Test Vault integration configuration."""
         config = {

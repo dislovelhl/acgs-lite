@@ -5,7 +5,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 Task 7.7: DELETE /tenants/{tenant_id}/integrations/{integration_id} with audit archival
 """
 
-import pytest
 
 from .conftest import (
     CONSTITUTIONAL_HASH,
@@ -16,7 +15,6 @@ from .conftest import (
 class TestDeleteWithAuditArchival:
     """Tests for integration deletion with audit archival."""
 
-    @pytest.mark.asyncio
     async def test_delete_creates_audit_log(self, integration_service):
         """Test that deletion creates an audit log entry."""
         integration = await integration_service.create_integration(
@@ -38,7 +36,6 @@ class TestDeleteWithAuditArchival:
         assert len(delete_logs) == 1
         assert delete_logs[0]["actor"] == "admin@example.com"
 
-    @pytest.mark.asyncio
     async def test_delete_archives_config(self, integration_service):
         """Test that deletion archives the configuration."""
         integration = await integration_service.create_integration(
@@ -59,7 +56,6 @@ class TestDeleteWithAuditArchival:
         assert "archived_config" in delete_log["details"]
         assert delete_log["details"]["name"] == "Archived Integration"
 
-    @pytest.mark.asyncio
     async def test_delete_archives_with_redacted_sensitive(self, integration_service):
         """Test that archived config has redacted sensitive fields."""
         integration = await integration_service.create_integration(
@@ -75,9 +71,8 @@ class TestDeleteWithAuditArchival:
         delete_log = next(log for log in logs if log["action"] == "delete")
 
         archived_config = delete_log["details"]["archived_config"]["config"]
-        assert archived_config["bind_password"] == "********"  # noqa: S105
+        assert archived_config["bind_password"] == "********"
 
-    @pytest.mark.asyncio
     async def test_all_crud_operations_audited(self, integration_service):
         """Test that all CRUD operations are audited."""
         # Create
@@ -105,7 +100,6 @@ class TestDeleteWithAuditArchival:
         assert "update" in actions
         assert "delete" in actions
 
-    @pytest.mark.asyncio
     async def test_audit_includes_constitutional_hash(self, integration_service):
         """Test that audit logs include constitutional hash."""
         integration = await integration_service.create_integration(

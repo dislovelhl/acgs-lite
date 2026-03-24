@@ -37,7 +37,6 @@ from enhanced_agent_bus.deliberation_layer.workflows.constitutional_saga import 
 class TestConstitutionalHashInWorkflow:
     """Tests for constitutional hash validation in saga workflow."""
 
-    @pytest.mark.asyncio
     async def test_constitutional_hash_in_step_context(self):
         """Test constitutional hash is passed to step context."""
         received_hash = {"hash": None}
@@ -54,7 +53,6 @@ class TestConstitutionalHashInWorkflow:
 
         assert received_hash["hash"] == "custom-hash-123"
 
-    @pytest.mark.asyncio
     async def test_default_constitutional_hash(self):
         """Test default constitutional hash is used."""
         received_hash = {"hash": None}
@@ -70,7 +68,6 @@ class TestConstitutionalHashInWorkflow:
 
         assert received_hash["hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_result_includes_constitutional_hash(self):
         """Test result includes constitutional hash."""
         saga = ConstitutionalSagaWorkflow(saga_id="result-hash")

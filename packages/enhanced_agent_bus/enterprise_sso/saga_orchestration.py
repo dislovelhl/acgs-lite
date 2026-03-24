@@ -30,11 +30,11 @@ from typing import Generic, TypeVar
 import redis.asyncio
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -55,7 +55,7 @@ _SAGA_OPERATION_ERRORS = (
 )
 
 
-class SagaStatus(str, Enum):  # noqa: UP042
+class SagaStatus(str, Enum):
     """Status of a saga execution."""
 
     PENDING = "pending"
@@ -67,7 +67,7 @@ class SagaStatus(str, Enum):  # noqa: UP042
     PARTIALLY_COMPENSATED = "partially_compensated"
 
 
-class SagaStepStatus(str, Enum):  # noqa: UP042
+class SagaStepStatus(str, Enum):
     """Status of an individual saga step."""
 
     PENDING = "pending"
@@ -80,7 +80,7 @@ class SagaStepStatus(str, Enum):  # noqa: UP042
     SKIPPED = "skipped"
 
 
-class SagaEventType(str, Enum):  # noqa: UP042
+class SagaEventType(str, Enum):
     """Types of saga events for audit logging."""
 
     SAGA_STARTED = "saga_started"
@@ -96,7 +96,7 @@ class SagaEventType(str, Enum):  # noqa: UP042
     STEP_COMPENSATION_FAILED = "step_compensation_failed"
 
 
-class CompensationStrategy(str, Enum):  # noqa: UP042
+class CompensationStrategy(str, Enum):
     """Strategy for handling compensation failures."""
 
     RETRY = "retry"
@@ -272,6 +272,17 @@ class SagaStore:
             "error_message": saga.error_message,
             "current_step_index": saga.current_step_index,
             "constitutional_hash": saga.constitutional_hash,
+            "context": {
+                "saga_id": saga.context.saga_id,
+                "tenant_id": saga.context.tenant_id,
+                "correlation_id": saga.context.correlation_id,
+                "data": saga.context.data,
+                "step_results": saga.context.step_results,
+                "metadata": saga.context.metadata,
+                "constitutional_hash": saga.context.constitutional_hash,
+            }
+            if saga.context
+            else None,
         }
 
     def _dict_to_saga(self, data: dict) -> Saga:
@@ -306,6 +317,17 @@ class SagaStore:
         saga.error_message = data.get("error_message")
         saga.current_step_index = data.get("current_step_index", 0)
         saga.constitutional_hash = data.get("constitutional_hash", CONSTITUTIONAL_HASH)
+        ctx_data = data.get("context")
+        if ctx_data:
+            saga.context = SagaContext(
+                saga_id=ctx_data["saga_id"],
+                tenant_id=ctx_data["tenant_id"],
+                correlation_id=ctx_data.get("correlation_id", ""),
+                data=ctx_data.get("data", {}),
+                step_results=ctx_data.get("step_results", {}),
+                metadata=ctx_data.get("metadata", {}),
+                constitutional_hash=ctx_data.get("constitutional_hash", CONSTITUTIONAL_HASH),
+            )
         return saga
 
     async def save(self, saga: Saga) -> None:
@@ -350,7 +372,7 @@ class SagaStore:
         sagas = []
         for sid in saga_ids:
             saga = await self.get(sid)
-            if saga:  # noqa: SIM102
+            if saga:
                 if status is None or saga.status == status:
                     sagas.append(saga)
 
@@ -1074,7 +1096,7 @@ class SagaRecoveryService:
         self._running = False
         if self._recovery_task:
             self._recovery_task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._recovery_task
             except asyncio.CancelledError:
                 pass

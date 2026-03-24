@@ -155,7 +155,6 @@ class MockDAGNode:
 class TestSagaPatternE2E:
     """End-to-end tests for Saga orchestration pattern."""
 
-    @pytest.mark.asyncio
     async def test_saga_happy_path_all_steps_succeed(self):
         """Test saga execution when all steps succeed."""
         context = WorkflowContext()
@@ -177,7 +176,6 @@ class TestSagaPatternE2E:
         assert all(step.executed for step in steps)
         assert len(compensation_stack) == 3
 
-    @pytest.mark.asyncio
     async def test_saga_lifo_compensation_on_failure(self):
         """Test LIFO compensation order when a step fails."""
         context = WorkflowContext()
@@ -215,7 +213,6 @@ class TestSagaPatternE2E:
         assert steps[1].compensated is True
         assert steps[3].executed is False
 
-    @pytest.mark.asyncio
     async def test_saga_compensation_failure_handling(self):
         """Test handling of compensation failures."""
         context = WorkflowContext()
@@ -251,7 +248,6 @@ class TestSagaPatternE2E:
         assert steps[0].compensated is True
         assert steps[1].compensated is False
 
-    @pytest.mark.asyncio
     async def test_saga_idempotent_compensations(self):
         """Test that compensations can be retried (idempotency)."""
         context = WorkflowContext()
@@ -276,7 +272,6 @@ class TestSagaPatternE2E:
 class TestDAGExecutionE2E:
     """End-to-end tests for DAG execution with parallelism."""
 
-    @pytest.mark.asyncio
     async def test_dag_independent_nodes_parallel_execution(self):
         """Test that independent nodes execute in parallel."""
         context = WorkflowContext()
@@ -317,7 +312,6 @@ class TestDAGExecutionE2E:
         assert nodes["A"].execution_order < nodes["B"].execution_order
         assert nodes["C"].execution_order < nodes["B"].execution_order
 
-    @pytest.mark.asyncio
     async def test_dag_complex_dependency_chain(self):
         """Test complex DAG with multiple dependency levels."""
         context = WorkflowContext()
@@ -353,7 +347,6 @@ class TestDAGExecutionE2E:
         assert nodes["B"].execution_order < nodes["D"].execution_order
         assert nodes["C"].execution_order < nodes["D"].execution_order
 
-    @pytest.mark.asyncio
     async def test_dag_node_failure_skips_dependents(self):
         """Test that node failure causes dependent nodes to be skipped."""
         context = WorkflowContext()
@@ -381,7 +374,6 @@ class TestDAGExecutionE2E:
         assert nodes["B"].executed is False  # Failed, not marked as executed
         assert nodes["C"].executed is False
 
-    @pytest.mark.asyncio
     async def test_dag_as_completed_pattern(self):
         """Test using asyncio.as_completed for maximum parallelism."""
         context = WorkflowContext()
@@ -418,7 +410,6 @@ class TestDAGExecutionE2E:
 class TestConstitutionalValidationE2E:
     """End-to-end tests for constitutional validation across boundaries."""
 
-    @pytest.mark.asyncio
     async def test_constitutional_validation_at_workflow_start(self):
         """Test constitutional validation at workflow entry point."""
         # Valid hash
@@ -439,7 +430,6 @@ class TestConstitutionalValidationE2E:
         assert is_valid is True
         assert error is None
 
-    @pytest.mark.asyncio
     async def test_constitutional_validation_rejects_invalid_hash(self):
         """Test that invalid constitutional hash is rejected."""
         invalid_message = AgentMessage(
@@ -459,7 +449,6 @@ class TestConstitutionalValidationE2E:
         assert is_valid is False
         assert "mismatch" in error.lower()
 
-    @pytest.mark.asyncio
     async def test_constitutional_validation_at_each_saga_step(self):
         """Test constitutional hash validation at each saga step boundary."""
         context = WorkflowContext()
@@ -493,7 +482,6 @@ class TestConstitutionalValidationE2E:
 
         assert context.execution_log == ["step_1", "step_2", "step_3"]
 
-    @pytest.mark.asyncio
     async def test_composite_validation_strategy(self):
         """Test composite validation combining multiple strategies."""
         message = AgentMessage(
@@ -530,7 +518,6 @@ class TestMultiAgentCoordinationE2E:
         processor.get_metrics = MagicMock(return_value={"processed": 0})
         return processor
 
-    @pytest.mark.asyncio
     async def test_agent_registration_and_discovery(self, mock_processor):
         """Test agent registration and discovery across the bus."""
         bus = EnhancedAgentBus(
@@ -556,7 +543,6 @@ class TestMultiAgentCoordinationE2E:
         assert "processor-1" in processors
         assert "validator-1" not in processors
 
-    @pytest.mark.asyncio
     async def test_agent_message_routing(self, mock_processor):
         """Test message routing between agents."""
         bus = EnhancedAgentBus(
@@ -591,7 +577,6 @@ class TestMultiAgentCoordinationE2E:
         finally:
             await bus.stop()
 
-    @pytest.mark.asyncio
     async def test_multi_tenant_agent_isolation(self, mock_processor):
         """Test that agents are properly isolated by tenant."""
         bus = EnhancedAgentBus(
@@ -627,7 +612,6 @@ class TestMultiAgentCoordinationE2E:
         finally:
             await bus.stop()
 
-    @pytest.mark.asyncio
     async def test_broadcast_message_to_tenant_agents(self, mock_processor):
         """Test broadcast message reaches only same-tenant agents."""
         bus = EnhancedAgentBus(
@@ -684,7 +668,6 @@ class TestIntegrationWorkflowE2E:
         processor.get_metrics = MagicMock(return_value={"processed": 0})
         return processor
 
-    @pytest.mark.asyncio
     async def test_complete_governance_workflow(self, mock_processor):
         """Test complete governance workflow from request to decision."""
         bus = EnhancedAgentBus(
@@ -724,7 +707,6 @@ class TestIntegrationWorkflowE2E:
         finally:
             await bus.stop()
 
-    @pytest.mark.asyncio
     async def test_degraded_mode_workflow(self, mock_processor):
         """Test workflow continues in degraded mode when processor fails."""
         # Configure processor to fail
@@ -750,6 +732,7 @@ class TestIntegrationWorkflowE2E:
                 priority=Priority.MEDIUM,
                 constitutional_hash=CONSTITUTIONAL_HASH,
                 tenant_id=None,
+                metadata={"prevalidated": True},
             )
 
             result = await bus.send_message(message)
@@ -760,7 +743,6 @@ class TestIntegrationWorkflowE2E:
         finally:
             await bus.stop()
 
-    @pytest.mark.asyncio
     async def test_high_throughput_message_processing(self, mock_processor):
         """Test high-throughput message processing performance."""
         bus = EnhancedAgentBus(

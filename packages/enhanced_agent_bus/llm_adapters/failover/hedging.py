@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -224,7 +224,7 @@ class RequestHedgingManager:
             )
         else:
             logger.debug(
-                f"[{CONSTITUTIONAL_HASH}] Hedged request {hedged.request_id} completed with no winner (all providers failed)"  # noqa: E501
+                f"[{CONSTITUTIONAL_HASH}] Hedged request {hedged.request_id} completed with no winner (all providers failed)"
             )
 
     def get_hedging_stats(self) -> JSONDict:

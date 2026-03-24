@@ -15,7 +15,6 @@ Tests cover:
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import patch
 
-import pytest
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 from enhanced_agent_bus.swarm_intelligence.enums import (
