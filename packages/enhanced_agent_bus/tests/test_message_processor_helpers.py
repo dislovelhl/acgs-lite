@@ -490,6 +490,14 @@ class TestExtractMessageSessionId:
 class TestComputeCacheKey:
     """Tests for _compute_cache_key helper."""
 
+    @staticmethod
+    def _expected_suffix(processor: MessageProcessor) -> str:
+        return (
+            f":{processor._governance_core_mode}:"
+            f"{int(processor._governance_peer_validation_enabled)}:"
+            f"{int(processor._governance_manifold_enabled)}"
+        )
+
     def test_rejects_invalid_cache_hash_mode(self):
         """Test that invalid cache hash mode is rejected."""
         with pytest.raises(ValueError, match="Invalid cache_hash_mode"):
@@ -502,9 +510,10 @@ class TestComputeCacheKey:
 
         # Assert
         assert isinstance(result, str)
-        assert len(result) == 64  # SHA-256 hash length
-        # Verify it's a valid hex string
-        int(result, 16)
+        base_hash, suffix = result.split(":", 1)
+        assert len(base_hash) == 64  # SHA-256 hash length
+        int(base_hash, 16)
+        assert suffix == self._expected_suffix(processor)[1:]
 
     def test_cache_key_consistent_for_same_message(self, processor, sample_message):
         """Test that cache key is consistent for the same message."""
@@ -551,7 +560,9 @@ class TestComputeCacheKey:
 
         # Assert
         assert isinstance(result, str)
-        assert len(result) == 64
+        base_hash, suffix = result.split(":", 1)
+        assert len(base_hash) == 64
+        assert suffix == self._expected_suffix(processor)[1:]
 
     def test_cache_key_handles_none_autonomy_tier(self, processor, sample_message):
         """Test that cache key handles None autonomy tier."""
@@ -563,7 +574,9 @@ class TestComputeCacheKey:
 
         # Assert
         assert isinstance(result, str)
-        assert len(result) == 64
+        base_hash, suffix = result.split(":", 1)
+        assert len(base_hash) == 64
+        assert suffix == self._expected_suffix(processor)[1:]
 
     def test_cache_key_calculation_logic(self, processor):
         """Test cache key calculation with known values."""
@@ -585,7 +598,9 @@ class TestComputeCacheKey:
         cache_dimensions = (
             f"test content:{CONSTITUTIONAL_HASH}:test-tenant:test-agent:command:bounded"
         )
-        expected = hashlib.sha256(cache_dimensions.encode()).hexdigest()
+        expected = hashlib.sha256(cache_dimensions.encode()).hexdigest() + self._expected_suffix(
+            processor
+        )
 
         assert result == expected
 
@@ -598,7 +613,10 @@ class TestComputeMessageCacheKey:
             fast_hash_available=False,
         )
 
-        assert result == processor._compute_cache_key(sample_message)
+        assert processor._compute_cache_key(sample_message) == (
+            result
+            + TestComputeCacheKey._expected_suffix(processor)
+        )
 
     def test_helper_uses_fast_hash_when_available(self, sample_message):
         called = {"value": False}
@@ -1082,7 +1100,7 @@ class TestBackgroundTaskSchedulingIntegration:
         result = processor._compute_cache_key(sample_message)
 
         assert called["value"] is True
-        assert result == "fast:000000000000beef"
+        assert result == "fast:000000000000beef:legacy:1:0"
 
     def test_cache_key_fast_mode_falls_back_to_sha256(self, monkeypatch):
         """Test that fast mode falls back to SHA-256 when kernel unavailable."""
@@ -1102,7 +1120,7 @@ class TestBackgroundTaskSchedulingIntegration:
         cache_dimensions = (
             f"test content:{CONSTITUTIONAL_HASH}:test-tenant:test-agent:command:bounded"
         )
-        expected = hashlib.sha256(cache_dimensions.encode()).hexdigest()
+        expected = hashlib.sha256(cache_dimensions.encode()).hexdigest() + ":legacy:1:0"
         assert result == expected
 
 
