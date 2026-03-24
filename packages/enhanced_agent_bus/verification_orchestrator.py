@@ -52,6 +52,22 @@ class VerificationResult:
     pqc_metadata: JSONDict = field(default_factory=dict)
 
 
+@dataclass(frozen=True)
+class VerificationRuntimeDependencies:
+    """Explicit runtime dependency bundle for verification wiring."""
+
+    intent_classifier: object
+    asc_verifier: object
+    graph_check: object
+    pacar_verifier: object
+    evolution_controller: object
+    ampo_engine: object
+    intent_type: object
+    enable_pqc: bool
+    pqc_service: object | None
+    pqc_config: object | None
+
+
 class VerificationOrchestrator:
     """Parallel SDPC + PQC verification coordinator.
 
@@ -154,6 +170,22 @@ class VerificationOrchestrator:
         self._pqc_service = None
         if self._enable_pqc:
             self._init_pqc(config)
+
+    def configure_runtime_dependencies(
+        self,
+        dependencies: VerificationRuntimeDependencies,
+    ) -> None:
+        """Apply externally-built verifier dependencies to this orchestrator."""
+        self.intent_classifier = dependencies.intent_classifier
+        self.asc_verifier = dependencies.asc_verifier
+        self.graph_check = dependencies.graph_check
+        self.pacar_verifier = dependencies.pacar_verifier
+        self.evolution_controller = dependencies.evolution_controller
+        self.ampo_engine = dependencies.ampo_engine
+        self._IntentType = dependencies.intent_type
+        self._enable_pqc = dependencies.enable_pqc
+        self._pqc_service = dependencies.pqc_service
+        self._pqc_config = dependencies.pqc_config
 
     # ------------------------------------------------------------------
     # Public API

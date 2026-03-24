@@ -130,8 +130,8 @@ health-worker:
 
 # === Code Quality ===
 lint:
-	ruff check --extend-exclude .codex-home .
-	mypy \
+	$(PYTHON) -m ruff check --extend-exclude .codex-home .
+	$(PYTHON) -m mypy \
 		conftest.py \
 		src/core/shared/cache/models.py \
 		src/core/shared/acgs_logging/agent_workflow_events.py \
