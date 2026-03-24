@@ -1,4 +1,4 @@
-.PHONY: help setup lock-sync lock-validate test test-quick test-lite test-bus test-gw lint format clean bench cov cov-html codex-doctor autoresearch-promote agent-commit
+.PHONY: help setup lock-sync lock-validate test test-quick test-lite test-bus test-gw health-manifest health-overview health-lite health-bus health-bus-governance health-gw health-constitutional-swarm health-frontend health-worker lint format clean bench cov cov-html codex-doctor autoresearch-promote agent-commit
 
 LOCK_PYTHON ?= 3.11
 UV ?= uv
@@ -7,7 +7,7 @@ UV_CACHE_DIR ?= $(ROOT_DIR)/.uv-cache
 VENV_PYTHON := $(ROOT_DIR)/.venv/bin/python
 PYTHON ?= $(if $(wildcard $(VENV_PYTHON)),$(VENV_PYTHON),python3)
 PIP ?= $(PYTHON) -m pip
-WORKSPACE_PYTHONPATH := $(ROOT_DIR)/packages/enhanced_agent_bus:$(ROOT_DIR)/packages/acgs-lite/src:$(ROOT_DIR)/packages/acgs-deliberation/src:$(ROOT_DIR)/src:$(ROOT_DIR)
+WORKSPACE_PYTHONPATH := $(ROOT_DIR)/packages/enhanced_agent_bus:$(ROOT_DIR)/packages/acgs-lite/src:$(ROOT_DIR)/packages/acgs-deliberation/src:$(ROOT_DIR)/packages/constitutional_swarm/src:$(ROOT_DIR)/packages/mhc/src:$(ROOT_DIR)/src:$(ROOT_DIR)
 export PYTHONPATH := $(WORKSPACE_PYTHONPATH)$(if $(PYTHONPATH),:$(PYTHONPATH))
 PYTEST_TARGETS ?=
 PYTEST_ARGS ?=
@@ -29,6 +29,17 @@ help:
 	@echo "    make test-bus     Enhanced Agent Bus tests only"
 	@echo "    make test-gw      API Gateway tests only"
 	@echo ""
+	@echo "  Package Health:"
+	@echo "    make health-manifest Validate package health metadata"
+	@echo "    make health-overview Show per-package owners, namespaces, and verification commands"
+	@echo "    make health-lite    First-class acgs-lite health gate"
+	@echo "    make health-bus     First-class enhanced-agent-bus health gate"
+	@echo "    make health-bus-governance Governance-core slice for enhanced-agent-bus"
+	@echo "    make health-gw      First-class API Gateway health gate"
+	@echo "    make health-constitutional-swarm First-class constitutional-swarm health gate"
+	@echo "    make health-frontend First-class propriety-ai health gate"
+	@echo "    make health-worker  First-class governance-proxy worker health gate"
+	@echo ""
 	@echo "  Code Quality:"
 	@echo "    make lint         Ruff + MyPy"
 	@echo "    make format       Auto-fix formatting"
@@ -38,12 +49,14 @@ help:
 	@echo "    make bench        Run acgs-lite benchmark suite"
 
 # === Setup ===
-setup:
-	$(PIP) install -e ".[dev,test]"
-	$(PIP) install -e packages/acgs-lite[dev]
-	$(PIP) install -e packages/enhanced_agent_bus[dev]
-	$(PIP) install -e packages/acgs-deliberation[dev]
-	pre-commit install
+setup: lock-sync
+	@if [ "$${CI:-}" = "true" ]; then \
+		echo "Skipping pre-commit install in CI"; \
+	elif git config --get core.hooksPath >/dev/null 2>&1; then \
+		echo "Skipping pre-commit install because git core.hooksPath is set"; \
+	else \
+		pre-commit install; \
+	fi
 	cd packages/propriety-ai && npm install
 
 lock-sync:
@@ -74,6 +87,46 @@ test-bus:
 
 test-gw:
 	$(PYTHON) -m pytest $(or $(PYTEST_TARGETS),src/core/services/api_gateway/tests/) -v --import-mode=importlib $(PYTEST_ARGS)
+
+health-manifest:
+	$(PYTHON) scripts/package_health.py validate
+
+health-overview: health-manifest
+	$(PYTHON) scripts/package_health.py list
+
+health-lite: test-lite
+
+health-bus: test-bus
+
+health-bus-governance:
+	ruff check \
+		packages/enhanced_agent_bus/governance_core.py \
+		packages/enhanced_agent_bus/message_processor.py \
+		packages/enhanced_agent_bus/verification_orchestrator.py \
+		packages/enhanced_agent_bus/config.py \
+		packages/enhanced_agent_bus/tests/test_governance_core.py \
+		packages/enhanced_agent_bus/tests/test_config.py
+	python3 -m pytest --import-mode=importlib -q \
+		packages/enhanced_agent_bus/tests/test_governance_core.py \
+		packages/enhanced_agent_bus/tests/test_config.py \
+		packages/enhanced_agent_bus/tests/test_message_processor_coverage.py \
+		packages/enhanced_agent_bus/tests/test_processor_redesign.py::TestMessageProcessorBackwardCompat \
+		packages/enhanced_agent_bus/tests/test_environment_check.py \
+		packages/enhanced_agent_bus/tests/test_security_defaults.py \
+		packages/enhanced_agent_bus/tests/test_message_processor_independent_validator_gate.py
+
+health-gw: test-gw
+
+health-constitutional-swarm:
+	$(PYTHON) -m ruff check packages/constitutional_swarm
+	$(PYTHON) -c "import constitutional_swarm"
+	$(PYTHON) -m pytest --import-mode=importlib packages/constitutional_swarm/tests -v
+
+health-frontend:
+	cd packages/propriety-ai && npm run test
+
+health-worker:
+	cd workers/governance-proxy && npm run test
 
 # === Code Quality ===
 lint:

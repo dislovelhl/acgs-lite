@@ -34,8 +34,6 @@ jobs:
           path: ${{ env.UV_CACHE_DIR }}
           key: uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}
           restore-keys: uv-${{ runner.os }}-
-      - name: Install dependencies
-        run: uv sync --all-extras --dev
       - name: Make setup
         run: make setup
       - name: Lint
@@ -60,8 +58,6 @@ jobs:
           path: ${{ env.UV_CACHE_DIR }}
           key: uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}
           restore-keys: uv-${{ runner.os }}-
-      - name: Install dependencies
-        run: uv sync --all-extras --dev
       - name: Make setup
         run: make setup
       - name: Test (quick)
@@ -87,8 +83,6 @@ jobs:
           path: ${{ env.UV_CACHE_DIR }}
           key: uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}
           restore-keys: uv-${{ runner.os }}-
-      - name: Install dependencies
-        run: uv sync --all-extras --dev
       - name: Make setup
         run: make setup
       - name: Test (full suite)
