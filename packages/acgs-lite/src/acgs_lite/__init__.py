@@ -35,7 +35,7 @@ from acgs_lite.governed import GovernedAgent, GovernedCallable
 from acgs_lite.licensing import LicenseInfo, LicenseManager, Tier
 from acgs_lite.maci import MACIEnforcer, MACIRole
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 
 
 def set_license(key: str) -> LicenseInfo:

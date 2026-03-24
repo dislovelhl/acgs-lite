@@ -4,13 +4,15 @@
 
 **Constitutional governance infrastructure for AI agents. The missing safety layer between your LLM and production.**
 
-`ACGS 2.0.0` | `AGPL-3.0` | `up to 560ns P50 on benchmark Rust path` | `3,133 tests passing`
+`ACGS 2.0.1` | `AGPL-3.0-or-later` | `up to 560ns P50 on benchmark Rust path` | `3,133 tests passing`
 
 [![Demo Video](https://img.youtube.com/vi/do9BCPn29_Q/maxresdefault.jpg)](https://youtu.be/do9BCPn29_Q)
 
 > **Note:** Performance numbers are from the local benchmark suite (`make bench`) and the fastest figures refer to the optional Rust/PyO3 hot path under benchmark conditions. Python-only and mixed integration paths will be slower. The benchmark target runs focused `pytest-benchmark` microbenchmarks for engine construction and steady-state validation. Run benchmarks on your own hardware before quoting exact latency. The import path is `from acgs import ...` (preferred) or `from acgs_lite import ...` (legacy, still supported).
 >
-> **License:** AGPL-3.0 for open-source use. [Commercial license](COMMERCIAL_LICENSE.md) available for proprietary/SaaS use.
+> **License:** AGPL-3.0-or-later for open-source use. [Commercial license](COMMERCIAL_LICENSE.md) available for proprietary/SaaS use.
+>
+> **Naming:** `ACGS` is the product name, `acgs` is the PyPI package, and `acgs_lite` is the compatibility import namespace. See [../../docs/brand-architecture.md](../../docs/brand-architecture.md).
 
 ---
 
@@ -308,7 +310,7 @@ Governance must be democratic. The infrastructure that constrains the machines m
 pip install acgs
 ```
 
-AGPL-3.0 Licensed | Open Source | [Commercial License Available](COMMERCIAL_LICENSE.md)
+AGPL-3.0-or-later Licensed | Open Source | [Commercial License Available](COMMERCIAL_LICENSE.md)
 
 *The question was never whether power would be constrained -- it was whether the constraints would be built by the people affected or imposed after the damage was done.*
 
@@ -329,7 +331,7 @@ you are editing.
 
 ACGS is dual-licensed:
 
-- **AGPL-3.0** -- Free for open-source use, internal pipelines, CI/CD, and on-premise deployment.
+- **AGPL-3.0-or-later** -- Free for open-source use, internal pipelines, CI/CD, and on-premise deployment.
 - **Commercial License** -- Required if you embed ACGS in a proprietary SaaS product served to external users. Contact hello@acgs.ai.
 
 See [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) for details and FAQ.

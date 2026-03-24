@@ -4,8 +4,8 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "acgs-lite"
-version = "2.0.0"
+name = "acgs"
+version = "2.0.1"
 description = "Constitutional AI governance for any agent. Wrap any LLM agent in enforceable rules, audit trails, and separation of powers — in 5 lines of code."
 readme = "README.md"
 license = "AGPL-3.0-or-later"
@@ -49,8 +49,9 @@ llamaindex = ["llama-index-core>=0.10"]
 autogen = ["autogen-core>=0.4", "autogen-agentchat>=0.4"]
 mcp = ["mcp>=1.0"]
 crewai = ["crewai>=0.30"]
+gitlab = ["httpx>=0.27", "starlette>=0.37"]
 google-cloud = ["google-cloud-logging>=3.0"]
-all = ["acgs-lite[a2a,openai,anthropic,langchain,litellm,google,llamaindex,autogen,mcp]"]
+all = ["acgs[a2a,openai,anthropic,langchain,litellm,google,llamaindex,autogen,mcp,crewai,gitlab,google-cloud]"]
 dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.24",
@@ -61,6 +62,7 @@ dev = [
 
 [project.scripts]
 "acgs" = "acgs_lite.cli:main"
+"acgs-lite" = "acgs_lite.cli:main"
 
 [project.urls]
 Homepage = "https://acgs.ai"
@@ -68,7 +70,7 @@ Documentation = "https://acgs.ai"
 Repository = "https://github.com/acgs2_admin/acgs"
 Issues = "https://github.com/acgs2_admin/acgs/issues"
 Changelog = "https://github.com/acgs2_admin/acgs/releases"
-PyPI = "https://pypi.org/project/acgs-lite/"
+PyPI = "https://pypi.org/project/acgs/"
 
 [tool.setuptools.packages.find]
 where = ["src"]
