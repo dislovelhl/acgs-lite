@@ -219,7 +219,7 @@ class TestArticle12Logger:
     def test_max_records_trim(self) -> None:
         logger = Article12Logger(system_id="test-sys", max_records=3)
         for i in range(5):
-            logger.log_call(f"op{i}", call=lambda: i)
+            logger.log_call(f"op{i}", call=lambda value=i: value)
         assert logger.record_count == 3
 
     def test_repr(self) -> None:
@@ -374,6 +374,24 @@ class TestHumanOversightGateway:
         gw = HumanOversightGateway(system_id="s1", on_review_required=notified.append)
         gw.submit("op", "out", impact_score=0.9)
         assert len(notified) == 1
+
+    def test_notification_callback_failure_is_suppressed(self) -> None:
+        def fail(_: OversightDecision) -> None:
+            raise RuntimeError("boom")
+
+        gw = HumanOversightGateway(system_id="s1", on_review_required=fail)
+        decision = gw.submit("op", "out", impact_score=0.9)
+        assert decision.outcome == OversightOutcome.PENDING
+        assert gw.get_decision(decision.decision_id) is decision
+
+    def test_approval_callback_failure_is_suppressed(self) -> None:
+        def fail(_: OversightDecision) -> None:
+            raise RuntimeError("boom")
+
+        gw = HumanOversightGateway(system_id="s1", on_approved=fail)
+        decision = gw.submit("op", "out", impact_score=0.9)
+        approved = gw.approve(decision.decision_id, reviewer_id="r1")
+        assert approved.outcome == OversightOutcome.APPROVED
 
     def test_oversight_decision_to_dict(self) -> None:
         gw = HumanOversightGateway(system_id="s1")

@@ -5,6 +5,7 @@ Constitutional Hash: cdd01ef066bc6cf2
 """
 
 import importlib
+import io
 import json
 import sys
 from dataclasses import dataclass
@@ -708,6 +709,21 @@ class TestGovernanceASGIMiddleware:
         mw = GovernanceASGIMiddleware(noop)
         assert mw.stats["total_validations"] == 0
 
+    def test_validate_output_restores_strict_after_engine_error(self):
+        from acgs_lite.middleware import GovernanceASGIMiddleware
+
+        async def noop(scope, receive, send):
+            pass
+
+        mw = GovernanceASGIMiddleware(noop, strict=True)
+
+        def raising_validate(*args: Any, **kwargs: Any) -> None:
+            raise RuntimeError("boom")
+
+        mw.engine.validate = raising_validate  # type: ignore[method-assign]
+        mw._validate_output("safe response")
+        assert mw.engine.strict is True
+
 
 @pytest.mark.integration
 class TestGovernanceWSGIMiddleware:
@@ -733,10 +749,33 @@ class TestGovernanceWSGIMiddleware:
 
         result = wrapped(environ, mock_start_response)
         assert result == [b"Hello"]
-
-        header_names = [h[0] for h in captured_headers]
+        header_names = [header[0] for header in captured_headers]
         assert "X-Governance-Hash" in header_names
         assert "X-Governance-Valid" in header_names
+
+    def test_request_validation_restores_strict_after_engine_error(self):
+        from acgs_lite.middleware import GovernanceWSGIMiddleware
+
+        def simple_app(environ, start_response):
+            start_response("200 OK", [("Content-Type", "text/plain")])
+            return [b"Hello"]
+
+        wrapped = GovernanceWSGIMiddleware(simple_app, strict=True)
+
+        def raising_validate(*args: Any, **kwargs: Any) -> None:
+            raise RuntimeError("boom")
+
+        wrapped.engine.validate = raising_validate  # type: ignore[method-assign]
+
+        environ = {
+            "REQUEST_METHOD": "POST",
+            "PATH_INFO": "/api",
+            "CONTENT_LENGTH": "16",
+            "wsgi.input": io.BytesIO(b'{"text":"hello"}'),
+        }
+
+        wrapped(environ, lambda status, headers, *args: None)
+        assert wrapped.engine.strict is True
 
     def test_skip_health(self):
         from acgs_lite.middleware import GovernanceWSGIMiddleware

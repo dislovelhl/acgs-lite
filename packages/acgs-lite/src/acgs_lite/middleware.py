@@ -55,6 +55,16 @@ DEFAULT_SKIP_PATHS: frozenset[str] = frozenset(
 BODY_METHODS: frozenset[str] = frozenset({"POST", "PUT", "PATCH", "DELETE"})
 
 
+def _validate_non_strict(engine: GovernanceEngine, text: str, *, agent_id: str) -> Any:
+    """Validate text while always restoring the engine's strict mode."""
+    old_strict = engine.strict
+    engine.strict = False
+    try:
+        return engine.validate(text, agent_id=agent_id)
+    finally:
+        engine.strict = old_strict
+
+
 class GovernanceASGIMiddleware:
     """ASGI middleware that validates request/response bodies.
 
@@ -124,33 +134,22 @@ class GovernanceASGIMiddleware:
 
         if method in BODY_METHODS:
             body_chunks: list[bytes] = []
-            body_complete = False
 
             async def receive_wrapper() -> dict[str, Any]:
-                nonlocal body_complete
                 message = await receive()
                 if message.get("type") == "http.request":
                     body = message.get("body", b"")
                     if body:
                         body_chunks.append(body)
-                    if not message.get("more_body", False):
-                        body_complete = True
                 return message
 
             # Use wrapped receive to capture the body
             if self.validate_responses:
                 # We need to buffer response too
-                response_headers_sent = False
                 response_body_chunks: list[bytes] = []
-                original_status = 200
 
                 async def send_wrapper(message: dict[str, Any]) -> None:
-                    nonlocal response_headers_sent, original_status
-
                     if message["type"] == "http.response.start":
-                        original_status = message.get("status", 200)
-                        headers = dict(message.get("headers", []))
-
                         # Add governance headers
                         extra_headers = [
                             (b"x-governance-hash", self.constitution.hash.encode()),
@@ -167,7 +166,6 @@ class GovernanceASGIMiddleware:
                         existing = list(message.get("headers", []))
                         existing.extend(extra_headers)
                         message = {**message, "headers": existing}
-                        response_headers_sent = True
 
                     elif message["type"] == "http.response.body":
                         body = message.get("body", b"")
@@ -226,10 +224,7 @@ class GovernanceASGIMiddleware:
                     for key in ("content", "text", "message", "query", "input", "prompt"):
                         if key in data and isinstance(data[key], str):
                             text_parts.append(data[key])
-                    if text_parts:
-                        text = " ".join(text_parts)
-                    else:
-                        text = json.dumps(data)
+                    text = " ".join(text_parts) if text_parts else json.dumps(data)
             except (json.JSONDecodeError, ValueError):
                 pass  # Use raw text
 
@@ -241,16 +236,17 @@ class GovernanceASGIMiddleware:
     def _validate_output(self, text: str) -> None:
         """Validate output text non-blocking."""
         try:
-            old_strict = self.engine.strict
-            self.engine.strict = False
             if text.strip():
-                result = self.engine.validate(text[:2000], agent_id=f"{self.agent_id}:response")
+                result = _validate_non_strict(
+                    self.engine,
+                    text[:2000],
+                    agent_id=f"{self.agent_id}:response",
+                )
                 if not result.valid:
                     logger.warning(
                         "HTTP response governance violations: %s",
                         [v.rule_id for v in result.violations],
                     )
-            self.engine.strict = old_strict
         except Exception as e:
             logger.debug("Governance middleware output validation error: %s", e)
 
@@ -318,10 +314,11 @@ class GovernanceWSGIMiddleware:
                 try:
                     text = body.decode("utf-8", errors="replace")
                     if text.strip():
-                        old_strict = self.engine.strict
-                        self.engine.strict = False
-                        self.engine.validate(text[:2000], agent_id=f"{self.agent_id}:request")
-                        self.engine.strict = old_strict
+                        _validate_non_strict(
+                            self.engine,
+                            text[:2000],
+                            agent_id=f"{self.agent_id}:request",
+                        )
                 except Exception as e:
                     logger.debug("WSGI governance validation error: %s", e)
 

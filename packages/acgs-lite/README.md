@@ -191,6 +191,67 @@ Ships with 11 out-of-the-box platform integrations:
 
 ---
 
+## HTTP Middleware for Existing Apps
+
+ACGS can be attached directly to HTTP services so inbound requests and outbound
+responses are checked against your constitution without rewriting your app.
+
+```python
+from acgs_lite.middleware import GovernanceASGIMiddleware
+
+app.add_middleware(
+    GovernanceASGIMiddleware,
+    strict=False,
+    validate_responses=True,
+    agent_id="http-middleware",
+)
+```
+
+```python
+from acgs_lite.middleware import GovernanceWSGIMiddleware
+
+app.wsgi_app = GovernanceWSGIMiddleware(
+    app.wsgi_app,
+    strict=False,
+    agent_id="http-middleware",
+)
+```
+
+Both middleware variants restore engine strictness after non-blocking validation
+paths, so response/request checks do not leak validation mode across requests.
+
+---
+
+## Human Oversight for High-Impact Decisions
+
+For Article 14 style human-in-the-loop control, route risky decisions through
+the human oversight gateway:
+
+```python
+from acgs_lite.eu_ai_act.human_oversight import HumanOversightGateway
+
+gateway = HumanOversightGateway(
+    system_id="cv-screener-v1",
+    oversight_threshold=0.8,
+)
+
+decision = gateway.submit(
+    "reject_candidate",
+    "Rejected: insufficient Python experience",
+    impact_score=0.91,
+    context={"candidate_id": "abc123"},
+)
+
+if decision.requires_human_review:
+    gateway.approve(decision.decision_id, reviewer_id="hr-1", notes="Approved after review")
+```
+
+Optional review/approval/rejection callbacks may fail without interrupting the
+governance decision record itself, which makes notification hooks safe to use
+with email, queue, or webhook transports.
+
+---
+
 ## Frictionless CI/CD: The GitLab Duo Integration
 
 1. **MR Webhook Fires** -- GitLab event triggered. Code diffs and commit messages enter the ACGS pipeline.
@@ -250,6 +311,19 @@ pip install acgs
 AGPL-3.0 Licensed | Open Source | [Commercial License Available](COMMERCIAL_LICENSE.md)
 
 *The question was never whether power would be constrained -- it was whether the constraints would be built by the people affected or imposed after the damage was done.*
+
+### Development Verification
+
+For local package development, run pytest with importlib mode from the package
+root:
+
+```bash
+python -m pytest tests -q --import-mode=importlib
+```
+
+The test configuration forces pytest to prefer the checked-out `src/` tree over
+an already installed `acgs_lite` copy, so local verification exercises the code
+you are editing.
 
 ### License
 

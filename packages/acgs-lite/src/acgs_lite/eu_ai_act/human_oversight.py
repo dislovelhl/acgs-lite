@@ -43,6 +43,7 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import Callable
+from contextlib import suppress
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import StrEnum
@@ -196,11 +197,11 @@ class HumanOversightGateway:
         """
         impact_score = max(0.0, min(1.0, impact_score))
         requires_review = impact_score >= self.oversight_threshold
-
-        if requires_review:
-            outcome = OversightOutcome.PENDING
-        else:
-            outcome = OversightOutcome.AUTO_APPROVED
+        outcome = (
+            OversightOutcome.PENDING
+            if requires_review
+            else OversightOutcome.AUTO_APPROVED
+        )
 
         decision = OversightDecision(
             decision_id=str(uuid.uuid4())[:8],
@@ -214,12 +215,8 @@ class HumanOversightGateway:
         )
 
         self._decisions[decision.decision_id] = decision
-
-        if requires_review and self._on_review_required:
-            try:
-                self._on_review_required(decision)
-            except Exception:
-                pass  # Notification failure must never block the governance record
+        if requires_review:
+            self._notify(self._on_review_required, decision)
 
         return decision
 
@@ -255,12 +252,7 @@ class HumanOversightGateway:
             }
         )
         self._decisions[decision_id] = updated
-
-        if self._on_approved:
-            try:
-                self._on_approved(updated)
-            except Exception:
-                pass
+        self._notify(self._on_approved, updated)
 
         return updated
 
@@ -296,12 +288,7 @@ class HumanOversightGateway:
             }
         )
         self._decisions[decision_id] = updated
-
-        if self._on_rejected:
-            try:
-                self._on_rejected(updated)
-            except Exception:
-                pass
+        self._notify(self._on_rejected, updated)
 
         return updated
 
@@ -332,6 +319,17 @@ class HumanOversightGateway:
     def get_decision(self, decision_id: str) -> OversightDecision | None:
         """Retrieve a decision by ID."""
         return self._decisions.get(decision_id)
+
+    def _notify(
+        self,
+        callback: NotificationCallback | None,
+        decision: OversightDecision,
+    ) -> None:
+        """Fire an optional callback without letting notification failures block governance."""
+        if callback is None:
+            return
+        with suppress(Exception):
+            callback(decision)
 
     def pending_decisions(self) -> list[OversightDecision]:
         """Return all decisions awaiting human review."""
