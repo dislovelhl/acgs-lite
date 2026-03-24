@@ -174,6 +174,18 @@ class OpenAIAdapter(BaseLLMAdapter):
         self._async_client: _AsyncOpenAIClientProtocol | None = None
         self._tiktoken_encoder: _TokenEncoderProtocol | None = None
 
+    def validate_constitutional_compliance(self, **kwargs: object) -> None:
+        """Validate constitutional compliance for OpenAI adapter."""
+        if not self.constitutional_hash:
+            raise ValueError("Constitutional hash is required for OpenAI adapter compliance.")
+        if self.constitutional_hash != CONSTITUTIONAL_HASH:
+            logger.warning(
+                "OpenAI adapter using non-standard constitutional hash: %s",
+                self.constitutional_hash,
+            )
+        if not self.model:
+            raise ValueError("OpenAI adapter constitutional compliance requires a model.")
+
     def _get_client(self) -> _OpenAIClientProtocol:
         """Get or create synchronous OpenAI client.
 

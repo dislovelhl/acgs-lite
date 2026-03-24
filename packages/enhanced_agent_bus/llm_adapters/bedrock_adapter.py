@@ -175,6 +175,18 @@ class BedrockAdapter(BaseLLMAdapter):
         self._async_client: object | None = None
         self._provider: str | None = None
 
+    def validate_constitutional_compliance(self, **kwargs: object) -> None:
+        """Validate constitutional compliance for Bedrock adapter."""
+        if not self.constitutional_hash:
+            raise ValueError("Constitutional hash is required for Bedrock adapter compliance.")
+        if self.constitutional_hash != CONSTITUTIONAL_HASH:
+            logger.warning(
+                "Bedrock adapter using non-standard constitutional hash: %s",
+                self.constitutional_hash,
+            )
+        if not self.model:
+            raise ValueError("Bedrock adapter constitutional compliance requires a model.")
+
     def _get_provider(self) -> str:
         """Get the provider name from model ID.
 

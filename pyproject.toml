@@ -4,11 +4,11 @@ requires = ["setuptools>=80.9.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "acgs"
+name = "acgs-monorepo"
 version = "3.0.0"
-description = "Advanced Constitutional Governance System — AI governance at 560ns"
+description = "ACGS monorepo workspace and developer tooling"
 requires-python = ">=3.11"
-license = "Apache-2.0"
+license = "AGPL-3.0-or-later"
 dependencies = [
     "fastapi>=0.127.0",
     "httpx>=0.27.0",
@@ -75,7 +75,7 @@ members = ["packages/enhanced_agent_bus", "packages/acgs-lite", "packages/acgs-d
 
 [tool.uv.sources]
 enhanced-agent-bus = { workspace = true }
-acgs-lite = { workspace = true }
+acgs = { workspace = true }
 acgs-deliberation = { workspace = true }
 
 [tool.ruff]
@@ -117,6 +117,7 @@ exclude = ["build", "dist", ".codex-home", ".venv", "tests"]
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "--import-mode=importlib"
+pythonpath = ["."]
 testpaths = [
     "tests",
     "packages/enhanced_agent_bus",

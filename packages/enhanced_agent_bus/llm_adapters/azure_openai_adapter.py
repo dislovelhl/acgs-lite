@@ -151,6 +151,18 @@ class AzureOpenAIAdapter(BaseLLMAdapter):
         self._tiktoken_encoder: _EncoderProtocol | None = None
         self._credential: object | None = None
 
+    def validate_constitutional_compliance(self, **kwargs: object) -> None:
+        """Validate constitutional compliance for Azure OpenAI adapter."""
+        if not self.constitutional_hash:
+            raise ValueError("Constitutional hash is required for Azure OpenAI adapter compliance.")
+        if self.constitutional_hash != CONSTITUTIONAL_HASH:
+            logger.warning(
+                "Azure OpenAI adapter using non-standard constitutional hash: %s",
+                self.constitutional_hash,
+            )
+        if not self.model:
+            raise ValueError("Azure OpenAI adapter constitutional compliance requires a model.")
+
     def _get_credential(self) -> object | None:
         """Get Azure credential for managed identity authentication.
 

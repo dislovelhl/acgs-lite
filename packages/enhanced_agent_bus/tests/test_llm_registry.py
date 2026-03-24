@@ -61,6 +61,9 @@ class _StubAdapter(BaseLLMAdapter):
     async def health_check(self):
         return HealthCheckResult(status=AdapterStatus.HEALTHY, message="ok")
 
+    def validate_constitutional_compliance(self, **kwargs: object) -> None:
+        pass  # No-op for test stub
+
     def _make_response(self, content: str) -> LLMResponse:
         return LLMResponse(
             content=content,

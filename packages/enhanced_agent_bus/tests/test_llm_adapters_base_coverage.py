@@ -103,6 +103,9 @@ class ConcreteAdapter(BaseLLMAdapter):
     async def health_check(self) -> HealthCheckResult:
         return HealthCheckResult(status=AdapterStatus.HEALTHY, latency_ms=1.0)
 
+    def validate_constitutional_compliance(self, **kwargs: object) -> None:
+        pass  # No-op for test stub
+
     def _make_response(self, tag: str) -> LLMResponse:
         meta = CompletionMetadata(model=self.model, provider="test")
         return LLMResponse(content=f"response-{tag}", metadata=meta)
@@ -723,6 +726,9 @@ class TestGetProviderName:
             async def health_check(self):
                 return HealthCheckResult(status=AdapterStatus.HEALTHY)
 
+            def validate_constitutional_compliance(self, **kwargs: object) -> None:
+                pass  # No-op for test stub
+
         a = OpenAIAdapter(model="x")
         assert a.get_provider_name() == "openai"
 
@@ -748,6 +754,9 @@ class TestGetProviderName:
 
             async def health_check(self):
                 return HealthCheckResult(status=AdapterStatus.HEALTHY)
+
+            def validate_constitutional_compliance(self, **kwargs: object) -> None:
+                pass  # No-op for test stub
 
         a = GroqLLM(model="x")
         # No trailing "adapter" substring, name is the full lowercased class name

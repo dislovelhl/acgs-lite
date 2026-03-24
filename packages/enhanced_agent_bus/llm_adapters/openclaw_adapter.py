@@ -165,6 +165,18 @@ class OpenClawAdapter(BaseLLMAdapter):
         self._client: _OpenAIClientProtocol | None = None
         self._async_client: _AsyncOpenAIClientProtocol | None = None
 
+    def validate_constitutional_compliance(self, **kwargs: object) -> None:
+        """Validate constitutional compliance for OpenClaw adapter."""
+        if not self.constitutional_hash:
+            raise ValueError("Constitutional hash is required for OpenClaw adapter compliance.")
+        if self.constitutional_hash != CONSTITUTIONAL_HASH:
+            logger.warning(
+                "OpenClaw adapter using non-standard constitutional hash: %s",
+                self.constitutional_hash,
+            )
+        if not self.model:
+            raise ValueError("OpenClaw adapter constitutional compliance requires a model.")
+
     def _get_client(self) -> _OpenAIClientProtocol:
         """Get or create synchronous OpenAI-compatible client.
 
