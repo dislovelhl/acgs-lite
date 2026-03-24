@@ -15,7 +15,6 @@ from enhanced_agent_bus.constitutional.refoundation import (
     SandboxExecutionResult,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

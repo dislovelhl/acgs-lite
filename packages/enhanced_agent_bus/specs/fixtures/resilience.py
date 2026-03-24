@@ -14,7 +14,7 @@ from enum import Enum
 import pytest
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -70,7 +70,7 @@ class SpecCircuitBreaker:
     @property
     def state(self) -> CircuitState:
         """Current circuit state, with automatic HALF_OPEN transition."""
-        if self._state == CircuitState.OPEN:  # noqa: SIM102
+        if self._state == CircuitState.OPEN:
             if self._last_failure_time:
                 elapsed = (datetime.now(UTC) - self._last_failure_time).total_seconds()
                 if elapsed >= self.recovery_timeout_s:

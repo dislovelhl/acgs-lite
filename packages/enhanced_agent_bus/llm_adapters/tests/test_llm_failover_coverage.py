@@ -561,9 +561,9 @@ class TestProviderWarmupManagerUncoveredPaths:
         assert isinstance(task, asyncio.Task)
         # Clean up
         task.cancel()
-        try:  # noqa: SIM105
+        try:
             await task
-        except (asyncio.CancelledError, Exception):  # noqa: S110
+        except (asyncio.CancelledError, Exception):
             pass
 
     async def test_start_periodic_warmup_replaces_existing_task(self) -> None:
@@ -582,9 +582,9 @@ class TestProviderWarmupManagerUncoveredPaths:
         assert first_task.cancelled() or first_task.cancelling() > 0
 
         second_task.cancel()
-        try:  # noqa: SIM105
+        try:
             await second_task
-        except (asyncio.CancelledError, Exception):  # noqa: S110
+        except (asyncio.CancelledError, Exception):
             pass
 
     async def test_stop_periodic_warmup_cancels_task(self) -> None:

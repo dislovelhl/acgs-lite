@@ -160,7 +160,7 @@ def generate_valid_saml_response(
             </saml:AuthnContext>
         </saml:AuthnStatement>
     </saml:Assertion>
-</samlp:Response>"""  # noqa: E501
+</samlp:Response>"""
 
     return saml_response
 
@@ -254,7 +254,7 @@ class TestSAMLMetadataGeneration:
 
         # Should not raise an exception
         try:
-            ET.fromstring(metadata)  # noqa: S314
+            ET.fromstring(metadata)
         except ET.ParseError as e:
             pytest.fail(f"Invalid XML: {e}")
 
@@ -861,7 +861,7 @@ class TestSAMLSingleLogout:
     <samlp:Status>
         <samlp:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Success"/>
     </samlp:Status>
-</samlp:LogoutResponse>"""  # noqa: E501
+</samlp:LogoutResponse>"""
         encoded_response = encode_saml_response(logout_response)
 
         result = await saml_handler_with_slo.validate_logout_response(

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 import pytest
 from fastapi import FastAPI
@@ -27,7 +27,6 @@ from src.core.services.api_gateway.routes.autonomy_tiers import (
     get_tier_repo,
 )
 from src.core.shared.security.auth import UserClaims, get_current_user
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

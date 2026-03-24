@@ -923,7 +923,7 @@ class BedrockAdapter(BaseLLMAdapter):
                         yield text
             else:
                 logger.warning(
-                    "Using sync client for async streaming - install aioboto3 for better performance"  # noqa: E501
+                    "Using sync client for async streaming - install aioboto3 for better performance"
                 )
                 async for text in self._async_stream_fallback(
                     messages, temperature, max_tokens, top_p, stop, **kwargs

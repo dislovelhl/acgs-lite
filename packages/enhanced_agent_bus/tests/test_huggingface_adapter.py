@@ -17,7 +17,6 @@ from enhanced_agent_bus.llm_adapters.base import (
 from enhanced_agent_bus.llm_adapters.config import HuggingFaceAdapterConfig
 from enhanced_agent_bus.llm_adapters.huggingface_adapter import HuggingFaceAdapter
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

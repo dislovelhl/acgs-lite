@@ -168,23 +168,23 @@ class TestAWSECRAuthProviderExpanded:
     async def test_get_token_with_valid_cached_token(self):
         """get_token returns cached token if valid."""
         provider = AWSECRAuthProvider()
-        provider._token = "cached_token"  # noqa: S105
+        provider._token = "cached_token"
         provider._expiry = datetime.now(UTC).replace(year=2099)  # Far future
 
         token = await provider.get_token()
-        assert token == "cached_token"  # noqa: S105
+        assert token == "cached_token"
 
     async def test_get_token_with_expired_token(self):
         """get_token refreshes expired token."""
         provider = AWSECRAuthProvider()
-        provider._token = "old_token"  # noqa: S105
+        provider._token = "old_token"
         provider._expiry = datetime.now(UTC).replace(year=2000)  # Past
 
         # Mock refresh
         provider.refresh_token = AsyncMock(return_value="new_token")
 
         token = await provider.get_token()
-        assert token == "new_token"  # noqa: S105
+        assert token == "new_token"
 
     async def test_refresh_token_with_boto3(self):
         """refresh_token uses boto3 when available."""
@@ -204,7 +204,7 @@ class TestAWSECRAuthProviderExpanded:
             provider = AWSECRAuthProvider()
             token = await provider.refresh_token()
 
-            assert token == "boto3_token"  # noqa: S105
+            assert token == "boto3_token"
 
     async def test_refresh_token_without_boto3(self):
         """refresh_token falls back to environment when boto3 unavailable."""
@@ -543,7 +543,7 @@ class TestOCIRegistryClientPullBundle:
 
             with pytest.raises(
                 Exception,
-                match=r"(?i)(constitutional hash mismatch|hash mismatch|wrong_hash|BUNDLE_HASH_MISMATCH)",  # noqa: E501
+                match=r"(?i)(constitutional hash mismatch|hash mismatch|wrong_hash|BUNDLE_HASH_MISMATCH)",
             ):
                 await client.pull_bundle("repo", "v1.0", output_path)
 
@@ -809,7 +809,7 @@ class TestOCIRegistryClientReplication:
         src_manifest = BundleManifest(version="1.0.0", revision="a" * 40)
 
         mock_src_client = MagicMock()
-        mock_src_client.pull_bundle = AsyncMock(return_value=(src_manifest, "/tmp/bundle.tar.gz"))  # noqa: S108
+        mock_src_client.pull_bundle = AsyncMock(return_value=(src_manifest, "/tmp/bundle.tar.gz"))
         mock_src_client.host = "source.example.com"
 
         mock_dst_client = OCIRegistryClient("https://dest.example.com")
@@ -828,7 +828,7 @@ class TestOCIRegistryClientReplication:
         manifest = BundleManifest(version="1.0.0", revision="a" * 40)
 
         client = OCIRegistryClient("https://registry.example.com")
-        client.pull_bundle = AsyncMock(return_value=(manifest, "/tmp/bundle.tar.gz"))  # noqa: S108
+        client.pull_bundle = AsyncMock(return_value=(manifest, "/tmp/bundle.tar.gz"))
         client.push_bundle = AsyncMock(return_value=("sha256:xyz", MagicMock()))
 
         with patch("os.path.exists", return_value=True):

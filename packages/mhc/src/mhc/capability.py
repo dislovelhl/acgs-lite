@@ -6,7 +6,7 @@ requirements to capabilities without broadcasting to all agents.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 

@@ -1162,16 +1162,16 @@ class TestCreateAssistantFactory:
 # ---------------------------------------------------------------------------
 # 4. mcp_integration.auth.oidc_provider
 # ---------------------------------------------------------------------------
+from enhanced_agent_bus.mcp_integration.auth.oauth2_provider import (
+    OAuth2GrantType,
+    OAuth2Token,
+)
 from enhanced_agent_bus.mcp_integration.auth.oidc_provider import (
     JWKSCache,
     OIDCConfig,
     OIDCProvider,
     OIDCProviderMetadata,
     OIDCTokens,
-)
-from enhanced_agent_bus.mcp_integration.auth.oauth2_provider import (
-    OAuth2Token,
-    OAuth2GrantType,
 )
 
 

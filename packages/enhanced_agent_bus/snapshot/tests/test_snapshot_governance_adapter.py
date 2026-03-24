@@ -9,7 +9,7 @@ import pytest
 pytestmark = pytest.mark.unit
 
 
-from enhanced_agent_bus.snapshot.snapshot_governance_adapter import (  # noqa: E402
+from enhanced_agent_bus.snapshot.snapshot_governance_adapter import (
     CONSTITUTIONAL_HASH,
     SnapshotGovernanceAdapter,
     SnapshotProposal,

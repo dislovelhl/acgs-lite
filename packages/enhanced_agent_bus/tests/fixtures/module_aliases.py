@@ -15,18 +15,15 @@ from unittest.mock import MagicMock
 
 # Only mock torch if it's not installed - torch is now a real dependency
 try:
-    import torch  # noqa: F401
+    import torch
 except ImportError:
     sys.modules["torch"] = MagicMock()
 
-# Ensure the sandbox environment guard is satisfied for the entire worker process.
-# ``require_sandbox_endpoint`` raises HTTP 503 when ENVIRONMENT is not in the
-# sandbox set.  Set it once at conftest load time (before any module is imported)
-# so every EAB test sees a consistent sandbox environment.  Individual tests that
-# need a different value (e.g. to assert 503 for production) can still override
-# via ``patch.dict(os.environ, {"ENVIRONMENT": "production"})``.
-# Constitutional Hash: cdd01ef066bc6cf2
-os.environ.setdefault("ENVIRONMENT", "test")
+# ``packages/enhanced_agent_bus/tests/conftest.py`` provides the temporary
+# import-time ``ENVIRONMENT=test`` default needed by the sandbox guard before
+# this module is loaded, then restores the worker process environment afterward.
+# Keep this module free of direct runtime-environment mutation so it does not
+# pollute non-EAB tests that execute later in the same worker.
 
 # CRITICAL: Block Rust imports BEFORE any module imports
 _test_with_rust = os.environ.get("TEST_WITH_RUST", "0") == "1"
@@ -71,17 +68,17 @@ def _patch_optional(pkg_name: str, flat_name: str | None = None) -> Any | None:
 _PKG = "packages.enhanced_agent_bus"
 
 
-import enhanced_agent_bus.audit_client as _audit_client  # noqa: E402
-import enhanced_agent_bus.dependency_bridge as _dependency_bridge  # noqa: E402
+import enhanced_agent_bus.audit_client as _audit_client
+import enhanced_agent_bus.dependency_bridge as _dependency_bridge
 
 # imports.py deleted (v3.1 cleanup) — dependency_bridge.py is the canonical source
-import enhanced_agent_bus.exceptions as _exceptions  # noqa: E402
-import enhanced_agent_bus.interfaces as _interfaces  # noqa: E402
-import enhanced_agent_bus.maci_enforcement as _maci_enforcement  # noqa: E402
-import enhanced_agent_bus.models as _models  # noqa: E402
-import enhanced_agent_bus.registry as _registry  # noqa: E402
-import enhanced_agent_bus.utils as _utils  # noqa: E402
-import enhanced_agent_bus.validators as _validators  # noqa: E402
+import enhanced_agent_bus.exceptions as _exceptions
+import enhanced_agent_bus.interfaces as _interfaces
+import enhanced_agent_bus.maci_enforcement as _maci_enforcement
+import enhanced_agent_bus.models as _models
+import enhanced_agent_bus.registry as _registry
+import enhanced_agent_bus.utils as _utils
+import enhanced_agent_bus.validators as _validators
 
 
 # PM-015 core-module fix: `import packages.enhanced_agent_bus.X as _X` uses the

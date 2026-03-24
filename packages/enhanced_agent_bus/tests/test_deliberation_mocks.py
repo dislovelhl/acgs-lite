@@ -24,7 +24,6 @@ from enhanced_agent_bus.deliberation_layer.deliberation_mocks import (
     mock_calculate_message_impact,
 )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------

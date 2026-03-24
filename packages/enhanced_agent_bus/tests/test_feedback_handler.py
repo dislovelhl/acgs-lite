@@ -8,19 +8,18 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from enhanced_agent_bus.feedback_handler.enums import FeedbackType, OutcomeStatus
+from enhanced_agent_bus.feedback_handler.handler import (
+    FeedbackHandler,
+    get_feedback_for_decision,
+    get_feedback_handler,
+    submit_feedback,
+)
 from enhanced_agent_bus.feedback_handler.models import (
     FeedbackBatchRequest,
     FeedbackEvent,
     FeedbackStats,
     StoredFeedbackEvent,
 )
-from enhanced_agent_bus.feedback_handler.handler import (
-    FeedbackHandler,
-    get_feedback_handler,
-    submit_feedback,
-    get_feedback_for_decision,
-)
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

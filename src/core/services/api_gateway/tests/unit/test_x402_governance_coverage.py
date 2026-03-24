@@ -18,15 +18,15 @@ from fastapi.testclient import TestClient
 
 from src.core.services.api_gateway.routes import x402_governance
 from src.core.services.api_gateway.routes.x402_governance import (
+    AttestationReceipt,
+    BatchValidationRequest,
+    GovernanceValidationRequest,
     _audit_related_endpoints,
     _evaluate_action,
     _pricing_journeys,
     _quick_check_related_endpoints,
     _sign_receipt,
     _validate_related_endpoints,
-    AttestationReceipt,
-    BatchValidationRequest,
-    GovernanceValidationRequest,
 )
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 

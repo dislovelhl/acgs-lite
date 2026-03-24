@@ -25,7 +25,6 @@ import pytest
 # ---------------------------------------------------------------------------
 # 1. Health routes
 # ---------------------------------------------------------------------------
-
 from enhanced_agent_bus.api.routes.health import (
     _circuit_breaker_available,
     _collect_stats_payload,

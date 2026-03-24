@@ -136,7 +136,7 @@ class TestCellularResilience:
             )
             assert degraded_count == 25
             logger.info(
-                "[Stress] 50 requests processed: 25 normal, 25 DEGRADED. Zero constitutional breaches."  # noqa: E501
+                "[Stress] 50 requests processed: 25 normal, 25 DEGRADED. Zero constitutional breaches."
             )
 
     async def test_isolated_mode_dependency_decoupling(self):
@@ -168,6 +168,6 @@ class TestCellularResilience:
         )
         expected_dynamic = message_processor.POLICY_CLIENT_AVAILABLE
         assert proc_normal._use_dynamic_policy == expected_dynamic, (
-            f"Non-isolated mode with use_dynamic_policy=True should match POLICY_CLIENT_AVAILABLE={expected_dynamic}"  # noqa: E501
+            f"Non-isolated mode with use_dynamic_policy=True should match POLICY_CLIENT_AVAILABLE={expected_dynamic}"
         )
         assert not proc_normal._isolated_mode, "Non-isolated mode flag should be False"

@@ -15,7 +15,6 @@ from enhanced_agent_bus.context.mamba_hybrid import (
     SharedAttentionLayer,
 )
 
-
 # ---------------------------------------------------------------------------
 # Stub path tests (always run — stubs are always defined)
 # ---------------------------------------------------------------------------

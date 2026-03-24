@@ -12,8 +12,8 @@ import pytest
 # Governance and constitutional compliance test markers
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
-from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage  # noqa: E402
-from enhanced_agent_bus.validation_strategies import (  # noqa: E402
+from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage
+from enhanced_agent_bus.validation_strategies import (
     CompositeValidationStrategy,
     DynamicPolicyValidationStrategy,
     OPAValidationStrategy,

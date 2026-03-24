@@ -177,8 +177,8 @@ class TestOPAPolicyUpdaterInit:
         assert u.opa_url == "http://opa.example.com"
 
     def test_custom_backup_dir(self):
-        u = OPAPolicyUpdater(policy_backup_dir="/tmp/mybackups")  # noqa: S108
-        assert u.policy_backup_dir == "/tmp/mybackups"  # noqa: S108
+        u = OPAPolicyUpdater(policy_backup_dir="/tmp/mybackups")
+        assert u.policy_backup_dir == "/tmp/mybackups"
 
     def test_default_backup_dir_is_tempdir(self):
         u = OPAPolicyUpdater()

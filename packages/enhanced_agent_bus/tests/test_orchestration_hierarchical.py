@@ -17,7 +17,6 @@ from enhanced_agent_bus.orchestration.hierarchical import (
     WorkerNode,
 )
 
-
 # ---------------------------------------------------------------------------
 # Task and WorkerCapability dataclasses
 # ---------------------------------------------------------------------------

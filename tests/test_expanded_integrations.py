@@ -4,8 +4,8 @@ Tests use mocked external services (no real API calls).
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-import json
 import importlib
+import json
 import sys
 from dataclasses import dataclass
 from typing import Any
@@ -276,7 +276,7 @@ class TestMCPServer:
                 for key in list(sys.modules):
                     if key == "mcp" or key.startswith("mcp."):
                         del sys.modules[key]
-                import mcp  # noqa: F401
+                import mcp
             finally:
                 for path in reversed(bus_paths):
                     sys.path.insert(0, path)

@@ -23,14 +23,14 @@ KAFKA_AUTO_OFFSET_RESET = os.getenv("KAFKA_AUTO_OFFSET_RESET", "earliest")
 KAFKA_MAX_POLL_RECORDS = int(os.getenv("KAFKA_MAX_POLL_RECORDS", "100"))
 
 
-class ModelType(str, Enum):  # noqa: UP042
+class ModelType(str, Enum):
     """Type of River model to use."""
 
     CLASSIFIER = "classifier"
     REGRESSOR = "regressor"
 
 
-class LearningStatus(str, Enum):  # noqa: UP042
+class LearningStatus(str, Enum):
     """Status of the online learning system."""
 
     COLD_START = "cold_start"  # Insufficient samples for reliable predictions

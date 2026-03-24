@@ -34,9 +34,9 @@ from enhanced_agent_bus.interfaces import (
     MetricsCollector,
     OPAClientProtocol,
     OrchestratorProtocol,
-    PQCValidatorProtocol,
     PolicyClientProtocol,
     PolicyValidationResultProtocol,
+    PQCValidatorProtocol,
     ProcessingStrategy,
     RecommendationPlannerProtocol,
     RoleMatrixValidatorProtocol,
@@ -45,7 +45,6 @@ from enhanced_agent_bus.interfaces import (
     ValidationResultProtocol,
     ValidationStrategy,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers: minimal concrete implementations that satisfy each Protocol
@@ -781,8 +780,9 @@ class TestInterfacesModuleAttributes:
 
     def test_runtime_checkable_protocols(self) -> None:
         """All Protocol classes should be @runtime_checkable."""
-        from enhanced_agent_bus import interfaces
         import inspect
+
+        from enhanced_agent_bus import interfaces
         for name in interfaces.__all__:
             obj = getattr(interfaces, name, None)
             if obj is None:

@@ -30,7 +30,7 @@ class TestCredentialRedaction:
         data = integration.to_dict(redact_sensitive=True)
 
         assert data["config"]["server_url"] == "ldap://example.com"
-        assert data["config"]["bind_password"] == "********"  # noqa: S105
+        assert data["config"]["bind_password"] == "********"
 
     async def test_to_dict_without_redaction(self, integration_service):
         """Test that to_dict can return encrypted values."""
@@ -44,8 +44,8 @@ class TestCredentialRedaction:
         data = integration.to_dict(redact_sensitive=False)
 
         # Should contain encrypted ciphertext, not redacted
-        assert data["config"]["bind_password"] != "********"  # noqa: S105
-        assert data["config"]["bind_password"] != "secret"  # noqa: S105
+        assert data["config"]["bind_password"] != "********"
+        assert data["config"]["bind_password"] != "secret"
 
     async def test_multiple_sensitive_fields_redacted(self, integration_service):
         """Test that all sensitive fields are redacted."""
@@ -63,7 +63,7 @@ class TestCredentialRedaction:
         data = integration.to_dict(redact_sensitive=True)
 
         assert data["config"]["client_id"] == "client-123"
-        assert data["config"]["client_secret"] == "********"  # noqa: S105
+        assert data["config"]["client_secret"] == "********"
         assert data["config"]["api_key"] == "********"
 
     async def test_redacted_response_includes_metadata(self, integration_service):

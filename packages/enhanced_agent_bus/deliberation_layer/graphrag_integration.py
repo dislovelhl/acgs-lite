@@ -23,7 +23,7 @@ from collections import OrderedDict
 from typing import TYPE_CHECKING
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -266,7 +266,7 @@ class GraphRAGContextEnricher:
                 tenant_id=tenant_id,
             )
             return {}
-        except Exception:  # noqa: BLE001 — deliberation must not fail due to enricher errors
+        except Exception:
             logger.warning("GraphRAG enrichment failed; continuing without context")
             return {}
 
@@ -367,7 +367,7 @@ class GraphRAGContextEnricher:
         Returns empty dict on any error so the caller can fall back to raw path.
         """
         try:
-            from src.core.cognitive.graphrag.retrieval.models import (  # noqa: PLC0415
+            from src.core.cognitive.graphrag.retrieval.models import (
                 GraphNode,
                 TraversalResult,
             )
@@ -441,7 +441,7 @@ class GraphRAGContextEnricher:
                 "retrieval_path": "pipeline",
             }
 
-        except Exception:  # noqa: BLE001
+        except Exception:
             logger.debug("GraphRAG pipeline retrieval failed; falling back to raw path")
             return {}
 

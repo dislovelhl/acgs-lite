@@ -1,5 +1,5 @@
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -21,7 +21,7 @@ Key Features:
 - Fallback chain support
 """
 
-from .base import (  # noqa: E402
+from .base import (
     AdapterStatus,
     BaseLLMAdapter,
     CompletionMetadata,
@@ -35,7 +35,7 @@ from .base import (  # noqa: E402
 )
 
 # Phase 3 LLM Antifragility modules
-from .capability_matrix import (  # noqa: E402
+from .capability_matrix import (
     CapabilityDimension,
     CapabilityLevel,
     CapabilityRegistry,
@@ -44,7 +44,7 @@ from .capability_matrix import (  # noqa: E402
     ProviderCapabilityProfile,
     get_capability_registry,
 )
-from .config import (  # noqa: E402
+from .config import (
     AdapterConfig,
     AdapterType,
     AnthropicAdapterConfig,
@@ -61,7 +61,7 @@ from .config import (  # noqa: E402
     RateLimitConfig,
     XAIAdapterConfig,
 )
-from .cost_optimizer import (  # noqa: E402
+from .cost_optimizer import (
     BatchOptimizer,
     BatchRequest,
     BatchResult,
@@ -76,7 +76,7 @@ from .cost_optimizer import (  # noqa: E402
     UrgencyLevel,
     get_cost_optimizer,
 )
-from .llm_failover import (  # noqa: E402
+from .llm_failover import (
     FailoverEvent,
     HealthMetrics,
     HedgedRequest,
@@ -92,7 +92,7 @@ from .llm_failover import (  # noqa: E402
     get_llm_failover_orchestrator,
     reset_llm_failover_orchestrator,
 )
-from .models import (  # noqa: E402
+from .models import (
     FunctionDefinition,
     FunctionParameters,
     LLMRequest,
@@ -104,7 +104,7 @@ from .models import (  # noqa: E402
     ToolDefinition,
     ToolType,
 )
-from .registry import (  # noqa: E402
+from .registry import (
     AdapterMetrics,
     CircuitBreaker,
     CircuitBreakerConfig,

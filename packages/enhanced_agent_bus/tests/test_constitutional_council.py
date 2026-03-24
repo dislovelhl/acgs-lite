@@ -19,7 +19,7 @@ def _proposal_payload(request: SimpleNamespace) -> str:
 
     changes_canonical = json.dumps(request.proposed_changes, sort_keys=True, separators=(",", ":"))
     payload_digest = sha256(changes_canonical.encode()).hexdigest()
-    return f"{request.proposer_agent_id}:{payload_digest}:{request.justification}:{CONSTITUTIONAL_HASH}"  # noqa: E501
+    return f"{request.proposer_agent_id}:{payload_digest}:{request.justification}:{CONSTITUTIONAL_HASH}"
 
 
 def _sign_payload(private_key: ed25519.Ed25519PrivateKey, payload: str) -> str:

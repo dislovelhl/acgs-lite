@@ -19,11 +19,11 @@ Service Configurations (T002 requirements):
 from dataclasses import dataclass, field
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -183,7 +183,7 @@ def get_service_config(service_name: str, use_unified_config: bool = True) -> Se
             "failure_threshold": cb_settings.blockchain_anchor_failure_threshold,
             "timeout_seconds": cb_settings.blockchain_anchor_timeout_seconds,
             "fallback_max_queue_size": cb_settings.blockchain_anchor_max_queue_size,
-            "fallback_retry_interval_seconds": cb_settings.blockchain_anchor_retry_interval_seconds,  # noqa: E501
+            "fallback_retry_interval_seconds": cb_settings.blockchain_anchor_retry_interval_seconds,
             },
             "redis_cache": {
             "failure_threshold": cb_settings.redis_cache_failure_threshold,
@@ -205,7 +205,7 @@ def get_service_config(service_name: str, use_unified_config: bool = True) -> Se
             },
             }
 
-            if service_name in config_mapping:  # noqa: SIM102
+            if service_name in config_mapping:
                 # Start with the base config from SERVICE_CIRCUIT_CONFIGS
                 if service_name in SERVICE_CIRCUIT_CONFIGS:
                     base_config = SERVICE_CIRCUIT_CONFIGS[service_name]

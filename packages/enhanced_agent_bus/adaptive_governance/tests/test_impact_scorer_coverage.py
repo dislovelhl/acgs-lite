@@ -6,10 +6,10 @@ Tests for ImpactScorer — targets ≥90% coverage.
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-import sys  # noqa: E402
-from unittest.mock import AsyncMock, MagicMock, patch  # noqa: E402
+import sys
+from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest  # noqa: E402
+import pytest
 
 # Force-import the module under test at collection time so coverage sees it.
 # Use patch to suppress MLflow I/O during import-time initialisation.

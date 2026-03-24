@@ -109,7 +109,7 @@ CREATE INDEX IF NOT EXISTS idx_workflow_steps_idempotency ON workflow_steps(work
 CREATE INDEX IF NOT EXISTS idx_workflow_events_instance_seq ON workflow_events(workflow_instance_id, sequence_number);
 CREATE INDEX IF NOT EXISTS idx_workflow_compensations_instance ON workflow_compensations(workflow_instance_id);
 CREATE INDEX IF NOT EXISTS idx_workflow_checkpoints_instance ON workflow_checkpoints(workflow_instance_id);
-"""  # noqa: E501
+"""
 
 
 def _serialize_json_value(value: object) -> str | None:

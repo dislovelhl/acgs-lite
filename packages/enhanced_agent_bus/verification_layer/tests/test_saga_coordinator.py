@@ -470,7 +470,7 @@ class TestSagaAbort:
 
         # Cancel the background task
         exec_task.cancel()
-        try:  # noqa: SIM105
+        try:
             await exec_task
         except asyncio.CancelledError:
             pass

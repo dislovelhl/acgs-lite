@@ -20,7 +20,6 @@ from enhanced_agent_bus.verification.sagallm_transactions import (
     saga_transaction,
 )
 
-
 # ---------------------------------------------------------------------------
 # Dataclass serialization
 # ---------------------------------------------------------------------------

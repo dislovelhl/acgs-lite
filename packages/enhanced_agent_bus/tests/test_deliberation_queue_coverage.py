@@ -26,14 +26,14 @@ pytestmark = [pytest.mark.unit]
 # Core imports
 # ---------------------------------------------------------------------------
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+from src.core.shared.constants import CONSTITUTIONAL_HASH
 
-from enhanced_agent_bus.core_models import (  # noqa: E402
+from enhanced_agent_bus.core_models import (
     AgentMessage,
     MessageStatus,
     MessageType,
 )
-from enhanced_agent_bus.deliberation_layer.deliberation_queue import (  # noqa: E402
+from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
     DELIBERATION_PERSISTENCE_ERRORS,
     AgentVote,
     DeliberationItem,
@@ -219,7 +219,7 @@ class TestLoadTasks:
 
     def test_load_tasks_missing_file(self) -> None:
         q = DeliberationQueue()
-        q.persistence_path = "/tmp/nonexistent_dq_test_file_xyz.json"  # noqa: S108
+        q.persistence_path = "/tmp/nonexistent_dq_test_file_xyz.json"
         q._load_tasks()
         assert len(q.tasks) == 0
 
@@ -524,9 +524,9 @@ class TestStop:
             await q.stop()
 
         task.cancel()
-        try:  # noqa: SIM105
+        try:
             await task
-        except (asyncio.CancelledError, Exception):  # noqa: S110
+        except (asyncio.CancelledError, Exception):
             pass
 
 
@@ -926,7 +926,7 @@ class TestPersistenceHelpers:
     async def test_read_nonexistent_raises(self) -> None:
         q = DeliberationQueue()
         with pytest.raises(FileNotFoundError):
-            await q._read_persistence_file("/tmp/nonexistent_acgs_test_abc.json")  # noqa: S108
+            await q._read_persistence_file("/tmp/nonexistent_acgs_test_abc.json")
 
 
 # ---------------------------------------------------------------------------
@@ -1153,9 +1153,9 @@ class TestResetDeliberationQueue:
                 results["error"] = str(exc)
             finally:
                 # Clean up the inner loop
-                try:  # noqa: SIM105
+                try:
                     inner_loop.close()
-                except Exception:  # noqa: S110
+                except Exception:
                     pass
 
         t = threading.Thread(target=_run_in_thread, daemon=True)
@@ -1245,7 +1245,7 @@ class TestCleanupAllDeliberationQueues:
         cleanup_all_deliberation_queues()
         assert _all_queue_instances == []
         running_task.cancel()
-        try:  # noqa: SIM105
+        try:
             await running_task
         except asyncio.CancelledError:
             pass

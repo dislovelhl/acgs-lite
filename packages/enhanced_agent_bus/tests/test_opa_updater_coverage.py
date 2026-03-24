@@ -224,14 +224,14 @@ class TestOPAPolicyUpdaterInit:
             enable_cache_invalidation=False,
             enable_rollback=False,
             health_check_timeout=10.0,
-            policy_backup_dir="/tmp/backups",  # noqa: S108
+            policy_backup_dir="/tmp/backups",
         )
         assert updater.opa_url == "http://opa:9999"
         assert updater.enable_health_checks is False
         assert updater.enable_cache_invalidation is False
         assert updater.enable_rollback is False
         assert updater.health_check_timeout == 10.0
-        assert updater.policy_backup_dir == "/tmp/backups"  # noqa: S108
+        assert updater.policy_backup_dir == "/tmp/backups"
 
     def test_default_backup_dir_is_tempdir(self):
         updater = OPAPolicyUpdater()

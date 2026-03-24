@@ -58,7 +58,7 @@ async def test_analyze_message_impact_prompt_standardization():
 
         # Updated assertions for chain-of-thought enhanced prompts
         assert (
-            "CONSTITUTIONAL CONSTRAINT: All analysis must validate against hash {constitutional_hash}"  # noqa: E501
+            "CONSTITUTIONAL CONSTRAINT: All analysis must validate against hash {constitutional_hash}"
             in template_str
         )
         assert "Security Analysis:" in template_str

@@ -16,6 +16,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 # ---------------------------------------------------------------------------
+# bus/core imports
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.bus.core import EnhancedAgentBus
+
+# ---------------------------------------------------------------------------
 # degradation_detector imports
 # ---------------------------------------------------------------------------
 from enhanced_agent_bus.constitutional.degradation_detector import (
@@ -44,13 +49,7 @@ from enhanced_agent_bus.constitutional.review_api import (
     RollbackResponse,
     health_check,
 )
-
-# ---------------------------------------------------------------------------
-# bus/core imports
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.bus.core import EnhancedAgentBus
-from enhanced_agent_bus.models import AgentMessage, CONSTITUTIONAL_HASH
-
+from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage
 
 # ============================================================================
 # Helpers
@@ -889,7 +888,7 @@ class TestChiSquareTest:
     def test_returns_result_with_scipy(self):
         d = _make_detector()
         try:
-            import scipy  # noqa: F401
+            import scipy
             result = d._chi_square_test(90, 100, 70, 100, "test_chi")
             assert result is not None
             assert result.test_name == "test_chi"

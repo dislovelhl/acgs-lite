@@ -18,7 +18,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-
 # =============================================================================
 # Module 1: src.core.shared.security.rate_limiter
 # =============================================================================
@@ -984,7 +983,6 @@ class TestExtractRequestFromCall:
 
     def test_request_in_args(self):
         from fastapi import Request
-
         from src.core.shared.security.rate_limiter import _extract_request_from_call
 
         req = MagicMock(spec=Request)
@@ -993,7 +991,6 @@ class TestExtractRequestFromCall:
 
     def test_request_in_kwargs(self):
         from fastapi import Request
-
         from src.core.shared.security.rate_limiter import _extract_request_from_call
 
         req = MagicMock(spec=Request)

@@ -295,7 +295,7 @@ class TestMCPServer:
             for key in list(sys.modules):
                 if key == "mcp" or key.startswith("mcp."):
                     del sys.modules[key]
-            import mcp  # noqa: F401 — triggers correct resolution
+            import mcp
             for p in bus_paths:
                 sys.path.insert(0, p)
         else:

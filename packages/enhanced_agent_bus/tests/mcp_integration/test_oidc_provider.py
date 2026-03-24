@@ -93,7 +93,7 @@ async def test_validate_id_token_accepts_valid_signed_token(oidc_provider, monke
 
     claims, errors = await oidc_provider._validate_id_token(
         id_token=id_token,
-        access_token="access-token",  # noqa: S106
+        access_token="access-token",
         expected_nonce="nonce-123",
     )
 
@@ -128,7 +128,7 @@ async def test_validate_id_token_rejects_invalid_signature(oidc_provider, monkey
 
     claims, errors = await oidc_provider._validate_id_token(
         id_token=id_token,
-        access_token="access-token",  # noqa: S106
+        access_token="access-token",
         expected_nonce="nonce-123",
     )
 
@@ -154,7 +154,7 @@ async def test_validate_id_token_fails_closed_when_jwks_unavailable(oidc_provide
 
     claims, errors = await oidc_provider._validate_id_token(
         id_token=id_token,
-        access_token="access-token",  # noqa: S106
+        access_token="access-token",
         expected_nonce="nonce-123",
     )
 

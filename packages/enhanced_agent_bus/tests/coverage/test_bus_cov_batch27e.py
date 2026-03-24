@@ -21,6 +21,10 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
+    from enhanced_agent_bus.llm_adapters.capability_matrix import (
+        CapabilityDimension,
+        CapabilityRequirement,
+    )
     from enhanced_agent_bus.llm_adapters.cost.batch import BatchOptimizer
     from enhanced_agent_bus.llm_adapters.cost.enums import (
         QualityLevel,
@@ -28,11 +32,9 @@ try:
     )
     from enhanced_agent_bus.llm_adapters.cost.models import (
         BatchRequest as CostBatchRequest,
-        BatchResult as CostBatchResult,
     )
-    from enhanced_agent_bus.llm_adapters.capability_matrix import (
-        CapabilityDimension,
-        CapabilityRequirement,
+    from enhanced_agent_bus.llm_adapters.cost.models import (
+        BatchResult as CostBatchResult,
     )
 
     HAS_COST_BATCH = True

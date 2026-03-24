@@ -17,12 +17,13 @@ import pytest
 from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
 
+from src.core.shared.errors.exceptions import ConfigurationError
+
 # ---------------------------------------------------------------------------
 # encryption.py
 # ---------------------------------------------------------------------------
 from src.core.shared.security import encryption as enc_mod
 from src.core.shared.security.encryption import EncryptionManager
-from src.core.shared.errors.exceptions import ConfigurationError
 
 
 class TestRuntimeEnvironment:
@@ -404,9 +405,9 @@ from src.core.shared.security import auth_dependency as ad_mod
 from src.core.shared.security.auth_dependency import (
     configure_revocation_service,
     initialize_revocation_service,
-    shutdown_revocation_service,
     require_auth,
     require_auth_optional,
+    shutdown_revocation_service,
 )
 
 
@@ -678,11 +679,11 @@ class TestRequireAuthOptional:
 # metrics/rocs.py
 # ---------------------------------------------------------------------------
 from src.core.shared.metrics.rocs import (
+    SEVERITY_WEIGHTS,
     GovernanceSpend,
     GovernanceValue,
     RoCSSnapshot,
     RoCSTracker,
-    SEVERITY_WEIGHTS,
     get_rocs_tracker,
     reset_rocs_tracker,
 )

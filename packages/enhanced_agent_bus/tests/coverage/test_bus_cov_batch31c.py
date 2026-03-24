@@ -16,6 +16,20 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 # ---------------------------------------------------------------------------
+# mamba_hybrid_processor imports
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.ai_assistant.mamba_hybrid_processor import (
+    TORCH_AVAILABLE,
+    ConstitutionalMambaHybrid,
+    MambaConfig,
+    MambaHybridManager,
+    MambaSSM,
+    SharedAttentionLayer,
+    get_mamba_hybrid_processor,
+    initialize_mamba_processor,
+)
+
+# ---------------------------------------------------------------------------
 # collaboration/server imports
 # ---------------------------------------------------------------------------
 from enhanced_agent_bus.collaboration.models import (
@@ -35,20 +49,6 @@ from enhanced_agent_bus.collaboration.models import (
 from enhanced_agent_bus.collaboration.server import (
     CollaborationServer,
     RateLimiter,
-)
-
-# ---------------------------------------------------------------------------
-# mamba_hybrid_processor imports
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.ai_assistant.mamba_hybrid_processor import (
-    TORCH_AVAILABLE,
-    ConstitutionalMambaHybrid,
-    MambaConfig,
-    MambaHybridManager,
-    MambaSSM,
-    SharedAttentionLayer,
-    get_mamba_hybrid_processor,
-    initialize_mamba_processor,
 )
 
 if TORCH_AVAILABLE:

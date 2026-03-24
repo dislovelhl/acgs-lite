@@ -15,31 +15,14 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 # ---------------------------------------------------------------------------
-# 1. swarm_intelligence/coordinator.py  (SwarmCoordinator)
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.swarm_intelligence.coordinator import (
-    MAX_AGENT_NAME_LENGTH,
-    MAX_TASK_DESCRIPTION_LENGTH,
-    SwarmCoordinator,
-    create_swarm_coordinator,
-)
-from enhanced_agent_bus.swarm_intelligence.enums import (
-    AgentState,
-    ConsensusType,
-    TaskPriority,
-)
-from enhanced_agent_bus.swarm_intelligence.models import (
-    AgentCapability,
-    SwarmAgent,
-    SwarmTask,
-)
-
-# ---------------------------------------------------------------------------
 # 2. coordinators/swarm_coordinator.py
 # ---------------------------------------------------------------------------
 from enhanced_agent_bus.coordinators.swarm_coordinator import (
     SwarmCoordinator as CoordinatorsSwarmCoordinator,
 )
+
+# We need AgentMessage from core_models for registry tests
+from enhanced_agent_bus.core_models import AgentMessage
 
 # ---------------------------------------------------------------------------
 # 3. interfaces.py  (protocol checks)
@@ -71,9 +54,25 @@ from enhanced_agent_bus.registry import (
     InMemoryAgentRegistry,
 )
 
-# We need AgentMessage from core_models for registry tests
-from enhanced_agent_bus.core_models import AgentMessage
-
+# ---------------------------------------------------------------------------
+# 1. swarm_intelligence/coordinator.py  (SwarmCoordinator)
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.swarm_intelligence.coordinator import (
+    MAX_AGENT_NAME_LENGTH,
+    MAX_TASK_DESCRIPTION_LENGTH,
+    SwarmCoordinator,
+    create_swarm_coordinator,
+)
+from enhanced_agent_bus.swarm_intelligence.enums import (
+    AgentState,
+    ConsensusType,
+    TaskPriority,
+)
+from enhanced_agent_bus.swarm_intelligence.models import (
+    AgentCapability,
+    SwarmAgent,
+    SwarmTask,
+)
 
 # ============================================================================
 # Helpers

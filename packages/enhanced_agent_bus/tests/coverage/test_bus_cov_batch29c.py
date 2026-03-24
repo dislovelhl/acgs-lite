@@ -17,13 +17,14 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 # ---------------------------------------------------------------------------
-# sync_engine imports
+# governance imports
 # ---------------------------------------------------------------------------
-from enhanced_agent_bus.enterprise_sso.data_warehouse.sync_engine import (
-    DataSyncEngine,
-    SyncScheduler,
-    create_sync_engine,
-)
+from enhanced_agent_bus.components.governance import GovernanceValidator
+
+# ---------------------------------------------------------------------------
+# prefetch imports
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.context_memory.optimizer.prefetch import PrefetchManager
 from enhanced_agent_bus.enterprise_sso.data_warehouse.models import (
     ScheduleConfig,
     SyncConfig,
@@ -34,13 +35,23 @@ from enhanced_agent_bus.enterprise_sso.data_warehouse.models import (
 )
 
 # ---------------------------------------------------------------------------
-# oidc imports
+# sync_engine imports
 # ---------------------------------------------------------------------------
-from enhanced_agent_bus.enterprise_sso.enterprise_sso_infra.oidc import OIDCHandler
+from enhanced_agent_bus.enterprise_sso.data_warehouse.sync_engine import (
+    DataSyncEngine,
+    SyncScheduler,
+    create_sync_engine,
+)
 from enhanced_agent_bus.enterprise_sso.enterprise_sso_infra.models import (
     AuthorizationRequest,
     ProtocolValidationResult,
 )
+
+# ---------------------------------------------------------------------------
+# oidc imports
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.enterprise_sso.enterprise_sso_infra.oidc import OIDCHandler
+from enhanced_agent_bus.meta_orchestrator.config import OrchestratorConfig
 
 # ---------------------------------------------------------------------------
 # orchestrator imports
@@ -49,20 +60,8 @@ from enhanced_agent_bus.meta_orchestrator.orchestrator import (
     MetaOrchestrator,
     create_meta_orchestrator,
 )
-from enhanced_agent_bus.meta_orchestrator.config import OrchestratorConfig
-
-# ---------------------------------------------------------------------------
-# prefetch imports
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.context_memory.optimizer.prefetch import PrefetchManager
-
-# ---------------------------------------------------------------------------
-# governance imports
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.components.governance import GovernanceValidator
-from enhanced_agent_bus.models import AgentMessage, CONSTITUTIONAL_HASH
+from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage
 from enhanced_agent_bus.validators import ValidationResult
-
 
 # ============================================================================
 # Helpers

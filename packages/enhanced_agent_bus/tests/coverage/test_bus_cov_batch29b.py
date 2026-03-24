@@ -17,13 +17,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-# ---------------------------------------------------------------------------
-# 1. saga_persistence/postgres/repository.py
-# ---------------------------------------------------------------------------
-
-from enhanced_agent_bus.saga_persistence.postgres.repository import (
-    PostgresSagaStateRepository,
-)
 from enhanced_agent_bus.saga_persistence.models import (
     CompensationEntry,
     CompensationStrategy,
@@ -32,6 +25,13 @@ from enhanced_agent_bus.saga_persistence.models import (
     SagaCheckpoint,
     SagaState,
     StepState,
+)
+
+# ---------------------------------------------------------------------------
+# 1. saga_persistence/postgres/repository.py
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.saga_persistence.postgres.repository import (
+    PostgresSagaStateRepository,
 )
 from enhanced_agent_bus.saga_persistence.repository import (
     RepositoryError,
@@ -913,14 +913,13 @@ class TestHealthAggregatorSingleton:
 # 3. specs/fixtures/observability.py
 # ---------------------------------------------------------------------------
 
+# Import Layer from the fixtures module (uses fallback if observability not available)
 from enhanced_agent_bus.specs.fixtures.observability import (
     LatencyMeasurement,
+    Layer,
     SpecMetricsRegistry,
     SpecTimeoutBudgetManager,
 )
-
-# Import Layer from the fixtures module (uses fallback if observability not available)
-from enhanced_agent_bus.specs.fixtures.observability import Layer
 
 
 class TestLatencyMeasurement:

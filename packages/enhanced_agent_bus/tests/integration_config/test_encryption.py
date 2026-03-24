@@ -30,7 +30,7 @@ class TestSensitiveDataEncryption:
 
         assert "bind_password" in integration.encrypted_fields
         # The stored value should be encrypted (base64)
-        assert integration.config["bind_password"] != "secret123"  # noqa: S105
+        assert integration.config["bind_password"] != "secret123"
 
     async def test_secret_field_encrypted(self, integration_service):
         """Test that secret fields are encrypted."""

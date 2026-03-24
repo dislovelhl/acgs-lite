@@ -19,6 +19,7 @@ import pytest
 # Z3 Policy Verifier imports
 # ---------------------------------------------------------------------------
 from enhanced_agent_bus.verification_layer.z3_policy_verifier import (
+    Z3_AVAILABLE,
     ConstraintGenerator,
     ConstraintType,
     HeuristicVerifier,
@@ -27,12 +28,10 @@ from enhanced_agent_bus.verification_layer.z3_policy_verifier import (
     PolicyVerificationRequest,
     PolicyVerificationResult,
     VerificationProof,
-    Z3_AVAILABLE,
     Z3PolicyVerifier,
     Z3VerificationStatus,
     create_z3_verifier,
 )
-
 
 # ===================================================================
 # SECTION 1: Z3SolverWrapper — real Z3 is available in this env
@@ -703,8 +702,8 @@ class TestRecommendationsAdditional:
 # ===================================================================
 
 from enhanced_agent_bus.mamba2_hybrid_processor import (
-    Mamba2Config,
     TORCH_AVAILABLE,
+    Mamba2Config,
 )
 
 
@@ -853,6 +852,7 @@ class TestMamba2TorchCoverage:
     def test_prepare_jrt_context_default_positions(self):
         """Default positions: [0, len(input_ids)-1] where len is batch dim."""
         import torch
+
         from enhanced_agent_bus.mamba2_hybrid_processor import (
             ConstitutionalMambaHybrid,
         )
@@ -869,6 +869,7 @@ class TestMamba2TorchCoverage:
 
     def test_prepare_jrt_context_single_token(self):
         import torch
+
         from enhanced_agent_bus.mamba2_hybrid_processor import (
             ConstitutionalMambaHybrid,
         )
@@ -884,6 +885,7 @@ class TestMamba2TorchCoverage:
 
     def test_prepare_jrt_context_position_out_of_bounds(self):
         import torch
+
         from enhanced_agent_bus.mamba2_hybrid_processor import (
             ConstitutionalMambaHybrid,
         )
@@ -903,6 +905,7 @@ class TestMamba2TorchCoverage:
     def test_prepare_jrt_context_truncation_path(self):
         """JRT truncation when expanded exceeds max_seq_len."""
         import torch
+
         from enhanced_agent_bus.mamba2_hybrid_processor import (
             ConstitutionalMambaHybrid,
         )
@@ -928,6 +931,7 @@ class TestMamba2TorchCoverage:
     def test_prepare_jrt_context_truncation_middle_removal(self):
         """JRT truncation that actually removes middle tokens."""
         import torch
+
         from enhanced_agent_bus.mamba2_hybrid_processor import (
             ConstitutionalMambaHybrid,
         )
@@ -959,6 +963,7 @@ class TestMamba2TorchCoverage:
     def test_prepare_jrt_context_no_truncation_needed(self):
         """JRT with no truncation needed."""
         import torch
+
         from enhanced_agent_bus.mamba2_hybrid_processor import (
             ConstitutionalMambaHybrid,
         )
@@ -1026,6 +1031,7 @@ class TestMamba2TorchCoverage:
 
     def test_extract_compliance_score_zero_embeddings(self):
         import torch
+
         from enhanced_agent_bus.mamba2_hybrid_processor import (
             ConstitutionalContextManager,
         )
@@ -1038,6 +1044,7 @@ class TestMamba2TorchCoverage:
 
     def test_extract_compliance_score_large_embeddings(self):
         import torch
+
         from enhanced_agent_bus.mamba2_hybrid_processor import (
             ConstitutionalContextManager,
         )
@@ -1050,6 +1057,7 @@ class TestMamba2TorchCoverage:
 
     def test_tokenize_text_single_word(self):
         import torch
+
         from enhanced_agent_bus.mamba2_hybrid_processor import (
             ConstitutionalContextManager,
         )
@@ -1073,8 +1081,8 @@ class TestMamba2TorchCoverage:
     async def test_process_with_context_critical_memory(self):
         """Cover the critical memory pressure early return path."""
         from enhanced_agent_bus.mamba2_hybrid_processor import (
-            ConstitutionalContextManager,
             CONSTITUTIONAL_HASH,
+            ConstitutionalContextManager,
         )
 
         cfg = Mamba2Config(d_model=64, d_state=16, num_mamba_layers=2)
@@ -1118,8 +1126,8 @@ class TestMamba2TorchCoverage:
 
     def test_create_mamba_hybrid_processor_none_config(self):
         from enhanced_agent_bus.mamba2_hybrid_processor import (
-            create_mamba_hybrid_processor,
             ConstitutionalMambaHybrid,
+            create_mamba_hybrid_processor,
         )
 
         model = create_mamba_hybrid_processor(None)
@@ -1128,8 +1136,8 @@ class TestMamba2TorchCoverage:
 
     def test_create_constitutional_context_manager_none_config(self):
         from enhanced_agent_bus.mamba2_hybrid_processor import (
-            create_constitutional_context_manager,
             ConstitutionalContextManager,
+            create_constitutional_context_manager,
         )
 
         mgr = create_constitutional_context_manager(None)

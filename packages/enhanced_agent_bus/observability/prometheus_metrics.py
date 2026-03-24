@@ -20,7 +20,7 @@ from datetime import UTC, datetime, timezone
 from enum import Enum
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.metrics.noop import (
@@ -39,7 +39,7 @@ from src.core.shared.metrics.noop import (
 )
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -193,7 +193,7 @@ acgs_system_info = _safe_create_metric(
 # =============================================================================
 
 
-class ValidationResult(str, Enum):  # noqa: UP042
+class ValidationResult(str, Enum):
     """Validation result types for metric labels."""
 
     SUCCESS = "success"
@@ -203,7 +203,7 @@ class ValidationResult(str, Enum):  # noqa: UP042
     TIMEOUT = "timeout"
 
 
-class CacheTier(str, Enum):  # noqa: UP042
+class CacheTier(str, Enum):
     """Cache tier types for metric labels."""
 
     L1 = "l1"
@@ -211,7 +211,7 @@ class CacheTier(str, Enum):  # noqa: UP042
     L3 = "l3"
 
 
-class CacheOperation(str, Enum):  # noqa: UP042
+class CacheOperation(str, Enum):
     """Cache operation types for metric labels."""
 
     GET = "get"
@@ -220,7 +220,7 @@ class CacheOperation(str, Enum):  # noqa: UP042
     EXPIRE = "expire"
 
 
-class PolicyDecision(str, Enum):  # noqa: UP042
+class PolicyDecision(str, Enum):
     """Policy decision types for metric labels."""
 
     ALLOW = "allow"

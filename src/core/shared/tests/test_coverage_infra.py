@@ -25,15 +25,12 @@ Covers:
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
-import time
 import warnings
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 
 # ============================================================================
 # database/utils.py  -- Pageable, Page, BulkOperations
@@ -366,8 +363,8 @@ class TestHttpClient:
 
     @pytest.mark.asyncio
     async def test_do_request_raises_without_client(self):
-        from src.core.shared.http_client import HttpClient
         from src.core.shared.errors.exceptions import ServiceUnavailableError
+        from src.core.shared.http_client import HttpClient
 
         client = HttpClient(enable_circuit_breaker=False)
         # Force _client to None
@@ -1501,9 +1498,9 @@ class TestNoopMetrics:
         assert PROMETHEUS_AVAILABLE is True
 
     def test_safe_create_metric_deduplication(self):
-        from src.core.shared.metrics.noop import _safe_create_metric
-
         from prometheus_client import Counter
+
+        from src.core.shared.metrics.noop import _safe_create_metric
 
         m1 = _safe_create_metric(Counter, "test_cov_safe_abc", "desc", labels=["l1"])
         m2 = _safe_create_metric(Counter, "test_cov_safe_abc", "desc", labels=["l1"])

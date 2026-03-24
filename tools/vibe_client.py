@@ -52,8 +52,8 @@ class VibeClient:
             from dotenv import load_dotenv
             load_dotenv(env_file)
 
-        from vibe.core.config.harness_files import init_harness_files_manager
         from vibe.core.config import VibeConfig
+        from vibe.core.config.harness_files import init_harness_files_manager
 
         init_harness_files_manager(Path.home() / ".vibe")
 

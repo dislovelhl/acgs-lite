@@ -157,7 +157,7 @@ class TestKafkaConfig:
             client_id="my-client",
             sasl_mechanism="PLAIN",
             sasl_username="user",
-            sasl_password="pass",  # pragma: allowlist secret  # noqa: S106
+            sasl_password="pass",  # pragma: allowlist secret
             ssl_cafile="/ca.pem",
             ssl_certfile="/cert.pem",
             ssl_keyfile="/key.pem",

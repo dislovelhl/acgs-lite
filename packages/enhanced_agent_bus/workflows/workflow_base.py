@@ -21,7 +21,7 @@ from typing import (
 )
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import (
@@ -36,7 +36,7 @@ try:
     from src.core.shared.types import (
         JSONDict,
         JSONValue,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]
@@ -479,7 +479,7 @@ class InMemoryWorkflowExecutor:
         task = self._tasks[workflow_id]
         task.cancel()
 
-        try:  # noqa: SIM105
+        try:
             await task
         except asyncio.CancelledError:
             pass

@@ -430,7 +430,7 @@ class TestFlushLogic:
         # Let it run one iteration
         await asyncio.sleep(0.1)
         task.cancel()
-        try:  # noqa: SIM105
+        try:
             await task
         except asyncio.CancelledError:
             pass

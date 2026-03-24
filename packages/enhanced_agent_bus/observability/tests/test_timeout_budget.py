@@ -5,10 +5,10 @@ ACGS-2 Timeout Budget Tests
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-import asyncio  # noqa: E402
-import time  # noqa: E402
+import asyncio
+import time
 
-import pytest  # noqa: E402
+import pytest
 
 try:
     from ..timeout_budget import (

@@ -24,6 +24,19 @@ import pytest
 from fastapi import HTTPException
 
 # ---------------------------------------------------------------------------
+# Governance engine imports
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.adaptive_governance.governance_engine import (
+    AdaptiveGovernanceEngine,
+)
+from enhanced_agent_bus.adaptive_governance.models import (
+    GovernanceDecision,
+    GovernanceMetrics,
+    ImpactFeatures,
+    ImpactLevel,
+)
+
+# ---------------------------------------------------------------------------
 # Tenants module imports
 # ---------------------------------------------------------------------------
 from enhanced_agent_bus.routes import tenants as tenants_mod
@@ -48,19 +61,6 @@ from enhanced_agent_bus.routes.tenants import (
     get_admin_tenant_id,
     get_manager,
     get_optional_tenant_id,
-)
-
-# ---------------------------------------------------------------------------
-# Governance engine imports
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.adaptive_governance.governance_engine import (
-    AdaptiveGovernanceEngine,
-)
-from enhanced_agent_bus.adaptive_governance.models import (
-    GovernanceDecision,
-    GovernanceMetrics,
-    ImpactFeatures,
-    ImpactLevel,
 )
 
 HASH = "cdd01ef066bc6cf2"

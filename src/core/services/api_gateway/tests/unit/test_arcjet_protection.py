@@ -138,6 +138,7 @@ def test_arcjet_status_endpoint_admin_only(monkeypatch: pytest.MonkeyPatch) -> N
     authorisation logic without importing the full gateway application.
     """
     from fastapi import Depends, HTTPException
+
     from src.core.shared.security.auth import UserClaims
 
     now = datetime.now(UTC)

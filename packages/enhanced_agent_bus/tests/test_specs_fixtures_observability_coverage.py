@@ -17,7 +17,7 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH
 # ---------------------------------------------------------------------------
 
 _MOD_NAME = "enhanced_agent_bus.specs.fixtures.observability"
-if _MOD_NAME in sys.modules:  # noqa: SIM108
+if _MOD_NAME in sys.modules:
     _mod = sys.modules[_MOD_NAME]
 else:
     _mod = importlib.import_module(_MOD_NAME)
@@ -33,7 +33,7 @@ MetricsRegistry = _mod.MetricsRegistry  # type: ignore[attr-defined]
 TracingContext = _mod.TracingContext  # type: ignore[attr-defined]
 
 # Import the public fixtures and classes
-from enhanced_agent_bus.specs.fixtures.observability import (  # noqa: E402
+from enhanced_agent_bus.specs.fixtures.observability import (
     LatencyMeasurement,
     SpecMetricsRegistry,
     SpecTimeoutBudgetManager,
@@ -724,51 +724,51 @@ class TestSpecMetricsRegistry:
 
 
 class TestTimeoutBudgetManagerFixture:
-    def test_fixture_returns_spec_manager(self, timeout_budget_manager):  # noqa: F811
+    def test_fixture_returns_spec_manager(self, timeout_budget_manager):
         assert isinstance(timeout_budget_manager, SpecTimeoutBudgetManager)
 
-    def test_fixture_starts_fresh(self, timeout_budget_manager):  # noqa: F811
+    def test_fixture_starts_fresh(self, timeout_budget_manager):
         assert timeout_budget_manager.measurements == []
 
-    def test_fixture_usable(self, timeout_budget_manager):  # noqa: F811
+    def test_fixture_usable(self, timeout_budget_manager):
         m = timeout_budget_manager.record_measurement(Layer.LAYER1_VALIDATION, "op", 2.0)
         assert m.within_budget is True
 
-    def test_fixture_is_isolated_between_tests(self, timeout_budget_manager):  # noqa: F811
+    def test_fixture_is_isolated_between_tests(self, timeout_budget_manager):
         timeout_budget_manager.record_measurement(Layer.LAYER1_VALIDATION, "op", 1.0)
         assert len(timeout_budget_manager.measurements) == 1
 
 
 class TestMetricsRegistryFixture:
-    def test_fixture_returns_spec_registry(self, metrics_registry):  # noqa: F811
+    def test_fixture_returns_spec_registry(self, metrics_registry):
         assert isinstance(metrics_registry, SpecMetricsRegistry)
 
-    def test_fixture_starts_fresh(self, metrics_registry):  # noqa: F811
+    def test_fixture_starts_fresh(self, metrics_registry):
         assert metrics_registry.metric_events == []
 
-    def test_fixture_usable(self, metrics_registry):  # noqa: F811
+    def test_fixture_usable(self, metrics_registry):
         metrics_registry.increment_counter("requests")
         assert metrics_registry.get_counter_total("requests") == 1
 
-    def test_fixture_service_name(self, metrics_registry):  # noqa: F811
+    def test_fixture_service_name(self, metrics_registry):
         assert metrics_registry.service_name == "acgs2-specs"
 
 
 class TestTracingContextFixture:
-    def test_fixture_returns_class(self, tracing_context):  # noqa: F811
+    def test_fixture_returns_class(self, tracing_context):
         # tracing_context fixture returns the TracingContext class itself
         assert tracing_context is TracingContext
 
-    def test_fixture_can_instantiate_and_use(self, tracing_context):  # noqa: F811
+    def test_fixture_can_instantiate_and_use(self, tracing_context):
         tc = tracing_context("test_op")
         with tc:
             pass
 
-    def test_fixture_context_manager_works(self, tracing_context):  # noqa: F811
+    def test_fixture_context_manager_works(self, tracing_context):
         with tracing_context("my_op") as span:
             span.set_attribute("key", "value")
 
-    def test_fixture_multiple_instances_independent(self, tracing_context):  # noqa: F811
+    def test_fixture_multiple_instances_independent(self, tracing_context):
         tc1 = tracing_context("op1")
         tc2 = tracing_context("op2")
         # Both are valid context managers

@@ -157,7 +157,7 @@ def test_patch_with_platform_operator_returns_200():
 
 
 def test_patch_strict_persists_and_returns_metadata():
-    """PATCH mode=strict calls set_mode and returns activated_at/activated_by/propagation_deadline."""  # noqa: E501
+    """PATCH mode=strict calls set_mode and returns activated_at/activated_by/propagation_deadline."""
     svc = _make_enforcement_svc()
     app = _build_app(OPERATOR_CLAIMS, svc)
     client = TestClient(app, raise_server_exceptions=False)

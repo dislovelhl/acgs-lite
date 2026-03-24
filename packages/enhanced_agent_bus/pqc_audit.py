@@ -66,7 +66,7 @@ async def write_verification_audit_event(
             result = audit_writer(event)
             if hasattr(result, "__await__"):
                 await result
-        except Exception as exc:  # noqa: BLE001 - pluggable audit writers may raise arbitrary errors
+        except Exception as exc:
             logger.error("Failed to write verification audit event", error=str(exc))
 
     # Increment Redis adoption counters
@@ -122,7 +122,7 @@ async def write_mode_change_audit_event(
             result = audit_writer(event)
             if hasattr(result, "__await__"):
                 await result
-        except Exception as exc:  # noqa: BLE001 - pluggable audit writers may raise arbitrary errors
+        except Exception as exc:
             logger.error("Failed to write mode change audit event", error=str(exc))
 
     # Downgrade warning

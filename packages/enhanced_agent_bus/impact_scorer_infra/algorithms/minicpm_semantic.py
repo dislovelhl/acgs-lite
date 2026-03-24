@@ -40,7 +40,7 @@ _MINICPM_SCORER_ERRORS = (
 
 # Constitutional Hash for governance compliance
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -401,7 +401,7 @@ class MiniCPMSemanticScorer(BaseScoringAlgorithm):
         if isinstance(msg, dict):
             if "content" in msg:
                 parts.append(str(msg["content"]))
-            if "payload" in msg and isinstance(msg["payload"], dict):  # noqa: SIM102
+            if "payload" in msg and isinstance(msg["payload"], dict):
                 if "message" in msg["payload"]:
                     parts.append(str(msg["payload"]["message"]))
         else:

@@ -670,16 +670,16 @@ class TestJWTAgentValidation:
 
     async def test_validate_agent_identity_token_without_crypto_available(self, bus_for_jwt):
         """Test validation when token provided but crypto/config not available."""
-        # This tests the path where token is provided but CRYPTO_AVAILABLE or CONFIG_AVAILABLE is False  # noqa: E501
+        # This tests the path where token is provided but CRYPTO_AVAILABLE or CONFIG_AVAILABLE is False
         # We test the warning path for token without crypto
         result = await bus_for_jwt._validate_agent_identity(
             agent_id="test-agent",
             tenant_id=None,
             capabilities=[],
-            auth_token="some.jwt.token",  # noqa: S106
+            auth_token="some.jwt.token",
         )
 
-        # Without both CRYPTO_AVAILABLE and CONFIG_AVAILABLE, returns (None, None) with warning logged  # noqa: E501
+        # Without both CRYPTO_AVAILABLE and CONFIG_AVAILABLE, returns (None, None) with warning logged
         assert result == (None, None) or result == (False, None)
 
     async def test_validate_agent_identity_dynamic_mode_no_token(self):

@@ -8,7 +8,7 @@ Covers: status, pause, resume, stop endpoints plus dependency resolution.
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 import pytest
 from fastapi import FastAPI
@@ -17,10 +17,11 @@ from redis.exceptions import RedisError
 
 from src.core.services.api_gateway.routes.evolution_control import (
     get_operator_control_plane,
+)
+from src.core.services.api_gateway.routes.evolution_control import (
     router as evolution_router,
 )
 from src.core.shared.security.auth import UserClaims, get_current_user
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

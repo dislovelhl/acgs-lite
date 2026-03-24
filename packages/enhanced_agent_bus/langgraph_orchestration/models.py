@@ -18,11 +18,11 @@ from typing import TypeVar
 from pydantic import BaseModel, ConfigDict, Field
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -41,7 +41,7 @@ ConditionalFunction = Callable[[JSONDict], str]
 # =============================================================================
 
 
-class NodeType(str, Enum):  # noqa: UP042
+class NodeType(str, Enum):
     """Types of nodes in the execution graph.
 
     Constitutional Hash: cdd01ef066bc6cf2
@@ -59,7 +59,7 @@ class NodeType(str, Enum):  # noqa: UP042
     WORKER = "worker"
 
 
-class NodeStatus(str, Enum):  # noqa: UP042
+class NodeStatus(str, Enum):
     """Execution status of a node.
 
     Constitutional Hash: cdd01ef066bc6cf2
@@ -74,7 +74,7 @@ class NodeStatus(str, Enum):  # noqa: UP042
     WAITING = "waiting"
 
 
-class EdgeType(str, Enum):  # noqa: UP042
+class EdgeType(str, Enum):
     """Types of edges in the execution graph.
 
     Constitutional Hash: cdd01ef066bc6cf2
@@ -86,7 +86,7 @@ class EdgeType(str, Enum):  # noqa: UP042
     LOOP = "loop"
 
 
-class ExecutionStatus(str, Enum):  # noqa: UP042
+class ExecutionStatus(str, Enum):
     """Overall execution status of a graph.
 
     Constitutional Hash: cdd01ef066bc6cf2
@@ -101,7 +101,7 @@ class ExecutionStatus(str, Enum):  # noqa: UP042
     TIMED_OUT = "timed_out"
 
 
-class CheckpointStatus(str, Enum):  # noqa: UP042
+class CheckpointStatus(str, Enum):
     """Status of a checkpoint.
 
     Constitutional Hash: cdd01ef066bc6cf2
@@ -113,7 +113,7 @@ class CheckpointStatus(str, Enum):  # noqa: UP042
     RESTORED = "restored"
 
 
-class InterruptType(str, Enum):  # noqa: UP042
+class InterruptType(str, Enum):
     """Types of execution interrupts.
 
     Constitutional Hash: cdd01ef066bc6cf2

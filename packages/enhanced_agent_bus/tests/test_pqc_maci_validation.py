@@ -90,7 +90,7 @@ class TestValidateMACIRecordPQC:
         assert "Self-validation not allowed (Gödel bypass prevention)" in result.errors
 
     async def test_validate_maci_pqc_enabled_delegation(self):
-        """If PQC is enabled and signature present, it should delegate to validate_constitutional_hash_pqc."""  # noqa: E501
+        """If PQC is enabled and signature present, it should delegate to validate_constitutional_hash_pqc."""
         record = {
             "agent_id": "agent-001",
             "target_output_id": "agent-002",
@@ -115,4 +115,4 @@ class TestValidateMACIRecordPQC:
             mock_val.assert_called_once()
 
 
-from unittest.mock import MagicMock  # noqa: E402
+from unittest.mock import MagicMock

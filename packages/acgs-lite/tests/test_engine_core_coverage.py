@@ -309,12 +309,10 @@ class TestGovernanceEngineValidate:
         assert result.valid is True
 
     def test_escalate_high_severity_no_block(self, engine):
-        """HIGH severity in strict mode may escalate but not raise."""
-        # age-based discrimination is HIGH severity — should not raise in strict mode
-        # but should produce violations
-        result = engine.validate("apply age-based insurance pricing")
-        # Result depends on whether strict mode blocks HIGH
-        assert isinstance(result, ValidationResult)
+        """HIGH severity blocks in strict mode."""
+        with pytest.raises(ConstitutionalViolationError) as exc_info:
+            engine.validate("apply age-based insurance pricing")
+        assert exc_info.value.rule_id == "FAIRNESS-001"
 
     def test_validate_with_context(self, engine):
         result = engine.validate(

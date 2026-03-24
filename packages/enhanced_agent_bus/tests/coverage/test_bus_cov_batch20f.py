@@ -19,17 +19,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-# ── saga_persistence.models ─────────────────────────────────────────────
-from enhanced_agent_bus.saga_persistence.models import (
-    CompensationEntry,
-    CompensationStrategy,
-    PersistedSagaState,
-    PersistedStepSnapshot,
-    SagaCheckpoint,
-    SagaState,
-    StepState,
-)
-
 # ── adaptive_governance.amendment_recommender ───────────────────────────
 from enhanced_agent_bus.adaptive_governance.amendment_recommender import (
     AmendmentRecommendation,
@@ -63,6 +52,16 @@ from enhanced_agent_bus.llm_adapters.base import (
 )
 from enhanced_agent_bus.llm_adapters.config import AnthropicAdapterConfig
 
+# ── saga_persistence.models ─────────────────────────────────────────────
+from enhanced_agent_bus.saga_persistence.models import (
+    CompensationEntry,
+    CompensationStrategy,
+    PersistedSagaState,
+    PersistedStepSnapshot,
+    SagaCheckpoint,
+    SagaState,
+    StepState,
+)
 
 # =====================================================================
 # Helpers

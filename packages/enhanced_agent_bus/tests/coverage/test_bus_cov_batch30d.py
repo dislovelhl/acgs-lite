@@ -45,7 +45,7 @@ class _RaiseOnImport:
     """Sentinel placed in sys.modules to make imports raise ImportError."""
 
     def __getattr__(self, name):
-        raise ImportError(f"Blocked for testing")
+        raise ImportError("Blocked for testing")
 
 
 def _reload_fallbacks_module(*, block_session: bool = True, block_tenant: bool = True):

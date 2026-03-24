@@ -16,10 +16,21 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from enhanced_agent_bus.ai_assistant.context import ConversationContext, ConversationState
+
+# ---------------------------------------------------------------------------
+# 3. ai_assistant/integration.py
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.ai_assistant.integration import (
+    AgentBusIntegration,
+    GovernanceDecision,
+    IntegrationConfig,
+)
+from enhanced_agent_bus.ai_assistant.nlu import Intent, NLUResult
+
 # ---------------------------------------------------------------------------
 # 1. collaboration/server.py
 # ---------------------------------------------------------------------------
-
 from enhanced_agent_bus.collaboration.models import (
     ActivityEventType,
     ChatMessage,
@@ -41,7 +52,6 @@ from enhanced_agent_bus.collaboration.server import (
 # ---------------------------------------------------------------------------
 # 2. enterprise_sso/data_warehouse/connectors.py
 # ---------------------------------------------------------------------------
-
 from enhanced_agent_bus.enterprise_sso.data_warehouse.connectors import (
     BigQueryConnector,
     MockConnection,
@@ -63,21 +73,8 @@ from enhanced_agent_bus.enterprise_sso.data_warehouse.models import (
 )
 
 # ---------------------------------------------------------------------------
-# 3. ai_assistant/integration.py
-# ---------------------------------------------------------------------------
-
-from enhanced_agent_bus.ai_assistant.integration import (
-    AgentBusIntegration,
-    GovernanceDecision,
-    IntegrationConfig,
-)
-from enhanced_agent_bus.ai_assistant.context import ConversationContext, ConversationState
-from enhanced_agent_bus.ai_assistant.nlu import Intent, NLUResult
-
-# ---------------------------------------------------------------------------
 # 4. mamba2_hybrid_processor.py
 # ---------------------------------------------------------------------------
-
 from enhanced_agent_bus.mamba2_hybrid_processor import (
     TORCH_AVAILABLE,
     ConstitutionalContextManager,

@@ -6,11 +6,14 @@ Constitutional Hash: cdd01ef066bc6cf2
 import asyncio
 import concurrent.futures
 import contextlib
+import io
 import os
 import queue
 import sys
 import threading
+from types import GeneratorType
 from typing import Any
+from urllib.parse import unquote
 
 import httpx
 
@@ -85,7 +88,7 @@ class _WorkerThreadRunner:
                 factory, future = item
                 try:
                     result = runner.run(factory())
-                except Exception as exc:  # noqa: BLE001 pragma: no cover - surfaced to caller
+                except Exception as exc:
                     future.set_exception(exc)
                 else:
                     future.set_result(result)
@@ -98,6 +101,158 @@ class _WorkerThreadRunner:
     def close(self) -> None:
         self._queue.put(None)
         self._thread.join(timeout=5)
+
+
+class _CompatSyncTransport(httpx.BaseTransport):
+    """Sync ASGI transport that avoids AnyIO's blocking portal."""
+
+    def __init__(
+        self,
+        *,
+        app: Any,
+        app_state: dict[str, Any],
+        raise_server_exceptions: bool,
+        root_path: str,
+        client: tuple[str, int],
+        run_async: Any,
+    ) -> None:
+        self.app = app
+        self.app_state = app_state
+        self.raise_server_exceptions = raise_server_exceptions
+        self.root_path = root_path
+        self.client = client
+        self.run_async = run_async
+
+    async def _run_app_with_ticker(
+        self,
+        scope: dict[str, Any],
+        receive: Any,
+        send: Any,
+    ) -> None:
+        stop = asyncio.Event()
+        ticker_task = asyncio.create_task(self._ticker(stop))
+        try:
+            await self.app(scope, receive, send)
+        finally:
+            stop.set()
+            ticker_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await ticker_task
+
+    async def _ticker(self, stop: asyncio.Event) -> None:
+        while not stop.is_set():
+            await asyncio.sleep(0.05)
+
+    def handle_request(self, request: httpx.Request) -> httpx.Response:
+        scheme = request.url.scheme
+        netloc = request.url.netloc.decode("ascii")
+        path = request.url.path
+        raw_path = request.url.raw_path
+        query = request.url.query.decode("ascii")
+
+        default_port = {"http": 80, "https": 443, "ws": 80, "wss": 443}[scheme]
+        if ":" in netloc:
+            host, port_string = netloc.split(":", 1)
+            port = int(port_string)
+        else:
+            host = netloc
+            port = default_port
+
+        if "host" in request.headers:
+            headers: list[tuple[bytes, bytes]] = []
+        elif port == default_port:  # pragma: no cover
+            headers = [(b"host", host.encode())]
+        else:  # pragma: no cover
+            headers = [(b"host", f"{host}:{port}".encode())]
+
+        headers += [
+            (key.lower().encode(), value.encode()) for key, value in request.headers.multi_items()
+        ]
+
+        scope = {
+            "type": "http",
+            "http_version": "1.1",
+            "method": request.method,
+            "path": unquote(path),
+            "raw_path": raw_path.split(b"?", 1)[0],
+            "root_path": self.root_path,
+            "scheme": scheme,
+            "query_string": query.encode(),
+            "headers": headers,
+            "client": self.client,
+            "server": [host, port],
+            "extensions": {"http.response.debug": {}},
+            "state": self.app_state.copy(),
+        }
+
+        request_complete = False
+        response_started = False
+        response_complete = threading.Event()
+        raw_kwargs: dict[str, Any] = {"stream": io.BytesIO()}
+
+        async def receive() -> dict[str, Any]:
+            nonlocal request_complete
+
+            if request_complete:
+                if not response_complete.is_set():
+                    await asyncio.to_thread(response_complete.wait)
+                return {"type": "http.disconnect"}
+
+            body = request.read()
+            if isinstance(body, str):
+                body_bytes = body.encode("utf-8")  # pragma: no cover
+            elif body is None:
+                body_bytes = b""  # pragma: no cover
+            elif isinstance(body, GeneratorType):
+                try:  # pragma: no cover
+                    chunk = body.send(None)
+                    if isinstance(chunk, str):
+                        chunk = chunk.encode("utf-8")
+                    return {"type": "http.request", "body": chunk, "more_body": True}
+                except StopIteration:
+                    request_complete = True
+                    return {"type": "http.request", "body": b""}
+            else:
+                body_bytes = body
+
+            request_complete = True
+            return {"type": "http.request", "body": body_bytes}
+
+        async def send(message: dict[str, Any]) -> None:
+            nonlocal raw_kwargs, response_started
+
+            if message["type"] == "http.response.start":
+                raw_kwargs["status_code"] = message["status"]
+                raw_kwargs["headers"] = [
+                    (key.decode(), value.decode()) for key, value in message.get("headers", [])
+                ]
+                response_started = True
+            elif message["type"] == "http.response.body":
+                body = message.get("body", b"")
+                more_body = message.get("more_body", False)
+                if request.method != "HEAD":
+                    raw_kwargs["stream"].write(body)
+                if not more_body:
+                    raw_kwargs["stream"].seek(0)
+                    response_complete.set()
+
+        try:
+            self.run_async(lambda: self._run_app_with_ticker(scope, receive, send))
+        except BaseException as exc:
+            if self.raise_server_exceptions:
+                raise exc
+
+        if self.raise_server_exceptions:
+            assert response_started, "TestClient did not receive any response."
+        elif not response_started:
+            raw_kwargs = {
+                "status_code": 500,
+                "headers": [],
+                "stream": io.BytesIO(),
+            }
+
+        raw_kwargs["stream"] = httpx.ByteStream(raw_kwargs["stream"].read())
+        return httpx.Response(**raw_kwargs, request=request)
 
 
 class CompatTestClient:
@@ -168,13 +323,18 @@ class CompatTestClient:
         if self._context_worker is not None:
             return self._context_worker.run(factory)
 
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            return asyncio.run(factory())
+
         result_box: dict[str, Any] = {}
         error_box: dict[str, BaseException] = {}
 
         def invoke() -> None:
             try:
                 result_box["value"] = asyncio.run(factory())
-            except Exception as exc:  # noqa: BLE001 pragma: no cover - surfaced to caller
+            except Exception as exc:
                 error_box["error"] = exc
 
         thread = threading.Thread(target=invoke, name="pytest-testclient-call", daemon=True)
@@ -192,27 +352,24 @@ class CompatTestClient:
             request_headers.update(request_kwargs.pop("headers"))
 
         follow_redirects = request_kwargs.pop("follow_redirects", self.follow_redirects)
-
-        async def do_request() -> tuple[httpx.Response, httpx.Cookies]:
-            transport = httpx.ASGITransport(
-                app=self.app,
-                raise_app_exceptions=self.raise_server_exceptions,
-                root_path=self.root_path,
-                client=self.client,
-            )
-            async with httpx.AsyncClient(
-                transport=transport,
-                base_url=self.base_url,
-                headers=request_headers,
-                cookies=self.cookies,
-                follow_redirects=follow_redirects,
-            ) as client:
-                response = await client.request(method, url, **request_kwargs)
-                return response, httpx.Cookies(client.cookies)
-
-        response, updated_cookies = self._run_async(do_request)
-        self.cookies = updated_cookies
-        return response
+        transport = _CompatSyncTransport(
+            app=self.app,
+            app_state=self.app_state,
+            raise_server_exceptions=self.raise_server_exceptions,
+            root_path=self.root_path,
+            client=self.client,
+            run_async=self._run_async,
+        )
+        with httpx.Client(
+            transport=transport,
+            base_url=self.base_url,
+            headers=request_headers,
+            cookies=self.cookies,
+            follow_redirects=follow_redirects,
+        ) as client:
+            response = client.request(method, url, **request_kwargs)
+            self.cookies = httpx.Cookies(client.cookies)
+            return response
 
     def get(self, url: str, **kwargs: Any) -> httpx.Response:
         return self.request("GET", url, **kwargs)

@@ -9,6 +9,10 @@ import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from src.core.shared.errors.exceptions import (
+    ResourceNotFoundError,
+    ServiceUnavailableError,
+)
 
 from enhanced_agent_bus.circuit_breaker.enums import CircuitState as CircuitBreakerState
 from enhanced_agent_bus.llm_adapters.base import (
@@ -28,11 +32,6 @@ from enhanced_agent_bus.llm_adapters.registry import (
     FallbackChain,
     LLMAdapterRegistry,
 )
-from src.core.shared.errors.exceptions import (
-    ResourceNotFoundError,
-    ServiceUnavailableError,
-)
-
 
 # ---------------------------------------------------------------------------
 # Helpers

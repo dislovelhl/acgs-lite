@@ -1520,14 +1520,20 @@ class TestAgentBusIntegration:
 
     @pytest.mark.asyncio
     async def test_initialize_no_bus(self) -> None:
-        from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration, IntegrationConfig
+        from enhanced_agent_bus.ai_assistant.integration import (
+            AgentBusIntegration,
+            IntegrationConfig,
+        )
         integration = AgentBusIntegration(config=IntegrationConfig())
         result = await integration.initialize()
         assert result is False
 
     @pytest.mark.asyncio
     async def test_initialize_with_bus(self) -> None:
-        from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration, IntegrationConfig
+        from enhanced_agent_bus.ai_assistant.integration import (
+            AgentBusIntegration,
+            IntegrationConfig,
+        )
         bus = MagicMock()
         integration = AgentBusIntegration(config=IntegrationConfig(), agent_bus=bus)
         result = await integration.initialize()
@@ -1570,7 +1576,10 @@ class TestAgentBusIntegration:
 
     @pytest.mark.asyncio
     async def test_send_message_no_bus(self) -> None:
-        from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration, IntegrationConfig
+        from enhanced_agent_bus.ai_assistant.integration import (
+            AgentBusIntegration,
+            IntegrationConfig,
+        )
         integration = AgentBusIntegration(config=IntegrationConfig(enable_governance=False))
         result = await integration.send_message("target", "hello")
         assert result is None
@@ -1657,7 +1666,10 @@ class TestAgentBusIntegration:
 
     @pytest.mark.asyncio
     async def test_process_nlu_result_governance_disabled(self) -> None:
-        from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration, IntegrationConfig
+        from enhanced_agent_bus.ai_assistant.integration import (
+            AgentBusIntegration,
+            IntegrationConfig,
+        )
         integration = AgentBusIntegration(config=IntegrationConfig(enable_governance=False))
 
         mock_nlu = MagicMock()
@@ -1669,7 +1681,10 @@ class TestAgentBusIntegration:
 
     @pytest.mark.asyncio
     async def test_process_nlu_help_intent(self) -> None:
-        from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration, IntegrationConfig
+        from enhanced_agent_bus.ai_assistant.integration import (
+            AgentBusIntegration,
+            IntegrationConfig,
+        )
         integration = AgentBusIntegration(config=IntegrationConfig(enable_governance=False))
 
         mock_nlu = MagicMock()
@@ -1682,7 +1697,10 @@ class TestAgentBusIntegration:
 
     @pytest.mark.asyncio
     async def test_process_nlu_default_intent(self) -> None:
-        from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration, IntegrationConfig
+        from enhanced_agent_bus.ai_assistant.integration import (
+            AgentBusIntegration,
+            IntegrationConfig,
+        )
         integration = AgentBusIntegration(config=IntegrationConfig(enable_governance=False))
 
         mock_nlu = MagicMock()
@@ -1695,7 +1713,10 @@ class TestAgentBusIntegration:
 
     @pytest.mark.asyncio
     async def test_check_governance_disabled(self) -> None:
-        from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration, IntegrationConfig
+        from enhanced_agent_bus.ai_assistant.integration import (
+            AgentBusIntegration,
+            IntegrationConfig,
+        )
         integration = AgentBusIntegration(config=IntegrationConfig(enable_governance=False))
 
         result = await integration._check_governance(MagicMock(), MagicMock())

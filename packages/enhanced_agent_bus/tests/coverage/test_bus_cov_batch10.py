@@ -19,7 +19,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-
 # =============================================================================
 # Module 1: response_quality.models
 # =============================================================================
@@ -615,8 +614,8 @@ class TestRefinementConfigRefiner:
 
 class TestDefaultLLMRefiner:
     def test_refine_adds_period(self):
-        from enhanced_agent_bus.response_quality.refiner import DefaultLLMRefiner
         from enhanced_agent_bus.response_quality.models import QualityAssessment, QualityDimension
+        from enhanced_agent_bus.response_quality.refiner import DefaultLLMRefiner
 
         refiner = DefaultLLMRefiner()
         assessment = QualityAssessment(
@@ -630,8 +629,8 @@ class TestDefaultLLMRefiner:
         assert result.endswith(".")
 
     def test_refine_safety_redaction(self):
-        from enhanced_agent_bus.response_quality.refiner import DefaultLLMRefiner
         from enhanced_agent_bus.response_quality.models import QualityAssessment, QualityDimension
+        from enhanced_agent_bus.response_quality.refiner import DefaultLLMRefiner
 
         refiner = DefaultLLMRefiner()
         assessment = QualityAssessment(
@@ -645,8 +644,8 @@ class TestDefaultLLMRefiner:
         assert "[redacted]" in result
 
     async def test_refine_async(self):
-        from enhanced_agent_bus.response_quality.refiner import DefaultLLMRefiner
         from enhanced_agent_bus.response_quality.models import QualityAssessment, QualityDimension
+        from enhanced_agent_bus.response_quality.refiner import DefaultLLMRefiner
 
         refiner = DefaultLLMRefiner()
         assessment = QualityAssessment(

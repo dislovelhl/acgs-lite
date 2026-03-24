@@ -25,7 +25,6 @@ from enhanced_agent_bus.langgraph_orchestration.node_executor import (
     ParallelNodeExecutor,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

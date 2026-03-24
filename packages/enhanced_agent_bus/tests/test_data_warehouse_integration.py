@@ -15,15 +15,15 @@ Tests for:
 - Cron-based sync scheduling
 """
 
-import asyncio  # noqa: E402
-from datetime import UTC, datetime, timezone  # noqa: E402
-from unittest.mock import AsyncMock, MagicMock, patch  # noqa: E402
+import asyncio
+from datetime import UTC, datetime, timezone
+from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest  # noqa: E402
-from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError  # noqa: E402
+import pytest
+from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 
-from enhanced_agent_bus.enterprise_sso.data_warehouse import (  # noqa: E402
-    CONSTITUTIONAL_HASH,  # noqa: F811
+from enhanced_agent_bus.enterprise_sso.data_warehouse import (
+    CONSTITUTIONAL_HASH,
     BigQueryConfig,
     BigQueryConnector,
     DataSyncEngine,

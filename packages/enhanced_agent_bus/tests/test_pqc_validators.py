@@ -18,7 +18,6 @@ from enhanced_agent_bus.pqc_validators import (
     validate_maci_record_pqc,
 )
 
-
 # ---------------------------------------------------------------------------
 # PqcValidators helper class
 # ---------------------------------------------------------------------------

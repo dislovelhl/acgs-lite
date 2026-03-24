@@ -18,7 +18,6 @@ from enhanced_agent_bus.llm_adapters.base import (
 from enhanced_agent_bus.llm_adapters.config import AdapterType, XAIAdapterConfig
 from enhanced_agent_bus.llm_adapters.xai_adapter import XAI_API_BASE, XAIAdapter
 
-
 # ---------------------------------------------------------------------------
 # Config tests
 # ---------------------------------------------------------------------------

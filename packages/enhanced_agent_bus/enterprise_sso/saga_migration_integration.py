@@ -21,7 +21,7 @@ from datetime import UTC, datetime, timezone
 from enum import Enum
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -48,7 +48,7 @@ from .saga_orchestration import (
 logger = get_logger(__name__)
 
 
-class MigrationPhase(str, Enum):  # noqa: UP042
+class MigrationPhase(str, Enum):
     """Phases of a saga-managed migration."""
 
     VALIDATION = "validation"

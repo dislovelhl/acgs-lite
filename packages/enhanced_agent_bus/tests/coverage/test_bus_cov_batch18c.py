@@ -53,7 +53,6 @@ from enhanced_agent_bus.pipeline.context import PipelineContext
 from enhanced_agent_bus.pipeline.middleware import MiddlewareConfig
 from enhanced_agent_bus.validators import ValidationResult
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

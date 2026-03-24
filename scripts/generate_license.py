@@ -24,7 +24,7 @@ _src = Path(__file__).parent.parent / "src"
 if str(_src) not in sys.path:
     sys.path.insert(0, str(_src))
 
-from acgs_lite.licensing import (  # noqa: E402
+from acgs_lite.licensing import (
     _DEFAULT_DEV_SECRET,
     Tier,
     generate_license_key,
@@ -80,7 +80,7 @@ Examples:
 
     if not args.quiet:
         print(
-            f"Generating {args.count} × {args.tier} key(s)  "  # noqa: RUF001
+            f"Generating {args.count} × {args.tier} key(s)  "
             f"({'no expiry' if args.days == 0 else f'{args.days} days'})"
         )
         if using_default:

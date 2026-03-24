@@ -196,7 +196,7 @@ class TestBatchPerformance:
         response_no_dedup = await processor.process_batch(batch_without_dedup)
         time_no_dedup = time.perf_counter() - start
 
-        #     f"  With dedup: {time_dedup*1000:.2f}ms (removed {response_dedup.stats.deduplicated_count})"  # noqa: E501
+        #     f"  With dedup: {time_dedup*1000:.2f}ms (removed {response_dedup.stats.deduplicated_count})"
         # )
 
         assert response_dedup.stats.deduplicated_count == 50

@@ -6,6 +6,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
 import pytest
+from src.core.shared.errors.exceptions import (
+    ServiceUnavailableError,
+)
+from src.core.shared.errors.exceptions import (
+    ValidationError as ACGSValidationError,
+)
 
 from enhanced_agent_bus.guardrails.siem_providers import (
     ElasticsearchProvider,
@@ -14,11 +20,6 @@ from enhanced_agent_bus.guardrails.siem_providers import (
     SplunkHECProvider,
     create_siem_provider,
 )
-from src.core.shared.errors.exceptions import (
-    ServiceUnavailableError,
-    ValidationError as ACGSValidationError,
-)
-
 
 # ---------------------------------------------------------------------------
 # Helpers

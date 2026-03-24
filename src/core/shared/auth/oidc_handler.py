@@ -188,7 +188,7 @@ class OIDCTokenResponse:
     """
 
     access_token: str
-    token_type: str = "Bearer"  # noqa: S105
+    token_type: str = "Bearer"
     expires_in: int | None = None
     refresh_token: str | None = None
     id_token: str | None = None

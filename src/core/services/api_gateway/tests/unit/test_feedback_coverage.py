@@ -12,11 +12,9 @@ list_services_v1, get_versioning_docs.
 
 import json
 import time
-from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from starlette.datastructures import Address
 
@@ -25,15 +23,14 @@ from src.core.services.api_gateway.routes.feedback import (
     FEEDBACK_REDIS_TTL,
     FeedbackRequest,
     FeedbackResponse,
+    _feedback_stats_cache,
     _get_feedback_source_identifier,
     _hash_ip_for_storage,
     get_cached_feedback_stats,
     save_feedback_to_redis,
     update_feedback_stats_cache,
-    _feedback_stats_cache,
 )
 from src.core.shared.constants import CONSTITUTIONAL_HASH
-
 
 # ---------------------------------------------------------------------------
 # FeedbackRequest model
@@ -282,10 +279,10 @@ class TestSubmitFeedbackEndpoint:
             permissions=[], exp=9999999999, iat=1000000000,
         )
 
+        from src.core.services.api_gateway.main import app as real_app
         from src.core.services.api_gateway.routes.feedback import (
             _enforce_feedback_submission_policy,
         )
-        from src.core.services.api_gateway.main import app as real_app
 
         # Override the dependency to return our authenticated user
         real_app.dependency_overrides[_enforce_feedback_submission_policy] = lambda: user

@@ -442,7 +442,7 @@ class TestSecurityValidation:
         similar_hash = CONSTITUTIONAL_HASH[:-1] + "0"
         different_hash = "0" * len(CONSTITUTIONAL_HASH)
 
-        # Measure the constant-time primitive directly; validate_batch timing is noisy due to async scheduling.  # noqa: E501
+        # Measure the constant-time primitive directly; validate_batch timing is noisy due to async scheduling.
         comparisons_per_sample = 20_000
 
         def _sample(candidate_hash: str) -> float:
@@ -462,7 +462,7 @@ class TestSecurityValidation:
         avg_similar = sum(times_similar) / len(times_similar)
         avg_different = sum(times_different) / len(times_different)
 
-        # Times should be within 100% of each other (constant-time property with CI jitter tolerance)  # noqa: E501
+        # Times should be within 100% of each other (constant-time property with CI jitter tolerance)
         ratio = max(avg_similar, avg_different) / max(min(avg_similar, avg_different), 1e-9)
         assert ratio < 2.0, f"Timing ratio {ratio} suggests non-constant-time comparison"
 

@@ -359,7 +359,7 @@ class TestRedisRegistryPath:
         bus = EnhancedAgentBus(
             enable_maci=False,
             use_redis_registry=True,
-            redis_url="redis://localhost:6379",  # test-only: MACI off to isolate transport/routing logic  # noqa: E501
+            redis_url="redis://localhost:6379",  # test-only: MACI off to isolate transport/routing logic
         )
 
         # May use Redis or fallback to InMemory depending on availability

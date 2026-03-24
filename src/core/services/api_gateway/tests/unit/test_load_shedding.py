@@ -5,7 +5,6 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from __future__ import annotations
 
-import asyncio
 import json
 from unittest.mock import AsyncMock, patch
 
@@ -18,7 +17,6 @@ from src.core.services.api_gateway.middleware.load_shedding import (
     ShedPriority,
     _classify_path,
 )
-
 
 # ---------------------------------------------------------------------------
 # ShedPriority enum

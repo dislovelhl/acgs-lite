@@ -37,10 +37,10 @@ class SecretType(StrEnum):
     API_KEY = "api_key"
     JWT_SIGNING_KEY = "jwt_signing_key"
     ENCRYPTION_KEY = "encryption_key"
-    DATABASE_PASSWORD = "database_password"  # noqa: S105
+    DATABASE_PASSWORD = "database_password"
     SERVICE_ACCOUNT = "service_account"
-    OAUTH_CLIENT_SECRET = "oauth_client_secret"  # noqa: S105
-    WEBHOOK_SECRET = "webhook_secret"  # noqa: S105
+    OAUTH_CLIENT_SECRET = "oauth_client_secret"
+    WEBHOOK_SECRET = "webhook_secret"
     GENERIC = "generic"
 
 

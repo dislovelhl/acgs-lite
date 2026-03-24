@@ -71,7 +71,7 @@ class TestDeleteWithAuditArchival:
         delete_log = next(log for log in logs if log["action"] == "delete")
 
         archived_config = delete_log["details"]["archived_config"]["config"]
-        assert archived_config["bind_password"] == "********"  # noqa: S105
+        assert archived_config["bind_password"] == "********"
 
     async def test_all_crud_operations_audited(self, integration_service):
         """Test that all CRUD operations are audited."""

@@ -20,7 +20,6 @@ sys.modules.setdefault("streamlit", _mock_st)
 # Now import the dashboard module directly (bypassing __init__.__getattr__)
 from enhanced_agent_bus.deliberation_layer import dashboard as dash_mod
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

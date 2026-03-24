@@ -94,7 +94,7 @@ globals()["AgentMessage"] = AgentMessage
 globals()["ValidationResult"] = ValidationResult
 
 # Create our own PolicyRegistryClient class for testing
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 
 class PolicyRegistryClientForTest:

@@ -16,9 +16,9 @@ import pytest
 
 z3 = pytest.importorskip("z3")
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+from src.core.shared.constants import CONSTITUTIONAL_HASH
 
-from enhanced_agent_bus.verification.z3_adapter import (  # noqa: E402
+from enhanced_agent_bus.verification.z3_adapter import (
     ConstitutionalPolicy,
     ConstitutionalZ3Verifier,
     LLMAssistedZ3Adapter,

@@ -15,7 +15,7 @@ import time
 from collections import deque
 from datetime import UTC, datetime
 from types import SimpleNamespace
-from unittest.mock import MagicMock, AsyncMock, patch, PropertyMock
+from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 sys.path.insert(0, "packages/enhanced_agent_bus")
 
@@ -50,6 +50,8 @@ from enhanced_agent_bus.governance_constants import (
 # Telemetry imports
 # -----------------------------------------------------------------------
 from enhanced_agent_bus.observability.telemetry import (
+    OTEL_AVAILABLE,
+    MetricsRegistry,
     NoOpCounter,
     NoOpHistogram,
     NoOpMeter,
@@ -58,18 +60,16 @@ from enhanced_agent_bus.observability.telemetry import (
     NoOpUpDownCounter,
     TelemetryConfig,
     TracingContext,
-    MetricsRegistry,
     _CrossModuleNoOpType,
     _get_env_default,
-    _get_otlp_endpoint,
-    _get_export_traces,
     _get_export_metrics,
-    _get_trace_sample_rate,
+    _get_export_traces,
+    _get_otlp_endpoint,
     _get_resource_attributes,
+    _get_trace_sample_rate,
     configure_telemetry,
-    get_tracer,
     get_meter,
-    OTEL_AVAILABLE,
+    get_tracer,
 )
 
 # -----------------------------------------------------------------------

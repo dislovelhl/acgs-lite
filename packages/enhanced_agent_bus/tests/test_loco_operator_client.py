@@ -10,6 +10,7 @@ import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 
 from enhanced_agent_bus.deliberation_layer.loco_operator_client import (
     GovernanceScoringResult,
@@ -20,8 +21,6 @@ from enhanced_agent_bus.deliberation_layer.loco_operator_client import (
     _truncate_json,
 )
 from enhanced_agent_bus.exceptions.operations import GovernanceError
-from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
-
 
 # ---------------------------------------------------------------------------
 # GovernanceScoringResult

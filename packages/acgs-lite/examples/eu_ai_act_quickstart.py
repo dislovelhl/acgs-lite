@@ -98,7 +98,7 @@ def article12_demo() -> Article12Logger:
     print(f"Article 12 compliant: {summary['compliant']}")
 
     # Export append-only JSONL
-    log.export_jsonl("/tmp/cv_screener_audit.jsonl")  # noqa: S108
+    log.export_jsonl("/tmp/cv_screener_audit.jsonl")
     print("Exported: /tmp/cv_screener_audit.jsonl")
 
     return log  # type: ignore[no-any-return]
@@ -253,7 +253,7 @@ def compliance_checklist_demo() -> None:
         icon = (
             "✅"
             if item.status.value == "compliant"
-            else ("➖" if item.status.value == "not_applicable" else "⏳")  # noqa: RUF001
+            else ("➖" if item.status.value == "not_applicable" else "⏳")
         )
         print(f"  {icon} {item.article_ref:<15} {item.status.value}")
 

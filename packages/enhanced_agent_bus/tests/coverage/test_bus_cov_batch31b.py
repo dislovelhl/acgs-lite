@@ -29,6 +29,20 @@ from enhanced_agent_bus.decision_store import (
     get_decision_store,
     reset_decision_store,
 )
+from enhanced_agent_bus.multi_tenancy import (
+    Tenant,
+    TenantConfig,
+    TenantNotFoundError,
+    TenantQuota,
+    TenantQuotaExceededError,
+    TenantStatus,
+    TenantValidationError,
+)
+from enhanced_agent_bus.routes.models.tenant_models import (
+    CreateTenantRequest,
+    QuotaCheckRequest,
+    TenantResponse,
+)
 
 # ---------------------------------------------------------------------------
 # tenants route imports
@@ -52,20 +66,6 @@ from enhanced_agent_bus.routes.tenants import (
     _validate_admin_api_key,
     get_manager,
     router,
-)
-from enhanced_agent_bus.routes.models.tenant_models import (
-    CreateTenantRequest,
-    QuotaCheckRequest,
-    TenantResponse,
-)
-from enhanced_agent_bus.multi_tenancy import (
-    Tenant,
-    TenantConfig,
-    TenantNotFoundError,
-    TenantQuota,
-    TenantQuotaExceededError,
-    TenantStatus,
-    TenantValidationError,
 )
 
 # ============================================================================
@@ -124,7 +124,8 @@ def _build_app(mock_manager: MagicMock, admin_id: str = "system-admin") -> FastA
     app.include_router(router)
 
     # Override auth dependency to return a static admin_id
-    from enhanced_agent_bus.routes.tenants import get_admin_tenant_id, get_manager as _gm
+    from enhanced_agent_bus.routes.tenants import get_admin_tenant_id
+    from enhanced_agent_bus.routes.tenants import get_manager as _gm
 
     app.dependency_overrides[get_admin_tenant_id] = lambda: admin_id
     app.dependency_overrides[_gm] = lambda: mock_manager

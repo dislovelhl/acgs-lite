@@ -475,7 +475,7 @@ class TestBatchInference:
                     contexts = [None] * len(messages)
                 elif len(contexts) != len(messages):
                     raise ValueError(
-                        f"contexts length ({len(contexts)}) must match messages length ({len(messages)})"  # noqa: E501
+                        f"contexts length ({len(contexts)}) must match messages length ({len(messages)})"
                     )
 
                 return [

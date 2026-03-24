@@ -26,7 +26,7 @@ from httpx import (
 )
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

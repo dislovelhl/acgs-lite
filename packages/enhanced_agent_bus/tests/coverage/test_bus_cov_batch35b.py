@@ -21,7 +21,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-
 # =============================================================================
 # Helpers
 # =============================================================================
@@ -35,7 +34,7 @@ def _make_ldap_config(**overrides):
         "server_uri": "ldap://test.example.com",
         "base_dn": "dc=example,dc=com",
         "bind_dn": "cn=admin,dc=example,dc=com",
-        "bind_password": "secret",  # noqa: S106
+        "bind_password": "secret",
         "circuit_breaker_enabled": False,
     }
     defaults.update(overrides)
@@ -106,8 +105,8 @@ class TestGetOrCreateMetricValueError:
     def test_duplicate_timeseries_registry_attribute_error(self):
         """Cover AttributeError when accessing registry._names_to_collectors."""
         from enhanced_agent_bus.transaction_coordinator_metrics import (
-            _NoOpCounter,
             _get_or_create_metric,
+            _NoOpCounter,
             reset_metrics_cache,
         )
 
@@ -147,8 +146,8 @@ class TestGetOrCreateMetricValueError:
     def test_value_error_not_duplicate_falls_to_noop_counter(self):
         """Cover ValueError that is NOT a duplicate — falls to else (NoOpCounter)."""
         from enhanced_agent_bus.transaction_coordinator_metrics import (
-            _NoOpCounter,
             _get_or_create_metric,
+            _NoOpCounter,
             reset_metrics_cache,
         )
 
@@ -180,8 +179,8 @@ class TestGetOrCreateMetricValueError:
         """
         import enhanced_agent_bus.transaction_coordinator_metrics as tcm
         from enhanced_agent_bus.transaction_coordinator_metrics import (
-            _NoOpHistogram,
             _get_or_create_metric,
+            _NoOpHistogram,
             reset_metrics_cache,
         )
 
@@ -209,8 +208,8 @@ class TestGetOrCreateMetricValueError:
         """Cover ValueError fallback for Gauge type (line 300-301)."""
         import enhanced_agent_bus.transaction_coordinator_metrics as tcm
         from enhanced_agent_bus.transaction_coordinator_metrics import (
-            _NoOpGauge,
             _get_or_create_metric,
+            _NoOpGauge,
             reset_metrics_cache,
         )
 
@@ -239,8 +238,8 @@ class TestGetOrCreateMetricNoPrometheus:
     def test_noop_for_unknown_metric_class(self):
         """Cover the else branch (line 265-266) for unknown metric class."""
         from enhanced_agent_bus.transaction_coordinator_metrics import (
-            _NoOpCounter,
             _get_or_create_metric,
+            _NoOpCounter,
             reset_metrics_cache,
         )
 
@@ -261,8 +260,8 @@ class TestGetOrCreateMetricNoPrometheus:
         """Cover Histogram branch in no-prometheus path (line 263-264)."""
         from enhanced_agent_bus.transaction_coordinator_metrics import (
             Histogram,
-            _NoOpHistogram,
             _get_or_create_metric,
+            _NoOpHistogram,
             reset_metrics_cache,
         )
 
@@ -279,8 +278,8 @@ class TestGetOrCreateMetricNoPrometheus:
         """Cover Gauge branch in no-prometheus path (line 261-262)."""
         from enhanced_agent_bus.transaction_coordinator_metrics import (
             Gauge,
-            _NoOpGauge,
             _get_or_create_metric,
+            _NoOpGauge,
             reset_metrics_cache,
         )
 
@@ -296,8 +295,8 @@ class TestGetOrCreateMetricNoPrometheus:
     def test_cache_hit_returns_cached(self):
         """Cover the cache hit path (line 252-253)."""
         from enhanced_agent_bus.transaction_coordinator_metrics import (
-            Counter,
             _METRICS_CACHE,
+            Counter,
             _get_or_create_metric,
             reset_metrics_cache,
         )
@@ -806,7 +805,7 @@ class TestLDAPIntegrationAuthenticate:
     def test_authenticate_user_not_found(self):
         integration = self._make_integration_with_pool()
         with patch.object(integration, "search_user", return_value=None):
-            result = integration.authenticate("missing", "password")  # noqa: S106
+            result = integration.authenticate("missing", "password")
             assert result.success is False
             assert result.error_code == "USER_NOT_FOUND"
 
@@ -828,7 +827,7 @@ class TestLDAPIntegrationAuthenticate:
             mock_conn.bind.side_effect = LDAPBindError("bad creds")
             mock_conn_cls.return_value = mock_conn
 
-            result = integration.authenticate("john", "wrong")  # noqa: S106
+            result = integration.authenticate("john", "wrong")
             assert result.success is False
             assert result.error_code == "INVALID_CREDENTIALS"
 
@@ -853,7 +852,7 @@ class TestLDAPIntegrationAuthenticate:
             mock_conn = MagicMock()
             mock_conn_cls.return_value = mock_conn
 
-            result = integration.authenticate("john", "correct")  # noqa: S106
+            result = integration.authenticate("john", "correct")
             assert result.success is True
             assert result.session_token is not None
             assert result.expires_at is not None
@@ -866,7 +865,7 @@ class TestLDAPIntegrationAuthenticate:
         with patch.object(
             integration, "search_user", side_effect=RuntimeError("ldap down")
         ):
-            result = integration.authenticate("john", "pass")  # noqa: S106
+            result = integration.authenticate("john", "pass")
             assert result.success is False
             assert result.error_code == "AUTHENTICATION_ERROR"
             assert integration.circuit_breaker.consecutive_failures == 1

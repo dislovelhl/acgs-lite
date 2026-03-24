@@ -22,7 +22,7 @@ try:
     from src.core.shared.types import (
         JSONDict,
         JSONList,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONList = list  # type: ignore[misc,assignment]
@@ -32,7 +32,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 logger = get_logger(__name__)
 # Constitutional Hash for immutable validation
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -182,7 +182,7 @@ class BaseMACIAgent:
 
         self.decision_history.append(response)
         logger.info(
-            f"{self.role.value} agent responded to decision {decision.id} with confidence {response.confidence:.2f}"  # noqa: E501
+            f"{self.role.value} agent responded to decision {decision.id} with confidence {response.confidence:.2f}"
         )
 
         return response
@@ -294,12 +294,12 @@ class LegislativeAgent(BaseMACIAgent):
         # Check for precedent conflicts
         if context_responses:
             for response in context_responses:
-                if response.agent_role == AgentRole.EXECUTIVE:  # noqa: SIM102
+                if response.agent_role == AgentRole.EXECUTIVE:
                     if response.confidence < 0.5:
                         evidence.append("Executive concerns suggest constitutional review needed")
 
         confidence = min(0.9, 0.6 + (len(relevant_principles) * 0.1))
-        reasoning = f"Legislative analysis identified {len(relevant_principles)} relevant constitutional principles"  # noqa: E501
+        reasoning = f"Legislative analysis identified {len(relevant_principles)} relevant constitutional principles"
 
         return {
             "confidence": confidence,
@@ -370,7 +370,7 @@ class JudicialAgent(BaseMACIAgent):
         # Final compliance determination
         is_compliant = len(violations) == 0 and confidence > 0.6
 
-        reasoning = f"Judicial review: {'COMPLIANT' if is_compliant else 'NON-COMPLIANT'} (confidence: {confidence:.2f})"  # noqa: E501
+        reasoning = f"Judicial review: {'COMPLIANT' if is_compliant else 'NON-COMPLIANT'} (confidence: {confidence:.2f})"
 
         return {
             "confidence": confidence,
@@ -468,7 +468,7 @@ class MACIVerificationPipeline:
         self.verification_history.append(result)
 
         logger.info(
-            f"MACI verification complete for {decision.id}: {'COMPLIANT' if is_compliant else 'NON-COMPLIANT'}"  # noqa: E501
+            f"MACI verification complete for {decision.id}: {'COMPLIANT' if is_compliant else 'NON-COMPLIANT'}"
         )
         return result
 
@@ -528,7 +528,7 @@ async def create_maci_pipeline_with_constitution(
 
     Returns:
         Initialized MACI pipeline
-    """  # noqa: E501
+    """
     pipeline = MACIVerificationPipeline()
 
     principles = [

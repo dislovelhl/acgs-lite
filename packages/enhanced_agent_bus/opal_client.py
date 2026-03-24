@@ -34,11 +34,11 @@ import httpx
 from pydantic import BaseModel, Field
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -77,7 +77,7 @@ OPAL_DEFAULT_PROPAGATION_TIMEOUT = 60
 # ---------------------------------------------------------------------------
 
 
-class OPALConnectionState(str, Enum):  # noqa: UP042
+class OPALConnectionState(str, Enum):
     """Websocket connection lifecycle states."""
 
     DISCONNECTED = "disconnected"
@@ -237,12 +237,12 @@ class OPALPolicyClient:
             self._ws_task = None
 
         if self._opa_client:
-            with contextlib.suppress(Exception):  # noqa: BLE001
+            with contextlib.suppress(Exception):
                 await self._opa_client.close()
             self._opa_client = None
 
         if self._audit_client:
-            with contextlib.suppress(Exception):  # noqa: BLE001
+            with contextlib.suppress(Exception):
                 await self._audit_client.stop()
             self._audit_client = None
 

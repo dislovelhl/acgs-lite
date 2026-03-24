@@ -64,7 +64,6 @@ from enhanced_agent_bus.observability.capacity_metrics.registry import (
     z3_solver_timer,
 )
 
-
 # ===========================================================================
 # Helpers
 # ===========================================================================
@@ -280,7 +279,7 @@ class TestPersistenceManagerDisconnect:
 
         await pm.disconnect()
 
-        pm.engine is None  # noqa: B015 (intentional assertion-like check)
+        pm.engine is None
 
     @pytest.mark.asyncio
     async def test_disconnect_without_engine(self):

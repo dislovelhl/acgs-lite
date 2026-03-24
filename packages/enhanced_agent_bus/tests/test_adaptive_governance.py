@@ -15,8 +15,8 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
 
-from ab_testing import ABTestRouter  # noqa: E402
-from enhanced_agent_bus.adaptive_governance import (  # noqa: E402
+from ab_testing import ABTestRouter
+from enhanced_agent_bus.adaptive_governance import (
     AdaptiveGovernanceEngine,
     AdaptiveThresholds,
     GovernanceDecision,

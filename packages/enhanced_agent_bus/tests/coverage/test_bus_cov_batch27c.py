@@ -22,14 +22,14 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
     from enhanced_agent_bus.adaptive_governance.impact_scorer import (
-        ImpactScorer,
+        MLFLOW_AVAILABLE,
         NUMPY_AVAILABLE,
         SKLEARN_AVAILABLE,
         TORCH_AVAILABLE,
-        MLFLOW_AVAILABLE,
+        ImpactScorer,
     )
+    from enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
 
     IMPACT_SCORER_IMPORTABLE = True
 except Exception:
@@ -500,34 +500,34 @@ class TestLogTrainingRunToMlflow:
 # ---------------------------------------------------------------------------
 
 try:
+    from enhanced_agent_bus.core_models import AgentMessage
     from enhanced_agent_bus.interfaces import (
         AgentRegistry,
-        MessageRouter,
-        ValidationStrategy,
-        ProcessingStrategy,
-        MessageHandler,
-        MetricsCollector,
-        MessageProcessorProtocol,
-        MACIRegistryProtocol,
-        MACIEnforcerProtocol,
-        TransportProtocol,
-        OrchestratorProtocol,
-        CircuitBreakerProtocol,
-        PolicyValidationResultProtocol,
-        PolicyClientProtocol,
-        OPAClientProtocol,
-        ValidationResultProtocol,
-        RustProcessorProtocol,
-        PQCValidatorProtocol,
-        ConstitutionalVerifierProtocol,
-        ConstitutionalVerificationResultProtocol,
-        ConstitutionalHashValidatorProtocol,
-        GovernanceDecisionValidatorProtocol,
         ApprovalsValidatorProtocol,
+        CircuitBreakerProtocol,
+        ConstitutionalHashValidatorProtocol,
+        ConstitutionalVerificationResultProtocol,
+        ConstitutionalVerifierProtocol,
+        GovernanceDecisionValidatorProtocol,
+        MACIEnforcerProtocol,
+        MACIRegistryProtocol,
+        MessageHandler,
+        MessageProcessorProtocol,
+        MessageRouter,
+        MetricsCollector,
+        OPAClientProtocol,
+        OrchestratorProtocol,
+        PolicyClientProtocol,
+        PolicyValidationResultProtocol,
+        PQCValidatorProtocol,
+        ProcessingStrategy,
         RecommendationPlannerProtocol,
         RoleMatrixValidatorProtocol,
+        RustProcessorProtocol,
+        TransportProtocol,
+        ValidationResultProtocol,
+        ValidationStrategy,
     )
-    from enhanced_agent_bus.core_models import AgentMessage
 
     INTERFACES_IMPORTABLE = True
 except Exception:
@@ -1075,15 +1075,15 @@ class TestRoleMatrixValidatorProtocol:
 
 try:
     from enhanced_agent_bus.ai_assistant.retrieval import (
+        EMBEDDINGS_AVAILABLE,
+        POLICY_INDEX_AVAILABLE,
         BaseRetriever,
-        RetrievalResult,
-        PolicyRetriever,
-        SemanticRetriever,
         HybridRetriever,
         KnowledgeRetriever,
+        PolicyRetriever,
+        RetrievalResult,
+        SemanticRetriever,
         get_knowledge_retriever,
-        POLICY_INDEX_AVAILABLE,
-        EMBEDDINGS_AVAILABLE,
     )
 
     RETRIEVAL_IMPORTABLE = True

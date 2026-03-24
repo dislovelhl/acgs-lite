@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -37,7 +37,7 @@ except ImportError:
 logger = get_logger(__name__)
 # Constitutional Hash for immutable validation
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -408,7 +408,7 @@ class LLMAssistedZ3Adapter:
                     generated_by="pattern_matching",
                 )
 
-        elif element_type == "prohibition":  # noqa: SIM102
+        elif element_type == "prohibition":
             # Pattern: "X cannot be Y"
             if any(phrase in element_text.lower() for phrase in ["cannot", "must not"]):
                 var_name = f"prohibit_{hash(element_text) % 1000}"
@@ -454,7 +454,7 @@ class LLMAssistedZ3Adapter:
         result = await self.z3_solver.async_check_sat(find_multiple=find_multiple)
 
         logger.info(
-            f"Z3 verification result: SAT={result.is_sat}, paths={len(result.alternative_paths) if result.alternative_paths else 0}, time={result.solve_time_ms:.2f}ms"  # noqa: E501
+            f"Z3 verification result: SAT={result.is_sat}, paths={len(result.alternative_paths) if result.alternative_paths else 0}, time={result.solve_time_ms:.2f}ms"
         )
         return result
 
@@ -561,7 +561,7 @@ class LLMAssistedZ3Adapter:
             elif char == ")":
                 depth -= 1
 
-            if depth == 0:  # noqa: SIM102
+            if depth == 0:
                 if s[i:].startswith(op):
                     parts.append(s[start:i])
                     start = i + len(op)

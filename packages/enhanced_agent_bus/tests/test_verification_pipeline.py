@@ -28,7 +28,6 @@ from enhanced_agent_bus.verification_layer.verification_pipeline import (
     create_verification_pipeline,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

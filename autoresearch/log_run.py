@@ -28,9 +28,7 @@ from pathlib import Path
 from results_utils import (
     KEPT_STATUSES,
     best_kept_row,
-    comparable_rows,
     ensure_results_tsv,
-    infer_scope,
     load_rows,
     scoped_description,
     serialize_row,

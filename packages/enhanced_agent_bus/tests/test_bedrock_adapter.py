@@ -17,7 +17,6 @@ from enhanced_agent_bus.llm_adapters.base import (
 from enhanced_agent_bus.llm_adapters.bedrock_adapter import BedrockAdapter
 from enhanced_agent_bus.llm_adapters.config import AWSBedrockAdapterConfig
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

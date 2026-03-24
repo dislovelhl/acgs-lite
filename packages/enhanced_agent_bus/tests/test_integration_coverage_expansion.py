@@ -244,7 +244,7 @@ def reset_singleton_per_test():
     """Reset singletons before each test to prevent cross-test pollution."""
     _integration._deliberation_layer = None
     # Also reset the adaptive router singleton
-    try:  # noqa: SIM105
+    try:
         _adaptive_router.reset_adaptive_router()
     except (NameError, AttributeError):
         pass
@@ -255,7 +255,7 @@ def reset_singleton_per_test():
         pass
     yield
     _integration._deliberation_layer = None
-    try:  # noqa: SIM105
+    try:
         _adaptive_router.reset_adaptive_router()
     except (NameError, AttributeError):
         pass

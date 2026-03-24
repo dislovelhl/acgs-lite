@@ -11,9 +11,10 @@ import functools
 import inspect
 import json
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, TypeVar
+from typing import Any, TypeVar
 
 from acgs_lite import (
     Constitution,

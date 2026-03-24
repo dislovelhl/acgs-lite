@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -43,7 +43,7 @@ CHI_SQUARE_TEST_ERRORS = (
 )
 
 
-class TimeWindow(str, Enum):  # noqa: UP042
+class TimeWindow(str, Enum):
     """Time windows for degradation analysis.
 
     Constitutional Hash: cdd01ef066bc6cf2
@@ -65,7 +65,7 @@ class TimeWindow(str, Enum):  # noqa: UP042
         return mapping[self]
 
 
-class SignificanceLevel(str, Enum):  # noqa: UP042
+class SignificanceLevel(str, Enum):
     """Statistical significance levels.
 
     Constitutional Hash: cdd01ef066bc6cf2
@@ -92,7 +92,7 @@ class SignificanceLevel(str, Enum):  # noqa: UP042
             return cls.NONE
 
 
-class DegradationSeverity(str, Enum):  # noqa: UP042
+class DegradationSeverity(str, Enum):
     """Severity levels for degradation detection.
 
     Constitutional Hash: cdd01ef066bc6cf2
@@ -242,7 +242,7 @@ class DegradationThresholds(BaseModel):
         health_score_threshold: Min acceptable decrease in health score (default: 0.15 = 15%)
         min_sample_size: Minimum sample size for statistical tests (default: 30)
         significance_level: P-value threshold for statistical significance (default: 0.05)
-    """  # noqa: E501
+    """
 
     violations_rate_threshold: float = Field(0.01, ge=0.0, le=1.0)
     latency_p99_threshold_ms: float = Field(2.0, ge=0.0)
@@ -835,7 +835,7 @@ class DegradationDetector:
     ) -> str:
         """Generate human-readable summary of degradation analysis."""
         if overall_severity == DegradationSeverity.NONE:
-            return "No significant governance degradation detected. All metrics within acceptable thresholds."  # noqa: E501
+            return "No significant governance degradation detected. All metrics within acceptable thresholds."
 
         degraded_metrics = [m for m in metric_analyses if m.threshold_exceeded]
 
@@ -847,7 +847,7 @@ class DegradationDetector:
         for metric in degraded_metrics:
             summary_parts.append(
                 f"- {metric.metric_name}: {metric.baseline_value:.4f} → {metric.current_value:.4f} "
-                f"(Δ {metric.delta:+.4f}, {metric.percent_change:+.1%}, severity: {metric.severity.value})"  # noqa: E501
+                f"(Δ {metric.delta:+.4f}, {metric.percent_change:+.1%}, severity: {metric.severity.value})"
             )
 
         return " ".join(summary_parts)
@@ -867,7 +867,7 @@ class DegradationDetector:
         if overall_severity == DegradationSeverity.CRITICAL:
             return True
 
-        if overall_severity == DegradationSeverity.HIGH:  # noqa: SIM102
+        if overall_severity == DegradationSeverity.HIGH:
             if confidence_score > 0.7 and statistical_significance in (
                 SignificanceLevel.VERY_HIGH,
                 SignificanceLevel.HIGH,

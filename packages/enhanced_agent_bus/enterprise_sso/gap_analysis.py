@@ -18,7 +18,7 @@ from enum import Enum
 from typing import ClassVar, cast
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -221,7 +221,7 @@ class ConstitutionalPolicyScanner:
                     description="Policy does not include constitutional hash validation",
                 )
             )
-        elif self.constitutional_hash not in policy_content:  # noqa: SIM102
+        elif self.constitutional_hash not in policy_content:
             # Has a hash reference but might be wrong
             if "cdd01ef" not in policy_content:  # Partial match check
                 gaps.append(

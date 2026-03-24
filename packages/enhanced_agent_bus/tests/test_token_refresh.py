@@ -18,7 +18,6 @@ from enhanced_agent_bus.mcp_integration.auth.token_refresh import (
     TokenRefresher,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

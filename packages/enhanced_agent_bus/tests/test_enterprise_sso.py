@@ -111,10 +111,10 @@ class TestOIDCConfig:
         """Test OIDC configuration creation."""
         config = OIDCConfig(
             client_id="test-client-id",
-            client_secret="test-secret",  # noqa: S106
+            client_secret="test-secret",
             issuer="https://idp.example.com",
             authorization_endpoint="https://idp.example.com/auth",
-            token_endpoint="https://idp.example.com/token",  # noqa: S106
+            token_endpoint="https://idp.example.com/token",
         )
         assert config.client_id == "test-client-id"
         assert config.issuer == "https://idp.example.com"
@@ -123,10 +123,10 @@ class TestOIDCConfig:
         """Test OIDC default scopes."""
         config = OIDCConfig(
             client_id="test-client-id",
-            client_secret="test-secret",  # noqa: S106
+            client_secret="test-secret",
             issuer="https://idp.example.com",
             authorization_endpoint="https://idp.example.com/auth",
-            token_endpoint="https://idp.example.com/token",  # noqa: S106
+            token_endpoint="https://idp.example.com/token",
         )
         assert "openid" in config.scopes
         assert "profile" in config.scopes
@@ -175,7 +175,7 @@ class TestTenantIdPConfig:
             tenant_id="test-tenant",
             okta_domain="example.okta.com",
             client_id="okta-client-id",
-            client_secret="okta-secret",  # noqa: S106
+            client_secret="okta-secret",
         )
         assert config.tenant_id == "test-tenant"
         assert config.provider_type == IdPType.OKTA
@@ -187,7 +187,7 @@ class TestTenantIdPConfig:
             tenant_id="test-tenant",
             azure_tenant_id="azure-tenant-id",
             client_id="azure-client-id",
-            client_secret="azure-secret",  # noqa: S106
+            client_secret="azure-secret",
         )
         assert config.tenant_id == "test-tenant"
         assert config.provider_type == IdPType.AZURE_AD
@@ -198,7 +198,7 @@ class TestTenantIdPConfig:
         config = create_google_workspace_idp_config(
             tenant_id="test-tenant",
             client_id="google-client-id",
-            client_secret="google-secret",  # noqa: S106
+            client_secret="google-secret",
             hosted_domain="example.com",
         )
         assert config.tenant_id == "test-tenant"
@@ -229,7 +229,7 @@ class TestTenantSSOConfig:
             tenant_id="test-tenant",
             okta_domain="example.okta.com",
             client_id="client-id",
-            client_secret="secret",  # noqa: S106
+            client_secret="secret",
         )
         config.identity_providers.append(idp)
         assert len(config.identity_providers) == 1
@@ -689,19 +689,19 @@ class TestSSOMiddlewareConfig:
         config = SSOMiddlewareConfig()
         assert "/health" in config.excluded_paths
         assert "/metrics" in config.excluded_paths
-        assert config.token_header == "Authorization"  # noqa: S105
-        assert config.token_prefix == "Bearer"  # noqa: S105
+        assert config.token_header == "Authorization"
+        assert config.token_prefix == "Bearer"
         assert config.require_authentication is True  # Secure default
 
     def test_custom_config(self):
         """Test custom middleware config."""
         config = SSOMiddlewareConfig(
             excluded_paths={"/custom"},
-            token_header="X-Auth-Token",  # noqa: S106
+            token_header="X-Auth-Token",
             require_authentication=True,
         )
         assert "/custom" in config.excluded_paths
-        assert config.token_header == "X-Auth-Token"  # noqa: S105
+        assert config.token_header == "X-Auth-Token"
         assert config.require_authentication is True
 
 
@@ -720,7 +720,7 @@ class TestEnterpriseSSOService:
             tenant_id="test-tenant",
             okta_domain="example.okta.com",
             client_id="client-id",
-            client_secret="secret",  # noqa: S106
+            client_secret="secret",
         )
         config = TenantSSOConfig(
             tenant_id="test-tenant",
@@ -1164,7 +1164,7 @@ class TestOIDCHandler:
         return OIDCHandler(
             issuer="https://auth.example.com",
             client_id="test-client-id",
-            client_secret="test-client-secret",  # noqa: S106
+            client_secret="test-client-secret",
             scopes=["openid", "profile", "email", "groups"],
             use_pkce=True,
         )
@@ -1276,7 +1276,7 @@ class TestProtocolHandlerFactory:
         handler = ProtocolHandlerFactory.create_oidc_handler(
             issuer="https://auth.example.com",
             client_id="test-client",
-            client_secret="test-secret",  # noqa: S106
+            client_secret="test-secret",
             use_pkce=True,
         )
         assert isinstance(handler, OIDCHandler)

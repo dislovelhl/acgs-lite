@@ -19,7 +19,7 @@ from enum import Enum
 from typing import Any
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -144,7 +144,7 @@ def _role_may_call_tool(maci_role: object, tool_name: str) -> tuple[bool, str]:
 # ---------------------------------------------------------------------------
 
 
-class MCPClientState(str, Enum):  # noqa: UP042
+class MCPClientState(str, Enum):
     """Lifecycle state of an MCPClient instance."""
 
     DISCONNECTED = "disconnected"

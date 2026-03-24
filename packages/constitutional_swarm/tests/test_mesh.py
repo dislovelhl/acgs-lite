@@ -5,8 +5,6 @@ from __future__ import annotations
 import time
 
 import pytest
-from acgs_lite import Constitution, ConstitutionalViolationError, Rule
-
 from constitutional_swarm.mesh import (
     ConstitutionalMesh,
     DuplicateVoteError,
@@ -17,6 +15,8 @@ from constitutional_swarm.mesh import (
     UnauthorizedVoterError,
     ValidationVote,
 )
+
+from acgs_lite import Constitution, ConstitutionalViolationError, Rule
 
 
 @pytest.fixture

@@ -19,7 +19,6 @@ from enhanced_agent_bus.ai_assistant.mamba_hybrid_processor import (
     initialize_mamba_processor,
 )
 
-
 # ---------------------------------------------------------------------------
 # MambaConfig tests (always run)
 # ---------------------------------------------------------------------------

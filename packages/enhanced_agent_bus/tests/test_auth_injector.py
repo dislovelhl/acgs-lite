@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from enhanced_agent_bus.mcp_integration.auth.auth_audit import AuditLoggerConfig
 from enhanced_agent_bus.mcp_integration.auth.auth_injector import (
     AuthContext,
     AuthInjector,
@@ -16,9 +17,7 @@ from enhanced_agent_bus.mcp_integration.auth.auth_injector import (
     InjectionResult,
     InjectionStatus,
 )
-from enhanced_agent_bus.mcp_integration.auth.auth_audit import AuditLoggerConfig
 from enhanced_agent_bus.mcp_integration.auth.credential_manager import CredentialManagerConfig
-
 
 # ---------------------------------------------------------------------------
 # Enum tests

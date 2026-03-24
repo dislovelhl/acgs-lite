@@ -39,15 +39,14 @@ sys.modules.setdefault("torch.utils.checkpoint", MagicMock())
 # ---------------------------------------------------------------------------
 # runtime_security imports
 # ---------------------------------------------------------------------------
-from enhanced_agent_bus.runtime_security import (
-    RuntimeSecurityConfig,
-    RuntimeSecurityScanner,
-    SecurityEvent,
-    SecurityEventType,
-    SecurityScanResult,
-    SecuritySeverity,
-    get_runtime_security_scanner,
-    scan_content,
+# ---------------------------------------------------------------------------
+# mamba_hybrid_processor imports (torch-dependent, may fallback)
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.ai_assistant.mamba_hybrid_processor import (
+    MambaConfig,
+    MambaHybridManager,
+    get_mamba_hybrid_processor,
+    initialize_mamba_processor,
 )
 
 # ---------------------------------------------------------------------------
@@ -82,17 +81,16 @@ from enhanced_agent_bus.performance_optimization import (
     create_memory_optimizer,
     create_resource_pool,
 )
-
-# ---------------------------------------------------------------------------
-# mamba_hybrid_processor imports (torch-dependent, may fallback)
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.ai_assistant.mamba_hybrid_processor import (
-    MambaConfig,
-    MambaHybridManager,
-    get_mamba_hybrid_processor,
-    initialize_mamba_processor,
+from enhanced_agent_bus.runtime_security import (
+    RuntimeSecurityConfig,
+    RuntimeSecurityScanner,
+    SecurityEvent,
+    SecurityEventType,
+    SecurityScanResult,
+    SecuritySeverity,
+    get_runtime_security_scanner,
+    scan_content,
 )
-
 
 # ===========================================================================
 # SECTION 1: mamba_hybrid_processor tests
@@ -173,11 +171,18 @@ class TestMambaHybridManager:
     def test_load_model_success(self) -> None:
         mock_model = MagicMock()
         mock_model.get_memory_usage.return_value = {"model_memory_mb": 0}
-        manager = MambaHybridManager(MambaConfig())
-        with patch(
-            "enhanced_agent_bus.ai_assistant.mamba_hybrid_processor.ConstitutionalMambaHybrid",
-            return_value=mock_model,
+        with (
+            patch("enhanced_agent_bus.ai_assistant.mamba_hybrid_processor.TORCH_AVAILABLE", True),
+            patch(
+                "enhanced_agent_bus.ai_assistant.mamba_hybrid_processor.torch",
+                _mock_torch,
+            ),
+            patch(
+                "enhanced_agent_bus.ai_assistant.mamba_hybrid_processor.ConstitutionalMambaHybrid",
+                return_value=mock_model,
+            ),
         ):
+            manager = MambaHybridManager(MambaConfig())
             result = manager.load_model()
             assert result is True
             assert manager.is_loaded is True

@@ -15,7 +15,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from pydantic import SecretStr
 
-
 # ---------------------------------------------------------------------------
 # 1. OrchestratorMiddleware tests
 # ---------------------------------------------------------------------------
@@ -69,10 +68,10 @@ class TestOrchestratorMiddlewareInit:
         assert mw._orchestrator is mock_orch
 
     def test_custom_config(self):
-        from enhanced_agent_bus.pipeline.middleware import MiddlewareConfig
         from enhanced_agent_bus.middlewares.orchestrator import (
             OrchestratorMiddleware,
         )
+        from enhanced_agent_bus.pipeline.middleware import MiddlewareConfig
 
         cfg = MiddlewareConfig(timeout_ms=1000, fail_closed=True)
         mw = OrchestratorMiddleware(config=cfg)

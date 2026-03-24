@@ -13,7 +13,7 @@ import re
 from datetime import UTC, datetime, timezone
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import (
@@ -24,7 +24,7 @@ from src.core.shared.errors.exceptions import (
 )
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -131,14 +131,14 @@ class DataSyncEngine:
                 # Insert into target
                 target_table = self._validate_identifier(config.target_table, "target_table")
                 rows_inserted = await self.target.execute_batch(
-                    f"INSERT INTO {target_table} VALUES (%s)",  # nosec B608  # noqa: S608
+                    f"INSERT INTO {target_table} VALUES (%s)",  # nosec B608
                     source_data,
                     config.batch_size,
                 )
                 result.rows_inserted = rows_inserted
 
                 # Update watermark
-                if watermark and isinstance(last_row := source_data[-1], dict):  # noqa: SIM102
+                if watermark and isinstance(last_row := source_data[-1], dict):
                     if last_value := last_row.get(config.watermark_column):
                         result.watermark = self.watermark_manager.update_watermark(
                             config.source_table,
@@ -223,7 +223,7 @@ class DataSyncEngine:
     ) -> tuple[str, JSONDict]:
         """Build the sync query and bound parameters based on configuration."""
         source_table = self._validate_identifier(config.source_table, "source_table")
-        query = f"SELECT * FROM {source_table}"  # nosec B608  # noqa: S608
+        query = f"SELECT * FROM {source_table}"  # nosec B608
         params: JSONDict = {}
 
         conditions: list[str] = []
@@ -378,7 +378,7 @@ class SyncScheduler:
         self._running = False
         if self._task:
             self._task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._task
             except asyncio.CancelledError:
                 pass

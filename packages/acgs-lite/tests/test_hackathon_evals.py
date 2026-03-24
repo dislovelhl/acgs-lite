@@ -9,7 +9,6 @@ import dataclasses
 
 import pytest
 
-
 # ── Regression: imports ──────────────────────────────────────────────────
 
 class TestRegressionImports:
@@ -18,25 +17,18 @@ class TestRegressionImports:
     def test_reg_gl_01_gitlab_imports(self) -> None:
         from acgs_lite.integrations.gitlab import (
             GitLabGovernanceBot,
-            GitLabMACIEnforcer,
-            GitLabWebhookHandler,
             GovernanceReport,
-            create_gitlab_ci_config,
-            format_governance_report,
         )
         assert GovernanceReport is not None
         assert GitLabGovernanceBot is not None
 
     def test_reg_mcp_02_mcp_imports(self) -> None:
-        from acgs_lite.integrations.mcp_server import create_mcp_server, run_mcp_server
+        from acgs_lite.integrations.mcp_server import create_mcp_server
         assert create_mcp_server is not None
 
     def test_reg_cr_01_cloud_run_imports(self) -> None:
         from acgs_lite.integrations.cloud_run_server import (
             app,
-            governance_summary_endpoint,
-            health_endpoint,
-            webhook_endpoint,
         )
         assert app is not None
 
@@ -78,6 +70,7 @@ class TestCloudRun:
 
     def test_cap_cr_01_health_endpoint(self) -> None:
         from starlette.testclient import TestClient
+
         from acgs_lite.integrations.cloud_run_server import app
 
         client = TestClient(app)
@@ -90,6 +83,7 @@ class TestCloudRun:
 
     def test_cap_cr_02_governance_summary(self) -> None:
         from starlette.testclient import TestClient
+
         from acgs_lite.integrations.cloud_run_server import app
 
         client = TestClient(app)
@@ -104,8 +98,10 @@ class TestCloudRun:
         os.environ.pop("GITLAB_TOKEN", None)
         os.environ.pop("GITLAB_PROJECT_ID", None)
 
-        from starlette.testclient import TestClient
         import importlib
+
+        from starlette.testclient import TestClient
+
         import acgs_lite.integrations.cloud_run_server as srv
         importlib.reload(srv)
 
@@ -124,12 +120,13 @@ class TestCloudRun:
         assert expected == routes
 
     def test_cap_cr_05_cloud_logging_optional(self) -> None:
-        from acgs_lite.integrations.cloud_run_server import app, _cloud_exporter
+        from acgs_lite.integrations.cloud_run_server import app
         # Should import without raising, even without GCP credentials
         assert app is not None
 
     def test_reg_cr_02_health_always_healthy(self) -> None:
         from starlette.testclient import TestClient
+
         from acgs_lite.integrations.cloud_run_server import app
         client = TestClient(app)
         for _ in range(3):
@@ -339,6 +336,7 @@ class TestGreenAgent:
 
     def test_cap_green_02_batch_validation(self) -> None:
         import time
+
         from acgs_lite.constitution import Constitution
         from acgs_lite.engine import GovernanceEngine
         engine = GovernanceEngine(Constitution.default(), strict=False)

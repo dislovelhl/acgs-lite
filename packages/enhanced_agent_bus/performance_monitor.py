@@ -19,11 +19,11 @@ from enum import Enum
 from typing import TypeVar
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -355,7 +355,7 @@ class PerformanceMonitor:
         # Use appropriate storage method based on context
         try:
             loop = asyncio.get_running_loop()
-            loop.create_task(self._add_record(record))  # noqa: RUF006
+            loop.create_task(self._add_record(record))
         except RuntimeError:
             # No event loop available
             self._store_record_sync(record)

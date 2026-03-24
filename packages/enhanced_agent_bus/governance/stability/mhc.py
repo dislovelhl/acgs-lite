@@ -8,9 +8,21 @@ using projections onto the Birkhoff Polytope (doubly stochastic matrices).
 
 from __future__ import annotations
 
+import importlib.util
+
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
+
+def _has_usable_torch() -> bool:
+    try:
+        return importlib.util.find_spec("torch") is not None
+    except (ImportError, ValueError):
+        return False
+
+
 try:
+    if not _has_usable_torch():
+        raise ImportError("torch is not installed")
     import torch
     import torch.nn as nn
 
@@ -20,7 +32,7 @@ except ImportError:
     nn = None  # type: ignore[assignment]
     TORCH_AVAILABLE = False
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -65,7 +77,7 @@ def sinkhorn_projection(
     if not TORCH_AVAILABLE:
         raise ImportError("torch is required for sinkhorn_projection")
     # Use high-performance Rust implementation if available
-    # Note: Rust implementation does not yet support alpha-capping, so we use Python fallback for that.  # noqa: E501
+    # Note: Rust implementation does not yet support alpha-capping, so we use Python fallback for that.
     if HAS_RUST_PERF and not W.is_cuda and W.dim() == 2 and alpha is None:
         W_np = torch.exp(W).detach().cpu().numpy().tolist()
 
@@ -181,7 +193,7 @@ class ManifoldHC(_ModuleBase):  # type: ignore[misc, valid-type]
 
         # Calculate Observability Metrics
         with torch.no_grad():
-            # Spectral Radius (approximate using power iteration or just max row sum for quick check)  # noqa: E501
+            # Spectral Radius (approximate using power iteration or just max row sum for quick check)
             # For doubly stochastic matrices, eigenvalues <= 1.
             # We use 1-norm or inf-norm as a proxy for bound check.
             # Ideally compute eigenvalues, but that's expensive for every step.

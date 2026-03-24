@@ -69,7 +69,7 @@ async def test_register_agent_identity_includes_extra_scopes_and_metadata() -> N
         constitutional_hash=CONSTITUTIONAL_HASH,
         capabilities=["analyze"],
         tenant_id="tenant-a",
-        auth_token="opaque-token",  # noqa: S106
+        auth_token="opaque-token",
         identity_scopes=["governance:execute", "analyze"],
         identity_metadata={"issuer": "unit-test"},
     )

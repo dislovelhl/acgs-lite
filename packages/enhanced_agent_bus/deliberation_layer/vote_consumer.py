@@ -11,7 +11,7 @@ import json
 from datetime import UTC, datetime, timezone
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -79,7 +79,7 @@ class VoteEventConsumer:
             tenant_id: Tenant identifier for topic isolation
             bootstrap_servers: Kafka bootstrap servers (defaults to settings.kafka.bootstrap_servers)
             voting_service: VotingService instance (creates new one if not provided)
-        """  # noqa: E501
+        """
         self.tenant_id = tenant_id.replace(".", "_") if tenant_id else "default"
         self.bootstrap_servers = bootstrap_servers or settings.kafka.get(
             "bootstrap_servers", "localhost:9092"

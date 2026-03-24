@@ -19,7 +19,6 @@ from enhanced_agent_bus.compliance_layer.conformity_assessment import (
     EvidenceType,
 )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------

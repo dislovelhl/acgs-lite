@@ -26,7 +26,6 @@ from enhanced_agent_bus.ai_assistant.response import (
     TemplateResponseGenerator,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

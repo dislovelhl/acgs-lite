@@ -29,7 +29,6 @@ from enhanced_agent_bus.adaptive_governance.threshold_manager import (
     AdaptiveThresholds,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

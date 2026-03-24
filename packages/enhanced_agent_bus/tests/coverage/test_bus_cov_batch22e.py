@@ -18,23 +18,6 @@ import httpx
 import pytest
 
 # ============================================================================
-# z3_policy_verifier imports
-# ============================================================================
-from enhanced_agent_bus.verification_layer.z3_policy_verifier import (
-    ConstraintGenerator,
-    ConstraintType,
-    HeuristicVerifier,
-    PolicyConstraint,
-    PolicyDomain,
-    PolicyVerificationRequest,
-    PolicyVerificationResult,
-    VerificationProof,
-    Z3PolicyVerifier,
-    Z3VerificationStatus,
-    create_z3_verifier,
-)
-
-# ============================================================================
 # ml_governance imports
 # ============================================================================
 from enhanced_agent_bus.integrations.ml_governance import (
@@ -53,11 +36,27 @@ from enhanced_agent_bus.integrations.ml_governance import (
 # benchmark_gpu_decision imports
 # ============================================================================
 from enhanced_agent_bus.profiling.benchmark_gpu_decision import (
-    GPUBenchmark,
     SAMPLE_MESSAGES,
+    GPUBenchmark,
     generate_random_message,
 )
 
+# ============================================================================
+# z3_policy_verifier imports
+# ============================================================================
+from enhanced_agent_bus.verification_layer.z3_policy_verifier import (
+    ConstraintGenerator,
+    ConstraintType,
+    HeuristicVerifier,
+    PolicyConstraint,
+    PolicyDomain,
+    PolicyVerificationRequest,
+    PolicyVerificationResult,
+    VerificationProof,
+    Z3PolicyVerifier,
+    Z3VerificationStatus,
+    create_z3_verifier,
+)
 
 # ============================================================================
 # z3_policy_verifier: Enums and Dataclasses

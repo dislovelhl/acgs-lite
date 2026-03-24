@@ -21,7 +21,6 @@ import pytest
 # ---------------------------------------------------------------------------
 # Integration: DeliberationLayer
 # ---------------------------------------------------------------------------
-
 from enhanced_agent_bus.deliberation_layer.integration import (
     DeliberationLayer,
     _lazy_import,
@@ -29,7 +28,6 @@ from enhanced_agent_bus.deliberation_layer.integration import (
     get_deliberation_layer,
     reset_deliberation_layer,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers for building mocks
@@ -1464,7 +1462,7 @@ class TestMCPPoolCallTool:
         pool.register_client(client)
         await pool.connect_all()
 
-        tool_name = f"tool_srv-a"
+        tool_name = "tool_srv-a"
         result = await pool.call_tool(tool_name, arguments={"q": "test"}, agent_id="a1")
         assert result.is_success
 

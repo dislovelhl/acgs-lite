@@ -25,7 +25,6 @@ from enhanced_agent_bus.decision_store import (
     reset_decision_store,
 )
 
-
 # ===========================================================================
 # Helpers
 # ===========================================================================
@@ -112,7 +111,7 @@ class TestSplitEngineReadFile:
 
         # Extract and execute just the read_file function
         ns: dict = {}
-        exec(  # noqa: S102 -- test-only, controlled input
+        exec(
             "def read_file(filepath):\n"
             "    with open(filepath) as f:\n"
             "        return f.readlines()\n",
@@ -129,7 +128,7 @@ class TestSplitEngineReadFile:
         target.write_text("")
 
         ns: dict = {}
-        exec(  # noqa: S102
+        exec(
             "def read_file(filepath):\n"
             "    with open(filepath) as f:\n"
             "        return f.readlines()\n",
@@ -141,7 +140,7 @@ class TestSplitEngineReadFile:
     def test_read_file_nonexistent_raises(self, tmp_path: Path):
         """read_file on a missing file raises FileNotFoundError."""
         ns: dict = {}
-        exec(  # noqa: S102
+        exec(
             "def read_file(filepath):\n"
             "    with open(filepath) as f:\n"
             "        return f.readlines()\n",

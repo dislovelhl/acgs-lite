@@ -14,7 +14,7 @@ try:
     from src.core.shared.types import (
         JSONDict,
         JSONValue,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]
@@ -117,9 +117,9 @@ except ImportError:
     MCPConfig = None  # type: ignore[assignment, misc]
     MCPToolResult = None  # type: ignore[assignment, misc]
 
-from .interfaces import ProcessingStrategy  # noqa: E402
-from .memory_profiler import ProfilingLevel, get_memory_profiler  # noqa: E402
-from .message_processor_components import (  # noqa: E402
+from .interfaces import ProcessingStrategy
+from .memory_profiler import ProfilingLevel, get_memory_profiler
+from .message_processor_components import (
     apply_latency_metadata,
     apply_session_governance_metrics,
     build_dlq_entry,
@@ -136,7 +136,7 @@ from .message_processor_components import (  # noqa: E402
     run_message_validation_gates,
     schedule_background_task,
 )
-from .models import (  # noqa: E402
+from .models import (
     CONSTITUTIONAL_HASH,
     AgentMessage,
     AutonomyTier,
@@ -145,17 +145,17 @@ from .models import (  # noqa: E402
     Priority,
     get_enum_value,
 )
-from .performance_monitor import timed  # noqa: E402
-from .runtime_security import get_runtime_security_scanner  # noqa: E402
-from .security_scanner import (  # noqa: E402
+from .performance_monitor import timed
+from .runtime_security import get_runtime_security_scanner
+from .security_scanner import (
     PROMPT_INJECTION_PATTERNS,
     MessageSecurityScanner,
 )
-from .session_context import SessionContext, SessionContextManager  # noqa: E402
-from .session_context_resolver import SessionContextResolver  # noqa: E402
-from .utils import LRUCache  # noqa: E402
-from .validators import ValidationResult  # noqa: E402
-from .verification_orchestrator import VerificationOrchestrator  # noqa: E402
+from .session_context import SessionContext, SessionContextManager
+from .session_context_resolver import SessionContextResolver
+from .utils import LRUCache
+from .validators import ValidationResult
+from .verification_orchestrator import VerificationOrchestrator
 
 logger = get_logger(__name__)
 DEFAULT_CACHE_HASH_MODE = "sha256"

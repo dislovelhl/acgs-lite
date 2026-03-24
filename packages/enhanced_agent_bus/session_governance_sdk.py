@@ -44,7 +44,7 @@ from enum import Enum
 from src.core.shared.errors.exceptions import ACGSBaseError
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -68,12 +68,12 @@ SESSION_SDK_HEALTHCHECK_ERRORS = (
 
 # Constitutional hash for compliance validation
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
 
-class RiskLevel(str, Enum):  # noqa: UP042
+class RiskLevel(str, Enum):
     """Risk level classification for session governance."""
 
     LOW = "low"
@@ -82,7 +82,7 @@ class RiskLevel(str, Enum):  # noqa: UP042
     CRITICAL = "critical"
 
 
-class AutomationLevel(str, Enum):  # noqa: UP042
+class AutomationLevel(str, Enum):
     """Maximum automation level for session governance."""
 
     FULL = "full"

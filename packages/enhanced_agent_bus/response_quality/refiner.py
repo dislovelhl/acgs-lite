@@ -12,13 +12,13 @@ from datetime import datetime
 from typing import Protocol
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import ACGSBaseError
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -575,12 +575,12 @@ class ResponseRefiner:
             True if refinement should stop
         """
         # Stop if passes all thresholds
-        if self.config.stop_on_pass and assessment.passes_threshold:  # noqa: SIM102
+        if self.config.stop_on_pass and assessment.passes_threshold:
             if assessment.constitutional_compliance or not self.config.require_constitutional:
                 return True
 
         # Stop if no improvement
-        if last_iteration:  # noqa: SIM102
+        if last_iteration:
             if last_iteration.improvement_delta < self.config.improvement_threshold:
                 logger.debug(
                     f"Stopping: improvement {last_iteration.improvement_delta:.4f} "

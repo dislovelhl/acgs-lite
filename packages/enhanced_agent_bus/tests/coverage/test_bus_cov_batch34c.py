@@ -67,7 +67,7 @@ class TestSerializationHelpers:
     def test_deserialize_msgpack_string_branch(self):
         """Cover the str->encode branch when msgpack IS available."""
         try:
-            import msgpack as _  # noqa: F401
+            import msgpack as _
         except ImportError:
             pytest.skip("msgpack not installed")
 
@@ -950,17 +950,18 @@ class TestChaosExperimentConstitutionalHash:
 # ---------------------------------------------------------------------------
 # explanation_service tests
 # ---------------------------------------------------------------------------
+from src.core.shared.event_schemas.decision_explanation import (
+    ExplanationFactor,
+    GovernanceDimension,
+    PredictedOutcome,
+)
+
 from enhanced_agent_bus.explanation_service import (
     CounterfactualEngine,
     ExplanationService,
     ExplanationServiceAdapter,
     get_explanation_service,
     reset_explanation_service,
-)
-from src.core.shared.event_schemas.decision_explanation import (
-    ExplanationFactor,
-    GovernanceDimension,
-    PredictedOutcome,
 )
 
 

@@ -707,15 +707,15 @@ class TestConsumerProperties:
 # 3. mcp_integration.auth.oidc_provider -- uncovered paths
 # ===================================================================
 
+from enhanced_agent_bus.mcp_integration.auth.oauth2_provider import (
+    OAuth2Token,
+)
 from enhanced_agent_bus.mcp_integration.auth.oidc_provider import (
     JWKSCache,
     OIDCConfig,
     OIDCProvider,
     OIDCProviderMetadata,
     OIDCTokens,
-)
-from enhanced_agent_bus.mcp_integration.auth.oauth2_provider import (
-    OAuth2Token,
 )
 
 

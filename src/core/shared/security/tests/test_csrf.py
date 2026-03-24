@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import pytest
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
-import pytest
 from starlette.middleware.sessions import SessionMiddleware
 
 from src.core.shared.security.csrf import CSRFConfig, CSRFMiddleware

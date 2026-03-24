@@ -23,34 +23,34 @@ if enhanced_agent_bus_dir not in sys.path:
 
 # Import context_memory components
 
-from context_memory.constitutional_context_cache import (  # noqa: E402
+from context_memory.constitutional_context_cache import (
     CacheConfig,
     CacheEntry,
     CacheStats,
     CacheTier,
     ConstitutionalContextCache,
 )
-from context_memory.hybrid_context_manager import (  # noqa: E402
+from context_memory.hybrid_context_manager import (
     HybridContextConfig,
     HybridContextManager,
     HybridProcessingResult,
     ProcessingMode,
     SharedAttentionProcessor,
 )
-from context_memory.jrt_context_preparer import (  # noqa: E402
+from context_memory.jrt_context_preparer import (
     CriticalSectionMarker,
     JRTContextPreparer,
     JRTPreparationResult,
     JRTRetrievalStrategy,
 )
-from context_memory.long_term_memory import (  # noqa: E402
+from context_memory.long_term_memory import (
     ConsolidationStrategy,
     LongTermMemoryConfig,
     LongTermMemoryStore,
     MemorySearchResult,
     MemoryTier,
 )
-from context_memory.mamba_processor import (  # noqa: E402
+from context_memory.mamba_processor import (
     NUMPY_AVAILABLE,
     TORCH_AVAILABLE,
     Mamba2SSMLayer,
@@ -58,7 +58,7 @@ from context_memory.mamba_processor import (  # noqa: E402
     MambaProcessorConfig,
     ProcessingResult,
 )
-from context_memory.models import (  # noqa: E402
+from context_memory.models import (
     CONSTITUTIONAL_HASH,
     ContextChunk,
     ContextPriority,

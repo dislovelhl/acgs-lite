@@ -22,11 +22,11 @@ from collections import deque
 from datetime import UTC, datetime, timedelta, timezone
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -359,7 +359,7 @@ class EnhancedAgentBusCapacityMetrics:
             )
         except (OSError, ValueError, KeyError) as e:
             logger.debug(
-                f"[{CONSTITUTIONAL_HASH}] Failed to update Prometheus metrics ({type(e).__name__}): {e}"  # noqa: E501
+                f"[{CONSTITUTIONAL_HASH}] Failed to update Prometheus metrics ({type(e).__name__}): {e}"
             )
 
     def get_capacity_trend(self, duration_minutes: int = 10) -> JSONDict:

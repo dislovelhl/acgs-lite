@@ -7,11 +7,11 @@ UV_CACHE_DIR ?= $(ROOT_DIR)/.uv-cache
 VENV_PYTHON := $(ROOT_DIR)/.venv/bin/python
 PYTHON ?= $(if $(wildcard $(VENV_PYTHON)),$(VENV_PYTHON),python3)
 PIP ?= $(PYTHON) -m pip
-WORKSPACE_PYTHONPATH := $(ROOT_DIR)/packages:$(ROOT_DIR)/src:$(ROOT_DIR)
+WORKSPACE_PYTHONPATH := $(ROOT_DIR)/packages/enhanced_agent_bus:$(ROOT_DIR)/packages/acgs-lite/src:$(ROOT_DIR)/packages/acgs-deliberation/src:$(ROOT_DIR)/src:$(ROOT_DIR)
 export PYTHONPATH := $(WORKSPACE_PYTHONPATH)$(if $(PYTHONPATH),:$(PYTHONPATH))
 PYTEST_TARGETS ?=
 PYTEST_ARGS ?=
-UV_SYNC_ARGS ?= --frozen --all-packages --extra dev --extra test --python $(LOCK_PYTHON) --no-python-downloads
+UV_SYNC_ARGS ?= --frozen --all-packages --extra dev --extra test --extra postgres --extra ml --extra messaging --extra all --python $(LOCK_PYTHON) --no-python-downloads
 
 help:
 	@echo "ACGS — Advanced Constitutional Governance System"

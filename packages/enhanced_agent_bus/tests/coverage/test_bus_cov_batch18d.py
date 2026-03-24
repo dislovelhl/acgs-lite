@@ -14,7 +14,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # 1. MACICoordinator tests
 # ---------------------------------------------------------------------------
@@ -1512,7 +1511,10 @@ class TestAuthInjector:
             AuthMethod,
             InjectionStatus,
         )
-        from enhanced_agent_bus.mcp_integration.auth.oauth2_provider import OAuth2Config, OAuth2Provider
+        from enhanced_agent_bus.mcp_integration.auth.oauth2_provider import (
+            OAuth2Config,
+            OAuth2Provider,
+        )
 
         injector = self._make_injector()
         config = OAuth2Config(

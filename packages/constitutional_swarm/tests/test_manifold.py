@@ -7,12 +7,12 @@ influence, and Sinkhorn-Knopp convergence.
 
 from __future__ import annotations
 
-import math
 import time
 
-import pytest
-
-from constitutional_swarm.manifold import GovernanceManifold, ManifoldProjectionResult, sinkhorn_knopp
+from constitutional_swarm.manifold import (
+    GovernanceManifold,
+    sinkhorn_knopp,
+)
 
 
 class TestSinkhornKnopp:

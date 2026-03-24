@@ -176,7 +176,7 @@ class TestJWTAgentValidation:
             agent_id="test-agent",
             tenant_id=None,
             capabilities=[],
-            auth_token="some.jwt.token",  # noqa: S106
+            auth_token="some.jwt.token",
         )
         assert result == (None, None) or result == (False, None)
 

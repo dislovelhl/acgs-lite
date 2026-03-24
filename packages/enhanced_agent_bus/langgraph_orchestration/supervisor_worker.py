@@ -20,7 +20,7 @@ from enum import Enum
 from typing import cast
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -59,7 +59,7 @@ SUPERVISOR_WORKFLOW_ERRORS = (
 )
 
 
-class WorkerStatus(str, Enum):  # noqa: UP042
+class WorkerStatus(str, Enum):
     """Worker status in the pool.
 
     Constitutional Hash: cdd01ef066bc6cf2
@@ -71,7 +71,7 @@ class WorkerStatus(str, Enum):  # noqa: UP042
     TERMINATED = "terminated"
 
 
-class TaskPriority(str, Enum):  # noqa: UP042
+class TaskPriority(str, Enum):
     """Task priority levels.
 
     Constitutional Hash: cdd01ef066bc6cf2

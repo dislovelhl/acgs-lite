@@ -24,7 +24,7 @@ moved to the `enhanced_agent_bus.maci` subpackage. Import from there for new cod
 """
 
 # Backward compatibility — re-export everything from the new maci/ subpackage
-from .maci import (  # noqa: F401
+from .maci import (
     CONSTITUTIONAL_HASH,
     ROLE_HIERARCHY,
     ROLE_PERMISSIONS,
@@ -51,7 +51,7 @@ from .maci import (  # noqa: F401
     create_maci_enforcement_middleware,
     validate_maci_role_matrix,
 )
-from .maci_imports import (  # noqa: F401
+from .maci_imports import (
     GLOBAL_SETTINGS_AVAILABLE,
     MACI_CORE_AVAILABLE,
     ensure_maci_models_loaded,
@@ -76,7 +76,7 @@ from .maci_imports import (
 from .maci_imports import (
     MACISelfValidationError as _MACISelfValidationError,
 )
-from .observability.structured_logging import get_logger  # noqa: F401
+from .observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
 MAX_MACI_VALIDATION_HISTORY = 1_000

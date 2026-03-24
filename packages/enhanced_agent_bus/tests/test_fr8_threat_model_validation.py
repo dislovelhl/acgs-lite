@@ -148,7 +148,7 @@ class MockPromptInjectionDetector:
         sanitized = content
         if is_injection:
             for pattern_str in matched:
-                try:  # noqa: SIM105
+                try:
                     sanitized = re.sub(pattern_str, "[REDACTED]", sanitized, flags=re.IGNORECASE)
                 except (RuntimeError, ValueError, TypeError):
                     pass
@@ -187,7 +187,7 @@ class MockPIIDetector:
         content = str(data) if data else ""
 
         for name, (pattern, category, confidence) in self._compiled.items():
-            if pattern.search(content):  # noqa: SIM102
+            if pattern.search(content):
                 if confidence >= self.min_confidence:
                     detections.append(
                         MockPIIDetection(

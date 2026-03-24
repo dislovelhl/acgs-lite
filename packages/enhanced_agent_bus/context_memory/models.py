@@ -13,14 +13,14 @@ from typing import TypeAlias
 from pydantic import BaseModel, Field, field_validator
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
 from enhanced_agent_bus.bus_types import JSONDict, JSONValue
 
 
-class ContextType(str, Enum):  # noqa: UP042
+class ContextType(str, Enum):
     """Types of context in the system."""
 
     CONSTITUTIONAL = "constitutional"  # Core constitutional principles
@@ -42,7 +42,7 @@ class ContextPriority(int, Enum):
     BACKGROUND = 0  # Optional background context
 
 
-class MemoryOperationType(str, Enum):  # noqa: UP042
+class MemoryOperationType(str, Enum):
     """Types of memory operations for audit."""
 
     STORE = "store"

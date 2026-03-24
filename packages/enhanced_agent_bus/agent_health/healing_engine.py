@@ -18,14 +18,14 @@ from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 from typing import Any
 
-from packages.enhanced_agent_bus.agent_health.actions import (
+from enhanced_agent_bus.agent_health.actions import (
     GracefulRestarter,
     HITLRequestor,
     QuarantineManager,
     SupervisorNotifier,
 )
-from packages.enhanced_agent_bus.agent_health.metrics import HEALING_ACTIONS_COUNTER
-from packages.enhanced_agent_bus.agent_health.models import (
+from enhanced_agent_bus.agent_health.metrics import HEALING_ACTIONS_COUNTER
+from enhanced_agent_bus.agent_health.models import (
     CONSTITUTIONAL_HASH,
     AgentHealthRecord,
     AgentHealthThresholds,
@@ -35,7 +35,7 @@ from packages.enhanced_agent_bus.agent_health.models import (
     HealingTrigger,
     OverrideMode,
 )
-from packages.enhanced_agent_bus.agent_health.store import AgentHealthStore
+from enhanced_agent_bus.agent_health.store import AgentHealthStore
 
 try:
     from src.core.shared.types import AgentID
@@ -233,7 +233,7 @@ class HealingEngine:
         record: AgentHealthRecord,
         audit_event_id: str,
     ) -> HealingAction:
-        """Tier 2: notify supervisor; proceed with restart on approval; escalate to ADVISORY on timeout."""  # noqa: E501
+        """Tier 2: notify supervisor; proceed with restart on approval; escalate to ADVISORY on timeout."""
         # Write audit BEFORE sending the supervisor notification.
         await self._write_audit(
             agent_id=agent_id,
@@ -307,7 +307,7 @@ class HealingEngine:
     # ------------------------------------------------------------------
 
     async def _await_bounded_approval(self, agent_id: AgentID) -> bool:
-        """Await supervisor approval for a BOUNDED agent. Returns False on timeout or if no awaiter."""  # noqa: E501
+        """Await supervisor approval for a BOUNDED agent. Returns False on timeout or if no awaiter."""
         if self._bounded_approval_awaiter is None:
             return False
         try:

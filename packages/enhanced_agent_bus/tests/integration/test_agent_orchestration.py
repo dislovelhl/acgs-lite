@@ -30,7 +30,7 @@ from src.core.shared.types import JSONDict
 # ============================================================================
 
 
-class ProcessingLane(str, Enum):  # noqa: UP042
+class ProcessingLane(str, Enum):
     """Processing lanes for agent orchestration."""
 
     FAST = "fast"
@@ -38,7 +38,7 @@ class ProcessingLane(str, Enum):  # noqa: UP042
     EMERGENCY = "emergency"
 
 
-class MACIRole(str, Enum):  # noqa: UP042
+class MACIRole(str, Enum):
     """MACI role types for separation of concerns."""
 
     EXECUTIVE = "executive"
@@ -1040,7 +1040,7 @@ class TestResponseQualityValidation:
     async def test_quality_validator_scores_coherence(self, quality_validator):
         """Verify quality validator scores response coherence."""
         result = await quality_validator.validate_response(
-            "This is a well-structured response. It has multiple sentences. Each sentence conveys meaning.",  # noqa: E501
+            "This is a well-structured response. It has multiple sentences. Each sentence conveys meaning.",
             "Test prompt",
         )
 

@@ -14,10 +14,9 @@ from __future__ import annotations
 import time
 from collections import deque
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch, PropertyMock
+from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
-
 
 # =============================================================================
 # Module 1: transaction_coordinator_metrics
@@ -98,12 +97,12 @@ class TestGetOrCreateMetric:
     def test_cache_hit(self):
         from enhanced_agent_bus.transaction_coordinator_metrics import (
             _METRICS_CACHE,
-            _get_or_create_metric,
             Counter,
+            _get_or_create_metric,
         )
 
         sentinel = object()
-        cache_key = f"Counter:__test_cache_hit_metric"
+        cache_key = "Counter:__test_cache_hit_metric"
         _METRICS_CACHE[cache_key] = sentinel
         try:
             result = _get_or_create_metric(Counter, "__test_cache_hit_metric", "doc")
@@ -114,9 +113,9 @@ class TestGetOrCreateMetric:
     def test_noop_fallback_for_unknown_class_type(self):
         from enhanced_agent_bus.transaction_coordinator_metrics import (
             _METRICS_CACHE,
+            PROMETHEUS_AVAILABLE,
             _get_or_create_metric,
             _NoOpCounter,
-            PROMETHEUS_AVAILABLE,
         )
 
         if PROMETHEUS_AVAILABLE:
@@ -131,9 +130,9 @@ class TestGetOrCreateMetric:
     def test_value_error_duplicate_returns_noop_histogram(self):
         from enhanced_agent_bus.transaction_coordinator_metrics import (
             _METRICS_CACHE,
+            Histogram,
             _get_or_create_metric,
             _NoOpHistogram,
-            Histogram,
         )
 
         cache_key = "Histogram:__test_dup_hist"
@@ -159,9 +158,9 @@ class TestGetOrCreateMetric:
     def test_value_error_duplicate_returns_noop_gauge(self):
         from enhanced_agent_bus.transaction_coordinator_metrics import (
             _METRICS_CACHE,
+            Gauge,
             _get_or_create_metric,
             _NoOpGauge,
-            Gauge,
         )
 
         cache_key = "Gauge:__test_dup_gauge"
@@ -187,9 +186,9 @@ class TestGetOrCreateMetric:
     def test_value_error_duplicate_returns_noop_counter(self):
         from enhanced_agent_bus.transaction_coordinator_metrics import (
             _METRICS_CACHE,
+            Counter,
             _get_or_create_metric,
             _NoOpCounter,
-            Counter,
         )
 
         cache_key = "Counter:__test_dup_counter"
@@ -215,8 +214,8 @@ class TestGetOrCreateMetric:
     def test_value_error_registry_lookup(self):
         from enhanced_agent_bus.transaction_coordinator_metrics import (
             _METRICS_CACHE,
-            _get_or_create_metric,
             Counter,
+            _get_or_create_metric,
         )
 
         cache_key = "Counter:__test_registry_lookup"
@@ -247,9 +246,9 @@ class TestGetOrCreateMetric:
     def test_value_error_registry_attribute_error(self):
         from enhanced_agent_bus.transaction_coordinator_metrics import (
             _METRICS_CACHE,
+            Counter,
             _get_or_create_metric,
             _NoOpCounter,
-            Counter,
         )
 
         cache_key = "Counter:__test_reg_attr_err"
@@ -905,8 +904,8 @@ class TestSessionGovernanceClient:
 
     def test_handle_error_503(self):
         from enhanced_agent_bus.session_governance_sdk import (
-            SessionGovernanceClient,
             ServiceUnavailableError,
+            SessionGovernanceClient,
         )
 
         c = SessionGovernanceClient(default_tenant_id="t")

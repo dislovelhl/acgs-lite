@@ -28,7 +28,6 @@ from acgs_lite.compliance.multi_framework import (
     _identify_cross_framework_gaps,
 )
 
-
 # ---------------------------------------------------------------------------
 # ChecklistItem edge cases
 # ---------------------------------------------------------------------------

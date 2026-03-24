@@ -26,7 +26,6 @@ from enhanced_agent_bus.llm_adapters.base import (
 )
 from enhanced_agent_bus.llm_adapters.config import AzureOpenAIAdapterConfig
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

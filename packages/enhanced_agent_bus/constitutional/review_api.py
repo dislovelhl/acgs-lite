@@ -6,9 +6,9 @@ API endpoints for reviewing, approving, and rejecting constitutional amendments
 with MACI enforcement, governance metrics comparison, and HITL integration.
 """
 
+import sys
 from dataclasses import dataclass
 from datetime import UTC, datetime, timezone
-import sys
 
 from fastapi import APIRouter, Header, HTTPException, Query
 from fastapi import status as http_status
@@ -16,13 +16,13 @@ from pydantic import BaseModel, Field
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.security.error_sanitizer import safe_error_detail
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -133,7 +133,7 @@ router = APIRouter(
 def _maci_allowed(result: object) -> bool:
     """Normalize MACI validation results from typed and legacy callers."""
     if hasattr(result, "is_valid"):
-        return bool(getattr(result, "is_valid"))
+        return bool(result.is_valid)
     if isinstance(result, dict):
         return bool(result.get("allowed", False) or result.get("is_valid", False))
     raise TypeError("Unsupported MACI validation result contract")
@@ -411,7 +411,7 @@ async def list_amendments(
             except ValueError:
                 raise HTTPException(
                     status_code=http_status.HTTP_400_BAD_REQUEST,
-                    detail=f"Invalid status: {status}. Must be one of: {[s.value for s in AmendmentStatus]}",  # noqa: E501
+                    detail=f"Invalid status: {status}. Must be one of: {[s.value for s in AmendmentStatus]}",
                 ) from None
 
         # Validate order_by field
@@ -463,7 +463,7 @@ async def list_amendments(
     "/amendments/{amendment_id}",
     response_model=AmendmentDetailResponse,
     summary="Get amendment details",
-    description="Get detailed information about a constitutional amendment including diff preview and governance metrics",  # noqa: E501
+    description="Get detailed information about a constitutional amendment including diff preview and governance metrics",
 )
 async def get_amendment(
     amendment_id: str,
@@ -789,7 +789,7 @@ async def reject_amendment(
         return ApprovalResponse(
             success=True,
             amendment=amendment,
-            message=f"Amendment {amendment_id} rejected by {rejection_request.rejector_agent_id}: {rejection_request.reason}",  # noqa: E501
+            message=f"Amendment {amendment_id} rejected by {rejection_request.rejector_agent_id}: {rejection_request.reason}",
             next_steps=next_steps,
             constitutional_hash=CONSTITUTIONAL_HASH,
         )
@@ -810,7 +810,7 @@ async def reject_amendment(
     "/versions/{version_id}/rollback",
     response_model=RollbackResponse,
     summary="Manual constitutional rollback",
-    description="Manually rollback to a specific constitutional version (requires JUDICIAL MACI role)",  # noqa: E501
+    description="Manually rollback to a specific constitutional version (requires JUDICIAL MACI role)",
 )
 async def rollback_to_version(
     version_id: str,
@@ -963,7 +963,7 @@ async def rollback_to_version(
                 current_version.predecessor_version = original_predecessor
                 await storage.update_version(current_version)
 
-                error_msg = f"Rollback saga failed: {saga_result.errors if hasattr(saga_result, 'errors') else 'Unknown error'}"  # noqa: E501
+                error_msg = f"Rollback saga failed: {saga_result.errors if hasattr(saga_result, 'errors') else 'Unknown error'}"
                 logger.error(f"[{CONSTITUTIONAL_HASH}] {error_msg}")
                 raise HTTPException(
                     status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR, detail=error_msg
@@ -991,7 +991,7 @@ async def rollback_to_version(
         )
 
         logger.warning(
-            f"CONSTITUTIONAL_MANUAL_ROLLBACK: {current_version.version} -> {target_version.version} "  # noqa: E501
+            f"CONSTITUTIONAL_MANUAL_ROLLBACK: {current_version.version} -> {target_version.version} "
             f"by {agent_id} (justification: {rollback_request.justification[:100]}...)"
         )
 
@@ -1001,7 +1001,7 @@ async def rollback_to_version(
             previous_version=current_version.version,
             restored_version=target_version.version,
             diff=revert_diff,
-            message=f"Successfully rolled back from {current_version.version} to {target_version.version}",  # noqa: E501
+            message=f"Successfully rolled back from {current_version.version} to {target_version.version}",
             justification=rollback_request.justification,
             degradation_detected=False,  # Manual rollback, not triggered by degradation
             constitutional_hash=CONSTITUTIONAL_HASH,

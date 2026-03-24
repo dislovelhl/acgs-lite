@@ -25,11 +25,11 @@ from enum import Enum
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -43,7 +43,7 @@ MAX_MEMORY_PERCENT = 80.0  # Don't exceed 80% memory pressure
 MAX_CPU_PERCENT = 90.0  # Don't exceed 90% CPU stress
 
 
-class ScenarioStatus(str, Enum):  # noqa: UP042
+class ScenarioStatus(str, Enum):
     """Status of a chaos scenario."""
 
     PENDING = "pending"
@@ -54,7 +54,7 @@ class ScenarioStatus(str, Enum):  # noqa: UP042
     CANCELLED = "cancelled"
 
 
-class PartitionType(str, Enum):  # noqa: UP042
+class PartitionType(str, Enum):
     """Types of network partitions."""
 
     FULL = "full"  # Complete isolation
@@ -63,7 +63,7 @@ class PartitionType(str, Enum):  # noqa: UP042
     SLOW = "slow"  # Extreme latency (not packet loss)
 
 
-class DependencyType(str, Enum):  # noqa: UP042
+class DependencyType(str, Enum):
     """Types of dependencies that can fail."""
 
     REDIS = "redis"

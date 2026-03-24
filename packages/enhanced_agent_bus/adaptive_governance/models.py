@@ -13,6 +13,8 @@ This module contains:
 - GovernanceDecision: Decision output from governance evaluation
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
 from enum import Enum

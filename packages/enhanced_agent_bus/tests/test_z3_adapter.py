@@ -24,7 +24,6 @@ from enhanced_agent_bus.verification.z3_adapter import (
     verify_policy_formally,
 )
 
-
 # ---------------------------------------------------------------------------
 # Z3Constraint dataclass
 # ---------------------------------------------------------------------------

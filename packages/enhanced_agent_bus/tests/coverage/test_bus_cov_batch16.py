@@ -19,7 +19,6 @@ import pytest
 # ---------------------------------------------------------------------------
 # 1. langgraph_orchestration/state_reducer (97 missing lines, 33.1% covered)
 # ---------------------------------------------------------------------------
-
 from enhanced_agent_bus.langgraph_orchestration.models import (
     ExecutionContext,
     GraphState,
@@ -56,7 +55,7 @@ class TestSafeCopy:
         assert safe_copy(original) is original
 
     def test_int_not_copied(self):
-        assert safe_copy(42) is 42  # noqa: F632 - intentional identity check
+        assert safe_copy(42) is 42
 
     def test_none_not_copied(self):
         assert safe_copy(None) is None
@@ -950,10 +949,12 @@ from enhanced_agent_bus.chaos.steady_state import (
     SteadyStateHypothesis,
     SteadyStateValidator,
     ValidationMetric,
-    ValidationResult as SSValidationResult,
     create_constitutional_validation_steady_state,
     create_maci_enforcement_steady_state,
     create_message_bus_steady_state,
+)
+from enhanced_agent_bus.chaos.steady_state import (
+    ValidationResult as SSValidationResult,
 )
 
 

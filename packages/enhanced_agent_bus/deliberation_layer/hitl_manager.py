@@ -13,7 +13,7 @@ from importlib import import_module
 from typing import TYPE_CHECKING, Protocol, cast
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

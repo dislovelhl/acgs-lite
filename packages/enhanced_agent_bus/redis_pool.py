@@ -37,11 +37,11 @@ class _RedisPoolMetrics(TypedDict, total=False):
 
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -407,7 +407,7 @@ class RedisConnectionPool:
         }
 
         if self._pool:
-            try:  # noqa: SIM105
+            try:
                 # Try to get pool info if available
                 stats["pool_class"] = self._pool.__class__.__name__
             except AttributeError:
@@ -617,7 +617,7 @@ async def reset_shared_pool() -> None:
 
     async with _shared_pool_lock:
         if _shared_pool is not None:
-            try:  # noqa: SIM105
+            try:
                 await _shared_pool.close()
             except (RedisConnectionError, RedisTimeoutError, RedisError):
                 # Suppress Redis errors during cleanup

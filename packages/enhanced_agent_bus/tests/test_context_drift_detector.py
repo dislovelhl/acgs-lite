@@ -17,7 +17,6 @@ from enhanced_agent_bus.security.context_drift_detector import (
     DriftType,
 )
 
-
 # ---------------------------------------------------------------------------
 # Tests: DriftSeverity / DriftType enums
 # ---------------------------------------------------------------------------

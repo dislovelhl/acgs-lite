@@ -293,7 +293,7 @@ class TestBasicAuthProvider:
     def test_password_decryption(self):
         """Password can be decrypted."""
         provider = BasicAuthProvider("testuser", "testpass")
-        assert provider.password == "testpass"  # noqa: S105
+        assert provider.password == "testpass"
 
     async def test_get_token(self):
         """get_token returns base64 encoded credentials."""
@@ -618,7 +618,7 @@ class TestClientHeaders:
         """Headers with ECR auth use Basic prefix."""
         auth = AWSECRAuthProvider()
         auth.refresh_token = AsyncMock(return_value="test_token")
-        auth._token = "test_token"  # Mock token  # noqa: S105
+        auth._token = "test_token"  # Mock token
 
         client = OCIRegistryClient(
             "https://ecr.aws.com", auth_provider=auth, registry_type=RegistryType.ECR

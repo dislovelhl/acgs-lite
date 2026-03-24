@@ -42,7 +42,6 @@ from enhanced_agent_bus.multi_tenancy.models import (
 )
 from enhanced_agent_bus.multi_tenancy.repository import TenantRepository
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS saga_locks (
 
 -- Index for lock expiration cleanup
 CREATE INDEX IF NOT EXISTS idx_saga_locks_expires_at ON saga_locks(expires_at);
-"""  # noqa: E501
+"""
 
 
 __all__ = [

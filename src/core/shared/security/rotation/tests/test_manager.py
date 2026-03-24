@@ -4,15 +4,13 @@ Tests for src/core/shared/security/rotation/manager.py - SecretRotationManager.
 
 from __future__ import annotations
 
-import asyncio
 from datetime import UTC, datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 
 from src.core.shared.security.rotation.backend import InMemorySecretBackend
 from src.core.shared.security.rotation.enums import (
-    RotationStatus,
     RotationTrigger,
     SecretType,
 )
@@ -22,7 +20,6 @@ from src.core.shared.security.rotation.manager import (
     reset_rotation_manager,
 )
 from src.core.shared.security.rotation.models import RotationPolicy
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

@@ -55,7 +55,9 @@ class _StubVerifier:
 
 def _load_candidate_from_file(path: Path) -> Any:
     """Load and deserialise an EvolutionCandidate from a JSON file."""
-    from enhanced_agent_bus.openevolve_adapter.integration import _deserialise_candidate  # noqa: PLC0415
+    from enhanced_agent_bus.openevolve_adapter.integration import (
+        _deserialise_candidate,
+    )
 
     raw = json.loads(path.read_text())
     return _deserialise_candidate(raw)
@@ -147,8 +149,8 @@ def _make_parser() -> argparse.ArgumentParser:
 
 
 async def _cmd_evaluate(args: argparse.Namespace) -> int:
-    from enhanced_agent_bus.openevolve_adapter.cascade import CascadeEvaluator  # noqa: PLC0415
-    from enhanced_agent_bus.openevolve_adapter.rollout import RolloutController  # noqa: PLC0415
+    from enhanced_agent_bus.openevolve_adapter.cascade import CascadeEvaluator
+    from enhanced_agent_bus.openevolve_adapter.rollout import RolloutController
 
     try:
         candidate = _load_candidate_from_file(args.candidate_file)
@@ -200,7 +202,7 @@ async def _cmd_evaluate(args: argparse.Namespace) -> int:
 
 
 async def _cmd_gate(args: argparse.Namespace) -> int:
-    from enhanced_agent_bus.openevolve_adapter.rollout import RolloutController  # noqa: PLC0415
+    from enhanced_agent_bus.openevolve_adapter.rollout import RolloutController
 
     try:
         candidate = _load_candidate_from_file(args.candidate_file)

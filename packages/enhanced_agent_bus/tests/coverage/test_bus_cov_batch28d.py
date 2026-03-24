@@ -40,8 +40,8 @@ from enhanced_agent_bus.adapters.base import (
     ModelResponse,
     StreamChunk,
 )
-from enhanced_agent_bus.adapters.huggingface_adapter import HuggingFaceAdapter
 from enhanced_agent_bus.adapters.deepseek_adapter import DeepSeekAdapter
+from enhanced_agent_bus.adapters.huggingface_adapter import HuggingFaceAdapter
 
 # ---------------------------------------------------------------------------
 # 3. context optimizer imports

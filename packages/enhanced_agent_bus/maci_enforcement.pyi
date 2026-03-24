@@ -41,13 +41,13 @@ class MACICrossRoleValidationError(MACIError):
 # Enums
 # ---------------------------------------------------------------------------
 
-class MACIRole(str, Enum):  # noqa: UP042
+class MACIRole(str, Enum):
     PROPOSER = "proposer"
     SOLVER = "solver"
     VALIDATOR = "validator"
     OBSERVER = "observer"
 
-class MACIAction(str, Enum):  # noqa: UP042
+class MACIAction(str, Enum):
     PROPOSE = "propose"
     SOLVE = "solve"
     VALIDATE = "validate"

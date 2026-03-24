@@ -69,7 +69,7 @@ class TestIntegrationEndToEnd:
                 f"Cluster {cluster.cluster_id} representative_statements should be a list"
             )
 
-            if cluster.size > 0:  # noqa: SIM102
+            if cluster.size > 0:
                 if len(governance.polis_engine.statements) > 0:
                     assert len(cluster.representative_statements) >= 0, (
                         f"Cluster {cluster.cluster_id} should have representatives"

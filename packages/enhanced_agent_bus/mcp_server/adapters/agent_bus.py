@@ -8,7 +8,7 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -162,7 +162,7 @@ class AgentBusAdapter:
         confidence = 1.0
 
         # Basic validation rules
-        if context.get("data_sensitivity") in ["confidential", "restricted"]:  # noqa: SIM102
+        if context.get("data_sensitivity") in ["confidential", "restricted"]:
             if not context.get("consent_obtained"):
                 violations.append(
                     {
@@ -174,7 +174,7 @@ class AgentBusAdapter:
                 confidence -= 0.3
 
         high_risk_patterns = ["delete", "drop", "admin", "root", "exec"]
-        if any(p in action.lower() for p in high_risk_patterns):  # noqa: SIM102
+        if any(p in action.lower() for p in high_risk_patterns):
             if not context.get("authorization_verified"):
                 violations.append(
                     {

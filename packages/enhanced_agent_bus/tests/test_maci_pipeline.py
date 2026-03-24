@@ -5,7 +5,7 @@ import pytest
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
-from enhanced_agent_bus.verification.maci_pipeline import (  # noqa: E402
+from enhanced_agent_bus.verification.maci_pipeline import (
     CONSTITUTIONAL_HASH,
     AgentRole,
     ConstitutionalPrinciple,

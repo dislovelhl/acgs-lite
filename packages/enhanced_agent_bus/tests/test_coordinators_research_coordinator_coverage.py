@@ -608,7 +608,7 @@ class TestSearchAll:
         async def mock_search(query, sources, research_type, max_results):
             # Return appropriate results based on source
             s = sources[0]
-            if hasattr(s, "value"):  # noqa: SIM108
+            if hasattr(s, "value"):
                 src_val = s.value
             else:
                 src_val = str(s)

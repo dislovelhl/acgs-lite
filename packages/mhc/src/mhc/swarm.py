@@ -10,10 +10,10 @@ from __future__ import annotations
 import uuid
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable
+from typing import Any
 
 from constitutional_swarm.artifact import Artifact, ArtifactStore
-from constitutional_swarm.capability import Capability, CapabilityRegistry
+from constitutional_swarm.capability import CapabilityRegistry
 from constitutional_swarm.contract import ContractStatus, TaskContract
 
 

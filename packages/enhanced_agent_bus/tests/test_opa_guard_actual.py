@@ -584,7 +584,7 @@ class TestReviewSubmission:
         review_result = ReviewResult(decision_id=decision_id)
         opa_guard._pending_reviews[decision_id] = review_result
 
-        # submit_review takes: decision_id, critic_id, verdict, reasoning, concerns, recommendations, confidence  # noqa: E501
+        # submit_review takes: decision_id, critic_id, verdict, reasoning, concerns, recommendations, confidence
         success = await opa_guard.submit_review(
             decision_id,
             "critic_1",

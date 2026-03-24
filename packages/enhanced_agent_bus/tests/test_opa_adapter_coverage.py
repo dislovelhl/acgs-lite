@@ -26,8 +26,8 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 # Add parent to path for direct imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from acl_adapters.base import AdapterResult  # noqa: E402
-from acl_adapters.opa_adapter import (  # noqa: E402
+from acl_adapters.base import AdapterResult
+from acl_adapters.opa_adapter import (
     CONSTITUTIONAL_HASH,
     OPAAdapter,
     OPAAdapterConfig,
@@ -456,7 +456,7 @@ class TestOPAAdapterGetCacheKey:
         key = opa_adapter._get_cache_key(request)
 
         # Should use default path from config
-        expected_data = f"{opa_adapter.opa_config.default_policy_path}|{json_dumps(request.input, sort_keys=True)}"  # noqa: E501
+        expected_data = f"{opa_adapter.opa_config.default_policy_path}|{json_dumps(request.input, sort_keys=True)}"
         expected_key = hashlib.sha256(expected_data.encode()).hexdigest()
         assert key == expected_key
 

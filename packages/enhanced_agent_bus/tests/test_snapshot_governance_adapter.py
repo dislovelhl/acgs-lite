@@ -15,7 +15,6 @@ from enhanced_agent_bus.snapshot.snapshot_governance_adapter import (
     SnapshotVotingAnalytics,
 )
 
-
 # ---------------------------------------------------------------------------
 # SnapshotSpace
 # ---------------------------------------------------------------------------

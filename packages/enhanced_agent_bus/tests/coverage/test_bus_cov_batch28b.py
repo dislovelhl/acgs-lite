@@ -21,6 +21,7 @@ import pytest
 
 from enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
 from enhanced_agent_bus.observability.telemetry import (
+    OTEL_AVAILABLE,
     MetricsRegistry,
     NoOpMeter,
     NoOpTracer,
@@ -30,9 +31,7 @@ from enhanced_agent_bus.observability.telemetry import (
     configure_telemetry,
     get_meter,
     get_tracer,
-    OTEL_AVAILABLE,
 )
-
 
 # -----------------------------------------------------------------------
 # Helper

@@ -14,9 +14,9 @@ pytestmark = pytest.mark.skip(
     reason="API integration tests require running server - Pydantic forward ref issue"
 )
 
-from fastapi.testclient import TestClient  # noqa: E402
+from fastapi.testclient import TestClient
 
-from enhanced_agent_bus.api import app  # noqa: E402
+from enhanced_agent_bus.api import app
 
 client = TestClient(app)
 

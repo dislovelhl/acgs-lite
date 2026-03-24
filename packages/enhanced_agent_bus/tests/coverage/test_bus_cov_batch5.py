@@ -17,25 +17,15 @@ import os
 import time
 from collections import OrderedDict
 from datetime import UTC, datetime
-from unittest.mock import AsyncMock, MagicMock, patch, PropertyMock
+from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
-
-# ---------------------------------------------------------------------------
-# 1. guardrails/audit_log
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.guardrails.audit_log import (
-    AuditLog,
-    AuditLogConfig,
-    BlockchainLedger,
-)
-from enhanced_agent_bus.guardrails.enums import GuardrailLayer, SafetyAction
-from enhanced_agent_bus.guardrails.models import GuardrailResult, Violation
 
 # ---------------------------------------------------------------------------
 # 2. caching
 # ---------------------------------------------------------------------------
 from enhanced_agent_bus.caching import (
+    RedisCacheClient,
     _async_lookup_cache,
     _async_store_cache,
     _make_cache_key,
@@ -48,9 +38,19 @@ from enhanced_agent_bus.caching import (
     clear_cache,
     get_cache_stats,
     invalidate_pattern,
-    RedisCacheClient,
     set_cache_hash_mode,
 )
+
+# ---------------------------------------------------------------------------
+# 1. guardrails/audit_log
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.guardrails.audit_log import (
+    AuditLog,
+    AuditLogConfig,
+    BlockchainLedger,
+)
+from enhanced_agent_bus.guardrails.enums import GuardrailLayer, SafetyAction
+from enhanced_agent_bus.guardrails.models import GuardrailResult, Violation
 
 # ---------------------------------------------------------------------------
 # 3. pqc_validators  (heavy mocking required for src.core.shared.security.pqc)

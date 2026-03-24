@@ -7,7 +7,6 @@ decisions with support for blockchain and SIEM integration.
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-import asyncio
 import hashlib
 import json
 import os
@@ -15,11 +14,11 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -177,8 +176,15 @@ class BlockchainLedger:
             logger.error(f"Failed to persist blockchain ledger: {e}")
 
     async def _persist_chain_async(self) -> None:
-        """Async-safe wrapper for persisting blockchain ledger."""
-        await asyncio.to_thread(self._persist_chain)
+        """Persist the ledger without creating executor threads.
+
+        The blockchain ledger writes a small local JSON file per entry. Running
+        this through ``asyncio.to_thread()`` leaves the guardrail tests and
+        short-lived CLI reproducers hanging during shutdown in this environment,
+        even though the write itself has already completed. Keep the async API
+        surface for callers, but execute the tiny write inline.
+        """
+        self._persist_chain()
 
     def get_latest_block(self) -> JSONDict:
         return self.blocks[-1]

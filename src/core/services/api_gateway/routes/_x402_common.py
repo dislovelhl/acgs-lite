@@ -3,15 +3,14 @@ from __future__ import annotations
 import importlib
 import os
 from collections.abc import Mapping
-from typing import Any
-from typing import Final
+from typing import Any, Final
 
 from fastapi import FastAPI
 from pydantic import BaseModel
 
 from src.core.shared.structured_logging import get_logger
 
-DEFAULT_ATTESTATION_SECRET: Final[str] = "acgs2-dev-key"  # noqa: S105
+DEFAULT_ATTESTATION_SECRET: Final[str] = "acgs2-dev-key"
 PAID_RESPONSE_DISCLAIMER: Final[str] = (
     "Informational governance signal only. Not legal advice or a substitute for "
     "professional compliance assessment."

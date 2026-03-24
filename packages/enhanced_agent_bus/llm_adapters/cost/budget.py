@@ -10,7 +10,7 @@ from __future__ import annotations
 import asyncio
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 from typing_extensions import TypedDict
@@ -73,7 +73,7 @@ class BudgetManager:
         limits = []
         for limit_id in limit_ids:
             limit = self._limits.get(limit_id)
-            if limit:  # noqa: SIM102
+            if limit:
                 # Check operation type filter
                 if limit.operation_type is None or limit.operation_type == operation_type:
                     limits.append(limit)

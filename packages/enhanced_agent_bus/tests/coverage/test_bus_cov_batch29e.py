@@ -11,11 +11,19 @@ Constitutional Hash: cdd01ef066bc6cf2
 
 from __future__ import annotations
 
+import importlib.util
 import sys
 from types import ModuleType
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+
+
+def _has_real_torch() -> bool:
+    try:
+        return importlib.util.find_spec("torch") is not None
+    except (ImportError, ValueError):
+        return False
 
 
 # ============================================================================
@@ -500,7 +508,8 @@ class TestMHCWithTorch:
 
     @pytest.fixture(autouse=True)
     def _require_torch(self):
-        pytest.importorskip("torch")
+        if not _has_real_torch():
+            pytest.skip("torch not installed")
 
     def test_sinkhorn_projection_basic(self):
         import torch

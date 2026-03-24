@@ -33,7 +33,6 @@ from src.core.shared.acgs_logging.audit_logger import (
 )
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

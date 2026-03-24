@@ -35,7 +35,7 @@ Example:
         ])
         result = await composite.process(message, handlers)
 # pyright: reportMissingImports=false, reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportArgumentType=false, reportAssignmentType=false
-"""  # noqa: E501
+"""
 
 from __future__ import annotations
 
@@ -868,7 +868,7 @@ class MACIProcessingStrategy:
             return valid, error
 
         if hasattr(result, "is_valid"):
-            valid = bool(getattr(result, "is_valid"))
+            valid = bool(result.is_valid)
             error_message = getattr(result, "error_message", None)
             violation_type = getattr(result, "violation_type", None)
             error = error_message or violation_type
@@ -920,7 +920,7 @@ class MACIProcessingStrategy:
         if self._maci_available and self._maci_strategy:
             try:
                 valid, error = await self._validate_message(msg)
-                if not valid:  # noqa: SIM102
+                if not valid:
                     if self._strict:
                         return ValidationResult(
                             is_valid=False,

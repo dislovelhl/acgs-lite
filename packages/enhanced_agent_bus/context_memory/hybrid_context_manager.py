@@ -12,13 +12,15 @@ Key Features:
 - Smart batching and caching for performance
 """
 
+from __future__ import annotations
+
 import time
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -38,7 +40,7 @@ if TORCH_AVAILABLE:
     import torch.nn.functional as F
 
 
-class ProcessingMode(str, Enum):  # noqa: UP042
+class ProcessingMode(str, Enum):
     """Processing mode for context."""
 
     SSM_ONLY = "ssm_only"  # Pure Mamba-2 SSM processing

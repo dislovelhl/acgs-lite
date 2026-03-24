@@ -12,7 +12,7 @@ Defines enumeration types for the MCP authentication provider:
 from enum import Enum
 
 
-class ProviderType(str, Enum):  # noqa: UP042
+class ProviderType(str, Enum):
     """Type of OAuth2/OIDC provider."""
 
     GENERIC = "generic"
@@ -25,7 +25,7 @@ class ProviderType(str, Enum):  # noqa: UP042
     CUSTOM = "custom"
 
 
-class TokenState(str, Enum):  # noqa: UP042
+class TokenState(str, Enum):
     """State of a managed token."""
 
     VALID = "valid"

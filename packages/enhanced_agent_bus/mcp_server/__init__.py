@@ -1,5 +1,5 @@
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -13,8 +13,8 @@ through a standardized interface.
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-from .config import MCPConfig  # noqa: E402
-from .server import MCPServer, create_mcp_server  # noqa: E402
+from .config import MCPConfig
+from .server import MCPServer, create_mcp_server
 
 __all__ = [
     "MCPConfig",

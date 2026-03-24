@@ -18,17 +18,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 # ---------------------------------------------------------------------------
-# redis_rate_limiter
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.security.redis_rate_limiter import (
-    InMemoryRateLimiter,
-    InMemoryWindow,
-    MultiTierRateLimiter,
-    RateLimitResult,
-    RedisRateLimiter,
-)
-
-# ---------------------------------------------------------------------------
 # batch_processor
 # ---------------------------------------------------------------------------
 from enhanced_agent_bus.batch_processor import (
@@ -36,10 +25,21 @@ from enhanced_agent_bus.batch_processor import (
     get_batch_processor,
     reset_batch_processor,
 )
-from enhanced_agent_bus.models import (
-    BatchRequest,
-    BatchRequestItem,
-    Priority,
+from enhanced_agent_bus.collaboration.models import (
+    CollaborationSession,
+    CollaborationValidationError,
+    ConflictError,
+    DocumentType,
+    EditOperation,
+    EditOperationType,
+)
+
+# ---------------------------------------------------------------------------
+# sync_engine
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.collaboration.sync_engine import (
+    OperationalTransform,
+    SyncEngine,
 )
 
 # ---------------------------------------------------------------------------
@@ -52,23 +52,22 @@ from enhanced_agent_bus.context_memory.long_term_memory import (
     MemorySearchResult,
     MemoryTier,
 )
-
-# ---------------------------------------------------------------------------
-# sync_engine
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.collaboration.sync_engine import (
-    OperationalTransform,
-    SyncEngine,
-)
-from enhanced_agent_bus.collaboration.models import (
-    CollaborationSession,
-    CollaborationValidationError,
-    ConflictError,
-    DocumentType,
-    EditOperation,
-    EditOperationType,
+from enhanced_agent_bus.models import (
+    BatchRequest,
+    BatchRequestItem,
+    Priority,
 )
 
+# ---------------------------------------------------------------------------
+# redis_rate_limiter
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.security.redis_rate_limiter import (
+    InMemoryRateLimiter,
+    InMemoryWindow,
+    MultiTierRateLimiter,
+    RateLimitResult,
+    RedisRateLimiter,
+)
 
 # ===================================================================
 # Helpers

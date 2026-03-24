@@ -320,7 +320,7 @@ class TestPrometheusSLAAlerts:
         alert_rules = [
             {
                 "name": "SLAErrorRateBreach",
-                "expr": "sum(rate(acgs_request_errors_total[5m])) / sum(rate(acgs_request_total[5m])) > 0.001",  # noqa: E501
+                "expr": "sum(rate(acgs_request_errors_total[5m])) / sum(rate(acgs_request_total[5m])) > 0.001",
                 "severity": "warning",
                 "for": "5m",
                 "labels": {"sla": "error_rate", "constitutional_hash": CONSTITUTIONAL_HASH},
@@ -537,7 +537,7 @@ class TestGrafanaDashboardPanels:
                 "title": "Error Rate (Target: <0.1%)",
                 "targets": [
                     {
-                        "expr": "sum(rate(acgs_request_errors_total[5m])) / sum(rate(acgs_request_total[5m])) * 100",  # noqa: E501
+                        "expr": "sum(rate(acgs_request_errors_total[5m])) / sum(rate(acgs_request_total[5m])) * 100",
                         "legendFormat": "Error Rate %",
                     }
                 ],

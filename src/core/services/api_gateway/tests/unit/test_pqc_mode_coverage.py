@@ -10,13 +10,12 @@ import os
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from starlette.requests import Request
 from starlette.testclient import TestClient
 
 from src.core.services.api_gateway.middleware.pqc_only_mode import (
-    PQCOnlyModeMiddleware,
     _APPROVED_PQC_ALGORITHM_STRINGS,
     _REDIS_KEY,
+    PQCOnlyModeMiddleware,
 )
 
 

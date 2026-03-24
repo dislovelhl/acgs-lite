@@ -526,7 +526,7 @@ class TestValidateJwtToken:
                     # Python raises ImportError when module is None in sys.modules
                     result = _validate_jwt_token("token")
                     # Either None (handled) or raises — both are acceptable paths
-        except Exception:  # noqa: S110
+        except Exception:
             pass
         finally:
             if original is not None:

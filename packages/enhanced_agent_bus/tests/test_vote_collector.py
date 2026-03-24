@@ -16,7 +16,7 @@ import pytest
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
 # Import test targets
-from enhanced_agent_bus.deliberation_layer.vote_collector import (  # noqa: E402
+from enhanced_agent_bus.deliberation_layer.vote_collector import (
     EventDrivenVoteCollector,
     VoteEvent,
     VoteSession,

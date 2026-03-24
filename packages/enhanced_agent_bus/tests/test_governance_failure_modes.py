@@ -21,8 +21,8 @@ import pytest
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
 # Constitutional Hash - Required for all governance operations
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
-from src.core.shared.types import JSONDict  # noqa: E402
+from src.core.shared.constants import CONSTITUTIONAL_HASH
+from src.core.shared.types import JSONDict
 
 # =============================================================================
 # Test Fixtures and Helpers
@@ -91,7 +91,7 @@ class AdversarialGovernanceSimulator:
         if not self.conflict_injection_active:
             return approvals
         # Inject opposing approval
-        return approvals + [not approvals[-1]] if approvals else [True, False]  # noqa: RUF005
+        return approvals + [not approvals[-1]] if approvals else [True, False]
 
 
 # =============================================================================
@@ -168,7 +168,7 @@ class TestConstitutionalHashCorruption:
         """Test that unicode lookalike characters are rejected."""
         from enhanced_agent_bus.validators import validate_constitutional_hash
 
-        # Replace 'c' with cyrillic 'с' (U+0441, looks similar)  # noqa: RUF003
+        # Replace 'c' with cyrillic 'с' (U+0441, looks similar)
         unicode_hash = "\u0441dd01ef066b\u04416\u0441f2"
 
         # Unicode may cause TypeError in hmac.compare_digest (expected fail-closed)
@@ -777,7 +777,7 @@ class TestGovernanceEdgeCases:
         approvals = []
 
         # Cannot approve with zero approvers
-        if len(approvals) == 0:  # noqa: SIM108
+        if len(approvals) == 0:
             result = False  # Fail closed
         else:
             result = sum(approvals) / len(approvals) >= 0.5

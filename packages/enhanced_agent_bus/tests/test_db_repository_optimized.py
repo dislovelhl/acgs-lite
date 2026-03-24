@@ -15,13 +15,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from enhanced_agent_bus.multi_tenancy.db_repository_optimized import (
+    _ORM_TO_PYDANTIC_STATUS,
+    _PYDANTIC_TO_ORM_STATUS,
     DatabaseTenantRepository,
     TenantHierarchyNode,
     TenantSummary,
-    _ORM_TO_PYDANTIC_STATUS,
-    _PYDANTIC_TO_ORM_STATUS,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures & helpers

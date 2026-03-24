@@ -50,7 +50,7 @@ from typing import cast
 import numpy as np
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -463,7 +463,7 @@ class PolisDeliberationEngine:
             - If no diverse candidates found, returns fewer than top_n statements
 
         Constitutional Hash: cdd01ef066bc6cf2
-        """  # noqa: E501
+        """
         if not cluster.member_stakeholders:
             logger.warning(f"Cluster {cluster.cluster_id} has no members, no representatives")
             return []
@@ -596,7 +596,7 @@ class PolisDeliberationEngine:
             else:
                 logger.debug(
                     f"Rejected similar candidate: {stmt_id[:8]} "
-                    f"(centrality={centrality:.3f}, max_similarity={max_similarity:.3f} >= {diversity_threshold})"  # noqa: E501
+                    f"(centrality={centrality:.3f}, max_similarity={max_similarity:.3f} >= {diversity_threshold})"
                 )
 
         return diverse_representatives

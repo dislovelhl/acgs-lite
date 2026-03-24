@@ -110,7 +110,7 @@ async def test_metric_emission_fires_at_configured_interval(
             _sleep=fake_sleep,
         )
         task = mon.start()
-        try:  # noqa: SIM105
+        try:
             await task
         except asyncio.CancelledError:
             pass
@@ -156,7 +156,7 @@ async def test_consecutive_failure_count_resets_to_zero(
             _sleep=fake_sleep,
         )
         task = mon.start()
-        try:  # noqa: SIM105
+        try:
             await task
         except asyncio.CancelledError:
             pass
@@ -195,7 +195,7 @@ async def test_recovery_event_recorded_in_store(
             _sleep=fake_sleep,
         )
         task = mon.start()
-        try:  # noqa: SIM105
+        try:
             await task
         except asyncio.CancelledError:
             pass
@@ -237,7 +237,7 @@ async def test_monitor_continues_when_processing_loop_blocked(
         # Start the monitor task — no "processing loop" is started; monitor
         # must emit metrics regardless (NFR-004: isolated asyncio.Task)
         task = mon.start()
-        try:  # noqa: SIM105
+        try:
             await task
         except asyncio.CancelledError:
             pass
@@ -299,9 +299,9 @@ async def test_heartbeat_loss_sets_degraded_in_store(
             _sleep=crashing_sleep,
         )
         task = mon.start()
-        try:  # noqa: SIM105
+        try:
             await asyncio.wait_for(task, timeout=5.0)
-        except (TimeoutError, asyncio.CancelledError, Exception):  # noqa: S110
+        except (TimeoutError, asyncio.CancelledError, Exception):
             pass
 
     final = await store.get_health_record(AGENT_ID)
@@ -361,7 +361,7 @@ async def test_monitor_updates_memory_usage_from_provider(
             _sleep=fake_sleep,
         )
         task = mon.start()
-        try:  # noqa: SIM105
+        try:
             await task
         except asyncio.CancelledError:
             pass
@@ -410,7 +410,7 @@ async def test_monitor_loop_survives_exceptions(
             _sleep=fake_sleep,
         )
         task = mon.start()
-        try:  # noqa: SIM105
+        try:
             await task
         except asyncio.CancelledError:
             pass

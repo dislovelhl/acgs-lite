@@ -26,12 +26,6 @@ _CP_ID = str(uuid.uuid4())
 # ---------------------------------------------------------------------------
 # Module 1: langgraph_orchestration.persistence
 # ---------------------------------------------------------------------------
-from enhanced_agent_bus.langgraph_orchestration.persistence import (
-    InMemoryStatePersistence,
-    RedisStatePersistence,
-    StatePersistence,
-    create_state_persistence,
-)
 from enhanced_agent_bus.langgraph_orchestration.models import (
     Checkpoint,
     CheckpointStatus,
@@ -39,6 +33,12 @@ from enhanced_agent_bus.langgraph_orchestration.models import (
     ExecutionStatus,
     GraphState,
     StateSnapshot,
+)
+from enhanced_agent_bus.langgraph_orchestration.persistence import (
+    InMemoryStatePersistence,
+    RedisStatePersistence,
+    StatePersistence,
+    create_state_persistence,
 )
 
 # ---------------------------------------------------------------------------
@@ -599,6 +599,7 @@ class TestPostgresStateManager:
 
     async def test_update_state_postgres_error(self, manager, mock_conn):
         import asyncpg
+
         from enhanced_agent_bus.saga_persistence.models import SagaState
         from enhanced_agent_bus.saga_persistence.repository import RepositoryError
         self._setup_pool(manager, mock_conn)
@@ -615,7 +616,9 @@ class TestPostgresStateManager:
 
     async def test_update_step_state_step_not_found(self, manager, mock_conn):
         from enhanced_agent_bus.saga_persistence.models import (
-            PersistedSagaState, PersistedStepSnapshot, StepState,
+            PersistedSagaState,
+            PersistedStepSnapshot,
+            StepState,
         )
         self._setup_pool(manager, mock_conn)
         saga = PersistedSagaState(
@@ -627,7 +630,9 @@ class TestPostgresStateManager:
 
     async def test_update_step_state_success(self, manager, mock_conn):
         from enhanced_agent_bus.saga_persistence.models import (
-            PersistedSagaState, PersistedStepSnapshot, StepState,
+            PersistedSagaState,
+            PersistedStepSnapshot,
+            StepState,
         )
         self._setup_pool(manager, mock_conn)
         step = PersistedStepSnapshot(step_id=_STEP_ID, step_name="test", state=StepState.PENDING)
@@ -637,7 +642,9 @@ class TestPostgresStateManager:
 
     async def test_update_step_state_terminal_with_started_at(self, manager, mock_conn):
         from enhanced_agent_bus.saga_persistence.models import (
-            PersistedSagaState, PersistedStepSnapshot, StepState,
+            PersistedSagaState,
+            PersistedStepSnapshot,
+            StepState,
         )
         self._setup_pool(manager, mock_conn)
         step = PersistedStepSnapshot(
@@ -652,7 +659,9 @@ class TestPostgresStateManager:
 
     async def test_update_step_state_with_error(self, manager, mock_conn):
         from enhanced_agent_bus.saga_persistence.models import (
-            PersistedSagaState, PersistedStepSnapshot, StepState,
+            PersistedSagaState,
+            PersistedStepSnapshot,
+            StepState,
         )
         self._setup_pool(manager, mock_conn)
         step = PersistedStepSnapshot(
@@ -667,8 +676,11 @@ class TestPostgresStateManager:
 
     async def test_update_step_state_postgres_error(self, manager, mock_conn):
         import asyncpg
+
         from enhanced_agent_bus.saga_persistence.models import (
-            PersistedSagaState, PersistedStepSnapshot, StepState,
+            PersistedSagaState,
+            PersistedStepSnapshot,
+            StepState,
         )
         from enhanced_agent_bus.saga_persistence.repository import RepositoryError
         self._setup_pool(manager, mock_conn)
@@ -693,6 +705,7 @@ class TestPostgresStateManager:
 
     async def test_update_current_step_postgres_error(self, manager, mock_conn):
         import asyncpg
+
         from enhanced_agent_bus.saga_persistence.repository import RepositoryError
         self._setup_pool(manager, mock_conn)
         mock_conn.execute.side_effect = asyncpg.PostgresError("db error")
@@ -713,6 +726,7 @@ class TestPostgresStateManager:
 
     async def test_save_checkpoint_postgres_error(self, manager, mock_conn):
         import asyncpg
+
         from enhanced_agent_bus.saga_persistence.models import SagaCheckpoint
         from enhanced_agent_bus.saga_persistence.repository import RepositoryError
         self._setup_pool(manager, mock_conn)
@@ -730,6 +744,7 @@ class TestPostgresStateManager:
 
     async def test_get_checkpoints_postgres_error(self, manager, mock_conn):
         import asyncpg
+
         from enhanced_agent_bus.saga_persistence.repository import RepositoryError
         self._setup_pool(manager, mock_conn)
         mock_conn.fetch.side_effect = asyncpg.PostgresError("db error")
@@ -757,6 +772,7 @@ class TestPostgresStateManager:
 
     async def test_delete_checkpoints_postgres_error(self, manager, mock_conn):
         import asyncpg
+
         from enhanced_agent_bus.saga_persistence.repository import RepositoryError
         self._setup_pool(manager, mock_conn)
         mock_conn.execute.side_effect = asyncpg.PostgresError("db error")
@@ -781,6 +797,7 @@ class TestPostgresStateManager:
 
     async def test_append_compensation_postgres_error(self, manager, mock_conn):
         import asyncpg
+
         from enhanced_agent_bus.saga_persistence.models import CompensationEntry
         from enhanced_agent_bus.saga_persistence.repository import RepositoryError
         self._setup_pool(manager, mock_conn)
@@ -814,6 +831,7 @@ class TestPostgresStateManager:
 
     async def test_get_compensation_log_postgres_error(self, manager, mock_conn):
         import asyncpg
+
         from enhanced_agent_bus.saga_persistence.repository import RepositoryError
         self._setup_pool(manager, mock_conn)
         mock_conn.fetchval.side_effect = asyncpg.PostgresError("db error")

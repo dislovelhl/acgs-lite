@@ -125,20 +125,19 @@ from enhanced_agent_bus.security_integration import (
     SecurityGateResult,
     _constant_time_compare,
 )
+
 # Remove the payload_integrity stub from sys.modules immediately after import
 # so subsequent test files can import the real module.
 # security_integration already resolved its reference — the stub stays in its
 # module-level namespace but won't block other importers.
 sys.modules.pop("enhanced_agent_bus.payload_integrity", None)
-from enhanced_agent_bus.validators import ValidationResult
-
 # ---------------------------------------------------------------------------
 # Import data_flywheel config (must handle CONSTITUTIONAL_HASH import)
 # ---------------------------------------------------------------------------
 from enhanced_agent_bus.data_flywheel.config import (
+    DEFAULT_FLYWHEEL_CONFIG,
     CandidateModel,
     DataSplitConfig,
-    DEFAULT_FLYWHEEL_CONFIG,
     EvaluationConfig,
     ExperimentType,
     FlywheelConfig,
@@ -147,7 +146,7 @@ from enhanced_agent_bus.data_flywheel.config import (
     ModelSelectionStrategy,
     TrainingConfig,
 )
-
+from enhanced_agent_bus.validators import ValidationResult
 
 # ============================================================================
 # PART 1: security_integration.py tests

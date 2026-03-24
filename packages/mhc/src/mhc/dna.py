@@ -10,9 +10,10 @@ from __future__ import annotations
 import functools
 import inspect
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, TypeVar
+from typing import Any, TypeVar
 
 from acgs_lite import (
     Constitution,

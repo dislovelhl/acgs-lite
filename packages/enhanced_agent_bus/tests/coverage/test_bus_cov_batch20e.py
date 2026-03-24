@@ -900,11 +900,12 @@ class TestAgentHealthRoutes:
 
     @pytest.fixture()
     def mock_store(self):
-        store = AsyncMock()
-        store.get_health_record = AsyncMock(return_value=None)
-        store.get_override = AsyncMock(return_value=None)
-        store.set_override = AsyncMock()
-        store.delete_override = AsyncMock()
+        store = SimpleNamespace(
+            get_health_record=AsyncMock(return_value=None),
+            get_override=AsyncMock(return_value=None),
+            set_override=AsyncMock(),
+            delete_override=AsyncMock(),
+        )
         return store
 
     @pytest.fixture()
@@ -927,10 +928,19 @@ class TestAgentHealthRoutes:
         app = FastAPI()
         app.include_router(router)
 
+        async def _operator_override():
+            return "test-operator"
+
+        async def _store_override():
+            return mock_store
+
+        async def _audit_override():
+            return mock_audit_client
+
         # Override dependencies
-        app.dependency_overrides[require_operator_role] = lambda: "test-operator"
-        app.dependency_overrides[get_agent_health_store] = lambda: mock_store
-        app.dependency_overrides[get_audit_log_client] = lambda: mock_audit_client
+        app.dependency_overrides[require_operator_role] = _operator_override
+        app.dependency_overrides[get_agent_health_store] = _store_override
+        app.dependency_overrides[get_audit_log_client] = _audit_override
 
         return app
 
@@ -944,7 +954,7 @@ class TestAgentHealthRoutes:
 
     async def test_get_agent_health_success(self, client, mock_store):
         """GET /api/v1/agents/{id}/health returns 200 with health data."""
-        from packages.enhanced_agent_bus.agent_health.models import (
+        from enhanced_agent_bus.agent_health.models import (
             AgentHealthRecord,
             AutonomyTier,
             HealthState,
@@ -975,7 +985,7 @@ class TestAgentHealthRoutes:
 
     async def test_get_agent_health_with_override(self, client, mock_store):
         """GET returns override data when healing_override_id is set."""
-        from packages.enhanced_agent_bus.agent_health.models import (
+        from enhanced_agent_bus.agent_health.models import (
             AgentHealthRecord,
             AutonomyTier,
             HealingOverride,
@@ -1012,7 +1022,7 @@ class TestAgentHealthRoutes:
 
     async def test_get_agent_health_override_id_but_no_override(self, client, mock_store):
         """GET with override_id set but no override record returns null override."""
-        from packages.enhanced_agent_bus.agent_health.models import (
+        from enhanced_agent_bus.agent_health.models import (
             AgentHealthRecord,
             AutonomyTier,
             HealthState,
@@ -1118,7 +1128,7 @@ class TestAgentHealthRoutes:
 
     async def test_create_healing_override_conflict(self, client, mock_store):
         """POST when override already exists returns 409."""
-        from packages.enhanced_agent_bus.agent_health.models import (
+        from enhanced_agent_bus.agent_health.models import (
             HealingOverride,
             OverrideMode,
         )
@@ -1146,7 +1156,7 @@ class TestAgentHealthRoutes:
 
     async def test_delete_healing_override_success(self, client, mock_store, mock_audit_client):
         """DELETE returns 204 on success."""
-        from packages.enhanced_agent_bus.agent_health.models import (
+        from enhanced_agent_bus.agent_health.models import (
             HealingOverride,
             OverrideMode,
         )
@@ -1184,8 +1194,9 @@ class TestAgentHealthDependencies:
     """Tests for dependency injection functions."""
 
     def test_get_audit_log_client_missing(self):
-        from enhanced_agent_bus.api.routes.agent_health import get_audit_log_client
         from fastapi import HTTPException
+
+        from enhanced_agent_bus.api.routes.agent_health import get_audit_log_client
 
         mock_request = MagicMock()
         mock_request.app.state = SimpleNamespace()
@@ -1205,8 +1216,9 @@ class TestAgentHealthDependencies:
         assert result is mock_client
 
     def test_get_agent_health_store_missing(self):
-        from enhanced_agent_bus.api.routes.agent_health import get_agent_health_store
         from fastapi import HTTPException
+
+        from enhanced_agent_bus.api.routes.agent_health import get_agent_health_store
 
         mock_request = MagicMock()
         mock_request.app.state = SimpleNamespace()
@@ -1226,8 +1238,9 @@ class TestAgentHealthDependencies:
         assert result is mock_store
 
     async def test_require_operator_role_no_auth_header(self):
-        from enhanced_agent_bus.api.routes.agent_health import require_operator_role
         from fastapi import HTTPException
+
+        from enhanced_agent_bus.api.routes.agent_health import require_operator_role
 
         mock_request = MagicMock()
         mock_request.headers = {}
@@ -1266,8 +1279,9 @@ class TestAgentHealthDependencies:
                     sys.modules.pop("src.core.shared.security.rbac", None)
 
     async def test_require_operator_role_prod_env_no_rbac(self):
-        from enhanced_agent_bus.api.routes.agent_health import require_operator_role
         from fastapi import HTTPException
+
+        from enhanced_agent_bus.api.routes.agent_health import require_operator_role
 
         mock_request = MagicMock()
         mock_request.headers = {"Authorization": "Bearer token"}
@@ -1286,8 +1300,9 @@ class TestAgentHealthDependencies:
                 sys.modules.pop("src.core.shared.security.rbac", None)
 
     async def test_require_operator_role_empty_bearer(self):
-        from enhanced_agent_bus.api.routes.agent_health import require_operator_role
         from fastapi import HTTPException
+
+        from enhanced_agent_bus.api.routes.agent_health import require_operator_role
 
         mock_request = MagicMock()
         mock_request.headers = {"Authorization": "Bearer "}
@@ -1929,9 +1944,9 @@ class TestMigrationSagaBuilder:
     @pytest.fixture()
     def builder(self):
         from enhanced_agent_bus.enterprise_sso.saga_orchestration import (
+            MigrationSagaBuilder,
             SagaOrchestrator,
             SagaStore,
-            MigrationSagaBuilder,
         )
 
         store = AsyncMock()

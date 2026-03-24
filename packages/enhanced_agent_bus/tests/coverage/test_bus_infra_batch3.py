@@ -194,7 +194,7 @@ def _make_engine(
     supervisor = AsyncMock()
     thresholds = _make_thresholds()
 
-    from packages.enhanced_agent_bus.agent_health.healing_engine import HealingEngine
+    from enhanced_agent_bus.agent_health.healing_engine import HealingEngine
 
     engine = HealingEngine(
         store=store,
@@ -214,8 +214,8 @@ def _make_engine(
 # validation, the Prometheus counter, and the _write_audit method (which imports
 # src.core.shared.audit at call time, unavailable in the test environment).
 _ENGINE_PATCHES = (
-    "packages.enhanced_agent_bus.agent_health.healing_engine._validate_constitutional_hash",
-    "packages.enhanced_agent_bus.agent_health.healing_engine.HEALING_ACTIONS_COUNTER",
+    "enhanced_agent_bus.agent_health.healing_engine._validate_constitutional_hash",
+    "enhanced_agent_bus.agent_health.healing_engine.HEALING_ACTIONS_COUNTER",
 )
 
 

@@ -23,7 +23,6 @@ from enhanced_agent_bus.mcp_integration.auth.auth_audit import (
     AuthAuditStats,
 )
 
-
 # ---------------------------------------------------------------------------
 # Data classes
 # ---------------------------------------------------------------------------

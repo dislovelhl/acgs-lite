@@ -18,11 +18,11 @@ Targets uncovered lines:
 
 from __future__ import annotations
 
-from contextlib import contextmanager
 import hashlib
 import json
 import os
 import tempfile
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -33,13 +33,13 @@ from cryptography.hazmat.primitives.asymmetric import ed25519
 # bundle_registry imports
 # ---------------------------------------------------------------------------
 from enhanced_agent_bus.bundle_registry import (
+    CONSTITUTIONAL_HASH,
     AWSECRAuthProvider,
     BasicAuthProvider,
     BundleArtifact,
     BundleDistributionService,
     BundleManifest,
     BundleStatus,
-    CONSTITUTIONAL_HASH,
     OCIRegistryClient,
     OCIRegistryClientAdapter,
     RegistryType,
@@ -55,6 +55,7 @@ from enhanced_agent_bus.constitutional.amendment_model import (
     AmendmentProposal,
     AmendmentStatus,
 )
+from enhanced_agent_bus.constitutional.diff_engine import SemanticDiff
 from enhanced_agent_bus.constitutional.review_api import (
     AmendmentDetailResponse,
     AmendmentListQuery,
@@ -71,11 +72,9 @@ from enhanced_agent_bus.constitutional.review_api import (
     reject_amendment,
     rollback_to_version,
 )
-from enhanced_agent_bus.constitutional.diff_engine import SemanticDiff
 from enhanced_agent_bus.constitutional.version_model import (
     ConstitutionalVersion,
 )
-
 
 _MISSING = object()
 

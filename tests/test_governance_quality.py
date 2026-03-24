@@ -13,8 +13,8 @@ import pytest
 from acgs_lite import (
     AcknowledgedTension,
     Constitution,
-    ConstitutionBuilder,
     ConstitutionalViolationError,
+    ConstitutionBuilder,
     GovernanceEngine,
     Rule,
     Severity,

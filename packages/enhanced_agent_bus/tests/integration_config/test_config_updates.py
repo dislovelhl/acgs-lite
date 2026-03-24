@@ -99,7 +99,7 @@ class TestConfigurationUpdates:
         )
 
         # New password should be encrypted
-        assert integration.config["bind_password"] != "new-password"  # noqa: S105
+        assert integration.config["bind_password"] != "new-password"
         assert "bind_password" in integration.encrypted_fields
 
     async def test_update_updates_timestamp(self, integration_service):

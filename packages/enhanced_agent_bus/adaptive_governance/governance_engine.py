@@ -20,6 +20,8 @@ Key Features:
 - Thread-safe operation with locking mechanisms
 """
 
+from __future__ import annotations
+
 import asyncio
 import dataclasses
 import time
@@ -39,7 +41,7 @@ try:
         JSONDict,
         MessagePayload,
         PolicyContext,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     MessagePayload = dict  # type: ignore[misc,assignment]
@@ -430,7 +432,7 @@ class AdaptiveGovernanceEngine:
         self.running = False
         if self.learning_task and not self.learning_task.done():
             self.learning_task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await asyncio.wait_for(self.learning_task, timeout=5)
             except (TimeoutError, asyncio.CancelledError):
                 pass
@@ -765,7 +767,7 @@ class AdaptiveGovernanceEngine:
                 feedback_type = FeedbackType.NEGATIVE
 
             # Determine outcome status
-            if outcome_success:  # noqa: SIM108
+            if outcome_success:
                 outcome_status = OutcomeStatus.SUCCESS
             else:
                 outcome_status = OutcomeStatus.FAILURE

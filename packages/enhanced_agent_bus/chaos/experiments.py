@@ -28,11 +28,11 @@ from typing import TypeVar
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -66,7 +66,7 @@ CHAOS_EXPERIMENT_ERRORS = (
 F = TypeVar("F", bound=Callable[..., object])
 
 
-class ExperimentPhase(str, Enum):  # noqa: UP042
+class ExperimentPhase(str, Enum):
     """Phases of a chaos experiment."""
 
     INITIALIZED = "initialized"
@@ -80,7 +80,7 @@ class ExperimentPhase(str, Enum):  # noqa: UP042
     ABORTED = "aborted"
 
 
-class ExperimentStatus(str, Enum):  # noqa: UP042
+class ExperimentStatus(str, Enum):
     """Status of a chaos experiment."""
 
     PENDING = "pending"
@@ -457,7 +457,7 @@ class ChaosExperiment:
         logger.error(f"[{self.constitutional_hash}] Experiment '{self.name}' error: {error}")
 
         # Attempt rollback on error
-        try:  # noqa: SIM105
+        try:
             await self.scenario.rollback()
         except (RuntimeError, ValueError, TypeError, OSError):
             pass

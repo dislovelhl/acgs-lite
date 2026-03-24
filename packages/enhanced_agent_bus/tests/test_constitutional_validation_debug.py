@@ -110,7 +110,7 @@ class TestMessageProcessorDebug:
         if result.errors:
             logger.error(f"  - First error: {result.errors[0]}")
             logger.info(
-                f"  - Contains 'Constitutional hash mismatch': {'Constitutional hash mismatch' in result.errors[0]}"  # noqa: E501
+                f"  - Contains 'Constitutional hash mismatch': {'Constitutional hash mismatch' in result.errors[0]}"
             )
 
         # Original assertions with detailed error messages

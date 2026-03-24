@@ -20,7 +20,6 @@ from enhanced_agent_bus.collaboration.models import (
 )
 from enhanced_agent_bus.collaboration.presence import PresenceManager
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

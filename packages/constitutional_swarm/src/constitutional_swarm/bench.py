@@ -8,14 +8,14 @@ utilization, and throughput to prove governance scales O(N), not O(N^2).
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from constitutional_swarm.artifact import Artifact, ArtifactStore
 from constitutional_swarm.capability import Capability, CapabilityRegistry
 from constitutional_swarm.compiler import DAGCompiler, GoalSpec
 from constitutional_swarm.dna import AgentDNA
-from constitutional_swarm.swarm import NodeStatus, SwarmExecutor
+from constitutional_swarm.swarm import SwarmExecutor
 
 
 @dataclass(frozen=True, slots=True)

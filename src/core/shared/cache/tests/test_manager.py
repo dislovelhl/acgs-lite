@@ -4,14 +4,13 @@ Covers initialization, sync get, async get/set/delete/exists,
 L1/L2/L3 tier logic, degraded mode, serialization, stats, and cleanup.
 """
 
-import asyncio
 import json
 import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.core.shared.cache.models import CacheTier, TieredCacheConfig, TieredCacheStats
+from src.core.shared.cache.models import CacheTier, TieredCacheConfig
 
 
 # ---------------------------------------------------------------------------
@@ -20,7 +19,7 @@ from src.core.shared.cache.models import CacheTier, TieredCacheConfig, TieredCac
 @pytest.fixture(autouse=True)
 def _patch_metrics():
     """Stub out all Prometheus metric helpers so tests don't need a registry."""
-    noop = lambda *a, **kw: None  # noqa: E731
+    noop = lambda *a, **kw: None
     patches = [
         patch("src.core.shared.cache.manager.record_cache_hit", noop),
         patch("src.core.shared.cache.manager.record_cache_miss", noop),
@@ -39,8 +38,7 @@ def _patch_metrics():
         p.stop()
 
 
-from src.core.shared.cache.manager import TieredCacheManager  # noqa: E402
-
+from src.core.shared.cache.manager import TieredCacheManager
 
 # ---------------------------------------------------------------------------
 # Helpers

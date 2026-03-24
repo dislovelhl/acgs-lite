@@ -34,14 +34,14 @@ class _OPABatchMetrics(TypedDict):
     created_at: str
 
 
-import httpx  # noqa: E402
+import httpx
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -506,7 +506,7 @@ async def reset_batch_client() -> None:
 
     async with _batch_client_lock:
         if _batch_client is not None:
-            try:  # noqa: SIM105
+            try:
                 await _batch_client.close()
             except (RuntimeError, ConnectionError, OSError):
                 pass  # Ignore close errors during cleanup

@@ -10,7 +10,7 @@ Extends OpenAIAdapter with xAI-specific pricing, server-side tools
 from __future__ import annotations
 
 import time
-from typing import ClassVar, cast
+from typing import ClassVar
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

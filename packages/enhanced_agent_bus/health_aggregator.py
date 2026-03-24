@@ -6,6 +6,8 @@ Real-time health monitoring and aggregation across all circuit breakers.
 Designed to maintain P99 latency < 1.31ms by using fire-and-forget patterns.
 """
 
+from __future__ import annotations
+
 import asyncio
 from collections import deque
 from collections.abc import Callable
@@ -14,14 +16,14 @@ from datetime import UTC, datetime
 from enum import Enum
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
     from src.core.shared.types import (
         JSONDict,
         SupportsCircuitBreaker,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     SupportsCircuitBreaker = object  # type: ignore[misc,assignment]
@@ -204,7 +206,7 @@ class HealthAggregator:
 
         if self._health_check_task:
             self._health_check_task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._health_check_task
             except asyncio.CancelledError:
                 pass

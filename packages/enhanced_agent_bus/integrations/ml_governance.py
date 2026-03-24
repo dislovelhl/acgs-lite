@@ -16,7 +16,7 @@ from enum import Enum
 import httpx
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -52,10 +52,10 @@ logger = get_logger(__name__)
 # =============================================================================
 
 
-from ..circuit_breaker.enums import CircuitState  # noqa: E402
+from ..circuit_breaker.enums import CircuitState
 
 
-class OutcomeReportStatus(str, Enum):  # noqa: UP042
+class OutcomeReportStatus(str, Enum):
     """Status of outcome report submission."""
 
     SUCCESS = "success"
@@ -412,7 +412,7 @@ class MLGovernanceClient:
         self._failure_count += 1
         self._last_failure_time = datetime.now(UTC).timestamp()
 
-        if self._failure_count >= self.config.circuit_breaker_threshold:  # noqa: SIM102
+        if self._failure_count >= self.config.circuit_breaker_threshold:
             if self._circuit_state != CircuitState.OPEN:
                 logger.warning(
                     f"Circuit breaker: opening circuit after {self._failure_count} failures"

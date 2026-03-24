@@ -2,24 +2,22 @@
 
 from __future__ import annotations
 
-import asyncio
 import time
 
 import pytest
+from constitutional_swarm.artifact import Artifact, ArtifactStore
+from constitutional_swarm.capability import Capability, CapabilityRegistry
+from constitutional_swarm.contract import ContractStatus, TaskContract
+from constitutional_swarm.dna import AgentDNA, constitutional_dna
+from constitutional_swarm.execution import ExecutionStatus, WorkReceipt
+from constitutional_swarm.swarm import NodeStatus, SwarmExecutor, TaskDAG, TaskNode
+
 from acgs_lite import (
     Constitution,
     ConstitutionalViolationError,
     MACIRole,
     Rule,
 )
-
-from constitutional_swarm.artifact import Artifact, ArtifactStore
-from constitutional_swarm.capability import Capability, CapabilityRegistry
-from constitutional_swarm.contract import ContractStatus, TaskContract
-from constitutional_swarm.execution import ExecutionStatus, WorkReceipt
-from constitutional_swarm.dna import AgentDNA, DNAValidationResult, constitutional_dna
-from constitutional_swarm.swarm import NodeStatus, SwarmExecutor, TaskDAG, TaskNode
-
 
 # ---------------------------------------------------------------------------
 # Breakthrough A: Agent DNA

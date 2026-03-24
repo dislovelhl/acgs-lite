@@ -62,17 +62,17 @@ _UniqueViolationError = sys.modules["asyncpg"].UniqueViolationError  # type: ign
 # Now import the module under test (deferred so coverage instruments it).
 # ---------------------------------------------------------------------------
 
-from enhanced_agent_bus.saga_persistence.postgres.locking import (  # noqa: E402
+from enhanced_agent_bus.saga_persistence.postgres.locking import (
     LOCK_HEALTH_CHECK_ERRORS,
     PostgresLockManager,
 )
-from enhanced_agent_bus.saga_persistence.postgres.locking import (  # noqa: E402
+from enhanced_agent_bus.saga_persistence.postgres.locking import (
     __all__ as locking_all,
 )
-from enhanced_agent_bus.saga_persistence.postgres.schema import (  # noqa: E402
+from enhanced_agent_bus.saga_persistence.postgres.schema import (
     DEFAULT_LOCK_TIMEOUT_SECONDS,
 )
-from enhanced_agent_bus.saga_persistence.repository import (  # noqa: E402
+from enhanced_agent_bus.saga_persistence.repository import (
     LockError,
     RepositoryError,
 )
@@ -83,7 +83,7 @@ from enhanced_agent_bus.saga_persistence.repository import (  # noqa: E402
 
 SAGA_ID = str(uuid.uuid4())
 LOCK_HOLDER = "test-node-abc12345"
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Helpers

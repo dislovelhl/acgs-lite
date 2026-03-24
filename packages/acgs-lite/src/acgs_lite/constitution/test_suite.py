@@ -349,7 +349,7 @@ class GovernanceTestSuite:
         start = time.monotonic()
         try:
             raw_result = self._engine(case.input_text, case.context)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             duration_ms = (time.monotonic() - start) * 1000
             return AssertionResult(
                 case_name=case.name,

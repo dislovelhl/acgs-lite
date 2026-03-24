@@ -15,25 +15,23 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
+from acgs_lite.audit import AuditEntry, AuditLog
 
 # ============================================================================
 # Part 1: acgs_lite engine/core.py tests
 # ============================================================================
-
 from acgs_lite.constitution import Constitution, Rule, Severity
-from acgs_lite.audit import AuditEntry, AuditLog
-from acgs_lite.errors import ConstitutionalViolationError
 from acgs_lite.engine.core import (
+    _ANON,
+    _EMPTY_VIOLATIONS,
     GovernanceEngine,
     ValidationResult,
     Violation,
     _dedup_violations,
     _FastAuditLog,
     _NoopRecorder,
-    _ANON,
-    _EMPTY_VIOLATIONS,
 )
+from acgs_lite.errors import ConstitutionalViolationError
 
 
 def _make_rule(
@@ -848,9 +846,10 @@ class TestOPAClientCoreSSL:
             assert ctx is not None
 
     def test_ssl_with_cert_and_key(self):
-        from enhanced_agent_bus.opa_client.core import OPAClientCore
         import ssl
         import tempfile
+
+        from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         # Create temp cert/key files
         with tempfile.NamedTemporaryFile(suffix=".pem", delete=False) as cert_f, \
@@ -956,24 +955,27 @@ class TestOPAClientCoreValidatePolicyPath:
         client._validate_policy_path("data.acgs.allow")
 
     def test_invalid_characters(self):
-        from enhanced_agent_bus.opa_client.core import OPAClientCore
         from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+
+        from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
         with pytest.raises(ACGSValidationError, match="Invalid policy path"):
             client._validate_policy_path("data/../etc/passwd")
 
     def test_path_traversal(self):
-        from enhanced_agent_bus.opa_client.core import OPAClientCore
         from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+
+        from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
         with pytest.raises(ACGSValidationError, match="Path traversal"):
             client._validate_policy_path("data..acgs..allow")
 
     def test_special_chars_rejected(self):
-        from enhanced_agent_bus.opa_client.core import OPAClientCore
         from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+
+        from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
         with pytest.raises(ACGSValidationError):
@@ -989,8 +991,9 @@ class TestOPAClientCoreValidateInputData:
         client._validate_input_data({"key": "value"})
 
     def test_oversized_input(self):
-        from enhanced_agent_bus.opa_client.core import OPAClientCore
         from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+
+        from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
         # Create input that exceeds 512KB
@@ -1174,8 +1177,9 @@ class TestOPAClientCoreEvaluatePolicy:
             assert result["allowed"] is True
 
     async def test_evaluate_policy_validation_error(self):
-        from enhanced_agent_bus.opa_client.core import OPAClient
         from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+
+        from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient()
         with patch.object(client, "_generate_cache_key", return_value="key"), \
@@ -1196,8 +1200,9 @@ class TestOPAClientCoreEvaluatePolicy:
             assert result["metadata"]["security"] == "fail-closed"
 
     async def test_evaluate_policy_connection_error(self):
-        from enhanced_agent_bus.opa_client.core import OPAClient
         from httpx import ConnectError as HTTPConnectError
+
+        from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient()
         with patch.object(client, "_generate_cache_key", return_value="key"), \
@@ -1269,8 +1274,9 @@ class TestOPAClientCoreEvaluateHTTP:
             await client._evaluate_http({}, "data.acgs.allow")
 
     async def test_evaluate_http_connect_error(self):
-        from enhanced_agent_bus.opa_client.core import OPAClientCore
         from httpx import ConnectError as HTTPConnectError
+
+        from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
         mock_http = AsyncMock()
@@ -1281,8 +1287,9 @@ class TestOPAClientCoreEvaluateHTTP:
                 await client._evaluate_http({}, "data.acgs.allow")
 
     async def test_evaluate_http_timeout(self):
-        from enhanced_agent_bus.opa_client.core import OPAClientCore
         from httpx import TimeoutException as HTTPTimeoutException
+
+        from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
         mock_http = AsyncMock()
@@ -1293,8 +1300,9 @@ class TestOPAClientCoreEvaluateHTTP:
                 await client._evaluate_http({}, "data.acgs.allow")
 
     async def test_evaluate_http_status_error(self):
-        from enhanced_agent_bus.opa_client.core import OPAClientCore
         import httpx
+
+        from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
         mock_http = AsyncMock()
@@ -1310,8 +1318,9 @@ class TestOPAClientCoreEvaluateHTTP:
                 await client._evaluate_http({}, "data.acgs.allow")
 
     async def test_evaluate_http_json_decode_error(self):
-        from enhanced_agent_bus.opa_client.core import OPAClientCore
         import json
+
+        from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
         mock_response = MagicMock()
@@ -1381,7 +1390,7 @@ class TestOPAClientCoreEvaluateFallback:
         assert "Invalid constitutional hash" in result["reason"]
 
     async def test_valid_hash_still_denied(self):
-        from enhanced_agent_bus.opa_client.core import OPAClientCore, CONSTITUTIONAL_HASH
+        from enhanced_agent_bus.opa_client.core import CONSTITUTIONAL_HASH, OPAClientCore
 
         client = OPAClientCore()
         result = await client._evaluate_fallback(
@@ -1432,8 +1441,8 @@ class TestOPAClientCoreValidateConstitutional:
             assert result.is_valid is False
 
     async def test_opa_connection_error(self):
-        from enhanced_agent_bus.opa_client.core import OPAClient
         from enhanced_agent_bus.exceptions import OPAConnectionError
+        from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient()
         with patch.object(
@@ -1450,8 +1459,9 @@ class TestOPAClientCoreValidateConstitutional:
             assert result.is_valid is False
 
     async def test_http_error(self):
-        from enhanced_agent_bus.opa_client.core import OPAClient
         from httpx import ConnectError as HTTPConnectError
+
+        from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient()
         with patch.object(
@@ -1487,7 +1497,7 @@ class TestOPAClientCoreValidateConstitutional:
 
 class TestOPAClientCoreCheckAuthorization:
     async def test_authorized(self):
-        from enhanced_agent_bus.opa_client.core import OPAClient, CONSTITUTIONAL_HASH
+        from enhanced_agent_bus.opa_client.core import CONSTITUTIONAL_HASH, OPAClient
 
         client = OPAClient()
         eval_result = {"allowed": True, "reason": "ok", "metadata": {}}
@@ -1530,8 +1540,8 @@ class TestOPAClientCoreCheckAuthorization:
             assert result is True
 
     async def test_opa_error_returns_false(self):
-        from enhanced_agent_bus.opa_client.core import OPAClient
         from enhanced_agent_bus.exceptions import OPAConnectionError
+        from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient()
         with patch.object(
@@ -1597,8 +1607,9 @@ class TestOPAClientCoreLoadPolicy:
         assert result is False
 
     async def test_load_policy_connect_error(self):
-        from enhanced_agent_bus.opa_client.core import OPAClient
         from httpx import ConnectError as HTTPConnectError
+
+        from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient(mode="http")
         mock_http = AsyncMock()
@@ -1608,8 +1619,9 @@ class TestOPAClientCoreLoadPolicy:
         assert result is False
 
     async def test_load_policy_timeout(self):
-        from enhanced_agent_bus.opa_client.core import OPAClient
         from httpx import TimeoutException as HTTPTimeoutException
+
+        from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient(mode="http")
         mock_http = AsyncMock()
@@ -1649,8 +1661,9 @@ class TestOPAClientCoreEvaluateWithHistory:
             assert result["allowed"] is True
 
     async def test_evaluate_with_history_error(self):
-        from enhanced_agent_bus.opa_client.core import OPAClient
         from httpx import ConnectError as HTTPConnectError
+
+        from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient(mode="http")
         with patch.object(client, "_validate_policy_path"), \
@@ -1748,8 +1761,9 @@ class TestOPAClientCoreVerifyBundle:
 
 class TestOPAClientCoreLoadBundle:
     async def test_load_bundle_connect_error(self):
-        from enhanced_agent_bus.opa_client.core import OPAClientCore
         from httpx import ConnectError as HTTPConnectError
+
+        from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
         mock_http = AsyncMock()
@@ -1851,8 +1865,8 @@ class TestModuleLevelHelpers:
 
 class TestOPAClientComposed:
     def test_opa_client_is_composed(self):
-        from enhanced_agent_bus.opa_client.core import OPAClient, OPAClientCore
         from enhanced_agent_bus.opa_client.cache import OPAClientCacheMixin
+        from enhanced_agent_bus.opa_client.core import OPAClient, OPAClientCore
         from enhanced_agent_bus.opa_client.health import OPAClientHealthMixin
 
         assert issubclass(OPAClient, OPAClientCore)

@@ -46,7 +46,6 @@ from src.core.shared.errors.exceptions import (
     ValidationError as ACGSValidationError,
 )
 
-
 # ---------------------------------------------------------------------------
 # HashVersion tests
 # ---------------------------------------------------------------------------

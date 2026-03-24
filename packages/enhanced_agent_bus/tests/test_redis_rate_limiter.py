@@ -18,7 +18,6 @@ from enhanced_agent_bus.security.redis_rate_limiter import (
     RedisRateLimiter,
 )
 
-
 # ---------------------------------------------------------------------------
 # RateLimitResult dataclass
 # ---------------------------------------------------------------------------

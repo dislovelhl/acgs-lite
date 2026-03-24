@@ -13,7 +13,7 @@ import pytest
 # Governance and constitutional compliance test markers
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
-from enhanced_agent_bus.deliberation_layer.opa_guard_mixin import OPAGuardMixin  # noqa: E402
+from enhanced_agent_bus.deliberation_layer.opa_guard_mixin import OPAGuardMixin
 
 # =============================================================================
 # Test Class Implementation

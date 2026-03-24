@@ -350,7 +350,7 @@ class TestRedisConnectionPoolSingleton:
         )
 
         # Reset to ensure clean state (use try/except to handle any errors)
-        try:  # noqa: SIM105
+        try:
             await reset_shared_pool()
         except (RuntimeError, ConnectionError, OSError):
             pass
@@ -370,7 +370,7 @@ class TestRedisConnectionPoolSingleton:
                 assert pool1 is pool2
 
         # Cleanup
-        try:  # noqa: SIM105
+        try:
             await reset_shared_pool()
         except (RuntimeError, ConnectionError, OSError):
             pass
@@ -383,7 +383,7 @@ class TestRedisConnectionPoolSingleton:
         )
 
         # Reset to ensure clean state
-        try:  # noqa: SIM105
+        try:
             await reset_shared_pool()
         except (RuntimeError, ConnectionError, OSError):
             pass
@@ -404,7 +404,7 @@ class TestRedisConnectionPoolSingleton:
                 assert pool1 is not pool2
 
         # Cleanup
-        try:  # noqa: SIM105
+        try:
             await reset_shared_pool()
         except (RuntimeError, ConnectionError, OSError):
             pass

@@ -72,7 +72,7 @@ async def test_engine():
 
     await engine.dispose()
     # Clean up the temporary database file
-    try:  # noqa: SIM105
+    try:
         os.unlink(db_path)
     except OSError:
         pass

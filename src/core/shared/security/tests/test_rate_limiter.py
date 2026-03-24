@@ -4,7 +4,6 @@ Tests for src.core.shared.security.rate_limiter
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-import math
 import time
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -35,7 +34,6 @@ from src.core.shared.security.rate_limiter import (
     rate_limit,
     rate_limiter,
 )
-
 
 # ============================================================================
 # _module_available

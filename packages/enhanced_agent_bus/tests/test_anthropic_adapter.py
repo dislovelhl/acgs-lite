@@ -11,16 +11,15 @@ import pytest
 
 from enhanced_agent_bus.llm_adapters.base import (
     AdapterStatus,
+    CompletionMetadata,
     CostEstimate,
     HealthCheckResult,
     LLMMessage,
     LLMResponse,
     StreamingMode,
     TokenUsage,
-    CompletionMetadata,
 )
 from enhanced_agent_bus.llm_adapters.config import AnthropicAdapterConfig
-
 
 # ---------------------------------------------------------------------------
 # Helpers

@@ -16,7 +16,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 
 JSONDict = dict[str, object]
 
-from .base import (  # noqa: E402
+from .base import (
     CONSTITUTIONAL_HASH,
     AdapterStatus,
     BaseLLMAdapter,
@@ -27,8 +27,8 @@ from .base import (  # noqa: E402
     RetryConfig,
     StreamingMode,
 )
-from .config import AzureOpenAIAdapterConfig  # noqa: E402
-from .models import MessageConverter, ResponseConverter  # noqa: E402
+from .config import AzureOpenAIAdapterConfig
+from .models import MessageConverter, ResponseConverter
 
 # Logger
 logger = get_logger(__name__)
@@ -217,7 +217,7 @@ class AzureOpenAIAdapter(BaseLLMAdapter):
                 if not self.api_key:
                     raise ValueError(
                         "Azure OpenAI API key is required when not using managed identity. "
-                        "Set AZURE_OPENAI_API_KEY environment variable or provide api_key parameter."  # noqa: E501
+                        "Set AZURE_OPENAI_API_KEY environment variable or provide api_key parameter."
                     )
                 client_kwargs["api_key"] = self.api_key
 
@@ -270,7 +270,7 @@ class AzureOpenAIAdapter(BaseLLMAdapter):
                 if not self.api_key:
                     raise ValueError(
                         "Azure OpenAI API key is required when not using managed identity. "
-                        "Set AZURE_OPENAI_API_KEY environment variable or provide api_key parameter."  # noqa: E501
+                        "Set AZURE_OPENAI_API_KEY environment variable or provide api_key parameter."
                     )
                 client_kwargs["api_key"] = self.api_key
 

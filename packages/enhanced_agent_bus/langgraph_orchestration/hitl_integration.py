@@ -17,11 +17,11 @@ from datetime import UTC, datetime
 from enum import Enum
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -37,7 +37,7 @@ from .models import (
 logger = get_logger(__name__)
 
 
-class HITLAction(str, Enum):  # noqa: UP042
+class HITLAction(str, Enum):
     """Actions that can be taken in response to HITL interrupt.
 
     Constitutional Hash: cdd01ef066bc6cf2

@@ -12,9 +12,9 @@ import sys
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from httpx import ASGITransport, AsyncClient
 from fastapi import FastAPI
 from fastapi.routing import APIRouter
+from httpx import ASGITransport, AsyncClient
 
 # Import the module under test. We use importlib to get the actual module
 # object (not the FastAPI `app` instance that `api/__init__.py` re-exports

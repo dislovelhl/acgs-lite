@@ -14,7 +14,8 @@ import warnings
 from unittest.mock import MagicMock, patch
 
 import pytest
-from pydantic import SecretStr, ValidationError as PydanticValidationError
+from pydantic import SecretStr
+from pydantic import ValidationError as PydanticValidationError
 
 from src.core.shared.constants import (
     COMPLIANCE_TARGET,
@@ -36,7 +37,6 @@ from src.core.shared.constants import (
     classify_risk_tier,
     get_constitutional_hash,
 )
-
 
 # ============================================================================
 # constants.py
@@ -485,7 +485,7 @@ class TestInfrastructure:
         assert db.pool_pre_ping is True
 
     def test_database_url_normalization_postgres(self):
-        from src.core.shared.config.infrastructure import DatabaseSettings, HAS_PYDANTIC_SETTINGS
+        from src.core.shared.config.infrastructure import HAS_PYDANTIC_SETTINGS, DatabaseSettings
 
         if HAS_PYDANTIC_SETTINGS:
             # Use validation_alias-based env var or direct field assignment
@@ -499,7 +499,7 @@ class TestInfrastructure:
             assert db.url.startswith("postgresql+asyncpg://")
 
     def test_database_url_normalization_postgresql(self):
-        from src.core.shared.config.infrastructure import DatabaseSettings, HAS_PYDANTIC_SETTINGS
+        from src.core.shared.config.infrastructure import HAS_PYDANTIC_SETTINGS, DatabaseSettings
 
         if HAS_PYDANTIC_SETTINGS:
             with patch.dict(os.environ, {"DATABASE_URL": "postgresql://localhost/test"}):
@@ -1489,7 +1489,6 @@ class TestCircuitBreaker:
         from src.core.shared.errors.circuit_breaker import (
             CircuitBreakerConfig,
             circuit_breaker,
-            get_circuit_breaker,
         )
 
         @circuit_breaker(
@@ -1960,7 +1959,6 @@ class TestInterfaces:
             MetricsCollector,
             NotificationService,
             PolicyEvaluator,
-            RetryStrategy,
         )
 
         # Verify they are all types

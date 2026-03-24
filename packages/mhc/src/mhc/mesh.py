@@ -25,13 +25,12 @@ import hashlib
 import random
 import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
-
-from acgs_lite import Constitution, ConstitutionalViolationError, Rule
 
 from constitutional_swarm.dna import AgentDNA
 
+from acgs_lite import Constitution
 
 # ---------------------------------------------------------------------------
 # Errors

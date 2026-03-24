@@ -22,7 +22,6 @@ from enhanced_agent_bus.verification.maci_verification import (
     verify_decision_maci,
 )
 
-
 # ---------------------------------------------------------------------------
 # Dataclass serialization
 # ---------------------------------------------------------------------------

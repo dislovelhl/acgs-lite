@@ -24,7 +24,6 @@ from src.core.shared.errors.exceptions import ConfigurationError
 # ============================================================================
 # PQC Tests
 # ============================================================================
-
 from src.core.shared.security.pqc import (
     APPROVED_CLASSICAL,
     APPROVED_PQC,
@@ -609,7 +608,6 @@ class TestPQCConstants:
 # ============================================================================
 
 from src.core.shared.security import auth
-
 
 TEST_JWT_SECRET = "test-secret-key-that-is-at-least-32-chars-long"
 
@@ -1356,14 +1354,14 @@ class TestConfigMergerMergeWithEnv:
         for truthy in ("true", "1", "yes", "on"):
             config = {"flag": False}
             result = ConfigMerger.merge_with_env(
-                config, "X", env_vars={f"X_FLAG": truthy}
+                config, "X", env_vars={"X_FLAG": truthy}
             )
             assert result["flag"] is True
 
         for falsy in ("false", "0", "no", "off"):
             config = {"flag": True}
             result = ConfigMerger.merge_with_env(
-                config, "X", env_vars={f"X_FLAG": falsy}
+                config, "X", env_vars={"X_FLAG": falsy}
             )
             assert result["flag"] is False
 

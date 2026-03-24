@@ -21,6 +21,8 @@ Example: Multi-Service Constitutional Validation
 Reference: https://temporal.io/blog/saga-pattern-made-easy
 """
 
+from __future__ import annotations
+
 import asyncio
 import json
 import uuid
@@ -40,14 +42,14 @@ from typing import (
 import aiofiles
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
     from src.core.shared.types import (
         JSONDict,
         JSONValue,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]

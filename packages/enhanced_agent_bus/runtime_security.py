@@ -22,7 +22,7 @@ from enum import Enum
 from typing import ClassVar
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -576,7 +576,7 @@ class RuntimeSecurityScanner:
             event = SecurityEvent(
                 event_type=SecurityEventType.ANOMALY_DETECTED,
                 severity=SecuritySeverity.HIGH,
-                message=f"Anomaly detected: {len(recent_events)} events in {self.config.anomaly_window_seconds}s",  # noqa: E501
+                message=f"Anomaly detected: {len(recent_events)} events in {self.config.anomaly_window_seconds}s",
                 tenant_id=tenant_id,
                 agent_id=agent_id,
                 metadata={

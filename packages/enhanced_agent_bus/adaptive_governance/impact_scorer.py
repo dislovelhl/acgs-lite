@@ -17,6 +17,8 @@ Key Features:
 - Adaptive model retraining based on feedback
 """
 
+from __future__ import annotations
+
 import asyncio
 import os
 import sys
@@ -29,7 +31,7 @@ try:
     from src.core.shared.types import (
         MessagePayload,
         PolicyContext,
-    )  # noqa: E402
+    )
 except ImportError:
     MessagePayload = dict  # type: ignore[misc,assignment]
     PolicyContext = dict  # type: ignore[misc,assignment]
@@ -490,7 +492,7 @@ class ImpactScorer:
 
                 # Avoid division by zero in R2 calculation
                 ss_tot = np.sum((y - np.mean(y)) ** 2)
-                if ss_tot > 0:  # noqa: SIM108
+                if ss_tot > 0:
                     r2_score = float(1 - (np.sum((y - y_pred) ** 2) / ss_tot))
                 else:
                     r2_score = 0.0

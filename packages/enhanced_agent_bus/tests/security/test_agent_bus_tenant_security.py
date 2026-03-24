@@ -105,7 +105,7 @@ class TestMessageProcessorTenantValidation:
         )
         msg = MockAgentMessage(tenant_id="tenant-A")
 
-        if session.governance_config.tenant_id != msg.tenant_id:  # noqa: SIM108
+        if session.governance_config.tenant_id != msg.tenant_id:
             loaded = None
         else:
             loaded = session
@@ -270,7 +270,7 @@ class TestDualReadMigration:
         parsed = json.loads(data)
         session_tenant = parsed.get("governance_config", {}).get("tenant_id")
 
-        if session_tenant != requesting_tenant:  # noqa: SIM108
+        if session_tenant != requesting_tenant:
             should_migrate = False
         else:
             should_migrate = True

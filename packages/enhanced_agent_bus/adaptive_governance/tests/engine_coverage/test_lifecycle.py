@@ -634,7 +634,7 @@ class TestLifecycle:
         # Clean up
         engine.running = False
         engine.learning_task.cancel()
-        try:  # noqa: SIM105
+        try:
             await engine.learning_task
         except asyncio.CancelledError:
             pass

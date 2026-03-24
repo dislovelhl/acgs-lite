@@ -17,35 +17,6 @@ import numpy as np
 import pytest
 
 # ---------------------------------------------------------------------------
-# Sandbox imports
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.guardrails.sandbox import (
-    SandboxConfig,
-    ToolRunnerSandbox,
-)
-from enhanced_agent_bus.guardrails.enums import (
-    GuardrailLayer,
-    SafetyAction,
-    ViolationSeverity,
-)
-from enhanced_agent_bus.guardrails.sandbox_providers import (
-    MockSandboxProvider,
-    SandboxExecutionResult,
-    SandboxProviderType,
-)
-
-# ---------------------------------------------------------------------------
-# Verification orchestrator imports
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.config import BusConfiguration
-from enhanced_agent_bus.models import AgentMessage, MessageType
-from enhanced_agent_bus.validators import ValidationResult
-from enhanced_agent_bus.verification_orchestrator import (
-    VerificationOrchestrator,
-    VerificationResult,
-)
-
-# ---------------------------------------------------------------------------
 # Adaptive threshold imports
 # ---------------------------------------------------------------------------
 from enhanced_agent_bus.adaptive_governance.models import (
@@ -57,6 +28,34 @@ from enhanced_agent_bus.adaptive_governance.threshold_manager import (
     AdaptiveThresholds,
 )
 
+# ---------------------------------------------------------------------------
+# Verification orchestrator imports
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.config import BusConfiguration
+from enhanced_agent_bus.guardrails.enums import (
+    GuardrailLayer,
+    SafetyAction,
+    ViolationSeverity,
+)
+
+# ---------------------------------------------------------------------------
+# Sandbox imports
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.guardrails.sandbox import (
+    SandboxConfig,
+    ToolRunnerSandbox,
+)
+from enhanced_agent_bus.guardrails.sandbox_providers import (
+    MockSandboxProvider,
+    SandboxExecutionResult,
+    SandboxProviderType,
+)
+from enhanced_agent_bus.models import AgentMessage, MessageType
+from enhanced_agent_bus.validators import ValidationResult
+from enhanced_agent_bus.verification_orchestrator import (
+    VerificationOrchestrator,
+    VerificationResult,
+)
 
 # =========================================================================
 # Helpers

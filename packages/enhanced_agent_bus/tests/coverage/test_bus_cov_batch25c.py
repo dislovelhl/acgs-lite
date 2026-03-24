@@ -18,7 +18,6 @@ import pytest
 # ============================================================================
 # collaboration/server.py tests
 # ============================================================================
-
 from enhanced_agent_bus.collaboration.models import (
     ActivityEventType,
     ChatMessage,

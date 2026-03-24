@@ -19,11 +19,11 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -222,10 +222,10 @@ class GraphOrchestrator:
             )
 
         # Check for invalid cycles
-        # Note: Some cycles are valid in LangGraph (loops), but self-loops without conditions are not  # noqa: E501
+        # Note: Some cycles are valid in LangGraph (loops), but self-loops without conditions are not
         for node in self.graph.nodes:
             for edge in self.graph.edges:
-                if edge.source_node_id == node.id and edge.target_node_id == node.id:  # noqa: SIM102
+                if edge.source_node_id == node.id and edge.target_node_id == node.id:
                     if edge.edge_type not in (EdgeType.LOOP, EdgeType.CONDITIONAL):
                         raise CyclicDependencyError(
                             cycle_path=[node.id, node.id],

@@ -12,7 +12,6 @@ from enhanced_agent_bus.persistence.postgres_repository import (
     asyncpg_module,
 )
 
-
 pytestmark = pytest.mark.integration
 
 

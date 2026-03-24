@@ -149,7 +149,7 @@ class GovernanceASGIMiddleware:
 
                     if message["type"] == "http.response.start":
                         original_status = message.get("status", 200)
-                        headers = dict(message.get("headers", []))  # noqa: F841
+                        headers = dict(message.get("headers", []))
 
                         # Add governance headers
                         extra_headers = [
@@ -226,7 +226,7 @@ class GovernanceASGIMiddleware:
                     for key in ("content", "text", "message", "query", "input", "prompt"):
                         if key in data and isinstance(data[key], str):
                             text_parts.append(data[key])
-                    if text_parts:  # noqa: SIM108
+                    if text_parts:
                         text = " ".join(text_parts)
                     else:
                         text = json.dumps(data)

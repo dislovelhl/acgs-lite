@@ -34,7 +34,7 @@ from pathlib import Path
 _LICENSE_FILE = Path.home() / ".acgs-lite" / "license"
 
 # Default dev secret — safe to be public; override with ACGS_LICENSE_SECRET for production
-_DEFAULT_DEV_SECRET = "acgs-lite-dev-2026"  # noqa: S105
+_DEFAULT_DEV_SECRET = "acgs-lite-dev-2026"
 
 
 class Tier(IntEnum):

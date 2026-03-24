@@ -18,7 +18,6 @@ from fastapi.testclient import TestClient
 from src.core.services.api_gateway.routes.data_subject import data_subject_v1_router
 from src.core.shared.security.auth import UserClaims, get_current_user
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

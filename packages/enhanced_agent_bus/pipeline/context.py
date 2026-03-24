@@ -6,26 +6,26 @@ Pipeline context and metrics for ACGS-2 Message Processing.
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-import time  # noqa: E402
-from dataclasses import dataclass, field  # noqa: E402
-from typing import TYPE_CHECKING  # noqa: E402
+import time
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
-from enhanced_agent_bus.models import AgentMessage  # noqa: E402
-from enhanced_agent_bus.validators import ValidationResult  # noqa: E402
+from enhanced_agent_bus.models import AgentMessage
+from enhanced_agent_bus.validators import ValidationResult
 
-from ..ifc.labels import Confidentiality, IFCLabel, IFCViolation, Integrity  # noqa: E402
-from ..prov.labels import ProvLabel, ProvLineage  # noqa: E402
-from ..session_context import SessionContext  # noqa: E402
+from ..ifc.labels import Confidentiality, IFCLabel, IFCViolation, Integrity
+from ..prov.labels import ProvLabel, ProvLineage
+from ..session_context import SessionContext
 
 if TYPE_CHECKING:
     from ..adaptive_governance.models import GovernanceDecision

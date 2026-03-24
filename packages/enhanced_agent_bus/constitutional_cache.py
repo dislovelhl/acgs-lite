@@ -19,7 +19,7 @@ try:
     from src.core.shared.types import (
         CONSTITUTIONAL_HASH,
         JSONDict,
-    )  # noqa: E402
+    )
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"  # type: ignore[misc,assignment]
     JSONDict = dict  # type: ignore[misc,assignment]

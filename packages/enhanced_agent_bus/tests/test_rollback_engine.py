@@ -41,7 +41,6 @@ from enhanced_agent_bus.constitutional.rollback_engine import (
     _resolve_rollback_activity_callable,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

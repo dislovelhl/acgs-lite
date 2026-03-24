@@ -11,7 +11,6 @@ from enhanced_agent_bus.constitutional.council import (
     ConstitutionalCouncilService,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

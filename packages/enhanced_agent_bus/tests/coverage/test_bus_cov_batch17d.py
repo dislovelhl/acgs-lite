@@ -13,8 +13,8 @@ import asyncio
 import sys
 import time
 from collections import deque
-from datetime import UTC, datetime, timedelta
 from dataclasses import dataclass, field
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -1541,6 +1541,7 @@ class TestZ3Endpoints:
     async def test_verify_with_verifier_success(self):
         """When Z3 verifier is available, use it."""
         import importlib
+
         import httpx
 
         from enhanced_agent_bus.api.routes.z3 import _verify_api_key
@@ -1597,6 +1598,7 @@ class TestZ3Endpoints:
     async def test_verify_with_verifier_exception(self):
         """When verifier raises, endpoint returns 500."""
         import importlib
+
         import httpx
 
         from enhanced_agent_bus.api.routes.z3 import _verify_api_key

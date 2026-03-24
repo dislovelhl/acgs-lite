@@ -16,7 +16,6 @@ from enhanced_agent_bus.constitutional.hitl_integration import (
     NotificationChannel,
 )
 
-
 # ---------------------------------------------------------------------------
 # Enum tests
 # ---------------------------------------------------------------------------

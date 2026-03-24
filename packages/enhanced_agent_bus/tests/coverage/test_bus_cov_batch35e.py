@@ -15,6 +15,20 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
 import pytest
+from src.core.shared.errors.exceptions import (
+    ServiceUnavailableError,
+)
+from src.core.shared.errors.exceptions import (
+    ValidationError as ACGSValidationError,
+)
+
+# ---------------------------------------------------------------------------
+# api.app imports (helpers only - avoid triggering full app creation)
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.api.app import (
+    _is_development_like_environment,
+    _normalize_workflow_dsn,
+)
 
 # ---------------------------------------------------------------------------
 # siem_providers imports
@@ -26,10 +40,6 @@ from enhanced_agent_bus.guardrails.siem_providers import (
     SIEMProviderType,
     SplunkHECProvider,
     create_siem_provider,
-)
-from src.core.shared.errors.exceptions import (
-    ServiceUnavailableError,
-    ValidationError as ACGSValidationError,
 )
 
 # ---------------------------------------------------------------------------
@@ -47,15 +57,6 @@ from enhanced_agent_bus.memory_profiler import (
     get_memory_queue,
     profile_memory,
 )
-
-# ---------------------------------------------------------------------------
-# api.app imports (helpers only - avoid triggering full app creation)
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.api.app import (
-    _is_development_like_environment,
-    _normalize_workflow_dsn,
-)
-
 
 # ===================================================================
 # Helpers

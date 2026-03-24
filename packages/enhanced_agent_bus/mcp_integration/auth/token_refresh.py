@@ -19,11 +19,11 @@ from enum import Enum
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -44,7 +44,7 @@ _TOKEN_REFRESH_OPERATION_ERRORS = (
 )
 
 
-class RefreshStatus(str, Enum):  # noqa: UP042
+class RefreshStatus(str, Enum):
     """Status of a refresh operation."""
 
     SUCCESS = "success"
@@ -52,7 +52,7 @@ class RefreshStatus(str, Enum):  # noqa: UP042
     PENDING = "pending"
     SKIPPED = "skipped"
     NOT_NEEDED = "not_needed"
-    NO_REFRESH_TOKEN = "no_refresh_token"  # noqa: S105
+    NO_REFRESH_TOKEN = "no_refresh_token"
 
 
 @dataclass
@@ -178,7 +178,7 @@ class TokenRefresher:
 
         if self._refresh_task:
             self._refresh_task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._refresh_task
             except asyncio.CancelledError:
                 pass

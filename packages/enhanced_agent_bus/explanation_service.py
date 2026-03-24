@@ -10,7 +10,7 @@ import time
 import uuid
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.event_schemas.decision_explanation import (
@@ -24,7 +24,7 @@ from src.core.shared.event_schemas.decision_explanation import (
 )
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -135,7 +135,7 @@ class CounterfactualEngine:
         else:
             # Medium score - show threshold crossing
             modified_value = 0.9 if original_value < 0.5 else 0.2
-            scenario_desc = f"If {factor.factor_name} crossed threshold ({modified_value:.1f} instead of {original_value:.2f})"  # noqa: E501
+            scenario_desc = f"If {factor.factor_name} crossed threshold ({modified_value:.1f} instead of {original_value:.2f})"
 
         # Predict outcome based on score change
         predicted_outcome = self._predict_outcome_change(
@@ -543,7 +543,7 @@ class ExplanationService:
         factor_metadata = {
             "semantic_score": {
                 "name": "Content Analysis",
-                "explanation": "Score based on semantic analysis of message content for high-impact keywords",  # noqa: E501
+                "explanation": "Score based on semantic analysis of message content for high-impact keywords",
                 "source": "semantic_scorer",
                 "method": "keyword_matching",
             },
@@ -699,13 +699,13 @@ class ExplanationService:
         primary_name = primary_factor.factor_name if primary_factor else "analysis"
 
         if verdict.upper() == "ALLOW":
-            return f"Decision: ALLOW. Impact score {impact_score:.2f} is below threshold. Primary factor: {primary_name}."  # noqa: E501
+            return f"Decision: ALLOW. Impact score {impact_score:.2f} is below threshold. Primary factor: {primary_name}."
         elif verdict.upper() == "DENY":
-            return f"Decision: DENY. Impact score {impact_score:.2f} exceeds threshold. Primary factor: {primary_name}."  # noqa: E501
+            return f"Decision: DENY. Impact score {impact_score:.2f} exceeds threshold. Primary factor: {primary_name}."
         elif verdict.upper() == "CONDITIONAL":
-            return f"Decision: CONDITIONAL. Impact score {impact_score:.2f} requires additional review. Primary factor: {primary_name}."  # noqa: E501
+            return f"Decision: CONDITIONAL. Impact score {impact_score:.2f} requires additional review. Primary factor: {primary_name}."
         else:
-            return f"Decision: {verdict}. Impact score {impact_score:.2f}. Primary factor: {primary_name}."  # noqa: E501
+            return f"Decision: {verdict}. Impact score {impact_score:.2f}. Primary factor: {primary_name}."
 
     def _generate_detailed_reasoning(
         self,
@@ -730,7 +730,7 @@ class ExplanationService:
         for f in sorted_factors:
             contribution = f.factor_value * f.factor_weight
             lines.append(
-                f"  - {f.factor_name}: {f.factor_value:.3f} (weight: {f.factor_weight:.2f}, contribution: {contribution:.3f})"  # noqa: E501
+                f"  - {f.factor_name}: {f.factor_value:.3f} (weight: {f.factor_weight:.2f}, contribution: {contribution:.3f})"
             )
 
         lines.append("")

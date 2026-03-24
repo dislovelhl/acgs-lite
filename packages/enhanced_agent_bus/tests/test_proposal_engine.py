@@ -14,7 +14,6 @@ from enhanced_agent_bus.constitutional.proposal_engine import (
     ProposalValidationError,
 )
 
-
 # ---------------------------------------------------------------------------
 # ProposalRequest model
 # ---------------------------------------------------------------------------

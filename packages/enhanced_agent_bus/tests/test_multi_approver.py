@@ -523,7 +523,7 @@ class TestSlackNotificationChannel:
         """Create a Slack notification channel."""
         return SlackNotificationChannel(
             webhook_url="https://hooks.slack.com/test",
-            bot_token="xoxb-test-token",  # noqa: S106
+            bot_token="xoxb-test-token",
         )
 
     async def test_send_approval_request(

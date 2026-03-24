@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
+from src.core.shared.security.auth import UserClaims, get_current_user
 
 from enhanced_agent_bus.api.dependencies import get_workflow_executor
 from enhanced_agent_bus.api.routes.workflows import router as workflows_router
@@ -18,8 +19,6 @@ from enhanced_agent_bus.persistence.models import (
     WorkflowStatus,
     WorkflowStep,
 )
-from src.core.shared.security.auth import UserClaims, get_current_user
-
 
 pytestmark = pytest.mark.integration
 _ROUTE_TIMEOUT_SECONDS = 2.0

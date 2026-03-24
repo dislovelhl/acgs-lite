@@ -21,7 +21,6 @@ from src.core.services.api_gateway.routes.decisions import (
 )
 from src.core.shared.security.auth import UserClaims, get_current_user
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

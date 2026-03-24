@@ -12,14 +12,15 @@ import hashlib
 import inspect
 import json
 from collections import defaultdict, deque
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import Enum, IntEnum
 from functools import wraps
-from typing import Any, Callable
+from typing import Any
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -470,11 +471,11 @@ def security_audit(
 
 __all__ = [
     "DEFAULT_ALERT_THRESHOLDS",
+    "FAST_HASH_AVAILABLE",
     "AlertLevel",
     "AlertManager",
     "AlertThreshold",
     "EventCorrelator",
-    "FAST_HASH_AVAILABLE",
     "SIEMConfig",
     "SIEMEventFormatter",
     "SIEMFormat",

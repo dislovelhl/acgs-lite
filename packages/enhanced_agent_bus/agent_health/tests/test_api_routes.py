@@ -76,11 +76,14 @@ def _build_authed_client(mock_store: AgentHealthStore) -> TestClient:
 
     app = FastAPI()
     app.include_router(router)
-    app.dependency_overrides[get_agent_health_store] = lambda: mock_store
+
+    async def _mock_store_dep() -> AgentHealthStore:
+        return mock_store
 
     async def _mock_operator() -> str:
         return "test-operator"
 
+    app.dependency_overrides[get_agent_health_store] = _mock_store_dep
     app.dependency_overrides[require_operator_role] = _mock_operator
     return TestClient(app, raise_server_exceptions=False)
 
@@ -95,11 +98,14 @@ def _build_unauthenticated_client(mock_store: AgentHealthStore) -> TestClient:
 
     app = FastAPI()
     app.include_router(router)
-    app.dependency_overrides[get_agent_health_store] = lambda: mock_store
+
+    async def _mock_store_dep() -> AgentHealthStore:
+        return mock_store
 
     async def _mock_unauthenticated() -> str:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
+    app.dependency_overrides[get_agent_health_store] = _mock_store_dep
     app.dependency_overrides[require_operator_role] = _mock_unauthenticated
     return TestClient(app, raise_server_exceptions=False)
 
@@ -114,11 +120,14 @@ def _build_forbidden_client(mock_store: AgentHealthStore) -> TestClient:
 
     app = FastAPI()
     app.include_router(router)
-    app.dependency_overrides[get_agent_health_store] = lambda: mock_store
+
+    async def _mock_store_dep() -> AgentHealthStore:
+        return mock_store
 
     async def _mock_forbidden() -> str:
         raise HTTPException(status_code=403, detail="Insufficient role")
 
+    app.dependency_overrides[get_agent_health_store] = _mock_store_dep
     app.dependency_overrides[require_operator_role] = _mock_forbidden
     return TestClient(app, raise_server_exceptions=False)
 
@@ -315,13 +324,20 @@ def _build_authed_client_with_audit(
 
     app = FastAPI()
     app.include_router(router)
-    app.dependency_overrides[get_agent_health_store] = lambda: mock_store
+
+    async def _mock_store_dep() -> AgentHealthStore:
+        return mock_store
+
     _audit = mock_audit_client or _make_mock_audit_client()
-    app.dependency_overrides[get_audit_log_client] = lambda: _audit
+
+    async def _mock_audit_dep():
+        return _audit
 
     async def _mock_operator() -> str:
         return "test-operator"
 
+    app.dependency_overrides[get_agent_health_store] = _mock_store_dep
+    app.dependency_overrides[get_audit_log_client] = _mock_audit_dep
     app.dependency_overrides[require_operator_role] = _mock_operator
     return TestClient(app, raise_server_exceptions=False)
 
@@ -337,12 +353,18 @@ def _build_unauthenticated_client_with_audit(mock_store: AgentHealthStore) -> Te
 
     app = FastAPI()
     app.include_router(router)
-    app.dependency_overrides[get_agent_health_store] = lambda: mock_store
-    app.dependency_overrides[get_audit_log_client] = lambda: _make_mock_audit_client()
+
+    async def _mock_store_dep() -> AgentHealthStore:
+        return mock_store
+
+    async def _mock_audit_dep():
+        return _make_mock_audit_client()
 
     async def _mock_unauthenticated() -> str:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
+    app.dependency_overrides[get_agent_health_store] = _mock_store_dep
+    app.dependency_overrides[get_audit_log_client] = _mock_audit_dep
     app.dependency_overrides[require_operator_role] = _mock_unauthenticated
     return TestClient(app, raise_server_exceptions=False)
 
@@ -358,12 +380,18 @@ def _build_forbidden_client_with_audit(mock_store: AgentHealthStore) -> TestClie
 
     app = FastAPI()
     app.include_router(router)
-    app.dependency_overrides[get_agent_health_store] = lambda: mock_store
-    app.dependency_overrides[get_audit_log_client] = lambda: _make_mock_audit_client()
+
+    async def _mock_store_dep() -> AgentHealthStore:
+        return mock_store
+
+    async def _mock_audit_dep():
+        return _make_mock_audit_client()
 
     async def _mock_forbidden() -> str:
         raise HTTPException(status_code=403, detail="Insufficient role")
 
+    app.dependency_overrides[get_agent_health_store] = _mock_store_dep
+    app.dependency_overrides[get_audit_log_client] = _mock_audit_dep
     app.dependency_overrides[require_operator_role] = _mock_forbidden
     return TestClient(app, raise_server_exceptions=False)
 

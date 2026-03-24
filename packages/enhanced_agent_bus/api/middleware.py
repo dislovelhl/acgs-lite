@@ -69,7 +69,7 @@ except ImportError:
     get_api_version = None  # type: ignore[misc, assignment]
 
 # Correlation ID middleware from api_exceptions
-from ..api_exceptions import (  # noqa: E402
+from ..api_exceptions import (
     correlation_id_middleware,
 )
 

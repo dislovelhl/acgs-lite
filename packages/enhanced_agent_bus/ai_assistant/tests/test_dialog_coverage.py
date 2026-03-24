@@ -346,7 +346,7 @@ class TestHandleSlotFilling:
 
         nlu = make_nlu(intent_name="order_status", entities=[])
         action = await policy.select_action(ctx, nlu, list(ActionType))
-        # order_id is in context, so not missing → return original action (FILL_SLOT mapped from intent)  # noqa: E501
+        # order_id is in context, so not missing → return original action (FILL_SLOT mapped from intent)
         assert isinstance(action, DialogAction)
 
 

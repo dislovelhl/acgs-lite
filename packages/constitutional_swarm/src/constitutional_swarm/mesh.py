@@ -29,11 +29,9 @@ import uuid
 from dataclasses import dataclass
 from typing import Any
 
-from acgs_lite import Constitution, ConstitutionalViolationError
-
+from acgs_lite import Constitution
 from constitutional_swarm.dna import AgentDNA
 from constitutional_swarm.manifold import GovernanceManifold
-
 
 # ---------------------------------------------------------------------------
 # Errors

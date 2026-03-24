@@ -8,11 +8,13 @@ DeliberationLayer class, implementing the VERIFY-BEFORE-ACT pattern
 with multi-signature collection and critic agent reviews.
 """
 
+from __future__ import annotations
+
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

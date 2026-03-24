@@ -185,7 +185,7 @@ class OPAAdapter(ACLAdapter[OPARequest, OPAResponse]):
                 result={"error": "timeout"},
                 trace_id=request.trace_id,
             )
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             if self.opa_config.fail_closed:
                 return OPAResponse(allow=False, result={"error": str(exc)}, trace_id=request.trace_id)
             return self._simulate_opa_response(request)

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import time
-from unittest.mock import AsyncMock, MagicMock, patch, PropertyMock
+from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
 
@@ -862,7 +862,6 @@ class TestN1DetectionMiddleware:
     async def test_middleware_disabled_passes_through(self):
         from fastapi import FastAPI
         from httpx import ASGITransport, AsyncClient
-
         from src.core.shared.database.n1_middleware import N1DetectionMiddleware
 
         app = FastAPI()
@@ -881,7 +880,6 @@ class TestN1DetectionMiddleware:
     async def test_middleware_enabled_adds_headers(self):
         from fastapi import FastAPI
         from httpx import ASGITransport, AsyncClient
-
         from src.core.shared.database.n1_middleware import N1DetectionMiddleware
 
         app = FastAPI()

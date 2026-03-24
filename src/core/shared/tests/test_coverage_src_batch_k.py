@@ -13,12 +13,9 @@ Targets uncovered lines in:
 
 from __future__ import annotations
 
-import os
 from unittest.mock import MagicMock, patch
 
 import pytest
-from pydantic import SecretStr
-
 
 # ============================================================================
 # Config: Security (pydantic_settings branch — lines 33-48)
@@ -868,32 +865,32 @@ class TestEvalNode:
     """Tests for _eval_node (lines 30-44)."""
 
     def test_eval_constant_int(self):
-        from src.core.shared.security.expression_utils import _eval_node
-
         import ast
+
+        from src.core.shared.security.expression_utils import _eval_node
         node = ast.Constant(value=42)
         assert _eval_node(node) == 42.0
 
     def test_eval_constant_float(self):
-        from src.core.shared.security.expression_utils import _eval_node
-
         import ast
+
+        from src.core.shared.security.expression_utils import _eval_node
         node = ast.Constant(value=3.14)
         assert _eval_node(node) == 3.14
 
     def test_eval_constant_bool_rejected(self):
         """Bool constants are rejected even though bool is subclass of int."""
-        from src.core.shared.security.expression_utils import _eval_node
-
         import ast
+
+        from src.core.shared.security.expression_utils import _eval_node
         node = ast.Constant(value=True)
         with pytest.raises(Exception, match="Unsupported"):
             _eval_node(node)
 
     def test_eval_binop_add(self):
-        from src.core.shared.security.expression_utils import _eval_node
-
         import ast
+
+        from src.core.shared.security.expression_utils import _eval_node
         node = ast.BinOp(
             left=ast.Constant(value=2),
             op=ast.Add(),
@@ -902,9 +899,9 @@ class TestEvalNode:
         assert _eval_node(node) == 5.0
 
     def test_eval_binop_sub(self):
-        from src.core.shared.security.expression_utils import _eval_node
-
         import ast
+
+        from src.core.shared.security.expression_utils import _eval_node
         node = ast.BinOp(
             left=ast.Constant(value=10),
             op=ast.Sub(),
@@ -913,9 +910,9 @@ class TestEvalNode:
         assert _eval_node(node) == 6.0
 
     def test_eval_binop_mul(self):
-        from src.core.shared.security.expression_utils import _eval_node
-
         import ast
+
+        from src.core.shared.security.expression_utils import _eval_node
         node = ast.BinOp(
             left=ast.Constant(value=3),
             op=ast.Mult(),
@@ -924,9 +921,9 @@ class TestEvalNode:
         assert _eval_node(node) == 21.0
 
     def test_eval_binop_div(self):
-        from src.core.shared.security.expression_utils import _eval_node
-
         import ast
+
+        from src.core.shared.security.expression_utils import _eval_node
         node = ast.BinOp(
             left=ast.Constant(value=10),
             op=ast.Div(),
@@ -935,9 +932,9 @@ class TestEvalNode:
         assert _eval_node(node) == 2.5
 
     def test_eval_binop_pow(self):
-        from src.core.shared.security.expression_utils import _eval_node
-
         import ast
+
+        from src.core.shared.security.expression_utils import _eval_node
         node = ast.BinOp(
             left=ast.Constant(value=2),
             op=ast.Pow(),
@@ -946,24 +943,24 @@ class TestEvalNode:
         assert _eval_node(node) == 8.0
 
     def test_eval_unary_neg(self):
-        from src.core.shared.security.expression_utils import _eval_node
-
         import ast
+
+        from src.core.shared.security.expression_utils import _eval_node
         node = ast.UnaryOp(op=ast.USub(), operand=ast.Constant(value=5))
         assert _eval_node(node) == -5.0
 
     def test_eval_unsupported_node(self):
-        from src.core.shared.security.expression_utils import _eval_node
-
         import ast
+
+        from src.core.shared.security.expression_utils import _eval_node
         node = ast.Name(id="x")
         with pytest.raises(Exception, match="Unsupported"):
             _eval_node(node)
 
     def test_eval_string_constant_rejected(self):
-        from src.core.shared.security.expression_utils import _eval_node
-
         import ast
+
+        from src.core.shared.security.expression_utils import _eval_node
         node = ast.Constant(value="hello")
         with pytest.raises(Exception, match="Unsupported"):
             _eval_node(node)

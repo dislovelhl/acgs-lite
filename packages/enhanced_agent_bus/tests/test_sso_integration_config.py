@@ -17,7 +17,6 @@ from enhanced_agent_bus.enterprise_sso.integration_config import (
     IntegrationType,
 )
 
-
 # ---------------------------------------------------------------------------
 # IntegrationConfig dataclass
 # ---------------------------------------------------------------------------

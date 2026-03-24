@@ -10,7 +10,7 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
-import pytest  # noqa: E402
+import pytest
 
 
 def test_module_imports():

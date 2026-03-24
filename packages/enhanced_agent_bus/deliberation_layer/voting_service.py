@@ -14,7 +14,7 @@ try:
     from src.core.shared.types import (
         JSONDict,
         JSONValue,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]
@@ -184,7 +184,7 @@ class VotingService:
 
         Returns:
             Election ID string
-        """  # noqa: E501
+        """
         if timeout is None:
             if settings is None or not hasattr(settings, "voting"):
                 timeout = 300  # Default 5-minute timeout when settings unavailable
@@ -319,7 +319,7 @@ class VotingService:
             success = await self.kafka_bus.publish_vote_event(tenant_id, vote_event_dict)
             if not success:
                 logger.warning(
-                    f"Failed to publish vote event to Kafka for election {election_id}, continuing anyway"  # noqa: E501
+                    f"Failed to publish vote event to Kafka for election {election_id}, continuing anyway"
                 )
         except VOTE_EVENT_PUBLISH_ERRORS as e:
             logger.error(f"Error publishing vote event to Kafka: {e}")

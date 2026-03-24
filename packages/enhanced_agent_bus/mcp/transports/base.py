@@ -77,7 +77,7 @@ class MCPTransport(Protocol):
         await transport.connect()
         result = await transport.send({"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}})
         await transport.disconnect()
-    """  # noqa: E501
+    """
 
     async def connect(self) -> None:
         """

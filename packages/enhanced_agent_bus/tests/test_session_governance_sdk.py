@@ -16,17 +16,16 @@ from enhanced_agent_bus.session_governance_sdk import (
     PolicySelectionResult,
     RiskLevel,
     SelectedPolicy,
+    ServiceUnavailableError,
     Session,
     SessionGovernanceClient,
     SessionMetrics,
     SessionNotFoundError,
     SessionSDKError,
     SessionValidationError,
-    ServiceUnavailableError,
     TenantAccessDeniedError,
     create_client,
 )
-
 
 # ---------------------------------------------------------------------------
 # Tests: Enums

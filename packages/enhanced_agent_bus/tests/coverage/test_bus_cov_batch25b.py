@@ -27,7 +27,7 @@ MOD_DB = "enhanced_agent_bus.multi_tenancy.db_repository_optimized"
 
 def _get_trt_mod():
     """Get the tensorrt_optimizer module object after first from-import."""
-    from enhanced_agent_bus.deliberation_layer.tensorrt_optimizer import (  # noqa: F401
+    from enhanced_agent_bus.deliberation_layer.tensorrt_optimizer import (
         TensorRTOptimizer,
     )
 
@@ -1682,8 +1682,9 @@ class TestListTenantsPaginated:
 
     async def test_paginated_with_status(self):
         session = _make_mock_session()
-        from enhanced_agent_bus.multi_tenancy.models import TenantStatus
         from src.core.shared.database.utils import Page, Pageable
+
+        from enhanced_agent_bus.multi_tenancy.models import TenantStatus
 
         repo = _make_repo(session)
         mock_page = Page(content=[], total_elements=0, page_number=0, page_size=20)
@@ -1735,8 +1736,9 @@ class TestListTenantSummaries:
 
         session.execute.side_effect = [mock_count_result, mock_data_result]
 
-        from enhanced_agent_bus.multi_tenancy.models import TenantStatus
         from src.core.shared.database.utils import Pageable
+
+        from enhanced_agent_bus.multi_tenancy.models import TenantStatus
 
         repo = _make_repo(session)
         pageable = Pageable(page=0, size=20, sort=[("name", "asc")])

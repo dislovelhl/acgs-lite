@@ -122,7 +122,7 @@ class BatchAutoTuneMiddleware(BaseMiddleware):
                 ) from e
 
             # Non-fatal: just log and continue
-            context.warnings = getattr(context, "warnings", []) + [error_msg]  # noqa: RUF005
+            context.warnings = getattr(context, "warnings", []) + [error_msg]
 
         # Record metrics
         duration_ms = (time.perf_counter() - start_time) * 1000

@@ -36,7 +36,7 @@ def splunk_config():
     return SIEMProviderConfig(
         provider_type=SIEMProviderType.SPLUNK,
         endpoint_url="https://splunk.example.com:8088/services/collector/event",
-        auth_token="test-token-123",  # noqa: S106
+        auth_token="test-token-123",
         index="acgs2_audit_test",
         source_type="acgs2:test",
         verify_ssl=False,
@@ -51,7 +51,7 @@ def elasticsearch_config():
     return SIEMProviderConfig(
         provider_type=SIEMProviderType.ELASTICSEARCH,
         endpoint_url="https://elasticsearch.example.com:9200",
-        auth_token="test-api-key",  # noqa: S106
+        auth_token="test-api-key",
         index="acgs2_audit_test",
         verify_ssl=False,
         timeout_seconds=5.0,
@@ -101,7 +101,7 @@ class TestSIEMProviderConfig:
         config = SIEMProviderConfig(
             provider_type=SIEMProviderType.SPLUNK,
             endpoint_url="https://test.com",
-            auth_token="token",  # noqa: S106
+            auth_token="token",
         )
         assert config.index == "acgs2_audit"
         assert config.source_type == "acgs2:audit"
@@ -115,7 +115,7 @@ class TestSIEMProviderConfig:
         config = SIEMProviderConfig(
             provider_type=SIEMProviderType.ELASTICSEARCH,
             endpoint_url="https://es.example.com:9200",
-            auth_token="api-key",  # noqa: S106
+            auth_token="api-key",
             index="custom_index",
             source_type="custom:source",
             verify_ssl=False,
@@ -125,7 +125,7 @@ class TestSIEMProviderConfig:
         )
         assert config.provider_type == SIEMProviderType.ELASTICSEARCH
         assert config.endpoint_url == "https://es.example.com:9200"
-        assert config.auth_token == "api-key"  # noqa: S105
+        assert config.auth_token == "api-key"
         assert config.index == "custom_index"
         assert config.source_type == "custom:source"
         assert config.verify_ssl is False
@@ -231,7 +231,7 @@ class TestSplunkHECProvider:
         config = SIEMProviderConfig(
             provider_type=SIEMProviderType.ELASTICSEARCH,  # Wrong type
             endpoint_url="https://test.com",
-            auth_token="token",  # noqa: S106
+            auth_token="token",
         )
         with pytest.raises(ACGSValidationError, match="SPLUNK"):
             SplunkHECProvider(config)
@@ -348,7 +348,7 @@ class TestElasticsearchProvider:
         config = SIEMProviderConfig(
             provider_type=SIEMProviderType.SPLUNK,  # Wrong type
             endpoint_url="https://test.com",
-            auth_token="token",  # noqa: S106
+            auth_token="token",
         )
         with pytest.raises(ACGSValidationError, match="ELASTICSEARCH"):
             ElasticsearchProvider(config)
@@ -362,7 +362,7 @@ class TestCreateSIEMProvider:
         config = SIEMProviderConfig(
             provider_type=SIEMProviderType.SPLUNK,
             endpoint_url="https://splunk.example.com",
-            auth_token="token",  # noqa: S106
+            auth_token="token",
         )
         provider = create_siem_provider(config)
         assert isinstance(provider, SplunkHECProvider)
@@ -372,7 +372,7 @@ class TestCreateSIEMProvider:
         config = SIEMProviderConfig(
             provider_type=SIEMProviderType.ELASTICSEARCH,
             endpoint_url="https://es.example.com",
-            auth_token="token",  # noqa: S106
+            auth_token="token",
         )
         provider = create_siem_provider(config)
         assert isinstance(provider, ElasticsearchProvider)

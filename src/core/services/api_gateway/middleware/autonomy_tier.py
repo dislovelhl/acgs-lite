@@ -206,7 +206,7 @@ class AutonomyTierEnforcementMiddleware(BaseHTTPMiddleware):
         if auth.startswith("Bearer "):
             try:
                 return verify_token(auth[7:])
-            except Exception:  # noqa: S110
+            except Exception:
                 pass
         return None
 

@@ -10,7 +10,7 @@ Constitutional Hash: cdd01ef066bc6cf2
 from abc import ABC, abstractmethod
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

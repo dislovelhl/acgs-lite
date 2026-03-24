@@ -44,20 +44,20 @@ sys.modules.setdefault("redis", _redis_mod)
 sys.modules.setdefault("redis.asyncio", _redis_asyncio_mod)
 
 # ── Stub: httpx ──────────────────────────────────────────────────────────────
-import httpx  # noqa: E402
+import httpx
 
-from enhanced_agent_bus.constitutional.amendment_model import (  # noqa: E402
+from enhanced_agent_bus.constitutional.amendment_model import (
     AmendmentProposal,
     AmendmentStatus,
 )
-from enhanced_agent_bus.constitutional.degradation_detector import (  # noqa: E402
+from enhanced_agent_bus.constitutional.degradation_detector import (
     DegradationReport,
     DegradationSeverity,
     MetricDegradationAnalysis,
     SignificanceLevel,
     TimeWindow,
 )
-from enhanced_agent_bus.constitutional.rollback_engine import (  # noqa: E402
+from enhanced_agent_bus.constitutional.rollback_engine import (
     RollbackEngineError,
     RollbackReason,
     RollbackSagaActivities,
@@ -65,7 +65,7 @@ from enhanced_agent_bus.constitutional.rollback_engine import (  # noqa: E402
     create_rollback_saga,
     rollback_amendment,
 )
-from enhanced_agent_bus.observability.structured_logging import get_logger  # noqa: E402
+from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # ── Import the module under test ─────────────────────────────────────────────
 

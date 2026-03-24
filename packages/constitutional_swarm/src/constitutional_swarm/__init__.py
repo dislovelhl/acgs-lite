@@ -13,43 +13,54 @@ Four breakthrough patterns:
      (inspired by mHC, arXiv:2512.24880)
 """
 
-from constitutional_swarm.dna import constitutional_dna, AgentDNA, DNADisabledError
-from constitutional_swarm.capability import Capability, CapabilityRegistry
-from constitutional_swarm.execution import WorkReceipt, ExecutionStatus
-from constitutional_swarm.contract import TaskContract, ContractStatus
 from constitutional_swarm.artifact import Artifact, ArtifactStore
-from constitutional_swarm.swarm import SwarmExecutor, TaskDAG, TaskNode
-from constitutional_swarm.mesh import ConstitutionalMesh, PeerAssignment, ValidationVote, MeshProof, MeshResult, MeshHaltedError
-from constitutional_swarm.manifold import GovernanceManifold, sinkhorn_knopp, ManifoldProjectionResult
+from constitutional_swarm.bench import BenchmarkResult, SwarmBenchmark
+from constitutional_swarm.capability import Capability, CapabilityRegistry
 from constitutional_swarm.compiler import DAGCompiler, GoalSpec
-from constitutional_swarm.bench import SwarmBenchmark, BenchmarkResult
+from constitutional_swarm.contract import ContractStatus, TaskContract
+from constitutional_swarm.dna import AgentDNA, DNADisabledError, constitutional_dna
+from constitutional_swarm.execution import ExecutionStatus, WorkReceipt
+from constitutional_swarm.manifold import (
+    GovernanceManifold,
+    ManifoldProjectionResult,
+    sinkhorn_knopp,
+)
+from constitutional_swarm.mesh import (
+    ConstitutionalMesh,
+    MeshHaltedError,
+    MeshProof,
+    MeshResult,
+    PeerAssignment,
+    ValidationVote,
+)
+from constitutional_swarm.swarm import SwarmExecutor, TaskDAG, TaskNode
 
 __all__ = [
-    "constitutional_dna",
     "AgentDNA",
-    "DNADisabledError",
-    "Capability",
-    "CapabilityRegistry",
-    "WorkReceipt",
-    "ExecutionStatus",
-    "TaskContract",
-    "ContractStatus",
     "Artifact",
     "ArtifactStore",
-    "SwarmExecutor",
-    "TaskDAG",
-    "TaskNode",
+    "BenchmarkResult",
+    "Capability",
+    "CapabilityRegistry",
     "ConstitutionalMesh",
-    "PeerAssignment",
-    "ValidationVote",
+    "ContractStatus",
+    "DAGCompiler",
+    "DNADisabledError",
+    "ExecutionStatus",
+    "GoalSpec",
+    "GovernanceManifold",
+    "ManifoldProjectionResult",
+    "MeshHaltedError",
     "MeshProof",
     "MeshResult",
-    "MeshHaltedError",
-    "GovernanceManifold",
-    "sinkhorn_knopp",
-    "ManifoldProjectionResult",
-    "DAGCompiler",
-    "GoalSpec",
+    "PeerAssignment",
     "SwarmBenchmark",
-    "BenchmarkResult",
+    "SwarmExecutor",
+    "TaskContract",
+    "TaskDAG",
+    "TaskNode",
+    "ValidationVote",
+    "WorkReceipt",
+    "constitutional_dna",
+    "sinkhorn_knopp",
 ]

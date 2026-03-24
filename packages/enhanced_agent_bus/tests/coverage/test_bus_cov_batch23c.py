@@ -13,11 +13,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from enhanced_agent_bus.batch_models import BatchRequestItem
-from enhanced_agent_bus.middlewares.batch.context import BatchPipelineContext
-from enhanced_agent_bus.middlewares.batch.exceptions import BatchTenantIsolationException
-from enhanced_agent_bus.middlewares.batch.tenant_isolation import (
-    BatchTenantIsolationMiddleware,
-)
 from enhanced_agent_bus.mcp_server.adapters.audit_client import AuditClientAdapter
 from enhanced_agent_bus.mcp_server.tools.get_metrics import (
     GetMetricsTool,
@@ -28,8 +23,12 @@ from enhanced_agent_bus.mcp_server.tools.query_precedents import (
     GovernancePrecedent,
     QueryPrecedentsTool,
 )
+from enhanced_agent_bus.middlewares.batch.context import BatchPipelineContext
+from enhanced_agent_bus.middlewares.batch.exceptions import BatchTenantIsolationException
+from enhanced_agent_bus.middlewares.batch.tenant_isolation import (
+    BatchTenantIsolationMiddleware,
+)
 from enhanced_agent_bus.pipeline.middleware import MiddlewareConfig
-
 
 # ---------------------------------------------------------------------------
 # Helpers

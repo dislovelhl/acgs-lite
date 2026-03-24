@@ -101,7 +101,7 @@ class TokenResponse(BaseModel):
     """Token response model."""
 
     access_token: str
-    token_type: str = "bearer"  # noqa: S105
+    token_type: str = "bearer"
 
 
 def _current_jwt_secret() -> str | None:

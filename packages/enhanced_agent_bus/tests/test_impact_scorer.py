@@ -9,7 +9,6 @@ import pytest
 
 from enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

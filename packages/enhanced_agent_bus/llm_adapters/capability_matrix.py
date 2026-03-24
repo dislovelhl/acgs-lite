@@ -27,11 +27,11 @@ from pydantic import BaseModel, Field
 
 # Import centralized constitutional hash from shared module
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -52,7 +52,7 @@ DISCOVERY_HOOK_ERRORS = (
 # =============================================================================
 
 
-class CapabilityDimension(str, Enum):  # noqa: UP042
+class CapabilityDimension(str, Enum):
     """
     Capability dimensions for LLM providers.
 
@@ -101,7 +101,7 @@ class CapabilityDimension(str, Enum):  # noqa: UP042
     CACHED_INPUT_COST_PER_1K = "cached_input_cost_per_1k"
 
 
-class LatencyClass(str, Enum):  # noqa: UP042
+class LatencyClass(str, Enum):
     """Latency classification for providers."""
 
     ULTRA_LOW = "ultra_low"  # <100ms
@@ -111,7 +111,7 @@ class LatencyClass(str, Enum):  # noqa: UP042
     VARIABLE = "variable"  # Depends on load
 
 
-class CapabilityLevel(str, Enum):  # noqa: UP042
+class CapabilityLevel(str, Enum):
     """Level of support for a capability."""
 
     NONE = "none"

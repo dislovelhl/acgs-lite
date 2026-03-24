@@ -17,7 +17,7 @@ try:
     from src.core.shared.types import (
         JSONDict,
         JSONList,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONList = list  # type: ignore[misc,assignment]
@@ -27,7 +27,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 logger = get_logger(__name__)
 # Constitutional compliance
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -398,7 +398,7 @@ class ToolRegistry:
 
     def to_prompt_format(self, category: ToolCategory | None = None) -> str:
         """Generate prompt-format documentation for tools."""
-        if category:  # noqa: SIM108
+        if category:
             tools = self.get_by_category(category)
         else:
             tools = self.get_all()
@@ -550,7 +550,7 @@ CONSTITUTIONAL_TOOLS = [
             ToolParameter(
                 name="action",
                 type="string",
-                description="The type of action to validate (e.g., 'modify_policy', 'approve_request')",  # noqa: E501
+                description="The type of action to validate (e.g., 'modify_policy', 'approve_request')",
                 required=True,
                 examples=["modify_policy", "approve_request", "escalate_issue"],
             ),
@@ -605,7 +605,7 @@ CONSTITUTIONAL_TOOLS = [
         ],
         common_errors={
             "InvalidActionError": "Ensure action is a valid string from the allowed actions list",
-            "HashMismatchError": "Constitutional hash mismatch - system integrity may be compromised",  # noqa: E501
+            "HashMismatchError": "Constitutional hash mismatch - system integrity may be compromised",
         },
         related_tools=["get_constitutional_principles", "audit_action"],
     ),
@@ -632,7 +632,7 @@ CONSTITUTIONAL_TOOLS = [
                 default="all",
             ),
         ],
-        returns="List of constitutional principles with their IDs, descriptions, and severity levels",  # noqa: E501
+        returns="List of constitutional principles with their IDs, descriptions, and severity levels",
         return_type="array",
         examples=[
             ToolExample(
@@ -723,7 +723,7 @@ GOVERNANCE_TOOLS = [
                 description="Create a policy update proposal",
                 input={
                     "title": "Increase API Rate Limit",
-                    "description": "Propose increasing the API rate limit from 100 to 200 requests per minute to accommodate growth.",  # noqa: E501
+                    "description": "Propose increasing the API rate limit from 100 to 200 requests per minute to accommodate growth.",
                     "impact_level": "medium",
                     "changes": {"rate_limit": {"old": 100, "new": 200}},
                 },

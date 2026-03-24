@@ -73,7 +73,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -192,7 +192,7 @@ _CATEGORY_KEYWORDS: dict[str, frozenset[str]] = {
 }
 
 
-class ToolCategory(str, Enum):  # noqa: UP042
+class ToolCategory(str, Enum):
     """Domain category for an MCP tool."""
 
     DATABASE = "database"
@@ -232,7 +232,7 @@ _CB_FAILURE_THRESHOLD: int = 3
 _CB_COOLDOWN_SECONDS: float = 30.0
 
 
-class _CircuitState(str, Enum):  # noqa: UP042
+class _CircuitState(str, Enum):
     """Lifecycle states of :class:`_ServerCircuitBreaker`."""
 
     CLOSED = "closed"

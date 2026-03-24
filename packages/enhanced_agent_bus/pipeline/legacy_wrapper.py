@@ -10,7 +10,7 @@ Constitutional Hash: cdd01ef066bc6cf2
 from collections.abc import Callable
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -18,12 +18,12 @@ from ..dependency_bridge import get_dependency, is_feature_available
 
 POLICY_CLIENT_AVAILABLE: bool = is_feature_available("OPA")
 get_opa_client = get_dependency("get_opa_client")
-from enhanced_agent_bus.models import AgentMessage  # noqa: E402
-from enhanced_agent_bus.validators import ValidationResult  # noqa: E402
+from enhanced_agent_bus.models import AgentMessage
+from enhanced_agent_bus.validators import ValidationResult
 
-from ..interfaces import ProcessingStrategy  # noqa: E402
-from .middleware import MiddlewareConfig  # noqa: E402
-from .router import PipelineConfig, PipelineMessageRouter  # noqa: E402
+from ..interfaces import ProcessingStrategy
+from .middleware import MiddlewareConfig
+from .router import PipelineConfig, PipelineMessageRouter
 
 LEGACY_PIPELINE_PROCESS_ERRORS = (
     RuntimeError,

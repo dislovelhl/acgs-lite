@@ -22,7 +22,6 @@ from enhanced_agent_bus.constitutional.metrics_collector import (
     GovernanceMetricsSnapshot,
 )
 
-
 # ---------------------------------------------------------------------------
 # TimeWindow tests
 # ---------------------------------------------------------------------------

@@ -27,7 +27,6 @@ from enhanced_agent_bus.models import (
 )
 from enhanced_agent_bus.validators import ValidationResult
 
-
 # ============================================================================
 # Helpers
 # ============================================================================

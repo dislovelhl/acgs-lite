@@ -22,9 +22,9 @@ if enhanced_agent_bus_dir not in sys.path:
     sys.path.insert(0, enhanced_agent_bus_dir)
 
 # Import the FastAPI app
-from src.core.shared.types import JSONDict  # noqa: E402
+from src.core.shared.types import JSONDict
 
-import api  # noqa: E402
+import api
 
 # Force Pydantic model rebuild to resolve forward references
 # This is needed when api module is imported with sys.path manipulation

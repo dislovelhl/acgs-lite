@@ -33,10 +33,10 @@ JSONType = JSON().with_variant(JSONB(), "postgresql")
 
 # Constitutional hash constant
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.database.session import Base  # noqa: E402
+from src.core.shared.database.session import Base
 
 # Ensure module aliasing across package import paths to avoid duplicate ORM definitions
 _module = sys.modules.get(__name__)
@@ -375,7 +375,7 @@ class EnterpriseIntegrationORM(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<EnterpriseIntegrationORM(integration_id={self.integration_id}, type={self.integration_type})>"  # noqa: E501
+        return f"<EnterpriseIntegrationORM(integration_id={self.integration_id}, type={self.integration_type})>"
 
 
 class TenantRoleMappingORM(Base):
@@ -492,7 +492,7 @@ class TenantRoleMappingORM(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<TenantRoleMappingORM(mapping_id={self.mapping_id}, external={self.external_role}, internal={self.internal_role})>"  # noqa: E501
+        return f"<TenantRoleMappingORM(mapping_id={self.mapping_id}, external={self.external_role}, internal={self.internal_role})>"
 
 
 class MigrationJobORM(Base):
@@ -748,7 +748,7 @@ class TenantAuditLogORM(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<TenantAuditLogORM(log_id={self.log_id}, action={self.action}, tenant_id={self.tenant_id})>"  # noqa: E501
+        return f"<TenantAuditLogORM(log_id={self.log_id}, action={self.action}, tenant_id={self.tenant_id})>"
 
 
 def _dedupe_class_registry() -> None:

@@ -17,13 +17,13 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.security.error_sanitizer import safe_error_detail
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -78,7 +78,7 @@ except (ImportError, ValueError):
         from pydantic import BaseModel
         from src.core.shared.errors.exceptions import ACGSBaseError
 
-        class TenantStatus(str, Enum):  # type: ignore[no-redef]  # noqa: UP042
+        class TenantStatus(str, Enum):  # type: ignore[no-redef]
             PENDING = "pending"
             ACTIVE = "active"
             SUSPENDED = "suspended"
@@ -289,7 +289,7 @@ def _validate_jwt_token(token: str) -> dict | None:
         token_hash = payload.get("constitutional_hash")
         if token_hash and token_hash != CONSTITUTIONAL_HASH:
             logger.warning(
-                f"JWT constitutional hash mismatch: expected {CONSTITUTIONAL_HASH}, got {token_hash}"  # noqa: E501
+                f"JWT constitutional hash mismatch: expected {CONSTITUTIONAL_HASH}, got {token_hash}"
             )
             return None
 

@@ -11,7 +11,7 @@ import time
 from dataclasses import dataclass, field
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -106,7 +106,7 @@ class RateLimiter(GuardrailComponent):
                             layer=self.get_layer(),
                             violation_type="rate_limit_blocked",
                             severity=ViolationSeverity.HIGH,
-                            message=f"Client {client_id} is rate limited until {self._blocked_until[client_id]}",  # noqa: E501
+                            message=f"Client {client_id} is rate limited until {self._blocked_until[client_id]}",
                             trace_id=trace_id,
                         )
                     ],

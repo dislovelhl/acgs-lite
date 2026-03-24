@@ -6,7 +6,6 @@ import tempfile
 from pathlib import Path
 
 import pytest
-
 from constitutional_swarm.compiler import DAGCompiler, GoalSpec, _deterministic_node_id
 from constitutional_swarm.swarm import NodeStatus
 

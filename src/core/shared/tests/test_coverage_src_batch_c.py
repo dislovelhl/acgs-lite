@@ -8,7 +8,6 @@ Comprehensive tests for:
 
 from __future__ import annotations
 
-import asyncio
 import base64
 from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -451,8 +450,6 @@ from src.core.shared.auth.saml_handler import SAMLHandler
 from src.core.shared.auth.saml_types import (
     SAMLError,
     SAMLReplayError,
-    SAMLUserInfo,
-    SAMLValidationError,
 )
 
 
@@ -1481,6 +1478,10 @@ class TestOIDCGeneratePKCE:
 # ---------------------------------------------------------------------------
 # 4. Dual-Key JWT Validator
 # ---------------------------------------------------------------------------
+# Generate RSA keys for testing
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+
 from src.core.shared.security.dual_key_jwt import (
     DualKeyConfig,
     DualKeyJWTValidator,
@@ -1488,10 +1489,6 @@ from src.core.shared.security.dual_key_jwt import (
     KeyMetadata,
     get_dual_key_validator,
 )
-
-# Generate RSA keys for testing
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
 
 
 def _generate_rsa_keypair():

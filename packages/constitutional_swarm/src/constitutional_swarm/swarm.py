@@ -13,14 +13,13 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from constitutional_swarm.artifact import Artifact, ArtifactStore
-from constitutional_swarm.capability import Capability, CapabilityRegistry
+from constitutional_swarm.capability import CapabilityRegistry
 from constitutional_swarm.execution import (
     ContractStatus,
     ExecutionStatus,
     WorkReceipt,
     contract_status_from_execution,
 )
-
 
 NodeStatus = ExecutionStatus
 

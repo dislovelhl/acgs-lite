@@ -20,6 +20,18 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from src.core.shared.security.pqc import (
+    CONSTITUTIONAL_HASH,
+    ClassicalKeyRejectedError,
+    KeyRegistryUnavailableError,
+    UnsupportedAlgorithmError,
+)
+from src.core.shared.security.pqc_crypto import (
+    HybridSignature,
+    PQCConfig,
+    PQCMetadata,
+    ValidationResult,
+)
 
 from enhanced_agent_bus.collaboration.models import (
     ActivityEventType,
@@ -54,19 +66,6 @@ from enhanced_agent_bus.pqc_validators import (
     validate_maci_record_pqc,
     validate_signature,
 )
-from src.core.shared.security.pqc import (
-    CONSTITUTIONAL_HASH,
-    ClassicalKeyRejectedError,
-    KeyRegistryUnavailableError,
-    UnsupportedAlgorithmError,
-)
-from src.core.shared.security.pqc_crypto import (
-    HybridSignature,
-    PQCConfig,
-    PQCMetadata,
-    ValidationResult,
-)
-
 
 # ---------------------------------------------------------------------------
 # Shared helpers

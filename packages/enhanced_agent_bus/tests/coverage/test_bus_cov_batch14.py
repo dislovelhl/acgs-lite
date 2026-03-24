@@ -21,7 +21,6 @@ from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # 1. MessageProcessor tests
 # ---------------------------------------------------------------------------

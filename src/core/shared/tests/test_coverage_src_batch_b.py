@@ -8,13 +8,17 @@ Covers:
 - retention_policy.py
 """
 
-import asyncio
-import time
 from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi import HTTPException, UploadFile
+
+from src.core.shared.security.data_classification import (
+    DataClassificationTier,
+    DisposalMethod,
+    RetentionPolicy,
+)
 
 # ---------------------------------------------------------------------------
 # rate_limiter imports
@@ -34,11 +38,28 @@ from src.core.shared.security.rate_limiter import (
     _module_available,
     _parse_bool_env,
     _resolve_rate_limit_identifier,
-    add_rate_limit_headers,
     configure_rate_limits,
-    create_rate_limit_middleware,
     rate_limit,
     update_rate_limit_metrics,
+)
+
+# ---------------------------------------------------------------------------
+# retention_policy imports
+# ---------------------------------------------------------------------------
+from src.core.shared.security.retention_policy import (
+    AnonymizeHandler,
+    ArchiveHandler,
+    DeleteHandler,
+    DisposalResult,
+    InMemoryRetentionStorage,
+    PseudonymizeHandler,
+    RetentionAction,
+    RetentionActionType,
+    RetentionPolicyEngine,
+    RetentionRecord,
+    RetentionStatus,
+    get_retention_engine,
+    reset_retention_engine,
 )
 
 # ---------------------------------------------------------------------------
@@ -68,32 +89,6 @@ from src.core.shared.security.url_file_validator import (
     validate_file_content,
     validate_url,
 )
-
-# ---------------------------------------------------------------------------
-# retention_policy imports
-# ---------------------------------------------------------------------------
-from src.core.shared.security.retention_policy import (
-    AnonymizeHandler,
-    ArchiveHandler,
-    DeleteHandler,
-    DisposalResult,
-    InMemoryRetentionStorage,
-    PseudonymizeHandler,
-    RetentionAction,
-    RetentionActionType,
-    RetentionPolicyEngine,
-    RetentionRecord,
-    RetentionStatus,
-    get_retention_engine,
-    reset_retention_engine,
-)
-from src.core.shared.security.data_classification import (
-    DataClassificationTier,
-    DisposalMethod,
-    PIICategory,
-    RetentionPolicy,
-)
-
 
 # ============================================================================
 # rate_limiter.py tests
@@ -996,7 +991,7 @@ class TestTokenRevocationGetStats:
 
         async def mock_scan_error(*args, **kwargs):
             raise ConnectionError("gone")
-            yield  # noqa: E501 — unreachable but makes this an async generator
+            yield
 
         mock_redis.scan_iter = MagicMock(return_value=mock_scan_error())
 
@@ -1063,7 +1058,6 @@ class TestCreateTokenRevocationService:
     async def test_redis_unavailable(self):
         """When Redis connection fails, service should operate in degraded mode."""
         import importlib
-        import sys
 
         # Simulate redis.asyncio import raising an error by patching
         # the entire create function's redis import path

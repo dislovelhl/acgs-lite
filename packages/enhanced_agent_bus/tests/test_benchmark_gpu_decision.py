@@ -15,7 +15,6 @@ from enhanced_agent_bus.profiling.benchmark_gpu_decision import (
     generate_random_message,
 )
 
-
 # ---------------------------------------------------------------------------
 # generate_random_message
 # ---------------------------------------------------------------------------

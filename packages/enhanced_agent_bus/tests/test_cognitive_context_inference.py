@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
-
 import importlib
 import importlib.util
 import sys
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest

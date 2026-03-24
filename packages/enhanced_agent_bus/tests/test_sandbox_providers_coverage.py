@@ -713,7 +713,7 @@ class TestBuildContainerConfig:
     def test_basic_config(self):
         provider = DockerSandboxProvider()
         req = _make_request()
-        config = provider._build_container_config(req, "/tmp/host", "mycontainer")  # noqa: S108
+        config = provider._build_container_config(req, "/tmp/host", "mycontainer")
         assert config["image"] == "python:3.11-slim"
         assert config["name"] == "mycontainer"
         assert config["working_dir"] == "/sandbox"
@@ -722,42 +722,42 @@ class TestBuildContainerConfig:
         provider = DockerSandboxProvider()
         req = _make_request()
         req.resource_limits.network_disabled = True
-        config = provider._build_container_config(req, "/tmp/host", "c")  # noqa: S108
+        config = provider._build_container_config(req, "/tmp/host", "c")
         assert config["network_mode"] == "none"
 
     def test_network_bridge_when_enabled(self):
         provider = DockerSandboxProvider()
         req = _make_request()
         req.resource_limits.network_disabled = False
-        config = provider._build_container_config(req, "/tmp/host", "c")  # noqa: S108
+        config = provider._build_container_config(req, "/tmp/host", "c")
         assert config["network_mode"] == "bridge"
 
     def test_user_non_root(self):
         provider = DockerSandboxProvider()
         req = _make_request()
         req.security_config.run_as_root = False
-        config = provider._build_container_config(req, "/tmp/host", "c")  # noqa: S108
+        config = provider._build_container_config(req, "/tmp/host", "c")
         assert config["user"] == "1000:1000"
 
     def test_user_root(self):
         provider = DockerSandboxProvider()
         req = _make_request()
         req.security_config.run_as_root = True
-        config = provider._build_container_config(req, "/tmp/host", "c")  # noqa: S108
+        config = provider._build_container_config(req, "/tmp/host", "c")
         assert config["user"] == "0:0"
 
     def test_cap_drop_all(self):
         provider = DockerSandboxProvider()
         req = _make_request()
         req.security_config.drop_all_capabilities = True
-        config = provider._build_container_config(req, "/tmp/host", "c")  # noqa: S108
+        config = provider._build_container_config(req, "/tmp/host", "c")
         assert config["cap_drop"] == ["ALL"]
 
     def test_cap_drop_none_when_not_dropping(self):
         provider = DockerSandboxProvider()
         req = _make_request()
         req.security_config.drop_all_capabilities = False
-        config = provider._build_container_config(req, "/tmp/host", "c")  # noqa: S108
+        config = provider._build_container_config(req, "/tmp/host", "c")
         # None values are removed
         assert "cap_drop" not in config
 
@@ -767,7 +767,7 @@ class TestBuildContainerConfig:
         req.security_config.enable_seccomp = True
         req.security_config.seccomp_profile = "/path/to/profile.json"
         req.security_config.no_new_privileges = True
-        config = provider._build_container_config(req, "/tmp/host", "c")  # noqa: S108
+        config = provider._build_container_config(req, "/tmp/host", "c")
         assert "seccomp=/path/to/profile.json" in config["security_opt"]
         assert "no-new-privileges:true" in config["security_opt"]
 
@@ -779,7 +779,7 @@ class TestBuildContainerConfig:
         req.security_config.seccomp_profile = None
         req.security_config.no_new_privileges = True
         req.security_config.security_opt = []
-        config = provider._build_container_config(req, "/tmp/host", "c")  # noqa: S108
+        config = provider._build_container_config(req, "/tmp/host", "c")
         assert "no-new-privileges:true" in config["security_opt"]
         # No seccomp entry since no profile
         assert not any("seccomp=" in o for o in config["security_opt"])
@@ -790,7 +790,7 @@ class TestBuildContainerConfig:
         req.security_config.enable_seccomp = False
         req.security_config.no_new_privileges = False
         req.security_config.security_opt = []
-        config = provider._build_container_config(req, "/tmp/host", "c")  # noqa: S108
+        config = provider._build_container_config(req, "/tmp/host", "c")
         # security_opt should either be absent or empty list
         assert config.get("security_opt", []) == []
 
@@ -800,48 +800,48 @@ class TestBuildContainerConfig:
         req.security_config.enable_seccomp = False
         req.security_config.no_new_privileges = False
         req.security_config.security_opt = ["custom-opt"]
-        config = provider._build_container_config(req, "/tmp/host", "c")  # noqa: S108
+        config = provider._build_container_config(req, "/tmp/host", "c")
         assert "custom-opt" in config.get("security_opt", [])
 
     def test_none_values_removed(self):
         provider = DockerSandboxProvider()
         req = _make_request()
         req.security_config.drop_all_capabilities = False
-        config = provider._build_container_config(req, "/tmp/host", "c")  # noqa: S108
+        config = provider._build_container_config(req, "/tmp/host", "c")
         # cap_drop was None and should be removed
         assert "cap_drop" not in config
 
     def test_volumes_mapping(self):
         provider = DockerSandboxProvider()
         req = _make_request()
-        config = provider._build_container_config(req, "/tmp/mydir", "c")  # noqa: S108
-        assert "/tmp/mydir" in config["volumes"]  # noqa: S108
-        assert config["volumes"]["/tmp/mydir"]["bind"] == "/sandbox"  # noqa: S108
+        config = provider._build_container_config(req, "/tmp/mydir", "c")
+        assert "/tmp/mydir" in config["volumes"]
+        assert config["volumes"]["/tmp/mydir"]["bind"] == "/sandbox"
 
     def test_memory_limit_format(self):
         provider = DockerSandboxProvider()
         req = _make_request()
         req.resource_limits.memory_limit_mb = 256
-        config = provider._build_container_config(req, "/tmp/h", "c")  # noqa: S108
+        config = provider._build_container_config(req, "/tmp/h", "c")
         assert config["mem_limit"] == "256m"
 
     def test_cpu_nano_cpus(self):
         provider = DockerSandboxProvider()
         req = _make_request()
         req.resource_limits.cpu_limit = 1.5
-        config = provider._build_container_config(req, "/tmp/h", "c")  # noqa: S108
+        config = provider._build_container_config(req, "/tmp/h", "c")
         assert config["nano_cpus"] == int(1.5 * 1e9)
 
     def test_tmpfs_present(self):
         provider = DockerSandboxProvider()
         req = _make_request()
-        config = provider._build_container_config(req, "/tmp/h", "c")  # noqa: S108
-        assert "/tmp" in config["tmpfs"]  # noqa: S108
+        config = provider._build_container_config(req, "/tmp/h", "c")
+        assert "/tmp" in config["tmpfs"]
 
     def test_detach_true_auto_remove_false(self):
         provider = DockerSandboxProvider()
         req = _make_request()
-        config = provider._build_container_config(req, "/tmp/h", "c")  # noqa: S108
+        config = provider._build_container_config(req, "/tmp/h", "c")
         assert config["detach"] is True
         assert config["auto_remove"] is False
 

@@ -13,6 +13,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from enhanced_agent_bus.mcp_integration.auth.oauth2_provider import (
+    OAuth2Config,
+    OAuth2Provider,
+    OAuth2Token,
+)
 from enhanced_agent_bus.mcp_integration.auth.oidc_provider import (
     JWKSCache,
     OIDCConfig,
@@ -20,12 +25,6 @@ from enhanced_agent_bus.mcp_integration.auth.oidc_provider import (
     OIDCProviderMetadata,
     OIDCTokens,
 )
-from enhanced_agent_bus.mcp_integration.auth.oauth2_provider import (
-    OAuth2Config,
-    OAuth2Provider,
-    OAuth2Token,
-)
-
 
 # ---------------------------------------------------------------------------
 # OIDCProviderMetadata

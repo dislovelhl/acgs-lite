@@ -4,7 +4,7 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "acgs"
+name = "acgs-lite"
 version = "2.0.0"
 description = "Constitutional AI governance for any agent. Wrap any LLM agent in enforceable rules, audit trails, and separation of powers — in 5 lines of code."
 readme = "README.md"
@@ -68,7 +68,7 @@ Documentation = "https://acgs.ai"
 Repository = "https://github.com/acgs2_admin/acgs"
 Issues = "https://github.com/acgs2_admin/acgs/issues"
 Changelog = "https://github.com/acgs2_admin/acgs/releases"
-PyPI = "https://pypi.org/project/acgs/"
+PyPI = "https://pypi.org/project/acgs-lite/"
 
 [tool.setuptools.packages.find]
 where = ["src"]

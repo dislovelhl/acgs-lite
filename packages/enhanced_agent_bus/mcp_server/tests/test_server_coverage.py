@@ -27,7 +27,6 @@ from enhanced_agent_bus.mcp_server.protocol.types import (
 )
 from enhanced_agent_bus.mcp_server.server import MCPServer, create_mcp_server
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

@@ -13,21 +13,20 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from enhanced_agent_bus.mcp.router import (
+    _CB_COOLDOWN_SECONDS,
+    _CB_FAILURE_THRESHOLD,
     MCPRouter,
     ToolCategory,
     ToolRequest,
     ToolResponse,
-    _CircuitState,
-    _ServerCircuitBreaker,
-    _classify_tool,
     _build_error_response,
+    _CircuitState,
+    _classify_tool,
     _elapsed_ms,
+    _ServerCircuitBreaker,
     pool_size_attr,
-    _CB_COOLDOWN_SECONDS,
-    _CB_FAILURE_THRESHOLD,
 )
 from enhanced_agent_bus.mcp.types import MCPTool, MCPToolResult, MCPToolStatus
-
 
 # ---------------------------------------------------------------------------
 # Helpers

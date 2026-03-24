@@ -32,7 +32,6 @@ from enhanced_agent_bus.models import (
 )
 from enhanced_agent_bus.validators import ValidationResult
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -584,8 +583,8 @@ class TestEvaluateHTTP:
     """Tests for _evaluate_http."""
 
     async def test_not_initialized_raises(self):
-        from enhanced_agent_bus.opa_client.core import OPAClientCore
         from enhanced_agent_bus.exceptions import OPANotInitializedError
+        from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore(mode="http")
         client._http_client = None
@@ -593,8 +592,8 @@ class TestEvaluateHTTP:
             await client._evaluate_http({}, "data.acgs.allow")
 
     async def test_json_decode_error(self):
-        from enhanced_agent_bus.opa_client.core import OPAClientCore
         from enhanced_agent_bus.exceptions import PolicyEvaluationError
+        from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore(mode="http")
         mock_response = MagicMock()

@@ -503,9 +503,10 @@ class TestCascadeEvaluator:
 
     @pytest.mark.asyncio
     async def test_syntax_fail_empty_id(self):
-        from enhanced_agent_bus.openevolve_adapter.cascade import CascadeEvaluator, CascadeStage
         # Bypass __post_init__ to create a structurally broken candidate
         import dataclasses
+
+        from enhanced_agent_bus.openevolve_adapter.cascade import CascadeEvaluator, CascadeStage
         c = _make_candidate()
         broken = dataclasses.replace(c, candidate_id="")
         ev = CascadeEvaluator(_GoodVerifier())
@@ -674,7 +675,10 @@ class TestEvolutionMessageHandler:
 
     @pytest.mark.asyncio
     async def test_mutation_trace_deserialised(self):
-        from enhanced_agent_bus.openevolve_adapter.integration import EvolutionMessageHandler, _deserialise_candidate
+        from enhanced_agent_bus.openevolve_adapter.integration import (
+            EvolutionMessageHandler,
+            _deserialise_candidate,
+        )
         meta = _make_meta()
         meta["mutation_trace"] = [
             {"operator": "crossover", "parent_id": "p-0", "description": "blend"}

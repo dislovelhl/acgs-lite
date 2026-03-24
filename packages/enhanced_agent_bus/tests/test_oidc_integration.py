@@ -35,7 +35,7 @@ from enterprise_sso.protocols import (
 # Test constants
 TEST_ISSUER = "https://idp.example.com"
 TEST_CLIENT_ID = "test-client-id"
-TEST_CLIENT_SECRET = "test-client-secret"  # noqa: S105
+TEST_CLIENT_SECRET = "test-client-secret"
 TEST_REDIRECT_URI = "https://acgs2.example.com/auth/callback"
 
 # Provider-specific constants
@@ -75,7 +75,7 @@ def okta_handler():
     return OIDCHandler(
         issuer=OKTA_ISSUER,
         client_id="okta-client-id",
-        client_secret="okta-client-secret",  # noqa: S106
+        client_secret="okta-client-secret",
         scopes=["openid", "profile", "email", "groups"],
     )
 
@@ -86,7 +86,7 @@ def auth0_handler():
     return OIDCHandler(
         issuer=AUTH0_ISSUER,
         client_id="auth0-client-id",
-        client_secret="auth0-client-secret",  # noqa: S106
+        client_secret="auth0-client-secret",
         scopes=["openid", "profile", "email"],
     )
 
@@ -97,7 +97,7 @@ def azure_ad_handler():
     return OIDCHandler(
         issuer=AZURE_AD_ISSUER,
         client_id="azure-client-id",
-        client_secret="azure-client-secret",  # noqa: S106
+        client_secret="azure-client-secret",
         scopes=["openid", "profile", "email", "offline_access"],
     )
 
@@ -799,7 +799,7 @@ class TestMultiProviderSupport:
             issuer="https://dev-12345.okta.com",
             client_id="test-client",
             authorization_endpoint="https://dev-12345.okta.com/oauth2/v1/authorize",
-            token_endpoint="https://dev-12345.okta.com/oauth2/v1/token",  # noqa: S106
+            token_endpoint="https://dev-12345.okta.com/oauth2/v1/token",
             userinfo_endpoint="https://dev-12345.okta.com/oauth2/v1/userinfo",
         )
 

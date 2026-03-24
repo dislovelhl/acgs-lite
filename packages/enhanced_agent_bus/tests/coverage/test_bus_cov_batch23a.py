@@ -371,8 +371,8 @@ class TestImpactScorer:
     def test_retrain_model_success(self, scorer):
         """Retrain with sufficient samples trains the model."""
         try:
-            import numpy as np  # noqa: F401
-            from sklearn.ensemble import RandomForestRegressor  # noqa: F401
+            import numpy as np
+            from sklearn.ensemble import RandomForestRegressor
         except ImportError:
             pytest.skip("sklearn/numpy required")
 
@@ -986,7 +986,7 @@ class TestAdaptiveGovernanceEngine:
     def test_collect_drift_data_with_history(self, engine):
         """Returns DataFrame when history is present."""
         try:
-            import pandas  # noqa: F401
+            import pandas
         except ImportError:
             pytest.skip("pandas required for drift data collection")
 

@@ -73,6 +73,11 @@ package = true
 [tool.uv.workspace]
 members = ["packages/enhanced_agent_bus", "packages/acgs-lite", "packages/acgs-deliberation"]
 
+[tool.uv.sources]
+enhanced-agent-bus = { workspace = true }
+acgs-lite = { workspace = true }
+acgs-deliberation = { workspace = true }
+
 [tool.ruff]
 line-length = 100
 target-version = "py311"

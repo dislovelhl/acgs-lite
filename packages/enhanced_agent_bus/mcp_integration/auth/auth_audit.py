@@ -22,11 +22,11 @@ from pathlib import Path
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -46,16 +46,16 @@ _AUTH_AUDIT_OPERATION_ERRORS = (
 )
 
 
-class AuthAuditEventType(str, Enum):  # noqa: UP042
+class AuthAuditEventType(str, Enum):
     """Type of authentication audit event."""
 
     # Token events
-    TOKEN_ACQUIRED = "token_acquired"  # noqa: S105
-    TOKEN_REFRESHED = "token_refreshed"  # noqa: S105
-    TOKEN_REVOKED = "token_revoked"  # noqa: S105
-    TOKEN_EXPIRED = "token_expired"  # noqa: S105
-    TOKEN_VALIDATION_SUCCESS = "token_validation_success"  # noqa: S105
-    TOKEN_VALIDATION_FAILED = "token_validation_failed"  # noqa: S105
+    TOKEN_ACQUIRED = "token_acquired"
+    TOKEN_REFRESHED = "token_refreshed"
+    TOKEN_REVOKED = "token_revoked"
+    TOKEN_EXPIRED = "token_expired"
+    TOKEN_VALIDATION_SUCCESS = "token_validation_success"
+    TOKEN_VALIDATION_FAILED = "token_validation_failed"
 
     # Credential events
     CREDENTIAL_CREATED = "credential_created"
@@ -88,7 +88,7 @@ class AuthAuditEventType(str, Enum):  # noqa: UP042
     SYSTEM_STOP = "system_stop"
 
 
-class AuditSeverity(str, Enum):  # noqa: UP042
+class AuditSeverity(str, Enum):
     """Severity level of audit event."""
 
     INFO = "info"

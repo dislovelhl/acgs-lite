@@ -18,7 +18,7 @@ from typing import ClassVar
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -559,7 +559,7 @@ class MCPConstitutionalValidator:
             if not maci_result.is_valid:
                 result.add_issue(
                     code="MACI_VIOLATION",
-                    message=f"MACI validation failed: {maci_result.error_message or 'Role violation'}",  # noqa: E501
+                    message=f"MACI validation failed: {maci_result.error_message or 'Role violation'}",
                     severity=ValidationSeverity.ERROR,
                     principle="authorization",
                     details=(

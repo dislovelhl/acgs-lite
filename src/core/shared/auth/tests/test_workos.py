@@ -35,7 +35,6 @@ from src.core.shared.auth.workos import (
 )
 from src.core.shared.config import settings
 
-
 # ---------------------------------------------------------------------------
 # Helper utilities
 # ---------------------------------------------------------------------------

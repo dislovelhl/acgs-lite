@@ -14,11 +14,11 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -165,7 +165,7 @@ class AsyncMemoryQueue:
         self._running = False
         if self._worker_task:
             self._worker_task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._worker_task
             except asyncio.CancelledError:
                 pass

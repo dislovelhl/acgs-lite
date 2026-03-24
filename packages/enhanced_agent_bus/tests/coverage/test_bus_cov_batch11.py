@@ -23,7 +23,6 @@ import pytest
 # ---------------------------------------------------------------------------
 # 1. observability/capacity_metrics/registry.py
 # ---------------------------------------------------------------------------
-
 from enhanced_agent_bus.observability.capacity_metrics.registry import (
     ADAPTIVE_THRESHOLD_BUCKETS,
     BATCH_OVERHEAD_BUCKETS,
@@ -33,7 +32,6 @@ from enhanced_agent_bus.observability.capacity_metrics.registry import (
     CacheLayer,
     CacheMissReason,
     PerformanceMetricsRegistry,
-    ValidationResult as MetricsValidationResult,
     adaptive_threshold_timer,
     batch_overhead_timer,
     deliberation_layer_timer,
@@ -50,6 +48,9 @@ from enhanced_agent_bus.observability.capacity_metrics.registry import (
     record_z3_solver_latency,
     reset_performance_metrics,
     z3_solver_timer,
+)
+from enhanced_agent_bus.observability.capacity_metrics.registry import (
+    ValidationResult as MetricsValidationResult,
 )
 
 

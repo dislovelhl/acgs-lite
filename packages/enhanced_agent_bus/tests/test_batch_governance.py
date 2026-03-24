@@ -8,12 +8,12 @@ import pytest
 
 # Governance and constitutional compliance test markers
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 from enhanced_agent_bus.batch_processor_infra.governance import (
-    BatchGovernanceManager,  # noqa: E402
+    BatchGovernanceManager,
 )
-from enhanced_agent_bus.models import BatchRequest, BatchRequestItem  # noqa: E402
+from enhanced_agent_bus.models import BatchRequest, BatchRequestItem
 
 
 class TestBatchGovernanceManager:

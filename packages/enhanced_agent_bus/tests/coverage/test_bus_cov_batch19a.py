@@ -744,9 +744,10 @@ class TestValidateConstitutionalHashPqc:
         The production ValidationResult stub lacks classical_verification_ms,
         so we patch ValidationResult to accept arbitrary kwargs.
         """
-        from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
+        from dataclasses import dataclass
+        from dataclasses import field as dc_field
 
-        from dataclasses import dataclass, field as dc_field
+        from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
         @dataclass
         class _VR:
@@ -796,7 +797,9 @@ class TestValidateConstitutionalHashPqc:
         assert result.valid is True
 
     async def test_pqc_enabled_v1_classical(self):
-        from dataclasses import dataclass, field as dc_field
+        from dataclasses import dataclass
+        from dataclasses import field as dc_field
+
         from src.core.shared.security.pqc_crypto import PQCConfig
 
         from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
@@ -836,7 +839,9 @@ class TestValidateConstitutionalHashPqc:
             assert result.pqc_metadata is not None
 
     async def test_pqc_enabled_v1_phase5_warning(self):
-        from dataclasses import dataclass, field as dc_field
+        from dataclasses import dataclass
+        from dataclasses import field as dc_field
+
         from src.core.shared.security.pqc_crypto import PQCConfig
 
         from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc

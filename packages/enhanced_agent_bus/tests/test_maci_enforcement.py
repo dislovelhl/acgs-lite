@@ -565,7 +565,7 @@ class TestMACIValidationLog:
         """Test failed validations are logged."""
         await maci_registry.register_agent("exec-1", MACIRole.EXECUTIVE)
 
-        try:  # noqa: SIM105
+        try:
             await maci_enforcer.validate_action("exec-1", MACIAction.VALIDATE)
         except MACIRoleViolationError:
             pass
@@ -858,7 +858,7 @@ class TestFailClosedTargetAgent:
         """Test validation log records target_not_found violations."""
         await maci_registry.register_agent("jud-1", MACIRole.JUDICIAL)
 
-        try:  # noqa: SIM105
+        try:
             await maci_enforcer.validate_action(
                 agent_id="jud-1",
                 action=MACIAction.VALIDATE,
@@ -1145,7 +1145,7 @@ class TestMACISessionAwareEnforcer:
 
 
 class TestMACISessionBypassPrevention:
-    """Tests for session bypass prevention - ensures MACI cannot be bypassed via session policies."""  # noqa: E501
+    """Tests for session bypass prevention - ensures MACI cannot be bypassed via session policies."""
 
     async def test_validate_session_bypass_blocks_unauthorized(self, maci_enforcer, maci_registry):
         """Test session bypass validation blocks unauthorized actions."""
@@ -1195,7 +1195,7 @@ class TestMACISessionBypassPrevention:
         await maci_registry.record_output("jud-1", "jud-output-1", session_id=session_id)
 
         # Self-validation should be blocked regardless of session
-        # Use validate_action directly since validate_session_bypass re-raises MACISelfValidationError  # noqa: E501
+        # Use validate_action directly since validate_session_bypass re-raises MACISelfValidationError
         with pytest.raises(MACISelfValidationError):
             await maci_enforcer.validate_action(
                 agent_id="jud-1",

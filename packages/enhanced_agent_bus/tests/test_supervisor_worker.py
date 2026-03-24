@@ -22,7 +22,6 @@ from enhanced_agent_bus.langgraph_orchestration.supervisor_worker import (
     create_supervisor_worker,
 )
 
-
 # ---------------------------------------------------------------------------
 # WorkerTask / WorkerTaskResult dataclass tests
 # ---------------------------------------------------------------------------

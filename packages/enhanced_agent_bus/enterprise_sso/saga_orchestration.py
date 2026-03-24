@@ -30,11 +30,11 @@ from typing import Generic, TypeVar
 import redis.asyncio
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -55,7 +55,7 @@ _SAGA_OPERATION_ERRORS = (
 )
 
 
-class SagaStatus(str, Enum):  # noqa: UP042
+class SagaStatus(str, Enum):
     """Status of a saga execution."""
 
     PENDING = "pending"
@@ -67,7 +67,7 @@ class SagaStatus(str, Enum):  # noqa: UP042
     PARTIALLY_COMPENSATED = "partially_compensated"
 
 
-class SagaStepStatus(str, Enum):  # noqa: UP042
+class SagaStepStatus(str, Enum):
     """Status of an individual saga step."""
 
     PENDING = "pending"
@@ -80,7 +80,7 @@ class SagaStepStatus(str, Enum):  # noqa: UP042
     SKIPPED = "skipped"
 
 
-class SagaEventType(str, Enum):  # noqa: UP042
+class SagaEventType(str, Enum):
     """Types of saga events for audit logging."""
 
     SAGA_STARTED = "saga_started"
@@ -96,7 +96,7 @@ class SagaEventType(str, Enum):  # noqa: UP042
     STEP_COMPENSATION_FAILED = "step_compensation_failed"
 
 
-class CompensationStrategy(str, Enum):  # noqa: UP042
+class CompensationStrategy(str, Enum):
     """Strategy for handling compensation failures."""
 
     RETRY = "retry"
@@ -372,7 +372,7 @@ class SagaStore:
         sagas = []
         for sid in saga_ids:
             saga = await self.get(sid)
-            if saga:  # noqa: SIM102
+            if saga:
                 if status is None or saga.status == status:
                     sagas.append(saga)
 
@@ -1096,7 +1096,7 @@ class SagaRecoveryService:
         self._running = False
         if self._recovery_task:
             self._recovery_task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._recovery_task
             except asyncio.CancelledError:
                 pass

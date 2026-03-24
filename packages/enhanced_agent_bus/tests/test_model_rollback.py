@@ -40,7 +40,7 @@ if enhanced_agent_bus_dir not in sys.path:
     sys.path.insert(0, enhanced_agent_bus_dir)
 
 # Import modules for testing
-from ml_versioning import DEFAULT_MODEL_NAME, MLFLOW_AVAILABLE, MLflowVersionManager  # noqa: E402
+from ml_versioning import DEFAULT_MODEL_NAME, MLFLOW_AVAILABLE, MLflowVersionManager
 
 logger = get_logger(__name__)
 RUN_EAB_MODEL_ROLLBACK_TESTS = os.getenv("RUN_EAB_MODEL_ROLLBACK_TESTS", "false").lower() == "true"

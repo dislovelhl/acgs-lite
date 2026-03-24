@@ -19,7 +19,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Helpers for building minimal valid GraphDefinition fixtures
 # ---------------------------------------------------------------------------
@@ -34,10 +33,10 @@ def _make_graph_definition(
     name="test-graph",
 ):
     from enhanced_agent_bus.langgraph_orchestration.models import (
+        EdgeType,
         GraphDefinition,
         GraphEdge,
         GraphNode,
-        EdgeType,
         NodeType,
     )
 
@@ -259,7 +258,7 @@ class TestGraphOrchestratorRun:
         mock_result.execution_time_ms = 1.0
         mock_result.error = None
 
-        from enhanced_agent_bus.langgraph_orchestration.models import NodeStatus, NodeResult
+        from enhanced_agent_bus.langgraph_orchestration.models import NodeResult, NodeStatus
 
         completed_result = NodeResult(
             node_id="start",

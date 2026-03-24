@@ -82,7 +82,7 @@ class OversightDecision:
         submitted_at: ISO timestamp of submission.
         reviewed_at: ISO timestamp of human review (if completed).
         context: Arbitrary context metadata.
-    """  # noqa: RUF002
+    """
 
     decision_id: str
     system_id: str
@@ -197,7 +197,7 @@ class HumanOversightGateway:
         impact_score = max(0.0, min(1.0, impact_score))
         requires_review = impact_score >= self.oversight_threshold
 
-        if requires_review:  # noqa: SIM108
+        if requires_review:
             outcome = OversightOutcome.PENDING
         else:
             outcome = OversightOutcome.AUTO_APPROVED
@@ -216,9 +216,9 @@ class HumanOversightGateway:
         self._decisions[decision.decision_id] = decision
 
         if requires_review and self._on_review_required:
-            try:  # noqa: SIM105
+            try:
                 self._on_review_required(decision)
-            except Exception:  # noqa: S110
+            except Exception:
                 pass  # Notification failure must never block the governance record
 
         return decision
@@ -257,9 +257,9 @@ class HumanOversightGateway:
         self._decisions[decision_id] = updated
 
         if self._on_approved:
-            try:  # noqa: SIM105
+            try:
                 self._on_approved(updated)
-            except Exception:  # noqa: S110
+            except Exception:
                 pass
 
         return updated
@@ -298,9 +298,9 @@ class HumanOversightGateway:
         self._decisions[decision_id] = updated
 
         if self._on_rejected:
-            try:  # noqa: SIM105
+            try:
                 self._on_rejected(updated)
-            except Exception:  # noqa: S110
+            except Exception:
                 pass
 
         return updated

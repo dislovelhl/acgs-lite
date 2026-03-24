@@ -879,9 +879,8 @@ class TestRedisConfigGetHealthStatsWithCheckTime:
 
 class TestRedisConfigSingleton:
     def test_get_redis_config_singleton(self):
-        from src.core.shared.redis_config import get_redis_config
-
         import src.core.shared.redis_config as rc_mod
+        from src.core.shared.redis_config import get_redis_config
 
         original = rc_mod._global_redis_config
         try:
@@ -1315,7 +1314,6 @@ class TestBulkOperationsAdditional:
 
     async def test_bulk_insert_on_conflict_batching(self, session, table):
         from sqlalchemy.dialects.postgresql import insert as pg_insert
-
         from src.core.shared.database.utils import BulkOperations
 
         values = [{"tenant_id": f"t{i}", "name": f"n{i}"} for i in range(5)]

@@ -29,20 +29,41 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from fastapi import HTTPException
 
-# ---------------------------------------------------------------------------
-# Module imports
-# ---------------------------------------------------------------------------
-from src.core.shared.security.pii_detector import (
-    PIIDetector,
-    PIIPattern,
-    classify_data,
-    detect_pii,
-    get_pii_detector,
-    reset_pii_detector,
+from src.core.shared.security.ccpa_handler import (
+    CCPABusinessPurpose,
+    CCPADataSource,
+    CCPAHandler,
+    CCPAPersonalInfoCategory,
+    CCPARequestStatus,
+    CCPARequestType,
+    ConsumerDataReport,
+    ConsumerInfoRecord,
+    reset_ccpa_handler,
+)
+from src.core.shared.security.cors_config import (
+    DEFAULT_ORIGINS,
+    CORSConfig,
+    CORSEnvironment,
+    detect_environment,
+    get_cors_config,
+    get_origins_from_env,
+    get_strict_cors_config,
+    validate_origin,
+)
+from src.core.shared.security.csrf import (
+    CSRFConfig,
+    _generate_token,
+    _verify_token,
 )
 from src.core.shared.security.data_classification import (
     DataClassificationTier,
     PIICategory,
+)
+from src.core.shared.security.error_handler_middleware import ErrorHandlerMiddleware
+from src.core.shared.security.error_sanitizer import (
+    safe_error_detail,
+    safe_error_message,
+    sanitize_error,
 )
 from src.core.shared.security.gdpr_erasure import (
     ErasureScope,
@@ -50,31 +71,21 @@ from src.core.shared.security.gdpr_erasure import (
     GDPRErasureHandler,
     reset_gdpr_erasure_handler,
 )
-from src.core.shared.security.ccpa_handler import (
-    CCPAHandler,
-    CCPAPersonalInfoCategory,
-    CCPARequestStatus,
-    CCPARequestType,
-    ConsumerDataReport,
-    ConsumerInfoRecord,
-    CCPADataSource,
-    CCPABusinessPurpose,
-    reset_ccpa_handler,
+from src.core.shared.security.input_validator import (
+    InputValidator,
+    _contains_injection,
 )
-from src.core.shared.security.sandbox import (
-    MAX_OUTPUT_BYTES,
-    ProcessSandbox,
-    Sandbox,
-    SandboxBackend,
-    SandboxConfig,
-    SandboxPolicy,
-    SandboxResult,
-)
-from src.core.shared.security.spiffe_san import (
-    DEFAULT_TRUST_DOMAINS,
-    SpiffeId,
-    parse_spiffe_id,
-    validate_spiffe_trust_domain,
+from src.core.shared.security.key_loader import load_key_material
+
+# ---------------------------------------------------------------------------
+# Module imports
+# ---------------------------------------------------------------------------
+from src.core.shared.security.pii_detector import (
+    PIIDetector,
+    classify_data,
+    detect_pii,
+    get_pii_detector,
+    reset_pii_detector,
 )
 from src.core.shared.security.pqc import (
     APPROVED_CLASSICAL,
@@ -103,9 +114,22 @@ from src.core.shared.security.pqc_crypto import (
     PQC_CRYPTO_AVAILABLE,
     HybridSignature,
     PQCConfig,
-    PQCCryptoService,
     PQCMetadata,
     ValidationResult,
+)
+from src.core.shared.security.sandbox import (
+    MAX_OUTPUT_BYTES,
+    ProcessSandbox,
+    Sandbox,
+    SandboxBackend,
+    SandboxConfig,
+    SandboxPolicy,
+    SandboxResult,
+)
+from src.core.shared.security.spiffe_san import (
+    DEFAULT_TRUST_DOMAINS,
+    parse_spiffe_id,
+    validate_spiffe_trust_domain,
 )
 from src.core.shared.security.tenant_context import (
     TENANT_ID_MAX_LENGTH,
@@ -116,33 +140,6 @@ from src.core.shared.security.tenant_context import (
     sanitize_tenant_id,
     validate_tenant_id,
 )
-from src.core.shared.security.key_loader import load_key_material
-from src.core.shared.security.error_sanitizer import (
-    safe_error_detail,
-    safe_error_message,
-    sanitize_error,
-)
-from src.core.shared.security.error_handler_middleware import ErrorHandlerMiddleware
-from src.core.shared.security.cors_config import (
-    CORSConfig,
-    CORSEnvironment,
-    DEFAULT_ORIGINS,
-    detect_environment,
-    get_cors_config,
-    get_origins_from_env,
-    get_strict_cors_config,
-    validate_origin,
-)
-from src.core.shared.security.csrf import (
-    CSRFConfig,
-    _generate_token,
-    _verify_token,
-)
-from src.core.shared.security.input_validator import (
-    InputValidator,
-    _contains_injection,
-)
-
 
 # ===========================================================================
 # PII Detector
@@ -1602,11 +1599,12 @@ class TestSpiffeSanExtract:
 
     def test_extract_from_cert_no_san(self):
         """Certificate without SAN extension returns empty list."""
-        from src.core.shared.security.spiffe_san import extract_spiffe_ids_from_cert
         from cryptography import x509
-        from cryptography.x509.oid import NameOID
         from cryptography.hazmat.primitives import hashes, serialization
         from cryptography.hazmat.primitives.asymmetric import ec
+        from cryptography.x509.oid import NameOID
+
+        from src.core.shared.security.spiffe_san import extract_spiffe_ids_from_cert
 
         # Generate a self-signed cert without SAN
         key = ec.generate_private_key(ec.SECP256R1())
@@ -1627,11 +1625,12 @@ class TestSpiffeSanExtract:
 
     def test_extract_from_cert_with_spiffe_san(self):
         """Certificate with spiffe:// URI SAN should extract the SPIFFE ID."""
-        from src.core.shared.security.spiffe_san import extract_spiffe_ids_from_cert
         from cryptography import x509
-        from cryptography.x509.oid import NameOID
         from cryptography.hazmat.primitives import hashes, serialization
         from cryptography.hazmat.primitives.asymmetric import ec
+        from cryptography.x509.oid import NameOID
+
+        from src.core.shared.security.spiffe_san import extract_spiffe_ids_from_cert
 
         key = ec.generate_private_key(ec.SECP256R1())
         subject = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "agent")])
@@ -1658,11 +1657,12 @@ class TestSpiffeSanExtract:
 
     def test_extract_from_cert_with_non_spiffe_uri(self):
         """Certificate with non-spiffe URI SAN should return empty list."""
-        from src.core.shared.security.spiffe_san import extract_spiffe_ids_from_cert
         from cryptography import x509
-        from cryptography.x509.oid import NameOID
         from cryptography.hazmat.primitives import hashes, serialization
         from cryptography.hazmat.primitives.asymmetric import ec
+        from cryptography.x509.oid import NameOID
+
+        from src.core.shared.security.spiffe_san import extract_spiffe_ids_from_cert
 
         key = ec.generate_private_key(ec.SECP256R1())
         subject = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "test")])
@@ -1695,9 +1695,9 @@ class TestSpiffeIdentityValidatorCerts:
 
     def _make_cert(self, san_uris=None, not_before=None, not_after=None):
         from cryptography import x509
-        from cryptography.x509.oid import NameOID
         from cryptography.hazmat.primitives import hashes, serialization
         from cryptography.hazmat.primitives.asymmetric import ec
+        from cryptography.x509.oid import NameOID
 
         key = ec.generate_private_key(ec.SECP256R1())
         subject = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "test")])
@@ -1812,10 +1812,10 @@ class TestCSRFMiddleware:
 
     @pytest.mark.asyncio
     async def test_csrf_disabled_passthrough(self):
-        from starlette.testclient import TestClient
         from starlette.applications import Starlette
         from starlette.responses import PlainTextResponse
         from starlette.routing import Route
+        from starlette.testclient import TestClient
 
         async def homepage(request):
             return PlainTextResponse("ok")
@@ -1830,10 +1830,10 @@ class TestCSRFMiddleware:
 
     @pytest.mark.asyncio
     async def test_csrf_safe_method_sets_cookie(self):
-        from starlette.testclient import TestClient
         from starlette.applications import Starlette
         from starlette.responses import PlainTextResponse
         from starlette.routing import Route
+        from starlette.testclient import TestClient
 
         async def homepage(request):
             return PlainTextResponse("ok")
@@ -1849,10 +1849,10 @@ class TestCSRFMiddleware:
 
     @pytest.mark.asyncio
     async def test_csrf_bearer_bypasses(self):
-        from starlette.testclient import TestClient
         from starlette.applications import Starlette
         from starlette.responses import PlainTextResponse
         from starlette.routing import Route
+        from starlette.testclient import TestClient
 
         async def homepage(request):
             return PlainTextResponse("ok")
@@ -1867,10 +1867,10 @@ class TestCSRFMiddleware:
 
     @pytest.mark.asyncio
     async def test_csrf_exempt_path_bypasses(self):
-        from starlette.testclient import TestClient
         from starlette.applications import Starlette
         from starlette.responses import PlainTextResponse
         from starlette.routing import Route
+        from starlette.testclient import TestClient
 
         async def health(request):
             return PlainTextResponse("ok")
@@ -1887,10 +1887,10 @@ class TestCSRFMiddleware:
 
     @pytest.mark.asyncio
     async def test_csrf_missing_tokens_returns_403(self):
-        from starlette.testclient import TestClient
         from starlette.applications import Starlette
         from starlette.responses import PlainTextResponse
         from starlette.routing import Route
+        from starlette.testclient import TestClient
 
         async def endpoint(request):
             return PlainTextResponse("ok")
@@ -1906,10 +1906,10 @@ class TestCSRFMiddleware:
 
     @pytest.mark.asyncio
     async def test_csrf_valid_double_submit(self):
-        from starlette.testclient import TestClient
         from starlette.applications import Starlette
         from starlette.responses import PlainTextResponse
         from starlette.routing import Route
+        from starlette.testclient import TestClient
 
         secret = "test-secret-42"
 
@@ -1937,10 +1937,10 @@ class TestCSRFMiddleware:
 
     @pytest.mark.asyncio
     async def test_csrf_mismatch_returns_403(self):
-        from starlette.testclient import TestClient
         from starlette.applications import Starlette
         from starlette.responses import PlainTextResponse
         from starlette.routing import Route
+        from starlette.testclient import TestClient
 
         secret = "test-secret-43"
 
@@ -1967,10 +1967,10 @@ class TestCSRFMiddleware:
     @pytest.mark.asyncio
     async def test_csrf_session_cookie_skip(self):
         """When session_cookie_name is set but cookie is absent, CSRF is skipped."""
-        from starlette.testclient import TestClient
         from starlette.applications import Starlette
         from starlette.responses import PlainTextResponse
         from starlette.routing import Route
+        from starlette.testclient import TestClient
 
         async def endpoint(request):
             return PlainTextResponse("ok")

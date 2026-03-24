@@ -28,18 +28,19 @@ from importlib import import_module
 
 # Constitutional hash for immutable validation
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
+
+from src.core.shared.constants import MACIRole
 
 from enhanced_agent_bus.interfaces import RecommendationPlannerProtocol
 from enhanced_agent_bus.maci_role_projection import project_to_verification_role
 from enhanced_agent_bus.observability.structured_logging import get_logger
-from src.core.shared.constants import MACIRole
 
 from ..governance_constants import (
     VERIFIER_BASE_RISK_SCORE,
@@ -698,7 +699,7 @@ class JudicialAgent(MACIAgentBase):
                 )
                 confidence = 0.6
 
-        elif rule_id == "data_protection":  # noqa: SIM102
+        elif rule_id == "data_protection":
             if decision_context.get("data_unprotected"):
                 violations.append(
                     {
@@ -732,7 +733,7 @@ class JudicialAgent(MACIAgentBase):
         for principle in principles:
             principle_lower = principle.lower()
 
-            if "harm" in principle_lower:  # noqa: SIM102
+            if "harm" in principle_lower:
                 if context.get("potential_harm"):
                     violations.append(
                         {
@@ -762,7 +763,7 @@ class JudicialAgent(MACIAgentBase):
         for constraint in constraints:
             constraint_lower = constraint.lower()
 
-            if "technically feasible" in constraint_lower:  # noqa: SIM102
+            if "technically feasible" in constraint_lower:
                 if not context.get("technically_feasible", True):
                     violations.append(
                         {
@@ -772,7 +773,7 @@ class JudicialAgent(MACIAgentBase):
                         }
                     )
 
-            if "human approval" in constraint_lower:  # noqa: SIM102
+            if "human approval" in constraint_lower:
                 if context.get("requires_human_approval") and not context.get("human_approved"):
                     violations.append(
                         {
@@ -1046,7 +1047,7 @@ class MACIVerifier:
             role=MACIAgentRole.JUDICIAL,
             phase=VerificationPhase.JUDGMENT,
             action="validate_compliance",
-            input_hash=f"{self.executive.output_registry.get(decision_id, '')}:{self.legislative.output_registry.get(rules_id, '')}",  # noqa: E501
+            input_hash=f"{self.executive.output_registry.get(decision_id, '')}:{self.legislative.output_registry.get(rules_id, '')}",
             output_hash=self.judicial.output_registry.get(judgment_id, ""),
             confidence=judgment.get("confidence", 0.5),
             reasoning=judgment.get("judgment_reasoning", ""),

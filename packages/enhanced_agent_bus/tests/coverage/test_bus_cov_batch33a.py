@@ -16,18 +16,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # ---------------------------------------------------------------------------
-# minicpm_semantic imports
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.impact_scorer_infra.algorithms.minicpm_semantic import (
-    GovernanceDomain,
-    MiniCPMScorerConfig,
-    MiniCPMSemanticScorer,
-    cosine_similarity,
-    create_minicpm_scorer,
-)
-from enhanced_agent_bus.impact_scorer_infra.models import ScoringMethod
-
-# ---------------------------------------------------------------------------
 # ldap_integration imports
 # ---------------------------------------------------------------------------
 from enhanced_agent_bus.enterprise_sso.ldap_integration import (
@@ -52,6 +40,17 @@ from enhanced_agent_bus.enterprise_sso.ldap_integration import (
     parse_ldap_entry,
 )
 
+# ---------------------------------------------------------------------------
+# minicpm_semantic imports
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.impact_scorer_infra.algorithms.minicpm_semantic import (
+    GovernanceDomain,
+    MiniCPMScorerConfig,
+    MiniCPMSemanticScorer,
+    cosine_similarity,
+    create_minicpm_scorer,
+)
+from enhanced_agent_bus.impact_scorer_infra.models import ScoringMethod
 
 # ============================================================================
 # MiniCPM Semantic Scorer — uncovered lines
@@ -461,7 +460,7 @@ def _make_ldap_config(**overrides):
         "server_uri": "ldap://test.example.com",
         "base_dn": "dc=example,dc=com",
         "bind_dn": "cn=admin,dc=example,dc=com",
-        "bind_password": "secret",  # noqa: S106
+        "bind_password": "secret",
         "circuit_breaker_enabled": False,
     }
     defaults.update(overrides)

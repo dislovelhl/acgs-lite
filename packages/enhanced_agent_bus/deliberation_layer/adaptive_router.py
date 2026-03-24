@@ -149,7 +149,7 @@ class AdaptiveRouter:
                 message.content, context
             )
             logger.debug(
-                f"Calculated impact score {message.impact_score:.3f} for message {message.message_id}"  # noqa: E501
+                f"Calculated impact score {message.impact_score:.3f} for message {message.message_id}"
             )
 
         impact_score = message.impact_score
@@ -371,7 +371,7 @@ class AdaptiveRouter:
 
             if abs(self.impact_threshold - old_threshold) > 0.01:
                 logger.info(
-                    f"Adjusted impact threshold from {old_threshold:.3f} to {self.impact_threshold:.3f} "  # noqa: E501
+                    f"Adjusted impact threshold from {old_threshold:.3f} to {self.impact_threshold:.3f} "
                     f"(FP rate: {fp_rate:.2f}, FN rate: {fn_rate:.2f})"
                 )
 

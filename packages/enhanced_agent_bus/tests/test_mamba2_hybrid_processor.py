@@ -14,10 +14,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from enhanced_agent_bus.mamba2_hybrid_processor import (
-    Mamba2Config,
     TORCH_AVAILABLE,
+    Mamba2Config,
 )
-
 
 # ---------------------------------------------------------------------------
 # Tests: Mamba2Config dataclass
@@ -147,6 +146,7 @@ class TestWithTorch:
     )
     def test_mamba2_ssm_forward(self):
         import torch
+
         from enhanced_agent_bus.mamba2_hybrid_processor import Mamba2SSM
 
         cfg = Mamba2Config(d_model=64, d_state=16, d_conv=4, expand_factor=2, num_mamba_layers=2)
@@ -162,6 +162,7 @@ class TestWithTorch:
     )
     def test_shared_attention_forward(self):
         import torch
+
         from enhanced_agent_bus.mamba2_hybrid_processor import SharedAttention
 
         cfg = Mamba2Config(d_model=64)
@@ -177,6 +178,7 @@ class TestWithTorch:
     )
     def test_constitutional_mamba_hybrid_forward(self):
         import torch
+
         from enhanced_agent_bus.mamba2_hybrid_processor import ConstitutionalMambaHybrid
 
         cfg = Mamba2Config(d_model=64, d_state=16, num_mamba_layers=2)
@@ -201,6 +203,7 @@ class TestWithTorch:
 
     def test_tokenize_text(self):
         import torch
+
         from enhanced_agent_bus.mamba2_hybrid_processor import ConstitutionalContextManager
 
         cfg = Mamba2Config(d_model=64, d_state=16, num_mamba_layers=2)
@@ -213,6 +216,7 @@ class TestWithTorch:
 
     def test_extract_compliance_score(self):
         import torch
+
         from enhanced_agent_bus.mamba2_hybrid_processor import ConstitutionalContextManager
 
         cfg = Mamba2Config(d_model=64, d_state=16, num_mamba_layers=2)
@@ -285,6 +289,7 @@ class TestWithTorch:
 
     def test_jrt_context_preparation(self):
         import torch
+
         from enhanced_agent_bus.mamba2_hybrid_processor import ConstitutionalMambaHybrid
 
         cfg = Mamba2Config(d_model=64, d_state=16, num_mamba_layers=2, jrt_repeat_factor=3)
@@ -306,15 +311,18 @@ class TestWithTorch:
 class TestConvenienceFunctions:
 
     def test_create_mamba_hybrid_processor(self):
-        from enhanced_agent_bus.mamba2_hybrid_processor import create_mamba_hybrid_processor, ConstitutionalMambaHybrid
+        from enhanced_agent_bus.mamba2_hybrid_processor import (
+            ConstitutionalMambaHybrid,
+            create_mamba_hybrid_processor,
+        )
 
         model = create_mamba_hybrid_processor(Mamba2Config(d_model=64, d_state=16, num_mamba_layers=2))
         assert isinstance(model, ConstitutionalMambaHybrid)
 
     def test_create_constitutional_context_manager(self):
         from enhanced_agent_bus.mamba2_hybrid_processor import (
-            create_constitutional_context_manager,
             ConstitutionalContextManager,
+            create_constitutional_context_manager,
         )
 
         mgr = create_constitutional_context_manager(Mamba2Config(d_model=64, d_state=16, num_mamba_layers=2))

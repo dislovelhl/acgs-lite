@@ -8,11 +8,9 @@ Targets:
 from __future__ import annotations
 
 import pytest
-
 from acgs_lite.constitution import Constitution, Rule, Severity
 from acgs_lite.constitution.rule import AcknowledgedTension
 from acgs_lite.errors import ConstitutionalViolationError
-
 
 # ---------------------------------------------------------------------------
 # Helpers

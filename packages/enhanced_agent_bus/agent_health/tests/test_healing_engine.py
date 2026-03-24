@@ -280,7 +280,7 @@ class TestAdvisoryTier:
         supervisor_notifier,
         thresholds,
     ) -> None:
-        """Spec edge case 2: engine calls HITLRequestor exactly once (requestor handles dedup internally)."""  # noqa: E501
+        """Spec edge case 2: engine calls HITLRequestor exactly once (requestor handles dedup internally)."""
         engine = _make_engine(
             store,
             audit_log_client,

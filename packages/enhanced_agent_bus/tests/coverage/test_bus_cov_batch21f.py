@@ -16,7 +16,7 @@ from datetime import UTC, datetime, timedelta
 from enum import Enum
 from queue import Full
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch, PropertyMock
+from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
 
@@ -26,6 +26,7 @@ import pytest
 from enhanced_agent_bus.enterprise_sso.ldap_integration import (
     CircuitBreakerState,
     LDAPAuthenticationResult,
+    LDAPBindError,
     LDAPCircuitBreaker,
     LDAPCircuitOpenError,
     LDAPConfig,
@@ -34,7 +35,6 @@ from enhanced_agent_bus.enterprise_sso.ldap_integration import (
     LDAPConnectionPool,
     LDAPIntegration,
     LDAPIntegrationError,
-    LDAPBindError,
     LDAPSearchError,
     build_search_filter,
     decode_ldap_value,
@@ -44,7 +44,6 @@ from enhanced_agent_bus.enterprise_sso.ldap_integration import (
     parse_dn,
     parse_ldap_entry,
 )
-
 
 # --- Utility functions ---
 
@@ -1595,6 +1594,8 @@ class TestWorkflowSingletons:
 # ---------------------------------------------------------------------------
 # 4. routes/tenants helper function tests
 # ---------------------------------------------------------------------------
+from fastapi import HTTPException
+
 from enhanced_agent_bus.routes.tenants import (
     _build_quota_check_response,
     _build_tenant_hierarchy_response,
@@ -1608,13 +1609,12 @@ from enhanced_agent_bus.routes.tenants import (
     _is_uuid,
     _parse_status_filter,
     _quota_resource_keys,
+    _raise_internal_tenant_error,
     _raise_tenant_not_found,
     _raise_value_http_error,
-    _raise_internal_tenant_error,
     _to_dict_safe,
     _validate_admin_api_key,
 )
-from fastapi import HTTPException
 
 
 class TestToDict:

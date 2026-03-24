@@ -15,7 +15,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # 1. IFC Middleware
 # ---------------------------------------------------------------------------
@@ -265,13 +264,13 @@ class TestGraphRAGRetriever:
         assert len(result.ranked_contexts) == 1
 
     def test_dataclass_defaults(self):
+        from src.core.cognitive.graphrag.retrieval.models import GraphNode
         from src.core.cognitive.graphrag.retrieval.retriever import (
             _AssembledContext,
             _RAGResult,
             _RankedContext,
             _Score,
         )
-        from src.core.cognitive.graphrag.retrieval.models import GraphNode
 
         score = _Score()
         assert score.total_score == 0.0

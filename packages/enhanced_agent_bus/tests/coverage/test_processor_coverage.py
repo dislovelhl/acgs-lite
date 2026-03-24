@@ -30,7 +30,7 @@ pytestmark = pytest.mark.skipif(
 )
 
 # Constitutional Hash - Required for all governance operations
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # =============================================================================
 # Message Processor Coverage Tests

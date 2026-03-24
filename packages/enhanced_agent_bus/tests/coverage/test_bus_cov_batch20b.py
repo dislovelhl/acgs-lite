@@ -15,11 +15,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 # ---------------------------------------------------------------------------
-# AgentBusAdapter imports
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.mcp_server.adapters.agent_bus import AgentBusAdapter
-
-# ---------------------------------------------------------------------------
 # AnthropicAdapter imports
 # ---------------------------------------------------------------------------
 from enhanced_agent_bus.adapters.anthropic_adapter import AnthropicAdapter
@@ -33,6 +28,11 @@ from enhanced_agent_bus.adapters.base import (
 )
 
 # ---------------------------------------------------------------------------
+# AgentBusAdapter imports
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.mcp_server.adapters.agent_bus import AgentBusAdapter
+
+# ---------------------------------------------------------------------------
 # SubmitGovernanceTool imports
 # ---------------------------------------------------------------------------
 from enhanced_agent_bus.mcp_server.tools.submit_governance import (
@@ -41,7 +41,6 @@ from enhanced_agent_bus.mcp_server.tools.submit_governance import (
     RequestStatus,
     SubmitGovernanceTool,
 )
-
 
 # ============================================================================
 # AgentBusAdapter Tests

@@ -69,7 +69,7 @@ def reset_prometheus_registry():
 
             # Unregister our collectors
             for collector in collectors_to_remove:
-                try:  # noqa: SIM105
+                try:
                     REGISTRY.unregister(collector)
                 except (RuntimeError, ValueError, TypeError):
                     pass

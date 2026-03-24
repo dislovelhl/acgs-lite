@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field, field_validator
 
 # Import from base module
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

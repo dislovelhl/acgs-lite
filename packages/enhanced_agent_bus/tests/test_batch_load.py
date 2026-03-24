@@ -448,7 +448,7 @@ class TestLatencyDistribution:
             if response.stats.p99_latency_ms is not None:
                 assert response.stats.p99_latency_ms >= response.stats.p95_latency_ms
 
-        if response.stats.p50_latency_ms is not None:  # noqa: SIM102
+        if response.stats.p50_latency_ms is not None:
             if response.stats.p99_latency_ms is not None:
                 pass
 

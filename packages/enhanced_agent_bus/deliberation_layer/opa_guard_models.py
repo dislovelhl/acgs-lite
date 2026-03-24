@@ -349,7 +349,7 @@ class ReviewResult:
             return
 
         # Need at least half of required critics
-        if self.required_critics:  # noqa: SIM102
+        if self.required_critics:
             if total_reviews < len(self.required_critics) // 2 + 1:
                 return
 

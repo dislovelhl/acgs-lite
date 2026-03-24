@@ -25,16 +25,16 @@ if not RUN_EAB_OPA_CLIENT_TESTS:
         )
     )
 
-from enhanced_agent_bus.models import CONSTITUTIONAL_HASH  # noqa: E402
+from enhanced_agent_bus.models import CONSTITUTIONAL_HASH
 
 # Use package-relative imports to maintain class identity
-from enhanced_agent_bus.opa_client import (  # noqa: E402
+from enhanced_agent_bus.opa_client import (
     OPAClient,
     close_opa_client,
     get_opa_client,
     initialize_opa_client,
 )
-from enhanced_agent_bus.validators import ValidationResult  # noqa: E402
+from enhanced_agent_bus.validators import ValidationResult
 
 
 class TestOPAClient:

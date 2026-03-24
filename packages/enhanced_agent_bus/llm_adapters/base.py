@@ -20,7 +20,7 @@ from src.core.shared.resilience.retry import RetryConfig as SharedRetryConfig
 from src.core.shared.resilience.retry import retry
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -30,7 +30,7 @@ logger = get_logger(__name__)
 
 # Import centralized constitutional hash from shared module
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -562,7 +562,7 @@ class BaseLLMAdapter(ABC):
         if messages[0].role == "assistant":
             raise ValueError("First message cannot be from assistant")
 
-    def validate_constitutional_compliance(self, **kwargs: object) -> None:  # noqa: B027
+    def validate_constitutional_compliance(self, **kwargs: object) -> None:
         """Validate constitutional compliance for request parameters.
 
         Args:

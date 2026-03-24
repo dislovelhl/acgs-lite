@@ -10,7 +10,6 @@ Target: >90% coverage on integrations/anthropic.py.
 
 from __future__ import annotations
 
-import json
 import logging
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
@@ -18,9 +17,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from acgs_lite.constitution import Constitution, Rule, Severity
-from acgs_lite.engine import GovernanceEngine, ValidationResult, Violation
+from acgs_lite.engine import GovernanceEngine, Violation
 from acgs_lite.errors import ConstitutionalViolationError
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -508,7 +506,7 @@ class TestGovernanceToolsDef:
         }
 
     def test_returns_deep_copy(self):
-        from acgs_lite.integrations.anthropic import GovernedAnthropic, _GOVERNANCE_TOOLS
+        from acgs_lite.integrations.anthropic import _GOVERNANCE_TOOLS, GovernedAnthropic
 
         tools = GovernedAnthropic.governance_tools()
         tools[0]["name"] = "MUTATED"

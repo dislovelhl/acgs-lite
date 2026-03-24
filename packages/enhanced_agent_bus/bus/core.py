@@ -84,31 +84,31 @@ MACIEnforcer = get_maci_enforcer()  # type: ignore[assignment]
 MACIRoleRegistry = get_maci_role_registry()  # type: ignore[assignment]
 
 del _flags  # Clean up namespace
-from enhanced_agent_bus.models import (  # noqa: E402
+from enhanced_agent_bus.models import (
     CONSTITUTIONAL_HASH,
     AgentMessage,
     BatchRequest,
     BatchResponse,
 )
-from enhanced_agent_bus.validators import ValidationResult  # noqa: E402
+from enhanced_agent_bus.validators import ValidationResult
 
-from ..interfaces import (  # noqa: E402
+from ..interfaces import (
     AgentRegistry,
     ProcessingStrategy,
     ValidationStrategy,
 )
-from ..message_processor import MessageProcessor  # noqa: E402
-from ..metering_manager import create_metering_manager  # noqa: E402
-from ..registry import (  # noqa: E402
+from ..message_processor import MessageProcessor
+from ..metering_manager import create_metering_manager
+from ..registry import (
     CompositeValidationStrategy,
 )
-from ..security_helpers import normalize_tenant_id, validate_tenant_consistency  # noqa: E402
-from ..utils import get_iso_timestamp  # noqa: E402
-from .batch import BatchProcessor  # noqa: E402
-from .governance import GovernanceIntegration  # noqa: E402
-from .messaging import MessageHandler  # noqa: E402
-from .metrics import BusMetrics  # noqa: E402
-from .validation import MessageValidator  # noqa: E402
+from ..security_helpers import normalize_tenant_id, validate_tenant_consistency
+from ..utils import get_iso_timestamp
+from .batch import BatchProcessor
+from .governance import GovernanceIntegration
+from .messaging import MessageHandler
+from .metrics import BusMetrics
+from .validation import MessageValidator
 
 # Rate Limiting imports
 try:
@@ -160,7 +160,7 @@ except ImportError:
     provide_governance_feedback = None  # type: ignore[misc, assignment]
 
 
-from enhanced_agent_bus.observability.structured_logging import get_logger  # noqa: E402
+from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -454,15 +454,15 @@ class EnhancedAgentBus:
 
         if self._kafka_consumer_task:
             self._kafka_consumer_task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._kafka_consumer_task
             except asyncio.CancelledError:
                 pass
 
         if self._redis_client_for_limiter:
-            try:  # noqa: SIM105
+            try:
                 await self._redis_client_for_limiter.aclose()
-            except Exception:  # noqa: S110
+            except Exception:
                 pass
 
     async def register_agent(
@@ -669,7 +669,7 @@ class EnhancedAgentBus:
                 # Inject context into message metadata for OPA and audit trail
                 msg.metadata["dynamic_context"] = dynamic_ctx.to_opa_input()
                 msg.metadata["dynamic_context_hash"] = dynamic_ctx.context_hash
-            except Exception as _dcs_exc:  # noqa: BLE001
+            except Exception as _dcs_exc:
                 # DCS failure must never block message delivery
                 logger.warning(
                     f"[{CONSTITUTIONAL_HASH}] DCS context assembly skipped: {_dcs_exc}",

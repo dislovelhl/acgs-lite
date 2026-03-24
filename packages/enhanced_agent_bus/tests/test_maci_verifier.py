@@ -29,7 +29,6 @@ from enhanced_agent_bus.verification_layer.maci_verifier import (
     create_maci_verifier,
 )
 
-
 # ---------------------------------------------------------------------------
 # Enum tests
 # ---------------------------------------------------------------------------

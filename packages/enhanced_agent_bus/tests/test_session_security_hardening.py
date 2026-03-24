@@ -16,7 +16,7 @@ import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
-from enterprise_sso.session_governance_sdk import (  # noqa: E402
+from enterprise_sso.session_governance_sdk import (
     SESSION_JWT_ALGORITHM,
     SESSION_JWT_AUDIENCE,
     SESSION_JWT_ISSUER,

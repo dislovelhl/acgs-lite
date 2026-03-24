@@ -9,7 +9,7 @@ import pytest
 
 from acgs_lite.audit import AuditLog
 from acgs_lite.constitution import Constitution, Severity
-from acgs_lite.engine.batch import BatchValidationMixin, BatchValidationResult
+from acgs_lite.engine.batch import BatchValidationResult
 from acgs_lite.engine.core import (
     GovernanceEngine,
     ValidationResult,
@@ -18,7 +18,6 @@ from acgs_lite.engine.core import (
     _FastAuditLog,
     _NoopRecorder,
 )
-from acgs_lite.errors import ConstitutionalViolationError
 
 # ---------------------------------------------------------------------------
 # Fixtures

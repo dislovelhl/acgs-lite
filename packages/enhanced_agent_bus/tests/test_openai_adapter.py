@@ -15,7 +15,6 @@ from enhanced_agent_bus.llm_adapters.base import (
 )
 from enhanced_agent_bus.llm_adapters.openai_adapter import OpenAIAdapter
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -90,7 +89,7 @@ class TestEstimateCost:
 class TestCountTokens:
     def test_count_tokens_basic(self, adapter):
         try:
-            import tiktoken  # noqa: F401
+            import tiktoken
         except ImportError:
             pytest.skip("tiktoken not installed")
 
@@ -104,7 +103,7 @@ class TestCountTokens:
 
     def test_count_tokens_with_name(self, adapter):
         try:
-            import tiktoken  # noqa: F401
+            import tiktoken
         except ImportError:
             pytest.skip("tiktoken not installed")
 

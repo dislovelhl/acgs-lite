@@ -13,6 +13,17 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from src.core.shared.errors.exceptions import (
+    ConstitutionalViolationError,
+    ResourceNotFoundError,
+    ServiceUnavailableError,
+)
+from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+
+from enhanced_agent_bus.core_models import AgentMessage, MessageType, get_enum_value
+from enhanced_agent_bus.enterprise_sso.tenant_sso_config import (
+    CONSTITUTIONAL_HASH as SSO_HASH,
+)
 
 # ---------------------------------------------------------------------------
 # tenant_sso_config
@@ -30,26 +41,6 @@ from enhanced_agent_bus.enterprise_sso.tenant_sso_config import (
     create_azure_ad_idp_config,
     create_google_workspace_idp_config,
     create_okta_idp_config,
-)
-from enhanced_agent_bus.enterprise_sso.tenant_sso_config import (
-    CONSTITUTIONAL_HASH as SSO_HASH,
-)
-
-# ---------------------------------------------------------------------------
-# workflow_base
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.workflows.workflow_base import (
-    InMemoryWorkflowExecutor,
-    Query,
-    Signal,
-    WorkflowContext,
-    WorkflowDefinition,
-    WorkflowStatus,
-    query as query_decorator,
-    signal as signal_decorator,
-)
-from enhanced_agent_bus.workflows.workflow_base import (
-    CONSTITUTIONAL_HASH as WF_HASH,
 )
 
 # ---------------------------------------------------------------------------
@@ -75,14 +66,27 @@ from enhanced_agent_bus.message_processor_components import (
 )
 from enhanced_agent_bus.validators import ValidationResult
 from enhanced_agent_bus.verification_orchestrator import VerificationResult
-from enhanced_agent_bus.core_models import AgentMessage, MessageType, get_enum_value
-from src.core.shared.errors.exceptions import (
-    ConstitutionalViolationError,
-    ResourceNotFoundError,
-    ServiceUnavailableError,
+from enhanced_agent_bus.workflows.workflow_base import (
+    CONSTITUTIONAL_HASH as WF_HASH,
 )
-from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 
+# ---------------------------------------------------------------------------
+# workflow_base
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.workflows.workflow_base import (
+    InMemoryWorkflowExecutor,
+    Query,
+    Signal,
+    WorkflowContext,
+    WorkflowDefinition,
+    WorkflowStatus,
+)
+from enhanced_agent_bus.workflows.workflow_base import (
+    query as query_decorator,
+)
+from enhanced_agent_bus.workflows.workflow_base import (
+    signal as signal_decorator,
+)
 
 # ===================================================================
 # SAML / OIDC Config tests

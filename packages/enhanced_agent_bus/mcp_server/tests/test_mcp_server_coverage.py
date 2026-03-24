@@ -315,7 +315,7 @@ class TestStdioTransport:
             patch("asyncio.StreamWriter", return_value=mock_writer),
             patch(f"{_SERVER_MODULE}.asyncio.get_running_loop", return_value=mock_loop),
         ):
-            try:  # noqa: SIM105
+            try:
                 await server._run_stdio_transport()
             except asyncio.CancelledError:
                 pass
@@ -341,7 +341,7 @@ class TestStdioTransport:
             patch("asyncio.StreamWriter", return_value=mock_writer),
             patch(f"{_SERVER_MODULE}.asyncio.get_running_loop", return_value=mock_loop),
         ):
-            try:  # noqa: SIM105
+            try:
                 await server._run_stdio_transport()
             except asyncio.CancelledError:
                 pass
@@ -364,7 +364,7 @@ class TestStdioTransport:
             patch("asyncio.StreamWriter", return_value=mock_writer),
             patch(f"{_SERVER_MODULE}.asyncio.get_running_loop", return_value=mock_loop),
         ):
-            try:  # noqa: SIM105
+            try:
                 await server._run_stdio_transport()
             except asyncio.CancelledError:
                 pass
@@ -387,7 +387,7 @@ class TestStdioTransport:
             patch("asyncio.StreamWriter", return_value=mock_writer),
             patch(f"{_SERVER_MODULE}.asyncio.get_running_loop", return_value=mock_loop),
         ):
-            try:  # noqa: SIM105
+            try:
                 await server._run_stdio_transport()
             except asyncio.CancelledError:
                 pass
@@ -418,7 +418,7 @@ class TestStdioTransport:
                 side_effect=OSError("pipe broken"),
             ),
         ):
-            try:  # noqa: SIM105
+            try:
                 await server._run_stdio_transport()
             except asyncio.CancelledError:
                 pass
@@ -446,7 +446,7 @@ class TestStdioTransport:
             patch("asyncio.StreamWriter", return_value=mock_writer),
             patch(f"{_SERVER_MODULE}.asyncio.get_running_loop", return_value=mock_loop),
         ):
-            try:  # noqa: SIM105
+            try:
                 await server._run_stdio_transport()
             except asyncio.CancelledError:
                 pass
@@ -466,7 +466,7 @@ class TestStdioTransport:
             patch("asyncio.StreamWriter", return_value=mock_writer),
             patch(f"{_SERVER_MODULE}.asyncio.get_running_loop", return_value=mock_loop),
         ):
-            try:  # noqa: SIM105
+            try:
                 await server._run_stdio_transport()
             except asyncio.CancelledError:
                 pass  # expected

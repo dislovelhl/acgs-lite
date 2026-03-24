@@ -16,15 +16,14 @@ from enhanced_agent_bus.saga_persistence.models import (
     SagaState,
     StepState,
 )
-from enhanced_agent_bus.saga_persistence.repository import (
-    InvalidStateTransitionError,
-    RepositoryError,
-)
 from enhanced_agent_bus.saga_persistence.redis.state import (
     VALID_STATE_TRANSITIONS,
     RedisStateManager,
 )
-
+from enhanced_agent_bus.saga_persistence.repository import (
+    InvalidStateTransitionError,
+    RepositoryError,
+)
 
 # ---------------------------------------------------------------------------
 # Concrete subclass that fulfils the mixin's abstract interface

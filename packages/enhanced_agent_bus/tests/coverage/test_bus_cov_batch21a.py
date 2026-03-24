@@ -47,13 +47,10 @@ from enhanced_agent_bus.middlewares.security import (
     SecurityMiddleware,
     SecurityThreat,
 )
-from enhanced_agent_bus.pipeline.exceptions import SecurityException
-from enhanced_agent_bus.pipeline.middleware import MiddlewareConfig
 
 # ---------------------------------------------------------------------------
 # 3. multi_tenancy imports
 # ---------------------------------------------------------------------------
-
 from enhanced_agent_bus.multi_tenancy.middleware import (
     CONSTITUTIONAL_HASH_HEADER,
     PUBLIC_PATHS,
@@ -64,6 +61,8 @@ from enhanced_agent_bus.multi_tenancy.middleware import (
     extract_user_from_request,
     is_admin_request,
 )
+from enhanced_agent_bus.pipeline.exceptions import SecurityException
+from enhanced_agent_bus.pipeline.middleware import MiddlewareConfig
 
 # ---------------------------------------------------------------------------
 # 4. pqc_dual_verify imports — DualVerifyWindowError may not exist
@@ -91,8 +90,8 @@ except ImportError:
             self.detail = detail or {}
 
     # Inject stub into sys.modules so pqc_dual_verify can import it
-    import types
     import sys
+    import types
 
     _phase4_mod = types.ModuleType("src.core.tools.pqc_migration.phase4.exceptions")
     _phase4_mod.DualVerifyWindowError = DualVerifyWindowError  # type: ignore[attr-defined]

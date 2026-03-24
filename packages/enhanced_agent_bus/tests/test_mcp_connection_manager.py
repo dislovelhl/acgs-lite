@@ -30,7 +30,6 @@ from enhanced_agent_bus.mcp_integration.client import (
     MCPTransportType,
 )
 
-
 # ---------------------------------------------------------------------------
 # Dataclass tests
 # ---------------------------------------------------------------------------

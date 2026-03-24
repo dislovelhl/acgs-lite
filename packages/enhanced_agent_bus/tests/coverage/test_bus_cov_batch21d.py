@@ -751,7 +751,6 @@ class TestCostAnomalyGetRecentAnomalies:
 # SECTION 4: adapters/openai_adapter.py
 # ===================================================================
 
-from enhanced_agent_bus.adapters.openai_adapter import OPENAI_ROLE_MAP, OpenAIAdapter
 from enhanced_agent_bus.adapters.base import (
     MessageRole,
     ModelMessage,
@@ -760,6 +759,7 @@ from enhanced_agent_bus.adapters.base import (
     ModelResponse,
     StreamChunk,
 )
+from enhanced_agent_bus.adapters.openai_adapter import OPENAI_ROLE_MAP, OpenAIAdapter
 
 
 class TestOpenAIAdapterInit:

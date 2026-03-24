@@ -13,7 +13,7 @@ from collections.abc import AsyncIterator, Iterator
 from typing import ClassVar, Protocol, cast
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -548,7 +548,7 @@ class HuggingFaceAdapter(BaseLLMAdapter):
             cost = self.estimate_cost(prompt_tokens, completion_tokens)
 
             # Build response
-            response_messages = messages + [LLMMessage(role="assistant", content=generated_text)]  # noqa: RUF005
+            response_messages = messages + [LLMMessage(role="assistant", content=generated_text)]
 
             return LLMResponse(
                 content=generated_text,
@@ -662,7 +662,7 @@ class HuggingFaceAdapter(BaseLLMAdapter):
             cost = self.estimate_cost(prompt_tokens, completion_tokens)
 
             # Build response
-            response_messages = messages + [LLMMessage(role="assistant", content=generated_text)]  # noqa: RUF005
+            response_messages = messages + [LLMMessage(role="assistant", content=generated_text)]
 
             return LLMResponse(
                 content=generated_text,

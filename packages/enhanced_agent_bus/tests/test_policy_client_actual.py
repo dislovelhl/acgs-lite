@@ -19,7 +19,7 @@ _parent_dir = os.path.dirname(os.path.dirname(__file__))
 sys.path.insert(0, _parent_dir)
 
 # Import models directly first
-from enhanced_agent_bus.models import AgentMessage, MessageType, Priority  # noqa: E402
+from enhanced_agent_bus.models import AgentMessage, MessageType, Priority
 
 # Now load policy_client with mocked relative imports
 _policy_client_path = os.path.join(_parent_dir, "policy_client.py")

@@ -389,7 +389,7 @@ class TestMemoryProfiler:
         try:
             profiler.start()
             # Allocate some memory
-            _ = [i for i in range(10000)]  # noqa: C416
+            _ = [i for i in range(10000)]
             snap = profiler.take_snapshot()
 
             # Should have allocation info
@@ -437,7 +437,7 @@ class TestMemoryProfilingContext:
 
             async with MemoryProfilingContext(profiler, "test_op", trace_id="t1") as ctx:
                 # Allocate some memory
-                _ = [i for i in range(1000)]  # noqa: C416
+                _ = [i for i in range(1000)]
 
             assert ctx.delta is not None
             assert ctx.delta.operation == "test_op"

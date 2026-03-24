@@ -20,7 +20,6 @@ from enhanced_agent_bus.mcp_integration.auth.oauth2_provider import (
     TokenStatus,
 )
 
-
 # ---------------------------------------------------------------------------
 # OAuth2Token dataclass tests
 # ---------------------------------------------------------------------------

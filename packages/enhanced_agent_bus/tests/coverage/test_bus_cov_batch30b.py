@@ -15,7 +15,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Section 1: mcp_server/cli.py
 # ---------------------------------------------------------------------------

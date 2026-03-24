@@ -9,7 +9,7 @@ import pandas as pd
 import streamlit as st
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -286,7 +286,7 @@ def show_settings(adaptive_router):
         help="Messages with impact score above this threshold go to deliberation",
     )
 
-    if new_threshold != current_threshold:  # noqa: SIM102
+    if new_threshold != current_threshold:
         if st.button("Update Threshold"):
             adaptive_router.set_impact_threshold(new_threshold)
             st.success(f"Threshold updated to {new_threshold:.3f}")

@@ -20,7 +20,7 @@ import time
 from dataclasses import dataclass
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -187,7 +187,7 @@ class TemporalPolicyMiddleware(BaseMiddleware):
             )
         except (OSError, TimeoutError, RuntimeError, ValueError) as exc:
             logger.error(
-                "TemporalPolicyMiddleware: OPA call failed for action=%r — blocking (fail-closed): %s",  # noqa: E501
+                "TemporalPolicyMiddleware: OPA call failed for action=%r — blocking (fail-closed): %s",
                 action,
                 exc,
             )

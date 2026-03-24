@@ -20,7 +20,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-
 # =============================================================================
 # Module 1: mcp_server/server.py
 # Missing lines: 17-18, 231-235, 265-325, 448-463
@@ -1172,9 +1171,8 @@ class TestInterfacesImports:
 
     def test_all_exports_present(self):
         """Verify __all__ exports are accessible."""
-        from enhanced_agent_bus.interfaces import __all__
-
         import enhanced_agent_bus.interfaces as mod
+        from enhanced_agent_bus.interfaces import __all__
 
         for name in __all__:
             assert hasattr(mod, name), f"Missing export: {name}"

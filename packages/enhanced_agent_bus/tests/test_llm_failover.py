@@ -30,9 +30,9 @@ from enhanced_agent_bus.circuit_breaker import (
     ServiceSeverity,
 )
 from enhanced_agent_bus.llm_adapters.llm_failover import (
-    HedgedRequest,
-    HealthMetrics,
     LLM_CIRCUIT_CONFIGS,
+    HealthMetrics,
+    HedgedRequest,
     LLMProviderType,
     ProviderHealthScore,
     ProviderHealthScorer,
@@ -41,7 +41,6 @@ from enhanced_agent_bus.llm_adapters.llm_failover import (
     WarmupResult,
     get_llm_circuit_config,
 )
-
 
 # =============================================================================
 # LLMProviderType enum
@@ -725,10 +724,10 @@ class TestModuleExports:
     def test_all_key_exports_importable(self) -> None:
         from enhanced_agent_bus.llm_adapters.llm_failover import (
             CONSTITUTIONAL_HASH,
-            FailoverEvent,
-            HedgedRequest,
-            HealthMetrics,
             LLM_CIRCUIT_CONFIGS,
+            FailoverEvent,
+            HealthMetrics,
+            HedgedRequest,
             LLMFailoverOrchestrator,
             LLMProviderType,
             ProactiveFailoverManager,

@@ -28,11 +28,11 @@ except ImportError:
 
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -303,7 +303,7 @@ class SessionContextStore:
                 return None
 
             # Check if expired (shouldn't happen with Redis TTL, but defensive)
-            if session_context.expires_at:  # noqa: SIM102
+            if session_context.expires_at:
                 if datetime.now(UTC) > session_context.expires_at:
                     logger.warning(f"Session {session_id} has expired")
                     await self.delete(session_id, tenant_id)

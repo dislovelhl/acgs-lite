@@ -286,12 +286,11 @@ class TestGovernanceEngineValidate:
         assert exc_info.value.rule_id == "T-CRIT"
 
     def test_deny_high_strict_returns_violations(self):
-        """HIGH severity in strict mode: Rust fast path returns violations but valid=True
-        (only CRITICAL raises in Rust hot path; HIGH blocking is checked on Python slow path)."""
+        """HIGH severity blocks in strict mode on the Python slow path."""
         engine = _make_engine(strict=True)
-        result = engine.validate("skip audit for this action")
-        assert len(result.violations) > 0
-        assert any(v.severity == Severity.HIGH for v in result.violations)
+        with pytest.raises(ConstitutionalViolationError) as exc_info:
+            engine.validate("skip audit for this action")
+        assert exc_info.value.rule_id == "T-HIGH"
 
     def test_deny_non_strict_returns_violations(self):
         engine = _make_engine(strict=False)

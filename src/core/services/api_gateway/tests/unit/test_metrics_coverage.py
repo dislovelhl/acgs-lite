@@ -7,13 +7,11 @@ MetricsMiddleware (dispatch + _normalize_endpoint), record_* helpers,
 get_metrics, get_metrics_content_type, create_metrics_endpoint.
 """
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from starlette.requests import Request
-from starlette.responses import PlainTextResponse
 
 from src.core.services.api_gateway.metrics import (
     PROMETHEUS_AVAILABLE,
@@ -34,7 +32,6 @@ from src.core.services.api_gateway.metrics import (
     record_proxy_request,
     update_connection_pool_metrics,
 )
-
 
 # ---------------------------------------------------------------------------
 # NoOpMetric

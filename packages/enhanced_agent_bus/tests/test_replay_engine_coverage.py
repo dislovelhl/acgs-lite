@@ -370,7 +370,7 @@ class TestVerifyDeterminism:
     async def test_verify_determinism_running_workflow_vs_nonempty_expected(
         self, engine, repository
     ):
-        """verify_determinism returns False for running workflow (output=None) vs non-None expected."""  # noqa: E501
+        """verify_determinism returns False for running workflow (output=None) vs non-None expected."""
         instance_id = uuid4()
         await _populate_started_events(repository, instance_id)
 
@@ -657,7 +657,7 @@ class TestReplayIntegration:
         instance_id = uuid4()
         now = datetime.now(UTC)
 
-        # Create mock events in reverse order — repo returns them sorted, so we test descending input  # noqa: E501
+        # Create mock events in reverse order — repo returns them sorted, so we test descending input
         mock_events = []
         for seq, et in [
             (3, EventType.WORKFLOW_COMPLETED),

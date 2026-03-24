@@ -27,7 +27,7 @@ Usage::
 
     # Export for conformity assessment documentation
     report = checklist.generate_report()
-"""  # noqa: E501
+"""
 
 from __future__ import annotations
 
@@ -100,7 +100,7 @@ class ChecklistItem:
         }
 
 
-# Canonical Article 9–16 checklist for high-risk systems  # noqa: RUF003
+# Canonical Article 9–16 checklist for high-risk systems
 _HIGH_RISK_ITEMS: list[tuple[str, str, str | None, bool]] = [
     # (article_ref, requirement, acgs_lite_feature, blocking)
     (
@@ -310,7 +310,7 @@ class ComplianceChecklist:
         and HumanOversightGateway to auto-populate their evidence.
         """
         acgs_articles = {
-            "Article 9": "acgs-lite RiskClassifier — risk level classification and obligation mapping",  # noqa: E501
+            "Article 9": "acgs-lite RiskClassifier — risk level classification and obligation mapping",
             "Article 12": "acgs-lite Article12Logger — automatic tamper-evident JSONL logging",
             "Article 13": "acgs-lite TransparencyDisclosure — Article 13 system card generation",
             "Article 14": "acgs-lite HumanOversightGateway — configurable HITL approval gates",
@@ -340,7 +340,7 @@ class ComplianceChecklist:
 
     @property
     def compliance_score(self) -> float:
-        """Fraction of items that are compliant or not-applicable (0.0–1.0)."""  # noqa: RUF002
+        """Fraction of items that are compliant or not-applicable (0.0–1.0)."""
         if not self._items:
             return 1.0
         done = sum(

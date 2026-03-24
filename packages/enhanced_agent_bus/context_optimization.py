@@ -31,11 +31,11 @@ from typing import (
 )
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -62,7 +62,7 @@ CONTEXT_OPTIMIZATION_AVAILABLE = True
 # =============================================================================
 
 
-class CompressionStrategy(str, Enum):  # noqa: UP042
+class CompressionStrategy(str, Enum):
     """Compression strategy for spec delta encoding."""
 
     FULL = "full"  # Send complete spec
@@ -574,7 +574,7 @@ class CachedGovernanceValidator:
 # =============================================================================
 
 
-class TopicPriority(str, Enum):  # noqa: UP042
+class TopicPriority(str, Enum):
     """Priority levels for bus topics."""
 
     LOW = "low"

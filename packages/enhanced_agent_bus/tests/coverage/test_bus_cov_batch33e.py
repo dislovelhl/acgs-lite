@@ -34,11 +34,10 @@ from enhanced_agent_bus.llm_adapters.base import (
     TokenUsage,
 )
 from enhanced_agent_bus.llm_adapters.config import (
+    AnthropicAdapterConfig,
     AWSBedrockAdapterConfig,
     AzureOpenAIAdapterConfig,
-    AnthropicAdapterConfig,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers / Fixtures
@@ -799,9 +798,9 @@ class TestDeliberationWorkflowRun:
     async def test_workflow_hash_validation_failure(self):
         """Lines 513: constitutional hash validation fails -> REJECTED."""
         from enhanced_agent_bus.deliberation_layer.workflows.deliberation_workflow import (
+            DefaultDeliberationActivities,
             DeliberationWorkflow,
             DeliberationWorkflowInput,
-            DefaultDeliberationActivities,
             WorkflowStatus,
         )
 
@@ -832,9 +831,9 @@ class TestDeliberationWorkflowRun:
     async def test_workflow_opa_policy_denied(self):
         """Cover OPA policy rejection path."""
         from enhanced_agent_bus.deliberation_layer.workflows.deliberation_workflow import (
+            DefaultDeliberationActivities,
             DeliberationWorkflow,
             DeliberationWorkflowInput,
-            DefaultDeliberationActivities,
             WorkflowStatus,
         )
 
@@ -862,9 +861,9 @@ class TestDeliberationWorkflowRun:
     async def test_workflow_human_review_timeout(self):
         """Lines 598-600: human review times out."""
         from enhanced_agent_bus.deliberation_layer.workflows.deliberation_workflow import (
+            DefaultDeliberationActivities,
             DeliberationWorkflow,
             DeliberationWorkflowInput,
-            DefaultDeliberationActivities,
             WorkflowStatus,
         )
 
@@ -896,9 +895,9 @@ class TestDeliberationWorkflowRun:
     async def test_workflow_human_review_approve(self):
         """Lines 598-600, 611-613: human decision received."""
         from enhanced_agent_bus.deliberation_layer.workflows.deliberation_workflow import (
+            DefaultDeliberationActivities,
             DeliberationWorkflow,
             DeliberationWorkflowInput,
-            DefaultDeliberationActivities,
             WorkflowStatus,
         )
 
@@ -940,9 +939,9 @@ class TestDeliberationWorkflowRun:
     async def test_workflow_error_with_compensations(self):
         """Lines 627, 659-660: workflow failure triggers compensations."""
         from enhanced_agent_bus.deliberation_layer.workflows.deliberation_workflow import (
+            DefaultDeliberationActivities,
             DeliberationWorkflow,
             DeliberationWorkflowInput,
-            DefaultDeliberationActivities,
             WorkflowStatus,
         )
 

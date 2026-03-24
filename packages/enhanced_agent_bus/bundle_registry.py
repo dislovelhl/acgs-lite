@@ -27,7 +27,7 @@ from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric import ed25519
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import (
@@ -39,7 +39,7 @@ from src.core.shared.errors.exceptions import (
 )
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -991,7 +991,7 @@ class BundleDistributionService:
                     results["replicas"].append(
                         {"digest": fb_digest, "registry": fallback.host, "status": "success"}
                     )
-                except Exception as e:  # noqa: BLE001 - replica replication must be best-effort
+                except Exception as e:
                     results["replicas"].append(
                         {"registry": fallback.host, "status": "failed", "error": str(e)}
                     )
@@ -1041,7 +1041,7 @@ class BundleDistributionService:
             self._lkg_path = path
 
             return manifest, path
-        except Exception as e:  # noqa: BLE001 - failover must continue on any primary failure
+        except Exception as e:
             logger.warning(f"Primary registry failed: {e}, trying fallbacks")
 
         # Try fallbacks
@@ -1052,7 +1052,7 @@ class BundleDistributionService:
                     Path(cache_path + ".manifest.json").write_text, json.dumps(manifest.to_dict())
                 )
                 return manifest, path
-            except Exception as e:  # noqa: BLE001 - fallback iteration must continue on errors
+            except Exception as e:
                 logger.warning(f"Fallback {fallback.host} failed: {e}")
 
         # Return LKG if available
@@ -1072,7 +1072,7 @@ class BundleDistributionService:
         experiment_tag = f"{base_tag}-{experiment_id}-{variant}"
         try:
             return await self.fetch(repository, experiment_tag, use_cache=True)
-        except Exception as e:  # noqa: BLE001 - variant miss should fall back to base tag
+        except Exception as e:
             # Fall back to base tag
             logger.info(f"A/B variant {experiment_tag} not found, using base: {e}")
             return await self.fetch(repository, base_tag, use_cache=True)

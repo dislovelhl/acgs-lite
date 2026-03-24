@@ -40,7 +40,7 @@ from .dual_key_jwt import (
 from .error_sanitizer import safe_error_detail, safe_error_message, sanitize_error
 from .expression_utils import redact_pii, safe_eval_expr
 from .pqc import (
-    CONSTITUTIONAL_HASH,  # noqa: F811
+    CONSTITUTIONAL_HASH,
     ConstitutionalHashMismatchError,
     KEMResult,
     PQCConfigurationError,

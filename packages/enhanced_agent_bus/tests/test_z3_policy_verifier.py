@@ -26,7 +26,6 @@ from enhanced_agent_bus.verification_layer.z3_policy_verifier import (
     create_z3_verifier,
 )
 
-
 # ---------------------------------------------------------------------------
 # Enum tests
 # ---------------------------------------------------------------------------

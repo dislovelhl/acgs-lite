@@ -35,9 +35,9 @@ ALL_INTENTS = [
 ]
 
 EXPECTED_MUTATIONS = {
-    IntentType.FACTUAL: "MUTATION: Extreme Grounding enforced. Cross-verify every date and location.",  # noqa: E501
-    IntentType.REASONING: "MUTATION: Chain-of-Thought verified. Explicitly list logical dependencies between steps.",  # noqa: E501
-    IntentType.CREATIVE: "MUTATION: Tone Adjustment. Ensure higher variety in sentence structure and imagery.",  # noqa: E501
+    IntentType.FACTUAL: "MUTATION: Extreme Grounding enforced. Cross-verify every date and location.",
+    IntentType.REASONING: "MUTATION: Chain-of-Thought verified. Explicitly list logical dependencies between steps.",
+    IntentType.CREATIVE: "MUTATION: Tone Adjustment. Ensure higher variety in sentence structure and imagery.",
     IntentType.GENERAL: "MUTATION: Conciseness. Reduce verbosity and focus on direct answers.",
 }
 

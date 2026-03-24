@@ -155,4 +155,4 @@ _config_pkg = sys.modules.get("src.core.shared.config")
 if _config_pkg is not None:
     from src.core.shared.config.unified import settings as _unified_settings
 
-    setattr(_config_pkg, "settings", _unified_settings)  # noqa: B010
+    setattr(_config_pkg, "settings", _unified_settings)

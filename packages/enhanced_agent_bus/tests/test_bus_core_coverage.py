@@ -976,13 +976,13 @@ class TestValidateAgentIdentity:
 
     async def test_token_with_dot(self) -> None:
         bus = _build_bus()
-        result, errors = await bus._validate_agent_identity(token="header.payload.sig")  # noqa: S106
+        result, errors = await bus._validate_agent_identity(token="header.payload.sig")
         assert result == "header.payload.sig"
         assert errors == []
 
     async def test_token_without_dot(self) -> None:
         bus = _build_bus()
-        result, errors = await bus._validate_agent_identity(token="simpletoken")  # noqa: S106
+        result, errors = await bus._validate_agent_identity(token="simpletoken")
         assert result == "default"
         assert errors == []
 

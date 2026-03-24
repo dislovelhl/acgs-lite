@@ -27,7 +27,7 @@ from datetime import UTC, datetime, timedelta
 from enum import Enum
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -68,7 +68,7 @@ _LLM_FAILOVER_OPERATION_ERRORS = (
 # =============================================================================
 
 
-class LLMProviderType(str, Enum):  # noqa: UP042
+class LLMProviderType(str, Enum):
     """LLM provider types for configuration."""
 
     OPENAI = "openai"
@@ -1079,7 +1079,7 @@ class RequestHedgingManager:
 # LLM Failover Orchestrator (re-exported from failover/ package)
 # =============================================================================
 
-from enhanced_agent_bus.llm_adapters.failover.orchestrator import (  # noqa: E402
+from enhanced_agent_bus.llm_adapters.failover.orchestrator import (
     LLMFailoverOrchestrator,
     get_llm_failover_orchestrator,
     reset_llm_failover_orchestrator,

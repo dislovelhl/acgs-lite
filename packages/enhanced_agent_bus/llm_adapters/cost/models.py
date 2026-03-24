@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta, timezone
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -196,7 +196,7 @@ class BudgetLimit:
         if self.monthly_limit and (self.monthly_usage + cost) > self.monthly_limit:
             return (
                 False,
-                f"Monthly limit exceeded: ${self.monthly_usage + cost:.4f} > ${self.monthly_limit:.4f}",  # noqa: E501
+                f"Monthly limit exceeded: ${self.monthly_usage + cost:.4f} > ${self.monthly_limit:.4f}",
             )
 
         return True, None

@@ -28,11 +28,11 @@ from typing import (
 )
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -144,7 +144,7 @@ class AsyncPipelineOptimizer:
                     success=False,
                     error=f"Timeout after {stage.timeout}s",
                 )
-            except Exception as exc:  # noqa: BLE001 - stage handlers are externally supplied callables
+            except Exception as exc:
                 duration_ms = (time.monotonic() - start) * 1000.0
                 self._stats["stage_failures"] = int(self._stats["stage_failures"]) + 1
                 logger.error(
@@ -735,7 +735,7 @@ class LatencyReducer:
                     duration_ms=duration_ms,
                     success=True,
                 )
-            except Exception as exc:  # noqa: BLE001 - processor callback failures are isolated
+            except Exception as exc:
                 duration_ms = (time.monotonic() - start) * 1000.0
                 self._stats["flush_errors"] = int(self._stats["flush_errors"]) + 1
                 logger.error(

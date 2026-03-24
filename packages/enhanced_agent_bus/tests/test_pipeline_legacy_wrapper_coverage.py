@@ -105,7 +105,7 @@ sys.modules.setdefault(
 _fake_security_module = sys.modules.get("enhanced_agent_bus.middlewares.security")
 
 # Patch the middlewares package to expose the fake middleware classes
-import enhanced_agent_bus.middlewares as _mw_pkg  # noqa: E402
+import enhanced_agent_bus.middlewares as _mw_pkg
 
 _mw_pkg.CacheMiddleware = _FakeCacheMiddleware  # type: ignore[attr-defined]
 _mw_pkg.MetricsMiddleware = _FakeMetricsMiddleware  # type: ignore[attr-defined]
@@ -114,7 +114,7 @@ _mw_pkg.VerificationMiddleware = _FakeVerificationMiddleware  # type: ignore[att
 
 # Also make sure SecurityMiddleware is available from the package
 from enhanced_agent_bus.middlewares.security import (
-    SecurityMiddleware as _RealSecurityMW,  # noqa: E402
+    SecurityMiddleware as _RealSecurityMW,
 )
 
 _mw_pkg.SecurityMiddleware = _RealSecurityMW  # type: ignore[attr-defined]

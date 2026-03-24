@@ -13,7 +13,6 @@ from enhanced_agent_bus.ai_assistant.dialog import (
 )
 from enhanced_agent_bus.ai_assistant.nlu import Entity, Intent, NLUResult
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

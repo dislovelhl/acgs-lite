@@ -16,7 +16,7 @@ import pytest
 pytestmark = [pytest.mark.governance, pytest.mark.unit]
 
 from enhanced_agent_bus.batch_models import BatchRequestItem
-from enhanced_agent_bus.maci.models import MACIAction, MACIRole, ROLE_PERMISSIONS
+from enhanced_agent_bus.maci.models import ROLE_PERMISSIONS, MACIAction, MACIRole
 from enhanced_agent_bus.maci.registry import MACIAgentRecord, MACIRoleRegistry
 from enhanced_agent_bus.middlewares.batch.context import BatchPipelineContext
 from enhanced_agent_bus.middlewares.batch.exceptions import BatchGovernanceException

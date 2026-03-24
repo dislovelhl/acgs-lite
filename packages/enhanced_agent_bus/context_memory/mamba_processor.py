@@ -14,6 +14,7 @@ Key Features:
 
 from __future__ import annotations
 
+import importlib.util
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -22,17 +23,26 @@ from typing import Any, TypeAlias
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
-from enhanced_agent_bus.bus_types import JSONDict  # noqa: E402
+from enhanced_agent_bus.bus_types import JSONDict
 
-from .models import ContextChunk  # noqa: E402
+from .models import ContextChunk
 
 logger = get_logger(__name__)
 # Try to import torch for actual model implementation
+def _has_real_torch() -> bool:
+    try:
+        return importlib.util.find_spec("torch") is not None
+    except (ImportError, ValueError):
+        return False
+
+
 try:
+    if not _has_real_torch():
+        raise ImportError("torch is not installed")
     import torch
     import torch.nn as nn
     import torch.nn.functional as F
@@ -453,7 +463,7 @@ class MambaProcessor:
 
             for start in range(0, seq_len, self.config.chunk_size):
                 end = min(start + self.config.chunk_size, seq_len)
-                if len(x.shape) == 3:  # noqa: SIM108
+                if len(x.shape) == 3:
                     chunk = x[:, start:end, :]
                 else:
                     chunk = x[start:end, :]
@@ -497,7 +507,7 @@ class MambaProcessor:
         total_tokens = sum(c.token_count for c in chunks)
 
         # Create embeddings (simple tokenization if no embed_fn)
-        if embed_fn:  # noqa: SIM108
+        if embed_fn:
             embeddings = embed_fn(combined_text)  # type: ignore[misc]
         else:
             # Simple character-level embedding for demonstration

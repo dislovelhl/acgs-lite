@@ -278,7 +278,7 @@ class FlagManager:
     @staticmethod
     def _hash_bucket(flag_id: str, actor: str) -> int:
         """Deterministic 0-99 bucket for consistent percentage rollouts."""
-        digest = hashlib.md5(  # noqa: S324
+        digest = hashlib.md5(
             f"{flag_id}:{actor}".encode(), usedforsecurity=False
         ).hexdigest()
         return int(digest[:8], 16) % 100

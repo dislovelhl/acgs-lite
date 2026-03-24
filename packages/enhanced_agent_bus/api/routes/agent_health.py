@@ -15,16 +15,16 @@ from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from packages.enhanced_agent_bus.agent_health.models import (
+from pydantic import BaseModel, Field
+
+from enhanced_agent_bus.agent_health.models import (
     CONSTITUTIONAL_HASH,
     AutonomyTier,
     HealingOverride,
     HealthState,
     OverrideMode,
 )
-from packages.enhanced_agent_bus.agent_health.store import AgentHealthStore
-from pydantic import BaseModel, Field
-
+from enhanced_agent_bus.agent_health.store import AgentHealthStore
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)

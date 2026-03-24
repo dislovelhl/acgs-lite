@@ -31,11 +31,11 @@ from enum import Enum
 
 # Constitutional hash for immutable validation
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -489,7 +489,7 @@ class StateTransitionManager:
         reason: str | None = None,
     ) -> tuple[bool, TransitionProof | None]:
         """Approve a validated transition."""
-        if transition.current_state != TransitionState.VALIDATED:  # noqa: SIM102
+        if transition.current_state != TransitionState.VALIDATED:
             # Move to pending approval first if validated
             if transition.current_state == TransitionState.VALIDATED:
                 await self.transition_to(
@@ -664,7 +664,7 @@ class StateTransitionManager:
                 errors.append(f"Proof {i} hash verification failed")
 
             # Verify chain continuity
-            if i > 0:  # noqa: SIM102
+            if i > 0:
                 if proof.previous_proof_hash != transition.proofs[i - 1].proof_hash:
                     errors.append(f"Proof {i} chain continuity broken")
 

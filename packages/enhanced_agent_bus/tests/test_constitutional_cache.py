@@ -90,7 +90,7 @@ async def test_get_local_hit_validates_hash(cache):
     key = cache._generate_key("policy", "pol-bad")
     bad_entry = CacheEntry(
         value={"data": "secret"},
-        constitutional_hash="wrong-hash-placeholder",  # intentionally invalid hash for rejection test  # noqa: E501
+        constitutional_hash="wrong-hash-placeholder",  # intentionally invalid hash for rejection test
         created_at=datetime.now(),
         ttl=3600,
         tags=[],

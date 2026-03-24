@@ -20,15 +20,15 @@ import pytest
 # Section 1: Observability fixtures
 # ---------------------------------------------------------------------------
 from enhanced_agent_bus.specs.fixtures.observability import (
+    _OBSERVABILITY_AVAILABLE,
+    LatencyMeasurement,
     Layer,
     LayerTimeoutBudget,
-    LatencyMeasurement,
     MetricsRegistry,
     SpecMetricsRegistry,
     SpecTimeoutBudgetManager,
     TimeoutBudgetManager,
     TracingContext,
-    _OBSERVABILITY_AVAILABLE,
 )
 
 
@@ -601,7 +601,7 @@ class TestJsonDumps:
 
     def test_dumps_boolean(self):
         result = dumps(True)
-        assert json.loads(result) == True  # noqa: E712
+        assert json.loads(result) == True
 
     def test_dumps_null(self):
         result = dumps(None)

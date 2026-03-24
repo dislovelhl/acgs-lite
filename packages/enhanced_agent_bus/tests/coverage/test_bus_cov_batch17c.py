@@ -41,7 +41,7 @@ for _key in list(sys.modules):
             _mod.GovernanceMetrics = _GovernanceMetrics  # type: ignore[attr-defined]
 
 # Also ensure a direct import picks it up
-import enhanced_agent_bus.models as _models_mod  # noqa: E402
+import enhanced_agent_bus.models as _models_mod
 
 if not hasattr(_models_mod, "GovernanceMetrics"):
     _models_mod.GovernanceMetrics = _GovernanceMetrics  # type: ignore[attr-defined]

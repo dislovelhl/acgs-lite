@@ -10,7 +10,6 @@ import pytest
 
 from enhanced_agent_bus.opa_client.health import OPAClientHealthMixin
 
-
 # ---------------------------------------------------------------------------
 # Concrete test host that provides the attrs the mixin expects
 # ---------------------------------------------------------------------------

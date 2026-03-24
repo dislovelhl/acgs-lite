@@ -40,7 +40,7 @@ from enhanced_agent_bus.mcp_integration.auth.oidc_provider import (
 
 def _make_oauth2_token(
     *,
-    access_token: str = "test-access-token",  # noqa: S107
+    access_token: str = "test-access-token",
     expires_in: int | None = None,
     refresh_token: str | None = None,
 ) -> OAuth2Token:
@@ -59,7 +59,7 @@ def _make_managed_token(
     if token is None:
         token = _make_oauth2_token()
     return ManagedProviderToken(
-        token_id="tok-001",  # noqa: S106
+        token_id="tok-001",
         provider_name="test-provider",
         tool_name="my-tool",
         tenant_id="tenant-abc",
@@ -104,7 +104,7 @@ class TestProviderConfigDefaults:
             provider_type=ProviderType.AZURE_AD,
             name="azure",
             client_id="cid",
-            client_secret="csecret",  # pragma: allowlist secret  # noqa: S106
+            client_secret="csecret",  # pragma: allowlist secret
             default_scopes=["openid", "profile"],
             tenant_id="tenant-xyz",
             timeout_seconds=60,
@@ -112,7 +112,7 @@ class TestProviderConfigDefaults:
             use_pkce=False,
         )
         assert cfg.client_id == "cid"
-        assert cfg.client_secret == "csecret"  # pragma: allowlist secret  # noqa: S105
+        assert cfg.client_secret == "csecret"  # pragma: allowlist secret
         assert cfg.default_scopes == ["openid", "profile"]
         assert cfg.tenant_id == "tenant-xyz"
         assert cfg.timeout_seconds == 60
@@ -210,7 +210,7 @@ class TestProviderConfigGetTokenEndpoint:
         cfg = ProviderConfig(
             provider_type=ProviderType.GITHUB,
             name="gh",
-            token_endpoint="https://custom.token.example.com/token",  # noqa: S106
+            token_endpoint="https://custom.token.example.com/token",
         )
         assert cfg._get_token_endpoint() == "https://custom.token.example.com/token"
 
@@ -310,14 +310,14 @@ class TestProviderConfigToOAuth2Config:
             provider_type=ProviderType.GOOGLE,
             name="google",
             client_id="cid",
-            client_secret="csecret",  # pragma: allowlist secret  # noqa: S106
+            client_secret="csecret",  # pragma: allowlist secret
             default_scopes=["email"],
             revocation_endpoint="https://oauth2.googleapis.com/revoke",
             introspection_endpoint=None,
         )
         result = cfg.to_oauth2_config()
         assert isinstance(result, OAuth2Config)
-        assert result.token_endpoint == "https://oauth2.googleapis.com/token"  # noqa: S105
+        assert result.token_endpoint == "https://oauth2.googleapis.com/token"
         assert result.client_id == "cid"
         assert result.default_scopes == ["email"]
         assert result.revocation_endpoint == "https://oauth2.googleapis.com/revoke"
@@ -325,16 +325,16 @@ class TestProviderConfigToOAuth2Config:
     def test_github_produces_valid_oauth2_config(self):
         cfg = ProviderConfig(provider_type=ProviderType.GITHUB, name="gh")
         result = cfg.to_oauth2_config()
-        assert result.token_endpoint == "https://github.com/login/oauth/access_token"  # noqa: S105
+        assert result.token_endpoint == "https://github.com/login/oauth/access_token"
 
     def test_explicit_token_endpoint_used(self):
         cfg = ProviderConfig(
             provider_type=ProviderType.CUSTOM,
             name="custom",
-            token_endpoint="https://custom.example.com/token",  # noqa: S106
+            token_endpoint="https://custom.example.com/token",
         )
         result = cfg.to_oauth2_config()
-        assert result.token_endpoint == "https://custom.example.com/token"  # noqa: S105
+        assert result.token_endpoint == "https://custom.example.com/token"
 
 
 # ---------------------------------------------------------------------------
@@ -348,7 +348,7 @@ class TestProviderConfigToOIDCConfig:
             provider_type=ProviderType.GOOGLE,
             name="google",
             client_id="cid",
-            client_secret="csecret",  # pragma: allowlist secret  # noqa: S106
+            client_secret="csecret",  # pragma: allowlist secret
             default_scopes=["openid", "email"],
         )
         result = cfg.to_oidc_config()
@@ -386,13 +386,13 @@ class TestManagedProviderTokenDefaults:
     def test_basic_construction(self):
         token = _make_oauth2_token()
         mpt = ManagedProviderToken(
-            token_id="tok-1",  # noqa: S106
+            token_id="tok-1",
             provider_name="prov",
             tool_name=None,
             tenant_id=None,
             token=token,
         )
-        assert mpt.token_id == "tok-1"  # noqa: S105
+        assert mpt.token_id == "tok-1"
         assert mpt.tool_name is None
         assert mpt.tenant_id is None
         assert mpt.state == TokenState.VALID
@@ -462,14 +462,14 @@ class TestManagedProviderTokenToDict:
     def test_to_dict_keys_present(self):
         token = _make_oauth2_token()
         mpt = ManagedProviderToken(
-            token_id="tok-dict",  # noqa: S106
+            token_id="tok-dict",
             provider_name="prov",
             tool_name="tool",
             tenant_id="ten",
             token=token,
         )
         d = mpt.to_dict()
-        assert d["token_id"] == "tok-dict"  # noqa: S105
+        assert d["token_id"] == "tok-dict"
         assert d["provider_name"] == "prov"
         assert d["tool_name"] == "tool"
         assert d["tenant_id"] == "ten"
@@ -486,7 +486,7 @@ class TestManagedProviderTokenToDict:
         token = _make_oauth2_token()
         last_used = datetime(2025, 1, 1, 12, 0, 0, tzinfo=UTC)
         mpt = ManagedProviderToken(
-            token_id="tok-lu",  # noqa: S106
+            token_id="tok-lu",
             provider_name="prov",
             tool_name=None,
             tenant_id=None,
@@ -500,7 +500,7 @@ class TestManagedProviderTokenToDict:
         token = _make_oauth2_token()
         oidc = OIDCTokens(oauth2_token=token)
         mpt = ManagedProviderToken(
-            token_id="tok-oidc",  # noqa: S106
+            token_id="tok-oidc",
             provider_name="prov",
             tool_name=None,
             tenant_id=None,
@@ -598,14 +598,14 @@ class TestAuthResultDefaults:
 
 class TestAuthResultToDict:
     def test_to_dict_success_no_tokens(self):
-        result = AuthResult(success=True, provider_name="prov", token_id="tok")  # noqa: S106
+        result = AuthResult(success=True, provider_name="prov", token_id="tok")
         d = result.to_dict()
         assert d["success"] is True
         assert d["has_token"] is False
         assert d["has_oidc_tokens"] is False
         assert d["error"] is None
         assert d["provider_name"] == "prov"
-        assert d["token_id"] == "tok"  # noqa: S105
+        assert d["token_id"] == "tok"
         assert d["duration_ms"] == 0.0
         assert d["constitutional_hash"] == CONSTITUTIONAL_HASH
 
@@ -674,14 +674,14 @@ class TestDefaultFactoryIsolation:
     def test_managed_provider_token_metadata_independent(self):
         t = _make_oauth2_token()
         a = ManagedProviderToken(
-            token_id="a",  # noqa: S106
+            token_id="a",
             provider_name="p",
             tool_name=None,
             tenant_id=None,
             token=t,
         )
         b = ManagedProviderToken(
-            token_id="b",  # noqa: S106
+            token_id="b",
             provider_name="p",
             tool_name=None,
             tenant_id=None,
@@ -713,13 +713,13 @@ class TestAuthResultFull:
             oidc_tokens=oidc,
             error=None,
             provider_name="prov",
-            token_id="tok-123",  # noqa: S106
+            token_id="tok-123",
             duration_ms=3.14,
         )
         assert result.token is token
         assert result.oidc_tokens is oidc
         assert result.provider_name == "prov"
-        assert result.token_id == "tok-123"  # noqa: S105
+        assert result.token_id == "tok-123"
         assert result.duration_ms == 3.14
         d = result.to_dict()
         assert d["has_token"] is True

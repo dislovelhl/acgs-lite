@@ -25,10 +25,10 @@ import pytest
 # ---------------------------------------------------------------------------
 try:
     from enhanced_agent_bus.verification_layer.sic_engine import (
+        SemanticIntegrityConstraint,
         SICEngine,
         SICType,
         SICVerificationResult,
-        SemanticIntegrityConstraint,
     )
 
     HAS_SIC_ENGINE = True
@@ -77,7 +77,7 @@ try:
 except ImportError:
     # Provide minimal stubs if the shared module is unavailable
     try:
-        from enhanced_agent_bus.mcp.shared_bridge import TaskIntent, SwarmTask  # type: ignore
+        from enhanced_agent_bus.mcp.shared_bridge import SwarmTask, TaskIntent  # type: ignore
     except ImportError:
 
         class TaskIntent(str, Enum):  # type: ignore[no-redef]

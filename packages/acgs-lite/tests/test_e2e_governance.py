@@ -10,27 +10,23 @@ Tests critical user journeys through the full governance stack:
 
 from __future__ import annotations
 
-import asyncio
 import tempfile
 from pathlib import Path
 from typing import Any
 
 import pytest
-import yaml
 
 from acgs_lite.audit import AuditLog
 from acgs_lite.constitution import Constitution, Rule, Severity
 from acgs_lite.engine import GovernanceEngine, ValidationResult
 from acgs_lite.errors import ConstitutionalViolationError, MACIViolationError
 from acgs_lite.eu_ai_act.risk_classification import (
-    ClassificationResult,
     RiskClassifier,
     RiskLevel,
     SystemDescription,
 )
 from acgs_lite.governed import GovernedAgent
 from acgs_lite.maci import (
-    ActionRiskTier,
     MACIEnforcer,
     MACIRole,
     recommend_escalation,

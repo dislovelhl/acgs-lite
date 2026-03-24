@@ -47,7 +47,6 @@ from enhanced_agent_bus.saga_persistence.repository import (
     VersionConflictError,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -517,7 +516,7 @@ class TestRedisSagaStateRepositorySave:
         repo = _make_repo(fake)
         saga = _make_saga(tenant_id="tenant-x")
         await repo.save(saga)
-        tenant_key = f"acgs2:saga:index:tenant:tenant-x"
+        tenant_key = "acgs2:saga:index:tenant:tenant-x"
         assert "saga-1" in fake._sets.get(tenant_key, set())
 
     async def test_save_redis_error(self):
@@ -592,7 +591,7 @@ class TestRedisSagaStateRepositoryDelete:
         saga = _make_saga()
         await repo.save(saga)
         # Add checkpoint IDs to the zset
-        cp_list_key = f"acgs2:saga:checkpoint:saga-1:list"
+        cp_list_key = "acgs2:saga:checkpoint:saga-1:list"
         fake._zsets[cp_list_key] = ["cp-1", "cp-2"]
         result = await repo.delete("saga-1")
         assert result is True

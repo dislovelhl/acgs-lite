@@ -61,7 +61,7 @@ async def test_llm_classification_ambiguous():
         "choices": [
             {
                 "message": {
-                    "content": '{"intent": "REASONING", "confidence": 0.85, "reasoning": "Query requires analysis"}'  # noqa: E501
+                    "content": '{"intent": "REASONING", "confidence": 0.85, "reasoning": "Query requires analysis"}'
                 }
             }
         ]
@@ -124,7 +124,7 @@ async def test_llm_classification_with_metadata():
         "choices": [
             {
                 "message": {
-                    "content": '{"intent": "CREATIVE", "confidence": 0.9, "reasoning": "Creative request"}'  # noqa: E501
+                    "content": '{"intent": "CREATIVE", "confidence": 0.9, "reasoning": "Creative request"}'
                 }
             }
         ]

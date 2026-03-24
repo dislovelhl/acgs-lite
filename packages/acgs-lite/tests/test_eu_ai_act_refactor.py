@@ -32,7 +32,6 @@ from acgs_lite.eu_ai_act.risk_classification import (
 )
 from acgs_lite.eu_ai_act.transparency import TransparencyDisclosure
 
-
 # ---------------------------------------------------------------------------
 # Risk Classification (Article 6 + Annex III)
 # ---------------------------------------------------------------------------

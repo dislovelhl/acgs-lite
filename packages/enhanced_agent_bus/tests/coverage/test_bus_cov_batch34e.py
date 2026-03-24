@@ -12,6 +12,7 @@ context manager memory pressure, JRT context preparation edge cases.
 from __future__ import annotations
 
 import asyncio
+import importlib.util
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
@@ -20,7 +21,17 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+
+def _has_real_torch() -> bool:
+    try:
+        return importlib.util.find_spec("torch") is not None
+    except (ImportError, ValueError):
+        return False
+
+
 try:
+    if not _has_real_torch():
+        raise ImportError("torch is not installed")
     import torch
     import torch.nn as nn
 
@@ -647,7 +658,7 @@ class TestClassifierAuditTrail:
 
     def test_get_audit_trail_limit(self):
         classifier = self._make_classifier()
-        for i in range(10):
+        for _i in range(10):
             classifier._add_to_audit_trail(self._make_result(True))
 
         limited = classifier.get_audit_trail(limit=3)
@@ -775,14 +786,13 @@ class TestClassifierGlobal:
     """Test global classifier factory and convenience function."""
 
     def test_get_global_classifier(self):
+        # Reset global
+        import enhanced_agent_bus.constitutional_classifier.classifier as mod
         from enhanced_agent_bus.constitutional_classifier.classifier import (
             ClassifierConfig,
             ConstitutionalClassifierV2,
             get_constitutional_classifier_v2,
         )
-
-        # Reset global
-        import enhanced_agent_bus.constitutional_classifier.classifier as mod
         mod._global_classifier = None
 
         c1 = get_constitutional_classifier_v2()
@@ -797,9 +807,8 @@ class TestClassifierGlobal:
         mod._global_classifier = None
 
     async def test_classify_action_convenience(self):
-        from enhanced_agent_bus.constitutional_classifier.classifier import classify_action
-
         import enhanced_agent_bus.constitutional_classifier.classifier as mod
+        from enhanced_agent_bus.constitutional_classifier.classifier import classify_action
         mod._global_classifier = None
 
         result = await classify_action("hello world")
@@ -878,7 +887,11 @@ class TestAIAssistantInitialization:
     """Test AIAssistant state transitions."""
 
     def test_initial_state(self):
-        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig, AssistantState
+        from enhanced_agent_bus.ai_assistant.core import (
+            AIAssistant,
+            AssistantConfig,
+            AssistantState,
+        )
 
         config = AssistantConfig(enable_governance=False)
         assistant = AIAssistant(config=config)
@@ -886,7 +899,11 @@ class TestAIAssistantInitialization:
         assert assistant.is_ready is False
 
     async def test_initialize_no_governance(self):
-        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig, AssistantState
+        from enhanced_agent_bus.ai_assistant.core import (
+            AIAssistant,
+            AssistantConfig,
+            AssistantState,
+        )
 
         config = AssistantConfig(enable_governance=False)
         assistant = AIAssistant(config=config)
@@ -896,7 +913,11 @@ class TestAIAssistantInitialization:
         assert assistant.is_ready is True
 
     async def test_initialize_with_governance_failure(self):
-        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig, AssistantState
+        from enhanced_agent_bus.ai_assistant.core import (
+            AIAssistant,
+            AssistantConfig,
+            AssistantState,
+        )
 
         mock_integration = AsyncMock()
         mock_integration.initialize = AsyncMock(side_effect=RuntimeError("bus unavailable"))
@@ -912,7 +933,11 @@ class TestAIAssistantShutdown:
     """Test shutdown paths."""
 
     async def test_shutdown_no_governance(self):
-        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig, AssistantState
+        from enhanced_agent_bus.ai_assistant.core import (
+            AIAssistant,
+            AssistantConfig,
+            AssistantState,
+        )
 
         config = AssistantConfig(enable_governance=False)
         assistant = AIAssistant(config=config)
@@ -921,7 +946,11 @@ class TestAIAssistantShutdown:
         assert assistant.state == AssistantState.SHUTDOWN
 
     async def test_shutdown_with_governance_error(self):
-        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig, AssistantState
+        from enhanced_agent_bus.ai_assistant.core import (
+            AIAssistant,
+            AssistantConfig,
+            AssistantState,
+        )
 
         mock_integration = AsyncMock()
         mock_integration.initialize = AsyncMock(return_value=True)
@@ -948,7 +977,11 @@ class TestAIAssistantProcessMessage:
         assert "not ready" in result.response_text
 
     async def test_process_message_nlu_error(self):
-        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig, AssistantState
+        from enhanced_agent_bus.ai_assistant.core import (
+            AIAssistant,
+            AssistantConfig,
+            AssistantState,
+        )
 
         config = AssistantConfig(enable_governance=False)
         mock_nlu = AsyncMock()
@@ -1014,8 +1047,8 @@ class TestAIAssistantSessionManagement:
         assert ctx.session_id.startswith("user1_")
 
     def test_get_session(self):
-        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig
         from enhanced_agent_bus.ai_assistant.context import ConversationContext
+        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig
 
         config = AssistantConfig(enable_governance=False)
         assistant = AIAssistant(config=config)
@@ -1027,8 +1060,8 @@ class TestAIAssistantSessionManagement:
         assert assistant.get_session("s1") is ctx
 
     def test_get_user_sessions(self):
-        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig
         from enhanced_agent_bus.ai_assistant.context import ConversationContext
+        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig
 
         config = AssistantConfig(enable_governance=False)
         assistant = AIAssistant(config=config)
@@ -1042,8 +1075,8 @@ class TestAIAssistantSessionManagement:
         assert len(sessions) == 2
 
     def test_end_session(self):
-        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig
         from enhanced_agent_bus.ai_assistant.context import ConversationContext
+        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig
 
         config = AssistantConfig(enable_governance=False)
         assistant = AIAssistant(config=config)
@@ -1055,8 +1088,8 @@ class TestAIAssistantSessionManagement:
         assert assistant.end_session("s1") is False
 
     def test_clear_expired_sessions(self):
-        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig
         from enhanced_agent_bus.ai_assistant.context import ConversationContext
+        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig
 
         config = AssistantConfig(enable_governance=False, session_timeout_minutes=1)
         assistant = AIAssistant(config=config)
@@ -1092,8 +1125,8 @@ class TestAIAssistantListeners:
         assistant.remove_listener(listener)
 
     async def test_notify_message_received_error(self):
-        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig
         from enhanced_agent_bus.ai_assistant.context import ConversationContext
+        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig
 
         config = AssistantConfig(enable_governance=False)
         assistant = AIAssistant(config=config)
@@ -1107,8 +1140,12 @@ class TestAIAssistantListeners:
         await assistant._notify_message_received(ctx, "hello")
 
     async def test_notify_response_generated_error(self):
-        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig, ProcessingResult
         from enhanced_agent_bus.ai_assistant.context import ConversationContext
+        from enhanced_agent_bus.ai_assistant.core import (
+            AIAssistant,
+            AssistantConfig,
+            ProcessingResult,
+        )
 
         config = AssistantConfig(enable_governance=False)
         assistant = AIAssistant(config=config)
@@ -1122,8 +1159,8 @@ class TestAIAssistantListeners:
         await assistant._notify_response_generated(ctx, "hi", result)
 
     async def test_notify_error_listener_failure(self):
-        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig
         from enhanced_agent_bus.ai_assistant.context import ConversationContext
+        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig
 
         config = AssistantConfig(enable_governance=False)
         assistant = AIAssistant(config=config)
@@ -1209,8 +1246,8 @@ class TestAIAssistantExecuteAction:
     """Test _execute_action branches."""
 
     async def test_execute_action_no_params(self):
-        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig
         from enhanced_agent_bus.ai_assistant.context import ConversationContext
+        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig
         from enhanced_agent_bus.ai_assistant.dialog import ActionType, DialogAction
 
         config = AssistantConfig(enable_governance=False)
@@ -1222,8 +1259,8 @@ class TestAIAssistantExecuteAction:
         assert result is None
 
     async def test_execute_action_no_task_type(self):
-        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig
         from enhanced_agent_bus.ai_assistant.context import ConversationContext
+        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig
         from enhanced_agent_bus.ai_assistant.dialog import ActionType, DialogAction
 
         config = AssistantConfig(enable_governance=False)
@@ -1238,8 +1275,8 @@ class TestAIAssistantExecuteAction:
         assert result is None
 
     async def test_execute_action_governance_disabled(self):
-        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig
         from enhanced_agent_bus.ai_assistant.context import ConversationContext
+        from enhanced_agent_bus.ai_assistant.core import AIAssistant, AssistantConfig
         from enhanced_agent_bus.ai_assistant.dialog import ActionType, DialogAction
 
         config = AssistantConfig(enable_governance=False)
@@ -1287,7 +1324,10 @@ class TestConstitutionalContextManagerBuildContext:
     """Test _build_context and _identify_critical_positions."""
 
     def _make_manager(self):
-        from enhanced_agent_bus.mamba2_hybrid_processor import ConstitutionalContextManager, Mamba2Config
+        from enhanced_agent_bus.mamba2_hybrid_processor import (
+            ConstitutionalContextManager,
+            Mamba2Config,
+        )
 
         return ConstitutionalContextManager(Mamba2Config(d_model=64, num_mamba_layers=2))
 
@@ -1322,7 +1362,10 @@ class TestConstitutionalContextManagerTokenize:
     """Test _tokenize_text."""
 
     def test_tokenize(self):
-        from enhanced_agent_bus.mamba2_hybrid_processor import ConstitutionalContextManager, Mamba2Config
+        from enhanced_agent_bus.mamba2_hybrid_processor import (
+            ConstitutionalContextManager,
+            Mamba2Config,
+        )
 
         mgr = ConstitutionalContextManager(Mamba2Config(d_model=64, num_mamba_layers=2))
         tokens = mgr._tokenize_text("hello world test")
@@ -1336,7 +1379,10 @@ class TestConstitutionalContextManagerMemoryPressure:
     """Test check_memory_pressure."""
 
     def test_memory_pressure_normal(self):
-        from enhanced_agent_bus.mamba2_hybrid_processor import ConstitutionalContextManager, Mamba2Config
+        from enhanced_agent_bus.mamba2_hybrid_processor import (
+            ConstitutionalContextManager,
+            Mamba2Config,
+        )
 
         mgr = ConstitutionalContextManager(Mamba2Config(d_model=64, num_mamba_layers=2))
         pressure = mgr.check_memory_pressure()
@@ -1353,7 +1399,11 @@ class TestConstitutionalContextManagerExtractCompliance:
 
     def test_compliance_score_range(self):
         import torch as _torch
-        from enhanced_agent_bus.mamba2_hybrid_processor import ConstitutionalContextManager, Mamba2Config
+
+        from enhanced_agent_bus.mamba2_hybrid_processor import (
+            ConstitutionalContextManager,
+            Mamba2Config,
+        )
 
         mgr = ConstitutionalContextManager(Mamba2Config(d_model=64, num_mamba_layers=2))
 
@@ -1376,7 +1426,10 @@ class TestConstitutionalContextManagerUpdateMemory:
     """Test _update_context_memory with size limit."""
 
     def test_memory_limit(self):
-        from enhanced_agent_bus.mamba2_hybrid_processor import ConstitutionalContextManager, Mamba2Config
+        from enhanced_agent_bus.mamba2_hybrid_processor import (
+            ConstitutionalContextManager,
+            Mamba2Config,
+        )
 
         mgr = ConstitutionalContextManager(Mamba2Config(d_model=64, num_mamba_layers=2))
         mgr.max_memory_entries = 5
@@ -1393,14 +1446,20 @@ class TestConstitutionalContextManagerStats:
     """Test get_context_stats with and without data."""
 
     def test_stats_empty(self):
-        from enhanced_agent_bus.mamba2_hybrid_processor import ConstitutionalContextManager, Mamba2Config
+        from enhanced_agent_bus.mamba2_hybrid_processor import (
+            ConstitutionalContextManager,
+            Mamba2Config,
+        )
 
         mgr = ConstitutionalContextManager(Mamba2Config(d_model=64, num_mamba_layers=2))
         stats = mgr.get_context_stats()
         assert stats["total_entries"] == 0
 
     def test_stats_with_entries(self):
-        from enhanced_agent_bus.mamba2_hybrid_processor import ConstitutionalContextManager, Mamba2Config
+        from enhanced_agent_bus.mamba2_hybrid_processor import (
+            ConstitutionalContextManager,
+            Mamba2Config,
+        )
 
         mgr = ConstitutionalContextManager(Mamba2Config(d_model=64, num_mamba_layers=2))
         mgr.context_memory = [
@@ -1420,7 +1479,10 @@ class TestConstitutionalMambaHybridMemoryUsage:
     """Test get_memory_usage on the model."""
 
     def test_memory_usage(self):
-        from enhanced_agent_bus.mamba2_hybrid_processor import ConstitutionalMambaHybrid, Mamba2Config
+        from enhanced_agent_bus.mamba2_hybrid_processor import (
+            ConstitutionalMambaHybrid,
+            Mamba2Config,
+        )
 
         model = ConstitutionalMambaHybrid(Mamba2Config(d_model=64, num_mamba_layers=2))
         usage = model.get_memory_usage()
@@ -1437,7 +1499,11 @@ class TestConstitutionalMambaHybridForward:
 
     def test_forward_basic(self):
         import torch as _torch
-        from enhanced_agent_bus.mamba2_hybrid_processor import ConstitutionalMambaHybrid, Mamba2Config
+
+        from enhanced_agent_bus.mamba2_hybrid_processor import (
+            ConstitutionalMambaHybrid,
+            Mamba2Config,
+        )
 
         config = Mamba2Config(d_model=64, num_mamba_layers=2, max_seq_len=32)
         model = ConstitutionalMambaHybrid(config)
@@ -1456,7 +1522,11 @@ class TestConstitutionalMambaHybridForward:
 
     def test_forward_with_critical_positions(self):
         import torch as _torch
-        from enhanced_agent_bus.mamba2_hybrid_processor import ConstitutionalMambaHybrid, Mamba2Config
+
+        from enhanced_agent_bus.mamba2_hybrid_processor import (
+            ConstitutionalMambaHybrid,
+            Mamba2Config,
+        )
 
         config = Mamba2Config(d_model=64, num_mamba_layers=2, max_seq_len=128)
         model = ConstitutionalMambaHybrid(config)
@@ -1480,7 +1550,11 @@ class TestJRTContextPreparation:
 
     def test_jrt_default_positions(self):
         import torch as _torch
-        from enhanced_agent_bus.mamba2_hybrid_processor import ConstitutionalMambaHybrid, Mamba2Config
+
+        from enhanced_agent_bus.mamba2_hybrid_processor import (
+            ConstitutionalMambaHybrid,
+            Mamba2Config,
+        )
 
         config = Mamba2Config(d_model=64, num_mamba_layers=2, jrt_repeat_factor=2)
         model = ConstitutionalMambaHybrid(config)
@@ -1491,7 +1565,11 @@ class TestJRTContextPreparation:
 
     def test_jrt_with_explicit_positions(self):
         import torch as _torch
-        from enhanced_agent_bus.mamba2_hybrid_processor import ConstitutionalMambaHybrid, Mamba2Config
+
+        from enhanced_agent_bus.mamba2_hybrid_processor import (
+            ConstitutionalMambaHybrid,
+            Mamba2Config,
+        )
 
         config = Mamba2Config(d_model=64, num_mamba_layers=2, jrt_repeat_factor=3)
         model = ConstitutionalMambaHybrid(config)
@@ -1502,7 +1580,11 @@ class TestJRTContextPreparation:
 
     def test_jrt_truncation_when_exceeding_max(self):
         import torch as _torch
-        from enhanced_agent_bus.mamba2_hybrid_processor import ConstitutionalMambaHybrid, Mamba2Config
+
+        from enhanced_agent_bus.mamba2_hybrid_processor import (
+            ConstitutionalMambaHybrid,
+            Mamba2Config,
+        )
 
         config = Mamba2Config(d_model=64, num_mamba_layers=2, max_seq_len=8, jrt_repeat_factor=3)
         model = ConstitutionalMambaHybrid(config)
@@ -1542,7 +1624,10 @@ class TestProcessWithContext:
     """Test process_with_context including memory pressure fallback."""
 
     async def test_process_with_critical_memory_pressure(self):
-        from enhanced_agent_bus.mamba2_hybrid_processor import ConstitutionalContextManager, Mamba2Config
+        from enhanced_agent_bus.mamba2_hybrid_processor import (
+            ConstitutionalContextManager,
+            Mamba2Config,
+        )
 
         mgr = ConstitutionalContextManager(Mamba2Config(d_model=64, num_mamba_layers=2))
 
@@ -1559,7 +1644,11 @@ class TestProcessWithContext:
 
     async def test_process_with_context_normal(self):
         import torch as _torch
-        from enhanced_agent_bus.mamba2_hybrid_processor import ConstitutionalContextManager, Mamba2Config
+
+        from enhanced_agent_bus.mamba2_hybrid_processor import (
+            ConstitutionalContextManager,
+            Mamba2Config,
+        )
 
         mgr = ConstitutionalContextManager(Mamba2Config(d_model=64, num_mamba_layers=2, max_seq_len=256))
 

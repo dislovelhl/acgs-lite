@@ -14,11 +14,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # 1. temporal.py
 # ---------------------------------------------------------------------------
-
 from enhanced_agent_bus.specs.fixtures.temporal import (
     CausalValidator,
     SpecTimeline,

@@ -74,7 +74,7 @@ class TimeoutChecker:
         self._running = False
         if self._task:
             self._task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._task
             except asyncio.CancelledError:
                 pass
@@ -131,7 +131,7 @@ class TimeoutChecker:
             logger.error(f"Error scanning elections: {e}")
 
     async def _handle_expired_election(self, election_id: str, election_data: dict) -> None:
-        """Handle an expired election: mark as EXPIRED, set result=DENY, publish escalation event."""  # noqa: E501
+        """Handle an expired election: mark as EXPIRED, set result=DENY, publish escalation event."""
         election_store = await get_election_store()
         if not election_store:
             return

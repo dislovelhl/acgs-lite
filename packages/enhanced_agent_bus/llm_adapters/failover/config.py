@@ -17,7 +17,7 @@ from enhanced_agent_bus.circuit_breaker import (
 )
 
 
-class LLMProviderType(str, Enum):  # noqa: UP042
+class LLMProviderType(str, Enum):
     """LLM provider types for configuration."""
 
     OPENAI = "openai"

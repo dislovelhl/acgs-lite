@@ -18,7 +18,7 @@ _test_with_rust = os.environ.get("TEST_WITH_RUST", "0") == "1"
 if not _test_with_rust:
     sys.modules["enhanced_agent_bus_rust"] = None  # type: ignore[assignment]
 
-from enhanced_agent_bus.retry_buffer import (  # noqa: E402
+from enhanced_agent_bus.retry_buffer import (
     RETRY_DELIVERY_ERRORS,
     BufferedMessage,
     RetryBuffer,
@@ -636,9 +636,9 @@ class TestNonRetryableErrors:
         producer = AsyncMock(side_effect=Exception("boom"))
 
         with patch("asyncio.sleep", new=AsyncMock()):
-            try:  # noqa: SIM105
+            try:
                 await buf.process(producer)
-            except Exception:  # noqa: S110
+            except Exception:
                 pass
 
         assert buf._processing is False

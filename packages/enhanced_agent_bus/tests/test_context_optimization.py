@@ -34,7 +34,6 @@ from enhanced_agent_bus.context_optimization import (
     create_spec_compressor,
 )
 
-
 # ---------------------------------------------------------------------------
 # Module-level checks
 # ---------------------------------------------------------------------------

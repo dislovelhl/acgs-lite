@@ -16,25 +16,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 # ---------------------------------------------------------------------------
-# HuggingFace adapter imports
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.llm_adapters.base import (
-    AdapterStatus,
-    LLMMessage,
-    StreamingMode,
-)
-from enhanced_agent_bus.llm_adapters.config import (
-    HuggingFaceAdapterConfig,
-    OpenAIAdapterConfig,
-)
-from enhanced_agent_bus.llm_adapters.huggingface_adapter import HuggingFaceAdapter
-
-# ---------------------------------------------------------------------------
-# OpenAI adapter imports
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.llm_adapters.openai_adapter import OpenAIAdapter
-
-# ---------------------------------------------------------------------------
 # OPA Guard imports
 # ---------------------------------------------------------------------------
 from enhanced_agent_bus.deliberation_layer.opa_guard import (
@@ -56,6 +37,24 @@ from enhanced_agent_bus.deliberation_layer.opa_guard_models import (
     SignatureStatus,
 )
 
+# ---------------------------------------------------------------------------
+# HuggingFace adapter imports
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.llm_adapters.base import (
+    AdapterStatus,
+    LLMMessage,
+    StreamingMode,
+)
+from enhanced_agent_bus.llm_adapters.config import (
+    HuggingFaceAdapterConfig,
+    OpenAIAdapterConfig,
+)
+from enhanced_agent_bus.llm_adapters.huggingface_adapter import HuggingFaceAdapter
+
+# ---------------------------------------------------------------------------
+# OpenAI adapter imports
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.llm_adapters.openai_adapter import OpenAIAdapter
 
 # ===========================================================================
 # Helpers
@@ -707,7 +706,7 @@ class TestOAICountTokens:
     def test_count_tokens_empty_content(self):
         adapter = _oai_adapter()
         try:
-            import tiktoken  # noqa: F401
+            import tiktoken
         except ImportError:
             pytest.skip("tiktoken not installed")
         msgs = [LLMMessage(role="user", content="")]
@@ -717,7 +716,7 @@ class TestOAICountTokens:
     def test_count_tokens_multiple_messages(self):
         adapter = _oai_adapter()
         try:
-            import tiktoken  # noqa: F401
+            import tiktoken
         except ImportError:
             pytest.skip("tiktoken not installed")
         msgs = [

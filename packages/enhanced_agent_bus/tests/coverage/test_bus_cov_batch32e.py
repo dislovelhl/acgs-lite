@@ -23,6 +23,25 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import numpy as np
 import pytest
+from src.core.shared.structured_logging import (
+    BoundLogger,
+    StructuredJSONFormatter,
+    StructuredLogger,
+    TextFormatter,
+    configure_logging,
+    correlation_id_var,
+    get_correlation_id,
+    get_logger,
+    get_tenant_id,
+    instrument_fastapi,
+    log_function_call,
+    request_id_var,
+    set_correlation_id,
+    set_request_id,
+    set_tenant_id,
+    setup_opentelemetry,
+    tenant_id_var,
+)
 
 from enhanced_agent_bus.circuit_breaker.enums import CircuitState
 from enhanced_agent_bus.governance.models import (
@@ -44,25 +63,6 @@ from enhanced_agent_bus.integrations.ml_governance import (
     get_ml_governance_client,
     initialize_ml_governance_client,
     report_outcome,
-)
-from src.core.shared.structured_logging import (
-    BoundLogger,
-    StructuredJSONFormatter,
-    StructuredLogger,
-    TextFormatter,
-    configure_logging,
-    correlation_id_var,
-    get_correlation_id,
-    get_logger,
-    get_tenant_id,
-    instrument_fastapi,
-    log_function_call,
-    request_id_var,
-    set_correlation_id,
-    set_request_id,
-    set_tenant_id,
-    setup_opentelemetry,
-    tenant_id_var,
 )
 
 pytestmark = [pytest.mark.unit]

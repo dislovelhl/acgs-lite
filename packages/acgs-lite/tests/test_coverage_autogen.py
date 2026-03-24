@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-import asyncio
 from types import SimpleNamespace
 from typing import Any
-from unittest.mock import AsyncMock
 
 import pytest
 
@@ -14,7 +12,6 @@ from acgs_lite.integrations.autogen import (
     _extract_message_text,
     _extract_result_text,
 )
-
 
 # --- Helper extraction functions ---
 

@@ -16,6 +16,18 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 # ---------------------------------------------------------------------------
+# retrieval imports
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.ai_assistant.retrieval import (
+    BaseRetriever,
+    HybridRetriever,
+    KnowledgeRetriever,
+    RetrievalResult,
+    SemanticRetriever,
+    get_knowledge_retriever,
+)
+
+# ---------------------------------------------------------------------------
 # response_quality imports
 # ---------------------------------------------------------------------------
 from enhanced_agent_bus.response_quality import (
@@ -40,18 +52,6 @@ from enhanced_agent_bus.response_quality import (
 )
 
 # ---------------------------------------------------------------------------
-# retrieval imports
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.ai_assistant.retrieval import (
-    BaseRetriever,
-    HybridRetriever,
-    KnowledgeRetriever,
-    RetrievalResult,
-    SemanticRetriever,
-    get_knowledge_retriever,
-)
-
-# ---------------------------------------------------------------------------
 # graph_workflow imports
 # ---------------------------------------------------------------------------
 from enhanced_agent_bus.workflows.graph_workflow import (
@@ -61,7 +61,6 @@ from enhanced_agent_bus.workflows.graph_workflow import (
     NodeStatus,
     StateGraph,
 )
-
 
 # ============================================================================
 # response_quality/models.py — QualityDimension

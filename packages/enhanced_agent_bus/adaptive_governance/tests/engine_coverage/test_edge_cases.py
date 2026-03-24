@@ -349,7 +349,7 @@ class TestAdditionalBranchCoverage:
     def test_dtmc_blending_with_empty_prefix(self, engine, sample_message, sample_context):
         """Branch: DTMC blend branch but prefix is None (empty history)."""
         # This is an async test — but we call the internal sync parts
-        # The branch 431->443 means: enable_dtmc+fitted+weight>0, _get_trajectory_prefix returns None  # noqa: E501
+        # The branch 431->443 means: enable_dtmc+fitted+weight>0, _get_trajectory_prefix returns None
         pass  # Covered by test_dtmc_blending_when_fitted with no history
 
     async def test_ab_test_routing_candidate_cohort(self, engine, sample_message, sample_context):

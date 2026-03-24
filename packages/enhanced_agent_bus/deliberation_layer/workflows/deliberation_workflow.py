@@ -33,11 +33,11 @@ from importlib import import_module
 from typing import TypeAlias, cast
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONList  # noqa: E402
+    from src.core.shared.types import JSONList
 except ImportError:
     JSONList = list  # type: ignore[misc,assignment]
 
@@ -255,7 +255,7 @@ class DefaultDeliberationActivities:
 
         request_id = str(uuid.uuid4())
         logger.info(
-            f"Vote request {request_id} sent to {len(voting_agents)} agents for message {message_id}"  # noqa: E501
+            f"Vote request {request_id} sent to {len(voting_agents)} agents for message {message_id}"
         )
         return request_id
 
@@ -344,7 +344,7 @@ class DefaultDeliberationActivities:
 
         notification_id = str(uuid.uuid4())
         logger.info(
-            f"Human review notification {notification_id} sent via {notification_channel} for message {message_id}"  # noqa: E501
+            f"Human review notification {notification_id} sent via {notification_channel} for message {message_id}"
         )
         return notification_id
 

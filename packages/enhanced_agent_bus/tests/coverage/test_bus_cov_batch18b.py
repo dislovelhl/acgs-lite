@@ -42,9 +42,9 @@ from enhanced_agent_bus.context_memory.optimizer.scorer import VectorizedScorer
 from enhanced_agent_bus.feedback_handler.enums import FeedbackType, OutcomeStatus
 from enhanced_agent_bus.feedback_handler.handler import (
     FeedbackHandler,
+    get_feedback_for_decision,
     get_feedback_handler,
     submit_feedback,
-    get_feedback_for_decision,
 )
 from enhanced_agent_bus.feedback_handler.models import (
     FeedbackBatchRequest,
@@ -65,7 +65,6 @@ from enhanced_agent_bus.llm_adapters.base import (
 )
 from enhanced_agent_bus.llm_adapters.bedrock_adapter import BedrockAdapter
 from enhanced_agent_bus.llm_adapters.config import AWSBedrockAdapterConfig
-
 
 # ===========================================================================
 # Helpers

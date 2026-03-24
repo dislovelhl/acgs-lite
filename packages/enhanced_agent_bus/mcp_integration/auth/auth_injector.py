@@ -18,11 +18,11 @@ from enum import Enum
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -50,19 +50,19 @@ AUTH_INJECTOR_OPERATION_ERRORS = (
 )
 
 
-class AuthMethod(str, Enum):  # noqa: UP042
+class AuthMethod(str, Enum):
     """Authentication method."""
 
     NONE = "none"
     API_KEY = "api_key"
     OAUTH2 = "oauth2"
     OIDC = "oidc"
-    BEARER_TOKEN = "bearer_token"  # noqa: S105
+    BEARER_TOKEN = "bearer_token"
     BASIC_AUTH = "basic_auth"
     CUSTOM = "custom"
 
 
-class InjectionStatus(str, Enum):  # noqa: UP042
+class InjectionStatus(str, Enum):
     """Status of credential injection."""
 
     SUCCESS = "success"

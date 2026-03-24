@@ -10,9 +10,9 @@ Constitutional Hash: cdd01ef066bc6cf2
 """
 
 import asyncio
-from contextlib import contextmanager
 import dataclasses
 from collections import deque
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 

@@ -27,12 +27,12 @@ RESULTS_TSV = Path(__file__).parent / "results.tsv"
 
 
 def _git(*args: str) -> str:
-    result = subprocess.run(["git", *args], capture_output=True, text=True, check=False)  # noqa: S603, S607
+    result = subprocess.run(["git", *args], capture_output=True, text=True, check=False)
     return result.stdout.strip()
 
 
 def _git_check(*args: str) -> bool:
-    result = subprocess.run(["git", *args], capture_output=True, text=True, check=False)  # noqa: S603, S607
+    result = subprocess.run(["git", *args], capture_output=True, text=True, check=False)
     return result.returncode == 0
 
 
@@ -92,14 +92,14 @@ def main() -> int:
     elif _git_check("show-ref", "--verify", "--quiet", f"refs/heads/{branch_name}"):
         print(f"Branch exists — switching: git checkout {branch_name}")
         if not args.dry_run:
-            subprocess.run(["git", "checkout", branch_name], check=True)  # noqa: S603, S607
+            subprocess.run(["git", "checkout", branch_name], check=True)
     else:
         if not _git_check("rev-parse", "--verify", args.base):
             print(f"ERROR: base branch not found: {args.base}", file=sys.stderr)
             return 1
         print(f"Creating branch: git checkout -b {branch_name} {args.base}")
         if not args.dry_run:
-            subprocess.run(["git", "checkout", "-b", branch_name, args.base], check=True)  # noqa: S603, S607
+            subprocess.run(["git", "checkout", "-b", branch_name, args.base], check=True)
 
     status_out = _git("status", "--porcelain")
     if status_out:

@@ -21,16 +21,10 @@ import json
 import logging
 import os
 import sys
-import time
 import warnings
-from dataclasses import dataclass
-from datetime import datetime
-from types import ModuleType
-from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID
 
 import pytest
-
 
 # ============================================================
 # structured_logging.py — uncovered lines

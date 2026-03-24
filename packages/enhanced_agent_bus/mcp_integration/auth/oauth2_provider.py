@@ -22,11 +22,11 @@ from enum import Enum
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -54,17 +54,17 @@ _OAUTH2_PROVIDER_OPERATION_ERRORS = (
 )
 
 
-class OAuth2GrantType(str, Enum):  # noqa: UP042
+class OAuth2GrantType(str, Enum):
     """OAuth2 grant types."""
 
     CLIENT_CREDENTIALS = "client_credentials"
     AUTHORIZATION_CODE = "authorization_code"
-    REFRESH_TOKEN = "refresh_token"  # noqa: S105
-    PASSWORD = "password"  # noqa: S105
+    REFRESH_TOKEN = "refresh_token"
+    PASSWORD = "password"
     DEVICE_CODE = "device_code"
 
 
-class TokenStatus(str, Enum):  # noqa: UP042
+class TokenStatus(str, Enum):
     """Token status."""
 
     VALID = "valid"
@@ -108,7 +108,7 @@ class OAuth2Token:
     """OAuth2 token."""
 
     access_token: str
-    token_type: str = "Bearer"  # noqa: S105
+    token_type: str = "Bearer"
     expires_in: int | None = None
     refresh_token: str | None = None
     scope: str | None = None
@@ -483,7 +483,7 @@ class OAuth2Provider:
     async def revoke_token(
         self,
         token: str,
-        token_type_hint: str = "access_token",  # noqa: S107
+        token_type_hint: str = "access_token",
     ) -> bool:
         """
         Revoke an OAuth2 token.
@@ -536,7 +536,7 @@ class OAuth2Provider:
     async def introspect_token(
         self,
         token: str,
-        token_type_hint: str = "access_token",  # noqa: S107
+        token_type_hint: str = "access_token",
     ) -> TokenIntrospectionResult | None:
         """
         Introspect an OAuth2 token.

@@ -25,7 +25,7 @@ projection operator P_M^gov — analogous to Sinkhorn-Knopp in mHC.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 

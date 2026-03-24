@@ -14,7 +14,6 @@ from enhanced_agent_bus.constitutional.metrics_collector import (
     MetricsComparison,
 )
 
-
 # ---------------------------------------------------------------------------
 # GovernanceMetricsSnapshot tests
 # ---------------------------------------------------------------------------

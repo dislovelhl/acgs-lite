@@ -15,11 +15,11 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -293,7 +293,7 @@ class TaskCoordinator:
 
     def _validate_constitutional_compliance(self, action: JSONDict) -> bool:
         """Validate action against constitutional principles."""
-        if "constitutional_hash" in action:  # noqa: SIM102
+        if "constitutional_hash" in action:
             if action["constitutional_hash"] != self.constitutional_hash:
                 logger.error("Constitutional hash mismatch!")
                 return False

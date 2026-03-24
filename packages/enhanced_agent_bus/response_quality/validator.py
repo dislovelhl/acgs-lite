@@ -11,7 +11,7 @@ from datetime import datetime
 from typing import ClassVar, Protocol
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import (
@@ -20,7 +20,7 @@ from src.core.shared.errors.exceptions import (
 )
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -459,13 +459,13 @@ class ResponseQualityValidator:
         severity = "slightly" if gap < 0.1 else "significantly" if gap < 0.3 else "critically"
 
         critiques = {
-            "accuracy": f"Response is {severity} below accuracy threshold ({score:.2f} < {threshold:.2f}). "  # noqa: E501
+            "accuracy": f"Response is {severity} below accuracy threshold ({score:.2f} < {threshold:.2f}). "
             "Consider verifying facts and sources.",
             "coherence": f"Response lacks coherence ({score:.2f} < {threshold:.2f}). "
             "Improve logical flow and structure.",
             "relevance": f"Response is {severity} off-topic ({score:.2f} < {threshold:.2f}). "
             "Better align with the query intent.",
-            "constitutional_alignment": f"Constitutional alignment insufficient ({score:.2f} < {threshold:.2f}). "  # noqa: E501
+            "constitutional_alignment": f"Constitutional alignment insufficient ({score:.2f} < {threshold:.2f}). "
             "Review against constitutional principles.",
             "safety": f"Safety concerns detected ({score:.2f} < {threshold:.2f}). "
             "Remove or rephrase potentially harmful content.",

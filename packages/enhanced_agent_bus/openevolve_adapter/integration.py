@@ -70,7 +70,6 @@ from .rollout import RolloutController
 
 if TYPE_CHECKING:
     from enhanced_agent_bus.message_processor import MessageProcessor
-    from enhanced_agent_bus.models import AgentMessage, ValidationResult
 
 logger = get_logger(__name__)
 
@@ -93,7 +92,7 @@ def _build_validation_result(
 ) -> Any:
     """Lazy import of ValidationResult to avoid circular imports at module load."""
     try:
-        from enhanced_agent_bus.models import ValidationResult  # noqa: PLC0415
+        from enhanced_agent_bus.models import ValidationResult
         return ValidationResult(is_valid=is_valid, errors=errors, metadata=metadata)
     except ImportError:
         # Minimal stub for unit-testing without the full bus installed
@@ -318,7 +317,7 @@ def wire_into_processor(
         wire_into_processor(processor, EvolutionMessageHandler(verifier=my_verifier))
     """
     try:
-        from enhanced_agent_bus.enums import MessageType  # noqa: PLC0415
+        from enhanced_agent_bus.enums import MessageType
     except ImportError:
         logger.warning("MessageType not importable — skipping handler registration")
         return

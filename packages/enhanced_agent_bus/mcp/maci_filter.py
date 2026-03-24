@@ -26,11 +26,11 @@ from enum import Enum
 from typing import Any
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -47,7 +47,7 @@ logger = get_logger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class MACIToolRole(str, Enum):  # noqa: UP042
+class MACIToolRole(str, Enum):
     """The three canonical MACI roles for tool-level access control."""
 
     PROPOSER = "proposer"

@@ -32,6 +32,8 @@ from enhanced_agent_bus.models import AgentMessage, MessageType
 from enhanced_agent_bus.validators import ValidationResult
 from enhanced_agent_bus.verification_orchestrator import (
     VerificationOrchestrator,
+)
+from enhanced_agent_bus.verification_orchestrator import (
     VerificationResult as VResult,
 )
 

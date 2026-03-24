@@ -20,7 +20,6 @@ import pytest
 # ---------------------------------------------------------------------------
 # OAuth2 State Manager Tests
 # ---------------------------------------------------------------------------
-
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 from src.core.shared.security.oauth_state_manager import (
@@ -988,7 +987,8 @@ class TestBulkOperations:
     @pytest.fixture()
     def table(self):
         """Create a real SQLAlchemy Table for testing."""
-        from sqlalchemy import Column, Integer, MetaData, String, Table as SATable
+        from sqlalchemy import Column, Integer, MetaData, String
+        from sqlalchemy import Table as SATable
         metadata = MetaData()
         return SATable(
             "test_table", metadata,

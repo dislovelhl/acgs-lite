@@ -13,14 +13,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from enhanced_agent_bus.circuit_breaker.breaker import ServiceCircuitBreaker
-from enhanced_agent_bus.circuit_breaker.config import ServiceCircuitConfig
-from enhanced_agent_bus.circuit_breaker.enums import (
-    CircuitState,
-    FallbackStrategy,
-    ServiceSeverity,
-)
-from enhanced_agent_bus.circuit_breaker.models import CircuitBreakerMetrics, QueuedRequest
 from enhanced_agent_bus.chaos_testing import (
     ChaosEngine,
     ChaosScenario,
@@ -30,6 +22,14 @@ from enhanced_agent_bus.chaos_testing import (
     get_chaos_engine,
     reset_chaos_engine,
 )
+from enhanced_agent_bus.circuit_breaker.breaker import ServiceCircuitBreaker
+from enhanced_agent_bus.circuit_breaker.config import ServiceCircuitConfig
+from enhanced_agent_bus.circuit_breaker.enums import (
+    CircuitState,
+    FallbackStrategy,
+    ServiceSeverity,
+)
+from enhanced_agent_bus.circuit_breaker.models import CircuitBreakerMetrics, QueuedRequest
 from enhanced_agent_bus.context_memory.jrt_context_preparer import (
     CriticalSectionMarker,
     JRTContextPreparer,
@@ -43,7 +43,6 @@ from enhanced_agent_bus.context_memory.models import (
     ContextWindow,
     JRTConfig,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers

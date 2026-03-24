@@ -26,7 +26,7 @@ import sys
 from typing import TypeVar, cast
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 from src.core.shared.utilities import DependencyRegistry, FeatureFlag

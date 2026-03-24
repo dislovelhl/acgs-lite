@@ -1270,7 +1270,7 @@ class TestTenantManagerSingleton:
 
 
 # Import TenantManager for fixture
-from enhanced_agent_bus.multi_tenancy.manager import TenantManager  # noqa: E402
+from enhanced_agent_bus.multi_tenancy.manager import TenantManager
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

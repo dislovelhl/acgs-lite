@@ -14,12 +14,12 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel, ConfigDict, Field
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
 
-class WorkflowStatus(str, Enum):  # noqa: UP042
+class WorkflowStatus(str, Enum):
     """Workflow instance status states."""
 
     PENDING = "pending"
@@ -31,7 +31,7 @@ class WorkflowStatus(str, Enum):  # noqa: UP042
     COMPENSATED = "compensated"
 
 
-class StepStatus(str, Enum):  # noqa: UP042
+class StepStatus(str, Enum):
     """Workflow step status states."""
 
     PENDING = "pending"
@@ -44,7 +44,7 @@ class StepStatus(str, Enum):  # noqa: UP042
     COMPENSATION_FAILED = "compensation_failed"
 
 
-class StepType(str, Enum):  # noqa: UP042
+class StepType(str, Enum):
     """Types of workflow steps."""
 
     ACTIVITY = "activity"
@@ -54,7 +54,7 @@ class StepType(str, Enum):  # noqa: UP042
     WAIT = "wait"
 
 
-class EventType(str, Enum):  # noqa: UP042
+class EventType(str, Enum):
     """Types of workflow events for replay."""
 
     WORKFLOW_STARTED = "workflow_started"

@@ -11,6 +11,16 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 # ---------------------------------------------------------------------------
+# llm_assistant imports
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.deliberation_layer.llm_assistant import (
+    LLMAssistant,
+    get_llm_assistant,
+    reset_llm_assistant,
+)
+from enhanced_agent_bus.models import AgentMessage, MessageType
+
+# ---------------------------------------------------------------------------
 # z3_adapter imports
 # ---------------------------------------------------------------------------
 from enhanced_agent_bus.verification.z3_adapter import (
@@ -23,16 +33,6 @@ from enhanced_agent_bus.verification.z3_adapter import (
     Z3VerificationResult,
     verify_policy_formally,
 )
-
-# ---------------------------------------------------------------------------
-# llm_assistant imports
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.deliberation_layer.llm_assistant import (
-    LLMAssistant,
-    get_llm_assistant,
-    reset_llm_assistant,
-)
-from enhanced_agent_bus.models import AgentMessage, MessageType
 
 pytestmark = pytest.mark.unit
 
@@ -206,7 +206,7 @@ class TestZ3SolverAdapter:
         """When there's only one possible model, enumeration stops."""
         adapter = Z3SolverAdapter()
         x = z3.Bool("x")
-        adapter.solver.add(x == True)  # noqa: E712
+        adapter.solver.add(x == True)
         meta = Z3Constraint(
             name="c1", expression="x", natural_language="nl", confidence=1.0
         )
@@ -228,7 +228,7 @@ class TestZ3SolverAdapter:
     def test_model_to_dict_bool_value(self):
         adapter = Z3SolverAdapter()
         b = z3.Bool("b")
-        adapter.solver.add(b == True)  # noqa: E712
+        adapter.solver.add(b == True)
         result = adapter.check_sat()
         assert result.is_sat is True
         assert result.model["b"] in (True, "True")

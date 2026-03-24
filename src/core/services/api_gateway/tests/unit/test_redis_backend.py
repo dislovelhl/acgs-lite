@@ -18,7 +18,6 @@ from src.core.services.api_gateway.redis_backend import (
 )
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 
-
 # ---------------------------------------------------------------------------
 # RedisConfig
 # ---------------------------------------------------------------------------

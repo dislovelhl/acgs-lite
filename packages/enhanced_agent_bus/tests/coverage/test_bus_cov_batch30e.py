@@ -18,30 +18,28 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-# ---------------------------------------------------------------------------
-# CostOptimizer imports
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.optimization_toolkit.cost import (
-    CostOptimizer,
-    UsageRecord,
-)
+import enhanced_agent_bus._ext_circuit_breaker as ext_cb
+import enhanced_agent_bus._ext_context_optimization as ext_ctx
 
 # ---------------------------------------------------------------------------
 # Extension module imports
 # ---------------------------------------------------------------------------
 import enhanced_agent_bus._ext_performance as ext_perf
-import enhanced_agent_bus._ext_context_optimization as ext_ctx
-import enhanced_agent_bus._ext_circuit_breaker as ext_cb
 
 # ---------------------------------------------------------------------------
 # ChatOps executor imports
 # ---------------------------------------------------------------------------
 from enhanced_agent_bus.agents.chatops_executor import (
-    handle_chatops_command,
-    _dispatch_build_fix,
     REVIEW_DISPATCH_ERRORS,
+    _dispatch_build_fix,
+    handle_chatops_command,
 )
 from enhanced_agent_bus.core_models import AgentMessage, MessageType
+from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
+    DeliberationQueue,
+    DeliberationStatus,
+    DeliberationTask,
+)
 
 # ---------------------------------------------------------------------------
 # HITL manager imports
@@ -50,10 +48,13 @@ from enhanced_agent_bus.deliberation_layer.hitl_manager import (
     HITLManager,
     ValidationResult,
 )
-from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
-    DeliberationQueue,
-    DeliberationStatus,
-    DeliberationTask,
+
+# ---------------------------------------------------------------------------
+# CostOptimizer imports
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.optimization_toolkit.cost import (
+    CostOptimizer,
+    UsageRecord,
 )
 
 

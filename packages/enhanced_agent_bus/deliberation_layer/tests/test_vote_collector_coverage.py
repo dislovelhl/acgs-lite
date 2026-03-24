@@ -315,9 +315,9 @@ class TestCollectorConnect:
         assert c._subscriber_task is not None
         # Cancel the subscriber task to avoid hanging
         c._subscriber_task.cancel()
-        try:  # noqa: SIM105
+        try:
             await c._subscriber_task
-        except (asyncio.CancelledError, Exception):  # noqa: S110
+        except (asyncio.CancelledError, Exception):
             pass
 
     async def test_connect_redis_connection_error_returns_false(self) -> None:

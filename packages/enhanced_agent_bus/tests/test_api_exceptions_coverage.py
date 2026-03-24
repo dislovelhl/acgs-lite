@@ -633,7 +633,7 @@ class TestRegisterExceptionHandlers:
         app.add_exception_handler = recording_add_handler  # type: ignore[method-assign]
         register_exception_handlers(app)
 
-        handler_map = {exc_cls: h for exc_cls, h in called_with}  # noqa: C416
+        handler_map = {exc_cls: h for exc_cls, h in called_with}
 
         # All known exception types must be registered
         from enhanced_agent_bus.api_exceptions import (
@@ -676,7 +676,7 @@ class TestRegisterExceptionHandlers:
         app.add_exception_handler = recording_add_handler  # type: ignore[method-assign]
         register_exception_handlers(app)
 
-        handler_map = {exc_cls: h for exc_cls, h in called_with}  # noqa: C416
+        handler_map = {exc_cls: h for exc_cls, h in called_with}
 
         from enhanced_agent_bus.api_exceptions import (
             AgentBusError,

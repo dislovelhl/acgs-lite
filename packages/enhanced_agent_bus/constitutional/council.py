@@ -6,11 +6,13 @@ Manages the ratification of high-risk policy changes through a
 distributed multi-signature voting process.
 """
 
+from __future__ import annotations
+
 import json
 from hashlib import sha256
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -137,7 +139,7 @@ class ConstitutionalCouncilService:
 
         # 2. Create election
         # We wrap the proposal in a mock message structure if needed by VotingService
-        # or we just pass the ID if VotingService supported generic payloads (it expects AgentMessage currently)  # noqa: E501
+        # or we just pass the ID if VotingService supported generic payloads (it expects AgentMessage currently)
 
         # Mock message for voting service compatibility
         message = (
@@ -166,7 +168,7 @@ class ConstitutionalCouncilService:
 
         self._active_elections[getattr(proposal, "id", proposal.proposal_id)] = election_id  # type: ignore[attr-defined]
         logger.info(
-            f"Started Council election {election_id} for proposal {getattr(proposal, 'id', proposal.proposal_id)}"  # noqa: E501
+            f"Started Council election {election_id} for proposal {getattr(proposal, 'id', proposal.proposal_id)}"
         )  # type: ignore[attr-defined]
 
         return election_id  # type: ignore[no-any-return]

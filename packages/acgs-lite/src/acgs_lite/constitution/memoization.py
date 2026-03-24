@@ -361,8 +361,8 @@ class MemoizedConstitution:
             found, _ = self._cache.get(key)
             if found:
                 # Undo the hit count increment (warming shouldn't inflate stats)
-                self._cache._hits -= 1  # noqa: SLF001
-                self._cache._misses -= 0  # no-op, just for clarity  # noqa: SLF001
+                self._cache._hits -= 1
+                self._cache._misses -= 0  # no-op, just for clarity
                 already_cached += 1
                 continue
             try:

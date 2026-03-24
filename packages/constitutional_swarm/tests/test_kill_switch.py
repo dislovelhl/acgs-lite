@@ -5,11 +5,10 @@ from __future__ import annotations
 import threading
 
 import pytest
-from acgs_lite import Constitution, ConstitutionalViolationError
-
 from constitutional_swarm.dna import AgentDNA, DNADisabledError
 from constitutional_swarm.mesh import ConstitutionalMesh, DuplicateVoteError, MeshHaltedError
 
+from acgs_lite import Constitution
 
 # ---------------------------------------------------------------------------
 # AgentDNA kill switch

@@ -15,12 +15,13 @@ Public API functions and classes are re-exported from this module to maintain
 backward compatibility with the original single-file structure.
 """
 
+from __future__ import annotations
 
 try:
     from src.core.shared.types import (
         MessagePayload,
         PolicyContext,
-    )  # noqa: E402
+    )
 except ImportError:
     MessagePayload = dict  # type: ignore[misc,assignment]
     PolicyContext = dict  # type: ignore[misc,assignment]

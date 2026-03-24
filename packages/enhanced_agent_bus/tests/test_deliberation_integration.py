@@ -18,7 +18,6 @@ from enhanced_agent_bus.deliberation_layer.integration import (
     _truncate_content_for_hotl,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

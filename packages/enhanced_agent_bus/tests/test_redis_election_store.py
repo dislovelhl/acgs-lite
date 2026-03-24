@@ -18,7 +18,6 @@ from enhanced_agent_bus.deliberation_layer.redis_election_store import (
     get_election_store,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

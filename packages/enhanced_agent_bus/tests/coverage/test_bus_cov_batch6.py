@@ -15,6 +15,17 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 # ---------------------------------------------------------------------------
+# enterprise_sso.integration
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.enterprise_sso.integration import (
+    EnterpriseSSOService,
+    SSOAuthenticationResult,
+    SSOIntegrationError,
+    SSOSession,
+    SSOUser,
+)
+
+# ---------------------------------------------------------------------------
 # enterprise_sso.middleware
 # ---------------------------------------------------------------------------
 from enhanced_agent_bus.enterprise_sso.middleware import (
@@ -30,33 +41,13 @@ from enhanced_agent_bus.enterprise_sso.middleware import (
     require_sso_authentication,
     set_sso_session,
 )
-
-# ---------------------------------------------------------------------------
-# enterprise_sso.integration
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.enterprise_sso.integration import (
-    EnterpriseSSOService,
-    SSOAuthenticationResult,
-    SSOIntegrationError,
-    SSOSession,
-    SSOUser,
-)
-
-# ---------------------------------------------------------------------------
-# llm_adapters.models
-# ---------------------------------------------------------------------------
-from enhanced_agent_bus.llm_adapters.models import (
-    FunctionDefinition,
-    FunctionParameters,
-    LLMMessage,
-    LLMRequest,
-    MessageConverter,
-    RequestConverter,
-    ResponseConverter,
-    ToolCall,
-    ToolCallFunction,
-    ToolDefinition,
-    ToolType,
+from enhanced_agent_bus.enterprise_sso.tenant_sso_config import (
+    IdPProviderType,
+    OIDCConfig,
+    RoleMappingRule,
+    SSOProtocolType,
+    TenantIdPConfig,
+    TenantSSOConfigManager,
 )
 
 # ---------------------------------------------------------------------------
@@ -76,15 +67,22 @@ from enhanced_agent_bus.llm_adapters.capability_matrix import (
     initialize_capability_matrix,
 )
 
-from enhanced_agent_bus.enterprise_sso.tenant_sso_config import (
-    IdPProviderType,
-    OIDCConfig,
-    RoleMappingRule,
-    SSOProtocolType,
-    TenantIdPConfig,
-    TenantSSOConfigManager,
+# ---------------------------------------------------------------------------
+# llm_adapters.models
+# ---------------------------------------------------------------------------
+from enhanced_agent_bus.llm_adapters.models import (
+    FunctionDefinition,
+    FunctionParameters,
+    LLMMessage,
+    LLMRequest,
+    MessageConverter,
+    RequestConverter,
+    ResponseConverter,
+    ToolCall,
+    ToolCallFunction,
+    ToolDefinition,
+    ToolType,
 )
-
 
 # ============================================================================
 # Helpers / Fixtures

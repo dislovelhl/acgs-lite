@@ -98,8 +98,9 @@ class TestCheckEnforcementForCreate:
         )
 
     async def test_strict_mode_none_key_type_raises(self):
-        from enhanced_agent_bus.pqc_validators import check_enforcement_for_create
         from src.core.shared.security.pqc import PQCKeyRequiredError
+
+        from enhanced_agent_bus.pqc_validators import check_enforcement_for_create
 
         config = MagicMock()
         config.get_mode = AsyncMock(return_value="strict")
@@ -109,8 +110,9 @@ class TestCheckEnforcementForCreate:
             )
 
     async def test_strict_mode_classical_key_raises(self):
-        from enhanced_agent_bus.pqc_validators import check_enforcement_for_create
         from src.core.shared.security.pqc import ClassicalKeyRejectedError
+
+        from enhanced_agent_bus.pqc_validators import check_enforcement_for_create
 
         config = MagicMock()
         config.get_mode = AsyncMock(return_value="strict")
@@ -122,8 +124,9 @@ class TestCheckEnforcementForCreate:
             )
 
     async def test_strict_mode_unsupported_pqc_raises(self):
-        from enhanced_agent_bus.pqc_validators import check_enforcement_for_create
         from src.core.shared.security.pqc import UnsupportedPQCAlgorithmError
+
+        from enhanced_agent_bus.pqc_validators import check_enforcement_for_create
 
         config = MagicMock()
         config.get_mode = AsyncMock(return_value="strict")
@@ -144,8 +147,9 @@ class TestCheckEnforcementForCreate:
         )
 
     async def test_strict_mode_pqc_with_empty_algorithm_raises(self):
-        from enhanced_agent_bus.pqc_validators import check_enforcement_for_create
         from src.core.shared.security.pqc import UnsupportedPQCAlgorithmError
+
+        from enhanced_agent_bus.pqc_validators import check_enforcement_for_create
 
         config = MagicMock()
         config.get_mode = AsyncMock(return_value="strict")
@@ -155,8 +159,9 @@ class TestCheckEnforcementForCreate:
             )
 
     async def test_strict_mode_pqc_with_none_algorithm_raises(self):
-        from enhanced_agent_bus.pqc_validators import check_enforcement_for_create
         from src.core.shared.security.pqc import UnsupportedPQCAlgorithmError
+
+        from enhanced_agent_bus.pqc_validators import check_enforcement_for_create
 
         config = MagicMock()
         config.get_mode = AsyncMock(return_value="strict")
@@ -188,8 +193,9 @@ class TestCheckEnforcementForUpdate:
         )
 
     async def test_strict_classical_raises_migration_required(self):
-        from enhanced_agent_bus.pqc_validators import check_enforcement_for_update
         from src.core.shared.security.pqc import MigrationRequiredError
+
+        from enhanced_agent_bus.pqc_validators import check_enforcement_for_update
 
         config = MagicMock()
         config.get_mode = AsyncMock(return_value="strict")
@@ -324,8 +330,9 @@ class TestValidateConstitutionalHashPqc:
         assert result.valid
 
     async def test_pqc_enabled_v1_classical_signature_hits_type_error(self):
-        from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
         from src.core.shared.security.pqc_crypto import PQCConfig
+
+        from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
         config = PQCConfig(pqc_enabled=True)
         with patch(
@@ -348,8 +355,9 @@ class TestValidateConstitutionalHashPqc:
             assert result.pqc_metadata.verification_mode == "classical_only"
 
     async def test_pqc_enabled_v1_deprecated_warning_phase5(self):
-        from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
         from src.core.shared.security.pqc_crypto import PQCConfig
+
+        from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
         config = PQCConfig(pqc_enabled=True)
         with patch(
@@ -371,9 +379,10 @@ class TestValidateConstitutionalHashPqc:
             assert any("deprecated" in w for w in result.warnings)
 
     async def test_pqc_verification_error_caught(self):
-        from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
         from src.core.shared.security.pqc import PQCVerificationError
         from src.core.shared.security.pqc_crypto import PQCConfig
+
+        from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
         config = PQCConfig(pqc_enabled=True)
         with patch(
@@ -392,8 +401,9 @@ class TestValidateConstitutionalHashPqc:
             assert any("PQC verification failed" in e for e in result.errors)
 
     async def test_unexpected_runtime_error_caught(self):
-        from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
         from src.core.shared.security.pqc_crypto import PQCConfig
+
+        from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
         config = PQCConfig(pqc_enabled=True)
         with patch(
@@ -412,9 +422,10 @@ class TestValidateConstitutionalHashPqc:
             assert any("Validation error" in e for e in result.errors)
 
     async def test_constitutional_hash_mismatch_error_caught(self):
-        from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
         from src.core.shared.security.pqc import ConstitutionalHashMismatchError
         from src.core.shared.security.pqc_crypto import PQCConfig
+
+        from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
         config = PQCConfig(pqc_enabled=True)
         with patch(
@@ -510,8 +521,9 @@ class TestValidateMaciRecordPqc:
         assert result.pqc_metadata is None
 
     async def test_valid_record_with_pqc_config_disabled(self):
-        from enhanced_agent_bus.pqc_validators import validate_maci_record_pqc
         from src.core.shared.security.pqc_crypto import PQCConfig
+
+        from enhanced_agent_bus.pqc_validators import validate_maci_record_pqc
 
         config = PQCConfig(pqc_enabled=False)
         result = await validate_maci_record_pqc(
@@ -527,8 +539,9 @@ class TestValidateMaciRecordPqc:
         assert result.pqc_metadata.verification_mode == "classical_only"
 
     async def test_valid_record_with_pqc_enabled_and_signature(self):
-        from enhanced_agent_bus.pqc_validators import validate_maci_record_pqc
         from src.core.shared.security.pqc_crypto import PQCConfig
+
+        from enhanced_agent_bus.pqc_validators import validate_maci_record_pqc
 
         config = PQCConfig(pqc_enabled=True)
         with patch(
@@ -644,8 +657,9 @@ class TestValidateSignature:
             assert result["key_type"] == "classical"
 
     async def test_classical_rejected_in_pqc_only_mode(self):
-        from enhanced_agent_bus.pqc_validators import validate_signature
         from src.core.shared.security.pqc import ClassicalKeyRejectedError
+
+        from enhanced_agent_bus.pqc_validators import validate_signature
 
         with pytest.raises(ClassicalKeyRejectedError, match="not accepted"):
             await validate_signature(
@@ -674,8 +688,9 @@ class TestValidateSignature:
             assert result["algorithm"] == "ML-DSA-65"
 
     async def test_unsupported_algorithm_raises(self):
-        from enhanced_agent_bus.pqc_validators import validate_signature
         from src.core.shared.security.pqc import UnsupportedAlgorithmError
+
+        from enhanced_agent_bus.pqc_validators import validate_signature
 
         with pytest.raises(UnsupportedAlgorithmError):
             await validate_signature(
@@ -687,8 +702,9 @@ class TestValidateSignature:
             )
 
     async def test_key_registry_error_raises(self):
-        from enhanced_agent_bus.pqc_validators import validate_signature
         from src.core.shared.security.pqc import KeyRegistryUnavailableError
+
+        from enhanced_agent_bus.pqc_validators import validate_signature
 
         mock_registry_module = MagicMock()
         mock_registry_module.key_registry_client._registry = MagicMock()
@@ -972,14 +988,14 @@ class TestNoOpTracer:
     """Tests for NoOpTracer."""
 
     def test_start_as_current_span(self):
-        from enhanced_agent_bus.observability.telemetry import NoOpTracer, NoOpSpan
+        from enhanced_agent_bus.observability.telemetry import NoOpSpan, NoOpTracer
 
         tracer = NoOpTracer()
         with tracer.start_as_current_span("test") as span:
             assert isinstance(span, NoOpSpan)
 
     def test_start_span(self):
-        from enhanced_agent_bus.observability.telemetry import NoOpTracer, NoOpSpan
+        from enhanced_agent_bus.observability.telemetry import NoOpSpan, NoOpTracer
 
         tracer = NoOpTracer()
         span = tracer.start_span("test")
@@ -1029,14 +1045,14 @@ class TestNoOpMeter:
     """Tests for NoOpMeter."""
 
     def test_create_counter(self):
-        from enhanced_agent_bus.observability.telemetry import NoOpMeter, NoOpCounter
+        from enhanced_agent_bus.observability.telemetry import NoOpCounter, NoOpMeter
 
         meter = NoOpMeter()
         counter = meter.create_counter("test")
         assert isinstance(counter, NoOpCounter)
 
     def test_create_histogram(self):
-        from enhanced_agent_bus.observability.telemetry import NoOpMeter, NoOpHistogram
+        from enhanced_agent_bus.observability.telemetry import NoOpHistogram, NoOpMeter
 
         meter = NoOpMeter()
         hist = meter.create_histogram("test")
@@ -1187,9 +1203,9 @@ class TestConfigureTelemetry:
 
     def test_returns_noop_when_otel_unavailable(self):
         from enhanced_agent_bus.observability.telemetry import (
-            configure_telemetry,
-            NoOpTracer,
             NoOpMeter,
+            NoOpTracer,
+            configure_telemetry,
         )
 
         with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
@@ -1202,14 +1218,14 @@ class TestGetTracer:
     """Tests for get_tracer."""
 
     def test_returns_noop_when_otel_unavailable(self):
-        from enhanced_agent_bus.observability.telemetry import get_tracer, NoOpTracer
+        from enhanced_agent_bus.observability.telemetry import NoOpTracer, get_tracer
 
         with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
             tracer = get_tracer("test-svc")
             assert isinstance(tracer, NoOpTracer)
 
     def test_returns_cached_tracer(self):
-        from enhanced_agent_bus.observability.telemetry import get_tracer, _tracers
+        from enhanced_agent_bus.observability.telemetry import _tracers, get_tracer
 
         mock_tracer = MagicMock()
         _tracers["cached-svc"] = mock_tracer
@@ -1224,14 +1240,14 @@ class TestGetMeter:
     """Tests for get_meter."""
 
     def test_returns_noop_when_otel_unavailable(self):
-        from enhanced_agent_bus.observability.telemetry import get_meter, NoOpMeter
+        from enhanced_agent_bus.observability.telemetry import NoOpMeter, get_meter
 
         with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
             meter = get_meter("test-svc")
             assert isinstance(meter, NoOpMeter)
 
     def test_returns_cached_meter(self):
-        from enhanced_agent_bus.observability.telemetry import get_meter, _meters
+        from enhanced_agent_bus.observability.telemetry import _meters, get_meter
 
         mock_meter = MagicMock()
         _meters["cached-svc"] = mock_meter
@@ -1370,8 +1386,8 @@ class TestGetResourceAttributes:
 
     def test_fallback_on_name_error(self):
         from enhanced_agent_bus.observability.telemetry import (
-            _get_resource_attributes,
             TelemetryConfig,
+            _get_resource_attributes,
         )
 
         config = TelemetryConfig(service_name="test", environment="dev")
@@ -1385,8 +1401,8 @@ class TestGetResourceAttributes:
 
     def test_returns_dict_with_service_info(self):
         from enhanced_agent_bus.observability.telemetry import (
-            _get_resource_attributes,
             TelemetryConfig,
+            _get_resource_attributes,
         )
 
         config = TelemetryConfig(

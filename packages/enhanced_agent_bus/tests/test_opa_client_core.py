@@ -455,6 +455,7 @@ class TestEvaluateHTTP:
 
     async def test_json_decode_error_raises(self, http_client):
         import json as _json
+
         from enhanced_agent_bus.exceptions import PolicyEvaluationError
 
         resp = MagicMock()

@@ -14,12 +14,12 @@ import pytest
 # Governance and constitutional compliance test markers
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
-from enhanced_agent_bus.deliberation_layer.voting_service import (  # noqa: E402
+from enhanced_agent_bus.deliberation_layer.voting_service import (
     Vote,
     VotingService,
     VotingStrategy,
 )
-from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage  # noqa: E402
+from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage
 
 # =============================================================================
 # Test Data and Fixtures

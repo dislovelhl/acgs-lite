@@ -30,7 +30,6 @@ from enhanced_agent_bus.persistence.models import (
 )
 from enhanced_agent_bus.persistence.repository import InMemoryWorkflowRepository
 
-
 # ---------------------------------------------------------------------------
 # Enum tests
 # ---------------------------------------------------------------------------

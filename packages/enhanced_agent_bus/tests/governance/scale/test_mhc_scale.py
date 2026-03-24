@@ -24,7 +24,7 @@ except ImportError:
 # Governance and constitutional compliance test markers
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
-from enhanced_agent_bus.governance.stability import mhc as mhc_module  # noqa: E402
+from enhanced_agent_bus.governance.stability import mhc as mhc_module
 
 if not mhc_module.TORCH_AVAILABLE:
     pytest.skip("mHC governance scale tests require PyTorch", allow_module_level=True)

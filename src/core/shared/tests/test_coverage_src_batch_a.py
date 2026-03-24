@@ -9,11 +9,10 @@ Targets:
 
 import asyncio
 import json
-import sys
-import time
 import threading
+import time
 from datetime import UTC, datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch, PropertyMock
+from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
 
@@ -21,6 +20,7 @@ import pytest
 # audit_logger imports
 # ---------------------------------------------------------------------------
 from src.core.shared.acgs_logging.audit_logger import (
+    SENSITIVE_FIELDS,
     AuditAction,
     AuditEntry,
     AuditLogConfig,
@@ -32,7 +32,17 @@ from src.core.shared.acgs_logging.audit_logger import (
     RedisAuditStore,
     TenantAuditLogger,
     create_tenant_audit_logger,
-    SENSITIVE_FIELDS,
+)
+
+# ---------------------------------------------------------------------------
+# cache/manager imports
+# ---------------------------------------------------------------------------
+from src.core.shared.cache.manager import TieredCacheManager
+from src.core.shared.cache.models import (
+    AccessRecord,
+    CacheTier,
+    TieredCacheConfig,
+    TieredCacheStats,
 )
 
 # ---------------------------------------------------------------------------
@@ -48,18 +58,6 @@ from src.core.shared.cache.warming import (
     get_cache_warmer,
     reset_cache_warmer,
 )
-
-# ---------------------------------------------------------------------------
-# cache/manager imports
-# ---------------------------------------------------------------------------
-from src.core.shared.cache.manager import TieredCacheManager
-from src.core.shared.cache.models import (
-    AccessRecord,
-    CacheTier,
-    TieredCacheConfig,
-    TieredCacheStats,
-)
-
 
 # ===================================================================
 # AUDIT LOGGER TESTS

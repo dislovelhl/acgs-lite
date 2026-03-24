@@ -529,8 +529,6 @@ class TestProcessLongContext:
         ctx = ConversationContext(user_id="u1", session_id="s1")
         ctx.add_message(Message(role=MessageRole.USER, content="hello world"))
 
-        import torch
-
         mock_tensor = MagicMock()
         mock_tensor.norm.return_value = MagicMock()
         mock_tensor.norm.return_value.item.return_value = 1.5
@@ -538,8 +536,6 @@ class TestProcessLongContext:
         mock_mamba_mgr = MagicMock()
         mock_mamba_mgr.is_loaded = True
         mock_mamba_mgr.process_context.return_value = mock_tensor
-
-        mock_torch_randn = MagicMock(return_value=MagicMock())
 
         import enhanced_agent_bus.ai_assistant.context as ctx_module
 

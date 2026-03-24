@@ -36,7 +36,6 @@ from src.core.shared.cache.warming import (
     warm_cache_on_startup,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -426,7 +425,7 @@ class TestCacheWarmerProgress:
         assert result.status == WarmingStatus.COMPLETED
 
     def test_remove_progress_callback(self, warmer):
-        cb = lambda p: None  # noqa: E731
+        cb = lambda p: None
         warmer.on_progress(cb)
         assert warmer.remove_progress_callback(cb) is True
         assert warmer.remove_progress_callback(cb) is False

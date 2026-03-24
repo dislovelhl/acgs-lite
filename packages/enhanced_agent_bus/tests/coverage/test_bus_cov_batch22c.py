@@ -23,7 +23,6 @@ import pytest
 # ---------------------------------------------------------------------------
 # 1. ConstitutionalStorageService tests
 # ---------------------------------------------------------------------------
-
 from enhanced_agent_bus.constitutional.storage_infra.config import StorageConfig
 from enhanced_agent_bus.constitutional.storage_infra.service import (
     ConstitutionalStorageService,
@@ -254,9 +253,9 @@ class TestConstitutionalStorageService:
 # ---------------------------------------------------------------------------
 
 from enhanced_agent_bus.middlewares.temporal_policy import (
+    _GOVERNED_ACTIONS,
     GovernanceRule,
     TemporalPolicyMiddleware,
-    _GOVERNED_ACTIONS,
 )
 from enhanced_agent_bus.validators import ValidationResult
 

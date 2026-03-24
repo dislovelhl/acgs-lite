@@ -19,11 +19,11 @@ from datetime import UTC
 import httpx
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -172,7 +172,7 @@ class AuditClient:
 
         if self._batch_worker:
             self._batch_worker.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._batch_worker
             except asyncio.CancelledError:
                 pass
@@ -324,7 +324,7 @@ class AuditClient:
         # Check circuit breaker
         if self._circuit_breaker and CIRCUIT_BREAKER_AVAILABLE:
             try:
-                if hasattr(self._circuit_breaker, "current_state"):  # noqa: SIM102
+                if hasattr(self._circuit_breaker, "current_state"):
                     if self._circuit_breaker.current_state == "open":
                         self._stats["circuit_rejections"] += len(batch)
                         logger.warning(

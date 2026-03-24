@@ -32,9 +32,9 @@ pytestmark = [
     ),
 ]
 
-from src.core.shared.database.session import Base  # noqa: E402
+from src.core.shared.database.session import Base
 
-from enhanced_agent_bus.multi_tenancy.orm_models import (  # noqa: E402
+from enhanced_agent_bus.multi_tenancy.orm_models import (
     CONSTITUTIONAL_HASH,
     EnterpriseIntegrationORM,
     MigrationJobORM,
@@ -77,7 +77,7 @@ async def test_engine():
 
     await engine.dispose()
     # Clean up the temporary database file
-    try:  # noqa: SIM105
+    try:
         os.unlink(db_path)
     except OSError:
         pass

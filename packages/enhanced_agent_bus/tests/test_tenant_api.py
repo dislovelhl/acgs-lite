@@ -6,7 +6,6 @@ Comprehensive tests for tenant CRUD operations, lifecycle management,
 quota enforcement, and hierarchical tenancy via the REST API.
 """
 
-import os
 import uuid
 from datetime import UTC, datetime, timezone
 from typing import Optional
@@ -22,12 +21,6 @@ from httpx import ASGITransport, AsyncClient
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.errors.exceptions import ACGSBaseError
 from src.core.shared.types import JSONDict
-
-# Configure test environment for authentication
-# set TENANT_ADMIN_KEY to match the test admin key used in fixtures
-os.environ.setdefault("TENANT_ADMIN_KEY", "test-admin-key")
-os.environ.setdefault("TENANT_AUTH_MODE", "strict")
-os.environ.setdefault("AGENT_RUNTIME_ENVIRONMENT", "development")
 
 # =============================================================================
 # Mock Models and Manager
@@ -350,6 +343,14 @@ class MockTenantManager:
 def mock_manager():
     """Create mock tenant manager."""
     return MockTenantManager()
+
+
+@pytest.fixture(autouse=True)
+def _tenant_api_environment(monkeypatch):
+    """Keep tenant API auth defaults test-local instead of process-global."""
+    monkeypatch.setenv("TENANT_ADMIN_KEY", "test-admin-key")
+    monkeypatch.setenv("TENANT_AUTH_MODE", "strict")
+    monkeypatch.setenv("AGENT_RUNTIME_ENVIRONMENT", "development")
 
 
 @pytest.fixture
