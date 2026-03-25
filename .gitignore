@@ -43,7 +43,17 @@ mlruns/
 # Research / paper artefacts (local LaTeX workspace)
 src/research/docs/research/
 docs/papers/
-docs/generated/
+# docs/generated/ source is tracked; only exclude build outputs
+docs/generated/dist/
+docs/generated/*.aux
+docs/generated/*.bbl
+docs/generated/*.blg
+docs/generated/*.fdb_latexmk
+docs/generated/*.fls
+docs/generated/*.log
+docs/generated/*.out
+docs/generated/*.toc
+docs/generated/*.synctex.gz
 
 # Autoresearch experiment logs & scratch files
 autoresearch/run_perf_*.log

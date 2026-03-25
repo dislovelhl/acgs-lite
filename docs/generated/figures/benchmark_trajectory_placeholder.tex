@@ -1,0 +1,30 @@
+\begin{tikzpicture}[
+  font=\small,
+  x=0.95cm,
+  y=0.9cm,
+  axis/.style={thick,-{Latex[length=2mm]}},
+  kept/.style={blue, thick},
+  outlier/.style={red, thick, dashed},
+  note/.style={align=left}
+]
+
+% axes
+\draw[axis] (0,0) -- (8.4,0) node[below right] {experiment progression};
+\draw[axis] (0,0) -- (0,4.5) node[above left] {performance score / inverse latency};
+
+% repeated kept trend
+\draw[kept] (0.5,1.2) -- (1.4,1.8) -- (2.3,2.4) -- (3.2,2.9) -- (4.1,3.1) -- (5.0,3.35) -- (5.9,3.55) -- (6.8,3.62);
+\foreach \x/\y in {0.5/1.2,1.4/1.8,2.3/2.4,3.2/2.9,4.1/3.1,5.0/3.35,5.9/3.55,6.8/3.62}
+  \fill[blue] (\x,\y) circle (1.5pt);
+
+% best-observed point and rerun variance
+\draw[outlier] (6.8,3.62) -- (7.4,4.05);
+\fill[red] (7.4,4.05) circle (1.7pt);
+\draw[outlier] (7.4,4.05) -- (8.0,3.15);
+\fill[red] (8.0,3.15) circle (1.7pt);
+
+\node[note, anchor=west] at (4.5,1.0) {\textcolor{blue}{Solid line:} repeated kept runs\\cluster in low-$\mu$s regime};
+\node[note, anchor=west] at (4.5,0.2) {\textcolor{red}{Dashed line:} best-observed run\\and rerun variance};
+\node[anchor=south] at (7.4,4.05) {\scriptsize exp254};
+
+\end{tikzpicture}

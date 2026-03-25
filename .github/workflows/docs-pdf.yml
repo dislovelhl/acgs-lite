@@ -23,17 +23,15 @@ jobs:
       matrix:
         mode: [generic, neurips, icml]
         submission: [review]
-    defaults:
-      run:
-        working-directory: docs/generated
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install LaTeX toolchain
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
             latexmk \
             lmodern \
             texlive-fonts-recommended \
@@ -43,9 +41,11 @@ jobs:
             texlive-pictures
 
       - name: Show detected tools
+        working-directory: docs/generated
         run: make check-tools
 
       - name: Build ${{ matrix.mode }} (${{ matrix.submission }}) PDF
+        working-directory: docs/generated
         run: make paper MODE=${{ matrix.mode }} SUBMISSION=${{ matrix.submission }}
 
       - name: Upload PDF artifact
