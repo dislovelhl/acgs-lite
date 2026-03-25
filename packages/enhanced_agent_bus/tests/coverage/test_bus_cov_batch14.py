@@ -8,7 +8,7 @@ Target modules (ranked 5-9 by missing lines):
 4. saga_persistence/postgres/repository.py (113 missing, 20.4%)
 5. langgraph_orchestration/constitutional_checkpoints.py (112 missing, 30.4%)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -17,7 +17,7 @@ import json
 import time
 import uuid
 from datetime import UTC, datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, PropertyMock, patch
 
 import pytest
 
@@ -694,7 +694,7 @@ class TestDefaultDeliberationActivities:
         assert isinstance(notification_id, str)
 
     @pytest.mark.asyncio
-    async def test_record_audit_trail_fallback(self):
+    async def test_record_audit_trail_fallback_when_client_unavailable(self):
         from enhanced_agent_bus.deliberation_layer.workflows.deliberation_workflow import (
             DefaultDeliberationActivities,
         )
@@ -702,11 +702,24 @@ class TestDefaultDeliberationActivities:
         mock_validator = AsyncMock()
         mock_validator.validate_hash = AsyncMock(return_value=(True, ""))
         activities = DefaultDeliberationActivities(hash_validator=mock_validator)
-        audit_hash = await activities.record_audit_trail(
-            "msg-1", {"status": "approved"}
-        )
+        with patch.object(activities, "_create_audit_client", return_value=None):
+            audit_hash = await activities.record_audit_trail(
+                "msg-1", {"status": "approved"}
+            )
         assert isinstance(audit_hash, str)
         assert len(audit_hash) == 16
+
+    @pytest.mark.asyncio
+    async def test_record_audit_trail_raises_on_runtime_failure(self):
+        from enhanced_agent_bus.deliberation_layer.workflows.deliberation_workflow import (
+            DefaultDeliberationActivities,
+        )
+
+        activities = DefaultDeliberationActivities()
+        activities._audit_client = Mock(record=AsyncMock(side_effect=RuntimeError("audit failed")))
+
+        with pytest.raises(RuntimeError, match="audit failed"):
+            await activities.record_audit_trail("msg-1", {"status": "approved"})
 
     @pytest.mark.asyncio
     async def test_deliver_message(self):
@@ -1603,7 +1616,7 @@ class TestPostgresSagaStateRepository:
             "total_duration_ms": 100.0,
             "failure_reason": None,
             "timeout_ms": 5000,
-            "constitutional_hash": "cdd01ef066bc6cf2",
+            "constitutional_hash": "608508a9bd224290",
         }
         saga = repo._row_to_saga(row)
         assert saga.saga_id == str(saga_id)
@@ -1630,7 +1643,7 @@ class TestPostgresSagaStateRepository:
             "created_at": now,
             "is_constitutional": True,
             "metadata": "{}",
-            "constitutional_hash": "cdd01ef066bc6cf2",
+            "constitutional_hash": "608508a9bd224290",
         }
         cp = repo._row_to_checkpoint(row)
         assert cp.checkpoint_id == str(cp_id)

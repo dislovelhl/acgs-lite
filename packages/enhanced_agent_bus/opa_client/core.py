@@ -4,7 +4,7 @@
 # the composition statically.
 """
 ACGS-2 OPA Client — Core
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides the core OPAClient class with initialization, evaluation,
 constitutional validation, authorization, bundle management, and
@@ -18,24 +18,17 @@ import os
 import re
 import ssl
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 
 import aiofiles
 import httpx
-from httpx import (
-    ConnectError as HTTPConnectError,
-)
-from httpx import (
-    ConnectTimeout as HTTPConnectTimeout,
-)
-from httpx import (
-    HTTPStatusError,
-)
-from httpx import (
-    TimeoutException as HTTPTimeoutException,
-)
+from httpx import ConnectError as HTTPConnectError
+from httpx import ConnectTimeout as HTTPConnectTimeout
+from httpx import HTTPStatusError
+from httpx import TimeoutException as HTTPTimeoutException
 
 try:
     from src.core.shared.errors.exceptions import ConfigurationError
@@ -208,6 +201,7 @@ class OPAClientCore:
         self._http_client: httpx.AsyncClient | None = None
         self._redis_client: object | None = None
         self._embedded_opa: object | None = None
+        self._embedded_executor: ThreadPoolExecutor | None = None
         self._memory_cache: dict[str, JSONDict] = {}
         self._memory_cache_timestamps: dict[str, float] = {}
         self._memory_cache_maxsize: int = 10000  # Prevent OOM
@@ -331,10 +325,15 @@ class OPAClientCore:
         try:
             opa_cls = _get_embedded_opa_class()
             self._embedded_opa = opa_cls()
+            self._embedded_executor = ThreadPoolExecutor(
+                max_workers=1,
+                thread_name_prefix="opa-embedded",
+            )
             logger.info("Embedded OPA initialized successfully")
         except (RuntimeError, OSError) as e:
             logger.error("Failed to initialize embedded OPA: %s", e)
             self.mode = "http"
+            self._shutdown_embedded_executor()
             await self._ensure_http_client()
 
     async def close(self) -> None:
@@ -360,8 +359,25 @@ class OPAClientCore:
             self._redis_client = None
 
         self._embedded_opa = None
+        self._shutdown_embedded_executor()
         self._memory_cache.clear()
         self._memory_cache_timestamps.clear()
+
+    def _get_embedded_executor(self) -> ThreadPoolExecutor:
+        """Return a dedicated executor for embedded OPA evaluations."""
+        if self._embedded_executor is None:
+            self._embedded_executor = ThreadPoolExecutor(
+                max_workers=1,
+                thread_name_prefix="opa-embedded",
+            )
+        return self._embedded_executor
+
+    def _shutdown_embedded_executor(self) -> None:
+        """Tear down the dedicated embedded OPA executor."""
+        if self._embedded_executor is None:
+            return
+        self._embedded_executor.shutdown(wait=False, cancel_futures=True)
+        self._embedded_executor = None
 
     async def _dispatch_evaluation(self, input_data: JSONDict, policy_path: str) -> JSONDict:
         """Route evaluation to the appropriate backend based on *self.mode*.
@@ -589,8 +605,12 @@ class OPAClientCore:
 
         try:
             loop = asyncio.get_running_loop()
+            executor = self._get_embedded_executor()
             opa_result = await loop.run_in_executor(
-                None, self._embedded_opa.evaluate, policy_path, input_data
+                executor,
+                self._embedded_opa.evaluate,
+                policy_path,
+                input_data,
             )
 
             return self._format_evaluation_result(opa_result, "embedded", policy_path)
@@ -965,7 +985,7 @@ class OPAClientCore:
 class OPAClient(OPAClientCore, OPAClientCacheMixin, OPAClientHealthMixin):
     """Fully-composed OPA client with caching and health monitoring.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Combines:
     - OPAClientCore: evaluation, authorization, bundle management

@@ -1,7 +1,7 @@
 """
 Module.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from unittest.mock import AsyncMock, Mock, patch
@@ -50,6 +50,50 @@ class TestDeliberationWorkflowOptimized:
             assert len(votes) == 1
             assert votes[0].agent_id == "agent1"
             assert votes[0].decision == "approve"
+
+    async def test_record_audit_trail_raises_when_audit_client_errors(self, activities):
+        """Audit trail recording should surface durable-write failures."""
+        audit_client = Mock()
+        audit_client.record = AsyncMock(side_effect=RuntimeError("audit unavailable"))
+        activities._audit_client = audit_client
+
+        with pytest.raises(RuntimeError, match="audit unavailable"):
+            await activities.record_audit_trail(
+                "msg1",
+                {"status": "approved", "score": 0.9},
+            )
+
+        audit_client.record.assert_awaited_once()
+
+    async def test_record_audit_trail_falls_back_when_audit_client_unavailable(self, activities):
+        """Missing audit client configuration may still use the deterministic fallback hash."""
+        with patch.object(activities, "_create_audit_client", return_value=None):
+            audit_hash = await activities.record_audit_trail(
+                "msg1",
+                {"status": "approved", "score": 0.9},
+            )
+
+        assert isinstance(audit_hash, str)
+        assert len(audit_hash) == 16
+
+    async def test_record_audit_trail_lazily_creates_default_audit_client(self, activities):
+        """Default activities should lazily create the default audit client."""
+        record = AsyncMock(return_value="audit-hash-1234")
+        mock_client = Mock()
+        mock_client.record = record
+
+        with patch(
+            "enhanced_agent_bus.audit_client.AuditClient",
+            return_value=mock_client,
+        ) as audit_client_cls:
+            audit_hash = await activities.record_audit_trail(
+                "msg1",
+                {"status": "approved", "score": 0.9},
+            )
+
+        assert audit_hash == "audit-hash-1234"
+        audit_client_cls.assert_called_once_with()
+        record.assert_awaited_once()
 
     def test_workflow_determination_logic(self):
         workflow = DeliberationWorkflow("wf1")

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Coverage Batch 33e
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Coverage tests for:
 - enhanced_agent_bus.llm_adapters.azure_openai_adapter (85.3% -> target 95%+)
@@ -18,7 +18,7 @@ from collections.abc import AsyncIterator, Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 
@@ -708,8 +708,8 @@ class TestDefaultDeliberationActivities:
             assert result["allowed"] is True
             assert result["policy_version"] == "fallback"
 
-    async def test_record_audit_trail_fallback(self):
-        """Lines 358-367: record audit trail fallback."""
+    async def test_record_audit_trail_fallback_when_client_unavailable(self):
+        """Lines 358-367: record audit trail fallback when client is unavailable."""
         from enhanced_agent_bus.deliberation_layer.workflows.deliberation_workflow import (
             DefaultDeliberationActivities,
         )
@@ -717,12 +717,25 @@ class TestDefaultDeliberationActivities:
         activities = DefaultDeliberationActivities()
 
         # Exercise the fallback path (ImportError on audit_client)
-        result = await activities.record_audit_trail(
-            "msg-1", {"status": "approved", "score": 0.9}
-        )
+        with patch.object(activities, "_create_audit_client", return_value=None):
+            result = await activities.record_audit_trail(
+                "msg-1", {"status": "approved", "score": 0.9}
+            )
         # Should return a hash string
         assert isinstance(result, str)
         assert len(result) == 16
+
+    async def test_record_audit_trail_raises_on_audit_failure(self):
+        """Runtime failures from the audit backend must surface to callers."""
+        from enhanced_agent_bus.deliberation_layer.workflows.deliberation_workflow import (
+            DefaultDeliberationActivities,
+        )
+
+        activities = DefaultDeliberationActivities()
+        activities._audit_client = Mock(record=AsyncMock(side_effect=RuntimeError("audit failed")))
+
+        with pytest.raises(RuntimeError, match="audit failed"):
+            await activities.record_audit_trail("msg-1", {"status": "approved", "score": 0.9})
 
     async def test_collect_votes_no_election_store(self):
         """Lines 280-281: election store not available."""
