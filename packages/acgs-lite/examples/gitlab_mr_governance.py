@@ -1,4 +1,4 @@
-"""GitLab MR Governance Demo — ACGS-Lite + GitLab AI Hackathon
+"""GitLab MR Governance Demo — ACGS + GitLab AI Hackathon
 
 Runs constitutional governance validation on a GitLab merge request:
   1. Loads governance rules from a YAML constitution
@@ -27,7 +27,7 @@ Usage:
     python gitlab_mr_governance.py --mr-iid 42 --dry-run
 
 Requirements:
-    pip install acgs-lite[gitlab]
+    pip install acgs[gitlab]
 """
 
 from __future__ import annotations
@@ -55,7 +55,7 @@ _DEFAULT_CONSTITUTION = str(Path(__file__).parent / "constitution.yaml")
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run ACGS-Lite constitutional governance on a GitLab merge request.",
+        description="Run ACGS constitutional governance on a GitLab merge request.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "Environment variable fallbacks:\n"
@@ -307,7 +307,7 @@ def main(argv: list[str] | None = None) -> int:
     else:
         logging.basicConfig(level=logging.WARNING)
 
-    print_header("ACGS-Lite GitLab MR Governance")
+    print_header("ACGS GitLab MR Governance")
 
     try:
         return asyncio.run(run_governance(args))

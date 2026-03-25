@@ -1,6 +1,6 @@
 """Tests for acgs_lite.constitution.policy_fuzzer module.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -56,7 +56,7 @@ class MockConstitution:
             MockRule(id="rule-2", keywords=["hack", "exploit"]),
             MockRule(id="rule-3", keywords=["kill", "terminate"]),
         ]
-        self.constitutional_hash = "cdd01ef066bc6cf2"
+        self.constitutional_hash = "608508a9bd224290"
 
     def validate(self, action: str, context: dict | None = None) -> MockResult:
         action_lower = action.lower()
@@ -281,7 +281,7 @@ class TestFuzzReport:
 
     def _make_report(self, cases=None, rule_coverage=None):
         return FuzzReport(
-            constitution_hash="cdd01ef066bc6cf2",
+            constitution_hash="608508a9bd224290",
             seed=42,
             n_cases=len(cases or []),
             started_at="2025-01-01T00:00:00Z",
@@ -329,13 +329,13 @@ class TestFuzzReport:
         report = self._make_report()
         summary = report.summary()
         assert "GovernancePolicyFuzzer Report" in summary
-        assert "cdd01ef066bc6cf2" in summary
+        assert "608508a9bd224290" in summary
         assert "42" in summary
 
     def test_to_dict(self):
         report = self._make_report()
         d = report.to_dict()
-        assert d["constitution_hash"] == "cdd01ef066bc6cf2"
+        assert d["constitution_hash"] == "608508a9bd224290"
         assert d["seed"] == 42
         assert d["bypass_count"] == 0
         assert isinstance(d["cases"], list)
@@ -412,7 +412,7 @@ class TestFuzzCampaign:
         assert isinstance(report, FuzzReport)
         assert report.n_cases == 20
         assert report.seed == 42
-        assert report.constitution_hash == "cdd01ef066bc6cf2"
+        assert report.constitution_hash == "608508a9bd224290"
         assert len(report.cases) == 20
 
     def test_fuzz_produces_rule_coverage(self):
@@ -461,7 +461,7 @@ class TestFuzzCampaign:
 
         class BrokenConstitution:
             rules = [MockRule(id="r1", keywords=["test"])]
-            constitutional_hash = "cdd01ef066bc6cf2"
+            constitutional_hash = "608508a9bd224290"
 
             def validate(self, action, context=None):
                 raise RuntimeError("boom")
@@ -479,7 +479,7 @@ class TestConstitutionHash:
     def test_hash_from_attribute(self):
         constitution = MockConstitution()
         h = GovernancePolicyFuzzer._constitution_hash(constitution)
-        assert h == "cdd01ef066bc6cf2"
+        assert h == "608508a9bd224290"
 
     def test_hash_none_returns_empty(self):
         """When constitutional_hash is None, returns empty string."""

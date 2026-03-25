@@ -4,7 +4,7 @@ Captures the complete governance state (constitution rules, metrics,
 session summaries, routing config) as a single immutable record for
 compliance archival, audit trails, and point-in-time governance review.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

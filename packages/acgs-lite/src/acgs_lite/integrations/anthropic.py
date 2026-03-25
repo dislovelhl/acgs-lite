@@ -13,7 +13,7 @@ Usage::
         messages=[{"role": "user", "content": "Hello!"}],
     )
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -276,7 +276,7 @@ class GovernedAnthropic:
         if not ANTHROPIC_AVAILABLE:
             raise ImportError(
                 "The 'anthropic' package is required. "
-                "Install with: pip install acgs-lite[anthropic]"
+                "Install with: pip install acgs[anthropic]"
             )
 
         self._client = Anthropic(

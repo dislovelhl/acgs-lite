@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 from unittest.mock import patch
 
@@ -267,6 +268,7 @@ class TestReportModule:
         return report.to_dict()
 
     def test_generate_markdown_report(self) -> None:
+        from acgs_lite import __constitutional_hash__, __version__
         from acgs_lite.report import generate_markdown_report
 
         data = self._make_report_data()
@@ -276,6 +278,8 @@ class TestReportModule:
         assert "Constitutional Hash" in md
         assert "Disclaimer" in md
         assert "Executive Summary" in md
+        assert f"ACGS v{__version__}" in md
+        assert __constitutional_hash__ in md
 
     def test_markdown_contains_framework_tables(self) -> None:
         from acgs_lite.report import generate_markdown_report
@@ -321,6 +325,18 @@ class TestReportModule:
         assert "75%" in bar
         assert "█" in bar
         assert "░" in bar
+
+
+class TestPackageMetadata:
+    """Tests for package metadata consistency."""
+
+    def test_runtime_version_matches_pyproject(self) -> None:
+        import acgs_lite
+
+        pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+        pyproject_data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+
+        assert acgs_lite.__version__ == pyproject_data["project"]["version"]
 
 
 # ---------------------------------------------------------------------------

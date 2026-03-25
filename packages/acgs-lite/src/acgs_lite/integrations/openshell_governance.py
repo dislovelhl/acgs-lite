@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 from uuid import uuid4
 
+from acgs_lite._meta import VERSION
 from acgs_lite.audit import AuditEntry, AuditLog
 from acgs_lite.constitution import Constitution
 from acgs_lite.constitution.quorum import GateState, QuorumManager
@@ -1007,7 +1008,7 @@ def create_openshell_governance_app(
             "Install with: pip install fastapi uvicorn"
         ) from e
 
-    app = FastAPI(title="acgs-openshell-governance", version="0.1.0")
+    app = FastAPI(title="acgs-openshell-governance", version=VERSION)
     app.include_router(
         create_openshell_governance_router(
             audit_log=audit_log,

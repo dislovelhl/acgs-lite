@@ -16,7 +16,7 @@ Usage::
     from acgs_lite.integrations.litellm import governed_completion
     response = governed_completion(model="gpt-4o", messages=[...])
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -95,7 +95,7 @@ class GovernedLiteLLM:
         strict: bool = True,
     ) -> None:
         if not LITELLM_AVAILABLE:
-            raise ImportError("litellm is required. Install with: pip install acgs-lite[litellm]")
+            raise ImportError("litellm is required. Install with: pip install acgs[litellm]")
         self.constitution = constitution or Constitution.default()
         self.audit_log = AuditLog()
         self.engine = GovernanceEngine(

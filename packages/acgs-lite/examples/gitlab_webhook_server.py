@@ -10,7 +10,7 @@ Endpoints:
     GET  /governance/summary - Active ruleset governance posture
 
 Setup:
-    pip install acgs-lite[gitlab] uvicorn starlette
+    pip install acgs[gitlab] uvicorn starlette
 
 Usage:
     # Minimal (uses default constitution and env vars for secrets):
@@ -44,7 +44,7 @@ Testing with ngrok (for GitLab.com webhooks):
     5. Open or update an MR -- the server will validate it and post
        governance comments automatically.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -187,7 +187,7 @@ def create_app(config: ServerConfig) -> Any:
         from acgs_lite.constitution import Constitution
         from acgs_lite.integrations.gitlab import GitLabGovernanceBot, GitLabWebhookHandler
     except ImportError:
-        logger.error("acgs-lite[gitlab] is required: pip install acgs-lite[gitlab]")
+        logger.error("acgs[gitlab] is required: pip install acgs[gitlab]")
         sys.exit(1)
 
     # --- Validate required config ---

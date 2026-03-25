@@ -13,7 +13,7 @@ Stage semantics:
 - **enforce**: New constitution is fully active for all agents.
 - **rollback**: Pipeline aborted; current constitution restored for all.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

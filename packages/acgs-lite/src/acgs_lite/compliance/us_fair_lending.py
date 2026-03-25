@@ -10,7 +10,7 @@ Reference: 15 U.S.C. 1691 (ECOA), 15 U.S.C. 1681 (FCRA),
 Regulation B (12 CFR 1002), Regulation V (12 CFR 1022).
 Enforced by CFPB, FTC, OCC, Federal Reserve, FDIC.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

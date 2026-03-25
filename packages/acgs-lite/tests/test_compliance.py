@@ -4,7 +4,7 @@ Covers all eight compliance frameworks, auto-population of acgs-lite
 features, the MultiFrameworkAssessor orchestrator, jurisdiction-based
 framework selection, cross-framework gap analysis, and compliance scoring.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

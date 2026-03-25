@@ -9,7 +9,7 @@ Classifies AI systems into one of four risk tiers:
 
 High-risk deadline: August 2, 2026. Systems must comply before this date.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Usage::
 

@@ -4,7 +4,7 @@
 
 **Constitutional governance infrastructure for AI agents. The missing safety layer between your LLM and production.**
 
-`ACGS 2.0.1` | `AGPL-3.0-or-later` | `up to 560ns P50 on benchmark Rust path` | `3,133 tests passing`
+`ACGS 2.4.0` | `AGPL-3.0-or-later` | `optional Rust fast path` | `pytest-backed verification`
 
 [![Demo Video](https://img.youtube.com/vi/do9BCPn29_Q/maxresdefault.jpg)](https://youtu.be/do9BCPn29_Q)
 
@@ -116,7 +116,7 @@ Cannot execute.  constitution        explicitly       boundary check.
 
 ## Deployment Without Provable Governance is Uninsurable
 
-**EU AI Act Takes Full Enforcement: August 2026**
+**EU AI Act High-Risk Provisions Take Full Enforcement: August 2, 2026**
 
 Fines up to **7% of Global Annual Revenue**.
 
@@ -209,21 +209,45 @@ agent = GovernedAgent(my_agent, constitution=constitution)
 result = agent.run("process this request")
 ```
 
-Ships with 11 out-of-the-box platform integrations:
+Ships with 11 integration surfaces for common agent runtimes and deployment paths:
 
 | Platform | Install | Status |
 |----------|---------|--------|
 | **Anthropic** | `acgs[anthropic]` | Production |
-| **MCP** | `acgs[mcp]` | Production |
-| **GitLab CI/CD** | Built-in | Production |
+| **MCP Server** | `acgs[mcp]` | Production |
+| **GitLab CI/CD** | `acgs[gitlab]` | Production |
 | OpenAI | `acgs[openai]` | Maintained |
+| xAI (OpenAI-compatible) | `acgs[openai]` | Experimental |
 | LangChain | `acgs[langchain]` | Maintained |
 | LiteLLM | `acgs[litellm]` | Maintained |
 | Google GenAI | `acgs[google]` | Experimental |
 | LlamaIndex | `acgs[llamaindex]` | Experimental |
 | AutoGen | `acgs[autogen]` | Experimental |
-| CrewAI | `acgs[crewai]` | Experimental |
 | A2A | `acgs[a2a]` | Experimental |
+
+Additional built-in surfaces include HTTP middleware (`acgs_lite.middleware`),
+the OpenShell governance API (`create_openshell_governance_app`), the Cloud
+Run webhook server (`acgs_lite.integrations.cloud_run_server`), and optional
+Cloud Logging export (`acgs[google-cloud]`).
+
+## CLI Surface
+
+`acgs` ships a package-local CLI for scaffolding, compliance scoring, report
+generation, policy lifecycle management, telemetry export, and license flows.
+
+```bash
+acgs init
+acgs assess --jurisdiction european_union --domain healthcare
+acgs report --markdown
+acgs eu-ai-act --domain healthcare
+acgs lint rules.yaml
+acgs test --fixtures tests.yaml
+acgs lifecycle summary
+acgs observe "approve deployment" --prometheus
+acgs activate ACGS-PRO-...
+acgs status
+acgs verify
+```
 
 ---
 
@@ -324,9 +348,10 @@ entries plus chain verification state.
 Stable import surface:
 
 ```python
-from acgs.openshell import (
+from acgs import (
     ActionEnvelope,
     JsonFileGovernanceStateBackend,
+    RedisGovernanceStateBackend,
     SQLiteGovernanceStateBackend,
     create_openshell_governance_app,
 )
@@ -342,6 +367,11 @@ app = create_openshell_governance_app(
 # Or:
 app = create_openshell_governance_app(
     state_backend=SQLiteGovernanceStateBackend("state/openshell-governance.db")
+)
+
+# Or:
+app = create_openshell_governance_app(
+    state_backend=RedisGovernanceStateBackend(redis_client)
 )
 ```
 

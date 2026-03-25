@@ -3,7 +3,7 @@
 The engine evaluates actions against constitutional rules and produces
 structured validation results with full audit trails.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

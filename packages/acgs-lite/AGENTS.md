@@ -1,6 +1,6 @@
-# ACGS-Lite
+# ACGS
 
-> Scope: `packages/acgs-lite/` — standalone governance library published as `acgs-lite`.
+> Scope: `packages/acgs-lite/` — standalone governance library published on PyPI as `acgs`, with `acgs_lite` retained as the compatibility import namespace.
 
 ## Planning
 
@@ -19,7 +19,7 @@ acgs-lite/
 │   ├── maci.py              # MACI role enforcement
 │   ├── matcher.py           # Rule matching hot path
 │   ├── audit.py             # Tamper-evident audit trail
-│   ├── cli.py               # `acgs-lite` CLI entrypoint
+│   ├── cli.py               # `acgs` CLI entrypoint (`acgs-lite` alias also supported)
 │   └── server.py            # FastAPI wrapper
 ├── src/eu_ai_act_tool/      # EU AI Act assessment tool
 ├── rust/                    # Optional Rust workspace (`core/`, `pyo3/`, `wasm/`)
@@ -47,7 +47,7 @@ acgs-lite/
 - Package runtime target is Python 3.10+.
 - Keep integrations optional through extras and lazy imports.
 - Keep Python fallbacks when Rust acceleration is optional.
-- Constitutional hash `cdd01ef066bc6cf2` is part of validation flows.
+- Constitutional hash `608508a9bd224290` is part of validation flows.
 - Use `_make_*` helpers in tests for fixture creation when available.
 
 ## Anti-Patterns
@@ -63,7 +63,7 @@ acgs-lite/
 make test-lite
 python -m pytest packages/acgs-lite/tests/ -v --import-mode=importlib
 cd packages/acgs-lite/rust && maturin develop --release
-acgs-lite status
+acgs status
 ```
 
 If you touch the Rust-backed validation path, rebuild with `maturin develop --release` and then

@@ -1431,6 +1431,7 @@ class Constitution(BaseModel):
 
         b = ConstitutionBuilder(self.name, version=self.version, description=self.description)
         b._rules = list(self.rules)
+        b._rule_ids = {rule.id for rule in self.rules}
         b._metadata = dict(self.metadata)
         return b
 

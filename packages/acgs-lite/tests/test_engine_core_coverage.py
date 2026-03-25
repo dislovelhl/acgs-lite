@@ -1,6 +1,6 @@
 """Tests for acgs_lite.engine.core — targeting missed lines for coverage boost.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -117,7 +117,7 @@ class TestValidationResult:
     def test_to_dict(self):
         result = ValidationResult(
             valid=True,
-            constitutional_hash="cdd01ef066bc6cf2",
+            constitutional_hash="608508a9bd224290",
             violations=[],
             rules_checked=5,
             latency_ms=1.23,
@@ -132,7 +132,7 @@ class TestValidationResult:
         v = Violation("R1", "rule text", Severity.HIGH, "matched", "cat")
         result = ValidationResult(
             valid=False,
-            constitutional_hash="cdd01ef066bc6cf2",
+            constitutional_hash="608508a9bd224290",
             violations=[v],
             rules_checked=3,
         )
@@ -146,7 +146,7 @@ class TestValidationResult:
         v_warn = Violation("R2", "text", Severity.LOW, "m", "c")
         result = ValidationResult(
             valid=False,
-            constitutional_hash="cdd01ef066bc6cf2",
+            constitutional_hash="608508a9bd224290",
             violations=[v_block, v_warn],
             rules_checked=2,
         )
@@ -158,7 +158,7 @@ class TestValidationResult:
         v_warn = Violation("R2", "text", Severity.LOW, "m", "c")
         result = ValidationResult(
             valid=False,
-            constitutional_hash="cdd01ef066bc6cf2",
+            constitutional_hash="608508a9bd224290",
             violations=[v_block, v_warn],
             rules_checked=2,
         )

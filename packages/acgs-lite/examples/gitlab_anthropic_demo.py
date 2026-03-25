@@ -26,7 +26,7 @@ Usage:
         --project-id 12345 \\
         --gitlab-token glpat-...
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -761,7 +761,7 @@ def _run_self_governance_live(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="ACGS-Lite: GitLab + Anthropic Governance Demo (Hackathon Bonus Track)",
+        description="ACGS: GitLab + Anthropic Governance Demo (Hackathon Bonus Track)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=textwrap.dedent("""\
             Examples:
@@ -814,7 +814,7 @@ def main() -> None:
     simulation = not has_anthropic
 
     # -- Banner --
-    _banner("ACGS-Lite: Anthropic + GitLab Governance Demo")
+    _banner("ACGS: Anthropic + GitLab Governance Demo")
     print()
     if simulation:
         _info("Running in SIMULATION mode (no API keys provided)")

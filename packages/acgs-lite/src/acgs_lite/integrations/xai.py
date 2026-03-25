@@ -13,7 +13,7 @@ Usage::
         messages=[{"role": "user", "content": "Hello!"}],
     )
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -75,7 +75,7 @@ class GovernedXAI:
         if not OPENAI_AVAILABLE:
             raise ImportError(
                 "The 'openai' package is required. "
-                "Install with: pip install acgs-lite[openai]"
+                "Install with: pip install acgs[openai]"
             )
 
         self._client = OpenAI(

@@ -13,7 +13,7 @@ Usage::
     governed_client = GovernedModelClient(base_client)
     agent = AssistantAgent("assistant", model_client=governed_client)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -104,7 +104,7 @@ class GovernedModelClient:
     ) -> None:
         if not AUTOGEN_AVAILABLE:
             raise ImportError(
-                "autogen-core is required. Install with: pip install acgs-lite[autogen]"
+                "autogen-core is required. Install with: pip install acgs[autogen]"
             )
 
         self._client = client

@@ -21,7 +21,7 @@ Usage::
 
     exporter = GovernanceObservabilityExporter(
         service_name="my-governance",
-        constitution_hash="cdd01ef066bc6cf2",
+        constitution_hash="608508a9bd224290",
     )
 
     exporter.record_decision(action="deploy", outcome="allow", latency_ms=0.56)

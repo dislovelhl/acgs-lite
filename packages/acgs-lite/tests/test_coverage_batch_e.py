@@ -7,7 +7,7 @@ Targets missing lines in:
   - integrations/anthropic.py (54 missing lines at 54.2%): GovernedMessages,
     GovernedAnthropic, governance tools handling
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

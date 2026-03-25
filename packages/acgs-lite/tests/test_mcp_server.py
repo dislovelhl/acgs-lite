@@ -3,7 +3,7 @@
 Covers all 5 governance tools, error handling, edge cases,
 and ensures >90% coverage of mcp_server.py.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

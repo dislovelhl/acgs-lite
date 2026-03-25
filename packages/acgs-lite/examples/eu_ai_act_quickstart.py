@@ -8,7 +8,7 @@ Run:
 
 No external services required — all compliance infrastructure runs in-process.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -282,7 +282,7 @@ def main() -> None:
     print("  ✅ Risk classification per Article 6 + Annex III")
     print("  ✅ Conformity assessment checklist")
     print()
-    print("pip install acgs-lite   # Get started in 5 minutes")
+    print("pip install acgs   # Get started in 5 minutes")
 
 
 if __name__ == "__main__":

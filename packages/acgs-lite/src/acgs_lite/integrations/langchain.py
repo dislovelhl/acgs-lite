@@ -11,7 +11,7 @@ Usage::
     governed_llm = GovernanceRunnable.wrap(llm)
     result = governed_llm.invoke("Hello!")
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -69,7 +69,7 @@ class GovernanceRunnable:
     ) -> None:
         if not LANGCHAIN_AVAILABLE:
             raise ImportError(
-                "langchain-core is required. Install with: pip install acgs-lite[langchain]"
+                "langchain-core is required. Install with: pip install acgs[langchain]"
             )
 
         self._runnable = runnable

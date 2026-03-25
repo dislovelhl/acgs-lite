@@ -1,6 +1,6 @@
 """Tests for ConstitutionalAmendmentProtocol.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests the full amendment lifecycle: draft, propose, vote, ratify, enforce,
 withdraw, and MACI separation-of-powers enforcement.

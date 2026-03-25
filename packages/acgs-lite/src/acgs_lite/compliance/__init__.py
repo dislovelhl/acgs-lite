@@ -14,7 +14,7 @@ Provides compliance assessment against eight major regulatory frameworks:
 Each framework auto-populates checklist items that acgs-lite satisfies,
 computing coverage and gap analysis.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Usage::
 

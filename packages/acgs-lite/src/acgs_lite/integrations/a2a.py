@@ -21,7 +21,7 @@ Usage::
     client = A2AGovernedClient("http://governance-agent:9000")
     result = await client.validate("deploy to production")
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -58,7 +58,7 @@ class A2AGovernedClient:
         timeout: float = 30.0,
     ) -> None:
         if not HTTPX_AVAILABLE:
-            raise ImportError("httpx is required for A2A. Install with: pip install acgs-lite[a2a]")
+            raise ImportError("httpx is required for A2A. Install with: pip install acgs[a2a]")
         self.agent_url = agent_url.rstrip("/")
         self.timeout = timeout
 

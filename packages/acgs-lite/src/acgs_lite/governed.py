@@ -8,7 +8,7 @@
 This is the main user-facing API. Wrap any agent, function, or callable
 in governance with a single line of code.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

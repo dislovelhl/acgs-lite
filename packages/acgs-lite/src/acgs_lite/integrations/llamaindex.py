@@ -15,7 +15,7 @@ Usage::
     governed_chat = GovernedChatEngine(index.as_chat_engine())
     response = governed_chat.chat("Tell me about the policy")
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -81,7 +81,7 @@ class GovernedQueryEngine:
     ) -> None:
         if not LLAMAINDEX_AVAILABLE:
             raise ImportError(
-                "llama-index is required. Install with: pip install acgs-lite[llamaindex]"
+                "llama-index is required. Install with: pip install acgs[llamaindex]"
             )
         self._engine = engine
         self.constitution = constitution or Constitution.default()
@@ -168,7 +168,7 @@ class GovernedChatEngine:
     ) -> None:
         if not LLAMAINDEX_AVAILABLE:
             raise ImportError(
-                "llama-index is required. Install with: pip install acgs-lite[llamaindex]"
+                "llama-index is required. Install with: pip install acgs[llamaindex]"
             )
         self._engine = engine
         self.constitution = constitution or Constitution.default()

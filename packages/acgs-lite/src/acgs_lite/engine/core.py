@@ -8,7 +8,7 @@
 The engine evaluates actions against constitutional rules and produces
 structured validation results with full audit trails.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -18,6 +18,7 @@ import re
 import time
 from collections import defaultdict
 from collections.abc import Callable
+from contextlib import suppress
 from dataclasses import dataclass, field
 from typing import Any, NamedTuple
 
@@ -592,38 +593,77 @@ class GovernanceEngine(BatchValidationMixin):
                     "classify decisions as trade secrets",  # escalate (keyword only)
                     "bypass content filtering system",  # escalate (neg keyword)
                     "implement differential privacy",  # allow (pos-verb, no match)
-                    # exp104: prime Rust AC automaton for longer action strings (edge_cases_exa style)
-                    "AI coding agent executed terraform destroy on production infrastructure without human approval",
-                    "analyze production AI system resilience through comprehensive chaos engineering tests",
-                    "evaluate model performance metrics against fairness benchmarks for quarterly compliance report",
+                    # exp104: prime Rust AC automaton for longer action strings
+                    # (edge_cases_exa style).
+                    (
+                        "AI coding agent executed terraform destroy on production "
+                        "infrastructure without human approval"
+                    ),
+                    (
+                        "analyze production AI system resilience through comprehensive "
+                        "chaos engineering tests"
+                    ),
+                    (
+                        "evaluate model performance metrics against fairness benchmarks "
+                        "for quarterly compliance report"
+                    ),
                 )
                 # exp98: 3× iterations exceeds CPython 3.12 specialization threshold (~16 hits)
                 # for all bytecodes in the no-context hot path. Reduces first-call cold penalty.
                 for _ in range(3):
                     for _wa in _no_ctx_warmup:
-                        try:
+                        with suppress(ConstitutionalViolationError):
                             self.validate(_wa)
-                        except ConstitutionalViolationError:
-                            pass
                 # exp89: prime the context-rich (_has_gov_ctx) code path — validates
                 # CPython inline caches for the action_detail/description dict-lookup
                 # and the validate_hot() double-call branch. CPython 3.12 needs ~16 hits
                 # to fully specialize a branch. Run 24 context-rich warmup calls to ensure
                 # both deny (raises) and allow (returns pooled) branches are specialized.
                 _wctx_calls = (
-                    ("prepare analytics dashboard", {"action_detail": "export personal data without consent"}),
-                    ("update service configuration", {"action_description": "disable safety monitoring"}),
-                    ("run compliance check", {"action_description": "review safety controls for completeness"}),
-                    ("analyze feedback trends", {"action_detail": "configure workflow without appeal for denied customers"}),
-                    ("schedule model retraining", {"action_description": "hide AI involvement in customer credit denial"}),
-                    ("assess patient record handling controls for compliance gaps", {"action_description": "assess clinical workflow safeguards for improvement planning"}),
+                    (
+                        "prepare analytics dashboard",
+                        {"action_detail": "export personal data without consent"},
+                    ),
+                    (
+                        "update service configuration",
+                        {"action_description": "disable safety monitoring"},
+                    ),
+                    (
+                        "run compliance check",
+                        {
+                            "action_description": "review safety controls for completeness",
+                        },
+                    ),
+                    (
+                        "analyze feedback trends",
+                        {
+                            "action_detail": (
+                                "configure workflow without appeal for denied customers"
+                            )
+                        },
+                    ),
+                    (
+                        "schedule model retraining",
+                        {
+                            "action_description": (
+                                "hide AI involvement in customer credit denial"
+                            )
+                        },
+                    ),
+                    (
+                        "assess patient record handling controls for compliance gaps",
+                        {
+                            "action_description": (
+                                "assess clinical workflow safeguards for improvement "
+                                "planning"
+                            )
+                        },
+                    ),
                 )
                 for _ in range(4):  # 4 × 6 = 24 ctx calls — exceeds specialization threshold
                     for _wctx_a, _wctx_c in _wctx_calls:
-                        try:
+                        with suppress(ConstitutionalViolationError):
                             self.validate(_wctx_a, context=_wctx_c)
-                        except ConstitutionalViolationError:
-                            pass
                 # exp147: prime the metadata-only context path (edge_cases_exa pattern).
                 # Benchmark passes context={"source": ..., "rule": ...} for 75 scenarios —
                 # bool(context)=True but no governance keys → _has_gov_ctx=False.
@@ -632,19 +672,28 @@ class GovernanceEngine(BatchValidationMixin):
                 _meta_ctx = {"source": "autoresearch", "rule": "SAFETY-003"}
                 _empty_ctx2: dict[str, Any] = {}
                 _meta_warmup = (
-                    ("AI coding agent executed terraform destroy on production infrastructure without human approval", _meta_ctx),
-                    ("autonomous AI agent deleted production environment without human oversight", _meta_ctx),
-                    ("run clinical decision support safety audit on cardiology model", _meta_ctx),
+                    (
+                        "AI coding agent executed terraform destroy on production "
+                        "infrastructure without human approval",
+                        _meta_ctx,
+                    ),
+                    (
+                        "autonomous AI agent deleted production environment without "
+                        "human oversight",
+                        _meta_ctx,
+                    ),
+                    (
+                        "run clinical decision support safety audit on cardiology model",
+                        _meta_ctx,
+                    ),
                     ("audit employment screening model for demographic fairness", _empty_ctx2),
                     ("deploy hiring model without bias audit", _empty_ctx2),
                     ("implement bias audit framework for hiring models", _empty_ctx2),
                 )
                 for _ in range(3):
                     for _wm_a, _wm_c in _meta_warmup:
-                        try:
+                        with suppress(ConstitutionalViolationError):
                             self.validate(_wm_a, context=_wm_c)
-                        except ConstitutionalViolationError:
-                            pass
             finally:
                 self._hot = _real_hot
                 self.audit_log = _real_audit
