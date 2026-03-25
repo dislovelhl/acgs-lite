@@ -133,7 +133,7 @@ Role-based execution. Explicit permission sets. Self-validation prevention. Acti
 Immutable RuleSnapshot history. Inter-rule dependency graphs. OpenTelemetry metrics export.
 
 - SHA-256 chain-verified audit trail
-- Constitutional hash: `cdd01ef066bc6cf2`
+- Constitutional hash: `608508a9bd224290`
 - Governance metrics collector for Prometheus/OpenTelemetry
 
 ---
@@ -221,6 +221,95 @@ app.wsgi_app = GovernanceWSGIMiddleware(
 
 Both middleware variants restore engine strictness after non-blocking validation
 paths, so response/request checks do not leak validation mode across requests.
+
+---
+
+## OpenShell Governance API
+
+`acgs-lite` also exposes a stable FastAPI surface for the
+`OpenClaw + OpenShell + ACGS` integration model. This is intended for PoC work
+where OpenClaw proposes actions, ACGS makes the governance decision, and
+OpenShell enforces the execution boundary.
+
+Run it with `uvicorn`:
+
+```bash
+uvicorn "acgs_lite.server:create_governance_app" --factory --host 0.0.0.0 --port 8000
+```
+
+The app exposes both the original validation API and the OpenShell
+governance routes:
+
+- `POST /validate`
+- `GET /stats`
+- `POST /governance/evaluate-action`
+- `POST /governance/submit-for-approval`
+- `POST /governance/review-approval`
+- `POST /governance/record-outcome`
+- `GET /governance/audit-log`
+
+Minimal example:
+
+```bash
+curl -X POST http://127.0.0.1:8000/governance/evaluate-action \
+  -H "content-type: application/json" \
+  -d '{
+    "action_type": "github.write",
+    "operation": "write",
+    "risk_level": "high",
+    "actor": {
+      "actor_id": "agent/openclaw-primary",
+      "role": "proposer",
+      "sandbox_id": "sandbox-demo"
+    },
+    "resource": {
+      "uri": "github://repo/org/repo/issues",
+      "kind": "github_repo"
+    },
+    "context": {
+      "request_id": "req_123",
+      "session_id": "sess_456",
+      "environment": "prod"
+    },
+    "requirements": {
+      "requires_network": true,
+      "requires_secret": true,
+      "mutates_state": true
+    },
+    "payload": {
+      "payload_hash": "sha256:abcd1234",
+      "summary": "Create a GitHub issue for follow-up."
+    }
+  }'
+```
+
+`POST /governance/record-outcome` writes into the package's real
+tamper-evident `AuditLog`, and `GET /governance/audit-log` returns the current
+entries plus chain verification state.
+
+Stable import surface:
+
+```python
+from acgs.openshell import (
+    ActionEnvelope,
+    JsonFileGovernanceStateBackend,
+    SQLiteGovernanceStateBackend,
+    create_openshell_governance_app,
+)
+```
+
+Pluggable persistence backends share a common state-storage protocol:
+
+```python
+app = create_openshell_governance_app(
+    state_backend=JsonFileGovernanceStateBackend("state/openshell-governance.json")
+)
+
+# Or:
+app = create_openshell_governance_app(
+    state_backend=SQLiteGovernanceStateBackend("state/openshell-governance.db")
+)
+```
 
 ---
 
@@ -340,4 +429,4 @@ See [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) for details and FAQ.
 
 **[PyPI](https://pypi.org/project/acgs/) | [GitHub](https://github.com/acgs2_admin/acgs) | [Website](https://acgs.ai)**
 
-*Constitutional Hash: cdd01ef066bc6cf2*
+*Constitutional Hash: 608508a9bd224290*

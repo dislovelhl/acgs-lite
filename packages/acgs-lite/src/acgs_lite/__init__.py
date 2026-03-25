@@ -4,7 +4,7 @@ Copyright (C) 2024-2026 ACGS Contributors
 Licensed under AGPL-3.0-or-later. See LICENSE for details.
 Commercial license available at https://acgs.ai for proprietary use.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Usage::
 
@@ -34,6 +34,42 @@ from acgs_lite.errors import (
 from acgs_lite.governed import GovernedAgent, GovernedCallable
 from acgs_lite.licensing import LicenseInfo, LicenseManager, Tier
 from acgs_lite.maci import MACIEnforcer, MACIRole
+from acgs_lite.openshell import (
+    ActionContext,
+    ActionEnvelope,
+    ActionPayloadSummary,
+    ActionRequirements,
+    ActionType,
+    ActorRef,
+    ActorRole,
+    ApprovalReviewRequest,
+    ApprovalReviewResponse,
+    ApprovalSubmission,
+    AuditEvent,
+    AuditEventType,
+    ComplianceResult,
+    ComplianceStatus,
+    DecisionType,
+    ExecutionOutcome,
+    ExternalRef,
+    GovernanceStateChecksumError,
+    GovernanceDecision,
+    GovernanceStateBackend,
+    GovernanceStateError,
+    GovernanceStateMigrationError,
+    GovernanceStateObservabilityHook,
+    GovernanceStateVersionError,
+    InMemoryGovernanceStateBackend,
+    JsonFileGovernanceStateBackend,
+    OperationType,
+    OutcomeStatus,
+    RedisGovernanceStateBackend,
+    ResourceRef,
+    RiskLevel,
+    SQLiteGovernanceStateBackend,
+    create_openshell_governance_app,
+    create_openshell_governance_router,
+)
 
 __version__ = "2.0.1"
 
@@ -55,7 +91,7 @@ def set_license(key: str) -> LicenseInfo:
     return LicenseManager().set_license(key)
 
 
-__constitutional_hash__ = "cdd01ef066bc6cf2"
+__constitutional_hash__ = "608508a9bd224290"
 
 __all__ = [
     # Core
@@ -79,6 +115,41 @@ __all__ = [
     # MACI
     "MACIRole",
     "MACIEnforcer",
+    # OpenShell governance integration
+    "ActionContext",
+    "ActionEnvelope",
+    "ActionPayloadSummary",
+    "ActionRequirements",
+    "ActionType",
+    "ActorRef",
+    "ActorRole",
+    "ApprovalReviewRequest",
+    "ApprovalReviewResponse",
+    "ApprovalSubmission",
+    "AuditEvent",
+    "AuditEventType",
+    "ComplianceResult",
+    "ComplianceStatus",
+    "DecisionType",
+    "ExecutionOutcome",
+    "ExternalRef",
+    "GovernanceStateChecksumError",
+    "GovernanceDecision",
+    "GovernanceStateBackend",
+    "GovernanceStateError",
+    "GovernanceStateMigrationError",
+    "GovernanceStateObservabilityHook",
+    "GovernanceStateVersionError",
+    "InMemoryGovernanceStateBackend",
+    "JsonFileGovernanceStateBackend",
+    "OperationType",
+    "OutcomeStatus",
+    "RedisGovernanceStateBackend",
+    "ResourceRef",
+    "RiskLevel",
+    "SQLiteGovernanceStateBackend",
+    "create_openshell_governance_app",
+    "create_openshell_governance_router",
     # Errors
     "ConstitutionalViolationError",
     "GovernanceError",
