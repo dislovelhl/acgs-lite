@@ -8,11 +8,45 @@
 
 [![Demo Video](https://img.youtube.com/vi/do9BCPn29_Q/maxresdefault.jpg)](https://youtu.be/do9BCPn29_Q)
 
+> **Hackathon fast path:** If you're here for the GitLab AI Hackathon demo, start with **Constitutional Sentinel** — an ACGS-powered GitLab merge request governance agent that reviews AI-generated code, posts inline violations, and blocks unsafe merges. See `hackathon/devpost-submission.md`, `hackathon/demo-video-script.md`, `hackathon/constitution.yaml`, and the demo MR: <https://gitlab.com/martin664/constitutional-sentinel-demo/-/merge_requests/1>.
+>
 > **Note:** Performance numbers are from the local benchmark suite (`make bench`) and the fastest figures refer to the optional Rust/PyO3 hot path under benchmark conditions. Python-only and mixed integration paths will be slower. The benchmark target runs focused `pytest-benchmark` microbenchmarks for engine construction and steady-state validation. Run benchmarks on your own hardware before quoting exact latency. The import path is `from acgs import ...` (preferred) or `from acgs_lite import ...` (legacy, still supported).
 >
 > **License:** AGPL-3.0-or-later for open-source use. [Commercial license](COMMERCIAL_LICENSE.md) available for proprietary/SaaS use.
 >
 > **Naming:** `ACGS` is the product name, `acgs` is the PyPI package, and `acgs_lite` is the compatibility import namespace. See [../../docs/brand-architecture.md](../../docs/brand-architecture.md).
+
+---
+
+## GitLab AI Hackathon Demo: Constitutional Sentinel
+
+**Constitutional Sentinel** is the hackathon demo built on ACGS. It is an independent governance agent for GitLab merge requests that:
+
+- reacts to merge request events
+- validates AI-generated diffs against constitutional rules
+- posts inline comments on violating lines
+- generates a governance summary with a constitutional hash
+- blocks unsafe merges when violations are severe
+
+### Judge / reviewer quick links
+
+- Devpost draft: `hackathon/devpost-submission.md`
+- Demo script: `hackathon/demo-video-script.md`
+- Demo constitution: `hackathon/constitution.yaml`
+- CI example: `hackathon/.gitlab-ci.yml`
+- Demo MR: <https://gitlab.com/martin664/constitutional-sentinel-demo/-/merge_requests/1>
+
+### Why it matters
+
+AI coding agents can produce useful code quickly, but they do not inherently know your security, privacy, or compliance boundaries. Constitutional Sentinel inserts an independent validator into the GitLab workflow so unsafe changes are flagged before merge.
+
+### Demo architecture
+
+1. GitLab merge request event triggers Sentinel
+2. Sentinel fetches and validates the diff using ACGS rules
+3. Violations are posted back inline on the merge request
+4. A governance summary records risk, findings, and constitutional hash
+5. Human executor decides whether the merge proceeds
 
 ---
 
@@ -133,7 +167,7 @@ Role-based execution. Explicit permission sets. Self-validation prevention. Acti
 Immutable RuleSnapshot history. Inter-rule dependency graphs. OpenTelemetry metrics export.
 
 - SHA-256 chain-verified audit trail
-- Constitutional hash: `cdd01ef066bc6cf2`
+- Constitutional hash: `608508a9bd224290`
 - Governance metrics collector for Prometheus/OpenTelemetry
 
 ---
@@ -221,6 +255,95 @@ app.wsgi_app = GovernanceWSGIMiddleware(
 
 Both middleware variants restore engine strictness after non-blocking validation
 paths, so response/request checks do not leak validation mode across requests.
+
+---
+
+## OpenShell Governance API
+
+`acgs-lite` also exposes a stable FastAPI surface for the
+`OpenClaw + OpenShell + ACGS` integration model. This is intended for PoC work
+where OpenClaw proposes actions, ACGS makes the governance decision, and
+OpenShell enforces the execution boundary.
+
+Run it with `uvicorn`:
+
+```bash
+uvicorn "acgs_lite.server:create_governance_app" --factory --host 0.0.0.0 --port 8000
+```
+
+The app exposes both the original validation API and the OpenShell
+governance routes:
+
+- `POST /validate`
+- `GET /stats`
+- `POST /governance/evaluate-action`
+- `POST /governance/submit-for-approval`
+- `POST /governance/review-approval`
+- `POST /governance/record-outcome`
+- `GET /governance/audit-log`
+
+Minimal example:
+
+```bash
+curl -X POST http://127.0.0.1:8000/governance/evaluate-action \
+  -H "content-type: application/json" \
+  -d '{
+    "action_type": "github.write",
+    "operation": "write",
+    "risk_level": "high",
+    "actor": {
+      "actor_id": "agent/openclaw-primary",
+      "role": "proposer",
+      "sandbox_id": "sandbox-demo"
+    },
+    "resource": {
+      "uri": "github://repo/org/repo/issues",
+      "kind": "github_repo"
+    },
+    "context": {
+      "request_id": "req_123",
+      "session_id": "sess_456",
+      "environment": "prod"
+    },
+    "requirements": {
+      "requires_network": true,
+      "requires_secret": true,
+      "mutates_state": true
+    },
+    "payload": {
+      "payload_hash": "sha256:abcd1234",
+      "summary": "Create a GitHub issue for follow-up."
+    }
+  }'
+```
+
+`POST /governance/record-outcome` writes into the package's real
+tamper-evident `AuditLog`, and `GET /governance/audit-log` returns the current
+entries plus chain verification state.
+
+Stable import surface:
+
+```python
+from acgs.openshell import (
+    ActionEnvelope,
+    JsonFileGovernanceStateBackend,
+    SQLiteGovernanceStateBackend,
+    create_openshell_governance_app,
+)
+```
+
+Pluggable persistence backends share a common state-storage protocol:
+
+```python
+app = create_openshell_governance_app(
+    state_backend=JsonFileGovernanceStateBackend("state/openshell-governance.json")
+)
+
+# Or:
+app = create_openshell_governance_app(
+    state_backend=SQLiteGovernanceStateBackend("state/openshell-governance.db")
+)
+```
 
 ---
 
@@ -340,4 +463,4 @@ See [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) for details and FAQ.
 
 **[PyPI](https://pypi.org/project/acgs/) | [GitHub](https://github.com/acgs2_admin/acgs) | [Website](https://acgs.ai)**
 
-*Constitutional Hash: cdd01ef066bc6cf2*
+*Constitutional Hash: 608508a9bd224290*

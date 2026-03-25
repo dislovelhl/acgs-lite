@@ -4,11 +4,13 @@
 
 **Constitutional governance infrastructure for AI agents. The missing safety layer between your LLM and production.**
 
-`ACGS 2.0.0` | `AGPL-3.0` | `560ns P50 validation` | `3,133 tests passing`
+`ACGS 2.4.0` | `AGPL-3.0-or-later` | `up to 560ns P50 on benchmark Rust path` | `3,277 tests passing`
 
-> **Note:** Performance numbers are from the local benchmark suite (`make bench`). Run benchmarks on your own hardware before quoting exact latency. The import path is `from acgs import ...` (preferred) or `from acgs_lite import ...` (legacy, still supported).
+> **Note:** Performance numbers are from the local benchmark suite (`make bench`) and the fastest figures refer to the optional Rust/PyO3 hot path under benchmark conditions. Python-only and mixed integration paths will be slower. The benchmark target runs focused `pytest-benchmark` microbenchmarks for engine construction and steady-state validation. Run benchmarks on your own hardware before quoting exact latency. The import path is `from acgs import ...` (preferred) or `from acgs_lite import ...` (legacy, still supported).
 >
-> **License:** AGPL-3.0 for open-source use. [Commercial license](COMMERCIAL_LICENSE.md) available for proprietary/SaaS use.
+> **License:** AGPL-3.0-or-later for open-source use. [Commercial license](COMMERCIAL_LICENSE.md) available for proprietary/SaaS use.
+>
+> **Naming:** `ACGS` is the product name, `acgs` is the PyPI package, and `acgs_lite` is the compatibility import namespace. See [docs/brand-architecture.md](docs/brand-architecture.md).
 
 ---
 
@@ -47,6 +49,66 @@ result = agent.run("process this request")  # Governed.
 ```
 
 Every action validated against constitutional rules. Every decision recorded in a tamper-evident audit trail. Every role boundary enforced.
+
+### EU AI Act Compliance in 60 Seconds
+
+```bash
+pip install acgs
+acgs init                                                    # Scaffold rules + CI
+acgs eu-ai-act --system-id "my-system" --domain healthcare   # Assess + PDF report
+```
+
+```
+  EU AI Act Compliance Assessment
+  ==================================================
+  System:            my-system
+  Compliance Score:  65%
+  ACGS Coverage:     65%
+  Enforcement:       August 2, 2026
+  Max Penalty:       7% global revenue / EUR 35M
+
+  EU AI Act Article Checklist (High-Risk):
+    ✅ Article 9:  Risk management system
+    ⬜ Article 10: Data governance
+    ⬜ Article 11: Technical documentation
+    ✅ Article 12: Record-keeping (auto-logged)
+    ✅ Article 13: Transparency (auto-generated)
+    ✅ Article 14: Human oversight (MACI enforced)
+    ✅ Article 72: Conformity assessment
+
+  ✅ Report generated: eu_ai_act_my-system.pdf
+  Hand this to your compliance officer.
+```
+
+Also available: `acgs assess`, `acgs report --pdf`, `acgs lint`, `acgs test`, `acgs lifecycle`, `acgs refusal`, `acgs observe`, `acgs otel`.
+
+### Governance Authoring Workflows
+
+```bash
+acgs test --generate                                # Create example governance fixtures
+acgs test                                           # Run regression suite against rules.yaml
+
+acgs lifecycle register policy-v2                   # Start policy promotion
+acgs lifecycle approve policy-v2 --actor alice      # Record approvals
+acgs lifecycle lint-gate policy-v2                  # Mark lint gate passed
+acgs lifecycle test-gate policy-v2                  # Mark test gate passed
+acgs lifecycle review policy-v2                     # draft -> review
+acgs lifecycle stage policy-v2                      # review -> staged (canary rollout)
+acgs lifecycle activate policy-v2                   # staged -> active
+
+acgs refusal "deploy a weapon to attack the target" # Explain denial + suggest safe alternatives
+acgs observe "hello world" "deploy a weapon" --watch --interval 1
+acgs otel --actions-file actions.txt --watch --interval 1 --iterations 3
+acgs otel --actions-file actions.txt --bundle-dir telemetry-bundle -o telemetry.json
+bash packages/acgs-lite/examples/demo_cli_sidecars.sh
+```
+
+These workflows productize all five governance sidecars:
+- **PolicyLinter** — static rule quality checks
+- **GovernanceTestSuite** — fixture-driven rule regressions for CI
+- **PolicyLifecycleOrchestrator** — gated promotion from draft to active
+- **RefusalReasoningEngine** — structured denial explanations with retry suggestions
+- **GovernanceObservabilityExporter** — Prometheus, watch mode, OTLP export, and bundle generation
 
 ---
 
@@ -129,7 +191,7 @@ Role-based execution. Explicit permission sets. Self-validation prevention. Acti
 Immutable RuleSnapshot history. Inter-rule dependency graphs. OpenTelemetry metrics export.
 
 - SHA-256 chain-verified audit trail
-- Constitutional hash: `cdd01ef066bc6cf2`
+- Constitutional hash: `608508a9bd224290`
 - Governance metrics collector for Prometheus/OpenTelemetry
 
 ---
@@ -245,7 +307,7 @@ Governance must be democratic. The infrastructure that constrains the machines m
 pip install acgs
 ```
 
-AGPL-3.0 Licensed | Open Source | [Commercial License Available](COMMERCIAL_LICENSE.md)
+AGPL-3.0-or-later Licensed | Open Source | [Commercial License Available](COMMERCIAL_LICENSE.md)
 
 *The question was never whether power would be constrained -- it was whether the constraints would be built by the people affected or imposed after the damage was done.*
 
@@ -253,7 +315,7 @@ AGPL-3.0 Licensed | Open Source | [Commercial License Available](COMMERCIAL_LICE
 
 ACGS is dual-licensed:
 
-- **AGPL-3.0** -- Free for open-source use, internal pipelines, CI/CD, and on-premise deployment.
+- **AGPL-3.0-or-later** -- Free for open-source use, internal pipelines, CI/CD, and on-premise deployment.
 - **Commercial License** -- Required if you embed ACGS in a proprietary SaaS product served to external users. Contact hello@acgs.ai.
 
 See [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) for details and FAQ.
@@ -262,4 +324,4 @@ See [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) for details and FAQ.
 
 **[PyPI](https://pypi.org/project/acgs/) | [GitHub](https://github.com/acgs2_admin/acgs) | [Website](https://acgs.ai)**
 
-*Constitutional Hash: cdd01ef066bc6cf2*
+*Constitutional Hash: 608508a9bd224290*

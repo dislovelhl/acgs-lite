@@ -56,3 +56,8 @@ class TestGovernanceServer:
         stats = get_stats()
         assert stats["total_validations"] >= 2
         assert "constitutional_hash" in stats
+
+    def test_app_mounts_experimental_openshell_routes_by_default(self) -> None:
+        app = create_governance_app(Constitution.default())
+        evaluate = self._route_endpoint(app, "/governance/evaluate-action")
+        assert callable(evaluate)

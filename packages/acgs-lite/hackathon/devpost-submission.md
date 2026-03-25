@@ -11,106 +11,117 @@ Constitutional Sentinel
 
 ## Tagline
 
-Constitutional governance for AI agents — separation of powers, tamper-evident audit trails, and nanosecond-scale validation for every AI-generated merge request.
+An independent GitLab governance agent that reviews AI-generated merge requests, flags risky code inline, blocks unsafe merges, and leaves a tamper-evident audit trail.
 
 ## Inspiration
 
-AI coding assistants now generate a significant portion of new code. But they operate without awareness of compliance rules, security policies, or regulatory requirements. An AI agent can hardcode credentials, leak PII, or write destructive SQL — and if the only check is the developer who prompted it, violations slip through.
+AI coding assistants can generate useful code quickly, but they do not understand an organization’s security rules, compliance requirements, or separation-of-duties policies.
 
-We built the Constitutional Sentinel to solve this: an independent governance agent that enforces constitutional rules on every merge request, with cryptographic proof of which rules were applied.
+That creates a dangerous gap: an AI-generated merge request can hardcode credentials, expose PII, weaken CI controls, or introduce destructive production operations before anyone notices. In many teams, the same person who prompted the AI is also the first person reviewing the code.
+
+We built Constitutional Sentinel to add an independent governance layer to that workflow.
 
 ## What it does
 
-The Constitutional Sentinel is a GitLab Duo agent that validates every AI-generated merge request against a set of constitutional governance rules. It:
+Constitutional Sentinel is a GitLab merge request governance agent powered by ACGS-Lite. When a merge request is opened or updated, it:
 
-- **Validates every diff line** against 10+ constitutional rules covering credentials, PII, destructive SQL, CI pipeline integrity, and MACI separation of powers
-- **Posts inline violation comments** directly on the lines that violate rules — not just a summary, but precise locations
-- **Generates governance reports** with risk scores, violation counts, and tamper-evident constitutional hashes
-- **Blocks merges** when CRITICAL or HIGH violations are found, with remediation guidance
-- **Enforces MACI separation of powers** — the code author (Proposer) cannot approve their own merge request; the Sentinel (Validator) reviews independently; a human (Executor) performs the merge
-- **Maintains a cryptographic audit trail** — every validation result embeds a constitutional hash proving which exact rules were enforced
+- **Inspects the merge request diff automatically**
+- **Validates added lines against constitutional governance rules** for secrets, PII, destructive SQL, CI bypasses, and separation-of-powers violations
+- **Posts inline comments directly on violating lines** so developers can see exactly what needs to change
+- **Generates a governance summary** with risk score, violations found, and the constitutional hash of the active ruleset
+- **Blocks unsafe merges** when HIGH or CRITICAL violations are present
+- **Preserves a tamper-evident audit trail** so reviewers can prove which rules were applied to a specific decision
+
+This is not a chat assistant and not just a linter summary. It is an agent that reacts to GitLab events and takes governance action inside the merge request workflow.
 
 ## How we built it
 
-### Engine: ACGS-Lite
-The governance engine is built in Python with an optional Rust/PyO3 backend for performance-critical paths. The Rust backend achieves **560ns P50 per line** validation — governance completes before the GitLab page finishes loading.
+### Governance engine
+Constitutional Sentinel runs on **ACGS-Lite**, a Python governance engine with an optional Rust/PyO3 fast path for performance-sensitive validation.
 
-### Constitution Format
-Rules are defined in a portable YAML file (`constitution.yaml`). Organizations can define their own rules: HIPAA, SOC 2, PCI-DSS, internal security policies. Each rule has an ID, severity, category, keywords, and regex patterns.
+### Constitution format
+Rules live in a portable YAML constitution. Each rule includes:
+- rule ID
+- severity
+- category
+- keywords
+- optional regex patterns
 
-### GitLab Integration
-- **Webhook handler** receives MR events from GitLab
-- **Diff parser** extracts added lines from MR changes
-- **Governance bot** validates each line, posts inline comments, and generates summary reports
-- **CI pipeline job** can run the Sentinel as part of any `.gitlab-ci.yml`
+That makes the system adaptable to internal engineering policies as well as regulated environments.
 
-### Cloud Run Deployment
-The Sentinel runs as a stateless container on Google Cloud Run:
-- Auto-scales from 0 to handle MR bursts
-- Health endpoint returns constitutional hash and rules count
-- Governance summary endpoint provides compliance posture for dashboards
+### GitLab workflow integration
+We built the GitLab-facing layer to work with real merge request workflows:
+- **Webhook handler** for merge request events
+- **Diff extraction and per-line validation**
+- **Inline MR comments** for precise findings
+- **Governance summary report** posted back to GitLab
+- **CI/CD stage** that can fail the pipeline when violations are severe enough
 
-### MACI Architecture
-Minimum Authority Constitutional Independence — three strictly separated roles:
-- **Proposer**: AI agent (GitLab Duo) that writes code and opens MRs
-- **Validator**: Constitutional Sentinel that independently reviews for compliance
-- **Executor**: Human who decides whether to merge after governance clearance
+### Deployment
+The demo is packaged as a stateless container and deployed on **Google Cloud Run**, so it can scale to zero and still respond quickly to merge request events.
 
-No agent validates its own output. This is separation of powers applied to AI governance.
+### MACI separation of powers
+We use a strict three-role model for governance:
+- **Proposer** — the AI assistant that writes or suggests code
+- **Validator** — Constitutional Sentinel, which reviews independently
+- **Executor** — the human who decides whether to merge
+
+That means the system that proposes code is never the system that validates it.
 
 ## Challenges we ran into
 
-- **Balancing speed and accuracy**: The engine needs to validate entire diffs in milliseconds while maintaining zero false negatives for critical rules (credentials, PII). The Rust backend solved the speed problem; careful regex patterns solved accuracy.
-- **GitLab API integration**: Posting inline comments at the correct diff line positions required parsing the unified diff format and mapping back to file line numbers.
-- **Constitutional hash stability**: The hash must change when rules change but remain stable across identical constitutions. We compute it from sorted rule IDs + severities + texts.
+- **Precision vs. speed:** We needed the system to scan diffs quickly without missing critical issues like credentials or PII.
+- **Inline GitLab feedback:** Mapping findings back to the right diff location for comments required careful diff parsing.
+- **Stable constitutional hashing:** The active ruleset needed a reproducible fingerprint so governance decisions could be audited later.
+- **Making governance visible:** We wanted governance to feel native to the MR workflow, not like an external report nobody reads.
 
 ## Accomplishments we're proud of
 
-- **12 violations caught in a single demo MR** — every deliberately planted violation detected with zero false positives
-- **560ns per line P50 validation** — governance is faster than page load
-- **30/30 eval suite passing** — comprehensive capability and regression evals covering all integration points
-- **3,820+ tests** in the full ACGS test suite
-- **Tamper-evident audit trail** — hash-chained entries prove governance decisions can't be retroactively altered
+- **A working end-to-end GitLab MR governance flow** that reacts to events and comments directly on code
+- **12 violations caught in a single demo merge request**
+- **Merge-blocking behavior for unsafe changes**
+- **Tamper-evident constitutional hashing and audit trail support**
+- **30/30 hackathon evals passing** for the hackathon-focused integration surface
+- **A clean demo story judges can inspect directly in GitLab**
 
 ## What we learned
 
-- AI governance needs to be **structural, not advisory** — it's not enough to suggest best practices; you need an independent agent with the authority to block merges
-- **Separation of powers** is as important for AI systems as it is for governments — no agent should validate its own output
-- **Constitutional hashing** provides a practical mechanism for compliance auditing — auditors can verify exactly which rules were in force for any historical decision
-- **Speed matters** for developer adoption — if governance adds latency, developers will bypass it
+- Governance for AI-generated code needs to be **structural, not advisory**
+- **Inline feedback beats detached reports** for developer adoption
+- **Separation of powers matters in agent workflows**, not just human institutions
+- **Performance matters**, but clarity in workflow impact matters even more
 
 ## What's next
 
-- **GitLab Duo Flow integration** — register the Sentinel as a native Duo Flow for seamless agentic orchestration
-- **MCP server** — expose governance tools via Model Context Protocol for any AI agent to call
-- **EU AI Act compliance mapping** — map constitutional rules to EU AI Act risk categories for regulatory alignment
-- **Multi-project governance** — a single Sentinel instance governing an entire GitLab group
+- Register the Sentinel as a more native **GitLab Duo / flow-style governance step**
+- Expand constitutional templates for more compliance and engineering-policy use cases
+- Add multi-project governance for GitLab groups
+- Expose governance capabilities through MCP and other agent integrations
 
 ## Built with
 
 - Python 3.11+
-- Rust (PyO3) — optional high-performance validation backend
-- Google Cloud Run — serverless deployment
-- GitLab API — MR webhooks, diff parsing, inline comments
-- Starlette/Uvicorn — async HTTP server
-- YAML — constitutional rule definitions
-- ACGS-Lite — constitutional governance engine
+- Rust (PyO3, optional fast path)
+- GitLab API
+- Starlette / Uvicorn
+- YAML constitutions
+- Google Cloud Run
+- ACGS-Lite
 
 ## Try it out
 
 - **GitLab Project**: https://gitlab.com/martin664/constitutional-sentinel-demo
 - **Live Demo MR**: https://gitlab.com/martin664/constitutional-sentinel-demo/-/merge_requests/1
-- **Cloud Run Health**: https://acgs-sentinel-208702602468.us-central1.run.app/health (requires GCP auth)
-- **Constitution**: See `constitution.yaml` in the repo root
+- **Constitution**: see `hackathon/constitution.yaml`
+- **Video**: add public YouTube/Vimeo link before submission
 
 ---
 
 ## Submission Checklist
 
-- [ ] Project in GitLab AI Hackathon group (fork/transfer needed)
-- [ ] Video uploaded to YouTube (public, 3 min max)
-- [ ] Open-source license in repo
-- [ ] AGENTS.md in repo root
-- [ ] .gitlab-ci.yml with sentinel stage
-- [ ] All source code in the project
-- [ ] DevPost submission form filled out
+- [ ] Project moved or forked into the GitLab AI Hackathon group
+- [ ] Public video uploaded (3 minutes max)
+- [ ] Open-source license clearly visible on repo page
+- [ ] Demo MR URL verified and public
+- [ ] README optimized for judges
+- [ ] Devpost form filled out and submitted

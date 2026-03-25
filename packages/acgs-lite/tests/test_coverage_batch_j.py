@@ -278,7 +278,7 @@ class TestBuildParser:
         from acgs_lite.cli import build_parser
 
         parser = build_parser()
-        assert parser.prog == "acgs-lite"
+        assert parser.prog == "acgs"
 
     def test_activate_subcommand(self):
         from acgs_lite.cli import build_parser

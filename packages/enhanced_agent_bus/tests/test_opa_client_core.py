@@ -2,7 +2,7 @@
 Tests for enhanced_agent_bus.opa_client.core
 
 Covers OPAClientCore, OPAClient, and module-level singleton helpers.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -209,8 +209,10 @@ class TestInitializeClose:
         await client.initialize()
         client._memory_cache["k"] = {"v": 1}
         client._memory_cache_timestamps["k"] = 1.0
+        client._embedded_executor = MagicMock()
         await client.close()
         assert client._http_client is None
+        assert client._embedded_executor is None
         assert client._memory_cache == {}
         assert client._memory_cache_timestamps == {}
 
@@ -253,6 +255,7 @@ class TestInitializeClose:
             client.mode = "embedded"
             await client._initialize_embedded_opa()
             assert client._embedded_opa is fake_opa
+            assert client._embedded_executor is not None
 
     async def test_initialize_embedded_opa_fallback_on_error(self, client):
         with patch(
@@ -497,6 +500,27 @@ class TestEvaluateEmbedded:
 
         result = await client._evaluate_embedded({"x": 1}, "data.test")
         assert result["allowed"] is True
+
+    async def test_reuses_dedicated_executor_across_calls(self, client):
+        mock_opa = MagicMock()
+        mock_opa.evaluate = MagicMock(return_value=True)
+        client._embedded_opa = mock_opa
+        loop = MagicMock()
+        loop.run_in_executor = AsyncMock(return_value=True)
+
+        with patch("enhanced_agent_bus.opa_client.core.asyncio.get_running_loop", return_value=loop):
+            with patch("enhanced_agent_bus.opa_client.core.ThreadPoolExecutor") as executor_cls:
+                executor = MagicMock()
+                executor_cls.return_value = executor
+
+                await client._evaluate_embedded({"x": 1}, "data.test")
+                await client._evaluate_embedded({"x": 2}, "data.test")
+
+        executor_cls.assert_called_once_with(
+            max_workers=1,
+            thread_name_prefix="opa-embedded",
+        )
+        assert loop.run_in_executor.await_count == 2
 
     async def test_runtime_error_raises_policy_eval(self, client):
         from enhanced_agent_bus.exceptions import PolicyEvaluationError
