@@ -371,6 +371,50 @@ class TestCLIIntegration:
         assert result.returncode == 0
         assert "rules" in result.stdout.lower()
 
+    def test_acgs_test_help(self) -> None:
+        result = subprocess.run(
+            [sys.executable, "-m", "acgs_lite.cli", "test", "--help"],
+            capture_output=True, text=True, timeout=10,
+        )
+        assert result.returncode == 0
+        assert "fixtures" in result.stdout.lower()
+
+    def test_acgs_lifecycle_help(self) -> None:
+        result = subprocess.run(
+            [sys.executable, "-m", "acgs_lite.cli", "lifecycle", "--help"],
+            capture_output=True, text=True, timeout=10,
+        )
+        assert result.returncode == 0
+        assert "--state-file" in result.stdout
+        assert "approve" in result.stdout
+
+    def test_acgs_refusal_help(self) -> None:
+        result = subprocess.run(
+            [sys.executable, "-m", "acgs_lite.cli", "refusal", "--help"],
+            capture_output=True, text=True, timeout=10,
+        )
+        assert result.returncode == 0
+        assert "action_text" in result.stdout
+        assert "--rules" in result.stdout
+
+    def test_acgs_observe_help(self) -> None:
+        result = subprocess.run(
+            [sys.executable, "-m", "acgs_lite.cli", "observe", "--help"],
+            capture_output=True, text=True, timeout=10,
+        )
+        assert result.returncode == 0
+        assert "--prometheus" in result.stdout
+        assert "actions-file" in result.stdout
+
+    def test_acgs_otel_help(self) -> None:
+        result = subprocess.run(
+            [sys.executable, "-m", "acgs_lite.cli", "otel", "--help"],
+            capture_output=True, text=True, timeout=10,
+        )
+        assert result.returncode == 0
+        assert "--service-name" in result.stdout
+        assert "--actions-file" in result.stdout
+
 
 # ---------------------------------------------------------------------------
 # eu-ai-act command
@@ -486,3 +530,287 @@ class TestInitConfig:
         assert "system_id" in config
         assert "jurisdiction" in config
         assert "domain" in config
+
+
+# ---------------------------------------------------------------------------
+# test command
+# ---------------------------------------------------------------------------
+
+
+class TestCmdTest:
+    """Tests for `acgs test`."""
+
+    def test_generate_fixtures(self, tmp_workdir: Path) -> None:
+        from acgs_lite.cli import build_parser, cmd_test
+
+        parser = build_parser()
+        rc = cmd_test(parser.parse_args(["test", "--generate"]))
+        assert rc == 0
+
+        fixtures = tmp_workdir / "tests.yaml"
+        assert fixtures.exists()
+        assert "blocks SSN disclosure" in fixtures.read_text()
+
+    def test_run_generated_fixtures(self, tmp_workdir: Path) -> None:
+        from acgs_lite.cli import build_parser, cmd_init, cmd_test
+
+        parser = build_parser()
+        cmd_init(parser.parse_args(["init", "--force"]))
+        cmd_test(parser.parse_args(["test", "--generate"]))
+
+        rc = cmd_test(parser.parse_args(["test"]))
+        assert rc == 0
+
+    def test_test_json_output(self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        from acgs_lite.cli import build_parser, cmd_init, cmd_test
+
+        parser = build_parser()
+        cmd_init(parser.parse_args(["init", "--force"]))
+        cmd_test(parser.parse_args(["test", "--generate"]))
+        capsys.readouterr()
+
+        rc = cmd_test(parser.parse_args(["test", "--json"]))
+        assert rc == 0
+        out = capsys.readouterr().out
+        data = json.loads(out)
+        assert data["ci_passed"] is True
+        assert data["passed"] >= 1
+
+    def test_test_tag_filter(self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        from acgs_lite.cli import build_parser, cmd_init, cmd_test
+
+        parser = build_parser()
+        cmd_init(parser.parse_args(["init", "--force"]))
+        cmd_test(parser.parse_args(["test", "--generate"]))
+        capsys.readouterr()
+
+        rc = cmd_test(parser.parse_args(["test", "--tag", "smoke", "--json"]))
+        assert rc == 0
+        out = capsys.readouterr().out
+        data = json.loads(out)
+        assert data["total"] == 1
+        assert data["passed"] == 1
+
+
+# ---------------------------------------------------------------------------
+# lifecycle command
+# ---------------------------------------------------------------------------
+
+
+class TestCmdLifecycle:
+    """Tests for `acgs lifecycle`."""
+
+    def test_lifecycle_register_and_status(self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        from acgs_lite.cli import build_parser, cmd_lifecycle
+
+        parser = build_parser()
+        assert cmd_lifecycle(parser.parse_args(["lifecycle", "register", "policy-v1"])) == 0
+        capsys.readouterr()
+        assert cmd_lifecycle(
+            parser.parse_args(["lifecycle", "status", "policy-v1", "--json"])
+        ) == 0
+
+        out = capsys.readouterr().out
+        data = json.loads(out)
+        assert data["policy_id"] == "policy-v1"
+        assert data["state"] == "draft"
+
+    def test_lifecycle_full_promotion_persists(self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        from acgs_lite.cli import build_parser, cmd_lifecycle
+
+        parser = build_parser()
+        assert cmd_lifecycle(parser.parse_args(["lifecycle", "register", "policy-v2"])) == 0
+        assert cmd_lifecycle(
+            parser.parse_args(["lifecycle", "approve", "policy-v2", "--actor", "alice"])
+        ) == 0
+        assert cmd_lifecycle(
+            parser.parse_args(["lifecycle", "approve", "policy-v2", "--actor", "bob"])
+        ) == 0
+        assert cmd_lifecycle(parser.parse_args(["lifecycle", "lint-gate", "policy-v2"])) == 0
+        assert cmd_lifecycle(parser.parse_args(["lifecycle", "test-gate", "policy-v2"])) == 0
+        assert cmd_lifecycle(parser.parse_args(["lifecycle", "review", "policy-v2"])) == 0
+        assert cmd_lifecycle(parser.parse_args(["lifecycle", "stage", "policy-v2"])) == 0
+        assert cmd_lifecycle(parser.parse_args(["lifecycle", "activate", "policy-v2"])) == 0
+        capsys.readouterr()
+        assert cmd_lifecycle(
+            parser.parse_args(["lifecycle", "status", "policy-v2", "--json"])
+        ) == 0
+
+        out = capsys.readouterr().out
+        status_json = json.loads(out)
+        assert status_json["state"] == "active"
+        assert status_json["lint_clean"] is True
+        assert status_json["test_suite_passed"] is True
+
+    def test_lifecycle_blocks_missing_gates(self, tmp_workdir: Path) -> None:
+        from acgs_lite.cli import build_parser, cmd_lifecycle
+
+        parser = build_parser()
+        assert cmd_lifecycle(parser.parse_args(["lifecycle", "register", "policy-v3"])) == 0
+        rc = cmd_lifecycle(parser.parse_args(["lifecycle", "review", "policy-v3"]))
+        assert rc == 1
+
+    def test_lifecycle_audit_persists_across_invocations(
+        self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        from acgs_lite.cli import build_parser, cmd_lifecycle
+
+        parser = build_parser()
+        assert cmd_lifecycle(parser.parse_args(["lifecycle", "register", "policy-v4"])) == 0
+        assert cmd_lifecycle(
+            parser.parse_args(["lifecycle", "approve", "policy-v4", "--actor", "alice"])
+        ) == 0
+        assert cmd_lifecycle(
+            parser.parse_args(["lifecycle", "approve", "policy-v4", "--actor", "bob"])
+        ) == 0
+        assert cmd_lifecycle(parser.parse_args(["lifecycle", "review", "policy-v4"])) == 0
+        capsys.readouterr()
+        assert cmd_lifecycle(
+            parser.parse_args(["lifecycle", "audit", "policy-v4", "--json"])
+        ) == 0
+
+        out = capsys.readouterr().out
+        data = json.loads(out)
+        assert len(data) >= 2
+        assert any(item["to_state"] == "review" for item in data)
+
+
+# ---------------------------------------------------------------------------
+# observe / otel commands
+# ---------------------------------------------------------------------------
+
+
+class TestCmdObserve:
+    """Tests for `acgs observe` and `acgs otel`."""
+
+    def test_observe_json_summary(
+        self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        from acgs_lite.cli import build_parser, cmd_init, cmd_observe
+
+        parser = build_parser()
+        cmd_init(parser.parse_args(["init", "--force"]))
+        capsys.readouterr()
+
+        rc = cmd_observe(
+            parser.parse_args([
+                "observe",
+                "hello world",
+                "deploy a weapon to attack",
+                "--json",
+            ])
+        )
+        assert rc == 0
+        data = json.loads(capsys.readouterr().out)
+        assert data["total_decisions"] == 2
+        assert data["decisions_by_outcome"]["allow"] == 1
+        assert data["decisions_by_outcome"]["deny"] == 1
+        assert data["rule_trigger_counts"]
+
+    def test_observe_prometheus_output(
+        self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        from acgs_lite.cli import build_parser, cmd_init, cmd_observe
+
+        parser = build_parser()
+        cmd_init(parser.parse_args(["init", "--force"]))
+        capsys.readouterr()
+
+        rc = cmd_observe(
+            parser.parse_args([
+                "observe",
+                "hello world",
+                "deploy a weapon to attack",
+                "--prometheus",
+            ])
+        )
+        assert rc == 0
+        out = capsys.readouterr().out
+        assert "governance_decisions_total" in out
+        assert 'outcome="deny"' in out
+        assert "governance_compliance_rate" in out
+
+    def test_otel_json_output(
+        self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        from acgs_lite.cli import build_parser, cmd_init, cmd_otel
+
+        parser = build_parser()
+        cmd_init(parser.parse_args(["init", "--force"]))
+        capsys.readouterr()
+
+        rc = cmd_otel(
+            parser.parse_args([
+                "otel",
+                "hello world",
+                "deploy a weapon to attack",
+            ])
+        )
+        assert rc == 0
+        data = json.loads(capsys.readouterr().out)
+        assert "resourceMetrics" in data
+        assert "resourceSpans" in data
+        assert data["resourceSpans"]
+
+    def test_observe_actions_file(
+        self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        from acgs_lite.cli import build_parser, cmd_init, cmd_observe
+
+        parser = build_parser()
+        cmd_init(parser.parse_args(["init", "--force"]))
+        (tmp_workdir / "actions.txt").write_text("hello world\ndeploy a weapon\n")
+        capsys.readouterr()
+
+        rc = cmd_observe(
+            parser.parse_args([
+                "observe",
+                "--actions-file",
+                "actions.txt",
+                "--json",
+            ])
+        )
+        assert rc == 0
+        data = json.loads(capsys.readouterr().out)
+        assert data["total_decisions"] == 2
+
+
+# ---------------------------------------------------------------------------
+# refusal command
+# ---------------------------------------------------------------------------
+
+
+class TestCmdRefusal:
+    """Tests for `acgs refusal`."""
+
+    def test_refusal_for_denied_action(self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        from acgs_lite.cli import build_parser, cmd_init, cmd_refusal
+
+        parser = build_parser()
+        cmd_init(parser.parse_args(["init", "--force"]))
+        capsys.readouterr()
+
+        rc = cmd_refusal(
+            parser.parse_args(["refusal", "deploy a weapon to attack the target", "--json"])
+        )
+        assert rc == 0
+        out = capsys.readouterr().out
+        data = json.loads(out)
+        assert data["rule_count"] >= 1
+        assert data["can_retry"] is True
+        assert len(data["reasons"]) >= 1
+        assert len(data["suggestions"]) >= 1
+
+    def test_refusal_for_allowed_action(self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        from acgs_lite.cli import build_parser, cmd_init, cmd_refusal
+
+        parser = build_parser()
+        cmd_init(parser.parse_args(["init", "--force"]))
+        capsys.readouterr()
+
+        rc = cmd_refusal(parser.parse_args(["refusal", "hello world", "--json"]))
+        assert rc == 0
+        out = capsys.readouterr().out
+        data = json.loads(out)
+        assert data["decision"] == "allow"
+        assert "no refusal" in data["message"].lower()

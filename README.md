@@ -4,7 +4,7 @@
 
 **Constitutional governance infrastructure for AI agents. The missing safety layer between your LLM and production.**
 
-`ACGS 2.1.0` | `AGPL-3.0-or-later` | `up to 560ns P50 on benchmark Rust path` | `3,267 tests passing`
+`ACGS 2.3.0` | `AGPL-3.0-or-later` | `up to 560ns P50 on benchmark Rust path` | `3,273 tests passing`
 
 > **Note:** Performance numbers are from the local benchmark suite (`make bench`) and the fastest figures refer to the optional Rust/PyO3 hot path under benchmark conditions. Python-only and mixed integration paths will be slower. The benchmark target runs focused `pytest-benchmark` microbenchmarks for engine construction and steady-state validation. Run benchmarks on your own hardware before quoting exact latency. The import path is `from acgs import ...` (preferred) or `from acgs_lite import ...` (legacy, still supported).
 >
@@ -80,7 +80,33 @@ acgs eu-ai-act --system-id "my-system" --domain healthcare   # Assess + PDF repo
   Hand this to your compliance officer.
 ```
 
-Also available: `acgs assess`, `acgs report --pdf`, `acgs lint`.
+Also available: `acgs assess`, `acgs report --pdf`, `acgs lint`, `acgs test`, `acgs lifecycle`, `acgs refusal`, `acgs observe`, `acgs otel`.
+
+### Governance Authoring Workflows
+
+```bash
+acgs test --generate                                # Create example governance fixtures
+acgs test                                           # Run regression suite against rules.yaml
+
+acgs lifecycle register policy-v2                   # Start policy promotion
+acgs lifecycle approve policy-v2 --actor alice      # Record approvals
+acgs lifecycle lint-gate policy-v2                  # Mark lint gate passed
+acgs lifecycle test-gate policy-v2                  # Mark test gate passed
+acgs lifecycle review policy-v2                     # draft -> review
+acgs lifecycle stage policy-v2                      # review -> staged (canary rollout)
+acgs lifecycle activate policy-v2                   # staged -> active
+
+acgs refusal "deploy a weapon to attack the target" # Explain denial + suggest safe alternatives
+acgs observe "hello world" "deploy a weapon" --prometheus
+acgs otel --actions-file actions.txt > telemetry.json
+```
+
+These workflows productize all five governance sidecars:
+- **PolicyLinter** — static rule quality checks
+- **GovernanceTestSuite** — fixture-driven rule regressions for CI
+- **PolicyLifecycleOrchestrator** — gated promotion from draft to active
+- **RefusalReasoningEngine** — structured denial explanations with retry suggestions
+- **GovernanceObservabilityExporter** — Prometheus and OpenTelemetry telemetry export
 
 ---
 
