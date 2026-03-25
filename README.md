@@ -4,7 +4,7 @@
 
 **Constitutional governance infrastructure for AI agents. The missing safety layer between your LLM and production.**
 
-`ACGS 2.3.0` | `AGPL-3.0-or-later` | `up to 560ns P50 on benchmark Rust path` | `3,273 tests passing`
+`ACGS 2.4.0` | `AGPL-3.0-or-later` | `up to 560ns P50 on benchmark Rust path` | `3,277 tests passing`
 
 > **Note:** Performance numbers are from the local benchmark suite (`make bench`) and the fastest figures refer to the optional Rust/PyO3 hot path under benchmark conditions. Python-only and mixed integration paths will be slower. The benchmark target runs focused `pytest-benchmark` microbenchmarks for engine construction and steady-state validation. Run benchmarks on your own hardware before quoting exact latency. The import path is `from acgs import ...` (preferred) or `from acgs_lite import ...` (legacy, still supported).
 >
@@ -97,8 +97,10 @@ acgs lifecycle stage policy-v2                      # review -> staged (canary r
 acgs lifecycle activate policy-v2                   # staged -> active
 
 acgs refusal "deploy a weapon to attack the target" # Explain denial + suggest safe alternatives
-acgs observe "hello world" "deploy a weapon" --prometheus
-acgs otel --actions-file actions.txt > telemetry.json
+acgs observe "hello world" "deploy a weapon" --watch --interval 1
+acgs otel --actions-file actions.txt --watch --interval 1 --iterations 3
+acgs otel --actions-file actions.txt --bundle-dir telemetry-bundle -o telemetry.json
+bash packages/acgs-lite/examples/demo_cli_sidecars.sh
 ```
 
 These workflows productize all five governance sidecars:
@@ -106,7 +108,7 @@ These workflows productize all five governance sidecars:
 - **GovernanceTestSuite** — fixture-driven rule regressions for CI
 - **PolicyLifecycleOrchestrator** — gated promotion from draft to active
 - **RefusalReasoningEngine** — structured denial explanations with retry suggestions
-- **GovernanceObservabilityExporter** — Prometheus and OpenTelemetry telemetry export
+- **GovernanceObservabilityExporter** — Prometheus, watch mode, OTLP export, and bundle generation
 
 ---
 

@@ -13,6 +13,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -404,7 +405,8 @@ class TestCLIIntegration:
         )
         assert result.returncode == 0
         assert "--prometheus" in result.stdout
-        assert "actions-file" in result.stdout
+        assert "--watch" in result.stdout
+        assert "--bundle-dir" in result.stdout
 
     def test_acgs_otel_help(self) -> None:
         result = subprocess.run(
@@ -414,6 +416,7 @@ class TestCLIIntegration:
         assert result.returncode == 0
         assert "--service-name" in result.stdout
         assert "--actions-file" in result.stdout
+        assert "--otlp-endpoint" in result.stdout
 
 
 # ---------------------------------------------------------------------------
@@ -752,6 +755,37 @@ class TestCmdObserve:
         assert "resourceSpans" in data
         assert data["resourceSpans"]
 
+    def test_otel_watch_mode(
+        self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        from acgs_lite.cli import build_parser, cmd_init, cmd_otel
+
+        parser = build_parser()
+        cmd_init(parser.parse_args(["init", "--force"]))
+        capsys.readouterr()
+
+        rc = cmd_otel(
+            parser.parse_args([
+                "otel",
+                "hello world",
+                "deploy a weapon",
+                "--watch",
+                "--interval",
+                "0",
+                "--iterations",
+                "2",
+            ])
+        )
+        assert rc == 0
+        lines = [line for line in capsys.readouterr().out.splitlines() if line.strip()]
+        assert len(lines) == 2
+        first = json.loads(lines[0])
+        second = json.loads(lines[1])
+        assert first["snapshot"] == 1
+        assert second["snapshot"] == 2
+        assert "resourceMetrics" in first["otel"]
+        assert "resourceSpans" in second["otel"]
+
     def test_observe_actions_file(
         self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]
     ) -> None:
@@ -773,6 +807,93 @@ class TestCmdObserve:
         assert rc == 0
         data = json.loads(capsys.readouterr().out)
         assert data["total_decisions"] == 2
+
+    def test_observe_watch_mode(
+        self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        from acgs_lite.cli import build_parser, cmd_init, cmd_observe
+
+        parser = build_parser()
+        cmd_init(parser.parse_args(["init", "--force"]))
+        capsys.readouterr()
+
+        rc = cmd_observe(
+            parser.parse_args([
+                "observe",
+                "hello world",
+                "deploy a weapon",
+                "--watch",
+                "--interval",
+                "0",
+                "--iterations",
+                "2",
+            ])
+        )
+        assert rc == 0
+        out = capsys.readouterr().out
+        assert "Snapshot 1" in out
+        assert "Snapshot 2" in out
+        assert "Decisions:" in out
+
+    def test_otel_bundle_dir(
+        self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        from acgs_lite.cli import build_parser, cmd_init, cmd_otel
+
+        parser = build_parser()
+        cmd_init(parser.parse_args(["init", "--force"]))
+        capsys.readouterr()
+
+        rc = cmd_otel(
+            parser.parse_args([
+                "otel",
+                "hello world",
+                "deploy a weapon",
+                "--bundle-dir",
+                "bundle",
+                "-o",
+                "otel-export.json",
+            ])
+        )
+        assert rc == 0
+        bundle = tmp_workdir / "bundle"
+        assert (bundle / "otel.json").exists()
+        assert (bundle / "metrics.prom").exists()
+        assert (bundle / "summary.json").exists()
+        assert (bundle / "manifest.json").exists()
+        out = capsys.readouterr().out
+        assert "Telemetry bundle written" in out
+        export_payload = json.loads((tmp_workdir / "otel-export.json").read_text())
+        assert "resourceMetrics" in export_payload
+
+    def test_otel_otlp_endpoint(
+        self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        from acgs_lite.cli import build_parser, cmd_init, cmd_otel
+
+        parser = build_parser()
+        cmd_init(parser.parse_args(["init", "--force"]))
+        capsys.readouterr()
+
+        with patch("acgs_lite.cli._post_otlp_json", return_value=202) as mock_post:
+            rc = cmd_otel(
+                parser.parse_args([
+                    "otel",
+                    "hello world",
+                    "--otlp-endpoint",
+                    "http://collector.test/v1/traces",
+                    "--otlp-header",
+                    "Authorization: Bearer demo-token",
+                    "-o",
+                    "otel-export.json",
+                ])
+            )
+        assert rc == 0
+        mock_post.assert_called_once()
+        called_endpoint = mock_post.call_args.args[0]
+        assert called_endpoint == "http://collector.test/v1/traces"
+        out = capsys.readouterr().out
+        assert "OTLP export sent" in out
 
 
 # ---------------------------------------------------------------------------
