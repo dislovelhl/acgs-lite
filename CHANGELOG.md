@@ -2,11 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.4.0] — 2026-03-25
+
+### Added
+- `acgs observe --watch` with `--interval` and `--iterations` for cumulative streaming governance telemetry snapshots.
+- `acgs otel --watch` for newline-delimited OpenTelemetry snapshot streaming.
+- OTLP HTTP export support via `--otlp-endpoint`, `--otlp-header`, and `--timeout-seconds`.
+- Telemetry bundle output via `--bundle-dir`, writing `summary.json`, `summary.txt`, `metrics.prom`, `otel.json`, `actions.txt`, and `manifest.json`.
+- `packages/acgs-lite/examples/demo_cli_sidecars.sh` covering linter, regression tests, lifecycle promotion, refusal reasoning, observe watch mode, and OTel export.
+- Eval definition `.claude/evals/acgs-cli-observability-demo.md` for observability/demo acceptance criteria.
+
+### Changed
+- `acgs observe` and `acgs otel` now share a richer telemetry export pipeline with summary, Prometheus, JSON, OTel, watch-mode, OTLP, and bundle-generation surfaces.
+- README governance workflow examples now document watch mode, telemetry bundles, and the end-to-end sidecar demo script.
+- `acgs-lite` package version advanced to `2.4.0`.
+
+### Tested
+- `python3 -m pytest packages/acgs-lite/tests/test_cli_governance.py --import-mode=importlib -q --tb=short`
+- `python3 -m pytest packages/acgs-lite/tests/ --import-mode=importlib -q --tb=no`
+- `bash packages/acgs-lite/examples/demo_cli_sidecars.sh`
+- Result: `3277 passed, 4 skipped, 53 deselected`
+
 ## [1.0.0] — 2026-03-21
 
 ### 🚀 First stable release
 
-ACGS-Lite 1.0.0 is the first stable, production-ready release of constitutional governance
+ACGS 1.0.0 is the first stable, production-ready release of constitutional governance
 infrastructure for AI agents. Five lines of code. Nine regulatory frameworks. Zero false negatives.
 
 ---
@@ -23,17 +44,17 @@ infrastructure for AI agents. Five lines of code. Nine regulatory frameworks. Ze
 - Nine regulatory framework mappings: EU AI Act, NIST RMF, ISO 42001, HIPAA, GDPR, SOC 2, Colorado AI Act, Singapore PDPA, Australia AI Ethics Framework
 
 #### Integrations (11)
-- `acgs-lite[openai]` — governed drop-in for `OpenAI()` client
-- `acgs-lite[anthropic]` — governed Claude client
-- `acgs-lite[langchain]` — LangChain chain and agent governance wrapper
-- `acgs-lite[litellm]` — multi-provider governance via LiteLLM
-- `acgs-lite[google]` — governed Gemini / Google GenAI client
-- `acgs-lite[llamaindex]` — query engine governance for LlamaIndex
-- `acgs-lite[autogen]` — multi-agent governance for AutoGen
-- `acgs-lite[crewai]` — crew task governance for CrewAI
-- `acgs-lite[mcp]` — Model Context Protocol server (5 tools: validate_action, get_constitution, get_audit_log, check_compliance, governance_stats)
-- `acgs-lite[a2a]` — Google Agent-to-Agent (A2A) protocol support
-- `acgs-lite[xai]` — xAI / Grok integration
+- `acgs[openai]` — governed drop-in for `OpenAI()` client
+- `acgs[anthropic]` — governed Claude client
+- `acgs[langchain]` — LangChain chain and agent governance wrapper
+- `acgs[litellm]` — multi-provider governance via LiteLLM
+- `acgs[google]` — governed Gemini / Google GenAI client
+- `acgs[llamaindex]` — query engine governance for LlamaIndex
+- `acgs[autogen]` — multi-agent governance for AutoGen
+- `acgs[crewai]` — crew task governance for CrewAI
+- `acgs[mcp]` — Model Context Protocol server (5 tools: validate_action, get_constitution, get_audit_log, check_compliance, governance_stats)
+- `acgs[a2a]` — Google Agent-to-Agent (A2A) protocol support
+- `acgs[openai]` — xAI / Grok integration via OpenAI-compatible client
 
 #### GitLab Integration
 - `GitLabGovernanceBot` — webhook handler for MR governance

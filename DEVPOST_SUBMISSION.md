@@ -87,6 +87,14 @@ Three principles from democratic governance, applied to AI systems:
 
 ---
 
+## Architecture Diagram
+
+![ACGS-Lite architecture diagram](docs/architecture.png)
+
+A compact view of the governance path from GitLab events to the Rust-accelerated core, Cloud Run, and audit logging. The SVG version is available at `docs/architecture.svg`.
+
+---
+
 ## Challenges We Ran Into
 
 **The governance paradox.** Building a system that constrains AI using AI creates a bootstrapping problem. The answer is the same as democratic constitutions: the constitution is separate from the governed entity, with its own integrity verification (hash), separation of powers (MACI), and audit trail.
