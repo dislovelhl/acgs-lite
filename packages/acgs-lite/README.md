@@ -8,11 +8,45 @@
 
 [![Demo Video](https://img.youtube.com/vi/do9BCPn29_Q/maxresdefault.jpg)](https://youtu.be/do9BCPn29_Q)
 
+> **Hackathon fast path:** If you're here for the GitLab AI Hackathon demo, start with **Constitutional Sentinel** — an ACGS-powered GitLab merge request governance agent that reviews AI-generated code, posts inline violations, and blocks unsafe merges. See `hackathon/devpost-submission.md`, `hackathon/demo-video-script.md`, `hackathon/constitution.yaml`, and the demo MR: <https://gitlab.com/martin664/constitutional-sentinel-demo/-/merge_requests/1>.
+>
 > **Note:** Performance numbers are from the local benchmark suite (`make bench`) and the fastest figures refer to the optional Rust/PyO3 hot path under benchmark conditions. Python-only and mixed integration paths will be slower. The benchmark target runs focused `pytest-benchmark` microbenchmarks for engine construction and steady-state validation. Run benchmarks on your own hardware before quoting exact latency. The import path is `from acgs import ...` (preferred) or `from acgs_lite import ...` (legacy, still supported).
 >
 > **License:** AGPL-3.0-or-later for open-source use. [Commercial license](COMMERCIAL_LICENSE.md) available for proprietary/SaaS use.
 >
 > **Naming:** `ACGS` is the product name, `acgs` is the PyPI package, and `acgs_lite` is the compatibility import namespace. See [../../docs/brand-architecture.md](../../docs/brand-architecture.md).
+
+---
+
+## GitLab AI Hackathon Demo: Constitutional Sentinel
+
+**Constitutional Sentinel** is the hackathon demo built on ACGS. It is an independent governance agent for GitLab merge requests that:
+
+- reacts to merge request events
+- validates AI-generated diffs against constitutional rules
+- posts inline comments on violating lines
+- generates a governance summary with a constitutional hash
+- blocks unsafe merges when violations are severe
+
+### Judge / reviewer quick links
+
+- Devpost draft: `hackathon/devpost-submission.md`
+- Demo script: `hackathon/demo-video-script.md`
+- Demo constitution: `hackathon/constitution.yaml`
+- CI example: `hackathon/.gitlab-ci.yml`
+- Demo MR: <https://gitlab.com/martin664/constitutional-sentinel-demo/-/merge_requests/1>
+
+### Why it matters
+
+AI coding agents can produce useful code quickly, but they do not inherently know your security, privacy, or compliance boundaries. Constitutional Sentinel inserts an independent validator into the GitLab workflow so unsafe changes are flagged before merge.
+
+### Demo architecture
+
+1. GitLab merge request event triggers Sentinel
+2. Sentinel fetches and validates the diff using ACGS rules
+3. Violations are posted back inline on the merge request
+4. A governance summary records risk, findings, and constitutional hash
+5. Human executor decides whether the merge proceeds
 
 ---
 
