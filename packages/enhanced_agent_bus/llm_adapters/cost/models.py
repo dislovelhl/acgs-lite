@@ -1,6 +1,6 @@
 """
 ACGS-2 Cost Optimizer Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Data models for cost management, budgets, anomalies, and batch processing.
 """
@@ -32,7 +32,7 @@ class CostModel:
     """
     Cost model for an LLM provider.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     provider_id: str
@@ -117,7 +117,7 @@ class CostEstimate:
     """
     Cost estimate for a request.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     provider_id: str
@@ -155,7 +155,7 @@ class BudgetLimit:
     """
     Budget limit configuration.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     limit_id: str
@@ -228,7 +228,7 @@ class CostAnomaly:
     """
     Detected cost anomaly.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     anomaly_id: str
@@ -254,7 +254,7 @@ class BatchRequest:
     """
     Request to be batched for cost optimization.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     request_id: str
@@ -274,7 +274,7 @@ class BatchResult:
     """
     Result of batch processing.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     batch_id: str

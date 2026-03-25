@@ -2,7 +2,7 @@
 Online learning service shim for ACGS-2.
 Re-exports implementation from .registry for backward compatibility.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from .registry import (

@@ -1,6 +1,6 @@
 """
 ACGS-2 Centralized Redis Configuration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides centralized Redis configuration for all services with health check
 callbacks for graceful degradation when Redis is unavailable.

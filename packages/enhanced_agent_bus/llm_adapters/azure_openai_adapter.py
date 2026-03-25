@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Azure OpenAI LLM Adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Azure OpenAI adapter supporting enterprise features including managed identity,
 private endpoints, deployment-based model selection, and content filtering.
@@ -65,7 +65,7 @@ _AZURE_OPENAI_ADAPTER_OPERATION_ERRORS = (
 class AzureOpenAIAdapter(BaseLLMAdapter):
     """Azure OpenAI LLM adapter with enterprise features.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Supports:
     - GPT-4 (all variants via Azure deployments)

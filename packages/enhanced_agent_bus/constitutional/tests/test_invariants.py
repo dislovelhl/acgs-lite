@@ -1,6 +1,6 @@
 """
 Tests for Constitutional Invariant System
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for invariant models, predicate functions, hash determinism,
 and the default manifest factory.
@@ -184,9 +184,9 @@ class TestInvariantManifest:
         )
 
     def test_create_empty(self):
-        manifest = InvariantManifest(constitutional_hash="cdd01ef066bc6cf2")
+        manifest = InvariantManifest(constitutional_hash="608508a9bd224290")
         assert manifest.manifest_version == "1.0.0"
-        assert manifest.constitutional_hash == "cdd01ef066bc6cf2"
+        assert manifest.constitutional_hash == "608508a9bd224290"
         assert manifest.invariant_hash != ""
 
     def test_hash_deterministic(self):
@@ -233,7 +233,7 @@ class TestInvariantManifest:
     def test_roundtrip(self):
         inv = self._make_invariant()
         original = InvariantManifest(
-            constitutional_hash="cdd01ef066bc6cf2",
+            constitutional_hash="608508a9bd224290",
             invariants=[inv],
         )
         data = original.model_dump()
@@ -382,8 +382,8 @@ class TestConstitutionalHashRequired:
 
     def test_pass_matching_hash(self):
         result = check_constitutional_hash_required(
-            state={"constitutional_hash": "cdd01ef066bc6cf2"},
-            change={"constitutional_hash": "cdd01ef066bc6cf2"},
+            state={"constitutional_hash": "608508a9bd224290"},
+            change={"constitutional_hash": "608508a9bd224290"},
         )
         assert result.passed is True
 
@@ -397,7 +397,7 @@ class TestConstitutionalHashRequired:
 
     def test_fail_missing_hash(self):
         result = check_constitutional_hash_required(
-            state={"constitutional_hash": "cdd01ef066bc6cf2"},
+            state={"constitutional_hash": "608508a9bd224290"},
             change={},
         )
         assert result.passed is False
@@ -405,7 +405,7 @@ class TestConstitutionalHashRequired:
 
     def test_fail_mismatched_hash(self):
         result = check_constitutional_hash_required(
-            state={"constitutional_hash": "cdd01ef066bc6cf2"},
+            state={"constitutional_hash": "608508a9bd224290"},
             change={"constitutional_hash": "wrong_hash"},
         )
         assert result.passed is False
@@ -490,7 +490,7 @@ class TestGetDefaultManifest:
 
     def test_constitutional_hash(self):
         manifest = get_default_manifest()
-        assert manifest.constitutional_hash == "cdd01ef066bc6cf2"
+        assert manifest.constitutional_hash == "608508a9bd224290"
 
     def test_invariant_ids(self):
         manifest = get_default_manifest()

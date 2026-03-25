@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Core Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Core message and routing models for agent communication.
 Split from models.py for improved maintainability.
@@ -292,7 +292,7 @@ class PQCMetadata:
     This dataclass tracks the PQC verification status and algorithm details
     for constitutional hash validation and MACI enforcement.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     pqc_enabled: bool
@@ -355,7 +355,7 @@ class ConversationMessage(BaseModel):
     Used by PACAR verifier to track conversation history for
     governance policy enforcement across conversation threads.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     role: str = Field(..., description="Message role: 'user' or 'assistant'")
@@ -380,7 +380,7 @@ class ConversationState(BaseModel):
     enabling PACAR verifier to enforce governance policies across
     multiple turns of a conversation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     session_id: str = Field(..., description="Unique session identifier")

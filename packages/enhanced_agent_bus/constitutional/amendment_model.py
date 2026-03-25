@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Amendment Proposal Model
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Data model for constitutional amendment proposals with justification,
 impact analysis, and governance metrics tracking.
@@ -28,7 +28,7 @@ except ImportError:
 class AmendmentStatus(str, Enum):
     """Amendment proposal status enumeration.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Tracks the lifecycle of a constitutional amendment from proposal
     through approval, activation, and potential rollback.
@@ -49,7 +49,7 @@ class AmendmentProposal(BaseModel):
     This model tracks proposed constitutional changes with justification,
     impact analysis, and governance metrics for before/after comparison.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Attributes:
         proposal_id: Unique identifier for this amendment proposal

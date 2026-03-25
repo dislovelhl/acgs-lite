@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # Sprint 57 -- feedback_handler/kafka_publisher.py coverage
 """
 Comprehensive tests for FeedbackKafkaPublisher to achieve ≥95% coverage.

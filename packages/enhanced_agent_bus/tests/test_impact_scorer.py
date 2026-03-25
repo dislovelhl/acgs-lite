@@ -1,6 +1,6 @@
 """Tests for adaptive_governance.impact_scorer module.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from unittest.mock import MagicMock, patch

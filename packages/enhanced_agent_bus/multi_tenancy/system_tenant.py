@@ -1,6 +1,6 @@
 """
 ACGS-2 System Tenant Utilities
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides constants and utilities for working with the system tenant.
 The system tenant is the default tenant for backward compatibility

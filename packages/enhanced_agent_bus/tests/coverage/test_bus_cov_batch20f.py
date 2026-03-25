@@ -5,7 +5,7 @@ Coverage tests for batch 20f:
 - enhanced_agent_bus.adaptive_governance.amendment_recommender
 - enhanced_agent_bus.saga_persistence.models
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

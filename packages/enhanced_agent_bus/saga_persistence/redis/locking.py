@@ -1,6 +1,6 @@
 """
 Redis Distributed Locking for Saga Persistence
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides distributed locking operations and maintenance utilities
 for saga state management using Redis SET NX with TTL.
@@ -40,7 +40,7 @@ class RedisLockManager(RedisKeyMixin):
     Implements distributed locks using Redis SET NX with TTL,
     providing safe concurrent access to saga state.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Type hints for mixin - these are provided by the main repository class

@@ -7,7 +7,7 @@ Targets:
 3. verification_layer/constitutional_transition.py
 4. message_processor.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio

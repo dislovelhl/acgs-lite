@@ -1,6 +1,6 @@
 """Tests for URL and File Validation Security Module.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for SEC-003 (SSRF Protection) and SEC-006 (File Upload Validation).
 """
@@ -27,7 +27,7 @@ from src.core.shared.security.url_file_validator import (
 
 
 class TestConstitutionalHash:
-    # Constitutional Hash: cdd01ef066bc6cf2
+    # Constitutional Hash: 608508a9bd224290
     """Test constitutional hash compliance."""
 
     def test_constitutional_hash_value(self) -> None:
@@ -759,7 +759,7 @@ class TestConvenienceFunctionsExtended:
         file.seek = AsyncMock()
         file.filename = "test.json"
 
-        content, ftype = await validate_upload(file)
+        _content, ftype = await validate_upload(file)
         assert ftype == FileType.JSON
 
     def test_validate_url_non_production(self) -> None:

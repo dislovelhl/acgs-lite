@@ -1,4 +1,4 @@
-"""Constitutional Hash: cdd01ef066bc6cf2
+"""Constitutional Hash: 608508a9bd224290
 ACGS-2 API Gateway — Lifespan management
 
 Extracted from main.py: startup/shutdown lifecycle for the FastAPI application.

@@ -3,7 +3,7 @@
 2. src/core/shared/config/governance.py (50% -> full coverage)
 3. src/core/shared/config/infrastructure.py (51.7% -> full coverage)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -701,7 +701,7 @@ class TestInfraAISettingsPydantic:
         assert s.openrouter_api_key is None
         assert s.hf_token is None
         assert s.openai_api_key is None
-        assert s.constitutional_hash == "cdd01ef066bc6cf2"
+        assert s.constitutional_hash == "608508a9bd224290"
 
     def test_explicit_keys_via_env(self):
         from src.core.shared.config.infrastructure import AISettings
@@ -847,7 +847,7 @@ class TestInfraDataclassFallback:
             oai = os.getenv("OPENAI_API_KEY")
             assert oai is not None
 
-            ch = os.getenv("CONSTITUTIONAL_HASH", "cdd01ef066bc6cf2")
+            ch = os.getenv("CONSTITUTIONAL_HASH", "608508a9bd224290")
             assert ch == "test-hash"
 
     def test_ai_settings_env_no_keys(self):

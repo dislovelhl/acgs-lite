@@ -1,7 +1,7 @@
 """
 Tests for Constitutional Hash Registry and Algorithm Agility Framework.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers:
 - HashVersion dataclass (to_canonical, is_valid, from_canonical)

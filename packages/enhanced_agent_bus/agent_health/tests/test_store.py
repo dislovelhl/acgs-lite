@@ -1,6 +1,6 @@
 """
 Unit tests for AgentHealthStore using fakeredis.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests are written RED-first (before store.py is implemented).
 All tests use FakeAsyncRedis — no real Redis connection required.
@@ -213,7 +213,7 @@ def _make_action(agent_id: str = "agent-001", **kwargs: object) -> HealingAction
         "tier_determined_by": AutonomyTier.HUMAN_APPROVED,
         "initiated_at": now,
         "audit_event_id": "audit-xyz",
-        "constitutional_hash": "cdd01ef066bc6cf2",  # pragma: allowlist secret
+        "constitutional_hash": "608508a9bd224290",  # pragma: allowlist secret
     }
     defaults.update(kwargs)
     return HealingAction(**defaults)

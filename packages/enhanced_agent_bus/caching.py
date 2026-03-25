@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Caching Utilities
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 High-performance caching layer for API responses and batch processing.
 """

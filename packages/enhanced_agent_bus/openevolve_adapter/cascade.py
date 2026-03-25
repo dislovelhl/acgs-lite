@@ -1,6 +1,6 @@
 """
 OpenEvolve Governance Adapter — Cascade Evaluation
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Progressive three-stage evaluation pipeline that prunes bad candidates early,
 saving compute for expensive stages.

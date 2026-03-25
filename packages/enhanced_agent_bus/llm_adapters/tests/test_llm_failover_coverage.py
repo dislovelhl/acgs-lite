@@ -1,6 +1,6 @@
 """
 Additional coverage tests for LLM Provider Failover System
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets uncovered lines in llm_failover.py to push coverage from 85% to 95%+.
 

@@ -1,7 +1,7 @@
 """Tests for acgs-lite GitLab integration.
 
 Tests use mocked external services (no real API calls).
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import hashlib
@@ -177,7 +177,7 @@ def _create_gitlab_ci_config(
             "stage": "test",
             "image": "python:3.11-slim",
             "script": [
-                "pip install acgs-lite",
+                "pip install acgs[gitlab]",
                 f"acgs-lite validate --constitution {constitution_path}"
                 + (" --strict" if strict else ""),
             ],
@@ -634,7 +634,7 @@ class TestHelperFunctions:
         assert "governance-check" in config
         job = config["governance-check"]
         assert job["stage"] == "test"
-        assert "pip install acgs-lite" in job["script"][0]
+        assert "pip install acgs[gitlab]" in job["script"][0]
         assert "--strict" in job["script"][1]
         assert job["allow_failure"] is False
         assert len(job["rules"]) == 1

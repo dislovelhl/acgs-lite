@@ -279,7 +279,7 @@ class TestTenantRateLimitProvider:
 
     def test_get_constitutional_hash(self):
         provider = TenantRateLimitProvider()
-        assert provider.get_constitutional_hash() == "cdd01ef066bc6cf2"
+        assert provider.get_constitutional_hash() == "608508a9bd224290"
 
     @patch.dict("os.environ", {
         "RATE_LIMIT_TENANT_REQUESTS": "2000",
@@ -359,14 +359,14 @@ class TestSlidingWindowRateLimiter:
 
     @pytest.mark.asyncio
     async def test_redis_allow(self):
-        mock_redis, mock_pipe = self._make_redis_mock(execute_return=[0, 2, True, True])
+        mock_redis, _mock_pipe = self._make_redis_mock(execute_return=[0, 2, True, True])
         limiter = SlidingWindowRateLimiter(redis_client=mock_redis)
         result = await limiter.is_allowed("key", limit=10, window_seconds=60)
         assert result.allowed is True
 
     @pytest.mark.asyncio
     async def test_redis_block(self):
-        mock_redis, mock_pipe = self._make_redis_mock(execute_return=[0, 10, True, True])
+        mock_redis, _mock_pipe = self._make_redis_mock(execute_return=[0, 10, True, True])
         limiter = SlidingWindowRateLimiter(redis_client=mock_redis)
         result = await limiter.is_allowed("key", limit=10, window_seconds=60)
         assert result.allowed is False
@@ -1061,7 +1061,7 @@ class TestCreateTokenRevocationService:
 
         # Simulate redis.asyncio import raising an error by patching
         # the entire create function's redis import path
-        with patch("builtins.__import__", side_effect=Exception("no redis")) as mock_import:
+        with patch("builtins.__import__", side_effect=Exception("no redis")):
             # Override __import__ only for 'redis' and 'redis.asyncio'
             original_import = importlib.__import__
 
@@ -2033,7 +2033,7 @@ class TestDisposalResultModel:
         )
         assert result.bytes_disposed == 0
         assert result.error_message is None
-        assert result.constitutional_hash == "cdd01ef066bc6cf2"
+        assert result.constitutional_hash == "608508a9bd224290"
 
 
 class TestRetentionRecordModel:
@@ -2047,4 +2047,4 @@ class TestRetentionRecordModel:
         )
         assert record.status == RetentionStatus.ACTIVE
         assert record.legal_hold is False
-        assert record.constitutional_hash == "cdd01ef066bc6cf2"
+        assert record.constitutional_hash == "608508a9bd224290"

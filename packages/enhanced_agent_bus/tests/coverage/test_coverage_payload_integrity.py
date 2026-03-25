@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Payload Integrity Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: enhanced_agent_bus/payload_integrity.py (29 stmts, 0% -> target 100%)
 Tests HMAC-SHA256 signing and verification for payload integrity (OWASP AA05).

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Verification Orchestrator
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Coordinates SDPC (Semantic Data Processing Chain) verification and
 PQC (Post-Quantum Cryptographic) constitutional validation in parallel.
@@ -75,7 +75,7 @@ class VerificationOrchestrator:
     GraphCheckVerifier, PACARVerifier, EvolutionController, AMPOEngine)
     and optionally the PQC crypto service.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

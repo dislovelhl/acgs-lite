@@ -1,6 +1,6 @@
 """
 Online Learning Submodule for ACGS-2 Enhanced Agent Bus
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Re-exports online learning components for backwards compatibility.
 """

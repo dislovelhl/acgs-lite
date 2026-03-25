@@ -1,6 +1,6 @@
 """
 PSV-Verus Unified Policy Generator
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Combines breakthrough research with production-grade execution logic.
 Implements the Propose-Solve-Verify (PSV) loop:

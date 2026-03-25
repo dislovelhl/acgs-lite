@@ -1,6 +1,6 @@
 """
 ACGS-2 Constitutional Saga Workflow
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements the Saga pattern for distributed transactions with compensation.
 Used for constitutional operations that require all-or-nothing semantics.

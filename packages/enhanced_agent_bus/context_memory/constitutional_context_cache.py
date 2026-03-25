@@ -1,6 +1,6 @@
 """
 ACGS-2 Context & Memory - Constitutional Context Cache
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Fast caching layer for constitutional context with sub-5ms P99 latency.
 Ensures constitutional principles are always readily available.
@@ -58,7 +58,7 @@ class CacheTier(str, Enum):
 class CacheConfig:
     """Configuration for constitutional context cache.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     l1_max_entries: int = 1000
@@ -82,7 +82,7 @@ class CacheConfig:
 class CacheEntry(Generic[T]):
     """A cached entry with metadata.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     key: str
@@ -111,7 +111,7 @@ class CacheEntry(Generic[T]):
 class CacheStats:
     """Statistics for cache operations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     total_requests: int = 0
@@ -152,7 +152,7 @@ class ConstitutionalContextCache:
 
     Provides multi-tier caching with constitutional compliance validation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

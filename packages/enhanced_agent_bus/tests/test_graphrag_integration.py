@@ -1,6 +1,6 @@
 """
 Tests for GraphRAGContextEnricher — deliberation layer policy retrieval.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -114,7 +114,7 @@ class TestGraphRAGContextEnricherInit:
 
     def test_constitutional_hash_set(self):
         enricher = _make_enricher()
-        assert enricher.constitutional_hash == "cdd01ef066bc6cf2"  # pragma: allowlist secret
+        assert enricher.constitutional_hash == "608508a9bd224290"  # pragma: allowlist secret
 
     def test_clear_cache_resets_size(self):
         enricher = _make_enricher()
@@ -181,7 +181,7 @@ class TestEnrich:
         enricher = _make_enricher()
         await enricher.seed_policy("Policy text.", "pol-1", "t1")
         result = await enricher.enrich("policy", "t1")
-        assert result.get("constitutional_hash") == "cdd01ef066bc6cf2"  # pragma: allowlist secret
+        assert result.get("constitutional_hash") == "608508a9bd224290"  # pragma: allowlist secret
 
     async def test_result_contains_retrieval_time_ms(self):
         enricher = _make_enricher()
@@ -325,12 +325,12 @@ class TestPipelinePath:
                         "policy_id": "pol-pipe",
                         "score": 0.9,
                         "snippet": "Policy text",
-                        "constitutional_hash": "cdd01ef066bc6cf2",
+                        "constitutional_hash": "608508a9bd224290",
                     }  # pragma: allowlist secret
                 ],
                 "assembled_context": "Policy text for pipeline.",
                 "retrieval_time_ms": 1.0,
-                "constitutional_hash": "cdd01ef066bc6cf2",  # pragma: allowlist secret
+                "constitutional_hash": "608508a9bd224290",  # pragma: allowlist secret
                 "retrieval_path": "pipeline",
             }
 

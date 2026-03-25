@@ -1,5 +1,5 @@
 """
-Example: 5-Minute Quickstart with acgs-lite
+Example: 5-Minute Quickstart with ACGS
 
 This demonstrates the core value proposition:
 Govern ANY AI agent with constitutional rules in 5 lines of code.
@@ -20,7 +20,7 @@ from acgs_lite import (
 
 def main() -> None:
     print("=" * 60)
-    print("  ACGS-Lite: Constitutional AI Governance")
+    print("  ACGS: Constitutional AI Governance")
     print("=" * 60)
 
     # ── 1. Default Constitution ────────────────────────────────

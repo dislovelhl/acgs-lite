@@ -1,7 +1,7 @@
 """
 Tests for ACGS-2 Cache Warming Module
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -425,7 +425,8 @@ class TestCacheWarmerProgress:
         assert result.status == WarmingStatus.COMPLETED
 
     def test_remove_progress_callback(self, warmer):
-        cb = lambda p: None
+        def cb(p):
+            return None
         warmer.on_progress(cb)
         assert warmer.remove_progress_callback(cb) is True
         assert warmer.remove_progress_callback(cb) is False

@@ -1,6 +1,6 @@
 """
 Comprehensive coverage tests for OPA Policy Updater.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests targeting 92%+ coverage of opa_updater.py.
 """

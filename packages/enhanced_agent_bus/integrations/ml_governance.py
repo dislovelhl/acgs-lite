@@ -1,6 +1,6 @@
 """
 ACGS-2 ML Governance Client
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides integration with the Adaptive Learning Engine for reporting governance
 decision outcomes. Enables real-time model training through outcome feedback.

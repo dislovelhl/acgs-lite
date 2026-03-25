@@ -1,6 +1,6 @@
 """
 ACGS-2 CCAI Democratic Framework - Governance Package
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This package provides the CCAI (Collective Constitutional AI) democratic governance
 framework for constitutional AI governance with democratic deliberation.
@@ -12,7 +12,7 @@ Modules:
     - polis_engine: Polis-style deliberation engine
     - democratic_governance: Democratic constitutional governance framework
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from .democratic_governance import (

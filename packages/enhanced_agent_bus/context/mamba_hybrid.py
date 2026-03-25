@@ -1,4 +1,4 @@
-"""Constitutional Hash: cdd01ef066bc6cf2
+"""Constitutional Hash: 608508a9bd224290
 
 Mamba-2 Hybrid Processor for ACGS-2 Constitutional AI Governance
 Implements breakthrough architecture for O(n) context handling with 4M+ token support.
@@ -159,7 +159,7 @@ if TORCH_AVAILABLE:
         - 1 shared attention layer for precise constitutional reasoning
         - JRT context preparation for critical sections
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
 
         def __init__(

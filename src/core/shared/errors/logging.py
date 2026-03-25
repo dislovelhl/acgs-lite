@@ -1,6 +1,6 @@
 """
 ACGS-2 Standardized Error Logging
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 .. deprecated::
     This module (``src.core.shared.errors.logging``) has zero active consumers in
@@ -83,7 +83,7 @@ class ErrorSeverity(IntEnum):
     """
     Error severity levels aligned with failure escalation framework.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     DEBUG = 10  # Debug-level errors (not typically logged in production)
@@ -99,7 +99,7 @@ class ErrorContext:
     """
     Structured context for error logging.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Provides comprehensive context for error events including:
     - Operation and service information
@@ -214,7 +214,7 @@ def build_error_context(
     """
     Build an ErrorContext with the provided parameters.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     This is a convenience function for creating ErrorContext instances
     with common patterns.
@@ -275,7 +275,7 @@ def log_error(
     """
     Log an error with structured context.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Args:
         error: The exception to log.
@@ -336,7 +336,7 @@ def log_warning(
     """
     Log a warning message with structured context.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Args:
         message: Warning message to log.
@@ -372,7 +372,7 @@ def log_critical(
     """
     Log a critical error with structured context.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Critical errors may trigger alerts and escalation procedures.
 

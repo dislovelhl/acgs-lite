@@ -9,7 +9,7 @@ MCP Protocol Types for ACGS-2 Constitutional Governance.
 Implements JSON-RPC 2.0 based MCP protocol types as per the Model Context Protocol
 specification.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import json

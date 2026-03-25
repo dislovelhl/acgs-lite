@@ -1,7 +1,7 @@
 """
 Tests for src/core/enhanced_agent_bus/context_memory/mamba_processor.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Coverage target: ≥85% of mamba_processor.py.
 Tests are organized by class/method and cover happy paths, error paths,

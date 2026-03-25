@@ -55,7 +55,7 @@ class TestSafeCopy:
         assert safe_copy(original) is original
 
     def test_int_not_copied(self):
-        assert safe_copy(42) is 42
+        assert safe_copy(42) == 42
 
     def test_none_not_copied(self):
         assert safe_copy(None) is None

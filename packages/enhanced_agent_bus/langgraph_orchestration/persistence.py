@@ -1,6 +1,6 @@
 """
 ACGS-2 LangGraph Orchestration - State Persistence
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 State persistence for graph orchestration:
 - In-memory persistence for testing
@@ -35,7 +35,7 @@ logger = get_logger(__name__)
 class StatePersistence(ABC):
     """Abstract base class for state persistence.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     @abstractmethod
@@ -158,7 +158,7 @@ class StatePersistence(ABC):
 class InMemoryStatePersistence(StatePersistence):
     """In-memory state persistence for testing and development.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, constitutional_hash: str = CONSTITUTIONAL_HASH):
@@ -265,7 +265,7 @@ class InMemoryStatePersistence(StatePersistence):
 class RedisStatePersistence(StatePersistence):
     """Redis-based state persistence for production.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -579,7 +579,7 @@ def create_state_persistence(
     Returns:
         Configured state persistence
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     constitutional_hash = kwargs.pop("constitutional_hash", CONSTITUTIONAL_HASH)
 

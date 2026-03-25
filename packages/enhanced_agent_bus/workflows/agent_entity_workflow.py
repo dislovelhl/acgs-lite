@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Agent Entity Workflow
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Long-lived workflow representing a single agent instance lifecycle.
 Implements the Entity Workflow pattern (Actor Model) for agent management.
@@ -41,7 +41,7 @@ _AGENT_WORKFLOW_OPERATION_ERRORS = (
 class AgentState(Enum):
     """Agent lifecycle states.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     INITIALIZING = "initializing"
@@ -67,7 +67,7 @@ class TaskPriority(Enum):
 class AgentConfig:
     """Configuration for agent initialization.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     agent_id: str
@@ -99,7 +99,7 @@ class AgentConfig:
 class Task:
     """Task to be executed by an agent.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     task_id: str = field(default_factory=lambda: str(uuid.uuid4()))
@@ -133,7 +133,7 @@ class Task:
 class TaskResult:
     """Result of task execution.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     task_id: str
@@ -161,7 +161,7 @@ class TaskResult:
 class AgentStatus:
     """Current status of an agent.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     agent_id: str
@@ -197,7 +197,7 @@ class AgentStatus:
 class AgentResult:
     """Final result of agent lifecycle.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     agent_id: str
@@ -227,7 +227,7 @@ class AgentResult:
 class ShutdownRequest:
     """Request to shutdown an agent.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     agent_id: str
@@ -251,7 +251,7 @@ class ShutdownRequest:
 class WorkflowActivity:
     """Base class for workflow activities.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     activity_name: str = ""
@@ -271,7 +271,7 @@ class WorkflowActivity:
 class InitializeAgentActivity(WorkflowActivity):
     """Activity to initialize an agent.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     activity_name = "initialize_agent"
@@ -314,7 +314,7 @@ class InitializeAgentActivity(WorkflowActivity):
 class ExecuteTaskActivity(WorkflowActivity):
     """Activity to execute a task.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     activity_name = "execute_task"
@@ -366,7 +366,7 @@ class ExecuteTaskActivity(WorkflowActivity):
 class CheckpointAgentActivity(WorkflowActivity):
     """Activity to checkpoint agent state.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     activity_name = "checkpoint_agent"
@@ -399,7 +399,7 @@ class CheckpointAgentActivity(WorkflowActivity):
 class ShutdownAgentActivity(WorkflowActivity):
     """Activity to shutdown an agent.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     activity_name = "shutdown_agent"
@@ -451,7 +451,7 @@ class AgentEntityWorkflow(WorkflowDefinition[AgentConfig, AgentResult]):
     - Supports queries for status inspection
     - Handles graceful shutdown
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self) -> None:

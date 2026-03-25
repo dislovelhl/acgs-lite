@@ -1,6 +1,6 @@
 """Tests for enhanced_agent_bus.mamba2_hybrid_processor module.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Note: The Mamba2SSM fallback path has a known Conv1d signature bug
 (missing out_channels). Tests that instantiate full models patch around

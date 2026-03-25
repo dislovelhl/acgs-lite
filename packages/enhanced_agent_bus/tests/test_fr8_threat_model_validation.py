@@ -1,6 +1,6 @@
 """
 Tests for FR-8: Threat Model Validation
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive threat model validation tests covering:
 - 8.1 Prompt injection mitigations (16 tests)

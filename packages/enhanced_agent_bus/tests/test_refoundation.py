@@ -24,7 +24,7 @@ _SHORT_JUSTIFICATION = "short"
 
 
 def _make_manifest() -> InvariantManifest:
-    return InvariantManifest(constitutional_hash="cdd01ef066bc6cf2")
+    return InvariantManifest(constitutional_hash="608508a9bd224290")
 
 
 def _create_engine_and_proposal(

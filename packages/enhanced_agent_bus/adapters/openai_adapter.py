@@ -1,6 +1,6 @@
 """
 ACGS-2 OpenAI Model Adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Adapter for OpenAI GPT models (GPT-4, GPT-3.5, etc.)
 """
@@ -44,7 +44,7 @@ class OpenAIAdapter(ModelAdapter):
     - Function calling and tools
     - Streaming responses
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

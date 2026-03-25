@@ -1,6 +1,6 @@
 """
 ACGS-2 Decision Store - Redis-backed Decision Explanation Storage
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements FR-12 Decision Explanation API storage requirements:
 - Redis-backed storage with 24-hour TTL
@@ -90,7 +90,7 @@ class DecisionStore:
     - Message Index: {index_prefix}:msg:{tenant_id}:{message_id}
     - Time Index: {index_prefix}:time:{tenant_id}:{timestamp}
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

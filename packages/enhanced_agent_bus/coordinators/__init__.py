@@ -1,7 +1,7 @@
 """
 Coordinator Protocol definitions for MetaOrchestrator decomposition.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 These protocols define the interfaces for focused coordinators that
 replace the monolithic MetaOrchestrator responsibilities.

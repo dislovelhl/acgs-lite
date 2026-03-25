@@ -1,7 +1,7 @@
 """
 ACGS-2 Deliberation Layer - Integration
 Main integration point for the deliberation layer components.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Supports dependency injection for all major components:
 - ImpactScorer: Impact score calculation
@@ -174,7 +174,7 @@ class DeliberationLayer(OPAGuardMixin):
 
     Integrates OPA policy guard for VERIFY-BEFORE-ACT pattern,
     multi-signature collection, and critic agent reviews.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Supports dependency injection for testing and customization.
     All major components can be injected via constructor parameters.
@@ -566,7 +566,7 @@ class DeliberationLayer(OPAGuardMixin):
     async def _execute_routing(self, message: AgentMessage, context: JSONDict) -> JSONDict:
         """Determine route and execute lane-specific processing.
 
-        Routing tiers (Constitutional Hash: cdd01ef066bc6cf2):
+        Routing tiers (Constitutional Hash: 608508a9bd224290):
           LOW  (score < 0.3)    → fast lane
           MEDIUM (0.3 - <0.8)  -> HOTL: auto-remediate + 15-min override window
           HIGH (score >= 0.8)  → existing deliberation / full HITL gate
@@ -1290,7 +1290,7 @@ def reset_deliberation_layer() -> None:
     """Reset the global deliberation layer instance.
 
     Used primarily for test isolation to prevent state leakage between tests.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     global _deliberation_layer
     _deliberation_layer = None

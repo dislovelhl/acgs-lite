@@ -1,6 +1,6 @@
 """
 ACGS-2 Compliance Layer - Layer 4: Compliance & Transparency
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements institutional-grade regulatory alignment for:
 - NIST AI RMF (Risk Management Framework)

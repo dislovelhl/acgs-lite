@@ -4,7 +4,7 @@ import future.keywords.if
 import future.keywords.in
 
 # Message Routing Policy - High-performance routing decisions
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # P99 eval <1ms: O(1) object lookups, indexed equality checks
 
 # OPTIMIZATION: Priority levels as object for O(1) lookup instead of array iteration
@@ -26,7 +26,7 @@ destination := {
     "queue": "governance"
 } if {
     input.message.message_type == "governance_request"
-    input.message.constitutional_hash == "cdd01ef066bc6cf2"
+    input.message.constitutional_hash == "608508a9bd224290"
 }
 
 # High priority messages go to high-priority queue
@@ -37,7 +37,7 @@ destination := {
     "queue": "priority"
 } if {
     high_priority_levels[input.message.priority]
-    input.message.constitutional_hash == "cdd01ef066bc6cf2"
+    input.message.constitutional_hash == "608508a9bd224290"
 }
 
 # Default routing based on message type (O(1) object lookup)
@@ -45,5 +45,5 @@ destination := {
     "agent": default_agent_for_type[input.message.message_type],
     "priority": input.message.priority
 } if {
-    input.message.constitutional_hash == "cdd01ef066bc6cf2"
+    input.message.constitutional_hash == "608508a9bd224290"
 }

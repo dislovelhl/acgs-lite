@@ -1,6 +1,6 @@
 """
 PostgreSQL Saga Repository Locking and Maintenance Operations
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Contains distributed locking and maintenance operations (cleanup,
 statistics, health checks) for the PostgreSQL saga state repository.
@@ -47,7 +47,7 @@ class PostgresLockManager:
 
     Handles distributed locking, cleanup, statistics, and health checks.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Type hints for mixin - these are provided by the main repository class

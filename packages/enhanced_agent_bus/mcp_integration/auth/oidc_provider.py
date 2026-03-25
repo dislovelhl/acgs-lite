@@ -1,7 +1,7 @@
 """
 OpenID Connect Provider for MCP Authentication.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 MACI Role: JUDICIAL
 
 Provides OIDC discovery and authentication:
@@ -237,7 +237,7 @@ class OIDCProvider:
     - UserInfo endpoint support
     - Session management
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, config: OIDCConfig):

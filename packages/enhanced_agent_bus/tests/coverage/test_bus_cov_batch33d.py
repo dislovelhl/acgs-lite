@@ -4,7 +4,7 @@ Coverage tests for:
 - enhanced_agent_bus/deliberation_layer/impact_scorer.py
 - enhanced_agent_bus/llm_adapters/bedrock_adapter.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -780,6 +780,12 @@ class TestOIDCHandlerDecodeIdToken:
             client_secret="real-secret-value-xyz",
             server_metadata_url="https://idp.example/.well-known/oidc",
         )
+        handler._fetch_metadata = AsyncMock(
+            return_value={
+                "issuer": "https://idp.example",
+                "jwks_uri": "https://idp.example/jwks",
+            }
+        )
         provider = handler.get_provider("p1")
         with patch("src.core.shared.auth.oidc_handler.HAS_AUTHLIB", False):
             with pytest.raises(OIDCTokenError, match="authlib library"):
@@ -795,8 +801,9 @@ class TestOIDCHandlerDecodeIdToken:
         )
         handler._fetch_metadata = AsyncMock(return_value={"issuer": "https://idp.example"})
         provider = handler.get_provider("p1")
-        with pytest.raises(OIDCTokenError, match="JWKS URI not found"):
-            await handler._decode_id_token("token", provider)
+        with patch("src.core.shared.auth.oidc_handler.HAS_AUTHLIB", False):
+            with pytest.raises(OIDCTokenError, match="JWKS URI not found"):
+                await handler._decode_id_token("token", provider)
 
     async def test_decode_id_token_no_issuer(self):
         handler = OIDCHandler()

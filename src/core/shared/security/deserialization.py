@@ -1,6 +1,6 @@
 """
 ACGS-2 Secure Deserialization Utilities
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides safer alternatives for pickle and other deserialization methods.
 """

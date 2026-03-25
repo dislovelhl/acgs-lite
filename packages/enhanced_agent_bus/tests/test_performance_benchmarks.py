@@ -13,7 +13,7 @@ Usage:
 Requires:
     pip install pytest-benchmark memory-profiler
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import gc

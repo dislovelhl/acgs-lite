@@ -130,7 +130,7 @@ agent = GovernedAgent(my_agent, constitution=constitution)
 Action: "Should I invest in crypto?"
 Decision: DENY (SAFE-001)
 Latency: 487ns
-Audit: chain-verified, hash cdd01ef066bc6cf2
+Audit: chain-verified, hash 608508a9bd224290
 ```
 
 ---
@@ -141,16 +141,16 @@ Audit: chain-verified, hash cdd01ef066bc6cf2
 Works with everything you already use
 
 ### Grid (logos + pip install extras)
-- OpenAI (`acgs-lite[openai]`)
-- Anthropic (`acgs-lite[anthropic]`)
-- LangChain (`acgs-lite[langchain]`)
-- LiteLLM (`acgs-lite[litellm]`)
-- Google GenAI (`acgs-lite[google]`)
-- LlamaIndex (`acgs-lite[llamaindex]`)
-- AutoGen (`acgs-lite[autogen]`)
-- CrewAI (`acgs-lite[crewai]`)
-- MCP (`acgs-lite[mcp]`)
-- A2A (`acgs-lite[a2a]`)
+- OpenAI (`acgs[openai]`)
+- Anthropic (`acgs[anthropic]`)
+- LangChain (`acgs[langchain]`)
+- LiteLLM (`acgs[litellm]`)
+- Google GenAI (`acgs[google]`)
+- LlamaIndex (`acgs[llamaindex]`)
+- AutoGen (`acgs[autogen]`)
+- CrewAI (`acgs[crewai]`)
+- MCP (`acgs[mcp]`)
+- A2A (`acgs[a2a]`)
 - GitLab CI/CD (pipeline stage)
 
 ---
@@ -206,7 +206,7 @@ Start free. Scale with compliance needs.
 Your AI makes decisions. Can you prove they're governed?
 
 ### CTA
-**Get Started Free** — `pip install acgs-lite`
+**Get Started Free** — `pip install acgs`
 
 ### Secondary links
 - Documentation

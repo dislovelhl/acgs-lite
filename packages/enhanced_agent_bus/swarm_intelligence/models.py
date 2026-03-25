@@ -3,7 +3,7 @@ Swarm Intelligence Models
 
 All dataclasses for swarm operations.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from dataclasses import dataclass, field

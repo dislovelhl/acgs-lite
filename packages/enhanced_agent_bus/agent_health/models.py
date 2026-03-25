@@ -1,6 +1,6 @@
 """
 Agent Health Monitoring — Data Models and Enums.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Defines all Pydantic v2 data contracts for the agent health sub-system:
 - Enums: HealthState, AutonomyTier, HealingTrigger, HealingActionType, OverrideMode
@@ -77,7 +77,7 @@ class OverrideMode(StrEnum):
 class AgentHealthRecord(BaseModel):
     """Current health snapshot for a single agent instance, stored as Redis hash.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     model_config = {"frozen": False}
@@ -96,7 +96,7 @@ class HealingAction(BaseModel):
     """A governance-approved action taken to restore agent health.
 
     Written to the governance audit log before execution.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     model_config = {"frozen": True}
@@ -122,7 +122,7 @@ class HealingAction(BaseModel):
 class HealingOverride(BaseModel):
     """Operator-issued instruction to suppress or force a healing action.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     model_config = {"frozen": True}
@@ -146,7 +146,7 @@ class AgentHealthThresholds(BaseModel):
     """Configurable thresholds controlling when healing actions trigger.
 
     Per-agent overrides fall back to global defaults when agent_id is None.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     model_config = {"frozen": False}

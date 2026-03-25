@@ -1,6 +1,6 @@
 # GitLab Duo Integration
 
-ACGS-Lite integrates directly into the GitLab development workflow as a governance layer for merge requests, CI/CD pipelines, and Duo Chat.
+ACGS integrates directly into the GitLab development workflow as a governance layer for merge requests, CI/CD pipelines, and Duo Chat.
 
 ## How It Works
 
@@ -21,16 +21,16 @@ governance:
   stage: test
   image: python:3.11-slim
   before_script:
-    - pip install acgs-lite
+    - pip install acgs[gitlab]
   script:
-    - acgs-lite validate --constitution rules.yaml --mr $CI_MERGE_REQUEST_IID
+    - python -c "from acgs_lite.integrations.gitlab import create_gitlab_ci_config; print(create_gitlab_ci_config())"
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
 ```
 
 ## MCP Server for Duo Chat
 
-ACGS-Lite ships as a Model Context Protocol server. Connect it to GitLab Duo Chat and any MCP-compatible client:
+ACGS ships as a Model Context Protocol server. Connect it to GitLab Duo Chat and any MCP-compatible client:
 
 ```bash
 python -m acgs_lite.integrations.mcp_server

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Contract Validator & Registry
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides:
 - ContractValidationResult — outcome of validating a message against a contract

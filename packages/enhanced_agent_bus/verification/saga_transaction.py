@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - SagaLLM Transactions
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements compensable transaction guarantees for LLM workflows.
 Bypasses self-verification limitations through LIFO rollback and formal checkpoints.
@@ -73,7 +73,7 @@ class SagaTransaction:
 
     Ensures that multi-step governance decisions are atomic and compensable.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, transaction_id: str | None = None):

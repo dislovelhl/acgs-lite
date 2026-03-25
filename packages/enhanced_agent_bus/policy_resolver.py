@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Policy Resolver
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 PolicyResolver for querying Policy Registry based on session context
 with Redis caching for sub-millisecond performance.
@@ -132,7 +132,7 @@ class PolicyResolver:
     - Cache invalidation on policy changes
     - Constitutional hash validation
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -249,7 +249,7 @@ class PolicyResolver:
         Returns:
             PolicyResolutionResult with selected policy and metadata
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         # Normalize parameters
         normalized_params = self._normalize_resolution_parameters(

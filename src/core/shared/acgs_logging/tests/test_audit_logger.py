@@ -707,7 +707,7 @@ class TestRedisAuditStore:
     async def test_query_ascending_order(self, store: RedisAuditStore, mock_redis):
         mock_redis.zrangebyscore = AsyncMock(return_value=[])
         params = AuditQueryParams(order_desc=False)
-        result = await store.query("t1", params)
+        await store.query("t1", params)
         mock_redis.zrangebyscore.assert_called_once()
 
     @pytest.mark.asyncio

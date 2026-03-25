@@ -1,6 +1,6 @@
 """
 ACGS-2 Observability Decorators
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Function decorators for automatic tracing and metrics collection.
 """
@@ -13,8 +13,8 @@ from collections.abc import Callable
 from typing import TypeVar, cast
 
 from enhanced_agent_bus.bus_types import JSONDict, JSONValue
-from enhanced_agent_bus.observability.structured_logging import get_logger
 
+from .structured_logging import get_logger
 from .telemetry import (
     CONSTITUTIONAL_HASH,
     OTEL_AVAILABLE,

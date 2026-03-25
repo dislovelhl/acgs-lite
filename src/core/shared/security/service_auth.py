@@ -1,6 +1,6 @@
 """
 ACGS-2 Service-to-Service Authentication
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides JWT-based identity and authentication for inter-service communication.
 """

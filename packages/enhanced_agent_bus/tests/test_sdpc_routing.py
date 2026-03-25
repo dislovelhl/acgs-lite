@@ -1,6 +1,6 @@
 """
 Integration test for AdaptiveRouter with SDPC Intent Classification.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from datetime import UTC, datetime, timezone

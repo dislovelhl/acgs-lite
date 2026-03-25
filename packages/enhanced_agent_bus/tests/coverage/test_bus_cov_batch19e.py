@@ -4,7 +4,7 @@ Coverage tests for:
 2. enhanced_agent_bus.opa_client.core (OPAClientCore, OPAClient, singleton helpers)
 3. enhanced_agent_bus.deliberation_layer.impact_scorer (ImpactScorer)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

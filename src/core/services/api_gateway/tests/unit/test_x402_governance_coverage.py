@@ -1,6 +1,6 @@
 """
 Tests for x402_governance.py — paid governance endpoints coverage.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: _evaluate_action, _sign_receipt, _validate_related_endpoints,
 _audit_related_endpoints, _quick_check_related_endpoints, _pricing_journeys,

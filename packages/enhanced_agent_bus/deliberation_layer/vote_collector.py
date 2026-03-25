@@ -1,6 +1,6 @@
 """
 ACGS-2 Event-Driven Vote Collector
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides high-performance event-driven vote collection using Redis pub/sub
 for multi-stakeholder deliberation workflows.

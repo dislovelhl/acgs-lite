@@ -11,7 +11,7 @@ Design notes:
 - Downstream middleware is called first; orchestration runs on the validated context
 - orchestration_result and orchestrator_used are set on PipelineContext
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 NIST 800-53 SI-7, AU-2 — Integrity checks, Audit events
 """
 

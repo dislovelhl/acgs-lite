@@ -1,6 +1,6 @@
 """
 ACGS-2 Performance Metrics Registry
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Extended Prometheus instrumentation for ACGS-2 performance metrics.
 Provides specialized metrics for:
@@ -33,8 +33,7 @@ try:
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
-from enhanced_agent_bus.observability.structured_logging import get_logger
-
+from ..structured_logging import get_logger
 from .prometheus_compat import (
     Counter,
     Gauge,
@@ -56,7 +55,7 @@ DELIBERATION_LAYER_BUCKETS = (5.0, 10.0, 25.0, 50.0, 100.0, 250.0, 500.0, 1000.0
 
 # =============================================================================
 # Z3 Solver Metrics
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # =============================================================================
 
 _z3_solver_latency_ms: Histogram | None = None
@@ -109,7 +108,7 @@ def z3_solver_timer(operation: str = "solve") -> Generator[None, None, None]:
 
 # =============================================================================
 # Adaptive Threshold Decision Metrics
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # =============================================================================
 
 _adaptive_threshold_decision_ms: Histogram | None = None
@@ -170,7 +169,7 @@ def adaptive_threshold_timer(
 
 # =============================================================================
 # Cache Miss Reason Metrics
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # =============================================================================
 
 _cache_miss_reasons: Counter | None = None
@@ -229,7 +228,7 @@ def record_cache_miss(
 
 # =============================================================================
 # Batch Processing Overhead Metrics
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # =============================================================================
 
 _batch_processing_overhead_us: Histogram | None = None
@@ -300,7 +299,7 @@ def batch_overhead_timer(batch_size: int) -> Generator[None, None, None]:
 
 # =============================================================================
 # MACI Enforcement Latency Metrics
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # =============================================================================
 
 _maci_enforcement_latency_p99: Gauge | None = None
@@ -369,7 +368,7 @@ def maci_enforcement_timer(maci_role: str = "unknown") -> Generator[None, None, 
 
 # =============================================================================
 # Constitutional Validation Rate Metrics
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # =============================================================================
 
 _constitutional_validation_rate: Counter | None = None
@@ -421,7 +420,7 @@ def record_constitutional_validation(
 
 # =============================================================================
 # OPA Policy Evaluation Metrics
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # =============================================================================
 
 _opa_policy_evaluation_ms: Histogram | None = None
@@ -486,7 +485,7 @@ def opa_policy_timer(
 
 # =============================================================================
 # Deliberation Layer Duration Metrics
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # =============================================================================
 
 _deliberation_layer_duration_ms: Histogram | None = None
@@ -564,7 +563,7 @@ def deliberation_layer_timer(
 
 # =============================================================================
 # Performance Metrics Registry
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # =============================================================================
 
 
@@ -576,7 +575,7 @@ class PerformanceMetricsRegistry:
     Provides centralized access to all performance metrics with
     constitutional hash enforcement.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     constitutional_hash: str = CONSTITUTIONAL_HASH

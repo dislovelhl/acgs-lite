@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """Comprehensive tests for adaptive_governance/trace_collector.py.
 
 Targets ≥90% coverage on:

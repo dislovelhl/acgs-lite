@@ -1,6 +1,6 @@
 """
 Multi-Agent Optimization Toolkit
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This package provides comprehensive multi-agent performance optimization
 capabilities for ACGS-2, including:

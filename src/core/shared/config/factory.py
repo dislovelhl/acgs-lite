@@ -1,7 +1,7 @@
 # mypy: disable-error-code="no-redef"
 """Global settings aggregation and factory.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import os

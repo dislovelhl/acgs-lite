@@ -1,6 +1,6 @@
 """
 ACGS-2 Constitutional Council Service
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Manages the ratification of high-risk policy changes through a
 distributed multi-signature voting process.

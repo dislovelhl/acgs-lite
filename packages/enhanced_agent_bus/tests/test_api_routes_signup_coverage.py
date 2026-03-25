@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # Sprint 55 — api/routes/signup.py coverage
 """Comprehensive coverage tests for api/routes/signup.py.
 

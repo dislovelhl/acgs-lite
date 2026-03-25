@@ -6,7 +6,7 @@ import future.keywords.in
 
 # RBAC Policy - Stricter least-privilege, tenant-scoped (ACGS-2 Enhanced)
 # NIST 800-53 AC-6, OWASP A01:2021 Broken Access Control
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # P99 eval <1ms: O(1) object lookups instead of array iteration
 # OPA Performance: Using indexed set lookups for sub-millisecond evaluation
 
@@ -23,7 +23,7 @@ user_roles_set[role] := true if {
 allow if {
 	user_roles_set[input.required_role]
 	input.user.tenant_id == input.tenant_id
-	input.constitutional_hash == "cdd01ef066bc6cf2"
+	input.constitutional_hash == "608508a9bd224290"
 	not privilege_escalation_attempt
 }
 

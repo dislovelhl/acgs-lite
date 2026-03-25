@@ -1,7 +1,7 @@
 """
 ACGS-2 Circuit Breaker Enums
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module defines the core enums for circuit breaker states,
 fallback strategies, and service severity levels.

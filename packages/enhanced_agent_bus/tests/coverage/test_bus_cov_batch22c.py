@@ -5,7 +5,7 @@ Coverage tests for batch 22c:
   3. constitutional_classifier/detector.py
   4. opal_client.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -41,7 +41,7 @@ def _make_version(
     return ConstitutionalVersion(
         version_id=version_id,
         version=version,
-        constitutional_hash="cdd01ef066bc6cf2",
+        constitutional_hash="608508a9bd224290",
         content={"policies": []},
         status=status,
     )

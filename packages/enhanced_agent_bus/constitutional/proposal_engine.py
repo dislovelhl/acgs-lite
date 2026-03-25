@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Amendment Proposal Engine
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Service to create, validate, and submit constitutional amendment proposals
 with impact analysis, MACI enforcement, and automatic audit logging.
@@ -150,7 +150,7 @@ class ProposalValidationError(ACGSBaseError):
 class ProposalRequest(BaseModel):
     """Request to create a constitutional amendment proposal.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     proposed_changes: JSONDict = Field(
@@ -174,7 +174,7 @@ class ProposalRequest(BaseModel):
 class ProposalResponse(BaseModel):
     """Response from proposal creation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     proposal: AmendmentProposal = Field(..., description="Created proposal")
@@ -192,7 +192,7 @@ class AmendmentProposalEngine:
     - MACI enforcement (only LEGISLATIVE role can propose)
     - Automatic audit logging
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

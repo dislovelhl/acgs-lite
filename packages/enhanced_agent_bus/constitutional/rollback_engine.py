@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Constitutional Rollback Engine
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Engine to automatically rollback constitutional amendments when governance
 degradation is detected. Implements rollback saga workflow (inverse of
@@ -217,7 +217,7 @@ class RollbackReason(str):
 class RollbackTriggerConfig:
     """Configuration for automatic rollback triggers.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -252,7 +252,7 @@ class RollbackSagaActivities:
     Activity implementations for constitutional rollback saga.
     All activities are idempotent and can be safely retried.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

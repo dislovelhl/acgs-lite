@@ -1,6 +1,6 @@
 """
 ACGS-2 Online Learning Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Unit tests for River-based online learning module with sklearn compatibility adapter.
 Tests adapter pattern, online learning pipeline, Kafka consumer, and module-level functions.

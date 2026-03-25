@@ -6,7 +6,7 @@ Targets:
 - enhanced_agent_bus.verification_orchestrator (VerificationOrchestrator)
 - enhanced_agent_bus.adaptive_governance.threshold_manager (AdaptiveThresholds)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import time
@@ -801,23 +801,23 @@ class TestVerificationOrchestratorVerify:
 
 class TestAdaptiveThresholdsInit:
     def test_init_sets_base_thresholds(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         assert at.base_thresholds[ImpactLevel.NEGLIGIBLE] == 0.1
         assert at.base_thresholds[ImpactLevel.LOW] == 0.3
         assert at.base_thresholds[ImpactLevel.MEDIUM] == 0.6
         assert at.base_thresholds[ImpactLevel.HIGH] == 0.8
         assert at.base_thresholds[ImpactLevel.CRITICAL] == 0.95
         assert at.model_trained is False
-        assert at.constitutional_hash == "cdd01ef066bc6cf2"
+        assert at.constitutional_hash == "608508a9bd224290"
 
     def test_mlflow_not_initialized_in_tests(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         assert at._mlflow_initialized is False
 
 
 class TestGetAdaptiveThreshold:
     def test_untrained_model_returns_base(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         features = _make_features()
 
         for level in ImpactLevel:
@@ -825,7 +825,7 @@ class TestGetAdaptiveThreshold:
             assert result == at.base_thresholds[level]
 
     def test_trained_model_returns_adjusted_threshold(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         at.model_trained = True
 
         features = _make_features(confidence_level=0.9)
@@ -841,7 +841,7 @@ class TestGetAdaptiveThreshold:
         assert 0.0 <= result <= 1.0
 
     def test_trained_model_clamps_to_bounds(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         at.model_trained = True
 
         features = _make_features(confidence_level=1.0)
@@ -857,7 +857,7 @@ class TestGetAdaptiveThreshold:
         assert result <= 1.0
 
     def test_trained_model_error_falls_back(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         at.model_trained = True
 
         features = _make_features()
@@ -870,13 +870,13 @@ class TestGetAdaptiveThreshold:
 
 class TestExtractFeatureVector:
     def test_feature_vector_length(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         features = _make_features()
         vec = at._extract_feature_vector(features)
         assert len(vec) == 11
 
     def test_empty_temporal_patterns(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         features = _make_features(temporal_patterns=[])
         vec = at._extract_feature_vector(features)
         # temporal_mean and temporal_std should be 0.0
@@ -884,7 +884,7 @@ class TestExtractFeatureVector:
         assert vec[4] == 0.0
 
     def test_non_empty_temporal_patterns(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         features = _make_features(temporal_patterns=[1.0, 2.0, 3.0])
         vec = at._extract_feature_vector(features)
         assert vec[3] == pytest.approx(np.mean([1.0, 2.0, 3.0]))
@@ -893,7 +893,7 @@ class TestExtractFeatureVector:
 
 class TestUpdateModel:
     def test_positive_reinforcement(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         decision = _make_decision()
 
         at.update_model(decision, outcome_success=True, human_feedback=True)
@@ -903,7 +903,7 @@ class TestUpdateModel:
         assert sample["human_feedback"] is True
 
     def test_negative_reinforcement(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         decision = _make_decision()
 
         at.update_model(decision, outcome_success=False, human_feedback=False)
@@ -912,7 +912,7 @@ class TestUpdateModel:
         assert sample["outcome_success"] is False
 
     def test_neutral_feedback(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         decision = _make_decision()
 
         # outcome_success=True but human_feedback=False triggers negative
@@ -920,7 +920,7 @@ class TestUpdateModel:
         assert len(at.training_data) == 1
 
     def test_update_triggers_retraining(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         at.last_retraining = time.time() - 7200  # 2 hours ago
 
         with patch.object(at, "_retrain_model") as mock_retrain:
@@ -929,7 +929,7 @@ class TestUpdateModel:
             mock_retrain.assert_called_once()
 
     def test_update_error_handled(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         decision = _make_decision()
         # Corrupt features_used to trigger error
         decision.features_used = None  # type: ignore[assignment]
@@ -940,9 +940,9 @@ class TestUpdateModel:
 
 class TestRetrainModel:
     def test_retrain_insufficient_data(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         # Add only 50 samples (need 100 minimum)
-        for i in range(50):
+        for _i in range(50):
             at.training_data.append({
                 "features": [0.1] * 11,
                 "target": 0.05,
@@ -957,10 +957,10 @@ class TestRetrainModel:
         assert at.model_trained is False
 
     def test_retrain_insufficient_recent_data(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         # Add 100 samples but all old
         old_time = time.time() - 200_000  # way older than 24h
-        for i in range(120):
+        for _i in range(120):
             at.training_data.append({
                 "features": [0.1] * 11,
                 "target": 0.05,
@@ -975,7 +975,7 @@ class TestRetrainModel:
         assert at.model_trained is False
 
     def test_retrain_success_without_mlflow(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         at._mlflow_initialized = False
 
         now = time.time()
@@ -994,11 +994,11 @@ class TestRetrainModel:
         assert at.model_trained is True
 
     def test_retrain_error_handled(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         at._mlflow_initialized = False
 
         now = time.time()
-        for i in range(120):
+        for _i in range(120):
             at.training_data.append({
                 "features": [0.1] * 11,
                 "target": 0.05,
@@ -1018,7 +1018,7 @@ class TestRetrainModel:
 
 class TestLogTrainingRunToMLflow:
     def test_mlflow_logging_error_falls_back(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         X = np.array([[0.1] * 11] * 60)
         y = np.array([0.05] * 60)
         recent_data = [
@@ -1041,10 +1041,10 @@ class TestAdaptiveThresholdsMLflowInit:
             "enhanced_agent_bus.adaptive_governance.threshold_manager.MLFLOW_AVAILABLE",
             False,
         ):
-            at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+            at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
             assert at._mlflow_initialized is False
 
     def test_mlflow_in_pytest_skips_init(self):
         # pytest is in sys.modules, so mlflow init should be skipped
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         assert at._mlflow_initialized is False

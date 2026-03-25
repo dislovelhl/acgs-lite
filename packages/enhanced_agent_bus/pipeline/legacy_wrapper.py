@@ -4,7 +4,7 @@ Legacy MessageProcessor wrapper for backward compatibility.
 This wrapper provides the same API as the legacy MessageProcessor
 but delegates to the new PipelineMessageRouter internally.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from collections.abc import Callable

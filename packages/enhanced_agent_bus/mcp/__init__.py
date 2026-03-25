@@ -6,7 +6,7 @@ This package is intentionally separate from the heavier ``mcp_integration`` and
 ``mcp_server`` packages so it can be imported in minimal contexts without pulling
 in optional dependencies.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Quick start::
 

@@ -1,6 +1,6 @@
 """
 Coverage improvement tests for batch32e.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets:
   - enhanced_agent_bus.integrations.ml_governance (lines 86-89, 503-505, 523,

@@ -1,6 +1,6 @@
 """
 ACGS-2 Decision Explanation Service
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements FR-12 Decision Explanation API requirements for structured
 factor attribution, governance vector analysis, and counterfactual reasoning.
@@ -72,7 +72,7 @@ class CounterfactualEngine:
     Provides "what-if" scenarios showing how decision outcomes might
     change with different input parameters.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self) -> None:
@@ -207,7 +207,7 @@ class ExplanationService:
     - Counterfactual analysis
     - EU AI Act Article 13 compliance
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -812,7 +812,7 @@ class ExplanationServiceAdapter:
     concrete ExplanationService, enabling independent testing and future
     implementation swaps without modifying service code.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, service: ExplanationService | None = None) -> None:

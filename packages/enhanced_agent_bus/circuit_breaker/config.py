@@ -1,7 +1,7 @@
 """
 ACGS-2 Circuit Breaker Configuration
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module defines circuit breaker configuration classes and service-specific
 default configurations per T002 requirements.
@@ -39,7 +39,7 @@ class ServiceCircuitConfig:
     """
     Service-specific circuit breaker configuration.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     name: str
@@ -151,7 +151,7 @@ def get_service_config(service_name: str, use_unified_config: bool = True) -> Se
     """
     Get configuration for a service, with sensible defaults.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Args:
         service_name: Name of the service to configure

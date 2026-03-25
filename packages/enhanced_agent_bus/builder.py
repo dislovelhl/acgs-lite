@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Builder and Factories for MessageProcessor dependencies.
 Isolates complex initialization and cross-layer instantiation logic.

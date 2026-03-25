@@ -22,7 +22,7 @@ export function healthResponse(): Response {
     JSON.stringify({
       status: "ok",
       service: "acgs-governance-proxy",
-      constitutional_hash: "cdd01ef066bc6cf2",
+      constitutional_hash: "608508a9bd224290",
     }),
     {
       status: 200,

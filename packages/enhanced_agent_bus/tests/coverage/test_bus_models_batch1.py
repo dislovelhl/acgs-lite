@@ -1,6 +1,6 @@
 """
 Tests for under-covered enhanced_agent_bus pure-Python models and exceptions.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers:
 - compliance_layer/models.py (enums, Pydantic models, computed properties)
@@ -1971,11 +1971,11 @@ class TestConstitutionalExceptions:
         from enhanced_agent_bus.exceptions import ConstitutionalHashMismatchError
 
         exc = ConstitutionalHashMismatchError(
-            expected_hash="cdd01ef066bc6cf2",
+            expected_hash="608508a9bd224290",
             actual_hash="0000000000000000",
             context="startup",
         )
-        assert exc.expected_hash == "cdd01ef066bc6cf2"
+        assert exc.expected_hash == "608508a9bd224290"
         assert exc.actual_hash == "0000000000000000"
         assert "startup" in str(exc)
 

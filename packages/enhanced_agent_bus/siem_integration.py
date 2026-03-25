@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - SIEM Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Lightweight SIEM formatting, alerting, and buffering support.
 """

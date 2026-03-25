@@ -4,7 +4,7 @@ Tests for BatchGovernanceMiddleware (middlewares/batch/governance.py).
 Covers MACI role validation, tenant access, impact scoring,
 constitutional compliance, caching, and error handling paths.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ from enhanced_agent_bus.validators import ValidationResult
 try:
     from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
-    CONSTITUTIONAL_HASH = "cdd01ef066bc6cf2"
+    CONSTITUTIONAL_HASH = "608508a9bd224290"
 
 
 # ---------------------------------------------------------------------------

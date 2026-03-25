@@ -1,6 +1,6 @@
 """Tests for enhanced_agent_bus.context_optimization — coverage boost.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests SpecDeltaCompressor, CachedGovernanceValidator, PartitionBroker,
 OptimizedAgentBus, and factory functions.

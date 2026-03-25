@@ -3,7 +3,7 @@ Query Governance Precedents MCP Tool.
 
 Queries historical governance decisions for precedent analysis.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -185,13 +185,11 @@ class QueryPrecedentsTool:
                     },
                     "start_date": {
                         "type": "string",
-                        "format": "date-time",
-                        "description": "Start of date range (ISO 8601)",
+                        "description": "Start of date range (ISO 8601 date-time, e.g. 2024-12-01T00:00:00Z)",
                     },
                     "end_date": {
                         "type": "string",
-                        "format": "date-time",
-                        "description": "End of date range (ISO 8601)",
+                        "description": "End of date range (ISO 8601 date-time, e.g. 2024-12-31T23:59:59Z)",
                     },
                     "min_confidence": {
                         "type": "number",

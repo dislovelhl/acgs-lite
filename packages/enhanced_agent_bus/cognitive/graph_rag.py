@@ -12,7 +12,7 @@ This module re-exports the canonical types and keeps the sync-only
 implementations that depend on sync ``GraphStorage`` / ``EmbeddingProvider``
 protocols.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

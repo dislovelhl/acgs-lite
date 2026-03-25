@@ -1,6 +1,6 @@
 """
 ACGS-2 Multi-Tenancy Middleware
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 FastAPI middleware for automatic tenant context management.
 Extracts tenant identification from requests and sets the tenant context.
@@ -36,7 +36,7 @@ PUBLIC_PATHS = [
 def extract_tenant_from_request(request: Request) -> str | None:
     """Extract tenant ID from request with security validation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     SECURITY: Tenant ID extraction follows principle of least privilege.
     JWT claims are the authoritative source for tenant identity.
@@ -66,13 +66,13 @@ def extract_tenant_from_request(request: Request) -> str | None:
             if header_tenant and header_tenant != jwt_tenant_id:
                 logger.warning(
                     f"Tenant ID mismatch: header={header_tenant}, jwt={jwt_tenant_id}. "
-                    "Using JWT tenant (authoritative). Constitutional Hash: cdd01ef066bc6cf2"
+                    "Using JWT tenant (authoritative). Constitutional Hash: 608508a9bd224290"
                 )
             path_tenant = request.path_params.get("tenant_id")
             if path_tenant and path_tenant != jwt_tenant_id:
                 logger.warning(
                     f"Tenant ID mismatch: path={path_tenant}, jwt={jwt_tenant_id}. "
-                    "Using JWT tenant (authoritative). Constitutional Hash: cdd01ef066bc6cf2"
+                    "Using JWT tenant (authoritative). Constitutional Hash: 608508a9bd224290"
                 )
             return jwt_tenant_id
 
@@ -134,7 +134,7 @@ def is_admin_request(request: Request) -> bool:
 class TenantMiddleware(BaseHTTPMiddleware):
     """FastAPI middleware for tenant context management.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     This middleware:
     1. Extracts tenant ID from incoming requests

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Compliance Layer Models Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: enhanced_agent_bus/compliance_layer/models.py (390 stmts, 0% -> target 80%+)
 Tests Pydantic model construction, enum values, and calculation methods:

@@ -2,7 +2,7 @@
 Coverage tests for batch27e: cost/batch, streaming, bus/batch,
 invariant_guard, api/routes/batch, builder.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -656,7 +656,7 @@ def _make_manifest(
             ),
         ]
     return InvariantManifest(
-        constitutional_hash="cdd01ef066bc6cf2",
+        constitutional_hash="608508a9bd224290",
         invariants=invariants,
     )
 
@@ -666,7 +666,7 @@ class TestInvariantClassifier:
 
     def test_empty_manifest_blocks_all(self):
         manifest = InvariantManifest(
-            constitutional_hash="cdd01ef066bc6cf2", invariants=[]
+            constitutional_hash="608508a9bd224290", invariants=[]
         )
         classifier = InvariantClassifier(manifest)
         result = classifier.classify_change(["anything"])

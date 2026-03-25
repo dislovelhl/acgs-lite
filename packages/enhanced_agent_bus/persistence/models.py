@@ -1,7 +1,7 @@
 """
 Workflow Persistence Models
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 Version: 1.0.0
 
 Data models for durable workflow execution with full audit trail support.

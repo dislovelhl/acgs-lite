@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Redis Pool Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive test suite targeting >=98% coverage of redis_pool.py.
 Covers all classes, methods, error paths, and edge cases.

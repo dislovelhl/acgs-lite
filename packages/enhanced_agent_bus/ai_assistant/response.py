@@ -1,6 +1,6 @@
 """
 ACGS-2 AI Assistant - Response Generation
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Intelligent response generation with template-based and LLM-powered
 options, personality application, and constitutional validation.

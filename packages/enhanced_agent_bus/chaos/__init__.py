@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Chaos Engineering Framework
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This package provides a comprehensive chaos engineering framework for validating
 system resilience under failure conditions while maintaining constitutional compliance.

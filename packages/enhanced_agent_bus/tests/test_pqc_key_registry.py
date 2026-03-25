@@ -1,6 +1,6 @@
 """
 Tests for PQC Key Registry
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This test file uses dynamic import to bypass parent module dependencies.
 """

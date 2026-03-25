@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Metering Manager
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Manages metering and billing event recording for the agent bus.
 Follows the fire-and-forget pattern for zero-latency impact.

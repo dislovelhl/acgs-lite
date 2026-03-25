@@ -1,6 +1,6 @@
 """
 ACGS-2 Admin API for SSO Provider Configuration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides administrative endpoints for managing SSO providers and role mappings.
 These endpoints require admin authentication and authorization.

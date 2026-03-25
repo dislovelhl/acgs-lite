@@ -4,7 +4,7 @@ Coverage tests for:
 - processing_strategies.py (Rust, Composite, DynamicPolicy, OPA, MACI strategies)
 - mamba2_hybrid_processor.py (Mamba2Config, ConstitutionalContextManager, helpers)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

@@ -7,7 +7,7 @@ Comprehensive coverage tests for enhanced_agent_bus modules:
 - agents/chatops_executor.py (ChatOps command executor)
 - deliberation_layer/hitl_manager.py (HITL manager)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

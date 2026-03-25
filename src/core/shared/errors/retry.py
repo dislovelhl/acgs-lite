@@ -1,6 +1,6 @@
 """
 Retry and Backoff Utilities — Facade
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Canonical location: src.core.shared.resilience.retry
 This module re-exports all symbols for backward compatibility.

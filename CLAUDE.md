@@ -15,7 +15,9 @@ ACGS is a multi-package governance codebase:
 - **Frontend and edge** (`packages/propriety-ai/`, `workers/governance-proxy/`) — SvelteKit UI
   and a Cloudflare Worker proxy.
 
-Constitutional hash: `608508a9bd224290`.
+Constitutional hash: `608508a9bd224290` — the SHA-256 of the default constitutional rule set,
+used as both `Constitution.default().hash` and the platform constant in
+`src/core/shared/constants.py`.
 
 Primary languages: Python first, TypeScript second, Rust for hot paths, Markdown for operating
 docs.

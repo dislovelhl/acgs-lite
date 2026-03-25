@@ -5,7 +5,7 @@ Coverage tests for:
 - interfaces.py
 - registry.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -1519,7 +1519,10 @@ class TestMessageProcessor:
         proc._dlq_redis = None
         msg = _msg(priority=Priority.CRITICAL)
         result = ValidationResult(is_valid=False, errors=["fail"])
-        with patch("enhanced_agent_bus.message_processor.schedule_background_task"):
+        with patch(
+            "enhanced_agent_bus.message_processor.schedule_background_task",
+            side_effect=lambda coroutine, _: coroutine.close(),
+        ):
             await proc._handle_failed_processing(msg, result)
         assert proc.failed_count == 1
 
@@ -1527,7 +1530,10 @@ class TestMessageProcessor:
         proc = self._make_processor()
         msg = _msg()
         result = ValidationResult(is_valid=True)
-        with patch("enhanced_agent_bus.message_processor.schedule_background_task"):
+        with patch(
+            "enhanced_agent_bus.message_processor.schedule_background_task",
+            side_effect=lambda coroutine, _: coroutine.close(),
+        ):
             await proc._handle_successful_processing(msg, result, "cache_key", 1.0)
         assert proc.processed_count == 1
 

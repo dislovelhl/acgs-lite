@@ -4,7 +4,7 @@ Tests for under-covered src/core/shared modules.
 Covers: config/, errors/, feature_flags, schema_registry, interfaces,
         types/protocol_types, constants, di_container, api_versioning.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -45,10 +45,10 @@ from src.core.shared.constants import (
 
 class TestConstants:
     def test_constitutional_hash_value(self):
-        assert CONSTITUTIONAL_HASH == "cdd01ef066bc6cf2"
+        assert CONSTITUTIONAL_HASH == "608508a9bd224290"
 
     def test_constitutional_hash_versioned(self):
-        assert CONSTITUTIONAL_HASH_VERSIONED == "sha256:v1:cdd01ef066bc6cf2"
+        assert CONSTITUTIONAL_HASH_VERSIONED == "sha256:v1:608508a9bd224290"
 
     def test_get_constitutional_hash(self):
         assert get_constitutional_hash() == CONSTITUTIONAL_HASH

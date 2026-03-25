@@ -1,7 +1,7 @@
 """
 x402 AI Governance Marketplace — Premium Paid Endpoints
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Wraps production ACGS-2 modules behind x402 micropayments.
 Every endpoint is pure profit: existing code, zero marginal compute,

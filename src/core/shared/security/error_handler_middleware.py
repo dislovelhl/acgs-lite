@@ -1,6 +1,6 @@
 """
 Production Error Handler Middleware
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides a FastAPI middleware to catch unhandled exceptions,
 log the full stack trace server-side, and return a sanitized

@@ -1,6 +1,6 @@
 """
 ACGS-2 CCAI Democratic Framework
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 CCAI (Collective Constitutional AI) provides breakthrough democratic governance:
 - Polis deliberation platform for stakeholder input
@@ -50,7 +50,7 @@ BACKWARD COMPATIBILITY:
     - governance/polis_engine.py: PolisDeliberationEngine class
     - governance/democratic_governance.py: DemocraticConstitutionalGovernance class
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio

@@ -1,5 +1,5 @@
-# ACGS-Lite Governance Agent — Runner Execution Configuration
-# Constitutional Hash: cdd01ef066bc6cf2
+# ACGS Governance Agent — Runner Execution Configuration
+# Constitutional Hash: 608508a9bd224290
 #
 # Configures the GitLab Runner environment for the ACGS governance agent.
 # Used by GitLab Duo to set up the execution context for agent flows.
@@ -11,12 +11,12 @@ variables:
   PIP_DISABLE_PIP_VERSION_CHECK: "1"
   PYTHONDONTWRITEBYTECODE: "1"
   PYTHONUNBUFFERED: "1"
-  ACGS_CONSTITUTIONAL_HASH: "cdd01ef066bc6cf2"
+  ACGS_CONSTITUTIONAL_HASH: "608508a9bd224290"
 
 setup_script:
   - apt-get update -qq && apt-get install -y -qq --no-install-recommends git curl jq > /dev/null 2>&1
   - pip install --quiet --no-cache-dir
-      acgs-lite[mcp]>=0.2.0
+      acgs[mcp]>=2.0.1
       pydantic>=2.0
       pyyaml>=6.0
       httpx>=0.27
@@ -27,7 +27,7 @@ setup_script:
       c = Constitution.default();
       expected = '${ACGS_CONSTITUTIONAL_HASH}';
       assert c.hash == expected, 'Hash mismatch';
-      print('ACGS-Lite ready', c.name, c.version, c.hash)"
+      print('ACGS ready', c.name, c.version, c.hash)"
   # Install glab CLI for GitLab API operations
   - curl -sSL "https://gitlab.com/gitlab-org/cli/-/releases/permalink/latest/downloads/glab_linux_amd64.deb"
       -o /tmp/glab.deb && dpkg -i /tmp/glab.deb > /dev/null 2>&1 && rm /tmp/glab.deb

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Bundle Registry Coverage Expansion Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests to expand coverage for bundle_registry.py module from 42.57% to 60%+.
 Focus on:
@@ -327,7 +327,7 @@ class TestOCIRegistryClientPushPull:
         # Create manifest with wrong hash (will fail in BundleManifest creation)
         with pytest.raises(
             (ValueError, Exception),
-            match=r"(?i)(invalid constitutional hash|hash mismatch|wrong_hash|cdd01ef066bc6cf2)",
+            match=r"(?i)(invalid constitutional hash|hash mismatch|wrong_hash|608508a9bd224290)",
         ):
             BundleManifest(version="1.0.0", revision="a" * 40, constitutional_hash="wrong_hash")
 

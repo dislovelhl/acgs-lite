@@ -6,7 +6,7 @@ Coverage tests for:
 Focuses on error branches, auth edge cases, drift detection paths, feedback storage
 branches, river model update failure/success paths, and background learning loop logic.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -63,7 +63,7 @@ from enhanced_agent_bus.routes.tenants import (
     get_optional_tenant_id,
 )
 
-HASH = "cdd01ef066bc6cf2"
+HASH = "608508a9bd224290"
 
 
 # ===========================================================================

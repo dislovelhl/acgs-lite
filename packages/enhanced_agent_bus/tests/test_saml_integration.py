@@ -1,6 +1,6 @@
 """
 SAML SSO Integration Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Phase 10 Task 4: SAML SSO Integration
 - Task 4.1: Write unit tests for SAML metadata generation (SP metadata XML)
@@ -178,7 +178,7 @@ def encode_saml_response(xml_response: str) -> str:
 class TestSAMLMetadataGeneration:
     """Test SAML Service Provider metadata generation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def test_generate_sp_metadata_basic(self, saml_handler):
@@ -271,7 +271,7 @@ class TestSAMLMetadataGeneration:
 class TestSAMLAuthnRequest:
     """Test SAML AuthnRequest creation and signature.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def test_create_authn_request_basic(self, saml_handler):
@@ -439,7 +439,7 @@ class TestSAMLAuthnRequest:
 class TestSAMLResponseValidation:
     """Test SAML Response validation including signature, timestamp, replay.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def test_validate_response_success(self, saml_handler):
@@ -630,7 +630,7 @@ class TestSAMLResponseValidation:
 class TestSAMLAttributeExtraction:
     """Test SAML assertion attribute extraction and mapping.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def test_extract_email_attribute(self, saml_handler):
@@ -803,7 +803,7 @@ class TestSAMLAttributeExtraction:
 class TestSAMLSingleLogout:
     """Test SAML Single Logout (SLO) functionality.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def test_create_logout_request(self, saml_handler_with_slo):
@@ -929,7 +929,7 @@ class TestSAMLSingleLogout:
 class TestSAMLEndToEndFlow:
     """Test end-to-end SAML authentication flow.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def test_full_authentication_flow(self, saml_handler):
@@ -1053,7 +1053,7 @@ class TestSAMLEndToEndFlow:
 class TestProtocolHandlerFactory:
     """Test Protocol Handler Factory.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def test_create_saml_handler(self):
@@ -1088,7 +1088,7 @@ class TestProtocolHandlerFactory:
 class TestConstitutionalHashValidation:
     """Test constitutional hash validation in SAML handler.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def test_valid_constitutional_hash(self):
@@ -1130,7 +1130,7 @@ class TestConstitutionalHashValidation:
 class TestSAMLEdgeCases:
     """Test edge cases and error handling.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def test_handler_with_minimal_config(self):

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Response Quality Enhancement
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Phase 5 implementation providing:
 - ResponseValidationPipeline: Multi-stage validation (SYNTAX, SEMANTIC, CONSTITUTIONAL)
@@ -46,7 +46,7 @@ RESPONSE_QUALITY_AVAILABLE = True
 class ValidationStage(str, Enum):
     """Stages in the multi-stage response validation pipeline.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     SYNTAX = "syntax"
@@ -58,7 +58,7 @@ class ValidationStage(str, Enum):
 class ValidationResult:
     """Result of a single validation pipeline stage.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     stage: ValidationStage
@@ -78,7 +78,7 @@ class ValidationResult:
 class QualityDimension(str, Enum):
     """Quality dimensions used by the multi-dimension scorer.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     COHERENCE = "coherence"
@@ -90,7 +90,7 @@ class QualityDimension(str, Enum):
 class QualityScore:
     """Multi-dimensional quality score for a response.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     dimension_scores: dict[QualityDimension, float]
@@ -121,7 +121,7 @@ class QualityScore:
 class PipelineStageConfig:
     """Configuration for a single validation stage.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     stage: ValidationStage
@@ -136,7 +136,7 @@ class PipelineStageConfig:
 class PipelineConfig:
     """Full configuration for the ResponseValidationPipeline.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     stages: list[PipelineStageConfig] = field(
@@ -164,7 +164,7 @@ class SyntaxValidator:
 
     Checks length bounds, character encoding, and forbidden patterns.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     DEFAULT_MIN_LENGTH: int = 10
@@ -235,7 +235,7 @@ class SemanticValidator:
 
     Checks word count, repetition, contradictions, and required topics.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     _CONTRADICTION_PAIRS: ClassVar[list[tuple[str, str]]] = [
@@ -351,7 +351,7 @@ class ConstitutionalValidator:
     Verifies the response does not violate constitutional constraints and
     adheres to the MACI separation-of-powers principle.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     MACI Note: This validator operates independently and never validates
     its own output — consistent with the MACI non-self-validation rule.
@@ -425,7 +425,7 @@ class ConstitutionalValidator:
 class PipelineRunResult:
     """Complete result from a full validation pipeline run.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     stage_results: list[ValidationResult]
@@ -453,7 +453,7 @@ class ResponseValidationPipeline:
     Executes SYNTAX → SEMANTIC → CONSTITUTIONAL stages sequentially
     (or in fail-fast mode, stopping at the first required-stage failure).
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -595,7 +595,7 @@ class ResponseValidationPipeline:
 class ScorerThresholds:
     """Per-dimension and overall pass/fail thresholds for QualityScorer.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     coherence: float = 0.70
@@ -613,7 +613,7 @@ class CoherenceScorer:
     """
     Scores response coherence (logical flow and topical consistency).
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def score(self, response: str, context: JSONDict) -> float:
@@ -653,7 +653,7 @@ class CompletenessScorer:
     """
     Scores response completeness (sufficient content and topic coverage).
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, min_expected_words: int = 50) -> None:
@@ -693,7 +693,7 @@ class AlignmentScorer:
     """
     Scores response alignment with governance objectives.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     _ALIGNMENT_KEYWORDS: ClassVar[list[str]] = [
@@ -754,7 +754,7 @@ class QualityScorer:
     Aggregates COHERENCE, COMPLETENESS, and ALIGNMENT scores with
     weighted combination and configurable pass/fail thresholds.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Governance context weights: alignment is most critical
@@ -858,7 +858,7 @@ RefinementCallback = Callable[[str, list[str]], Coroutine[Any, Any, str]]
 class RefinementConfig:
     """Configuration for the iterative ResponseRefiner loop.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     max_iterations: int = 3
@@ -880,7 +880,7 @@ class RefinementConfig:
 class RefinementStep:
     """Record of a single iteration in the refinement loop.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     iteration: int
@@ -896,7 +896,7 @@ class RefinementStep:
 class RefinementResult:
     """Complete outcome of a response refinement run.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     original_response: str
@@ -927,7 +927,7 @@ class ResponseRefiner:
     Applies a configurable RefinementCallback to address validation
     issues until the quality threshold is met or iterations are exhausted.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     MACI Note: The refinement callback is always an external, independent
     function. This class never self-validates its own refinement outputs.
@@ -1132,7 +1132,7 @@ def create_validation_pipeline(
     """
     Create a fully configured ResponseValidationPipeline.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     config = PipelineConfig(fail_fast=fail_fast)
     syntax_validator = SyntaxValidator(
@@ -1159,7 +1159,7 @@ def create_quality_scorer(
     """
     Create a configured QualityScorer with per-dimension thresholds.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     thresholds = ScorerThresholds(
         coherence=coherence_threshold,
@@ -1183,7 +1183,7 @@ def create_response_refiner(
     """
     Create a configured ResponseRefiner with optional external callback.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     config = RefinementConfig(
         max_iterations=max_iterations,

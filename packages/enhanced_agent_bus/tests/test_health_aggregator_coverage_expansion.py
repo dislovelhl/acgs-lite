@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Health Aggregator Coverage Expansion Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests to expand health_aggregator.py coverage from 52.59% to 70%+.
 """

@@ -1,6 +1,6 @@
 """
 ACGS-2 Pytest Fixtures for Executable Specifications
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides reusable fixtures for specification-based testing across all
 architectural layers.

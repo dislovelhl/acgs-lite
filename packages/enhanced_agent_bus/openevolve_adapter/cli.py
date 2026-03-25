@@ -1,6 +1,6 @@
 """
 OpenEvolve Governance Adapter — CLI Entry Point
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Usage
 -----
@@ -26,7 +26,7 @@ from typing import Any
 try:
     from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
-    CONSTITUTIONAL_HASH = "cdd01ef066bc6cf2"  # pragma: allowlist secret
+    CONSTITUTIONAL_HASH = "608508a9bd224290"  # pragma: allowlist secret
 
 _VERSION = "1.0.0"
 

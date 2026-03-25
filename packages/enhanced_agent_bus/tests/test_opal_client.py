@@ -1,6 +1,6 @@
 """
 Tests for enhanced_agent_bus.opal_client — OPAL Policy Client.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers:
 - OPALPolicyClient init / defaults / env override

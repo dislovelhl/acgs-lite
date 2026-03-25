@@ -6,7 +6,7 @@ Targets:
 - enhanced_agent_bus.llm_adapters.openclaw_adapter (OpenClawAdapter)
 - enhanced_agent_bus.observability.capacity_metrics.registry (metrics registry)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -78,7 +78,7 @@ def _make_version():
     return ConstitutionalVersion(
         version_id="v-test-001",
         version="1.0.0",
-        constitutional_hash="cdd01ef066bc6cf2",
+        constitutional_hash="608508a9bd224290",
         content={"rules": ["be safe"]},
         status=ConstitutionalStatus.ACTIVE,
         metadata={"author": "test"},
@@ -111,7 +111,7 @@ def _make_amendment():
         approval_chain=[],
         rejection_reason=None,
         rollback_reason=None,
-        metadata={"constitutional_hash": "cdd01ef066bc6cf2"},
+        metadata={"constitutional_hash": "608508a9bd224290"},
         created_at=datetime.now(UTC),
         reviewed_at=None,
         activated_at=None,
@@ -124,7 +124,7 @@ def _fake_db_version():
     obj = MagicMock()
     obj.version_id = "v-test-001"
     obj.version = "1.0.0"
-    obj.constitutional_hash = "cdd01ef066bc6cf2"
+    obj.constitutional_hash = "608508a9bd224290"
     obj.content = {"rules": ["be safe"]}
     obj.predecessor_version = None
     obj.status = "active"
@@ -154,7 +154,7 @@ def _fake_db_amendment():
     obj.approval_chain = []
     obj.rejection_reason = None
     obj.rollback_reason = None
-    obj.extra_metadata = {"constitutional_hash": "cdd01ef066bc6cf2"}
+    obj.extra_metadata = {"constitutional_hash": "608508a9bd224290"}
     obj.created_at = datetime.now(UTC)
     obj.reviewed_at = None
     obj.activated_at = None
@@ -795,7 +795,7 @@ class TestPersistenceManagerConverters:
         result = pm._db_to_pydantic_version(db_v)
         assert result.version_id == "v-test-001"
         assert result.version == "1.0.0"
-        assert result.constitutional_hash == "cdd01ef066bc6cf2"
+        assert result.constitutional_hash == "608508a9bd224290"
 
     def test_db_to_pydantic_version_no_metadata(self):
         pm = PersistenceManager(StorageConfig())

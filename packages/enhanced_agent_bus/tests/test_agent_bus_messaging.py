@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus Tests - Messaging
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive test coverage for messaging functionality in agent_bus.py.
 """

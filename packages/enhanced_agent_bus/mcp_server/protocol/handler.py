@@ -3,7 +3,7 @@ MCP Protocol Handler for ACGS-2 Constitutional Governance.
 
 Handles JSON-RPC 2.0 based MCP protocol messages with constitutional validation.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from collections.abc import Awaitable, Callable

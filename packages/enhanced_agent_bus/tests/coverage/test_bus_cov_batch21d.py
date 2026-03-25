@@ -5,7 +5,7 @@ Coverage tests for batch21d:
   3. llm_adapters/cost/anomaly.py
   4. adapters/openai_adapter.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -593,7 +593,7 @@ class TestCostAnomalyRecordCost:
 
     async def test_window_trimming(self) -> None:
         d = CostAnomalyDetector(window_size=12)
-        for i in range(20):
+        for _i in range(20):
             await d.record_cost("t1", "p1", 1.0)
         key = "t1:p1"
         assert len(d._cost_history[key]) <= 12

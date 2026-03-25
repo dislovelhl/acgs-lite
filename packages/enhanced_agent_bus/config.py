@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Configuration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Configuration dataclass for the Enhanced Agent Bus.
 Follows the Builder pattern for clean configuration management.
@@ -110,6 +110,11 @@ class BusConfiguration:
     require_independent_validator: bool = False
     independent_validator_threshold: float = 0.8
 
+    # Governance core routing (legacy shell vs. swarm governance kernel)
+    governance_core_mode: str = "legacy"
+    governance_swarm_peer_validation_enabled: bool = True
+    governance_swarm_use_manifold: bool = False
+
     # DTMC trajectory risk scoring (Pro2Guard-inspired)
     # Feature flag -- safe default off; zero behaviour change until activated.
     enable_dtmc: bool = False
@@ -156,6 +161,10 @@ class BusConfiguration:
         # Ensure constitutional hash is always set
         if not self.constitutional_hash:
             self.constitutional_hash = CONSTITUTIONAL_HASH
+        if self.governance_core_mode not in {"legacy", "shadow", "swarm_enforced"}:
+            raise ValueError(
+                "governance_core_mode must be one of: legacy, shadow, swarm_enforced"
+            )
 
     @staticmethod
     def _parse_bool(value: object) -> bool:
@@ -186,6 +195,16 @@ class BusConfiguration:
             return float(value)
         except ValueError:
             return default
+
+    @staticmethod
+    def _parse_governance_core_mode(value: str | None, default: str) -> str:
+        """Parse governance core mode with fallback to default."""
+        if value is None:
+            return default
+        normalized = value.strip().lower()
+        if normalized in {"legacy", "shadow", "swarm_enforced"}:
+            return normalized
+        return default
 
     @classmethod
     def from_environment(cls) -> "BusConfiguration":
@@ -226,6 +245,16 @@ class BusConfiguration:
             ),
             independent_validator_threshold=cls._parse_float(
                 os.getenv("INDEPENDENT_VALIDATOR_THRESHOLD"), 0.8
+            ),
+            governance_core_mode=cls._parse_governance_core_mode(
+                os.getenv("GOVERNANCE_CORE_MODE"),
+                "legacy",
+            ),
+            governance_swarm_peer_validation_enabled=cls._parse_bool(
+                os.getenv("GOVERNANCE_SWARM_PEER_VALIDATION_ENABLED", "true")
+            ),
+            governance_swarm_use_manifold=cls._parse_bool(
+                os.getenv("GOVERNANCE_SWARM_USE_MANIFOLD", "false")
             ),
             # Queue backpressure settings
             max_queue_size=cls._parse_int(os.getenv("MAX_QUEUE_SIZE"), 10_000),
@@ -294,6 +323,9 @@ class BusConfiguration:
             enable_session_governance=False,
             require_independent_validator=False,
             independent_validator_threshold=0.8,
+            governance_core_mode="legacy",
+            governance_swarm_peer_validation_enabled=True,
+            governance_swarm_use_manifold=False,
             # Relaxed backpressure for testing
             max_queue_size=100_000,
         )
@@ -321,6 +353,9 @@ class BusConfiguration:
             enable_session_governance=True,
             require_independent_validator=True,
             independent_validator_threshold=0.8,
+            governance_core_mode="legacy",
+            governance_swarm_peer_validation_enabled=True,
+            governance_swarm_use_manifold=False,
             # Strict backpressure for production
             max_queue_size=10_000,
             max_message_size_bytes=1_048_576,
@@ -405,6 +440,11 @@ class BusConfiguration:
             "session_context_ttl": self.session_context_ttl,
             "require_independent_validator": self.require_independent_validator,
             "independent_validator_threshold": self.independent_validator_threshold,
+            "governance_core_mode": self.governance_core_mode,
+            "governance_swarm_peer_validation_enabled": (
+                self.governance_swarm_peer_validation_enabled
+            ),
+            "governance_swarm_use_manifold": self.governance_swarm_use_manifold,
             # Queue backpressure settings
             "max_queue_size": self.max_queue_size,
             "max_message_size_bytes": self.max_message_size_bytes,

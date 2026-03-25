@@ -1,6 +1,6 @@
 """
 ACGS-2 Cache Warming Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides cache pre-population at service startup to prevent cold start performance
 degradation with rate limiting to avoid thundering herd.

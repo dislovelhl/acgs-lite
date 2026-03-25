@@ -1,6 +1,6 @@
 """
 Coverage tests for observability fixtures, chaos extension, and JSON utilities.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets:
   - packages/enhanced_agent_bus/specs/fixtures/observability.py (68.6% -> ~95%)

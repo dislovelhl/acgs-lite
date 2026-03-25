@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Usage Metering Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Non-blocking async metering integration for production billing.
 Designed to maintain P99 latency < 1.31ms by using fire-and-forget patterns.

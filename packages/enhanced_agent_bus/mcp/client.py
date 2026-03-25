@@ -6,7 +6,7 @@ against remote MCP servers.  MACI role-based restrictions are enforced
 inside call_tool() so that no agent may invoke a tool that exceeds its
 constitutional authority.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

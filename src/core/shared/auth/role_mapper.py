@@ -1,6 +1,6 @@
 """
 ACGS-2 Role Mapping Service for IdP Group Translation
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides role mapping functionality to translate identity provider (IdP) groups
 to internal ACGS-2 roles during SSO authentication flows. Supports both

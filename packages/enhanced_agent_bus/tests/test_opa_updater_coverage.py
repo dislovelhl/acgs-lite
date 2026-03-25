@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - OPA Policy Updater Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests to boost constitutional/opa_updater.py coverage from 72% to ≥95%.
 Covers all classes, methods, error paths, and edge cases.

@@ -2,7 +2,7 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 """
 ACGS-2 Auth Rate Limiting Standalone Test
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Standalone test to verify auth rate limiting configuration without full imports.
 """
@@ -65,7 +65,7 @@ def test_rate_limit_configuration():
 def test_constitutional_hash():
     """Verify constitutional hash is present."""
     assert CONSTITUTIONAL_HASH == CONSTITUTIONAL_HASH
-    logger.info("Constitutional hash verified: cdd01ef066bc6cf2")
+    logger.info("Constitutional hash verified: 608508a9bd224290")
 
 
 def test_redis_configuration():
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     logger.info("\n" + "=" * 70)
     logger.info("ACGS-2 Auth Rate Limiting Configuration Validation")
-    logger.info("Constitutional Hash: cdd01ef066bc6cf2")
+    logger.info("Constitutional Hash: 608508a9bd224290")
     logger.info("=" * 70 + "\n")
 
     test_constitutional_hash()

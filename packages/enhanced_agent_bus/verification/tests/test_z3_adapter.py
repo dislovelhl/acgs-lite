@@ -1,6 +1,6 @@
 """
 Tests for Z3 SMT Solver Integration (z3_adapter.py).
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers:
 - Z3Constraint, Z3VerificationResult, ConstitutionalPolicy dataclasses

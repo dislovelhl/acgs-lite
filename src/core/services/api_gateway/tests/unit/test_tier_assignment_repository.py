@@ -1,6 +1,6 @@
 """
 Unit tests for TierAssignmentRepository.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 All external dependencies (Redis, SQLAlchemy async session) are mocked.
 No real database or cache connections are made.

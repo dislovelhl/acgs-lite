@@ -7,7 +7,7 @@ Targets:
 - enhanced_agent_bus.policy.verify_integration
 - enhanced_agent_bus.mcp.shared_bridge
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

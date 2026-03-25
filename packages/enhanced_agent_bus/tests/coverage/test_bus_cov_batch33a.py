@@ -3,7 +3,7 @@ Coverage tests for enhanced_agent_bus modules:
 - impact_scorer_infra/algorithms/minicpm_semantic.py
 - enterprise_sso/ldap_integration.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -888,7 +888,7 @@ class TestLDAPIntegrationLogAuth:
             integration._log_authentication_attempt(
                 username="testuser",
                 success=True,
-                constitutional_hash="cdd01ef066bc6cf2",
+                constitutional_hash="608508a9bd224290",
             )
 
     def test_log_failure_with_error(self):
@@ -899,7 +899,7 @@ class TestLDAPIntegrationLogAuth:
                 username="testuser",
                 success=False,
                 error="bad password",
-                constitutional_hash="cdd01ef066bc6cf2",
+                constitutional_hash="608508a9bd224290",
             )
 
 

@@ -1,5 +1,5 @@
 # ACGS-2 Model Profiling Module
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Model profiling utilities for GPU acceleration evaluation.
 

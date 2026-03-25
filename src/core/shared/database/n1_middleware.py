@@ -1,6 +1,6 @@
 """
 ACGS-2 N+1 Query Detection Middleware
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Development middleware to detect N+1 query patterns in real-time.
 Integrates with FastAPI to monitor query counts per request.

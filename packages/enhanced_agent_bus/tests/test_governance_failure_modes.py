@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Governance Failure Mode Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Adversarial tests proving fail-closed behavior under governance attack conditions.
 These tests validate system resilience against:
@@ -106,7 +106,7 @@ class TestConstitutionalHashCorruption:
         """Test that corrupted constitutional hash is detected."""
         from enhanced_agent_bus.validators import validate_constitutional_hash
 
-        corrupted_hash = "cdd01ef066bc6cf3"  # Last char changed
+        corrupted_hash = "608508a9bd224291"  # Last char changed
 
         result = validate_constitutional_hash(corrupted_hash)
 

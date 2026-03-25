@@ -1,6 +1,6 @@
 """Tests for enhanced_agent_bus.session_governance_sdk module.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -160,7 +160,7 @@ class TestSession:
             "updated_at": "2025-01-02T00:00:00Z",
             "expires_at": "2025-01-03T00:00:00Z",
             "ttl_remaining": 3600,
-            "constitutional_hash": "cdd01ef066bc6cf2",
+            "constitutional_hash": "608508a9bd224290",
         }
         session = Session.from_dict(data)
         assert session.risk_level == "high"

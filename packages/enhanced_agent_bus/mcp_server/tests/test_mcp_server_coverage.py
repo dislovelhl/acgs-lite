@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Extended coverage tests for src/core/enhanced_agent_bus/mcp_server/server.py.
 

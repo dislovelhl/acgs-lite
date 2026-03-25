@@ -6,7 +6,7 @@ Targets:
 - enhanced_agent_bus.verification_orchestrator (75.9% -> 85%+)
 - enhanced_agent_bus.interfaces (70.2% -> improved, Protocol stubs excluded)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -1406,7 +1406,7 @@ class TestInterfacesConcreteImplementation:
                 pass
 
             def get_status(self):
-                return {"status": "healthy", "constitutional_hash": "cdd01ef066bc6cf2"}
+                return {"status": "healthy", "constitutional_hash": "608508a9bd224290"}
 
         o = ConcreteOrchestrator()
         assert isinstance(o, OrchestratorProtocol)

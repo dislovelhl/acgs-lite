@@ -1,6 +1,6 @@
 """
 Redis State Management for Saga Persistence
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides state transition operations, checkpoint management,
 and compensation log operations for saga persistence.
@@ -52,7 +52,7 @@ class RedisStateManager(RedisKeyMixin):
     Implements state transitions, checkpoint persistence, and compensation
     log management using Redis atomic operations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Type hints for mixin - these are provided by the main repository class

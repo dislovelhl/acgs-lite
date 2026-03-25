@@ -1,6 +1,6 @@
 """
 Session Security Hardening Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Regression tests for:
 - H1: JWT iss/aud claim enforcement (PyJWT migration)

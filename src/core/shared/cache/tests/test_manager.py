@@ -19,7 +19,8 @@ from src.core.shared.cache.models import CacheTier, TieredCacheConfig
 @pytest.fixture(autouse=True)
 def _patch_metrics():
     """Stub out all Prometheus metric helpers so tests don't need a registry."""
-    noop = lambda *a, **kw: None
+    def noop(*a, **kw):
+        return None
     patches = [
         patch("src.core.shared.cache.manager.record_cache_hit", noop),
         patch("src.core.shared.cache.manager.record_cache_miss", noop),

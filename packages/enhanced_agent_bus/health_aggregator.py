@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Health Aggregation Service
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Real-time health monitoring and aggregation across all circuit breakers.
 Designed to maintain P99 latency < 1.31ms by using fire-and-forget patterns.
@@ -157,7 +157,7 @@ class HealthAggregator:
     Uses fire-and-forget pattern to ensure zero impact on P99 latency.
     Collects health snapshots and provides real-time health scoring.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Chaos Testing Framework
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides controlled chaos injection for validating system resilience
 under failure conditions while maintaining constitutional compliance.
@@ -97,7 +97,7 @@ class ChaosScenario:
     """
     Defines a chaos testing scenario with safety controls.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     name: str
@@ -201,7 +201,7 @@ class ChaosEngine:
     """
     Central engine for injecting controlled chaos into the agent bus.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Features:
     - Constitutional hash validation

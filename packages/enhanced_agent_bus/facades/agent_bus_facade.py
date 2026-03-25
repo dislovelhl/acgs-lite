@@ -1,6 +1,6 @@
 """Public Agent Bus facade for service-layer imports.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module defines the stable import surface that service packages should use
 instead of importing from ``packages.enhanced_agent_bus`` internals directly.

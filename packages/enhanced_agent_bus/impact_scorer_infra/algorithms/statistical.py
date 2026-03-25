@@ -1,6 +1,6 @@
 """
 Statistical and Sinkhorn-based impact scoring.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from enhanced_agent_bus.impact_scorer_infra.models import (

@@ -1,6 +1,6 @@
 """
 OAuth2 State Manager Service
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Redis-backed OAuth2 state parameter management with enhanced security:
 - High-entropy state generation (256-bit)
@@ -109,7 +109,7 @@ class OAuth2StateManager:
     - Constitutional hash validation
     - Graceful degradation without Redis
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # State TTL in seconds (5 minutes)

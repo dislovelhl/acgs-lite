@@ -31,7 +31,7 @@ Every AI decision validated against constitutional rules. Every decision logged 
 
 Think of it as HTTPS for AI — the early web couldn't scale commercially until SSL/TLS provided cryptographic proof that transactions were secure. AI can't scale into regulated domains without the equivalent.
 
-Open source. Apache-2.0. 3,133 tests passing.
+Open source. AGPL-3.0-or-later. 3,133 tests passing.
 
 I have no CS degree. I built this entirely with Claude (Anthropic's AI assistant) over two years of daily work. If governance infrastructure for AI can be built by anyone with a vision, then anyone can govern their own AI systems.
 

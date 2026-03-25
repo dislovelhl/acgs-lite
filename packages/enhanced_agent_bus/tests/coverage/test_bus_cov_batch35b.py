@@ -9,7 +9,7 @@ Focuses on uncovered branches: error recovery in metric registration,
 _get_counter_value with real values, LDAP authenticate flow, connection
 pool edge cases, health checks, and group search operations.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

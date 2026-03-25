@@ -3,7 +3,7 @@ MCP Server Integration Tests.
 
 Tests for the main MCP Server implementation and lifecycle.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from unittest.mock import MagicMock

@@ -1,6 +1,6 @@
 """Tests for AuthAuditLogger.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests authentication audit logging, alerting, filtering, stats, and cleanup.
 """
@@ -468,7 +468,7 @@ class TestRateLimitDetection:
         )
         audit_logger = AuthAuditLogger(config)
 
-        for i in range(5):
+        for _i in range(5):
             await audit_logger.log_event(
                 event_type=AuthAuditEventType.AUTH_SUCCESS,
                 agent_id="tracked-agent",

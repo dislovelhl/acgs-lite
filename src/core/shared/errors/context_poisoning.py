@@ -1,6 +1,6 @@
 """
 ACGS-2 Context Poisoning Error
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Custom exception for OWASP AA05 (Memory Poisoning) violations detected
 by the ContextIntegrityGuard when agent-supplied context contains

@@ -39,7 +39,7 @@ services:
       REDIS_URL: redis://redis:6379
       OPA_URL: http://opa:8181
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/postgres
-      CONSTITUTIONAL_HASH: cdd01ef066bc6cf2
+      CONSTITUTIONAL_HASH: 608508a9bd224290
       MACI_STRICT_MODE: "true"
       ACGS2_SERVICE_SECRET: dev-secret-do-not-use-in-prod
     volumes:
@@ -59,7 +59,7 @@ services:
     environment:
       REDIS_URL: redis://redis:6379
       AGENT_BUS_URL: http://agent-bus:8000
-      CONSTITUTIONAL_HASH: cdd01ef066bc6cf2
+      CONSTITUTIONAL_HASH: 608508a9bd224290
       ACGS2_SERVICE_SECRET: dev-secret-do-not-use-in-prod
     volumes:
       - ./src:/app/src

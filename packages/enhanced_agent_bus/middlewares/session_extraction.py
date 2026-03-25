@@ -1,6 +1,6 @@
 """
 ACGS-2 Session Extraction Middleware
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 FastAPI middleware for automatic session context extraction and management.
 Extracts session identification from requests and loads session governance configuration.
@@ -53,7 +53,7 @@ PUBLIC_PATHS = [
 def extract_session_id_from_request(request: Request) -> str | None:
     """Extract session ID from request.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Attempts to extract session ID from:
     1. X-Session-ID header
@@ -128,7 +128,7 @@ def extract_tenant_id_from_request(request: Request) -> str | None:
 class SessionContext:
     """Session context container for request processing.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Contains session ID, governance configuration, and tenant isolation context.
     """
@@ -223,7 +223,7 @@ class SessionContext:
 class SessionExtractionMiddleware(BaseHTTPMiddleware):
     """FastAPI middleware for session context extraction.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     This middleware:
     1. Extracts session ID from incoming requests
@@ -427,7 +427,7 @@ class SessionExtractionMiddleware(BaseHTTPMiddleware):
 class SessionContextDependency:
     """FastAPI dependency for session context.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Usage:
         from fastapi import Depends
@@ -501,7 +501,7 @@ class SessionContextDependency:
 class SessionGovernanceDependency:
     """FastAPI dependency for session governance configuration.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Provides access to session governance configuration for policy enforcement.
 

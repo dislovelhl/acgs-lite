@@ -1,7 +1,7 @@
 """
 MCP Authentication Provider.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 MACI Role: JUDICIAL
 
 Main authentication provider for MCP integration.
@@ -79,7 +79,7 @@ class MCPAuthProvider(TokenOperationsMixin):
     - Comprehensive audit logging
     - Constitutional governance compliance
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH

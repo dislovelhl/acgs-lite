@@ -3,7 +3,7 @@ ACGS-2 Enhanced Agent Bus - Service-Specific Circuit Breaker Configuration
 
 Task T002: Circuit Breaker Configuration
 Expert Reference: Michael Nygard (Release It!)
-Hash: cdd01ef066bc6cf2
+Hash: 608508a9bd224290
 
 This module implements the circuit breaker pattern for external service calls
 with configurable thresholds, state tracking, and observability integration.

@@ -1,6 +1,6 @@
 """
 ACGS-2 Shared Utilities
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Centralized utility classes to reduce code duplication across the codebase.
 This module provides common functionality that was previously duplicated.

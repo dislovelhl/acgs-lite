@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - PQC Strict Validation Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for check_enforcement_for_create() and check_enforcement_for_update()
 enforcement gates in pqc_validators.py.

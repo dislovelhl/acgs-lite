@@ -1,6 +1,6 @@
 """
 ACGS-2 Structured Logging Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for structured_logging module per SPEC_ACGS2_ENHANCED.md Section 6.2.
 """

@@ -1,6 +1,6 @@
 """
 ACGS-2 Model Profiler - GPU Acceleration Evaluation
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Model profiling for determining GPU acceleration ROI.
 

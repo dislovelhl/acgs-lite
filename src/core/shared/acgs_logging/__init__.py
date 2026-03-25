@@ -1,6 +1,6 @@
 """
 ACGS-2 Logging Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Centralized logging utilities for the ACGS-2 platform:
 - Tenant-scoped audit logging with access controls

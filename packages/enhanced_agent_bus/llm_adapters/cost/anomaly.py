@@ -1,6 +1,6 @@
 """
 ACGS-2 Cost Anomaly Detection
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Detects cost anomalies in LLM usage using statistical methods.
 """
@@ -29,7 +29,7 @@ class CostAnomalyDetector:
     """
     Detects cost anomalies in LLM usage.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Uses statistical methods to detect:
     - Cost spikes (sudden increases)

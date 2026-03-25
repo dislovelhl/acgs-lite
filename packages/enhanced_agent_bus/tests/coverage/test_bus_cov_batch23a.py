@@ -2,7 +2,7 @@
 Coverage tests for adaptive_governance/governance_engine.py and
 adaptive_governance/impact_scorer.py.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ from enhanced_agent_bus.adaptive_governance.models import (
 # Helpers
 # ---------------------------------------------------------------------------
 
-CONSTITUTIONAL_HASH = "cdd01ef066bc6cf2"
+CONSTITUTIONAL_HASH = "608508a9bd224290"
 
 
 def _make_features(**overrides) -> ImpactFeatures:
@@ -392,7 +392,7 @@ class TestImpactScorer:
         if scorer.impact_classifier is None:
             pytest.skip("sklearn not available")
 
-        for i in range(600):
+        for _i in range(600):
             scorer.training_samples.append((_make_features(), 0.5))
 
         scorer.impact_classifier.fit = MagicMock(side_effect=RuntimeError("fit error"))

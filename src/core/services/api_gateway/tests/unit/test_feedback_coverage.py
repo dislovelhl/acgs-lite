@@ -1,6 +1,6 @@
 """
 Tests for feedback.py — feedback submission, stats, Redis storage, models.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: FeedbackRequest validation (metadata size, payload size, process),
 get_cached_feedback_stats, update_feedback_stats_cache,

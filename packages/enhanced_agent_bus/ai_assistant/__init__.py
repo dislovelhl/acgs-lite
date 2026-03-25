@@ -1,6 +1,6 @@
 """
 ACGS-2 AI Assistant Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides conversational AI assistant capabilities with NLU, dialog management,
 response generation, and Agent Bus integration for governance compliance.
@@ -66,7 +66,7 @@ from .response import (
 logger = get_logger(__name__)
 """
 ACGS-2 AI Assistant Framework
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Production-ready AI assistant with constitutional governance integration.
 Provides NLU, dialog management, and response generation with constitutional validation.

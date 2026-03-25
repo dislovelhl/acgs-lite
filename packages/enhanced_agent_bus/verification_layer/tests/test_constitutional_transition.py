@@ -1,6 +1,6 @@
 """
 Tests for Constitutional Transition - State Transitions with Proofs
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests cover:
 - State transition validation

@@ -1,6 +1,6 @@
 """
 ACGS-2 AI Assistant - Dialog Management
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Dialog management with conversation flows, state machine,
 and policy-based action selection.

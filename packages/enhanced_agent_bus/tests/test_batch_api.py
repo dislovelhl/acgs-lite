@@ -9,7 +9,7 @@ These tests verify the complete batch processing workflow including:
 - Tenant isolation
 - Constitutional hash enforcement
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import os

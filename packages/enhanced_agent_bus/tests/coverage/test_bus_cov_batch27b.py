@@ -3,7 +3,7 @@ Tests targeting uncovered lines in:
   1. enhanced_agent_bus.adaptive_governance.governance_engine (78% -> 90%+)
   2. enhanced_agent_bus.observability.telemetry (72.6% -> 90%+)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -134,7 +134,7 @@ class TestInitializeFeedbackHandler:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         # The handler was called during __init__
         mock_get_fh.assert_called()
         mock_handler.initialize_schema.assert_called()
@@ -146,7 +146,7 @@ class TestInitializeFeedbackHandler:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         assert engine._feedback_handler is None
 
 
@@ -166,7 +166,7 @@ class TestInitializeDriftDetector:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         assert engine._drift_detector is mock_dd
 
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE", True)
@@ -178,7 +178,7 @@ class TestInitializeDriftDetector:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         assert engine._drift_detector is mock_dd
 
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE", True)
@@ -188,7 +188,7 @@ class TestInitializeDriftDetector:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         assert engine._drift_detector is None
 
 
@@ -209,7 +209,7 @@ class TestInitializeRiverModel:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         # impact_scorer.model_trained may be False by default, that's OK
         mock_get_pipeline.assert_called()
 
@@ -223,7 +223,7 @@ class TestInitializeRiverModel:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         engine.impact_scorer.model_trained = True
         # Re-initialize to trigger line 354
         engine._initialize_river_model()
@@ -238,7 +238,7 @@ class TestInitializeRiverModel:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         assert engine.river_model is None
 
 
@@ -260,7 +260,7 @@ class TestInitializeABTestRouter:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         engine.impact_scorer.model_trained = True
         engine._initialize_ab_test_router()
         mock_router.set_champion_model.assert_called()
@@ -272,7 +272,7 @@ class TestInitializeABTestRouter:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         assert engine._ab_test_router is None
         assert engine._shadow_executor is None
 
@@ -291,7 +291,7 @@ class TestInitializeAnomalyMonitor:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         assert engine._anomaly_monitor is not None
 
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.ANOMALY_MONITORING_AVAILABLE", True)
@@ -301,7 +301,7 @@ class TestInitializeAnomalyMonitor:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         assert engine._anomaly_monitor is None
 
 
@@ -316,7 +316,7 @@ class TestRecordABTestRequest:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         engine._ab_test_router = MagicMock()
         return engine
 
@@ -361,7 +361,7 @@ class TestScheduleShadowExecution:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         return engine
 
     def test_skips_when_not_champion(self):
@@ -416,7 +416,7 @@ class TestUpdateRiverModel:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         return engine
 
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.ONLINE_LEARNING_AVAILABLE", True)
@@ -474,7 +474,7 @@ class TestScheduledDriftDetection:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         return engine
 
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE", True)
@@ -597,7 +597,7 @@ class TestCollectDriftData:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        return AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        return AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
 
     def test_no_decision_history(self):
         engine = self._make_engine()
@@ -626,7 +626,7 @@ class TestAnalyzePerformanceTrends:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        return AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        return AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
 
     def test_trend_analysis_normal(self):
         engine = self._make_engine()
@@ -670,7 +670,7 @@ class TestLogPerformanceSummary:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        return AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        return AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
 
     def test_log_summary_normal(self):
         engine = self._make_engine()
@@ -696,7 +696,7 @@ class TestBackgroundLearningLoop:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        return AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        return AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
 
     async def test_one_iteration(self):
         engine = self._make_engine()
@@ -742,7 +742,7 @@ class TestMaybeRefitDTMC:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        return AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config(enable_dtmc=True))
+        return AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config(enable_dtmc=True))
 
     def test_refit_with_enough_data(self):
         engine = self._make_engine()
@@ -772,7 +772,7 @@ class TestMaybeRefitDTMC:
             AdaptiveGovernanceEngine,
         )
         engine = AdaptiveGovernanceEngine(
-            "cdd01ef066bc6cf2", config=_make_config(enable_dtmc=False)
+            "608508a9bd224290", config=_make_config(enable_dtmc=False)
         )
         engine._maybe_refit_dtmc()  # Should return early
 
@@ -788,7 +788,7 @@ class TestStoreFeedbackEvent:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        return AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        return AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
 
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.FEEDBACK_HANDLER_AVAILABLE", True)
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.FeedbackEvent")
@@ -871,14 +871,14 @@ class TestLoadSaveModelState:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         await engine._load_historical_data()
 
     async def test_save_model_state_normal(self):
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         await engine._save_model_state()
 
 
@@ -1358,7 +1358,7 @@ class TestDTMCBlendAndEscalation:
             AdaptiveGovernanceEngine,
         )
         return AdaptiveGovernanceEngine(
-            "cdd01ef066bc6cf2",
+            "608508a9bd224290",
             config=_make_config(**config_kwargs),
         )
 
@@ -1441,7 +1441,7 @@ class TestShouldRetrain:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        return AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        return AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
 
     def test_retrain_low_compliance(self):
         engine = self._make_engine()
@@ -1475,7 +1475,7 @@ class TestGetTrajectoryPrefix:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        return AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        return AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
 
     def test_empty_history(self):
         engine = self._make_engine()
@@ -1503,7 +1503,7 @@ class TestEvaluateGovernanceDecision:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         engine.impact_scorer.assess_impact = AsyncMock(
             side_effect=RuntimeError("scorer failed")
         )
@@ -1524,7 +1524,7 @@ class TestInitializeShutdown:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         mock_monitor = AsyncMock()
         engine._anomaly_monitor = mock_monitor
         await engine.initialize()
@@ -1537,7 +1537,7 @@ class TestInitializeShutdown:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         await engine.initialize()
         assert engine.running is True
         assert engine.learning_task is not None
@@ -1556,7 +1556,7 @@ class TestClassifyImpactLevel:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        return AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        return AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
 
     def test_critical(self):
         engine = self._make_engine()
@@ -1590,7 +1590,7 @@ class TestGenerateReasoning:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        return AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+        return AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
 
     def test_allowed_high_confidence(self):
         engine = self._make_engine()

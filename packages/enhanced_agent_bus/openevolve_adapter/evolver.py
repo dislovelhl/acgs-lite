@@ -1,6 +1,6 @@
 """
 OpenEvolve Governance Adapter — Governed Evolver
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements MACI separation-of-powers for the evolution loop:
 

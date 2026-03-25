@@ -5,7 +5,7 @@ Meta-Orchestrator Models Module
 Data models for the Meta-Orchestrator system including task results,
 agent definitions, and memory tier structures.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

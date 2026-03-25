@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus — OPAL Policy Client
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides OPALPolicyClient: wraps the existing OPA client with live policy updates
 delivered via the OPAL (Open Policy Administration Layer) websocket channel.

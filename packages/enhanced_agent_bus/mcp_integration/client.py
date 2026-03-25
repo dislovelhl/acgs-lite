@@ -5,7 +5,7 @@ Provides MCP client capabilities for connecting to external MCP servers,
 enabling tool discovery, resource access, and bidirectional communication
 with constitutional governance.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -205,7 +205,7 @@ class MCPClient:
     Provides bidirectional communication with external MCP servers,
     enabling tool discovery, resource access, and governance integration.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH
@@ -814,7 +814,7 @@ class MCPConnectionPool:
 
     Supports connecting to 16,000+ MCP servers with constitutional governance.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH

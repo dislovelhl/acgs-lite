@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Redis Connection Pool Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 TDD tests for Redis connection pooling in batch operations.
 Tests Phase 4-Task 1 acceptance criteria:

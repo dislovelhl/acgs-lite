@@ -1,7 +1,7 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Extended coverage tests for Constitutional Amendment Activation Saga.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets uncovered code paths in:
   - activate_amendment() hasattr / isinstance branching (lines 814-820, 832-837)

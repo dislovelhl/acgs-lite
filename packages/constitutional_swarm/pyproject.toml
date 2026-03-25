@@ -3,7 +3,7 @@ name = "constitutional_swarm"
 version = "0.1.0"
 description = "Constitutional Swarm Mesh — orchestrator-free multi-agent governance via embedded Agent DNA"
 requires-python = ">=3.11"
-dependencies = ["acgs-lite"]
+dependencies = ["acgs"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "pytest-asyncio>=1.0"]
@@ -17,4 +17,8 @@ packages = ["src/constitutional_swarm"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-markers = ["slow: marks tests as slow (800+ agent scale)"]
+markers = [
+  "slow: marks tests as slow (800+ agent scale)",
+  "integration: marks cross-package integration tests",
+  "contract: marks stable cross-package contract tests"
+]

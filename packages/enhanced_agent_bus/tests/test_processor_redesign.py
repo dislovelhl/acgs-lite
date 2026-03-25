@@ -1,6 +1,6 @@
 """
 Tests for MessageProcessor Redesign — 4 Coordinator Classes (TDD)
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 These tests define contracts for the new decomposed architecture:
 1. SessionContextResolver — unified session extraction
@@ -918,7 +918,7 @@ class TestMessageProcessorBackwardCompat:
 
     @pytest.mark.constitutional
     def test_constitutional_hash_value(self, isolated_processor: MessageProcessor) -> None:
-        """Constitutional hash must be cdd01ef066bc6cf2."""
+        """Constitutional hash must be 608508a9bd224290."""
         assert isolated_processor.constitutional_hash == CONSTITUTIONAL_HASH
 
 

@@ -1,6 +1,6 @@
 """
 Tests for ACGS-2 Row-Level Security Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Integration tests for RLS policy generation and management.
 Tests that require PostgreSQL are marked with @pytest.mark.postgres.

@@ -1,6 +1,6 @@
 """
 Watermark Manager
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Manages watermarks for incremental data sync tracking.
 Provides CRUD operations and state management for sync progress.

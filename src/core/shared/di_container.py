@@ -1,7 +1,7 @@
 """
 Dependency Injection Container for ACGS-2.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from typing import ClassVar, TypeVar, cast
@@ -18,7 +18,7 @@ class DIContainer:
     Centralized Dependency Injection container for ACGS-2 services.
 
     Manages singleton lifecycles and provides unified access to core components.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     _instance: ClassVar["DIContainer | None"] = None

@@ -1,7 +1,7 @@
 """Coverage batch 13 — governance_engine, tensorrt_optimizer,
 pqc_validators, message_processor.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -23,8 +23,8 @@ class TestAdaptiveGovernanceEngineInit:
             AdaptiveGovernanceEngine,
         )
 
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
-        assert engine.constitutional_hash == "cdd01ef066bc6cf2"
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
+        assert engine.constitutional_hash == "608508a9bd224290"
         assert engine.running is False
 
     def test_creates_engine_with_config(self):
@@ -35,7 +35,7 @@ class TestAdaptiveGovernanceEngineInit:
 
         config = BusConfiguration.from_environment()
         engine = AdaptiveGovernanceEngine(
-            constitutional_hash="cdd01ef066bc6cf2", config=config
+            constitutional_hash="608508a9bd224290", config=config
         )
         assert engine.config is config
 
@@ -47,7 +47,7 @@ class TestClassifyImpactLevel:
         )
         from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
 
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         assert engine._classify_impact_level(0.95) == ImpactLevel.CRITICAL
 
     def test_high(self):
@@ -56,7 +56,7 @@ class TestClassifyImpactLevel:
         )
         from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
 
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         assert engine._classify_impact_level(0.75) == ImpactLevel.HIGH
 
     def test_medium(self):
@@ -65,7 +65,7 @@ class TestClassifyImpactLevel:
         )
         from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
 
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         assert engine._classify_impact_level(0.45) == ImpactLevel.MEDIUM
 
     def test_low(self):
@@ -74,7 +74,7 @@ class TestClassifyImpactLevel:
         )
         from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
 
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         assert engine._classify_impact_level(0.25) == ImpactLevel.LOW
 
     def test_negligible(self):
@@ -83,7 +83,7 @@ class TestClassifyImpactLevel:
         )
         from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
 
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         assert engine._classify_impact_level(0.05) == ImpactLevel.NEGLIGIBLE
 
 
@@ -94,7 +94,7 @@ class TestGenerateReasoning:
         )
         from enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
 
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         features = ImpactFeatures(
             message_length=100,
             agent_count=2,
@@ -117,7 +117,7 @@ class TestGenerateReasoning:
         )
         from enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
 
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         features = ImpactFeatures(
             message_length=100,
             agent_count=2,
@@ -158,7 +158,7 @@ class TestGovernanceEngineInitSubsystems:
             "enhanced_agent_bus.adaptive_governance.governance_engine.FEEDBACK_HANDLER_AVAILABLE",
             False,
         ):
-            engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+            engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
             assert engine._feedback_handler is None
 
     def test_initialize_drift_detector_not_available(self):
@@ -170,7 +170,7 @@ class TestGovernanceEngineInitSubsystems:
             "enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE",
             False,
         ):
-            engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+            engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
             assert engine._drift_detector is None
 
     def test_default_river_feature_names(self):
@@ -191,7 +191,7 @@ class TestGovernanceEngineShutdown:
             AdaptiveGovernanceEngine,
         )
 
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         engine.running = True
         await engine.shutdown()
         assert engine.running is False
@@ -202,7 +202,7 @@ class TestGovernanceEngineShutdown:
             AdaptiveGovernanceEngine,
         )
 
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         engine.running = True
 
         async def dummy():
@@ -248,7 +248,7 @@ class TestGovernanceEngineProvideFeedback:
             AdaptiveGovernanceEngine,
         )
 
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         decision = self._make_decision()
         engine.provide_feedback(decision, outcome_success=True)
 
@@ -257,7 +257,7 @@ class TestGovernanceEngineProvideFeedback:
             AdaptiveGovernanceEngine,
         )
 
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         decision = self._make_decision()
         engine.provide_feedback(decision, outcome_success=False, human_override=False)
 
@@ -266,7 +266,7 @@ class TestGovernanceEngineProvideFeedback:
             AdaptiveGovernanceEngine,
         )
 
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         decision = self._make_decision(risk_score=0.9, allowed=False, level_name="HIGH")
         engine.provide_feedback(decision, outcome_success=False)
 
@@ -278,7 +278,7 @@ class TestGovernanceEngineDTMC:
         )
         from enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
 
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         features = ImpactFeatures(
             message_length=100, agent_count=2, tenant_complexity=1,
             temporal_patterns=[], semantic_similarity=0.5, historical_precedence=1,
@@ -298,7 +298,7 @@ class TestGovernanceEngineDTMC:
             ImpactLevel,
         )
 
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         features = ImpactFeatures(
             message_length=100, agent_count=2, tenant_complexity=1,
             temporal_patterns=[], semantic_similarity=0.5, historical_precedence=1,
@@ -318,7 +318,7 @@ class TestGovernanceEngineDTMC:
             AdaptiveGovernanceEngine,
         )
 
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         assert engine._learning_thread is None
 
 
@@ -333,7 +333,7 @@ class TestGovernanceEngineABTest:
             ImpactLevel,
         )
 
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         features = ImpactFeatures(
             message_length=100, agent_count=2, tenant_complexity=1,
             temporal_patterns=[], semantic_similarity=0.5, historical_precedence=1,
@@ -356,7 +356,7 @@ class TestGovernanceEngineBuildDecision:
         )
         from enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
 
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         features = ImpactFeatures(
             message_length=100, agent_count=2, tenant_complexity=1,
             temporal_patterns=[], semantic_similarity=0.5, historical_precedence=1,
@@ -375,7 +375,7 @@ class TestGovernanceEngineInitialize:
             AdaptiveGovernanceEngine,
         )
 
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         await engine.initialize()
         assert engine.running is True
         assert engine.learning_task is not None

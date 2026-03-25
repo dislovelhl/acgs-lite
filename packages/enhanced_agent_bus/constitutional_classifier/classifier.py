@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Constitutional Classifier Core
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Main classifier implementation integrating pattern detection, scoring,
 and MACI framework for comprehensive jailbreak prevention.
@@ -82,7 +82,7 @@ _CLASSIFIER_OPERATION_ERRORS = (
 class ClassificationResult:
     """Comprehensive result of constitutional classification.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Core classification
@@ -148,7 +148,7 @@ class ClassificationResult:
 class ClassifierConfig:
     """Configuration for the constitutional classifier.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Core settings
@@ -185,7 +185,7 @@ class ConstitutionalClassifierV2:
     - Session-specific policy support
     - Real-time and streaming detection modes
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

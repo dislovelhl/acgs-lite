@@ -1,6 +1,6 @@
 """
 Tests for kafka_streaming.py — targets 90%+ coverage.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 All Kafka/aiokafka dependencies are mocked; the module uses a MockProducer
 internally so no real Kafka broker is required.

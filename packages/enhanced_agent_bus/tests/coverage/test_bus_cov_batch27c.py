@@ -1,6 +1,6 @@
 """
 Coverage tests for batch 27c: impact_scorer.py, interfaces.py, retrieval.py
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets uncovered lines in:
   - enhanced_agent_bus.adaptive_governance.impact_scorer (71.6% -> 90%+)
@@ -838,7 +838,7 @@ class TestOrchestratorProtocol:
                 pass
 
             def get_status(self):
-                return {"status": "ok", "constitutional_hash": "cdd01ef066bc6cf2"}
+                return {"status": "ok", "constitutional_hash": "608508a9bd224290"}
 
         orch = MyOrch()
         assert isinstance(orch, OrchestratorProtocol)

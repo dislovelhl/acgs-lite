@@ -1,6 +1,6 @@
 """
 OpenEvolve Governance Adapter — Rollout Controller
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Bridges EvolutionCandidate risk tiers to concrete rollout constraints:
 

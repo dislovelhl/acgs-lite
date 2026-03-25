@@ -1,7 +1,7 @@
 """
 Lightweight authentication dependency for FastAPI endpoints.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides a reusable FastAPI dependency that validates Bearer tokens or API keys.
 Supports environment-controlled bypass for development and testing.

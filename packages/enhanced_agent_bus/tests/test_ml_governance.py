@@ -1,7 +1,7 @@
 """
 Tests for ML Governance Client.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: enums, exceptions, config, data types, client (circuit breaker,
 outcome reporting, batch, health, callbacks, queue), and module-level helpers.

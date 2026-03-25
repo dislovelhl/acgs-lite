@@ -1,7 +1,7 @@
 """
 ACGS-2 Circuit Breaker Registry
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module implements the circuit breaker registry for managing service-specific
 circuit breakers and provides global access functions.
@@ -34,7 +34,7 @@ class ServiceCircuitBreakerRegistry:
     """
     Registry for managing service-specific circuit breakers.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     _instance: "ServiceCircuitBreakerRegistry" | None = None

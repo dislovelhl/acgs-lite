@@ -1,6 +1,6 @@
 """
 ACGS-2 Deliberation Layer - Audit Signature Utilities
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 HMAC-SHA256 signature functions for audit record immutability verification.
 """

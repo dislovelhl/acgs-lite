@@ -17,6 +17,7 @@ Run from repo root.
 from __future__ import annotations
 
 import argparse
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -24,15 +25,26 @@ from pathlib import Path
 from results_utils import best_kept_row, ensure_results_tsv, load_rows, recent_rows
 
 RESULTS_TSV = Path(__file__).parent / "results.tsv"
+_GIT_BIN = shutil.which("git") or "git"
 
 
 def _git(*args: str) -> str:
-    result = subprocess.run(["git", *args], capture_output=True, text=True, check=False)
+    result = subprocess.run(  # noqa: S603
+        [_GIT_BIN, *args],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
     return result.stdout.strip()
 
 
 def _git_check(*args: str) -> bool:
-    result = subprocess.run(["git", *args], capture_output=True, text=True, check=False)
+    result = subprocess.run(  # noqa: S603
+        [_GIT_BIN, *args],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
     return result.returncode == 0
 
 
@@ -92,14 +104,17 @@ def main() -> int:
     elif _git_check("show-ref", "--verify", "--quiet", f"refs/heads/{branch_name}"):
         print(f"Branch exists — switching: git checkout {branch_name}")
         if not args.dry_run:
-            subprocess.run(["git", "checkout", branch_name], check=True)
+            subprocess.run([_GIT_BIN, "checkout", branch_name], check=True)  # noqa: S603
     else:
         if not _git_check("rev-parse", "--verify", args.base):
             print(f"ERROR: base branch not found: {args.base}", file=sys.stderr)
             return 1
         print(f"Creating branch: git checkout -b {branch_name} {args.base}")
         if not args.dry_run:
-            subprocess.run(["git", "checkout", "-b", branch_name, args.base], check=True)
+            subprocess.run(  # noqa: S603
+                [_GIT_BIN, "checkout", "-b", branch_name, args.base],
+                check=True,
+            )
 
     status_out = _git("status", "--porcelain")
     if status_out:

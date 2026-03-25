@@ -1,6 +1,6 @@
 """
 ACGS-2 Hierarchical Orchestration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements supervisor-worker topology for multi-agent orchestration.
 Based on CEOS architecture with planning, delegation, and critique loops.

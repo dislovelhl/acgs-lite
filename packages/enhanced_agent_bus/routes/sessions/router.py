@@ -1,6 +1,6 @@
 """
 ACGS-2 Session Governance - Router Configuration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 FastAPI router setup, lifecycle management, and route registration.
 """
@@ -109,7 +109,7 @@ Create a new session with the specified governance configuration.
 - Multi-tenant isolation
 - Constitutional compliance validation
 
-**Constitutional Hash:** cdd01ef066bc6cf2
+**Constitutional Hash:** 608508a9bd224290
     """,
 )
 async def create_session_route(
@@ -242,7 +242,7 @@ user, policy overrides) and returns the most appropriate policies to apply.
 - Cache-optimized for sub-millisecond performance
 - Detailed selection reasoning for audit trails
 
-**Constitutional Hash:** cdd01ef066bc6cf2
+**Constitutional Hash:** 608508a9bd224290
     """,
 )
 async def select_session_policies_route(

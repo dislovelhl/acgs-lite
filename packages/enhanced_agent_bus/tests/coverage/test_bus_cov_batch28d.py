@@ -6,7 +6,7 @@ Comprehensive coverage tests for batch 28d:
 - packages/enhanced_agent_bus/adapters/deepseek_adapter.py
 - packages/enhanced_agent_bus/optimization_toolkit/context.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

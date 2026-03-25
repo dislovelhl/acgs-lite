@@ -46,7 +46,7 @@ def _make_mock_message(**overrides: Any) -> MagicMock:
     msg.impact_score = overrides.get("impact_score", None)
     msg.priority = overrides.get("priority", "normal")
     msg.message_type = overrides.get("message_type", MagicMock(value="command"))
-    msg.constitutional_hash = overrides.get("constitutional_hash", "cdd01ef066bc6cf2")
+    msg.constitutional_hash = overrides.get("constitutional_hash", "608508a9bd224290")
     msg.status = overrides.get("status", "pending")
     msg.to_dict = MagicMock(return_value={"id": msg.message_id})
     return msg

@@ -6,7 +6,7 @@ import future.keywords.if
 # Resource Limits Policy - P99 <5ms enforcement (ACGS-2 Perf)
 # NIST SP 800-53 SC-7, OWASP Resource Exhaustion
 # Bounds CPU/Mem requests for low latency
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 
 default allow := false
 
@@ -16,7 +16,7 @@ allow if {
 	input.resources.mem_requests <= 512Mi
 	input.resources.mem_limits <= 1Gi
 	input.tenant_id != null
-	input.constitutional_hash == "cdd01ef066bc6cf2"
+	input.constitutional_hash == "608508a9bd224290"
 }
 
 # Input validation: resource strings parsed safely (no eval)

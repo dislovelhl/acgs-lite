@@ -10,7 +10,7 @@ Coverage tests for uncovered paths in:
 - config/infrastructure.py
 - config/factory.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -1175,7 +1175,7 @@ class TestInfrastructureAISettingsPydantic:
         assert s.openrouter_api_key is None
         assert s.hf_token is None
         assert s.openai_api_key is None
-        assert s.constitutional_hash == "cdd01ef066bc6cf2"
+        assert s.constitutional_hash == "608508a9bd224290"
 
     def test_from_env_vars(self, monkeypatch):
         from src.core.shared.config.infrastructure import AISettings
@@ -1344,7 +1344,7 @@ class TestInfrastructureDataclassFallback:
         assert s.openrouter_api_key is None
         assert s.hf_token is None
         assert s.openai_api_key is None
-        assert s.constitutional_hash == "cdd01ef066bc6cf2"
+        assert s.constitutional_hash == "608508a9bd224290"
 
     def test_ai_settings_dataclass_from_env(self, monkeypatch):
         monkeypatch.setenv("OPENROUTER_API_KEY", "or-key")

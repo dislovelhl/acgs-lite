@@ -1,5 +1,5 @@
 """ACGS-2 Public API v1 — governance validation endpoints.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import time

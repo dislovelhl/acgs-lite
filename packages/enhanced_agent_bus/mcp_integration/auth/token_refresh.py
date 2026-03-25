@@ -1,7 +1,7 @@
 """
 Token Refresh Manager for MCP Authentication.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 MACI Role: JUDICIAL
 
 Provides automatic token refresh:
@@ -132,7 +132,7 @@ class TokenRefresher:
     - Callback hooks for refresh events
     - Concurrent refresh limiting
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, config: RefreshConfig | None = None):

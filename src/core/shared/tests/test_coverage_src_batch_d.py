@@ -5,7 +5,7 @@ Comprehensive tests for batch D coverage targets:
 - src.core.shared.auth.provisioning
 - src.core.shared.database.utils
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -777,15 +777,15 @@ class TestJITProvisionerMergeRoles:
         assert changed is False
 
     def test_deduplicates_and_sorts(self, prov):
-        merged, changed = prov._merge_roles([], ["b", "a", "b"])
+        merged, _changed = prov._merge_roles([], ["b", "a", "b"])
         assert merged == ["a", "b"]
 
     def test_no_change_detected(self, prov):
-        merged, changed = prov._merge_roles(["a", "b"], ["a", "b"])
+        _merged, changed = prov._merge_roles(["a", "b"], ["a", "b"])
         assert changed is False
 
     def test_custom_defaults(self, prov):
-        merged, changed = prov._merge_roles([], [], default_roles=["custom"])
+        merged, _changed = prov._merge_roles([], [], default_roles=["custom"])
         assert merged == ["custom"]
 
 

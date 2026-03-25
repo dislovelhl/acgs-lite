@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # Sprint 59 — llm_adapters/failover/hedging.py coverage
 """
 Comprehensive test suite for:

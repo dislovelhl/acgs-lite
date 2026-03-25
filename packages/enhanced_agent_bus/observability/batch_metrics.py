@@ -2,7 +2,7 @@
 """
 ACGS-2 Batch Processing Metrics
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Prometheus/OpenTelemetry metrics for batch processing operations.
 Tracks throughput, latency, success/failure rates, and resource usage.
@@ -12,8 +12,7 @@ import time
 from dataclasses import dataclass, field
 from importlib import import_module
 
-from enhanced_agent_bus.observability.structured_logging import get_logger
-
+from .structured_logging import get_logger
 from .telemetry import NoOpCounter, NoOpHistogram, NoOpMeter, get_meter
 
 logger = get_logger(__name__)

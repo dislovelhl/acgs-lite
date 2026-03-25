@@ -2,9 +2,10 @@ from __future__ import annotations
 
 """ACGS-2 Enhanced Agent Bus API Application.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
+import inspect
 import os
 from contextlib import asynccontextmanager
 from importlib import import_module
@@ -42,10 +43,12 @@ from ..api_exceptions import (
     rate_limit_exceeded_handler,
 )
 from ..batch_processor import BatchMessageProcessor
+from ..maci_enforcement import MACIEnforcer, MACIRoleRegistry
 from ..message_processor import MessageProcessor
 from ..persistence.executor import DurableWorkflowExecutor, WorkflowContext
 from ..persistence.postgres_repository import PostgresWorkflowRepository
 from ..persistence.repository import InMemoryWorkflowRepository
+from ..pqc_enforcement_config import EnforcementModeConfigService
 from .config import (
     API_VERSION,
     BATCH_PROCESSOR_ITEM_TIMEOUT_SECONDS,
@@ -72,7 +75,15 @@ from .rate_limiting import (
 from .routes.agent_health import router as agent_health_router
 from .routes.badge import router as badge_router
 from .routes.batch import router as batch_router
-from .routes.governance import router as governance_router
+from .routes.governance import (
+    InMemoryPQCConfigBackend,
+    MACIRecordStore,
+    RedisMACIRecordStore,
+    RedisMACIRoleRegistry,
+)
+from .routes.governance import (
+    router as governance_router,
+)
 from .routes.health import router as health_router
 from .routes.messages import router as messages_router
 from .routes.policies import router as policies_router
@@ -184,6 +195,14 @@ def _is_development_like_environment() -> bool:
     """Return whether current environment is development-like."""
     environment = os.environ.get("ENVIRONMENT", "").lower()
     return environment in ("development", "dev", "test", "testing", "ci")
+
+
+def _build_governance_redis_client() -> Any:
+    """Create the shared Redis client used by MACI and PQC API state."""
+    import redis.asyncio as aioredis
+
+    redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+    return aioredis.from_url(redis_url, decode_responses=True)
 
 
 def _initialize_agent_bus_state() -> MessageProcessor | dict:
@@ -333,6 +352,24 @@ async def _close_workflow_repository_if_available(
         logger.error(f"Error closing Workflow Repository: {e}")
 
 
+async def _close_governance_redis_if_available(app: FastAPI) -> None:
+    """Close the shared governance Redis client when initialized."""
+    client = getattr(app.state, "governance_redis_client", None)
+    if client is None:
+        return
+
+    close_method = getattr(client, "aclose", None) or getattr(client, "close", None)
+    if close_method is None:
+        return
+
+    try:
+        result = close_method()
+        if inspect.isawaitable(result):
+            await result
+    except Exception as e:
+        logger.error(f"Error closing governance Redis client: {e}")
+
+
 def _bind_runtime_state(app: FastAPI, *, bus: MessageProcessor | dict) -> None:
     """Bind initialized runtime dependencies onto FastAPI state."""
     global agent_bus, batch_processor, message_circuit_breaker
@@ -352,21 +389,101 @@ def _bind_runtime_state(app: FastAPI, *, bus: MessageProcessor | dict) -> None:
     logger.info("Circuit breaker enabled for message processing")
 
 
+def _configure_in_memory_governance_state(application: FastAPI) -> None:
+    """Wire development/test-only in-memory governance backends."""
+    application.state.governance_redis_client = None
+    application.state.maci_record_store = MACIRecordStore()
+    application.state.maci_role_registry = MACIRoleRegistry()
+    application.state.maci_enforcer = MACIEnforcer(
+        registry=application.state.maci_role_registry,
+        strict_mode=True,
+    )
+    application.state.pqc_enforcement_service = EnforcementModeConfigService(
+        redis_client=InMemoryPQCConfigBackend()
+    )
+
+
+def _configure_shared_governance_state(
+    application: FastAPI,
+    *,
+    redis_client: Any,
+) -> None:
+    """Wire shared Redis-backed governance backends."""
+    registry = RedisMACIRoleRegistry(redis_client=redis_client)
+    application.state.governance_redis_client = redis_client
+    application.state.maci_record_store = RedisMACIRecordStore(redis_client=redis_client)
+    application.state.maci_role_registry = registry
+    application.state.maci_enforcer = MACIEnforcer(
+        registry=registry,
+        strict_mode=True,
+    )
+    application.state.pqc_enforcement_service = EnforcementModeConfigService(
+        redis_client=redis_client
+    )
+
+
+def _governance_state_is_shared(application: FastAPI) -> bool:
+    """Return whether the app already uses shared governance backends."""
+    app_state = application.state
+    return isinstance(getattr(app_state, "maci_record_store", None), RedisMACIRecordStore) and (
+        isinstance(getattr(app_state, "maci_role_registry", None), RedisMACIRoleRegistry)
+    )
+
+
+def _ensure_governance_state(
+    application: FastAPI,
+    *,
+    allow_in_memory_fallback: bool,
+) -> None:
+    """Ensure MACI and PQC services use shared backends whenever available."""
+    if _governance_state_is_shared(application):
+        return
+
+    try:
+        redis_client = _build_governance_redis_client()
+        _configure_shared_governance_state(application, redis_client=redis_client)
+    except Exception as e:
+        if not allow_in_memory_fallback:
+            raise
+        logger.warning(f"Shared governance backends unavailable, using in-memory fallback: {e}")
+        _configure_in_memory_governance_state(application)
+
+
+def _attach_pqc_postgres_fallback(
+    application: FastAPI,
+    repository: PostgresWorkflowRepository | None,
+) -> None:
+    """Attach PostgreSQL fallback storage to the shared PQC service when available."""
+    service = getattr(application.state, "pqc_enforcement_service", None)
+    if not isinstance(service, EnforcementModeConfigService):
+        return
+
+    pool = getattr(repository, "_pool", None) if repository is not None else None
+    if pool is not None:
+        service._pg = pool
+
+
 async def _startup_runtime(app: FastAPI) -> None:
     """Initialize runtime state required during application startup."""
     global workflow_executor, workflow_repository
 
+    _ensure_governance_state(
+        app,
+        allow_in_memory_fallback=_is_development_like_environment(),
+    )
     bus = _initialize_agent_bus_state()
     _bind_runtime_state(app, bus=bus)
     workflow_executor, workflow_repository = await _initialize_workflow_components(app)
+    _attach_pqc_postgres_fallback(app, workflow_repository)
     await _initialize_session_manager_if_available()
 
 
-async def _shutdown_runtime() -> None:
+async def _shutdown_runtime(app: FastAPI) -> None:
     """Shutdown runtime state in the inverse order of startup."""
     await _stop_cache_warmer_if_running()
     await _shutdown_session_manager_if_available()
     await _close_workflow_repository_if_available(workflow_repository)
+    await _close_governance_redis_if_available(app)
     logger.info("Enhanced Agent Bus stopped")
 
 
@@ -374,6 +491,10 @@ def _configure_application_state(application: FastAPI) -> None:
     """Initialize non-runtime FastAPI application state."""
     application.state.limiter = limiter
     application.state.failed_tasks = []
+    _ensure_governance_state(
+        application,
+        allow_in_memory_fallback=True,
+    )
 
 
 def _register_core_routers(application: FastAPI) -> None:
@@ -416,7 +537,7 @@ async def _lifespan_context(app: FastAPI):
 
     yield
 
-    await _shutdown_runtime()
+    await _shutdown_runtime(app)
 
 
 def _register_exception_handlers(app: FastAPI) -> None:

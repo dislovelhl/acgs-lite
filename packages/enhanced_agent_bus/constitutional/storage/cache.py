@@ -1,6 +1,6 @@
 """
 Cache Layer for Constitutional Storage
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Abstraction over Redis cache with tenant-aware key management.
 """
@@ -52,7 +52,7 @@ class ConstitutionalCache:
     - TTL-based invalidation
     - JSON serialization for complex types
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

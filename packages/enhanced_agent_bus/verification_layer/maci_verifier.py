@@ -1,6 +1,6 @@
 """
 ACGS-2 MACI Verifier - Role-Based Verification Pipeline
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements Multi-Agent Collaborative Intelligence (MACI) verification to bypass
 Godel's incompleteness limitations through strict role separation:
@@ -813,7 +813,7 @@ class MACIVerifier:
 
     No agent validates its own output, bypassing Godel limitations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

@@ -1,6 +1,6 @@
 """FastAPI dependency providers for the ACGS-2 Enhanced Agent Bus API.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Dependency providers read shared state from ``request.app.state`` which is
 populated during the application lifespan startup phase.  Route handlers

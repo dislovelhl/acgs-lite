@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Verification Package
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 .. note::
     New verification code should be added to ``verification_layer/`` instead.

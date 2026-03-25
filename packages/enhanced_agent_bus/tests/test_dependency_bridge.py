@@ -1,6 +1,6 @@
 """
 Tests for DependencyBridge module.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 These tests verify the bridge between the legacy imports.py pattern
 and the new DependencyRegistry.

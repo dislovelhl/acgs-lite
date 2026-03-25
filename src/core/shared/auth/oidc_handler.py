@@ -1,6 +1,6 @@
 """
 ACGS-2 OpenID Connect (OIDC) Handler Service
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides enterprise-grade OIDC Relying Party (RP) implementation using Authlib.
 Supports multiple identity providers including Google Workspace, Azure AD, and Okta.

@@ -1,6 +1,6 @@
 """
 ACGS-2 Impact Scorer
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements ML-based impact assessment for messages and actions with
 hybrid rule-based and model-based risk scoring.

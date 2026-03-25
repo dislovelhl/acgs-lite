@@ -305,7 +305,7 @@ class TestReputation:
 
         # Run many validations to push reputation
         for j in range(50):
-            result = mesh.full_validation("a-0", f"good work iteration {j}", f"art-{j}")
+            mesh.full_validation("a-0", f"good work iteration {j}", f"art-{j}")
 
         for i in range(5):
             rep = mesh.get_reputation(f"a-{i}")

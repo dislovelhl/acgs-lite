@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - AWS Bedrock LLM Adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 AWS Bedrock adapter supporting multiple foundation models:
 - Anthropic Claude (Opus, Sonnet, Haiku)
@@ -63,7 +63,7 @@ _BEDROCK_ADAPTER_OPERATION_ERRORS = (
 class BedrockAdapter(BaseLLMAdapter):
     """AWS Bedrock LLM adapter for multiple foundation models.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Supports:
     - Anthropic Claude models (via Bedrock)

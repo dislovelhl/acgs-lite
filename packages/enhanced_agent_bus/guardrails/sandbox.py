@@ -4,7 +4,7 @@ Tool Runner Sandbox Guardrail Component.
 Layer 3 of OWASP guardrails: isolated execution environment for tool calls
 and external integrations using Docker or Firecracker.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import time

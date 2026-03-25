@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Steady State Validation
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements steady state hypothesis validation for chaos engineering experiments.
 The steady state represents normal system behavior that should be maintained
@@ -63,7 +63,7 @@ class ValidationMetric:
     """
     A metric to validate in steady state.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     name: str
@@ -113,7 +113,7 @@ class ValidationResult:
     """
     Result of a steady state validation check.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     valid: bool
@@ -207,7 +207,7 @@ class SteadyStateHypothesis:
     """
     A hypothesis about the system's steady state.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     name: str
@@ -233,7 +233,7 @@ class SteadyStateValidator:
     """
     Validates system steady state during chaos experiments.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Features:
     - Continuous metric validation

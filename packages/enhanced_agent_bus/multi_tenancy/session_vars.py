@@ -1,6 +1,6 @@
 """
 ACGS-2 PostgreSQL Session Variable Management for RLS
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides utilities for managing PostgreSQL session variables used by
 Row-Level Security (RLS) policies. These variables must be set before

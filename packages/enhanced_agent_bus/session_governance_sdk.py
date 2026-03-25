@@ -1,6 +1,6 @@
 """
 ACGS-2 Session Governance SDK
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 A Python client SDK for the Enhanced Agent Bus Session Governance API.
 Provides a clean interface for managing session governance configurations
@@ -290,7 +290,7 @@ class SessionGovernanceClient:
     """
     Client SDK for Session Governance API.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Provides a clean interface for managing session governance configurations
     with full multi-tenant support and constitutional compliance.

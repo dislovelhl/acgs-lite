@@ -4,7 +4,7 @@ Agent Engine Guardrail Component.
 Layer 2 of OWASP guardrails: core governance layer with constitutional
 validation and ML-based impact scoring.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import time

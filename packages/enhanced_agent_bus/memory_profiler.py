@@ -1,6 +1,6 @@
 """
 ACGS-2 Memory Profiler Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Memory profiling for message processing using tracemalloc.
 Designed for minimal latency impact (<5μs) using fire-and-forget async patterns.

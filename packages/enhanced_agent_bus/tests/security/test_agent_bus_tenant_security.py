@@ -1,4 +1,4 @@
-"""Agent Bus Tenant Security Integration Tests. Constitutional Hash: cdd01ef066bc6cf2"""
+"""Agent Bus Tenant Security Integration Tests. Constitutional Hash: 608508a9bd224290"""
 
 from dataclasses import dataclass, field
 from enum import Enum

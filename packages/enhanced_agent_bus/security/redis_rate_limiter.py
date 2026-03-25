@@ -1,6 +1,6 @@
 """
 ACGS-2 Production-Ready Redis Rate Limiter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Distributed rate limiter using Redis with sliding window algorithm.
 Includes automatic fallback to in-memory limiting when Redis is unavailable.

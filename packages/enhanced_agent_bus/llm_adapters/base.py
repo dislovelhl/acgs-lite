@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - LLM Adapter Base Interface
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Abstract base class defining standard interface for all LLM adapters.
 Provides methods for completion, streaming, token counting, error handling,
@@ -79,7 +79,7 @@ class AdapterStatus(Enum):
 class TokenUsage:
     """Token usage statistics for a completion request.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     prompt_tokens: int = 0
@@ -106,7 +106,7 @@ class TokenUsage:
 class CostEstimate:
     """Cost estimation for LLM API calls.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     prompt_cost_usd: float = 0.0
@@ -132,7 +132,7 @@ class CostEstimate:
 class CompletionMetadata:
     """Metadata for completion requests and responses.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     model: str
@@ -162,7 +162,7 @@ class LLMMessage(BaseModel):
     """Standardized message format for LLM requests.
 
     Compatible with OpenAI, Anthropic, and other major providers.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     role: str = Field(..., description="Message role: 'system', 'user', or 'assistant'")
@@ -184,7 +184,7 @@ class LLMMessage(BaseModel):
 class LLMResponse(BaseModel):
     """Standardized response format from LLM adapters.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     content: str = Field(..., description="Generated text content")
@@ -272,7 +272,7 @@ RetryConfig = LLMRetryConfig
 class HealthCheckResult:
     """Result of adapter health check.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     status: AdapterStatus
@@ -300,7 +300,7 @@ class BaseLLMAdapter(ABC):
     This class defines the standard interface that all LLM adapter implementations
     must follow, ensuring consistent behavior across different providers.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     All adapters must implement:
     - Completion (sync and async)
@@ -562,6 +562,7 @@ class BaseLLMAdapter(ABC):
         if messages[0].role == "assistant":
             raise ValueError("First message cannot be from assistant")
 
+    @abstractmethod
     def validate_constitutional_compliance(self, **kwargs: object) -> None:
         """Validate constitutional compliance for request parameters.
 
@@ -571,9 +572,7 @@ class BaseLLMAdapter(ABC):
         Raises:
             ConstitutionalError: If constitutional validation fails
         """
-        # Base implementation - can be overridden by subclasses
-        # for provider-specific constitutional checks
-        pass
+        raise NotImplementedError
 
     async def retry_with_backoff(
         self,

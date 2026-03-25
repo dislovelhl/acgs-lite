@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus Batch Processing Routes
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides batch processing endpoints for governance validation.
 """
@@ -159,7 +159,7 @@ async def batch_validate(
 
     **Features:**
     - Parallel validation using asyncio.gather
-    - Constitutional hash validation (cdd01ef066bc6cf2)
+    - Constitutional hash validation (608508a9bd224290)
     - MACI role enforcement with separation of powers
     - Per-item error isolation for partial failure handling
     - Request deduplication within batch

@@ -1,6 +1,6 @@
 """
 ACGS-2 HuggingFace Model Adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Adapter for HuggingFace Inference API and local models.
 Supports Llama, Mistral, and other open source models.
@@ -37,7 +37,7 @@ class HuggingFaceAdapter(ModelAdapter):
     - Mistral models
     - Open source models
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

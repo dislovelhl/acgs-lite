@@ -1,6 +1,6 @@
 """
 Tests for Security Headers Middleware
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests verify:
 - SecurityHeadersConfig dataclass (defaults, custom config, environment-based configs)

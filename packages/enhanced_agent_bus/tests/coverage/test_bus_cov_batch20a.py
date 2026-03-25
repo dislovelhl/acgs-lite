@@ -3,7 +3,7 @@ Comprehensive coverage tests for enhanced_agent_bus modules:
 - message_processor.py (MessageProcessor class and helpers)
 - di_container.py (DIContainer, ServiceDescriptor, create_default_container, get/reset_container)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -79,7 +79,8 @@ class TestServiceDescriptor:
         assert desc.singleton is True
 
     def test_with_factory(self) -> None:
-        factory = lambda: 42
+        def factory():
+            return 42
         desc = ServiceDescriptor(service_type=int, factory=factory)
         assert desc.factory is factory
         assert desc.singleton is True

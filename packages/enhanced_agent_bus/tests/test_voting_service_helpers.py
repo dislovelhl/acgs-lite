@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Voting Service Helper Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Unit tests for extracted helper functions in VotingService.
 Tests each helper function independently with comprehensive edge cases.

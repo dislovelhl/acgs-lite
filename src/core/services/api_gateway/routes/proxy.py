@@ -1,4 +1,4 @@
-"""Constitutional Hash: cdd01ef066bc6cf2
+"""Constitutional Hash: 608508a9bd224290
 ACGS-2 API Gateway — Proxy catch-all endpoint
 
 Extracted from main.py: reverse proxy to Agent Bus service.
@@ -26,7 +26,7 @@ logger = get_logger(__name__)
 # Service URLs from centralized config
 AGENT_BUS_URL = settings.services.agent_bus_url
 
-# Shared httpx client for proxy requests (Constitutional Hash: cdd01ef066bc6cf2)
+# Shared httpx client for proxy requests (Constitutional Hash: 608508a9bd224290)
 _proxy_client: httpx.AsyncClient | None = None
 _proxy_client_lock = asyncio.Lock()
 

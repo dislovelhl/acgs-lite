@@ -1,6 +1,6 @@
 """
 ACGS-2 Verification Pipeline - Integrated Layer 2 Verification System
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Integrates all Layer 2 components into a unified verification pipeline:
 - MACI role-based verification (Executive/Legislative/Judicial)
@@ -251,7 +251,7 @@ class VerificationPipeline:
     - SagaLLM transaction management (compensation support)
     - Constitutional state transitions (proof generation)
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

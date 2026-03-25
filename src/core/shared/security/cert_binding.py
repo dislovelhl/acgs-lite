@@ -1,6 +1,6 @@
 """Certificate-bound agent identity validator (OWASP AA04).
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements RFC 8705-inspired certificate binding for agent tokens.
 An agent's JWT is bound to its X.509 certificate fingerprint.
@@ -74,7 +74,7 @@ class CertBindingResult:
 class CertBindingValidator:
     """Validates that agent JWTs are bound to specific X.509 certificates.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     All mutation and validation operations verify the constitutional hash
     to prevent tampered governance state from being accepted.

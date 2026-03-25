@@ -1,6 +1,6 @@
 """
 ACGS-2 SagaLLM Transaction System
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 SagaLLM provides transaction guarantees for constitutional governance operations:
 - Compensable actions with LIFO rollback on failure

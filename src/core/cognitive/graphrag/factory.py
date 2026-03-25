@@ -1,6 +1,6 @@
 """
 GraphRAG factory — create_embedding_provider and create_vector_store.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides lightweight in-memory implementations for dev/test use.
 """

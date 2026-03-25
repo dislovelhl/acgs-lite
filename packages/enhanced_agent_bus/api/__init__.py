@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus API Package
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This package exposes the FastAPI API surface for the Enhanced Agent Bus.
 Exports are resolved lazily so test collection can import the package without

@@ -5,7 +5,7 @@ Provides core dataclasses for the MCP client layer:
 - MCPTool: describes a tool exposed by an MCP server
 - MCPToolResult: carries the outcome of a tool invocation
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

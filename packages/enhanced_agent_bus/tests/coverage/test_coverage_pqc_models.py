@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - PQC Enforcement Models Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: enhanced_agent_bus/pqc_enforcement_models.py (26 stmts, 0% -> target 100%)
 Tests Pydantic models for PQC enforcement mode administration.

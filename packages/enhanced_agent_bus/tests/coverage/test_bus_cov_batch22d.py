@@ -5,7 +5,7 @@ Comprehensive coverage tests for enhanced_agent_bus modules:
 - health_aggregator.py (HealthAggregator, HealthSnapshot, etc.)
 - performance_optimization.py (AsyncPipelineOptimizer, ResourcePool, etc.)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -1428,7 +1428,7 @@ class TestRuntimeSecurityAdditional:
             "enhanced_agent_bus.runtime_security.validate_constitutional_hash",
             return_value=mock_validation,
         ):
-            await scanner._check_constitutional_hash(result, "cdd01ef066bc6cf2", None, None)
+            await scanner._check_constitutional_hash(result, "608508a9bd224290", None, None)
             assert result.blocked is False
 
     async def test_check_constitutional_hash_invalid(self) -> None:

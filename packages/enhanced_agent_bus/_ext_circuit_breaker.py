@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Optional circuit breaker imports for enhanced_agent_bus.
 Service-Specific Circuit Breaker Configuration (T002).

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - End-to-End Workflow Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive E2E tests for workflow patterns:
 - Saga orchestration with LIFO compensation

@@ -8,7 +8,7 @@ os.environ["ENABLE_RATE_LIMITING"] = "false"
 os.environ["SAML_ENABLED"] = "false"
 """
 ACGS-2 API Gateway OIDC Flow Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for OpenID Connect authentication flow with Google Workspace mock.
 Tests cover: login redirect, callback handling, token exchange, user info extraction,

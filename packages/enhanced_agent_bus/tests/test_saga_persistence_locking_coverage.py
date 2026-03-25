@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive pytest test suite for saga_persistence/postgres/locking.py.
 Target: ≥95% coverage of PostgresLockManager.

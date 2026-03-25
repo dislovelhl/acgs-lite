@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ACGS-2 GPU Acceleration Benchmark
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Runs load testing on ML models to determine if GPU acceleration is beneficial.
 
@@ -194,7 +194,7 @@ class GPUBenchmark:
         """Run the complete benchmark suite."""
         logger.info("=" * 70)
         logger.info("ACGS-2 GPU ACCELERATION BENCHMARK")
-        logger.info("Constitutional Hash: cdd01ef066bc6cf2")
+        logger.info("Constitutional Hash: 608508a9bd224290")
         logger.info(f"Started: {datetime.now(UTC).isoformat()}")
         logger.info("=" * 70)
         logger.info("")

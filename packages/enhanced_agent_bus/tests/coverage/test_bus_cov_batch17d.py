@@ -4,7 +4,7 @@ Coverage tests for batch17d:
   2. mcp_integration/auth/mcp_auth_provider/token_ops.py
   3. api/routes/z3.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

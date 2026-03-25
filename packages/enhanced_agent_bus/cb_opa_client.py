@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Circuit Breaker OPA Client
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 OPA Client with circuit breaker protection implementing FAIL-CLOSED strategy.
 When the circuit is open, all policy evaluations are DENIED.
@@ -64,7 +64,7 @@ class CircuitBreakerOPAClient:
     Implements FAIL-CLOSED strategy for constitutional governance.
     When the circuit is open, all policy evaluations are DENIED.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

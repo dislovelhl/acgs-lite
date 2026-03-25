@@ -1,7 +1,7 @@
 """
 ACGS-2 Circuit Breaker Core Implementation
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module implements the core ServiceCircuitBreaker class with state management,
 metrics tracking, and fallback strategy support.
@@ -64,7 +64,7 @@ class ServiceCircuitBreaker:
     """
     Service-specific circuit breaker with fallback strategies.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     States:
     - CLOSED: Normal operation, requests pass through

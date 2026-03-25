@@ -3,7 +3,7 @@ Swarm Intelligence - Message Bus
 
 Inter-agent communication bus with advanced messaging features.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio

@@ -1,7 +1,7 @@
 """
 Return on Cognitive Spend (RoCS) — governance efficiency metric.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 Ref: solveeverything.org — RoCS replaces EBITDA as the primary signal
 of solvency in the Intelligence Revolution.
 

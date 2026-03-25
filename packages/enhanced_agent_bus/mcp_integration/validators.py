@@ -4,7 +4,7 @@ MCP Constitutional Validators for ACGS-2.
 Provides constitutional validation for all MCP operations, ensuring
 compliance with governance principles and MACI role-based access control.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -267,7 +267,7 @@ class MCPConstitutionalValidator:
     Validates all MCP operations against constitutional principles,
     MACI role-based access control, and governance policies.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH

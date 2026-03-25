@@ -1,6 +1,6 @@
 """
 ACGS-2 AI Assistant - Core Orchestrator
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Main orchestrator class that ties together all AI assistant components:
 NLU, Dialog Management, Response Generation, and Agent Bus Integration.

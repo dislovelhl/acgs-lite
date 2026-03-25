@@ -1,6 +1,6 @@
 """
 ACGS-2 Deliberation Layer - OPA Guard Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Data models and enums for the OPA Policy Guard.
 Separates data structures from business logic for better maintainability.

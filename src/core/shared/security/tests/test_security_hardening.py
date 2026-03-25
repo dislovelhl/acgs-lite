@@ -3,7 +3,7 @@
 These tests validate the security fixes without importing the full gateway,
 which has unresolved import dependencies (api_versioning, otel_config, self_evolution).
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

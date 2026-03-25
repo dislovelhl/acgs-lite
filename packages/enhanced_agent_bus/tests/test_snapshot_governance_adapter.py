@@ -1,6 +1,6 @@
 """
 Tests for enhanced_agent_bus.snapshot.snapshot_governance_adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from datetime import UTC, datetime, timedelta

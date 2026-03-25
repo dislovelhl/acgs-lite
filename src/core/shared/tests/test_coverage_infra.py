@@ -1,6 +1,6 @@
 """
 Tests for under-covered src/core infrastructure and utility modules.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers:
 - database/utils.py (Pageable, Page, BulkOperations)
@@ -399,7 +399,7 @@ class TestErrorLogging:
         assert ctx.operation == "test_op"
         assert ctx.service == "test_svc"
         assert ctx.correlation_id  # auto-generated
-        assert ctx.constitutional_hash == "cdd01ef066bc6cf2"
+        assert ctx.constitutional_hash == "608508a9bd224290"
 
     def test_error_context_to_dict(self):
         with warnings.catch_warnings():

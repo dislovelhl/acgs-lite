@@ -3,7 +3,7 @@ Tests targeting remaining uncovered lines in:
   1. enhanced_agent_bus.observability.telemetry (73.4% -> 90%+)
   2. enhanced_agent_bus.adaptive_governance.impact_scorer (75.6% -> 90%+)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Batch 28b: covers gaps NOT handled by batch27b.
 """
@@ -569,7 +569,7 @@ class TestImpactScorerInit:
                 ImpactScorer,
             )
 
-            scorer = ImpactScorer("cdd01ef066bc6cf2")
+            scorer = ImpactScorer("608508a9bd224290")
             assert scorer.impact_classifier is None
 
     def test_init_with_mhc_stability(self):
@@ -589,7 +589,7 @@ class TestImpactScorerInit:
                 ImpactScorer,
             )
 
-            scorer = ImpactScorer("cdd01ef066bc6cf2")
+            scorer = ImpactScorer("608508a9bd224290")
             assert scorer.use_mhc_stability is True
 
 
@@ -606,7 +606,7 @@ class TestImpactScorerMLflow:
                 ImpactScorer,
             )
 
-            scorer = ImpactScorer("cdd01ef066bc6cf2")
+            scorer = ImpactScorer("608508a9bd224290")
             assert scorer._mlflow_initialized is False
 
     def test_mlflow_init_in_pytest(self):
@@ -620,7 +620,7 @@ class TestImpactScorerMLflow:
                 ImpactScorer,
             )
 
-            scorer = ImpactScorer("cdd01ef066bc6cf2")
+            scorer = ImpactScorer("608508a9bd224290")
             assert scorer._mlflow_initialized is False
 
     def test_mlflow_init_creates_experiment(self):
@@ -647,7 +647,7 @@ class TestImpactScorerMLflow:
                     ImpactScorer,
                 )
 
-                scorer = ImpactScorer("cdd01ef066bc6cf2")
+                scorer = ImpactScorer("608508a9bd224290")
                 assert scorer._mlflow_initialized is True
                 assert scorer._mlflow_experiment_id == "exp-123"
             finally:
@@ -677,7 +677,7 @@ class TestImpactScorerMLflow:
                     ImpactScorer,
                 )
 
-                scorer = ImpactScorer("cdd01ef066bc6cf2")
+                scorer = ImpactScorer("608508a9bd224290")
                 assert scorer._mlflow_experiment_id == "exp-456"
             finally:
                 if saved_pytest is not None:
@@ -704,7 +704,7 @@ class TestImpactScorerMLflow:
                     ImpactScorer,
                 )
 
-                scorer = ImpactScorer("cdd01ef066bc6cf2")
+                scorer = ImpactScorer("608508a9bd224290")
                 assert scorer._mlflow_initialized is False
             finally:
                 if saved_pytest is not None:
@@ -717,7 +717,7 @@ class TestImpactScorerAssessImpact:
     def _make_scorer(self):
         from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
-        return ImpactScorer("cdd01ef066bc6cf2")
+        return ImpactScorer("608508a9bd224290")
 
     async def test_assess_impact_model_trained(self):
         """Cover lines 195-197: model_trained=True uses ML prediction."""
@@ -760,7 +760,7 @@ class TestImpactScorerPredictRiskScore:
     def _make_scorer(self):
         from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
-        return ImpactScorer("cdd01ef066bc6cf2")
+        return ImpactScorer("608508a9bd224290")
 
     def test_predict_falls_back_when_no_numpy(self):
         """Cover line 300: not NUMPY_AVAILABLE."""
@@ -846,7 +846,7 @@ class TestImpactScorerRuleBasedScore:
     def _make_scorer(self):
         from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
-        return ImpactScorer("cdd01ef066bc6cf2")
+        return ImpactScorer("608508a9bd224290")
 
     def test_high_message_length(self):
         """Cover line 327: message_length > high_threshold."""
@@ -896,7 +896,7 @@ class TestImpactScorerCalculateConfidence:
     def _make_scorer(self):
         from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
-        return ImpactScorer("cdd01ef066bc6cf2")
+        return ImpactScorer("608508a9bd224290")
 
     def test_full_confidence(self):
         """Cover lines 354-361: all conditions boost confidence."""
@@ -927,7 +927,7 @@ class TestImpactScorerUpdateModel:
     def _make_scorer(self):
         from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
-        return ImpactScorer("cdd01ef066bc6cf2")
+        return ImpactScorer("608508a9bd224290")
 
     def test_update_model_error_path(self):
         """Cover lines 406-407: error in update_model."""
@@ -970,7 +970,7 @@ class TestImpactScorerRetrainModel:
     def _make_scorer(self):
         from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
-        return ImpactScorer("cdd01ef066bc6cf2")
+        return ImpactScorer("608508a9bd224290")
 
     def test_retrain_without_numpy(self):
         """Cover lines 411-413: no numpy available."""
@@ -1101,7 +1101,7 @@ class TestImpactScorerLogTrainingRunToMLflow:
     def _make_scorer(self):
         from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
-        scorer = ImpactScorer("cdd01ef066bc6cf2")
+        scorer = ImpactScorer("608508a9bd224290")
         scorer._mlflow_experiment_id = "exp-001"
         return scorer
 
@@ -1184,7 +1184,7 @@ class TestImpactScorerApplyMHCStability:
     def _make_scorer(self):
         from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
-        return ImpactScorer("cdd01ef066bc6cf2")
+        return ImpactScorer("608508a9bd224290")
 
     def test_apply_mhc_stability_disabled(self):
         """Cover line 368-369: use_mhc_stability=False."""
@@ -1241,7 +1241,7 @@ class TestImpactScorerExtractFeatures:
     def _make_scorer(self):
         from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
-        return ImpactScorer("cdd01ef066bc6cf2")
+        return ImpactScorer("608508a9bd224290")
 
     async def test_extract_features_basic(self):
         """Cover lines 221-259: feature extraction."""

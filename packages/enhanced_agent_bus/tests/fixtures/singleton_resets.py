@@ -1,7 +1,7 @@
 """
 Fixtures that reset singleton state between tests.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import pytest
@@ -35,7 +35,7 @@ def _reset_singletons() -> None:
 def reset_global_state():
     """Reset global singletons before each test to prevent state pollution.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     _reset_singletons()
 

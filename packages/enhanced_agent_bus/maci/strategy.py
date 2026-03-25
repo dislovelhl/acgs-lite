@@ -4,7 +4,7 @@ MACI Validation Strategy for AgentMessage processing.
 Maps message types to MACI actions and validates through the enforcer.
 Supports session context from messages for session-aware validation.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from collections.abc import Callable
@@ -30,7 +30,7 @@ class MACIValidationStrategy:
     Maps message types to MACI actions and validates through the enforcer.
     Supports session context from messages for session-aware validation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, enforcer: MACIEnforcer | None = None):
@@ -130,7 +130,7 @@ def create_maci_enforcement_middleware(
     Returns:
         Async middleware function
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     enf = enforcer or MACIEnforcer()
 

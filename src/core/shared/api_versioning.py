@@ -4,7 +4,7 @@ This module intentionally provides only lightweight defaults so services and tes
 import API versioning symbols without pulling in the historical implementation.
 It is not a full versioning system.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

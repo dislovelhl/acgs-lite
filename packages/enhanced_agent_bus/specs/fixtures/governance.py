@@ -1,6 +1,6 @@
 """
 ACGS-2 Governance Fixtures
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Fixtures for consensus checking, policy verification, and governance testing.
 """

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - LLM Adapter Configuration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Pydantic models for adapter configuration including API keys, endpoints,
 model parameters, and rate limits. Supports environment variable injection
@@ -30,7 +30,7 @@ logger = get_logger(__name__)
 class AdapterType(Enum):
     """Supported LLM adapter types.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     OPENAI = "openai"
@@ -47,7 +47,7 @@ class AdapterType(Enum):
 class RateLimitConfig(BaseModel):
     """Rate limiting configuration for API requests.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     requests_per_minute: int = Field(
@@ -98,7 +98,7 @@ class RateLimitConfig(BaseModel):
 class ModelParameters(BaseModel):
     """Default model parameters for LLM requests.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     temperature: float = Field(
@@ -162,7 +162,7 @@ class ModelParameters(BaseModel):
 class BaseAdapterConfig(BaseModel):
     """Base configuration for all LLM adapters.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     adapter_type: AdapterType = Field(
@@ -266,7 +266,7 @@ class BaseAdapterConfig(BaseModel):
 class OpenAIAdapterConfig(BaseAdapterConfig):
     """Configuration for OpenAI adapter.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     adapter_type: AdapterType = Field(
@@ -320,7 +320,7 @@ class OpenAIAdapterConfig(BaseAdapterConfig):
 class AnthropicAdapterConfig(BaseAdapterConfig):
     """Configuration for Anthropic adapter.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     adapter_type: AdapterType = Field(
@@ -370,7 +370,7 @@ class AnthropicAdapterConfig(BaseAdapterConfig):
 class AzureOpenAIAdapterConfig(BaseAdapterConfig):
     """Configuration for Azure OpenAI adapter.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     adapter_type: AdapterType = Field(
@@ -446,7 +446,7 @@ class AzureOpenAIAdapterConfig(BaseAdapterConfig):
 class AWSBedrockAdapterConfig(BaseAdapterConfig):
     """Configuration for AWS Bedrock adapter.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     adapter_type: AdapterType = Field(
@@ -526,7 +526,7 @@ class AWSBedrockAdapterConfig(BaseAdapterConfig):
 class HuggingFaceAdapterConfig(BaseAdapterConfig):
     """Configuration for Hugging Face adapter.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     adapter_type: AdapterType = Field(
@@ -595,7 +595,7 @@ class HuggingFaceAdapterConfig(BaseAdapterConfig):
 class KimiAdapterConfig(BaseAdapterConfig):
     """Configuration for Moonshot AI (Kimi) adapter.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Supports Kimi K2.5 models with free tier access.
     """
@@ -652,7 +652,7 @@ class KimiAdapterConfig(BaseAdapterConfig):
 class XAIAdapterConfig(BaseAdapterConfig):
     """Configuration for xAI (Grok) adapter.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     xAI exposes an OpenAI-compatible API at https://api.x.ai/v1.
     Supports Grok 4.x models with 2M token context, server-side tools
@@ -723,7 +723,7 @@ class XAIAdapterConfig(BaseAdapterConfig):
 class OpenClawAdapterConfig(BaseAdapterConfig):
     """Configuration for OpenClaw gateway adapter.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     OpenClaw is a local agent runtime gateway that proxies requests to
     underlying model providers. It exposes an OpenAI-compatible API endpoint
@@ -796,7 +796,7 @@ class OpenClawAdapterConfig(BaseAdapterConfig):
 class CustomAdapterConfig(BaseAdapterConfig):
     """Configuration for custom LLM adapter.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Use this for proprietary or local models that don't fit other adapters.
     """
@@ -848,7 +848,7 @@ class CustomAdapterConfig(BaseAdapterConfig):
 class LocoOperatorAdapterConfig(HuggingFaceAdapterConfig):
     """Configuration for LocoOperator-4B (local operator/agent model).
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     LocoOperator-4B is a MACI Proposer-only model. It generates governance
     scoring signals and action recommendations that must pass independent

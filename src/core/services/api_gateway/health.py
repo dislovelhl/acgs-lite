@@ -1,6 +1,6 @@
 """
 ACGS-2 API Gateway Health Endpoints
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements health check endpoints per SPEC_ACGS2_ENHANCED.md Section 3.3.
 Per Expert Panel Review (Kelsey Hightower - Cloud Native Expert).
@@ -145,7 +145,7 @@ class HealthChecker:
     """
     Health checker for API Gateway dependencies.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Checks:
     - Database connectivity
@@ -475,7 +475,7 @@ def create_health_router(
         initialized = getattr(request.app.state, "initialized", False)
         hash_valid = bool(CONSTITUTIONAL_HASH) and hmac.compare_digest(
             CONSTITUTIONAL_HASH,
-            "cdd01ef066bc6cf2",  # pragma: allowlist secret
+            "608508a9bd224290",  # pragma: allowlist secret
         )
         ready = hash_valid
 

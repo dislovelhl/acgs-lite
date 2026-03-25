@@ -15,7 +15,7 @@
 
 ### To a Developer
 
-> "pip install acgs-lite. Five lines of Python. Every AI action validated against your constitutional rules in 560 nanoseconds. Cryptographic audit trail included. You already lint your code — now lint your AI decisions."
+> "pip install acgs. Five lines of Python. Every AI action validated against your constitutional rules in 560 nanoseconds. Cryptographic audit trail included. You already lint your code — now lint your AI decisions."
 
 ### To a CTO / VP Engineering
 

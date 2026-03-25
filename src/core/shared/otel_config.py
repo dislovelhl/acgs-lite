@@ -1,6 +1,6 @@
 """
 OpenTelemetry Configuration for ACGS-2 Services
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Supports exporting telemetry to configurable OTLP endpoints via environment
 variables OTEL_EXPORTER_OTLP_HTTP_ENDPOINT and OTEL_EXPORTER_OTLP_GRPC_ENDPOINT.

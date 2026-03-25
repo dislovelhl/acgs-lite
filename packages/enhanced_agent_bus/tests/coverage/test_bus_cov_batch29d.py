@@ -7,7 +7,7 @@ Coverage batch 29d -- targets uncovered lines in:
   5. api/routes/_tenant_auth.py
   6. mcp_server/resources/decisions.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

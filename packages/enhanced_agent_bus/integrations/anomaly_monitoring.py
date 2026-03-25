@@ -1,6 +1,6 @@
 """
 ACGS-2 Anomaly Monitoring Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Integrates the AnomalyDetector with the Agent Bus to provide real-time
 monitoring of governance metrics and automatic incident triggering.

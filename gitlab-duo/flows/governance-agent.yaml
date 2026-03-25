@@ -1,14 +1,14 @@
-# ACGS-Lite Governance Agent — GitLab Duo External Agent Flow
-# Constitutional Hash: cdd01ef066bc6cf2
+# ACGS Governance Agent — GitLab Duo External Agent Flow
+# Constitutional Hash: 608508a9bd224290
 #
 # Triggers: MR creation, MR update, manual @mention in MR comments.
-# Reads MR diffs from AI_FLOW_CONTEXT, runs acgs-lite constitutional
+# Reads MR diffs from AI_FLOW_CONTEXT, runs ACGS constitutional
 # validation, MACI separation-of-powers checks, and EU AI Act compliance,
 # then posts a structured governance report as an MR note.
 
 name: acgs-governance-agent
 description: >
-  Constitutional AI governance agent powered by acgs-lite.
+  Constitutional AI governance agent powered by ACGS.
   Validates merge requests against constitutional rules, enforces MACI
   separation of powers, and checks EU AI Act compliance for high-risk
   AI system changes.
@@ -20,21 +20,21 @@ image: python:3.11-slim
 setup: |
   set -euo pipefail
   pip install --quiet --no-cache-dir \
-    acgs-lite[mcp]>=0.2.0 \
+    acgs[mcp]>=2.0.1 \
     pyyaml>=6.0 \
     pydantic>=2.0 \
     httpx>=0.27
 
-  # Verify acgs-lite is importable and print constitutional hash
+  # Verify ACGS is importable and print constitutional hash
   python3 -c "
   from acgs_lite.constitution import Constitution
   c = Constitution.default()
-  print(f'acgs-lite loaded: {c.name} v{c.version} hash={c.hash}')
+  print(f'ACGS loaded: {c.name} v{c.version} hash={c.hash}')
   "
 
 system_prompt: |
   You are the ACGS Constitutional Governance Agent. Your role is to review
-  merge requests against constitutional governance rules using the acgs-lite
+  merge requests against constitutional governance rules using the ACGS
   library.
 
   ## Your capabilities

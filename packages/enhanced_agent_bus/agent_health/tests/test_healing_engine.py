@@ -1,6 +1,6 @@
 """
 Unit tests for HealingEngine — constitutional tier-routing.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Marked @pytest.mark.constitutional for 95%+ coverage gate.
 
@@ -825,7 +825,7 @@ class TestConstitutionalHashValidation:
         supervisor_notifier,
         thresholds,
     ) -> None:
-        """HealingEngine must validate CONSTITUTIONAL_HASH == 'cdd01ef066bc6cf2'."""
+        """HealingEngine must validate CONSTITUTIONAL_HASH == '608508a9bd224290'."""
         engine = _make_engine(
             store,
             audit_log_client,

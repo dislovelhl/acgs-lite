@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Circuit Breaker Kafka Producer
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Kafka Producer with circuit breaker protection implementing QUEUE_FOR_RETRY strategy.
 When the circuit is open, messages are buffered for later retry.
@@ -63,7 +63,7 @@ class CircuitBreakerKafkaProducer:
     Implements QUEUE_FOR_RETRY strategy for guaranteed delivery.
     When the circuit is open, messages are buffered for later retry.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

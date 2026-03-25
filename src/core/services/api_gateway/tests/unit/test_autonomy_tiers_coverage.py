@@ -1,6 +1,6 @@
 """
 Tests for autonomy_tiers.py route coverage.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: CRUD endpoints, _require_tenant_admin, _to_response helpers.
 """

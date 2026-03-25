@@ -1,6 +1,6 @@
 """
 ACGS-2 Authentication and Authorization Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides JWT-based authentication and role-based authorization for all services.
 """

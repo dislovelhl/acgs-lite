@@ -3,7 +3,7 @@ Comprehensive coverage tests for enhanced_agent_bus modules:
 - deliberation_layer/tensorrt_optimizer.py (TensorRTOptimizer)
 - enterprise_sso/middleware.py (SSO middleware, session context, decorators)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

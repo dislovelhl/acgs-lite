@@ -1,6 +1,6 @@
 """
 ACGS-2 AI Assistant - Natural Language Understanding
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Advanced NLU with intent classification, entity extraction,
 and sentiment analysis. Integrates with constitutional governance.

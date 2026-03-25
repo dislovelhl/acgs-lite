@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Validators Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for validation utilities including:
 - ValidationResult dataclass and methods
@@ -355,7 +355,7 @@ class TestValidateConstitutionalHash:
     def test_similar_hash_fails(self):
         """Hash with one character difference fails."""
         # Change last character
-        result = validate_constitutional_hash("cdd01ef066bc6cf3")
+        result = validate_constitutional_hash("608508a9bd224291")
 
         assert result.is_valid is False
 
@@ -367,13 +367,13 @@ class TestValidateConstitutionalHash:
 
     def test_hash_with_prefix_fails(self):
         """Hash with prefix fails."""
-        result = validate_constitutional_hash("0xcdd01ef066bc6cf2")
+        result = validate_constitutional_hash("0x608508a9bd224290")
 
         assert result.is_valid is False
 
     def test_partial_hash_fails(self):
         """Partial hash fails."""
-        result = validate_constitutional_hash("cdd01ef0")
+        result = validate_constitutional_hash("608508a9")
 
         assert result.is_valid is False
 
@@ -599,10 +599,10 @@ class TestEdgeCases:
 
     def test_hash_with_whitespace_fails(self):
         """Hash with leading/trailing whitespace fails."""
-        result = validate_constitutional_hash(" cdd01ef066bc6cf2")
+        result = validate_constitutional_hash(" 608508a9bd224290")
         assert result.is_valid is False
 
-        result = validate_constitutional_hash("cdd01ef066bc6cf2 ")
+        result = validate_constitutional_hash("608508a9bd224290 ")
         assert result.is_valid is False
 
     def test_content_with_circular_reference_handling(self):

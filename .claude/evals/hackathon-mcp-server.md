@@ -100,7 +100,8 @@ c2 = Constitution.default()
 assert c1.hash == c2.hash, f'Hash not stable: {c1.hash} != {c2.hash}'
 assert len(c1.hash) == 16, f'Hash wrong length: {c1.hash}'
 # Actual baseline hash (March 2026): 608508a9bd224290
-# Note: CLAUDE.md references cdd01ef066bc6cf2 — stale, pre-dates constitution update
+# This is the content-addressable hash of Constitution.default() rules,
+# also used as the platform constant in src/core/shared/constants.py.
 print(f'PASS — hash={c1.hash}')
 " && echo "PASS" || echo "FAIL"
 ```

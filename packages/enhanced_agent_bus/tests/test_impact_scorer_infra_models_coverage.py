@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # Sprint 56 — impact_scorer_infra/models.py coverage
 """
 Comprehensive tests for src/core/enhanced_agent_bus/impact_scorer_infra/models.py

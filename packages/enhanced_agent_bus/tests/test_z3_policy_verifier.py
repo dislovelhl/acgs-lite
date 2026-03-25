@@ -1,6 +1,6 @@
 """
 Tests for Z3 Policy Verifier module.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: dataclasses, ConstraintGenerator, HeuristicVerifier, Z3PolicyVerifier,
         factory function, and edge cases.

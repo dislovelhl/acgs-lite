@@ -1,6 +1,6 @@
 """
 ACGS-2 Dual-Key JWT Validator for Zero-Downtime Rotation
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides JWT validation that supports dual-key mode during secret
 rotation, enabling zero-downtime key rotation by accepting tokens signed with

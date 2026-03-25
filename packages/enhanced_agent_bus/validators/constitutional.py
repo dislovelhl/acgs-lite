@@ -1,6 +1,6 @@
 """Constitutional hash validator — MACI Validator role only.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This validator ONLY verifies constitutional compliance.
 It does NOT propose, execute, or remediate — those are separate MACI roles.
@@ -18,7 +18,7 @@ try:
     constants_module = import_module("src.core.shared.constants")
     _constitutional_hash_default = str(constants_module.CONSTITUTIONAL_HASH)
 except (ImportError, AttributeError):
-    _constitutional_hash_default = "cdd01ef066bc6cf2"
+    _constitutional_hash_default = "608508a9bd224290"
 
 CONSTITUTIONAL_HASH: str = _constitutional_hash_default
 

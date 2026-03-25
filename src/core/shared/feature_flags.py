@@ -5,7 +5,7 @@ Feature Flags for ACGS-2 Meta-Orchestrator
 Explicit feature flag management replacing silent try/except import failures.
 All flags are loaded from environment variables with ACGS_FEATURE_ prefix.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

@@ -1,5 +1,5 @@
-# ACGS-Lite Governance Pipeline — GitLab CI/CD Configuration
-# Constitutional Hash: cdd01ef066bc6cf2
+# ACGS Governance Pipeline — GitLab CI/CD Configuration
+# Constitutional Hash: 608508a9bd224290
 #
 # Adds a `governance` stage that runs before merge to validate MR diffs
 # against constitutional rules, check MACI separation of powers, verify
@@ -10,7 +10,7 @@ stages:
 
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.pip-cache"
-  ACGS_CONSTITUTIONAL_HASH: "cdd01ef066bc6cf2"
+  ACGS_CONSTITUTIONAL_HASH: "608508a9bd224290"
   ACGS_STRICT_MODE: "false"
   ACGS_EU_AI_ACT_CHECK: "false"
   ACGS_MACI_EXEMPT: ""
@@ -31,7 +31,7 @@ acgs-governance-validation:
     policy: pull-push
   before_script:
     - pip install --quiet --no-cache-dir
-        acgs-lite>=0.2.0
+        acgs>=2.0.1
         pydantic>=2.0
         pyyaml>=6.0
   script:
@@ -55,7 +55,7 @@ acgs-governance-validation:
       from acgs_lite.maci import MACIEnforcer, MACIRole
 
       # --- Configuration from CI variables ---
-      expected_hash = os.environ.get("ACGS_CONSTITUTIONAL_HASH", "cdd01ef066bc6cf2")
+      expected_hash = os.environ.get("ACGS_CONSTITUTIONAL_HASH", "608508a9bd224290")
       strict_mode = os.environ.get("ACGS_STRICT_MODE", "false").lower() == "true"
       eu_ai_act_check = os.environ.get("ACGS_EU_AI_ACT_CHECK", "false").lower() == "true"
       maci_exempt = set(
@@ -270,7 +270,7 @@ acgs-maci-check:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   before_script:
-    - pip install --quiet --no-cache-dir acgs-lite>=0.2.0
+    - pip install --quiet --no-cache-dir acgs>=2.0.1
   script:
     - |
       cat <<'PYEOF' > /tmp/acgs_maci_check.py
@@ -350,14 +350,14 @@ acgs-hash-verification:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   before_script:
-    - pip install --quiet --no-cache-dir acgs-lite>=0.2.0
+    - pip install --quiet --no-cache-dir acgs>=2.0.1
   script:
     - |
       python3 -c "
       import os, sys
       from acgs_lite.constitution import Constitution
 
-      expected = os.environ.get('ACGS_CONSTITUTIONAL_HASH', 'cdd01ef066bc6cf2')
+      expected = os.environ.get('ACGS_CONSTITUTIONAL_HASH', '608508a9bd224290')
       constitution_path = os.environ.get('ACGS_CONSTITUTION_PATH', '')
 
       if constitution_path:
@@ -395,7 +395,7 @@ acgs-eu-ai-act-report:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $ACGS_EU_AI_ACT_CHECK == "true"
   before_script:
-    - pip install --quiet --no-cache-dir acgs-lite>=0.2.0
+    - pip install --quiet --no-cache-dir acgs>=2.0.1
   script:
     - |
       cat <<'PYEOF' > /tmp/acgs_eu_ai_act.py

@@ -5,7 +5,7 @@ Implements Anthropic's best practice of designing tool interfaces from
 the model's perspective. Provides structured documentation that helps
 AI agents understand when and how to use tools effectively.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import json

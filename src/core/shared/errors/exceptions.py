@@ -1,7 +1,7 @@
 # pyright: reportMissingImports=false
 """
 ACGS-2 Base Exception Classes
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides a hierarchy of standardized exceptions for ACGS-2 services with:
 - Constitutional hash tracking for governance compliance

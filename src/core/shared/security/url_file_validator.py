@@ -1,6 +1,6 @@
 """
 ACGS-2 URL and File Upload Security Validation
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Security remediation for:
 - SEC-003: SSRF Protection (URL validation with allowlist)
@@ -103,7 +103,7 @@ class URLValidator:
     """
     Validates URLs for SSRF protection.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     MACI Role: CONTROLLER (security enforcement)
 
     Provides comprehensive URL validation to prevent:
@@ -408,7 +408,7 @@ class FileValidator:
     """
     Validates file uploads for security.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     MACI Role: CONTROLLER (security enforcement)
 
     Provides comprehensive file validation to prevent:

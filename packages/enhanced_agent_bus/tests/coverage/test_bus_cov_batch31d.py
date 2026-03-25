@@ -4,7 +4,7 @@ Coverage tests for:
 - enhanced_agent_bus/constitutional/review_api.py (84.6% -> target 95%+)
 - enhanced_agent_bus/constitutional/degradation_detector.py (83.8% -> target 95%+)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

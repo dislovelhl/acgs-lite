@@ -1547,7 +1547,7 @@ class TestCacheWarmer:
         mock_tier_module.CacheTier = CacheTier
         with patch.dict("sys.modules", {"src.core.shared.tiered_cache": mock_tier_module}):
             with patch.object(warmer, "_load_key_value", new_callable=AsyncMock, return_value="val"):
-                result = await warmer._warm_in_batches(
+                await warmer._warm_in_batches(
                     ["k1", "k2"], mock_cm, None, time.monotonic()
                 )
         assert cb.called
@@ -1925,7 +1925,7 @@ class TestTieredCacheManager:
         mock_client.get = AsyncMock(side_effect=ConnectionError("fail"))
         mgr._l2_client = mock_client
         mgr._l2_degraded = False
-        result = await mgr.get_async("k2", default="def")
+        await mgr.get_async("k2", default="def")
         assert mgr._l2_degraded is True
 
     @pytest.mark.asyncio

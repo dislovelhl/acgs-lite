@@ -1,6 +1,6 @@
 """
 Tests for deliberation_layer/integration.py — targets ≥90% coverage.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 asyncio_mode = "auto" — no @pytest.mark.asyncio decorators needed.
 Run with: python -m pytest ... --import-mode=importlib

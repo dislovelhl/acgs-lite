@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Chaos Experiments
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Defines chaos experiment lifecycle and execution framework.
 Experiments combine scenarios with steady state validation to
@@ -96,7 +96,7 @@ class ExperimentResult:
     """
     Result of a chaos experiment.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     experiment_name: str
@@ -148,7 +148,7 @@ class ChaosExperiment:
     """
     A chaos engineering experiment with full lifecycle management.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Lifecycle:
     1. Validate baseline steady state

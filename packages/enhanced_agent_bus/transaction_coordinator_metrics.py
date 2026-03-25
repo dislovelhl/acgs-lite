@@ -2,7 +2,7 @@
 """
 Transaction Coordinator Metrics Module
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive metrics collection for TransactionCoordinator with:
 - Transaction count tracking (total, success, failure)
@@ -412,7 +412,7 @@ class TransactionMetrics:
     - Concurrent transaction gauge
     - Consistency ratio
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Internal state for tracking when Prometheus is not available

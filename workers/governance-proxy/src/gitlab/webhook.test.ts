@@ -6,7 +6,7 @@ import { handleGitLabWebhook } from "./webhook.ts";
 const baseEnv: Env = {
   CONSTITUTIONS: {} as KVNamespace,
   AUDIT_DB: {} as D1Database,
-  CONSTITUTIONAL_HASH: "cdd01ef066bc6cf2",
+  CONSTITUTIONAL_HASH: "608508a9bd224290",
 };
 
 function makeRequest(body: unknown, headers: HeadersInit = {}): Request {

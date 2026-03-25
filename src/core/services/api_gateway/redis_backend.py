@@ -1,7 +1,7 @@
 """
 Redis Backend for Distributed Rate Limiting.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides Redis-based rate limiting for multi-instance deployments.
 Falls back to in-memory when Redis is unavailable.

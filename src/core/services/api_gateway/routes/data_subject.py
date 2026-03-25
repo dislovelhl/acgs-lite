@@ -1,6 +1,6 @@
 """
 ACGS-2 Data Subject Rights API Routes
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements GDPR/CCPA data subject rights endpoints:
 - Right to Access (GDPR Art. 15, CCPA §1798.100)
@@ -165,7 +165,7 @@ data_subject_v1_router = create_versioned_router(
     Returns information about what personal data is being processed,
     processing purposes, recipients, and data sources.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """,
 )
 @track_request_metrics("api-gateway", "/api/v1/data-subject/access")
@@ -233,7 +233,7 @@ async def request_data_access(
     The request will be validated, exemptions checked, and data erased
     within 30 days per GDPR requirements.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """,
 )
 @track_request_metrics("api-gateway", "/api/v1/data-subject/erasure")
@@ -347,7 +347,7 @@ async def request_erasure(
     description="""
     Get the status of an erasure request.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """,
 )
 @track_request_metrics("api-gateway", "/api/v1/data-subject/erasure/{request_id}")
@@ -455,7 +455,7 @@ async def get_erasure_status(
     Requires elevated permissions. Performs identity validation,
     exemption checking, data discovery, and erasure across systems.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """,
 )
 @track_request_metrics("api-gateway", "/api/v1/data-subject/erasure/{request_id}/process")
@@ -567,7 +567,7 @@ async def process_erasure(
 
     The certificate provides verifiable proof of data erasure per GDPR.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """,
 )
 @track_request_metrics("api-gateway", "/api/v1/data-subject/erasure/{request_id}/certificate")
@@ -667,7 +667,7 @@ async def get_erasure_certificate(
     Returns detected PII categories, confidence scores, and
     recommended retention policies.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """,
 )
 @track_request_metrics("api-gateway", "/api/v1/data-subject/classify")

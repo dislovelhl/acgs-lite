@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Exceptions
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Backward-compatible re-export surface for all exception symbols.
 """

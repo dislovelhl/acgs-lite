@@ -1,6 +1,6 @@
 """Tests for WorkOS webhook event ingestion service.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -243,7 +243,7 @@ class TestGetRedisClient:
                 "redis.asyncio.ConnectionPool.from_url",
                 side_effect=ImportError("no redis"),
             ):
-                client = await svc._get_redis_client()
+                await svc._get_redis_client()
         # After import error fallback, should return None
         assert svc._redis_initialized is True
 

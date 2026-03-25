@@ -5,7 +5,7 @@ Tests for batch18b coverage targets:
   3. feedback_handler/handler.py
   4. llm_adapters/bedrock_adapter.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

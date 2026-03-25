@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Hugging Face LLM Adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Hugging Face adapter supporting open-source models like Llama, DeepSeek, Mistral
 via Inference API, Inference Endpoints, or local transformers.
@@ -64,7 +64,7 @@ class _TokenWithText(Protocol):
 class HuggingFaceAdapter(BaseLLMAdapter):
     """Hugging Face LLM adapter for open-source models.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Supports:
     - Inference API (cloud-hosted models)

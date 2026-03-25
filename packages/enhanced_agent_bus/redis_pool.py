@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Redis Connection Pool
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 High-performance Redis connection pooling for batch operations.
 Implements Phase 4-Task 1 acceptance criteria:
@@ -98,7 +98,7 @@ class RedisConnectionPool:
     - Batch operations with pipelining
     - Metrics collection for observability
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

@@ -1,6 +1,6 @@
 """
 Manifold-Constrained HyperConnection (mHC) for Governance Stability
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module implements stability constraints for policy weight aggregation
 using projections onto the Birkhoff Polytope (doubly stochastic matrices).

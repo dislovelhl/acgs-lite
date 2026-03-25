@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - MACI Integration Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for MACI role separation enforcement integration with EnhancedAgentBus
 and MessageProcessor.
@@ -13,7 +13,7 @@ from enhanced_agent_bus.message_processor import MessageProcessor
 from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage, MessageType
 
 # Skip if MACI not available, but mark as governance tests when run
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 pytestmark = [
     pytest.mark.skipif(not MACI_AVAILABLE, reason="MACI module not available"),
     pytest.mark.governance,

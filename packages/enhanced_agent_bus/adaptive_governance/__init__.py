@@ -1,6 +1,6 @@
 """
 ACGS-2 Adaptive Governance System
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements ML-based adaptive governance with dynamic impact scoring and
 self-evolving constitutional thresholds for intelligent AI safety governance.

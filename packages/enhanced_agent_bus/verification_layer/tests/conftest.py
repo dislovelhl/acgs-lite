@@ -1,6 +1,6 @@
 """
 Pytest Configuration for Verification Layer Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides common fixtures and configuration for Layer 2 verification tests.
 """

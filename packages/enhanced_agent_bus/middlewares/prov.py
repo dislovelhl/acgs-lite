@@ -12,7 +12,7 @@ Design:
   before ProvMiddleware registered itself).
 - Timestamps bracket the downstream call for accurate activity duration.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 NIST 800-53 AU-2, AU-9 — Audit Events, Protection of Audit Information
 """
 
@@ -84,7 +84,7 @@ class ProvMiddleware(BaseMiddleware):
         fail_closed=False — any exception during stamping is caught, logged,
         and silently dropped. Message processing continues unimpeded.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, config: MiddlewareConfig | None = None) -> None:

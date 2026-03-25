@@ -1,6 +1,6 @@
 """
 ACGS-2 JIT Provisioning Service for SSO Authentication
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides Just-In-Time (JIT) user provisioning for SSO authentication flows.
 Creates new users on first SSO login and updates existing users on subsequent logins.

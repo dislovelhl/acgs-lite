@@ -1,6 +1,6 @@
 """
 Enterprise Integration Configuration API.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Phase 10 Task 7: Enterprise Integration Configuration API
 
@@ -75,7 +75,7 @@ class IntegrationStatus(Enum):
 class IntegrationConfig:
     """Configuration for an enterprise integration.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     id: str
@@ -125,7 +125,7 @@ class IntegrationConfig:
 class EncryptionService:
     """Service for encrypting/decrypting sensitive configuration data.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Supports:
     - HashiCorp Vault transit engine for production
@@ -196,7 +196,7 @@ class EncryptionService:
 class IntegrationHealthChecker:
     """Health checker for enterprise integrations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def check_ldap(self, config: JSONDict) -> JSONDict:
@@ -276,7 +276,7 @@ class IntegrationHealthChecker:
 class IntegrationAuditService:
     """Audit logging service for integration operations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self):
@@ -322,7 +322,7 @@ class IntegrationAuditService:
 class IntegrationConfigService:
     """Service for managing enterprise integration configurations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Provides:
     - CRUD operations for integrations

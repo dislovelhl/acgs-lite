@@ -1,6 +1,6 @@
 """
 ACGS-2 Constitutional Transition - State Transitions with Proofs
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements state transition management for constitutional governance:
 - Cryptographic proofs for state transitions
@@ -266,7 +266,7 @@ class StateTransitionManager:
     - Checkpoint creation for recovery
     - Rollback capability with proof verification
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, require_proof_verification: bool = True):

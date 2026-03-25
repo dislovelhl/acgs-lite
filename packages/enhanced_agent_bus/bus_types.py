@@ -1,6 +1,6 @@
 """Centralized type definitions for enhanced_agent_bus.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides all common type aliases used throughout the enhanced_agent_bus
 package, eliminating duplicate definitions and ensuring type consistency.

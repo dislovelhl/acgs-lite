@@ -1,6 +1,6 @@
 """
 ACGS-2 Audit Event Schemas
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Versioned schemas for audit trail events.
 Records all significant system events for compliance and forensics.
@@ -82,7 +82,7 @@ class AuditEventV1(EventSchemaBase):
     """
     Audit Event Schema V1 - Comprehensive audit trail event.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Records all significant system events with:
     - Event categorization and severity

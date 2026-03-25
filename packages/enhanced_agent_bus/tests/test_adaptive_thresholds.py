@@ -1,7 +1,7 @@
 """
 Tests for Adaptive Threshold Manager.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers:
 - AdaptiveThresholds construction and _initialize_mlflow
@@ -37,7 +37,7 @@ from enhanced_agent_bus.adaptive_governance.threshold_manager import (
 @pytest.fixture
 def thresholds():
     """Create an AdaptiveThresholds instance."""
-    return AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+    return AdaptiveThresholds(constitutional_hash="608508a9bd224290")
 
 
 @pytest.fixture
@@ -90,7 +90,7 @@ class TestConstruction:
         assert thresholds._mlflow_initialized is False
 
     def test_init_constitutional_hash(self, thresholds):
-        assert thresholds.constitutional_hash == "cdd01ef066bc6cf2"
+        assert thresholds.constitutional_hash == "608508a9bd224290"
 
 
 # ---------------------------------------------------------------------------
@@ -231,7 +231,7 @@ class TestRetrainModel:
     def test_retrain_error_does_not_raise(self, thresholds):
         """Retrain errors are caught."""
         # Add invalid training data
-        for i in range(120):
+        for _i in range(120):
             thresholds.training_data.append({
                 "features": "not_a_list",
                 "target": 0.1,

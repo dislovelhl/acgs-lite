@@ -4,7 +4,7 @@ Comprehensive coverage tests for enhanced_agent_bus modules:
 - ai_assistant/retrieval.py (policy, semantic, hybrid retrieval)
 - workflows/graph_workflow.py (state graph, governance graph)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

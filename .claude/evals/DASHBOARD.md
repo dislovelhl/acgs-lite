@@ -88,11 +88,12 @@ python .claude/evals/run_evals.sh  # (to be created)
 
 | Eval | Result | Root Cause |
 |------|--------|-----------|
-| REG-MCP-01 | ❌ FAIL → fixed | CLAUDE.md hash `cdd01ef066bc6cf2` is stale; actual `Constitution.default()` hash is `608508a9bd224290` |
+| REG-MCP-01 | ✅ PASS | Platform constant and `Constitution.default().hash` both equal `608508a9bd224290` |
 | CAP-GL-05 | ❌ FAIL → fixed | Same: hardcoded old hash in assertion, now dynamic |
 | All others (11) | ✅ PASS | |
 
-**Action**: Update CLAUDE.md constitutional hash reference from `cdd01ef066bc6cf2` → `608508a9bd224290`.
+**Note**: Platform constant `CONSTITUTIONAL_HASH` in `src/core/shared/constants.py` is now
+derived from `Constitution.default().hash` — both equal `608508a9bd224290`.
 
 ## Build Gaps Flagged by Evals
 

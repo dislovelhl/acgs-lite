@@ -170,7 +170,7 @@
 
 ## 5. ACGS Product Surface Inventory
 
-### acgs-lite Feature Map (120+ capabilities)
+### ACGS Library Feature Map (120+ capabilities)
 
 **Core Engine:**
 - Rule engine with YAML-based rule definitions

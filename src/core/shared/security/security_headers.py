@@ -1,6 +1,6 @@
 """
 ACGS-2 Security Headers Middleware
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Security headers middleware for FastAPI applications providing defense-in-depth
 against common web attacks including XSS, clickjacking, MIME sniffing, and downgrade attacks.

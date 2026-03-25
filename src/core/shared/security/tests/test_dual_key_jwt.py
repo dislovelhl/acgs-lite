@@ -280,7 +280,7 @@ class TestValidateTokenDualKey:
 # ---------------------------------------------------------------------------
 class TestCleanupExpiredKeys:
     def test_removes_expired(self, rsa_keys):
-        priv, pub = rsa_keys
+        _priv, pub = rsa_keys
         v = DualKeyJWTValidator()
         expired_meta = KeyMetadata(
             kid="old",
@@ -311,7 +311,7 @@ class TestCleanupExpiredKeys:
 # ---------------------------------------------------------------------------
 class TestCreateToken:
     def test_creates_valid_token(self, validator_with_keys, rsa_keys):
-        _, pub = rsa_keys
+        _, _pub = rsa_keys
         token = validator_with_keys.create_token({"sub": "user1"})
         assert token is not None
         # Validate it
@@ -373,7 +373,7 @@ class TestLoadKeysFromEnv:
 
     async def test_load_with_previous_key(self, rsa_keys, rsa_keys_prev):
         priv, pub = rsa_keys
-        priv_prev, pub_prev = rsa_keys_prev
+        _priv_prev, pub_prev = rsa_keys_prev
         env = {
             "JWT_CURRENT_PUBLIC_KEY": base64.b64encode(pub).decode(),
             "JWT_CURRENT_PRIVATE_KEY": base64.b64encode(priv).decode(),
@@ -393,14 +393,14 @@ class TestLoadKeysFromEnv:
 # ---------------------------------------------------------------------------
 class TestLoadKeysFromVault:
     async def test_no_vault_falls_back_to_env(self, rsa_keys):
-        priv, pub = rsa_keys
+        _priv, pub = rsa_keys
         env = {
             "JWT_CURRENT_PUBLIC_KEY": base64.b64encode(pub).decode(),
             "JWT_CURRENT_KID": "v1",
         }
         with patch.dict(os.environ, env, clear=False):
             v = DualKeyJWTValidator(vault_client=None)
-            result = await v.load_keys_from_vault()
+            await v.load_keys_from_vault()
             # Falls back to load_keys_from_env
 
     async def test_vault_client_success(self, rsa_keys):
@@ -422,7 +422,7 @@ class TestLoadKeysFromVault:
         assert v._current_kid == "vault-v1"
 
     async def test_vault_error_falls_back(self, rsa_keys):
-        priv, pub = rsa_keys
+        _priv, pub = rsa_keys
         vault = MagicMock()
         vault.secrets.kv.v2.read_secret_version.side_effect = RuntimeError("vault down")
         env = {
@@ -431,7 +431,7 @@ class TestLoadKeysFromVault:
         }
         with patch.dict(os.environ, env, clear=False):
             v = DualKeyJWTValidator(vault_client=vault)
-            result = await v.load_keys_from_vault()
+            await v.load_keys_from_vault()
             # Should fall back to env
 
 
@@ -485,7 +485,7 @@ class TestStatsHealthJWKS:
 
     def test_get_health_previous_expires_soon(self, dual_validator):
         # Override expiry to be within 1 hour
-        _, pub, meta = dual_validator._keys["v1"]
+        _, pub, _meta = dual_validator._keys["v1"]
         new_meta = KeyMetadata(
             kid="v1",
             is_current=False,

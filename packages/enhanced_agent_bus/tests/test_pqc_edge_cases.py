@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - PQC Enforcement Edge Case Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for race conditions, config unavailability, delete/recreate,
 and migration context bypass scenarios.

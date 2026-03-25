@@ -7,7 +7,7 @@ Targets:
   3. caching.py  (cached decorator, RedisCacheClient, helpers)
   4. pqc_validators.py  (enforcement gates, validators, helpers)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -1604,7 +1604,7 @@ class TestValidateConstitutionalHashPqc:
 
         result = await validate_constitutional_hash_pqc(
             data={"constitutional_hash": "wrong_hash_value"},
-            expected_hash="cdd01ef066bc6cf2",
+            expected_hash="608508a9bd224290",
         )
         assert result.valid is False
         assert any("mismatch" in e for e in result.errors)
@@ -1675,7 +1675,7 @@ class TestValidateMaciRecordPqc:
                 "timestamp": "2025-01-01",
                 "constitutional_hash": "wrong",
             },
-            expected_hash="cdd01ef066bc6cf2",
+            expected_hash="608508a9bd224290",
         )
         assert result.valid is False
 

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - PQC Validators
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Post-quantum cryptographic validators for constitutional hash validation
 and MACI enforcement with hybrid signature support.
@@ -191,7 +191,7 @@ async def validate_constitutional_hash_pqc(
 
     Args:
         data: Data to validate (must include signature and constitutional_hash)
-        expected_hash: Expected constitutional hash (default: cdd01ef066bc6cf2)
+        expected_hash: Expected constitutional hash (default: 608508a9bd224290)
         pqc_config: PQC configuration (None = disabled, classical-only mode)
 
     Returns:

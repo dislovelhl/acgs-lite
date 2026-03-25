@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 HTTP Transport for MCP Toolbox communication.
 
@@ -17,7 +17,7 @@ Features
 - Bearer-token and arbitrary header auth.
 - Structured logging at every retry and failure boundary.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

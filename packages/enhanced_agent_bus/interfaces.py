@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Protocol Interfaces
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Abstract protocol definitions for dependency injection support.
 These protocols enable loose coupling and testability.
@@ -35,7 +35,7 @@ class AgentRegistry(Protocol):
     """Protocol for agent registration and discovery.
 
     Implementations must provide thread-safe agent management.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def register(
@@ -115,7 +115,7 @@ class MessageRouter(Protocol):
     """Protocol for message routing decisions.
 
     Implementations determine how messages are delivered to agents.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def route(self, message: AgentMessage, registry: AgentRegistry) -> str | None:
@@ -151,7 +151,7 @@ class ValidationStrategy(Protocol):
     """Protocol for message validation.
 
     Implementations define how messages are validated before processing.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def validate(self, message: AgentMessage) -> tuple[bool, str | None]:
@@ -172,7 +172,7 @@ class ProcessingStrategy(Protocol):
 
     Implementations define how messages are validated and processed.
     Each strategy handles a different processing mode (Rust, Dynamic Policy, Python).
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def process(
@@ -211,7 +211,7 @@ class MessageHandler(Protocol):
     """Protocol for message handlers.
 
     Implementations process messages for specific message types.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def handle(self, message: AgentMessage) -> AgentMessage | None:
@@ -242,7 +242,7 @@ class MetricsCollector(Protocol):
     """Protocol for metrics collection.
 
     Implementations gather performance and operational metrics.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def record_message_processed(
@@ -287,7 +287,7 @@ class MessageProcessorProtocol(Protocol):
     """Protocol for message processing implementations.
 
     Implementations handle message validation and processing through the bus.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def process(self, message: AgentMessage) -> "ValidationResultType":
@@ -307,7 +307,7 @@ class MACIRegistryProtocol(Protocol):
     """Protocol for MACI agent role registry.
 
     Implementations manage agent role assignments for constitutional governance.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def register_agent(self, agent_id: str, role: str) -> bool:
@@ -350,7 +350,7 @@ class MACIEnforcerProtocol(Protocol):
     """Protocol for MACI action enforcement.
 
     Implementations enforce separation of powers in constitutional governance.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def validate_action(
@@ -374,7 +374,7 @@ class MACIEnforcerProtocol(Protocol):
 
 # =============================================================================
 # Infrastructure Protocols (Phase 2 Consolidation)
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # =============================================================================
 
 
@@ -383,7 +383,7 @@ class TransportProtocol(Protocol):
     """Protocol for message transport implementations.
 
     Enables swapping between in-process, Kafka, and other transports
-    without changing bus logic. Constitutional Hash: cdd01ef066bc6cf2
+    without changing bus logic. Constitutional Hash: 608508a9bd224290
     """
 
     async def start(self) -> None:
@@ -421,7 +421,7 @@ class OrchestratorProtocol(Protocol):
     """Protocol for orchestrator lifecycle and health.
 
     All orchestrators should implement this for unified health aggregation
-    and lifecycle management. Constitutional Hash: cdd01ef066bc6cf2
+    and lifecycle management. Constitutional Hash: 608508a9bd224290
     """
 
     async def start(self) -> None:
@@ -446,7 +446,7 @@ class CircuitBreakerProtocol(Protocol):
     """Protocol for circuit breaker implementations.
 
     Minimal interface covering state tracking and result recording.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def record_success(self) -> None:
@@ -537,7 +537,7 @@ __all__ = [
 
 # ============================================================================
 # Validation Strategy Dependencies - Protocol Types
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # ============================================================================
 
 
@@ -546,7 +546,7 @@ class PolicyValidationResultProtocol(Protocol):
     """Protocol for policy validation results.
 
     Used by DynamicPolicyValidationStrategy for type safety.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     @property
@@ -565,7 +565,7 @@ class PolicyClientProtocol(Protocol):
     """Protocol for dynamic policy clients.
 
     Used by DynamicPolicyValidationStrategy for type safety.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def validate_message_signature(
@@ -587,7 +587,7 @@ class OPAClientProtocol(Protocol):
     """Protocol for OPA (Open Policy Agent) clients.
 
     Used by OPAValidationStrategy for type safety.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def validate_constitutional(self, message: JSONDict) -> "ValidationResultProtocol":
@@ -606,7 +606,7 @@ class OPAClientProtocol(Protocol):
 class ValidationResultProtocol(Protocol):
     """Protocol for validation results.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     @property
@@ -626,7 +626,7 @@ class RustProcessorProtocol(Protocol):
 
     Used by RustValidationStrategy for type safety.
     Supports multiple validation method signatures.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # At least one of these methods should be available
@@ -649,7 +649,7 @@ class PQCValidatorProtocol(Protocol):
     """Protocol for Post-Quantum Cryptographic validators.
 
     Used by PQCValidationStrategy for type safety.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def verify_governance_decision(
@@ -676,7 +676,7 @@ class ConstitutionalVerifierProtocol(Protocol):
     """Protocol for constitutional verifiers using Z3.
 
     Used by ConstitutionalValidationStrategy for type safety.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def verify_constitutional_compliance(
@@ -702,7 +702,7 @@ class ConstitutionalVerifierProtocol(Protocol):
 class ConstitutionalVerificationResultProtocol(Protocol):
     """Protocol for constitutional verification results.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     @property

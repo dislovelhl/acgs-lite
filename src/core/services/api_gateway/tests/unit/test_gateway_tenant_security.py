@@ -4,7 +4,7 @@ Gateway Tenant Security Tests - Integration Tests
 These tests verify tenant isolation and security at the API Gateway level.
 They test the actual FastAPI endpoints with TestClient.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import pytest

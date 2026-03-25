@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Bundle Registry Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for OCI bundle registry client and distribution service.
 """

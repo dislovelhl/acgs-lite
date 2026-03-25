@@ -17,12 +17,12 @@ from enhanced_agent_bus.verification.maci_pipeline import (
 )
 
 # Mark all tests as governance tests (95% coverage required)
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
 
 class TestMACIAgents:
-    # Constitutional Hash: cdd01ef066bc6cf2
+    # Constitutional Hash: 608508a9bd224290
     """Test individual MACI agents."""
 
     @pytest.fixture

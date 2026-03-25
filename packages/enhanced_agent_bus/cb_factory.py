@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Circuit Breaker Client Factory
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Factory functions for creating and managing circuit breaker protected clients.
 Split from circuit_breaker_clients.py for improved maintainability.

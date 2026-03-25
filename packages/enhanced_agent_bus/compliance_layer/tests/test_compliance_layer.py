@@ -1,6 +1,6 @@
 """
 ACGS-2 Compliance Layer Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive test suite for Layer 4: Compliance & Transparency
 Testing NIST AI RMF, SOC 2, and EU AI Act compliance components.

@@ -5,7 +5,7 @@ This module runs import-time side effects that register flat-name and
 qualified-name aliases in sys.modules so that test files can use short
 import paths.  It MUST be imported before any test code runs.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import os

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Tenant Management API
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides REST API endpoints for managing multi-tenant configurations,
 enabling tenant lifecycle management, quota enforcement, and hierarchical tenancy.
@@ -736,7 +736,7 @@ Create a new tenant with the specified configuration.
 - Configurable resource quotas
 - Auto-activation option
 
-**Constitutional Hash:** cdd01ef066bc6cf2
+**Constitutional Hash:** 608508a9bd224290
     """,
 )
 async def create_tenant(

@@ -1,7 +1,7 @@
 """
 Dependency Injection Container for ACGS-2 MetaOrchestrator.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides lightweight DI for coordinator wiring without heavy frameworks.
 This module implements a simple but effective dependency injection pattern

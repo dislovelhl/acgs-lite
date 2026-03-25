@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # Sprint 58 — llm_adapters/cost/budget.py coverage
 """
 Comprehensive tests for src/core/enhanced_agent_bus/llm_adapters/cost/budget.py

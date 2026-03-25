@@ -1,7 +1,7 @@
 """
 x402 Governance-as-a-Service — Pay-Per-Call Constitutional Validation
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tiered pricing (zero facilitator fees via xpay.sh):
     GET  /x402/check     — FREE   (pass/fail funnel entry, no auth)

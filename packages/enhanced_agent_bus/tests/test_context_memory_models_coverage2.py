@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive test suite for context_memory/models.py
 Target: ≥95% coverage of all classes, methods, validators, and edge cases.

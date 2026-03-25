@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """Comprehensive tests for session_context.py targeting >=98% coverage."""
 
 from __future__ import annotations

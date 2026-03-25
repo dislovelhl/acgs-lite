@@ -938,7 +938,7 @@ class TestSAMLHandlerInitiateLogin:
         with patch.object(
             handler, "_get_saml_client", new_callable=AsyncMock, return_value=mock_client
         ):
-            url, req_id = await handler.initiate_login("okta")
+            url, _req_id = await handler.initiate_login("okta")
             assert url == "http://idp/login"
 
     @pytest.mark.asyncio

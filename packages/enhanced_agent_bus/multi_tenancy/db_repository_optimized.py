@@ -1,6 +1,6 @@
 """
 ACGS-2 Database-Backed Tenant Repository (Optimized)
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides SQLAlchemy async database operations for tenant management.
 Optimized with:
@@ -102,7 +102,7 @@ class TenantHierarchyNode:
 class DatabaseTenantRepository:
     """Database-backed repository for tenant management operations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     This repository handles tenant lifecycle operations with persistent storage:
     - Tenant creation and registration (with bulk support)

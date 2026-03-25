@@ -1,6 +1,6 @@
 """
 ACGS-2 Online Learning Module (Facade)
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Incremental learning using River with sklearn compatibility.
 Delegates to specialized modules in .online_learning_infra.

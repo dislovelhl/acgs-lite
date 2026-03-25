@@ -4,7 +4,7 @@
 
 This is the high-performance governance validation engine for ACGS-2, implemented in Rust as a PyO3 native extension for IP protection and maximum throughput.
 
-**Constitutional Hash:** `cdd01ef066bc6cf2`
+**Constitutional Hash:** `608508a9bd224290`
 
 ## Modules
 

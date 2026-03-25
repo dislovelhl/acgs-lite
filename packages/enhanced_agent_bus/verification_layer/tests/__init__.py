@@ -1,6 +1,6 @@
 """
 ACGS-2 Layer 2: Verification & Validation Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive test suite for the verification layer components:
 - MACIVerifier: Role-based verification (50+ tests)

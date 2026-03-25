@@ -1,6 +1,6 @@
 """
 OpenEvolve Governance Adapter — Constitutional Fitness
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Computes a blended fitness score that weights raw performance against
 constitutional compliance.  A risk multiplier further penalises high-risk

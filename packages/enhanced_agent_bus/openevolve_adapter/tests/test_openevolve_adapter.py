@@ -1,6 +1,6 @@
 """
 Tests for enhanced_agent_bus.openevolve_adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers:
 - candidate.py  (EvolutionCandidate contract & validation)
@@ -40,7 +40,7 @@ from enhanced_agent_bus.openevolve_adapter import (
 # Constants & shared helpers
 # ---------------------------------------------------------------------------
 
-HASH = "cdd01ef066bc6cf2"  # pragma: allowlist secret
+HASH = "608508a9bd224290"  # pragma: allowlist secret
 
 
 def _make_payload(

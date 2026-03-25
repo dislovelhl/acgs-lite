@@ -3,7 +3,7 @@ Submit Governance Request MCP Tool.
 
 Submits a governance request for constitutional validation and approval.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

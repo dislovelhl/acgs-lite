@@ -1,4 +1,4 @@
-"""Constitutional Hash: cdd01ef066bc6cf2
+"""Constitutional Hash: 608508a9bd224290
 ACGS-2 API Gateway — Feedback endpoints
 
 Extracted from main.py: feedback submission, stats, versioning docs, and service discovery.
@@ -53,7 +53,7 @@ _FEEDBACK_MAX_METADATA_BYTES = 8 * 1024
 _FEEDBACK_MAX_REQUEST_BYTES = 16 * 1024
 
 # Feedback storage configuration using Redis for persistence
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 FEEDBACK_REDIS_PREFIX = "acgs:feedback:"
 FEEDBACK_REDIS_TTL = 60 * 60 * 24 * 90  # 90 days
 
@@ -185,7 +185,7 @@ class FeedbackResponse(BaseModel):
 
 # ============================================================================
 # Versioned Gateway Router (API v1)
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # ============================================================================
 
 # Create versioned router for gateway endpoints

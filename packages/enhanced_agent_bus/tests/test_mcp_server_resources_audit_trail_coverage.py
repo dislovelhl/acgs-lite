@@ -1,10 +1,10 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # Sprint 57 — mcp_server/resources/audit_trail.py coverage
 """
 Comprehensive tests for mcp_server/resources/audit_trail.py.
 Targets >=95% coverage of all classes, methods, and branches.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

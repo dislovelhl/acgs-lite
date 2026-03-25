@@ -1,7 +1,7 @@
 """
 PostgreSQL Persistence for ACGS-2 Constitutional Storage.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 

@@ -5,7 +5,7 @@ Coverage tests for batch 18e:
   - online_learning_infra/consumer.py
   - llm_adapters/llm_failover.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -356,7 +356,7 @@ class TestGracefulRestarter:
             await restarter.execute("agent-1", thresholds_fast)
 
         assert len(bus.requeued) == 2
-        for msg, headers in bus.requeued:
+        for _msg, headers in bus.requeued:
             assert headers["X-ACGS-Retry"] == "true"
 
     async def test_no_record_skips_restarting(self):

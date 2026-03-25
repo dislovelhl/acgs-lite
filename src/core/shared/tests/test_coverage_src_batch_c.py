@@ -1038,7 +1038,7 @@ class TestOIDCInitiateLogin:
             "authorization_endpoint": "https://auth.example.com/authorize",
         }
         handler._fetch_metadata = AsyncMock(return_value=metadata)
-        url, state = await handler.initiate_login("google", "https://app.com/cb")
+        _url, _state = await handler.initiate_login("google", "https://app.com/cb")
         # Should have evicted one
         assert len(handler._pending_states) <= 2
 
@@ -1048,7 +1048,7 @@ class TestOIDCInitiateLogin:
             "authorization_endpoint": "https://auth.example.com/authorize",
         }
         handler._fetch_metadata = AsyncMock(return_value=metadata)
-        url, state = await handler.initiate_login("google", "https://app.com/cb")
+        url, _state = await handler.initiate_login("google", "https://app.com/cb")
         assert "code_challenge" in url
         assert "code_challenge_method=S256" in url
 
@@ -1590,7 +1590,7 @@ class TestDualKeyValidateToken:
     def test_valid_token(self, validator_with_keys):
         import jwt as pyjwt
 
-        v, priv, pub = validator_with_keys
+        v, priv, _pub = validator_with_keys
         token = pyjwt.encode(
             {"sub": "user1", "iss": "acgs2", "exp": datetime.now(UTC) + timedelta(hours=1)},
             priv,
@@ -1904,7 +1904,7 @@ class TestDualKeyLoadFromVault:
     async def test_no_vault_client_falls_back(self):
         v = DualKeyJWTValidator()
         v.load_keys_from_env = AsyncMock(return_value=True)
-        result = await v.load_keys_from_vault()
+        await v.load_keys_from_vault()
         v.load_keys_from_env.assert_awaited()
 
     async def test_vault_load_success(self):
@@ -1964,7 +1964,7 @@ class TestDualKeyLoadFromVault:
         vault.secrets.kv.v2.read_secret_version.side_effect = RuntimeError("vault down")
         v = DualKeyJWTValidator(vault_client=vault)
         v.load_keys_from_env = AsyncMock(return_value=False)
-        result = await v.load_keys_from_vault()
+        await v.load_keys_from_vault()
         v.load_keys_from_env.assert_awaited()
 
 

@@ -1,6 +1,6 @@
 """
 ACGS-2 Capacity Metrics Trackers
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Contains tracking utilities for capacity metrics:
 - SlidingWindowCounter: Thread-safe sliding window counter for rate calculations

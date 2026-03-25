@@ -9,7 +9,7 @@ Runs the governance engine against 847 scenarios and measures:
 - Throughput (requests per second)
 - False positive/negative rates
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

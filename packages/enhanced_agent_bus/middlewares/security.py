@@ -5,7 +5,7 @@ Provides prompt injection detection using:
 1. Fast regex-based scanning (legacy)
 2. AI-powered guardrails (new, more thorough)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio

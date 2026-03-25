@@ -17,7 +17,7 @@ Covers previously uncovered branches:
 - check_consensus() zero_total_weight branch
 - VoteEvent.from_dict() with timestamp field
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

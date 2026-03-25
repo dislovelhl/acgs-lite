@@ -1,6 +1,6 @@
 """
 ACGS-2 EU AI Act Compliance
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements EU AI Act compliance for Layer 4.
 Provides Article 13 transparency, Article 14 human oversight,
@@ -42,7 +42,7 @@ class Article13Transparency:
     Ensures AI system transparency through decision explanations,
     capability disclosure, and user instructions.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self):
@@ -124,7 +124,7 @@ class Article14HumanOversight:
 
     Implements human oversight mechanisms for high-risk AI systems.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self):
@@ -243,7 +243,7 @@ class Article14HumanOversight:
 class HighRiskSystemValidator:
     """Validates high-risk AI system classification per EU AI Act.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self):
@@ -283,7 +283,7 @@ class EUAIActCompliance:
     - High-risk AI system classification
     - Technical documentation generation
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self):

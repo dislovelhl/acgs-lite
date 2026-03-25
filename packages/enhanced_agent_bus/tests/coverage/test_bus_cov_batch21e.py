@@ -5,7 +5,7 @@ Coverage tests for batch 21e:
 - deliberation_layer/llm_assistant.py
 - api/routes/governance.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

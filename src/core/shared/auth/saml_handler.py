@@ -1,6 +1,6 @@
 """
 ACGS-2 SAML 2.0 Handler Service
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides enterprise-grade SAML 2.0 Service Provider (SP) implementation using
 PySAML2. Supports multiple Identity Providers including Okta, Azure AD, and

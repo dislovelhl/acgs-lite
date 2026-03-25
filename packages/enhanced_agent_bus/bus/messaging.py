@@ -1,7 +1,7 @@
 """
 Message sending, receiving, and routing for EnhancedAgentBus.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -37,7 +37,7 @@ class MessageHandler:
     """
     Handles message sending, receiving, and routing operations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -112,7 +112,7 @@ class MessageHandler:
             - Normal path: Depends on processor complexity
             - Degraded path: Near-instant return with minimal overhead
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
 
         Note:
             This graceful degradation ensures system availability while
@@ -176,7 +176,7 @@ class MessageHandler:
     ) -> dict[str, ValidationResult]:
         """Broadcast message to all agents in same tenant.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         Performance: Uses O(1) tenant index lookup instead of O(n) iteration.
         """
         msg.tenant_id = normalize_tenant_id(msg.tenant_id)

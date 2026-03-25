@@ -1,6 +1,6 @@
 """
 ACGS-2 Deliberation Layer - Vote Event Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Pydantic models for Kafka vote events, audit records, and weighted voting.
 """

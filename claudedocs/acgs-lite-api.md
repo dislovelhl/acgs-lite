@@ -1,9 +1,9 @@
-# acgs-lite API Reference
+# ACGS API Reference (`acgs_lite` module)
 
 > Constitutional AI governance for any agent. Wrap any LLM agent in enforceable rules, audit
 > trails, and separation of powers — in 5 lines of code.
 
-**Version**: 0.2.0 | **License**: Apache-2.0 | **Python**: 3.10+ | **Constitutional Hash**: `cdd01ef066bc6cf2`
+**Version**: 2.0.1 | **License**: AGPL-3.0-or-later | **Python**: 3.10+ | **Constitutional Hash**: `608508a9bd224290`
 
 ---
 
@@ -28,7 +28,7 @@
 
 ## 1. Overview
 
-acgs-lite is a standalone Python library that adds constitutional governance to AI agents. It sits between your agent and the world, enforcing rules defined in YAML or Python before any action is taken and after any output is produced.
+ACGS is a standalone Python library that adds constitutional governance to AI agents. It sits between your agent and the world, enforcing rules defined in YAML or Python before any action is taken and after any output is produced.
 
 Three concerns are addressed:
 
@@ -45,23 +45,24 @@ The validation engine uses a Rust/PyO3 hot path (560ns P50) with automatic Pytho
 **Core (no optional deps):**
 
 ```bash
-pip install acgs-lite
+pip install acgs
 ```
 
 **With LLM integrations:**
 
 ```bash
-pip install "acgs-lite[openai]"
-pip install "acgs-lite[anthropic]"
-pip install "acgs-lite[langchain]"
-pip install "acgs-lite[litellm]"
-pip install "acgs-lite[google]"
-pip install "acgs-lite[llamaindex]"
-pip install "acgs-lite[autogen]"
-pip install "acgs-lite[a2a]"
-pip install "acgs-lite[mcp]"
+pip install "acgs[openai]"
+pip install "acgs[anthropic]"
+pip install "acgs[langchain]"
+pip install "acgs[litellm]"
+pip install "acgs[google]"
+pip install "acgs[llamaindex]"
+pip install "acgs[autogen]"
+pip install "acgs[a2a]"
+pip install "acgs[gitlab]"
+pip install "acgs[mcp]"
 # Install all integrations at once:
-pip install "acgs-lite[all]"
+pip install "acgs[all]"
 ```
 
 **Core dependencies**: `pydantic>=2.0`, `pyyaml>=6.0`, `click>=8.0`
@@ -144,7 +145,7 @@ from acgs_lite import (
 | Name | Type | Description |
 |------|------|-------------|
 | `__version__` | `str` | `"0.2.0"` |
-| `__constitutional_hash__` | `str` | `"cdd01ef066bc6cf2"` — embedded in all validation paths |
+| `__constitutional_hash__` | `str` | `"608508a9bd224290"` — embedded in all validation paths |
 | `set_license(key)` | `func` | Activate a license key for this process; returns `LicenseInfo` |
 
 #### `set_license(key: str) -> LicenseInfo`
@@ -1007,7 +1008,7 @@ Install the extra before importing the integration module.
 ### OpenAI (`acgs_lite.integrations.openai`)
 
 ```bash
-pip install "acgs-lite[openai]"
+pip install "acgs[openai]"
 ```
 
 ```python
@@ -1033,7 +1034,7 @@ Async: `await client.chat.completions.acreate(**kwargs)`
 ### Anthropic (`acgs_lite.integrations.anthropic`)
 
 ```bash
-pip install "acgs-lite[anthropic]"
+pip install "acgs[anthropic]"
 ```
 
 ```python
@@ -1050,7 +1051,7 @@ response = client.messages.create(
 ### LangChain (`acgs_lite.integrations.langchain`)
 
 ```bash
-pip install "acgs-lite[langchain]"
+pip install "acgs[langchain]"
 ```
 
 ```python
@@ -1064,7 +1065,7 @@ result = governed_chain.invoke({"input": "process this"})
 ### LiteLLM (`acgs_lite.integrations.litellm`)
 
 ```bash
-pip install "acgs-lite[litellm]"
+pip install "acgs[litellm]"
 ```
 
 ```python
@@ -1080,7 +1081,7 @@ response = client.completion(
 ### Google GenAI (`acgs_lite.integrations.google_genai`)
 
 ```bash
-pip install "acgs-lite[google]"
+pip install "acgs[google]"
 ```
 
 ```python
@@ -1093,7 +1094,7 @@ response = client.generate_content("Hello, world")
 ### LlamaIndex (`acgs_lite.integrations.llamaindex`)
 
 ```bash
-pip install "acgs-lite[llamaindex]"
+pip install "acgs[llamaindex]"
 ```
 
 ```python
@@ -1106,7 +1107,7 @@ response = engine.query("What does this document say?")
 ### AutoGen (`acgs_lite.integrations.autogen`)
 
 ```bash
-pip install "acgs-lite[autogen]"
+pip install "acgs[autogen]"
 ```
 
 ```python
@@ -1118,7 +1119,7 @@ agent = GovernedAutoGenAgent(base_agent, constitution=constitution)
 ### A2A (`acgs_lite.integrations.a2a`)
 
 ```bash
-pip install "acgs-lite[a2a]"
+pip install "acgs[a2a]"
 ```
 
 Wraps A2A (Agent-to-Agent) protocol messages with constitutional validation before routing.
@@ -1132,7 +1133,7 @@ client = GovernedA2AClient(constitution=constitution)
 ### MCP Server (`acgs_lite.integrations.mcp_server`)
 
 ```bash
-pip install "acgs-lite[mcp]"
+pip install "acgs[mcp]"
 ```
 
 Exposes the governance engine as an MCP (Model Context Protocol) server so external tools can call `validate` over the wire.
@@ -1158,7 +1159,7 @@ gate.check_merge_request(mr_title, mr_description)  # raises on violation
 ### Cloud Logging (`acgs_lite.integrations.cloud_logging`)
 
 ```bash
-pip install "acgs-lite[google-cloud]"
+pip install "acgs[google-cloud]"
 ```
 
 Streams audit log entries to Google Cloud Logging.

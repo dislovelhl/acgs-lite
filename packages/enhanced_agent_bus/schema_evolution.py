@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Schema Evolution
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Versioned schema metadata and compatibility helpers for message evolution.
 """

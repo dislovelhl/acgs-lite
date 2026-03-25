@@ -1,6 +1,6 @@
 """
 ACGS-2 Saga Orchestration for Enterprise Migration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements the Saga pattern for distributed transactions in enterprise
 migration jobs. Provides compensating transactions, rollback capabilities,

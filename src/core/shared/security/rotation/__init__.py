@@ -1,6 +1,6 @@
 """
 ACGS-2 Secret Rotation Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Production-grade secret rotation with:
 - Time-based and event-based rotation triggers

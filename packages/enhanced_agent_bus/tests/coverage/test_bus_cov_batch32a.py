@@ -1,6 +1,6 @@
 """
 Coverage tests for opa_client/core.py and message_processor.py — Batch 32a
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets remaining uncovered lines in:
 - enhanced_agent_bus.opa_client.core (OPAClientCore, OPAClient, singleton helpers)

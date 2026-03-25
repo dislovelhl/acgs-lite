@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # Sprint 61 — deliberation_layer/vote_consumer.py coverage
 """
 Comprehensive tests for deliberation_layer/vote_consumer.py.

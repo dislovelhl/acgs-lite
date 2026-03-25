@@ -1,7 +1,7 @@
 """
 MiniCPM-Enhanced Semantic Impact Scoring.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Uses MiniCPM embeddings for true semantic understanding of message content,
 providing dimension-specific impact scores for governance domains.
@@ -215,7 +215,7 @@ class MiniCPMSemanticScorer(BaseScoringAlgorithm):
     """
     MiniCPM-enhanced semantic impact scorer.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Uses MiniCPM embeddings for true semantic understanding of message content,
     providing dimension-specific impact scores across 7 governance domains.

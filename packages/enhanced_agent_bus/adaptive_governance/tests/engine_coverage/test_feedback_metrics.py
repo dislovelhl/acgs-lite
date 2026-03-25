@@ -1,6 +1,6 @@
 """
 Test coverage for AdaptiveGovernanceEngine.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets ≥90% coverage of
 src/core/enhanced_agent_bus/adaptive_governance/governance_engine.py

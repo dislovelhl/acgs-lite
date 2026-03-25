@@ -11,7 +11,7 @@ Key properties:
 - Fail-closed: unknown roles and unresolved guards default to block
 - Constitutional immutability: modify_constitutional_hash is hard-denied for ALL roles
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -434,7 +434,7 @@ class ToolPrivilegeMiddleware(BaseMiddleware):
     If the message carries no `requested_tool`, the middleware is a no-op
     and passes control to the next middleware unchanged.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

@@ -117,7 +117,7 @@ Files needing `logger.exception()` added:
 ## Security Patterns
 
 ### Constitutional Hash Enforcement
-- Hash `cdd01ef066bc6cf2` embedded in configs, tests, validation paths
+- Hash `608508a9bd224290` embedded in configs, tests, validation paths
 - MACI separation: Proposer/Validator/Executor roles enforced at middleware level
 - No hardcoded secrets in production code (all test data properly marked `# noqa: S105`)
 

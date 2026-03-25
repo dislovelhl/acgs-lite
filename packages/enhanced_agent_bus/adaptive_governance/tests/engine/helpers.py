@@ -1,6 +1,6 @@
 """
 Test helpers for adaptive governance engine tests.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from enhanced_agent_bus.adaptive_governance.models import (

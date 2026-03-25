@@ -2,7 +2,7 @@
 Coverage tests for batch tenant isolation, audit client adapter,
 get_metrics tool, and query_precedents tool.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -422,7 +422,7 @@ class TestGetMetricsToolExecute:
             "precedent_count": 5,
             "cache_hit_rate": 0.9,
             "system_health": "healthy",
-            "constitutional_hash": "cdd01ef066bc6cf2",
+            "constitutional_hash": "608508a9bd224290",
             "timestamp": "2024-01-01T00:00:00Z",
         })
         tool = GetMetricsTool(metrics_adapter=mock_adapter)
@@ -525,7 +525,7 @@ class TestGetMetricsToolLocal:
             precedent_count=5,
             cache_hit_rate=0.9,
             system_health="healthy",
-            constitutional_hash="cdd01ef066bc6cf2",
+            constitutional_hash="608508a9bd224290",
             timestamp="2024-01-01T00:00:00Z",
         )
         d = gm.to_dict()

@@ -1,6 +1,6 @@
 """
 ACGS-2 Context Optimizer - Parallel Batch Processor
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Parallel batch processor for context chunks with concurrency control.
 """
@@ -31,7 +31,7 @@ class ParallelBatchProcessor:
 
     Processes multiple chunks concurrently for improved throughput.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

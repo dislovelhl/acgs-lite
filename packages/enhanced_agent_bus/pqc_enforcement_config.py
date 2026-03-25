@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - PQC Enforcement Mode Config Service
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Manages the PQC enforcement mode (strict | permissive) with:
 - Redis as primary durable store (hash key pqc:enforcement_config)

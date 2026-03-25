@@ -4,7 +4,7 @@ Revision ID: 001_add_agent_tier_assignments
 Revises:
 Create Date: 2026-03-05 00:00:00.000000
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

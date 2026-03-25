@@ -6,7 +6,7 @@ Targets:
 - src/core/shared/config/security.py (69 missing lines, 53.1%)
 - src/core/shared/config/governance.py (45 missing lines, 50.0%)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -361,7 +361,7 @@ class TestTenantRateLimitProvider:
         from src.core.shared.security.rate_limiter import TenantRateLimitProvider
 
         provider = TenantRateLimitProvider()
-        assert provider.get_constitutional_hash() == "cdd01ef066bc6cf2"
+        assert provider.get_constitutional_hash() == "608508a9bd224290"
 
     def test_from_env(self):
         from src.core.shared.security.rate_limiter import TenantRateLimitProvider

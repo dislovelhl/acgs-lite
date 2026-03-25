@@ -4,7 +4,7 @@ Enhanced Agent Bus test fixtures subpackage.
 Re-exports all fixtures so they are discoverable by pytest when
 imported from the root conftest.py.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 # Module aliases must be imported first — they run sys.modules patching at import time.

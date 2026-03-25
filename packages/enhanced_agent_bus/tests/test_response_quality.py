@@ -1,6 +1,6 @@
 """
 Response Quality Enhancement - Comprehensive Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for enhanced_agent_bus.response_quality package covering:
 - models.py: QualityDimension, QualityAssessment, RefinementIteration, RefinementResult, enums

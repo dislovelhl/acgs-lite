@@ -5,7 +5,7 @@ Covers AdaptiveGovernanceEngine methods: initialization, evaluate_governance_dec
 provide_feedback, classify_impact_level, generate_reasoning, DTMC integration,
 A/B test routing, drift detection, metrics, background learning, and fallback paths.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -46,7 +46,7 @@ from enhanced_agent_bus.governance_constants import (
 
 pytestmark = [pytest.mark.unit]
 
-HASH = "cdd01ef066bc6cf2"
+HASH = "608508a9bd224290"
 
 
 # ---------------------------------------------------------------------------
@@ -533,7 +533,7 @@ class TestGetTrajectoryPrefix:
         assert prefix == [1, 4]  # LOW=1, CRITICAL=4
 
     def test_caps_at_10_entries(self, engine):
-        for i in range(15):
+        for _i in range(15):
             engine.decision_history.append(_make_decision(impact_level=ImpactLevel.MEDIUM))
 
         prefix = engine._get_trajectory_prefix()

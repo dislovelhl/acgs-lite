@@ -4,7 +4,7 @@ Backward compatibility shim for agent_bus module.
 This module re-exports all symbols from the new modular structure
 to maintain backward compatibility with existing imports.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Migration:
     Old: from packages.enhanced_agent_bus.agent_bus import EnhancedAgentBus

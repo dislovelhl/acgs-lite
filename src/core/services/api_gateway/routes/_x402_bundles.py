@@ -1,7 +1,7 @@
 """
 x402 Endpoint Bundles — Tiered Micropayment Packages
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Bundles aggregate individually-priced x402 governance endpoints into
 discounted tiers.  A single x402 payment settles the full bundle,

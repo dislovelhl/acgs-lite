@@ -1,6 +1,6 @@
 """
 Coverage tests for z3_policy_verifier.py and mamba2_hybrid_processor.py
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets uncovered lines in:
   - enhanced_agent_bus.verification_layer.z3_policy_verifier (Z3SolverWrapper,

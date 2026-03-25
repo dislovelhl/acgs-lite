@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - xAI (Grok) LLM Adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 xAI adapter supporting Grok 4.x models via OpenAI-compatible API.
 Extends OpenAIAdapter with xAI-specific pricing, server-side tools
@@ -47,7 +47,7 @@ _XAI_ADAPTER_OPERATION_ERRORS = (
 class XAIAdapter(OpenAIAdapter):
     """xAI LLM adapter for Grok models.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Extends OpenAIAdapter since xAI exposes an OpenAI-compatible API.
     Adds xAI-specific features:

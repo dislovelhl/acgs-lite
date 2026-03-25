@@ -1,6 +1,6 @@
 """Tests for fail-closed enforcement in OPAClient.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 VULN-002: OPAClient always forces fail_closed=True regardless of environment.
 The constructor no longer accepts a fail_closed parameter.

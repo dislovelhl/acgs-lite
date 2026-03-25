@@ -1420,7 +1420,7 @@ class TestAdaptiveThresholds:
         at = self._make_thresholds()
         at._mlflow_initialized = False
         # Add enough recent training data
-        for i in range(150):
+        for _i in range(150):
             at.training_data.append({
                 "features": list(np.random.rand(11)),
                 "target": np.random.rand() * 0.1,
@@ -1433,7 +1433,7 @@ class TestAdaptiveThresholds:
         at = self._make_thresholds()
         at._mlflow_initialized = False
         # Add enough recent data
-        for i in range(150):
+        for _i in range(150):
             at.training_data.append({
                 "features": list(np.random.rand(11)),
                 "target": np.random.rand(),

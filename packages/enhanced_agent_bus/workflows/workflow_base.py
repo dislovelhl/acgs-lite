@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Workflow Base Abstractions
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Base classes and protocols for workflow orchestration.
 Provides abstractions compatible with Temporal patterns.
@@ -74,7 +74,7 @@ class WorkflowContext:
     """Context for workflow execution.
 
     Provides workflow-scoped information and utilities.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     workflow_id: str
@@ -126,7 +126,7 @@ class Activity(Protocol[TInput, TOutput]):  # type: ignore[misc]
 
     Activities are the building blocks of workflows that perform
     actual work (I/O, computations, external calls).
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def execute(self, input_data: TInput, context: WorkflowContext) -> TOutput:
@@ -157,7 +157,7 @@ class Signal:
     """Signal definition for workflow communication.
 
     Signals allow external events to be sent to running workflows.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     name: str
@@ -170,7 +170,7 @@ class Query:
     """Query definition for workflow state inspection.
 
     Queries allow read-only access to workflow state.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     name: str
@@ -183,7 +183,7 @@ class WorkflowDefinition(ABC, Generic[TInput, TOutput]):
 
     Workflows define long-running business processes with
     signals for external input and queries for state inspection.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self) -> None:
@@ -346,7 +346,7 @@ class InMemoryWorkflowExecutor:
     """In-memory workflow executor for testing and development.
 
     Runs workflows in-process without external dependencies.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self) -> None:

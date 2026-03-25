@@ -1,6 +1,6 @@
 """
 Tests for decisions.py route coverage.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: get_decision_explanation, generate_decision_explanation,
         get_governance_vector_schema, _convert_to_response helper.
@@ -131,7 +131,7 @@ def _mock_explanation(*, include_factors: bool = True, include_cf: bool = True):
     exp.tenant_id = "tenant-1"
     exp.scope = "decision"
     exp.audit_references = ["audit-1"]
-    exp.constitutional_hash = "cdd01ef066bc6cf2"
+    exp.constitutional_hash = "608508a9bd224290"
     return exp
 
 
@@ -324,7 +324,7 @@ class TestGovernanceVectorSchema:
             "safety", "security", "privacy", "fairness",
             "reliability", "transparency", "efficiency",
         }
-        assert body["constitutional_hash"] == "cdd01ef066bc6cf2"
+        assert body["constitutional_hash"] == "608508a9bd224290"
         assert body["thresholds"]["escalation"] == 0.8
 
     def test_schema_dimension_structure(self, client: TestClient):

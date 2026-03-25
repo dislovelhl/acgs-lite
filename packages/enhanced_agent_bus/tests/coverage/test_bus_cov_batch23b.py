@@ -4,7 +4,7 @@ Comprehensive coverage tests for:
 - enhanced_agent_bus.observability.telemetry (NoOp classes, config helpers, TracingContext, MetricsRegistry)
 - enhanced_agent_bus.constitutional_cache (ConstitutionalCache, PolicyCache, ValidationCache)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-CONSTITUTIONAL_HASH = "cdd01ef066bc6cf2"
+CONSTITUTIONAL_HASH = "608508a9bd224290"
 
 
 # =============================================================================

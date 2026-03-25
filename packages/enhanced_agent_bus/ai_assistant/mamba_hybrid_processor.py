@@ -1,6 +1,6 @@
 """
 ACGS-2 Mamba-2 Hybrid Processor
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Zamba-inspired architecture for 4M+ token context processing:
 - 6 Mamba SSM layers for O(n) complexity long context
@@ -294,7 +294,7 @@ class ConstitutionalMambaHybrid(_ModuleBase):  # type: ignore[misc, valid-type]
     - 1 shared attention layer for precise reasoning
     - JRT context preparation (critical sections repeated)
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, config: MambaConfig):

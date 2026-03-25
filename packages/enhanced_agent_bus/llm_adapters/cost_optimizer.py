@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Cost-Aware LLM Provider Selection
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module has been refactored into a modular structure.
 All functionality is now provided by the `cost` subpackage.

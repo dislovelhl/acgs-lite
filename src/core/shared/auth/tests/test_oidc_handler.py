@@ -1,6 +1,6 @@
 """Comprehensive tests for OIDC handler.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers:
 - Dataclass construction and validation (OIDCProviderConfig, OIDCTokenResponse, OIDCUserInfo)
@@ -760,6 +760,28 @@ class TestOIDCHandlerAsync:
 
         with pytest.raises(OIDCProviderError, match="Failed to fetch OIDC metadata"):
             await registered_handler._fetch_metadata(provider)
+
+    async def test_decode_id_token_missing_jwks_uri_precedes_authlib_requirement(
+        self, registered_handler: OIDCHandler
+    ):
+        provider = registered_handler.get_provider("google")
+        registered_handler._fetch_metadata = AsyncMock(
+            return_value={"issuer": MOCK_METADATA["issuer"]}
+        )
+
+        with patch("src.core.shared.auth.oidc_handler.HAS_AUTHLIB", False):
+            with pytest.raises(OIDCTokenError, match="JWKS URI not found"):
+                await registered_handler._decode_id_token("token", provider)
+
+    async def test_decode_id_token_no_authlib_with_valid_metadata(
+        self, registered_handler: OIDCHandler
+    ):
+        provider = registered_handler.get_provider("google")
+        registered_handler._fetch_metadata = AsyncMock(return_value=MOCK_METADATA)
+
+        with patch("src.core.shared.auth.oidc_handler.HAS_AUTHLIB", False):
+            with pytest.raises(OIDCTokenError, match="authlib library"):
+                await registered_handler._decode_id_token("token", provider)
 
     async def test_fetch_userinfo_success(self, registered_handler: OIDCHandler):
         userinfo = {"sub": "u1", "email": "a@b.com"}

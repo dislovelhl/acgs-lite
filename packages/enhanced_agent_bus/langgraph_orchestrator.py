@@ -4,7 +4,7 @@ ACGS-2 LangGraph-Style Orchestration
 Implements stateful cyclic graphs for complex multi-agent governance workflows
 with conditional branching and state persistence, inspired by LangGraph patterns.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from abc import ABC, abstractmethod
@@ -94,7 +94,7 @@ class GlobalState:
     Global state object that flows through the workflow graph.
 
     This replaces message passing with persistent state mutations.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Core state
@@ -345,7 +345,7 @@ class WorkflowExecutor:
     Executes workflows using LangGraph-style orchestration.
 
     Manages state persistence, error handling, and execution flow.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, workflow: WorkflowDefinition):

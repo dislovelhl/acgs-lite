@@ -5,7 +5,7 @@ Coverage batch 29a -- tests for:
   3. observability/capacity_metrics/latency_decorators.py (track_request_latency, track_async_request_latency)
   4. _ext_mcp.py (import fallback path)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

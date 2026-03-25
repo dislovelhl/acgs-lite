@@ -1,6 +1,6 @@
 """
 ACGS-2 Usage Endpoint
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 GET /v1/usage — returns remaining quota for the authenticated developer.
 """

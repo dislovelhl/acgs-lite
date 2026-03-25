@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - OPA Policy Updater Service
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Service to dynamically update OPA policies when constitutional amendments are activated.
 Provides atomic policy updates with validation, rollback, and health checking.

@@ -1,11 +1,11 @@
 # Enhanced Agent Bus
 
-<!-- Constitutional Hash: cdd01ef066bc6cf2 -->
+<!-- Constitutional Hash: 608508a9bd224290 -->
 
 [![Tests](https://img.shields.io/badge/tests-pytest-blue)](./tests/)
 [![Coverage](https://img.shields.io/badge/coverage-local--report-blue)](./coverage.json)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://python.org)
-[![License](https://img.shields.io/badge/license-MIT-blue)](./LICENSE)
+[![License](https://img.shields.io/badge/license-AGPL--3.0--or--later-blue)](../../LICENSE)
 
 > **Version:** 2.5.0
 > **Status:** Active repository package
@@ -15,7 +15,7 @@
 
 ## Overview
 
-The Enhanced Agent Bus is the core communication infrastructure for ACGS-2's multi-agent constitutional governance system. It provides high-performance, constitutionally-compliant message routing between AI agents with built-in policy validation, MACI role enforcement, and comprehensive antifragility features.
+The Enhanced Agent Bus is the platform runtime layer for ACGS, historically referenced internally as ACGS-2. It provides high-performance, constitutionally compliant message routing between AI agents with built-in policy validation, MACI role enforcement, and comprehensive antifragility features.
 
 ### Key Capabilities
 
@@ -359,20 +359,21 @@ AgentBusError (base)
 
 1. Ensure all tests pass: `pytest tests/ -v`
 2. Maintain 80%+ coverage
-3. Include constitutional hash in new files: `cdd01ef066bc6cf2`
+3. Include constitutional hash in new files: `608508a9bd224290`
 4. Follow MACI role separation for governance code
 5. Add tests for new functionality
 6. Use proper logging (no `print()` statements)
 
 ## License
 
-MIT License - See [LICENSE](./LICENSE) for details.
+AGPL-3.0-or-later. See [../../LICENSE](../../LICENSE) for the repository license and
+[../../COMMERCIAL_LICENSE.md](../../COMMERCIAL_LICENSE.md) for proprietary/SaaS licensing terms.
 
 ---
 
-_Constitutional Hash: cdd01ef066bc6cf2_
+_Constitutional Hash: 608508a9bd224290_
 _Updated: 2026-02-01_
-_ACGS-2 Enhanced Agent Bus v2.5.0_
+_Enhanced Agent Bus for ACGS (historically labeled ACGS-2) v2.5.0_
 \n
 
 ## Coverage Metrics

@@ -1,7 +1,7 @@
 """
 x402 Revenue Event Instrumentation
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Structured revenue tracking for x402 micropayment endpoints.  Emits events
 to both structlog (for real-time observability) and an append-only JSONL file

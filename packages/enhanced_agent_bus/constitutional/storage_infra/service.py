@@ -1,6 +1,6 @@
 """
 Modular Constitutional Storage Service for ACGS-2.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Orchestrates caching, persistence, and locking for constitutional metadata.
 """
@@ -32,7 +32,7 @@ class ConstitutionalStorageService:
     """
     Facade for constitutional storage orchestrating cache and persistence.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

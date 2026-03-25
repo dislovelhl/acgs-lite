@@ -1,6 +1,6 @@
 """
 Tests for REPL audit trail, operation records, and metrics.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from datetime import UTC, datetime, timezone

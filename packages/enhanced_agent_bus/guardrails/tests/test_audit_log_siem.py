@@ -4,7 +4,7 @@ Tests for SIEM integration in audit_log.py.
 Tests Splunk and Elasticsearch providers with comprehensive coverage
 of success, failure, and edge cases.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import json

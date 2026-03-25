@@ -4,7 +4,7 @@ Coverage tests for:
 - enhanced_agent_bus.memory_profiler (profiler, queue, decorator, snapshots)
 - enhanced_agent_bus.api.app (helpers, lifespan, factory, DSN normalize)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -1340,5 +1340,10 @@ class TestRegisterExceptionHandlers:
 class TestInitializeSessionManager:
     async def test_import_error(self):
         from enhanced_agent_bus.api.app import _initialize_session_manager_if_available
-        # Should not raise - catches ImportError
-        await _initialize_session_manager_if_available()
+
+        with patch(
+            "enhanced_agent_bus.api.app.import_module",
+            side_effect=ImportError("no sessions"),
+        ):
+            # Should not raise - catches ImportError
+            await _initialize_session_manager_if_available()

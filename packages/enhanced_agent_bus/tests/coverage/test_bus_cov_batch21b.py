@@ -1,7 +1,7 @@
 """Coverage tests for validation_strategies, processing_strategies,
 adaptive_governance/threshold_manager, and verification_orchestrator.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -1334,7 +1334,7 @@ class TestAdaptiveThresholds:
         from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
 
         now = time.time()
-        for i in range(120):
+        for _i in range(120):
             thresholds.training_data.append({
                 "features": thresholds._extract_feature_vector(features),
                 "target": 0.01,
@@ -1370,7 +1370,7 @@ class TestAdaptiveThresholds:
         thresholds.last_retraining = time.time() - 7200
 
         now = time.time()
-        for i in range(120):
+        for _i in range(120):
             thresholds.training_data.append({
                 "features": thresholds._extract_feature_vector(features),
                 "target": 0.01,
@@ -1395,7 +1395,7 @@ class TestAdaptiveThresholds:
     def test_retrain_insufficient_recent_data(self, thresholds, features):
         """100+ samples but all older than 24h -> skip."""
         old_ts = time.time() - 200_000
-        for i in range(120):
+        for _i in range(120):
             thresholds.training_data.append({
                 "features": thresholds._extract_feature_vector(features),
                 "target": 0.01,

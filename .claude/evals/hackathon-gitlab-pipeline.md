@@ -42,13 +42,13 @@ r = GovernanceReport(
     mr_iid=1, title='AI: Add login', passed=False, risk_score=0.85,
     violations=[{'rule_id': 'SEC-001', 'rule_text': 'No hardcoded secrets', 'severity': 'critical', 'matched_content': 'password=abc', 'source': 'diff', 'file': 'auth.py', 'line': 42, 'category': 'security'}],
     rules_checked=15,
-    constitutional_hash='cdd01ef066bc6cf2',
+    constitutional_hash='608508a9bd224290',
 )
 md = format_governance_report(r)
 assert '## Governance Report' in md
 assert 'FAILED' in md
 assert 'SEC-001' in md
-assert 'cdd01ef066bc6cf2' in md
+assert '608508a9bd224290' in md
 assert 'auth.py:42' in md
 print('PASS')
 " && echo "PASS" || echo "FAIL"

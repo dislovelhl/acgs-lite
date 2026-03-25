@@ -4,7 +4,7 @@ Coverage tests for batch 35d:
   - enhanced_agent_bus.online_learning_infra.consumer (81.4% -> 95%+)
   - enhanced_agent_bus.mcp_integration.auth.oidc_provider (90.3% -> 95%+)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -32,7 +32,7 @@ from enhanced_agent_bus.constitutional.version_model import (
 # Helpers
 # ---------------------------------------------------------------------------
 
-CONST_HASH = "cdd01ef066bc6cf2"
+CONST_HASH = "608508a9bd224290"
 
 
 def _make_version(

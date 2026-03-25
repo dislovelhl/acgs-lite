@@ -1,6 +1,6 @@
 """Tests for enhanced_agent_bus.llm_adapters.azure_openai_adapter — coverage boost.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests the AzureOpenAIAdapter class including initialization, request preparation,
 response processing, token counting, cost estimation, streaming, and health checks.

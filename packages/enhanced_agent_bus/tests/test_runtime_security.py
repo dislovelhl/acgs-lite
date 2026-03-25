@@ -1,6 +1,6 @@
 """
 Tests for ACGS-2 Runtime Security Scanner
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive test suite covering:
 - SecurityEvent and SecurityScanResult dataclasses

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Circuit Breaker Protected Clients
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides circuit breaker wrapped clients for external services:
 - OPA Client: fail-closed for governance (constitutional validation cannot be skipped)

@@ -7,7 +7,7 @@ Targets:
 - enhanced_agent_bus.constitutional.review_api (150 missing, 49.8%)
 - enhanced_agent_bus.deliberation_layer.timeout_checker (118 missing, 0%)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

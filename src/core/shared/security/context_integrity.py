@@ -1,6 +1,6 @@
 """
 ACGS-2 Context Integrity Guard
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Scans agent-supplied context for prompt injection patterns BEFORE storage
 in working memory, mitigating OWASP AA05 (Memory Poisoning) attacks.

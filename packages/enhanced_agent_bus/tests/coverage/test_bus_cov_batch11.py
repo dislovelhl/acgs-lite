@@ -5,7 +5,7 @@ Coverage batch 11 — comprehensive tests for:
   3. deliberation_layer/tensorrt_optimizer.py (141 missing, 58.5%)
   4. pqc_validators.py (134 missing, 51.3%)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -338,9 +338,9 @@ def _make_decision(**overrides: Any) -> GovernanceDecision:
 
 class TestAdaptiveGovernanceEngineInit:
     def test_basic_init(self):
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         assert engine.mode == GovernanceMode.ADAPTIVE
-        assert engine.constitutional_hash == "cdd01ef066bc6cf2"
+        assert engine.constitutional_hash == "608508a9bd224290"
         assert engine.running is False
 
     def test_default_river_feature_names(self):
@@ -353,7 +353,7 @@ class TestAdaptiveGovernanceEngineInit:
 class TestClassifyImpactLevel:
     @pytest.fixture
     def engine(self):
-        return AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        return AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
 
     def test_critical(self, engine):
         assert engine._classify_impact_level(0.95) == ImpactLevel.CRITICAL
@@ -374,7 +374,7 @@ class TestClassifyImpactLevel:
 class TestGenerateReasoning:
     @pytest.fixture
     def engine(self):
-        return AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        return AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
 
     def test_allowed_reasoning(self, engine):
         features = _make_features(risk_score=0.2, confidence_level=0.9)
@@ -409,7 +409,7 @@ class TestBuildConservativeFallback:
 class TestProvideFeedback:
     @pytest.fixture
     def engine(self):
-        return AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        return AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
 
     def test_positive_feedback(self, engine):
         decision = _make_decision()
@@ -427,7 +427,7 @@ class TestProvideFeedback:
 class TestUpdateMetrics:
     @pytest.fixture
     def engine(self):
-        return AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        return AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
 
     def test_update_metrics_basic(self, engine):
         decision = _make_decision()
@@ -444,7 +444,7 @@ class TestUpdateMetrics:
 
 class TestAnalyzePerformanceTrends:
     def test_trends_populated(self):
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         engine.metrics.constitutional_compliance_rate = 0.95
         engine.metrics.false_positive_rate = 0.05
         engine.metrics.average_response_time = 0.01
@@ -456,13 +456,13 @@ class TestAnalyzePerformanceTrends:
 
 class TestShouldRetrainModels:
     def test_retrain_when_compliance_low(self):
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         engine.metrics.constitutional_compliance_rate = 0.5
         engine.performance_target = 0.9
         assert engine._should_retrain_models() is True
 
     def test_no_retrain_when_compliant(self):
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         engine.metrics.constitutional_compliance_rate = 0.99
         engine.performance_target = 0.9
         assert engine._should_retrain_models() is False
@@ -471,7 +471,7 @@ class TestShouldRetrainModels:
 class TestDTMCIntegration:
     @pytest.fixture
     def engine(self):
-        return AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        return AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
 
     def test_get_trajectory_prefix_empty(self, engine):
         assert engine._get_trajectory_prefix() is None
@@ -494,7 +494,7 @@ class TestDTMCIntegration:
 
 class TestGovernanceEngineLifecycle:
     async def test_initialize_and_shutdown(self):
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         await engine.initialize()
         assert engine.running is True
         assert engine.learning_task is not None
@@ -502,17 +502,17 @@ class TestGovernanceEngineLifecycle:
         assert engine.running is False
 
     async def test_shutdown_without_initialize(self):
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         await engine.shutdown()
 
     async def test_learning_thread_alias(self):
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         assert engine._learning_thread is engine.learning_task
 
 
 class TestEvaluateGovernanceDecision:
     async def test_evaluate_returns_decision(self):
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         message = {"content": "test message", "agent_id": "agent-1"}
         context = {"policy_level": "standard"}
         decision = await engine.evaluate_governance_decision(message, context)
@@ -520,7 +520,7 @@ class TestEvaluateGovernanceDecision:
         assert isinstance(decision.action_allowed, bool)
 
     async def test_evaluate_fallback_on_error(self):
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         engine.impact_scorer.assess_impact = AsyncMock(
             side_effect=RuntimeError("scorer failed")
         )
@@ -531,21 +531,21 @@ class TestEvaluateGovernanceDecision:
 
 class TestGetRiverModelStats:
     def test_returns_none_when_unavailable(self):
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         engine.river_model = None
         assert engine.get_river_model_stats() is None
 
 
 class TestGetABTestMetrics:
     def test_returns_none_when_unavailable(self):
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         engine._ab_test_router = None
         assert engine.get_ab_test_metrics() is None
         assert engine.get_ab_test_comparison() is None
         assert engine.get_ab_test_router() is None
 
     def test_promote_candidate_none(self):
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         engine._ab_test_router = None
         result = engine.promote_candidate_model()
         assert result is None
@@ -553,13 +553,13 @@ class TestGetABTestMetrics:
 
 class TestLatestDriftReport:
     def test_default_none(self):
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         assert engine.get_latest_drift_report() is None
 
 
 class TestLogPerformanceSummary:
     def test_does_not_raise(self):
-        engine = AdaptiveGovernanceEngine(constitutional_hash="cdd01ef066bc6cf2")
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         engine._log_performance_summary()
 
 
@@ -985,23 +985,23 @@ class TestValidateConstitutionalHashPqc:
     async def test_hash_mismatch(self):
         result = await validate_constitutional_hash_pqc(
             {"constitutional_hash": "wrong_hash_value"},
-            expected_hash="cdd01ef066bc6cf2",
+            expected_hash="608508a9bd224290",
         )
         assert result.valid is False
         assert any("mismatch" in e.lower() for e in result.errors)
 
     async def test_valid_hash_no_signature(self):
         result = await validate_constitutional_hash_pqc(
-            {"constitutional_hash": "cdd01ef066bc6cf2"},
-            expected_hash="cdd01ef066bc6cf2",
+            {"constitutional_hash": "608508a9bd224290"},
+            expected_hash="608508a9bd224290",
         )
         assert result.valid is True
         assert result.validation_duration_ms is not None
 
     async def test_valid_hash_empty_signature(self):
         result = await validate_constitutional_hash_pqc(
-            {"constitutional_hash": "cdd01ef066bc6cf2", "signature": None},
-            expected_hash="cdd01ef066bc6cf2",
+            {"constitutional_hash": "608508a9bd224290", "signature": None},
+            expected_hash="608508a9bd224290",
         )
         assert result.valid is True
 
@@ -1011,10 +1011,10 @@ class TestValidateConstitutionalHashPqc:
         pqc_verification_ms fields, so the classical signature branch succeeds."""
         result = await validate_constitutional_hash_pqc(
             {
-                "constitutional_hash": "cdd01ef066bc6cf2",
+                "constitutional_hash": "608508a9bd224290",
                 "signature": {"signature": "abc123"},
             },
-            expected_hash="cdd01ef066bc6cf2",
+            expected_hash="608508a9bd224290",
             pqc_config=None,
         )
         assert result.valid is True
@@ -1024,10 +1024,10 @@ class TestValidateConstitutionalHashPqc:
         we still get a valid result (no classical verification attempted)."""
         result = await validate_constitutional_hash_pqc(
             {
-                "constitutional_hash": "cdd01ef066bc6cf2",
+                "constitutional_hash": "608508a9bd224290",
                 "signature": {"other_field": "value"},
             },
-            expected_hash="cdd01ef066bc6cf2",
+            expected_hash="608508a9bd224290",
             pqc_config=None,
         )
         assert result.valid is True
@@ -1041,10 +1041,10 @@ class TestValidateConstitutionalHashPqc:
         pqc_config = PQCConfig(pqc_enabled=True)
         result = await validate_constitutional_hash_pqc(
             {
-                "constitutional_hash": "cdd01ef066bc6cf2",
+                "constitutional_hash": "608508a9bd224290",
                 "signature": {"version": "v1", "signature": "abc"},
             },
-            expected_hash="cdd01ef066bc6cf2",
+            expected_hash="608508a9bd224290",
             pqc_config=pqc_config,
         )
         # PQCCryptoService(config=...) raises TypeError caught by the handler
@@ -1060,10 +1060,10 @@ class TestValidateConstitutionalHashPqc:
         pqc_config = PQCConfig(pqc_enabled=False)
         result = await validate_constitutional_hash_pqc(
             {
-                "constitutional_hash": "cdd01ef066bc6cf2",
+                "constitutional_hash": "608508a9bd224290",
                 "signature": {"signature": "test"},
             },
-            expected_hash="cdd01ef066bc6cf2",
+            expected_hash="608508a9bd224290",
             pqc_config=pqc_config,
         )
         assert result.valid is True
@@ -1075,10 +1075,10 @@ class TestValidateConstitutionalHashPqc:
         pqc_config = PQCConfig(pqc_enabled=False)
         result = await validate_constitutional_hash_pqc(
             {
-                "constitutional_hash": "cdd01ef066bc6cf2",
+                "constitutional_hash": "608508a9bd224290",
                 "signature": {"other": "value"},
             },
-            expected_hash="cdd01ef066bc6cf2",
+            expected_hash="608508a9bd224290",
             pqc_config=pqc_config,
         )
         assert result.valid is True
@@ -1114,7 +1114,7 @@ class TestValidateMaciRecordPqc:
                 "timestamp": "2024-01-01T00:00:00Z",
                 "constitutional_hash": "wrong_hash",
             },
-            expected_hash="cdd01ef066bc6cf2",
+            expected_hash="608508a9bd224290",
         )
         assert result.valid is False
         assert any("hash mismatch" in e.lower() for e in result.errors)

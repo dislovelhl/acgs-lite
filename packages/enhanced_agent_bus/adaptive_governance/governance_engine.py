@@ -1,6 +1,6 @@
 """
 ACGS-2 Adaptive Governance Engine
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Core governance engine implementing ML-based adaptive governance with dynamic
 impact scoring, threshold management, and constitutional compliance evaluation.

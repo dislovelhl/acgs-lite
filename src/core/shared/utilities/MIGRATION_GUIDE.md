@@ -1,6 +1,6 @@
 # DependencyRegistry Migration Guide
 
-**Constitutional Hash:** `cdd01ef066bc6cf2`
+**Constitutional Hash:** `608508a9bd224290`
 
 This guide describes how to migrate from the scattered `try/except ImportError` pattern
 to the centralized `DependencyRegistry` pattern.

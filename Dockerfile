@@ -1,5 +1,5 @@
-# Constitutional Hash: cdd01ef066bc6cf2
-# ACGS-Lite Cloud Run Deployment
+# Constitutional Hash: 608508a9bd224290
+# ACGS Cloud Run Deployment
 # Minimal production image for GitLab AI Governance Bot
 
 FROM python:3.11-slim AS base

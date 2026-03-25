@@ -1,6 +1,6 @@
 """Coverage batch 33b: z3_adapter and llm_assistant uncovered lines.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -206,7 +206,7 @@ class TestZ3SolverAdapter:
         """When there's only one possible model, enumeration stops."""
         adapter = Z3SolverAdapter()
         x = z3.Bool("x")
-        adapter.solver.add(x == True)
+        adapter.solver.add(x)
         meta = Z3Constraint(
             name="c1", expression="x", natural_language="nl", confidence=1.0
         )
@@ -228,7 +228,7 @@ class TestZ3SolverAdapter:
     def test_model_to_dict_bool_value(self):
         adapter = Z3SolverAdapter()
         b = z3.Bool("b")
-        adapter.solver.add(b == True)
+        adapter.solver.add(b)
         result = adapter.check_sat()
         assert result.is_sat is True
         assert result.model["b"] in (True, "True")

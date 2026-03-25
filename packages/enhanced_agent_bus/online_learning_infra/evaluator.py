@@ -2,7 +2,7 @@
 Online learning evaluator for ACGS-2.
 Provides metrics and stats aggregation for the online learning pipeline.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from .config import LearningStatus

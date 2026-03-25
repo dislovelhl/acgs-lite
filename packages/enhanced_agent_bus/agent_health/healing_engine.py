@@ -1,6 +1,6 @@
 """
 HealingEngine — constitutional tier-based healing orchestrator.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Governs all healing decisions for agent instances:
   - Validates CONSTITUTIONAL_HASH before any audit write (FR-009)
@@ -68,7 +68,7 @@ class HealingEngine:
     All audit log writes happen BEFORE any action is dispatched (FR-009).
     Operator overrides bypass tier routing entirely.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

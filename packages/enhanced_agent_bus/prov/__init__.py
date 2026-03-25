@@ -6,7 +6,7 @@ Records the entity generated, the activity that generated it, and
 the agent responsible — for every governance decision point.
 
 Reference: W3C PROV-DM https://www.w3.org/TR/prov-dm/
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from .labels import (

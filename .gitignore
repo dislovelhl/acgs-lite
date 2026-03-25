@@ -44,6 +44,7 @@ node_modules/
 
 # Claude Code worktrees (embedded git repos — not submodules)
 .claude/worktrees/
+.claude/settings.local.json
 
 # Demo harnesses (local only)
 constitutional-sentinel-demo/
@@ -62,3 +63,4 @@ x402_revenue.jsonl
 src/acgs_lite/
 src/fix_imports.py
 src/split_engine.py
+.gstack/

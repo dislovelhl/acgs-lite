@@ -4,7 +4,7 @@ Output Verifier Guardrail Component.
 Layer 4 of OWASP guardrails: validates and sanitizes output before it reaches
 users, including content safety checks, toxicity filtering, and PII redaction.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import json

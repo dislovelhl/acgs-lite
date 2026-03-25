@@ -1,6 +1,6 @@
 """
 ACGS-2 Deliberation Layer - Deliberation Queue
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 Persistent queue for high-impact messages awaiting approval.
 """
 
@@ -574,7 +574,7 @@ def reset_deliberation_queue() -> None:
 
     Used primarily for test isolation to prevent state leakage between tests.
     Properly cleans up any pending async tasks to avoid 'Task was destroyed but pending' warnings.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     global _deliberation_queue
     if _deliberation_queue is not None:
@@ -615,7 +615,7 @@ def cleanup_all_deliberation_queues() -> None:
     This function should be called at test teardown to properly stop all
     queue instances, not just the singleton. Essential for tests that create
     multiple queue instances directly.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     global _all_queue_instances
     for queue in _all_queue_instances:

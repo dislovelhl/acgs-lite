@@ -6,7 +6,7 @@ Targets:
 - enhanced_agent_bus.session_governance_sdk (85.6%, 44 missing lines)
 - enhanced_agent_bus.deliberation_layer.impact_scorer (86.9%, 44 missing lines)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

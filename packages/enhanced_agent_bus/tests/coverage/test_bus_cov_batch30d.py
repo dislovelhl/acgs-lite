@@ -1,6 +1,6 @@
 """
 Coverage tests for batch 30d: session fallbacks, visual studio service, online learning registry.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets:
 - routes/sessions/_fallbacks.py (63.6% -> 95%+)

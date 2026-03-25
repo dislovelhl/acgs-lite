@@ -1,7 +1,7 @@
 """Tests for expanded acgs-lite integrations.
 
 Tests use mocked external services (no real API calls).
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import importlib

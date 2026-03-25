@@ -4,7 +4,7 @@ Document Sync Engine with Operational Transform.
 Handles conflict resolution for concurrent edits using Operational Transform (OT)
 algorithms. Ensures consistency across all clients while maintaining low latency.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

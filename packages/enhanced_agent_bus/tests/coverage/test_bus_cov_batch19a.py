@@ -3,7 +3,7 @@ Coverage tests for:
   1. enhanced_agent_bus.adaptive_governance.governance_engine
   2. enhanced_agent_bus.pqc_validators
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ from enhanced_agent_bus.adaptive_governance.models import (
     ImpactLevel,
 )
 
-CONSTITUTIONAL_HASH = "cdd01ef066bc6cf2"
+CONSTITUTIONAL_HASH = "608508a9bd224290"
 
 
 def _make_impact_features(**overrides) -> ImpactFeatures:

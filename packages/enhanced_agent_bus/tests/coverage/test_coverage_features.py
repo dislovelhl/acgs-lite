@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Feature Flags Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: enhanced_agent_bus/features.py (36 stmts, 0% -> target 100%)
 Tests AgentBusFeatures dataclass, factory methods, environment parsing.

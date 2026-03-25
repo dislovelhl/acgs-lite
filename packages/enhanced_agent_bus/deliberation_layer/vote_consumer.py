@@ -1,6 +1,6 @@
 """
 ACGS-2 Deliberation Layer - Vote Event Consumer
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Kafka consumer for processing vote events with exactly-once semantics.
 Consumes vote events from Kafka, deduplicates, and updates Redis elections.

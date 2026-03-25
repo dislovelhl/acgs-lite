@@ -1,6 +1,6 @@
 """
 Security Defaults Regression Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 CRITICAL: These tests prevent regression on security-critical defaults.
 All security-sensitive components MUST default to fail-closed behavior.

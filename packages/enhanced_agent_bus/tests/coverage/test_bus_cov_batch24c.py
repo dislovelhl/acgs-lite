@@ -25,7 +25,7 @@ import pytest
 # Helpers
 # ---------------------------------------------------------------------------
 
-_HASH = "cdd01ef066bc6cf2"
+_HASH = "608508a9bd224290"
 
 
 def _make_impact_features(**overrides):

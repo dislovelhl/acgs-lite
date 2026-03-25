@@ -1,6 +1,6 @@
 """
 ACGS-2 LDAP Integration Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 LDAP integration for enterprise authentication with connection pooling,
 circuit breaker pattern, and MACI role mapping.

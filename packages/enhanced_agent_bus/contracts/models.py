@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Agent Behavioral Contract Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Pydantic v2 models implementing formal agent behavioral contracts C=(P,I,G,R)
 per arXiv:2602.22302.  Each component captures a distinct facet of an agent's

@@ -1,6 +1,6 @@
 """
 AgentHealthMonitor -- background asyncio.Task for agent health monitoring.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Runs as an isolated asyncio.Task separate from the message-processing loop
 so that monitoring continues even when the processing loop is blocked (NFR-004).

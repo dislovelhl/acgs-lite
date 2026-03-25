@@ -3,7 +3,7 @@ Coverage batch 31a -- targeted tests for:
   1. message_processor.py (83.3%, 80 missing lines)
   2. opa_client/core.py (83.8%, 77 missing lines)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Focuses on error-handling branches, conditional paths, optional dependency
 fallbacks, MCP integration, DLQ, metering, retry logic, SSL context building,

@@ -1,6 +1,6 @@
 """Coverage tests for interfaces.py and facades/agent_bus_facade.py.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets:
   - enhanced_agent_bus/interfaces.py (Protocol stub bodies, isinstance checks)
@@ -170,7 +170,7 @@ class ConcreteOrchestrator:
         pass
 
     def get_status(self) -> JSONDict:
-        return {"status": "healthy", "constitutional_hash": "cdd01ef066bc6cf2"}
+        return {"status": "healthy", "constitutional_hash": "608508a9bd224290"}
 
 
 class ConcreteCircuitBreaker:
@@ -710,8 +710,8 @@ class TestConstitutionalHashValidatorMethods:
     async def test_validate_hash(self) -> None:
         v = ConcreteConstitutionalHashValidator()
         is_valid, err = await v.validate_hash(
-            provided_hash="cdd01ef066bc6cf2",
-            expected_hash="cdd01ef066bc6cf2",
+            provided_hash="608508a9bd224290",
+            expected_hash="608508a9bd224290",
             context={"source": "test"},
         )
         assert is_valid is True
@@ -796,7 +796,7 @@ class TestInterfacesModuleAttributes:
 
     def test_constitutional_hash_in_docstring(self) -> None:
         from enhanced_agent_bus import interfaces
-        assert "cdd01ef066bc6cf2" in (interfaces.__doc__ or "")
+        assert "608508a9bd224290" in (interfaces.__doc__ or "")
 
 
 # ============================================================================
@@ -812,7 +812,7 @@ class TestFacadeConstitutionalHash:
     def test_constitutional_hash_value(self) -> None:
         from enhanced_agent_bus.facades import agent_bus_facade
         # Either the real hash or standalone fallback
-        assert agent_bus_facade.CONSTITUTIONAL_HASH in ("cdd01ef066bc6cf2", "standalone")
+        assert agent_bus_facade.CONSTITUTIONAL_HASH in ("608508a9bd224290", "standalone")
 
     def test_constitutional_hash_in_all(self) -> None:
         from enhanced_agent_bus.facades import agent_bus_facade

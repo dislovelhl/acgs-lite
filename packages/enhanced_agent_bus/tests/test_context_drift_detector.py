@@ -1,6 +1,6 @@
 """Tests for enhanced_agent_bus.security.context_drift_detector module.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -199,7 +199,7 @@ class TestDetectDrift:
 
     def test_insufficient_samples(self):
         detector = ContextDriftDetector(min_samples=10)
-        for i in range(5):
+        for _i in range(5):
             detector.update_profile("agent-1", 0.5)
         result = detector.detect_drift("agent-1", 0.5)
         assert result.has_drift is False
@@ -323,7 +323,7 @@ class TestDetectTemporalDrift:
     def test_returns_none_with_few_samples(self):
         detector = ContextDriftDetector()
         profile = AgentProfile(agent_id="a")
-        for i in range(5):
+        for _i in range(5):
             profile.request_times.append(datetime.now(UTC))
         result = detector._detect_temporal_drift(profile, datetime.now(UTC))
         assert result is None

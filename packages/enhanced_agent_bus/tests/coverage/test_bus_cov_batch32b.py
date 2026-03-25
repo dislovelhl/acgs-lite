@@ -1,7 +1,7 @@
 """
 Coverage tests for collaboration/server.py and pqc_validators.py.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets uncovered lines in:
 - enhanced_agent_bus.collaboration.server (84.5% -> higher)
@@ -71,7 +71,7 @@ from enhanced_agent_bus.pqc_validators import (
 # Shared helpers
 # ---------------------------------------------------------------------------
 
-EXPECTED_HASH = "cdd01ef066bc6cf2"
+EXPECTED_HASH = "608508a9bd224290"
 
 
 def _make_collaborator(**overrides) -> Collaborator:

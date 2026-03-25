@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-ACGS (Advanced Constitutional Governance System) is a **339K-line Python/Rust/TypeScript monorepo** implementing constitutional governance infrastructure for AI agents. The system enforces a **MACI (Montesquieu-Inspired) separation of powers** (Proposer/Validator/Executor) with a cryptographic constitutional hash (`cdd01ef066bc6cf2`) embedded across all validation paths.
+ACGS (Advanced Constitutional Governance System) is a **339K-line Python/Rust/TypeScript monorepo** implementing constitutional governance infrastructure for AI agents. The system enforces a **MACI (Montesquieu-Inspired) separation of powers** (Proposer/Validator/Executor) with a cryptographic constitutional hash (`608508a9bd224290`) embedded across all validation paths.
 
 **Key Metrics:**
 | Metric | Value |
@@ -260,7 +260,7 @@ acgs-lite test file ratio is notably low.
 
 4. **Extension Module Fragility** — 15 `_ext_*.py` modules all use try/except with stub fallbacks. No runtime capability manifest. Different deployments silently have different feature sets.
 
-5. **Static Constitutional Hash** — `cdd01ef066bc6cf2` appears in 200+ files but its derivation from actual rules is not verified at startup. A tampered deployment could bypass governance.
+5. **Static Constitutional Hash** — `608508a9bd224290` appears in 200+ files but its derivation from actual rules is not verified at startup. A tampered deployment could bypass governance.
 
 ---
 

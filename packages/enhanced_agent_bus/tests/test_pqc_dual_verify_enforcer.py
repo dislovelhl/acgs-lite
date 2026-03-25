@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """Unit tests for DualVerifyEnforcer (packages/enhanced_agent_bus/pqc_dual_verify.py).
 
 Tests cover:

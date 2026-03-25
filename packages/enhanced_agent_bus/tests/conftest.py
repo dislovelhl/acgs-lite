@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Shared Test Fixtures
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Thin root conftest that delegates to the fixtures subpackage.
 All sys.modules aliasing, singleton resets, and mock fixtures live
@@ -64,7 +64,7 @@ def pytest_collection_modifyitems(config, items):
     fresh module instances which pollutes sys.modules. Running it last prevents
     it from affecting other test files.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     regular_tests = []
     polluting_tests = []

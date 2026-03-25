@@ -1,6 +1,6 @@
 """
 Integration tests for GET/POST/DELETE /api/v1/agents/{agent_id}/health* endpoints.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests are TDD RED-first — all tests fail before api/routes/agent_health.py exists.
 
@@ -237,7 +237,7 @@ def test_get_health_includes_healing_override_when_active() -> None:
 
 
 def test_get_health_constitutional_hash_present_in_every_response() -> None:
-    """constitutional_hash field must equal cdd01ef066bc6cf2 in every 200 response."""
+    """constitutional_hash field must equal 608508a9bd224290 in every 200 response."""
     for state in (HealthState.HEALTHY, HealthState.QUARANTINED, HealthState.RESTARTING):
         record = _make_record(health_state=state)
         mock_store = AsyncMock(spec=AgentHealthStore)

@@ -5,7 +5,7 @@ Coverage tests for batch 21a:
   3. multi_tenancy/middleware.py
   4. pqc_dual_verify.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ with patch.dict(
     "sys.modules",
     {
         "src.core.shared.types": MagicMock(JSONDict=dict),
-        "src.core.shared.constants": MagicMock(CONSTITUTIONAL_HASH="cdd01ef066bc6cf2"),
+        "src.core.shared.constants": MagicMock(CONSTITUTIONAL_HASH="608508a9bd224290"),
     },
 ):
     from enhanced_agent_bus.mcp_server.tools.validate_compliance import (
@@ -190,7 +190,7 @@ class TestValidationResult:
             principles_checked=["safety", "privacy"],
             violations=[],
             recommendations=["Keep doing well"],
-            constitutional_hash="cdd01ef066bc6cf2",
+            constitutional_hash="608508a9bd224290",
             validation_timestamp="2025-01-01T00:00:00",
             latency_ms=1.5,
         )
@@ -209,7 +209,7 @@ class TestValidationResult:
             principles_checked=["non_maleficence"],
             violations=[{"principle": "non_maleficence", "severity": "critical"}],
             recommendations=[],
-            constitutional_hash="cdd01ef066bc6cf2",
+            constitutional_hash="608508a9bd224290",
             validation_timestamp="2025-01-01T00:00:00",
             latency_ms=2.0,
         )

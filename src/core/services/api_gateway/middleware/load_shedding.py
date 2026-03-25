@@ -1,6 +1,6 @@
 """Adaptive Load Shedding Middleware for the API Gateway.
 
-Constitutional Hash: cdd01ef066bc6cf2  # pragma: allowlist secret
+Constitutional Hash: 608508a9bd224290  # pragma: allowlist secret
 
 Implements Design C: Adaptive Load Shedding Layer.  The middleware monitors
 P99 latency over a rolling window and progressively sheds lower-priority

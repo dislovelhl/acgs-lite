@@ -1,6 +1,6 @@
 """
 Tests for enhanced_agent_bus.constitutional.proposal_engine
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from unittest.mock import AsyncMock, MagicMock, patch

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Agent Entity Workflow Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for AgentEntityWorkflow and related components.
 Tests cover: workflow lifecycle, signals, queries, activities, and error handling.

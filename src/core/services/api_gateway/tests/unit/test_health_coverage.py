@@ -1,6 +1,6 @@
 """
 Tests for health.py — HealthChecker dependency checks and router coverage.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: check_database (timeout, generic error, with asyncpg),
 check_redis (timeout, generic error, with aioredis), check_opa (degraded,

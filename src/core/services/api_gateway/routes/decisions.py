@@ -1,6 +1,6 @@
 """
 ACGS-2 Decision Explanation API Routes
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements FR-12 Decision Explanation API endpoints for structured
 factor attribution, governance vector analysis, and counterfactual reasoning.
@@ -172,7 +172,7 @@ decisions_v1_router = create_versioned_router(
     - Counterfactual analysis hints
     - EU AI Act Article 13 transparency compliance
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """,
 )
 @track_request_metrics("api-gateway", "/api/v1/decisions/{decision_id}/explain")
@@ -262,7 +262,7 @@ async def get_decision_explanation(
     Use this endpoint to create explanations for new decisions that
     haven't been stored yet, or to get explanations without persistence.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """,
 )
 @track_request_metrics("api-gateway", "/api/v1/decisions/explain")

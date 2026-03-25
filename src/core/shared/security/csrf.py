@@ -1,6 +1,6 @@
 """
 ACGS-2 Shared Security - CSRF Protection Middleware
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides double-submit cookie CSRF protection for cookie-based sessions.
 Automatically skips enforcement for Bearer-token (JWT API) requests.

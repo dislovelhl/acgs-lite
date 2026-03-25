@@ -3,7 +3,7 @@ package acgs.multitenant
 # Multi-tenant isolation policy - Mandatory tenant_id (ACGS-2 Standard)
 # NIST SP 800-207, OWASP Multi-Tenancy Top 10
 # Enforces tenant isolation: deny if tenant_id missing/null/empty
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 
 default allow := false
 
@@ -12,7 +12,7 @@ allow {
 	input.tenant_id != null
 	input.tenant_id != ""
 	is_valid_tenant_id(input.tenant_id)
-	input.constitutional_hash == "cdd01ef066bc6cf2"
+	input.constitutional_hash == "608508a9bd224290"
 }
 
 # Deny cross-tenant access

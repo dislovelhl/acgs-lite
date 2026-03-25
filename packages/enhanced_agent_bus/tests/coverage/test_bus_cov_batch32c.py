@@ -3,7 +3,7 @@ Coverage tests for:
 - enhanced_agent_bus/bundle_registry.py (90.9% -> target 97%+)
 - enhanced_agent_bus/constitutional/review_api.py (84.6% -> target 97%+)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets uncovered lines:
   bundle_registry: verify_signature paths, verify_cosign_signature, push_bundle,

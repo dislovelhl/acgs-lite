@@ -1,6 +1,6 @@
 """
 ACGS-2 SSO Authentication Router
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides a lean entry point for OIDC and SAML authentication routes.
 Delegates implementation to sub-modules in routes/sso/.

@@ -1,6 +1,6 @@
 """
 Data Warehouse Connectors
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides abstract base class and implementations for connecting to
 various data warehouses: Snowflake, Redshift, and BigQuery.

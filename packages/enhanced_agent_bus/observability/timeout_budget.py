@@ -1,6 +1,6 @@
 """
 ACGS-2 Timeout Budget Management
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Layer-specific timeout allocation and enforcement for constitutional
 compliance within latency SLAs.
@@ -24,7 +24,7 @@ try:
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
-from enhanced_agent_bus.observability.structured_logging import get_logger
+from .structured_logging import get_logger
 
 logger = get_logger(__name__)
 T = TypeVar("T")

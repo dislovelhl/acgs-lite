@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Constitutional Classifier Real-Time Detector
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Real-time threat detection engine for constitutional compliance.
 Optimized for sub-5ms inference latency with streaming support.
@@ -67,7 +67,7 @@ class DetectionDecision(Enum):
 class DetectionResult:
     """Result of threat detection.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     decision: DetectionDecision
@@ -103,7 +103,7 @@ class DetectionResult:
 class DetectorConfig:
     """Configuration for the threat detector.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Thresholds
@@ -135,7 +135,7 @@ class ThreatDetector:
     Provides fast, accurate threat detection for constitutional compliance.
     Optimized for <5ms latency with configurable detection modes.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

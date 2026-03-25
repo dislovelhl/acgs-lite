@@ -1,7 +1,7 @@
 """
 SQLAlchemy and Pydantic models for ACGS-2 Constitutional Storage.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from datetime import UTC, datetime, timezone
@@ -20,7 +20,7 @@ class Base(DeclarativeBase):
 class ConstitutionalVersionDB(Base):
     """SQLAlchemy model for constitutional versions in PostgreSQL.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     Multi-Tenant Support: Phase 10 Task 1
     """
 
@@ -42,7 +42,7 @@ class ConstitutionalVersionDB(Base):
 class AmendmentProposalDB(Base):
     """SQLAlchemy model for amendment proposals in PostgreSQL.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     Multi-Tenant Support: Phase 10 Task 1
     """
 

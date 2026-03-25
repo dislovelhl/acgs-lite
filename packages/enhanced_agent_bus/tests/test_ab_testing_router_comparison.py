@@ -1,6 +1,6 @@
 """
 A/B Testing Framework - Router Comparison Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Part of the A/B testing framework test suite.
 Extracted from monolithic test_ab_testing.py for better maintainability.

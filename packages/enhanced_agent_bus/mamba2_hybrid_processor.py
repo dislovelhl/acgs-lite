@@ -7,7 +7,7 @@ Implements Zamba-inspired architecture for O(n) context handling:
 - JRT context preparation for critical sections
 - 4M+ token effective context length
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

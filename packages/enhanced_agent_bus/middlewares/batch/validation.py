@@ -4,7 +4,7 @@ Batch Validation Middleware for ACGS-2 Pipeline.
 Validates BatchRequest structure and item schema.
 Extracted from: batch_processor.py + batch_processor_infra/orchestrator.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import time
@@ -37,7 +37,7 @@ class BatchValidationMiddleware(BaseMiddleware):
         )
         context = await middleware.process(batch_context)
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

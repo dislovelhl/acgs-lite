@@ -1,6 +1,6 @@
 """
 MACI Import Management
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Centralizes optional dependency imports for MACI enforcement.
 Provides clean fallback handling for imports that may not be available
@@ -43,7 +43,7 @@ GLOBAL_SETTINGS_AVAILABLE: bool = False
 try:
     from src.core.shared.constants import CONSTITUTIONAL_HASH as _DEFAULT_CONSTITUTIONAL_HASH
 except ImportError:
-    _DEFAULT_CONSTITUTIONAL_HASH = "cdd01ef066bc6cf2"  # pragma: allowlist secret
+    _DEFAULT_CONSTITUTIONAL_HASH = "608508a9bd224290"  # pragma: allowlist secret
 
 CONSTITUTIONAL_HASH: str = _DEFAULT_CONSTITUTIONAL_HASH
 

@@ -1,7 +1,7 @@
 """
 Tests for under-covered src/core/shared/security modules.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers:
 - PII detection patterns and classification
@@ -354,7 +354,7 @@ class TestPIIDetector:
         assert stats["total_items"] == 2
         assert "total_detections" in stats
         assert "average_confidence" in stats
-        assert stats["constitutional_hash"] == "cdd01ef066bc6cf2"
+        assert stats["constitutional_hash"] == "608508a9bd224290"
 
     def test_get_statistics_empty(self):
         stats = self.detector.get_statistics([])
@@ -736,27 +736,27 @@ class TestSandbox:
 
     def test_sandbox_validate_code_dangerous_subprocess(self):
         sandbox = Sandbox()
-        is_safe, reason = sandbox.validate_code("subprocess.run(['ls'])")
+        is_safe, _reason = sandbox.validate_code("subprocess.run(['ls'])")
         assert is_safe is False
 
     def test_sandbox_validate_code_dangerous_eval(self):
         sandbox = Sandbox()
-        is_safe, reason = sandbox.validate_code("eval('1+1')")
+        is_safe, _reason = sandbox.validate_code("eval('1+1')")
         assert is_safe is False
 
     def test_sandbox_validate_code_dangerous_exec(self):
         sandbox = Sandbox()
-        is_safe, reason = sandbox.validate_code("exec('print(1)')")
+        is_safe, _reason = sandbox.validate_code("exec('print(1)')")
         assert is_safe is False
 
     def test_sandbox_validate_code_dangerous_etc(self):
         sandbox = Sandbox()
-        is_safe, reason = sandbox.validate_code("open('/etc/passwd')")
+        is_safe, _reason = sandbox.validate_code("open('/etc/passwd')")
         assert is_safe is False
 
     def test_sandbox_validate_code_dangerous_proc(self):
         sandbox = Sandbox()
-        is_safe, reason = sandbox.validate_code("open('/proc/self/environ')")
+        is_safe, _reason = sandbox.validate_code("open('/proc/self/environ')")
         assert is_safe is False
 
     def test_sandbox_run_empty_code(self):

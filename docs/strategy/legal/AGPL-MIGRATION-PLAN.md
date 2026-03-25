@@ -5,6 +5,9 @@
 **Decision:** AGPL-3.0 + Commercial Dual License (confirmed)
 **Timeline:** Week 1 of launch
 
+> Historical planning note: this document captures the pre-migration plan. The repository is now
+> licensed under `AGPL-3.0-or-later`, and the public PyPI package name is `acgs`.
+
 ---
 
 ## 1. What Changes

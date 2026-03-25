@@ -2,7 +2,7 @@
 Additional coverage tests for MCP Integration Server.
 
 Targets uncovered lines to boost coverage from ~70% to 90%+.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio

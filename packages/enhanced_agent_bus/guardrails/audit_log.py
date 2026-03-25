@@ -4,7 +4,7 @@ Audit Log Guardrail Component.
 Layer 5 of OWASP guardrails: immutable compliance trail for all guardrail
 decisions with support for blockchain and SIEM integration.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import hashlib
@@ -75,7 +75,7 @@ class BlockchainLedger:
     Each audit entry is stored as a block cryptographically linked to
     the previous block, creating an immutable audit trail.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, storage_path: str = "audit_blockchain_ledger.json"):
@@ -206,7 +206,7 @@ class AuditLog(GuardrailComponent):
     Supports blockchain integration for immutability
     and SIEM systems for security monitoring.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, config: AuditLogConfig | None = None):

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Batch Message Processor
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Refactored BatchMessageProcessor that delegates to the infra components.
 """
@@ -42,7 +42,7 @@ _batch_processor_instance = None
 def get_batch_processor() -> "BatchMessageProcessor":
     """
     Get the global batch processor singleton.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     global _batch_processor_instance
     if _batch_processor_instance is None:
@@ -60,7 +60,7 @@ def get_batch_processor() -> "BatchMessageProcessor":
 def reset_batch_processor() -> None:
     """
     Reset the global batch processor singleton.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     global _batch_processor_instance
     _batch_processor_instance = None
@@ -69,7 +69,7 @@ def reset_batch_processor() -> None:
 class BatchMessageProcessor:
     """
     Refactored BatchMessageProcessor using modular components.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, **kwargs: JSONValue) -> None:
@@ -347,7 +347,7 @@ class BatchMessageProcessor:
     def get_recommended_batch_size(self) -> int:
         """Get the recommended batch size based on auto-tuning.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         if not self.auto_tune_batch_size:
             return self.max_batch_size
@@ -358,7 +358,7 @@ class BatchMessageProcessor:
     ) -> None:
         """Update batch size recommendation based on observed latency.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         if not self.auto_tune_batch_size or p99_latency_ms is None:
             return
@@ -391,7 +391,7 @@ class BatchMessageProcessor:
     def get_auto_tune_stats(self) -> JSONDict:
         """Get auto-tuning statistics.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         avg_latency = None
         if self._latency_history:

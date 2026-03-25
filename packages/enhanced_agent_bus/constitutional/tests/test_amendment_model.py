@@ -1,6 +1,6 @@
 """
 Tests for Constitutional Amendment Model
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for AmendmentProposal model, status transitions, and validation.
 """

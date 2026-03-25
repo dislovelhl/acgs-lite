@@ -6,7 +6,7 @@ Targets:
 - mcp_server.server (MCPServer, create_mcp_server)
 - constitutional.review_api (list_amendments, get_amendment, approve/reject, rollback, health)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -94,7 +94,7 @@ def _make_engine(
         patch.object(AdaptiveGovernanceEngine, "_initialize_anomaly_monitor"),
     ):
         engine = AdaptiveGovernanceEngine(
-            constitutional_hash="cdd01ef066bc6cf2",
+            constitutional_hash="608508a9bd224290",
             config=config,
         )
     # Ensure optional subsystems are None so we test the fallback paths

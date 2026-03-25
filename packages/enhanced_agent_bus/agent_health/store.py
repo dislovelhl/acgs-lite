@@ -1,6 +1,6 @@
 """
 AgentHealthStore — async Redis-backed CRUD for agent health state.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Key schema:
   agent_health:{agent_id}              → AgentHealthRecord (Redis hash)
@@ -96,7 +96,7 @@ def _hash_to_override(data: dict[str, str]) -> HealingOverride:
 class AgentHealthStore:
     """Async Redis-backed store for AgentHealthRecord and HealingOverride objects.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, redis: Redis) -> None:

@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Tests for src/core/enhanced_agent_bus/constitutional/version_model.py
 Coverage target: ≥90%
@@ -191,9 +191,9 @@ class TestHashFormatValidation:
         "bad_hash",
         [
             "",  # empty
-            "cdd01ef066bc6cf",  # 15 chars
-            "cdd01ef066bc6cf21",  # 17 chars
-            "cdd01ef066bc6cfX",  # non-hex char
+            "608508a9bd22429",  # 15 chars
+            "608508a9bd2242901",  # 17 chars
+            "608508a9bd22429X",  # non-hex char
             CONSTITUTIONAL_HASH.upper(),  # uppercase
         ],
     )

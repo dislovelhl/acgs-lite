@@ -1,6 +1,6 @@
 """
 Saga State Repository Interface
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Abstract base class defining the interface for saga state persistence.
 Implementations can use Redis, PostgreSQL, or other storage backends.
@@ -42,7 +42,7 @@ class SagaStateRepository(ABC):
     Implementations must provide atomic operations for saga state management,
     supporting recovery scenarios and multi-tenant isolation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     @property

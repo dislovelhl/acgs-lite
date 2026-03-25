@@ -1,7 +1,7 @@
 """
 ACGS-2 Circuit Breaker Exceptions
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module defines exceptions for circuit breaker operations.
 """

@@ -1,6 +1,6 @@
 """
 ACGS-2 Capacity Metrics Latency Decorators
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Decorators for tracking request latency in the Enhanced Agent Bus.
 These decorators automatically record request latency to the capacity metrics

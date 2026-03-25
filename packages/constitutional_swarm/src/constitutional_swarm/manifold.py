@@ -5,7 +5,7 @@ unconstrained agent interaction matrices onto the governance manifold
 via Sinkhorn-Knopp normalization.
 
 Mathematical foundation:
-  - Agent influence is represented as an N×N matrix H where H[i,j]
+  - Agent influence is represented as an N x N matrix H where H[i,j]
     is how much agent i trusts agent j's validation
   - Unconstrained H leads to trust explosion/collapse at scale
     (analogous to signal explosion in unconstrained HC)
@@ -55,7 +55,7 @@ def sinkhorn_knopp(
     unconstrained agent influence → bounded, conserved trust.
 
     Args:
-        matrix: N×N non-negative matrix of raw agent interactions.
+        matrix: N x N non-negative matrix of raw agent interactions.
         max_iterations: Maximum Sinkhorn-Knopp iterations.
         epsilon: Convergence threshold.
 

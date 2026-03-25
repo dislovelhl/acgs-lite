@@ -1,7 +1,7 @@
 """
 Integration tests for SDPC Phase 2 Verification Layer
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from unittest.mock import AsyncMock

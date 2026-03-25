@@ -1,6 +1,6 @@
 # Enhanced Agent Bus - Documentation Portal
 
-<!-- Constitutional Hash: cdd01ef066bc6cf2 -->
+<!-- Constitutional Hash: 608508a9bd224290 -->
 
 > **Version:** 2.4.0
 > **Last Updated:** 2025-01-01
@@ -248,7 +248,7 @@ Use this index to find documentation by topic:
 
 **Documentation Standards:**
 
-- Constitutional Hash: `cdd01ef066bc6cf2` required in all docs
+- Constitutional Hash: `608508a9bd224290` required in all docs
 - Markdown format following CommonMark specification
 - Mermaid diagrams for architecture visualization
 - Code examples use Python 3.11+ syntax
@@ -276,7 +276,7 @@ Quick reference showing which documents cover which topics:
 
 ## Contributing to Documentation
 
-1. All documentation must include constitutional hash: `cdd01ef066bc6cf2`
+1. All documentation must include constitutional hash: `608508a9bd224290`
 2. Use relative links for cross-references within the repository
 3. Update this portal when adding new documentation
 4. Follow existing formatting conventions
@@ -291,5 +291,5 @@ Quick reference showing which documents cover which topics:
 
 ---
 
-_Constitutional Hash: cdd01ef066bc6cf2_
+_Constitutional Hash: 608508a9bd224290_
 _Enhanced Agent Bus Documentation Portal v1.0_

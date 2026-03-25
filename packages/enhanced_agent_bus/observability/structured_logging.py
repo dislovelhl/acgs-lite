@@ -1,6 +1,6 @@
 """
 ACGS-2 Structured Logging Configuration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements the required logging from SPEC_ACGS2_ENHANCED.md Section 6.2.
 Per Expert Panel Review (Kelsey Hightower - Cloud Native Expert).

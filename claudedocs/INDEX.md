@@ -1,6 +1,6 @@
 # ACGS-2 Project Index
 
-> Generated: 2026-03-20 | Branch: `main` | Constitutional Hash: `cdd01ef066bc6cf2`
+> Generated: 2026-03-20 | Branch: `main` | Constitutional Hash: `608508a9bd224290`
 
 ## Overview
 
@@ -238,7 +238,7 @@ this repo snapshot.
 ## Architecture Invariants
 
 1. **MACI Separation of Powers** — Agents NEVER validate their own output (Proposer → Validator → Executor)
-2. **Constitutional Hash** — `cdd01ef066bc6cf2` embedded in all validation paths
+2. **Constitutional Hash** — `608508a9bd224290` embedded in all validation paths
 3. **Import Paths** — Use `enhanced_agent_bus.*` directly (never `src.core.enhanced_agent_bus.*`)
 4. **Canonical Paths** — `middlewares/` (plural), `context_memory/`, `persistence/`
 5. **Async-First** — `async def` for all I/O operations

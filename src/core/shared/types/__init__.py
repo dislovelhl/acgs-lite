@@ -17,7 +17,7 @@ When to use 'object' (sparingly):
 
 Always prefer Union types, Protocols, or TypedDict over 'object' when possible.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 # Constitutional hash for module verification

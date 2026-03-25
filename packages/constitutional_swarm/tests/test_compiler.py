@@ -235,7 +235,7 @@ class TestDAGCompiler:
         )
         compiler = DAGCompiler()
         dag = compiler.compile(spec)
-        node = list(dag.nodes.values())[0]
+        node = next(iter(dag.nodes.values()))
         assert node.required_capabilities == ("code_review",)
         assert node.priority == 5
         assert node.max_budget_tokens == 1000

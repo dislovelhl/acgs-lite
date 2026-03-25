@@ -1,6 +1,6 @@
 """
 ACGS-2 Context & Memory - Mamba-2 SSM Processor
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements Mamba-2 State Space Model layers for O(n) context handling.
 Achieves 30x context length increase through efficient state space computation.
@@ -77,7 +77,7 @@ else:
 class MambaProcessorConfig:
     """Configuration for the Mamba Processor.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     d_model: int = 256
@@ -101,7 +101,7 @@ class MambaProcessorConfig:
 class ProcessingResult:
     """Result of Mamba processing.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     output_embeddings: _TensorLike  # torch.Tensor or numpy array
@@ -120,7 +120,7 @@ class Mamba2SSMLayer:
     Implements selective state space model with O(n) complexity.
     This is a simulation layer - actual Mamba-2 model would be external.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -263,7 +263,7 @@ class MambaProcessor:
     Implements 6 Mamba SSM layers for O(n) context processing,
     enabling 4M+ token context windows for multi-day autonomous governance.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

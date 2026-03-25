@@ -1,7 +1,7 @@
 """
 MCP Adapters for ACGS-2 System Integration.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from .agent_bus import AgentBusAdapter

@@ -1,7 +1,7 @@
 # EU AI Act Compliance Guide for Engineering Teams
 
 > Your legal counsel sent you a letter. You have until **August 2, 2026** to comply.
-> This guide shows you what to build, what ACGS-Lite handles for you, and what you
+> This guide shows you what to build, what ACGS handles for you, and what you
 > still need to do yourself.
 
 **Last updated**: 2026-03-21
@@ -66,12 +66,12 @@ If `result.is_prohibited` returns `True`, stop here. You cannot deploy that syst
 
 ---
 
-## The 9 Technical Requirements (and What ACGS-Lite Covers)
+## The 9 Technical Requirements (and What ACGS Covers)
 
 High-risk systems must satisfy nine article-level requirements. Here is the honest breakdown of
-what ACGS-Lite automates versus what your team still needs to build.
+what ACGS automates versus what your team still needs to build.
 
-| # | Article | Requirement | ACGS-Lite | Status |
+| # | Article | Requirement | ACGS | Status |
 |---|---------|-------------|-----------|--------|
 | 1 | **Article 9** | Risk management system | `RiskClassifier` | **Partial** -- classifies risk and maps obligations; you write the risk management plan |
 | 2 | **Article 10** | Data governance | -- | **Manual** -- training data quality, bias testing, lineage documentation |
@@ -83,7 +83,7 @@ what ACGS-Lite automates versus what your team still needs to build.
 | 8 | **Article 16** | Provider obligations (CE marking, EU database registration) | -- | **Manual** -- regulatory filing, EU representative appointment |
 | 9 | **Article 72** | Conformity assessment | `ComplianceChecklist` | **Partial** -- generates assessment documentation; self-assessment is still your responsibility |
 
-**Bottom line**: ACGS-Lite automates 5 of 9 items (Articles 9, 12, 13, 14, 72). Articles 10,
+**Bottom line**: ACGS automates 5 of 9 items (Articles 9, 12, 13, 14, 72). Articles 10,
 11, 15, and 16 require work that no library can do for you -- they depend on your specific
 data, model, and organizational processes.
 
@@ -94,7 +94,7 @@ data, model, and organizational processes.
 ### Step 1: Install and Configure
 
 ```bash
-pip install acgs-lite
+pip install acgs
 ```
 
 Set your license key (EU AI Act features require PRO tier or above):
@@ -263,7 +263,7 @@ from acgs_lite.eu_ai_act import ComplianceChecklist
 
 checklist = ComplianceChecklist(system_id="loan-underwriter-v3")
 
-# Auto-populate the 5 items that ACGS-Lite handles
+# Auto-populate the 5 items that ACGS handles
 checklist.auto_populate_acgs_lite()
 
 print(checklist.compliance_score)  # 0.5556 (5 of 9 items)
@@ -345,14 +345,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install acgs-lite
+      - run: pip install acgs
       - run: python ci/compliance_gate.py
 ```
 
 ### Step 8: Multi-Framework Assessment
 
 If you operate across jurisdictions, run a single assessment that covers all applicable
-frameworks simultaneously. ACGS-Lite evaluates against GDPR, NIST AI RMF, ISO 42001, SOC 2,
+frameworks simultaneously. ACGS evaluates against GDPR, NIST AI RMF, ISO 42001, SOC 2,
 HIPAA, and five other frameworks.
 
 ```python
@@ -367,7 +367,7 @@ report = assessor.assess({
 
 print(f"Overall score: {report.overall_score:.0%}")
 print(f"Frameworks assessed: {report.frameworks_assessed}")
-print(f"ACGS-Lite coverage: {report.acgs_lite_total_coverage:.0%}")
+print(f"ACGS coverage: {report.acgs_lite_total_coverage:.0%}")
 
 # Cross-framework gaps (items missing across multiple regulations)
 for gap in report.cross_framework_gaps:
@@ -402,9 +402,9 @@ for fw_id, assessment in report.by_framework.items():
 
 ---
 
-## What ACGS-Lite Covers vs. What You Still Need
+## What ACGS Covers vs. What You Still Need
 
-### ACGS-Lite handles these automatically
+### ACGS handles these automatically
 
 | Capability | Article | What It Does |
 |---|---|---|
@@ -519,5 +519,5 @@ constitution = (
 This guide is provided for informational purposes only. It is not legal advice. The EU AI Act
 is a complex regulation and its interpretation continues to evolve through guidance documents,
 delegated acts, and enforcement practice. Consult qualified legal counsel before relying on any
-compliance self-assessment. ACGS-Lite generates indicative assessments that support -- but do
+compliance self-assessment. ACGS generates indicative assessments that support -- but do
 not replace -- professional legal review.

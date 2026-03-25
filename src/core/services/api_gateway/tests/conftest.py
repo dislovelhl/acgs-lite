@@ -6,7 +6,7 @@ os.environ["ENABLE_RATE_LIMITING"] = "false"
 os.environ["SAML_ENABLED"] = "false"
 """
 Test configuration and fixtures for API Gateway service.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from unittest.mock import AsyncMock, MagicMock

@@ -1,6 +1,6 @@
 """
 Tests for Delete with Audit Archival.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Task 7.7: DELETE /tenants/{tenant_id}/integrations/{integration_id} with audit archival
 """

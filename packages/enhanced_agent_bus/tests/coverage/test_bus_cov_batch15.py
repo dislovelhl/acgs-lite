@@ -1086,7 +1086,7 @@ def _make_version(
     return ConstitutionalVersion(
         version=version,
         content={"rules": []},
-        constitutional_hash="cdd01ef066bc6cf2",
+        constitutional_hash="608508a9bd224290",
         status=status,
         predecessor_version=predecessor,
         activated_at=activated_at,
@@ -1590,7 +1590,7 @@ class TestAgentBusIntegration:
         integration = AgentBusIntegration()
 
         mock_msg = MagicMock()
-        mock_msg.constitutional_hash = "cdd01ef066bc6cf2"
+        mock_msg.constitutional_hash = "608508a9bd224290"
         mock_msg.message_type = MagicMock(value="command")
 
         response_msg = MagicMock()
@@ -1606,7 +1606,7 @@ class TestAgentBusIntegration:
         integration = AgentBusIntegration()
 
         mock_msg = MagicMock()
-        mock_msg.constitutional_hash = "cdd01ef066bc6cf2"
+        mock_msg.constitutional_hash = "608508a9bd224290"
         mock_msg.message_type = MagicMock(value="unknown_type")
 
         result = await integration.handle_incoming_message(mock_msg)
@@ -1618,7 +1618,7 @@ class TestAgentBusIntegration:
         integration = AgentBusIntegration()
 
         mock_msg = MagicMock()
-        mock_msg.constitutional_hash = "cdd01ef066bc6cf2"
+        mock_msg.constitutional_hash = "608508a9bd224290"
         mock_msg.content = {"text": "Hello there, this is a test message."}
 
         mock_context = MagicMock()
@@ -1634,7 +1634,7 @@ class TestAgentBusIntegration:
         integration = AgentBusIntegration()
 
         mock_msg = MagicMock()
-        mock_msg.constitutional_hash = "cdd01ef066bc6cf2"
+        mock_msg.constitutional_hash = "608508a9bd224290"
         mock_msg.content = {"text": ""}
 
         result = await integration.validate_user_message(mock_msg, MagicMock())
@@ -1646,7 +1646,7 @@ class TestAgentBusIntegration:
         integration = AgentBusIntegration()
 
         mock_msg = MagicMock()
-        mock_msg.constitutional_hash = "cdd01ef066bc6cf2"
+        mock_msg.constitutional_hash = "608508a9bd224290"
         mock_msg.content = {"text": "x" * 20000}
 
         result = await integration.validate_user_message(mock_msg, MagicMock())
@@ -1658,7 +1658,7 @@ class TestAgentBusIntegration:
         integration = AgentBusIntegration()
 
         mock_msg = MagicMock()
-        mock_msg.constitutional_hash = "cdd01ef066bc6cf2"
+        mock_msg.constitutional_hash = "608508a9bd224290"
         mock_msg.content = "A plain string message for testing."
 
         result = await integration.validate_user_message(mock_msg, MagicMock())

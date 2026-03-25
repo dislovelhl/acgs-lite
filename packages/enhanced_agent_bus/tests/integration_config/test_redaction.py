@@ -1,6 +1,6 @@
 """
 Tests for Credential Redaction in API Responses.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Task 7.4: GET /tenants/{tenant_id}/integrations with credential redaction
 """

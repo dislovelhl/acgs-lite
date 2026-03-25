@@ -1,6 +1,6 @@
 """
 ACGS-2 Compliance Layer Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from datetime import UTC, datetime, timezone
@@ -206,7 +206,7 @@ class ConfidentialityControl(BaseModel):
 class AvailabilityControl(BaseModel):
     """SOC 2 Availability Trust Service Criteria control.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     control_id: str = Field(...)
@@ -235,7 +235,7 @@ class AvailabilityControl(BaseModel):
 class AuditEvidencePackage(BaseModel):
     """60-day audit evidence package for SOC 2 type II.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     package_id: str = Field(...)

@@ -1,6 +1,6 @@
 """
 Unit tests for MessageProcessor helper functions.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for extracted helper methods to reduce C901 complexity while preserving behavior.
 """

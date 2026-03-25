@@ -1,6 +1,6 @@
 """
 GraphRAG Context Enricher for Deliberation Layer
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Enriches deliberation context with relevant policy documents retrieved from a
 GraphRAG knowledge base using vector similarity search.

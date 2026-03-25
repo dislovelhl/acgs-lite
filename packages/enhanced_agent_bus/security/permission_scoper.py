@@ -1,4 +1,4 @@
-"""Constitutional Hash: cdd01ef066bc6cf2
+"""Constitutional Hash: 608508a9bd224290
 ACGS-2 Runtime Security - Permission Scoper
 Facilitates dynamic, task-specific token generation for autonomous agents.
 Enforces the principle of least privilege.

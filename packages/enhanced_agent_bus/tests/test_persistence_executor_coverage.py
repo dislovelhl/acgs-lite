@@ -1,7 +1,7 @@
 """
 Targeted coverage tests for persistence/executor.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers previously uncovered lines:
 - WorkflowContext properties (tenant_id, input)

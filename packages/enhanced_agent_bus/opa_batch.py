@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - OPA Batch Operations
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 High-performance batch OPA policy evaluation optimization.
 Implements Phase 4-Task 3 acceptance criteria:
@@ -85,7 +85,7 @@ class OPABatchClient:
     - Metrics collection for observability
     - Fail-closed error handling for security
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

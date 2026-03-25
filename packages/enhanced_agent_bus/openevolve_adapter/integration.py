@@ -1,6 +1,6 @@
 """
 OpenEvolve Governance Adapter — MessageProcessor Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides ``EvolutionMessageHandler`` — a handler that plugs into
 ``MessageProcessor`` via ``register_handler`` to process
@@ -30,7 +30,7 @@ Message payload contract (``AgentMessage.metadata``)::
 
     {
         "candidate_id":           str,
-        "constitutional_hash":    str,          # must equal cdd01ef066bc6cf2
+        "constitutional_hash":    str,          # must equal 608508a9bd224290
         "risk_tier":              str,          # "low"|"medium"|"high"|"critical"
         "proposed_rollout_stage": str,          # "canary"|"shadow"|"partial"|"full"
         "performance_score":      float,        # 0.0 – 1.0
@@ -81,7 +81,7 @@ logger = get_logger(__name__)
 try:
     from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
-    CONSTITUTIONAL_HASH = "cdd01ef066bc6cf2"  # pragma: allowlist secret
+    CONSTITUTIONAL_HASH = "608508a9bd224290"  # pragma: allowlist secret
 
 
 def _build_validation_result(

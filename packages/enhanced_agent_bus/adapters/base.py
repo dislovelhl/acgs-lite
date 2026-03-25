@@ -1,6 +1,6 @@
 """
 ACGS-2 Model-Agnostic Adapter Framework
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Base adapter interface for AI model integration.
 Enables governance across any AI model without code changes.
@@ -158,7 +158,7 @@ class ModelAdapter(ABC):
     - Error handling
     - Streaming support
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

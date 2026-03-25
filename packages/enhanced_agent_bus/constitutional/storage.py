@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Constitutional Storage Layer (Facade)
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Storage service for persisting constitutional versions with Redis caching
 and PostgreSQL persistence. Supports atomic version transitions with locking.
@@ -33,7 +33,7 @@ class ConstitutionalStorageService:
     """
     Facade for constitutional storage service (Backward Compatible).
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
