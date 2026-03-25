@@ -1,6 +1,6 @@
 """
 ACGS-2 Coverage Tests - Batch 28e
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets uncovered lines in:
 1. enhanced_agent_bus/api/routes/governance.py
@@ -590,10 +590,14 @@ class TestGovernanceRoutes:
         resp = MACIRecordResponse(record_id="r1", status="created")
         assert resp.status == "created"
 
-    def test_get_enforcement_config_returns_none(self) -> None:
+    async def test_get_enforcement_config_returns_none(self) -> None:
+        from unittest.mock import MagicMock
+
         from enhanced_agent_bus.api.routes.governance import _get_enforcement_config
 
-        assert _get_enforcement_config() is None
+        mock_request = MagicMock()
+        mock_request.app.state = None
+        assert await _get_enforcement_config(mock_request) is None
 
     async def test_get_stability_metrics_no_governance(self) -> None:
         from fastapi import HTTPException

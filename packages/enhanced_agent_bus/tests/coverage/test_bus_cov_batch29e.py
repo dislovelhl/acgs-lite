@@ -6,7 +6,7 @@ Coverage tests for batch 29e:
 - enhanced_agent_bus/api/routes/governance.py (governance routes)
 - acgs_lite/integrations/llamaindex.py (governed query/chat engines)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -751,10 +751,14 @@ class TestGovernanceRoutes:
         resp = MACIRecordResponse(record_id="r1", status="created")
         assert resp.status == "created"
 
-    def test_get_enforcement_config_returns_none(self):
+    async def test_get_enforcement_config_returns_none(self):
+        from unittest.mock import MagicMock
+
         from enhanced_agent_bus.api.routes.governance import _get_enforcement_config
 
-        assert _get_enforcement_config() is None
+        mock_request = MagicMock()
+        mock_request.app.state = None
+        assert await _get_enforcement_config(mock_request) is None
 
 
 class TestGovernanceRoutesIntegration:

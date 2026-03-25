@@ -365,7 +365,7 @@ class OPAClientCore:
 
     def _get_embedded_executor(self) -> ThreadPoolExecutor:
         """Return a dedicated executor for embedded OPA evaluations."""
-        if self._embedded_executor is None:
+        if getattr(self, "_embedded_executor", None) is None:
             self._embedded_executor = ThreadPoolExecutor(
                 max_workers=1,
                 thread_name_prefix="opa-embedded",
@@ -374,7 +374,7 @@ class OPAClientCore:
 
     def _shutdown_embedded_executor(self) -> None:
         """Tear down the dedicated embedded OPA executor."""
-        if self._embedded_executor is None:
+        if getattr(self, "_embedded_executor", None) is None:
             return
         self._embedded_executor.shutdown(wait=False, cancel_futures=True)
         self._embedded_executor = None
