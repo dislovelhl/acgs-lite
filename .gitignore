@@ -119,3 +119,4 @@ src/fix_imports.py
 src/split_engine.py
 .gstack/
 .python-version
+.github/workflows/docs-pdf.yml
