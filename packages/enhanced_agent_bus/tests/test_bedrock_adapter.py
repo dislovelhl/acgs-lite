@@ -150,9 +150,7 @@ class TestBuildRequestBody:
 
     def test_anthropic_body_with_stop(self):
         adapter = _adapter("anthropic.claude-sonnet-4-6-v1:0")
-        body_str = adapter._build_request_body(
-            _messages(), stop=["END"], top_k=10
-        )
+        body_str = adapter._build_request_body(_messages(), stop=["END"], top_k=10)
         body = json.loads(body_str)
         assert body["stop_sequences"] == ["END"]
         assert body["top_k"] == 10
@@ -418,9 +416,7 @@ class TestMisc:
 
     def test_build_streaming_params(self):
         adapter = _adapter()
-        params = adapter._build_streaming_params(
-            _messages(), 0.7, 100, 1.0, None
-        )
+        params = adapter._build_streaming_params(_messages(), 0.7, 100, 1.0, None)
         assert params["modelId"] == adapter.model
         assert "body" in params
 
@@ -429,9 +425,7 @@ class TestMisc:
         cfg.guardrails_id = "g1"
         cfg.guardrails_version = "v1"
         adapter = BedrockAdapter(config=cfg)
-        params = adapter._build_streaming_params(
-            _messages(), 0.7, 100, 1.0, None
-        )
+        params = adapter._build_streaming_params(_messages(), 0.7, 100, 1.0, None)
         assert params["guardrailIdentifier"] == "g1"
 
     def test_format_generic_prompt(self):

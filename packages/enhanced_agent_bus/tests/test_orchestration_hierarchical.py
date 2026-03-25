@@ -153,26 +153,20 @@ class TestSupervisorNode:
     @pytest.mark.asyncio
     async def test_critique_result_passes(self, supervisor):
         output = {"result": "something", "worker_id": "w1"}
-        critique = await supervisor.critique_result(
-            Task(task_id="t1", description="x"), output
-        )
+        critique = await supervisor.critique_result(Task(task_id="t1", description="x"), output)
         assert critique["is_passed"] is True
         assert critique["score"] == 1.0
 
     @pytest.mark.asyncio
     async def test_critique_result_no_result(self, supervisor):
         output = {"worker_id": "w1"}
-        critique = await supervisor.critique_result(
-            Task(task_id="t1", description="x"), output
-        )
+        critique = await supervisor.critique_result(Task(task_id="t1", description="x"), output)
         assert critique["is_passed"] is False
 
     @pytest.mark.asyncio
     async def test_critique_result_with_error(self, supervisor):
         output = {"result": "partial", "error": "timeout", "worker_id": "w1"}
-        critique = await supervisor.critique_result(
-            Task(task_id="t1", description="x"), output
-        )
+        critique = await supervisor.critique_result(Task(task_id="t1", description="x"), output)
         assert critique["is_passed"] is False
         assert critique["score"] == 0.3
 

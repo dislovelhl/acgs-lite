@@ -486,9 +486,7 @@ class ConstitutionalClassifierV2:
 
         return self.config.threshold
 
-    def _extract_policy_patterns(
-        self, policy_result: "PolicyResolutionResult" | None
-    ) -> list[str]:
+    def _extract_policy_patterns(self, policy_result: "PolicyResolutionResult" | None) -> list[str]:
         """Extract custom patterns from policy."""
         if not policy_result or not policy_result.policy:
             return []

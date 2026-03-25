@@ -114,6 +114,7 @@ def _review_api_patch(name: str, value=_MISSING, **kwargs):
 # Helpers
 # ============================================================================
 
+
 def _make_amendment(
     *,
     status: AmendmentStatus = AmendmentStatus.UNDER_REVIEW,
@@ -632,7 +633,9 @@ class TestOCIRegistryClientMisc:
         assert client._client is mock
 
     def test_get_stats(self):
-        client = OCIRegistryClient("https://registry.example.com", registry_type=RegistryType.HARBOR)
+        client = OCIRegistryClient(
+            "https://registry.example.com", registry_type=RegistryType.HARBOR
+        )
         stats = client.get_stats()
         assert stats["pushes"] == 0
         assert stats["type"] == "harbor"
@@ -968,12 +971,17 @@ class TestListAmendmentsEndpoint:
         amendment = _make_amendment()
         mock_storage.list_amendments.return_value = ([amendment], 1)
 
-        with _review_api_patch("ConstitutionalStorageService",
+        with _review_api_patch(
+            "ConstitutionalStorageService",
             return_value=mock_storage,
         ):
             result = await list_amendments(
-                status="proposed", proposer_agent_id=None,
-                limit=10, offset=0, order_by="created_at", order="asc",
+                status="proposed",
+                proposer_agent_id=None,
+                limit=10,
+                offset=0,
+                order_by="created_at",
+                order="asc",
             )
             assert isinstance(result, AmendmentListResponse)
             assert result.total == 1
@@ -982,12 +990,17 @@ class TestListAmendmentsEndpoint:
         mock_storage = AsyncMock()
         mock_storage.list_amendments.return_value = ([], 0)
 
-        with _review_api_patch("ConstitutionalStorageService",
+        with _review_api_patch(
+            "ConstitutionalStorageService",
             return_value=mock_storage,
         ):
             result = await list_amendments(
-                status=None, proposer_agent_id="agent-1",
-                limit=50, offset=0, order_by="created_at", order="desc",
+                status=None,
+                proposer_agent_id="agent-1",
+                limit=50,
+                offset=0,
+                order_by="created_at",
+                order="desc",
             )
             assert result.total == 0
 
@@ -995,13 +1008,18 @@ class TestListAmendmentsEndpoint:
         mock_storage = AsyncMock()
         mock_storage.connect.side_effect = RuntimeError("DB down")
 
-        with _review_api_patch("ConstitutionalStorageService",
+        with _review_api_patch(
+            "ConstitutionalStorageService",
             return_value=mock_storage,
         ):
             with pytest.raises(Exception) as exc_info:
                 await list_amendments(
-                    status=None, proposer_agent_id=None,
-                    limit=50, offset=0, order_by="created_at", order="desc",
+                    status=None,
+                    proposer_agent_id=None,
+                    limit=50,
+                    offset=0,
+                    order_by="created_at",
+                    order="desc",
                 )
             assert exc_info.value.status_code == 500
 
@@ -1024,10 +1042,15 @@ class TestGetAmendmentEndpoint:
         mock_diff_engine = AsyncMock()
         mock_diff_engine.compute_diff_from_content.return_value = mock_diff_obj
 
-        with _review_api_patch("ConstitutionalStorageService",
-            return_value=mock_storage,
-        ), _review_api_patch("ConstitutionalDiffEngine",
-            return_value=mock_diff_engine,
+        with (
+            _review_api_patch(
+                "ConstitutionalStorageService",
+                return_value=mock_storage,
+            ),
+            _review_api_patch(
+                "ConstitutionalDiffEngine",
+                return_value=mock_diff_engine,
+            ),
         ):
             result = await get_amendment("amend-1", include_diff=True, include_target_version=True)
             assert isinstance(result, AmendmentDetailResponse)
@@ -1045,10 +1068,15 @@ class TestGetAmendmentEndpoint:
         mock_diff_engine = AsyncMock()
         mock_diff_engine.compute_diff.return_value = _make_semantic_diff()
 
-        with _review_api_patch("ConstitutionalStorageService",
-            return_value=mock_storage,
-        ), _review_api_patch("ConstitutionalDiffEngine",
-            return_value=mock_diff_engine,
+        with (
+            _review_api_patch(
+                "ConstitutionalStorageService",
+                return_value=mock_storage,
+            ),
+            _review_api_patch(
+                "ConstitutionalDiffEngine",
+                return_value=mock_diff_engine,
+            ),
         ):
             result = await get_amendment("amend-1", include_diff=True, include_target_version=True)
             assert result.diff is not None
@@ -1058,7 +1086,8 @@ class TestGetAmendmentEndpoint:
         mock_storage = AsyncMock()
         mock_storage.get_amendment.return_value = amendment
 
-        with _review_api_patch("ConstitutionalStorageService",
+        with _review_api_patch(
+            "ConstitutionalStorageService",
             return_value=mock_storage,
         ):
             result = await get_amendment(
@@ -1071,7 +1100,8 @@ class TestGetAmendmentEndpoint:
         mock_storage = AsyncMock()
         mock_storage.get_amendment.return_value = None
 
-        with _review_api_patch("ConstitutionalStorageService",
+        with _review_api_patch(
+            "ConstitutionalStorageService",
             return_value=mock_storage,
         ):
             with pytest.raises(Exception) as exc_info:
@@ -1082,7 +1112,8 @@ class TestGetAmendmentEndpoint:
         mock_storage = AsyncMock()
         mock_storage.connect.side_effect = RuntimeError("DB error")
 
-        with _review_api_patch("ConstitutionalStorageService",
+        with _review_api_patch(
+            "ConstitutionalStorageService",
             return_value=mock_storage,
         ):
             with pytest.raises(Exception) as exc_info:
@@ -1109,23 +1140,38 @@ class TestApproveAmendmentEndpoint:
         mock_chain_config.required_approvals = 1
         mock_hitl._determine_approval_chain.return_value = mock_chain_config
 
-        with _review_api_patch("ConstitutionalStorageService",
-            return_value=mock_storage,
-        ), _review_api_patch("MACIEnforcer",
-            return_value=mock_maci,
-        ), _review_api_patch("ConstitutionalHITLIntegration",
-            return_value=mock_hitl,
+        with (
+            _review_api_patch(
+                "ConstitutionalStorageService",
+                return_value=mock_storage,
+            ),
+            _review_api_patch(
+                "MACIEnforcer",
+                return_value=mock_maci,
+            ),
+            _review_api_patch(
+                "ConstitutionalHITLIntegration",
+                return_value=mock_hitl,
+            ),
         ):
             mock_audit = AsyncMock()
-            with _review_api_patch("AuditClient",
-                return_value=mock_audit,
-            ), _review_api_patch("AuditClientConfig",
+            with (
+                _review_api_patch(
+                    "AuditClient",
+                    return_value=mock_audit,
+                ),
+                _review_api_patch(
+                    "AuditClientConfig",
+                ),
             ):
                 req = ApprovalRequest(approver_agent_id="judicial-agent")
                 result = await approve_amendment("amend-1", req, x_agent_id="judicial-agent")
                 assert isinstance(result, ApprovalResponse)
                 assert result.success is True
-                assert "fully approved" in result.next_steps[0].lower() or "approved" in result.message.lower()
+                assert (
+                    "fully approved" in result.next_steps[0].lower()
+                    or "approved" in result.message.lower()
+                )
 
     async def test_approve_pending_more_approvals(self):
         amendment = _make_amendment(
@@ -1143,15 +1189,26 @@ class TestApproveAmendmentEndpoint:
         mock_chain_config.required_approvals = 3
         mock_hitl._determine_approval_chain.return_value = mock_chain_config
 
-        with _review_api_patch("ConstitutionalStorageService",
-            return_value=mock_storage,
-        ), _review_api_patch("MACIEnforcer",
-            return_value=mock_maci,
-        ), _review_api_patch("ConstitutionalHITLIntegration",
-            return_value=mock_hitl,
-        ), _review_api_patch("AuditClient",
-            return_value=AsyncMock(),
-        ), _review_api_patch("AuditClientConfig",
+        with (
+            _review_api_patch(
+                "ConstitutionalStorageService",
+                return_value=mock_storage,
+            ),
+            _review_api_patch(
+                "MACIEnforcer",
+                return_value=mock_maci,
+            ),
+            _review_api_patch(
+                "ConstitutionalHITLIntegration",
+                return_value=mock_hitl,
+            ),
+            _review_api_patch(
+                "AuditClient",
+                return_value=AsyncMock(),
+            ),
+            _review_api_patch(
+                "AuditClientConfig",
+            ),
         ):
             req = ApprovalRequest(approver_agent_id="judicial-agent")
             result = await approve_amendment("amend-1", req, x_agent_id=None)
@@ -1162,7 +1219,8 @@ class TestApproveAmendmentEndpoint:
         mock_maci = AsyncMock()
         mock_maci.validate_action.return_value = {"allowed": False}
 
-        with _review_api_patch("MACIEnforcer",
+        with _review_api_patch(
+            "MACIEnforcer",
             return_value=mock_maci,
         ):
             req = ApprovalRequest(approver_agent_id="bad-agent")
@@ -1177,13 +1235,22 @@ class TestApproveAmendmentEndpoint:
         mock_maci = AsyncMock()
         mock_maci.validate_action.return_value = {"allowed": True}
 
-        with _review_api_patch("ConstitutionalStorageService",
-            return_value=mock_storage,
-        ), _review_api_patch("MACIEnforcer",
-            return_value=mock_maci,
-        ), _review_api_patch("AuditClient",
-            return_value=AsyncMock(),
-        ), _review_api_patch("AuditClientConfig",
+        with (
+            _review_api_patch(
+                "ConstitutionalStorageService",
+                return_value=mock_storage,
+            ),
+            _review_api_patch(
+                "MACIEnforcer",
+                return_value=mock_maci,
+            ),
+            _review_api_patch(
+                "AuditClient",
+                return_value=AsyncMock(),
+            ),
+            _review_api_patch(
+                "AuditClientConfig",
+            ),
         ):
             req = ApprovalRequest(approver_agent_id="judicial-agent")
             with pytest.raises(Exception) as exc_info:
@@ -1198,14 +1265,25 @@ class TestApproveAmendmentEndpoint:
         mock_maci = AsyncMock()
         mock_maci.validate_action.return_value = {"allowed": True}
 
-        with _review_api_patch("ConstitutionalStorageService",
-            return_value=mock_storage,
-        ), _review_api_patch("MACIEnforcer",
-            return_value=mock_maci,
-        ), _review_api_patch("AuditClient",
-            return_value=AsyncMock(),
-        ), _review_api_patch("AuditClientConfig",
-        ), _review_api_patch("ConstitutionalHITLIntegration",
+        with (
+            _review_api_patch(
+                "ConstitutionalStorageService",
+                return_value=mock_storage,
+            ),
+            _review_api_patch(
+                "MACIEnforcer",
+                return_value=mock_maci,
+            ),
+            _review_api_patch(
+                "AuditClient",
+                return_value=AsyncMock(),
+            ),
+            _review_api_patch(
+                "AuditClientConfig",
+            ),
+            _review_api_patch(
+                "ConstitutionalHITLIntegration",
+            ),
         ):
             req = ApprovalRequest(approver_agent_id="judicial-agent")
             with pytest.raises(Exception) as exc_info:
@@ -1219,10 +1297,15 @@ class TestApproveAmendmentEndpoint:
         mock_storage = AsyncMock()
         mock_storage.connect.side_effect = RuntimeError("boom")
 
-        with _review_api_patch("MACIEnforcer",
-            return_value=mock_maci,
-        ), _review_api_patch("ConstitutionalStorageService",
-            return_value=mock_storage,
+        with (
+            _review_api_patch(
+                "MACIEnforcer",
+                return_value=mock_maci,
+            ),
+            _review_api_patch(
+                "ConstitutionalStorageService",
+                return_value=mock_storage,
+            ),
         ):
             req = ApprovalRequest(approver_agent_id="judicial-agent")
             with pytest.raises(Exception) as exc_info:
@@ -1241,13 +1324,22 @@ class TestRejectAmendmentEndpoint:
         mock_maci = AsyncMock()
         mock_maci.validate_action.return_value = {"allowed": True}
 
-        with _review_api_patch("ConstitutionalStorageService",
-            return_value=mock_storage,
-        ), _review_api_patch("MACIEnforcer",
-            return_value=mock_maci,
-        ), _review_api_patch("AuditClient",
-            return_value=AsyncMock(),
-        ), _review_api_patch("AuditClientConfig",
+        with (
+            _review_api_patch(
+                "ConstitutionalStorageService",
+                return_value=mock_storage,
+            ),
+            _review_api_patch(
+                "MACIEnforcer",
+                return_value=mock_maci,
+            ),
+            _review_api_patch(
+                "AuditClient",
+                return_value=AsyncMock(),
+            ),
+            _review_api_patch(
+                "AuditClientConfig",
+            ),
         ):
             req = RejectionRequest(
                 rejector_agent_id="judicial-agent",
@@ -1263,7 +1355,8 @@ class TestRejectAmendmentEndpoint:
         mock_maci = AsyncMock()
         mock_maci.validate_action.return_value = {"allowed": False}
 
-        with _review_api_patch("MACIEnforcer",
+        with _review_api_patch(
+            "MACIEnforcer",
             return_value=mock_maci,
         ):
             req = RejectionRequest(
@@ -1281,13 +1374,22 @@ class TestRejectAmendmentEndpoint:
         mock_maci = AsyncMock()
         mock_maci.validate_action.return_value = {"allowed": True}
 
-        with _review_api_patch("ConstitutionalStorageService",
-            return_value=mock_storage,
-        ), _review_api_patch("MACIEnforcer",
-            return_value=mock_maci,
-        ), _review_api_patch("AuditClient",
-            return_value=AsyncMock(),
-        ), _review_api_patch("AuditClientConfig",
+        with (
+            _review_api_patch(
+                "ConstitutionalStorageService",
+                return_value=mock_storage,
+            ),
+            _review_api_patch(
+                "MACIEnforcer",
+                return_value=mock_maci,
+            ),
+            _review_api_patch(
+                "AuditClient",
+                return_value=AsyncMock(),
+            ),
+            _review_api_patch(
+                "AuditClientConfig",
+            ),
         ):
             req = RejectionRequest(
                 rejector_agent_id="judicial-agent",
@@ -1305,13 +1407,22 @@ class TestRejectAmendmentEndpoint:
         mock_maci = AsyncMock()
         mock_maci.validate_action.return_value = {"allowed": True}
 
-        with _review_api_patch("ConstitutionalStorageService",
-            return_value=mock_storage,
-        ), _review_api_patch("MACIEnforcer",
-            return_value=mock_maci,
-        ), _review_api_patch("AuditClient",
-            return_value=AsyncMock(),
-        ), _review_api_patch("AuditClientConfig",
+        with (
+            _review_api_patch(
+                "ConstitutionalStorageService",
+                return_value=mock_storage,
+            ),
+            _review_api_patch(
+                "MACIEnforcer",
+                return_value=mock_maci,
+            ),
+            _review_api_patch(
+                "AuditClient",
+                return_value=AsyncMock(),
+            ),
+            _review_api_patch(
+                "AuditClientConfig",
+            ),
         ):
             req = RejectionRequest(
                 rejector_agent_id="judicial-agent",
@@ -1328,10 +1439,15 @@ class TestRejectAmendmentEndpoint:
         mock_storage = AsyncMock()
         mock_storage.connect.side_effect = RuntimeError("DB exploded")
 
-        with _review_api_patch("MACIEnforcer",
-            return_value=mock_maci,
-        ), _review_api_patch("ConstitutionalStorageService",
-            return_value=mock_storage,
+        with (
+            _review_api_patch(
+                "MACIEnforcer",
+                return_value=mock_maci,
+            ),
+            _review_api_patch(
+                "ConstitutionalStorageService",
+                return_value=mock_storage,
+            ),
         ):
             req = RejectionRequest(
                 rejector_agent_id="judicial-agent",
@@ -1350,13 +1466,22 @@ class TestRejectAmendmentEndpoint:
         mock_maci = AsyncMock()
         mock_maci.validate_action.return_value = {"allowed": True}
 
-        with _review_api_patch("ConstitutionalStorageService",
-            return_value=mock_storage,
-        ), _review_api_patch("MACIEnforcer",
-            return_value=mock_maci,
-        ), _review_api_patch("AuditClient",
-            return_value=AsyncMock(),
-        ), _review_api_patch("AuditClientConfig",
+        with (
+            _review_api_patch(
+                "ConstitutionalStorageService",
+                return_value=mock_storage,
+            ),
+            _review_api_patch(
+                "MACIEnforcer",
+                return_value=mock_maci,
+            ),
+            _review_api_patch(
+                "AuditClient",
+                return_value=AsyncMock(),
+            ),
+            _review_api_patch(
+                "AuditClientConfig",
+            ),
         ):
             req = RejectionRequest(
                 rejector_agent_id="body-agent",
@@ -1367,7 +1492,10 @@ class TestRejectAmendmentEndpoint:
             # MACI was called with header agent
             mock_maci.validate_action.assert_awaited_once()
             call_kwargs = mock_maci.validate_action.call_args
-            assert call_kwargs.kwargs.get("agent_id") == "header-agent" or call_kwargs[1].get("agent_id") == "header-agent"
+            assert (
+                call_kwargs.kwargs.get("agent_id") == "header-agent"
+                or call_kwargs[1].get("agent_id") == "header-agent"
+            )
 
 
 class TestRollbackEndpoint:
@@ -1387,7 +1515,8 @@ class TestRollbackEndpoint:
         mock_maci = AsyncMock()
         mock_maci.validate_action.return_value = {"allowed": False}
 
-        with _review_api_patch("MACIEnforcer",
+        with _review_api_patch(
+            "MACIEnforcer",
             return_value=mock_maci,
         ):
             req = RollbackRequest(
@@ -1405,13 +1534,22 @@ class TestRollbackEndpoint:
         mock_storage = AsyncMock()
         mock_storage.get_version.return_value = None
 
-        with _review_api_patch("MACIEnforcer",
-            return_value=mock_maci,
-        ), _review_api_patch("ConstitutionalStorageService",
-            return_value=mock_storage,
-        ), _review_api_patch("AuditClient",
-            return_value=AsyncMock(),
-        ), _review_api_patch("AuditClientConfig",
+        with (
+            _review_api_patch(
+                "MACIEnforcer",
+                return_value=mock_maci,
+            ),
+            _review_api_patch(
+                "ConstitutionalStorageService",
+                return_value=mock_storage,
+            ),
+            _review_api_patch(
+                "AuditClient",
+                return_value=AsyncMock(),
+            ),
+            _review_api_patch(
+                "AuditClientConfig",
+            ),
         ):
             req = RollbackRequest(
                 requester_agent_id="judicial-agent",
@@ -1430,13 +1568,22 @@ class TestRollbackEndpoint:
         mock_storage.get_version.return_value = target_version
         mock_storage.get_active_version.return_value = None
 
-        with _review_api_patch("MACIEnforcer",
-            return_value=mock_maci,
-        ), _review_api_patch("ConstitutionalStorageService",
-            return_value=mock_storage,
-        ), _review_api_patch("AuditClient",
-            return_value=AsyncMock(),
-        ), _review_api_patch("AuditClientConfig",
+        with (
+            _review_api_patch(
+                "MACIEnforcer",
+                return_value=mock_maci,
+            ),
+            _review_api_patch(
+                "ConstitutionalStorageService",
+                return_value=mock_storage,
+            ),
+            _review_api_patch(
+                "AuditClient",
+                return_value=AsyncMock(),
+            ),
+            _review_api_patch(
+                "AuditClientConfig",
+            ),
         ):
             req = RollbackRequest(
                 requester_agent_id="judicial-agent",
@@ -1455,13 +1602,22 @@ class TestRollbackEndpoint:
         mock_storage.get_version.return_value = version
         mock_storage.get_active_version.return_value = version
 
-        with _review_api_patch("MACIEnforcer",
-            return_value=mock_maci,
-        ), _review_api_patch("ConstitutionalStorageService",
-            return_value=mock_storage,
-        ), _review_api_patch("AuditClient",
-            return_value=AsyncMock(),
-        ), _review_api_patch("AuditClientConfig",
+        with (
+            _review_api_patch(
+                "MACIEnforcer",
+                return_value=mock_maci,
+            ),
+            _review_api_patch(
+                "ConstitutionalStorageService",
+                return_value=mock_storage,
+            ),
+            _review_api_patch(
+                "AuditClient",
+                return_value=AsyncMock(),
+            ),
+            _review_api_patch(
+                "AuditClientConfig",
+            ),
         ):
             req = RollbackRequest(
                 requester_agent_id="judicial-agent",
@@ -1491,22 +1647,39 @@ class TestRollbackEndpoint:
         mock_saga_result = MagicMock()
         mock_saga_result.status.value = "completed"
 
-        with _review_api_patch("MACIEnforcer",
-            return_value=mock_maci,
-        ), _review_api_patch("ConstitutionalStorageService",
-            return_value=mock_storage,
-        ), _review_api_patch("ConstitutionalDiffEngine",
-            return_value=mock_diff_engine,
-        ), _review_api_patch("GovernanceMetricsCollector",
-            return_value=mock_metrics,
-        ), _review_api_patch("DegradationDetector",
-            return_value=mock_degradation,
-        ), _review_api_patch("rollback_amendment",
-            new_callable=AsyncMock,
-            return_value=mock_saga_result,
-        ), _review_api_patch("AuditClient",
-            return_value=AsyncMock(),
-        ), _review_api_patch("AuditClientConfig",
+        with (
+            _review_api_patch(
+                "MACIEnforcer",
+                return_value=mock_maci,
+            ),
+            _review_api_patch(
+                "ConstitutionalStorageService",
+                return_value=mock_storage,
+            ),
+            _review_api_patch(
+                "ConstitutionalDiffEngine",
+                return_value=mock_diff_engine,
+            ),
+            _review_api_patch(
+                "GovernanceMetricsCollector",
+                return_value=mock_metrics,
+            ),
+            _review_api_patch(
+                "DegradationDetector",
+                return_value=mock_degradation,
+            ),
+            _review_api_patch(
+                "rollback_amendment",
+                new_callable=AsyncMock,
+                return_value=mock_saga_result,
+            ),
+            _review_api_patch(
+                "AuditClient",
+                return_value=AsyncMock(),
+            ),
+            _review_api_patch(
+                "AuditClientConfig",
+            ),
         ):
             req = RollbackRequest(
                 requester_agent_id="judicial-agent",
@@ -1539,22 +1712,39 @@ class TestRollbackEndpoint:
         mock_saga_result.status.value = "failed"
         mock_saga_result.errors = ["Saga step failed"]
 
-        with _review_api_patch("MACIEnforcer",
-            return_value=mock_maci,
-        ), _review_api_patch("ConstitutionalStorageService",
-            return_value=mock_storage,
-        ), _review_api_patch("ConstitutionalDiffEngine",
-            return_value=mock_diff_engine,
-        ), _review_api_patch("GovernanceMetricsCollector",
-            return_value=mock_metrics,
-        ), _review_api_patch("DegradationDetector",
-            return_value=mock_degradation,
-        ), _review_api_patch("rollback_amendment",
-            new_callable=AsyncMock,
-            return_value=mock_saga_result,
-        ), _review_api_patch("AuditClient",
-            return_value=AsyncMock(),
-        ), _review_api_patch("AuditClientConfig",
+        with (
+            _review_api_patch(
+                "MACIEnforcer",
+                return_value=mock_maci,
+            ),
+            _review_api_patch(
+                "ConstitutionalStorageService",
+                return_value=mock_storage,
+            ),
+            _review_api_patch(
+                "ConstitutionalDiffEngine",
+                return_value=mock_diff_engine,
+            ),
+            _review_api_patch(
+                "GovernanceMetricsCollector",
+                return_value=mock_metrics,
+            ),
+            _review_api_patch(
+                "DegradationDetector",
+                return_value=mock_degradation,
+            ),
+            _review_api_patch(
+                "rollback_amendment",
+                new_callable=AsyncMock,
+                return_value=mock_saga_result,
+            ),
+            _review_api_patch(
+                "AuditClient",
+                return_value=AsyncMock(),
+            ),
+            _review_api_patch(
+                "AuditClientConfig",
+            ),
         ):
             req = RollbackRequest(
                 requester_agent_id="judicial-agent",
@@ -1571,13 +1761,22 @@ class TestRollbackEndpoint:
         mock_storage = AsyncMock()
         mock_storage.connect.side_effect = RuntimeError("connection failed")
 
-        with _review_api_patch("MACIEnforcer",
-            return_value=mock_maci,
-        ), _review_api_patch("ConstitutionalStorageService",
-            return_value=mock_storage,
-        ), _review_api_patch("AuditClient",
-            return_value=AsyncMock(),
-        ), _review_api_patch("AuditClientConfig",
+        with (
+            _review_api_patch(
+                "MACIEnforcer",
+                return_value=mock_maci,
+            ),
+            _review_api_patch(
+                "ConstitutionalStorageService",
+                return_value=mock_storage,
+            ),
+            _review_api_patch(
+                "AuditClient",
+                return_value=AsyncMock(),
+            ),
+            _review_api_patch(
+                "AuditClientConfig",
+            ),
         ):
             req = RollbackRequest(
                 requester_agent_id="judicial-agent",

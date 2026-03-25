@@ -425,9 +425,7 @@ class TestMessageSecurityScanner:
         mock_result = MagicMock()
         mock_result.blocked = False
         mock_result.events = []
-        with patch(
-            "enhanced_agent_bus.security_scanner.get_runtime_security_scanner"
-        ) as mock_get:
+        with patch("enhanced_agent_bus.security_scanner.get_runtime_security_scanner") as mock_get:
             mock_scanner = AsyncMock()
             mock_scanner.scan = AsyncMock(return_value=mock_result)
             mock_get.return_value = mock_scanner
@@ -448,9 +446,7 @@ class TestMessageSecurityScanner:
         mock_event = MagicMock()
         mock_event.to_dict.return_value = {"type": "block"}
         mock_result.events = [mock_event]
-        with patch(
-            "enhanced_agent_bus.security_scanner.get_runtime_security_scanner"
-        ) as mock_get:
+        with patch("enhanced_agent_bus.security_scanner.get_runtime_security_scanner") as mock_get:
             mock_scanner = AsyncMock()
             mock_scanner.scan = AsyncMock(return_value=mock_result)
             mock_get.return_value = mock_scanner
@@ -519,9 +515,7 @@ class TestMessageSecurityScanner:
         event1 = MagicMock()
         event1.to_dict.return_value = {"type": "threat", "score": 0.9}
         mock_result.events = [event1]
-        with patch(
-            "enhanced_agent_bus.security_scanner.get_runtime_security_scanner"
-        ) as mock_get:
+        with patch("enhanced_agent_bus.security_scanner.get_runtime_security_scanner") as mock_get:
             mock_scanner = AsyncMock()
             mock_scanner.scan = AsyncMock(return_value=mock_result)
             mock_get.return_value = mock_scanner

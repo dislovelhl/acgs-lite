@@ -205,9 +205,7 @@ class ChatHistory(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
-    def add_message(
-        self, role: str, content: str, metadata: dict | None = None
-    ) -> None:
+    def add_message(self, role: str, content: str, metadata: dict | None = None) -> None:
         msg = ChatMessage(role=role, content=content, metadata=metadata or {})
         self.messages.append(msg)
         self.updated_at = datetime.now(UTC)

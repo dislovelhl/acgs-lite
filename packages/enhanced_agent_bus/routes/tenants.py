@@ -204,8 +204,7 @@ JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "")
 JWT_ALGORITHM = os.environ.get("JWT_ALGORITHM", "RS256")
 if JWT_ALGORITHM not in _ALLOWED_JWT_ALGORITHMS:
     raise ValueError(
-        f"Unsupported JWT_ALGORITHM={JWT_ALGORITHM!r}. "
-        f"Allowed: {sorted(_ALLOWED_JWT_ALGORITHMS)}"
+        f"Unsupported JWT_ALGORITHM={JWT_ALGORITHM!r}. Allowed: {sorted(_ALLOWED_JWT_ALGORITHMS)}"
     )
 JWT_ISSUER = os.environ.get("JWT_ISSUER", "acgs2-agent-runtime")
 JWT_AUDIENCE = os.environ.get("JWT_AUDIENCE", "acgs2-services")

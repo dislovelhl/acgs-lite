@@ -205,9 +205,7 @@ class TestDatabaseTenantRepository:
 
     # -- CRUD: create_tenant ------------------------------------------------
 
-    async def test_create_tenant_duplicate_slug(
-        self, repo: Any, mock_session: AsyncMock
-    ) -> None:
+    async def test_create_tenant_duplicate_slug(self, repo: Any, mock_session: AsyncMock) -> None:
         result_mock = MagicMock()
         result_mock.scalar_one_or_none.return_value = SimpleNamespace(slug="dup")
         mock_session.execute.return_value = result_mock
@@ -215,9 +213,7 @@ class TestDatabaseTenantRepository:
         with pytest.raises(ValueError, match="already exists"):
             await repo.create_tenant(name="Dup", slug="dup")
 
-    async def test_create_tenant_success(
-        self, repo: Any, mock_session: AsyncMock
-    ) -> None:
+    async def test_create_tenant_success(self, repo: Any, mock_session: AsyncMock) -> None:
         from enhanced_agent_bus.multi_tenancy.orm_models import TenantStatusEnum
 
         # First call: check slug -> no existing
@@ -266,9 +262,7 @@ class TestDatabaseTenantRepository:
 
     # -- CRUD: get_tenant ---------------------------------------------------
 
-    async def test_get_tenant_found(
-        self, repo: Any, mock_session: AsyncMock
-    ) -> None:
+    async def test_get_tenant_found(self, repo: Any, mock_session: AsyncMock) -> None:
         from enhanced_agent_bus.multi_tenancy.orm_models import TenantStatusEnum
 
         now = datetime.now(UTC)
@@ -294,9 +288,7 @@ class TestDatabaseTenantRepository:
         assert tenant is not None
         assert tenant.tenant_id == "t1"
 
-    async def test_get_tenant_not_found(
-        self, repo: Any, mock_session: AsyncMock
-    ) -> None:
+    async def test_get_tenant_not_found(self, repo: Any, mock_session: AsyncMock) -> None:
         result_mock = MagicMock()
         result_mock.scalar_one_or_none.return_value = None
         mock_session.execute.return_value = result_mock
@@ -304,9 +296,7 @@ class TestDatabaseTenantRepository:
         tenant = await repo.get_tenant("missing")
         assert tenant is None
 
-    async def test_get_tenant_cache_hit(
-        self, repo_cached: Any, mock_session: AsyncMock
-    ) -> None:
+    async def test_get_tenant_cache_hit(self, repo_cached: Any, mock_session: AsyncMock) -> None:
         repo_cached._tenant_cache.get_async = AsyncMock(
             return_value={"tenant_id": "c1", "name": "Cached", "slug": "ca-ch"}
         )
@@ -317,9 +307,7 @@ class TestDatabaseTenantRepository:
 
     # -- CRUD: get_tenant_by_slug -------------------------------------------
 
-    async def test_get_tenant_by_slug_found(
-        self, repo: Any, mock_session: AsyncMock
-    ) -> None:
+    async def test_get_tenant_by_slug_found(self, repo: Any, mock_session: AsyncMock) -> None:
         from enhanced_agent_bus.multi_tenancy.orm_models import TenantStatusEnum
 
         now = datetime.now(UTC)
@@ -345,9 +333,7 @@ class TestDatabaseTenantRepository:
         assert tenant is not None
         assert tenant.slug == "by-slug"
 
-    async def test_get_tenant_by_slug_not_found(
-        self, repo: Any, mock_session: AsyncMock
-    ) -> None:
+    async def test_get_tenant_by_slug_not_found(self, repo: Any, mock_session: AsyncMock) -> None:
         result_mock = MagicMock()
         result_mock.scalar_one_or_none.return_value = None
         mock_session.execute.return_value = result_mock
@@ -367,9 +353,7 @@ class TestDatabaseTenantRepository:
 
     # -- list_tenants -------------------------------------------------------
 
-    async def test_list_tenants_no_status(
-        self, repo: Any, mock_session: AsyncMock
-    ) -> None:
+    async def test_list_tenants_no_status(self, repo: Any, mock_session: AsyncMock) -> None:
         from enhanced_agent_bus.multi_tenancy.orm_models import TenantStatusEnum
 
         now = datetime.now(UTC)
@@ -397,9 +381,7 @@ class TestDatabaseTenantRepository:
         assert len(tenants) == 1
         assert tenants[0].name == "List1"
 
-    async def test_list_tenants_with_status(
-        self, repo: Any, mock_session: AsyncMock
-    ) -> None:
+    async def test_list_tenants_with_status(self, repo: Any, mock_session: AsyncMock) -> None:
         from enhanced_agent_bus.multi_tenancy.models import TenantStatus
 
         scalars_mock = MagicMock()
@@ -411,9 +393,7 @@ class TestDatabaseTenantRepository:
         tenants = await repo.list_tenants(status=TenantStatus.ACTIVE)
         assert tenants == []
 
-    async def test_list_tenants_offset(
-        self, repo: Any, mock_session: AsyncMock
-    ) -> None:
+    async def test_list_tenants_offset(self, repo: Any, mock_session: AsyncMock) -> None:
         scalars_mock = MagicMock()
         scalars_mock.all.return_value = []
         result_mock = MagicMock()
@@ -425,9 +405,7 @@ class TestDatabaseTenantRepository:
 
     # -- activate_tenant ----------------------------------------------------
 
-    async def test_activate_tenant_found(
-        self, repo: Any, mock_session: AsyncMock
-    ) -> None:
+    async def test_activate_tenant_found(self, repo: Any, mock_session: AsyncMock) -> None:
         from enhanced_agent_bus.multi_tenancy.orm_models import TenantStatusEnum
 
         now = datetime.now(UTC)
@@ -453,9 +431,7 @@ class TestDatabaseTenantRepository:
         assert tenant is not None
         assert orm.status == TenantStatusEnum.ACTIVE
 
-    async def test_activate_tenant_not_found(
-        self, repo: Any, mock_session: AsyncMock
-    ) -> None:
+    async def test_activate_tenant_not_found(self, repo: Any, mock_session: AsyncMock) -> None:
         result_mock = MagicMock()
         result_mock.scalar_one_or_none.return_value = None
         mock_session.execute.return_value = result_mock
@@ -465,9 +441,7 @@ class TestDatabaseTenantRepository:
 
     # -- suspend_tenant -----------------------------------------------------
 
-    async def test_suspend_tenant_found(
-        self, repo: Any, mock_session: AsyncMock
-    ) -> None:
+    async def test_suspend_tenant_found(self, repo: Any, mock_session: AsyncMock) -> None:
         from enhanced_agent_bus.multi_tenancy.orm_models import TenantStatusEnum
 
         now = datetime.now(UTC)
@@ -493,9 +467,7 @@ class TestDatabaseTenantRepository:
         assert tenant is not None
         assert orm.status == TenantStatusEnum.SUSPENDED
 
-    async def test_suspend_tenant_not_found(
-        self, repo: Any, mock_session: AsyncMock
-    ) -> None:
+    async def test_suspend_tenant_not_found(self, repo: Any, mock_session: AsyncMock) -> None:
         result_mock = MagicMock()
         result_mock.scalar_one_or_none.return_value = None
         mock_session.execute.return_value = result_mock
@@ -505,9 +477,7 @@ class TestDatabaseTenantRepository:
 
     # -- delete_tenant ------------------------------------------------------
 
-    async def test_delete_tenant_found(
-        self, repo: Any, mock_session: AsyncMock
-    ) -> None:
+    async def test_delete_tenant_found(self, repo: Any, mock_session: AsyncMock) -> None:
         orm = SimpleNamespace(tenant_id="d1", slug="del-one")
         result_mock = MagicMock()
         result_mock.scalar_one_or_none.return_value = orm
@@ -517,9 +487,7 @@ class TestDatabaseTenantRepository:
         assert deleted is True
         mock_session.delete.assert_awaited()
 
-    async def test_delete_tenant_not_found(
-        self, repo: Any, mock_session: AsyncMock
-    ) -> None:
+    async def test_delete_tenant_not_found(self, repo: Any, mock_session: AsyncMock) -> None:
         result_mock = MagicMock()
         result_mock.scalar_one_or_none.return_value = None
         mock_session.execute.return_value = result_mock
@@ -559,9 +527,7 @@ class TestDatabaseTenantRepository:
         result_mock.scalars.return_value = scalars_mock
         mock_session.execute.return_value = result_mock
 
-        tenants = await repo.create_tenants_bulk_optimized(
-            [{"name": "Bulk1", "slug": "bulk-one"}]
-        )
+        tenants = await repo.create_tenants_bulk_optimized([{"name": "Bulk1", "slug": "bulk-one"}])
         assert len(tenants) == 1
         mock_bulk_insert.assert_awaited_once()
 
@@ -570,12 +536,8 @@ class TestDatabaseTenantRepository:
         new_callable=AsyncMock,
         return_value=3,
     )
-    async def test_update_tenants_bulk(
-        self, mock_bulk_update: AsyncMock, repo: Any
-    ) -> None:
-        count = await repo.update_tenants_bulk(
-            [{"tenant_id": "t1", "status": "active"}]
-        )
+    async def test_update_tenants_bulk(self, mock_bulk_update: AsyncMock, repo: Any) -> None:
+        count = await repo.update_tenants_bulk([{"tenant_id": "t1", "status": "active"}])
         assert count == 3
         mock_bulk_update.assert_awaited_once()
 
@@ -584,9 +546,7 @@ class TestDatabaseTenantRepository:
         new_callable=AsyncMock,
         return_value=2,
     )
-    async def test_delete_tenants_bulk(
-        self, mock_bulk_delete: AsyncMock, repo: Any
-    ) -> None:
+    async def test_delete_tenants_bulk(self, mock_bulk_delete: AsyncMock, repo: Any) -> None:
         count = await repo.delete_tenants_bulk(["t1", "t2"])
         assert count == 2
         mock_bulk_delete.assert_awaited_once()
@@ -605,9 +565,7 @@ class TestDatabaseTenantRepository:
 
     # -- count_tenants ------------------------------------------------------
 
-    async def test_count_tenants_all(
-        self, repo: Any, mock_session: AsyncMock
-    ) -> None:
+    async def test_count_tenants_all(self, repo: Any, mock_session: AsyncMock) -> None:
         result_mock = MagicMock()
         result_mock.scalar.return_value = 42
         mock_session.execute.return_value = result_mock
@@ -615,9 +573,7 @@ class TestDatabaseTenantRepository:
         count = await repo.count_tenants()
         assert count == 42
 
-    async def test_count_tenants_by_status(
-        self, repo: Any, mock_session: AsyncMock
-    ) -> None:
+    async def test_count_tenants_by_status(self, repo: Any, mock_session: AsyncMock) -> None:
         from enhanced_agent_bus.multi_tenancy.models import TenantStatus
 
         result_mock = MagicMock()
@@ -627,9 +583,7 @@ class TestDatabaseTenantRepository:
         count = await repo.count_tenants(status=TenantStatus.SUSPENDED)
         assert count == 5
 
-    async def test_count_tenants_none_result(
-        self, repo: Any, mock_session: AsyncMock
-    ) -> None:
+    async def test_count_tenants_none_result(self, repo: Any, mock_session: AsyncMock) -> None:
         result_mock = MagicMock()
         result_mock.scalar.return_value = None
         mock_session.execute.return_value = result_mock
@@ -649,9 +603,7 @@ class TestDatabaseTenantRepository:
         count = await repo.count_tenants_by_parent("p1")
         assert count == 3
 
-    async def test_count_tenants_by_parent_root(
-        self, repo: Any, mock_session: AsyncMock
-    ) -> None:
+    async def test_count_tenants_by_parent_root(self, repo: Any, mock_session: AsyncMock) -> None:
         result_mock = MagicMock()
         result_mock.scalar.return_value = 10
         mock_session.execute.return_value = result_mock
@@ -667,9 +619,7 @@ class TestDatabaseTenantRepository:
         )
 
         now = datetime.now(UTC)
-        s = TenantSummary(
-            tenant_id="t1", name="S", slug="ss", status="active", created_at=now
-        )
+        s = TenantSummary(tenant_id="t1", name="S", slug="ss", status="active", created_at=now)
         assert s.tenant_id == "t1"
         with pytest.raises(AttributeError):
             s.name = "changed"  # type: ignore[misc]
@@ -736,9 +686,7 @@ class TestOPAClientCore:
     def test_init_embedded_without_sdk(self) -> None:
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
-        with patch(
-            "enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=False
-        ):
+        with patch("enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=False):
             c = OPAClientCore(mode="embedded", enable_cache=False)
             assert c.mode == "http"  # falls back
 
@@ -908,9 +856,7 @@ class TestOPAClientCore:
     # -- _evaluate_fallback -------------------------------------------------
 
     async def test_evaluate_fallback_wrong_hash(self, client: Any) -> None:
-        r = await client._evaluate_fallback(
-            {"constitutional_hash": "wrong"}, "data.acgs.allow"
-        )
+        r = await client._evaluate_fallback({"constitutional_hash": "wrong"}, "data.acgs.allow")
         assert r["allowed"] is False
         assert "Invalid constitutional hash" in r["reason"]
 
@@ -947,9 +893,7 @@ class TestOPAClientCore:
             mode="fallback",
             enable_cache=False,
         )
-        r = await c.evaluate_policy(
-            {"constitutional_hash": "wrong"}, "data.acgs.allow"
-        )
+        r = await c.evaluate_policy({"constitutional_hash": "wrong"}, "data.acgs.allow")
         assert r["allowed"] is False
 
     async def test_evaluate_policy_validation_error(self) -> None:
@@ -984,9 +928,7 @@ class TestOPAClientCore:
         from httpx import ConnectError as HTTPConnectError
 
         mock_http = AsyncMock()
-        mock_http.put = AsyncMock(
-            side_effect=HTTPConnectError("conn refused")
-        )
+        mock_http.put = AsyncMock(side_effect=HTTPConnectError("conn refused"))
         http_client._http_client = mock_http
 
         result = await http_client.load_policy("p1", "package test")
@@ -1005,9 +947,7 @@ class TestOPAClientCore:
 
     async def test_close_event_loop_closed(self, http_client: Any) -> None:
         mock_http = AsyncMock()
-        mock_http.aclose = AsyncMock(
-            side_effect=RuntimeError("Event loop is closed")
-        )
+        mock_http.aclose = AsyncMock(side_effect=RuntimeError("Event loop is closed"))
         http_client._http_client = mock_http
         http_client._redis_client = None
 
@@ -1016,9 +956,7 @@ class TestOPAClientCore:
 
     async def test_close_redis_event_loop_closed(self, client: Any) -> None:
         mock_redis = AsyncMock()
-        mock_redis.close = AsyncMock(
-            side_effect=RuntimeError("Event loop is closed")
-        )
+        mock_redis.close = AsyncMock(side_effect=RuntimeError("Event loop is closed"))
         client._http_client = None
         client._redis_client = mock_redis
 
@@ -1149,9 +1087,7 @@ class TestOPAClientCore:
     async def test_validate_constitutional_opa_error(self, client: Any) -> None:
         from enhanced_agent_bus.exceptions import OPAConnectionError
 
-        client.evaluate_policy = AsyncMock(
-            side_effect=OPAConnectionError("localhost", "down")
-        )
+        client.evaluate_policy = AsyncMock(side_effect=OPAConnectionError("localhost", "down"))
         client._is_multi_path_candidate_generation_enabled = MagicMock(return_value=False)
         result = await client.validate_constitutional({"content": "test"})
         assert result.is_valid is False
@@ -1173,9 +1109,7 @@ class TestOPAClientCore:
     async def test_check_authorization_opa_error(self, client: Any) -> None:
         from enhanced_agent_bus.exceptions import OPAConnectionError
 
-        client.evaluate_policy = AsyncMock(
-            side_effect=OPAConnectionError("localhost", "down")
-        )
+        client.evaluate_policy = AsyncMock(side_effect=OPAConnectionError("localhost", "down"))
         client._is_multi_path_candidate_generation_enabled = MagicMock(return_value=False)
         result = await client.check_agent_authorization("a1", "read", "res1")
         assert result is False
@@ -1277,7 +1211,11 @@ class TestImpactScorer:
         scorer._loco_client.is_available = True
 
         # Patch the property
-        with patch.object(type(scorer), "loco_operator_available", new_callable=lambda: property(lambda self: True)):
+        with patch.object(
+            type(scorer),
+            "loco_operator_available",
+            new_callable=lambda: property(lambda self: True),
+        ):
             result = await scorer._score_with_loco_operator("action", {})
             assert result == {"score": 0.8}
 
@@ -1296,32 +1234,24 @@ class TestImpactScorer:
         assert score > 0.3
 
     def test_calculate_impact_score_critical_priority(self, scorer: Any) -> None:
-        score = scorer.calculate_impact_score(
-            {"content": "test", "priority": "critical"}
-        )
+        score = scorer.calculate_impact_score({"content": "test", "priority": "critical"})
         from enhanced_agent_bus.governance_constants import IMPACT_CRITICAL_FLOOR
 
         assert score >= IMPACT_CRITICAL_FLOOR
 
     def test_calculate_impact_score_with_context_priority(self, scorer: Any) -> None:
-        score = scorer.calculate_impact_score(
-            {"content": "test"}, {"priority": "high"}
-        )
+        score = scorer.calculate_impact_score({"content": "test"}, {"priority": "high"})
         assert 0.0 <= score <= 1.0
 
     def test_calculate_impact_score_with_priority_enum(self, scorer: Any) -> None:
         priority = SimpleNamespace(name="CRITICAL")
-        score = scorer.calculate_impact_score(
-            {"content": "test", "priority": priority}
-        )
+        score = scorer.calculate_impact_score({"content": "test", "priority": priority})
         from enhanced_agent_bus.governance_constants import IMPACT_CRITICAL_FLOOR
 
         assert score >= IMPACT_CRITICAL_FLOOR
 
     def test_calculate_impact_score_semantic_override(self, scorer: Any) -> None:
-        score = scorer.calculate_impact_score(
-            {"content": "test"}, {"semantic_override": 0.95}
-        )
+        score = scorer.calculate_impact_score({"content": "test"}, {"semantic_override": 0.95})
         # semantic_override >= 0.9 triggers high-semantic floor
         from enhanced_agent_bus.governance_constants import IMPACT_HIGH_SEMANTIC_FLOOR
 
@@ -1475,9 +1405,7 @@ class TestImpactScorer:
         assert scorer._get_keyword_score("security breach") == 0.75
 
     def test_keyword_score_many(self, scorer: Any) -> None:
-        score = scorer._get_keyword_score(
-            "security breach exploit vulnerability attack threat"
-        )
+        score = scorer._get_keyword_score("security breach exploit vulnerability attack threat")
         assert score >= 0.75
 
     # -- _calculate_priority_factor -----------------------------------------
@@ -1576,9 +1504,7 @@ class TestImpactScorer:
             scorer.batch_score_impact([{"content": "a"}], [{}, {}])
 
     def test_score_messages_batch_no_onnx(self, scorer: Any) -> None:
-        scores = scorer.score_messages_batch(
-            [{"content": "hello"}, {"content": "security"}]
-        )
+        scores = scorer.score_messages_batch([{"content": "hello"}, {"content": "security"}])
         assert len(scores) == 2
 
     # -- reset_history ------------------------------------------------------

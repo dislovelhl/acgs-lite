@@ -5,7 +5,6 @@ Constitutional Hash: 608508a9bd224290
 Task 7.7: DELETE /tenants/{tenant_id}/integrations/{integration_id} with audit archival
 """
 
-
 from .conftest import (
     CONSTITUTIONAL_HASH,
     IntegrationType,

@@ -220,25 +220,19 @@ class TestConstraintGenerator:
 
     @pytest.mark.asyncio
     async def test_generate_obligation_shall(self, generator):
-        constraints = await generator.generate_constraints(
-            "The system shall log all actions."
-        )
+        constraints = await generator.generate_constraints("The system shall log all actions.")
         assert len(constraints) == 1
         assert "Obligation" in constraints[0].name
 
     @pytest.mark.asyncio
     async def test_generate_obligation_required(self, generator):
-        constraints = await generator.generate_constraints(
-            "Encryption is required for all data."
-        )
+        constraints = await generator.generate_constraints("Encryption is required for all data.")
         assert len(constraints) == 1
         assert "Obligation" in constraints[0].name
 
     @pytest.mark.asyncio
     async def test_generate_prohibition_cannot(self, generator):
-        constraints = await generator.generate_constraints(
-            "Agents cannot share private keys."
-        )
+        constraints = await generator.generate_constraints("Agents cannot share private keys.")
         assert len(constraints) == 1
         assert "Prohibition" in constraints[0].name
         assert constraints[0].confidence == 0.90
@@ -249,18 +243,14 @@ class TestConstraintGenerator:
         # "must not" contains "must" which also matches obligation pattern.
         # The iteration order of the dict means "must" is checked before "must not",
         # so this sentence actually generates an Obligation constraint.
-        constraints = await generator.generate_constraints(
-            "The system must not expose secrets."
-        )
+        constraints = await generator.generate_constraints("The system must not expose secrets.")
         assert len(constraints) == 1
         # Pattern matching picks "must" first due to dict iteration order
         assert "Obligation" in constraints[0].name
 
     @pytest.mark.asyncio
     async def test_generate_prohibition_forbidden(self, generator):
-        constraints = await generator.generate_constraints(
-            "Direct database access is forbidden."
-        )
+        constraints = await generator.generate_constraints("Direct database access is forbidden.")
         assert len(constraints) == 1
         assert "Prohibition" in constraints[0].name
 
@@ -277,25 +267,19 @@ class TestConstraintGenerator:
 
     @pytest.mark.asyncio
     async def test_generate_permission_can(self, generator):
-        constraints = await generator.generate_constraints(
-            "Users can opt out of telemetry."
-        )
+        constraints = await generator.generate_constraints("Users can opt out of telemetry.")
         assert len(constraints) == 1
         assert "Permission" in constraints[0].name
 
     @pytest.mark.asyncio
     async def test_generate_permission_optional(self, generator):
-        constraints = await generator.generate_constraints(
-            "Logging verbosity is optional."
-        )
+        constraints = await generator.generate_constraints("Logging verbosity is optional.")
         assert len(constraints) == 1
         assert "Permission" in constraints[0].name
 
     @pytest.mark.asyncio
     async def test_generate_comparison_greater_than(self, generator):
-        constraints = await generator.generate_constraints(
-            "Score must be greater than 80."
-        )
+        constraints = await generator.generate_constraints("Score must be greater than 80.")
         # "must" also matches but comparison patterns are checked first
         assert len(constraints) >= 1
         comp = [c for c in constraints if "Comparison" in c.name]
@@ -306,9 +290,7 @@ class TestConstraintGenerator:
 
     @pytest.mark.asyncio
     async def test_generate_comparison_less_than(self, generator):
-        constraints = await generator.generate_constraints(
-            "Latency must be less than 100 ms."
-        )
+        constraints = await generator.generate_constraints("Latency must be less than 100 ms.")
         comp = [c for c in constraints if "Comparison" in c.name]
         assert len(comp) == 1
         assert "<=" in comp[0].expression
@@ -316,25 +298,19 @@ class TestConstraintGenerator:
 
     @pytest.mark.asyncio
     async def test_generate_comparison_at_least(self, generator):
-        constraints = await generator.generate_constraints(
-            "Coverage at least 80 percent."
-        )
+        constraints = await generator.generate_constraints("Coverage at least 80 percent.")
         assert len(constraints) == 1
         assert ">=" in constraints[0].expression
 
     @pytest.mark.asyncio
     async def test_generate_comparison_at_most(self, generator):
-        constraints = await generator.generate_constraints(
-            "Errors at most 5 per hour."
-        )
+        constraints = await generator.generate_constraints("Errors at most 5 per hour.")
         assert len(constraints) == 1
         assert "<=" in constraints[0].expression
 
     @pytest.mark.asyncio
     async def test_generate_comparison_no_number(self, generator):
-        constraints = await generator.generate_constraints(
-            "Throughput greater than expected."
-        )
+        constraints = await generator.generate_constraints("Throughput greater than expected.")
         comp = [c for c in constraints if "Comparison" in c.name]
         assert len(comp) == 1
         # No number => threshold defaults to 0
@@ -347,9 +323,7 @@ class TestConstraintGenerator:
 
     @pytest.mark.asyncio
     async def test_no_matching_patterns(self, generator):
-        constraints = await generator.generate_constraints(
-            "The sky is blue. Water is wet."
-        )
+        constraints = await generator.generate_constraints("The sky is blue. Water is wet.")
         assert constraints == []
 
     @pytest.mark.asyncio

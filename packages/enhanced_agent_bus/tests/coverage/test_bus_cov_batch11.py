@@ -521,9 +521,7 @@ class TestEvaluateGovernanceDecision:
 
     async def test_evaluate_fallback_on_error(self):
         engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
-        engine.impact_scorer.assess_impact = AsyncMock(
-            side_effect=RuntimeError("scorer failed")
-        )
+        engine.impact_scorer.assess_impact = AsyncMock(side_effect=RuntimeError("scorer failed"))
         decision = await engine.evaluate_governance_decision({}, {})
         assert decision.action_allowed is False
         assert "failed" in decision.reasoning.lower()
@@ -692,12 +690,15 @@ class TestValidateEngine:
         engine_path.write_bytes(b"x" * 100)
         opt = TensorRTOptimizer(cache_dir=tmp_path)
         mock_trt = MagicMock()
-        with patch(
-            "enhanced_agent_bus.deliberation_layer.tensorrt_optimizer.TENSORRT_AVAILABLE",
-            True,
-        ), patch(
-            "enhanced_agent_bus.deliberation_layer.tensorrt_optimizer.trt",
-            mock_trt,
+        with (
+            patch(
+                "enhanced_agent_bus.deliberation_layer.tensorrt_optimizer.TENSORRT_AVAILABLE",
+                True,
+            ),
+            patch(
+                "enhanced_agent_bus.deliberation_layer.tensorrt_optimizer.trt",
+                mock_trt,
+            ),
         ):
             assert opt.validate_engine(engine_path) is False
 
@@ -877,29 +878,54 @@ class TestExtractMessageContent:
 
 class TestIsSelfValidation:
     def test_same_author(self):
-        assert _is_self_validation(
-            "agent-1", "output-1", {"output_author": "agent-1"},
-        ) is True
+        assert (
+            _is_self_validation(
+                "agent-1",
+                "output-1",
+                {"output_author": "agent-1"},
+            )
+            is True
+        )
 
     def test_different_author(self):
-        assert _is_self_validation(
-            "agent-1", "output-1", {"output_author": "agent-2"},
-        ) is False
+        assert (
+            _is_self_validation(
+                "agent-1",
+                "output-1",
+                {"output_author": "agent-2"},
+            )
+            is False
+        )
 
     def test_agent_in_target_id(self):
-        assert _is_self_validation(
-            "agent-1", "output-by-agent-1-123", {},
-        ) is True
+        assert (
+            _is_self_validation(
+                "agent-1",
+                "output-by-agent-1-123",
+                {},
+            )
+            is True
+        )
 
     def test_agent_not_in_target_id(self):
-        assert _is_self_validation(
-            "agent-1", "output-by-agent-2-123", {},
-        ) is False
+        assert (
+            _is_self_validation(
+                "agent-1",
+                "output-by-agent-2-123",
+                {},
+            )
+            is False
+        )
 
     def test_no_output_author_no_match(self):
-        assert _is_self_validation(
-            "agent-1", "unrelated-output", {},
-        ) is False
+        assert (
+            _is_self_validation(
+                "agent-1",
+                "unrelated-output",
+                {},
+            )
+            is False
+        )
 
 
 class TestCheckEnforcementForCreate:
@@ -1091,19 +1117,23 @@ class TestValidateMaciRecordPqc:
         assert any("Missing required" in e for e in result.errors)
 
     async def test_missing_single_field(self):
-        result = await validate_maci_record_pqc({
-            "agent_id": "a1",
-            "action": "validate",
-        })
+        result = await validate_maci_record_pqc(
+            {
+                "agent_id": "a1",
+                "action": "validate",
+            }
+        )
         assert result.valid is False
         assert any("timestamp" in e for e in result.errors)
 
     async def test_valid_record_classical(self):
-        result = await validate_maci_record_pqc({
-            "agent_id": "agent-1",
-            "action": "validate",
-            "timestamp": "2024-01-01T00:00:00Z",
-        })
+        result = await validate_maci_record_pqc(
+            {
+                "agent_id": "agent-1",
+                "action": "validate",
+                "timestamp": "2024-01-01T00:00:00Z",
+            }
+        )
         assert result.valid is True
 
     async def test_hash_mismatch(self):
@@ -1120,13 +1150,15 @@ class TestValidateMaciRecordPqc:
         assert any("hash mismatch" in e.lower() for e in result.errors)
 
     async def test_self_validation_detected(self):
-        result = await validate_maci_record_pqc({
-            "agent_id": "agent-1",
-            "action": "validate",
-            "timestamp": "2024-01-01T00:00:00Z",
-            "target_output_id": "output-1",
-            "output_author": "agent-1",
-        })
+        result = await validate_maci_record_pqc(
+            {
+                "agent_id": "agent-1",
+                "action": "validate",
+                "timestamp": "2024-01-01T00:00:00Z",
+                "target_output_id": "output-1",
+                "output_author": "agent-1",
+            }
+        )
         assert result.valid is False
         assert any("Self-validation" in e for e in result.errors)
 
@@ -1146,11 +1178,13 @@ class TestValidateMaciRecordPqc:
         assert result.pqc_metadata.verification_mode == "classical_only"
 
     async def test_no_pqc_metadata_without_config(self):
-        result = await validate_maci_record_pqc({
-            "agent_id": "agent-1",
-            "action": "validate",
-            "timestamp": "2024-01-01T00:00:00Z",
-        })
+        result = await validate_maci_record_pqc(
+            {
+                "agent_id": "agent-1",
+                "action": "validate",
+                "timestamp": "2024-01-01T00:00:00Z",
+            }
+        )
         assert result.valid is True
         assert result.pqc_metadata is None
 

@@ -170,16 +170,12 @@ class TestGetOrCreateMetric:
             "enhanced_agent_bus.transaction_coordinator_metrics.PROMETHEUS_AVAILABLE",
             True,
         ):
-            with patch.object(
-                Gauge, "__init__", side_effect=ValueError("already registered")
-            ):
+            with patch.object(Gauge, "__init__", side_effect=ValueError("already registered")):
                 with patch(
                     "enhanced_agent_bus.transaction_coordinator_metrics.REGISTRY",
                     None,
                 ):
-                    result = _get_or_create_metric(
-                        Gauge, "__test_dup_gauge", "doc"
-                    )
+                    result = _get_or_create_metric(Gauge, "__test_dup_gauge", "doc")
                     assert isinstance(result, _NoOpGauge)
         _METRICS_CACHE.pop(cache_key, None)
 
@@ -198,16 +194,12 @@ class TestGetOrCreateMetric:
             "enhanced_agent_bus.transaction_coordinator_metrics.PROMETHEUS_AVAILABLE",
             True,
         ):
-            with patch.object(
-                Counter, "__init__", side_effect=ValueError("already registered")
-            ):
+            with patch.object(Counter, "__init__", side_effect=ValueError("already registered")):
                 with patch(
                     "enhanced_agent_bus.transaction_coordinator_metrics.REGISTRY",
                     None,
                 ):
-                    result = _get_or_create_metric(
-                        Counter, "__test_dup_counter", "doc"
-                    )
+                    result = _get_or_create_metric(Counter, "__test_dup_counter", "doc")
                     assert isinstance(result, _NoOpCounter)
         _METRICS_CACHE.pop(cache_key, None)
 
@@ -230,16 +222,12 @@ class TestGetOrCreateMetric:
             "enhanced_agent_bus.transaction_coordinator_metrics.PROMETHEUS_AVAILABLE",
             True,
         ):
-            with patch.object(
-                Counter, "__init__", side_effect=ValueError("Duplicated timeseries")
-            ):
+            with patch.object(Counter, "__init__", side_effect=ValueError("Duplicated timeseries")):
                 with patch(
                     "enhanced_agent_bus.transaction_coordinator_metrics.REGISTRY",
                     mock_registry,
                 ):
-                    result = _get_or_create_metric(
-                        Counter, "__test_registry_lookup", "doc"
-                    )
+                    result = _get_or_create_metric(Counter, "__test_registry_lookup", "doc")
                     assert result is mock_collector
         _METRICS_CACHE.pop(cache_key, None)
 
@@ -263,16 +251,12 @@ class TestGetOrCreateMetric:
             "enhanced_agent_bus.transaction_coordinator_metrics.PROMETHEUS_AVAILABLE",
             True,
         ):
-            with patch.object(
-                Counter, "__init__", side_effect=ValueError("Duplicated timeseries")
-            ):
+            with patch.object(Counter, "__init__", side_effect=ValueError("Duplicated timeseries")):
                 with patch(
                     "enhanced_agent_bus.transaction_coordinator_metrics.REGISTRY",
                     mock_registry,
                 ):
-                    result = _get_or_create_metric(
-                        Counter, "__test_reg_attr_err", "doc"
-                    )
+                    result = _get_or_create_metric(Counter, "__test_reg_attr_err", "doc")
                     assert isinstance(result, _NoOpCounter)
         _METRICS_CACHE.pop(cache_key, None)
 
@@ -1100,23 +1084,17 @@ class TestImpactScorerMethods:
 
     def test_calculate_impact_score_critical_priority(self):
         scorer = self._make_scorer()
-        score = scorer.calculate_impact_score(
-            {"content": "hello", "priority": "critical"}, {}
-        )
+        score = scorer.calculate_impact_score({"content": "hello", "priority": "critical"}, {})
         assert score >= 0.7
 
     def test_calculate_impact_score_high_semantic(self):
         scorer = self._make_scorer()
-        score = scorer.calculate_impact_score(
-            {"content": "critical security breach exploit"}, {}
-        )
+        score = scorer.calculate_impact_score({"content": "critical security breach exploit"}, {})
         assert score >= 0.5
 
     def test_calculate_impact_score_semantic_override(self):
         scorer = self._make_scorer()
-        score = scorer.calculate_impact_score(
-            {"content": "hello"}, {"semantic_override": 0.95}
-        )
+        score = scorer.calculate_impact_score({"content": "hello"}, {"semantic_override": 0.95})
         assert score >= 0.5
 
     def test_calculate_impact_score_object_message(self):
@@ -1135,9 +1113,7 @@ class TestImpactScorerMethods:
         scorer = self._make_scorer()
         priority_enum = MagicMock()
         priority_enum.name = "CRITICAL"
-        score = scorer.calculate_impact_score(
-            {"content": "hello", "priority": priority_enum}, {}
-        )
+        score = scorer.calculate_impact_score({"content": "hello", "priority": priority_enum}, {})
         assert score >= 0.5
 
     def test_record_override(self):
@@ -1180,30 +1156,22 @@ class TestPermissionScore:
 
     def test_high_risk_tool(self):
         scorer = self._make_scorer()
-        score = scorer._calculate_permission_score(
-            {"tools": [{"name": "execute_command"}]}
-        )
+        score = scorer._calculate_permission_score({"tools": [{"name": "execute_command"}]})
         assert score >= 0.7
 
     def test_read_tool(self):
         scorer = self._make_scorer()
-        score = scorer._calculate_permission_score(
-            {"tools": [{"name": "read_file"}]}
-        )
+        score = scorer._calculate_permission_score({"tools": [{"name": "read_file"}]})
         assert score == 0.2
 
     def test_unknown_tool(self):
         scorer = self._make_scorer()
-        score = scorer._calculate_permission_score(
-            {"tools": [{"name": "custom_tool"}]}
-        )
+        score = scorer._calculate_permission_score({"tools": [{"name": "custom_tool"}]})
         assert score == 0.3
 
     def test_string_tool(self):
         scorer = self._make_scorer()
-        score = scorer._calculate_permission_score(
-            {"tools": ["shell_exec"]}
-        )
+        score = scorer._calculate_permission_score({"tools": ["shell_exec"]})
         assert score >= 0.7
 
     def test_object_message_tools(self):
@@ -1252,9 +1220,7 @@ class TestContextScore:
 
     def test_high_amount_payload(self):
         scorer = self._make_scorer()
-        score = scorer._calculate_context_score(
-            {"payload": {"amount": 50000}}, {}
-        )
+        score = scorer._calculate_context_score({"payload": {"amount": 50000}}, {})
         assert score >= 0.5
 
     def test_object_message_no_dict_payload(self):
@@ -1397,10 +1363,7 @@ class TestPriorityFactor:
     def test_priority_from_context(self):
         scorer = self._make_scorer()
         assert (
-            scorer._calculate_priority_factor(
-                {"priority": "low"}, {"priority": "critical"}
-            )
-            == 1.0
+            scorer._calculate_priority_factor({"priority": "low"}, {"priority": "critical"}) == 1.0
         )
 
     def test_priority_enum_with_value(self):
@@ -1432,9 +1395,7 @@ class TestExtractContent:
 
     def test_payload_message(self):
         scorer = self._make_scorer()
-        text = scorer._extract_text_content(
-            {"payload": {"message": "payload msg"}}
-        )
+        text = scorer._extract_text_content({"payload": {"message": "payload msg"}})
         assert "payload msg" in text
 
     def test_action_details_keys(self):
@@ -1447,16 +1408,12 @@ class TestExtractContent:
 
     def test_tool_names_dict(self):
         scorer = self._make_scorer()
-        text = scorer._extract_text_content(
-            {"tools": [{"name": "my_tool"}]}
-        )
+        text = scorer._extract_text_content({"tools": [{"name": "my_tool"}]})
         assert "my_tool" in text
 
     def test_tool_names_string(self):
         scorer = self._make_scorer()
-        text = scorer._extract_text_content(
-            {"tools": ["str_tool"]}
-        )
+        text = scorer._extract_text_content({"tools": ["str_tool"]})
         assert "str_tool" in text
 
     def test_tool_names_from_object(self):

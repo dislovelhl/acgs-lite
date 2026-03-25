@@ -45,10 +45,7 @@ class IFCLabel:
 
     def can_flow_to(self, target: "IFCLabel") -> bool:
         """Bell-LaPadula + Biba style flow check."""
-        return (
-            target.confidentiality >= self.confidentiality
-            and self.integrity >= target.integrity
-        )
+        return target.confidentiality >= self.confidentiality and self.integrity >= target.integrity
 
     def to_dict(self) -> dict[str, int]:
         """Serialize the label as integer enum values."""

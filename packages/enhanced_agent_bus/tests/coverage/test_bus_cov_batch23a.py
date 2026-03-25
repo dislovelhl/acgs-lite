@@ -550,9 +550,7 @@ class TestAdaptiveGovernanceEngine:
 
     async def test_evaluate_governance_decision_error(self, engine):
         """Runtime error during evaluation returns conservative fallback."""
-        engine.impact_scorer.assess_impact = AsyncMock(
-            side_effect=RuntimeError("scorer down")
-        )
+        engine.impact_scorer.assess_impact = AsyncMock(side_effect=RuntimeError("scorer down"))
 
         message = {"content": "test"}
         context = {}
@@ -689,9 +687,7 @@ class TestAdaptiveGovernanceEngine:
     def test_update_metrics_compliance_rate(self, engine):
         """Compliance rate calculated from recent decisions."""
         for i in range(10):
-            engine.decision_history.append(
-                _make_decision(confidence_score=0.9 if i < 8 else 0.5)
-            )
+            engine.decision_history.append(_make_decision(confidence_score=0.9 if i < 8 else 0.5))
         decision = _make_decision(confidence_score=0.9)
         engine._update_metrics(decision, 0.01)
         assert engine.metrics.constitutional_compliance_rate > 0.5
@@ -730,9 +726,7 @@ class TestAdaptiveGovernanceEngine:
     def test_provide_feedback_error_handled(self, engine):
         """Error during feedback processing is caught."""
         decision = _make_decision()
-        engine.threshold_manager.update_model = MagicMock(
-            side_effect=RuntimeError("db error")
-        )
+        engine.threshold_manager.update_model = MagicMock(side_effect=RuntimeError("db error"))
         # Should not raise
         engine.provide_feedback(decision, outcome_success=True)
 
@@ -902,15 +896,9 @@ class TestAdaptiveGovernanceEngine:
 
     def test_get_trajectory_prefix_with_history(self, engine):
         """Returns list of state indices from recent decisions."""
-        engine.decision_history.append(
-            _make_decision(impact_level=ImpactLevel.NEGLIGIBLE)
-        )
-        engine.decision_history.append(
-            _make_decision(impact_level=ImpactLevel.LOW)
-        )
-        engine.decision_history.append(
-            _make_decision(impact_level=ImpactLevel.HIGH)
-        )
+        engine.decision_history.append(_make_decision(impact_level=ImpactLevel.NEGLIGIBLE))
+        engine.decision_history.append(_make_decision(impact_level=ImpactLevel.LOW))
+        engine.decision_history.append(_make_decision(impact_level=ImpactLevel.HIGH))
 
         prefix = engine._get_trajectory_prefix()
         assert prefix == [0, 1, 3]

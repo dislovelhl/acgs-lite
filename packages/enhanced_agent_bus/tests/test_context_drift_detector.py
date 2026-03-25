@@ -21,8 +21,8 @@ from enhanced_agent_bus.security.context_drift_detector import (
 # Tests: DriftSeverity / DriftType enums
 # ---------------------------------------------------------------------------
 
-class TestEnums:
 
+class TestEnums:
     def test_severity_values(self):
         assert DriftSeverity.LOW.value == "low"
         assert DriftSeverity.MEDIUM.value == "medium"
@@ -42,8 +42,8 @@ class TestEnums:
 # Tests: DriftDetectionResult dataclass
 # ---------------------------------------------------------------------------
 
-class TestDriftDetectionResult:
 
+class TestDriftDetectionResult:
     def test_default_values(self):
         result = DriftDetectionResult(has_drift=False)
         assert result.has_drift is False
@@ -72,8 +72,8 @@ class TestDriftDetectionResult:
 # Tests: AgentProfile
 # ---------------------------------------------------------------------------
 
-class TestAgentProfile:
 
+class TestAgentProfile:
     def test_default_profile(self):
         profile = AgentProfile(agent_id="test")
         assert profile.agent_id == "test"
@@ -123,8 +123,8 @@ class TestAgentProfile:
 # Tests: ContextDriftDetector - initialization
 # ---------------------------------------------------------------------------
 
-class TestDetectorInit:
 
+class TestDetectorInit:
     def test_default_init(self):
         detector = ContextDriftDetector()
         assert detector.drift_threshold == 0.3
@@ -144,8 +144,8 @@ class TestDetectorInit:
 # Tests: update_profile
 # ---------------------------------------------------------------------------
 
-class TestUpdateProfile:
 
+class TestUpdateProfile:
     def test_creates_new_profile(self):
         detector = ContextDriftDetector()
         detector.update_profile("agent-1", 0.5)
@@ -179,7 +179,9 @@ class TestUpdateProfile:
 
     def test_none_optionals_are_safe(self):
         detector = ContextDriftDetector()
-        detector.update_profile("agent-1", 0.5, message_type=None, permissions=None, semantic_features=None)
+        detector.update_profile(
+            "agent-1", 0.5, message_type=None, permissions=None, semantic_features=None
+        )
         profile = detector.agent_profiles["agent-1"]
         assert profile.message_types == {}
         assert profile.permission_usage == {}
@@ -189,8 +191,8 @@ class TestUpdateProfile:
 # Tests: detect_drift
 # ---------------------------------------------------------------------------
 
-class TestDetectDrift:
 
+class TestDetectDrift:
     def test_no_profile_returns_no_drift(self):
         detector = ContextDriftDetector()
         result = detector.detect_drift("unknown-agent", 0.5)
@@ -234,6 +236,7 @@ class TestDetectDrift:
 
     def test_detects_impact_drift_with_varied_baseline(self):
         import random
+
         detector = ContextDriftDetector(min_samples=10)
         rng = random.Random(42)
         for _ in range(50):
@@ -249,8 +252,8 @@ class TestDetectDrift:
 # Tests: _detect_impact_drift
 # ---------------------------------------------------------------------------
 
-class TestDetectImpactDrift:
 
+class TestDetectImpactDrift:
     def test_returns_none_when_std_is_zero(self):
         detector = ContextDriftDetector()
         profile = AgentProfile(agent_id="a")
@@ -261,6 +264,7 @@ class TestDetectImpactDrift:
 
     def test_returns_none_for_small_deviation(self):
         import random
+
         detector = ContextDriftDetector()
         profile = AgentProfile(agent_id="a")
         rng = random.Random(42)
@@ -289,8 +293,8 @@ class TestDetectImpactDrift:
 # Tests: _detect_permission_drift
 # ---------------------------------------------------------------------------
 
-class TestDetectPermissionDrift:
 
+class TestDetectPermissionDrift:
     def test_returns_none_when_few_permissions(self):
         detector = ContextDriftDetector()
         profile = AgentProfile(agent_id="a")
@@ -318,8 +322,8 @@ class TestDetectPermissionDrift:
 # Tests: _detect_temporal_drift
 # ---------------------------------------------------------------------------
 
-class TestDetectTemporalDrift:
 
+class TestDetectTemporalDrift:
     def test_returns_none_with_few_samples(self):
         detector = ContextDriftDetector()
         profile = AgentProfile(agent_id="a")
@@ -347,8 +351,8 @@ class TestDetectTemporalDrift:
 # Tests: _severity_value
 # ---------------------------------------------------------------------------
 
-class TestSeverityValue:
 
+class TestSeverityValue:
     def test_ordering(self):
         assert ContextDriftDetector._severity_value(DriftSeverity.LOW) == 1
         assert ContextDriftDetector._severity_value(DriftSeverity.MEDIUM) == 2
@@ -363,8 +367,8 @@ class TestSeverityValue:
 # Tests: get_agent_profile / get_drift_summary
 # ---------------------------------------------------------------------------
 
-class TestGetters:
 
+class TestGetters:
     def test_get_agent_profile_exists(self):
         detector = ContextDriftDetector()
         detector.update_profile("agent-1", 0.5)
@@ -400,10 +404,20 @@ class TestGetters:
     def test_get_drift_summary_filtered_by_agent(self):
         detector = ContextDriftDetector()
         detector.detection_history.append(
-            DriftDetectionResult(has_drift=True, severity=DriftSeverity.LOW, drift_type=DriftType.VOLUME, agent_id="a")
+            DriftDetectionResult(
+                has_drift=True,
+                severity=DriftSeverity.LOW,
+                drift_type=DriftType.VOLUME,
+                agent_id="a",
+            )
         )
         detector.detection_history.append(
-            DriftDetectionResult(has_drift=True, severity=DriftSeverity.HIGH, drift_type=DriftType.IMPACT, agent_id="b")
+            DriftDetectionResult(
+                has_drift=True,
+                severity=DriftSeverity.HIGH,
+                drift_type=DriftType.IMPACT,
+                agent_id="b",
+            )
         )
         summary_a = detector.get_drift_summary(agent_id="a")
         assert summary_a["total_detections"] == 1

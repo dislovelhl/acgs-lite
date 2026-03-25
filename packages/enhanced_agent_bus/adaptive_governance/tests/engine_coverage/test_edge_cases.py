@@ -24,8 +24,7 @@ _IMPACT_MLFLOW = (
     "enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
 )
 _THRESH_MLFLOW = (
-    "enhanced_agent_bus.adaptive_governance.threshold_manager."
-    "AdaptiveThresholds._initialize_mlflow"
+    "enhanced_agent_bus.adaptive_governance.threshold_manager.AdaptiveThresholds._initialize_mlflow"
 )
 
 
@@ -77,28 +76,23 @@ def engine():
         patch(_IMPACT_MLFLOW),
         patch(_THRESH_MLFLOW),
         patch(
-            "enhanced_agent_bus.adaptive_governance.governance_engine."
-            "FEEDBACK_HANDLER_AVAILABLE",
+            "enhanced_agent_bus.adaptive_governance.governance_engine.FEEDBACK_HANDLER_AVAILABLE",
             False,
         ),
         patch(
-            "enhanced_agent_bus.adaptive_governance.governance_engine."
-            "DRIFT_MONITORING_AVAILABLE",
+            "enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE",
             False,
         ),
         patch(
-            "enhanced_agent_bus.adaptive_governance.governance_engine."
-            "ONLINE_LEARNING_AVAILABLE",
+            "enhanced_agent_bus.adaptive_governance.governance_engine.ONLINE_LEARNING_AVAILABLE",
             False,
         ),
         patch(
-            "enhanced_agent_bus.adaptive_governance.governance_engine."
-            "AB_TESTING_AVAILABLE",
+            "enhanced_agent_bus.adaptive_governance.governance_engine.AB_TESTING_AVAILABLE",
             False,
         ),
         patch(
-            "enhanced_agent_bus.adaptive_governance.governance_engine."
-            "ANOMALY_MONITORING_AVAILABLE",
+            "enhanced_agent_bus.adaptive_governance.governance_engine.ANOMALY_MONITORING_AVAILABLE",
             False,
         ),
     ):
@@ -153,8 +147,7 @@ class TestAdditionalBranchCoverage:
                 True,
             ),
             patch(
-                "enhanced_agent_bus.adaptive_governance.governance_engine."
-                "get_drift_detector",
+                "enhanced_agent_bus.adaptive_governance.governance_engine.get_drift_detector",
                 side_effect=RuntimeError("drift init fail"),
             ),
             patch(
@@ -163,8 +156,7 @@ class TestAdditionalBranchCoverage:
                 False,
             ),
             patch(
-                "enhanced_agent_bus.adaptive_governance.governance_engine."
-                "AB_TESTING_AVAILABLE",
+                "enhanced_agent_bus.adaptive_governance.governance_engine.AB_TESTING_AVAILABLE",
                 False,
             ),
             patch(
@@ -214,8 +206,7 @@ class TestAdditionalBranchCoverage:
                 MagicMock(),
             ),
             patch(
-                "enhanced_agent_bus.adaptive_governance.governance_engine."
-                "AB_TESTING_AVAILABLE",
+                "enhanced_agent_bus.adaptive_governance.governance_engine.AB_TESTING_AVAILABLE",
                 False,
             ),
             patch(
@@ -255,18 +246,15 @@ class TestAdditionalBranchCoverage:
                 False,
             ),
             patch(
-                "enhanced_agent_bus.adaptive_governance.governance_engine."
-                "AB_TESTING_AVAILABLE",
+                "enhanced_agent_bus.adaptive_governance.governance_engine.AB_TESTING_AVAILABLE",
                 True,
             ),
             patch(
-                "enhanced_agent_bus.adaptive_governance.governance_engine."
-                "get_ab_test_router",
+                "enhanced_agent_bus.adaptive_governance.governance_engine.get_ab_test_router",
                 return_value=mock_router,
             ),
             patch(
-                "enhanced_agent_bus.adaptive_governance.governance_engine."
-                "ShadowPolicyExecutor",
+                "enhanced_agent_bus.adaptive_governance.governance_engine.ShadowPolicyExecutor",
                 return_value=mock_shadow,
             ),
             patch(

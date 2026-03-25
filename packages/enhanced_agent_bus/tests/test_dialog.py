@@ -26,8 +26,12 @@ def _make_context(state: ConversationState = ConversationState.ACTIVE, **kwargs)
     return ctx
 
 
-def _make_nlu(intent_name: str = "unknown", confidence: float = 0.9, entities=None,
-              requires_clarification: bool = False):
+def _make_nlu(
+    intent_name: str = "unknown",
+    confidence: float = 0.9,
+    entities=None,
+    requires_clarification: bool = False,
+):
     return NLUResult(
         original_text="test",
         processed_text="test",
@@ -91,8 +95,12 @@ class TestConversationFlow:
             FlowNode(id="ask", name="Ask", node_type="question", content="What do you need?"),
         ]
         flow = ConversationFlow(
-            id="f1", name="Test Flow", description="desc",
-            trigger_intents=["help"], nodes=nodes, entry_node="start",
+            id="f1",
+            name="Test Flow",
+            description="desc",
+            trigger_intents=["help"],
+            nodes=nodes,
+            entry_node="start",
         )
         assert flow.get_node("start") is nodes[0]
         assert flow.get_node("ask") is nodes[1]
@@ -100,7 +108,9 @@ class TestConversationFlow:
 
     def test_to_dict(self):
         flow = ConversationFlow(
-            id="f1", name="Test", description="desc",
+            id="f1",
+            name="Test",
+            description="desc",
             trigger_intents=["help"],
             nodes=[FlowNode(id="n1", name="N1", node_type="response")],
             entry_node="n1",
@@ -273,9 +283,13 @@ class TestDialogManager:
             FlowNode(id="start", name="Start", node_type="response", content="Welcome!"),
         ]
         flow = ConversationFlow(
-            id="f1", name="Welcome Flow", description="Onboarding",
-            trigger_intents=["onboarding"], nodes=nodes,
-            entry_node="start", exit_nodes=[],
+            id="f1",
+            name="Welcome Flow",
+            description="Onboarding",
+            trigger_intents=["onboarding"],
+            nodes=nodes,
+            entry_node="start",
+            exit_nodes=[],
         )
         mgr = DialogManager()
         mgr.add_flow(flow)
@@ -287,14 +301,21 @@ class TestDialogManager:
     async def test_flow_trigger(self):
         nodes = [
             FlowNode(
-                id="start", name="Start", node_type="response",
-                content="Welcome to onboarding!", next_node=None,
+                id="start",
+                name="Start",
+                node_type="response",
+                content="Welcome to onboarding!",
+                next_node=None,
             ),
         ]
         flow = ConversationFlow(
-            id="onboard", name="Onboarding", description="desc",
-            trigger_intents=["onboarding"], nodes=nodes,
-            entry_node="start", exit_nodes=[],
+            id="onboard",
+            name="Onboarding",
+            description="desc",
+            trigger_intents=["onboarding"],
+            nodes=nodes,
+            entry_node="start",
+            exit_nodes=[],
         )
         mgr = DialogManager(flows=[flow])
         ctx = _make_context()
@@ -307,8 +328,12 @@ class TestDialogManager:
     async def test_flow_node_not_found(self):
         nodes = [FlowNode(id="start", name="Start", node_type="response", content="Hi")]
         flow = ConversationFlow(
-            id="f1", name="F", description="d",
-            trigger_intents=["x"], nodes=nodes, entry_node="start",
+            id="f1",
+            name="F",
+            description="d",
+            trigger_intents=["x"],
+            nodes=nodes,
+            entry_node="start",
         )
         mgr = DialogManager(flows=[flow])
         ctx = _make_context()

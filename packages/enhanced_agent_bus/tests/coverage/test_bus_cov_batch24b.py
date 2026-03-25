@@ -89,6 +89,7 @@ def _make_engine(
 # Violation NamedTuple
 # ---------------------------------------------------------------------------
 
+
 class TestViolation:
     def test_creation(self):
         v = Violation("R1", "rule text", Severity.HIGH, "matched", "safety")
@@ -107,6 +108,7 @@ class TestViolation:
 # ---------------------------------------------------------------------------
 # ValidationResult dataclass
 # ---------------------------------------------------------------------------
+
 
 class TestValidationResult:
     def test_blocking_violations(self):
@@ -175,6 +177,7 @@ class TestValidationResult:
 # _dedup_violations
 # ---------------------------------------------------------------------------
 
+
 class TestDedupViolations:
     def test_no_duplicates(self):
         v1 = Violation("R1", "t", Severity.LOW, "m", "c")
@@ -201,6 +204,7 @@ class TestDedupViolations:
 # _NoopRecorder
 # ---------------------------------------------------------------------------
 
+
 class TestNoopRecorder:
     def test_append_and_len(self):
         rec = _NoopRecorder()
@@ -214,6 +218,7 @@ class TestNoopRecorder:
 # ---------------------------------------------------------------------------
 # _FastAuditLog
 # ---------------------------------------------------------------------------
+
 
 class TestFastAuditLog:
     def test_record_fast_full_tuple(self):
@@ -271,6 +276,7 @@ class TestFastAuditLog:
 # ---------------------------------------------------------------------------
 # GovernanceEngine — initialization and basic validation
 # ---------------------------------------------------------------------------
+
 
 class TestGovernanceEngineInit:
     def test_default_init_with_no_rules(self):
@@ -336,6 +342,7 @@ class TestGovernanceEngineInit:
 # GovernanceEngine.validate — allow path
 # ---------------------------------------------------------------------------
 
+
 class TestGovernanceEngineValidateAllow:
     def test_allow_safe_action(self):
         engine = _make_engine()
@@ -360,6 +367,7 @@ class TestGovernanceEngineValidateAllow:
 # ---------------------------------------------------------------------------
 # GovernanceEngine.validate — deny path
 # ---------------------------------------------------------------------------
+
 
 class TestGovernanceEngineValidateDeny:
     def test_critical_rule_raises(self):
@@ -403,6 +411,7 @@ class TestGovernanceEngineValidateDeny:
 # ---------------------------------------------------------------------------
 # GovernanceEngine.validate — context checking
 # ---------------------------------------------------------------------------
+
 
 class TestGovernanceEngineContext:
     def test_context_action_detail(self):
@@ -455,11 +464,14 @@ class TestGovernanceEngineContext:
 # GovernanceEngine — custom validators
 # ---------------------------------------------------------------------------
 
+
 class TestCustomValidators:
     def test_custom_validator_adds_violations(self):
         def my_validator(action: str, ctx: dict) -> list[Violation]:
             if "banned" in action:
-                return [Violation("CUSTOM-1", "Banned word", Severity.MEDIUM, action[:200], "custom")]
+                return [
+                    Violation("CUSTOM-1", "Banned word", Severity.MEDIUM, action[:200], "custom")
+                ]
             return []
 
         # Use audit_log to force slow path so custom validators run
@@ -492,6 +504,7 @@ class TestCustomValidators:
 # ---------------------------------------------------------------------------
 # GovernanceEngine.stats
 # ---------------------------------------------------------------------------
+
 
 class TestGovernanceEngineStats:
     def test_stats_with_noop_recorder(self):
@@ -536,6 +549,7 @@ class TestGovernanceEngineStats:
 # ---------------------------------------------------------------------------
 # GovernanceEngine — audit log recording (slow path)
 # ---------------------------------------------------------------------------
+
 
 class TestGovernanceEngineAuditLog:
     def test_audit_entry_recorded_on_allow(self):
@@ -587,6 +601,7 @@ class TestGovernanceEngineAuditLog:
 # GovernanceEngine — deduplication edge cases
 # ---------------------------------------------------------------------------
 
+
 class TestDeduplication:
     def test_single_violation_no_dedup(self):
         rules = [
@@ -609,6 +624,7 @@ class TestDeduplication:
 # ---------------------------------------------------------------------------
 # GovernanceEngine — pattern matching
 # ---------------------------------------------------------------------------
+
 
 class TestPatternMatching:
     def test_pattern_match_triggers_violation(self):
@@ -643,6 +659,7 @@ class TestPatternMatching:
 # ---------------------------------------------------------------------------
 # GovernanceEngine — strict vs non-strict blocking with HIGH
 # ---------------------------------------------------------------------------
+
 
 class TestStrictBlocking:
     def test_strict_high_raises(self):
@@ -697,27 +714,21 @@ class TestOPAClientCoreInit:
     def test_embedded_mode_falls_back_when_sdk_unavailable(self):
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
-        with patch(
-            "enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=False
-        ):
+        with patch("enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=False):
             client = OPAClientCore(mode="embedded")
             assert client.mode == "http"
 
     def test_embedded_mode_stays_when_sdk_available(self):
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
-        with patch(
-            "enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True
-        ):
+        with patch("enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True):
             client = OPAClientCore(mode="embedded")
             assert client.mode == "embedded"
 
     def test_fast_hash_mode_warns_when_unavailable(self):
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
-        with patch(
-            "enhanced_agent_bus.opa_client.core.FAST_HASH_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.opa_client.core.FAST_HASH_AVAILABLE", False):
             # Should not raise, just warn
             client = OPAClientCore(cache_hash_mode="fast")
             assert client.cache_hash_mode == "fast"
@@ -756,8 +767,10 @@ class TestOPAClientCoreContextManager:
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
-        with patch.object(client, "initialize", new_callable=AsyncMock) as mock_init, \
-             patch.object(client, "close", new_callable=AsyncMock) as mock_close:
+        with (
+            patch.object(client, "initialize", new_callable=AsyncMock) as mock_init,
+            patch.object(client, "close", new_callable=AsyncMock) as mock_close,
+        ):
             async with client as c:
                 assert c is client
                 mock_init.assert_awaited_once()
@@ -789,11 +802,10 @@ class TestOPAClientCoreInitialize:
         client.opa_url = "http://localhost:8181"
         client.enable_cache = False
         client._http_client = None
-        with patch(
-            "enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True
-        ), patch.object(
-            client, "_initialize_embedded_opa", new_callable=AsyncMock
-        ) as mock:
+        with (
+            patch("enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True),
+            patch.object(client, "_initialize_embedded_opa", new_callable=AsyncMock) as mock,
+        ):
             await client.initialize()
             mock.assert_awaited_once()
 
@@ -801,14 +813,14 @@ class TestOPAClientCoreInitialize:
         from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient(mode="http", enable_cache=True)
-        with patch.object(client, "_ensure_http_client", new_callable=AsyncMock), \
-             patch(
-                 "enhanced_agent_bus.opa_client.core._redis_client_available",
-                 return_value=True,
-             ), \
-             patch.object(
-                 client, "_initialize_redis_cache", new_callable=AsyncMock
-             ) as mock_redis:
+        with (
+            patch.object(client, "_ensure_http_client", new_callable=AsyncMock),
+            patch(
+                "enhanced_agent_bus.opa_client.core._redis_client_available",
+                return_value=True,
+            ),
+            patch.object(client, "_initialize_redis_cache", new_callable=AsyncMock) as mock_redis,
+        ):
             await client.initialize()
             mock_redis.assert_awaited_once()
 
@@ -852,8 +864,10 @@ class TestOPAClientCoreSSL:
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         # Create temp cert/key files
-        with tempfile.NamedTemporaryFile(suffix=".pem", delete=False) as cert_f, \
-             tempfile.NamedTemporaryFile(suffix=".pem", delete=False) as key_f:
+        with (
+            tempfile.NamedTemporaryFile(suffix=".pem", delete=False) as cert_f,
+            tempfile.NamedTemporaryFile(suffix=".pem", delete=False) as key_f,
+        ):
             cert_path = cert_f.name
             key_path = key_f.name
 
@@ -863,8 +877,10 @@ class TestOPAClientCoreSSL:
                 ssl_cert=cert_path,
                 ssl_key=key_path,
             )
-            with patch.dict(os.environ, {"ENVIRONMENT": "development"}), \
-                 patch.object(ssl.SSLContext, "load_cert_chain"):
+            with (
+                patch.dict(os.environ, {"ENVIRONMENT": "development"}),
+                patch.object(ssl.SSLContext, "load_cert_chain"),
+            ):
                 ctx = client._build_ssl_context_if_needed()
                 assert ctx is not None
         finally:
@@ -1130,9 +1146,7 @@ class TestOPAClientCoreHandleError:
 
         client = OPAClientCore()
         with patch.object(client, "_sanitize_error", return_value="sanitized msg"):
-            result = client._handle_evaluation_error(
-                RuntimeError("test"), "data.acgs.allow"
-            )
+            result = client._handle_evaluation_error(RuntimeError("test"), "data.acgs.allow")
             assert result["result"] is False
             assert result["allowed"] is False
             assert result["metadata"]["security"] == "fail-closed"
@@ -1145,13 +1159,15 @@ class TestOPAClientCoreEvaluatePolicy:
 
         client = OPAClient()
         cached = {"result": True, "allowed": True, "reason": "cached"}
-        with patch.object(client, "_generate_cache_key", return_value="key"), \
-             patch.object(client, "_get_from_cache", new_callable=AsyncMock, return_value=cached), \
-             patch.object(
-                 client,
-                 "_is_multi_path_candidate_generation_enabled",
-                 return_value=False,
-             ):
+        with (
+            patch.object(client, "_generate_cache_key", return_value="key"),
+            patch.object(client, "_get_from_cache", new_callable=AsyncMock, return_value=cached),
+            patch.object(
+                client,
+                "_is_multi_path_candidate_generation_enabled",
+                return_value=False,
+            ),
+        ):
             result = await client.evaluate_policy({"input": "data"})
             assert result == cached
 
@@ -1160,19 +1176,21 @@ class TestOPAClientCoreEvaluatePolicy:
 
         client = OPAClient()
         eval_result = {"result": True, "allowed": True, "reason": "ok"}
-        with patch.object(client, "_generate_cache_key", return_value="key"), \
-             patch.object(client, "_get_from_cache", new_callable=AsyncMock, return_value=None), \
-             patch.object(client, "_validate_policy_path"), \
-             patch.object(client, "_validate_input_data"), \
-             patch.object(
-                 client, "_dispatch_evaluation", new_callable=AsyncMock, return_value=eval_result
-             ), \
-             patch.object(client, "_set_to_cache", new_callable=AsyncMock), \
-             patch.object(
-                 client,
-                 "_is_multi_path_candidate_generation_enabled",
-                 return_value=False,
-             ):
+        with (
+            patch.object(client, "_generate_cache_key", return_value="key"),
+            patch.object(client, "_get_from_cache", new_callable=AsyncMock, return_value=None),
+            patch.object(client, "_validate_policy_path"),
+            patch.object(client, "_validate_input_data"),
+            patch.object(
+                client, "_dispatch_evaluation", new_callable=AsyncMock, return_value=eval_result
+            ),
+            patch.object(client, "_set_to_cache", new_callable=AsyncMock),
+            patch.object(
+                client,
+                "_is_multi_path_candidate_generation_enabled",
+                return_value=False,
+            ),
+        ):
             result = await client.evaluate_policy({"input": "data"})
             assert result["allowed"] is True
 
@@ -1182,19 +1200,21 @@ class TestOPAClientCoreEvaluatePolicy:
         from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient()
-        with patch.object(client, "_generate_cache_key", return_value="key"), \
-             patch.object(client, "_get_from_cache", new_callable=AsyncMock, return_value=None), \
-             patch.object(
-                 client,
-                 "_validate_policy_path",
-                 side_effect=ACGSValidationError("bad path", field="f"),
-             ), \
-             patch.object(client, "_sanitize_error", return_value="err"), \
-             patch.object(
-                 client,
-                 "_is_multi_path_candidate_generation_enabled",
-                 return_value=False,
-             ):
+        with (
+            patch.object(client, "_generate_cache_key", return_value="key"),
+            patch.object(client, "_get_from_cache", new_callable=AsyncMock, return_value=None),
+            patch.object(
+                client,
+                "_validate_policy_path",
+                side_effect=ACGSValidationError("bad path", field="f"),
+            ),
+            patch.object(client, "_sanitize_error", return_value="err"),
+            patch.object(
+                client,
+                "_is_multi_path_candidate_generation_enabled",
+                return_value=False,
+            ),
+        ):
             result = await client.evaluate_policy({"input": "data"})
             assert result["allowed"] is False
             assert result["metadata"]["security"] == "fail-closed"
@@ -1205,22 +1225,24 @@ class TestOPAClientCoreEvaluatePolicy:
         from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient()
-        with patch.object(client, "_generate_cache_key", return_value="key"), \
-             patch.object(client, "_get_from_cache", new_callable=AsyncMock, return_value=None), \
-             patch.object(client, "_validate_policy_path"), \
-             patch.object(client, "_validate_input_data"), \
-             patch.object(
-                 client,
-                 "_dispatch_evaluation",
-                 new_callable=AsyncMock,
-                 side_effect=HTTPConnectError("conn failed"),
-             ), \
-             patch.object(client, "_sanitize_error", return_value="err"), \
-             patch.object(
-                 client,
-                 "_is_multi_path_candidate_generation_enabled",
-                 return_value=False,
-             ):
+        with (
+            patch.object(client, "_generate_cache_key", return_value="key"),
+            patch.object(client, "_get_from_cache", new_callable=AsyncMock, return_value=None),
+            patch.object(client, "_validate_policy_path"),
+            patch.object(client, "_validate_input_data"),
+            patch.object(
+                client,
+                "_dispatch_evaluation",
+                new_callable=AsyncMock,
+                side_effect=HTTPConnectError("conn failed"),
+            ),
+            patch.object(client, "_sanitize_error", return_value="err"),
+            patch.object(
+                client,
+                "_is_multi_path_candidate_generation_enabled",
+                return_value=False,
+            ),
+        ):
             result = await client.evaluate_policy({"input": "data"})
             assert result["allowed"] is False
 
@@ -1229,22 +1251,24 @@ class TestOPAClientCoreEvaluatePolicy:
 
         client = OPAClient()
         multi_result = {"result": True, "allowed": True, "reason": "multi"}
-        with patch.object(
-            client,
-            "_is_multi_path_candidate_generation_enabled",
-            return_value=False,
-        ), \
-             patch.object(client, "_generate_cache_key", return_value="key"), \
-             patch.object(client, "_get_from_cache", new_callable=AsyncMock, return_value=None), \
-             patch.object(client, "_validate_policy_path"), \
-             patch.object(client, "_validate_input_data"), \
-             patch.object(
-                 client,
-                 "evaluate_policy_multi_path",
-                 new_callable=AsyncMock,
-                 return_value=multi_result,
-             ), \
-             patch.object(client, "_set_to_cache", new_callable=AsyncMock):
+        with (
+            patch.object(
+                client,
+                "_is_multi_path_candidate_generation_enabled",
+                return_value=False,
+            ),
+            patch.object(client, "_generate_cache_key", return_value="key"),
+            patch.object(client, "_get_from_cache", new_callable=AsyncMock, return_value=None),
+            patch.object(client, "_validate_policy_path"),
+            patch.object(client, "_validate_input_data"),
+            patch.object(
+                client,
+                "evaluate_policy_multi_path",
+                new_callable=AsyncMock,
+                return_value=multi_result,
+            ),
+            patch.object(client, "_set_to_cache", new_callable=AsyncMock),
+        ):
             input_data = {"input": "data", "support_set_candidates": [{"a": 1}]}
             result = await client.evaluate_policy(input_data)
             assert result == multi_result
@@ -1420,12 +1444,15 @@ class TestOPAClientCoreValidateConstitutional:
             "reason": "ok",
             "metadata": {"mode": "http"},
         }
-        with patch.object(
-            client, "evaluate_policy", new_callable=AsyncMock, return_value=eval_result
-        ), patch.object(
-            client,
-            "_is_multi_path_candidate_generation_enabled",
-            return_value=False,
+        with (
+            patch.object(
+                client, "evaluate_policy", new_callable=AsyncMock, return_value=eval_result
+            ),
+            patch.object(
+                client,
+                "_is_multi_path_candidate_generation_enabled",
+                return_value=False,
+            ),
         ):
             result = await client.validate_constitutional({"content": "test"})
             assert result.is_valid is True
@@ -1439,12 +1466,15 @@ class TestOPAClientCoreValidateConstitutional:
             "reason": "Denied by policy",
             "metadata": {},
         }
-        with patch.object(
-            client, "evaluate_policy", new_callable=AsyncMock, return_value=eval_result
-        ), patch.object(
-            client,
-            "_is_multi_path_candidate_generation_enabled",
-            return_value=False,
+        with (
+            patch.object(
+                client, "evaluate_policy", new_callable=AsyncMock, return_value=eval_result
+            ),
+            patch.object(
+                client,
+                "_is_multi_path_candidate_generation_enabled",
+                return_value=False,
+            ),
         ):
             result = await client.validate_constitutional({"content": "bad"})
             assert result.is_valid is False
@@ -1454,15 +1484,18 @@ class TestOPAClientCoreValidateConstitutional:
         from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient()
-        with patch.object(
-            client,
-            "evaluate_policy",
-            new_callable=AsyncMock,
-            side_effect=OPAConnectionError("host", "msg"),
-        ), patch.object(
-            client,
-            "_is_multi_path_candidate_generation_enabled",
-            return_value=False,
+        with (
+            patch.object(
+                client,
+                "evaluate_policy",
+                new_callable=AsyncMock,
+                side_effect=OPAConnectionError("host", "msg"),
+            ),
+            patch.object(
+                client,
+                "_is_multi_path_candidate_generation_enabled",
+                return_value=False,
+            ),
         ):
             result = await client.validate_constitutional({"content": "test"})
             assert result.is_valid is False
@@ -1473,15 +1506,18 @@ class TestOPAClientCoreValidateConstitutional:
         from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient()
-        with patch.object(
-            client,
-            "evaluate_policy",
-            new_callable=AsyncMock,
-            side_effect=HTTPConnectError("conn failed"),
-        ), patch.object(
-            client,
-            "_is_multi_path_candidate_generation_enabled",
-            return_value=False,
+        with (
+            patch.object(
+                client,
+                "evaluate_policy",
+                new_callable=AsyncMock,
+                side_effect=HTTPConnectError("conn failed"),
+            ),
+            patch.object(
+                client,
+                "_is_multi_path_candidate_generation_enabled",
+                return_value=False,
+            ),
         ):
             result = await client.validate_constitutional({"content": "test"})
             assert result.is_valid is False
@@ -1490,15 +1526,18 @@ class TestOPAClientCoreValidateConstitutional:
         from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient()
-        with patch.object(
-            client,
-            "evaluate_policy",
-            new_callable=AsyncMock,
-            side_effect=ValueError("bad value"),
-        ), patch.object(
-            client,
-            "_is_multi_path_candidate_generation_enabled",
-            return_value=False,
+        with (
+            patch.object(
+                client,
+                "evaluate_policy",
+                new_callable=AsyncMock,
+                side_effect=ValueError("bad value"),
+            ),
+            patch.object(
+                client,
+                "_is_multi_path_candidate_generation_enabled",
+                return_value=False,
+            ),
         ):
             result = await client.validate_constitutional({"content": "test"})
             assert result.is_valid is False
@@ -1510,15 +1549,20 @@ class TestOPAClientCoreCheckAuthorization:
 
         client = OPAClient()
         eval_result = {"allowed": True, "reason": "ok", "metadata": {}}
-        with patch.object(
-            client, "evaluate_policy", new_callable=AsyncMock, return_value=eval_result
-        ), patch.object(
-            client,
-            "_is_multi_path_candidate_generation_enabled",
-            return_value=False,
+        with (
+            patch.object(
+                client, "evaluate_policy", new_callable=AsyncMock, return_value=eval_result
+            ),
+            patch.object(
+                client,
+                "_is_multi_path_candidate_generation_enabled",
+                return_value=False,
+            ),
         ):
             result = await client.check_agent_authorization(
-                "agent1", "read", "resource1",
+                "agent1",
+                "read",
+                "resource1",
                 context={"constitutional_hash": CONSTITUTIONAL_HASH},
             )
             assert result is True
@@ -1528,7 +1572,9 @@ class TestOPAClientCoreCheckAuthorization:
 
         client = OPAClient()
         result = await client.check_agent_authorization(
-            "agent1", "read", "resource1",
+            "agent1",
+            "read",
+            "resource1",
             context={"constitutional_hash": "wrong_hash"},
         )
         assert result is False
@@ -1538,12 +1584,15 @@ class TestOPAClientCoreCheckAuthorization:
 
         client = OPAClient()
         eval_result = {"allowed": True, "reason": "ok", "metadata": {}}
-        with patch.object(
-            client, "evaluate_policy", new_callable=AsyncMock, return_value=eval_result
-        ), patch.object(
-            client,
-            "_is_multi_path_candidate_generation_enabled",
-            return_value=False,
+        with (
+            patch.object(
+                client, "evaluate_policy", new_callable=AsyncMock, return_value=eval_result
+            ),
+            patch.object(
+                client,
+                "_is_multi_path_candidate_generation_enabled",
+                return_value=False,
+            ),
         ):
             result = await client.check_agent_authorization("agent1", "read", "resource1")
             assert result is True
@@ -1553,15 +1602,18 @@ class TestOPAClientCoreCheckAuthorization:
         from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient()
-        with patch.object(
-            client,
-            "evaluate_policy",
-            new_callable=AsyncMock,
-            side_effect=OPAConnectionError("host", "msg"),
-        ), patch.object(
-            client,
-            "_is_multi_path_candidate_generation_enabled",
-            return_value=False,
+        with (
+            patch.object(
+                client,
+                "evaluate_policy",
+                new_callable=AsyncMock,
+                side_effect=OPAConnectionError("host", "msg"),
+            ),
+            patch.object(
+                client,
+                "_is_multi_path_candidate_generation_enabled",
+                return_value=False,
+            ),
         ):
             result = await client.check_agent_authorization("agent1", "read", "resource1")
             assert result is False
@@ -1570,15 +1622,18 @@ class TestOPAClientCoreCheckAuthorization:
         from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient()
-        with patch.object(
-            client,
-            "evaluate_policy",
-            new_callable=AsyncMock,
-            side_effect=ValueError("bad"),
-        ), patch.object(
-            client,
-            "_is_multi_path_candidate_generation_enabled",
-            return_value=False,
+        with (
+            patch.object(
+                client,
+                "evaluate_policy",
+                new_callable=AsyncMock,
+                side_effect=ValueError("bad"),
+            ),
+            patch.object(
+                client,
+                "_is_multi_path_candidate_generation_enabled",
+                return_value=False,
+            ),
         ):
             result = await client.check_agent_authorization("agent1", "read", "resource1")
             assert result is False
@@ -1656,17 +1711,15 @@ class TestOPAClientCoreEvaluateWithHistory:
 
         client = OPAClient(mode="http")
         eval_result = {"allowed": True, "result": True, "reason": "ok", "metadata": {}}
-        with patch.object(client, "_validate_policy_path"), \
-             patch.object(client, "_validate_input_data"), \
-             patch.object(
-                 client, "_evaluate_http", new_callable=AsyncMock, return_value=eval_result
-             ), \
-             patch.object(
-                 client, "_is_temporal_multi_path_enabled", return_value=False
-             ):
-            result = await client.evaluate_with_history(
-                {"action": "test"}, ["step1", "step2"]
-            )
+        with (
+            patch.object(client, "_validate_policy_path"),
+            patch.object(client, "_validate_input_data"),
+            patch.object(
+                client, "_evaluate_http", new_callable=AsyncMock, return_value=eval_result
+            ),
+            patch.object(client, "_is_temporal_multi_path_enabled", return_value=False),
+        ):
+            result = await client.evaluate_with_history({"action": "test"}, ["step1", "step2"])
             assert result["allowed"] is True
 
     async def test_evaluate_with_history_error(self):
@@ -1675,21 +1728,19 @@ class TestOPAClientCoreEvaluateWithHistory:
         from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient(mode="http")
-        with patch.object(client, "_validate_policy_path"), \
-             patch.object(client, "_validate_input_data"), \
-             patch.object(
-                 client,
-                 "_evaluate_http",
-                 new_callable=AsyncMock,
-                 side_effect=HTTPConnectError("fail"),
-             ), \
-             patch.object(client, "_sanitize_error", return_value="err"), \
-             patch.object(
-                 client, "_is_temporal_multi_path_enabled", return_value=False
-             ):
-            result = await client.evaluate_with_history(
-                {"action": "test"}, ["step1"]
-            )
+        with (
+            patch.object(client, "_validate_policy_path"),
+            patch.object(client, "_validate_input_data"),
+            patch.object(
+                client,
+                "_evaluate_http",
+                new_callable=AsyncMock,
+                side_effect=HTTPConnectError("fail"),
+            ),
+            patch.object(client, "_sanitize_error", return_value="err"),
+            patch.object(client, "_is_temporal_multi_path_enabled", return_value=False),
+        ):
+            result = await client.evaluate_with_history({"action": "test"}, ["step1"])
             assert result["allowed"] is False
 
 
@@ -1794,8 +1845,10 @@ class TestOPAClientCoreLoadBundle:
         mock_response.raise_for_status = MagicMock()
         mock_http.get.return_value = mock_response
         client._http_client = mock_http
-        with patch("os.makedirs", side_effect=OSError("disk full")), \
-             patch.object(client, "_rollback_to_lkg", new_callable=AsyncMock, return_value=False):
+        with (
+            patch("os.makedirs", side_effect=OSError("disk full")),
+            patch.object(client, "_rollback_to_lkg", new_callable=AsyncMock, return_value=False),
+        ):
             result = await client.load_bundle_from_url(
                 "http://example.com/bundle.tar.gz", "sig", "key"
             )
@@ -1806,6 +1859,7 @@ class TestOPAClientCoreLoadBundle:
 # Singleton lifecycle helpers
 # ---------------------------------------------------------------------------
 
+
 class TestSingletonLifecycle:
     async def test_initialize_get_close(self):
         import enhanced_agent_bus.opa_client.core as opa_core
@@ -1813,9 +1867,7 @@ class TestSingletonLifecycle:
         original = opa_core._opa_client
         try:
             opa_core._opa_client = None
-            with patch.object(
-                opa_core.OPAClient, "initialize", new_callable=AsyncMock
-            ):
+            with patch.object(opa_core.OPAClient, "initialize", new_callable=AsyncMock):
                 client = await opa_core.initialize_opa_client()
                 assert client is not None
                 assert opa_core.get_opa_client() is client
@@ -1856,6 +1908,7 @@ class TestSingletonLifecycle:
 # ---------------------------------------------------------------------------
 # Helper functions at module level
 # ---------------------------------------------------------------------------
+
 
 class TestModuleLevelHelpers:
     def test_opa_sdk_available_from_package(self):

@@ -13,4 +13,7 @@ class GraphCheckVerifier:
                 results.append({"entity": token, "status": "grounded"})
         if not results:
             results.append({"entity": "content", "status": "unknown"})
-        return {"is_valid": any(item["status"] == "grounded" for item in results), "results": results}
+        return {
+            "is_valid": any(item["status"] == "grounded" for item in results),
+            "results": results,
+        }

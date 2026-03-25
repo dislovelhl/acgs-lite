@@ -230,9 +230,7 @@ class SwarmExecutor:
             if not node.required_capabilities:
                 available.append(node)
                 continue
-            has_caps = any(
-                rc.lower() in cap_names for rc in node.required_capabilities
-            )
+            has_caps = any(rc.lower() in cap_names for rc in node.required_capabilities)
             in_domain = node.domain in cap_domains
             if has_caps or in_domain:
                 available.append(node)

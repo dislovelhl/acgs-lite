@@ -129,7 +129,9 @@ async def _check_revocation(jti: str | None) -> None:
     except Exception as e:
         logger.error("Revocation check error: %s", e)
         if _is_production_environment():
-            raise HTTPException(status_code=503, detail="Token revocation backend unavailable") from e
+            raise HTTPException(
+                status_code=503, detail="Token revocation backend unavailable"
+            ) from e
 
 
 async def require_auth(

@@ -363,7 +363,9 @@ class RollbackSagaActivities:
         if severity not in ("critical", "high"):
             return notifications_sent
 
-        if not self.hitl_integration or not hasattr(self.hitl_integration, "_send_slack_notification"):
+        if not self.hitl_integration or not hasattr(
+            self.hitl_integration, "_send_slack_notification"
+        ):
             return notifications_sent
 
         title = f"🔴 Constitutional Rollback - {severity.upper()}"
@@ -392,8 +394,7 @@ class RollbackSagaActivities:
                 await self.hitl_integration._send_pagerduty_notification(
                     title="Critical Constitutional Rollback",
                     message=(
-                        "Automatic rollback from "
-                        f"{preparation_result.get('current_version')}"
+                        f"Automatic rollback from {preparation_result.get('current_version')}"
                     ),
                     severity="critical",
                 )

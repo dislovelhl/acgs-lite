@@ -210,9 +210,7 @@ class TestAmendmentProposalEngine:
     async def test_validate_proposed_changes_critical_fields(self):
         engine = self._make_engine()
         active = _make_version(content={"constitutional_hash": "abc", "version": "1.0"})
-        result = await engine._validate_proposed_changes(
-            {"constitutional_hash": "new"}, active
-        )
+        result = await engine._validate_proposed_changes({"constitutional_hash": "new"}, active)
         assert result["valid"] is False
         assert any("critical" in e.lower() for e in result["errors"])
 
@@ -339,9 +337,7 @@ class TestAmendmentProposalEngine:
 
     async def test_validate_proposal_success(self):
         active = _make_version(version="1.0.0", content={"rules": "x"})
-        amendment = _make_amendment(
-            target_version="1.0.0", proposed_changes={"new_rule": "y"}
-        )
+        amendment = _make_amendment(target_version="1.0.0", proposed_changes={"new_rule": "y"})
         storage = _mock_storage(active_version=active, amendment=amendment)
         engine = self._make_engine(storage=storage)
         result = await engine.validate_proposal(amendment.proposal_id)
@@ -821,9 +817,7 @@ class TestActivationSagaActivities:
     def test_compute_constitutional_hash(self):
         activities = self._make_activities()
         content = {"rules": "test", "version": "1.0"}
-        expected = hashlib.sha256(
-            json.dumps(content, sort_keys=True).encode("utf-8")
-        ).hexdigest()
+        expected = hashlib.sha256(json.dumps(content, sort_keys=True).encode("utf-8")).hexdigest()
         assert activities._compute_constitutional_hash(content) == expected
 
     def test_compute_constitutional_hash_deterministic(self):
@@ -882,9 +876,7 @@ class TestActivationSagaActivities:
 
         activities = self._make_activities()
         with pytest.raises(ActivationSagaError, match="Missing amendment_id"):
-            await activities.validate_activation(
-                {"saga_id": "s1", "context": {}}
-            )
+            await activities.validate_activation({"saga_id": "s1", "context": {}})
 
     async def test_validate_activation_amendment_not_found(self):
         from enhanced_agent_bus.constitutional.activation_saga import (
@@ -913,9 +905,7 @@ class TestActivationSagaActivities:
 
     async def test_validate_activation_success(self):
         active = _make_version(version="1.0.0")
-        amendment = _make_amendment(
-            status=AmendmentStatus.APPROVED, target_version="1.0.0"
-        )
+        amendment = _make_amendment(status=AmendmentStatus.APPROVED, target_version="1.0.0")
         storage = _mock_storage(active_version=active, amendment=amendment)
         storage.get_version = AsyncMock(return_value=active)
         activities = self._make_activities(storage=storage)
@@ -930,9 +920,7 @@ class TestActivationSagaActivities:
         """Target version not matching active version logs warning."""
         active = _make_version(version="1.0.0", version_id="v-active")
         target = _make_version(version="1.0.0", version_id="v-target")
-        amendment = _make_amendment(
-            status=AmendmentStatus.APPROVED, target_version="1.0.0"
-        )
+        amendment = _make_amendment(status=AmendmentStatus.APPROVED, target_version="1.0.0")
         storage = _mock_storage(active_version=active, amendment=amendment)
         storage.get_version = AsyncMock(return_value=target)
         activities = self._make_activities(storage=storage)
@@ -944,9 +932,7 @@ class TestActivationSagaActivities:
 
     async def test_log_validation_failure(self):
         activities = self._make_activities()
-        result = await activities.log_validation_failure(
-            {"saga_id": "s1", "context": {}}
-        )
+        result = await activities.log_validation_failure({"saga_id": "s1", "context": {}})
         assert result is True
 
     async def test_backup_current_version(self):
@@ -954,9 +940,7 @@ class TestActivationSagaActivities:
         storage = _mock_storage(active_version=active)
         activities = self._make_activities(storage=storage)
 
-        result = await activities.backup_current_version(
-            {"saga_id": "s1", "context": {}}
-        )
+        result = await activities.backup_current_version({"saga_id": "s1", "context": {}})
         assert result["version"] == "1.0.0"
         assert "backup_id" in result
 
@@ -968,9 +952,7 @@ class TestActivationSagaActivities:
         storage = _mock_storage(active_version=None)
         activities = self._make_activities(storage=storage)
         with pytest.raises(ActivationSagaError, match="No active"):
-            await activities.backup_current_version(
-                {"saga_id": "s1", "context": {}}
-            )
+            await activities.backup_current_version({"saga_id": "s1", "context": {}})
 
     async def test_restore_backup_success(self):
         storage = _mock_storage()
@@ -988,9 +970,7 @@ class TestActivationSagaActivities:
 
     async def test_restore_backup_no_data(self):
         activities = self._make_activities()
-        result = await activities.restore_backup(
-            {"saga_id": "s1", "context": {}}
-        )
+        result = await activities.restore_backup({"saga_id": "s1", "context": {}})
         assert result is False
 
     async def test_restore_backup_error(self):
@@ -1174,9 +1154,7 @@ class TestActivationSagaActivities:
 
         activities = self._make_activities()
         mock_client = AsyncMock()
-        mock_client.put = AsyncMock(
-            side_effect=httpx.RequestError("fail", request=MagicMock())
-        )
+        mock_client.put = AsyncMock(side_effect=httpx.RequestError("fail", request=MagicMock()))
         activities._http_client = mock_client
 
         result = await activities.revert_opa_policies(
@@ -1186,9 +1164,7 @@ class TestActivationSagaActivities:
 
     async def test_update_cache_no_redis(self):
         active = _make_version(version="1.0.0", content={"rules": "x"})
-        amendment = _make_amendment(
-            status=AmendmentStatus.APPROVED, target_version="1.0.0"
-        )
+        amendment = _make_amendment(status=AmendmentStatus.APPROVED, target_version="1.0.0")
         storage = _mock_storage(active_version=active, amendment=amendment)
         storage.get_version = AsyncMock(return_value=active)
         activities = self._make_activities(storage=storage)
@@ -1212,9 +1188,7 @@ class TestActivationSagaActivities:
 
     async def test_update_cache_with_redis(self):
         active = _make_version(version="1.0.0", content={"rules": "x"})
-        amendment = _make_amendment(
-            status=AmendmentStatus.APPROVED, target_version="1.0.0"
-        )
+        amendment = _make_amendment(status=AmendmentStatus.APPROVED, target_version="1.0.0")
         storage = _mock_storage(active_version=active, amendment=amendment)
         storage.get_version = AsyncMock(return_value=active)
         activities = self._make_activities(storage=storage)
@@ -1239,9 +1213,7 @@ class TestActivationSagaActivities:
 
     async def test_update_cache_redis_error(self):
         active = _make_version(version="1.0.0", content={"rules": "x"})
-        amendment = _make_amendment(
-            status=AmendmentStatus.APPROVED, target_version="1.0.0"
-        )
+        amendment = _make_amendment(status=AmendmentStatus.APPROVED, target_version="1.0.0")
         storage = _mock_storage(active_version=active, amendment=amendment)
         storage.get_version = AsyncMock(return_value=active)
         activities = self._make_activities(storage=storage)
@@ -1393,9 +1365,7 @@ class TestActivationSagaActivities:
     async def test_mark_audit_failed_no_context(self):
         activities = self._make_activities()
         activities._audit_client = None
-        result = await activities.mark_audit_failed(
-            {"saga_id": "s1", "context": {}}
-        )
+        result = await activities.mark_audit_failed({"saga_id": "s1", "context": {}})
         assert result is True
 
 
@@ -1672,9 +1642,7 @@ class TestConfigHelpers:
 
         mock_settings = MagicMock()
         mock_settings.env = "production"
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.settings", mock_settings
-        ):
+        with patch("enhanced_agent_bus.observability.telemetry.settings", mock_settings):
             assert _get_env_default() == "production"
 
     def test_get_otlp_endpoint_no_settings(self):
@@ -1689,9 +1657,7 @@ class TestConfigHelpers:
 
         mock_settings = MagicMock()
         mock_settings.telemetry.otlp_endpoint = "http://custom:4317"
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.settings", mock_settings
-        ):
+        with patch("enhanced_agent_bus.observability.telemetry.settings", mock_settings):
             assert _get_otlp_endpoint() == "http://custom:4317"
 
     def test_get_export_traces_no_settings(self):
@@ -1705,9 +1671,7 @@ class TestConfigHelpers:
 
         mock_settings = MagicMock()
         mock_settings.telemetry.export_traces = False
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.settings", mock_settings
-        ):
+        with patch("enhanced_agent_bus.observability.telemetry.settings", mock_settings):
             assert _get_export_traces() is False
 
     def test_get_export_metrics_no_settings(self):
@@ -1721,9 +1685,7 @@ class TestConfigHelpers:
 
         mock_settings = MagicMock()
         mock_settings.telemetry.export_metrics = False
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.settings", mock_settings
-        ):
+        with patch("enhanced_agent_bus.observability.telemetry.settings", mock_settings):
             assert _get_export_metrics() is False
 
     def test_get_trace_sample_rate_no_settings(self):
@@ -1737,9 +1699,7 @@ class TestConfigHelpers:
 
         mock_settings = MagicMock()
         mock_settings.telemetry.trace_sample_rate = 0.25
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.settings", mock_settings
-        ):
+        with patch("enhanced_agent_bus.observability.telemetry.settings", mock_settings):
             assert _get_trace_sample_rate() == 0.25
 
 
@@ -1751,9 +1711,7 @@ class TestConfigureTelemetry:
             configure_telemetry,
         )
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
             tracer, meter = configure_telemetry()
         assert isinstance(tracer, NoOpTracer)
         assert isinstance(meter, NoOpMeter)
@@ -1766,9 +1724,7 @@ class TestConfigureTelemetry:
         )
 
         config = TelemetryConfig(service_name="test")
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
             tracer, meter = configure_telemetry(config)
         assert isinstance(tracer, NoOpTracer)
 
@@ -1777,9 +1733,7 @@ class TestGetTracer:
     def test_returns_noop_when_unavailable(self):
         from enhanced_agent_bus.observability.telemetry import NoOpTracer, get_tracer
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
             tracer = get_tracer()
         assert isinstance(tracer, NoOpTracer)
 
@@ -1797,9 +1751,7 @@ class TestGetTracer:
     def test_returns_noop_with_service_name(self):
         from enhanced_agent_bus.observability.telemetry import NoOpTracer, get_tracer
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
             tracer = get_tracer("nonexistent-service")
         assert isinstance(tracer, NoOpTracer)
 
@@ -1808,9 +1760,7 @@ class TestGetMeter:
     def test_returns_noop_when_unavailable(self):
         from enhanced_agent_bus.observability.telemetry import NoOpMeter, get_meter
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
             meter = get_meter()
         assert isinstance(meter, NoOpMeter)
 
@@ -1828,9 +1778,7 @@ class TestGetMeter:
     def test_returns_noop_with_service_name(self):
         from enhanced_agent_bus.observability.telemetry import NoOpMeter, get_meter
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
             meter = get_meter("nonexistent-service")
         assert isinstance(meter, NoOpMeter)
 
@@ -1877,9 +1825,7 @@ class TestTracingContext:
     def test_enter_exit_noop(self):
         from enhanced_agent_bus.observability.telemetry import TracingContext
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
             ctx = TracingContext("test_span", attributes={"k": "v"})
             with ctx as span:
                 span.set_attribute("x", "y")
@@ -1887,9 +1833,7 @@ class TestTracingContext:
     def test_enter_exit_with_exception(self):
         from enhanced_agent_bus.observability.telemetry import TracingContext
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
             ctx = TracingContext("test_span")
             try:
                 with ctx:
@@ -1900,9 +1844,7 @@ class TestTracingContext:
     def test_exit_with_exception_records(self):
         from enhanced_agent_bus.observability.telemetry import TracingContext
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
             ctx = TracingContext("test_span")
             # Manually test __exit__ with exception info
             ctx._span = MagicMock()
@@ -1926,18 +1868,14 @@ class TestMetricsRegistry:
     def test_init(self):
         from enhanced_agent_bus.observability.telemetry import MetricsRegistry
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
             registry = MetricsRegistry("test-service")
         assert registry.service_name == "test-service"
 
     def test_get_counter(self):
         from enhanced_agent_bus.observability.telemetry import MetricsRegistry
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
             registry = MetricsRegistry()
         counter = registry.get_counter("test_counter", description="a counter")
         # Should return same instance on second call
@@ -1946,9 +1884,7 @@ class TestMetricsRegistry:
     def test_get_histogram(self):
         from enhanced_agent_bus.observability.telemetry import MetricsRegistry
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
             registry = MetricsRegistry()
         histogram = registry.get_histogram("test_hist", unit="s")
         assert registry.get_histogram("test_hist") is histogram
@@ -1956,9 +1892,7 @@ class TestMetricsRegistry:
     def test_get_gauge(self):
         from enhanced_agent_bus.observability.telemetry import MetricsRegistry
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
             registry = MetricsRegistry()
         gauge = registry.get_gauge("test_gauge")
         assert registry.get_gauge("test_gauge") is gauge
@@ -1966,9 +1900,7 @@ class TestMetricsRegistry:
     def test_increment_counter(self):
         from enhanced_agent_bus.observability.telemetry import MetricsRegistry
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
             registry = MetricsRegistry()
         # Should not raise
         registry.increment_counter("requests")
@@ -1977,9 +1909,7 @@ class TestMetricsRegistry:
     def test_record_latency(self):
         from enhanced_agent_bus.observability.telemetry import MetricsRegistry
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
             registry = MetricsRegistry()
         registry.record_latency("processing", 12.5)
         registry.record_latency("processing", 5.0, attributes={"step": "validate"})
@@ -1987,9 +1917,7 @@ class TestMetricsRegistry:
     def test_set_gauge(self):
         from enhanced_agent_bus.observability.telemetry import MetricsRegistry
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
             registry = MetricsRegistry()
         registry.set_gauge("active_connections", 1)
         registry.set_gauge("active_connections", -1, attributes={"pool": "main"})

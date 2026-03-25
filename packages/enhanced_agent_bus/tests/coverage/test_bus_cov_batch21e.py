@@ -509,9 +509,7 @@ class TestOAuth2ProviderAsync:
 
     @patch("enhanced_agent_bus.mcp_integration.auth.oauth2_provider.HTTPX_AVAILABLE", False)
     async def test_introspect_token_no_httpx(self):
-        provider = self._make_provider(
-            introspection_endpoint="https://auth.example.com/introspect"
-        )
+        provider = self._make_provider(introspection_endpoint="https://auth.example.com/introspect")
         result = await provider.introspect_token("tok")
         assert result is None
 
@@ -539,9 +537,7 @@ class TestOAuth2ProviderAsync:
         mock_client.__aexit__ = AsyncMock(return_value=False)
         mock_httpx.AsyncClient.return_value = mock_client
 
-        provider = self._make_provider(
-            introspection_endpoint="https://auth.example.com/introspect"
-        )
+        provider = self._make_provider(introspection_endpoint="https://auth.example.com/introspect")
         result = await provider.introspect_token("tok")
         assert result is not None
         assert result.active is True
@@ -559,9 +555,7 @@ class TestOAuth2ProviderAsync:
         mock_client.__aexit__ = AsyncMock(return_value=False)
         mock_httpx.AsyncClient.return_value = mock_client
 
-        provider = self._make_provider(
-            introspection_endpoint="https://auth.example.com/introspect"
-        )
+        provider = self._make_provider(introspection_endpoint="https://auth.example.com/introspect")
         result = await provider.introspect_token("tok")
         assert result is None
 
@@ -569,9 +563,7 @@ class TestOAuth2ProviderAsync:
     async def test_introspect_token_exception(self, mock_httpx):
         mock_httpx.AsyncClient.side_effect = OSError("network error")
 
-        provider = self._make_provider(
-            introspection_endpoint="https://auth.example.com/introspect"
-        )
+        provider = self._make_provider(introspection_endpoint="https://auth.example.com/introspect")
         result = await provider.introspect_token("tok")
         assert result is None
 
@@ -1317,9 +1309,7 @@ class TestLLMAssistantAsync:
         assistant.llm = mock_llm
 
         # _invoke_llm catches and returns {}, then ainvoke_multi_turn returns that
-        result = await assistant.ainvoke_multi_turn(
-            "sys", [{"role": "user", "content": "hi"}]
-        )
+        result = await assistant.ainvoke_multi_turn("sys", [{"role": "user", "content": "hi"}])
         assert result == {}
 
     async def test_invoke_llm_with_token_usage(self):

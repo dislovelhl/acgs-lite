@@ -4,7 +4,6 @@ Distributed Locking for ACGS-2 Constitutional Storage.
 Constitutional Hash: 608508a9bd224290
 """
 
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from .cache import CacheManager

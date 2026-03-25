@@ -9,7 +9,6 @@ Tests cover:
 - Integration with related components
 """
 
-
 from .hitl_test_helpers import (
     MockAuditLedger,
     MockDeliberationQueue,

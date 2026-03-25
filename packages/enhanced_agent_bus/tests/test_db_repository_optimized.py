@@ -89,17 +89,13 @@ def _make_orm(**overrides):
 class TestProjectionDTOs:
     def test_tenant_summary_creation(self):
         now = datetime.now(UTC)
-        s = TenantSummary(
-            tenant_id="t1", name="Test", slug="test", status="active", created_at=now
-        )
+        s = TenantSummary(tenant_id="t1", name="Test", slug="test", status="active", created_at=now)
         assert s.tenant_id == "t1"
         assert s.status == "active"
 
     def test_tenant_summary_is_frozen(self):
         now = datetime.now(UTC)
-        s = TenantSummary(
-            tenant_id="t1", name="Test", slug="test", status="active", created_at=now
-        )
+        s = TenantSummary(tenant_id="t1", name="Test", slug="test", status="active", created_at=now)
         with pytest.raises(AttributeError):
             s.name = "Changed"  # type: ignore[misc]
 

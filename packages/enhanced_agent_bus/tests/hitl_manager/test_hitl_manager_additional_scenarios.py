@@ -10,7 +10,6 @@ Tests cover:
 """
 
 
-
 class TestHITLManagerAdditionalScenarios:
     """Additional test scenarios for comprehensive coverage."""
 

@@ -214,7 +214,9 @@ class TestIsTokenRevoked:
         assert await svc.is_token_revoked(valid_jti) is False
 
     @patch.dict("os.environ", {"TOKEN_REVOCATION_FAIL_OPEN": "false"})
-    @patch("src.core.shared.security.token_revocation._runtime_environment", return_value="production")
+    @patch(
+        "src.core.shared.security.token_revocation._runtime_environment", return_value="production"
+    )
     async def test_no_redis_strict_mode(self, _mock_env, valid_jti):
         svc = _make_service(None)
         assert await svc.is_token_revoked(valid_jti) is True
@@ -226,7 +228,9 @@ class TestIsTokenRevoked:
         assert await svc.is_token_revoked(valid_jti) is False
 
     @patch.dict("os.environ", {"TOKEN_REVOCATION_FAIL_OPEN": "false"})
-    @patch("src.core.shared.security.token_revocation._runtime_environment", return_value="production")
+    @patch(
+        "src.core.shared.security.token_revocation._runtime_environment", return_value="production"
+    )
     async def test_connection_error_strict_mode(self, _mock_env, mock_redis, valid_jti):
         mock_redis.exists.side_effect = ConnectionError("down")
         svc = _make_service(mock_redis)
@@ -308,7 +312,9 @@ class TestIsUserRevoked:
         assert await svc.is_user_revoked(user_id, datetime.now(UTC)) is False
 
     @patch.dict("os.environ", {"TOKEN_REVOCATION_FAIL_OPEN": "false"})
-    @patch("src.core.shared.security.token_revocation._runtime_environment", return_value="production")
+    @patch(
+        "src.core.shared.security.token_revocation._runtime_environment", return_value="production"
+    )
     async def test_no_redis_strict_mode(self, _mock_env, user_id):
         svc = _make_service(None)
         assert await svc.is_user_revoked(user_id, datetime.now(UTC)) is True

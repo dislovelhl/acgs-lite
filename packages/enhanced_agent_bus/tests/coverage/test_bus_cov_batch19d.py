@@ -524,15 +524,9 @@ class TestVerificationOrchestratorSDPC:
     async def test_perform_sdpc_high_impact(self, bus_config, high_impact_message):
         orch = VerificationOrchestrator(config=bus_config, enable_pqc=False)
         # Patch SDPC verifiers to use no-op stubs that accept any kwargs
-        mock_pacar = AsyncMock(
-            return_value={"is_valid": True, "confidence": 0.95}
-        )
-        mock_asc = AsyncMock(
-            return_value={"is_valid": True, "confidence": 0.9, "results": []}
-        )
-        mock_graph = AsyncMock(
-            return_value={"is_valid": True, "results": []}
-        )
+        mock_pacar = AsyncMock(return_value={"is_valid": True, "confidence": 0.95})
+        mock_asc = AsyncMock(return_value={"is_valid": True, "confidence": 0.9, "results": []})
+        mock_graph = AsyncMock(return_value={"is_valid": True, "results": []})
         orch.pacar_verifier.verify = mock_pacar
         orch.asc_verifier.verify = mock_asc
         orch.graph_check.verify_entities = mock_graph
@@ -553,9 +547,7 @@ class TestVerificationOrchestratorSDPC:
             impact_score=0.5,
         )
         orch = VerificationOrchestrator(config=bus_config, enable_pqc=False)
-        mock_pacar = AsyncMock(
-            return_value={"is_valid": True, "confidence": 0.8, "critique": "ok"}
-        )
+        mock_pacar = AsyncMock(return_value={"is_valid": True, "confidence": 0.8, "critique": "ok"})
         orch.pacar_verifier.verify = mock_pacar
 
         sdpc_meta, verifications = await orch._perform_sdpc(msg, "task content")

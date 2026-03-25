@@ -319,9 +319,7 @@ class TestVerifyEndpoint:
             separators=(",", ":"),
         )
         receipt_hash = hashlib.sha256(canonical.encode()).hexdigest()
-        signature = hmac.new(
-            b"test-secret-key", canonical.encode(), hashlib.sha256
-        ).hexdigest()
+        signature = hmac.new(b"test-secret-key", canonical.encode(), hashlib.sha256).hexdigest()
 
         resp = client.get(
             "/x402/verify",
@@ -354,9 +352,7 @@ class TestVerifyEndpoint:
 
     def test_verify_invalid_hash(self, client):
         canonical = json.dumps({"compliant": True}, sort_keys=True, separators=(",", ":"))
-        signature = hmac.new(
-            b"test-secret-key", canonical.encode(), hashlib.sha256
-        ).hexdigest()
+        signature = hmac.new(b"test-secret-key", canonical.encode(), hashlib.sha256).hexdigest()
         resp = client.get(
             "/x402/verify",
             params={

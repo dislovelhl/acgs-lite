@@ -68,6 +68,7 @@ from enhanced_agent_bus.validators import ValidationResult
 # Helpers
 # ============================================================================
 
+
 def _make_connector() -> MagicMock:
     """Create a mock DataWarehouseConnector."""
     conn = MagicMock()
@@ -92,6 +93,7 @@ def _make_id_token(claims: dict) -> str:
 # ============================================================================
 # sync_engine tests — target missing lines
 # ============================================================================
+
 
 class TestSyncEngineTransformAndMapping:
     """Cover lines 124-125 (transform_fn), 128-129 (column_mapping),
@@ -337,6 +339,7 @@ class TestCreateSyncEngine:
 # OIDC tests — target missing lines
 # ============================================================================
 
+
 class TestOIDCValidateResponse:
     """Cover lines 180-184 (exception handler), 193-216 (_exchange_code),
     258-259 (nonce mismatch), 296-328 (_get_userinfo).
@@ -396,7 +399,9 @@ class TestOIDCValidateResponse:
 
     async def test_validate_response_no_token(self):
         h = self._handler()
-        with patch.object(h, "_exchange_code", new_callable=AsyncMock, return_value={"scope": "openid"}):
+        with patch.object(
+            h, "_exchange_code", new_callable=AsyncMock, return_value={"scope": "openid"}
+        ):
             result = await h.validate_response({"code": "authcode"})
             assert result.success is False
             assert result.error_code == "NO_TOKEN"
@@ -412,7 +417,9 @@ class TestOIDCValidateResponse:
         }
         token = _make_id_token(claims)
         with patch.object(
-            h, "_exchange_code", new_callable=AsyncMock,
+            h,
+            "_exchange_code",
+            new_callable=AsyncMock,
             return_value={"id_token": token, "access_token": "at"},
         ):
             result = await h.validate_response({"code": "authcode"})
@@ -422,11 +429,15 @@ class TestOIDCValidateResponse:
     async def test_validate_response_with_access_token_only(self):
         h = self._handler()
         with patch.object(
-            h, "_exchange_code", new_callable=AsyncMock,
+            h,
+            "_exchange_code",
+            new_callable=AsyncMock,
             return_value={"access_token": "at123"},
         ):
             with patch.object(
-                h, "_get_userinfo", new_callable=AsyncMock,
+                h,
+                "_get_userinfo",
+                new_callable=AsyncMock,
                 return_value=ProtocolValidationResult(success=True, user_id="u1"),
             ):
                 result = await h.validate_response({"code": "authcode"})
@@ -437,7 +448,9 @@ class TestOIDCValidateResponse:
         """Cover the outer exception handler lines 180-184."""
         h = self._handler()
         with patch.object(
-            h, "_exchange_code", new_callable=AsyncMock,
+            h,
+            "_exchange_code",
+            new_callable=AsyncMock,
             side_effect=RuntimeError("network failure"),
         ):
             result = await h.validate_response({"code": "authcode"})
@@ -459,7 +472,9 @@ class TestOIDCExchangeCode:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("enhanced_agent_bus.enterprise_sso.enterprise_sso_infra.oidc.OIDCHandler._exchange_code") as mock_exc:
+        with patch(
+            "enhanced_agent_bus.enterprise_sso.enterprise_sso_infra.oidc.OIDCHandler._exchange_code"
+        ) as mock_exc:
             mock_exc.return_value = {"access_token": "at", "id_token": "idt"}
             tokens = await mock_exc("code123", "https://redirect.example.com")
             assert "access_token" in tokens
@@ -614,6 +629,7 @@ class TestOIDCGetUserinfo:
 # orchestrator tests — target missing lines
 # ============================================================================
 
+
 class TestMetaOrchestratorInit:
     """Cover container-based init (lines 94-110) and no-container fallback (122-127)."""
 
@@ -654,9 +670,7 @@ class TestMetaOrchestratorContextProcessing:
             fallback: bool = False
 
         orch = MetaOrchestrator()
-        orch._context_coordinator.process_with_context = AsyncMock(
-            return_value=FakeResult()
-        )
+        orch._context_coordinator.process_with_context = AsyncMock(return_value=FakeResult())
         result = await orch.process_with_mamba_context("test input")
         assert result["compliance_score"] == 0.8
 
@@ -705,9 +719,7 @@ class TestMetaOrchestratorMACIValidation:
         orch._context_coordinator.process_with_context = AsyncMock(
             return_value={"compliance_score": 0.9, "fallback": False}
         )
-        orch._maci_coordinator.validate_action = AsyncMock(
-            return_value={"allowed": False}
-        )
+        orch._maci_coordinator.validate_action = AsyncMock(return_value={"allowed": False})
         result = await orch.validate_constitutional_compliance(
             {"task": "something", "agent_id": "agent1", "action_type": "execute"}
         )
@@ -718,9 +730,7 @@ class TestMetaOrchestratorMACIValidation:
         orch._context_coordinator.process_with_context = AsyncMock(
             return_value={"compliance_score": 0.9, "fallback": False}
         )
-        orch._maci_coordinator.validate_action = AsyncMock(
-            return_value={"allowed": True}
-        )
+        orch._maci_coordinator.validate_action = AsyncMock(return_value={"allowed": True})
         result = await orch.validate_constitutional_compliance(
             {"task": "something", "agent_id": "agent1"}
         )
@@ -752,9 +762,7 @@ class TestMetaOrchestratorWorkflow:
 
     async def test_evolve_workflow_success(self):
         orch = MetaOrchestrator()
-        orch._workflow_coordinator.evolve_workflow = AsyncMock(
-            return_value={"success": True}
-        )
+        orch._workflow_coordinator.evolve_workflow = AsyncMock(return_value={"success": True})
         result = await orch.evolve_workflow("wf1", {"confidence": 0.9})
         assert result is True
 
@@ -800,6 +808,7 @@ class TestMetaOrchestratorStatus:
 # ============================================================================
 # prefetch tests — target missing lines
 # ============================================================================
+
 
 class TestPrefetchManagerInit:
     """Cover line 57 (invalid hash)."""
@@ -950,6 +959,7 @@ class TestPrefetchManagerMetrics:
 # governance tests — target missing lines
 # ============================================================================
 
+
 class TestGovernanceValidatorInit:
     """Cover lines 85-92 (adaptive governance init), 97-100 (shutdown)."""
 
@@ -981,15 +991,14 @@ class TestGovernanceValidatorInit:
         await gv.initialize()  # Should not raise
 
     async def test_initialize_adaptive_governance(self):
-        gv = GovernanceValidator(
-            config={}, enable_adaptive_governance=True
-        )
-        with patch(
-            "enhanced_agent_bus.components.governance.ADAPTIVE_GOVERNANCE_AVAILABLE", True
-        ), patch(
-            "enhanced_agent_bus.components.governance.initialize_adaptive_governance",
-            new_callable=AsyncMock,
-            return_value=MagicMock(),
+        gv = GovernanceValidator(config={}, enable_adaptive_governance=True)
+        with (
+            patch("enhanced_agent_bus.components.governance.ADAPTIVE_GOVERNANCE_AVAILABLE", True),
+            patch(
+                "enhanced_agent_bus.components.governance.initialize_adaptive_governance",
+                new_callable=AsyncMock,
+                return_value=MagicMock(),
+            ),
         ):
             gv._enable_adaptive_governance = True
             await gv.initialize()
@@ -997,12 +1006,13 @@ class TestGovernanceValidatorInit:
 
     async def test_initialize_adaptive_governance_failure(self):
         gv = GovernanceValidator(config={}, enable_adaptive_governance=True)
-        with patch(
-            "enhanced_agent_bus.components.governance.ADAPTIVE_GOVERNANCE_AVAILABLE", True
-        ), patch(
-            "enhanced_agent_bus.components.governance.initialize_adaptive_governance",
-            new_callable=AsyncMock,
-            side_effect=RuntimeError("ag init fail"),
+        with (
+            patch("enhanced_agent_bus.components.governance.ADAPTIVE_GOVERNANCE_AVAILABLE", True),
+            patch(
+                "enhanced_agent_bus.components.governance.initialize_adaptive_governance",
+                new_callable=AsyncMock,
+                side_effect=RuntimeError("ag init fail"),
+            ),
         ):
             gv._enable_adaptive_governance = True
             await gv.initialize()
@@ -1089,9 +1099,7 @@ class TestGovernanceValidatorAdaptiveEval:
     async def test_evaluate_adaptive_governance_exception(self):
         gv = GovernanceValidator(config={})
         mock_ag = AsyncMock()
-        mock_ag.evaluate_governance_decision = AsyncMock(
-            side_effect=RuntimeError("eval failed")
-        )
+        mock_ag.evaluate_governance_decision = AsyncMock(side_effect=RuntimeError("eval failed"))
         gv._adaptive_governance = mock_ag
 
         msg = AgentMessage()
@@ -1120,11 +1128,12 @@ class TestGovernanceValidatorFeedback:
 
         msg = AgentMessage(content={"test": True})
 
-        with patch(
-            "enhanced_agent_bus.components.governance.ADAPTIVE_GOVERNANCE_AVAILABLE", True
-        ), patch(
-            "enhanced_agent_bus.components.governance.provide_governance_feedback",
-        ) as mock_feedback:
+        with (
+            patch("enhanced_agent_bus.components.governance.ADAPTIVE_GOVERNANCE_AVAILABLE", True),
+            patch(
+                "enhanced_agent_bus.components.governance.provide_governance_feedback",
+            ) as mock_feedback,
+        ):
             gv.provide_feedback(msg, True)
             mock_feedback.assert_called_once_with(mock_decision, True)
 

@@ -166,9 +166,7 @@ class TestGetOrCreateHistogram:
                 return_value=mock_hist,
             ),
         ):
-            result = _get_or_create_histogram(
-                "hist_buckets", "d", ["l"], buckets=[0.1, 0.5, 1.0]
-            )
+            result = _get_or_create_histogram("hist_buckets", "d", ["l"], buckets=[0.1, 0.5, 1.0])
             assert result is mock_hist
         _METRICS_CACHE.pop("hist_buckets", None)
 
@@ -377,9 +375,7 @@ class TestHuggingFaceAdapter:
     def test_translate_response_choices_format(self):
         """Cover lines 104-105: dict with choices format."""
         adapter = self._make_adapter()
-        resp = adapter.translate_response({
-            "choices": [{"message": {"content": "From choices"}}]
-        })
+        resp = adapter.translate_response({"choices": [{"message": {"content": "From choices"}}]})
         assert resp.content == "From choices"
 
     def test_translate_response_empty_dict(self):
@@ -732,16 +728,36 @@ class TestExtContextMemoryFallbacks:
 
             # All fallback names should be `object`
             fallback_names = [
-                "ContextMemoryChunk", "ContextPriority", "ContextRetrievalResult",
-                "ContextType", "ContextMemoryWindow", "EpisodicMemoryEntry",
-                "JRTConfig", "MambaConfig", "MemoryConsolidationResult",
-                "MemoryOperation", "MemoryOperationType", "MemoryQuery",
-                "SemanticMemoryEntry", "MambaProcessor", "Mamba2SSMLayer",
-                "MambaProcessorConfig", "HybridContextManager", "HybridContextConfig",
-                "ProcessingMode", "JRTContextPreparer", "JRTRetrievalStrategy",
-                "CriticalSectionMarker", "LongTermMemoryStore", "LongTermMemoryConfig",
-                "MemoryTier", "ConsolidationStrategy", "ConstitutionalContextCache",
-                "CacheConfig", "ContextMemoryCacheEntry", "CacheStats",
+                "ContextMemoryChunk",
+                "ContextPriority",
+                "ContextRetrievalResult",
+                "ContextType",
+                "ContextMemoryWindow",
+                "EpisodicMemoryEntry",
+                "JRTConfig",
+                "MambaConfig",
+                "MemoryConsolidationResult",
+                "MemoryOperation",
+                "MemoryOperationType",
+                "MemoryQuery",
+                "SemanticMemoryEntry",
+                "MambaProcessor",
+                "Mamba2SSMLayer",
+                "MambaProcessorConfig",
+                "HybridContextManager",
+                "HybridContextConfig",
+                "ProcessingMode",
+                "JRTContextPreparer",
+                "JRTRetrievalStrategy",
+                "CriticalSectionMarker",
+                "LongTermMemoryStore",
+                "LongTermMemoryConfig",
+                "MemoryTier",
+                "ConsolidationStrategy",
+                "ConstitutionalContextCache",
+                "CacheConfig",
+                "ContextMemoryCacheEntry",
+                "CacheStats",
             ]
             for name in fallback_names:
                 val = getattr(mod, name)

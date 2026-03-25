@@ -357,9 +357,7 @@ class TestSnapshotGovernanceAdapter:
     @pytest.mark.asyncio
     async def test_analytics_with_space(self):
         adapter = self._make_adapter()
-        space = SnapshotSpace(
-            space_id="test.eth", name="Test", follower_count=200
-        )
+        space = SnapshotSpace(space_id="test.eth", name="Test", follower_count=200)
         adapter.add_space(space)
 
         pid = await adapter.submit_constitutional_amendment(

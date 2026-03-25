@@ -79,6 +79,7 @@ class Z3Adapter(ACLAdapter[Z3Request, Z3Response]):
     def _check_z3_available(self) -> bool:
         try:
             import z3  # noqa: F401
+
             return True
         except ImportError:
             return False
@@ -121,7 +122,9 @@ class Z3Adapter(ACLAdapter[Z3Request, Z3Response]):
                             model[str(decl.name())] = str(model_obj[decl])
                     except Exception:
                         model = {}
-                return Z3Response(result="sat", model=model, statistics=stats, trace_id=request.trace_id)
+                return Z3Response(
+                    result="sat", model=model, statistics=stats, trace_id=request.trace_id
+                )
 
             if check_result == getattr(z3, "unsat", "unsat"):
                 proof = None
@@ -146,7 +149,9 @@ class Z3Adapter(ACLAdapter[Z3Request, Z3Response]):
             return Z3Response(result="unknown", statistics=stats, trace_id=request.trace_id)
         except Exception as exc:
             reason = "parse_error" if "parse" in str(exc).lower() else f"z3_error:{exc}"
-            return Z3Response(result="unknown", statistics={"reason": reason}, trace_id=request.trace_id)
+            return Z3Response(
+                result="unknown", statistics={"reason": reason}, trace_id=request.trace_id
+            )
 
     def _extract_stats(self, solver: Any) -> dict[str, Any]:
         try:

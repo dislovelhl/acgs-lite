@@ -883,9 +883,7 @@ class TestOIDCProviderDiscoverHTTP:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
-        with patch(
-            "enhanced_agent_bus.mcp_integration.auth.oidc_provider.httpx"
-        ) as mock_httpx:
+        with patch("enhanced_agent_bus.mcp_integration.auth.oidc_provider.httpx") as mock_httpx:
             mock_httpx.AsyncClient.return_value = mock_client
             with patch(
                 "enhanced_agent_bus.mcp_integration.auth.oidc_provider.HTTPX_AVAILABLE",
@@ -910,9 +908,7 @@ class TestOIDCProviderDiscoverHTTP:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
-        with patch(
-            "enhanced_agent_bus.mcp_integration.auth.oidc_provider.httpx"
-        ) as mock_httpx:
+        with patch("enhanced_agent_bus.mcp_integration.auth.oidc_provider.httpx") as mock_httpx:
             mock_httpx.AsyncClient.return_value = mock_client
             with patch(
                 "enhanced_agent_bus.mcp_integration.auth.oidc_provider.HTTPX_AVAILABLE",
@@ -931,9 +927,7 @@ class TestOIDCProviderDiscoverHTTP:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
-        with patch(
-            "enhanced_agent_bus.mcp_integration.auth.oidc_provider.httpx"
-        ) as mock_httpx:
+        with patch("enhanced_agent_bus.mcp_integration.auth.oidc_provider.httpx") as mock_httpx:
             mock_httpx.AsyncClient.return_value = mock_client
             with patch(
                 "enhanced_agent_bus.mcp_integration.auth.oidc_provider.HTTPX_AVAILABLE",
@@ -974,9 +968,13 @@ class TestOIDCProviderAcquireTokens:
         provider._oauth2_provider = MagicMock()
 
         # Build a simple JWT-like token (header.payload.sig)
-        payload = base64.urlsafe_b64encode(
-            json.dumps({"sub": "user-1", "iss": "https://example.com"}).encode()
-        ).decode().rstrip("=")
+        payload = (
+            base64.urlsafe_b64encode(
+                json.dumps({"sub": "user-1", "iss": "https://example.com"}).encode()
+            )
+            .decode()
+            .rstrip("=")
+        )
         fake_token = f"eyJhbGciOiJSUzI1NiJ9.{payload}.fake_sig"
 
         oauth2_token = OAuth2Token(
@@ -1011,9 +1009,7 @@ class TestOIDCProviderAcquireTokens:
         provider = OIDCProvider(config)
         provider._oauth2_provider = MagicMock()
         provider._oauth2_provider.acquire_token = AsyncMock(return_value=None)
-        provider._oauth2_provider.get_pkce_verifier = MagicMock(
-            return_value="verifier-123"
-        )
+        provider._oauth2_provider.get_pkce_verifier = MagicMock(return_value="verifier-123")
 
         await provider.acquire_tokens(state="state-abc")
         provider._oauth2_provider.get_pkce_verifier.assert_called_with("state-abc")
@@ -1075,9 +1071,7 @@ class TestOIDCProviderGetUserinfo:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
-        with patch(
-            "enhanced_agent_bus.mcp_integration.auth.oidc_provider.httpx"
-        ) as mock_httpx:
+        with patch("enhanced_agent_bus.mcp_integration.auth.oidc_provider.httpx") as mock_httpx:
             mock_httpx.AsyncClient.return_value = mock_client
             with patch(
                 "enhanced_agent_bus.mcp_integration.auth.oidc_provider.HTTPX_AVAILABLE",
@@ -1106,9 +1100,7 @@ class TestOIDCProviderGetUserinfo:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
-        with patch(
-            "enhanced_agent_bus.mcp_integration.auth.oidc_provider.httpx"
-        ) as mock_httpx:
+        with patch("enhanced_agent_bus.mcp_integration.auth.oidc_provider.httpx") as mock_httpx:
             mock_httpx.AsyncClient.return_value = mock_client
             with patch(
                 "enhanced_agent_bus.mcp_integration.auth.oidc_provider.HTTPX_AVAILABLE",
@@ -1133,9 +1125,7 @@ class TestOIDCProviderGetUserinfo:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
-        with patch(
-            "enhanced_agent_bus.mcp_integration.auth.oidc_provider.httpx"
-        ) as mock_httpx:
+        with patch("enhanced_agent_bus.mcp_integration.auth.oidc_provider.httpx") as mock_httpx:
             mock_httpx.AsyncClient.return_value = mock_client
             with patch(
                 "enhanced_agent_bus.mcp_integration.auth.oidc_provider.HTTPX_AVAILABLE",
@@ -1157,9 +1147,13 @@ class TestOIDCProviderValidateIdToken:
         )
         provider = OIDCProvider(config)
 
-        payload = base64.urlsafe_b64encode(
-            json.dumps({"sub": "u1", "iss": "https://example.com"}).encode()
-        ).decode().rstrip("=")
+        payload = (
+            base64.urlsafe_b64encode(
+                json.dumps({"sub": "u1", "iss": "https://example.com"}).encode()
+            )
+            .decode()
+            .rstrip("=")
+        )
         token = f"eyJhbGciOiJSUzI1NiJ9.{payload}.sig"
 
         claims, errors = await provider._validate_id_token(token, "access", None)
@@ -1174,9 +1168,7 @@ class TestOIDCProviderValidateIdToken:
         )
         provider = OIDCProvider(config)
 
-        claims, errors = await provider._validate_id_token(
-            "not.a.valid-jwt", "access", None
-        )
+        claims, errors = await provider._validate_id_token("not.a.valid-jwt", "access", None)
         assert len(errors) > 0
         assert "decode" in errors[0].lower() or "Token decode error" in errors[0]
 
@@ -1214,9 +1206,7 @@ class TestOIDCProviderDecodeJwtPayload:
         provider = OIDCProvider(config)
 
         payload_data = {"sub": "user-1", "email": "test@example.com"}
-        payload = base64.urlsafe_b64encode(
-            json.dumps(payload_data).encode()
-        ).decode().rstrip("=")
+        payload = base64.urlsafe_b64encode(json.dumps(payload_data).encode()).decode().rstrip("=")
         token = f"header.{payload}.signature"
 
         result = provider._decode_jwt_payload(token)
@@ -1237,9 +1227,11 @@ class TestOIDCProviderComputeAtHash:
         config = OIDCConfig(issuer_url="https://example.com", client_id="test")
         provider = OIDCProvider(config)
         result = provider._compute_at_hash("access-token-123", {"alg": "RS256"})
-        expected = base64.urlsafe_b64encode(
-            hashlib.sha256(b"access-token-123").digest()[:16]
-        ).decode().rstrip("=")
+        expected = (
+            base64.urlsafe_b64encode(hashlib.sha256(b"access-token-123").digest()[:16])
+            .decode()
+            .rstrip("=")
+        )
         assert result == expected
 
     def test_at_hash_sha384(self):
@@ -1247,9 +1239,7 @@ class TestOIDCProviderComputeAtHash:
         provider = OIDCProvider(config)
         result = provider._compute_at_hash("access-token-123", {"alg": "RS384"})
         digest = hashlib.sha384(b"access-token-123").digest()
-        expected = base64.urlsafe_b64encode(
-            digest[: len(digest) // 2]
-        ).decode().rstrip("=")
+        expected = base64.urlsafe_b64encode(digest[: len(digest) // 2]).decode().rstrip("=")
         assert result == expected
 
     def test_at_hash_sha512(self):
@@ -1257,9 +1247,7 @@ class TestOIDCProviderComputeAtHash:
         provider = OIDCProvider(config)
         result = provider._compute_at_hash("access-token-123", {"alg": "RS512"})
         digest = hashlib.sha512(b"access-token-123").digest()
-        expected = base64.urlsafe_b64encode(
-            digest[: len(digest) // 2]
-        ).decode().rstrip("=")
+        expected = base64.urlsafe_b64encode(digest[: len(digest) // 2]).decode().rstrip("=")
         assert result == expected
 
     def test_at_hash_unknown_alg_falls_back_to_sha256(self):
@@ -1267,9 +1255,11 @@ class TestOIDCProviderComputeAtHash:
         provider = OIDCProvider(config)
         result = provider._compute_at_hash("access-token-123", {"alg": "ES256K"})
         # ES256K does not end in 256/384/512 so falls back to sha256
-        expected = base64.urlsafe_b64encode(
-            hashlib.sha256(b"access-token-123").digest()[:16]
-        ).decode().rstrip("=")
+        expected = (
+            base64.urlsafe_b64encode(hashlib.sha256(b"access-token-123").digest()[:16])
+            .decode()
+            .rstrip("=")
+        )
         assert result == expected
 
 
@@ -1336,9 +1326,7 @@ class TestOIDCProviderFetchJWKS:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
-        with patch(
-            "enhanced_agent_bus.mcp_integration.auth.oidc_provider.httpx"
-        ) as mock_httpx:
+        with patch("enhanced_agent_bus.mcp_integration.auth.oidc_provider.httpx") as mock_httpx:
             mock_httpx.AsyncClient.return_value = mock_client
             with patch(
                 "enhanced_agent_bus.mcp_integration.auth.oidc_provider.HTTPX_AVAILABLE",
@@ -1368,9 +1356,7 @@ class TestOIDCProviderFetchJWKS:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
-        with patch(
-            "enhanced_agent_bus.mcp_integration.auth.oidc_provider.httpx"
-        ) as mock_httpx:
+        with patch("enhanced_agent_bus.mcp_integration.auth.oidc_provider.httpx") as mock_httpx:
             mock_httpx.AsyncClient.return_value = mock_client
             with patch(
                 "enhanced_agent_bus.mcp_integration.auth.oidc_provider.HTTPX_AVAILABLE",

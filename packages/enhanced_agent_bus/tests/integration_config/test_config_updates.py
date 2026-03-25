@@ -5,7 +5,6 @@ Constitutional Hash: 608508a9bd224290
 Task 7.6: PATCH /tenants/{tenant_id}/integrations/{integration_id} for config updates
 """
 
-
 from .conftest import (
     IntegrationStatus,
     IntegrationType,

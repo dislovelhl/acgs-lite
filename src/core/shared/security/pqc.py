@@ -368,9 +368,7 @@ class PQCWrapper:
         """
         if find_spec("oqs") is None:
             logger.error("liboqs-python not installed. Install with: pip install liboqs-python")
-            raise PQCConfigurationError(
-                "liboqs-python not installed. Required for PQC operations."
-            )
+            raise PQCConfigurationError("liboqs-python not installed. Required for PQC operations.")
         logger.debug("liboqs-python is available")
 
     # ========================================================================

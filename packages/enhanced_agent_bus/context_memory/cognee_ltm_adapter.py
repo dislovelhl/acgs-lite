@@ -69,14 +69,9 @@ class CogneeLongTermMemory:
 
     def __init__(self, config: CogneeLTMConfig | None = None) -> None:
         if not HAS_COGNEE:
-            raise RuntimeError(
-                "cognee is not installed. "
-                "Install with: pip install cognee"
-            )
+            raise RuntimeError("cognee is not installed. Install with: pip install cognee")
         self._config = config or CogneeLTMConfig()
-        self._graph = ConstitutionalKnowledgeGraph(
-            config=self._config.cognee_config
-        )
+        self._graph = ConstitutionalKnowledgeGraph(config=self._config.cognee_config)
         self._operations: list[MemoryOperation] = []
         self._stats = {
             "episodic_stored": 0,
@@ -115,15 +110,17 @@ class CogneeLongTermMemory:
         start = time.monotonic()
         tenant = tenant_id or entry.tenant_id
 
-        await self._graph.ingest_precedents([
-            {
-                "id": entry.entry_id,
-                "action": entry.event_type,
-                "verdict": entry.outcome or "unknown",
-                "reasoning": entry.content,
-                "principle_ids": entry.context.get("principle_ids", []),
-            }
-        ])
+        await self._graph.ingest_precedents(
+            [
+                {
+                    "id": entry.entry_id,
+                    "action": entry.event_type,
+                    "verdict": entry.outcome or "unknown",
+                    "reasoning": entry.content,
+                    "principle_ids": entry.context.get("principle_ids", []),
+                }
+            ]
+        )
 
         latency = (time.monotonic() - start) * 1000
         self._stats["episodic_stored"] += 1
@@ -152,14 +149,16 @@ class CogneeLongTermMemory:
         """
         start = time.monotonic()
 
-        await self._graph.ingest_principles([
-            {
-                "id": entry.entry_id,
-                "category": entry.knowledge_type,
-                "text": entry.content,
-                "weight": entry.confidence,
-            }
-        ])
+        await self._graph.ingest_principles(
+            [
+                {
+                    "id": entry.entry_id,
+                    "category": entry.knowledge_type,
+                    "text": entry.content,
+                    "weight": entry.confidence,
+                }
+            ]
+        )
 
         latency = (time.monotonic() - start) * 1000
         self._stats["semantic_stored"] += 1
@@ -243,6 +242,7 @@ class CogneeLongTermMemory:
         # We trigger a re-cognify to rebuild the graph
         try:
             import cognee
+
             await cognee.cognify()
         except Exception:
             logger.exception("cognee_consolidation_failed")
@@ -251,8 +251,7 @@ class CogneeLongTermMemory:
         self._stats["consolidations"] += 1
 
         return MemoryConsolidationResult(
-            entries_processed=self._stats["episodic_stored"]
-            + self._stats["semantic_stored"],
+            entries_processed=self._stats["episodic_stored"] + self._stats["semantic_stored"],
             entries_consolidated=0,
             entries_archived=0,
             entries_deleted=0,

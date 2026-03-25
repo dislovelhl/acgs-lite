@@ -32,6 +32,7 @@ from src.core.shared.security.auth import UserClaims, get_current_user
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 def _make_user(roles: list[str] | None = None) -> UserClaims:
     now = int(datetime.now(UTC).timestamp())
     return UserClaims(

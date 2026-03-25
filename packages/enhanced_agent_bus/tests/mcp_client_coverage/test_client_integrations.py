@@ -53,9 +53,7 @@ class TestMCPClientConnectWithValidator:
     async def test_connect_validators_not_available_skips(self):
         validator = MagicMock()
         validator.validate = AsyncMock()
-        with patch(
-            "enhanced_agent_bus.mcp_integration.client.VALIDATORS_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.mcp_integration.client.VALIDATORS_AVAILABLE", False):
             client = _make_client(validator=validator)
             result = await client.connect()
         assert result is True
@@ -67,9 +65,7 @@ class TestMCPClientToolRegistry:
         registry = MagicMock()
         registry.discover_tools = AsyncMock()
 
-        with patch(
-            "enhanced_agent_bus.mcp_integration.client.TOOL_REGISTRY_AVAILABLE", True
-        ):
+        with patch("enhanced_agent_bus.mcp_integration.client.TOOL_REGISTRY_AVAILABLE", True):
             client = _make_client(tool_registry=registry)
             await client.connect()
 
@@ -82,9 +78,7 @@ class TestMCPClientToolRegistry:
         registry = MagicMock()
         registry.discover_tools = AsyncMock()
 
-        with patch(
-            "enhanced_agent_bus.mcp_integration.client.TOOL_REGISTRY_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.mcp_integration.client.TOOL_REGISTRY_AVAILABLE", False):
             client = _make_client(tool_registry=registry)
             await client.connect()
 

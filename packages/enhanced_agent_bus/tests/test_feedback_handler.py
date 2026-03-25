@@ -25,6 +25,7 @@ from enhanced_agent_bus.feedback_handler.models import (
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 def _make_event(**overrides) -> FeedbackEvent:
     defaults = {
         "decision_id": "dec-001",
@@ -46,6 +47,7 @@ def handler() -> FeedbackHandler:
 # ---------------------------------------------------------------------------
 # store_feedback — in-memory path
 # ---------------------------------------------------------------------------
+
 
 class TestStoreFeedback:
     def test_store_returns_accepted_response(self, handler: FeedbackHandler):
@@ -70,6 +72,7 @@ class TestStoreFeedback:
 # ---------------------------------------------------------------------------
 # store_feedback — DB path
 # ---------------------------------------------------------------------------
+
 
 class TestStoreFeedbackWithDB:
     def test_store_to_database_called(self):
@@ -102,6 +105,7 @@ class TestStoreFeedbackWithDB:
 # Kafka auto-publish
 # ---------------------------------------------------------------------------
 
+
 class TestKafkaPublish:
     def test_auto_publish_invokes_publisher(self):
         publisher = MagicMock()
@@ -125,6 +129,7 @@ class TestKafkaPublish:
 # store_batch
 # ---------------------------------------------------------------------------
 
+
 class TestStoreBatch:
     def test_batch_all_accepted(self, handler: FeedbackHandler):
         events = [_make_event(decision_id=f"dec-{i}") for i in range(3)]
@@ -140,6 +145,7 @@ class TestStoreBatch:
 # ---------------------------------------------------------------------------
 # get_feedback — in-memory
 # ---------------------------------------------------------------------------
+
 
 class TestGetFeedback:
     def test_returns_all_when_no_filter(self, handler: FeedbackHandler):
@@ -168,6 +174,7 @@ class TestGetFeedback:
 # ---------------------------------------------------------------------------
 # get_feedback_stats — in-memory
 # ---------------------------------------------------------------------------
+
 
 class TestGetFeedbackStats:
     def test_empty_stats(self, handler: FeedbackHandler):
@@ -218,6 +225,7 @@ class TestGetFeedbackStats:
 # mark_as_processed — in-memory
 # ---------------------------------------------------------------------------
 
+
 class TestMarkAsProcessed:
     def test_marks_matching_events(self, handler: FeedbackHandler):
         resp = handler.store_feedback(_make_event())
@@ -233,6 +241,7 @@ class TestMarkAsProcessed:
 # get_unprocessed_feedback
 # ---------------------------------------------------------------------------
 
+
 class TestGetUnprocessed:
     def test_returns_only_unprocessed(self, handler: FeedbackHandler):
         r1 = handler.store_feedback(_make_event(decision_id="d1"))
@@ -247,6 +256,7 @@ class TestGetUnprocessed:
 # ---------------------------------------------------------------------------
 # initialize_schema
 # ---------------------------------------------------------------------------
+
 
 class TestInitializeSchema:
     def test_no_db_returns_false(self, handler: FeedbackHandler):
@@ -272,6 +282,7 @@ class TestInitializeSchema:
 # close
 # ---------------------------------------------------------------------------
 
+
 class TestClose:
     def test_close_with_connection(self):
         mock_conn = MagicMock()
@@ -287,6 +298,7 @@ class TestClose:
 # ---------------------------------------------------------------------------
 # publisher property
 # ---------------------------------------------------------------------------
+
 
 class TestPublisherProperty:
     def test_publisher_getter_setter(self, handler: FeedbackHandler):
@@ -304,9 +316,11 @@ class TestPublisherProperty:
 # Module-level convenience functions
 # ---------------------------------------------------------------------------
 
+
 class TestModuleFunctions:
     def test_get_feedback_handler_singleton(self):
         import enhanced_agent_bus.feedback_handler.handler as mod
+
         mod._feedback_handler = None
         h1 = get_feedback_handler()
         h2 = get_feedback_handler()
@@ -315,16 +329,20 @@ class TestModuleFunctions:
 
     def test_submit_feedback_with_dict(self):
         import enhanced_agent_bus.feedback_handler.handler as mod
+
         mod._feedback_handler = None
-        resp = submit_feedback({
-            "decision_id": "d-dict",
-            "feedback_type": "positive",
-        })
+        resp = submit_feedback(
+            {
+                "decision_id": "d-dict",
+                "feedback_type": "positive",
+            }
+        )
         assert resp.status == "accepted"
         mod._feedback_handler = None
 
     def test_get_feedback_for_decision(self):
         import enhanced_agent_bus.feedback_handler.handler as mod
+
         mod._feedback_handler = None
         submit_feedback(_make_event(decision_id="lookup-me"))
         results = get_feedback_for_decision("lookup-me")

@@ -107,15 +107,11 @@ class TestInjectionResult:
     """Tests for InjectionResult dataclass."""
 
     def test_success_property(self):
-        result = InjectionResult(
-            status=InjectionStatus.SUCCESS, auth_method=AuthMethod.API_KEY
-        )
+        result = InjectionResult(status=InjectionStatus.SUCCESS, auth_method=AuthMethod.API_KEY)
         assert result.success is True
 
     def test_failure_property(self):
-        result = InjectionResult(
-            status=InjectionStatus.FAILED, auth_method=AuthMethod.API_KEY
-        )
+        result = InjectionResult(status=InjectionStatus.FAILED, auth_method=AuthMethod.API_KEY)
         assert result.success is False
 
     def test_aliases(self):

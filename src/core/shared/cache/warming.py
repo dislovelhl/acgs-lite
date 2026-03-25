@@ -454,14 +454,14 @@ class CacheWarmer:
             l3_cache = cache_manager_dict.get("_l3_cache")
             if isinstance(l3_cache, Mapping):
                 l3_lock = cache_manager_dict.get("_l3_lock")
-                with (l3_lock if l3_lock is not None else nullcontext()):
+                with l3_lock if l3_lock is not None else nullcontext():
                     l3_keys = list(l3_cache.keys())
 
                 # Sort by access frequency if available
                 access_records = cache_manager_dict.get("_access_records")
                 if isinstance(access_records, Mapping):
                     access_lock = cache_manager_dict.get("_access_lock")
-                    with (access_lock if access_lock is not None else nullcontext()):
+                    with access_lock if access_lock is not None else nullcontext():
                         sorted_keys = sorted(
                             l3_keys,
                             key=lambda k: (

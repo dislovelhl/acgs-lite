@@ -5,6 +5,7 @@ online_learning_infra/adapter, ai_assistant/integration.
 
 Target: 864+ newly covered lines across 8 modules.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -164,8 +165,13 @@ class TestStructuredJSONFormatter:
     def test_format_basic(self) -> None:
         formatter = StructuredJSONFormatter(service_name="test-svc", redact_pii=False)
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="", lineno=0,
-            msg="Test message", args=(), exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="",
+            lineno=0,
+            msg="Test message",
+            args=(),
+            exc_info=None,
         )
         output = formatter.format(record)
         parsed = json.loads(output)
@@ -179,10 +185,16 @@ class TestStructuredJSONFormatter:
             raise ValueError("test error")
         except ValueError:
             import sys
+
             exc_info = sys.exc_info()
         record = logging.LogRecord(
-            name="test", level=logging.ERROR, pathname="", lineno=0,
-            msg="Error", args=(), exc_info=exc_info,
+            name="test",
+            level=logging.ERROR,
+            pathname="",
+            lineno=0,
+            msg="Error",
+            args=(),
+            exc_info=exc_info,
         )
         output = formatter.format(record)
         parsed = json.loads(output)
@@ -191,8 +203,13 @@ class TestStructuredJSONFormatter:
     def test_format_with_extra(self) -> None:
         formatter = StructuredJSONFormatter(include_extra=True, redact_pii=False)
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="", lineno=0,
-            msg="Test", args=(), exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="",
+            lineno=0,
+            msg="Test",
+            args=(),
+            exc_info=None,
         )
         record.custom_field = "custom_value"  # type: ignore[attr-defined]
         output = formatter.format(record)
@@ -202,8 +219,13 @@ class TestStructuredJSONFormatter:
     def test_format_without_extra(self) -> None:
         formatter = StructuredJSONFormatter(include_extra=False, redact_pii=False)
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="", lineno=0,
-            msg="Test", args=(), exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="",
+            lineno=0,
+            msg="Test",
+            args=(),
+            exc_info=None,
         )
         output = formatter.format(record)
         parsed = json.loads(output)
@@ -212,8 +234,13 @@ class TestStructuredJSONFormatter:
     def test_format_with_pii_redaction(self) -> None:
         formatter = StructuredJSONFormatter(redact_pii=True)
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="", lineno=0,
-            msg="Email: user@test.com", args=(), exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="",
+            lineno=0,
+            msg="Email: user@test.com",
+            args=(),
+            exc_info=None,
         )
         output = formatter.format(record)
         assert "user@test.com" not in output
@@ -482,6 +509,7 @@ class TestRequireSSOAuthentication:
         session = _make_session()
         set_sso_session(session)
         try:
+
             @require_sso_authentication()
             async def protected() -> str:
                 return "ok"
@@ -496,6 +524,7 @@ class TestRequireSSOAuthentication:
         session = _make_session(expires_at=datetime.now(UTC) - timedelta(hours=1))
         set_sso_session(session)
         try:
+
             @require_sso_authentication(allow_expired=False)
             async def protected() -> str:
                 return "ok"
@@ -510,6 +539,7 @@ class TestRequireSSOAuthentication:
         session = _make_session(expires_at=datetime.now(UTC) - timedelta(hours=1))
         set_sso_session(session)
         try:
+
             @require_sso_authentication(allow_expired=True)
             async def protected() -> str:
                 return "ok"
@@ -524,6 +554,7 @@ class TestRequireSSOAuthentication:
         session = _make_session(maci_roles=["VIEWER"])
         set_sso_session(session)
         try:
+
             @require_sso_authentication(roles=["ADMIN", "OPERATOR"], any_role=True)
             async def protected() -> str:
                 return "ok"
@@ -538,6 +569,7 @@ class TestRequireSSOAuthentication:
         session = _make_session(maci_roles=["ADMIN"])
         set_sso_session(session)
         try:
+
             @require_sso_authentication(roles=["ADMIN", "OPERATOR"], any_role=False)
             async def protected() -> str:
                 return "ok"
@@ -561,6 +593,7 @@ class TestRequireSSOAuthentication:
         session = _make_session()
         set_sso_session(session)
         try:
+
             @require_sso_authentication()
             def protected() -> str:
                 return "ok"
@@ -573,6 +606,7 @@ class TestRequireSSOAuthentication:
         session = _make_session(expires_at=datetime.now(UTC) - timedelta(hours=1))
         set_sso_session(session)
         try:
+
             @require_sso_authentication()
             def protected() -> str:
                 return "ok"
@@ -586,6 +620,7 @@ class TestRequireSSOAuthentication:
         session = _make_session(maci_roles=["VIEWER"])
         set_sso_session(session)
         try:
+
             @require_sso_authentication(roles=["ADMIN"], any_role=True)
             def protected() -> str:
                 return "ok"
@@ -599,6 +634,7 @@ class TestRequireSSOAuthentication:
         session = _make_session(maci_roles=["ADMIN"])
         set_sso_session(session)
         try:
+
             @require_sso_authentication(roles=["ADMIN", "OPERATOR"], any_role=False)
             def protected() -> str:
                 return "ok"
@@ -1111,13 +1147,15 @@ class TestVersionHistorySummary:
 
 
 class TestVersionHistoryService:
-    def _make_service(self, versions: list[ConstitutionalVersion] | None = None) -> VersionHistoryService:
+    def _make_service(
+        self, versions: list[ConstitutionalVersion] | None = None
+    ) -> VersionHistoryService:
         storage = AsyncMock()
         vlist = versions or []
         storage.list_versions = AsyncMock(return_value=vlist)
-        storage.get_version = AsyncMock(side_effect=lambda vid: next(
-            (v for v in vlist if v.version_id == vid), None
-        ))
+        storage.get_version = AsyncMock(
+            side_effect=lambda vid: next((v for v in vlist if v.version_id == vid), None)
+        )
         return VersionHistoryService(storage=storage)
 
     @pytest.mark.asyncio
@@ -1321,20 +1359,32 @@ _mock_forest.ARFRegressor.return_value = _mock_regressor
 class TestRiverSklearnAdapter:
     @pytest.fixture(autouse=True)
     def _patch_deps(self):
-        with patch.dict("sys.modules", {
-            "river": MagicMock(),
-            "river.forest": _mock_forest,
-            "river.metrics": _mock_metrics,
-        }):
-            with patch("enhanced_agent_bus.online_learning_infra.adapter.river_forest", _mock_forest):
-                with patch("enhanced_agent_bus.online_learning_infra.adapter.river_metrics", _mock_metrics):
-                    with patch("enhanced_agent_bus.online_learning_infra.adapter.RIVER_AVAILABLE", True):
-                        with patch("enhanced_agent_bus.online_learning_infra.adapter.NUMPY_AVAILABLE", True):
+        with patch.dict(
+            "sys.modules",
+            {
+                "river": MagicMock(),
+                "river.forest": _mock_forest,
+                "river.metrics": _mock_metrics,
+            },
+        ):
+            with patch(
+                "enhanced_agent_bus.online_learning_infra.adapter.river_forest", _mock_forest
+            ):
+                with patch(
+                    "enhanced_agent_bus.online_learning_infra.adapter.river_metrics", _mock_metrics
+                ):
+                    with patch(
+                        "enhanced_agent_bus.online_learning_infra.adapter.RIVER_AVAILABLE", True
+                    ):
+                        with patch(
+                            "enhanced_agent_bus.online_learning_infra.adapter.NUMPY_AVAILABLE", True
+                        ):
                             yield
 
     def _make_adapter(self, **kwargs):
         from enhanced_agent_bus.online_learning_infra.adapter import RiverSklearnAdapter
         from enhanced_agent_bus.online_learning_infra.config import ModelType
+
         # Patch _check_dependencies to skip actual import checks
         with patch.object(RiverSklearnAdapter, "_check_dependencies"):
             return RiverSklearnAdapter(**kwargs)
@@ -1393,6 +1443,7 @@ class TestRiverSklearnAdapter:
 
     def test_predict_proba_one_regressor_raises(self) -> None:
         from enhanced_agent_bus.online_learning_infra.config import ModelType
+
         adapter = self._make_adapter(model_type=ModelType.REGRESSOR)
         with pytest.raises(ValueError, match="only available for classifiers"):
             adapter.predict_proba_one({"f1": 1.0})
@@ -1411,6 +1462,7 @@ class TestRiverSklearnAdapter:
         adapter = self._make_adapter()
         # Simulate enough samples
         from enhanced_agent_bus.online_learning_infra.config import MIN_SAMPLES_FOR_PREDICTION
+
         adapter._samples_learned = MIN_SAMPLES_FOR_PREDICTION + 1
         stats = adapter.get_stats()
         assert stats.status.value == "ready"
@@ -1418,6 +1470,7 @@ class TestRiverSklearnAdapter:
     def test_get_stats_warming_up(self) -> None:
         adapter = self._make_adapter()
         from enhanced_agent_bus.online_learning_infra.config import MIN_SAMPLES_FOR_PREDICTION
+
         adapter._samples_learned = MIN_SAMPLES_FOR_PREDICTION // 2 + 1
         stats = adapter.get_stats()
         assert stats.status.value == "warming_up"
@@ -1426,6 +1479,7 @@ class TestRiverSklearnAdapter:
         adapter = self._make_adapter()
         assert adapter.is_ready is False
         from enhanced_agent_bus.online_learning_infra.config import MIN_SAMPLES_FOR_PREDICTION
+
         adapter._samples_learned = MIN_SAMPLES_FOR_PREDICTION
         assert adapter.is_ready is True
 
@@ -1491,6 +1545,7 @@ class TestRiverSklearnAdapter:
 
     def test_regressor_model(self) -> None:
         from enhanced_agent_bus.online_learning_infra.config import ModelType
+
         adapter = self._make_adapter(model_type=ModelType.REGRESSOR)
         assert adapter.model is not None
 
@@ -1499,15 +1554,19 @@ class TestRiverSklearnAdapter:
 # 7. ai_assistant/integration (109 missing lines)
 # ---------------------------------------------------------------------------
 
+
 class TestAgentBusIntegration:
     @pytest.fixture
     def _mock_imports(self):
         """Patch imports needed by ai_assistant.integration."""
-        with patch.dict("sys.modules", {
-            "src.core.shared.policy": MagicMock(),
-            "src.core.shared.policy.models": MagicMock(),
-            "src.core.shared.policy.unified_generator": MagicMock(),
-        }):
+        with patch.dict(
+            "sys.modules",
+            {
+                "src.core.shared.policy": MagicMock(),
+                "src.core.shared.policy.models": MagicMock(),
+                "src.core.shared.policy.unified_generator": MagicMock(),
+            },
+        ):
             yield
 
     def _make_integration(self, agent_bus=None):
@@ -1515,6 +1574,7 @@ class TestAgentBusIntegration:
             AgentBusIntegration,
             IntegrationConfig,
         )
+
         config = IntegrationConfig(agent_id="test_agent", enable_governance=False)
         return AgentBusIntegration(config=config, agent_bus=agent_bus)
 
@@ -1524,6 +1584,7 @@ class TestAgentBusIntegration:
             AgentBusIntegration,
             IntegrationConfig,
         )
+
         integration = AgentBusIntegration(config=IntegrationConfig())
         result = await integration.initialize()
         assert result is False
@@ -1534,6 +1595,7 @@ class TestAgentBusIntegration:
             AgentBusIntegration,
             IntegrationConfig,
         )
+
         bus = MagicMock()
         integration = AgentBusIntegration(config=IntegrationConfig(), agent_bus=bus)
         result = await integration.initialize()
@@ -1541,6 +1603,7 @@ class TestAgentBusIntegration:
 
     def test_register_handler(self) -> None:
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
+
         integration = AgentBusIntegration()
 
         def handler(msg):
@@ -1551,6 +1614,7 @@ class TestAgentBusIntegration:
 
     def test_governance_decision_to_dict(self) -> None:
         from enhanced_agent_bus.ai_assistant.integration import GovernanceDecision
+
         gd = GovernanceDecision(
             is_allowed=True,
             reason="test",
@@ -1564,6 +1628,7 @@ class TestAgentBusIntegration:
 
     def test_integration_config_defaults(self) -> None:
         from enhanced_agent_bus.ai_assistant.integration import IntegrationConfig
+
         config = IntegrationConfig()
         assert config.agent_id == "ai_assistant"
         assert config.enable_governance is True
@@ -1571,6 +1636,7 @@ class TestAgentBusIntegration:
     @pytest.mark.asyncio
     async def test_shutdown(self) -> None:
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
+
         integration = AgentBusIntegration()
         await integration.shutdown()  # Should not raise
 
@@ -1580,6 +1646,7 @@ class TestAgentBusIntegration:
             AgentBusIntegration,
             IntegrationConfig,
         )
+
         integration = AgentBusIntegration(config=IntegrationConfig(enable_governance=False))
         result = await integration.send_message("target", "hello")
         assert result is None
@@ -1587,6 +1654,7 @@ class TestAgentBusIntegration:
     @pytest.mark.asyncio
     async def test_handle_incoming_with_handler(self) -> None:
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
+
         integration = AgentBusIntegration()
 
         mock_msg = MagicMock()
@@ -1603,6 +1671,7 @@ class TestAgentBusIntegration:
     @pytest.mark.asyncio
     async def test_handle_incoming_no_handler(self) -> None:
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
+
         integration = AgentBusIntegration()
 
         mock_msg = MagicMock()
@@ -1615,6 +1684,7 @@ class TestAgentBusIntegration:
     @pytest.mark.asyncio
     async def test_validate_user_message(self) -> None:
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
+
         integration = AgentBusIntegration()
 
         mock_msg = MagicMock()
@@ -1631,6 +1701,7 @@ class TestAgentBusIntegration:
     @pytest.mark.asyncio
     async def test_validate_user_message_empty(self) -> None:
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
+
         integration = AgentBusIntegration()
 
         mock_msg = MagicMock()
@@ -1643,6 +1714,7 @@ class TestAgentBusIntegration:
     @pytest.mark.asyncio
     async def test_validate_user_message_too_long(self) -> None:
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
+
         integration = AgentBusIntegration()
 
         mock_msg = MagicMock()
@@ -1655,6 +1727,7 @@ class TestAgentBusIntegration:
     @pytest.mark.asyncio
     async def test_validate_user_message_string_content(self) -> None:
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
+
         integration = AgentBusIntegration()
 
         mock_msg = MagicMock()
@@ -1670,6 +1743,7 @@ class TestAgentBusIntegration:
             AgentBusIntegration,
             IntegrationConfig,
         )
+
         integration = AgentBusIntegration(config=IntegrationConfig(enable_governance=False))
 
         mock_nlu = MagicMock()
@@ -1685,6 +1759,7 @@ class TestAgentBusIntegration:
             AgentBusIntegration,
             IntegrationConfig,
         )
+
         integration = AgentBusIntegration(config=IntegrationConfig(enable_governance=False))
 
         mock_nlu = MagicMock()
@@ -1701,6 +1776,7 @@ class TestAgentBusIntegration:
             AgentBusIntegration,
             IntegrationConfig,
         )
+
         integration = AgentBusIntegration(config=IntegrationConfig(enable_governance=False))
 
         mock_nlu = MagicMock()
@@ -1717,6 +1793,7 @@ class TestAgentBusIntegration:
             AgentBusIntegration,
             IntegrationConfig,
         )
+
         integration = AgentBusIntegration(config=IntegrationConfig(enable_governance=False))
 
         result = await integration._check_governance(MagicMock(), MagicMock())
@@ -1725,6 +1802,7 @@ class TestAgentBusIntegration:
     @pytest.mark.asyncio
     async def test_execute_task_no_handler(self) -> None:
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
+
         integration = AgentBusIntegration()
 
         result = await integration.execute_task("test_task", {"param": "value"})

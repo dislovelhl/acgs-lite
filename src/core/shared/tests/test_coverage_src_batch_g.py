@@ -34,7 +34,9 @@ class TestRuntimeEnvironment:
             assert enc_mod._runtime_environment() == "development"
 
     def test_agent_runtime_takes_precedence(self):
-        with patch.dict(os.environ, {"AGENT_RUNTIME_ENVIRONMENT": " Staging ", "ENVIRONMENT": "prod"}):
+        with patch.dict(
+            os.environ, {"AGENT_RUNTIME_ENVIRONMENT": " Staging ", "ENVIRONMENT": "prod"}
+        ):
             assert enc_mod._runtime_environment() == "staging"
 
     def test_falls_back_to_environment(self):
@@ -59,12 +61,22 @@ class TestIsProductionLikeEnvironment:
 
 
 class TestParseBoolEnv:
-    @pytest.mark.parametrize("val,expected", [
-        ("true", True), ("1", True), ("yes", True), ("on", True),
-        ("True", True), (" YES ", True),
-        ("false", False), ("0", False), ("no", False), ("", False),
-        (None, False),
-    ])
+    @pytest.mark.parametrize(
+        "val,expected",
+        [
+            ("true", True),
+            ("1", True),
+            ("yes", True),
+            ("on", True),
+            ("True", True),
+            (" YES ", True),
+            ("false", False),
+            ("0", False),
+            ("no", False),
+            ("", False),
+            (None, False),
+        ],
+    )
     def test_values(self, val, expected):
         assert enc_mod._parse_bool_env(val) is expected
 
@@ -314,8 +326,7 @@ class TestResolveServiceJwtMaterial:
 class TestServiceAuth:
     def test_create_and_verify_token_hs256(self):
         with (
-            patch.object(sa_mod, "_resolve_service_jwt_material")
-            as mock_resolve,
+            patch.object(sa_mod, "_resolve_service_jwt_material") as mock_resolve,
         ):
             secret = "test-secret-that-is-long-enough-32"
             mock_resolve.return_value = (secret, "HS256")
@@ -339,7 +350,8 @@ class TestServiceAuth:
         }
         token = pyjwt.encode(payload, secret, algorithm="HS256")
         with patch.object(
-            sa_mod, "_resolve_service_jwt_material",
+            sa_mod,
+            "_resolve_service_jwt_material",
             return_value=(secret, "HS256"),
         ):
             assert ServiceAuth.verify_service_token(token) is None
@@ -357,7 +369,8 @@ class TestServiceAuth:
         }
         token = pyjwt.encode(payload, secret, algorithm="HS256")
         with patch.object(
-            sa_mod, "_resolve_service_jwt_material",
+            sa_mod,
+            "_resolve_service_jwt_material",
             return_value=(secret, "HS256"),
         ):
             assert ServiceAuth.verify_service_token(token) is None
@@ -375,7 +388,8 @@ class TestServiceAuth:
         }
         token = pyjwt.encode(payload, secret, algorithm="HS256")
         with patch.object(
-            sa_mod, "_resolve_service_jwt_material",
+            sa_mod,
+            "_resolve_service_jwt_material",
             return_value=(secret, "HS256"),
         ):
             assert ServiceAuth.verify_service_token(token) is None
@@ -653,7 +667,8 @@ class TestRequireAuthOptional:
         with (
             patch.object(ad_mod, "has_jwt_verification_material", return_value=True),
             patch.object(
-                ad_mod, "verify_token",
+                ad_mod,
+                "verify_token",
                 side_effect=HTTPException(status_code=401, detail="expired"),
             ),
         ):
@@ -666,7 +681,8 @@ class TestRequireAuthOptional:
         with (
             patch.object(ad_mod, "has_jwt_verification_material", return_value=True),
             patch.object(
-                ad_mod, "verify_token",
+                ad_mod,
+                "verify_token",
                 side_effect=HTTPException(status_code=500, detail="boom"),
             ),
         ):

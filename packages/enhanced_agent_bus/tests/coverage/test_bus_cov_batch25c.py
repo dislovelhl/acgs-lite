@@ -59,9 +59,7 @@ def _make_server(**kwargs):
     ):
         # Set up limiter mock
         mock_limiter = MagicMock()
-        mock_limiter.is_allowed = AsyncMock(
-            return_value=MagicMock(allowed=True)
-        )
+        mock_limiter.is_allowed = AsyncMock(return_value=MagicMock(allowed=True))
         mock_limiter._lock = asyncio.Lock()
         mock_limiter.local_windows = {}
         mock_limiter_cls.return_value = mock_limiter
@@ -101,15 +99,11 @@ class TestRateLimiter:
     def _make_limiter(self):
         from enhanced_agent_bus.collaboration.server import RateLimiter
 
-        with patch(
-            "enhanced_agent_bus.collaboration.server.SlidingWindowRateLimiter"
-        ) as mock_cls:
+        with patch("enhanced_agent_bus.collaboration.server.SlidingWindowRateLimiter") as mock_cls:
             mock_inner = MagicMock()
             mock_inner._lock = asyncio.Lock()
             mock_inner.local_windows = {}
-            mock_inner.is_allowed = AsyncMock(
-                return_value=MagicMock(allowed=True)
-            )
+            mock_inner.is_allowed = AsyncMock(return_value=MagicMock(allowed=True))
             mock_cls.return_value = mock_inner
             limiter = RateLimiter(max_requests=10, window_seconds=60)
         return limiter
@@ -121,9 +115,7 @@ class TestRateLimiter:
 
     async def test_is_allowed_denied(self):
         limiter = self._make_limiter()
-        limiter._limiter.is_allowed = AsyncMock(
-            return_value=MagicMock(allowed=False)
-        )
+        limiter._limiter.is_allowed = AsyncMock(return_value=MagicMock(allowed=False))
         result = await limiter.is_allowed("client1")
         assert result is False
 
@@ -185,30 +177,22 @@ class TestCollaborationServerDocumentHandlers:
     async def test_handle_join_document_missing_doc_id(self):
         server = _make_server()
         server.rate_limiter.is_allowed = AsyncMock(return_value=True)
-        server.sio.get_session = AsyncMock(
-            return_value={"user_id": "u1", "tenant_id": "t1"}
-        )
+        server.sio.get_session = AsyncMock(return_value={"user_id": "u1", "tenant_id": "t1"})
         result = await server._handle_join_document("sid1", {})
         assert result["code"] == "MISSING_DOC_ID"
 
     async def test_handle_join_document_missing_tenant(self):
         server = _make_server()
         server.rate_limiter.is_allowed = AsyncMock(return_value=True)
-        server.sio.get_session = AsyncMock(
-            return_value={"user_id": "u1", "tenant_id": None}
-        )
+        server.sio.get_session = AsyncMock(return_value={"user_id": "u1", "tenant_id": None})
         result = await server._handle_join_document("sid1", {"document_id": "doc1"})
         assert result["code"] == "MISSING_TENANT"
 
     async def test_handle_join_document_session_full(self):
         server = _make_server()
         server.rate_limiter.is_allowed = AsyncMock(return_value=True)
-        server.sio.get_session = AsyncMock(
-            return_value={"user_id": "u1", "tenant_id": "t1"}
-        )
-        server.presence.join_session = AsyncMock(
-            side_effect=SessionFullError("full")
-        )
+        server.sio.get_session = AsyncMock(return_value={"user_id": "u1", "tenant_id": "t1"})
+        server.presence.join_session = AsyncMock(side_effect=SessionFullError("full"))
         result = await server._handle_join_document("sid1", {"document_id": "doc1"})
         assert result["code"] == "SESSION_FULL"
 
@@ -227,12 +211,8 @@ class TestCollaborationServerDocumentHandlers:
         mock_session = MagicMock()
         mock_session.version = 1
 
-        server.sio.get_session = AsyncMock(
-            return_value={"user_id": "u1", "tenant_id": "t1"}
-        )
-        server.presence.join_session = AsyncMock(
-            return_value=(mock_session, mock_collaborator)
-        )
+        server.sio.get_session = AsyncMock(return_value={"user_id": "u1", "tenant_id": "t1"})
+        server.presence.join_session = AsyncMock(return_value=(mock_session, mock_collaborator))
         server.sync.get_document = AsyncMock(return_value={"content": {}})
 
         mock_user = MagicMock()
@@ -250,12 +230,8 @@ class TestCollaborationServerDocumentHandlers:
     async def test_handle_join_document_internal_error(self):
         server = _make_server()
         server.rate_limiter.is_allowed = AsyncMock(return_value=True)
-        server.sio.get_session = AsyncMock(
-            return_value={"user_id": "u1", "tenant_id": "t1"}
-        )
-        server.presence.join_session = AsyncMock(
-            side_effect=RuntimeError("unexpected")
-        )
+        server.sio.get_session = AsyncMock(return_value={"user_id": "u1", "tenant_id": "t1"})
+        server.presence.join_session = AsyncMock(side_effect=RuntimeError("unexpected"))
         result = await server._handle_join_document("sid1", {"document_id": "doc1"})
         assert result["code"] == "INTERNAL_ERROR"
 
@@ -270,9 +246,7 @@ class TestCollaborationServerDocumentHandlers:
         mock_collab = MagicMock()
         mock_collab.user_id = "u1"
         mock_collab.name = "Alice"
-        server.sio.get_session = AsyncMock(
-            return_value={"document_id": "doc1", "client_id": "c1"}
-        )
+        server.sio.get_session = AsyncMock(return_value={"document_id": "doc1", "client_id": "c1"})
         server.presence.leave_session = AsyncMock(return_value=mock_collab)
         result = await server._handle_leave_document("sid1")
         assert result["success"] is True
@@ -280,9 +254,7 @@ class TestCollaborationServerDocumentHandlers:
 
     async def test_handle_leave_document_no_collaborator_found(self):
         server = _make_server()
-        server.sio.get_session = AsyncMock(
-            return_value={"document_id": "doc1", "client_id": "c1"}
-        )
+        server.sio.get_session = AsyncMock(return_value={"document_id": "doc1", "client_id": "c1"})
         server.presence.leave_session = AsyncMock(return_value=None)
         result = await server._handle_leave_document("sid1")
         assert result["success"] is True
@@ -290,9 +262,7 @@ class TestCollaborationServerDocumentHandlers:
 
     async def test_handle_leave_document_no_doc_or_client(self):
         server = _make_server()
-        server.sio.get_session = AsyncMock(
-            return_value={"user_id": "u1"}
-        )
+        server.sio.get_session = AsyncMock(return_value={"user_id": "u1"})
         result = await server._handle_leave_document("sid1")
         assert result["success"] is True
 
@@ -317,9 +287,7 @@ class TestCollaborationServerEditHandlers:
 
     async def test_handle_cursor_move_success(self):
         server = _make_server()
-        server.sio.get_session = AsyncMock(
-            return_value={"document_id": "doc1", "client_id": "c1"}
-        )
+        server.sio.get_session = AsyncMock(return_value={"document_id": "doc1", "client_id": "c1"})
         server.presence.update_cursor = AsyncMock(return_value=True)
         mock_collab = MagicMock()
         mock_collab.user_id = "u1"
@@ -327,16 +295,12 @@ class TestCollaborationServerEditHandlers:
         mock_collab.color = "#FF0000"
         server.presence.get_collaborator = AsyncMock(return_value=mock_collab)
 
-        result = await server._handle_cursor_move(
-            "sid1", {"cursor": {"x": 10, "y": 20, "line": 5}}
-        )
+        result = await server._handle_cursor_move("sid1", {"cursor": {"x": 10, "y": 20, "line": 5}})
         assert result["success"] is True
 
     async def test_handle_cursor_move_update_fails(self):
         server = _make_server()
-        server.sio.get_session = AsyncMock(
-            return_value={"document_id": "doc1", "client_id": "c1"}
-        )
+        server.sio.get_session = AsyncMock(return_value={"document_id": "doc1", "client_id": "c1"})
         server.presence.update_cursor = AsyncMock(return_value=False)
         result = await server._handle_cursor_move("sid1", {"cursor": {}})
         assert result["success"] is False
@@ -422,9 +386,7 @@ class TestCollaborationServerEditHandlers:
         server.permissions.validate_operation = AsyncMock(
             side_effect=CollaborationValidationError("bad op")
         )
-        result = await server._handle_edit_operation(
-            "sid1", {"type": "replace", "path": "/x"}
-        )
+        result = await server._handle_edit_operation("sid1", {"type": "replace", "path": "/x"})
         assert result["code"] == "VALIDATION_FAILED"
 
     async def test_handle_edit_operation_conflict(self):
@@ -440,12 +402,8 @@ class TestCollaborationServerEditHandlers:
         mock_collab_session.version = 1
         server.presence.get_session = AsyncMock(return_value=mock_collab_session)
         server.permissions.validate_operation = AsyncMock()
-        server.sync.apply_operation = AsyncMock(
-            side_effect=ConflictError("conflict")
-        )
-        result = await server._handle_edit_operation(
-            "sid1", {"type": "replace", "path": "/x"}
-        )
+        server.sync.apply_operation = AsyncMock(side_effect=ConflictError("conflict"))
+        result = await server._handle_edit_operation("sid1", {"type": "replace", "path": "/x"})
         assert result["code"] == "CONFLICT"
 
     async def test_handle_edit_operation_success(self):
@@ -500,9 +458,7 @@ class TestCollaborationServerEditHandlers:
         mock_applied.to_dict = MagicMock(return_value={})
         server.sync.apply_operation = AsyncMock(return_value=mock_applied)
 
-        result = await server._handle_edit_operation(
-            "sid1", {"type": "replace", "path": "/x"}
-        )
+        result = await server._handle_edit_operation("sid1", {"type": "replace", "path": "/x"})
         assert result["success"] is True
 
 
@@ -559,9 +515,7 @@ class TestCollaborationServerSocialHandlers:
 
     async def test_handle_typing_indicator_success(self):
         server = _make_server()
-        server.sio.get_session = AsyncMock(
-            return_value={"document_id": "doc1", "client_id": "c1"}
-        )
+        server.sio.get_session = AsyncMock(return_value={"document_id": "doc1", "client_id": "c1"})
         server.presence.set_typing = AsyncMock(return_value=True)
         mock_collab = MagicMock()
         mock_collab.user_id = "u1"
@@ -572,9 +526,7 @@ class TestCollaborationServerSocialHandlers:
 
     async def test_handle_typing_indicator_failure(self):
         server = _make_server()
-        server.sio.get_session = AsyncMock(
-            return_value={"document_id": "doc1", "client_id": "c1"}
-        )
+        server.sio.get_session = AsyncMock(return_value={"document_id": "doc1", "client_id": "c1"})
         server.presence.set_typing = AsyncMock(return_value=False)
         result = await server._handle_typing_indicator("sid1", {"is_typing": False})
         assert result["success"] is False
@@ -647,9 +599,7 @@ class TestCollaborationServerSocialHandlers:
 
     async def test_handle_get_presence_success(self):
         server = _make_server()
-        server.sio.get_session = AsyncMock(
-            return_value={"document_id": "doc1"}
-        )
+        server.sio.get_session = AsyncMock(return_value={"document_id": "doc1"})
         mock_user = MagicMock()
         mock_user.to_dict = MagicMock(return_value={"user_id": "u1"})
         server.presence.get_all_users = AsyncMock(return_value=[mock_user])
@@ -675,27 +625,21 @@ class TestCollaborationServerMisc:
     async def test_log_activity_with_audit_client(self):
         audit = AsyncMock()
         server = _make_server(audit_client=audit)
-        await server._log_activity(
-            ActivityEventType.USER_JOINED, "u1", "doc1", {"extra": "data"}
-        )
+        await server._log_activity(ActivityEventType.USER_JOINED, "u1", "doc1", {"extra": "data"})
         audit.log_event.assert_called_once()
 
     async def test_log_activity_no_audit_client(self):
         server = _make_server()
         server.audit_client = None
         # Should not raise
-        await server._log_activity(
-            ActivityEventType.DOCUMENT_EDITED, "u1", "doc1", {}
-        )
+        await server._log_activity(ActivityEventType.DOCUMENT_EDITED, "u1", "doc1", {})
 
     async def test_log_activity_audit_error_swallowed(self):
         audit = AsyncMock()
         audit.log_event = AsyncMock(side_effect=RuntimeError("audit down"))
         server = _make_server(audit_client=audit)
         # Should not raise
-        await server._log_activity(
-            ActivityEventType.COMMENT_ADDED, "u1", "doc1", {}
-        )
+        await server._log_activity(ActivityEventType.COMMENT_ADDED, "u1", "doc1", {})
 
     async def test_health_check_not_started(self):
         server = _make_server()
@@ -922,7 +866,9 @@ class TestRustProcessingStrategy:
             rp.process = MagicMock(return_value=MagicMock(is_valid=True, errors=[]))
 
         mock_validation = MagicMock()
-        mock_validation.validate = AsyncMock(return_value=(validation_ok, None if validation_ok else "fail"))
+        mock_validation.validate = AsyncMock(
+            return_value=(validation_ok, None if validation_ok else "fail")
+        )
 
         strat = RustProcessingStrategy(
             rust_processor=rp,
@@ -986,9 +932,7 @@ class TestRustProcessingStrategy:
 
         rp = MagicMock()
         rp.validate = MagicMock()
-        rp.process = MagicMock(
-            return_value=MagicMock(is_valid=False, errors=["rust_err"])
-        )
+        rp.process = MagicMock(return_value=MagicMock(is_valid=False, errors=["rust_err"]))
 
         strat = self._make_strategy(rp=rp, rb=rb)
         msg = _make_agent_message()
@@ -1091,9 +1035,7 @@ class TestRustProcessBulk:
 
         rp = MagicMock()
         rp.validate = MagicMock()
-        rp.process_bulk = AsyncMock(
-            return_value={"results": json.dumps([True, False])}
-        )
+        rp.process_bulk = AsyncMock(return_value={"results": json.dumps([True, False])})
 
         from enhanced_agent_bus.processing_strategies import RustProcessingStrategy
 
@@ -1156,9 +1098,7 @@ class TestCompositeProcessingStrategy:
     async def test_first_fails_fast_on_validation(self):
         from enhanced_agent_bus.processing_strategies import CompositeProcessingStrategy
 
-        s1 = self._make_strategy_mock(
-            "s1", result=ValidationResult(is_valid=False, errors=["bad"])
-        )
+        s1 = self._make_strategy_mock("s1", result=ValidationResult(is_valid=False, errors=["bad"]))
         s2 = self._make_strategy_mock("s2")
         composite = CompositeProcessingStrategy([s1, s2])
         msg = _make_agent_message()
@@ -1264,18 +1204,14 @@ class TestDynamicPolicyProcessingStrategy:
         from enhanced_agent_bus.processing_strategies import DynamicPolicyProcessingStrategy
 
         mock_vs = MagicMock()
-        strat = DynamicPolicyProcessingStrategy(
-            policy_client=None, validation_strategy=mock_vs
-        )
+        strat = DynamicPolicyProcessingStrategy(policy_client=None, validation_strategy=mock_vs)
         assert strat.is_available() is False
 
     def test_get_name(self):
         from enhanced_agent_bus.processing_strategies import DynamicPolicyProcessingStrategy
 
         mock_vs = MagicMock()
-        strat = DynamicPolicyProcessingStrategy(
-            policy_client=None, validation_strategy=mock_vs
-        )
+        strat = DynamicPolicyProcessingStrategy(policy_client=None, validation_strategy=mock_vs)
         assert strat.get_name() == "dynamic_policy"
 
 
@@ -1310,19 +1246,25 @@ class TestOPAProcessingStrategy:
         from enhanced_agent_bus.processing_strategies import OPAProcessingStrategy
 
         mock_vs = MagicMock()
-        assert OPAProcessingStrategy(opa_client=MagicMock(), validation_strategy=mock_vs).is_available()
+        assert OPAProcessingStrategy(
+            opa_client=MagicMock(), validation_strategy=mock_vs
+        ).is_available()
 
     def test_is_available_without_client(self):
         from enhanced_agent_bus.processing_strategies import OPAProcessingStrategy
 
         mock_vs = MagicMock()
-        assert not OPAProcessingStrategy(opa_client=None, validation_strategy=mock_vs).is_available()
+        assert not OPAProcessingStrategy(
+            opa_client=None, validation_strategy=mock_vs
+        ).is_available()
 
     def test_get_name(self):
         from enhanced_agent_bus.processing_strategies import OPAProcessingStrategy
 
         mock_vs = MagicMock()
-        assert OPAProcessingStrategy(opa_client=None, validation_strategy=mock_vs).get_name() == "opa"
+        assert (
+            OPAProcessingStrategy(opa_client=None, validation_strategy=mock_vs).get_name() == "opa"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -1335,9 +1277,7 @@ class TestMACIProcessingStrategy:
         inner = MagicMock()
         inner.is_available = MagicMock(return_value=True)
         inner.get_name = MagicMock(return_value="python")
-        inner.process = AsyncMock(
-            return_value=result or ValidationResult(is_valid=True)
-        )
+        inner.process = AsyncMock(return_value=result or ValidationResult(is_valid=True))
         return inner
 
     async def test_maci_passes_delegates_to_inner(self):

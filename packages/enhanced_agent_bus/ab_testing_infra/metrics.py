@@ -13,10 +13,10 @@ class ABTestMetricsManager:
         self.champion_metrics = CohortMetrics(cohort=CohortType.CHAMPION)
         self.candidate_metrics = CohortMetrics(cohort=CohortType.CANDIDATE)
 
-    def record_outcome(
-        self, cohort: CohortType, predicted, actual, latency_ms: float
-    ) -> bool:
-        self.get_cohort_metrics(cohort).record_request(latency_ms, prediction=predicted, actual=actual)
+    def record_outcome(self, cohort: CohortType, predicted, actual, latency_ms: float) -> bool:
+        self.get_cohort_metrics(cohort).record_request(
+            latency_ms, prediction=predicted, actual=actual
+        )
         return True
 
     def get_champion_metrics(self) -> CohortMetrics:
@@ -133,4 +133,3 @@ class ABTestMetricsManager:
     def reset_metrics(self) -> None:
         self.champion_metrics = CohortMetrics(cohort=CohortType.CHAMPION)
         self.candidate_metrics = CohortMetrics(cohort=CohortType.CANDIDATE)
-

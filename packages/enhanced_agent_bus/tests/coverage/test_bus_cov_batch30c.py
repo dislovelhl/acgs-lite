@@ -67,15 +67,11 @@ class TestLayerTimeoutBudget:
         assert b.strict_enforcement is True
 
     def test_custom_soft_limit(self):
-        b = LayerTimeoutBudget(
-            layer=Layer.LAYER2_DELIBERATION, budget_ms=20.0, soft_limit_pct=0.5
-        )
+        b = LayerTimeoutBudget(layer=Layer.LAYER2_DELIBERATION, budget_ms=20.0, soft_limit_pct=0.5)
         assert b.soft_limit_pct == 0.5
 
     def test_custom_strict_enforcement(self):
-        b = LayerTimeoutBudget(
-            layer=Layer.LAYER3_POLICY, budget_ms=10.0, strict_enforcement=False
-        )
+        b = LayerTimeoutBudget(layer=Layer.LAYER3_POLICY, budget_ms=10.0, strict_enforcement=False)
         assert b.strict_enforcement is False
 
     def test_budget_stores_layer(self):
@@ -221,15 +217,23 @@ class TestLatencyMeasurement:
         m = LatencyMeasurement(layer="l1", operation="op", latency_ms=1.0)
         d = m.to_dict()
         expected_keys = {
-            "layer", "operation", "latency_ms", "timestamp",
-            "within_budget", "budget_ms", "constitutional_hash",
+            "layer",
+            "operation",
+            "latency_ms",
+            "timestamp",
+            "within_budget",
+            "budget_ms",
+            "constitutional_hash",
         }
         assert set(d.keys()) == expected_keys
 
     def test_to_dict_values(self):
         m = LatencyMeasurement(
-            layer="l1", operation="op", latency_ms=3.0,
-            within_budget=False, budget_ms=2.0,
+            layer="l1",
+            operation="op",
+            latency_ms=3.0,
+            within_budget=False,
+            budget_ms=2.0,
         )
         d = m.to_dict()
         assert d["layer"] == "l1"

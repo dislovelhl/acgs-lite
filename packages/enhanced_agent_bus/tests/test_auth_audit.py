@@ -317,9 +317,7 @@ class TestGetEntries:
         assert len(entries) == 3
 
     async def test_filter_by_event_type(self, populated_logger) -> None:
-        entries = await populated_logger.get_entries(
-            event_type=AuthAuditEventType.AUTH_FAILURE
-        )
+        entries = await populated_logger.get_entries(event_type=AuthAuditEventType.AUTH_FAILURE)
         assert len(entries) == 1
         assert entries[0].event_type == AuthAuditEventType.AUTH_FAILURE
 

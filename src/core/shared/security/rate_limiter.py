@@ -687,7 +687,9 @@ class RateLimitMiddleware:
 
         self._initialized = True
 
-    def _create_503_response(self, detail: str = "Rate limiting backend unavailable") -> JSONResponse:
+    def _create_503_response(
+        self, detail: str = "Rate limiting backend unavailable"
+    ) -> JSONResponse:
         return JSONResponse(
             status_code=503,
             content={
@@ -876,7 +878,11 @@ class RateLimitMiddleware:
         key_parts.append(client_id)
         if rule.scope == RateLimitScope.ENDPOINT:
             matched_endpoint = next(
-                (endpoint for endpoint in (rule.endpoints or []) if request.url.path.startswith(endpoint)),
+                (
+                    endpoint
+                    for endpoint in (rule.endpoints or [])
+                    if request.url.path.startswith(endpoint)
+                ),
                 request.url.path,
             )
             key_parts.append(matched_endpoint)

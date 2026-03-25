@@ -164,9 +164,7 @@ class TestAddApproval:
     def test_single_approval_moves_to_under_review(self) -> None:
         engine, proposal = _create_engine_and_proposal()
         engine.submit_for_review(proposal.proposal_id)
-        updated = engine.add_approval(
-            proposal.proposal_id, "legislative", "approver-1", True, "ok"
-        )
+        updated = engine.add_approval(proposal.proposal_id, "legislative", "approver-1", True, "ok")
         assert updated.status == RefoundationStatus.UNDER_REVIEW
 
     def test_invalid_role(self) -> None:
@@ -191,9 +189,7 @@ class TestAddApproval:
     def test_rejection_sets_rejected(self) -> None:
         engine, proposal = _create_engine_and_proposal()
         engine.submit_for_review(proposal.proposal_id)
-        updated = engine.add_approval(
-            proposal.proposal_id, "legislative", "a1", False, "disagree"
-        )
+        updated = engine.add_approval(proposal.proposal_id, "legislative", "a1", False, "disagree")
         assert updated.status == RefoundationStatus.REJECTED
 
     def test_all_three_approvals_moves_to_sandbox_testing(self) -> None:
@@ -232,9 +228,7 @@ class TestRecordSandboxResults:
     def test_degradation_rejects(self) -> None:
         engine, proposal = _create_engine_and_proposal()
         _approve_all(engine, proposal.proposal_id)
-        results = SandboxExecutionResult(
-            sandbox_id="sb-1", passed=True, degradation_detected=True
-        )
+        results = SandboxExecutionResult(sandbox_id="sb-1", passed=True, degradation_detected=True)
         updated = engine.record_sandbox_results(proposal.proposal_id, results)
         assert updated.status == RefoundationStatus.REJECTED
 

@@ -130,7 +130,9 @@ class CohortMetrics:
             "p99_latency_ms": self.p99_latency_ms,
             "errors": self.errors,
             "error_rate": self.error_rate,
-            "first_request_at": self.first_request_at.isoformat() if self.first_request_at else None,
+            "first_request_at": self.first_request_at.isoformat()
+            if self.first_request_at
+            else None,
             "last_request_at": self.last_request_at.isoformat() if self.last_request_at else None,
         }
 
@@ -252,7 +254,9 @@ class ABTestRouter:
         cohort = CohortType.CHAMPION
         if self.ab_test_active and self._compute_hash_value(request_id) < self.candidate_split:
             cohort = CohortType.CANDIDATE
-        version = self.candidate_version if cohort == CohortType.CANDIDATE else self.champion_version
+        version = (
+            self.candidate_version if cohort == CohortType.CANDIDATE else self.champion_version
+        )
         result = RoutingResult(cohort=cohort, request_id=request_id, model_version=version)
         self._routing_history[request_id] = result
         return result
@@ -283,7 +287,9 @@ class ABTestRouter:
     def get_cohort_metrics(self, cohort: CohortType) -> CohortMetrics:
         return self._candidate_metrics if cohort == CohortType.CANDIDATE else self._champion_metrics
 
-    def get_traffic_distribution(self, n_requests: int | None = None) -> dict[str, float | int | bool]:
+    def get_traffic_distribution(
+        self, n_requests: int | None = None
+    ) -> dict[str, float | int | bool]:
         if n_requests is None:
             return {
                 "champion": 1.0 - self.candidate_split if self.ab_test_active else 1.0,
@@ -328,7 +334,9 @@ class ABTestRouter:
 
     def predict(self, routing: RoutingResult, features: Any) -> PredictionResult:
         started = time.perf_counter()
-        model = self.candidate_model if routing.cohort == CohortType.CANDIDATE else self.champion_model
+        model = (
+            self.candidate_model if routing.cohort == CohortType.CANDIDATE else self.champion_model
+        )
         metrics = self.get_cohort_metrics(routing.cohort)
         if model is None:
             latency_ms = (time.perf_counter() - started) * 1000

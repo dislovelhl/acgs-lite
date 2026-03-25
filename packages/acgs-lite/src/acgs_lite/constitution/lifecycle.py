@@ -107,9 +107,7 @@ def lifecycle_transition_rules(
     return candidates
 
 
-def set_rule_tenants(
-    constitution: Constitution, rule_id: str, tenants: list[str]
-) -> bool:
+def set_rule_tenants(constitution: Constitution, rule_id: str, tenants: list[str]) -> bool:
     """exp165: Set tenant scoping for a rule.
 
     Enables multi-tenant rule isolation where rules can be scoped to
@@ -130,9 +128,7 @@ def set_rule_tenants(
     return False
 
 
-def get_tenant_rules(
-    constitution: Constitution, tenant_id: str | None = None
-) -> list[Rule]:
+def get_tenant_rules(constitution: Constitution, tenant_id: str | None = None) -> list[Rule]:
     """Get rules applicable to a specific tenant.
 
     Args:

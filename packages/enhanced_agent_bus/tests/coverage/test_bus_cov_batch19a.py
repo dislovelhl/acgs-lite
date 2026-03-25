@@ -95,9 +95,7 @@ def _build_engine(config=None):
             AdaptiveGovernanceEngine,
         )
 
-        engine = AdaptiveGovernanceEngine(
-            constitutional_hash=CONSTITUTIONAL_HASH, config=config
-        )
+        engine = AdaptiveGovernanceEngine(constitutional_hash=CONSTITUTIONAL_HASH, config=config)
     return engine
 
 
@@ -208,9 +206,7 @@ class TestBuildConservativeFallbackDecision:
             AdaptiveGovernanceEngine,
         )
 
-        decision = AdaptiveGovernanceEngine._build_conservative_fallback_decision(
-            ValueError("x")
-        )
+        decision = AdaptiveGovernanceEngine._build_conservative_fallback_decision(ValueError("x"))
         assert decision.features_used.message_length == 0
         assert decision.features_used.agent_count == 0
 
@@ -346,23 +342,17 @@ class TestMaybeRefitDtmc:
         engine._maybe_refit_dtmc()  # should not raise
 
     def test_no_refit_insufficient_data(self):
-        config = SimpleNamespace(
-            enable_dtmc=True, dtmc_intervention_threshold=0.8
-        )
+        config = SimpleNamespace(enable_dtmc=True, dtmc_intervention_threshold=0.8)
         engine = _build_engine(config=config)
         for _ in range(5):
             engine.decision_history.append(_make_decision())
         engine._maybe_refit_dtmc()  # not enough data (< 10)
 
     def test_refit_with_enough_data(self):
-        config = SimpleNamespace(
-            enable_dtmc=True, dtmc_intervention_threshold=0.8
-        )
+        config = SimpleNamespace(enable_dtmc=True, dtmc_intervention_threshold=0.8)
         engine = _build_engine(config=config)
         for _ in range(15):
-            engine.decision_history.append(
-                _make_decision(impact_level=ImpactLevel.LOW)
-            )
+            engine.decision_history.append(_make_decision(impact_level=ImpactLevel.LOW))
         engine._maybe_refit_dtmc()
 
 
@@ -372,9 +362,7 @@ class TestEvaluateGovernanceDecision:
         engine.impact_scorer.assess_impact = AsyncMock(
             return_value=_make_impact_features(risk_score=0.3)
         )
-        engine._decision_validator.validate_decision = AsyncMock(
-            return_value=(True, [])
-        )
+        engine._decision_validator.validate_decision = AsyncMock(return_value=(True, []))
         result = await engine.evaluate_governance_decision(
             message={"content": "test"}, context={"tenant": "t1"}
         )
@@ -383,12 +371,8 @@ class TestEvaluateGovernanceDecision:
 
     async def test_fallback_on_error(self):
         engine = _build_engine()
-        engine.impact_scorer.assess_impact = AsyncMock(
-            side_effect=RuntimeError("boom")
-        )
-        result = await engine.evaluate_governance_decision(
-            message={"content": "test"}, context={}
-        )
+        engine.impact_scorer.assess_impact = AsyncMock(side_effect=RuntimeError("boom"))
+        result = await engine.evaluate_governance_decision(message={"content": "test"}, context={})
         assert result.action_allowed is False
         assert "boom" in result.reasoning
 
@@ -402,16 +386,12 @@ class TestProvideFeedback:
     def test_feedback_with_human_override(self):
         engine = _build_engine()
         decision = _make_decision()
-        engine.provide_feedback(
-            decision, outcome_success=False, human_override=True
-        )
+        engine.provide_feedback(decision, outcome_success=False, human_override=True)
 
     def test_feedback_error_handled(self):
         engine = _build_engine()
         decision = _make_decision()
-        engine.threshold_manager.update_model = MagicMock(
-            side_effect=RuntimeError("fail")
-        )
+        engine.threshold_manager.update_model = MagicMock(side_effect=RuntimeError("fail"))
         engine.provide_feedback(decision, outcome_success=True)
 
 
@@ -725,9 +705,7 @@ class TestValidateConstitutionalHashPqc:
     async def test_short_mismatched_hash(self):
         from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
-        result = await validate_constitutional_hash_pqc(
-            data={"constitutional_hash": "short"}
-        )
+        result = await validate_constitutional_hash_pqc(data={"constitutional_hash": "short"})
         assert result.valid is False
 
     async def test_valid_hash_no_signature(self):
@@ -889,9 +867,7 @@ class TestValidateConstitutionalHashPqc:
 
         config = PQCConfig(pqc_enabled=True, verification_mode="strict")
 
-        with patch(
-            "enhanced_agent_bus.pqc_validators.PQCCryptoService"
-        ) as mock_svc_cls:
+        with patch("enhanced_agent_bus.pqc_validators.PQCCryptoService") as mock_svc_cls:
             mock_svc_cls.side_effect = ConstitutionalHashMismatchError("bad hash")
 
             result = await validate_constitutional_hash_pqc(
@@ -911,9 +887,7 @@ class TestValidateConstitutionalHashPqc:
 
         config = PQCConfig(pqc_enabled=True, verification_mode="strict")
 
-        with patch(
-            "enhanced_agent_bus.pqc_validators.PQCCryptoService"
-        ) as mock_svc_cls:
+        with patch("enhanced_agent_bus.pqc_validators.PQCCryptoService") as mock_svc_cls:
             mock_svc_cls.side_effect = PQCVerificationError("bad sig")
 
             result = await validate_constitutional_hash_pqc(
@@ -933,9 +907,7 @@ class TestValidateConstitutionalHashPqc:
 
         config = PQCConfig(pqc_enabled=True, verification_mode="strict")
 
-        with patch(
-            "enhanced_agent_bus.pqc_validators.PQCCryptoService"
-        ) as mock_svc_cls:
+        with patch("enhanced_agent_bus.pqc_validators.PQCCryptoService") as mock_svc_cls:
             mock_svc_cls.side_effect = ValueError("unexpected")
 
             result = await validate_constitutional_hash_pqc(
@@ -1031,36 +1003,22 @@ class TestIsSelfValidation:
     def test_output_author_matches(self):
         from enhanced_agent_bus.pqc_validators import _is_self_validation
 
-        assert (
-            _is_self_validation(
-                "agent-1", "output-123", {"output_author": "agent-1"}
-            )
-            is True
-        )
+        assert _is_self_validation("agent-1", "output-123", {"output_author": "agent-1"}) is True
 
     def test_output_author_no_match(self):
         from enhanced_agent_bus.pqc_validators import _is_self_validation
 
-        assert (
-            _is_self_validation(
-                "agent-1", "output-123", {"output_author": "agent-2"}
-            )
-            is False
-        )
+        assert _is_self_validation("agent-1", "output-123", {"output_author": "agent-2"}) is False
 
     def test_agent_id_in_target(self):
         from enhanced_agent_bus.pqc_validators import _is_self_validation
 
-        assert (
-            _is_self_validation("agent-1", "agent-1-output-xyz", {}) is True
-        )
+        assert _is_self_validation("agent-1", "agent-1-output-xyz", {}) is True
 
     def test_no_match(self):
         from enhanced_agent_bus.pqc_validators import _is_self_validation
 
-        assert (
-            _is_self_validation("agent-1", "output-for-agent-2", {}) is False
-        )
+        assert _is_self_validation("agent-1", "output-for-agent-2", {}) is False
 
 
 class TestExtractMessageContent:
@@ -1217,8 +1175,12 @@ class TestCheckKeyStatusForValidation:
         )
 
         result = await _check_key_status_for_validation(
-            data={}, signature_data={}, errors=[], warnings=[],
-            expected_hash=CONSTITUTIONAL_HASH, start_time=time.perf_counter(),
+            data={},
+            signature_data={},
+            errors=[],
+            warnings=[],
+            expected_hash=CONSTITUTIONAL_HASH,
+            start_time=time.perf_counter(),
         )
         assert result is None
 

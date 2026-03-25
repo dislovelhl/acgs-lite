@@ -492,9 +492,7 @@ class TestHandleChatMessage:
 
     async def test_not_in_document(self):
         srv = _make_collab_server()
-        srv.sio.get_session = AsyncMock(
-            return_value={"user_id": "u1", "document_id": None}
-        )
+        srv.sio.get_session = AsyncMock(return_value={"user_id": "u1", "document_id": None})
         result = await srv._handle_chat_message("sid1", {"text": "hi"})
         assert result == {"error": "Not in document"}
 
@@ -545,9 +543,7 @@ class TestHandleAddComment:
 
     async def test_not_in_document(self):
         srv = _make_collab_server()
-        srv.sio.get_session = AsyncMock(
-            return_value={"user_id": "u1", "document_id": None}
-        )
+        srv.sio.get_session = AsyncMock(return_value={"user_id": "u1", "document_id": None})
         result = await srv._handle_add_comment("sid1", {"text": "note"})
         assert result == {"error": "Not in document"}
 
@@ -585,9 +581,7 @@ class TestHandleGetPresence:
 
     async def test_not_in_document(self):
         srv = _make_collab_server()
-        srv.sio.get_session = AsyncMock(
-            return_value={"user_id": "u1", "document_id": None}
-        )
+        srv.sio.get_session = AsyncMock(return_value={"user_id": "u1", "document_id": None})
         result = await srv._handle_get_presence("sid1")
         assert result == {"error": "Not in document"}
 
@@ -666,9 +660,7 @@ class TestCreateComment:
     def test_with_position(self):
         srv = _make_collab_server()
         collab = _make_collaborator()
-        comment = srv._create_comment(
-            "u1", collab, {"text": "fix", "position": {"x": 1, "y": 2}}
-        )
+        comment = srv._create_comment("u1", collab, {"text": "fix", "position": {"x": 1, "y": 2}})
         assert comment.position is not None
         assert comment.position.x == 1
 
@@ -1226,36 +1218,28 @@ class TestAgentBusIntegration:
         assert result is None
 
     async def test_process_nlu_result_help_intent(self):
-        integration = AgentBusIntegration(
-            config=IntegrationConfig(enable_governance=False)
-        )
+        integration = AgentBusIntegration(config=IntegrationConfig(enable_governance=False))
         nlu = _make_nlu_result(primary_intent=Intent(name="help", confidence=0.9))
         ctx = _make_context()
         action = await integration.process_nlu_result(nlu, ctx)
         assert action.response_template == "How can I help you today?"
 
     async def test_process_nlu_result_unknown_intent(self):
-        integration = AgentBusIntegration(
-            config=IntegrationConfig(enable_governance=False)
-        )
+        integration = AgentBusIntegration(config=IntegrationConfig(enable_governance=False))
         nlu = _make_nlu_result(primary_intent=Intent(name="foo", confidence=0.5))
         ctx = _make_context()
         action = await integration.process_nlu_result(nlu, ctx)
         assert action.response_template == "I'm processing your request."
 
     async def test_process_nlu_result_no_primary_intent(self):
-        integration = AgentBusIntegration(
-            config=IntegrationConfig(enable_governance=False)
-        )
+        integration = AgentBusIntegration(config=IntegrationConfig(enable_governance=False))
         nlu = _make_nlu_result(primary_intent=None)
         ctx = _make_context()
         action = await integration.process_nlu_result(nlu, ctx)
         assert action.response_template == "I'm processing your request."
 
     async def test_process_nlu_with_governance_blocked(self):
-        integration = AgentBusIntegration(
-            config=IntegrationConfig(enable_governance=True)
-        )
+        integration = AgentBusIntegration(config=IntegrationConfig(enable_governance=True))
         # Mock _check_governance to return blocked
         integration._check_governance = AsyncMock(
             return_value={"is_allowed": False, "reason": "Policy violation"}
@@ -1268,9 +1252,7 @@ class TestAgentBusIntegration:
             await integration.process_nlu_result(nlu, ctx)
 
     async def test_check_governance_public_alias(self):
-        integration = AgentBusIntegration(
-            config=IntegrationConfig(enable_governance=False)
-        )
+        integration = AgentBusIntegration(config=IntegrationConfig(enable_governance=False))
         nlu = _make_nlu_result()
         ctx = _make_context()
         decision = await integration.check_governance(nlu, ctx)
@@ -1278,9 +1260,7 @@ class TestAgentBusIntegration:
         assert decision.is_allowed is True
 
     async def test_check_governance_error(self):
-        integration = AgentBusIntegration(
-            config=IntegrationConfig(enable_governance=True)
-        )
+        integration = AgentBusIntegration(config=IntegrationConfig(enable_governance=True))
         # Mock the policy generator to fail
         integration.policy_generator.generate_verified_policy = AsyncMock(
             side_effect=RuntimeError("policy engine down")
@@ -1586,9 +1566,7 @@ class TestConstitutionalContextManager:
         assert stats["min_compliance_score"] == 0.7
 
     def test_create_constitutional_context_manager(self):
-        mgr = create_constitutional_context_manager(
-            Mamba2Config(d_model=64, num_mamba_layers=1)
-        )
+        mgr = create_constitutional_context_manager(Mamba2Config(d_model=64, num_mamba_layers=1))
         assert isinstance(mgr, ConstitutionalContextManager)
 
     async def test_process_with_context_basic(self):

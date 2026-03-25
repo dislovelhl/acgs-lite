@@ -5,6 +5,7 @@ Because the module depends on ``src.core.cognitive.graphrag.schema`` which may
 not exist at test time, we inject lightweight stub types into ``sys.modules``
 before importing the module under test.
 """
+
 from __future__ import annotations
 
 import importlib
@@ -115,6 +116,7 @@ def teardown_module() -> None:
     """Remove stub modules injected into sys.modules to avoid polluting other tests."""
     for mod_key in _INJECTED_MODULES:
         sys.modules.pop(mod_key, None)
+
 
 GovernanceKnowledgeGraph = _graph_rag.GovernanceKnowledgeGraph
 PolicyGraphExtractor = _graph_rag.PolicyGraphExtractor
@@ -329,9 +331,7 @@ class TestGovernanceKnowledgeGraph:
         graph.add_node(make_node(node_id="r1", node_type=NodeType.RULE))
         graph.add_edge(make_edge(source_id="p1", target_id="r1"))
 
-        result = graph.traverse_bfs(
-            "p1", node_filter=lambda n: n.node_type == NodeType.RULE
-        )
+        result = graph.traverse_bfs("p1", node_filter=lambda n: n.node_type == NodeType.RULE)
         assert len(result) == 1
         assert result[0].node_id == "r1"
 
@@ -621,9 +621,7 @@ class TestGraphSimilaritySearch:
 
     def test_fallback_text_search_respects_node_types(self, populated_graph):
         search = GraphSimilaritySearch(populated_graph)
-        results = search.search_by_text(
-            "safety", tenant_id="t1", node_types=[NodeType.RULE]
-        )
+        results = search.search_by_text("safety", tenant_id="t1", node_types=[NodeType.RULE])
         assert all(r.node.node_type == NodeType.RULE for r in results)
 
     def test_search_with_context(self, graph, make_node, make_edge):
@@ -747,9 +745,7 @@ class TestBuildGovernanceContext:
             name="related-rule",
             content="rule content",
         )
-        result = SearchResult(
-            node=main_node, score=0.9, context_nodes=[ctx_node]
-        )
+        result = SearchResult(node=main_node, score=0.9, context_nodes=[ctx_node])
         ctx = build_governance_context(GovernanceKnowledgeGraph(), [result])
         assert "related-rule" in ctx
         assert "Related" in ctx
@@ -779,9 +775,7 @@ class TestBuildGovernanceContext:
             for i in range(10)
         ]
         result = SearchResult(node=main, score=0.9, context_nodes=ctx_nodes)
-        ctx = build_governance_context(
-            GovernanceKnowledgeGraph(), [result], max_tokens=10000
-        )
+        ctx = build_governance_context(GovernanceKnowledgeGraph(), [result], max_tokens=10000)
         # Only first 3 context nodes should appear
         for i in range(3):
             assert f"ctx-{i}" in ctx

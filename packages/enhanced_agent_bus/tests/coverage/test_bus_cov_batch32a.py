@@ -38,6 +38,7 @@ from enhanced_agent_bus.validators import ValidationResult
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_msg(**overrides: Any) -> AgentMessage:
     """Create a minimal AgentMessage with defaults."""
     defaults: dict[str, Any] = {
@@ -80,18 +81,14 @@ class TestOPAClientCoreInit:
     def test_embedded_mode_falls_back_to_http_when_sdk_unavailable(self):
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
-        with patch(
-            "enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=False
-        ):
+        with patch("enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=False):
             client = OPAClientCore(mode="embedded")
             assert client.mode == "http"
 
     def test_embedded_mode_kept_when_sdk_available(self):
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
-        with patch(
-            "enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True
-        ):
+        with patch("enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True):
             client = OPAClientCore(mode="embedded")
             assert client.mode == "embedded"
 
@@ -198,9 +195,7 @@ class TestInitialize:
 
         mock_opa = MagicMock()
         with (
-            patch(
-                "enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True
-            ),
+            patch("enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True),
             patch(
                 "enhanced_agent_bus.opa_client.core._get_embedded_opa_class",
                 return_value=mock_opa,
@@ -218,9 +213,7 @@ class TestInitialize:
             raise RuntimeError("OPA init failed")
 
         with (
-            patch(
-                "enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True
-            ),
+            patch("enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True),
             patch(
                 "enhanced_agent_bus.opa_client.core._get_embedded_opa_class",
                 return_value=raise_runtime,
@@ -469,9 +462,7 @@ class TestSanitizeError:
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
-        result = client._sanitize_error(
-            RuntimeError("Failed at http://secret:password@host/path")
-        )
+        result = client._sanitize_error(RuntimeError("Failed at http://secret:password@host/path"))
         assert isinstance(result, str)
 
 
@@ -482,9 +473,7 @@ class TestHandleEvaluationError:
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
-        result = client._handle_evaluation_error(
-            ValueError("bad input"), "data.acgs.allow"
-        )
+        result = client._handle_evaluation_error(ValueError("bad input"), "data.acgs.allow")
         assert result["result"] is False
         assert result["allowed"] is False
         assert result["metadata"]["security"] == "fail-closed"
@@ -564,9 +553,7 @@ class TestDispatchEvaluation:
     async def test_dispatch_embedded(self):
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
-        with patch(
-            "enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True
-        ):
+        with patch("enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True):
             client = OPAClientCore(mode="embedded")
         client._evaluate_embedded = AsyncMock(return_value={"result": True})
         result = await client._dispatch_evaluation({"input": 1}, "data.test")
@@ -693,9 +680,7 @@ class TestEvaluateEmbedded:
         from enhanced_agent_bus.exceptions import OPANotInitializedError
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
-        with patch(
-            "enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True
-        ):
+        with patch("enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True):
             client = OPAClientCore(mode="embedded")
         client._embedded_opa = None
         with pytest.raises(OPANotInitializedError):
@@ -705,9 +690,7 @@ class TestEvaluateEmbedded:
         from enhanced_agent_bus.exceptions import PolicyEvaluationError
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
-        with patch(
-            "enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True
-        ):
+        with patch("enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True):
             client = OPAClientCore(mode="embedded")
         mock_opa = MagicMock()
         mock_opa.evaluate.side_effect = RuntimeError("OPA crashed")
@@ -720,9 +703,7 @@ class TestEvaluateEmbedded:
         from enhanced_agent_bus.exceptions import PolicyEvaluationError
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
-        with patch(
-            "enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True
-        ):
+        with patch("enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True):
             client = OPAClientCore(mode="embedded")
         mock_opa = MagicMock()
         mock_opa.evaluate.side_effect = TypeError("bad type")
@@ -734,9 +715,7 @@ class TestEvaluateEmbedded:
     async def test_successful_embedded_eval(self):
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
-        with patch(
-            "enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True
-        ):
+        with patch("enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True):
             client = OPAClientCore(mode="embedded")
         mock_opa = MagicMock()
         mock_opa.evaluate.return_value = True
@@ -797,9 +776,7 @@ class TestEvaluatePolicy:
         client = OPAClient(mode="fallback", enable_cache=False)
         client._generate_cache_key = MagicMock(return_value="key")
         client._get_from_cache = AsyncMock(return_value=None)
-        client._validate_policy_path = MagicMock(
-            side_effect=ValueError("bad path")
-        )
+        client._validate_policy_path = MagicMock(side_effect=ValueError("bad path"))
 
         result = await client.evaluate_policy({"test": 1}, "bad;path")
         assert result["allowed"] is False
@@ -810,9 +787,7 @@ class TestEvaluatePolicy:
         client = OPAClient(mode="http", enable_cache=False)
         client._generate_cache_key = MagicMock(return_value="key")
         client._get_from_cache = AsyncMock(return_value=None)
-        client._dispatch_evaluation = AsyncMock(
-            side_effect=OSError("Network unreachable")
-        )
+        client._dispatch_evaluation = AsyncMock(side_effect=OSError("Network unreachable"))
 
         result = await client.evaluate_policy({"test": 1})
         assert result["allowed"] is False
@@ -824,9 +799,7 @@ class TestEvaluatePolicy:
         client = OPAClient(mode="http", enable_cache=False)
         client._generate_cache_key = MagicMock(return_value="key")
         client._get_from_cache = AsyncMock(return_value=None)
-        client._dispatch_evaluation = AsyncMock(
-            side_effect=RuntimeError("unexpected")
-        )
+        client._dispatch_evaluation = AsyncMock(side_effect=RuntimeError("unexpected"))
 
         result = await client.evaluate_policy({"test": 1})
         assert result["allowed"] is False
@@ -837,9 +810,7 @@ class TestEvaluatePolicy:
         client = OPAClient(mode="http", enable_cache=False)
         client._generate_cache_key = MagicMock(return_value="key")
         client._get_from_cache = AsyncMock(return_value=None)
-        client._dispatch_evaluation = AsyncMock(
-            side_effect=TypeError("bad type")
-        )
+        client._dispatch_evaluation = AsyncMock(side_effect=TypeError("bad type"))
 
         result = await client.evaluate_policy({"test": 1})
         assert result["allowed"] is False
@@ -850,9 +821,7 @@ class TestEvaluatePolicy:
         client = OPAClient(mode="http", enable_cache=False)
         client._generate_cache_key = MagicMock(return_value="key")
         client._get_from_cache = AsyncMock(return_value=None)
-        client._dispatch_evaluation = AsyncMock(
-            side_effect=AttributeError("missing attr")
-        )
+        client._dispatch_evaluation = AsyncMock(side_effect=AttributeError("missing attr"))
 
         result = await client.evaluate_policy({"test": 1})
         assert result["allowed"] is False
@@ -863,9 +832,7 @@ class TestEvaluatePolicy:
         client = OPAClient(mode="http", enable_cache=False)
         client._generate_cache_key = MagicMock(return_value="key")
         client._get_from_cache = AsyncMock(return_value=None)
-        client._dispatch_evaluation = AsyncMock(
-            side_effect=KeyError("missing key")
-        )
+        client._dispatch_evaluation = AsyncMock(side_effect=KeyError("missing key"))
 
         result = await client.evaluate_policy({"test": 1})
         assert result["allowed"] is False
@@ -955,9 +922,7 @@ class TestValidateConstitutional:
         from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient(mode="fallback", enable_cache=False)
-        client.evaluate_policy = AsyncMock(
-            side_effect=OPAConnectionError("localhost", "refused")
-        )
+        client.evaluate_policy = AsyncMock(side_effect=OPAConnectionError("localhost", "refused"))
         result = await client.validate_constitutional({"content": "test"})
         assert result.is_valid is False
 
@@ -967,9 +932,7 @@ class TestValidateConstitutional:
         from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient(mode="fallback", enable_cache=False)
-        client.evaluate_policy = AsyncMock(
-            side_effect=HTTPConnectError("connection refused")
-        )
+        client.evaluate_policy = AsyncMock(side_effect=HTTPConnectError("connection refused"))
         result = await client.validate_constitutional({"content": "test"})
         assert result.is_valid is False
 
@@ -993,7 +956,9 @@ class TestCheckAgentAuthorization:
             return_value={"allowed": True, "reason": "OK", "metadata": {}}
         )
         result = await client.check_agent_authorization(
-            "agent-1", "read", "resource-1",
+            "agent-1",
+            "read",
+            "resource-1",
             context={"constitutional_hash": CONSTITUTIONAL_HASH},
         )
         assert result is True
@@ -1003,7 +968,9 @@ class TestCheckAgentAuthorization:
 
         client = OPAClient(mode="fallback", enable_cache=False)
         result = await client.check_agent_authorization(
-            "agent-1", "read", "resource-1",
+            "agent-1",
+            "read",
+            "resource-1",
             context={"constitutional_hash": "wrong_hash"},
         )
         assert result is False
@@ -1023,9 +990,7 @@ class TestCheckAgentAuthorization:
         from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient(mode="fallback", enable_cache=False)
-        client.evaluate_policy = AsyncMock(
-            side_effect=OPAConnectionError("localhost", "refused")
-        )
+        client.evaluate_policy = AsyncMock(side_effect=OPAConnectionError("localhost", "refused"))
         result = await client.check_agent_authorization("agent-1", "read", "res-1")
         assert result is False
 
@@ -1043,9 +1008,7 @@ class TestCheckAgentAuthorization:
         from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient(mode="fallback", enable_cache=False)
-        client.evaluate_policy = AsyncMock(
-            side_effect=HTTPConnectError("connection refused")
-        )
+        client.evaluate_policy = AsyncMock(side_effect=HTTPConnectError("connection refused"))
         result = await client.check_agent_authorization("agent-1", "read", "res-1")
         assert result is False
 
@@ -1198,9 +1161,7 @@ class TestSingletonLifecycle:
         original = core_mod._opa_client
         try:
             core_mod._opa_client = None
-            client = await core_mod.initialize_opa_client(
-                mode="fallback", enable_cache=False
-            )
+            client = await core_mod.initialize_opa_client(mode="fallback", enable_cache=False)
             assert client is not None
             assert core_mod._opa_client is client
 
@@ -1230,9 +1191,7 @@ class TestSingletonLifecycle:
         original = core_mod._opa_client
         try:
             core_mod._opa_client = None
-            client = await core_mod.initialize_opa_client(
-                mode="fallback", enable_cache=False
-            )
+            client = await core_mod.initialize_opa_client(mode="fallback", enable_cache=False)
             await core_mod.close_opa_client()
             assert core_mod._opa_client is None
         finally:

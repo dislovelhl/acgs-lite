@@ -304,9 +304,7 @@ class TestAIAssistant:
 class TestCreateAssistant:
     @pytest.mark.asyncio
     async def test_create_default(self):
-        with patch(
-            "enhanced_agent_bus.ai_assistant.core.AgentBusIntegration"
-        ) as MockIntegration:
+        with patch("enhanced_agent_bus.ai_assistant.core.AgentBusIntegration") as MockIntegration:
             mock_instance = MagicMock()
             mock_instance.initialize = AsyncMock()
             MockIntegration.return_value = mock_instance
@@ -317,9 +315,7 @@ class TestCreateAssistant:
     @pytest.mark.asyncio
     async def test_create_with_agent_bus(self):
         mock_bus = MagicMock()
-        with patch(
-            "enhanced_agent_bus.ai_assistant.core.AgentBusIntegration"
-        ) as MockIntegration:
+        with patch("enhanced_agent_bus.ai_assistant.core.AgentBusIntegration") as MockIntegration:
             mock_instance = MagicMock()
             mock_instance.initialize = AsyncMock()
             MockIntegration.return_value = mock_instance

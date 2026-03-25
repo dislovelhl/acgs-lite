@@ -275,13 +275,10 @@ class GovernedAnthropic:
     ) -> None:
         if not ANTHROPIC_AVAILABLE:
             raise ImportError(
-                "The 'anthropic' package is required. "
-                "Install with: pip install acgs[anthropic]"
+                "The 'anthropic' package is required. Install with: pip install acgs[anthropic]"
             )
 
-        self._client = Anthropic(
-            api_key=api_key, **anthropic_kwargs
-        )
+        self._client = Anthropic(api_key=api_key, **anthropic_kwargs)
         self.constitution = constitution or Constitution.default()
         self.audit_log = AuditLog()
         self.engine = GovernanceEngine(

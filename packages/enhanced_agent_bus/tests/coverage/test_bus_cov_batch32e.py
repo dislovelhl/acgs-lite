@@ -72,6 +72,7 @@ pytestmark = [pytest.mark.unit]
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _test_config(**overrides) -> MLGovernanceConfig:
     defaults = {
         "base_url": "http://localhost:8001",
@@ -314,6 +315,7 @@ class TestMLGovernanceFlushQueue:
         client._circuit_state = CircuitState.OPEN
         # Use a very recent failure time so circuit stays open
         from datetime import UTC, datetime
+
         client._last_failure_time = datetime.now(UTC).timestamp()
 
         count = await client._flush_queue()
@@ -501,8 +503,13 @@ class TestStructuredJSONFormatter:
         try:
             formatter = StructuredJSONFormatter()
             record = logging.LogRecord(
-                name="test", level=logging.INFO, pathname="t.py",
-                lineno=1, msg="msg", args=None, exc_info=None,
+                name="test",
+                level=logging.INFO,
+                pathname="t.py",
+                lineno=1,
+                msg="msg",
+                args=None,
+                exc_info=None,
             )
             output = formatter.format(record)
             data = json.loads(output)
@@ -516,8 +523,13 @@ class TestStructuredJSONFormatter:
         try:
             formatter = StructuredJSONFormatter()
             record = logging.LogRecord(
-                name="test", level=logging.INFO, pathname="t.py",
-                lineno=1, msg="msg", args=None, exc_info=None,
+                name="test",
+                level=logging.INFO,
+                pathname="t.py",
+                lineno=1,
+                msg="msg",
+                args=None,
+                exc_info=None,
             )
             output = formatter.format(record)
             data = json.loads(output)
@@ -530,8 +542,13 @@ class TestStructuredJSONFormatter:
     def test_format_with_extra_attribute(self):
         formatter = StructuredJSONFormatter()
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="t.py",
-            lineno=1, msg="msg", args=None, exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="t.py",
+            lineno=1,
+            msg="msg",
+            args=None,
+            exc_info=None,
         )
         record.extra = {"user_id": "u1"}
         output = formatter.format(record)
@@ -541,8 +558,12 @@ class TestStructuredJSONFormatter:
     def test_format_with_dict_args(self):
         formatter = StructuredJSONFormatter()
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="t.py",
-            lineno=1, msg="msg", args=None,
+            name="test",
+            level=logging.INFO,
+            pathname="t.py",
+            lineno=1,
+            msg="msg",
+            args=None,
             exc_info=None,
         )
         # Manually set args to a dict after construction to bypass LogRecord validation
@@ -559,8 +580,13 @@ class TestStructuredJSONFormatter:
             exc_info = sys.exc_info()
 
         record = logging.LogRecord(
-            name="test", level=logging.ERROR, pathname="t.py",
-            lineno=1, msg="error msg", args=None, exc_info=exc_info,
+            name="test",
+            level=logging.ERROR,
+            pathname="t.py",
+            lineno=1,
+            msg="error msg",
+            args=None,
+            exc_info=exc_info,
         )
         output = formatter.format(record)
         data = json.loads(output)
@@ -570,8 +596,13 @@ class TestStructuredJSONFormatter:
     def test_format_warning_includes_source(self):
         formatter = StructuredJSONFormatter()
         record = logging.LogRecord(
-            name="test", level=logging.WARNING, pathname="warn.py",
-            lineno=42, msg="warn msg", args=None, exc_info=None,
+            name="test",
+            level=logging.WARNING,
+            pathname="warn.py",
+            lineno=42,
+            msg="warn msg",
+            args=None,
+            exc_info=None,
         )
         output = formatter.format(record)
         data = json.loads(output)
@@ -580,8 +611,13 @@ class TestStructuredJSONFormatter:
     def test_format_truncation(self):
         formatter = StructuredJSONFormatter()
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="t.py",
-            lineno=1, msg="x" * 20000, args=None, exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="t.py",
+            lineno=1,
+            msg="x" * 20000,
+            args=None,
+            exc_info=None,
         )
         output = formatter.format(record)
         assert output.endswith(" [truncated]")
@@ -590,8 +626,13 @@ class TestStructuredJSONFormatter:
     def test_format_no_stack_trace(self):
         formatter = StructuredJSONFormatter(include_stack_trace=False)
         record = logging.LogRecord(
-            name="test", level=logging.ERROR, pathname="t.py",
-            lineno=1, msg="msg", args=None, exc_info=None,
+            name="test",
+            level=logging.ERROR,
+            pathname="t.py",
+            lineno=1,
+            msg="msg",
+            args=None,
+            exc_info=None,
         )
         output = formatter.format(record)
         data = json.loads(output)
@@ -650,8 +691,13 @@ class TestTextFormatter:
     def test_format_basic(self):
         formatter = TextFormatter()
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="t.py",
-            lineno=1, msg="hello", args=None, exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="t.py",
+            lineno=1,
+            msg="hello",
+            args=None,
+            exc_info=None,
         )
         output = formatter.format(record)
         assert "hello" in output
@@ -662,8 +708,13 @@ class TestTextFormatter:
         try:
             formatter = TextFormatter()
             record = logging.LogRecord(
-                name="test", level=logging.DEBUG, pathname="t.py",
-                lineno=1, msg="debug msg", args=None, exc_info=None,
+                name="test",
+                level=logging.DEBUG,
+                pathname="t.py",
+                lineno=1,
+                msg="debug msg",
+                args=None,
+                exc_info=None,
             )
             output = formatter.format(record)
             assert "[corr-123" in output
@@ -673,8 +724,13 @@ class TestTextFormatter:
     def test_format_with_extra(self):
         formatter = TextFormatter()
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="t.py",
-            lineno=1, msg="msg", args=None, exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="t.py",
+            lineno=1,
+            msg="msg",
+            args=None,
+            exc_info=None,
         )
         record.extra = {"key": "val"}
         output = formatter.format(record)
@@ -687,8 +743,13 @@ class TestTextFormatter:
         except RuntimeError:
             exc_info = sys.exc_info()
         record = logging.LogRecord(
-            name="test", level=logging.ERROR, pathname="t.py",
-            lineno=1, msg="error", args=None, exc_info=exc_info,
+            name="test",
+            level=logging.ERROR,
+            pathname="t.py",
+            lineno=1,
+            msg="error",
+            args=None,
+            exc_info=exc_info,
         )
         output = formatter.format(record)
         assert "RuntimeError" in output
@@ -1045,7 +1106,9 @@ class TestPolisDiversityThresholdFallback:
 
         cluster = _make_cluster("c1", ["s1"])
         result = await engine.select_diverse_representative_statements(
-            cluster, top_n=5, diversity_threshold=1.0,
+            cluster,
+            top_n=5,
+            diversity_threshold=1.0,
         )
         assert len(result) >= 1
 
@@ -1060,7 +1123,8 @@ class TestPolisSortedScoresEmpty:
         engine = PolisDeliberationEngine()
         cluster = _make_cluster("c1", ["s1"])
         result = await engine.select_diverse_representative_statements(
-            cluster, diversity_threshold=0.5,
+            cluster,
+            diversity_threshold=0.5,
         )
         assert result == []
 

@@ -22,9 +22,7 @@ import pytest
 class TestMACICoordinator:
     """Tests for coordinators/maci_coordinator.py."""
 
-    def _make_coordinator(
-        self, strict_mode: bool = True, enable_audit: bool = True
-    ) -> Any:
+    def _make_coordinator(self, strict_mode: bool = True, enable_audit: bool = True) -> Any:
         with patch(
             "enhanced_agent_bus.coordinators.maci_coordinator.MACICoordinator._initialize_maci"
         ):
@@ -68,10 +66,12 @@ class TestMACICoordinator:
         # Simulate the import inside register_agent raising an error
         with patch.dict(
             "sys.modules",
-            {"enhanced_agent_bus.maci_enforcement": MagicMock(
-                MACIRole=MagicMock(parse=MagicMock(side_effect=RuntimeError("bad role"))),
-                MACIAgentRoleConfig=MagicMock(),
-            )},
+            {
+                "enhanced_agent_bus.maci_enforcement": MagicMock(
+                    MACIRole=MagicMock(parse=MagicMock(side_effect=RuntimeError("bad role"))),
+                    MACIAgentRoleConfig=MagicMock(),
+                )
+            },
         ):
             result = await coord.register_agent("agent-2", "judicial")
             assert result is False
@@ -121,7 +121,9 @@ class TestMACICoordinator:
                 "sys.modules",
                 {"enhanced_agent_bus.maci_enforcement": MagicMock(MACIAction=mock_action_cls)},
             ):
-                result = await coord.validate_action("agent-1", "validate", target_output_id="agent-2")
+                result = await coord.validate_action(
+                    "agent-1", "validate", target_output_id="agent-2"
+                )
                 assert result["allowed"] is True
 
     async def test_validate_action_enforcer_error(self) -> None:
@@ -137,7 +139,9 @@ class TestMACICoordinator:
                 "sys.modules",
                 {"enhanced_agent_bus.maci_enforcement": MagicMock()},
             ):
-                result = await coord.validate_action("agent-1", "validate", target_output_id="agent-2")
+                result = await coord.validate_action(
+                    "agent-1", "validate", target_output_id="agent-2"
+                )
                 assert result["allowed"] is False
                 assert "Validation error" in result["reason"]
 
@@ -346,7 +350,9 @@ class TestCostOptimizer:
         )
         opt.register_cost_model(model)
 
-        est = opt.estimate_cost("p1", input_tokens=2000, estimated_output_tokens=1000, cached_tokens=500)
+        est = opt.estimate_cost(
+            "p1", input_tokens=2000, estimated_output_tokens=1000, cached_tokens=500
+        )
         assert est is not None
         assert est.provider_id == "p1"
         assert est.model_id == "m1"
@@ -390,7 +396,12 @@ class TestCostOptimizer:
         opt._cost_models["p1"] = model
 
         with patch.object(opt.registry, "find_capable_providers", return_value=[(profile, 0.9)]):
-            with patch.object(opt.budget_manager, "check_budget", new_callable=AsyncMock, return_value=(True, None)):
+            with patch.object(
+                opt.budget_manager,
+                "check_budget",
+                new_callable=AsyncMock,
+                return_value=(True, None),
+            ):
                 sel, est = await opt.select_optimal_provider(
                     [], tenant_id="t1", estimated_input_tokens=1000, estimated_output_tokens=500
                 )
@@ -421,7 +432,10 @@ class TestCostOptimizer:
 
         with patch.object(opt.registry, "find_capable_providers", return_value=[(profile, 0.9)]):
             with patch.object(
-                opt.budget_manager, "check_budget", new_callable=AsyncMock, return_value=(False, "over")
+                opt.budget_manager,
+                "check_budget",
+                new_callable=AsyncMock,
+                return_value=(False, "over"),
             ):
                 sel, est = await opt.select_optimal_provider([], tenant_id="t1")
                 assert sel is None
@@ -448,9 +462,7 @@ class TestCostOptimizer:
         opt._cost_models["p1"] = model
 
         with patch.object(opt.registry, "find_capable_providers", return_value=[(profile, 0.9)]):
-            sel, est = await opt.select_optimal_provider(
-                [], tenant_id="t1", max_cost=0.0001
-            )
+            sel, est = await opt.select_optimal_provider([], tenant_id="t1", max_cost=0.0001)
             assert sel is None
 
     async def test_select_optimal_provider_urgency_batch(self) -> None:
@@ -476,7 +488,12 @@ class TestCostOptimizer:
         opt._cost_models["p1"] = model
 
         with patch.object(opt.registry, "find_capable_providers", return_value=[(profile, 0.8)]):
-            with patch.object(opt.budget_manager, "check_budget", new_callable=AsyncMock, return_value=(True, None)):
+            with patch.object(
+                opt.budget_manager,
+                "check_budget",
+                new_callable=AsyncMock,
+                return_value=(True, None),
+            ):
                 sel, est = await opt.select_optimal_provider(
                     [],
                     tenant_id="t1",
@@ -488,7 +505,9 @@ class TestCostOptimizer:
     async def test_record_actual_cost(self) -> None:
         opt = self._make_optimizer()
         with patch.object(opt.budget_manager, "record_cost", new_callable=AsyncMock):
-            with patch.object(opt.anomaly_detector, "record_cost", new_callable=AsyncMock, return_value=None):
+            with patch.object(
+                opt.anomaly_detector, "record_cost", new_callable=AsyncMock, return_value=None
+            ):
                 result = await opt.record_actual_cost("t1", "p1", 0.05, "completion")
                 assert result is None
 

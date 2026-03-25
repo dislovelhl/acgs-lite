@@ -74,8 +74,7 @@ class GovernedXAI:
     ) -> None:
         if not OPENAI_AVAILABLE:
             raise ImportError(
-                "The 'openai' package is required. "
-                "Install with: pip install acgs[openai]"
+                "The 'openai' package is required. Install with: pip install acgs[openai]"
             )
 
         self._client = OpenAI(

@@ -37,6 +37,7 @@ from enhanced_agent_bus.observability.telemetry import (
 # Helper
 # -----------------------------------------------------------------------
 
+
 def _make_features(**overrides) -> ImpactFeatures:
     defaults = dict(
         message_length=100,
@@ -370,9 +371,7 @@ class TestConfigureTraceProviderPaths:
             ),
         ):
             # Remove the OTLP exporter module to trigger ImportError
-            saved = sys.modules.pop(
-                "opentelemetry.exporter.otlp.proto.grpc.trace_exporter", None
-            )
+            saved = sys.modules.pop("opentelemetry.exporter.otlp.proto.grpc.trace_exporter", None)
             try:
                 with patch.dict(
                     sys.modules,
@@ -386,9 +385,7 @@ class TestConfigureTraceProviderPaths:
                     mock_tp.add_span_processor.assert_not_called()
             finally:
                 if saved is not None:
-                    sys.modules[
-                        "opentelemetry.exporter.otlp.proto.grpc.trace_exporter"
-                    ] = saved
+                    sys.modules["opentelemetry.exporter.otlp.proto.grpc.trace_exporter"] = saved
 
     def test_configure_trace_provider_no_export(self):
         """Cover lines 232-233: export_traces=False returns early."""
@@ -454,9 +451,7 @@ class TestConfigureMeterProviderPaths:
                 return_value=mock_mp,
             ),
         ):
-            saved = sys.modules.pop(
-                "opentelemetry.exporter.otlp.proto.grpc.metric_exporter", None
-            )
+            saved = sys.modules.pop("opentelemetry.exporter.otlp.proto.grpc.metric_exporter", None)
             try:
                 with patch.dict(
                     sys.modules,
@@ -469,9 +464,7 @@ class TestConfigureMeterProviderPaths:
                     assert result is mock_mp
             finally:
                 if saved is not None:
-                    sys.modules[
-                        "opentelemetry.exporter.otlp.proto.grpc.metric_exporter"
-                    ] = saved
+                    sys.modules["opentelemetry.exporter.otlp.proto.grpc.metric_exporter"] = saved
 
     def test_configure_meter_provider_no_export(self):
         """Cover line 261-262: export_metrics=False."""
@@ -506,9 +499,7 @@ class TestConfigurePropagation:
                     ),
                 },
             ),
-            patch(
-                "enhanced_agent_bus.observability.telemetry.set_global_textmap"
-            ) as mock_set,
+            patch("enhanced_agent_bus.observability.telemetry.set_global_textmap") as mock_set,
         ):
             _configure_propagation()
             mock_set.assert_called_once_with(mock_b3)
@@ -787,9 +778,7 @@ class TestImpactScorerPredictRiskScore:
         mock_classifier.predict.return_value = [0.65]
         scorer.impact_classifier = mock_classifier
 
-        with patch(
-            "enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np
-        ):
+        with patch("enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np):
             with patch(
                 "enhanced_agent_bus.adaptive_governance.impact_scorer.NUMPY_AVAILABLE",
                 True,
@@ -809,9 +798,7 @@ class TestImpactScorerPredictRiskScore:
         mock_classifier.predict.return_value = [1.5]  # Out of range
         scorer.impact_classifier = mock_classifier
 
-        with patch(
-            "enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np
-        ):
+        with patch("enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np):
             with patch(
                 "enhanced_agent_bus.adaptive_governance.impact_scorer.NUMPY_AVAILABLE",
                 True,
@@ -829,9 +816,7 @@ class TestImpactScorerPredictRiskScore:
         mock_classifier = MagicMock()
         scorer.impact_classifier = mock_classifier
 
-        with patch(
-            "enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np
-        ):
+        with patch("enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np):
             with patch(
                 "enhanced_agent_bus.adaptive_governance.impact_scorer.NUMPY_AVAILABLE",
                 True,
@@ -1016,9 +1001,7 @@ class TestImpactScorerRetrainModel:
             scorer.training_samples.append((_make_features(), float(i % 10) / 10))
 
         with (
-            patch(
-                "enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np
-            ),
+            patch("enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np),
             patch(
                 "enhanced_agent_bus.adaptive_governance.impact_scorer.NUMPY_AVAILABLE",
                 True,
@@ -1052,9 +1035,7 @@ class TestImpactScorerRetrainModel:
         scorer._log_training_run_to_mlflow = mock_log_fn
 
         with (
-            patch(
-                "enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np
-            ),
+            patch("enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np),
             patch(
                 "enhanced_agent_bus.adaptive_governance.impact_scorer.NUMPY_AVAILABLE",
                 True,
@@ -1084,9 +1065,7 @@ class TestImpactScorerRetrainModel:
             scorer.training_samples.append((_make_features(), float(i % 10) / 10))
 
         with (
-            patch(
-                "enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np
-            ),
+            patch("enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np),
             patch(
                 "enhanced_agent_bus.adaptive_governance.impact_scorer.NUMPY_AVAILABLE",
                 True,

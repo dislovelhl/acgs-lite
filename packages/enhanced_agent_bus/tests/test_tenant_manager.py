@@ -80,9 +80,7 @@ class TestCreateTenant:
             await manager.create_tenant(name="Bad", slug="BAD")
 
     async def test_create_with_parent(self, manager):
-        parent = await manager.create_tenant(
-            name="Parent", slug="parent-org", auto_activate=True
-        )
+        parent = await manager.create_tenant(name="Parent", slug="parent-org", auto_activate=True)
         child = await manager.create_tenant(
             name="Child", slug="child-org", parent_tenant_id=parent.tenant_id
         )
@@ -103,9 +101,7 @@ class TestCreateTenant:
             )
 
     async def test_create_inherits_parent_config(self, manager):
-        parent = await manager.create_tenant(
-            name="Parent", slug="parent-cfg", auto_activate=True
-        )
+        parent = await manager.create_tenant(name="Parent", slug="parent-cfg", auto_activate=True)
         child = await manager.create_tenant(
             name="Child", slug="child-cfg", parent_tenant_id=parent.tenant_id
         )
@@ -155,15 +151,9 @@ class TestListTenants:
         assert len(page) == 2
 
     async def test_list_by_parent(self, manager):
-        parent = await manager.create_tenant(
-            name="Parent", slug="parent-list", auto_activate=True
-        )
-        await manager.create_tenant(
-            name="C1", slug="c1-list", parent_tenant_id=parent.tenant_id
-        )
-        await manager.create_tenant(
-            name="C2", slug="c2-list", parent_tenant_id=parent.tenant_id
-        )
+        parent = await manager.create_tenant(name="Parent", slug="parent-list", auto_activate=True)
+        await manager.create_tenant(name="C1", slug="c1-list", parent_tenant_id=parent.tenant_id)
+        await manager.create_tenant(name="C2", slug="c2-list", parent_tenant_id=parent.tenant_id)
         await manager.create_tenant(name="Other", slug="other-list")
 
         children = await manager.list_tenants(parent_id=parent.tenant_id)
@@ -178,9 +168,7 @@ class TestUpdateTenant:
 
     async def test_update_metadata(self, manager):
         tenant = await manager.create_tenant(name="Meta", slug="meta-t")
-        updated = await manager.update_tenant(
-            tenant.tenant_id, metadata={"key": "value"}
-        )
+        updated = await manager.update_tenant(tenant.tenant_id, metadata={"key": "value"})
         assert updated.metadata["key"] == "value"
 
     async def test_update_nonexistent(self, manager):
@@ -201,9 +189,7 @@ class TestDeleteTenant:
         assert result is False
 
     async def test_delete_with_children_raises(self, manager):
-        parent = await manager.create_tenant(
-            name="Parent", slug="parent-del", auto_activate=True
-        )
+        parent = await manager.create_tenant(name="Parent", slug="parent-del", auto_activate=True)
         await manager.create_tenant(
             name="Child", slug="child-del", parent_tenant_id=parent.tenant_id
         )
@@ -211,9 +197,7 @@ class TestDeleteTenant:
             await manager.delete_tenant(parent.tenant_id)
 
     async def test_delete_with_children_force(self, manager):
-        parent = await manager.create_tenant(
-            name="Parent", slug="parent-force", auto_activate=True
-        )
+        parent = await manager.create_tenant(name="Parent", slug="parent-force", auto_activate=True)
         await manager.create_tenant(
             name="Child", slug="child-force", parent_tenant_id=parent.tenant_id
         )
@@ -260,9 +244,7 @@ class TestLifecycle:
         assert result is None
 
     async def test_suspend_with_children(self, manager):
-        parent = await manager.create_tenant(
-            name="P", slug="p-sus", auto_activate=True
-        )
+        parent = await manager.create_tenant(name="P", slug="p-sus", auto_activate=True)
         child = await manager.create_tenant(
             name="C", slug="c-sus", parent_tenant_id=parent.tenant_id, auto_activate=True
         )
@@ -408,22 +390,14 @@ class TestQuotaManagement:
 
 class TestHierarchy:
     async def test_get_child_tenants(self, manager):
-        parent = await manager.create_tenant(
-            name="P", slug="p-hier", auto_activate=True
-        )
-        await manager.create_tenant(
-            name="C1", slug="c1-hier", parent_tenant_id=parent.tenant_id
-        )
-        await manager.create_tenant(
-            name="C2", slug="c2-hier", parent_tenant_id=parent.tenant_id
-        )
+        parent = await manager.create_tenant(name="P", slug="p-hier", auto_activate=True)
+        await manager.create_tenant(name="C1", slug="c1-hier", parent_tenant_id=parent.tenant_id)
+        await manager.create_tenant(name="C2", slug="c2-hier", parent_tenant_id=parent.tenant_id)
         children = await manager.get_child_tenants(parent.tenant_id)
         assert len(children) == 2
 
     async def test_get_tenant_hierarchy(self, manager):
-        root = await manager.create_tenant(
-            name="Root", slug="root-hier", auto_activate=True
-        )
+        root = await manager.create_tenant(name="Root", slug="root-hier", auto_activate=True)
         child = await manager.create_tenant(
             name="Child", slug="child-hier", parent_tenant_id=root.tenant_id
         )
@@ -433,11 +407,10 @@ class TestHierarchy:
         assert hierarchy[1].tenant_id == child.tenant_id
 
     async def test_get_all_descendants(self, manager):
-        root = await manager.create_tenant(
-            name="Root", slug="root-desc", auto_activate=True
-        )
+        root = await manager.create_tenant(name="Root", slug="root-desc", auto_activate=True)
         child = await manager.create_tenant(
-            name="Child", slug="child-desc",
+            name="Child",
+            slug="child-desc",
             parent_tenant_id=root.tenant_id,
             auto_activate=True,
         )
@@ -532,6 +505,7 @@ class TestCacheManagement:
         tenant = await manager.create_tenant(name="Exp", slug="exp-t")
         # Manually expire cache
         from datetime import UTC, datetime, timedelta
+
         manager._cache[tenant.tenant_id] = (
             tenant,
             datetime.now(UTC) - timedelta(seconds=manager._cache_ttl + 1),

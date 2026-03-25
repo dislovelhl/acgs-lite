@@ -120,8 +120,7 @@ class InvariantManifest(BaseModel):
         computed = self._compute_hash()
         if self.invariant_hash and self.invariant_hash != computed:
             raise ValueError(
-                f"Invariant hash mismatch: provided={self.invariant_hash}, "
-                f"computed={computed}"
+                f"Invariant hash mismatch: provided={self.invariant_hash}, computed={computed}"
             )
         self.invariant_hash = computed
 

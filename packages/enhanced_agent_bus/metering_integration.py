@@ -34,7 +34,7 @@ try:
     MeteringTier = _models.MeteringTier
     UsageEvent = _models.UsageEvent
     UsageMeteringService = importlib.import_module(
-    "src.core.services.metering.app.service"
+        "src.core.services.metering.app.service"
     ).UsageMeteringService
 
     METERING_AVAILABLE = True

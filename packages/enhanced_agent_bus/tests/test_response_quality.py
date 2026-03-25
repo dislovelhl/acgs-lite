@@ -65,9 +65,7 @@ def _make_assessment(
         QualityDimension(name="accuracy", score=0.85, threshold=0.8),
         QualityDimension(name="coherence", score=0.8, threshold=0.7),
         QualityDimension(name="relevance", score=0.85, threshold=0.8),
-        QualityDimension(
-            name="constitutional_alignment", score=0.98, threshold=0.95
-        ),
+        QualityDimension(name="constitutional_alignment", score=0.98, threshold=0.95),
         QualityDimension(name="safety", score=0.99, threshold=0.99),
     ]
     if dimension_overrides:
@@ -170,9 +168,7 @@ class TestQualityDimension:
             QualityDimension(name="test", score=0.5, threshold=1.5)
 
     def test_to_dict(self):
-        dim = QualityDimension(
-            name="accuracy", score=0.85, threshold=0.8, critique="Good"
-        )
+        dim = QualityDimension(name="accuracy", score=0.85, threshold=0.8, critique="Good")
         d = dim.to_dict()
         assert d["name"] == "accuracy"
         assert d["score"] == 0.85
@@ -196,9 +192,7 @@ class TestQualityAssessment:
         assert assessment.passes_threshold is True
 
     def test_overall_score_validation(self):
-        with pytest.raises(
-            ValueError, match="Overall score must be between"
-        ):
+        with pytest.raises(ValueError, match="Overall score must be between"):
             QualityAssessment(
                 dimensions=[],
                 overall_score=1.5,
@@ -217,9 +211,7 @@ class TestQualityAssessment:
         assert len(passing) == 5
 
     def test_failing_dimensions(self):
-        assessment = _make_assessment(
-            dimension_overrides={"accuracy": 0.5}
-        )
+        assessment = _make_assessment(dimension_overrides={"accuracy": 0.5})
         failing = assessment.failing_dimensions
         assert len(failing) == 1
         assert failing[0].name == "accuracy"
@@ -239,9 +231,7 @@ class TestQualityAssessment:
         assert assessment.pass_rate == 0.0
 
     def test_critical_failures(self):
-        assessment = _make_assessment(
-            dimension_overrides={"safety": 0.3}
-        )
+        assessment = _make_assessment(dimension_overrides={"safety": 0.3})
         critical = assessment.critical_failures
         assert len(critical) == 1
         assert critical[0].name == "safety"
@@ -341,9 +331,7 @@ class TestRefinementIteration:
         assert iteration.improved is False
 
     def test_now_passes(self):
-        before = _make_assessment(
-            overall_score=0.5, passes_threshold=False
-        )
+        before = _make_assessment(overall_score=0.5, passes_threshold=False)
         after = _make_assessment(overall_score=0.9, passes_threshold=True)
         iteration = RefinementIteration(
             iteration_number=1,
@@ -383,9 +371,7 @@ class TestRefinementResult:
             before_assessment=before,
             after_assessment=after,
         )
-        result = self._make_result(
-            iterations=[iteration], total_iterations=1
-        )
+        result = self._make_result(iterations=[iteration], total_iterations=1)
         assert result.was_refined is True
 
     def test_was_refined_false(self):
@@ -506,9 +492,7 @@ class TestResponseQualityValidator:
             "constitutional_alignment": 0.98,
             "safety": 0.99,
         }
-        assessment = validator.validate(
-            GOOD_RESPONSE, scores=scores
-        )
+        assessment = validator.validate(GOOD_RESPONSE, scores=scores)
         dim = assessment.get_dimension("accuracy")
         assert dim is not None
         assert dim.score == 0.9
@@ -543,18 +527,12 @@ class TestResponseQualityValidator:
             ResponseQualityValidator(constitutional_hash="wrong_hash")
 
     def test_custom_dimensions(self):
-        custom = {
-            "custom_dim": DimensionSpec(
-                name="custom_dim", threshold=0.5, weight=1.0
-            )
-        }
+        custom = {"custom_dim": DimensionSpec(name="custom_dim", threshold=0.5, weight=1.0)}
         validator = ResponseQualityValidator(custom_dimensions=custom)
         assert "custom_dim" in validator.dimension_names
 
     def test_validate_batch(self, validator):
-        results = validator.validate_batch(
-            [GOOD_RESPONSE, HARMFUL_RESPONSE]
-        )
+        results = validator.validate_batch([GOOD_RESPONSE, HARMFUL_RESPONSE])
         assert len(results) == 2
         assert all(isinstance(r, QualityAssessment) for r in results)
 
@@ -567,9 +545,7 @@ class TestResponseQualityValidator:
 
     def test_validate_batch_length_mismatch(self, validator):
         with pytest.raises(ValidationError):
-            validator.validate_batch(
-                [GOOD_RESPONSE], contexts=[None, None]
-            )
+            validator.validate_batch([GOOD_RESPONSE], contexts=[None, None])
 
     def test_get_dimension_spec(self, validator):
         spec = validator.get_dimension_spec("safety")
@@ -654,9 +630,7 @@ class TestCreateValidator:
         assert isinstance(validator, ResponseQualityValidator)
 
     def test_custom_thresholds(self):
-        validator = create_validator(
-            thresholds={"accuracy": 0.5, "custom": 0.3}
-        )
+        validator = create_validator(thresholds={"accuracy": 0.5, "custom": 0.3})
         assert validator.thresholds["accuracy"] == 0.5
         assert "custom" in validator.dimension_names
 
@@ -689,27 +663,19 @@ class TestRefinementConfig:
 class TestDefaultLLMRefiner:
     def test_refine_coherence(self):
         refiner = DefaultLLMRefiner()
-        assessment = _make_assessment(
-            dimension_overrides={"coherence": 0.3}
-        )
+        assessment = _make_assessment(dimension_overrides={"coherence": 0.3})
         result = refiner.refine("incomplete response", assessment)
         assert result.endswith(".")
 
     def test_refine_relevance_with_context(self):
         refiner = DefaultLLMRefiner()
-        assessment = _make_assessment(
-            dimension_overrides={"relevance": 0.3}
-        )
-        result = refiner.refine(
-            "Some response.", assessment, context={"query": "What is AI?"}
-        )
+        assessment = _make_assessment(dimension_overrides={"relevance": 0.3})
+        result = refiner.refine("Some response.", assessment, context={"query": "What is AI?"})
         assert "Regarding your query" in result
 
     def test_refine_safety(self):
         refiner = DefaultLLMRefiner()
-        assessment = _make_assessment(
-            dimension_overrides={"safety": 0.3}
-        )
+        assessment = _make_assessment(dimension_overrides={"safety": 0.3})
         result = refiner.refine(HARMFUL_RESPONSE, assessment)
         assert "[redacted]" in result
 
@@ -724,16 +690,12 @@ class TestDefaultLLMRefiner:
 class TestDefaultConstitutionalCorrector:
     def test_correct_harmful(self):
         corrector = DefaultConstitutionalCorrector()
-        result = corrector.correct(
-            "test response", violations=["harmful content"]
-        )
+        result = corrector.correct("test response", violations=["harmful content"])
         assert "[Reviewed for safety]" in result
 
     def test_correct_bias(self):
         corrector = DefaultConstitutionalCorrector()
-        result = corrector.correct(
-            "test response", violations=["bias detected"]
-        )
+        result = corrector.correct("test response", violations=["bias detected"])
         assert "balanced and fair" in result
 
     def test_correct_privacy(self):
@@ -748,9 +710,7 @@ class TestDefaultConstitutionalCorrector:
     @pytest.mark.asyncio
     async def test_correct_async(self):
         corrector = DefaultConstitutionalCorrector()
-        result = await corrector.correct_async(
-            "test", violations=["harmful"]
-        )
+        result = await corrector.correct_async("test", violations=["harmful"])
         assert isinstance(result, str)
 
 
@@ -794,9 +754,7 @@ class TestResponseRefiner:
         assert result.total_iterations >= 0
 
     def test_refine_with_context(self, refiner):
-        result = refiner.refine(
-            GOOD_RESPONSE, context={"query": "governance policy"}
-        )
+        result = refiner.refine(GOOD_RESPONSE, context={"query": "governance policy"})
         assert isinstance(result, RefinementResult)
 
     def test_stats(self, refiner):
@@ -825,9 +783,7 @@ class TestResponseRefiner:
 
     def test_refine_batch_length_mismatch(self, refiner):
         with pytest.raises(ValueError, match="same length"):
-            refiner.refine_batch(
-                [GOOD_RESPONSE], contexts=[None, None]
-            )
+            refiner.refine_batch([GOOD_RESPONSE], contexts=[None, None])
 
     @pytest.mark.asyncio
     async def test_refine_async_good_response(self, refiner):
@@ -845,23 +801,17 @@ class TestResponseRefiner:
 
     @pytest.mark.asyncio
     async def test_refine_batch_async(self, refiner):
-        results = await refiner.refine_batch_async(
-            [GOOD_RESPONSE, GOOD_RESPONSE]
-        )
+        results = await refiner.refine_batch_async([GOOD_RESPONSE, GOOD_RESPONSE])
         assert len(results) == 2
 
     @pytest.mark.asyncio
     async def test_refine_batch_async_length_mismatch(self, refiner):
         with pytest.raises(ValueError, match="same length"):
-            await refiner.refine_batch_async(
-                [GOOD_RESPONSE], contexts=[None, None]
-            )
+            await refiner.refine_batch_async([GOOD_RESPONSE], contexts=[None, None])
 
     def test_stops_on_no_improvement(self):
         """Refiner stops when improvement is below threshold."""
-        config = RefinementConfig(
-            max_iterations=5, improvement_threshold=10.0
-        )
+        config = RefinementConfig(max_iterations=5, improvement_threshold=10.0)
         refiner = ResponseRefiner(config=config, max_iterations=5)
         result = refiner.refine(SHORT_RESPONSE)
         # Should stop early because improvement can't exceed 10.0

@@ -52,9 +52,7 @@ def _get_service_private_key() -> str | None:
     configured = (os.getenv("JWT_PRIVATE_KEY") or "").strip()
     if not configured:
         return None
-    loaded = load_key_material(
-        configured, error_code="SERVICE_JWT_KEY_FILE_READ_FAILED"
-    )
+    loaded = load_key_material(configured, error_code="SERVICE_JWT_KEY_FILE_READ_FAILED")
     return loaded if loaded else None
 
 
@@ -62,9 +60,7 @@ def _get_service_public_key() -> str | None:
     configured = (os.getenv("JWT_PUBLIC_KEY") or "").strip()
     if not configured:
         return None
-    loaded = load_key_material(
-        configured, error_code="SERVICE_JWT_KEY_FILE_READ_FAILED"
-    )
+    loaded = load_key_material(configured, error_code="SERVICE_JWT_KEY_FILE_READ_FAILED")
     return loaded if loaded else None
 
 
@@ -72,14 +68,13 @@ SERVICE_SECRET = _get_service_secret()
 
 
 def _configured_service_algorithm() -> str:
-    configured = (os.getenv("SERVICE_JWT_ALGORITHM", "RS256").strip() or "RS256")
+    configured = os.getenv("SERVICE_JWT_ALGORITHM", "RS256").strip() or "RS256"
     canonical_algorithm = _SERVICE_ALGORITHM_LOOKUP.get(configured.upper())
     if canonical_algorithm is None:
         allowed_algorithms = ", ".join(sorted(_ALLOWED_SERVICE_ALGORITHMS))
         raise ConfigurationError(
             message=(
-                "SERVICE_JWT_ALGORITHM must be one of "
-                f"{allowed_algorithms}. Got {configured!r}."
+                f"SERVICE_JWT_ALGORITHM must be one of {allowed_algorithms}. Got {configured!r}."
             ),
             error_code="SERVICE_JWT_ALGORITHM_INVALID",
         )
@@ -95,9 +90,7 @@ def _resolve_service_jwt_material(for_signing: bool) -> tuple[str, str]:
     public_key = _get_service_public_key()
     if private_key and public_key:
         return (
-            (private_key, requested_algorithm)
-            if for_signing
-            else (public_key, requested_algorithm)
+            (private_key, requested_algorithm) if for_signing else (public_key, requested_algorithm)
         )
 
     if requested_algorithm == "RS256":

@@ -141,7 +141,9 @@ def _aggregate_events(events: list[dict[str, Any]]) -> RevenueSummary:
         endpoint_stats[ep] = EndpointStats(
             revenue_usd=round(bucket["revenue"], 6),
             call_count=bucket["count"],
-            avg_processing_ms=round(bucket["ms_sum"] / bucket["count"], 2) if bucket["count"] else 0.0,
+            avg_processing_ms=round(bucket["ms_sum"] / bucket["count"], 2)
+            if bucket["count"]
+            else 0.0,
         )
 
     return RevenueSummary(

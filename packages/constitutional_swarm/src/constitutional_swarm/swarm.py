@@ -63,12 +63,8 @@ class TaskDAG:
         """Check whether a node's dependencies exist and are completed."""
         missing = tuple(dep for dep in node.depends_on if dep not in self.nodes)
         if missing:
-            raise KeyError(
-                f"Node {node.node_id} depends on missing node(s): {', '.join(missing)}"
-            )
-        return all(
-            self.nodes[dep].status == ExecutionStatus.COMPLETED for dep in node.depends_on
-        )
+            raise KeyError(f"Node {node.node_id} depends on missing node(s): {', '.join(missing)}")
+        return all(self.nodes[dep].status == ExecutionStatus.COMPLETED for dep in node.depends_on)
 
     def add_node(self, node: TaskNode) -> TaskDAG:
         """Add a node to the DAG. Returns new DAG (immutable pattern)."""
@@ -233,9 +229,7 @@ class SwarmExecutor:
                 if not node.required_capabilities:
                     available.append(node)
                     continue
-                has_caps = any(
-                    rc.lower() in cap_names for rc in node.required_capabilities
-                )
+                has_caps = any(rc.lower() in cap_names for rc in node.required_capabilities)
                 in_domain = node.domain in cap_domains
                 if has_caps or in_domain:
                     available.append(node)
@@ -274,8 +268,7 @@ class SwarmExecutor:
                 raise KeyError(f"Node {node_id} not found")
             if node.claimed_by is not None and artifact.agent_id != node.claimed_by:
                 raise PermissionError(
-                    f"Agent {artifact.agent_id} cannot submit for node "
-                    f"claimed by {node.claimed_by}"
+                    f"Agent {artifact.agent_id} cannot submit for node claimed by {node.claimed_by}"
                 )
             self._store.publish(artifact)
             self._dag = self._dag.complete_node(node_id, artifact.artifact_id)

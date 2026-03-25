@@ -320,9 +320,7 @@ class TestParallelNodeExecutor:
         ]
         deps = {"n1": set(), "n2": {"n1"}}
 
-        results, final_state = await executor.execute_with_dependencies(
-            nodes, deps, _make_state()
-        )
+        results, final_state = await executor.execute_with_dependencies(nodes, deps, _make_state())
         assert len(results) == 2
         # n1 should complete before n2
         node_ids = [r.node_id for r in results]

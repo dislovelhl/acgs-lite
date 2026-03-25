@@ -55,6 +55,7 @@ def sanitize_error(error: Exception | str | None) -> str:
         msg = pattern.sub(replacement, msg)
     return msg
 
+
 _PRODUCTION_ENVIRONMENTS = frozenset({"production", "prod", "staging"})
 
 

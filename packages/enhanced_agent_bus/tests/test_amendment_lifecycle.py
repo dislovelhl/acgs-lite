@@ -111,9 +111,7 @@ class TestSubmitProposal:
         svc.voting_service.create_election.return_value = "election-1"
 
         with patch.object(svc, "_verify_proposer_signature", return_value=True):
-            with patch(
-                "enhanced_agent_bus.constitutional.council.AgentMessage"
-            ) as mock_msg_cls:
+            with patch("enhanced_agent_bus.constitutional.council.AgentMessage") as mock_msg_cls:
                 mock_msg_cls.return_value = MagicMock()
                 election_id = await svc.submit_proposal(req, "valid-sig")
 
@@ -131,9 +129,7 @@ class TestSubmitProposal:
         svc.proposal_engine.create_proposal.return_value = MagicMock(proposal=mock_proposal)
 
         with patch.object(svc, "_verify_proposer_signature", return_value=True):
-            with patch(
-                "enhanced_agent_bus.constitutional.council.AgentMessage", None
-            ):
+            with patch("enhanced_agent_bus.constitutional.council.AgentMessage", None):
                 with pytest.raises(RuntimeError, match="AgentMessage model not available"):
                     await svc.submit_proposal(req, "valid-sig")
 
@@ -174,18 +170,14 @@ class TestCastVote:
         svc.voting_service.cast_vote.return_value = True
         svc.voting_service.get_election_result.return_value = {"status": "OPEN"}
         with patch.object(svc, "_verify_vote_signature", return_value=True):
-            result = await svc.cast_vote(
-                "e1", "bob", "APPROVE", "sig", key_type="ML-DSA-65"
-            )
+            result = await svc.cast_vote("e1", "bob", "APPROVE", "sig", key_type="ML-DSA-65")
         assert result is True
 
     @pytest.mark.asyncio
     async def test_cast_vote_pqc_key_not_registered(self):
         svc = _make_service()
         # Don't register PQC key for alice
-        result = await svc.cast_vote(
-            "e1", "alice", "APPROVE", "sig", key_type="ML-DSA-65"
-        )
+        result = await svc.cast_vote("e1", "alice", "APPROVE", "sig", key_type="ML-DSA-65")
         assert result is False
 
 

@@ -98,7 +98,7 @@ def __getattr__(name: str) -> Any:
 
     module = importlib.import_module(module_name, __name__)
     if name == "CapacityValidationResult":
-        value = getattr(module, "ValidationResult")
+        value = module.ValidationResult
     else:
         value = getattr(module, name)
     globals()[name] = value

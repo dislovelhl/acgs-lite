@@ -803,9 +803,7 @@ class TestBuildHelpers:
     def test_build_tenant_hierarchy_response_with_ancestors(self):
         t1 = _make_tenant(tenant_id="root", slug="ro-ot")
         t2 = _make_tenant(tenant_id="child", slug="ch-ld")
-        resp = _build_tenant_hierarchy_response(
-            "child", ancestors=[t1, t2], descendants=[]
-        )
+        resp = _build_tenant_hierarchy_response("child", ancestors=[t1, t2], descendants=[])
         assert resp.depth == 1
         assert len(resp.ancestors) == 1
 
@@ -1277,9 +1275,7 @@ class TestDeactivateTenantEndpoint:
 
     def test_deactivate_success(self):
         mock_mgr = AsyncMock()
-        mock_mgr.deactivate_tenant.return_value = _make_tenant(
-            status=TenantStatus.DEACTIVATED
-        )
+        mock_mgr.deactivate_tenant.return_value = _make_tenant(status=TenantStatus.DEACTIVATED)
         app = _build_app(mock_mgr)
         client = TestClient(app)
         resp = client.post("/api/v1/tenants/t-100/deactivate")
@@ -1466,9 +1462,7 @@ class TestHierarchyEndpoint:
 
     def test_hierarchy_not_found(self):
         mock_mgr = AsyncMock()
-        mock_mgr.get_tenant_hierarchy.side_effect = TenantNotFoundError(
-            "nope", tenant_id="x"
-        )
+        mock_mgr.get_tenant_hierarchy.side_effect = TenantNotFoundError("nope", tenant_id="x")
         app = _build_app(mock_mgr)
         client = TestClient(app)
         resp = client.get("/api/v1/tenants/x/hierarchy")

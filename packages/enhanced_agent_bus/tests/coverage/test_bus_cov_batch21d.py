@@ -209,9 +209,7 @@ class TestAgentHealthStoreUpsert:
         rec = _make_record()
         await store.upsert_health_record(rec)
         redis.hset.assert_awaited_once()
-        redis.expire.assert_awaited_once_with(
-            _health_key("agent-1"), HEALTH_RECORD_TTL_SECONDS
-        )
+        redis.expire.assert_awaited_once_with(_health_key("agent-1"), HEALTH_RECORD_TTL_SECONDS)
 
     async def test_upsert_raises_on_redis_error(self) -> None:
         redis = _fake_redis()
@@ -925,7 +923,9 @@ class TestOpenAIAdapterTranslateResponse:
         adapter = OpenAIAdapter(api_key="k")
         tc = [{"id": "tc-1", "type": "function"}]
         raw: dict[str, Any] = {
-            "choices": [{"message": {"content": "", "tool_calls": tc}, "finish_reason": "tool_calls"}],
+            "choices": [
+                {"message": {"content": "", "tool_calls": tc}, "finish_reason": "tool_calls"}
+            ],
             "usage": {},
         }
         resp = adapter.translate_response(raw)
@@ -1074,9 +1074,7 @@ class TestOpenAIAdapterStream:
                 self._idx += 1
                 return item
 
-        mock_client.chat.completions.create = AsyncMock(
-            return_value=_AsyncChunkIter([chunk])
-        )
+        mock_client.chat.completions.create = AsyncMock(return_value=_AsyncChunkIter([chunk]))
         adapter._client = mock_client
 
         req = ModelRequest(

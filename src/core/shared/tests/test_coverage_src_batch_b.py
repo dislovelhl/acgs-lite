@@ -172,38 +172,54 @@ class TestRateLimitResult:
 
 
 class TestRateLimitConfig:
-    @patch.dict("os.environ", {
-        "RATE_LIMIT_ENABLED": "true",
-        "RATE_LIMIT_REQUESTS_PER_MINUTE": "120",
-        "RATE_LIMIT_BURST_LIMIT": "20",
-    }, clear=False)
+    @patch.dict(
+        "os.environ",
+        {
+            "RATE_LIMIT_ENABLED": "true",
+            "RATE_LIMIT_REQUESTS_PER_MINUTE": "120",
+            "RATE_LIMIT_BURST_LIMIT": "20",
+        },
+        clear=False,
+    )
     def test_from_env_enabled(self):
         config = RateLimitConfig.from_env()
         assert config.enabled is True
         assert len(config.rules) == 1
         assert config.rules[0].requests == 120
 
-    @patch.dict("os.environ", {
-        "RATE_LIMIT_ENABLED": "false",
-    }, clear=False)
+    @patch.dict(
+        "os.environ",
+        {
+            "RATE_LIMIT_ENABLED": "false",
+        },
+        clear=False,
+    )
     def test_from_env_disabled(self):
         config = RateLimitConfig.from_env()
         assert config.enabled is False
         assert len(config.rules) == 0
 
-    @patch.dict("os.environ", {
-        "RATE_LIMIT_ENABLED": "true",
-        "RATE_LIMIT_FAIL_OPEN": "true",
-    }, clear=False)
+    @patch.dict(
+        "os.environ",
+        {
+            "RATE_LIMIT_ENABLED": "true",
+            "RATE_LIMIT_FAIL_OPEN": "true",
+        },
+        clear=False,
+    )
     def test_from_env_fail_open_explicit(self):
         config = RateLimitConfig.from_env()
         assert config.fail_open is True
 
-    @patch.dict("os.environ", {
-        "RATE_LIMIT_ENABLED": "true",
-        "RATE_LIMIT_REQUESTS_PER_MINUTE": "0",
-        "RATE_LIMIT_BURST_LIMIT": "5",
-    }, clear=False)
+    @patch.dict(
+        "os.environ",
+        {
+            "RATE_LIMIT_ENABLED": "true",
+            "RATE_LIMIT_REQUESTS_PER_MINUTE": "0",
+            "RATE_LIMIT_BURST_LIMIT": "5",
+        },
+        clear=False,
+    )
     def test_from_env_zero_rpm(self):
         config = RateLimitConfig.from_env()
         assert config.enabled is True
@@ -281,12 +297,16 @@ class TestTenantRateLimitProvider:
         provider = TenantRateLimitProvider()
         assert provider.get_constitutional_hash() == "608508a9bd224290"
 
-    @patch.dict("os.environ", {
-        "RATE_LIMIT_TENANT_REQUESTS": "2000",
-        "RATE_LIMIT_TENANT_WINDOW": "120",
-        "RATE_LIMIT_TENANT_BURST": "2.0",
-        "RATE_LIMIT_USE_REGISTRY": "true",
-    }, clear=False)
+    @patch.dict(
+        "os.environ",
+        {
+            "RATE_LIMIT_TENANT_REQUESTS": "2000",
+            "RATE_LIMIT_TENANT_WINDOW": "120",
+            "RATE_LIMIT_TENANT_BURST": "2.0",
+            "RATE_LIMIT_USE_REGISTRY": "true",
+        },
+        clear=False,
+    )
     def test_from_env(self):
         provider = TenantRateLimitProvider.from_env()
         assert provider._default_requests == 2000
@@ -518,7 +538,9 @@ class TestRateLimitMiddleware:
     def test_get_tenant_quota_with_provider(self):
         provider = TenantRateLimitProvider()
         provider.set_tenant_quota("t1", requests=100)
-        mw = RateLimitMiddleware(MagicMock(), config=RateLimitConfig(), tenant_quota_provider=provider)
+        mw = RateLimitMiddleware(
+            MagicMock(), config=RateLimitConfig(), tenant_quota_provider=provider
+        )
         quota = mw._get_tenant_quota("t1")
         assert quota is not None
         assert quota.requests == 100
@@ -526,7 +548,9 @@ class TestRateLimitMiddleware:
     def test_get_tenant_quota_provider_error(self):
         provider = MagicMock()
         provider.get_tenant_quota.side_effect = RuntimeError("boom")
-        mw = RateLimitMiddleware(MagicMock(), config=RateLimitConfig(), tenant_quota_provider=provider)
+        mw = RateLimitMiddleware(
+            MagicMock(), config=RateLimitConfig(), tenant_quota_provider=provider
+        )
         assert mw._get_tenant_quota("t1") is None
 
 
@@ -536,11 +560,13 @@ class TestExtractRequestFromCall:
         request.__class__ = type("Request", (), {})
         # Use a real-ish Request mock
         from fastapi import Request as FRequest
+
         req = MagicMock(spec=FRequest)
         assert _extract_request_from_call((req,), {}) is req
 
     def test_from_kwargs(self):
         from fastapi import Request as FRequest
+
         req = MagicMock(spec=FRequest)
         assert _extract_request_from_call((), {"request": req}) is req
 
@@ -605,6 +631,7 @@ class TestRateLimitDecorator:
     @pytest.mark.asyncio
     async def test_decorator_allowed(self):
         from fastapi import Request as FRequest
+
         req = MagicMock(spec=FRequest)
         req.client.host = "1.2.3.4"
         req.state.user_id = "u1"
@@ -649,6 +676,7 @@ class TestTokenRevocationService:
     @pytest.mark.asyncio
     async def test_revoke_token_empty_jti(self):
         from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+
         service = TokenRevocationService(redis_client=MagicMock())
         with pytest.raises(ACGSValidationError):
             await service.revoke_token(jti="", expires_at=datetime.now(UTC))
@@ -656,6 +684,7 @@ class TestTokenRevocationService:
     @pytest.mark.asyncio
     async def test_revoke_token_whitespace_jti(self):
         from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+
         service = TokenRevocationService(redis_client=MagicMock())
         with pytest.raises(ACGSValidationError):
             await service.revoke_token(jti="   ", expires_at=datetime.now(UTC))
@@ -663,7 +692,9 @@ class TestTokenRevocationService:
     @pytest.mark.asyncio
     async def test_revoke_token_no_redis(self):
         service = TokenRevocationService(redis_client=None)
-        result = await service.revoke_token(jti="abc-123", expires_at=datetime.now(UTC) + timedelta(hours=1))
+        result = await service.revoke_token(
+            jti="abc-123", expires_at=datetime.now(UTC) + timedelta(hours=1)
+        )
         assert result is False
 
     @pytest.mark.asyncio
@@ -702,6 +733,7 @@ class TestTokenRevocationService:
     @pytest.mark.asyncio
     async def test_is_token_revoked_empty_jti(self):
         from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+
         service = TokenRevocationService(redis_client=MagicMock())
         with pytest.raises(ACGSValidationError):
             await service.is_token_revoked(jti="")
@@ -777,6 +809,7 @@ class TestTokenRevocationRevokeAllUserTokens:
     @pytest.mark.asyncio
     async def test_empty_user_id(self):
         from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+
         service = TokenRevocationService(redis_client=MagicMock())
         with pytest.raises(ACGSValidationError):
             await service.revoke_all_user_tokens(user_id="", expires_at=datetime.now(UTC))
@@ -1214,91 +1247,109 @@ class TestFileValidator:
         reset_file_validator()
 
     def test_detect_png(self):
-        validator = FileValidator(config=FileValidationConfig(
-            allowed_types={FileType.PNG},
-            verify_extension_match=False,
-            block_executables=False,
-        ))
+        validator = FileValidator(
+            config=FileValidationConfig(
+                allowed_types={FileType.PNG},
+                verify_extension_match=False,
+                block_executables=False,
+            )
+        )
         content = b"\x89PNG\r\n\x1a\n" + b"\x00" * 100
         result = validator.validate_content(content, "image.png")
         assert result == FileType.PNG
 
     def test_detect_jpeg(self):
-        validator = FileValidator(config=FileValidationConfig(
-            allowed_types={FileType.JPEG},
-            verify_extension_match=False,
-            block_executables=False,
-        ))
+        validator = FileValidator(
+            config=FileValidationConfig(
+                allowed_types={FileType.JPEG},
+                verify_extension_match=False,
+                block_executables=False,
+            )
+        )
         content = b"\xff\xd8\xff" + b"\x00" * 100
         result = validator.validate_content(content, "photo.jpg")
         assert result == FileType.JPEG
 
     def test_detect_zip(self):
-        validator = FileValidator(config=FileValidationConfig(
-            allowed_types={FileType.ZIP},
-            verify_extension_match=False,
-            block_executables=False,
-        ))
+        validator = FileValidator(
+            config=FileValidationConfig(
+                allowed_types={FileType.ZIP},
+                verify_extension_match=False,
+                block_executables=False,
+            )
+        )
         content = b"PK\x03\x04" + b"\x00" * 100
         result = validator.validate_content(content)
         assert result == FileType.ZIP
 
     def test_detect_gzip(self):
-        validator = FileValidator(config=FileValidationConfig(
-            allowed_types={FileType.TAR_GZ},
-            verify_extension_match=False,
-            block_executables=False,
-        ))
+        validator = FileValidator(
+            config=FileValidationConfig(
+                allowed_types={FileType.TAR_GZ},
+                verify_extension_match=False,
+                block_executables=False,
+            )
+        )
         content = b"\x1f\x8b" + b"\x00" * 100
         result = validator.validate_content(content)
         assert result == FileType.TAR_GZ
 
     def test_detect_pdf(self):
-        validator = FileValidator(config=FileValidationConfig(
-            allowed_types={FileType.PDF},
-            verify_extension_match=False,
-            block_executables=False,
-        ))
+        validator = FileValidator(
+            config=FileValidationConfig(
+                allowed_types={FileType.PDF},
+                verify_extension_match=False,
+                block_executables=False,
+            )
+        )
         content = b"%PDF-1.4 some pdf content here"
         result = validator.validate_content(content)
         assert result == FileType.PDF
 
     def test_detect_gif87a(self):
-        validator = FileValidator(config=FileValidationConfig(
-            allowed_types={FileType.GIF},
-            verify_extension_match=False,
-            block_executables=False,
-        ))
+        validator = FileValidator(
+            config=FileValidationConfig(
+                allowed_types={FileType.GIF},
+                verify_extension_match=False,
+                block_executables=False,
+            )
+        )
         content = b"GIF87a" + b"\x00" * 100
         result = validator.validate_content(content)
         assert result == FileType.GIF
 
     def test_detect_json(self):
-        validator = FileValidator(config=FileValidationConfig(
-            allowed_types={FileType.JSON},
-            verify_extension_match=False,
-            block_executables=False,
-        ))
+        validator = FileValidator(
+            config=FileValidationConfig(
+                allowed_types={FileType.JSON},
+                verify_extension_match=False,
+                block_executables=False,
+            )
+        )
         content = b'{"key": "value"}'
         result = validator.validate_content(content)
         assert result == FileType.JSON
 
     def test_detect_json_array(self):
-        validator = FileValidator(config=FileValidationConfig(
-            allowed_types={FileType.JSON},
-            verify_extension_match=False,
-            block_executables=False,
-        ))
-        content = b'[1, 2, 3]'
+        validator = FileValidator(
+            config=FileValidationConfig(
+                allowed_types={FileType.JSON},
+                verify_extension_match=False,
+                block_executables=False,
+            )
+        )
+        content = b"[1, 2, 3]"
         result = validator.validate_content(content)
         assert result == FileType.JSON
 
     def test_detect_text_fallback(self):
-        validator = FileValidator(config=FileValidationConfig(
-            allowed_types={FileType.TEXT},
-            verify_extension_match=False,
-            block_executables=False,
-        ))
+        validator = FileValidator(
+            config=FileValidationConfig(
+                allowed_types={FileType.TEXT},
+                verify_extension_match=False,
+                block_executables=False,
+            )
+        )
         content = b"Just plain text content"
         result = validator.validate_content(content)
         assert result == FileType.TEXT
@@ -1314,85 +1365,101 @@ class TestFileValidator:
             validator.validate_content(b"x" * 100, "large.txt")
 
     def test_type_not_allowed(self):
-        validator = FileValidator(config=FileValidationConfig(
-            allowed_types={FileType.JSON},
-            verify_extension_match=False,
-            block_executables=False,
-        ))
+        validator = FileValidator(
+            config=FileValidationConfig(
+                allowed_types={FileType.JSON},
+                verify_extension_match=False,
+                block_executables=False,
+            )
+        )
         content = b"\x89PNG\r\n\x1a\n" + b"\x00" * 100
         with pytest.raises(HTTPException):
             validator.validate_content(content)
 
     def test_unknown_type_not_text(self):
-        validator = FileValidator(config=FileValidationConfig(
-            verify_magic_bytes=True,
-            verify_extension_match=False,
-            block_executables=False,
-        ))
+        validator = FileValidator(
+            config=FileValidationConfig(
+                verify_magic_bytes=True,
+                verify_extension_match=False,
+                block_executables=False,
+            )
+        )
         # Binary content that isn't valid text
         content = bytes(range(256)) * 10
         with pytest.raises(HTTPException):
             validator.validate_content(content)
 
     def test_executable_content_blocked(self):
-        validator = FileValidator(config=FileValidationConfig(
-            allowed_types={FileType.TEXT},
-            verify_magic_bytes=True,
-            verify_extension_match=False,
-            block_executables=True,
-        ))
+        validator = FileValidator(
+            config=FileValidationConfig(
+                allowed_types={FileType.TEXT},
+                verify_magic_bytes=True,
+                verify_extension_match=False,
+                block_executables=True,
+            )
+        )
         content = b"#!/bin/bash\nrm -rf /"
         with pytest.raises(HTTPException):
             validator.validate_content(content, "script.txt")
 
     def test_php_content_blocked(self):
-        validator = FileValidator(config=FileValidationConfig(
-            allowed_types={FileType.TEXT},
-            verify_magic_bytes=True,
-            verify_extension_match=False,
-            block_executables=True,
-        ))
+        validator = FileValidator(
+            config=FileValidationConfig(
+                allowed_types={FileType.TEXT},
+                verify_magic_bytes=True,
+                verify_extension_match=False,
+                block_executables=True,
+            )
+        )
         content = b"<?php echo 'hack'; ?>"
         with pytest.raises(HTTPException):
             validator.validate_content(content, "shell.txt")
 
     def test_extension_mismatch(self):
-        validator = FileValidator(config=FileValidationConfig(
-            allowed_types={FileType.PNG},
-            verify_extension_match=True,
-            block_executables=False,
-        ))
+        validator = FileValidator(
+            config=FileValidationConfig(
+                allowed_types={FileType.PNG},
+                verify_extension_match=True,
+                block_executables=False,
+            )
+        )
         content = b"\x89PNG\r\n\x1a\n" + b"\x00" * 100
         with pytest.raises(HTTPException):
             validator.validate_content(content, "image.jpg")
 
     def test_extension_match_ok(self):
-        validator = FileValidator(config=FileValidationConfig(
-            allowed_types={FileType.PNG},
-            verify_extension_match=True,
-            block_executables=False,
-        ))
+        validator = FileValidator(
+            config=FileValidationConfig(
+                allowed_types={FileType.PNG},
+                verify_extension_match=True,
+                block_executables=False,
+            )
+        )
         content = b"\x89PNG\r\n\x1a\n" + b"\x00" * 100
         result = validator.validate_content(content, "image.png")
         assert result == FileType.PNG
 
     def test_unknown_extension_allowed(self):
-        validator = FileValidator(config=FileValidationConfig(
-            allowed_types={FileType.JSON},
-            verify_extension_match=True,
-            block_executables=False,
-        ))
+        validator = FileValidator(
+            config=FileValidationConfig(
+                allowed_types={FileType.JSON},
+                verify_extension_match=True,
+                block_executables=False,
+            )
+        )
         content = b'{"data": true}'
         result = validator.validate_content(content, "data.custom")
         assert result == FileType.JSON
 
     @pytest.mark.asyncio
     async def test_validate_upload(self):
-        validator = FileValidator(config=FileValidationConfig(
-            allowed_types={FileType.JSON},
-            verify_extension_match=False,
-            block_executables=False,
-        ))
+        validator = FileValidator(
+            config=FileValidationConfig(
+                allowed_types={FileType.JSON},
+                verify_extension_match=False,
+                block_executables=False,
+            )
+        )
         file = AsyncMock(spec=UploadFile)
         file.filename = "data.json"
         file.read.return_value = b'{"key": "val"}'
@@ -1615,10 +1682,12 @@ class TestInMemoryRetentionStorage:
     async def test_get_actions_no_filter(self):
         storage = InMemoryRetentionStorage()
         for i in range(3):
-            await storage.log_action(RetentionAction(
-                record_id=f"r{i}",
-                action_type=RetentionActionType.CREATED,
-            ))
+            await storage.log_action(
+                RetentionAction(
+                    record_id=f"r{i}",
+                    action_type=RetentionActionType.CREATED,
+                )
+            )
         actions = await storage.get_actions()
         assert len(actions) == 3
 
@@ -1686,9 +1755,11 @@ class TestDisposalHandlers:
             classification_tier=DataClassificationTier.INTERNAL,
             retention_until=datetime.now(UTC),
         )
+
         # Non-serializable data
         class Unserializable:
             pass
+
         result = await handler.dispose(record, data=Unserializable())
         assert result.success is False
 
@@ -1716,8 +1787,10 @@ class TestDisposalHandlers:
             classification_tier=DataClassificationTier.INTERNAL,
             retention_until=datetime.now(UTC),
         )
+
         class Unserializable:
             pass
+
         result = await handler.dispose(record, data=Unserializable())
         assert result.success is False
 

@@ -37,6 +37,7 @@ from enhanced_agent_bus.llm_adapters.registry import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 class _StubAdapter(BaseLLMAdapter):
     """Minimal concrete adapter for testing."""
 
@@ -81,6 +82,7 @@ def _adapter(name: str = "stub") -> _StubAdapter:
 # CircuitBreakerConfig
 # ===========================================================================
 
+
 class TestCircuitBreakerConfig:
     def test_defaults(self):
         cfg = CircuitBreakerConfig()
@@ -97,6 +99,7 @@ class TestCircuitBreakerConfig:
 # ===========================================================================
 # AdapterMetrics
 # ===========================================================================
+
 
 class TestAdapterMetrics:
     def test_initial_success_rate_is_zero(self):
@@ -148,6 +151,7 @@ class TestAdapterMetrics:
 # ===========================================================================
 # CircuitBreaker
 # ===========================================================================
+
 
 class TestCircuitBreaker:
     @pytest.mark.asyncio
@@ -248,6 +252,7 @@ class TestCircuitBreaker:
 # FallbackChain
 # ===========================================================================
 
+
 class TestFallbackChain:
     def test_get_ordered_adapters(self):
         chain = FallbackChain(primary="a", fallbacks=["b", "c"])
@@ -263,6 +268,7 @@ class TestFallbackChain:
 # ===========================================================================
 # LLMAdapterRegistry
 # ===========================================================================
+
 
 class TestLLMAdapterRegistry:
     @pytest.fixture

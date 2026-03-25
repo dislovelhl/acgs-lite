@@ -23,7 +23,9 @@ class OPARequest:
 
     def __post_init__(self) -> None:
         if self.trace_id is None:
-            self.trace_id = hashlib.sha256(json_dumps(self.input, sort_keys=True).encode()).hexdigest()[:16]
+            self.trace_id = hashlib.sha256(
+                json_dumps(self.input, sort_keys=True).encode()
+            ).hexdigest()[:16]
 
 
 @dataclass(slots=True)
@@ -187,7 +189,9 @@ class OPAAdapter(ACLAdapter[OPARequest, OPAResponse]):
             )
         except Exception as exc:
             if self.opa_config.fail_closed:
-                return OPAResponse(allow=False, result={"error": str(exc)}, trace_id=request.trace_id)
+                return OPAResponse(
+                    allow=False, result={"error": str(exc)}, trace_id=request.trace_id
+                )
             return self._simulate_opa_response(request)
 
     async def close(self) -> None:

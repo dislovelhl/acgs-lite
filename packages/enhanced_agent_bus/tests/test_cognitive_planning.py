@@ -16,9 +16,7 @@ import pytest
 # Load the module file directly to avoid cognitive/__init__.py which pulls in
 # graph_rag (requires unavailable src.core.cognitive.graphrag.schema).
 _MOD_NAME = "enhanced_agent_bus.cognitive.planning"
-_MOD_PATH = (
-    Path(__file__).resolve().parent.parent / "cognitive" / "planning.py"
-)
+_MOD_PATH = Path(__file__).resolve().parent.parent / "cognitive" / "planning.py"
 _spec = importlib.util.spec_from_file_location(_MOD_NAME, _MOD_PATH)
 assert _spec is not None and _spec.loader is not None
 _planning = importlib.util.module_from_spec(_spec)
@@ -29,6 +27,7 @@ _spec.loader.exec_module(_planning)
 def teardown_module() -> None:
     """Remove injected module from sys.modules to avoid polluting other tests."""
     sys.modules.pop(_MOD_NAME, None)
+
 
 AgentCapability = _planning.AgentCapability
 CapabilityMatcher = _planning.CapabilityMatcher
@@ -305,9 +304,7 @@ class TestExecutionPlan:
         assert sample_plan.has_failures() is True
 
     def test_progress_percent_empty(self) -> None:
-        plan = ExecutionPlan(
-            plan_id="p", tenant_id="t", name="n", description="d", steps=[]
-        )
+        plan = ExecutionPlan(plan_id="p", tenant_id="t", name="n", description="d", steps=[])
         assert plan.progress_percent() == 0.0
 
     def test_progress_percent_partial(self, sample_plan: ExecutionPlan) -> None:
@@ -353,7 +350,9 @@ class TestTaskDecomposer:
         assert "request_approval" in names
 
     def test_decompose_with_all_keywords(self, decomposer: TaskDecomposer) -> None:
-        result = decomposer.decompose("evaluate policy with constitutional check and human approval")
+        result = decomposer.decompose(
+            "evaluate policy with constitutional check and human approval"
+        )
         assert result.estimated_steps >= 5
         assert result.complexity_score > 0.0
 
@@ -469,9 +468,7 @@ class TestPlanVerifier:
             capability_type=CapabilityType.INFERENCE,
             assigned_agent="agent-1",
         )
-        plan = ExecutionPlan(
-            plan_id="p1", tenant_id="t", name="n", description="d", steps=[step]
-        )
+        plan = ExecutionPlan(plan_id="p1", tenant_id="t", name="n", description="d", steps=[step])
         result = verifier.verify(plan)
         assert result.is_valid is True
         assert plan.status == PlanStatus.VERIFIED
@@ -487,9 +484,7 @@ class TestPlanVerifier:
             dependencies=["nonexistent"],
             capability_type=CapabilityType.INFERENCE,
         )
-        plan = ExecutionPlan(
-            plan_id="p1", tenant_id="t", name="n", description="d", steps=[step]
-        )
+        plan = ExecutionPlan(plan_id="p1", tenant_id="t", name="n", description="d", steps=[step])
         result = verifier.verify(plan)
         assert result.is_valid is False
         assert any(v["type"] == "dag_violation" for v in result.violations)
@@ -497,16 +492,20 @@ class TestPlanVerifier:
     def test_verify_circular_dependency(self, matcher_with_agents: CapabilityMatcher) -> None:
         verifier = PlanVerifier(matcher_with_agents)
         s1 = PlanStep(
-            step_id="s1", name="a", description="d",
-            dependencies=["s2"], capability_type=CapabilityType.INFERENCE,
+            step_id="s1",
+            name="a",
+            description="d",
+            dependencies=["s2"],
+            capability_type=CapabilityType.INFERENCE,
         )
         s2 = PlanStep(
-            step_id="s2", name="b", description="d",
-            dependencies=["s1"], capability_type=CapabilityType.INFERENCE,
+            step_id="s2",
+            name="b",
+            description="d",
+            dependencies=["s1"],
+            capability_type=CapabilityType.INFERENCE,
         )
-        plan = ExecutionPlan(
-            plan_id="p1", tenant_id="t", name="n", description="d", steps=[s1, s2]
-        )
+        plan = ExecutionPlan(plan_id="p1", tenant_id="t", name="n", description="d", steps=[s1, s2])
         result = verifier.verify(plan)
         assert result.is_valid is False
         assert any(v["type"] == "dag_violation" for v in result.violations)
@@ -515,12 +514,12 @@ class TestPlanVerifier:
         empty_matcher = CapabilityMatcher()
         verifier = PlanVerifier(empty_matcher)
         step = PlanStep(
-            step_id="s1", name="x", description="d",
+            step_id="s1",
+            name="x",
+            description="d",
             capability_type=CapabilityType.HITL_APPROVAL,
         )
-        plan = ExecutionPlan(
-            plan_id="p1", tenant_id="t", name="n", description="d", steps=[step]
-        )
+        plan = ExecutionPlan(plan_id="p1", tenant_id="t", name="n", description="d", steps=[step])
         result = verifier.verify(plan)
         assert result.is_valid is False
         assert any(v["type"] == "no_capable_agent" for v in result.violations)
@@ -530,24 +529,20 @@ class TestPlanVerifier:
     ) -> None:
         verifier = PlanVerifier(matcher_with_agents)
         step = PlanStep(step_id="s1", name="x", description="d", capability_type=None)
-        plan = ExecutionPlan(
-            plan_id="p1", tenant_id="t", name="n", description="d", steps=[step]
-        )
+        plan = ExecutionPlan(plan_id="p1", tenant_id="t", name="n", description="d", steps=[step])
         result = verifier.verify(plan)
         assert any(w["type"] == "missing_capability" for w in result.warnings)
 
-    def test_verify_invalid_agent_assignment(
-        self, matcher_with_agents: CapabilityMatcher
-    ) -> None:
+    def test_verify_invalid_agent_assignment(self, matcher_with_agents: CapabilityMatcher) -> None:
         verifier = PlanVerifier(matcher_with_agents)
         step = PlanStep(
-            step_id="s1", name="x", description="d",
+            step_id="s1",
+            name="x",
+            description="d",
             capability_type=CapabilityType.POLICY_EVALUATION,
             assigned_agent="agent-1",  # agent-1 does NOT have POLICY_EVALUATION
         )
-        plan = ExecutionPlan(
-            plan_id="p1", tenant_id="t", name="n", description="d", steps=[step]
-        )
+        plan = ExecutionPlan(plan_id="p1", tenant_id="t", name="n", description="d", steps=[step])
         result = verifier.verify(plan)
         assert any(v["type"] == "invalid_assignment" for v in result.violations)
 
@@ -556,13 +551,13 @@ class TestPlanVerifier:
     ) -> None:
         verifier = PlanVerifier(matcher_with_agents)
         step = PlanStep(
-            step_id="s1", name="x", description="d",
+            step_id="s1",
+            name="x",
+            description="d",
             capability_type=CapabilityType.INFERENCE,
             constitutional_hash="wrong_hash",
         )
-        plan = ExecutionPlan(
-            plan_id="p1", tenant_id="t", name="n", description="d", steps=[step]
-        )
+        plan = ExecutionPlan(plan_id="p1", tenant_id="t", name="n", description="d", steps=[step])
         result = verifier.verify(plan)
         assert any(v["type"] == "constitutional_hash_mismatch" for v in result.violations)
 
@@ -571,12 +566,18 @@ class TestPlanVerifier:
     ) -> None:
         verifier = PlanVerifier(matcher_with_agents)
         step = PlanStep(
-            step_id="s1", name="x", description="d",
+            step_id="s1",
+            name="x",
+            description="d",
             capability_type=CapabilityType.INFERENCE,
         )
         plan = ExecutionPlan(
-            plan_id="p1", tenant_id="t", name="n", description="d",
-            steps=[step], constitutional_hash="bad_hash",
+            plan_id="p1",
+            tenant_id="t",
+            name="n",
+            description="d",
+            steps=[step],
+            constitutional_hash="bad_hash",
         )
         result = verifier.verify(plan)
         assert any(v["type"] == "plan_constitutional_hash_mismatch" for v in result.violations)
@@ -620,10 +621,7 @@ class TestMultiAgentPlanner:
     def test_create_plan_assigns_agents(self, planner: MultiAgentPlanner) -> None:
         plan = planner.create_plan("t1", "simple goal")
         # First step (inference) should be assigned to agent-1
-        inference_steps = [
-            s for s in plan.steps
-            if s.capability_type == CapabilityType.INFERENCE
-        ]
+        inference_steps = [s for s in plan.steps if s.capability_type == CapabilityType.INFERENCE]
         assert any(s.assigned_agent == "agent-1" for s in inference_steps)
 
     def test_create_plan_sequential_dependencies(self, planner: MultiAgentPlanner) -> None:
@@ -748,6 +746,7 @@ class TestMultiAgentPlanner:
     def test_create_plan_invalid_capability_falls_back(self) -> None:
         def custom_fn(_g: str) -> list[dict[str, str]]:
             return [{"name": "x", "capability": "bogus_cap"}]
+
         decomposer = TaskDecomposer(decomposer_fn=custom_fn)
         matcher = CapabilityMatcher()
         verifier = PlanVerifier(matcher)

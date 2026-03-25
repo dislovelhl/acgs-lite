@@ -111,12 +111,16 @@ class TestGetWorkOSApiKey:
             _get_workos_api_key()
 
     def test_rejects_placeholder(self, monkeypatch):
-        monkeypatch.setattr(settings.sso, "workos_api_key", SecretStr(" replace_me "), raising=False)
+        monkeypatch.setattr(
+            settings.sso, "workos_api_key", SecretStr(" replace_me "), raising=False
+        )
         with pytest.raises(WorkOSConfigurationError, match="placeholder"):
             _get_workos_api_key()
 
     def test_returns_valid_key(self, monkeypatch):
-        monkeypatch.setattr(settings.sso, "workos_api_key", SecretStr("sk_live_real"), raising=False)
+        monkeypatch.setattr(
+            settings.sso, "workos_api_key", SecretStr("sk_live_real"), raising=False
+        )
         assert _get_workos_api_key() == "sk_live_real"
 
 
@@ -127,9 +131,7 @@ class TestGetWorkOSWebhookSecret:
             _get_workos_webhook_secret()
 
     def test_raises_when_empty(self, monkeypatch):
-        monkeypatch.setattr(
-            settings.sso, "workos_webhook_secret", SecretStr("  "), raising=False
-        )
+        monkeypatch.setattr(settings.sso, "workos_webhook_secret", SecretStr("  "), raising=False)
         with pytest.raises(WorkOSConfigurationError, match="empty"):
             _get_workos_webhook_secret()
 
@@ -260,9 +262,7 @@ class TestParseAndVerifyWebhook:
 
     def test_valid_webhook(self, monkeypatch):
         secret = "whsec_test"
-        monkeypatch.setattr(
-            settings.sso, "workos_webhook_secret", SecretStr(secret), raising=False
-        )
+        monkeypatch.setattr(settings.sso, "workos_webhook_secret", SecretStr(secret), raising=False)
         payload = {
             "id": "evt_1",
             "event": "user.created",
@@ -279,9 +279,7 @@ class TestParseAndVerifyWebhook:
 
     def test_invalid_json_body(self, monkeypatch):
         secret = "whsec_test2"
-        monkeypatch.setattr(
-            settings.sso, "workos_webhook_secret", SecretStr(secret), raising=False
-        )
+        monkeypatch.setattr(settings.sso, "workos_webhook_secret", SecretStr(secret), raising=False)
         body = b"not-json"
         sig = self._sign(body, secret)
         with pytest.raises(WorkOSWebhookVerificationError, match="not valid JSON"):
@@ -431,6 +429,4 @@ class TestWebhookEventModel:
         from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
-            WorkOSWebhookEvent(
-                id="", event="x", data={}, created_at="2025-01-01T00:00:00Z"
-            )
+            WorkOSWebhookEvent(id="", event="x", data={}, created_at="2025-01-01T00:00:00Z")

@@ -566,9 +566,7 @@ class TestOIDCHandlerGetUserInfo:
         )
         provider = handler.get_provider("p1")
         tokens = OIDCTokenResponse(access_token="at", id_token="idt")
-        handler._decode_id_token = AsyncMock(
-            return_value={"sub": "u1", "email": "a@b.com"}
-        )
+        handler._decode_id_token = AsyncMock(return_value={"sub": "u1", "email": "a@b.com"})
         result = await handler._get_user_info(provider, tokens)
         assert result.sub == "u1"
 
@@ -819,20 +817,19 @@ class TestOIDCHandlerDecodeIdToken:
         mock_client = AsyncMock()
         mock_client.get = AsyncMock(return_value=mock_resp)
         handler._get_http_client = AsyncMock(return_value=mock_client)
-        handler._fetch_metadata = AsyncMock(
-            return_value={"jwks_uri": "https://idp.example/jwks"}
-        )
+        handler._fetch_metadata = AsyncMock(return_value={"jwks_uri": "https://idp.example/jwks"})
         provider = handler.get_provider("p1")
         with patch("src.core.shared.auth.oidc_handler.HAS_AUTHLIB", True):
             with patch("src.core.shared.auth.oidc_handler.jwt"):
-                with patch(
-                    "enhanced_agent_bus.llm_adapters.bedrock_adapter.json"
-                ):
+                with patch("enhanced_agent_bus.llm_adapters.bedrock_adapter.json"):
                     pass
             # The import of JsonWebKey inside the method - mock it
-            with patch.dict("sys.modules", {
-                "authlib.jose": MagicMock(),
-            }):
+            with patch.dict(
+                "sys.modules",
+                {
+                    "authlib.jose": MagicMock(),
+                },
+            ):
                 with pytest.raises(OIDCTokenError):
                     await handler._decode_id_token("token", provider)
 
@@ -1361,9 +1358,7 @@ class TestBedrockAdapterBuildRequestBody:
     def test_anthropic_body_with_stop_and_top_k(self):
         adapter = _make_bedrock_adapter("anthropic.claude-sonnet-4-6-v1:0")
         messages = [LLMMessage(role="user", content="Hi")]
-        body_str = adapter._build_request_body(
-            messages, stop=["END"], top_k=10
-        )
+        body_str = adapter._build_request_body(messages, stop=["END"], top_k=10)
         body = json.loads(body_str)
         assert body["stop_sequences"] == ["END"]
         assert body["top_k"] == 10
@@ -1427,10 +1422,12 @@ class TestBedrockAdapterParseResponse:
 
     def test_parse_anthropic_response(self):
         adapter = _make_bedrock_adapter("anthropic.claude-sonnet-4-6-v1:0")
-        body = json.dumps({
-            "content": [{"type": "text", "text": "Hello!"}],
-            "usage": {"input_tokens": 10, "output_tokens": 5},
-        })
+        body = json.dumps(
+            {
+                "content": [{"type": "text", "text": "Hello!"}],
+                "usage": {"input_tokens": 10, "output_tokens": 5},
+            }
+        )
         content, usage = adapter._parse_response_body(body)
         assert content == "Hello!"
         assert usage.prompt_tokens == 10
@@ -1438,21 +1435,25 @@ class TestBedrockAdapterParseResponse:
 
     def test_parse_meta_response(self):
         adapter = _make_bedrock_adapter("meta.llama3-8b-instruct-v1:0")
-        body = json.dumps({
-            "generation": "Hi there",
-            "prompt_token_count": 8,
-            "generation_token_count": 3,
-        })
+        body = json.dumps(
+            {
+                "generation": "Hi there",
+                "prompt_token_count": 8,
+                "generation_token_count": 3,
+            }
+        )
         content, usage = adapter._parse_response_body(body)
         assert content == "Hi there"
         assert usage.prompt_tokens == 8
 
     def test_parse_amazon_response(self):
         adapter = _make_bedrock_adapter("amazon.titan-text-express-v1")
-        body = json.dumps({
-            "results": [{"outputText": "Titan says hi", "tokenCount": 4}],
-            "inputTextTokenCount": 6,
-        })
+        body = json.dumps(
+            {
+                "results": [{"outputText": "Titan says hi", "tokenCount": 4}],
+                "inputTextTokenCount": 6,
+            }
+        )
         content, usage = adapter._parse_response_body(body)
         assert content == "Titan says hi"
         assert usage.completion_tokens == 4
@@ -1472,9 +1473,7 @@ class TestBedrockAdapterParseResponse:
 
     def test_parse_ai21_response(self):
         adapter = _make_bedrock_adapter("ai21.jamba-instruct-v1:0")
-        body = json.dumps({
-            "completions": [{"data": {"text": "AI21 response"}}]
-        })
+        body = json.dumps({"completions": [{"data": {"text": "AI21 response"}}]})
         content, usage = adapter._parse_response_body(body)
         assert content == "AI21 response"
 
@@ -1543,9 +1542,9 @@ class TestBedrockAdapterStreamAndMisc:
         assert adapter.get_provider_name() == "bedrock-anthropic"
 
     def test_extract_anthropic_chunk_text(self):
-        result = BedrockAdapter._extract_anthropic_chunk_text({
-            "delta": {"type": "content_block_delta", "delta": {"text": "chunk"}}
-        })
+        result = BedrockAdapter._extract_anthropic_chunk_text(
+            {"delta": {"type": "content_block_delta", "delta": {"text": "chunk"}}}
+        )
         assert result == "chunk"
 
     def test_extract_anthropic_chunk_text_none(self):
@@ -1576,9 +1575,7 @@ class TestBedrockAdapterStreamAndMisc:
         assert "body" in params
 
     def test_build_streaming_params_with_guardrails(self):
-        config = AWSBedrockAdapterConfig.from_environment(
-            model="anthropic.claude-sonnet-4-6-v1:0"
-        )
+        config = AWSBedrockAdapterConfig.from_environment(model="anthropic.claude-sonnet-4-6-v1:0")
         config.guardrails_id = "gr-123"
         config.guardrails_version = "1"
         adapter = BedrockAdapter(config=config)

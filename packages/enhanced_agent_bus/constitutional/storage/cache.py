@@ -29,6 +29,7 @@ class _RedisClientProtocol(Protocol):
     async def setex(self, key: str, ttl: int, value: Any) -> Any: ...
     async def delete(self, key: str) -> Any: ...
 
+
 logger = get_logger(__name__)
 _CACHE_OPERATION_ERRORS = (
     RuntimeError,
@@ -154,7 +155,9 @@ class ConstitutionalCache:
             cached_data = await self.redis_client.get(cache_key)
             if not cached_data:
                 return None
-            return cached_data.decode("utf-8") if isinstance(cached_data, bytes) else str(cached_data)
+            return (
+                cached_data.decode("utf-8") if isinstance(cached_data, bytes) else str(cached_data)
+            )
         except _CACHE_OPERATION_ERRORS as e:
             logger.warning(f"[{CONSTITUTIONAL_HASH}] Active version get error: {e}")
             return None

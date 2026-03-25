@@ -304,9 +304,7 @@ class TestProcessMessage:
     @pytest.mark.asyncio
     async def test_process_timeout_error(self):
         layer = _build_layer()
-        layer.adaptive_router.route_message = AsyncMock(
-            side_effect=TimeoutError("timed out")
-        )
+        layer.adaptive_router.route_message = AsyncMock(side_effect=TimeoutError("timed out"))
         msg = _make_mock_message()
         result = await layer.process_message(msg)
         assert result["success"] is False
@@ -315,9 +313,7 @@ class TestProcessMessage:
     @pytest.mark.asyncio
     async def test_process_value_error(self):
         layer = _build_layer()
-        layer.adaptive_router.route_message = AsyncMock(
-            side_effect=ValueError("bad value")
-        )
+        layer.adaptive_router.route_message = AsyncMock(side_effect=ValueError("bad value"))
         msg = _make_mock_message()
         result = await layer.process_message(msg)
         assert result["success"] is False
@@ -326,9 +322,7 @@ class TestProcessMessage:
     @pytest.mark.asyncio
     async def test_process_runtime_error(self):
         layer = _build_layer()
-        layer.adaptive_router.route_message = AsyncMock(
-            side_effect=RuntimeError("boom")
-        )
+        layer.adaptive_router.route_message = AsyncMock(side_effect=RuntimeError("boom"))
         msg = _make_mock_message()
         result = await layer.process_message(msg)
         assert result["success"] is False
@@ -337,9 +331,7 @@ class TestProcessMessage:
     @pytest.mark.asyncio
     async def test_process_cancelled_error_propagates(self):
         layer = _build_layer()
-        layer.adaptive_router.route_message = AsyncMock(
-            side_effect=asyncio.CancelledError()
-        )
+        layer.adaptive_router.route_message = AsyncMock(side_effect=asyncio.CancelledError())
         msg = _make_mock_message()
         with pytest.raises(asyncio.CancelledError):
             await layer.process_message(msg)
@@ -566,9 +558,7 @@ class TestSubmitDecisions:
     @pytest.mark.asyncio
     async def test_submit_human_decision_value_error(self):
         layer = _build_layer()
-        layer.deliberation_queue.submit_human_decision = AsyncMock(
-            side_effect=ValueError("bad")
-        )
+        layer.deliberation_queue.submit_human_decision = AsyncMock(side_effect=ValueError("bad"))
         ok = await layer.submit_human_decision("item-1", "reviewer-1", "approved", "ok")
         assert ok is False
 
@@ -611,18 +601,14 @@ class TestSubmitDecisions:
     @pytest.mark.asyncio
     async def test_submit_agent_vote_value_error(self):
         layer = _build_layer()
-        layer.deliberation_queue.submit_agent_vote = AsyncMock(
-            side_effect=ValueError("bad")
-        )
+        layer.deliberation_queue.submit_agent_vote = AsyncMock(side_effect=ValueError("bad"))
         ok = await layer.submit_agent_vote("item-1", "agent-1", "approve", "ok")
         assert ok is False
 
     @pytest.mark.asyncio
     async def test_submit_agent_vote_runtime_error(self):
         layer = _build_layer()
-        layer.deliberation_queue.submit_agent_vote = AsyncMock(
-            side_effect=RuntimeError("broken")
-        )
+        layer.deliberation_queue.submit_agent_vote = AsyncMock(side_effect=RuntimeError("broken"))
         ok = await layer.submit_agent_vote("item-1", "agent-1", "approve", "ok")
         assert ok is False
 
@@ -755,9 +741,7 @@ class TestMiscMethods:
     @pytest.mark.asyncio
     async def test_analyze_trends_with_llm(self):
         llm = MagicMock()
-        llm.analyze_deliberation_trends = AsyncMock(
-            return_value={"trends": ["improving"]}
-        )
+        llm.analyze_deliberation_trends = AsyncMock(return_value={"trends": ["improving"]})
         layer = _build_layer(llm_assistant=llm)
         result = await layer.analyze_trends()
         assert result == {"trends": ["improving"]}
@@ -1174,10 +1158,12 @@ class TestTensorRTOptimizerInferOnnx:
 
         opt = TensorRTOptimizer(cache_dir=tmp_path)
         with pytest.raises(RuntimeError, match="ONNX session not loaded"):
-            opt._infer_onnx({
-                "input_ids": np.ones((1, 128), dtype=np.int64),
-                "attention_mask": np.ones((1, 128), dtype=np.int64),
-            })
+            opt._infer_onnx(
+                {
+                    "input_ids": np.ones((1, 128), dtype=np.int64),
+                    "attention_mask": np.ones((1, 128), dtype=np.int64),
+                }
+            )
 
 
 class TestTensorRTModuleFunctions:
@@ -1225,7 +1211,9 @@ def _make_mock_client(
 
     if tools is None:
         tools = [
-            MCPTool(name=f"tool_{server_id}", description="a tool", input_schema={}, server_id=server_id),
+            MCPTool(
+                name=f"tool_{server_id}", description="a tool", input_schema={}, server_id=server_id
+            ),
         ]
     client.list_tools = AsyncMock(return_value=tools)
     client.call_tool = AsyncMock(
@@ -1310,6 +1298,7 @@ class TestMCPPoolConnectDisconnect:
     async def test_connect_all_success(self):
         pool = MCPClientPool()
         client = _make_mock_client("srv-a", is_connected=False)
+
         # After connect is called, simulate the client becoming connected
         async def fake_connect():
             client.is_connected = True
@@ -1381,10 +1370,13 @@ class TestMCPPoolListTools:
         from enhanced_agent_bus.mcp.types import MCPTool
 
         pool = MCPClientPool()
-        client = _make_mock_client("srv-a", tools=[
-            MCPTool(name="search_docs", description="search", input_schema={}),
-            MCPTool(name="execute_cmd", description="exec", input_schema={}),
-        ])
+        client = _make_mock_client(
+            "srv-a",
+            tools=[
+                MCPTool(name="search_docs", description="search", input_schema={}),
+                MCPTool(name="execute_cmd", description="exec", input_schema={}),
+            ],
+        )
 
         async def fake_connect():
             client.is_connected = True
@@ -1401,10 +1393,13 @@ class TestMCPPoolListTools:
         from enhanced_agent_bus.mcp.types import MCPTool
 
         pool = MCPClientPool()
-        client = _make_mock_client("srv-a", tools=[
-            MCPTool(name="search_docs", description="search", input_schema={}),
-            MCPTool(name="execute_cmd", description="exec", input_schema={}),
-        ])
+        client = _make_mock_client(
+            "srv-a",
+            tools=[
+                MCPTool(name="search_docs", description="search", input_schema={}),
+                MCPTool(name="execute_cmd", description="exec", input_schema={}),
+            ],
+        )
 
         async def fake_connect():
             client.is_connected = True
@@ -1534,12 +1529,22 @@ class TestMCPPoolToolConflict:
         from enhanced_agent_bus.mcp.types import MCPTool
 
         pool = MCPClientPool()
-        client_a = _make_mock_client("srv-a", tools=[
-            MCPTool(name="shared_tool", description="from a", input_schema={}, server_id="srv-a"),
-        ])
-        client_b = _make_mock_client("srv-b", tools=[
-            MCPTool(name="shared_tool", description="from b", input_schema={}, server_id="srv-b"),
-        ])
+        client_a = _make_mock_client(
+            "srv-a",
+            tools=[
+                MCPTool(
+                    name="shared_tool", description="from a", input_schema={}, server_id="srv-a"
+                ),
+            ],
+        )
+        client_b = _make_mock_client(
+            "srv-b",
+            tools=[
+                MCPTool(
+                    name="shared_tool", description="from b", input_schema={}, server_id="srv-b"
+                ),
+            ],
+        )
 
         async def connect_a():
             client_a.is_connected = True
@@ -1564,9 +1569,14 @@ class TestMCPPoolToolConflict:
         from enhanced_agent_bus.mcp.types import MCPTool
 
         pool = MCPClientPool()
-        client_a = _make_mock_client("srv-a", tools=[
-            MCPTool(name="shared_tool", description="from a", input_schema={}, server_id="srv-a"),
-        ])
+        client_a = _make_mock_client(
+            "srv-a",
+            tools=[
+                MCPTool(
+                    name="shared_tool", description="from a", input_schema={}, server_id="srv-a"
+                ),
+            ],
+        )
 
         async def connect_a():
             client_a.is_connected = True
@@ -1576,9 +1586,14 @@ class TestMCPPoolToolConflict:
         await pool.connect_all()
 
         # Now simulate incremental index from another client with conflicting tool
-        client_b = _make_mock_client("srv-b", tools=[
-            MCPTool(name="shared_tool", description="from b", input_schema={}, server_id="srv-b"),
-        ])
+        client_b = _make_mock_client(
+            "srv-b",
+            tools=[
+                MCPTool(
+                    name="shared_tool", description="from b", input_schema={}, server_id="srv-b"
+                ),
+            ],
+        )
         client_b.is_connected = True
         await pool._index_client_tools(client_b)
 

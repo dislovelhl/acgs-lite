@@ -112,13 +112,15 @@ class TestBlockchainLedger:
         original_hash = ledger.blocks[0]["hash"]
         # Tamper: add a second block with wrong previous_hash
         tampered_blocks = ledger.blocks.copy()
-        tampered_blocks.append({
-            "index": 1,
-            "timestamp": datetime.now(UTC).isoformat(),
-            "data": {"tampered": True},
-            "previous_hash": "wrong_previous_hash",
-            "hash": "fake_hash",
-        })
+        tampered_blocks.append(
+            {
+                "index": 1,
+                "timestamp": datetime.now(UTC).isoformat(),
+                "data": {"tampered": True},
+                "previous_hash": "wrong_previous_hash",
+                "hash": "fake_hash",
+            }
+        )
         with open(tmp_ledger, "w") as f:
             json.dump(tampered_blocks, f)
         # Reload - should detect integrity failure via logger
@@ -742,10 +744,12 @@ class TestRedisCacheClient:
         mock_conn.get = AsyncMock(return_value=b"cached_value")
 
         mock_pool = MagicMock()
-        mock_pool.connection = MagicMock(return_value=AsyncMock(
-            __aenter__=AsyncMock(return_value=mock_conn),
-            __aexit__=AsyncMock(return_value=False),
-        ))
+        mock_pool.connection = MagicMock(
+            return_value=AsyncMock(
+                __aenter__=AsyncMock(return_value=mock_conn),
+                __aexit__=AsyncMock(return_value=False),
+            )
+        )
 
         client = RedisCacheClient(mock_pool)
         result = await client.get("key1")
@@ -757,10 +761,12 @@ class TestRedisCacheClient:
         mock_conn.get = AsyncMock(return_value=None)
 
         mock_pool = MagicMock()
-        mock_pool.connection = MagicMock(return_value=AsyncMock(
-            __aenter__=AsyncMock(return_value=mock_conn),
-            __aexit__=AsyncMock(return_value=False),
-        ))
+        mock_pool.connection = MagicMock(
+            return_value=AsyncMock(
+                __aenter__=AsyncMock(return_value=mock_conn),
+                __aexit__=AsyncMock(return_value=False),
+            )
+        )
 
         client = RedisCacheClient(mock_pool)
         result = await client.get("miss")
@@ -841,10 +847,12 @@ class TestRedisCacheClient:
         mock_conn.setex = AsyncMock()
 
         mock_pool = MagicMock()
-        mock_pool.connection = MagicMock(return_value=AsyncMock(
-            __aenter__=AsyncMock(return_value=mock_conn),
-            __aexit__=AsyncMock(return_value=False),
-        ))
+        mock_pool.connection = MagicMock(
+            return_value=AsyncMock(
+                __aenter__=AsyncMock(return_value=mock_conn),
+                __aexit__=AsyncMock(return_value=False),
+            )
+        )
 
         client = RedisCacheClient(mock_pool)
         result = await client.set("key1", "val", ttl=60)
@@ -856,10 +864,12 @@ class TestRedisCacheClient:
         mock_conn.delete = AsyncMock()
 
         mock_pool = MagicMock()
-        mock_pool.connection = MagicMock(return_value=AsyncMock(
-            __aenter__=AsyncMock(return_value=mock_conn),
-            __aexit__=AsyncMock(return_value=False),
-        ))
+        mock_pool.connection = MagicMock(
+            return_value=AsyncMock(
+                __aenter__=AsyncMock(return_value=mock_conn),
+                __aexit__=AsyncMock(return_value=False),
+            )
+        )
 
         client = RedisCacheClient(mock_pool)
         result = await client.delete("key1")
@@ -871,10 +881,12 @@ class TestRedisCacheClient:
         mock_conn.mget = AsyncMock(return_value=[b"v1", None, b"v3"])
 
         mock_pool = MagicMock()
-        mock_pool.connection = MagicMock(return_value=AsyncMock(
-            __aenter__=AsyncMock(return_value=mock_conn),
-            __aexit__=AsyncMock(return_value=False),
-        ))
+        mock_pool.connection = MagicMock(
+            return_value=AsyncMock(
+                __aenter__=AsyncMock(return_value=mock_conn),
+                __aexit__=AsyncMock(return_value=False),
+            )
+        )
 
         client = RedisCacheClient(mock_pool)
         result = await client.mget(["a", "b", "c"])
@@ -1032,7 +1044,10 @@ class TestDatabaseTenantRepository:
         mock_orm_instance = self._make_mock_orm(name="New", slug="new-slug")
 
         with (
-            patch("enhanced_agent_bus.multi_tenancy.db_repository.TenantORM", return_value=mock_orm_instance) as MockORM,
+            patch(
+                "enhanced_agent_bus.multi_tenancy.db_repository.TenantORM",
+                return_value=mock_orm_instance,
+            ) as MockORM,
             patch("enhanced_agent_bus.multi_tenancy.db_repository.select") as mock_select,
             patch("enhanced_agent_bus.multi_tenancy.db_repository.TieredCacheManager") as MockCache,
         ):

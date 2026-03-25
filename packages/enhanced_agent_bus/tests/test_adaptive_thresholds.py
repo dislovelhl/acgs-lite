@@ -200,15 +200,17 @@ class TestRetrainModel:
     def test_insufficient_data_skips(self, thresholds):
         """Retrain with < 100 samples should skip."""
         for i in range(50):
-            thresholds.training_data.append({
-                "features": [float(i)] * 11,
-                "target": 0.1,
-                "timestamp": time.time(),
-                "impact_level": "medium",
-                "confidence": 0.8,
-                "outcome_success": True,
-                "human_feedback": None,
-            })
+            thresholds.training_data.append(
+                {
+                    "features": [float(i)] * 11,
+                    "target": 0.1,
+                    "timestamp": time.time(),
+                    "impact_level": "medium",
+                    "confidence": 0.8,
+                    "outcome_success": True,
+                    "human_feedback": None,
+                }
+            )
         thresholds._retrain_model()
         assert thresholds.model_trained is False
 
@@ -216,15 +218,17 @@ class TestRetrainModel:
         """Retrain with >= 100 recent samples should train."""
         now = time.time()
         for i in range(120):
-            thresholds.training_data.append({
-                "features": [float(j + i * 0.01) for j in range(11)],
-                "target": 0.1 + (i * 0.001),
-                "timestamp": now - (i * 10),  # all within 24h
-                "impact_level": "medium",
-                "confidence": 0.8,
-                "outcome_success": True,
-                "human_feedback": None,
-            })
+            thresholds.training_data.append(
+                {
+                    "features": [float(j + i * 0.01) for j in range(11)],
+                    "target": 0.1 + (i * 0.001),
+                    "timestamp": now - (i * 10),  # all within 24h
+                    "impact_level": "medium",
+                    "confidence": 0.8,
+                    "outcome_success": True,
+                    "human_feedback": None,
+                }
+            )
         thresholds._retrain_model()
         assert thresholds.model_trained is True
 
@@ -232,15 +236,17 @@ class TestRetrainModel:
         """Retrain errors are caught."""
         # Add invalid training data
         for _i in range(120):
-            thresholds.training_data.append({
-                "features": "not_a_list",
-                "target": 0.1,
-                "timestamp": time.time(),
-                "impact_level": "medium",
-                "confidence": 0.8,
-                "outcome_success": True,
-                "human_feedback": None,
-            })
+            thresholds.training_data.append(
+                {
+                    "features": "not_a_list",
+                    "target": 0.1,
+                    "timestamp": time.time(),
+                    "impact_level": "medium",
+                    "confidence": 0.8,
+                    "outcome_success": True,
+                    "human_feedback": None,
+                }
+            )
         # Should not raise
         thresholds._retrain_model()
 

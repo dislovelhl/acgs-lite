@@ -20,7 +20,7 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
 
 # Add acgs-lite to path
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -63,7 +63,7 @@ except ModuleNotFoundError:
     class RoCSTracker:
         """Local fallback when the platform RoCS module is unavailable."""
 
-        _SEVERITY_WEIGHTS: dict[str, float] = {
+        _SEVERITY_WEIGHTS: ClassVar[dict[str, float]] = {
             "critical": 10.0,
             "high": 5.0,
             "medium": 2.0,

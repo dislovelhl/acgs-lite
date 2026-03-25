@@ -317,21 +317,12 @@ class ComplianceChecklist:
         """
         acgs_articles = {
             "Article 9": (
-                "acgs-lite RiskClassifier — risk level classification and obligation "
-                "mapping"
+                "acgs-lite RiskClassifier — risk level classification and obligation mapping"
             ),
-            "Article 12": (
-                "acgs-lite Article12Logger — automatic tamper-evident JSONL logging"
-            ),
-            "Article 13": (
-                "acgs-lite TransparencyDisclosure — Article 13 system card generation"
-            ),
-            "Article 14": (
-                "acgs-lite HumanOversightGateway — configurable HITL approval gates"
-            ),
-            "Article 72": (
-                "acgs-lite ComplianceChecklist — conformity assessment documentation"
-            ),
+            "Article 12": ("acgs-lite Article12Logger — automatic tamper-evident JSONL logging"),
+            "Article 13": ("acgs-lite TransparencyDisclosure — Article 13 system card generation"),
+            "Article 14": ("acgs-lite HumanOversightGateway — configurable HITL approval gates"),
+            "Article 72": ("acgs-lite ComplianceChecklist — conformity assessment documentation"),
         }
         for article_ref, evidence in acgs_articles.items():
             self.mark_complete(article_ref, evidence=evidence)

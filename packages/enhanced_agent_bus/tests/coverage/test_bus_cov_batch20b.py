@@ -976,11 +976,13 @@ class TestSubmitGovernanceToolExecute:
 
     async def test_execute_local_approved(self):
         tool = SubmitGovernanceTool()
-        result = await tool.execute({
-            "action": "read_data",
-            "context": {},
-            "requester_id": "user-1",
-        })
+        result = await tool.execute(
+            {
+                "action": "read_data",
+                "context": {},
+                "requester_id": "user-1",
+            }
+        )
 
         assert result["isError"] is False
         content_text = result["content"][0]["text"]
@@ -990,12 +992,14 @@ class TestSubmitGovernanceToolExecute:
 
     async def test_execute_local_denied(self):
         tool = SubmitGovernanceTool()
-        result = await tool.execute({
-            "action": "delete_records",
-            "context": {"data_sensitivity": "confidential"},
-            "requester_id": "user-1",
-            "priority": "low",
-        })
+        result = await tool.execute(
+            {
+                "action": "delete_records",
+                "context": {"data_sensitivity": "confidential"},
+                "requester_id": "user-1",
+                "priority": "low",
+            }
+        )
 
         assert result["isError"] is True
         content_text = result["content"][0]["text"]
@@ -1005,12 +1009,14 @@ class TestSubmitGovernanceToolExecute:
     async def test_execute_local_conditional(self):
         """Action with violation but confidence >= 0.7 => conditional."""
         tool = SubmitGovernanceTool()
-        result = await tool.execute({
-            "action": "delete_data",
-            "context": {},
-            "requester_id": "user-1",
-            "priority": "low",
-        })
+        result = await tool.execute(
+            {
+                "action": "delete_data",
+                "context": {},
+                "requester_id": "user-1",
+                "priority": "low",
+            }
+        )
 
         content_text = result["content"][0]["text"]
         parsed = json.loads(content_text)
@@ -1020,12 +1026,14 @@ class TestSubmitGovernanceToolExecute:
 
     async def test_execute_local_pending_when_no_auto_approve(self):
         tool = SubmitGovernanceTool()
-        result = await tool.execute({
-            "action": "read_data",
-            "context": {},
-            "requester_id": "user-1",
-            "auto_approve_if_compliant": False,
-        })
+        result = await tool.execute(
+            {
+                "action": "read_data",
+                "context": {},
+                "requester_id": "user-1",
+                "auto_approve_if_compliant": False,
+            }
+        )
 
         content_text = result["content"][0]["text"]
         parsed = json.loads(content_text)
@@ -1033,18 +1041,22 @@ class TestSubmitGovernanceToolExecute:
 
     async def test_execute_via_agent_bus(self):
         mock_adapter = AsyncMock()
-        mock_adapter.submit_governance_request = AsyncMock(return_value={
-            "status": "approved",
-            "validation_result": {"compliant": True},
-            "conditions": [],
-        })
+        mock_adapter.submit_governance_request = AsyncMock(
+            return_value={
+                "status": "approved",
+                "validation_result": {"compliant": True},
+                "conditions": [],
+            }
+        )
         tool = SubmitGovernanceTool(agent_bus_adapter=mock_adapter)
 
-        result = await tool.execute({
-            "action": "read_data",
-            "context": {},
-            "requester_id": "user-1",
-        })
+        result = await tool.execute(
+            {
+                "action": "read_data",
+                "context": {},
+                "requester_id": "user-1",
+            }
+        )
 
         assert result["isError"] is False
         content_text = result["content"][0]["text"]
@@ -1053,12 +1065,14 @@ class TestSubmitGovernanceToolExecute:
 
     async def test_execute_exception_returns_error(self):
         tool = SubmitGovernanceTool()
-        result = await tool.execute({
-            "action": "test",
-            "context": {},
-            "requester_id": "user-1",
-            "priority": "invalid_priority",  # Will cause ValueError in RequestPriority()
-        })
+        result = await tool.execute(
+            {
+                "action": "test",
+                "context": {},
+                "requester_id": "user-1",
+                "priority": "invalid_priority",  # Will cause ValueError in RequestPriority()
+            }
+        )
 
         assert result["isError"] is True
         content_text = result["content"][0]["text"]
@@ -1068,11 +1082,13 @@ class TestSubmitGovernanceToolExecute:
 
     async def test_execute_moves_to_completed(self):
         tool = SubmitGovernanceTool()
-        result = await tool.execute({
-            "action": "read_data",
-            "context": {},
-            "requester_id": "user-1",
-        })
+        result = await tool.execute(
+            {
+                "action": "read_data",
+                "context": {},
+                "requester_id": "user-1",
+            }
+        )
 
         # Approved request should be in completed, not pending
         assert len(tool._pending_requests) == 0
@@ -1357,18 +1373,22 @@ class TestSubmitGovernanceToolGetMetrics:
         tool = SubmitGovernanceTool()
 
         # Execute an approved request
-        await tool.execute({
-            "action": "read_data",
-            "context": {},
-            "requester_id": "user-1",
-        })
+        await tool.execute(
+            {
+                "action": "read_data",
+                "context": {},
+                "requester_id": "user-1",
+            }
+        )
         # Execute a denied request
-        await tool.execute({
-            "action": "admin_drop",
-            "context": {"data_sensitivity": "confidential"},
-            "requester_id": "user-2",
-            "priority": "low",
-        })
+        await tool.execute(
+            {
+                "action": "admin_drop",
+                "context": {"data_sensitivity": "confidential"},
+                "requester_id": "user-2",
+                "priority": "low",
+            }
+        )
 
         metrics = tool.get_metrics()
         assert metrics["request_count"] == 2
@@ -1381,11 +1401,13 @@ class TestSubmitGovernanceToolSubmitViaBus:
 
     async def test_submit_via_bus_delegates(self):
         mock_adapter = AsyncMock()
-        mock_adapter.submit_governance_request = AsyncMock(return_value={
-            "status": "approved",
-            "validation_result": {},
-            "conditions": [],
-        })
+        mock_adapter.submit_governance_request = AsyncMock(
+            return_value={
+                "status": "approved",
+                "validation_result": {},
+                "conditions": [],
+            }
+        )
         tool = SubmitGovernanceTool(agent_bus_adapter=mock_adapter)
 
         req = GovernanceRequest(

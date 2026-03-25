@@ -1571,7 +1571,10 @@ class TestProcessSandboxExecute:
         with tempfile.TemporaryDirectory() as tmpdir:
             sandbox_dir = Path(tmpdir)
             # Patch subprocess.run to raise OSError
-            with patch("src.core.shared.security.sandbox.subprocess.run", side_effect=OSError("no such file")):
+            with patch(
+                "src.core.shared.security.sandbox.subprocess.run",
+                side_effect=OSError("no such file"),
+            ):
                 result = backend.execute("print(1)", config, sandbox_dir)
                 assert result.success is False
                 assert "Sandbox execution failed" in result.error
@@ -1634,9 +1637,11 @@ class TestSpiffeSanExtract:
 
         key = ec.generate_private_key(ec.SECP256R1())
         subject = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "agent")])
-        san = x509.SubjectAlternativeName([
-            x509.UniformResourceIdentifier("spiffe://acgs2/tenant/t1/agent/a1"),
-        ])
+        san = x509.SubjectAlternativeName(
+            [
+                x509.UniformResourceIdentifier("spiffe://acgs2/tenant/t1/agent/a1"),
+            ]
+        )
         cert = (
             x509.CertificateBuilder()
             .subject_name(subject)
@@ -1666,9 +1671,11 @@ class TestSpiffeSanExtract:
 
         key = ec.generate_private_key(ec.SECP256R1())
         subject = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "test")])
-        san = x509.SubjectAlternativeName([
-            x509.UniformResourceIdentifier("https://example.com"),
-        ])
+        san = x509.SubjectAlternativeName(
+            [
+                x509.UniformResourceIdentifier("https://example.com"),
+            ]
+        )
         cert = (
             x509.CertificateBuilder()
             .subject_name(subject)
@@ -1711,9 +1718,9 @@ class TestSpiffeIdentityValidatorCerts:
             .not_valid_after(not_after or datetime.now(UTC) + timedelta(days=1))
         )
         if san_uris:
-            san = x509.SubjectAlternativeName([
-                x509.UniformResourceIdentifier(uri) for uri in san_uris
-            ])
+            san = x509.SubjectAlternativeName(
+                [x509.UniformResourceIdentifier(uri) for uri in san_uris]
+            )
             builder = builder.add_extension(san, critical=False)
         cert = builder.sign(key, hashes.SHA256())
         return cert.public_bytes(serialization.Encoding.PEM)
@@ -2094,11 +2101,13 @@ class TestPQCWrapperMocked:
         with patch("src.core.shared.security.pqc.find_spec", return_value=None):
             with pytest.raises(PQCConfigurationError):
                 from src.core.shared.security.pqc import PQCWrapper as PW
+
                 PW()
 
     def test_pqcwrapper_init_with_liboqs(self):
         mock_spec = MagicMock()
         with patch("src.core.shared.security.pqc.find_spec", return_value=mock_spec):
             from src.core.shared.security.pqc import PQCWrapper as PW
+
             wrapper = PW()
             assert wrapper is not None

@@ -207,9 +207,7 @@ class TestQualityAssessment:
         assert critical[0].name == "safety"
 
     def test_critical_failures_none(self):
-        qa = self._make(
-            dimensions=[QualityDimension(name="accuracy", score=0.9, threshold=0.8)]
-        )
+        qa = self._make(dimensions=[QualityDimension(name="accuracy", score=0.9, threshold=0.8)])
         assert len(qa.critical_failures) == 0
 
     def test_overall_level_excellent(self):
@@ -603,8 +601,13 @@ class TestResponseQualityValidator:
     def test_custom_scorer(self):
         class MyScorer:
             def score(self, response, context=None):
-                return {"accuracy": 1.0, "coherence": 1.0, "relevance": 1.0,
-                        "constitutional_alignment": 1.0, "safety": 1.0}
+                return {
+                    "accuracy": 1.0,
+                    "coherence": 1.0,
+                    "relevance": 1.0,
+                    "constitutional_alignment": 1.0,
+                    "safety": 1.0,
+                }
 
         v = ResponseQualityValidator(scorer=MyScorer())
         qa = v.validate("test")

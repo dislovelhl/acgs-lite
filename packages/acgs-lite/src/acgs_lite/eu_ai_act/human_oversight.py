@@ -197,11 +197,7 @@ class HumanOversightGateway:
         """
         impact_score = max(0.0, min(1.0, impact_score))
         requires_review = impact_score >= self.oversight_threshold
-        outcome = (
-            OversightOutcome.PENDING
-            if requires_review
-            else OversightOutcome.AUTO_APPROVED
-        )
+        outcome = OversightOutcome.PENDING if requires_review else OversightOutcome.AUTO_APPROVED
 
         decision = OversightDecision(
             decision_id=str(uuid.uuid4())[:8],

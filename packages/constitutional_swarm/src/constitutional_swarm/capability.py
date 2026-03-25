@@ -61,13 +61,9 @@ class CapabilityRegistry:
         caps = self._by_agent.pop(agent_id, [])
         for cap in caps:
             domain_list = self._by_domain.get(cap.domain, [])
-            self._by_domain[cap.domain] = [
-                (aid, c) for aid, c in domain_list if aid != agent_id
-            ]
+            self._by_domain[cap.domain] = [(aid, c) for aid, c in domain_list if aid != agent_id]
             name_list = self._by_name.get(cap.name.lower(), [])
-            self._by_name[cap.name.lower()] = [
-                (aid, c) for aid, c in name_list if aid != agent_id
-            ]
+            self._by_name[cap.name.lower()] = [(aid, c) for aid, c in name_list if aid != agent_id]
 
     def find_by_domain(self, domain: str) -> list[tuple[str, Capability]]:
         """Find all agents with capabilities in a domain. O(1) lookup."""
@@ -135,7 +131,5 @@ class CapabilityRegistry:
             "agents": len(self._by_agent),
             "domains": len(self._by_domain),
             "capabilities": sum(len(caps) for caps in self._by_agent.values()),
-            "domain_distribution": {
-                d: len(entries) for d, entries in self._by_domain.items()
-            },
+            "domain_distribution": {d: len(entries) for d, entries in self._by_domain.items()},
         }

@@ -266,11 +266,20 @@ class TestAnomalyMonitor:
         detector.fit = lambda df: (fit_calls.append(1), original_fit(df))
         monitor = self._make_monitor(detector=detector, min_training_samples=2)
         # Fill buffer to exactly 1000
-        monitor._metrics_buffer = [{"total_requests": 1, "approved_count": 1,
-                                     "denied_count": 0, "violation_count": 0,
-                                     "error_count": 0, "avg_latency_ms": 1.0,
-                                     "denial_rate": 0.0, "violation_rate": 0.0,
-                                     "timestamp": "2024-01-01"} for _ in range(1000)]
+        monitor._metrics_buffer = [
+            {
+                "total_requests": 1,
+                "approved_count": 1,
+                "denied_count": 0,
+                "violation_count": 0,
+                "error_count": 0,
+                "avg_latency_ms": 1.0,
+                "denial_rate": 0.0,
+                "violation_rate": 0.0,
+                "timestamp": "2024-01-01",
+            }
+            for _ in range(1000)
+        ]
         await monitor.detect_anomalies()
         assert len(fit_calls) == 1  # Should retrain at modulo 1000
 
@@ -285,10 +294,12 @@ class TestLocalEventBus:
 
     def _make_bus(self):
         from enhanced_agent_bus.local_bus import LocalEventBus
+
         return LocalEventBus()
 
     def _make_message(self, **kwargs):
         from enhanced_agent_bus.core_models import AgentMessage, MessageType
+
         defaults = {
             "from_agent": "agent-a",
             "to_agent": "agent-b",
@@ -310,6 +321,7 @@ class TestLocalEventBus:
         # Add something to queues via subscribe
         handler = AsyncMock()
         from enhanced_agent_bus.core_models import MessageType
+
         await bus.subscribe("tenant1", [MessageType.COMMAND], handler)
         assert len(bus._queues) > 0
         await bus.stop()
@@ -322,6 +334,7 @@ class TestLocalEventBus:
 
     async def test_send_message_not_running_raises(self):
         from enhanced_agent_bus.exceptions import MessageDeliveryError
+
         bus = self._make_bus()
         msg = self._make_message()
         with pytest.raises(MessageDeliveryError):
@@ -382,6 +395,7 @@ class TestLocalEventBus:
         await bus.subscribe(handler)
 
         from enhanced_agent_bus.core_models import MessageType
+
         # Use a specific tenant; the "all" subscriber catches messages from any tenant
         msg = self._make_message(tenant_id="tenant-x", message_type=MessageType.COMMAND)
         await bus.send_message(msg)
@@ -472,6 +486,7 @@ class TestLocalEventBus:
         bus = self._make_bus()
         # Not started, so it should raise
         from enhanced_agent_bus.exceptions import MessageDeliveryError
+
         msg = self._make_message(to_agent=None)
         with pytest.raises(MessageDeliveryError):
             await bus.send_message(msg)
@@ -487,6 +502,7 @@ class TestRPCHelpers:
 
     def test_rpc_success(self):
         from enhanced_agent_bus.mcp.transports.http import _rpc_success
+
         resp = _rpc_success("req-1", {"tools": []})
         assert resp["jsonrpc"] == "2.0"
         assert resp["id"] == "req-1"
@@ -494,11 +510,13 @@ class TestRPCHelpers:
 
     def test_rpc_success_none_id(self):
         from enhanced_agent_bus.mcp.transports.http import _rpc_success
+
         resp = _rpc_success(None, "ok")
         assert resp["id"] is None
 
     def test_rpc_error_without_data(self):
         from enhanced_agent_bus.mcp.transports.http import _rpc_error
+
         resp = _rpc_error("req-2", -32601, "Not found")
         assert resp["error"]["code"] == -32601
         assert resp["error"]["message"] == "Not found"
@@ -506,6 +524,7 @@ class TestRPCHelpers:
 
     def test_rpc_error_with_data(self):
         from enhanced_agent_bus.mcp.transports.http import _rpc_error
+
         resp = _rpc_error("req-3", -32603, "Internal", {"detail": "x"})
         assert resp["error"]["data"] == {"detail": "x"}
 
@@ -515,6 +534,7 @@ class TestHTTPTransport:
 
     def _make_transport(self, **kwargs):
         from enhanced_agent_bus.mcp.transports.http import HTTPTransport
+
         defaults = {
             "base_url": "http://toolbox:5000",
             "max_retries": 0,
@@ -587,6 +607,7 @@ class TestHTTPTransport:
 
     async def test_connect_http_status_error_raises(self):
         from enhanced_agent_bus.mcp.transports.base import MCPTransportError
+
         t = self._make_transport()
 
         request = httpx.Request("GET", "http://toolbox:5000/api/tools")
@@ -605,6 +626,7 @@ class TestHTTPTransport:
 
     async def test_connect_transport_error_raises(self):
         from enhanced_agent_bus.mcp.transports.base import MCPTransportError
+
         t = self._make_transport()
 
         mock_client = AsyncMock(spec=httpx.AsyncClient)
@@ -653,6 +675,7 @@ class TestHTTPTransport:
 
     async def test_send_not_connected_raises(self):
         from enhanced_agent_bus.mcp.transports.base import MCPTransportError
+
         t = self._make_transport()
         with pytest.raises(MCPTransportError, match="before connect"):
             await t.send({"method": "tools/list", "id": 1})
@@ -710,12 +733,14 @@ class TestHTTPTransport:
         mock_client.request = AsyncMock(return_value=response)
         t._client = mock_client
 
-        result = await t.send({
-            "jsonrpc": "2.0",
-            "id": 4,
-            "method": "tools/call",
-            "params": {"name": "my_tool", "arguments": {"x": 1}},
-        })
+        result = await t.send(
+            {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "method": "tools/call",
+                "params": {"name": "my_tool", "arguments": {"x": 1}},
+            }
+        )
         assert result["result"]["content"][0]["text"] == "ok"
 
     async def test_send_tools_call_normalizes_non_content_response(self):
@@ -729,12 +754,14 @@ class TestHTTPTransport:
         mock_client.request = AsyncMock(return_value=response)
         t._client = mock_client
 
-        result = await t.send({
-            "jsonrpc": "2.0",
-            "id": 5,
-            "method": "tools/call",
-            "params": {"name": "calc"},
-        })
+        result = await t.send(
+            {
+                "jsonrpc": "2.0",
+                "id": 5,
+                "method": "tools/call",
+                "params": {"name": "calc"},
+            }
+        )
         assert result["result"]["isError"] is False
         assert result["result"]["content"][0]["type"] == "text"
 
@@ -743,12 +770,14 @@ class TestHTTPTransport:
         t._connected = True
         t._client = AsyncMock()
 
-        result = await t.send({
-            "jsonrpc": "2.0",
-            "id": 6,
-            "method": "tools/call",
-            "params": {},
-        })
+        result = await t.send(
+            {
+                "jsonrpc": "2.0",
+                "id": 6,
+                "method": "tools/call",
+                "params": {},
+            }
+        )
         assert "error" in result
         assert result["error"]["code"] == -32603
 
@@ -773,6 +802,7 @@ class TestHTTPTransport:
 
     async def test_request_with_retry_timeout_exhausts(self):
         from enhanced_agent_bus.mcp.transports.base import MCPTransportError
+
         t = self._make_transport(max_retries=1, retry_base_delay=0.0)
         t._connected = True
         mock_client = AsyncMock(spec=httpx.AsyncClient)
@@ -784,6 +814,7 @@ class TestHTTPTransport:
 
     async def test_request_with_retry_transport_error(self):
         from enhanced_agent_bus.mcp.transports.base import MCPTransportError
+
         t = self._make_transport(max_retries=1, retry_base_delay=0.0)
         t._connected = True
         mock_client = AsyncMock(spec=httpx.AsyncClient)
@@ -795,6 +826,7 @@ class TestHTTPTransport:
 
     async def test_request_with_retry_non_retryable_http_error(self):
         from enhanced_agent_bus.mcp.transports.base import MCPTransportError
+
         t = self._make_transport(max_retries=1, retry_base_delay=0.0)
         t._connected = True
         mock_client = AsyncMock(spec=httpx.AsyncClient)
@@ -826,6 +858,7 @@ class TestHTTPTransport:
 
     async def test_request_with_retry_retryable_status_exhausted(self):
         from enhanced_agent_bus.mcp.transports.base import MCPTransportError
+
         t = self._make_transport(max_retries=1, retry_base_delay=0.0)
         t._connected = True
         mock_client = AsyncMock(spec=httpx.AsyncClient)

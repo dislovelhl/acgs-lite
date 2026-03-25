@@ -79,7 +79,6 @@ def _gs_json(data: dict | None = None) -> dict:
 
 
 class TestInMemoryStatePersistence:
-
     @pytest.fixture
     def persistence(self):
         return InMemoryStatePersistence(constitutional_hash="test-hash")
@@ -91,8 +90,11 @@ class TestInMemoryStatePersistence:
     @pytest.fixture
     def checkpoint(self):
         return Checkpoint(
-            id="cp-1", workflow_id="wf-1", run_id="run-1",
-            node_id="node-1", step_index=0,
+            id="cp-1",
+            workflow_id="wf-1",
+            run_id="run-1",
+            node_id="node-1",
+            step_index=0,
             state=GraphState(data={"checkpoint": True}),
             status=CheckpointStatus.CREATED,
         )
@@ -100,7 +102,8 @@ class TestInMemoryStatePersistence:
     @pytest.fixture
     def execution_result(self):
         return ExecutionResult(
-            workflow_id="wf-1", run_id="run-1",
+            workflow_id="wf-1",
+            run_id="run-1",
             status=ExecutionStatus.COMPLETED,
             final_state=GraphState(data={"done": True}),
         )
@@ -134,8 +137,12 @@ class TestInMemoryStatePersistence:
     async def test_list_checkpoints_filters_by_workflow(self, persistence):
         for i, wf in enumerate(["wf-1", "wf-1", "wf-2"]):
             cp = Checkpoint(
-                id=f"cp-{i}", workflow_id=wf, run_id=f"r-{i}",
-                node_id="n", step_index=0, state=GraphState(),
+                id=f"cp-{i}",
+                workflow_id=wf,
+                run_id=f"r-{i}",
+                node_id="n",
+                step_index=0,
+                state=GraphState(),
             )
             await persistence.save_checkpoint(cp)
         assert len(await persistence.list_checkpoints("wf-1")) == 2
@@ -143,8 +150,12 @@ class TestInMemoryStatePersistence:
     async def test_list_checkpoints_filters_by_run_id(self, persistence):
         for i in range(2):
             cp = Checkpoint(
-                id=f"cp-{i}", workflow_id="wf-1", run_id=f"run-{i}",
-                node_id="n", step_index=0, state=GraphState(),
+                id=f"cp-{i}",
+                workflow_id="wf-1",
+                run_id=f"run-{i}",
+                node_id="n",
+                step_index=0,
+                state=GraphState(),
             )
             await persistence.save_checkpoint(cp)
         result = await persistence.list_checkpoints("wf-1", run_id="run-0")
@@ -191,7 +202,6 @@ class TestInMemoryStatePersistence:
 
 
 class TestRedisStatePersistence:
-
     @pytest.fixture
     def mock_redis(self):
         r = AsyncMock()
@@ -208,7 +218,9 @@ class TestRedisStatePersistence:
     @pytest.fixture
     def persistence(self, mock_redis):
         p = RedisStatePersistence(
-            redis_url="redis://test:6379", key_prefix="test:", ttl_seconds=3600,
+            redis_url="redis://test:6379",
+            key_prefix="test:",
+            ttl_seconds=3600,
         )
         p._redis = mock_redis
         return p
@@ -236,13 +248,17 @@ class TestRedisStatePersistence:
         mock_redis.setex.assert_called_once()
 
     async def test_load_state_with_run_id(self, persistence, mock_redis):
-        stored = json.dumps({
-            "id": "snap-1", "workflow_id": "wf-1",
-            "state": _gs_json({"key": "value"}),
-            "node_id": "n1", "step_index": 0,
-            "created_at": datetime.now(UTC).isoformat(),
-            "constitutional_hash": "test",
-        })
+        stored = json.dumps(
+            {
+                "id": "snap-1",
+                "workflow_id": "wf-1",
+                "state": _gs_json({"key": "value"}),
+                "node_id": "n1",
+                "step_index": 0,
+                "created_at": datetime.now(UTC).isoformat(),
+                "constitutional_hash": "test",
+            }
+        )
         mock_redis.get.return_value = stored
         result = await persistence.load_state("wf-1", run_id="run-1")
         assert result is not None and result.data == {"key": "value"}
@@ -257,12 +273,17 @@ class TestRedisStatePersistence:
 
     async def test_load_state_without_run_id_with_keys(self, persistence, mock_redis):
         now = datetime.now(UTC)
-        stored = json.dumps({
-            "id": "snap-1", "workflow_id": "wf-1",
-            "state": _gs_json({"key": "value"}),
-            "node_id": "n1", "step_index": 0,
-            "created_at": now.isoformat(), "constitutional_hash": "t",
-        })
+        stored = json.dumps(
+            {
+                "id": "snap-1",
+                "workflow_id": "wf-1",
+                "state": _gs_json({"key": "value"}),
+                "node_id": "n1",
+                "step_index": 0,
+                "created_at": now.isoformat(),
+                "constitutional_hash": "t",
+            }
+        )
 
         async def scan(pattern):
             yield b"test:state:wf-1:run-1"
@@ -292,8 +313,12 @@ class TestRedisStatePersistence:
 
     async def test_save_checkpoint(self, persistence, mock_redis):
         cp = Checkpoint(
-            id="cp-1", workflow_id="wf-1", run_id="run-1",
-            node_id="n1", step_index=0, state=_gs(),
+            id="cp-1",
+            workflow_id="wf-1",
+            run_id="run-1",
+            node_id="n1",
+            step_index=0,
+            state=_gs(),
         )
         await persistence.save_checkpoint(cp)
         assert mock_redis.setex.call_count == 1
@@ -302,28 +327,46 @@ class TestRedisStatePersistence:
 
     async def test_load_checkpoint_found(self, persistence, mock_redis):
         now = datetime.now(UTC)
-        stored = json.dumps({
-            "id": "cp-1", "workflow_id": "wf-1", "run_id": "run-1",
-            "node_id": "n1", "step_index": 0,
-            "state": _gs_json(), "status": "created",
-            "constitutional_validated": False, "maci_validated": False,
-            "created_at": now.isoformat(), "validated_at": None,
-            "metadata": {}, "constitutional_hash": "test",
-        })
+        stored = json.dumps(
+            {
+                "id": "cp-1",
+                "workflow_id": "wf-1",
+                "run_id": "run-1",
+                "node_id": "n1",
+                "step_index": 0,
+                "state": _gs_json(),
+                "status": "created",
+                "constitutional_validated": False,
+                "maci_validated": False,
+                "created_at": now.isoformat(),
+                "validated_at": None,
+                "metadata": {},
+                "constitutional_hash": "test",
+            }
+        )
         mock_redis.get.return_value = stored
         result = await persistence.load_checkpoint("cp-1")
         assert result is not None and result.id == "cp-1"
 
     async def test_load_checkpoint_with_validated_at(self, persistence, mock_redis):
         now = datetime.now(UTC)
-        stored = json.dumps({
-            "id": "cp-1", "workflow_id": "wf-1", "run_id": "run-1",
-            "node_id": "n1", "step_index": 0,
-            "state": _gs_json(), "status": "validated",
-            "constitutional_validated": True, "maci_validated": True,
-            "created_at": now.isoformat(), "validated_at": now.isoformat(),
-            "metadata": {"k": "v"}, "constitutional_hash": "test",
-        })
+        stored = json.dumps(
+            {
+                "id": "cp-1",
+                "workflow_id": "wf-1",
+                "run_id": "run-1",
+                "node_id": "n1",
+                "step_index": 0,
+                "state": _gs_json(),
+                "status": "validated",
+                "constitutional_validated": True,
+                "maci_validated": True,
+                "created_at": now.isoformat(),
+                "validated_at": now.isoformat(),
+                "metadata": {"k": "v"},
+                "constitutional_hash": "test",
+            }
+        )
         mock_redis.get.return_value = stored
         result = await persistence.load_checkpoint("cp-1")
         assert result is not None and result.validated_at is not None
@@ -335,28 +378,46 @@ class TestRedisStatePersistence:
     async def test_list_checkpoints(self, persistence, mock_redis):
         now = datetime.now(UTC)
         mock_redis.zrange.return_value = [b"cp-1"]
-        stored = json.dumps({
-            "id": "cp-1", "workflow_id": "wf-1", "run_id": "run-1",
-            "node_id": "n1", "step_index": 0,
-            "state": _gs_json(), "status": "created",
-            "constitutional_validated": False, "maci_validated": False,
-            "created_at": now.isoformat(), "validated_at": None,
-            "metadata": {}, "constitutional_hash": "t",
-        })
+        stored = json.dumps(
+            {
+                "id": "cp-1",
+                "workflow_id": "wf-1",
+                "run_id": "run-1",
+                "node_id": "n1",
+                "step_index": 0,
+                "state": _gs_json(),
+                "status": "created",
+                "constitutional_validated": False,
+                "maci_validated": False,
+                "created_at": now.isoformat(),
+                "validated_at": None,
+                "metadata": {},
+                "constitutional_hash": "t",
+            }
+        )
         mock_redis.get.return_value = stored
         assert len(await persistence.list_checkpoints("wf-1")) == 1
 
     async def test_list_checkpoints_with_run_id_filter(self, persistence, mock_redis):
         now = datetime.now(UTC)
         mock_redis.zrange.return_value = ["cp-1"]
-        stored = json.dumps({
-            "id": "cp-1", "workflow_id": "wf-1", "run_id": "run-1",
-            "node_id": "n1", "step_index": 0,
-            "state": _gs_json(), "status": "created",
-            "constitutional_validated": False, "maci_validated": False,
-            "created_at": now.isoformat(), "validated_at": None,
-            "metadata": {}, "constitutional_hash": "t",
-        })
+        stored = json.dumps(
+            {
+                "id": "cp-1",
+                "workflow_id": "wf-1",
+                "run_id": "run-1",
+                "node_id": "n1",
+                "step_index": 0,
+                "state": _gs_json(),
+                "status": "created",
+                "constitutional_validated": False,
+                "maci_validated": False,
+                "created_at": now.isoformat(),
+                "validated_at": None,
+                "metadata": {},
+                "constitutional_hash": "t",
+            }
+        )
         mock_redis.get.return_value = stored
         assert len(await persistence.list_checkpoints("wf-1", run_id="run-1")) == 1
         assert len(await persistence.list_checkpoints("wf-1", run_id="other")) == 0
@@ -388,12 +449,16 @@ class TestRedisStatePersistence:
 
     async def test_save_execution_result(self, persistence, mock_redis):
         result = ExecutionResult(
-            workflow_id="wf-1", run_id="run-1",
+            workflow_id="wf-1",
+            run_id="run-1",
             status=ExecutionStatus.COMPLETED,
             final_state=_gs({"done": True}),
             output={"result": "ok"},
-            total_execution_time_ms=100.5, node_count=3, step_count=5,
-            constitutional_validated=True, checkpoint_count=2,
+            total_execution_time_ms=100.5,
+            node_count=3,
+            step_count=5,
+            constitutional_validated=True,
+            checkpoint_count=2,
             started_at=datetime.now(UTC),
         )
         await persistence.save_execution_result(result)
@@ -401,38 +466,62 @@ class TestRedisStatePersistence:
 
     async def test_save_execution_result_no_final_state(self, persistence, mock_redis):
         result = ExecutionResult(
-            workflow_id="wf-1", run_id="run-1",
-            status=ExecutionStatus.FAILED, error="fail",
+            workflow_id="wf-1",
+            run_id="run-1",
+            status=ExecutionStatus.FAILED,
+            error="fail",
         )
         await persistence.save_execution_result(result)
         mock_redis.setex.assert_called_once()
 
     async def test_load_execution_result_found(self, persistence, mock_redis):
         now = datetime.now(UTC)
-        stored = json.dumps({
-            "workflow_id": "wf-1", "run_id": "run-1", "status": "completed",
-            "final_state": _gs_json(), "output": {"ok": True}, "error": None,
-            "total_execution_time_ms": 50.0, "node_count": 2, "step_count": 4,
-            "p50_node_time_ms": 10.0, "p99_node_time_ms": 40.0,
-            "constitutional_validated": True, "checkpoint_count": 1,
-            "started_at": now.isoformat(), "completed_at": now.isoformat(),
-            "constitutional_hash": "test",
-        })
+        stored = json.dumps(
+            {
+                "workflow_id": "wf-1",
+                "run_id": "run-1",
+                "status": "completed",
+                "final_state": _gs_json(),
+                "output": {"ok": True},
+                "error": None,
+                "total_execution_time_ms": 50.0,
+                "node_count": 2,
+                "step_count": 4,
+                "p50_node_time_ms": 10.0,
+                "p99_node_time_ms": 40.0,
+                "constitutional_validated": True,
+                "checkpoint_count": 1,
+                "started_at": now.isoformat(),
+                "completed_at": now.isoformat(),
+                "constitutional_hash": "test",
+            }
+        )
         mock_redis.get.return_value = stored
         result = await persistence.load_execution_result("wf-1", "run-1")
         assert result is not None and result.status == ExecutionStatus.COMPLETED
 
     async def test_load_execution_result_no_started_at(self, persistence, mock_redis):
         now = datetime.now(UTC)
-        stored = json.dumps({
-            "workflow_id": "wf-1", "run_id": "run-1", "status": "failed",
-            "final_state": None, "output": None, "error": "fail",
-            "total_execution_time_ms": 0, "node_count": 0, "step_count": 0,
-            "p50_node_time_ms": None, "p99_node_time_ms": None,
-            "constitutional_validated": False, "checkpoint_count": 0,
-            "started_at": None, "completed_at": now.isoformat(),
-            "constitutional_hash": "test",
-        })
+        stored = json.dumps(
+            {
+                "workflow_id": "wf-1",
+                "run_id": "run-1",
+                "status": "failed",
+                "final_state": None,
+                "output": None,
+                "error": "fail",
+                "total_execution_time_ms": 0,
+                "node_count": 0,
+                "step_count": 0,
+                "p50_node_time_ms": None,
+                "p99_node_time_ms": None,
+                "constitutional_validated": False,
+                "checkpoint_count": 0,
+                "started_at": None,
+                "completed_at": now.isoformat(),
+                "constitutional_hash": "test",
+            }
+        )
         mock_redis.get.return_value = stored
         result = await persistence.load_execution_result("wf-1", "run-1")
         assert result is not None and result.started_at is None
@@ -491,7 +580,6 @@ class TestCreateStatePersistence:
 
 
 class TestPostgresStateManager:
-
     @pytest.fixture
     def manager(self):
         from enhanced_agent_bus.saga_persistence.postgres.state import PostgresStateManager
@@ -506,6 +594,7 @@ class TestPostgresStateManager:
 
             def _row_to_checkpoint(self, row):
                 from enhanced_agent_bus.saga_persistence.models import SagaCheckpoint
+
                 return SagaCheckpoint(
                     checkpoint_id=str(row.get("checkpoint_id", "")),
                     saga_id=str(row.get("saga_id", "")),
@@ -535,6 +624,7 @@ class TestPostgresStateManager:
 
     async def test_update_state_not_found(self, manager, mock_conn):
         from enhanced_agent_bus.saga_persistence.models import SagaState
+
         self._setup_pool(manager, mock_conn)
         mock_conn.fetchrow.return_value = None
         assert await manager.update_state(_SAGA_ID, SagaState.RUNNING) is False
@@ -542,58 +632,81 @@ class TestPostgresStateManager:
     async def test_update_state_invalid_transition(self, manager, mock_conn):
         from enhanced_agent_bus.saga_persistence.models import SagaState
         from enhanced_agent_bus.saga_persistence.repository import InvalidStateTransitionError
+
         self._setup_pool(manager, mock_conn)
         mock_conn.fetchrow.return_value = {
-            "state": "COMPLETED", "version": 1, "started_at": datetime.now(UTC),
+            "state": "COMPLETED",
+            "version": 1,
+            "started_at": datetime.now(UTC),
         }
         with pytest.raises(InvalidStateTransitionError):
             await manager.update_state(_SAGA_ID, SagaState.RUNNING)
 
     async def test_update_state_to_running(self, manager, mock_conn):
         from enhanced_agent_bus.saga_persistence.models import SagaState
+
         self._setup_pool(manager, mock_conn)
         mock_conn.fetchrow.return_value = {
-            "state": "INITIALIZED", "version": 1, "started_at": None,
+            "state": "INITIALIZED",
+            "version": 1,
+            "started_at": None,
         }
         assert await manager.update_state(_SAGA_ID, SagaState.RUNNING) is True
 
     async def test_update_state_to_completed_with_started_at(self, manager, mock_conn):
         from enhanced_agent_bus.saga_persistence.models import SagaState
+
         self._setup_pool(manager, mock_conn)
         mock_conn.fetchrow.return_value = {
-            "state": "RUNNING", "version": 1, "started_at": datetime.now(UTC),
+            "state": "RUNNING",
+            "version": 1,
+            "started_at": datetime.now(UTC),
         }
         assert await manager.update_state(_SAGA_ID, SagaState.COMPLETED) is True
 
     async def test_update_state_to_completed_no_started_at(self, manager, mock_conn):
         from enhanced_agent_bus.saga_persistence.models import SagaState
+
         self._setup_pool(manager, mock_conn)
         mock_conn.fetchrow.return_value = {
-            "state": "RUNNING", "version": 1, "started_at": None,
+            "state": "RUNNING",
+            "version": 1,
+            "started_at": None,
         }
         assert await manager.update_state(_SAGA_ID, SagaState.COMPLETED) is True
 
     async def test_update_state_to_compensated(self, manager, mock_conn):
         from enhanced_agent_bus.saga_persistence.models import SagaState
+
         self._setup_pool(manager, mock_conn)
         mock_conn.fetchrow.return_value = {
-            "state": "COMPENSATING", "version": 1, "started_at": datetime.now(UTC),
+            "state": "COMPENSATING",
+            "version": 1,
+            "started_at": datetime.now(UTC),
         }
         assert await manager.update_state(_SAGA_ID, SagaState.COMPENSATED) is True
 
     async def test_update_state_to_failed_with_reason(self, manager, mock_conn):
         from enhanced_agent_bus.saga_persistence.models import SagaState
+
         self._setup_pool(manager, mock_conn)
         mock_conn.fetchrow.return_value = {
-            "state": "RUNNING", "version": 1, "started_at": datetime.now(UTC),
+            "state": "RUNNING",
+            "version": 1,
+            "started_at": datetime.now(UTC),
         }
-        assert await manager.update_state(_SAGA_ID, SagaState.FAILED, failure_reason="timeout") is True
+        assert (
+            await manager.update_state(_SAGA_ID, SagaState.FAILED, failure_reason="timeout") is True
+        )
 
     async def test_update_state_no_timestamp_field(self, manager, mock_conn):
         from enhanced_agent_bus.saga_persistence.models import SagaState
+
         self._setup_pool(manager, mock_conn)
         mock_conn.fetchrow.return_value = {
-            "state": "RUNNING", "version": 1, "started_at": datetime.now(UTC),
+            "state": "RUNNING",
+            "version": 1,
+            "started_at": datetime.now(UTC),
         }
         assert await manager.update_state(_SAGA_ID, SagaState.COMPENSATING) is True
 
@@ -602,6 +715,7 @@ class TestPostgresStateManager:
 
         from enhanced_agent_bus.saga_persistence.models import SagaState
         from enhanced_agent_bus.saga_persistence.repository import RepositoryError
+
         self._setup_pool(manager, mock_conn)
         mock_conn.fetchrow.side_effect = asyncpg.PostgresError("connection lost")
         with pytest.raises(RepositoryError):
@@ -611,6 +725,7 @@ class TestPostgresStateManager:
 
     async def test_update_step_state_saga_not_found(self, manager, mock_conn):
         from enhanced_agent_bus.saga_persistence.models import StepState
+
         self._setup_pool(manager, mock_conn)
         assert await manager.update_step_state(_SAGA_ID, _STEP_ID, StepState.RUNNING) is False
 
@@ -620,6 +735,7 @@ class TestPostgresStateManager:
             PersistedStepSnapshot,
             StepState,
         )
+
         self._setup_pool(manager, mock_conn)
         saga = PersistedSagaState(
             saga_id=_SAGA_ID,
@@ -634,6 +750,7 @@ class TestPostgresStateManager:
             PersistedStepSnapshot,
             StepState,
         )
+
         self._setup_pool(manager, mock_conn)
         step = PersistedStepSnapshot(step_id=_STEP_ID, step_name="test", state=StepState.PENDING)
         saga = PersistedSagaState(saga_id=_SAGA_ID, steps=[step])
@@ -646,16 +763,22 @@ class TestPostgresStateManager:
             PersistedStepSnapshot,
             StepState,
         )
+
         self._setup_pool(manager, mock_conn)
         step = PersistedStepSnapshot(
-            step_id=_STEP_ID, step_name="test",
-            state=StepState.RUNNING, started_at=datetime.now(UTC),
+            step_id=_STEP_ID,
+            step_name="test",
+            state=StepState.RUNNING,
+            started_at=datetime.now(UTC),
         )
         saga = PersistedSagaState(saga_id=_SAGA_ID, steps=[step])
         manager._saga_data = {_SAGA_ID: saga}
-        assert await manager.update_step_state(
-            _SAGA_ID, _STEP_ID, StepState.COMPLETED, output_data={"ok": True}
-        ) is True
+        assert (
+            await manager.update_step_state(
+                _SAGA_ID, _STEP_ID, StepState.COMPLETED, output_data={"ok": True}
+            )
+            is True
+        )
 
     async def test_update_step_state_with_error(self, manager, mock_conn):
         from enhanced_agent_bus.saga_persistence.models import (
@@ -663,16 +786,22 @@ class TestPostgresStateManager:
             PersistedStepSnapshot,
             StepState,
         )
+
         self._setup_pool(manager, mock_conn)
         step = PersistedStepSnapshot(
-            step_id=_STEP_ID, step_name="test",
-            state=StepState.RUNNING, started_at=datetime.now(UTC),
+            step_id=_STEP_ID,
+            step_name="test",
+            state=StepState.RUNNING,
+            started_at=datetime.now(UTC),
         )
         saga = PersistedSagaState(saga_id=_SAGA_ID, steps=[step])
         manager._saga_data = {_SAGA_ID: saga}
-        assert await manager.update_step_state(
-            _SAGA_ID, _STEP_ID, StepState.FAILED, error_message="step failed"
-        ) is True
+        assert (
+            await manager.update_step_state(
+                _SAGA_ID, _STEP_ID, StepState.FAILED, error_message="step failed"
+            )
+            is True
+        )
 
     async def test_update_step_state_postgres_error(self, manager, mock_conn):
         import asyncpg
@@ -683,6 +812,7 @@ class TestPostgresStateManager:
             StepState,
         )
         from enhanced_agent_bus.saga_persistence.repository import RepositoryError
+
         self._setup_pool(manager, mock_conn)
         step = PersistedStepSnapshot(step_id=_STEP_ID, step_name="test")
         saga = PersistedSagaState(saga_id=_SAGA_ID, steps=[step])
@@ -707,6 +837,7 @@ class TestPostgresStateManager:
         import asyncpg
 
         from enhanced_agent_bus.saga_persistence.repository import RepositoryError
+
         self._setup_pool(manager, mock_conn)
         mock_conn.execute.side_effect = asyncpg.PostgresError("db error")
         with pytest.raises(RepositoryError):
@@ -716,11 +847,15 @@ class TestPostgresStateManager:
 
     async def test_save_checkpoint_success(self, manager, mock_conn):
         from enhanced_agent_bus.saga_persistence.models import SagaCheckpoint
+
         self._setup_pool(manager, mock_conn)
         cp = SagaCheckpoint(
-            checkpoint_id=_CP_ID, saga_id=_SAGA_ID,
-            checkpoint_name="test", state_snapshot={"k": "v"},
-            completed_step_ids=["s1"], pending_step_ids=["s2"],
+            checkpoint_id=_CP_ID,
+            saga_id=_SAGA_ID,
+            checkpoint_name="test",
+            state_snapshot={"k": "v"},
+            completed_step_ids=["s1"],
+            pending_step_ids=["s2"],
         )
         assert await manager.save_checkpoint(cp) is True
 
@@ -729,6 +864,7 @@ class TestPostgresStateManager:
 
         from enhanced_agent_bus.saga_persistence.models import SagaCheckpoint
         from enhanced_agent_bus.saga_persistence.repository import RepositoryError
+
         self._setup_pool(manager, mock_conn)
         mock_conn.execute.side_effect = asyncpg.PostgresError("db error")
         cp = SagaCheckpoint(checkpoint_id=_CP_ID, saga_id=_SAGA_ID)
@@ -746,6 +882,7 @@ class TestPostgresStateManager:
         import asyncpg
 
         from enhanced_agent_bus.saga_persistence.repository import RepositoryError
+
         self._setup_pool(manager, mock_conn)
         mock_conn.fetch.side_effect = asyncpg.PostgresError("db error")
         with pytest.raises(RepositoryError):
@@ -774,6 +911,7 @@ class TestPostgresStateManager:
         import asyncpg
 
         from enhanced_agent_bus.saga_persistence.repository import RepositoryError
+
         self._setup_pool(manager, mock_conn)
         mock_conn.execute.side_effect = asyncpg.PostgresError("db error")
         with pytest.raises(RepositoryError):
@@ -783,6 +921,7 @@ class TestPostgresStateManager:
 
     async def test_append_compensation_success(self, manager, mock_conn):
         from enhanced_agent_bus.saga_persistence.models import CompensationEntry
+
         self._setup_pool(manager, mock_conn)
         mock_conn.execute.return_value = "UPDATE 1"
         entry = CompensationEntry(step_id="s1", step_name="step1", executed=True)
@@ -790,6 +929,7 @@ class TestPostgresStateManager:
 
     async def test_append_compensation_not_found(self, manager, mock_conn):
         from enhanced_agent_bus.saga_persistence.models import CompensationEntry
+
         self._setup_pool(manager, mock_conn)
         mock_conn.execute.return_value = "UPDATE 0"
         entry = CompensationEntry(step_id="s1")
@@ -800,6 +940,7 @@ class TestPostgresStateManager:
 
         from enhanced_agent_bus.saga_persistence.models import CompensationEntry
         from enhanced_agent_bus.saga_persistence.repository import RepositoryError
+
         self._setup_pool(manager, mock_conn)
         mock_conn.execute.side_effect = asyncpg.PostgresError("db error")
         with pytest.raises(RepositoryError):
@@ -833,6 +974,7 @@ class TestPostgresStateManager:
         import asyncpg
 
         from enhanced_agent_bus.saga_persistence.repository import RepositoryError
+
         self._setup_pool(manager, mock_conn)
         mock_conn.fetchval.side_effect = asyncpg.PostgresError("db error")
         with pytest.raises(RepositoryError):
@@ -845,7 +987,6 @@ class TestPostgresStateManager:
 
 
 class TestTransitionProof:
-
     def test_create_with_auto_hash(self):
         proof = TransitionProof(transition_id="t-1")
         assert proof.proof_hash and len(proof.proof_hash) == 64
@@ -860,8 +1001,11 @@ class TestTransitionProof:
 
     def test_to_dict(self):
         proof = TransitionProof(
-            transition_id="t-1", proof_type=ProofType.MERKLE_PROOF,
-            signature="sig", signer_id="s1", witnesses=["w1"],
+            transition_id="t-1",
+            proof_type=ProofType.MERKLE_PROOF,
+            signature="sig",
+            signer_id="s1",
+            witnesses=["w1"],
         )
         d = proof.to_dict()
         assert d["proof_type"] == "merkle_proof"
@@ -872,13 +1016,16 @@ class TestTransitionProof:
 
 
 class TestConstitutionalTransition:
-
     def test_defaults(self):
         t = ConstitutionalTransition()
         assert t.current_state == TransitionState.INITIAL
 
     def test_is_terminal(self):
-        for state in (TransitionState.COMPLETED, TransitionState.REJECTED, TransitionState.ROLLED_BACK):
+        for state in (
+            TransitionState.COMPLETED,
+            TransitionState.REJECTED,
+            TransitionState.ROLLED_BACK,
+        ):
             assert ConstitutionalTransition(current_state=state).is_terminal is True
         assert ConstitutionalTransition(current_state=TransitionState.INITIAL).is_terminal is False
 
@@ -890,14 +1037,18 @@ class TestConstitutionalTransition:
     def test_to_dict_fields(self):
         d = ConstitutionalTransition(
             transition_type=TransitionType.EMERGENCY_ACTION,
-            initiated_by="admin", rejected_by="rev", rejection_reason="bad",
+            initiated_by="admin",
+            rejected_by="rev",
+            rejection_reason="bad",
         ).to_dict()
         assert d["transition_type"] == "emergency_action"
         assert d["completed_at"] is None
 
     def test_to_dict_completed_at(self):
         now = datetime.now(UTC)
-        assert ConstitutionalTransition(completed_at=now).to_dict()["completed_at"] == now.isoformat()
+        assert (
+            ConstitutionalTransition(completed_at=now).to_dict()["completed_at"] == now.isoformat()
+        )
 
     def test_compute_state_hash(self):
         h = ConstitutionalTransition(state_data={"k": "v"})._compute_state_hash()
@@ -905,15 +1056,17 @@ class TestConstitutionalTransition:
 
 
 class TestStateTransitionManager:
-
     @pytest.fixture
     def mgr(self):
         return StateTransitionManager(require_proof_verification=True)
 
     def test_create_transition(self, mgr):
         t = mgr.create_transition(
-            TransitionType.POLICY_CHANGE, state_data={"p": "new"},
-            context={"env": "test"}, initiated_by="admin", metadata={"t": "1"},
+            TransitionType.POLICY_CHANGE,
+            state_data={"p": "new"},
+            context={"env": "test"},
+            initiated_by="admin",
+            metadata={"t": "1"},
         )
         assert t.current_state == TransitionState.INITIAL
         assert len(t.proofs) == 1
@@ -934,8 +1087,11 @@ class TestStateTransitionManager:
 
     async def test_transition_approved_adds_actor(self, mgr):
         t = mgr.create_transition(TransitionType.POLICY_CHANGE, state_data={})
-        for s in [TransitionState.PENDING_VALIDATION, TransitionState.VALIDATED,
-                   TransitionState.PENDING_APPROVAL]:
+        for s in [
+            TransitionState.PENDING_VALIDATION,
+            TransitionState.VALIDATED,
+            TransitionState.PENDING_APPROVAL,
+        ]:
             await mgr.transition_to(t, s, "sys")
         await mgr.transition_to(t, TransitionState.APPROVED, "approver-1")
         assert "approver-1" in t.approved_by
@@ -947,29 +1103,44 @@ class TestStateTransitionManager:
 
     async def test_transition_executed_stores_result(self, mgr):
         t = mgr.create_transition(TransitionType.POLICY_CHANGE, state_data={})
-        for s in [TransitionState.PENDING_VALIDATION, TransitionState.VALIDATED,
-                   TransitionState.PENDING_APPROVAL, TransitionState.APPROVED,
-                   TransitionState.EXECUTING]:
+        for s in [
+            TransitionState.PENDING_VALIDATION,
+            TransitionState.VALIDATED,
+            TransitionState.PENDING_APPROVAL,
+            TransitionState.APPROVED,
+            TransitionState.EXECUTING,
+        ]:
             await mgr.transition_to(t, s, "sys")
         await mgr.transition_to(t, TransitionState.EXECUTED, "e1", execution_result={"out": 1})
         assert t.execution_result == {"out": 1}
 
     async def test_completed_sets_completed_at(self, mgr):
         t = mgr.create_transition(TransitionType.POLICY_CHANGE, state_data={})
-        for s in [TransitionState.PENDING_VALIDATION, TransitionState.VALIDATED,
-                   TransitionState.PENDING_APPROVAL, TransitionState.APPROVED,
-                   TransitionState.EXECUTING, TransitionState.EXECUTED,
-                   TransitionState.PENDING_VERIFICATION, TransitionState.VERIFIED,
-                   TransitionState.COMPLETED]:
+        for s in [
+            TransitionState.PENDING_VALIDATION,
+            TransitionState.VALIDATED,
+            TransitionState.PENDING_APPROVAL,
+            TransitionState.APPROVED,
+            TransitionState.EXECUTING,
+            TransitionState.EXECUTED,
+            TransitionState.PENDING_VERIFICATION,
+            TransitionState.VERIFIED,
+            TransitionState.COMPLETED,
+        ]:
             await mgr.transition_to(t, s, "sys")
         assert t.completed_at is not None
         assert t.transition_id in mgr._completed_transitions
 
     async def test_rolled_back_sets_completed_at(self, mgr):
         t = mgr.create_transition(TransitionType.POLICY_CHANGE, state_data={})
-        for s in [TransitionState.PENDING_VALIDATION, TransitionState.VALIDATED,
-                   TransitionState.PENDING_APPROVAL, TransitionState.APPROVED,
-                   TransitionState.EXECUTING, TransitionState.EXECUTED]:
+        for s in [
+            TransitionState.PENDING_VALIDATION,
+            TransitionState.VALIDATED,
+            TransitionState.PENDING_APPROVAL,
+            TransitionState.APPROVED,
+            TransitionState.EXECUTING,
+            TransitionState.EXECUTED,
+        ]:
             await mgr.transition_to(t, s, "sys")
         await mgr.transition_to(t, TransitionState.ROLLED_BACK, "sys")
         assert t.completed_at is not None
@@ -993,16 +1164,24 @@ class TestStateTransitionManager:
 
     async def test_execute_with_sync_func(self, mgr):
         t = mgr.create_transition(TransitionType.POLICY_CHANGE, state_data={})
-        for s in [TransitionState.PENDING_VALIDATION, TransitionState.VALIDATED,
-                   TransitionState.PENDING_APPROVAL, TransitionState.APPROVED]:
+        for s in [
+            TransitionState.PENDING_VALIDATION,
+            TransitionState.VALIDATED,
+            TransitionState.PENDING_APPROVAL,
+            TransitionState.APPROVED,
+        ]:
             await mgr.transition_to(t, s, "sys")
         ok, _ = await mgr.execute_transition(t, "exec", lambda d: {"done": True})
         assert ok and t.current_state == TransitionState.EXECUTED
 
     async def test_execute_with_async_func(self, mgr):
         t = mgr.create_transition(TransitionType.POLICY_CHANGE, state_data={})
-        for s in [TransitionState.PENDING_VALIDATION, TransitionState.VALIDATED,
-                   TransitionState.PENDING_APPROVAL, TransitionState.APPROVED]:
+        for s in [
+            TransitionState.PENDING_VALIDATION,
+            TransitionState.VALIDATED,
+            TransitionState.PENDING_APPROVAL,
+            TransitionState.APPROVED,
+        ]:
             await mgr.transition_to(t, s, "sys")
 
         async def fn(d):
@@ -1013,8 +1192,12 @@ class TestStateTransitionManager:
 
     async def test_execute_func_raises(self, mgr):
         t = mgr.create_transition(TransitionType.POLICY_CHANGE, state_data={})
-        for s in [TransitionState.PENDING_VALIDATION, TransitionState.VALIDATED,
-                   TransitionState.PENDING_APPROVAL, TransitionState.APPROVED]:
+        for s in [
+            TransitionState.PENDING_VALIDATION,
+            TransitionState.VALIDATED,
+            TransitionState.PENDING_APPROVAL,
+            TransitionState.APPROVED,
+        ]:
             await mgr.transition_to(t, s, "sys")
         ok, _ = await mgr.execute_transition(
             t, "exec", lambda d: (_ for _ in ()).throw(RuntimeError("fail"))
@@ -1033,9 +1216,14 @@ class TestStateTransitionManager:
 
     async def _bring_to_executed(self, mgr):
         t = mgr.create_transition(TransitionType.POLICY_CHANGE, state_data={"x": 1})
-        for s in [TransitionState.PENDING_VALIDATION, TransitionState.VALIDATED,
-                   TransitionState.PENDING_APPROVAL, TransitionState.APPROVED,
-                   TransitionState.EXECUTING, TransitionState.EXECUTED]:
+        for s in [
+            TransitionState.PENDING_VALIDATION,
+            TransitionState.VALIDATED,
+            TransitionState.PENDING_APPROVAL,
+            TransitionState.APPROVED,
+            TransitionState.EXECUTING,
+            TransitionState.EXECUTED,
+        ]:
             await mgr.transition_to(t, s, "sys")
         return t
 
@@ -1097,10 +1285,13 @@ class TestStateTransitionManager:
 
     def test_verify_proof_chain_continuity_broken(self, mgr):
         t = mgr.create_transition(TransitionType.POLICY_CHANGE, state_data={})
-        t.proofs.append(TransitionProof(
-            transition_id=t.transition_id, chain_position=2,
-            previous_proof_hash="wrong",
-        ))
+        t.proofs.append(
+            TransitionProof(
+                transition_id=t.transition_id,
+                chain_position=2,
+                previous_proof_hash="wrong",
+            )
+        )
         valid, errors = mgr.verify_proof_chain(t)
         assert not valid and any("continuity" in e for e in errors)
 
@@ -1155,7 +1346,8 @@ class TestValidTransitions:
 
     def test_initial_targets(self):
         assert VALID_TRANSITIONS[TransitionState.INITIAL] == {
-            TransitionState.PENDING_VALIDATION, TransitionState.REJECTED,
+            TransitionState.PENDING_VALIDATION,
+            TransitionState.REJECTED,
         }
 
 
@@ -1165,10 +1357,10 @@ class TestValidTransitions:
 
 
 class TestMessageProcessor:
-
     @pytest.fixture
     def processor(self):
         from enhanced_agent_bus.message_processor import MessageProcessor
+
         return MessageProcessor(isolated_mode=True)
 
     def test_init_isolated(self, processor):
@@ -1308,7 +1500,9 @@ class TestMessageProcessor:
         from enhanced_agent_bus.models import AgentMessage, MessageType
 
         msg = AgentMessage(
-            from_agent="a", to_agent="b", content="t",
+            from_agent="a",
+            to_agent="b",
+            content="t",
             message_type=MessageType.GOVERNANCE_REQUEST,
         )
         assert processor._requires_independent_validation(msg) is True
@@ -1332,7 +1526,11 @@ class TestMessageProcessor:
 
         processor._require_independent_validator = True
         msg = AgentMessage(
-            from_agent="a", to_agent="b", content="t", impact_score=0.9, metadata={},
+            from_agent="a",
+            to_agent="b",
+            content="t",
+            impact_score=0.9,
+            metadata={},
         )
         result = processor._enforce_independent_validator_gate(msg)
         assert result is not None and result.is_valid is False
@@ -1342,8 +1540,11 @@ class TestMessageProcessor:
 
         processor._require_independent_validator = True
         msg = AgentMessage(
-            from_agent="agent-a", to_agent="b", content="t",
-            impact_score=0.9, metadata={"validated_by_agent": "agent-a"},
+            from_agent="agent-a",
+            to_agent="b",
+            content="t",
+            impact_score=0.9,
+            metadata={"validated_by_agent": "agent-a"},
         )
         result = processor._enforce_independent_validator_gate(msg)
         assert result is not None and "self_validation" in str(result.metadata)
@@ -1353,7 +1554,9 @@ class TestMessageProcessor:
 
         processor._require_independent_validator = True
         msg = AgentMessage(
-            from_agent="agent-a", to_agent="b", content="t",
+            from_agent="agent-a",
+            to_agent="b",
+            content="t",
             impact_score=0.9,
             metadata={"validated_by_agent": "agent-b", "validation_stage": "self"},
         )
@@ -1365,7 +1568,9 @@ class TestMessageProcessor:
 
         processor._require_independent_validator = True
         msg = AgentMessage(
-            from_agent="agent-a", to_agent="b", content="t",
+            from_agent="agent-a",
+            to_agent="b",
+            content="t",
             impact_score=0.9,
             metadata={"validated_by_agent": "agent-b", "validation_stage": "independent"},
         )
@@ -1373,6 +1578,7 @@ class TestMessageProcessor:
 
     def test_invalid_cache_hash_mode(self):
         from enhanced_agent_bus.message_processor import MessageProcessor
+
         with pytest.raises(ValueError, match="Invalid cache_hash_mode"):
             MessageProcessor(isolated_mode=True, cache_hash_mode="invalid")
 

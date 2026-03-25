@@ -257,9 +257,7 @@ class TestGovernanceMetricsCollector:
     async def test_record_maci_violation_no_redis(self):
         collector = GovernanceMetricsCollector()
         collector.redis_client = None
-        await collector.record_maci_violation(
-            agent_id="agent-1", action="approve", role="judicial"
-        )
+        await collector.record_maci_violation(agent_id="agent-1", action="approve", role="judicial")
 
     @pytest.mark.asyncio
     async def test_record_deliberation_outcome_no_redis(self):
@@ -340,9 +338,7 @@ class TestGovernanceMetricsCollector:
     async def test_compare_snapshots_collects_current(self):
         collector = GovernanceMetricsCollector()
         collector.redis_client = None
-        baseline = GovernanceMetricsSnapshot(
-            violations_rate=0.0, constitutional_version="1.0.0"
-        )
+        baseline = GovernanceMetricsSnapshot(violations_rate=0.0, constitutional_version="1.0.0")
         comp = await collector.compare_snapshots(baseline)
         assert isinstance(comp, MetricsComparison)
 
@@ -386,9 +382,7 @@ class TestGovernanceMetricsCollector:
         mock_client = AsyncMock()
         collector.redis_client = mock_client
 
-        await collector.record_maci_violation(
-            agent_id="agent-1", action="approve", role="judicial"
-        )
+        await collector.record_maci_violation(agent_id="agent-1", action="approve", role="judicial")
         mock_client.zadd.assert_awaited()
 
     @pytest.mark.asyncio

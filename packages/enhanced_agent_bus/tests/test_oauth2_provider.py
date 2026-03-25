@@ -357,7 +357,13 @@ class TestOAuth2Provider:
     def test_build_grant_specific_auth_code(self):
         provider = self._make_provider()
         data = provider._build_grant_specific_data(
-            OAuth2GrantType.AUTHORIZATION_CODE, "code123", "https://app/cb", None, None, None, "verifier"
+            OAuth2GrantType.AUTHORIZATION_CODE,
+            "code123",
+            "https://app/cb",
+            None,
+            None,
+            None,
+            "verifier",
         )
         assert data["code"] == "code123"
         assert data["redirect_uri"] == "https://app/cb"
@@ -404,7 +410,12 @@ class TestOAuth2Provider:
         data = provider._build_token_request_data(
             OAuth2GrantType.CLIENT_CREDENTIALS,
             ["openid"],
-            None, None, None, None, None, None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
         )
         assert data is not None
         assert data["grant_type"] == "client_credentials"
@@ -414,13 +425,15 @@ class TestOAuth2Provider:
 
     def test_parse_token_response_success(self):
         provider = self._make_provider()
-        token = provider._parse_token_response({
-            "access_token": "tok123",
-            "token_type": "Bearer",
-            "expires_in": 3600,
-            "refresh_token": "ref",
-            "scope": "openid",
-        })
+        token = provider._parse_token_response(
+            {
+                "access_token": "tok123",
+                "token_type": "Bearer",
+                "expires_in": 3600,
+                "refresh_token": "ref",
+                "scope": "openid",
+            }
+        )
         assert token is not None
         assert token.access_token == "tok123"
         assert token.expires_in == 3600
@@ -435,7 +448,9 @@ class TestOAuth2Provider:
     @pytest.mark.asyncio
     async def test_acquire_token_no_httpx(self):
         provider = self._make_provider()
-        with patch("enhanced_agent_bus.mcp_integration.auth.oauth2_provider.HTTPX_AVAILABLE", False):
+        with patch(
+            "enhanced_agent_bus.mcp_integration.auth.oauth2_provider.HTTPX_AVAILABLE", False
+        ):
             result = await provider.acquire_token()
             assert result is None
 
@@ -471,7 +486,9 @@ class TestOAuth2Provider:
     @pytest.mark.asyncio
     async def test_revoke_token_no_httpx(self):
         provider = self._make_provider(revocation_endpoint="https://auth/revoke")
-        with patch("enhanced_agent_bus.mcp_integration.auth.oauth2_provider.HTTPX_AVAILABLE", False):
+        with patch(
+            "enhanced_agent_bus.mcp_integration.auth.oauth2_provider.HTTPX_AVAILABLE", False
+        ):
             result = await provider.revoke_token("tok123")
             assert result is False
 
@@ -486,7 +503,9 @@ class TestOAuth2Provider:
     @pytest.mark.asyncio
     async def test_introspect_token_no_httpx(self):
         provider = self._make_provider(introspection_endpoint="https://auth/introspect")
-        with patch("enhanced_agent_bus.mcp_integration.auth.oauth2_provider.HTTPX_AVAILABLE", False):
+        with patch(
+            "enhanced_agent_bus.mcp_integration.auth.oauth2_provider.HTTPX_AVAILABLE", False
+        ):
             result = await provider.introspect_token("tok123")
             assert result is None
 

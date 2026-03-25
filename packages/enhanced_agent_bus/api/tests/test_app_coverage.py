@@ -257,7 +257,9 @@ class TestCreateApp:
 
         assert isinstance(result.state.maci_record_store, app_module.MACIRecordStore)
         assert isinstance(result.state.maci_role_registry, app_module.MACIRoleRegistry)
-        assert isinstance(result.state.pqc_enforcement_service._redis, app_module.InMemoryPQCConfigBackend)
+        assert isinstance(
+            result.state.pqc_enforcement_service._redis, app_module.InMemoryPQCConfigBackend
+        )
 
     def test_create_app_sets_limiter_state(self):
         result = app_module.create_app()

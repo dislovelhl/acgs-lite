@@ -48,7 +48,9 @@ class APIVersioningMiddleware(BaseHTTPMiddleware):
         call_next: RequestResponseEndpoint,
     ) -> Response:
         response = await call_next(request)
-        requested_version = _extract_version_from_path(request.url.path) or self.config.default_version
+        requested_version = (
+            _extract_version_from_path(request.url.path) or self.config.default_version
+        )
         response.headers.setdefault("X-API-Version", requested_version)
         response.headers.setdefault("X-Constitutional-Hash", CONSTITUTIONAL_HASH)
         if requested_version in self.config.deprecated_versions:
@@ -59,7 +61,9 @@ class APIVersioningMiddleware(BaseHTTPMiddleware):
 class DeprecationNoticeMiddleware(BaseHTTPMiddleware):
     """Pass-through middleware that adds a basic deprecation header when needed."""
 
-    def __init__(self, app: object, deprecated_routes: frozenset[str] | set[str] | None = None) -> None:
+    def __init__(
+        self, app: object, deprecated_routes: frozenset[str] | set[str] | None = None
+    ) -> None:
         super().__init__(app)
         self.deprecated_routes = set(deprecated_routes or ())
 

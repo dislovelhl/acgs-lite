@@ -126,6 +126,7 @@ class _FakeTenant:
 # Governance engine fixture
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture()
 def _patch_externals():
     with (
@@ -1193,9 +1194,7 @@ class TestUpdateRiverModelExtended:
 
     def test_river_with_empty_temporal_patterns(self, engine, mocks):
         mock_model = MagicMock()
-        mock_model.learn_from_feedback.return_value = SimpleNamespace(
-            success=True, total_samples=5
-        )
+        mock_model.learn_from_feedback.return_value = SimpleNamespace(success=True, total_samples=5)
         mock_model.adapter.is_ready = False
         engine.river_model = mock_model
 

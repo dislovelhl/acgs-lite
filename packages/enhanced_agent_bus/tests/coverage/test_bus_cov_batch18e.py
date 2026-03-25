@@ -187,9 +187,7 @@ class TestHealthRoutes:
 
     async def test_readiness_check_with_invalid_probe_hash(self, app, client):
         app.state.agent_bus = MagicMock()
-        resp = await client.get(
-            "/health/ready", headers={"X-Constitutional-Hash": "badhash"}
-        )
+        resp = await client.get("/health/ready", headers={"X-Constitutional-Hash": "badhash"})
         assert resp.status_code == 503
         data = resp.json()
         assert data["checks"]["constitutional_hash_probe_header"] == "down"
@@ -345,9 +343,11 @@ class TestGracefulRestarter:
         restarter = GracefulRestarter(store=store, bus=bus)
         # Use very short drain timeout to trigger timeout path
         thresholds = _make_thresholds(drain_timeout=5)
+
         # Patch drain to always timeout
         async def _slow_drain(agent_id):
             await asyncio.sleep(100)
+
         bus.drain = _slow_drain
 
         thresholds_fast = AgentHealthThresholds(drain_timeout_seconds=5)
@@ -612,26 +612,22 @@ class TestFeedbackKafkaConsumerInit:
 class TestFeedbackKafkaConsumerCheckDeps:
     def test_returns_false_when_kafka_unavailable(self):
         consumer = FeedbackKafkaConsumer()
-        with patch(
-            "enhanced_agent_bus.online_learning_infra.consumer.KAFKA_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.online_learning_infra.consumer.KAFKA_AVAILABLE", False):
             assert consumer._check_dependencies() is False
 
     def test_returns_false_when_river_unavailable(self):
         consumer = FeedbackKafkaConsumer()
-        with patch(
-            "enhanced_agent_bus.online_learning_infra.consumer.KAFKA_AVAILABLE", True
-        ), patch(
-            "enhanced_agent_bus.online_learning_infra.consumer.RIVER_AVAILABLE", False
+        with (
+            patch("enhanced_agent_bus.online_learning_infra.consumer.KAFKA_AVAILABLE", True),
+            patch("enhanced_agent_bus.online_learning_infra.consumer.RIVER_AVAILABLE", False),
         ):
             assert consumer._check_dependencies() is False
 
     def test_returns_true_when_all_available(self):
         consumer = FeedbackKafkaConsumer()
-        with patch(
-            "enhanced_agent_bus.online_learning_infra.consumer.KAFKA_AVAILABLE", True
-        ), patch(
-            "enhanced_agent_bus.online_learning_infra.consumer.RIVER_AVAILABLE", True
+        with (
+            patch("enhanced_agent_bus.online_learning_infra.consumer.KAFKA_AVAILABLE", True),
+            patch("enhanced_agent_bus.online_learning_infra.consumer.RIVER_AVAILABLE", True),
         ):
             assert consumer._check_dependencies() is True
 
@@ -975,9 +971,7 @@ class TestProviderHealthScorer:
 
     async def test_record_quality_score(self):
         scorer = ProviderHealthScorer()
-        await scorer.record_request(
-            "openai", latency_ms=50.0, success=True, quality_score=0.9
-        )
+        await scorer.record_request("openai", latency_ms=50.0, success=True, quality_score=0.9)
         score = scorer.get_health_score("openai")
         assert score.metrics.avg_quality_score == 0.9
 
@@ -1042,9 +1036,7 @@ class TestProactiveFailoverManager:
         scorer = ProviderHealthScorer()
         registry = MagicMock()
         registry.find_capable_providers.return_value = []
-        return ProactiveFailoverManager(
-            health_scorer=scorer, capability_registry=registry
-        )
+        return ProactiveFailoverManager(health_scorer=scorer, capability_registry=registry)
 
     def test_set_primary_provider(self):
         mgr = self._make_manager()
@@ -1073,9 +1065,7 @@ class TestProactiveFailoverManager:
             (provider_a, 1.0),
             (provider_b, 0.9),
         ]
-        mgr = ProactiveFailoverManager(
-            health_scorer=scorer, capability_registry=registry
-        )
+        mgr = ProactiveFailoverManager(health_scorer=scorer, capability_registry=registry)
         chain = mgr.build_fallback_chain("openai", [])
         assert "anthropic" in chain
         assert "google" in chain
@@ -1086,9 +1076,7 @@ class TestProactiveFailoverManager:
         provider_a = MagicMock()
         provider_a.provider_id = "anthropic"
         registry.find_capable_providers.return_value = [(provider_a, 1.0)]
-        mgr = ProactiveFailoverManager(
-            health_scorer=scorer, capability_registry=registry
-        )
+        mgr = ProactiveFailoverManager(health_scorer=scorer, capability_registry=registry)
         provider, failed_over = await mgr.check_and_failover("tenant-1", [])
         assert provider == "anthropic"
         assert failed_over is False
@@ -1103,9 +1091,7 @@ class TestProactiveFailoverManager:
         # Record a healthy request
         await scorer.record_request("openai", latency_ms=50.0, success=True)
 
-        mgr = ProactiveFailoverManager(
-            health_scorer=scorer, capability_registry=MagicMock()
-        )
+        mgr = ProactiveFailoverManager(health_scorer=scorer, capability_registry=MagicMock())
         mgr.set_primary_provider("tenant-1", "openai")
 
         provider, failed_over = await mgr.check_and_failover("tenant-1", [])
@@ -1120,9 +1106,7 @@ class TestProactiveFailoverManager:
         # Keep anthropic healthy
         await scorer.record_request("anthropic", latency_ms=50.0, success=True)
 
-        mgr = ProactiveFailoverManager(
-            health_scorer=scorer, capability_registry=MagicMock()
-        )
+        mgr = ProactiveFailoverManager(health_scorer=scorer, capability_registry=MagicMock())
         mgr.set_primary_provider("tenant-1", "openai")
         mgr.set_fallback_chain("openai", ["anthropic"])
 
@@ -1136,9 +1120,7 @@ class TestProactiveFailoverManager:
         for _ in range(10):
             await scorer.record_request("openai", latency_ms=30.0, success=True)
 
-        mgr = ProactiveFailoverManager(
-            health_scorer=scorer, capability_registry=MagicMock()
-        )
+        mgr = ProactiveFailoverManager(health_scorer=scorer, capability_registry=MagicMock())
         mgr.set_primary_provider("tenant-1", "openai")
         mgr._active_failovers["tenant-1"] = "anthropic"
 
@@ -1153,9 +1135,7 @@ class TestProactiveFailoverManager:
             await scorer.record_request("openai", latency_ms=5000.0, success=False)
             await scorer.record_request("anthropic", latency_ms=5000.0, success=False)
 
-        mgr = ProactiveFailoverManager(
-            health_scorer=scorer, capability_registry=MagicMock()
-        )
+        mgr = ProactiveFailoverManager(health_scorer=scorer, capability_registry=MagicMock())
         mgr.set_primary_provider("tenant-1", "openai")
         mgr.set_fallback_chain("openai", ["anthropic"])
 
@@ -1351,9 +1331,7 @@ class TestRequestHedgingManager:
         async def execute_fn(provider_id: str):
             return f"response-{provider_id}"
 
-        winner, result = await mgr.execute_hedged(
-            "req-1", ["openai", "anthropic"], execute_fn
-        )
+        winner, result = await mgr.execute_hedged("req-1", ["openai", "anthropic"], execute_fn)
         assert winner in ("openai", "anthropic")
         assert "response-" in result
 
@@ -1374,9 +1352,7 @@ class TestRequestHedgingManager:
                 raise ConnectionError("failed")
             return f"response-{provider_id}"
 
-        winner, result = await mgr.execute_hedged(
-            "req-2", ["openai", "anthropic"], execute_fn
-        )
+        winner, result = await mgr.execute_hedged("req-2", ["openai", "anthropic"], execute_fn)
         assert winner == "anthropic"
 
     async def test_execute_hedged_all_fail(self):

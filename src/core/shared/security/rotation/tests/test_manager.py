@@ -214,6 +214,7 @@ class TestRotateSecret:
     @pytest.mark.asyncio
     async def test_rotate_with_audit_callback(self, backend):
         audit_events = []
+
         async def audit_cb(event):
             audit_events.append(event)
 

@@ -54,7 +54,9 @@ class CohortMetrics:
             if prediction == actual:
                 self.correct_predictions += 1
             self.accuracy = (
-                self.correct_predictions / self.total_predictions if self.total_predictions > 0 else 0.0
+                self.correct_predictions / self.total_predictions
+                if self.total_predictions > 0
+                else 0.0
             )
 
 
@@ -101,4 +103,3 @@ class PromotionResult:
     promoted_at: datetime | None = None
     error_message: str | None = None
     comparison: MetricsComparison | None = None
-

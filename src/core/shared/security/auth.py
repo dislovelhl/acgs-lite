@@ -71,9 +71,7 @@ _JWT_SECRET_ENV_KEYS = ("JWT_SECRET", "JWT_SECRET_KEY")
 _JWT_PRIVATE_KEY_ENV_KEY = "JWT_PRIVATE_KEY"
 _JWT_PUBLIC_KEY_ENV_KEY = "JWT_PUBLIC_KEY"
 _JWT_ALGORITHM_ENV_KEY = "JWT_ALGORITHM"
-_ALLOWED_JWT_ALGORITHMS = frozenset(
-    {"RS256", "RS384", "RS512", "ES256", "ES384", "EdDSA", "HS256"}
-)
+_ALLOWED_JWT_ALGORITHMS = frozenset({"RS256", "RS384", "RS512", "ES256", "ES384", "EdDSA", "HS256"})
 _JWT_ALGORITHM_CANONICAL_MAP = {
     algorithm.lower(): algorithm for algorithm in _ALLOWED_JWT_ALGORITHMS
 }
@@ -119,9 +117,7 @@ def _current_jwt_secret() -> str | None:
 def _current_jwt_private_key() -> str | None:
     configured = (os.getenv(_JWT_PRIVATE_KEY_ENV_KEY) or "").strip()
     if configured:
-        loaded = load_key_material(
-            configured, error_code="JWT_KEY_FILE_READ_FAILED"
-        )
+        loaded = load_key_material(configured, error_code="JWT_KEY_FILE_READ_FAILED")
         return loaded if loaded else None
 
     local_private_key = getattr(settings, "jwt_private_key", "")
@@ -134,9 +130,7 @@ def _current_jwt_private_key() -> str | None:
 def _current_jwt_public_key() -> str | None:
     configured = (os.getenv(_JWT_PUBLIC_KEY_ENV_KEY) or "").strip()
     if configured:
-        loaded = load_key_material(
-            configured, error_code="JWT_KEY_FILE_READ_FAILED"
-        )
+        loaded = load_key_material(configured, error_code="JWT_KEY_FILE_READ_FAILED")
         return loaded if loaded else None
 
     local_public_key = getattr(settings, "jwt_public_key", "")
@@ -369,9 +363,7 @@ async def get_current_user(
                     detail="Token revocation backend unavailable",
                 )
         elif await revocation_service.is_token_revoked(claims.jti):
-            logger.warning(
-                "Revoked token used: jti=%s sub=%s", claims.jti[:8], claims.sub
-            )
+            logger.warning("Revoked token used: jti=%s sub=%s", claims.jti[:8], claims.sub)
             raise HTTPException(status_code=401, detail="Token has been revoked")
     except HTTPException:
         raise

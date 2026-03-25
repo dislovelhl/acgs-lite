@@ -1307,8 +1307,6 @@ class TestAllExports:
     def test_all_names_importable(self) -> None:
         import importlib
 
-        mod = importlib.import_module(
-            "enhanced_agent_bus.deliberation_layer.deliberation_queue"
-        )
+        mod = importlib.import_module("enhanced_agent_bus.deliberation_layer.deliberation_queue")
         for name in mod.__all__:
             assert hasattr(mod, name), f"Missing export: {name}"

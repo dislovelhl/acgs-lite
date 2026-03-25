@@ -224,6 +224,7 @@ class _FastAuditLog:
     def __len__(self) -> int:
         return len(self._records)
 
+
 _request_counter = itertools.count(1)
 
 
@@ -563,8 +564,17 @@ class GovernanceEngine(BatchValidationMixin):
         if self._rust_validator is not None:
             _h = self._hot
             self._hot = (
-                _h[0], _h[1], _h[2], _h[3], _h[4], _h[5],
-                _h[6], _h[7], _h[8], _h[9], self._rust_validator,
+                _h[0],
+                _h[1],
+                _h[2],
+                _h[3],
+                _h[4],
+                _h[5],
+                _h[6],
+                _h[7],
+                _h[8],
+                _h[9],
+                self._rust_validator,
             )
         # exp81: Warm up Rust dual-automaton + regex dispatch to prime CPU
         # instruction caches and CPython inline caches for the PyO3 call path.
@@ -644,18 +654,13 @@ class GovernanceEngine(BatchValidationMixin):
                     ),
                     (
                         "schedule model retraining",
-                        {
-                            "action_description": (
-                                "hide AI involvement in customer credit denial"
-                            )
-                        },
+                        {"action_description": ("hide AI involvement in customer credit denial")},
                     ),
                     (
                         "assess patient record handling controls for compliance gaps",
                         {
                             "action_description": (
-                                "assess clinical workflow safeguards for improvement "
-                                "planning"
+                                "assess clinical workflow safeguards for improvement planning"
                             )
                         },
                     ),
@@ -1065,9 +1070,7 @@ class GovernanceEngine(BatchValidationMixin):
                                     )
                                 if violations is None:
                                     violations = []
-                                violations.append(
-                                    Violation(rid, rtxt, rsev, action_200, rcat)
-                                )
+                                violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
                 for rule_idx, pat in self._no_anchor_patterns:
                     _bit = 1 << rule_idx
                     if not (fired & _bit) and pat.search(text_lower):
@@ -1340,7 +1343,8 @@ class GovernanceEngine(BatchValidationMixin):
             # exp236: only pass governance-relevant keys to validate_full(); metadata
             # keys (source, rule, env, risk) carry no violation text.
             _ctx_pairs = [
-                (k, v) for k, v in context.items()
+                (k, v)
+                for k, v in context.items()
                 if isinstance(v, str) and k in ("action_detail", "action_description")
             ]
             if not _ctx_pairs:

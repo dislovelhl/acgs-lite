@@ -132,10 +132,15 @@ class TestTensorRTOptimizerLoadTorchModel:
             mod.TORCH_AVAILABLE = True
             mod.torch = mock_torch
 
-            with patch.dict("sys.modules", {
-                "transformers": MagicMock(AutoModel=MagicMock(from_pretrained=MagicMock(return_value=mock_model))),
-                "accelerate": MagicMock(),
-            }):
+            with patch.dict(
+                "sys.modules",
+                {
+                    "transformers": MagicMock(
+                        AutoModel=MagicMock(from_pretrained=MagicMock(return_value=mock_model))
+                    ),
+                    "accelerate": MagicMock(),
+                },
+            ):
                 result = opt._load_torch_model()
                 assert result is mock_model
                 mock_model.eval.assert_called_once()
@@ -158,10 +163,15 @@ class TestTensorRTOptimizerLoadTorchModel:
             mod.TORCH_AVAILABLE = True
             mod.torch = mock_torch
 
-            with patch.dict("sys.modules", {
-                "transformers": MagicMock(AutoModel=MagicMock(from_pretrained=MagicMock(return_value=mock_model))),
-                "accelerate": MagicMock(),
-            }):
+            with patch.dict(
+                "sys.modules",
+                {
+                    "transformers": MagicMock(
+                        AutoModel=MagicMock(from_pretrained=MagicMock(return_value=mock_model))
+                    ),
+                    "accelerate": MagicMock(),
+                },
+            ):
                 opt._load_torch_model()
                 mock_model.cuda.assert_called_once()
         finally:
@@ -241,9 +251,14 @@ class TestExportOnnx:
             mod.ONNX_AVAILABLE = True
             mod.torch = mock_torch
 
-            opt._load_tokenizer = MagicMock(return_value=MagicMock(return_value={
-                "input_ids": MagicMock(), "attention_mask": MagicMock(),
-            }))
+            opt._load_tokenizer = MagicMock(
+                return_value=MagicMock(
+                    return_value={
+                        "input_ids": MagicMock(),
+                        "attention_mask": MagicMock(),
+                    }
+                )
+            )
             opt._load_torch_model = MagicMock(return_value=MagicMock())
 
             with patch.dict("sys.modules", {"onnx": mock_onnx_mod}):
@@ -686,7 +701,8 @@ class TestLoadOnnxRuntime:
 
         mock_ort = MagicMock()
         mock_ort.get_available_providers.return_value = [
-            "CUDAExecutionProvider", "CPUExecutionProvider",
+            "CUDAExecutionProvider",
+            "CPUExecutionProvider",
         ]
         mock_ort.InferenceSession.return_value = MagicMock()
 
@@ -956,8 +972,12 @@ class TestModuleFunctions:
         )
 
         with patch.object(TensorRTOptimizer, "__init__", return_value=None):
-            with patch.object(TensorRTOptimizer, "status", new_callable=PropertyMock, return_value={"a": 1}):
-                with patch.object(TensorRTOptimizer, "export_onnx", side_effect=RuntimeError("no torch")):
+            with patch.object(
+                TensorRTOptimizer, "status", new_callable=PropertyMock, return_value={"a": 1}
+            ):
+                with patch.object(
+                    TensorRTOptimizer, "export_onnx", side_effect=RuntimeError("no torch")
+                ):
                     result = optimize_distilbert(force=True)
                     assert "onnx_error" in result
                     assert result["onnx_error"] == "no torch"
@@ -970,11 +990,21 @@ class TestModuleFunctions:
         )
 
         with patch.object(TensorRTOptimizer, "__init__", return_value=None):
-            with patch.object(TensorRTOptimizer, "status", new_callable=PropertyMock, return_value={"a": 1}):
-                with patch.object(TensorRTOptimizer, "export_onnx", return_value=Path("/fake.onnx")):
-                    with patch.object(TensorRTOptimizer, "load_tensorrt_engine", return_value=False):
-                        with patch.object(TensorRTOptimizer, "load_onnx_runtime", return_value=False):
-                            with patch.object(TensorRTOptimizer, "benchmark", side_effect=RuntimeError("no")):
+            with patch.object(
+                TensorRTOptimizer, "status", new_callable=PropertyMock, return_value={"a": 1}
+            ):
+                with patch.object(
+                    TensorRTOptimizer, "export_onnx", return_value=Path("/fake.onnx")
+                ):
+                    with patch.object(
+                        TensorRTOptimizer, "load_tensorrt_engine", return_value=False
+                    ):
+                        with patch.object(
+                            TensorRTOptimizer, "load_onnx_runtime", return_value=False
+                        ):
+                            with patch.object(
+                                TensorRTOptimizer, "benchmark", side_effect=RuntimeError("no")
+                            ):
                                 result = optimize_distilbert()
                                 assert "tensorrt_skipped" in result
                                 assert result["active_backend"] == "pytorch"
@@ -992,11 +1022,21 @@ class TestModuleFunctions:
             mod.TENSORRT_AVAILABLE = True
 
             with patch.object(TensorRTOptimizer, "__init__", return_value=None):
-                with patch.object(TensorRTOptimizer, "status", new_callable=PropertyMock, return_value={"a": 1}):
-                    with patch.object(TensorRTOptimizer, "export_onnx", return_value=Path("/f.onnx")):
-                        with patch.object(TensorRTOptimizer, "convert_to_tensorrt", return_value=Path("/f.trt")):
-                            with patch.object(TensorRTOptimizer, "load_tensorrt_engine", return_value=True):
-                                with patch.object(TensorRTOptimizer, "benchmark", return_value={"p99": 1.0}):
+                with patch.object(
+                    TensorRTOptimizer, "status", new_callable=PropertyMock, return_value={"a": 1}
+                ):
+                    with patch.object(
+                        TensorRTOptimizer, "export_onnx", return_value=Path("/f.onnx")
+                    ):
+                        with patch.object(
+                            TensorRTOptimizer, "convert_to_tensorrt", return_value=Path("/f.trt")
+                        ):
+                            with patch.object(
+                                TensorRTOptimizer, "load_tensorrt_engine", return_value=True
+                            ):
+                                with patch.object(
+                                    TensorRTOptimizer, "benchmark", return_value={"p99": 1.0}
+                                ):
                                     result = optimize_distilbert()
                                     assert "tensorrt_convert" in result["steps_completed"]
                                     assert result["active_backend"] == "tensorrt"
@@ -1011,11 +1051,21 @@ class TestModuleFunctions:
 
         with patch(f"{MOD_TRT}.TENSORRT_AVAILABLE", False):
             with patch.object(TensorRTOptimizer, "__init__", return_value=None):
-                with patch.object(TensorRTOptimizer, "status", new_callable=PropertyMock, return_value={"a": 1}):
-                    with patch.object(TensorRTOptimizer, "export_onnx", return_value=Path("/f.onnx")):
-                        with patch.object(TensorRTOptimizer, "load_tensorrt_engine", return_value=False):
-                            with patch.object(TensorRTOptimizer, "load_onnx_runtime", return_value=True):
-                                with patch.object(TensorRTOptimizer, "benchmark", return_value={"p99": 5.0}):
+                with patch.object(
+                    TensorRTOptimizer, "status", new_callable=PropertyMock, return_value={"a": 1}
+                ):
+                    with patch.object(
+                        TensorRTOptimizer, "export_onnx", return_value=Path("/f.onnx")
+                    ):
+                        with patch.object(
+                            TensorRTOptimizer, "load_tensorrt_engine", return_value=False
+                        ):
+                            with patch.object(
+                                TensorRTOptimizer, "load_onnx_runtime", return_value=True
+                            ):
+                                with patch.object(
+                                    TensorRTOptimizer, "benchmark", return_value={"p99": 5.0}
+                                ):
                                     result = optimize_distilbert()
                                     assert result["active_backend"] == "onnxruntime"
 
@@ -1031,12 +1081,26 @@ class TestModuleFunctions:
             mod.TENSORRT_AVAILABLE = True
 
             with patch.object(TensorRTOptimizer, "__init__", return_value=None):
-                with patch.object(TensorRTOptimizer, "status", new_callable=PropertyMock, return_value={"a": 1}):
-                    with patch.object(TensorRTOptimizer, "export_onnx", return_value=Path("/f.onnx")):
-                        with patch.object(TensorRTOptimizer, "convert_to_tensorrt", side_effect=RuntimeError("fail")):
-                            with patch.object(TensorRTOptimizer, "load_tensorrt_engine", return_value=False):
-                                with patch.object(TensorRTOptimizer, "load_onnx_runtime", return_value=False):
-                                    with patch.object(TensorRTOptimizer, "benchmark", return_value={"p99": 5.0}):
+                with patch.object(
+                    TensorRTOptimizer, "status", new_callable=PropertyMock, return_value={"a": 1}
+                ):
+                    with patch.object(
+                        TensorRTOptimizer, "export_onnx", return_value=Path("/f.onnx")
+                    ):
+                        with patch.object(
+                            TensorRTOptimizer,
+                            "convert_to_tensorrt",
+                            side_effect=RuntimeError("fail"),
+                        ):
+                            with patch.object(
+                                TensorRTOptimizer, "load_tensorrt_engine", return_value=False
+                            ):
+                                with patch.object(
+                                    TensorRTOptimizer, "load_onnx_runtime", return_value=False
+                                ):
+                                    with patch.object(
+                                        TensorRTOptimizer, "benchmark", return_value={"p99": 5.0}
+                                    ):
                                         result = optimize_distilbert()
                                         assert "tensorrt_error" in result
         finally:
@@ -1054,12 +1118,24 @@ class TestModuleFunctions:
             mod.TENSORRT_AVAILABLE = True
 
             with patch.object(TensorRTOptimizer, "__init__", return_value=None):
-                with patch.object(TensorRTOptimizer, "status", new_callable=PropertyMock, return_value={"a": 1}):
-                    with patch.object(TensorRTOptimizer, "export_onnx", return_value=Path("/f.onnx")):
-                        with patch.object(TensorRTOptimizer, "convert_to_tensorrt", return_value=None):
-                            with patch.object(TensorRTOptimizer, "load_tensorrt_engine", return_value=False):
-                                with patch.object(TensorRTOptimizer, "load_onnx_runtime", return_value=False):
-                                    with patch.object(TensorRTOptimizer, "benchmark", return_value={"p99": 5.0}):
+                with patch.object(
+                    TensorRTOptimizer, "status", new_callable=PropertyMock, return_value={"a": 1}
+                ):
+                    with patch.object(
+                        TensorRTOptimizer, "export_onnx", return_value=Path("/f.onnx")
+                    ):
+                        with patch.object(
+                            TensorRTOptimizer, "convert_to_tensorrt", return_value=None
+                        ):
+                            with patch.object(
+                                TensorRTOptimizer, "load_tensorrt_engine", return_value=False
+                            ):
+                                with patch.object(
+                                    TensorRTOptimizer, "load_onnx_runtime", return_value=False
+                                ):
+                                    with patch.object(
+                                        TensorRTOptimizer, "benchmark", return_value={"p99": 5.0}
+                                    ):
                                         result = optimize_distilbert()
                                         assert "tensorrt_convert" not in result["steps_completed"]
         finally:
@@ -1437,9 +1513,7 @@ class TestBulkOperations:
         repo = _make_repo(session)
 
         with patch(f"{MOD_DB}.BulkOperations.bulk_insert", new_callable=AsyncMock):
-            tenants = await repo.create_tenants_bulk_optimized(
-                [{"name": "A", "slug": "a"}]
-            )
+            tenants = await repo.create_tenants_bulk_optimized([{"name": "A", "slug": "a"}])
             assert len(tenants) == 1
 
     async def test_create_bulk_with_cache(self):
@@ -1453,9 +1527,7 @@ class TestBulkOperations:
         repo._tenant_cache = mock_cache
 
         with patch(f"{MOD_DB}.BulkOperations.bulk_insert", new_callable=AsyncMock):
-            tenants = await repo.create_tenants_bulk_optimized(
-                [{"name": "A", "slug": "a"}]
-            )
+            tenants = await repo.create_tenants_bulk_optimized([{"name": "A", "slug": "a"}])
             assert mock_cache.set.await_count == 2
 
     async def test_update_bulk(self):
@@ -1475,9 +1547,7 @@ class TestBulkOperations:
         repo._tenant_cache = mock_cache
 
         with patch(f"{MOD_DB}.BulkOperations.bulk_update", new_callable=AsyncMock, return_value=2):
-            count = await repo.update_tenants_bulk(
-                [{"tenant_id": "t1"}, {"tenant_id": "t2"}]
-            )
+            count = await repo.update_tenants_bulk([{"tenant_id": "t1"}, {"tenant_id": "t2"}])
             assert count == 2
             assert mock_cache.delete.await_count >= 2
 

@@ -310,9 +310,7 @@ class TestSemanticCoverage:
         constitution = Constitution.from_template("general")
         report = constitution.analyze_coverage_gaps()
         assert "transparency" in report["missing_domains"]
-        assert any(
-            "transparency" in recommendation for recommendation in report["recommendations"]
-        )
+        assert any("transparency" in recommendation for recommendation in report["recommendations"])
 
     def test_analyze_coverage_gaps_rejects_bad_threshold(self) -> None:
         constitution = Constitution.from_template("general")

@@ -33,7 +33,12 @@ from enhanced_agent_bus.mcp.types import MCPTool, MCPToolResult, MCPToolStatus
 # ---------------------------------------------------------------------------
 
 
-def _make_tool(name: str = "test_tool", tags: list[str] | None = None, server_id: str = "srv1", description: str = "A test tool") -> MCPTool:
+def _make_tool(
+    name: str = "test_tool",
+    tags: list[str] | None = None,
+    server_id: str = "srv1",
+    description: str = "A test tool",
+) -> MCPTool:
     return MCPTool(
         name=name,
         description=description,
@@ -43,7 +48,9 @@ def _make_tool(name: str = "test_tool", tags: list[str] | None = None, server_id
     )
 
 
-def _make_pool_mock(tools: list[MCPTool] | None = None, server_ids: list[str] | None = None) -> MagicMock:
+def _make_pool_mock(
+    tools: list[MCPTool] | None = None, server_ids: list[str] | None = None
+) -> MagicMock:
     pool = MagicMock()
     pool.client_count = len(server_ids or ["srv1"])
     pool.server_ids = MagicMock(return_value=server_ids or ["srv1"])

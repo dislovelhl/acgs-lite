@@ -5,7 +5,6 @@ Constitutional Hash: 608508a9bd224290
 Task 7.4: GET /tenants/{tenant_id}/integrations with credential redaction
 """
 
-
 from .conftest import (
     CONSTITUTIONAL_HASH,
     IntegrationType,
