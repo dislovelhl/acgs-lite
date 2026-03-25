@@ -1,0 +1,56 @@
+name: Build LaTeX PDFs
+
+on:
+  push:
+    paths:
+      - 'docs/generated/**'
+      - '.github/workflows/docs-pdf.yml'
+  pull_request:
+    paths:
+      - 'docs/generated/**'
+      - '.github/workflows/docs-pdf.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: docs-pdf-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-pdf:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [generic, neurips, icml]
+        submission: [review]
+    defaults:
+      run:
+        working-directory: docs/generated
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install LaTeX toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            latexmk \
+            lmodern \
+            texlive-fonts-recommended \
+            texlive-latex-base \
+            texlive-latex-extra \
+            texlive-latex-recommended \
+            texlive-pictures
+
+      - name: Show detected tools
+        run: make check-tools
+
+      - name: Build ${{ matrix.mode }} (${{ matrix.submission }}) PDF
+        run: make paper MODE=${{ matrix.mode }} SUBMISSION=${{ matrix.submission }}
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: acgs-paper-${{ matrix.mode }}-${{ matrix.submission }}
+          path: docs/generated/dist/acgs_arxiv_skeleton-${{ matrix.mode }}-${{ matrix.submission }}.pdf
+          if-no-files-found: error

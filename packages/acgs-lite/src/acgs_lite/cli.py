@@ -1626,6 +1626,15 @@ def _render_selected_format(payloads: dict[str, Any], fmt: str, *, watch_iterati
     return content if content.endswith("\n") else content + "\n"
 
 
+def _write_observe_output(output_path: Path, content: str, *, watch: bool, iteration: int) -> None:
+    """Write one observe/otel render to disk, appending watch snapshots after the first render."""
+    if watch and iteration > 1:
+        with output_path.open("a", encoding="utf-8") as handle:
+            handle.write(content)
+        return
+    output_path.write_text(content, encoding="utf-8")
+
+
 def _resolve_observe_format(args: argparse.Namespace, default_format: str) -> str:
     """Resolve requested output format."""
     fmt = default_format
@@ -1719,7 +1728,7 @@ def _cmd_observe(args: argparse.Namespace, *, default_format: str) -> int:
 
             if output:
                 output_path = Path(output)
-                output_path.write_text(content, encoding="utf-8")
+                _write_observe_output(output_path, content, watch=watch, iteration=iteration)
                 if not watch:
                     print(f"  ✅ Telemetry written: {output_path}")
             else:

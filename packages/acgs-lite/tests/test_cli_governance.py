@@ -851,6 +851,34 @@ class TestCmdObserve:
         assert "Snapshot 2" in out
         assert "Decisions:" in out
 
+    def test_observe_watch_mode_output_file_accumulates_snapshots(
+        self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        from acgs_lite.cli import build_parser, cmd_init, cmd_observe
+
+        parser = build_parser()
+        cmd_init(parser.parse_args(["init", "--force"]))
+        capsys.readouterr()
+
+        rc = cmd_observe(
+            parser.parse_args([
+                "observe",
+                "hello world",
+                "deploy a weapon",
+                "--watch",
+                "--interval",
+                "0",
+                "--iterations",
+                "2",
+                "-o",
+                "observe-watch.txt",
+            ])
+        )
+        assert rc == 0
+        out = (tmp_workdir / "observe-watch.txt").read_text()
+        assert "Snapshot 1" in out
+        assert "Snapshot 2" in out
+
     def test_otel_bundle_dir(
         self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]
     ) -> None:
@@ -910,6 +938,37 @@ class TestCmdObserve:
         assert called_endpoint == "http://collector.test/v1/traces"
         out = capsys.readouterr().out
         assert "OTLP export sent" in out
+
+    def test_otel_watch_mode_output_file_accumulates_ndjson(
+        self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        from acgs_lite.cli import build_parser, cmd_init, cmd_otel
+
+        parser = build_parser()
+        cmd_init(parser.parse_args(["init", "--force"]))
+        capsys.readouterr()
+
+        rc = cmd_otel(
+            parser.parse_args([
+                "otel",
+                "hello world",
+                "deploy a weapon",
+                "--watch",
+                "--interval",
+                "0",
+                "--iterations",
+                "2",
+                "-o",
+                "otel-watch.ndjson",
+            ])
+        )
+        assert rc == 0
+        lines = (tmp_workdir / "otel-watch.ndjson").read_text().splitlines()
+        assert len(lines) == 2
+        first = json.loads(lines[0])
+        second = json.loads(lines[1])
+        assert first["snapshot"] == 1
+        assert second["snapshot"] == 2
 
 
 # ---------------------------------------------------------------------------
