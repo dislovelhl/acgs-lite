@@ -29,16 +29,10 @@ mlruns/
 # AI agent / coding-assistant dev stacks (local tooling, not project source)
 .gstack/
 .openclaw/
-.agents/skills/gstack/
-.agents/skills/gstack-*
-.agents/skills/package-health-governance/
-.agents/skills/acgs-codex-bootstrap/
-.agents/skills/README.md
-.claude/commands/
-.claude/rules/
-.claude/evals/README.md
-.claude/evals/test-feature.md
-.python-version
+.agents/
+.claude/
+.mcp.json
+.playwright-cli/
 
 # Research / paper artefacts (local LaTeX workspace)
 src/research/docs/research/
@@ -124,3 +118,4 @@ src/acgs_lite/
 src/fix_imports.py
 src/split_engine.py
 .gstack/
+.python-version
