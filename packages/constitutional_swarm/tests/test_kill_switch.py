@@ -146,10 +146,7 @@ class TestMeshThreadSafety:
             except Exception as e:
                 errors.append(e)
 
-        threads = [
-            threading.Thread(target=register_batch, args=(i * 20, 20))
-            for i in range(5)
-        ]
+        threads = [threading.Thread(target=register_batch, args=(i * 20, 20)) for i in range(5)]
         for t in threads:
             t.start()
         for t in threads:
@@ -179,10 +176,7 @@ class TestMeshThreadSafety:
                 with lock:
                     errors.append(e)
 
-        threads = [
-            threading.Thread(target=validate_batch, args=(i * 10, 10))
-            for i in range(4)
-        ]
+        threads = [threading.Thread(target=validate_batch, args=(i * 10, 10)) for i in range(4)]
         for t in threads:
             t.start()
         for t in threads:

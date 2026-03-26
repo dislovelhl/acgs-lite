@@ -411,9 +411,7 @@ class TestTaskDAG:
     def _sample_dag(self) -> TaskDAG:
         """Create a diamond-shaped DAG: A → B,C → D."""
         dag = TaskDAG(goal="Build feature X")
-        dag = dag.add_node(
-            TaskNode(node_id="A", title="Design", domain="architecture")
-        )
+        dag = dag.add_node(TaskNode(node_id="A", title="Design", domain="architecture"))
         dag = dag.add_node(
             TaskNode(
                 node_id="B",
@@ -529,9 +527,7 @@ class TestSwarmExecutor:
 
         # Build DAG: A → B,C → D
         dag = TaskDAG(goal="Build feature")
-        dag = dag.add_node(
-            TaskNode(node_id="A", title="Design", domain="architecture")
-        )
+        dag = dag.add_node(TaskNode(node_id="A", title="Design", domain="architecture"))
         dag = dag.add_node(
             TaskNode(node_id="B", title="Backend", domain="backend", depends_on=("A",))
         )

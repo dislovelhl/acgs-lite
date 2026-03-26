@@ -92,6 +92,4 @@ class TestSwarmBenchmark:
         large = bench.run(num_agents=100, num_domains=4, dag_depth=3, dag_width=5)
 
         ratio = large.total_time_ms / small.total_time_ms if small.total_time_ms > 0 else 0
-        assert ratio < 20, (
-            f"Scaling ratio {ratio:.1f}x for 10x agents — suggests O(N^2) overhead"
-        )
+        assert ratio < 20, f"Scaling ratio {ratio:.1f}x for 10x agents — suggests O(N^2) overhead"

@@ -16,6 +16,7 @@ try:
         ResearchOperatorControlSnapshot,
     )
 except ImportError:
+
     class ResearchOperatorControlSnapshot(BaseModel):
         """Fallback snapshot model when self_evolution is unavailable."""
 
@@ -35,6 +36,8 @@ except ImportError:
         async def request_resume(self, user_id: str, reason: str | None) -> dict[str, object]: ...
 
         async def request_stop(self, user_id: str, reason: str | None) -> dict[str, object]: ...
+
+
 from src.core.shared.security.auth import UserClaims, get_current_user
 from src.core.shared.structured_logging import get_logger
 

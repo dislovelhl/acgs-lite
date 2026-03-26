@@ -162,9 +162,7 @@ class BusConfiguration:
         if not self.constitutional_hash:
             self.constitutional_hash = CONSTITUTIONAL_HASH
         if self.governance_core_mode not in {"legacy", "shadow", "swarm_enforced"}:
-            raise ValueError(
-                "governance_core_mode must be one of: legacy, shadow, swarm_enforced"
-            )
+            raise ValueError("governance_core_mode must be one of: legacy, shadow, swarm_enforced")
 
     @staticmethod
     def _parse_bool(value: object) -> bool:

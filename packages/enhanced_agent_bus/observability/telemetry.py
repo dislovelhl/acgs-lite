@@ -156,9 +156,8 @@ class _CrossModuleNoOpType(type):
         instance_cls = instance.__class__
         if type.__instancecheck__(cls, instance):
             return True
-        return (
-            instance_cls.__name__ == cls.__name__
-            and instance_cls.__module__.endswith(".observability.telemetry")
+        return instance_cls.__name__ == cls.__name__ and instance_cls.__module__.endswith(
+            ".observability.telemetry"
         )
 
 

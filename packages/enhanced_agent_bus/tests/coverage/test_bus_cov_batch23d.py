@@ -61,6 +61,7 @@ from enhanced_agent_bus.verification_orchestrator import (
 # Helpers
 # =========================================================================
 
+
 def _make_features(**overrides) -> ImpactFeatures:
     defaults = dict(
         message_length=100,
@@ -106,6 +107,7 @@ def _make_msg(**overrides) -> AgentMessage:
 # SECTION 1: ToolRunnerSandbox tests
 # =========================================================================
 
+
 class TestSandboxConfig:
     def test_default_config(self):
         cfg = SandboxConfig()
@@ -140,9 +142,7 @@ class TestToolRunnerSandboxInit:
 class TestToolRunnerSandboxInitialize:
     async def test_initialize_docker_provider(self):
         sandbox = ToolRunnerSandbox(config=SandboxConfig(use_docker=True, use_firecracker=False))
-        with patch(
-            "enhanced_agent_bus.guardrails.sandbox.DockerSandboxProvider"
-        ) as mock_cls:
+        with patch("enhanced_agent_bus.guardrails.sandbox.DockerSandboxProvider") as mock_cls:
             mock_provider = AsyncMock()
             mock_provider.initialize = AsyncMock(return_value=True)
             mock_cls.return_value = mock_provider
@@ -153,9 +153,7 @@ class TestToolRunnerSandboxInitialize:
 
     async def test_initialize_firecracker_provider(self):
         sandbox = ToolRunnerSandbox(config=SandboxConfig(use_firecracker=True))
-        with patch(
-            "enhanced_agent_bus.guardrails.sandbox.FirecrackerSandboxProvider"
-        ) as mock_cls:
+        with patch("enhanced_agent_bus.guardrails.sandbox.FirecrackerSandboxProvider") as mock_cls:
             mock_provider = AsyncMock()
             mock_provider.initialize = AsyncMock(return_value=True)
             mock_cls.return_value = mock_provider
@@ -164,12 +162,8 @@ class TestToolRunnerSandboxInitialize:
             assert result is True
 
     async def test_initialize_mock_provider(self):
-        sandbox = ToolRunnerSandbox(
-            config=SandboxConfig(use_docker=False, use_firecracker=False)
-        )
-        with patch(
-            "enhanced_agent_bus.guardrails.sandbox.MockSandboxProvider"
-        ) as mock_cls:
+        sandbox = ToolRunnerSandbox(config=SandboxConfig(use_docker=False, use_firecracker=False))
+        with patch("enhanced_agent_bus.guardrails.sandbox.MockSandboxProvider") as mock_cls:
             mock_provider = AsyncMock()
             mock_provider.initialize = AsyncMock(return_value=True)
             mock_cls.return_value = mock_provider
@@ -185,11 +179,10 @@ class TestToolRunnerSandboxInitialize:
 
     async def test_initialize_fallback_on_provider_failure(self):
         sandbox = ToolRunnerSandbox(config=SandboxConfig(use_docker=True, use_firecracker=False))
-        with patch(
-            "enhanced_agent_bus.guardrails.sandbox.DockerSandboxProvider"
-        ) as docker_cls, patch(
-            "enhanced_agent_bus.guardrails.sandbox.MockSandboxProvider"
-        ) as mock_cls:
+        with (
+            patch("enhanced_agent_bus.guardrails.sandbox.DockerSandboxProvider") as docker_cls,
+            patch("enhanced_agent_bus.guardrails.sandbox.MockSandboxProvider") as mock_cls,
+        ):
             docker_provider = AsyncMock()
             docker_provider.initialize = AsyncMock(return_value=False)
             docker_cls.return_value = docker_provider
@@ -203,11 +196,10 @@ class TestToolRunnerSandboxInitialize:
 
     async def test_initialize_fallback_on_exception(self):
         sandbox = ToolRunnerSandbox(config=SandboxConfig(use_docker=True, use_firecracker=False))
-        with patch(
-            "enhanced_agent_bus.guardrails.sandbox.DockerSandboxProvider"
-        ) as docker_cls, patch(
-            "enhanced_agent_bus.guardrails.sandbox.MockSandboxProvider"
-        ) as mock_cls:
+        with (
+            patch("enhanced_agent_bus.guardrails.sandbox.DockerSandboxProvider") as docker_cls,
+            patch("enhanced_agent_bus.guardrails.sandbox.MockSandboxProvider") as mock_cls,
+        ):
             docker_cls.side_effect = RuntimeError("Docker unavailable")
 
             fallback_provider = AsyncMock()
@@ -256,9 +248,7 @@ class TestToolRunnerSandboxProcess:
         sandbox = ToolRunnerSandbox()
         mock_provider = AsyncMock()
         mock_provider.execute = AsyncMock(
-            return_value=SandboxExecutionResult(
-                success=True, output={"result": 42}, trace_id="t3"
-            )
+            return_value=SandboxExecutionResult(success=True, output={"result": 42}, trace_id="t3")
         )
         sandbox._provider = mock_provider
         sandbox._initialized = True
@@ -274,9 +264,7 @@ class TestToolRunnerSandboxProcess:
         sandbox = ToolRunnerSandbox()
         mock_provider = AsyncMock()
         mock_provider.execute = AsyncMock(
-            return_value=SandboxExecutionResult(
-                success=True, output={"ok": True}, trace_id="t4"
-            )
+            return_value=SandboxExecutionResult(success=True, output={"ok": True}, trace_id="t4")
         )
         sandbox._provider = mock_provider
         sandbox._initialized = True
@@ -378,9 +366,7 @@ class TestToolRunnerSandboxProcess:
 class TestExecuteInSandbox:
     async def test_execute_not_initialized_calls_initialize(self):
         sandbox = ToolRunnerSandbox()
-        with patch(
-            "enhanced_agent_bus.guardrails.sandbox.MockSandboxProvider"
-        ) as mock_cls:
+        with patch("enhanced_agent_bus.guardrails.sandbox.MockSandboxProvider") as mock_cls:
             mock_provider = AsyncMock()
             mock_provider.initialize = AsyncMock(return_value=True)
             mock_provider.execute = AsyncMock(
@@ -418,9 +404,11 @@ class TestExecuteInSandbox:
         assert request.data == {"input": "raw_string"}
 
     async def test_execute_passes_resource_limits(self):
-        sandbox = ToolRunnerSandbox(config=SandboxConfig(
-            cpu_limit=1.0, memory_limit_mb=1024, timeout_ms=5000, network_isolation=False
-        ))
+        sandbox = ToolRunnerSandbox(
+            config=SandboxConfig(
+                cpu_limit=1.0, memory_limit_mb=1024, timeout_ms=5000, network_isolation=False
+            )
+        )
         mock_provider = AsyncMock()
         mock_provider.execute = AsyncMock(
             return_value=SandboxExecutionResult(success=True, output={})
@@ -440,6 +428,7 @@ class TestExecuteInSandbox:
 # =========================================================================
 # SECTION 2: VerificationOrchestrator tests
 # =========================================================================
+
 
 class TestVerificationResult:
     def test_defaults(self):
@@ -468,6 +457,7 @@ class TestVerificationOrchestratorInit:
 class TestVerificationOrchestratorSDPC:
     def _mock_verifiers(self, orch):
         """Replace verifiers with async mocks that accept any args."""
+
         async def _mock_verify(*args, **kwargs):
             return {"is_valid": True, "confidence": 1.0, "results": []}
 
@@ -799,6 +789,7 @@ class TestVerificationOrchestratorVerify:
 # SECTION 3: AdaptiveThresholds tests
 # =========================================================================
 
+
 class TestAdaptiveThresholdsInit:
     def test_init_sets_base_thresholds(self):
         at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
@@ -943,15 +934,17 @@ class TestRetrainModel:
         at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         # Add only 50 samples (need 100 minimum)
         for _i in range(50):
-            at.training_data.append({
-                "features": [0.1] * 11,
-                "target": 0.05,
-                "timestamp": time.time(),
-                "impact_level": "medium",
-                "confidence": 0.8,
-                "outcome_success": True,
-                "human_feedback": None,
-            })
+            at.training_data.append(
+                {
+                    "features": [0.1] * 11,
+                    "target": 0.05,
+                    "timestamp": time.time(),
+                    "impact_level": "medium",
+                    "confidence": 0.8,
+                    "outcome_success": True,
+                    "human_feedback": None,
+                }
+            )
 
         at._retrain_model()
         assert at.model_trained is False
@@ -961,15 +954,17 @@ class TestRetrainModel:
         # Add 100 samples but all old
         old_time = time.time() - 200_000  # way older than 24h
         for _i in range(120):
-            at.training_data.append({
-                "features": [0.1] * 11,
-                "target": 0.05,
-                "timestamp": old_time,
-                "impact_level": "medium",
-                "confidence": 0.8,
-                "outcome_success": True,
-                "human_feedback": None,
-            })
+            at.training_data.append(
+                {
+                    "features": [0.1] * 11,
+                    "target": 0.05,
+                    "timestamp": old_time,
+                    "impact_level": "medium",
+                    "confidence": 0.8,
+                    "outcome_success": True,
+                    "human_feedback": None,
+                }
+            )
 
         at._retrain_model()
         assert at.model_trained is False
@@ -980,15 +975,17 @@ class TestRetrainModel:
 
         now = time.time()
         for i in range(120):
-            at.training_data.append({
-                "features": [float(i % 5) * 0.1 + j * 0.01 for j in range(11)],
-                "target": 0.05 + (i % 3) * 0.01,
-                "timestamp": now - i * 10,
-                "impact_level": "medium",
-                "confidence": 0.8,
-                "outcome_success": i % 2 == 0,
-                "human_feedback": None,
-            })
+            at.training_data.append(
+                {
+                    "features": [float(i % 5) * 0.1 + j * 0.01 for j in range(11)],
+                    "target": 0.05 + (i % 3) * 0.01,
+                    "timestamp": now - i * 10,
+                    "impact_level": "medium",
+                    "confidence": 0.8,
+                    "outcome_success": i % 2 == 0,
+                    "human_feedback": None,
+                }
+            )
 
         at._retrain_model()
         assert at.model_trained is True
@@ -999,15 +996,17 @@ class TestRetrainModel:
 
         now = time.time()
         for _i in range(120):
-            at.training_data.append({
-                "features": [0.1] * 11,
-                "target": 0.05,
-                "timestamp": now,
-                "impact_level": "medium",
-                "confidence": 0.8,
-                "outcome_success": True,
-                "human_feedback": None,
-            })
+            at.training_data.append(
+                {
+                    "features": [0.1] * 11,
+                    "target": 0.05,
+                    "timestamp": now,
+                    "impact_level": "medium",
+                    "confidence": 0.8,
+                    "outcome_success": True,
+                    "human_feedback": None,
+                }
+            )
 
         # Patch fit to raise
         at.threshold_model.fit = MagicMock(side_effect=RuntimeError("fit failed"))
@@ -1021,10 +1020,7 @@ class TestLogTrainingRunToMLflow:
         at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         X = np.array([[0.1] * 11] * 60)
         y = np.array([0.05] * 60)
-        recent_data = [
-            {"outcome_success": True, "human_feedback": None}
-            for _ in range(60)
-        ]
+        recent_data = [{"outcome_success": True, "human_feedback": None} for _ in range(60)]
 
         # Patch mlflow to raise
         with patch(

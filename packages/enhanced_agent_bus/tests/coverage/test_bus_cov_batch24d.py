@@ -862,9 +862,7 @@ class TestCreateRateLimitMiddleware:
             assert response.status_code == 429
         finally:
             # Cleanup rate limiter state
-            keys_to_remove = [
-                k for k in rate_limiter.local_windows if "rate-test" in k
-            ]
+            keys_to_remove = [k for k in rate_limiter.local_windows if "rate-test" in k]
             for k in keys_to_remove:
                 rate_limiter.local_windows.pop(k, None)
 
@@ -1413,7 +1411,9 @@ class TestSecuritySettingsDataclassFallback:
         from src.core.shared.config.security import HAS_PYDANTIC_SETTINGS
 
         if not HAS_PYDANTIC_SETTINGS:
-            with patch.dict("os.environ", {"CORS_ORIGINS": "http://a.com,http://b.com"}, clear=False):
+            with patch.dict(
+                "os.environ", {"CORS_ORIGINS": "http://a.com,http://b.com"}, clear=False
+            ):
                 from src.core.shared.config.security import SecuritySettings
 
                 s = SecuritySettings()

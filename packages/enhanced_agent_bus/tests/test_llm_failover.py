@@ -50,8 +50,16 @@ from enhanced_agent_bus.llm_adapters.llm_failover import (
 class TestLLMProviderType:
     def test_all_providers_exist(self) -> None:
         expected = {
-            "openai", "anthropic", "google", "azure",
-            "bedrock", "cohere", "mistral", "kimi", "openclaw", "local",
+            "openai",
+            "anthropic",
+            "google",
+            "azure",
+            "bedrock",
+            "cohere",
+            "mistral",
+            "kimi",
+            "openclaw",
+            "local",
         }
         actual = {p.value for p in LLMProviderType}
         assert actual == expected
@@ -68,8 +76,16 @@ class TestLLMProviderType:
 
 class TestLLMCircuitConfigs:
     def test_known_providers_have_configs(self) -> None:
-        for key in ("llm:openai", "llm:anthropic", "llm:google", "llm:azure",
-                     "llm:bedrock", "llm:kimi", "llm:openclaw", "llm:local"):
+        for key in (
+            "llm:openai",
+            "llm:anthropic",
+            "llm:google",
+            "llm:azure",
+            "llm:bedrock",
+            "llm:kimi",
+            "llm:openclaw",
+            "llm:local",
+        ):
             assert key in LLM_CIRCUIT_CONFIGS
 
     def test_openai_config_values(self) -> None:
@@ -154,9 +170,18 @@ class TestProviderHealthScore:
         score = self._make_score()
         d = score.to_dict()
         expected_keys = {
-            "provider_id", "health_score", "latency_score", "error_score",
-            "quality_score", "availability_score", "is_healthy", "is_degraded",
-            "is_unhealthy", "metrics", "last_updated", "constitutional_hash",
+            "provider_id",
+            "health_score",
+            "latency_score",
+            "error_score",
+            "quality_score",
+            "availability_score",
+            "is_healthy",
+            "is_degraded",
+            "is_unhealthy",
+            "metrics",
+            "last_updated",
+            "constitutional_hash",
         }
         assert set(d.keys()) == expected_keys
 
@@ -601,9 +626,7 @@ class TestRequestHedgingManager:
                 await asyncio.sleep(1.0)
             return f"response-{provider_id}"
 
-        winner, result = await mgr.execute_hedged(
-            "r1", ["fast", "slow"], execute_fn, hedge_count=2
-        )
+        winner, result = await mgr.execute_hedged("r1", ["fast", "slow"], execute_fn, hedge_count=2)
         assert winner == "fast"
         assert result == "response-fast"
 
@@ -615,9 +638,7 @@ class TestRequestHedgingManager:
                 raise ConnectionError("down")
             return f"response-{provider_id}"
 
-        winner, result = await mgr.execute_hedged(
-            "r1", ["bad", "good"], execute_fn, hedge_count=2
-        )
+        winner, result = await mgr.execute_hedged("r1", ["bad", "good"], execute_fn, hedge_count=2)
         assert winner == "good"
         assert result == "response-good"
 
@@ -661,9 +682,7 @@ class TestRequestHedgingManager:
             call_count += 1
             return "ok"
 
-        await mgr.execute_hedged(
-            "r1", ["p1", "p2", "p3", "p4"], execute_fn, hedge_count=2
-        )
+        await mgr.execute_hedged("r1", ["p1", "p2", "p3", "p4"], execute_fn, hedge_count=2)
         # Only 2 providers should have been attempted
         assert call_count <= 2
 

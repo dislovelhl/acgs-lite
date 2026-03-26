@@ -538,11 +538,7 @@ class MessageProcessor:
                 )
             )
         strategies.append(default_strategy)
-        return (
-            composite_strategy_cls(strategies)
-            if len(strategies) > 1
-            else strategies[0]
-        )
+        return composite_strategy_cls(strategies) if len(strategies) > 1 else strategies[0]
 
     def _wrap_processing_strategy_with_maci(
         self,
@@ -898,14 +894,19 @@ class MessageProcessor:
     async def _run_governance_core(self, msg: AgentMessage) -> ValidationResult | None:
         governance_input = self._build_governance_input(msg)
         legacy_decision = await self._legacy_governance_core.validate_local(governance_input)
-        legacy_receipt = self._legacy_governance_core.build_receipt(governance_input, legacy_decision)
+        legacy_receipt = self._legacy_governance_core.build_receipt(
+            governance_input, legacy_decision
+        )
 
         selected_decision = legacy_decision
         selected_receipt = legacy_receipt
         shadow_metadata: JSONDict | None = None
 
         if self._governance_core_mode in {"shadow", "swarm_enforced"}:
-            if self._governance_core_mode == "shadow" and not self._swarm_governance_core.is_available():
+            if (
+                self._governance_core_mode == "shadow"
+                and not self._swarm_governance_core.is_available()
+            ):
                 swarm_error = getattr(self._swarm_governance_core, "_constitution_error", None)
                 self._governance_shadow_errors += 1
                 shadow_metadata = {
@@ -913,7 +914,9 @@ class MessageProcessor:
                     "status": "error",
                     "legacy_allowed": legacy_decision.allowed,
                     "swarm_allowed": None,
-                    "error": swarm_error if isinstance(swarm_error, str) and swarm_error else "swarm unavailable",
+                    "error": swarm_error
+                    if isinstance(swarm_error, str) and swarm_error
+                    else "swarm unavailable",
                 }
                 self._store_governance_artifacts(
                     msg=msg,
@@ -1262,8 +1265,12 @@ class MessageProcessor:
             "message_type": get_enum_value(msg.message_type),
             "constitutional_hash": msg.constitutional_hash,
             "result_valid": result.is_valid,
-            "rejection_reason": self._extract_rejection_reason(result) if not result.is_valid else None,
-            "governance_core_mode": metadata.get("governance_core_mode", self._governance_core_mode),
+            "rejection_reason": self._extract_rejection_reason(result)
+            if not result.is_valid
+            else None,
+            "governance_core_mode": metadata.get(
+                "governance_core_mode", self._governance_core_mode
+            ),
             "governance_decision": metadata.get("governance_decision"),
             "governance_receipt": metadata.get("governance_receipt"),
             "governance_shadow": metadata.get("governance_shadow"),

@@ -21,6 +21,7 @@ except ImportError:
     async def create_research_operator_control_plane(**kwargs: object) -> None:
         """Stub when self_evolution module is not installed."""
 
+
 from src.core.shared.config import settings
 from src.core.shared.config.runtime_environment import resolve_runtime_environment
 from src.core.shared.constants import CONSTITUTIONAL_HASH

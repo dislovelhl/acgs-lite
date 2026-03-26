@@ -84,8 +84,6 @@ def validate_rules(constitution: Any) -> list[str]:
 
         for dep_id in rule.depends_on:
             if dep_id not in rule_ids:
-                errors.append(
-                    f"Rule {rule.id}: depends_on references non-existent rule {dep_id}"
-                )
+                errors.append(f"Rule {rule.id}: depends_on references non-existent rule {dep_id}")
 
     return errors

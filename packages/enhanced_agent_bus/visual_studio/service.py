@@ -64,8 +64,7 @@ class VisualStudioService:
         page_size: int,
     ) -> tuple[list[WorkflowSummary], int]:
         all_wfs = [
-            wf for wf in self._store.values()
-            if tenant_id is None or wf.tenant_id == tenant_id
+            wf for wf in self._store.values() if tenant_id is None or wf.tenant_id == tenant_id
         ]
         total = len(all_wfs)
         offset = (page - 1) * page_size

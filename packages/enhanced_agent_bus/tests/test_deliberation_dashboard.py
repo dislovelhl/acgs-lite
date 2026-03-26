@@ -24,12 +24,14 @@ from enhanced_agent_bus.deliberation_layer import dashboard as dash_mod
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_queue_status(items=None, stats=None):
     return {
         "queue_size": len(items or []),
         "processing_count": 0,
         "items": items or [],
-        "stats": stats or {
+        "stats": stats
+        or {
             "deliberation_count": 10,
             "deliberation_approved": 7,
             "avg_processing_time": 2.5,
@@ -70,6 +72,7 @@ def _fresh_st():
 # ---------------------------------------------------------------------------
 # show_pending_reviews
 # ---------------------------------------------------------------------------
+
 
 class TestShowPendingReviews:
     def test_no_pending_items_shows_success(self):
@@ -137,6 +140,7 @@ class TestShowPendingReviews:
 # show_item_details
 # ---------------------------------------------------------------------------
 
+
 class TestShowItemDetails:
     def test_item_not_found(self):
         mock_st = _fresh_st()
@@ -171,6 +175,7 @@ class TestShowItemDetails:
 # ---------------------------------------------------------------------------
 # show_review_actions
 # ---------------------------------------------------------------------------
+
 
 class TestShowReviewActions:
     def test_submit_without_reasoning_shows_error(self):
@@ -235,6 +240,7 @@ class TestShowReviewActions:
 # show_queue_status
 # ---------------------------------------------------------------------------
 
+
 class TestShowQueueStatus:
     def test_renders_metrics(self):
         mock_st = _fresh_st()
@@ -257,6 +263,7 @@ class TestShowQueueStatus:
 # ---------------------------------------------------------------------------
 # show_analytics
 # ---------------------------------------------------------------------------
+
 
 class TestShowAnalytics:
     def test_renders_router_stats(self):
@@ -288,6 +295,7 @@ class TestShowAnalytics:
 # show_settings
 # ---------------------------------------------------------------------------
 
+
 class TestShowSettings:
     def test_renders_settings(self):
         mock_st = _fresh_st()
@@ -318,6 +326,7 @@ class TestShowSettings:
 # ---------------------------------------------------------------------------
 # main entry point
 # ---------------------------------------------------------------------------
+
 
 class TestMain:
     def test_main_pending_reviews(self):

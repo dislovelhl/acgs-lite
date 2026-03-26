@@ -1,7 +1,7 @@
 """
 ACGS-2 Circuit Breaker Configuration
 
-Constitutional Hash: 608508a9bd224290
+Constitutional Hash: cdd01ef066bc6cf2
 
 This module defines circuit breaker configuration classes and service-specific
 default configurations per T002 requirements.
@@ -19,11 +19,11 @@ Service Configurations (T002 requirements):
 from dataclasses import dataclass, field
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict
+    from src.core.shared.types import JSONDict  # noqa: E402
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -39,7 +39,7 @@ class ServiceCircuitConfig:
     """
     Service-specific circuit breaker configuration.
 
-    Constitutional Hash: 608508a9bd224290
+    Constitutional Hash: cdd01ef066bc6cf2
     """
 
     name: str
@@ -151,7 +151,7 @@ def get_service_config(service_name: str, use_unified_config: bool = True) -> Se
     """
     Get configuration for a service, with sensible defaults.
 
-    Constitutional Hash: 608508a9bd224290
+    Constitutional Hash: cdd01ef066bc6cf2
 
     Args:
         service_name: Name of the service to configure
@@ -170,42 +170,42 @@ def get_service_config(service_name: str, use_unified_config: bool = True) -> Se
 
             # Map service names to unified config attributes
             config_mapping = {
-            "policy_registry": {
-            "failure_threshold": cb_settings.policy_registry_failure_threshold,
-            "timeout_seconds": cb_settings.policy_registry_timeout_seconds,
-            "fallback_ttl_seconds": cb_settings.policy_registry_fallback_ttl_seconds,
-            },
-            "opa_evaluator": {
-            "failure_threshold": cb_settings.opa_evaluator_failure_threshold,
-            "timeout_seconds": cb_settings.opa_evaluator_timeout_seconds,
-            },
-            "blockchain_anchor": {
-            "failure_threshold": cb_settings.blockchain_anchor_failure_threshold,
-            "timeout_seconds": cb_settings.blockchain_anchor_timeout_seconds,
-            "fallback_max_queue_size": cb_settings.blockchain_anchor_max_queue_size,
-            "fallback_retry_interval_seconds": cb_settings.blockchain_anchor_retry_interval_seconds,
-            },
-            "redis_cache": {
-            "failure_threshold": cb_settings.redis_cache_failure_threshold,
-            "timeout_seconds": cb_settings.redis_cache_timeout_seconds,
-            },
-            "kafka_producer": {
-            "failure_threshold": cb_settings.kafka_producer_failure_threshold,
-            "timeout_seconds": cb_settings.kafka_producer_timeout_seconds,
-            "fallback_max_queue_size": cb_settings.kafka_producer_max_queue_size,
-            },
-            "audit_service": {
-            "failure_threshold": cb_settings.audit_service_failure_threshold,
-            "timeout_seconds": cb_settings.audit_service_timeout_seconds,
-            "fallback_max_queue_size": cb_settings.audit_service_max_queue_size,
-            },
-            "deliberation_layer": {
-            "failure_threshold": cb_settings.deliberation_layer_failure_threshold,
-            "timeout_seconds": cb_settings.deliberation_layer_timeout_seconds,
-            },
+                "policy_registry": {
+                    "failure_threshold": cb_settings.policy_registry_failure_threshold,
+                    "timeout_seconds": cb_settings.policy_registry_timeout_seconds,
+                    "fallback_ttl_seconds": cb_settings.policy_registry_fallback_ttl_seconds,
+                },
+                "opa_evaluator": {
+                    "failure_threshold": cb_settings.opa_evaluator_failure_threshold,
+                    "timeout_seconds": cb_settings.opa_evaluator_timeout_seconds,
+                },
+                "blockchain_anchor": {
+                    "failure_threshold": cb_settings.blockchain_anchor_failure_threshold,
+                    "timeout_seconds": cb_settings.blockchain_anchor_timeout_seconds,
+                    "fallback_max_queue_size": cb_settings.blockchain_anchor_max_queue_size,
+                    "fallback_retry_interval_seconds": cb_settings.blockchain_anchor_retry_interval_seconds,  # noqa: E501
+                },
+                "redis_cache": {
+                    "failure_threshold": cb_settings.redis_cache_failure_threshold,
+                    "timeout_seconds": cb_settings.redis_cache_timeout_seconds,
+                },
+                "kafka_producer": {
+                    "failure_threshold": cb_settings.kafka_producer_failure_threshold,
+                    "timeout_seconds": cb_settings.kafka_producer_timeout_seconds,
+                    "fallback_max_queue_size": cb_settings.kafka_producer_max_queue_size,
+                },
+                "audit_service": {
+                    "failure_threshold": cb_settings.audit_service_failure_threshold,
+                    "timeout_seconds": cb_settings.audit_service_timeout_seconds,
+                    "fallback_max_queue_size": cb_settings.audit_service_max_queue_size,
+                },
+                "deliberation_layer": {
+                    "failure_threshold": cb_settings.deliberation_layer_failure_threshold,
+                    "timeout_seconds": cb_settings.deliberation_layer_timeout_seconds,
+                },
             }
 
-            if service_name in config_mapping:
+            if service_name in config_mapping:  # noqa: SIM102
                 # Start with the base config from SERVICE_CIRCUIT_CONFIGS
                 if service_name in SERVICE_CIRCUIT_CONFIGS:
                     base_config = SERVICE_CIRCUIT_CONFIGS[service_name]

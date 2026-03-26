@@ -102,9 +102,7 @@ def _validate_maci_role(maci_role: object) -> tuple[bool, str]:
 
     return (
         False,
-        (
-            f"MACI role '{maci_role}' is unknown or unmapped for MCP tool access"
-        ),
+        (f"MACI role '{maci_role}' is unknown or unmapped for MCP tool access"),
     )
 
 

@@ -666,7 +666,9 @@ async def test_failed_process_emits_governance_audit_event() -> None:
 
 
 @pytest.mark.asyncio
-async def test_message_processor_swarm_enforced_skips_peer_validation_after_local_rejection() -> None:
+async def test_message_processor_swarm_enforced_skips_peer_validation_after_local_rejection() -> (
+    None
+):
     strategy = MagicMock()
     strategy.process = AsyncMock(return_value=ValidationResult(is_valid=True))
     strategy.get_name = MagicMock(return_value="mock_strategy")
@@ -720,7 +722,9 @@ async def test_message_processor_cache_hit_reattaches_governance_receipt_per_mes
     assert strategy.process.await_count == 1
     assert first_result.metadata["governance_receipt"]["message_id"] == first.message_id
     assert second_result.metadata["governance_receipt"]["message_id"] == second.message_id
-    assert second_result.metadata["governance_receipt"]["receipt_id"] == f"legacy:{second.message_id}"
+    assert (
+        second_result.metadata["governance_receipt"]["receipt_id"] == f"legacy:{second.message_id}"
+    )
 
 
 @pytest.mark.asyncio

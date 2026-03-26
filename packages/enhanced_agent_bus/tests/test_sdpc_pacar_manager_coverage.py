@@ -104,9 +104,7 @@ class TestGetRedis:
         existing = AsyncMock()
         mgr._redis = existing
 
-        with patch(
-            "enhanced_agent_bus.sdpc.pacar_manager.redis.from_url"
-        ) as mock_from_url:
+        with patch("enhanced_agent_bus.sdpc.pacar_manager.redis.from_url") as mock_from_url:
             result = await mgr._get_redis()
 
         mock_from_url.assert_not_called()

@@ -32,6 +32,7 @@ from enhanced_agent_bus.verification_layer.verification_pipeline import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_maci_result(is_compliant: bool = True, confidence: float = 0.9):
     """Build a mock MACIVerificationResult."""
     r = MagicMock()
@@ -261,7 +262,9 @@ class TestVerifyErrorPaths:
         """TimeoutError inside a stage is caught by the stage handler, producing FAILED (not TIMEOUT)."""
         pipeline = _build_pipeline()
         pipeline.maci_verifier.verify = AsyncMock(side_effect=TimeoutError("timed out"))
-        cfg = PipelineConfig(enable_saga=False, enable_state_transitions=False, enable_policy_verification=False)
+        cfg = PipelineConfig(
+            enable_saga=False, enable_state_transitions=False, enable_policy_verification=False
+        )
         pipeline.config = cfg
         result = await pipeline.verify("action", {})
         # The MACI stage catches the TimeoutError internally; pipeline sees a failed stage
@@ -272,7 +275,9 @@ class TestVerifyErrorPaths:
     async def test_runtime_error_in_pipeline(self):
         pipeline = _build_pipeline()
         pipeline.maci_verifier.verify = AsyncMock(side_effect=RuntimeError("bad"))
-        cfg = PipelineConfig(enable_saga=False, enable_state_transitions=False, enable_policy_verification=False)
+        cfg = PipelineConfig(
+            enable_saga=False, enable_state_transitions=False, enable_policy_verification=False
+        )
         pipeline.config = cfg
         result = await pipeline.verify("action", {})
         assert result.status == PipelineStatus.FAILED
@@ -373,7 +378,9 @@ class TestQuickVerifyAndStats:
     @pytest.mark.asyncio
     async def test_get_pipeline_stats_after_execution(self):
         pipeline = _build_pipeline()
-        cfg = PipelineConfig(enable_saga=False, enable_state_transitions=False, enable_policy_verification=False)
+        cfg = PipelineConfig(
+            enable_saga=False, enable_state_transitions=False, enable_policy_verification=False
+        )
         pipeline.config = cfg
         await pipeline.verify("action", {})
         stats = pipeline.get_pipeline_stats()

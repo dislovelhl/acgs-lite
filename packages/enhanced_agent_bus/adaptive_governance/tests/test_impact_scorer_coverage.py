@@ -40,6 +40,7 @@ def _restore_impact_module_state():
     for name, value in _IMPACT_MODULE_DEFAULTS.items():
         setattr(_IMPACT_MODULE, name, value)
 
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

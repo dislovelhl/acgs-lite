@@ -127,9 +127,7 @@ class ConstitutionalFitness:
             ValueError: If *performance_score* is outside [0, 1].
         """
         if not (0.0 <= performance_score <= 1.0):
-            raise ValueError(
-                f"performance_score must be in [0, 1], got {performance_score}"
-            )
+            raise ValueError(f"performance_score must be in [0, 1], got {performance_score}")
 
         compliance_score = self._compliance_from_payload(candidate)
         risk_multiplier = _RISK_MULTIPLIERS[candidate.risk_tier]
@@ -176,5 +174,5 @@ class ConstitutionalFitness:
         """Derive a [0, 1] compliance score from the verification payload."""
         vp = candidate.verification_payload
         # Each boolean component contributes ⅓; safety_score contributes the rest
-        bool_score = (0.333 * int(vp.syntax_valid) + 0.333 * int(vp.policy_compliant))
+        bool_score = 0.333 * int(vp.syntax_valid) + 0.333 * int(vp.policy_compliant)
         return min(bool_score + 0.334 * vp.safety_score, 1.0)

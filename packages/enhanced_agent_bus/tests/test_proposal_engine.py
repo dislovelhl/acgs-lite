@@ -182,9 +182,7 @@ class TestValidateProposedChanges:
     async def test_valid_changes(self):
         engine = _make_engine()
         version = _mock_version(content={"rules": ["be good"]})
-        result = await engine._validate_proposed_changes(
-            {"new_section": "content"}, version
-        )
+        result = await engine._validate_proposed_changes({"new_section": "content"}, version)
         assert result["valid"] is True
 
 

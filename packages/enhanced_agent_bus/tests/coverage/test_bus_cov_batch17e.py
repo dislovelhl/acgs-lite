@@ -210,7 +210,6 @@ def _make_repo(fake_redis: FakeRedis | None = None) -> RedisSagaStateRepository:
 
 
 class TestRedisLockManagerAcquireLock:
-
     async def test_acquire_lock_success(self):
         repo = _make_repo()
         result = await repo.acquire_lock("saga-1", "holder-a", ttl_seconds=10)
@@ -236,7 +235,6 @@ class TestRedisLockManagerAcquireLock:
 
 
 class TestRedisLockManagerReleaseLock:
-
     async def test_release_lock_success(self):
         repo = _make_repo()
         await repo.acquire_lock("saga-1", "holder-a")
@@ -277,7 +275,6 @@ class TestRedisLockManagerReleaseLock:
 
 
 class TestRedisLockManagerExtendLock:
-
     async def test_extend_lock_success(self):
         repo = _make_repo()
         await repo.acquire_lock("saga-1", "holder-a")
@@ -317,7 +314,6 @@ class TestRedisLockManagerExtendLock:
 
 
 class TestDistributedLockContextManager:
-
     async def test_distributed_lock_acquire_and_release(self):
         repo = _make_repo()
         async with repo.distributed_lock("saga-1", ttl_seconds=5) as acquired:
@@ -346,7 +342,6 @@ class TestDistributedLockContextManager:
 
 
 class TestCleanupOldSagas:
-
     async def test_cleanup_terminal_sagas(self):
         fake = FakeRedis()
         repo = _make_repo(fake)
@@ -394,7 +389,6 @@ class TestCleanupOldSagas:
 
 
 class TestGetStatistics:
-
     async def test_get_statistics_empty(self):
         repo = _make_repo()
         stats = await repo.get_statistics()
@@ -425,7 +419,6 @@ class TestGetStatistics:
 
 
 class TestHealthCheck:
-
     async def test_health_check_healthy(self):
         repo = _make_repo()
         health = await repo.health_check()
@@ -453,7 +446,6 @@ class TestHealthCheck:
 
 
 class TestRedisSagaStateRepositoryInit:
-
     def test_init_defaults(self):
         fake = FakeRedis()
         repo = RedisSagaStateRepository(redis_client=fake)
@@ -477,7 +469,6 @@ class TestRedisSagaStateRepositoryInit:
 
 
 class TestRedisSagaStateRepositorySave:
-
     async def test_save_new_saga(self):
         repo = _make_repo()
         saga = _make_saga()
@@ -534,7 +525,6 @@ class TestRedisSagaStateRepositorySave:
 
 
 class TestRedisSagaStateRepositoryGet:
-
     async def test_get_existing(self):
         fake = FakeRedis()
         repo = _make_repo(fake)
@@ -563,7 +553,6 @@ class TestRedisSagaStateRepositoryGet:
 
 
 class TestRedisSagaStateRepositoryDelete:
-
     async def test_delete_existing(self):
         fake = FakeRedis()
         repo = _make_repo(fake)
@@ -610,7 +599,6 @@ class TestRedisSagaStateRepositoryDelete:
 
 
 class TestRedisSagaStateRepositoryExists:
-
     async def test_exists_true(self):
         fake = FakeRedis()
         repo = _make_repo(fake)
@@ -638,7 +626,6 @@ class TestRedisSagaStateRepositoryExists:
 
 
 class TestExecuteWithRetry:
-
     async def test_execute_with_retry_success(self):
         repo = _make_repo()
 
@@ -665,7 +652,6 @@ class TestExecuteWithRetry:
 
 
 class TestListByTenant:
-
     async def test_list_by_tenant_empty(self):
         repo = _make_repo()
         result = await repo.list_by_tenant("tenant-a")
@@ -715,7 +701,6 @@ class TestListByTenant:
 
 
 class TestListByState:
-
     async def test_list_by_state_empty(self):
         repo = _make_repo()
         result = await repo.list_by_state(SagaState.RUNNING)
@@ -752,7 +737,6 @@ class TestListByState:
 
 
 class TestListPendingCompensations:
-
     async def test_list_pending_empty(self):
         repo = _make_repo()
         result = await repo.list_pending_compensations()
@@ -797,7 +781,6 @@ class TestListPendingCompensations:
 
 
 class TestListTimedOut:
-
     async def test_list_timed_out_empty(self):
         repo = _make_repo()
         result = await repo.list_timed_out(since=datetime.now(UTC))
@@ -851,7 +834,6 @@ class TestListTimedOut:
 
 
 class TestCountByState:
-
     async def test_count_by_state_zero(self):
         repo = _make_repo()
         count = await repo.count_by_state(SagaState.RUNNING)
@@ -879,7 +861,6 @@ class TestCountByState:
 
 
 class TestCountByTenant:
-
     async def test_count_by_tenant_zero(self):
         repo = _make_repo()
         count = await repo.count_by_tenant("tenant-a")
@@ -912,7 +893,6 @@ class TestCountByTenant:
 
 
 class TestSagaBackendEnum:
-
     def test_values(self):
         assert SagaBackend.REDIS.value == "redis"
         assert SagaBackend.POSTGRES.value == "postgres"
@@ -922,7 +902,6 @@ class TestSagaBackendEnum:
 
 
 class TestBackendUnavailableError:
-
     def test_attributes(self):
         err = BackendUnavailableError(SagaBackend.REDIS, "not installed")
         assert err.backend == SagaBackend.REDIS
@@ -931,7 +910,6 @@ class TestBackendUnavailableError:
 
 
 class TestDetectBackend:
-
     def test_default_is_redis(self):
         env = {"SAGA_BACKEND": "", "DATABASE_URL": ""}
         with patch.dict(os.environ, env, clear=False):
@@ -959,7 +937,6 @@ class TestDetectBackend:
 
 
 class TestMaskUrl:
-
     def test_no_credentials(self):
         assert _mask_url("redis://localhost:6379") == "redis://localhost:6379"
 
@@ -980,7 +957,6 @@ class TestMaskUrl:
 
 
 class TestCreateSagaRepositoryRedis:
-
     async def test_creates_redis_repo_successfully(self):
         mock_client = AsyncMock()
         mock_client.ping = AsyncMock(return_value=True)
@@ -1020,7 +996,6 @@ class TestCreateSagaRepositoryRedis:
 
 
 class TestCreateSagaRepositoryPostgres:
-
     async def test_postgres_unavailable_raises(self):
         with patch("enhanced_agent_bus.saga_persistence.POSTGRES_AVAILABLE", False):
             with pytest.raises(BackendUnavailableError):
@@ -1038,13 +1013,10 @@ class TestCreateSagaRepositoryPostgres:
         ):
             os.environ.pop("DATABASE_URL", None)
             with pytest.raises(BackendUnavailableError, match="No DSN"):
-                await create_saga_repository(
-                    SagaBackend.POSTGRES, fallback=False
-                )
+                await create_saga_repository(SagaBackend.POSTGRES, fallback=False)
 
 
 class TestCreateSagaRepositoryAutoDetect:
-
     async def test_auto_detect_defaults_to_redis(self):
         mock_client = AsyncMock()
         mock_client.ping = AsyncMock(return_value=True)
@@ -1082,7 +1054,6 @@ class TestRedisQueryOperationsMixinStandalone:
 
 
 class TestRedisLockManagerMixinStandalone:
-
     async def test_get_raises(self):
         obj = RedisLockManager()
         with pytest.raises(NotImplementedError):
@@ -1105,7 +1076,6 @@ class TestRedisLockManagerMixinStandalone:
 
 
 class TestRedisKeyMixin:
-
     def test_state_key(self):
         mixin = RedisKeyMixin()
         assert mixin._state_key("s1") == f"{SAGA_STATE_PREFIX}s1"
@@ -1141,7 +1111,6 @@ class TestRedisKeyMixin:
 
 
 class TestRedisSagaRepositoryRoundTrip:
-
     async def test_save_get_delete_cycle(self):
         fake = FakeRedis()
         repo = _make_repo(fake)

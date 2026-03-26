@@ -8,7 +8,6 @@ Constitutional Hash: 608508a9bd224290
 """
 
 
-
 class TestMetricsIntegration:
     """Test metrics collection and endpoints."""
 

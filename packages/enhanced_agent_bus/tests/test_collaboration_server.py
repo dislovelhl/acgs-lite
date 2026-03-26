@@ -36,6 +36,7 @@ from enhanced_agent_bus.collaboration.server import (
 # Helpers / Fixtures
 # ---------------------------------------------------------------------------
 
+
 def _make_collaborator(**overrides) -> Collaborator:
     defaults = {
         "user_id": "user-1",
@@ -113,6 +114,7 @@ def server(config, audit_client) -> CollaborationServer:
 # RateLimiter
 # ===========================================================================
 
+
 class TestRateLimiter:
     @pytest.mark.asyncio
     async def test_is_allowed_within_limit(self):
@@ -150,6 +152,7 @@ class TestRateLimiter:
 # ===========================================================================
 # CollaborationServer — Construction & Lifecycle
 # ===========================================================================
+
 
 class TestServerLifecycle:
     def test_default_construction(self):
@@ -207,6 +210,7 @@ class TestServerLifecycle:
 # Document Handlers — join / leave
 # ===========================================================================
 
+
 class TestJoinDocument:
     @pytest.mark.asyncio
     async def test_join_rate_limited(self, server):
@@ -222,28 +226,20 @@ class TestJoinDocument:
 
     @pytest.mark.asyncio
     async def test_join_missing_doc_id(self, server):
-        server.sio.get_session = AsyncMock(
-            return_value={"user_id": "u1", "tenant_id": "t1"}
-        )
+        server.sio.get_session = AsyncMock(return_value={"user_id": "u1", "tenant_id": "t1"})
         result = await server._handle_join_document("sid-1", {})
         assert result["code"] == "MISSING_DOC_ID"
 
     @pytest.mark.asyncio
     async def test_join_missing_tenant(self, server):
-        server.sio.get_session = AsyncMock(
-            return_value={"user_id": "u1", "tenant_id": None}
-        )
+        server.sio.get_session = AsyncMock(return_value={"user_id": "u1", "tenant_id": None})
         result = await server._handle_join_document("sid-1", {"document_id": "doc-1"})
         assert result["code"] == "MISSING_TENANT"
 
     @pytest.mark.asyncio
     async def test_join_session_full(self, server):
-        server.sio.get_session = AsyncMock(
-            return_value={"user_id": "u1", "tenant_id": "t1"}
-        )
-        server.presence.join_session = AsyncMock(
-            side_effect=SessionFullError("Session is full")
-        )
+        server.sio.get_session = AsyncMock(return_value={"user_id": "u1", "tenant_id": "t1"})
+        server.presence.join_session = AsyncMock(side_effect=SessionFullError("Session is full"))
         server.permissions.get_document_permissions = MagicMock(return_value={})
         result = await server._handle_join_document("sid-1", {"document_id": "doc-1"})
         assert result["code"] == "SESSION_FULL"
@@ -256,9 +252,7 @@ class TestJoinDocument:
         server.sio.get_session = AsyncMock(
             return_value={"user_id": "user-1", "tenant_id": "tenant-1"}
         )
-        server.presence.join_session = AsyncMock(
-            return_value=(collab_session, collaborator)
-        )
+        server.presence.join_session = AsyncMock(return_value=(collab_session, collaborator))
         server.presence.get_all_users = AsyncMock(return_value=[collaborator])
         server.sync.get_document = AsyncMock(return_value={"title": "Test"})
         server.permissions.get_document_permissions = MagicMock(return_value={})
@@ -278,12 +272,8 @@ class TestJoinDocument:
     @pytest.mark.asyncio
     async def test_join_internal_error_caught(self, server):
         """Unexpected errors in handler return INTERNAL_ERROR, not raise."""
-        server.sio.get_session = AsyncMock(
-            return_value={"user_id": "u1", "tenant_id": "t1"}
-        )
-        server.permissions.get_document_permissions = MagicMock(
-            side_effect=KeyError("boom")
-        )
+        server.sio.get_session = AsyncMock(return_value={"user_id": "u1", "tenant_id": "t1"})
+        server.permissions.get_document_permissions = MagicMock(side_effect=KeyError("boom"))
         result = await server._handle_join_document("sid-1", {"document_id": "doc-1"})
         assert result["code"] == "INTERNAL_ERROR"
 
@@ -340,6 +330,7 @@ class TestLeaveDocument:
 # ===========================================================================
 # Cursor / Edit handlers
 # ===========================================================================
+
 
 class TestCursorMove:
     @pytest.mark.asyncio
@@ -488,9 +479,7 @@ class TestEditOperation:
         server.permissions.require_edit_permission = AsyncMock()
         server.presence.get_session = AsyncMock(return_value=collab_session)
         server.permissions.validate_operation = AsyncMock()
-        server.sync.apply_operation = AsyncMock(
-            side_effect=ConflictError("Version mismatch")
-        )
+        server.sync.apply_operation = AsyncMock(side_effect=ConflictError("Version mismatch"))
         result = await server._handle_edit_operation(
             "sid-1",
             {"type": "replace", "path": "/x"},
@@ -528,13 +517,9 @@ class TestEditOperation:
 
     @pytest.mark.asyncio
     async def test_edit_internal_error(self, server):
-        server.sio.get_session = AsyncMock(
-            return_value=self._session_data()
-        )
+        server.sio.get_session = AsyncMock(return_value=self._session_data())
         server.permissions.require_edit_permission = AsyncMock()
-        server.presence.get_session = AsyncMock(
-            side_effect=RuntimeError("unexpected")
-        )
+        server.presence.get_session = AsyncMock(side_effect=RuntimeError("unexpected"))
         result = await server._handle_edit_operation("sid-1", {"type": "replace", "path": "/x"})
         assert result["code"] == "INTERNAL_ERROR"
 
@@ -542,6 +527,7 @@ class TestEditOperation:
 # ===========================================================================
 # Social handlers — chat, typing, comments, presence
 # ===========================================================================
+
 
 class TestChatMessage:
     @pytest.mark.asyncio
@@ -702,9 +688,7 @@ class TestGetPresence:
     @pytest.mark.asyncio
     async def test_presence_success(self, server):
         collaborator = _make_collaborator()
-        server.sio.get_session = AsyncMock(
-            return_value={"user_id": "u1", "document_id": "doc-1"}
-        )
+        server.sio.get_session = AsyncMock(return_value={"user_id": "u1", "document_id": "doc-1"})
         server.presence.get_all_users = AsyncMock(return_value=[collaborator])
 
         result = await server._handle_get_presence("sid-1")
@@ -715,6 +699,7 @@ class TestGetPresence:
 # ===========================================================================
 # Internal helper methods
 # ===========================================================================
+
 
 class TestHelperMethods:
     def test_create_cursor_position(self, server):
@@ -786,19 +771,13 @@ class TestHelperMethods:
     @pytest.mark.asyncio
     async def test_validate_edit_operation_ok(self, server):
         server.permissions.validate_operation = AsyncMock()
-        op = EditOperation(
-            type="replace", path="/x", user_id="u1", client_id="c1", version=1
-        )
+        op = EditOperation(type="replace", path="/x", user_id="u1", client_id="c1", version=1)
         assert await server._validate_edit_operation("u1", "doc-1", op, {}) is None
 
     @pytest.mark.asyncio
     async def test_validate_edit_operation_denied(self, server):
-        server.permissions.validate_operation = AsyncMock(
-            side_effect=PermissionDeniedError("Nope")
-        )
-        op = EditOperation(
-            type="replace", path="/x", user_id="u1", client_id="c1", version=1
-        )
+        server.permissions.validate_operation = AsyncMock(side_effect=PermissionDeniedError("Nope"))
+        op = EditOperation(type="replace", path="/x", user_id="u1", client_id="c1", version=1)
         result = await server._validate_edit_operation("u1", "doc-1", op, {})
         assert result["code"] == "VALIDATION_FAILED"
 
@@ -806,6 +785,7 @@ class TestHelperMethods:
 # ===========================================================================
 # Activity logging
 # ===========================================================================
+
 
 class TestActivityLogging:
     @pytest.mark.asyncio
@@ -825,22 +805,19 @@ class TestActivityLogging:
     async def test_log_activity_no_audit_client(self, server):
         server.audit_client = None
         # Should not raise
-        await server._log_activity(
-            ActivityEventType.DOCUMENT_EDITED, "u1", "d1", {}
-        )
+        await server._log_activity(ActivityEventType.DOCUMENT_EDITED, "u1", "d1", {})
 
     @pytest.mark.asyncio
     async def test_log_activity_error_swallowed(self, server, audit_client):
         audit_client.log_event = AsyncMock(side_effect=RuntimeError("audit down"))
         # Should not raise
-        await server._log_activity(
-            ActivityEventType.COMMENT_ADDED, "u1", "d1", {}
-        )
+        await server._log_activity(ActivityEventType.COMMENT_ADDED, "u1", "d1", {})
 
 
 # ===========================================================================
 # Presence event callback
 # ===========================================================================
+
 
 class TestPresenceCallback:
     @pytest.mark.asyncio
@@ -857,6 +834,7 @@ class TestPresenceCallback:
 # ===========================================================================
 # Cleanup
 # ===========================================================================
+
 
 class TestCleanup:
     @pytest.mark.asyncio

@@ -514,11 +514,18 @@ async def scan_injection(request: Request, body: ScanRequest) -> dict[str, Any]:
 
     decision = "BLOCKED" if result.is_injection else "CLEAN"
     ms = int(elapsed.total_seconds() * 1000)
-    await emit_revenue_event(RevenueEvent(
-        endpoint="/x402/scan", price_usd=X402_PRICE_SCAN, agent_id="anonymous",
-        decision=decision, timestamp=datetime.now(UTC).isoformat(),
-        processing_ms=ms, network=X402_NETWORK, wallet_address=X402_PAY_TO,
-    ))
+    await emit_revenue_event(
+        RevenueEvent(
+            endpoint="/x402/scan",
+            price_usd=X402_PRICE_SCAN,
+            agent_id="anonymous",
+            decision=decision,
+            timestamp=datetime.now(UTC).isoformat(),
+            processing_ms=ms,
+            network=X402_NETWORK,
+            wallet_address=X402_PAY_TO,
+        )
+    )
     return {
         "is_injection": result.is_injection,
         "severity": result.severity.value if result.severity else None,
@@ -586,12 +593,18 @@ async def classify_risk(
     output["processing_ms"] = ms
     output["disclaimer"] = PAID_RESPONSE_DISCLAIMER
     output["related_endpoints"] = _related_endpoints("classify-risk")
-    await emit_revenue_event(RevenueEvent(
-        endpoint="/x402/classify-risk", price_usd=X402_PRICE_CLASSIFY_RISK,
-        agent_id=body.system_id, decision=result.level.value,
-        timestamp=datetime.now(UTC).isoformat(), processing_ms=ms,
-        network=X402_NETWORK, wallet_address=X402_PAY_TO,
-    ))
+    await emit_revenue_event(
+        RevenueEvent(
+            endpoint="/x402/classify-risk",
+            price_usd=X402_PRICE_CLASSIFY_RISK,
+            agent_id=body.system_id,
+            decision=result.level.value,
+            timestamp=datetime.now(UTC).isoformat(),
+            processing_ms=ms,
+            network=X402_NETWORK,
+            wallet_address=X402_PAY_TO,
+        )
+    )
     return output
 
 
@@ -641,12 +654,18 @@ async def assess_compliance(
     output["processing_ms"] = ms
     output["disclaimer"] = PAID_RESPONSE_DISCLAIMER
     output["related_endpoints"] = _related_endpoints("compliance")
-    await emit_revenue_event(RevenueEvent(
-        endpoint="/x402/compliance", price_usd=X402_PRICE_COMPLIANCE,
-        agent_id=body.system_id, decision=f"score:{report.overall_score}",
-        timestamp=datetime.now(UTC).isoformat(), processing_ms=ms,
-        network=X402_NETWORK, wallet_address=X402_PAY_TO,
-    ))
+    await emit_revenue_event(
+        RevenueEvent(
+            endpoint="/x402/compliance",
+            price_usd=X402_PRICE_COMPLIANCE,
+            agent_id=body.system_id,
+            decision=f"score:{report.overall_score}",
+            timestamp=datetime.now(UTC).isoformat(),
+            processing_ms=ms,
+            network=X402_NETWORK,
+            wallet_address=X402_PAY_TO,
+        )
+    )
     return output
 
 
@@ -698,12 +717,18 @@ async def simulate_policy(
     output["processing_ms"] = ms
     output["disclaimer"] = PAID_RESPONSE_DISCLAIMER
     output["related_endpoints"] = _related_endpoints("simulate")
-    await emit_revenue_event(RevenueEvent(
-        endpoint="/x402/simulate", price_usd=X402_PRICE_SIMULATE,
-        agent_id="anonymous", decision=report.recommendation,
-        timestamp=datetime.now(UTC).isoformat(), processing_ms=ms,
-        network=X402_NETWORK, wallet_address=X402_PAY_TO,
-    ))
+    await emit_revenue_event(
+        RevenueEvent(
+            endpoint="/x402/simulate",
+            price_usd=X402_PRICE_SIMULATE,
+            agent_id="anonymous",
+            decision=report.recommendation,
+            timestamp=datetime.now(UTC).isoformat(),
+            processing_ms=ms,
+            network=X402_NETWORK,
+            wallet_address=X402_PAY_TO,
+        )
+    )
     return output
 
 
@@ -756,13 +781,18 @@ async def trust_score(request: Request, body: TrustRequest) -> dict[str, Any]:
             if k not in ("constitutional_hash", "disclaimer", "related_endpoints")
         },
     )
-    await emit_revenue_event(RevenueEvent(
-        endpoint="/x402/trust", price_usd=X402_PRICE_TRUST,
-        agent_id=body.agent_id, decision=result.get("action", "query"),
-        timestamp=datetime.now(UTC).isoformat(),
-        processing_ms=result["processing_ms"],
-        network=X402_NETWORK, wallet_address=X402_PAY_TO,
-    ))
+    await emit_revenue_event(
+        RevenueEvent(
+            endpoint="/x402/trust",
+            price_usd=X402_PRICE_TRUST,
+            agent_id=body.agent_id,
+            decision=result.get("action", "query"),
+            timestamp=datetime.now(UTC).isoformat(),
+            processing_ms=result["processing_ms"],
+            network=X402_NETWORK,
+            wallet_address=X402_PAY_TO,
+        )
+    )
     return result
 
 
@@ -797,12 +827,18 @@ async def detect_anomaly(request: Request, body: AnomalyRequest) -> dict[str, An
     )
 
     ms = int(elapsed.total_seconds() * 1000)
-    await emit_revenue_event(RevenueEvent(
-        endpoint="/x402/anomaly", price_usd=X402_PRICE_ANOMALY,
-        agent_id=body.agent_id, decision=f"anomalies:{len(signals)}",
-        timestamp=datetime.now(UTC).isoformat(), processing_ms=ms,
-        network=X402_NETWORK, wallet_address=X402_PAY_TO,
-    ))
+    await emit_revenue_event(
+        RevenueEvent(
+            endpoint="/x402/anomaly",
+            price_usd=X402_PRICE_ANOMALY,
+            agent_id=body.agent_id,
+            decision=f"anomalies:{len(signals)}",
+            timestamp=datetime.now(UTC).isoformat(),
+            processing_ms=ms,
+            network=X402_NETWORK,
+            wallet_address=X402_PAY_TO,
+        )
+    )
     return {
         "anomalies": [s.to_dict() for s in signals],
         "anomaly_count": len(signals),
@@ -858,12 +894,18 @@ async def explain_decision(request: Request, body: ExplainRequest) -> dict[str, 
     output["processing_ms"] = ms
     output["disclaimer"] = PAID_RESPONSE_DISCLAIMER
     output["related_endpoints"] = _related_endpoints("explain")
-    await emit_revenue_event(RevenueEvent(
-        endpoint="/x402/explain", price_usd=X402_PRICE_EXPLAIN,
-        agent_id="anonymous", decision="explained",
-        timestamp=datetime.now(UTC).isoformat(), processing_ms=ms,
-        network=X402_NETWORK, wallet_address=X402_PAY_TO,
-    ))
+    await emit_revenue_event(
+        RevenueEvent(
+            endpoint="/x402/explain",
+            price_usd=X402_PRICE_EXPLAIN,
+            agent_id="anonymous",
+            decision="explained",
+            timestamp=datetime.now(UTC).isoformat(),
+            processing_ms=ms,
+            network=X402_NETWORK,
+            wallet_address=X402_PAY_TO,
+        )
+    )
     return output
 
 
@@ -913,13 +955,18 @@ async def invariant_guard(
         tier=body.tier,
         processing_ms=output["processing_ms"],
     )
-    await emit_revenue_event(RevenueEvent(
-        endpoint="/x402/invariant-guard", price_usd=X402_PRICE_INVARIANT,
-        agent_id=body.agent_id, decision="checked",
-        timestamp=datetime.now(UTC).isoformat(),
-        processing_ms=output["processing_ms"],
-        network=X402_NETWORK, wallet_address=X402_PAY_TO,
-    ))
+    await emit_revenue_event(
+        RevenueEvent(
+            endpoint="/x402/invariant-guard",
+            price_usd=X402_PRICE_INVARIANT,
+            agent_id=body.agent_id,
+            decision="checked",
+            timestamp=datetime.now(UTC).isoformat(),
+            processing_ms=output["processing_ms"],
+            network=X402_NETWORK,
+            wallet_address=X402_PAY_TO,
+        )
+    )
     return output
 
 
@@ -963,13 +1010,18 @@ async def circuit_breaker(
         agent_id=body.agent_id,
         processing_ms=output["processing_ms"],
     )
-    await emit_revenue_event(RevenueEvent(
-        endpoint="/x402/circuit-breaker", price_usd=X402_PRICE_CIRCUIT,
-        agent_id=body.agent_id, decision="evaluated",
-        timestamp=datetime.now(UTC).isoformat(),
-        processing_ms=output["processing_ms"],
-        network=X402_NETWORK, wallet_address=X402_PAY_TO,
-    ))
+    await emit_revenue_event(
+        RevenueEvent(
+            endpoint="/x402/circuit-breaker",
+            price_usd=X402_PRICE_CIRCUIT,
+            agent_id=body.agent_id,
+            decision="evaluated",
+            timestamp=datetime.now(UTC).isoformat(),
+            processing_ms=output["processing_ms"],
+            network=X402_NETWORK,
+            wallet_address=X402_PAY_TO,
+        )
+    )
     return output
 
 
@@ -1009,13 +1061,18 @@ async def policy_lint(
         strict=body.strict,
         processing_ms=output["processing_ms"],
     )
-    await emit_revenue_event(RevenueEvent(
-        endpoint="/x402/policy-lint", price_usd=X402_PRICE_POLICY_LINT,
-        agent_id="anonymous", decision="linted",
-        timestamp=datetime.now(UTC).isoformat(),
-        processing_ms=output["processing_ms"],
-        network=X402_NETWORK, wallet_address=X402_PAY_TO,
-    ))
+    await emit_revenue_event(
+        RevenueEvent(
+            endpoint="/x402/policy-lint",
+            price_usd=X402_PRICE_POLICY_LINT,
+            agent_id="anonymous",
+            decision="linted",
+            timestamp=datetime.now(UTC).isoformat(),
+            processing_ms=output["processing_ms"],
+            network=X402_NETWORK,
+            wallet_address=X402_PAY_TO,
+        )
+    )
     return output
 
 
@@ -1062,11 +1119,16 @@ async def eu_ai_act_log(
         risk_level=body.risk_level,
         processing_ms=output["processing_ms"],
     )
-    await emit_revenue_event(RevenueEvent(
-        endpoint="/x402/eu-ai-log", price_usd=X402_PRICE_EU_AI_LOG,
-        agent_id=body.agent_id, decision=f"logged:{body.risk_level}",
-        timestamp=datetime.now(UTC).isoformat(),
-        processing_ms=output["processing_ms"],
-        network=X402_NETWORK, wallet_address=X402_PAY_TO,
-    ))
+    await emit_revenue_event(
+        RevenueEvent(
+            endpoint="/x402/eu-ai-log",
+            price_usd=X402_PRICE_EU_AI_LOG,
+            agent_id=body.agent_id,
+            decision=f"logged:{body.risk_level}",
+            timestamp=datetime.now(UTC).isoformat(),
+            processing_ms=output["processing_ms"],
+            network=X402_NETWORK,
+            wallet_address=X402_PAY_TO,
+        )
+    )
     return output

@@ -56,7 +56,9 @@ class ABTestRouter:
         self.champion_alias = champion_alias
         self.candidate_alias = candidate_alias
         self.ab_test_active = True
-        self.model_manager = ABTestModelManager(champion_alias, candidate_alias, model_registry_name)
+        self.model_manager = ABTestModelManager(
+            champion_alias, candidate_alias, model_registry_name
+        )
         self.metrics_manager = ABTestMetricsManager(split, min_samples, confidence_level)
         self._request_cohorts: dict[str, CohortType] = {}
         self._version_manager_mock = object()
@@ -151,10 +153,14 @@ class ABTestRouter:
         if self.ab_test_active and self._compute_hash_value(request_id) < self.candidate_split:
             cohort = CohortType.CANDIDATE
         self._request_cohorts[request_id] = cohort
-        version = self.candidate_version if cohort == CohortType.CANDIDATE else self.champion_version
+        version = (
+            self.candidate_version if cohort == CohortType.CANDIDATE else self.champion_version
+        )
         return RoutingResult(cohort=cohort, request_id=request_id, model_version=version)
 
-    def predict(self, cohort_or_routing, features: FeatureData, request_id: str = "") -> PredictionResult:
+    def predict(
+        self, cohort_or_routing, features: FeatureData, request_id: str = ""
+    ) -> PredictionResult:
         start = time.perf_counter()
         if isinstance(cohort_or_routing, RoutingResult):
             cohort = cohort_or_routing.cohort
@@ -163,11 +169,21 @@ class ABTestRouter:
         else:
             cohort = cohort_or_routing
             rid = request_id or f"req-{datetime.now(UTC).timestamp()}"
-            version = self.candidate_version if cohort == CohortType.CANDIDATE else self.champion_version
+            version = (
+                self.candidate_version if cohort == CohortType.CANDIDATE else self.champion_version
+            )
         model = self.candidate_model if cohort == CohortType.CANDIDATE else self.champion_model
         if model is None:
             latency_ms = (time.perf_counter() - start) * 1000
-            return PredictionResult(None, cohort, rid, latency_ms, model_version=version, success=False, error="Model not loaded")
+            return PredictionResult(
+                None,
+                cohort,
+                rid,
+                latency_ms,
+                model_version=version,
+                success=False,
+                error="Model not loaded",
+            )
         try:
             payload = [features] if not isinstance(features, dict) else features
             if hasattr(model, "predict"):
@@ -176,15 +192,21 @@ class ABTestRouter:
             else:
                 prediction = model(payload)
             latency_ms = (time.perf_counter() - start) * 1000
-            return PredictionResult(prediction, cohort, rid, latency_ms, model_version=version, success=True)
+            return PredictionResult(
+                prediction, cohort, rid, latency_ms, model_version=version, success=True
+            )
         except Exception as exc:
             latency_ms = (time.perf_counter() - start) * 1000
-            return PredictionResult(None, cohort, rid, latency_ms, model_version=version, success=False, error=str(exc))
+            return PredictionResult(
+                None, cohort, rid, latency_ms, model_version=version, success=False, error=str(exc)
+            )
 
     def route_and_predict(self, request_id: str, features: FeatureData) -> PredictionResult:
         return self.predict(self.route(request_id), features)
 
-    def record_outcome(self, request_id: str, predicted, actual, latency_ms: float | None = 0.0) -> bool:
+    def record_outcome(
+        self, request_id: str, predicted, actual, latency_ms: float | None = 0.0
+    ) -> bool:
         cohort = self._request_cohorts.get(request_id)
         if cohort is None:
             return False
@@ -220,13 +242,33 @@ class ABTestRouter:
     def promote_candidate(self, force: bool = False) -> PromotionResult:
         comparison = self.compare_metrics()
         if getattr(self, "_version_manager_mock", object()) is None:
-            return PromotionResult(PromotionStatus.ERROR, False, error_message="Version manager unavailable", comparison=comparison)
+            return PromotionResult(
+                PromotionStatus.ERROR,
+                False,
+                error_message="Version manager unavailable",
+                comparison=comparison,
+            )
         if force and self.candidate_model is None:
-            return PromotionResult(PromotionStatus.ERROR, False, error_message="Candidate model unavailable", comparison=comparison)
+            return PromotionResult(
+                PromotionStatus.ERROR,
+                False,
+                error_message="Candidate model unavailable",
+                comparison=comparison,
+            )
         if not force and comparison.result == ComparisonResult.INSUFFICIENT_DATA:
-            return PromotionResult(PromotionStatus.NOT_READY, False, error_message="Insufficient data", comparison=comparison)
+            return PromotionResult(
+                PromotionStatus.NOT_READY,
+                False,
+                error_message="Insufficient data",
+                comparison=comparison,
+            )
         if not force and not comparison.candidate_is_better:
-            return PromotionResult(PromotionStatus.BLOCKED, False, error_message="Candidate is not better", comparison=comparison)
+            return PromotionResult(
+                PromotionStatus.BLOCKED,
+                False,
+                error_message="Candidate is not better",
+                comparison=comparison,
+            )
         previous = self.champion_version
         self.champion_model = self.candidate_model
         self.champion_version = self.candidate_version

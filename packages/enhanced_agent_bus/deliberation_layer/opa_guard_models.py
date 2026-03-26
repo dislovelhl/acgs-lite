@@ -20,16 +20,14 @@ from enhanced_agent_bus.bus_types import JSONDict, JSONValue
 _module = sys.modules.get(__name__)
 if _module is not None:
     sys.modules.setdefault("enhanced_agent_bus.deliberation_layer.opa_guard_models", _module)
-    sys.modules.setdefault(
-        "enhanced_agent_bus.deliberation_layer.opa_guard_models", _module
-    )
+    sys.modules.setdefault("enhanced_agent_bus.deliberation_layer.opa_guard_models", _module)
     sys.modules.setdefault("core.enhanced_agent_bus.deliberation_layer.opa_guard_models", _module)
 
 # Import centralized constitutional hash from shared module
 try:
     from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 # Alias for backward compatibility
 GUARD_CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH
 

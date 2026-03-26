@@ -132,9 +132,7 @@ class TestZ3SolverAdapter:
     def test_reset_solver(self):
         adapter = Z3SolverAdapter()
         x = z3.Bool("x")
-        meta = Z3Constraint(
-            name="c1", expression="x", natural_language="x is true", confidence=1.0
-        )
+        meta = Z3Constraint(name="c1", expression="x", natural_language="x is true", confidence=1.0)
         adapter.add_constraint("c1", x, meta)
         assert "c1" in adapter.named_constraints
         adapter.reset_solver()
@@ -143,9 +141,7 @@ class TestZ3SolverAdapter:
     def test_add_constraint(self):
         adapter = Z3SolverAdapter()
         x = z3.Bool("x")
-        meta = Z3Constraint(
-            name="c1", expression="x", natural_language="x", confidence=1.0
-        )
+        meta = Z3Constraint(name="c1", expression="x", natural_language="x", confidence=1.0)
         adapter.add_constraint("c1", x, meta)
         assert "c1" in adapter.named_constraints
         assert len(adapter.constraint_history) == 1
@@ -202,7 +198,8 @@ class TestZ3SolverAdapter:
         adapter = Z3SolverAdapter()
         x = z3.Bool("x")
         adapter.add_constraint(
-            "c1", x,
+            "c1",
+            x,
             Z3Constraint(name="c1", expression="x", natural_language="x", confidence=1.0),
         )
         result = adapter.check_sat()
@@ -212,7 +209,8 @@ class TestZ3SolverAdapter:
         adapter = Z3SolverAdapter()
         x = z3.Int("x")
         adapter.add_constraint(
-            "c1", x == 42,
+            "c1",
+            x == 42,
             Z3Constraint(name="c1", expression="x==42", natural_language="x is 42", confidence=1.0),
         )
         result = adapter.check_sat()
@@ -254,7 +252,9 @@ class TestLLMAssistedZ3Adapter:
 
     def test_extract_policy_elements_prohibition(self):
         adapter = LLMAssistedZ3Adapter()
-        elements = adapter._extract_policy_elements("Users are forbidden from accessing admin data.")
+        elements = adapter._extract_policy_elements(
+            "Users are forbidden from accessing admin data."
+        )
         assert len(elements) == 1
         assert elements[0]["type"] == "prohibition"
 
@@ -305,9 +305,7 @@ class TestLLMAssistedZ3Adapter:
     @pytest.mark.asyncio
     async def test_natural_language_to_constraints_empty(self):
         adapter = LLMAssistedZ3Adapter()
-        constraints = await adapter.natural_language_to_constraints(
-            "Nothing interesting here"
-        )
+        constraints = await adapter.natural_language_to_constraints("Nothing interesting here")
         assert len(constraints) == 0
 
     @pytest.mark.asyncio
@@ -430,8 +428,10 @@ class TestLLMAssistedZ3Adapter:
         adapter = LLMAssistedZ3Adapter()
         constraints = [
             Z3Constraint(
-                name="c1", expression="(declare-const x Bool)\n(assert x)",
-                natural_language="x", confidence=0.9,
+                name="c1",
+                expression="(declare-const x Bool)\n(assert x)",
+                natural_language="x",
+                confidence=0.9,
             )
         ]
         sat_result = Z3VerificationResult(is_sat=True)

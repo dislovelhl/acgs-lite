@@ -46,8 +46,18 @@ class RolloutStage(str, Enum):
 
 # Risk tier → maximum allowed rollout stage
 _TIER_MAX_STAGE: dict[RiskTier, set[RolloutStage]] = {
-    RiskTier.LOW: {RolloutStage.CANARY, RolloutStage.SHADOW, RolloutStage.PARTIAL, RolloutStage.FULL},
-    RiskTier.MEDIUM: {RolloutStage.CANARY, RolloutStage.SHADOW, RolloutStage.PARTIAL, RolloutStage.FULL},
+    RiskTier.LOW: {
+        RolloutStage.CANARY,
+        RolloutStage.SHADOW,
+        RolloutStage.PARTIAL,
+        RolloutStage.FULL,
+    },
+    RiskTier.MEDIUM: {
+        RolloutStage.CANARY,
+        RolloutStage.SHADOW,
+        RolloutStage.PARTIAL,
+        RolloutStage.FULL,
+    },
     RiskTier.HIGH: {RolloutStage.CANARY, RolloutStage.SHADOW},
     RiskTier.CRITICAL: {RolloutStage.CANARY, RolloutStage.SHADOW, RolloutStage.PARTIAL},
 }

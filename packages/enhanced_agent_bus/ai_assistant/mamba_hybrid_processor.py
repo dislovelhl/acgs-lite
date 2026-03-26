@@ -39,6 +39,7 @@ MAMBA_MODEL_LOAD_ERRORS = (
     OSError,
 )
 
+
 def _has_real_torch() -> bool:
     try:
         return importlib.util.find_spec("torch") is not None
@@ -73,6 +74,7 @@ else:
 
     def torch_no_grad_context():
         return nullcontext()
+
 
 # Conditional base class for when torch is unavailable
 _ModuleBase = nn.Module if TORCH_AVAILABLE else object  # type: ignore[misc]

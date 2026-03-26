@@ -532,6 +532,7 @@ class TestRunScheduledDriftDetection:
         engine = _make_engine()
         engine._drift_detector = MagicMock()
         import time
+
         engine._last_drift_check = time.time()
         engine._drift_check_interval = 9999
         engine._run_scheduled_drift_detection()
@@ -866,7 +867,8 @@ class TestListAmendments:
         mock_storage = AsyncMock()
         mock_storage.list_amendments.return_value = ([_make_amendment()], 1)
 
-        with _review_api_patch("ConstitutionalStorageService",
+        with _review_api_patch(
+            "ConstitutionalStorageService",
             return_value=mock_storage,
         ):
             result = await list_amendments(
@@ -884,7 +886,8 @@ class TestListAmendments:
         mock_storage = AsyncMock()
         mock_storage.list_amendments.return_value = ([], 0)
 
-        with _review_api_patch("ConstitutionalStorageService",
+        with _review_api_patch(
+            "ConstitutionalStorageService",
             return_value=mock_storage,
         ):
             result = await list_amendments(
@@ -901,7 +904,8 @@ class TestListAmendments:
         mock_storage = AsyncMock()
 
         with (
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
             pytest.raises(Exception) as exc_info,
@@ -920,7 +924,8 @@ class TestListAmendments:
         mock_storage = AsyncMock()
 
         with (
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
             pytest.raises(Exception) as exc_info,
@@ -939,7 +944,8 @@ class TestListAmendments:
         mock_storage = AsyncMock()
 
         with (
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
             pytest.raises(Exception) as exc_info,
@@ -959,7 +965,8 @@ class TestListAmendments:
         mock_storage.connect.side_effect = RuntimeError("db down")
 
         with (
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
             pytest.raises(Exception) as exc_info,
@@ -978,7 +985,8 @@ class TestListAmendments:
         mock_storage = AsyncMock()
         mock_storage.list_amendments.return_value = ([_make_amendment()], 1)
 
-        with _review_api_patch("ConstitutionalStorageService",
+        with _review_api_patch(
+            "ConstitutionalStorageService",
             return_value=mock_storage,
         ):
             result = await list_amendments(
@@ -999,7 +1007,8 @@ class TestGetAmendment:
         mock_storage.get_amendment.return_value = amendment
         mock_storage.get_version.return_value = None
 
-        with _review_api_patch("ConstitutionalStorageService",
+        with _review_api_patch(
+            "ConstitutionalStorageService",
             return_value=mock_storage,
         ):
             result = await get_amendment("amend-001")
@@ -1010,7 +1019,8 @@ class TestGetAmendment:
         mock_storage.get_amendment.return_value = None
 
         with (
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
             pytest.raises(Exception) as exc_info,
@@ -1047,10 +1057,12 @@ class TestGetAmendment:
         mock_diff_engine.compute_diff_from_content = AsyncMock(return_value=fake_diff)
 
         with (
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
-            _review_api_patch("ConstitutionalDiffEngine",
+            _review_api_patch(
+                "ConstitutionalDiffEngine",
                 return_value=mock_diff_engine,
             ),
         ):
@@ -1091,10 +1103,12 @@ class TestGetAmendment:
         mock_diff_engine.compute_diff = AsyncMock(return_value=fake_diff)
 
         with (
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
-            _review_api_patch("ConstitutionalDiffEngine",
+            _review_api_patch(
+                "ConstitutionalDiffEngine",
                 return_value=mock_diff_engine,
             ),
         ):
@@ -1107,7 +1121,8 @@ class TestGetAmendment:
         mock_storage.get_amendment.return_value = amendment
         mock_storage.get_version.return_value = None
 
-        with _review_api_patch("ConstitutionalStorageService",
+        with _review_api_patch(
+            "ConstitutionalStorageService",
             return_value=mock_storage,
         ):
             result = await get_amendment("amend-001", include_diff=False)
@@ -1122,7 +1137,8 @@ class TestGetAmendment:
         mock_storage.get_amendment.return_value = amendment
         mock_storage.get_version.return_value = None
 
-        with _review_api_patch("ConstitutionalStorageService",
+        with _review_api_patch(
+            "ConstitutionalStorageService",
             return_value=mock_storage,
         ):
             result = await get_amendment("amend-001", include_diff=False)
@@ -1134,7 +1150,8 @@ class TestGetAmendment:
         mock_storage.connect.side_effect = RuntimeError("db down")
 
         with (
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
             pytest.raises(Exception) as exc_info,
@@ -1161,19 +1178,24 @@ class TestApproveAmendment:
         mock_audit.log_event = AsyncMock()
 
         with (
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
-            _review_api_patch("MACIEnforcer",
+            _review_api_patch(
+                "MACIEnforcer",
                 return_value=mock_maci,
             ),
-            _review_api_patch("ConstitutionalHITLIntegration",
+            _review_api_patch(
+                "ConstitutionalHITLIntegration",
                 return_value=mock_hitl,
             ),
-            _review_api_patch("AuditClient",
+            _review_api_patch(
+                "AuditClient",
                 return_value=mock_audit,
             ),
-            _review_api_patch("AuditClientConfig",
+            _review_api_patch(
+                "AuditClientConfig",
                 return_value=MagicMock(),
             ),
         ):
@@ -1202,19 +1224,24 @@ class TestApproveAmendment:
         mock_audit.log_event = AsyncMock()
 
         with (
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
-            _review_api_patch("MACIEnforcer",
+            _review_api_patch(
+                "MACIEnforcer",
                 return_value=mock_maci,
             ),
-            _review_api_patch("ConstitutionalHITLIntegration",
+            _review_api_patch(
+                "ConstitutionalHITLIntegration",
                 return_value=mock_hitl,
             ),
-            _review_api_patch("AuditClient",
+            _review_api_patch(
+                "AuditClient",
                 return_value=mock_audit,
             ),
-            _review_api_patch("AuditClientConfig",
+            _review_api_patch(
+                "AuditClientConfig",
                 return_value=MagicMock(),
             ),
         ):
@@ -1228,7 +1255,8 @@ class TestApproveAmendment:
         mock_maci.validate_action = AsyncMock(return_value={"allowed": False})
 
         with (
-            _review_api_patch("MACIEnforcer",
+            _review_api_patch(
+                "MACIEnforcer",
                 return_value=mock_maci,
             ),
             pytest.raises(Exception) as exc_info,
@@ -1245,10 +1273,12 @@ class TestApproveAmendment:
         mock_maci.validate_action = AsyncMock(return_value={"allowed": True})
 
         with (
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
-            _review_api_patch("MACIEnforcer",
+            _review_api_patch(
+                "MACIEnforcer",
                 return_value=mock_maci,
             ),
             pytest.raises(Exception) as exc_info,
@@ -1266,10 +1296,12 @@ class TestApproveAmendment:
         mock_maci.validate_action = AsyncMock(return_value={"allowed": True})
 
         with (
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
-            _review_api_patch("MACIEnforcer",
+            _review_api_patch(
+                "MACIEnforcer",
                 return_value=mock_maci,
             ),
             pytest.raises(Exception) as exc_info,
@@ -1286,10 +1318,12 @@ class TestApproveAmendment:
         mock_storage.connect.side_effect = RuntimeError("db boom")
 
         with (
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
-            _review_api_patch("MACIEnforcer",
+            _review_api_patch(
+                "MACIEnforcer",
                 return_value=mock_maci,
             ),
             pytest.raises(Exception) as exc_info,
@@ -1312,16 +1346,20 @@ class TestRejectAmendment:
         mock_audit.log_event = AsyncMock()
 
         with (
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
-            _review_api_patch("MACIEnforcer",
+            _review_api_patch(
+                "MACIEnforcer",
                 return_value=mock_maci,
             ),
-            _review_api_patch("AuditClient",
+            _review_api_patch(
+                "AuditClient",
                 return_value=mock_audit,
             ),
-            _review_api_patch("AuditClientConfig",
+            _review_api_patch(
+                "AuditClientConfig",
                 return_value=MagicMock(),
             ),
         ):
@@ -1339,7 +1377,8 @@ class TestRejectAmendment:
         mock_maci.validate_action = AsyncMock(return_value={"allowed": False})
 
         with (
-            _review_api_patch("MACIEnforcer",
+            _review_api_patch(
+                "MACIEnforcer",
                 return_value=mock_maci,
             ),
             pytest.raises(Exception) as exc_info,
@@ -1359,10 +1398,12 @@ class TestRejectAmendment:
         mock_maci.validate_action = AsyncMock(return_value={"allowed": True})
 
         with (
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
-            _review_api_patch("MACIEnforcer",
+            _review_api_patch(
+                "MACIEnforcer",
                 return_value=mock_maci,
             ),
             pytest.raises(Exception) as exc_info,
@@ -1383,10 +1424,12 @@ class TestRejectAmendment:
         mock_maci.validate_action = AsyncMock(return_value={"allowed": True})
 
         with (
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
-            _review_api_patch("MACIEnforcer",
+            _review_api_patch(
+                "MACIEnforcer",
                 return_value=mock_maci,
             ),
             pytest.raises(Exception) as exc_info,
@@ -1406,10 +1449,12 @@ class TestRejectAmendment:
         mock_storage.connect.side_effect = RuntimeError("db boom")
 
         with (
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
-            _review_api_patch("MACIEnforcer",
+            _review_api_patch(
+                "MACIEnforcer",
                 return_value=mock_maci,
             ),
             pytest.raises(Exception) as exc_info,
@@ -1424,8 +1469,7 @@ class TestRejectAmendment:
 
 class TestRollbackToVersion:
     async def test_rollback_not_available_raises_501(self):
-        with _review_api_patch("ROLLBACK_AVAILABLE", False
-        ):
+        with _review_api_patch("ROLLBACK_AVAILABLE", False):
             with pytest.raises(Exception) as exc_info:
                 request = RollbackRequest(
                     requester_agent_id="judge-001",
@@ -1440,7 +1484,8 @@ class TestRollbackToVersion:
 
         with (
             _review_api_patch("ROLLBACK_AVAILABLE", True),
-            _review_api_patch("MACIEnforcer",
+            _review_api_patch(
+                "MACIEnforcer",
                 return_value=mock_maci,
             ),
             pytest.raises(Exception) as exc_info,
@@ -1460,10 +1505,12 @@ class TestRollbackToVersion:
 
         with (
             _review_api_patch("ROLLBACK_AVAILABLE", True),
-            _review_api_patch("MACIEnforcer",
+            _review_api_patch(
+                "MACIEnforcer",
                 return_value=mock_maci,
             ),
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
             pytest.raises(Exception) as exc_info,
@@ -1492,10 +1539,12 @@ class TestRollbackToVersion:
 
         with (
             _review_api_patch("ROLLBACK_AVAILABLE", True),
-            _review_api_patch("MACIEnforcer",
+            _review_api_patch(
+                "MACIEnforcer",
                 return_value=mock_maci,
             ),
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
             pytest.raises(Exception) as exc_info,
@@ -1520,10 +1569,12 @@ class TestRollbackToVersion:
 
         with (
             _review_api_patch("ROLLBACK_AVAILABLE", True),
-            _review_api_patch("MACIEnforcer",
+            _review_api_patch(
+                "MACIEnforcer",
                 return_value=mock_maci,
             ),
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
             pytest.raises(Exception) as exc_info,
@@ -1544,10 +1595,12 @@ class TestRollbackToVersion:
 
         with (
             _review_api_patch("ROLLBACK_AVAILABLE", True),
-            _review_api_patch("MACIEnforcer",
+            _review_api_patch(
+                "MACIEnforcer",
                 return_value=mock_maci,
             ),
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
             pytest.raises(Exception) as exc_info,
@@ -1578,26 +1631,29 @@ class TestApproveAmendmentWithXAgentId:
         mock_audit.log_event = AsyncMock()
 
         with (
-            _review_api_patch("ConstitutionalStorageService",
+            _review_api_patch(
+                "ConstitutionalStorageService",
                 return_value=mock_storage,
             ),
-            _review_api_patch("MACIEnforcer",
+            _review_api_patch(
+                "MACIEnforcer",
                 return_value=mock_maci,
             ),
-            _review_api_patch("ConstitutionalHITLIntegration",
+            _review_api_patch(
+                "ConstitutionalHITLIntegration",
                 return_value=mock_hitl,
             ),
-            _review_api_patch("AuditClient",
+            _review_api_patch(
+                "AuditClient",
                 return_value=mock_audit,
             ),
-            _review_api_patch("AuditClientConfig",
+            _review_api_patch(
+                "AuditClientConfig",
                 return_value=MagicMock(),
             ),
         ):
             request = ApprovalRequest(approver_agent_id="judge-001")
-            result = await approve_amendment(
-                "amend-001", request, x_agent_id="header-agent"
-            )
+            result = await approve_amendment("amend-001", request, x_agent_id="header-agent")
         # MACI should have been called with header-agent
         call_kwargs = mock_maci.validate_action.call_args[1]
         assert call_kwargs["agent_id"] == "header-agent"
@@ -1606,6 +1662,7 @@ class TestApproveAmendmentWithXAgentId:
 # ============================================================================
 # Response model tests for review_api
 # ============================================================================
+
 
 class TestResponseModels:
     def test_amendment_list_response(self):

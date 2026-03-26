@@ -1,16 +1,14 @@
 """
 ACGS-2 Enhanced Agent Bus - Constitutional Storage Layer (Facade)
-Constitutional Hash: 608508a9bd224290
+Constitutional Hash: cdd01ef066bc6cf2
 
 Storage service for persisting constitutional versions with Redis caching
 and PostgreSQL persistence. Supports atomic version transitions with locking.
 Delegates to specialized modules in .storage_infra.
 """
 
-import sys
-
 try:
-    from src.core.shared.types import JSONDict
+    from src.core.shared.types import JSONDict  # noqa: E402
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -21,10 +19,6 @@ from .storage_infra.config import StorageConfig
 from .storage_infra.service import ConstitutionalStorageService as ModularStorageService
 from .version_model import ConstitutionalStatus, ConstitutionalVersion
 
-_MODULE = sys.modules[__name__]
-sys.modules.setdefault("enhanced_agent_bus.constitutional.storage", _MODULE)
-sys.modules.setdefault("packages.enhanced_agent_bus.constitutional.storage", _MODULE)
-
 logger = get_logger(__name__)
 __all__ = ["ConstitutionalStorageService", "StorageConfig"]
 
@@ -33,7 +27,7 @@ class ConstitutionalStorageService:
     """
     Facade for constitutional storage service (Backward Compatible).
 
-    Constitutional Hash: 608508a9bd224290
+    Constitutional Hash: cdd01ef066bc6cf2
     """
 
     def __init__(

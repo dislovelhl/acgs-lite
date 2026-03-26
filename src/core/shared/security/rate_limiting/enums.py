@@ -1,7 +1,7 @@
 """
 Rate Limiting Enums.
 
-Constitutional Hash: 608508a9bd224290
+Constitutional Hash: cdd01ef066bc6cf2
 """
 
 from enum import StrEnum
@@ -20,6 +20,6 @@ class RateLimitScope(StrEnum):
 class RateLimitAlgorithm(StrEnum):
     """Rate limiting algorithms."""
 
-    TOKEN_BUCKET = "token_bucket"  # noqa: S105 - algorithm label, not a secret
+    TOKEN_BUCKET = "token_bucket"
     SLIDING_WINDOW = "sliding_window"
     FIXED_WINDOW = "fixed_window"

@@ -102,7 +102,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Validate only — do not post comments or approve/block",
     )
     parser.add_argument(
-        "--verbose", "-v",
+        "--verbose",
+        "-v",
         action="store_true",
         help="Enable debug logging",
     )
@@ -123,6 +124,7 @@ def _env_int(name: str) -> int | None:
 # ---------------------------------------------------------------------------
 # Display helpers
 # ---------------------------------------------------------------------------
+
 
 def print_header(text: str) -> None:
     print(f"\n{'=' * 64}")
@@ -189,6 +191,7 @@ def print_maci_result(result: dict) -> None:
 # ---------------------------------------------------------------------------
 # Main pipeline
 # ---------------------------------------------------------------------------
+
 
 async def run_governance(args: argparse.Namespace) -> int:
     """Execute the governance pipeline and return an exit code (0=pass, 1=fail)."""

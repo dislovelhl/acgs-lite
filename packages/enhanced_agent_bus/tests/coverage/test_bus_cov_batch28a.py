@@ -613,9 +613,7 @@ class TestHttpClient:
 
         with patch.object(client, "_do_request", new_callable=AsyncMock) as mock_do:
             mock_do.return_value = mock_response
-            resp = await client.request(
-                "GET", "http://example.com", retry_on_failure=False
-            )
+            resp = await client.request("GET", "http://example.com", retry_on_failure=False)
             mock_do.assert_called_once()
 
         await client.close()

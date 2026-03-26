@@ -65,9 +65,7 @@ class TestImpactScorerInit:
         assert scorer.model_version is None
 
     def test_init_sklearn_unavailable(self):
-        with patch(
-            "enhanced_agent_bus.adaptive_governance.impact_scorer.SKLEARN_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.adaptive_governance.impact_scorer.SKLEARN_AVAILABLE", False):
             scorer = ImpactScorer.__new__(ImpactScorer)
             scorer.constitutional_hash = "hash"
             scorer.feature_weights = {
@@ -91,9 +89,7 @@ class TestImpactScorerInit:
             assert scorer.impact_classifier is None
 
     def test_mlflow_not_available_during_init(self):
-        with patch(
-            "enhanced_agent_bus.adaptive_governance.impact_scorer.MLFLOW_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.adaptive_governance.impact_scorer.MLFLOW_AVAILABLE", False):
             scorer = ImpactScorer(constitutional_hash="hash")
             assert scorer._mlflow_initialized is False
 
@@ -310,9 +306,7 @@ class TestAssessImpact:
             assert result.confidence_level == 0.85
 
     async def test_error_returns_safe_defaults(self):
-        with patch.object(
-            self.scorer, "_extract_features", side_effect=RuntimeError("boom")
-        ):
+        with patch.object(self.scorer, "_extract_features", side_effect=RuntimeError("boom")):
             message = {"content": "test", "tenant_id": "t1"}
             context = {}
             result = await self.scorer.assess_impact(message, context)
@@ -320,9 +314,7 @@ class TestAssessImpact:
             assert result.confidence_level == 0.5
 
     async def test_error_with_missing_content(self):
-        with patch.object(
-            self.scorer, "_extract_features", side_effect=ValueError("bad data")
-        ):
+        with patch.object(self.scorer, "_extract_features", side_effect=ValueError("bad data")):
             message = {}
             context = {}
             result = await self.scorer.assess_impact(message, context)
@@ -486,9 +478,7 @@ class TestLogTrainingRunToMlflow:
         self.scorer.impact_classifier = mock_classifier
         self.scorer._mlflow_initialized = True
 
-        with patch(
-            "enhanced_agent_bus.adaptive_governance.impact_scorer.mlflow"
-        ) as mock_mlflow:
+        with patch("enhanced_agent_bus.adaptive_governance.impact_scorer.mlflow") as mock_mlflow:
             mock_mlflow.start_run.side_effect = RuntimeError("mlflow down")
             # Should fall back to fit without mlflow
             self.scorer._log_training_run_to_mlflow(X, y, samples)
@@ -967,9 +957,7 @@ class TestPQCValidatorProtocol:
 class TestConstitutionalVerifierProtocol:
     def test_isinstance_check(self):
         class MyVerifier:
-            async def verify_constitutional_compliance(
-                self, action_data, context, session_id=None
-            ):
+            async def verify_constitutional_compliance(self, action_data, context, session_id=None):
                 return MagicMock(is_valid=True, failure_reason=None)
 
         assert isinstance(MyVerifier(), ConstitutionalVerifierProtocol)
@@ -1035,9 +1023,7 @@ class TestApprovalsValidatorProtocol:
 
         av = MyAV()
         assert isinstance(av, ApprovalsValidatorProtocol)
-        ok, reason = av.validate_approvals(
-            policy={}, decisions=[], approvers={}, requester_id="u1"
-        )
+        ok, reason = av.validate_approvals(policy={}, decisions=[], approvers={}, requester_id="u1")
         assert ok is True
 
 
@@ -1226,9 +1212,7 @@ class TestSemanticRetriever:
         mock_store = MagicMock()
         mock_store.search.return_value = [mock_result]
 
-        retriever = SemanticRetriever(
-            embedding_provider=mock_provider, vector_store=mock_store
-        )
+        retriever = SemanticRetriever(embedding_provider=mock_provider, vector_store=mock_store)
         retriever._initialized = True
 
         results = await retriever.retrieve("test query", limit=3)
@@ -1249,9 +1233,7 @@ class TestSemanticRetriever:
         mock_store = MagicMock()
         mock_store.upsert = MagicMock()
 
-        retriever = SemanticRetriever(
-            embedding_provider=mock_provider, vector_store=mock_store
-        )
+        retriever = SemanticRetriever(embedding_provider=mock_provider, vector_store=mock_store)
         retriever._initialized = True
 
         # Create a fake embeddings.vector_store module with VectorDocument
@@ -1267,8 +1249,10 @@ class TestSemanticRetriever:
 
         with patch.dict(
             sys.modules,
-            {"enhanced_agent_bus.embeddings": MagicMock(),
-             "enhanced_agent_bus.embeddings.vector_store": fake_vs_module},
+            {
+                "enhanced_agent_bus.embeddings": MagicMock(),
+                "enhanced_agent_bus.embeddings.vector_store": fake_vs_module,
+            },
         ):
             result = await retriever.index_document("d1", "hello", {"key": "val"})
 
@@ -1286,9 +1270,7 @@ class TestSemanticRetriever:
         mock_store = MagicMock()
         mock_store.upsert.return_value = 2
 
-        retriever = SemanticRetriever(
-            embedding_provider=mock_provider, vector_store=mock_store
-        )
+        retriever = SemanticRetriever(embedding_provider=mock_provider, vector_store=mock_store)
         retriever._initialized = True
 
         @dataclass
@@ -1307,8 +1289,10 @@ class TestSemanticRetriever:
 
         with patch.dict(
             sys.modules,
-            {"enhanced_agent_bus.embeddings": MagicMock(),
-             "enhanced_agent_bus.embeddings.vector_store": fake_vs_module},
+            {
+                "enhanced_agent_bus.embeddings": MagicMock(),
+                "enhanced_agent_bus.embeddings.vector_store": fake_vs_module,
+            },
         ):
             count = await retriever.index_documents_batch(docs)
         assert count == 2
@@ -1431,9 +1415,7 @@ class TestSemanticRetrieverEnsureInitializedPaths:
     def test_with_providers_pre_set(self):
         mock_provider = MagicMock()
         mock_store = MagicMock()
-        retriever = SemanticRetriever(
-            embedding_provider=mock_provider, vector_store=mock_store
-        )
+        retriever = SemanticRetriever(embedding_provider=mock_provider, vector_store=mock_store)
         retriever._initialized = False
 
         if EMBEDDINGS_AVAILABLE:

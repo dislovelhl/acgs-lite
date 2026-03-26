@@ -401,9 +401,7 @@ class DefaultDeliberationActivities:
         import hashlib
         import json
 
-        return hashlib.sha256(
-            json.dumps(workflow_result, default=str).encode()
-        ).hexdigest()[:16]
+        return hashlib.sha256(json.dumps(workflow_result, default=str).encode()).hexdigest()[:16]
 
     async def deliver_message(self, message_id: str, to_agent: str, content: str) -> bool:
         """Deliver message to target agent."""

@@ -80,16 +80,12 @@ class TestOPAClientCoreInit:
             OPAClientCore(cache_hash_mode="bogus")
 
     def test_embedded_mode_falls_back_when_sdk_unavailable(self):
-        with patch(
-            "enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=False
-        ):
+        with patch("enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=False):
             c = OPAClientCore(mode="embedded")
             assert c.mode == "http"
 
     def test_embedded_mode_accepted_when_sdk_available(self):
-        with patch(
-            "enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True
-        ):
+        with patch("enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True):
             c = OPAClientCore(mode="embedded")
             assert c.mode == "embedded"
 
@@ -246,11 +242,12 @@ class TestInitializeClose:
 
     async def test_initialize_embedded_opa_success(self, client):
         fake_opa = MagicMock()
-        with patch(
-            "enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True
-        ), patch(
-            "enhanced_agent_bus.opa_client.core._get_embedded_opa_class",
-            return_value=MagicMock(return_value=fake_opa),
+        with (
+            patch("enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True),
+            patch(
+                "enhanced_agent_bus.opa_client.core._get_embedded_opa_class",
+                return_value=MagicMock(return_value=fake_opa),
+            ),
         ):
             client.mode = "embedded"
             await client._initialize_embedded_opa()
@@ -358,26 +355,21 @@ class TestEvaluatePolicy:
         policy = "data.test.allow"
         inp = {"user": "alice"}
         cached = {"result": True, "allowed": True}
-        with patch.object(
-            client, "_get_from_cache", new_callable=AsyncMock, return_value=cached
-        ), patch.object(
-            client, "_generate_cache_key", return_value="k"
+        with (
+            patch.object(client, "_get_from_cache", new_callable=AsyncMock, return_value=cached),
+            patch.object(client, "_generate_cache_key", return_value="k"),
         ):
             result = await client.evaluate_policy(inp, policy)
             assert result == cached
 
     async def test_fail_closed_on_connection_error(self, http_client):
-        http_client._http_client.post = AsyncMock(
-            side_effect=httpx.ConnectError("refused")
-        )
+        http_client._http_client.post = AsyncMock(side_effect=httpx.ConnectError("refused"))
         result = await http_client.evaluate_policy({"user": "a"}, "data.test.allow")
         assert result["allowed"] is False
         assert result["metadata"]["security"] == "fail-closed"
 
     async def test_fail_closed_on_timeout(self, http_client):
-        http_client._http_client.post = AsyncMock(
-            side_effect=httpx.TimeoutException("timeout")
-        )
+        http_client._http_client.post = AsyncMock(side_effect=httpx.TimeoutException("timeout"))
         result = await http_client.evaluate_policy({"user": "a"}, "data.test.allow")
         assert result["allowed"] is False
 
@@ -388,7 +380,10 @@ class TestEvaluatePolicy:
     async def test_delegates_to_multi_path_when_candidates_present(self, client):
         inp = {"user": "a", "support_set_candidates": [{"x": 1}]}
         with patch.object(
-            client, "evaluate_policy_multi_path", new_callable=AsyncMock, return_value={"allowed": True}
+            client,
+            "evaluate_policy_multi_path",
+            new_callable=AsyncMock,
+            return_value={"allowed": True},
         ) as mock:
             result = await client.evaluate_policy(inp, "data.test.allow")
             mock.assert_awaited_once()
@@ -430,18 +425,14 @@ class TestEvaluateHTTP:
     async def test_connect_error_raises_opa_connection(self, http_client):
         from enhanced_agent_bus.exceptions import OPAConnectionError
 
-        http_client._http_client.post = AsyncMock(
-            side_effect=httpx.ConnectError("fail")
-        )
+        http_client._http_client.post = AsyncMock(side_effect=httpx.ConnectError("fail"))
         with pytest.raises(OPAConnectionError):
             await http_client._evaluate_http({}, "data.test")
 
     async def test_timeout_raises_opa_connection(self, http_client):
         from enhanced_agent_bus.exceptions import OPAConnectionError
 
-        http_client._http_client.post = AsyncMock(
-            side_effect=httpx.ConnectTimeout("timeout")
-        )
+        http_client._http_client.post = AsyncMock(side_effect=httpx.ConnectTimeout("timeout"))
         with pytest.raises(OPAConnectionError):
             await http_client._evaluate_http({}, "data.test")
 
@@ -508,7 +499,9 @@ class TestEvaluateEmbedded:
         loop = MagicMock()
         loop.run_in_executor = AsyncMock(return_value=True)
 
-        with patch("enhanced_agent_bus.opa_client.core.asyncio.get_running_loop", return_value=loop):
+        with patch(
+            "enhanced_agent_bus.opa_client.core.asyncio.get_running_loop", return_value=loop
+        ):
             with patch("enhanced_agent_bus.opa_client.core.ThreadPoolExecutor") as executor_cls:
                 executor = MagicMock()
                 executor_cls.return_value = executor
@@ -558,9 +551,7 @@ class TestEvaluateFallback:
         assert result["metadata"]["security"] == "fail-closed"
 
     async def test_wrong_constitutional_hash(self, client):
-        result = await client._evaluate_fallback(
-            {"constitutional_hash": "wrong"}, "data.test"
-        )
+        result = await client._evaluate_fallback({"constitutional_hash": "wrong"}, "data.test")
         assert result["allowed"] is False
         assert "Invalid constitutional hash" in result["reason"]
 
@@ -768,7 +759,9 @@ class TestLoadPolicy:
         resp.raise_for_status = MagicMock()
         http_client._http_client.put = AsyncMock(return_value=resp)
         with patch.object(http_client, "clear_cache", new_callable=AsyncMock):
-            result = await http_client.load_policy("my_policy", "package my_policy\ndefault allow = false")
+            result = await http_client.load_policy(
+                "my_policy", "package my_policy\ndefault allow = false"
+            )
             assert result is True
 
     async def test_not_http_mode(self, client):
@@ -782,16 +775,12 @@ class TestLoadPolicy:
         assert result is False
 
     async def test_connect_error(self, http_client):
-        http_client._http_client.put = AsyncMock(
-            side_effect=httpx.ConnectError("fail")
-        )
+        http_client._http_client.put = AsyncMock(side_effect=httpx.ConnectError("fail"))
         result = await http_client.load_policy("p", "content")
         assert result is False
 
     async def test_timeout_error(self, http_client):
-        http_client._http_client.put = AsyncMock(
-            side_effect=httpx.TimeoutException("timeout")
-        )
+        http_client._http_client.put = AsyncMock(side_effect=httpx.TimeoutException("timeout"))
         result = await http_client.load_policy("p", "content")
         assert result is False
 
@@ -805,9 +794,7 @@ class TestLoadPolicy:
         assert result is False
 
     async def test_runtime_error(self, http_client):
-        http_client._http_client.put = AsyncMock(
-            side_effect=RuntimeError("unexpected")
-        )
+        http_client._http_client.put = AsyncMock(side_effect=RuntimeError("unexpected"))
         result = await http_client.load_policy("p", "content")
         assert result is False
 
@@ -819,14 +806,23 @@ class TestLoadPolicy:
 
 class TestEvaluateWithHistory:
     async def test_basic_temporal_evaluation(self, client):
-        with patch.object(
-            client, "_evaluate_http", new_callable=AsyncMock,
-            return_value={
-                "result": True, "allowed": True,
-                "reason": "ok", "metadata": {"mode": "http"},
-            },
-        ), patch.object(
-            client, "_is_temporal_multi_path_enabled", return_value=False,
+        with (
+            patch.object(
+                client,
+                "_evaluate_http",
+                new_callable=AsyncMock,
+                return_value={
+                    "result": True,
+                    "allowed": True,
+                    "reason": "ok",
+                    "metadata": {"mode": "http"},
+                },
+            ),
+            patch.object(
+                client,
+                "_is_temporal_multi_path_enabled",
+                return_value=False,
+            ),
         ):
             client._http_client = MagicMock()
             result = await client.evaluate_with_history(
@@ -836,7 +832,9 @@ class TestEvaluateWithHistory:
 
     async def test_fail_closed_on_error(self, client):
         with patch.object(
-            client, "_evaluate_http", new_callable=AsyncMock,
+            client,
+            "_evaluate_http",
+            new_callable=AsyncMock,
             side_effect=httpx.ConnectError("refused"),
         ):
             client._http_client = MagicMock()
@@ -846,9 +844,7 @@ class TestEvaluateWithHistory:
             assert result["allowed"] is False
 
     async def test_invalid_policy_path_fail_closed(self, client):
-        result = await client.evaluate_with_history(
-            {"action": "test"}, ["step1"], "data..bad"
-        )
+        result = await client.evaluate_with_history({"action": "test"}, ["step1"], "data..bad")
         assert result["allowed"] is False
 
 
@@ -876,9 +872,7 @@ class TestRollbackToLKG:
 
 class TestLoadBundleFromUrl:
     async def test_connection_error_triggers_rollback(self, http_client):
-        http_client._http_client.get = AsyncMock(
-            side_effect=httpx.ConnectError("fail")
-        )
+        http_client._http_client.get = AsyncMock(side_effect=httpx.ConnectError("fail"))
         with patch.object(
             http_client, "_rollback_to_lkg", new_callable=AsyncMock, return_value=False
         ) as mock_rollback:
@@ -889,9 +883,7 @@ class TestLoadBundleFromUrl:
             mock_rollback.assert_awaited_once()
 
     async def test_timeout_triggers_rollback(self, http_client):
-        http_client._http_client.get = AsyncMock(
-            side_effect=httpx.TimeoutException("timeout")
-        )
+        http_client._http_client.get = AsyncMock(side_effect=httpx.TimeoutException("timeout"))
         with patch.object(
             http_client, "_rollback_to_lkg", new_callable=AsyncMock, return_value=False
         ):
@@ -908,9 +900,10 @@ class TestLoadBundleFromUrl:
 
 class TestVerifyBundle:
     async def test_import_error_returns_false(self, client):
-        with patch(
-            "enhanced_agent_bus.opa_client.core.hashlib"
-        ), patch("builtins.open", side_effect=ImportError("no crypto")):
+        with (
+            patch("enhanced_agent_bus.opa_client.core.hashlib"),
+            patch("builtins.open", side_effect=ImportError("no crypto")),
+        ):
             result = await client._verify_bundle("/tmp/fake.tar.gz", "sig", "key")
             assert result is False
 

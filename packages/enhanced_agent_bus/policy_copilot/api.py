@@ -99,6 +99,7 @@ class ValidateRequest(BaseModel):
 def get_nlp_engine() -> Any:
     global _nlp_engine
     if _nlp_engine is None:
+
         class _Engine:
             def extract_entities(self, _description: str) -> list:
                 return []
@@ -113,6 +114,7 @@ def get_nlp_engine() -> Any:
 def get_rego_generator() -> Any:
     global _rego_generator
     if _rego_generator is None:
+
         class _Generator:
             TEMPLATES: dict[str, PolicyTemplate] = {}
 
@@ -143,6 +145,7 @@ def get_rego_generator() -> Any:
 def get_policy_validator() -> Any:
     global _policy_validator
     if _policy_validator is None:
+
         class _Validator:
             def validate_syntax(self, _policy: str) -> ValidationResult:
                 return ValidationResult(valid=True, syntax_check=True)
@@ -320,9 +323,7 @@ async def get_template(
     templates = getattr(generator, "TEMPLATES", {})
     template = templates.get(template_id)
     if template is None:
-        raise HTTPException(
-            status_code=404, detail=f"template not found: {template_id}"
-        )
+        raise HTTPException(status_code=404, detail=f"template not found: {template_id}")
     return template
 
 

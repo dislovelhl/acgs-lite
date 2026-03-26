@@ -17,6 +17,7 @@ from enhanced_agent_bus.constitutional.diff_engine import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_version(
     version_id="v1",
     version="1.0.0",
@@ -53,6 +54,7 @@ def engine():
 # ---------------------------------------------------------------------------
 # DiffChange / PrincipleChange models
 # ---------------------------------------------------------------------------
+
 
 class TestModels:
     def test_diff_change_creation(self):
@@ -93,12 +95,17 @@ class TestModels:
 # _compute_content_diff
 # ---------------------------------------------------------------------------
 
+
 class TestComputeContentDiff:
     def test_added_fields(self, engine):
         diff = SemanticDiff(
-            from_version="1", to_version="2",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="a", to_hash="b", hash_changed=False,
+            from_version="1",
+            to_version="2",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="a",
+            to_hash="b",
+            hash_changed=False,
         )
         engine._compute_content_diff(diff, {}, {"new_key": "val"})
         assert diff.additions_count == 1
@@ -107,9 +114,13 @@ class TestComputeContentDiff:
 
     def test_removed_fields(self, engine):
         diff = SemanticDiff(
-            from_version="1", to_version="2",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="a", to_hash="b", hash_changed=False,
+            from_version="1",
+            to_version="2",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="a",
+            to_hash="b",
+            hash_changed=False,
         )
         engine._compute_content_diff(diff, {"old_key": "val"}, {})
         assert diff.removals_count == 1
@@ -117,9 +128,13 @@ class TestComputeContentDiff:
 
     def test_modified_fields(self, engine):
         diff = SemanticDiff(
-            from_version="1", to_version="2",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="a", to_hash="b", hash_changed=False,
+            from_version="1",
+            to_version="2",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="a",
+            to_hash="b",
+            hash_changed=False,
         )
         engine._compute_content_diff(diff, {"key": "old"}, {"key": "new"})
         assert diff.modifications_count == 1
@@ -129,9 +144,13 @@ class TestComputeContentDiff:
 
     def test_nested_dict_recursion(self, engine):
         diff = SemanticDiff(
-            from_version="1", to_version="2",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="a", to_hash="b", hash_changed=False,
+            from_version="1",
+            to_version="2",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="a",
+            to_hash="b",
+            hash_changed=False,
         )
         engine._compute_content_diff(
             diff,
@@ -143,18 +162,26 @@ class TestComputeContentDiff:
 
     def test_no_changes(self, engine):
         diff = SemanticDiff(
-            from_version="1", to_version="2",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="a", to_hash="b", hash_changed=False,
+            from_version="1",
+            to_version="2",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="a",
+            to_hash="b",
+            hash_changed=False,
         )
         engine._compute_content_diff(diff, {"a": 1}, {"a": 1})
         assert diff.total_changes == 0
 
     def test_all_changes_tracked(self, engine):
         diff = SemanticDiff(
-            from_version="1", to_version="2",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="a", to_hash="b", hash_changed=False,
+            from_version="1",
+            to_version="2",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="a",
+            to_hash="b",
+            hash_changed=False,
         )
         engine._compute_content_diff(
             diff,
@@ -170,33 +197,44 @@ class TestComputeContentDiff:
 # _assess_impact
 # ---------------------------------------------------------------------------
 
+
 class TestAssessImpact:
     def test_hash_changed_is_critical(self, engine):
         diff = SemanticDiff(
-            from_version="1", to_version="2",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="a", to_hash="b", hash_changed=True,
+            from_version="1",
+            to_version="2",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="a",
+            to_hash="b",
+            hash_changed=True,
         )
         engine._assess_impact(diff)
         assert diff.impact_level == "critical"
 
     def test_principle_removed_is_critical(self, engine):
         diff = SemanticDiff(
-            from_version="1", to_version="2",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="a", to_hash="a", hash_changed=False,
-            principle_changes=[
-                PrincipleChange(principle_id="p1", change_type="removed")
-            ],
+            from_version="1",
+            to_version="2",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="a",
+            to_hash="a",
+            hash_changed=False,
+            principle_changes=[PrincipleChange(principle_id="p1", change_type="removed")],
         )
         engine._assess_impact(diff)
         assert diff.impact_level == "critical"
 
     def test_many_changes_is_high(self, engine):
         diff = SemanticDiff(
-            from_version="1", to_version="2",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="a", to_hash="a", hash_changed=False,
+            from_version="1",
+            to_version="2",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="a",
+            to_hash="a",
+            hash_changed=False,
             total_changes=15,
         )
         engine._assess_impact(diff)
@@ -204,9 +242,13 @@ class TestAssessImpact:
 
     def test_principle_added_is_high(self, engine):
         diff = SemanticDiff(
-            from_version="1", to_version="2",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="a", to_hash="a", hash_changed=False,
+            from_version="1",
+            to_version="2",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="a",
+            to_hash="a",
+            hash_changed=False,
             principle_changes=[
                 PrincipleChange(principle_id="p1", change_type="added", new_content="x")
             ],
@@ -216,9 +258,13 @@ class TestAssessImpact:
 
     def test_moderate_changes_is_medium(self, engine):
         diff = SemanticDiff(
-            from_version="1", to_version="2",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="a", to_hash="a", hash_changed=False,
+            from_version="1",
+            to_version="2",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="a",
+            to_hash="a",
+            hash_changed=False,
             total_changes=5,
         )
         engine._assess_impact(diff)
@@ -226,9 +272,13 @@ class TestAssessImpact:
 
     def test_few_changes_is_low(self, engine):
         diff = SemanticDiff(
-            from_version="1", to_version="2",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="a", to_hash="a", hash_changed=False,
+            from_version="1",
+            to_version="2",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="a",
+            to_hash="a",
+            hash_changed=False,
             total_changes=1,
         )
         engine._assess_impact(diff)
@@ -239,12 +289,17 @@ class TestAssessImpact:
 # _detect_breaking_changes
 # ---------------------------------------------------------------------------
 
+
 class TestDetectBreakingChanges:
     def test_modified_breaking_field(self, engine):
         diff = SemanticDiff(
-            from_version="1", to_version="2",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="a", to_hash="b", hash_changed=True,
+            from_version="1",
+            to_version="2",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="a",
+            to_hash="b",
+            hash_changed=True,
             modified_fields={"constitutional_hash": {"from": "a", "to": "b"}},
         )
         engine._detect_breaking_changes(diff)
@@ -253,9 +308,13 @@ class TestDetectBreakingChanges:
 
     def test_removed_breaking_field(self, engine):
         diff = SemanticDiff(
-            from_version="1", to_version="2",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="a", to_hash="b", hash_changed=True,
+            from_version="1",
+            to_version="2",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="a",
+            to_hash="b",
+            hash_changed=True,
             removed_fields={"enforcement_rules": {"rule1": True}},
         )
         engine._detect_breaking_changes(diff)
@@ -263,9 +322,13 @@ class TestDetectBreakingChanges:
 
     def test_removed_principle_is_breaking(self, engine):
         diff = SemanticDiff(
-            from_version="1", to_version="2",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="a", to_hash="b", hash_changed=True,
+            from_version="1",
+            to_version="2",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="a",
+            to_hash="b",
+            hash_changed=True,
             principle_changes=[
                 PrincipleChange(principle_id="p1", change_type="removed", old_content="x")
             ],
@@ -275,9 +338,13 @@ class TestDetectBreakingChanges:
 
     def test_non_breaking_field_not_flagged(self, engine):
         diff = SemanticDiff(
-            from_version="1", to_version="2",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="a", to_hash="a", hash_changed=False,
+            from_version="1",
+            to_version="2",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="a",
+            to_hash="a",
+            hash_changed=False,
             modified_fields={"description": {"from": "old", "to": "new"}},
         )
         engine._detect_breaking_changes(diff)
@@ -287,6 +354,7 @@ class TestDetectBreakingChanges:
 # ---------------------------------------------------------------------------
 # _assess_principle_impact
 # ---------------------------------------------------------------------------
+
 
 class TestAssessPrincipleImpact:
     def test_critical_principle_name(self, engine):
@@ -309,6 +377,7 @@ class TestAssessPrincipleImpact:
 # _stringify_principle
 # ---------------------------------------------------------------------------
 
+
 class TestStringifyPrinciple:
     def test_string_passthrough(self, engine):
         assert engine._stringify_principle("hello") == "hello"
@@ -326,12 +395,17 @@ class TestStringifyPrinciple:
 # _analyze_dict_principles
 # ---------------------------------------------------------------------------
 
+
 class TestAnalyzeDictPrinciples:
     def test_added_principle(self, engine):
         diff = SemanticDiff(
-            from_version="1", to_version="2",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="a", to_hash="b", hash_changed=True,
+            from_version="1",
+            to_version="2",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="a",
+            to_hash="b",
+            hash_changed=True,
         )
         engine._analyze_dict_principles(diff, {}, {"new_p": "content"})
         assert len(diff.principle_changes) == 1
@@ -339,9 +413,13 @@ class TestAnalyzeDictPrinciples:
 
     def test_removed_principle(self, engine):
         diff = SemanticDiff(
-            from_version="1", to_version="2",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="a", to_hash="b", hash_changed=True,
+            from_version="1",
+            to_version="2",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="a",
+            to_hash="b",
+            hash_changed=True,
         )
         engine._analyze_dict_principles(diff, {"old_p": "content"}, {})
         assert len(diff.principle_changes) == 1
@@ -350,9 +428,13 @@ class TestAnalyzeDictPrinciples:
 
     def test_modified_principle(self, engine):
         diff = SemanticDiff(
-            from_version="1", to_version="2",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="a", to_hash="b", hash_changed=True,
+            from_version="1",
+            to_version="2",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="a",
+            to_hash="b",
+            hash_changed=True,
         )
         engine._analyze_dict_principles(diff, {"p1": "old"}, {"p1": "new"})
         assert len(diff.principle_changes) == 1
@@ -363,12 +445,17 @@ class TestAnalyzeDictPrinciples:
 # _analyze_list_principles
 # ---------------------------------------------------------------------------
 
+
 class TestAnalyzeListPrinciples:
     def test_added_in_list(self, engine):
         diff = SemanticDiff(
-            from_version="1", to_version="2",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="a", to_hash="b", hash_changed=True,
+            from_version="1",
+            to_version="2",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="a",
+            to_hash="b",
+            hash_changed=True,
         )
         engine._analyze_list_principles(diff, ["A"], ["A", "B"])
         added = [pc for pc in diff.principle_changes if pc.change_type == "added"]
@@ -376,9 +463,13 @@ class TestAnalyzeListPrinciples:
 
     def test_removed_in_list(self, engine):
         diff = SemanticDiff(
-            from_version="1", to_version="2",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="a", to_hash="b", hash_changed=True,
+            from_version="1",
+            to_version="2",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="a",
+            to_hash="b",
+            hash_changed=True,
         )
         engine._analyze_list_principles(diff, ["A", "B"], ["A"])
         removed = [pc for pc in diff.principle_changes if pc.change_type == "removed"]
@@ -388,6 +479,7 @@ class TestAnalyzeListPrinciples:
 # ---------------------------------------------------------------------------
 # compute_diff (integration with storage mock)
 # ---------------------------------------------------------------------------
+
 
 class TestComputeDiff:
     @pytest.mark.asyncio
@@ -426,6 +518,7 @@ class TestComputeDiff:
 # compute_diff_from_content
 # ---------------------------------------------------------------------------
 
+
 class TestComputeDiffFromContent:
     @pytest.mark.asyncio
     async def test_returns_none_if_source_missing(self):
@@ -450,6 +543,7 @@ class TestComputeDiffFromContent:
 # compute_text_diff
 # ---------------------------------------------------------------------------
 
+
 class TestComputeTextDiff:
     @pytest.mark.asyncio
     async def test_returns_none_if_version_missing(self):
@@ -473,6 +567,7 @@ class TestComputeTextDiff:
 # ---------------------------------------------------------------------------
 # compute_multi_version_diff
 # ---------------------------------------------------------------------------
+
 
 class TestComputeMultiVersionDiff:
     @pytest.mark.asyncio

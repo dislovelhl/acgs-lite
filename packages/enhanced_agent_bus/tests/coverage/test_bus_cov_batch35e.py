@@ -62,6 +62,7 @@ from enhanced_agent_bus.memory_profiler import (
 # Helpers
 # ===================================================================
 
+
 def _splunk_config(**overrides) -> SIEMProviderConfig:
     defaults = {
         "provider_type": SIEMProviderType.SPLUNK,
@@ -146,8 +147,10 @@ class TestElasticsearchProviderInit:
 class TestSIEMProviderContextManager:
     async def test_aenter_aexit(self):
         provider = SplunkHECProvider(_splunk_config())
-        with patch.object(provider, "start", new_callable=AsyncMock) as mock_start, \
-             patch.object(provider, "close", new_callable=AsyncMock) as mock_close:
+        with (
+            patch.object(provider, "start", new_callable=AsyncMock) as mock_start,
+            patch.object(provider, "close", new_callable=AsyncMock) as mock_close,
+        ):
             async with provider as p:
                 assert p is provider
                 mock_start.assert_awaited_once()
@@ -346,9 +349,7 @@ class TestElasticsearchSendEvent:
     async def test_send_success(self):
         provider = ElasticsearchProvider(_es_config())
         mock_client = AsyncMock()
-        mock_client.post = AsyncMock(
-            return_value=_mock_response(201, {"result": "created"})
-        )
+        mock_client.post = AsyncMock(return_value=_mock_response(201, {"result": "created"}))
         provider._client = mock_client
 
         result = await provider.send_event({"action": "test"})
@@ -357,9 +358,7 @@ class TestElasticsearchSendEvent:
     async def test_send_updated_result(self):
         provider = ElasticsearchProvider(_es_config())
         mock_client = AsyncMock()
-        mock_client.post = AsyncMock(
-            return_value=_mock_response(200, {"result": "updated"})
-        )
+        mock_client.post = AsyncMock(return_value=_mock_response(200, {"result": "updated"}))
         provider._client = mock_client
 
         result = await provider.send_event({"action": "test"})
@@ -368,9 +367,7 @@ class TestElasticsearchSendEvent:
     async def test_send_unexpected_result(self):
         provider = ElasticsearchProvider(_es_config())
         mock_client = AsyncMock()
-        mock_client.post = AsyncMock(
-            return_value=_mock_response(200, {"result": "noop"})
-        )
+        mock_client.post = AsyncMock(return_value=_mock_response(200, {"result": "noop"}))
         provider._client = mock_client
 
         with patch("asyncio.sleep", new_callable=AsyncMock):
@@ -408,9 +405,7 @@ class TestElasticsearchSendEvent:
     async def test_send_http_error(self):
         provider = ElasticsearchProvider(_es_config(max_retries=1))
         mock_client = AsyncMock()
-        mock_client.post = AsyncMock(
-            return_value=_mock_response(500, text="server error")
-        )
+        mock_client.post = AsyncMock(return_value=_mock_response(500, text="server error"))
         provider._client = mock_client
 
         result = await provider.send_event({"action": "test"})
@@ -506,11 +501,14 @@ class TestElasticsearchHealthCheck:
         provider = ElasticsearchProvider(_es_config())
         mock_client = AsyncMock()
         mock_client.get = AsyncMock(
-            return_value=_mock_response(200, {
-                "status": "green",
-                "cluster_name": "test",
-                "number_of_nodes": 3,
-            })
+            return_value=_mock_response(
+                200,
+                {
+                    "status": "green",
+                    "cluster_name": "test",
+                    "number_of_nodes": 3,
+                },
+            )
         )
         provider._client = mock_client
 
@@ -781,9 +779,7 @@ class TestMemoryProfiler:
 
     def test_start_enabled(self):
         was_tracing = tracemalloc.is_tracing()
-        profiler = MemoryProfiler(
-            MemoryProfilingConfig(enabled=True, level=ProfilingLevel.SUMMARY)
-        )
+        profiler = MemoryProfiler(MemoryProfilingConfig(enabled=True, level=ProfilingLevel.SUMMARY))
         profiler.start()
         assert profiler._started is True
         assert profiler._baseline is not None
@@ -940,9 +936,7 @@ class TestMemoryProfilingContext:
             profiler._started = True
 
             # Mock take_snapshot to return large delta
-            start_snap = MemorySnapshot(
-                timestamp=1.0, current_bytes=0, peak_bytes=0
-            )
+            start_snap = MemorySnapshot(timestamp=1.0, current_bytes=0, peak_bytes=0)
             end_snap = MemorySnapshot(
                 timestamp=2.0,
                 current_bytes=20 * 1024 * 1024,
@@ -971,6 +965,7 @@ class TestMemoryProfilingContext:
 class TestGetMemoryProfiler:
     def test_returns_profiler(self):
         import enhanced_agent_bus.memory_profiler as mp
+
         old = mp._profiler
         try:
             mp._profiler = None
@@ -985,6 +980,7 @@ class TestGetMemoryProfiler:
 class TestGetMemoryQueue:
     async def test_returns_queue(self):
         import enhanced_agent_bus.memory_profiler as mp
+
         old = mp._queue
         try:
             mp._queue = None
@@ -1007,6 +1003,7 @@ class TestGetMemoryQueue:
 class TestProfileMemoryDecorator:
     async def test_disabled(self):
         import enhanced_agent_bus.memory_profiler as mp
+
         old = mp._profiler
         try:
             mp._profiler = MemoryProfiler(MemoryProfilingConfig(enabled=False))
@@ -1025,6 +1022,7 @@ class TestProfileMemoryDecorator:
         if not was_tracing:
             tracemalloc.start()
         import enhanced_agent_bus.memory_profiler as mp
+
         old = mp._profiler
         try:
             cfg = MemoryProfilingConfig(enabled=True, level=ProfilingLevel.SUMMARY)
@@ -1048,6 +1046,7 @@ class TestProfileMemoryDecorator:
         if not was_tracing:
             tracemalloc.start()
         import enhanced_agent_bus.memory_profiler as mp
+
         old = mp._profiler
         try:
             cfg = MemoryProfilingConfig(enabled=True, level=ProfilingLevel.SUMMARY)
@@ -1126,6 +1125,7 @@ class TestIsDevelopmentLikeEnvironment:
 class TestLoadOptionalRouters:
     def test_load_visual_studio_router_import_error(self):
         from enhanced_agent_bus.api.app import _load_visual_studio_router
+
         with patch(
             "enhanced_agent_bus.api.app.import_module",
             side_effect=ImportError("no module"),
@@ -1134,12 +1134,14 @@ class TestLoadOptionalRouters:
 
     def test_load_visual_studio_router_no_router_attr(self):
         from enhanced_agent_bus.api.app import _load_visual_studio_router
+
         mock_module = MagicMock(spec=[])
         with patch("enhanced_agent_bus.api.app.import_module", return_value=mock_module):
             assert _load_visual_studio_router() is None
 
     def test_load_visual_studio_router_wrong_type(self):
         from enhanced_agent_bus.api.app import _load_visual_studio_router
+
         mock_module = MagicMock()
         mock_module.router = "not_a_router"
         with patch("enhanced_agent_bus.api.app.import_module", return_value=mock_module):
@@ -1147,6 +1149,7 @@ class TestLoadOptionalRouters:
 
     def test_load_copilot_router_import_error(self):
         from enhanced_agent_bus.api.app import _load_copilot_router
+
         with patch(
             "enhanced_agent_bus.api.app.import_module",
             side_effect=ImportError("no module"),
@@ -1155,6 +1158,7 @@ class TestLoadOptionalRouters:
 
     def test_load_copilot_router_no_router_attr(self):
         from enhanced_agent_bus.api.app import _load_copilot_router
+
         mock_module = MagicMock(spec=[])
         with patch("enhanced_agent_bus.api.app.import_module", return_value=mock_module):
             assert _load_copilot_router() is None
@@ -1163,29 +1167,36 @@ class TestLoadOptionalRouters:
 class TestInitializeAgentBusState:
     def test_success(self):
         from enhanced_agent_bus.api.app import _initialize_agent_bus_state
-        with patch(
-            "enhanced_agent_bus.api.app.MessageProcessor"
-        ) as mock_cls:
+
+        with patch("enhanced_agent_bus.api.app.MessageProcessor") as mock_cls:
             mock_cls.return_value = MagicMock()
             result = _initialize_agent_bus_state()
             assert result is mock_cls.return_value
 
     def test_failure_dev_mode(self):
         from enhanced_agent_bus.api.app import _initialize_agent_bus_state
-        with patch(
-            "enhanced_agent_bus.api.app.MessageProcessor",
-            side_effect=RuntimeError("no bus"),
-        ), patch.dict("os.environ", {"ENVIRONMENT": "development"}):
+
+        with (
+            patch(
+                "enhanced_agent_bus.api.app.MessageProcessor",
+                side_effect=RuntimeError("no bus"),
+            ),
+            patch.dict("os.environ", {"ENVIRONMENT": "development"}),
+        ):
             result = _initialize_agent_bus_state()
             assert isinstance(result, dict)
             assert result["status"] == "mock_initialized"
 
     def test_failure_production_raises(self):
         from enhanced_agent_bus.api.app import _initialize_agent_bus_state
-        with patch(
-            "enhanced_agent_bus.api.app.MessageProcessor",
-            side_effect=RuntimeError("no bus"),
-        ), patch.dict("os.environ", {"ENVIRONMENT": "production"}):
+
+        with (
+            patch(
+                "enhanced_agent_bus.api.app.MessageProcessor",
+                side_effect=RuntimeError("no bus"),
+            ),
+            patch.dict("os.environ", {"ENVIRONMENT": "production"}),
+        ):
             with pytest.raises(RuntimeError):
                 _initialize_agent_bus_state()
 
@@ -1193,14 +1204,14 @@ class TestInitializeAgentBusState:
 class TestInitializeWorkflowComponents:
     async def test_success(self):
         from enhanced_agent_bus.api.app import _initialize_workflow_components
+
         mock_app = MagicMock()
         mock_app.state = MagicMock()
 
-        with patch(
-            "enhanced_agent_bus.api.app.PostgresWorkflowRepository"
-        ) as mock_repo_cls, patch(
-            "enhanced_agent_bus.api.app.DurableWorkflowExecutor"
-        ) as mock_exec_cls:
+        with (
+            patch("enhanced_agent_bus.api.app.PostgresWorkflowRepository") as mock_repo_cls,
+            patch("enhanced_agent_bus.api.app.DurableWorkflowExecutor") as mock_exec_cls,
+        ):
             mock_repo = AsyncMock()
             mock_repo_cls.return_value = mock_repo
 
@@ -1211,6 +1222,7 @@ class TestInitializeWorkflowComponents:
 
     async def test_import_error_non_dev(self):
         from enhanced_agent_bus.api.app import _initialize_workflow_components
+
         mock_app = MagicMock()
         mock_app.state = MagicMock()
 
@@ -1230,6 +1242,7 @@ class TestInitializeWorkflowComponents:
 
     async def test_import_error_dev_fallback(self):
         from enhanced_agent_bus.api.app import _initialize_workflow_components
+
         mock_app = MagicMock()
         mock_app.state = MagicMock()
 
@@ -1249,6 +1262,7 @@ class TestInitializeWorkflowComponents:
 
     async def test_generic_exception_non_dev(self):
         from enhanced_agent_bus.api.app import _initialize_workflow_components
+
         mock_app = MagicMock()
         mock_app.state = MagicMock()
 
@@ -1270,6 +1284,7 @@ class TestInitializeWorkflowComponents:
 class TestInitializeBatchProcessorState:
     def test_success(self):
         from enhanced_agent_bus.api.app import _initialize_batch_processor_state
+
         mock_mp = MagicMock()
         with patch("enhanced_agent_bus.api.app.BatchMessageProcessor") as mock_cls:
             mock_cls.return_value = MagicMock()
@@ -1278,6 +1293,7 @@ class TestInitializeBatchProcessorState:
 
     def test_failure_returns_none(self):
         from enhanced_agent_bus.api.app import _initialize_batch_processor_state
+
         mock_mp = MagicMock()
         with patch(
             "enhanced_agent_bus.api.app.BatchMessageProcessor",
@@ -1290,6 +1306,7 @@ class TestInitializeBatchProcessorState:
 class TestStopCacheWarmer:
     async def test_no_warmer(self):
         from enhanced_agent_bus.api.app import _stop_cache_warmer_if_running
+
         with patch(
             "enhanced_agent_bus.api.app.import_module",
             side_effect=ImportError("no cache"),
@@ -1299,6 +1316,7 @@ class TestStopCacheWarmer:
 
     async def test_error_handled(self):
         from enhanced_agent_bus.api.app import _stop_cache_warmer_if_running
+
         # The function catches errors internally, just ensure no unhandled exceptions
         await _stop_cache_warmer_if_running()
 
@@ -1306,6 +1324,7 @@ class TestStopCacheWarmer:
 class TestShutdownSessionManager:
     async def test_import_error(self):
         from enhanced_agent_bus.api.app import _shutdown_session_manager_if_available
+
         # This catches ImportError internally
         await _shutdown_session_manager_if_available()
 
@@ -1313,16 +1332,19 @@ class TestShutdownSessionManager:
 class TestCloseWorkflowRepository:
     async def test_with_repo(self):
         from enhanced_agent_bus.api.app import _close_workflow_repository_if_available
+
         mock_repo = AsyncMock()
         await _close_workflow_repository_if_available(mock_repo)
         mock_repo.close.assert_awaited_once()
 
     async def test_with_none(self):
         from enhanced_agent_bus.api.app import _close_workflow_repository_if_available
+
         await _close_workflow_repository_if_available(None)
 
     async def test_with_error(self):
         from enhanced_agent_bus.api.app import _close_workflow_repository_if_available
+
         mock_repo = AsyncMock()
         mock_repo.close = AsyncMock(side_effect=Exception("close error"))
         await _close_workflow_repository_if_available(mock_repo)
@@ -1331,6 +1353,7 @@ class TestCloseWorkflowRepository:
 class TestRegisterExceptionHandlers:
     def test_registers_handlers(self):
         from enhanced_agent_bus.api.app import _register_exception_handlers
+
         mock_app = MagicMock()
         _register_exception_handlers(mock_app)
         # 1 rate limit + 10 bus exception handlers = 11 calls

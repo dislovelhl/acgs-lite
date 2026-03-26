@@ -995,7 +995,10 @@ class TestSemanticRetriever:
         mock_vd = MagicMock()
         with patch.dict(
             "sys.modules",
-            {"enhanced_agent_bus.embeddings": MagicMock(), "enhanced_agent_bus.embeddings.vector_store": MagicMock(VectorDocument=mock_vd)},
+            {
+                "enhanced_agent_bus.embeddings": MagicMock(),
+                "enhanced_agent_bus.embeddings.vector_store": MagicMock(VectorDocument=mock_vd),
+            },
         ):
             success = await sr.index_document("doc-1", "content", {"tag": "test"})
             assert success is True
@@ -1024,12 +1027,17 @@ class TestSemanticRetriever:
         mock_vd = MagicMock()
         with patch.dict(
             "sys.modules",
-            {"enhanced_agent_bus.embeddings": MagicMock(), "enhanced_agent_bus.embeddings.vector_store": MagicMock(VectorDocument=mock_vd)},
+            {
+                "enhanced_agent_bus.embeddings": MagicMock(),
+                "enhanced_agent_bus.embeddings.vector_store": MagicMock(VectorDocument=mock_vd),
+            },
         ):
-            count = await sr.index_documents_batch([
-                {"id": "d1", "content": "one", "metadata": {"k": "v"}},
-                {"content": "two"},
-            ])
+            count = await sr.index_documents_batch(
+                [
+                    {"id": "d1", "content": "one", "metadata": {"k": "v"}},
+                    {"content": "two"},
+                ]
+            )
             assert count == 2
 
     async def test_index_documents_batch_not_initialized(self):
@@ -1071,9 +1079,7 @@ class TestHybridRetriever:
         mock_results_1 = [
             RetrievalResult(id="p1", content="policy", score=0.9, source="policy_index")
         ]
-        mock_results_2 = [
-            RetrievalResult(id="v1", content="vector", score=0.8, source="vector_db")
-        ]
+        mock_results_2 = [RetrievalResult(id="v1", content="vector", score=0.8, source="vector_db")]
         hr.retrievers[0] = MagicMock()
         hr.retrievers[0].retrieve = AsyncMock(return_value=mock_results_1)
         hr.retrievers[1] = MagicMock()
@@ -1097,9 +1103,7 @@ class TestHybridRetriever:
     async def test_retrieve_respects_limit(self):
         hr = HybridRetriever()
         many_results = [
-            RetrievalResult(
-                id=f"r{i}", content=f"content {i}", score=0.9 - i * 0.1, source="test"
-            )
+            RetrievalResult(id=f"r{i}", content=f"content {i}", score=0.9 - i * 0.1, source="test")
             for i in range(10)
         ]
         hr.retrievers = [MagicMock()]
@@ -1114,9 +1118,7 @@ class TestKnowledgeRetriever:
 
     async def test_query_delegates_to_hybrid(self):
         kr = KnowledgeRetriever()
-        mock_results = [
-            RetrievalResult(id="r1", content="result", score=0.9, source="test")
-        ]
+        mock_results = [RetrievalResult(id="r1", content="result", score=0.9, source="test")]
         kr.retriever = MagicMock()
         kr.retriever.retrieve = AsyncMock(return_value=mock_results)
 

@@ -5,7 +5,6 @@ Targets ≥90% coverage of:
   src/core/enhanced_agent_bus/guardrails/input_sanitizer.py
 """
 
-
 from enhanced_agent_bus.guardrails.enums import (
     GuardrailLayer,
     SafetyAction,

@@ -614,8 +614,7 @@ class TestComputeMessageCacheKey:
         )
 
         assert processor._compute_cache_key(sample_message) == (
-            result
-            + TestComputeCacheKey._expected_suffix(processor)
+            result + TestComputeCacheKey._expected_suffix(processor)
         )
 
     def test_helper_uses_fast_hash_when_available(self, sample_message):

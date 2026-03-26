@@ -89,7 +89,10 @@ def test_configure_x402_payment_middleware_fails_closed_without_dependency(monke
     def _raise_import_error(name: str):
         raise ImportError(name)
 
-    monkeypatch.setattr("src.core.services.api_gateway.routes._x402_common.importlib.import_module", _raise_import_error)
+    monkeypatch.setattr(
+        "src.core.services.api_gateway.routes._x402_common.importlib.import_module",
+        _raise_import_error,
+    )
 
     with pytest.raises(RuntimeError, match="x402\\[evm\\]"):
         configure_x402_payment_middleware(app, environ={"EVM_ADDRESS": "0xabc123"})

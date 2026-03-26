@@ -3,7 +3,6 @@ Tests for Edge Cases and Integration Type Specific Tests.
 Constitutional Hash: 608508a9bd224290
 """
 
-
 from .conftest import (
     IntegrationType,
 )

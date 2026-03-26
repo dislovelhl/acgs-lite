@@ -169,9 +169,7 @@ class TestRegisterSecret:
     async def test_register_with_custom_type_and_policy(self):
         mgr = SecretRotationManager()
         policy = RotationPolicy(rotation_interval_days=7)
-        result = await mgr.register_secret(
-            "k", secret_type=SecretType.API_KEY, policy=policy
-        )
+        result = await mgr.register_secret("k", secret_type=SecretType.API_KEY, policy=policy)
         assert result is True
         st, pol = mgr._registered_secrets["k"]
         assert st == SecretType.API_KEY
@@ -1014,9 +1012,7 @@ class TestOIDCInitiateLogin:
             "issuer": "https://accounts.google.com",
         }
         handler._fetch_metadata = AsyncMock(return_value=metadata)
-        url, state = await handler.initiate_login(
-            "google", "https://app.com/callback"
-        )
+        url, state = await handler.initiate_login("google", "https://app.com/callback")
         assert "accounts.google.com" in url
         assert "state=" in url
         assert state in handler._pending_states
@@ -1115,9 +1111,7 @@ class TestOIDCExchangeCode:
             client_secret="real_secret_1234",
             server_metadata_url="https://x.com/.well-known/oidc",
         )
-        handler._fetch_metadata = AsyncMock(
-            return_value={"token_endpoint": "https://x.com/token"}
-        )
+        handler._fetch_metadata = AsyncMock(return_value={"token_endpoint": "https://x.com/token"})
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         mock_resp.json.return_value = {"access_token": "at", "token_type": "Bearer"}
@@ -1136,9 +1130,7 @@ class TestOIDCExchangeCode:
             client_secret="real_secret_1234",
             server_metadata_url="https://x.com/.well-known/oidc",
         )
-        handler._fetch_metadata = AsyncMock(
-            return_value={"token_endpoint": "https://x.com/token"}
-        )
+        handler._fetch_metadata = AsyncMock(return_value={"token_endpoint": "https://x.com/token"})
         mock_resp = MagicMock()
         mock_resp.status_code = 400
         mock_resp.content = b'{"error":"invalid_grant"}'
@@ -1162,9 +1154,7 @@ class TestOIDCGetUserInfo:
         )
         provider = handler.get_provider("g")
         tokens = OIDCTokenResponse(access_token="at", id_token="id_tok")
-        handler._decode_id_token = AsyncMock(
-            return_value={"sub": "u1", "email": "u@t.com"}
-        )
+        handler._decode_id_token = AsyncMock(return_value={"sub": "u1", "email": "u@t.com"})
         result = await handler._get_user_info(provider, tokens)
         assert result.sub == "u1"
 
@@ -1179,9 +1169,7 @@ class TestOIDCGetUserInfo:
         provider = handler.get_provider("g")
         tokens = OIDCTokenResponse(access_token="at", id_token="id_tok")
         handler._decode_id_token = AsyncMock(side_effect=OIDCTokenError("bad"))
-        handler._fetch_userinfo = AsyncMock(
-            return_value=OIDCUserInfo(sub="u2", email="u2@t.com")
-        )
+        handler._fetch_userinfo = AsyncMock(return_value=OIDCUserInfo(sub="u2", email="u2@t.com"))
         result = await handler._get_user_info(provider, tokens)
         assert result.sub == "u2"
 
@@ -1195,9 +1183,7 @@ class TestOIDCGetUserInfo:
         )
         provider = handler.get_provider("g")
         tokens = OIDCTokenResponse(access_token="at", id_token=None)
-        handler._fetch_userinfo = AsyncMock(
-            return_value=OIDCUserInfo(sub="u3")
-        )
+        handler._fetch_userinfo = AsyncMock(return_value=OIDCUserInfo(sub="u3"))
         result = await handler._get_user_info(provider, tokens)
         assert result.sub == "u3"
 
@@ -1279,9 +1265,7 @@ class TestOIDCRefreshToken:
             client_secret="real_secret_1234",
             server_metadata_url="https://x.com/.well-known/oidc",
         )
-        handler._fetch_metadata = AsyncMock(
-            return_value={"token_endpoint": "https://x.com/token"}
-        )
+        handler._fetch_metadata = AsyncMock(return_value={"token_endpoint": "https://x.com/token"})
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         mock_resp.json.return_value = {"access_token": "new_at", "token_type": "Bearer"}
@@ -1299,9 +1283,7 @@ class TestOIDCRefreshToken:
             client_secret="real_secret_1234",
             server_metadata_url="https://x.com/.well-known/oidc",
         )
-        handler._fetch_metadata = AsyncMock(
-            return_value={"token_endpoint": "https://x.com/token"}
-        )
+        handler._fetch_metadata = AsyncMock(return_value={"token_endpoint": "https://x.com/token"})
         mock_resp = MagicMock()
         mock_resp.status_code = 400
         mock_resp.content = b'{"error":"invalid"}'

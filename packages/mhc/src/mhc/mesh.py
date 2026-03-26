@@ -178,8 +178,7 @@ class ConstitutionalMesh:
     ) -> None:
         if quorum > peers_per_validation:
             raise ValueError(
-                f"Quorum ({quorum}) cannot exceed peers_per_validation "
-                f"({peers_per_validation})"
+                f"Quorum ({quorum}) cannot exceed peers_per_validation ({peers_per_validation})"
             )
         self._constitution = constitution
         self._dna = AgentDNA(constitution=constitution, agent_id="mesh-validator")
@@ -297,9 +296,7 @@ class ConstitutionalMesh:
 
         existing = self._votes.get(assignment_id, [])
         if any(v.voter_id == voter_id for v in existing):
-            raise DuplicateVoteError(
-                f"{voter_id} already voted on {assignment_id}"
-            )
+            raise DuplicateVoteError(f"{voter_id} already voted on {assignment_id}")
 
         vote = ValidationVote(
             assignment_id=assignment_id,
@@ -427,11 +424,7 @@ class ConstitutionalMesh:
         """Mesh statistics."""
         total_validations = len(self._assignments)
         total_votes = sum(len(v) for v in self._votes.values())
-        settled = sum(
-            1
-            for aid in self._assignments
-            if self.get_result(aid).quorum_met
-        )
+        settled = sum(1 for aid in self._assignments if self.get_result(aid).quorum_met)
         return {
             "agents": self.agent_count,
             "constitutional_hash": self.constitutional_hash,
@@ -492,9 +485,7 @@ def _compute_merkle_root(
     the root and verify the proof.
     """
     # Leaf: content + constitutional hash
-    leaf = hashlib.sha256(
-        f"{content_hash}:{constitutional_hash}".encode()
-    ).hexdigest()[:16]
+    leaf = hashlib.sha256(f"{content_hash}:{constitutional_hash}".encode()).hexdigest()[:16]
 
     # Votes subtree: iterative hashing of vote hashes
     if not vote_hashes:

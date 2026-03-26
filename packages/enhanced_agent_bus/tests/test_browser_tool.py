@@ -17,10 +17,12 @@ def mock_playwright():
     mock_page = AsyncMock()
     mock_page.title = AsyncMock(return_value="Test Page")
     mock_page.inner_text = AsyncMock(return_value="Hello World content")
-    mock_page.evaluate = AsyncMock(side_effect=[
-        {"description": "A test page"},  # meta tags
-        ["https://example.com/link1"],  # links
-    ])
+    mock_page.evaluate = AsyncMock(
+        side_effect=[
+            {"description": "A test page"},  # meta tags
+            ["https://example.com/link1"],  # links
+        ]
+    )
     mock_page.set_default_timeout = MagicMock()
 
     mock_response = MagicMock()

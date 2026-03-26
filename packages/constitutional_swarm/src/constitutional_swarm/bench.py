@@ -68,11 +68,13 @@ def _build_synthetic_spec(
                 # Each task depends on its corresponding task in the previous level
                 prev_idx = task_idx % dag_width
                 deps = [f"L{level - 1}-T{prev_idx}"]
-            steps.append({
-                "title": title,
-                "domain": domain,
-                "depends_on": deps,
-            })
+            steps.append(
+                {
+                    "title": title,
+                    "domain": domain,
+                    "depends_on": deps,
+                }
+            )
 
     return GoalSpec(
         goal=f"Synthetic benchmark: {dag_depth}x{dag_width}",
@@ -208,23 +210,17 @@ class SwarmBenchmark:
         elapsed_ns = time.perf_counter_ns() - start_ns
         total_time_ms = elapsed_ns / 1_000_000
 
-        avg_validation_ns = (
-            total_validation_ns / validation_count if validation_count > 0 else 0.0
-        )
+        avg_validation_ns = total_validation_ns / validation_count if validation_count > 0 else 0.0
 
-        throughput = (
-            (num_tasks / (total_time_ms / 1000)) if total_time_ms > 0 else 0.0
-        )
+        throughput = (num_tasks / (total_time_ms / 1000)) if total_time_ms > 0 else 0.0
 
         total_possible_ns = elapsed_ns * num_agents if elapsed_ns > 0 else 1
-        agent_utilization = min(
-            total_work_time_ns / total_possible_ns, 1.0
-        ) if total_possible_ns > 0 else 0.0
+        agent_utilization = (
+            min(total_work_time_ns / total_possible_ns, 1.0) if total_possible_ns > 0 else 0.0
+        )
 
         coordination_overhead = (
-            (elapsed_ns - total_work_time_ns) / elapsed_ns
-            if elapsed_ns > 0
-            else 0.0
+            (elapsed_ns - total_work_time_ns) / elapsed_ns if elapsed_ns > 0 else 0.0
         )
         coordination_overhead = max(0.0, min(1.0, coordination_overhead))
 

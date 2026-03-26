@@ -637,9 +637,7 @@ class TestMambaProcessorSimpleEmbed:
         cfg = MambaProcessorConfig(num_layers=1, d_model=16, d_state=8)
         proc = MambaProcessor(config=cfg)
         # patch out torch to force numpy branch
-        with patch(
-            "enhanced_agent_bus.context_memory.mamba_processor.TORCH_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.context_memory.mamba_processor.TORCH_AVAILABLE", False):
             result = proc._simple_embed("hi")
             assert isinstance(result, np.ndarray)
             assert result.shape == (1, 2, 16)
@@ -649,12 +647,8 @@ class TestMambaProcessorSimpleEmbed:
         from unittest.mock import patch
 
         with (
-            patch(
-                "enhanced_agent_bus.context_memory.mamba_processor.TORCH_AVAILABLE", False
-            ),
-            patch(
-                "enhanced_agent_bus.context_memory.mamba_processor.NUMPY_AVAILABLE", False
-            ),
+            patch("enhanced_agent_bus.context_memory.mamba_processor.TORCH_AVAILABLE", False),
+            patch("enhanced_agent_bus.context_memory.mamba_processor.NUMPY_AVAILABLE", False),
         ):
             cfg = MambaProcessorConfig(num_layers=1, d_model=4, d_state=2)
             proc = MambaProcessor(config=cfg)

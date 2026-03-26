@@ -628,9 +628,7 @@ class TestDefaultDeliberationActivities:
         activities = DefaultDeliberationActivities(hash_validator=mock_validator)
 
         # Test fallback keyword scoring
-        score = await activities.calculate_impact_score(
-            "msg-1", "delete the admin root files"
-        )
+        score = await activities.calculate_impact_score("msg-1", "delete the admin root files")
         assert 0.0 <= score <= 1.0
         assert score > 0  # has high-impact keywords
 
@@ -675,9 +673,7 @@ class TestDefaultDeliberationActivities:
         mock_validator = AsyncMock()
         mock_validator.validate_hash = AsyncMock(return_value=(True, ""))
         activities = DefaultDeliberationActivities(hash_validator=mock_validator)
-        request_id = await activities.request_agent_votes(
-            "msg-1", ["v1", "v2"], datetime.now(UTC)
-        )
+        request_id = await activities.request_agent_votes("msg-1", ["v1", "v2"], datetime.now(UTC))
         assert isinstance(request_id, str)
         assert len(request_id) > 0
 
@@ -703,9 +699,7 @@ class TestDefaultDeliberationActivities:
         mock_validator.validate_hash = AsyncMock(return_value=(True, ""))
         activities = DefaultDeliberationActivities(hash_validator=mock_validator)
         with patch.object(activities, "_create_audit_client", return_value=None):
-            audit_hash = await activities.record_audit_trail(
-                "msg-1", {"status": "approved"}
-            )
+            audit_hash = await activities.record_audit_trail("msg-1", {"status": "approved"})
         assert isinstance(audit_hash, str)
         assert len(audit_hash) == 16
 
@@ -1095,22 +1089,16 @@ class TestSSOSessionContext:
         assert session.is_expired is False
 
     def test_is_expired_true(self):
-        session = self._make_session(
-            expires_at=datetime.now(UTC) - timedelta(hours=1)
-        )
+        session = self._make_session(expires_at=datetime.now(UTC) - timedelta(hours=1))
         assert session.is_expired is True
 
     def test_time_until_expiry(self):
-        session = self._make_session(
-            expires_at=datetime.now(UTC) + timedelta(seconds=60)
-        )
+        session = self._make_session(expires_at=datetime.now(UTC) + timedelta(seconds=60))
         assert session.time_until_expiry > 50
         assert session.time_until_expiry <= 60
 
     def test_time_until_expiry_expired(self):
-        session = self._make_session(
-            expires_at=datetime.now(UTC) - timedelta(seconds=60)
-        )
+        session = self._make_session(expires_at=datetime.now(UTC) - timedelta(seconds=60))
         assert session.time_until_expiry == 0.0
 
     def test_has_role(self):
@@ -2115,9 +2103,7 @@ class TestConstitutionalCheckpointManager:
         # Must use the module-level CONSTITUTIONAL_HASH since ConstitutionalCheckpoint
         # hardcodes it in its __init__
         h = CP_HASH
-        manager = self._make_manager(
-            constitutional_hash=h, enable_integrity_check=True
-        )
+        manager = self._make_manager(constitutional_hash=h, enable_integrity_check=True)
         ctx = self._make_context(constitutional_hash=h)
         state = GraphState(data={"k": "v"}, version=1, constitutional_hash=h)
         cp = await manager.create_checkpoint(ctx, "node-1", state, validate=True)
@@ -2135,9 +2121,7 @@ class TestConstitutionalCheckpointManager:
         )
 
         h = CP_HASH
-        manager = self._make_manager(
-            constitutional_hash=h, enable_integrity_check=False
-        )
+        manager = self._make_manager(constitutional_hash=h, enable_integrity_check=False)
         ctx = self._make_context(constitutional_hash=h)
         state = GraphState(data={"k": "v"}, constitutional_hash=h)
         cp = await manager.create_checkpoint(ctx, "n1", state, validate=False)
@@ -2160,9 +2144,7 @@ class TestConstitutionalCheckpointManager:
         from enhanced_agent_bus.langgraph_orchestration.exceptions import CheckpointError
         from enhanced_agent_bus.langgraph_orchestration.models import GraphState
 
-        manager = self._make_manager(
-            constitutional_hash="hash-a", enable_integrity_check=False
-        )
+        manager = self._make_manager(constitutional_hash="hash-a", enable_integrity_check=False)
         ctx = self._make_context(constitutional_hash="hash-a")
         state = GraphState(data={}, constitutional_hash="hash-a")
         cp = await manager.create_checkpoint(ctx, "n1", state, validate=False)

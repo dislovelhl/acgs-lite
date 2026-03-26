@@ -1133,9 +1133,7 @@ class TestWorkflowNode:
     def test_model_dump(self) -> None:
         from enhanced_agent_bus.visual_studio.models import NodeType, WorkflowNode
 
-        node = WorkflowNode(
-            id="n2", type=NodeType.POLICY, position={"x": 10.0, "y": 20.0}
-        )
+        node = WorkflowNode(id="n2", type=NodeType.POLICY, position={"x": 10.0, "y": 20.0})
         d = node.model_dump()
         assert d["type"] == "policy"
         assert d["position"]["x"] == 10.0
@@ -2020,9 +2018,7 @@ class TestMACIExceptions:
     def test_role_violation_no_allowed(self) -> None:
         from enhanced_agent_bus.exceptions import MACIRoleViolationError
 
-        exc = MACIRoleViolationError(
-            agent_id="a", role="r", action="act"
-        )
+        exc = MACIRoleViolationError(agent_id="a", role="r", action="act")
         assert exc.allowed_roles == []
 
     def test_self_validation_error(self) -> None:

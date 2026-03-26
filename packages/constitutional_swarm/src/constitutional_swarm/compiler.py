@@ -125,8 +125,7 @@ class DAGCompiler:
             for dep_title in step.get("depends_on", []):
                 if dep_title not in title_to_id:
                     raise ValueError(
-                        f"Step {step['title']!r} depends on {dep_title!r}, "
-                        f"which does not exist"
+                        f"Step {step['title']!r} depends on {dep_title!r}, which does not exist"
                     )
 
         # Validate step domains are in the declared domains list

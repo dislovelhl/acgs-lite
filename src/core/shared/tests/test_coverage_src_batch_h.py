@@ -26,6 +26,7 @@ from pydantic import SecretStr
 # 1. auth/workos.py
 # ---------------------------------------------------------------------------
 
+
 class TestWorkOSHelpers:
     """Tests for private helpers in workos module."""
 
@@ -205,7 +206,6 @@ class TestWorkOSConfigGetters:
 
 
 class TestIsWorkOSEnabled:
-
     @patch("src.core.shared.auth.workos.settings")
     def test_disabled_when_flag_off(self, mock_settings):
         from src.core.shared.auth.workos import is_workos_enabled
@@ -241,7 +241,6 @@ class TestIsWorkOSEnabled:
 
 
 class TestGenerateWorkOSAdminPortalLink:
-
     @patch("src.core.shared.auth.workos.settings")
     async def test_disabled_raises(self, mock_settings):
         from src.core.shared.auth.workos import (
@@ -363,7 +362,6 @@ class TestGenerateWorkOSAdminPortalLink:
 
 
 class TestListWorkOSEvents:
-
     @patch("src.core.shared.auth.workos.settings")
     async def test_disabled_raises(self, mock_settings):
         from src.core.shared.auth.workos import (
@@ -462,7 +460,6 @@ class TestListWorkOSEvents:
 
 
 class TestWorkOSWebhookSignature:
-
     def test_parse_signature_header_valid(self):
         from src.core.shared.auth.workos import _parse_workos_signature_header
 
@@ -564,7 +561,6 @@ class TestWorkOSWebhookSignature:
 
 
 class TestParseAndVerifyWorkOSWebhook:
-
     @patch("src.core.shared.auth.workos.settings")
     def test_success(self, mock_settings):
         from src.core.shared.auth.workos import parse_and_verify_workos_webhook
@@ -638,7 +634,6 @@ class TestParseAndVerifyWorkOSWebhook:
 
 
 class TestWorkOSWebhookEventModel:
-
     def test_valid_event(self):
         from src.core.shared.auth.workos import WorkOSWebhookEvent
 
@@ -661,8 +656,8 @@ class TestWorkOSWebhookEventModel:
 # 2. security/rotation/backend.py
 # ---------------------------------------------------------------------------
 
-class TestInMemorySecretBackend:
 
+class TestInMemorySecretBackend:
     async def test_store_and_get(self):
         from src.core.shared.security.rotation.backend import InMemorySecretBackend
 
@@ -740,7 +735,6 @@ class TestInMemorySecretBackend:
 
 
 class TestVaultSecretBackend:
-
     def test_init_defaults(self):
         from src.core.shared.security.rotation.backend import VaultSecretBackend
 
@@ -959,8 +953,8 @@ class TestVaultSecretBackend:
 # 3. security/security_headers.py
 # ---------------------------------------------------------------------------
 
-class TestSecurityHeadersConfig:
 
+class TestSecurityHeadersConfig:
     def test_default_values(self):
         from src.core.shared.security.security_headers import SecurityHeadersConfig
 
@@ -1009,7 +1003,9 @@ class TestSecurityHeadersConfig:
         cfg = SecurityHeadersConfig.for_integration_service()
         assert "https:" in cfg.custom_csp_directives["connect-src"]
 
-    @patch("src.core.shared.security.security_headers._detect_environment", return_value="development")
+    @patch(
+        "src.core.shared.security.security_headers._detect_environment", return_value="development"
+    )
     @patch.dict("os.environ", {}, clear=False)
     def test_from_env_development(self, mock_detect):
         from src.core.shared.security.security_headers import SecurityHeadersConfig
@@ -1029,7 +1025,9 @@ class TestSecurityHeadersConfig:
         assert cfg.enable_hsts is True
         assert cfg.hsts_max_age == 86400
 
-    @patch("src.core.shared.security.security_headers._detect_environment", return_value="production")
+    @patch(
+        "src.core.shared.security.security_headers._detect_environment", return_value="production"
+    )
     @patch.dict("os.environ", {}, clear=False)
     def test_from_env_production(self, mock_detect):
         from src.core.shared.security.security_headers import SecurityHeadersConfig
@@ -1038,8 +1036,18 @@ class TestSecurityHeadersConfig:
         assert cfg.environment == "production"
         assert cfg.hsts_max_age == 31536000
 
-    @patch("src.core.shared.security.security_headers._detect_environment", return_value="production")
-    @patch.dict("os.environ", {"SECURITY_HSTS_ENABLED": "false", "SECURITY_HSTS_MAX_AGE": "999", "SECURITY_FRAME_OPTIONS": "SAMEORIGIN"}, clear=False)
+    @patch(
+        "src.core.shared.security.security_headers._detect_environment", return_value="production"
+    )
+    @patch.dict(
+        "os.environ",
+        {
+            "SECURITY_HSTS_ENABLED": "false",
+            "SECURITY_HSTS_MAX_AGE": "999",
+            "SECURITY_FRAME_OPTIONS": "SAMEORIGIN",
+        },
+        clear=False,
+    )
     def test_from_env_custom_vars(self, mock_detect):
         from src.core.shared.security.security_headers import SecurityHeadersConfig
 
@@ -1100,7 +1108,6 @@ class TestSecurityHeadersConfig:
 
 
 class TestSecurityHeadersMiddleware:
-
     @patch("src.core.shared.security.security_headers.SecurityHeadersConfig.from_env")
     def test_init_default_config(self, mock_from_env):
         from src.core.shared.security.security_headers import (
@@ -1243,7 +1250,6 @@ class TestSecurityHeadersMiddleware:
 
 
 class TestAddSecurityHeadersFunction:
-
     def test_with_custom_config(self):
         from src.core.shared.security.security_headers import (
             SecurityHeadersConfig,
@@ -1286,8 +1292,8 @@ class TestAddSecurityHeadersFunction:
 # 4. audit_client.py
 # ---------------------------------------------------------------------------
 
-class TestAuditClient:
 
+class TestAuditClient:
     def _make_client(self):
         from src.core.shared.audit_client import AuditClient
 
@@ -1461,8 +1467,8 @@ class TestAuditClient:
 # 5. config/security.py
 # ---------------------------------------------------------------------------
 
-class TestSecuritySettings:
 
+class TestSecuritySettings:
     def test_default_values(self):
         from src.core.shared.config.security import SecuritySettings
 
@@ -1519,7 +1525,6 @@ class TestSecuritySettings:
 
 
 class TestOPASettings:
-
     def test_defaults(self):
         from src.core.shared.config.security import OPASettings
 
@@ -1538,7 +1543,6 @@ class TestOPASettings:
 
 
 class TestAuditSettings:
-
     def test_defaults(self):
         from src.core.shared.config.security import AuditSettings
 
@@ -1547,7 +1551,6 @@ class TestAuditSettings:
 
 
 class TestVaultSettings:
-
     def test_defaults(self):
         from src.core.shared.config.security import VaultSettings
 
@@ -1558,16 +1561,20 @@ class TestVaultSettings:
         assert s.verify_tls is True
         assert s.timeout == 30.0
 
-    @patch.dict("os.environ", {
-        "VAULT_ADDR": "https://vault.prod.com",
-        "VAULT_TOKEN": "s.mytoken",
-        "VAULT_NAMESPACE": "prod",
-        "VAULT_TRANSIT_MOUNT": "my_transit",
-        "VAULT_KV_MOUNT": "kv",
-        "VAULT_KV_VERSION": "1",
-        "VAULT_TIMEOUT": "10.0",
-        "VAULT_VERIFY_TLS": "false",
-    }, clear=False)
+    @patch.dict(
+        "os.environ",
+        {
+            "VAULT_ADDR": "https://vault.prod.com",
+            "VAULT_TOKEN": "s.mytoken",
+            "VAULT_NAMESPACE": "prod",
+            "VAULT_TRANSIT_MOUNT": "my_transit",
+            "VAULT_KV_MOUNT": "kv",
+            "VAULT_KV_VERSION": "1",
+            "VAULT_TIMEOUT": "10.0",
+            "VAULT_VERIFY_TLS": "false",
+        },
+        clear=False,
+    )
     def test_custom(self):
         from src.core.shared.config.security import VaultSettings
 
@@ -1580,7 +1587,6 @@ class TestVaultSettings:
 
 
 class TestSSOSettings:
-
     def test_defaults(self, monkeypatch: pytest.MonkeyPatch):
         from src.core.shared.config.security import SSOSettings
 
@@ -1602,12 +1608,16 @@ class TestSSOSettings:
         assert s.auto_provision_users is True
         assert s.default_role_on_provision == "viewer"
 
-    @patch.dict("os.environ", {
-        "WORKOS_ENABLED": "true",
-        "WORKOS_CLIENT_ID": "client_xyz",
-        "WORKOS_API_KEY": "sk_live_test",
-        "WORKOS_WEBHOOK_SECRET": "whsec_test",
-    }, clear=False)
+    @patch.dict(
+        "os.environ",
+        {
+            "WORKOS_ENABLED": "true",
+            "WORKOS_CLIENT_ID": "client_xyz",
+            "WORKOS_API_KEY": "sk_live_test",
+            "WORKOS_WEBHOOK_SECRET": "whsec_test",
+        },
+        clear=False,
+    )
     def test_workos_fields(self):
         from src.core.shared.config.security import SSOSettings
 
@@ -1616,12 +1626,16 @@ class TestSSOSettings:
         assert s.workos_client_id == "client_xyz"
         assert s.workos_api_key.get_secret_value() == "sk_live_test"
 
-    @patch.dict("os.environ", {
-        "OIDC_CLIENT_ID": "oidc_id",
-        "OIDC_CLIENT_SECRET": "oidc_secret",
-        "OIDC_ISSUER_URL": "https://issuer.example.com",
-        "OIDC_USE_PKCE": "false",
-    }, clear=False)
+    @patch.dict(
+        "os.environ",
+        {
+            "OIDC_CLIENT_ID": "oidc_id",
+            "OIDC_CLIENT_SECRET": "oidc_secret",
+            "OIDC_ISSUER_URL": "https://issuer.example.com",
+            "OIDC_USE_PKCE": "false",
+        },
+        clear=False,
+    )
     def test_oidc_fields(self):
         from src.core.shared.config.security import SSOSettings
 
@@ -1629,12 +1643,16 @@ class TestSSOSettings:
         assert s.oidc_client_id == "oidc_id"
         assert s.oidc_use_pkce is False
 
-    @patch.dict("os.environ", {
-        "SAML_ENTITY_ID": "https://sp.example.com/metadata",
-        "SAML_SIGN_REQUESTS": "true",
-        "SAML_WANT_ASSERTIONS_SIGNED": "true",
-        "SAML_WANT_ASSERTIONS_ENCRYPTED": "true",
-    }, clear=False)
+    @patch.dict(
+        "os.environ",
+        {
+            "SAML_ENTITY_ID": "https://sp.example.com/metadata",
+            "SAML_SIGN_REQUESTS": "true",
+            "SAML_WANT_ASSERTIONS_SIGNED": "true",
+            "SAML_WANT_ASSERTIONS_ENCRYPTED": "true",
+        },
+        clear=False,
+    )
     def test_saml_fields(self):
         from src.core.shared.config.security import SSOSettings
 

@@ -247,9 +247,7 @@ class TestConstraintGenerator:
         assert constraints[0].generated_by == "pattern_matching"
 
     async def test_generate_obligation_shall(self, generator):
-        constraints = await generator.generate_constraints(
-            "Agents shall report their status."
-        )
+        constraints = await generator.generate_constraints("Agents shall report their status.")
         assert len(constraints) == 1
         assert "Obligation" in constraints[0].name
 
@@ -269,24 +267,18 @@ class TestConstraintGenerator:
         assert constraints[0].confidence == 0.90
 
     async def test_generate_prohibition_must_not(self, generator):
-        constraints = await generator.generate_constraints(
-            "Agents must not bypass security."
-        )
+        constraints = await generator.generate_constraints("Agents must not bypass security.")
         # "must not" triggers prohibition, but "must" also matches obligation
         # The comparison patterns are checked first, then others
         assert len(constraints) >= 1
 
     async def test_generate_prohibition_forbidden(self, generator):
-        constraints = await generator.generate_constraints(
-            "Unauthorized access is forbidden."
-        )
+        constraints = await generator.generate_constraints("Unauthorized access is forbidden.")
         assert len(constraints) == 1
         assert "Prohibition" in constraints[0].name
 
     async def test_generate_permission_may(self, generator):
-        constraints = await generator.generate_constraints(
-            "Users may request data exports."
-        )
+        constraints = await generator.generate_constraints("Users may request data exports.")
         assert len(constraints) == 1
         assert "Permission" in constraints[0].name
         assert constraints[0].confidence == 0.75
@@ -294,23 +286,17 @@ class TestConstraintGenerator:
         assert constraints[0].priority == 2
 
     async def test_generate_permission_can(self, generator):
-        constraints = await generator.generate_constraints(
-            "Admins can override rate limits."
-        )
+        constraints = await generator.generate_constraints("Admins can override rate limits.")
         assert len(constraints) == 1
         assert "Permission" in constraints[0].name
 
     async def test_generate_permission_optional(self, generator):
-        constraints = await generator.generate_constraints(
-            "Logging is optional for debug mode."
-        )
+        constraints = await generator.generate_constraints("Logging is optional for debug mode.")
         assert len(constraints) == 1
         assert "Permission" in constraints[0].name
 
     async def test_generate_comparison_greater_than(self, generator):
-        constraints = await generator.generate_constraints(
-            "Score must be greater than 50."
-        )
+        constraints = await generator.generate_constraints("Score must be greater than 50.")
         # "greater than" is a comparison pattern, checked first
         assert len(constraints) >= 1
         comp = [c for c in constraints if "Comparison" in c.name]
@@ -320,34 +306,26 @@ class TestConstraintGenerator:
         assert "50" in comp[0].expression
 
     async def test_generate_comparison_less_than(self, generator):
-        constraints = await generator.generate_constraints(
-            "Latency must be less than 100ms."
-        )
+        constraints = await generator.generate_constraints("Latency must be less than 100ms.")
         comp = [c for c in constraints if "Comparison" in c.name]
         assert len(comp) >= 1
         assert "<=" in comp[0].expression
         assert "100" in comp[0].expression
 
     async def test_generate_comparison_at_least(self, generator):
-        constraints = await generator.generate_constraints(
-            "Coverage at least 80 percent."
-        )
+        constraints = await generator.generate_constraints("Coverage at least 80 percent.")
         comp = [c for c in constraints if "Comparison" in c.name]
         assert len(comp) >= 1
         assert ">=" in comp[0].expression
 
     async def test_generate_comparison_at_most(self, generator):
-        constraints = await generator.generate_constraints(
-            "Queue size at most 1000."
-        )
+        constraints = await generator.generate_constraints("Queue size at most 1000.")
         comp = [c for c in constraints if "Comparison" in c.name]
         assert len(comp) >= 1
         assert "<=" in comp[0].expression
 
     async def test_generate_comparison_no_number(self, generator):
-        constraints = await generator.generate_constraints(
-            "Value greater than threshold."
-        )
+        constraints = await generator.generate_constraints("Value greater than threshold.")
         comp = [c for c in constraints if "Comparison" in c.name]
         assert len(comp) >= 1
         # threshold defaults to 0 when no number found
@@ -360,9 +338,7 @@ class TestConstraintGenerator:
         assert len(constraints) >= 3
 
     async def test_generate_no_matching_pattern(self, generator):
-        constraints = await generator.generate_constraints(
-            "Hello world."
-        )
+        constraints = await generator.generate_constraints("Hello world.")
         assert constraints == []
 
     async def test_generate_with_context(self, generator):
@@ -1016,9 +992,7 @@ class TestMLGovernanceClient:
             "enhanced_agent_bus.integrations.ml_governance.MLGovernanceClient._sanitize_error",
             return_value="sanitized",
         ):
-            result = await client._submit_report(
-                OutcomeReport(features={"x": 1.0}, label=1)
-            )
+            result = await client._submit_report(OutcomeReport(features={"x": 1.0}, label=1))
         # max_retries=1 for testing, graceful_degradation=True, queue disabled
         assert result.success is False
         await client.close()
@@ -1033,9 +1007,7 @@ class TestMLGovernanceClient:
             "enhanced_agent_bus.integrations.ml_governance.MLGovernanceClient._sanitize_error",
             return_value="sanitized",
         ):
-            result = await client._submit_report(
-                OutcomeReport(features={"x": 1.0}, label=1)
-            )
+            result = await client._submit_report(OutcomeReport(features={"x": 1.0}, label=1))
         assert result.success is False
         await client.close()
 
@@ -1049,9 +1021,7 @@ class TestMLGovernanceClient:
             side_effect=httpx.TimeoutException("timeout"),
         )
         with pytest.raises(MLGovernanceTimeoutError):
-            await client._submit_report(
-                OutcomeReport(features={"x": 1.0}, label=1)
-            )
+            await client._submit_report(OutcomeReport(features={"x": 1.0}, label=1))
         await client.close()
 
     async def test_submit_report_not_graceful_connection(self):
@@ -1064,9 +1034,7 @@ class TestMLGovernanceClient:
             side_effect=httpx.ConnectError("refused"),
         )
         with pytest.raises(MLGovernanceConnectionError):
-            await client._submit_report(
-                OutcomeReport(features={"x": 1.0}, label=1)
-            )
+            await client._submit_report(OutcomeReport(features={"x": 1.0}, label=1))
         await client.close()
 
     async def test_flush_queue_empty(self, client):
@@ -1221,9 +1189,7 @@ class TestMLGovernanceClient:
             "enhanced_agent_bus.integrations.ml_governance.MLGovernanceClient._sanitize_error",
             return_value="sanitized",
         ):
-            result = await client._submit_report(
-                OutcomeReport(features={"x": 1.0}, label=1)
-            )
+            result = await client._submit_report(OutcomeReport(features={"x": 1.0}, label=1))
         assert result.status == OutcomeReportStatus.SERVICE_UNAVAILABLE
         assert len(called) == 1
         await client.close()

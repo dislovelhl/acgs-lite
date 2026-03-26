@@ -91,7 +91,9 @@ class SchemaRegistry:
     ) -> None:
         self._migrations[(schema_name, str(from_version), str(to_version))] = migration_fn
 
-    def get(self, schema_name: str, version: SchemaVersion | str | None = None) -> type[EventSchemaBase] | None:
+    def get(
+        self, schema_name: str, version: SchemaVersion | str | None = None
+    ) -> type[EventSchemaBase] | None:
         versions = self._schemas.get(schema_name, {})
         if not versions:
             return None

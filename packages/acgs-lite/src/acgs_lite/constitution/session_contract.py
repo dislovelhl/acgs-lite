@@ -319,9 +319,7 @@ class SessionContractTracker:
         divergences: list[ContractDivergence] = []
 
         # Check 1: action type authorisation
-        if state.contract.allowed_actions and not (
-            action_words & state.contract.allowed_actions
-        ):
+        if state.contract.allowed_actions and not (action_words & state.contract.allowed_actions):
             divergences.append(
                 ContractDivergence(
                     divergence_type=DivergenceType.UNAUTHORIZED_ACTION,

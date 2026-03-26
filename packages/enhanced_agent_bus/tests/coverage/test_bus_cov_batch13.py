@@ -34,9 +34,7 @@ class TestAdaptiveGovernanceEngineInit:
         from enhanced_agent_bus.config import BusConfiguration
 
         config = BusConfiguration.from_environment()
-        engine = AdaptiveGovernanceEngine(
-            constitutional_hash="608508a9bd224290", config=config
-        )
+        engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290", config=config)
         assert engine.config is config
 
 
@@ -280,9 +278,15 @@ class TestGovernanceEngineDTMC:
 
         engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         features = ImpactFeatures(
-            message_length=100, agent_count=2, tenant_complexity=1,
-            temporal_patterns=[], semantic_similarity=0.5, historical_precedence=1,
-            resource_utilization=0.3, network_isolation=0.8, risk_score=0.3,
+            message_length=100,
+            agent_count=2,
+            tenant_complexity=1,
+            temporal_patterns=[],
+            semantic_similarity=0.5,
+            historical_precedence=1,
+            resource_utilization=0.3,
+            network_isolation=0.8,
+            risk_score=0.3,
             confidence_level=0.8,
         )
         result = engine._apply_dtmc_risk_blend(features)
@@ -300,15 +304,24 @@ class TestGovernanceEngineDTMC:
 
         engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         features = ImpactFeatures(
-            message_length=100, agent_count=2, tenant_complexity=1,
-            temporal_patterns=[], semantic_similarity=0.5, historical_precedence=1,
-            resource_utilization=0.3, network_isolation=0.8, risk_score=0.3,
+            message_length=100,
+            agent_count=2,
+            tenant_complexity=1,
+            temporal_patterns=[],
+            semantic_similarity=0.5,
+            historical_precedence=1,
+            resource_utilization=0.3,
+            network_isolation=0.8,
+            risk_score=0.3,
             confidence_level=0.8,
         )
         decision = GovernanceDecision(
-            action_allowed=True, impact_level=ImpactLevel.LOW,
-            confidence_score=0.8, reasoning="test",
-            recommended_threshold=0.5, features_used=features,
+            action_allowed=True,
+            impact_level=ImpactLevel.LOW,
+            confidence_score=0.8,
+            reasoning="test",
+            recommended_threshold=0.5,
+            features_used=features,
         )
         result = engine._apply_dtmc_escalation(decision)
         assert result.impact_level == ImpactLevel.LOW
@@ -335,15 +348,24 @@ class TestGovernanceEngineABTest:
 
         engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         features = ImpactFeatures(
-            message_length=100, agent_count=2, tenant_complexity=1,
-            temporal_patterns=[], semantic_similarity=0.5, historical_precedence=1,
-            resource_utilization=0.3, network_isolation=0.8, risk_score=0.3,
+            message_length=100,
+            agent_count=2,
+            tenant_complexity=1,
+            temporal_patterns=[],
+            semantic_similarity=0.5,
+            historical_precedence=1,
+            resource_utilization=0.3,
+            network_isolation=0.8,
+            risk_score=0.3,
             confidence_level=0.8,
         )
         decision = GovernanceDecision(
-            action_allowed=True, impact_level=ImpactLevel.LOW,
-            confidence_score=0.8, reasoning="test",
-            recommended_threshold=0.5, features_used=features,
+            action_allowed=True,
+            impact_level=ImpactLevel.LOW,
+            confidence_score=0.8,
+            reasoning="test",
+            recommended_threshold=0.5,
+            features_used=features,
         )
         result = engine._apply_ab_test_routing(decision, features, time.time())
         assert result is decision
@@ -358,9 +380,15 @@ class TestGovernanceEngineBuildDecision:
 
         engine = AdaptiveGovernanceEngine(constitutional_hash="608508a9bd224290")
         features = ImpactFeatures(
-            message_length=100, agent_count=2, tenant_complexity=1,
-            temporal_patterns=[], semantic_similarity=0.5, historical_precedence=1,
-            resource_utilization=0.3, network_isolation=0.8, risk_score=0.2,
+            message_length=100,
+            agent_count=2,
+            tenant_complexity=1,
+            temporal_patterns=[],
+            semantic_similarity=0.5,
+            historical_precedence=1,
+            resource_utilization=0.3,
+            network_isolation=0.8,
+            risk_score=0.2,
             confidence_level=0.9,
         )
         decision = engine._build_decision_for_features(features, "test-id-1")
@@ -393,8 +421,10 @@ class TestTensorRTOptimizerInit:
         from enhanced_agent_bus.deliberation_layer.tensorrt_optimizer import TensorRTOptimizer
 
         opt = TensorRTOptimizer(
-            model_name="test-model", max_seq_length=64,
-            use_fp16=False, cache_dir=tmp_path,
+            model_name="test-model",
+            max_seq_length=64,
+            use_fp16=False,
+            cache_dir=tmp_path,
         )
         assert opt.model_name == "test-model"
         assert opt.max_seq_length == 64
@@ -493,9 +523,7 @@ class TestTensorRTOptimizerLoadEngines:
     def test_load_onnx_runtime_no_file(self, tmp_path):
         from enhanced_agent_bus.deliberation_layer.tensorrt_optimizer import TensorRTOptimizer
 
-        with patch(
-            "enhanced_agent_bus.deliberation_layer.tensorrt_optimizer.ONNX_AVAILABLE", True
-        ):
+        with patch("enhanced_agent_bus.deliberation_layer.tensorrt_optimizer.ONNX_AVAILABLE", True):
             opt = TensorRTOptimizer(cache_dir=tmp_path)
             assert opt.load_onnx_runtime() is False
 
@@ -679,8 +707,10 @@ class TestCheckEnforcementForCreate:
 
         config = AsyncMock()
         await check_enforcement_for_create(
-            key_type=None, key_algorithm=None,
-            enforcement_config=config, migration_context=True,
+            key_type=None,
+            key_algorithm=None,
+            enforcement_config=config,
+            migration_context=True,
         )
         config.get_mode.assert_not_called()
 
@@ -691,7 +721,9 @@ class TestCheckEnforcementForCreate:
         config = AsyncMock()
         config.get_mode = AsyncMock(return_value="permissive")
         await check_enforcement_for_create(
-            key_type=None, key_algorithm=None, enforcement_config=config,
+            key_type=None,
+            key_algorithm=None,
+            enforcement_config=config,
         )
 
     @pytest.mark.asyncio
@@ -704,7 +736,9 @@ class TestCheckEnforcementForCreate:
         config.get_mode = AsyncMock(return_value="strict")
         with pytest.raises(PQCKeyRequiredError):
             await check_enforcement_for_create(
-                key_type=None, key_algorithm=None, enforcement_config=config,
+                key_type=None,
+                key_algorithm=None,
+                enforcement_config=config,
             )
 
     @pytest.mark.asyncio
@@ -717,7 +751,8 @@ class TestCheckEnforcementForCreate:
         config.get_mode = AsyncMock(return_value="strict")
         with pytest.raises(ClassicalKeyRejectedError):
             await check_enforcement_for_create(
-                key_type="classical", key_algorithm="ed25519",
+                key_type="classical",
+                key_algorithm="ed25519",
                 enforcement_config=config,
             )
 
@@ -728,7 +763,8 @@ class TestCheckEnforcementForCreate:
         config = AsyncMock()
         config.get_mode = AsyncMock(return_value="strict")
         await check_enforcement_for_create(
-            key_type="pqc", key_algorithm="ML-DSA-65",
+            key_type="pqc",
+            key_algorithm="ML-DSA-65",
             enforcement_config=config,
         )
 
@@ -742,7 +778,8 @@ class TestCheckEnforcementForCreate:
         config.get_mode = AsyncMock(return_value="strict")
         with pytest.raises(UnsupportedPQCAlgorithmError):
             await check_enforcement_for_create(
-                key_type="pqc", key_algorithm="INVALID-ALG",
+                key_type="pqc",
+                key_algorithm="INVALID-ALG",
                 enforcement_config=config,
             )
 
@@ -754,7 +791,8 @@ class TestCheckEnforcementForUpdate:
 
         config = AsyncMock()
         await check_enforcement_for_update(
-            existing_key_type="classical", enforcement_config=config,
+            existing_key_type="classical",
+            enforcement_config=config,
             migration_context=True,
         )
         config.get_mode.assert_not_called()
@@ -766,7 +804,8 @@ class TestCheckEnforcementForUpdate:
         config = AsyncMock()
         config.get_mode = AsyncMock(return_value="permissive")
         await check_enforcement_for_update(
-            existing_key_type="classical", enforcement_config=config,
+            existing_key_type="classical",
+            enforcement_config=config,
         )
 
     @pytest.mark.asyncio
@@ -779,7 +818,8 @@ class TestCheckEnforcementForUpdate:
         config.get_mode = AsyncMock(return_value="strict")
         with pytest.raises(MigrationRequiredError):
             await check_enforcement_for_update(
-                existing_key_type="classical", enforcement_config=config,
+                existing_key_type="classical",
+                enforcement_config=config,
             )
 
     @pytest.mark.asyncio
@@ -789,7 +829,8 @@ class TestCheckEnforcementForUpdate:
         config = AsyncMock()
         config.get_mode = AsyncMock(return_value="strict")
         await check_enforcement_for_update(
-            existing_key_type="pqc", enforcement_config=config,
+            existing_key_type="pqc",
+            enforcement_config=config,
         )
 
 
@@ -992,8 +1033,11 @@ class TestMessageProcessorRequiresIndependentValidation:
             independent_validator_threshold=0.5,
         )
         msg = AgentMessage(
-            content="test", from_agent="agent-1", to_agent="agent-2",
-            message_type=MessageType.QUERY, priority=Priority.MEDIUM,
+            content="test",
+            from_agent="agent-1",
+            to_agent="agent-2",
+            message_type=MessageType.QUERY,
+            priority=Priority.MEDIUM,
         )
         msg.impact_score = 0.9
         assert proc._requires_independent_validation(msg) is True
@@ -1003,11 +1047,15 @@ class TestMessageProcessorRequiresIndependentValidation:
         from enhanced_agent_bus.models import AgentMessage, MessageType, Priority
 
         proc = MessageProcessor(
-            isolated_mode=True, require_independent_validator=True,
+            isolated_mode=True,
+            require_independent_validator=True,
         )
         msg = AgentMessage(
-            content="test", from_agent="agent-1", to_agent="agent-2",
-            message_type=MessageType.CONSTITUTIONAL_VALIDATION, priority=Priority.MEDIUM,
+            content="test",
+            from_agent="agent-1",
+            to_agent="agent-2",
+            message_type=MessageType.CONSTITUTIONAL_VALIDATION,
+            priority=Priority.MEDIUM,
         )
         assert proc._requires_independent_validation(msg) is True
 
@@ -1016,12 +1064,16 @@ class TestMessageProcessorRequiresIndependentValidation:
         from enhanced_agent_bus.models import AgentMessage, MessageType, Priority
 
         proc = MessageProcessor(
-            isolated_mode=True, require_independent_validator=True,
+            isolated_mode=True,
+            require_independent_validator=True,
             independent_validator_threshold=0.8,
         )
         msg = AgentMessage(
-            content="test", from_agent="agent-1", to_agent="agent-2",
-            message_type=MessageType.QUERY, priority=Priority.LOW,
+            content="test",
+            from_agent="agent-1",
+            to_agent="agent-2",
+            message_type=MessageType.QUERY,
+            priority=Priority.LOW,
         )
         msg.impact_score = 0.1
         assert proc._requires_independent_validation(msg) is False
@@ -1031,12 +1083,16 @@ class TestMessageProcessorRequiresIndependentValidation:
         from enhanced_agent_bus.models import AgentMessage, MessageType, Priority
 
         proc = MessageProcessor(
-            isolated_mode=True, require_independent_validator=True,
+            isolated_mode=True,
+            require_independent_validator=True,
             independent_validator_threshold=0.8,
         )
         msg = AgentMessage(
-            content="test", from_agent="agent-1", to_agent="agent-2",
-            message_type=MessageType.QUERY, priority=Priority.LOW,
+            content="test",
+            from_agent="agent-1",
+            to_agent="agent-2",
+            message_type=MessageType.QUERY,
+            priority=Priority.LOW,
         )
         msg.impact_score = None
         assert proc._requires_independent_validation(msg) is False
@@ -1049,8 +1105,11 @@ class TestEnforceIndependentValidatorGate:
 
         proc = MessageProcessor(isolated_mode=True, require_independent_validator=False)
         msg = AgentMessage(
-            content="test", from_agent="agent-1", to_agent="agent-2",
-            message_type=MessageType.QUERY, priority=Priority.MEDIUM,
+            content="test",
+            from_agent="agent-1",
+            to_agent="agent-2",
+            message_type=MessageType.QUERY,
+            priority=Priority.MEDIUM,
         )
         result = proc._enforce_independent_validator_gate(msg)
         assert result is None
@@ -1060,12 +1119,16 @@ class TestEnforceIndependentValidatorGate:
         from enhanced_agent_bus.models import AgentMessage, MessageType, Priority
 
         proc = MessageProcessor(
-            isolated_mode=True, require_independent_validator=True,
+            isolated_mode=True,
+            require_independent_validator=True,
             independent_validator_threshold=0.0,
         )
         msg = AgentMessage(
-            content="test", from_agent="agent-1", to_agent="agent-2",
-            message_type=MessageType.GOVERNANCE_REQUEST, priority=Priority.HIGH,
+            content="test",
+            from_agent="agent-1",
+            to_agent="agent-2",
+            message_type=MessageType.GOVERNANCE_REQUEST,
+            priority=Priority.HIGH,
             metadata={},
         )
         result = proc._enforce_independent_validator_gate(msg)
@@ -1077,12 +1140,16 @@ class TestEnforceIndependentValidatorGate:
         from enhanced_agent_bus.models import AgentMessage, MessageType, Priority
 
         proc = MessageProcessor(
-            isolated_mode=True, require_independent_validator=True,
+            isolated_mode=True,
+            require_independent_validator=True,
             independent_validator_threshold=0.0,
         )
         msg = AgentMessage(
-            content="test", from_agent="agent-1", to_agent="agent-2",
-            message_type=MessageType.GOVERNANCE_REQUEST, priority=Priority.HIGH,
+            content="test",
+            from_agent="agent-1",
+            to_agent="agent-2",
+            message_type=MessageType.GOVERNANCE_REQUEST,
+            priority=Priority.HIGH,
             metadata={"validated_by_agent": "agent-1"},
         )
         result = proc._enforce_independent_validator_gate(msg)
@@ -1095,12 +1162,16 @@ class TestEnforceIndependentValidatorGate:
         from enhanced_agent_bus.models import AgentMessage, MessageType, Priority
 
         proc = MessageProcessor(
-            isolated_mode=True, require_independent_validator=True,
+            isolated_mode=True,
+            require_independent_validator=True,
             independent_validator_threshold=0.0,
         )
         msg = AgentMessage(
-            content="test", from_agent="agent-1", to_agent="agent-2",
-            message_type=MessageType.GOVERNANCE_REQUEST, priority=Priority.HIGH,
+            content="test",
+            from_agent="agent-1",
+            to_agent="agent-2",
+            message_type=MessageType.GOVERNANCE_REQUEST,
+            priority=Priority.HIGH,
             metadata={"validated_by_agent": "agent-2", "validation_stage": "wrong_stage"},
         )
         result = proc._enforce_independent_validator_gate(msg)
@@ -1112,12 +1183,16 @@ class TestEnforceIndependentValidatorGate:
         from enhanced_agent_bus.models import AgentMessage, MessageType, Priority
 
         proc = MessageProcessor(
-            isolated_mode=True, require_independent_validator=True,
+            isolated_mode=True,
+            require_independent_validator=True,
             independent_validator_threshold=0.0,
         )
         msg = AgentMessage(
-            content="test", from_agent="agent-1", to_agent="agent-2",
-            message_type=MessageType.GOVERNANCE_REQUEST, priority=Priority.HIGH,
+            content="test",
+            from_agent="agent-1",
+            to_agent="agent-2",
+            message_type=MessageType.GOVERNANCE_REQUEST,
+            priority=Priority.HIGH,
             metadata={"validated_by_agent": "agent-2", "validation_stage": "independent"},
         )
         result = proc._enforce_independent_validator_gate(msg)
@@ -1133,8 +1208,10 @@ class TestMessageProcessorProcess:
         proc = MessageProcessor(isolated_mode=True)
         msg = AgentMessage(
             content="Hello world test message for processing.",
-            from_agent="agent-1", to_agent="agent-2",
-            message_type=MessageType.QUERY, priority=Priority.MEDIUM,
+            from_agent="agent-1",
+            to_agent="agent-2",
+            message_type=MessageType.QUERY,
+            priority=Priority.MEDIUM,
         )
         result = await proc.process(msg, max_retries=1)
         assert hasattr(result, "is_valid")
@@ -1146,8 +1223,11 @@ class TestMessageProcessorProcess:
 
         proc = MessageProcessor(isolated_mode=True)
         msg = AgentMessage(
-            content="test", from_agent="agent-1", to_agent="agent-2",
-            message_type=MessageType.QUERY, priority=Priority.MEDIUM,
+            content="test",
+            from_agent="agent-1",
+            to_agent="agent-2",
+            message_type=MessageType.QUERY,
+            priority=Priority.MEDIUM,
         )
         call_count = 0
 
@@ -1171,8 +1251,11 @@ class TestMessageProcessorRecordWorkflowEvent:
         proc = MessageProcessor(isolated_mode=True)
         proc._agent_workflow_metrics = None
         msg = AgentMessage(
-            content="test", from_agent="agent-1", to_agent="agent-2",
-            message_type=MessageType.QUERY, priority=Priority.MEDIUM,
+            content="test",
+            from_agent="agent-1",
+            to_agent="agent-2",
+            message_type=MessageType.QUERY,
+            priority=Priority.MEDIUM,
         )
         proc._record_agent_workflow_event(event_type="test", msg=msg, reason="testing")
 
@@ -1185,8 +1268,11 @@ class TestMessageProcessorRecordWorkflowEvent:
         mock_collector.record_event.side_effect = RuntimeError("fail")
         proc._agent_workflow_metrics = mock_collector
         msg = AgentMessage(
-            content="test", from_agent="agent-1", to_agent="agent-2",
-            message_type=MessageType.QUERY, priority=Priority.MEDIUM,
+            content="test",
+            from_agent="agent-1",
+            to_agent="agent-2",
+            message_type=MessageType.QUERY,
+            priority=Priority.MEDIUM,
         )
         proc._record_agent_workflow_event(event_type="test", msg=msg, reason="testing")
 
@@ -1198,8 +1284,11 @@ class TestMessageProcessorMemoryProfiling:
 
         proc = MessageProcessor(isolated_mode=True)
         msg = AgentMessage(
-            content="test", from_agent="agent-1", to_agent="agent-2",
-            message_type=MessageType.QUERY, priority=Priority.MEDIUM,
+            content="test",
+            from_agent="agent-1",
+            to_agent="agent-2",
+            message_type=MessageType.QUERY,
+            priority=Priority.MEDIUM,
         )
         ctx = proc._setup_memory_profiling_context(msg)
         assert ctx is not None
@@ -1212,8 +1301,11 @@ class TestMessageProcessorComputeCacheKey:
 
         proc = MessageProcessor(isolated_mode=True)
         msg = AgentMessage(
-            content="test content", from_agent="agent-1", to_agent="agent-2",
-            message_type=MessageType.QUERY, priority=Priority.MEDIUM,
+            content="test content",
+            from_agent="agent-1",
+            to_agent="agent-2",
+            message_type=MessageType.QUERY,
+            priority=Priority.MEDIUM,
         )
         key = proc._compute_cache_key(msg)
         assert isinstance(key, str)
@@ -1225,12 +1317,18 @@ class TestMessageProcessorComputeCacheKey:
 
         proc = MessageProcessor(isolated_mode=True)
         msg1 = AgentMessage(
-            content="content A", from_agent="agent-1", to_agent="agent-2",
-            message_type=MessageType.QUERY, priority=Priority.MEDIUM,
+            content="content A",
+            from_agent="agent-1",
+            to_agent="agent-2",
+            message_type=MessageType.QUERY,
+            priority=Priority.MEDIUM,
         )
         msg2 = AgentMessage(
-            content="content B", from_agent="agent-1", to_agent="agent-2",
-            message_type=MessageType.QUERY, priority=Priority.MEDIUM,
+            content="content B",
+            from_agent="agent-1",
+            to_agent="agent-2",
+            message_type=MessageType.QUERY,
+            priority=Priority.MEDIUM,
         )
         key1 = proc._compute_cache_key(msg1)
         key2 = proc._compute_cache_key(msg2)

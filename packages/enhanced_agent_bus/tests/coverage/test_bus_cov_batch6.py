@@ -89,6 +89,7 @@ from enhanced_agent_bus.llm_adapters.models import (
 # Helpers / Fixtures
 # ============================================================================
 
+
 def _make_session_context(
     *,
     expired: bool = False,
@@ -162,6 +163,7 @@ def _clear_session():
 # SSO Middleware - SSOSessionContext
 # ============================================================================
 
+
 class TestSSOSessionContext:
     def test_not_expired(self):
         ctx = _make_session_context()
@@ -211,6 +213,7 @@ class TestSSOSessionContext:
 # SSO Middleware - context helpers
 # ============================================================================
 
+
 class TestContextHelpers:
     def test_get_set_clear(self):
         assert get_current_sso_session() is None
@@ -225,6 +228,7 @@ class TestContextHelpers:
 # SSO Middleware - _raise_auth_error
 # ============================================================================
 
+
 class TestRaiseAuthError:
     def test_raises_permission_error_without_fastapi(self):
         with patch("enhanced_agent_bus.enterprise_sso.middleware.FASTAPI_AVAILABLE", False):
@@ -235,6 +239,7 @@ class TestRaiseAuthError:
 # ============================================================================
 # SSO Middleware - _check_session_valid / _check_session_roles
 # ============================================================================
+
 
 class TestCheckSessionValid:
     def test_none_session_raises(self):
@@ -315,6 +320,7 @@ class TestCheckSessionRolesSync:
 # SSO Middleware - require_sso_authentication decorator
 # ============================================================================
 
+
 class TestRequireSSOAuthenticationDecorator:
     @pytest.mark.asyncio
     async def test_async_no_session_raises(self):
@@ -379,6 +385,7 @@ class TestRequireSSOAuthenticationDecorator:
 # SSO Middleware - SSOMiddlewareConfig
 # ============================================================================
 
+
 class TestSSOMiddlewareConfig:
     def test_defaults(self):
         cfg = SSOMiddlewareConfig()
@@ -399,6 +406,7 @@ class TestSSOMiddlewareConfig:
 # ============================================================================
 # enterprise_sso.integration - data classes
 # ============================================================================
+
 
 class TestSSOUser:
     def test_to_dict(self):
@@ -487,9 +495,7 @@ class TestSSOAuthenticationResult:
         assert "user" in d
 
     def test_failure_to_dict(self):
-        result = SSOAuthenticationResult(
-            success=False, error="bad", error_code="ERR"
-        )
+        result = SSOAuthenticationResult(success=False, error="bad", error_code="ERR")
         d = result.to_dict()
         assert d["success"] is False
         assert d["error"] == "bad"
@@ -511,6 +517,7 @@ class TestSSOIntegrationError:
 # ============================================================================
 # enterprise_sso.integration - EnterpriseSSOService
 # ============================================================================
+
 
 class TestEnterpriseSSOService:
     def _make_service(self) -> EnterpriseSSOService:
@@ -680,14 +687,24 @@ class TestEnterpriseSSOService:
     def test_invalidate_user_sessions(self):
         svc = self._make_service()
         svc._create_session(
-            user_id="u1", external_id="e1", tenant_id="t1",
-            idp_id="i1", maci_roles=[], email="a@b.com",
-            display_name="A", session_hours=1,
+            user_id="u1",
+            external_id="e1",
+            tenant_id="t1",
+            idp_id="i1",
+            maci_roles=[],
+            email="a@b.com",
+            display_name="A",
+            session_hours=1,
         )
         svc._create_session(
-            user_id="u1", external_id="e1", tenant_id="t1",
-            idp_id="i1", maci_roles=[], email="a@b.com",
-            display_name="A", session_hours=1,
+            user_id="u1",
+            external_id="e1",
+            tenant_id="t1",
+            idp_id="i1",
+            maci_roles=[],
+            email="a@b.com",
+            display_name="A",
+            session_hours=1,
         )
         assert svc.invalidate_user_sessions("u1") == 2
         assert svc.invalidate_user_sessions("u1") == 0
@@ -695,9 +712,14 @@ class TestEnterpriseSSOService:
     def test_get_user_sessions(self):
         svc = self._make_service()
         svc._create_session(
-            user_id="u1", external_id="e1", tenant_id="t1",
-            idp_id="i1", maci_roles=[], email="a@b.com",
-            display_name="A", session_hours=1,
+            user_id="u1",
+            external_id="e1",
+            tenant_id="t1",
+            idp_id="i1",
+            maci_roles=[],
+            email="a@b.com",
+            display_name="A",
+            session_hours=1,
         )
         sessions = svc.get_user_sessions("u1")
         assert len(sessions) == 1
@@ -707,9 +729,14 @@ class TestEnterpriseSSOService:
         svc = self._make_service()
         svc.configure_tenant_sso("t1", sso_enabled=True)
         session = svc._create_session(
-            user_id="u1", external_id="e1", tenant_id="t1",
-            idp_id="i1", maci_roles=[], email="a@b.com",
-            display_name="A", session_hours=1,
+            user_id="u1",
+            external_id="e1",
+            tenant_id="t1",
+            idp_id="i1",
+            maci_roles=[],
+            email="a@b.com",
+            display_name="A",
+            session_hours=1,
         )
         old_expires = session.expires_at
         refreshed = svc.refresh_session(session.session_id)
@@ -744,9 +771,14 @@ class TestEnterpriseSSOService:
     def test_session_maci_roles(self):
         svc = self._make_service()
         session = svc._create_session(
-            user_id="u1", external_id="e1", tenant_id="t1",
-            idp_id="i1", maci_roles=["ADMIN"], email="a@b.com",
-            display_name="A", session_hours=1,
+            user_id="u1",
+            external_id="e1",
+            tenant_id="t1",
+            idp_id="i1",
+            maci_roles=["ADMIN"],
+            email="a@b.com",
+            display_name="A",
+            session_hours=1,
         )
         assert svc.get_session_maci_roles(session.session_id) == ["ADMIN"]
         assert svc.get_session_maci_roles("nope") == []
@@ -754,9 +786,14 @@ class TestEnterpriseSSOService:
     def test_session_has_role(self):
         svc = self._make_service()
         session = svc._create_session(
-            user_id="u1", external_id="e1", tenant_id="t1",
-            idp_id="i1", maci_roles=["ADMIN"], email="a@b.com",
-            display_name="A", session_hours=1,
+            user_id="u1",
+            external_id="e1",
+            tenant_id="t1",
+            idp_id="i1",
+            maci_roles=["ADMIN"],
+            email="a@b.com",
+            display_name="A",
+            session_hours=1,
         )
         assert svc.session_has_role(session.session_id, "ADMIN") is True
         assert svc.session_has_role(session.session_id, "VIEWER") is False
@@ -773,8 +810,12 @@ class TestEnterpriseSSOService:
     def test_create_tenant_context_no_multitenancy(self):
         svc = self._make_service()
         session = SSOSession(
-            session_id="s1", user_id="u1", external_id="e1",
-            tenant_id="t1", idp_id="i1", maci_roles=["ADMIN"],
+            session_id="s1",
+            user_id="u1",
+            external_id="e1",
+            tenant_id="t1",
+            idp_id="i1",
+            maci_roles=["ADMIN"],
         )
         # This may return None depending on multi_tenancy availability
         result = svc.create_tenant_context(session)
@@ -785,6 +826,7 @@ class TestEnterpriseSSOService:
 # ============================================================================
 # llm_adapters.models - ToolType
 # ============================================================================
+
 
 class TestToolType:
     def test_values(self):
@@ -797,6 +839,7 @@ class TestToolType:
 # ============================================================================
 # llm_adapters.models - FunctionParameters
 # ============================================================================
+
 
 class TestFunctionParameters:
     def test_defaults(self):
@@ -827,6 +870,7 @@ class TestFunctionParameters:
 # llm_adapters.models - FunctionDefinition
 # ============================================================================
 
+
 class TestFunctionDefinition:
     def test_valid(self):
         fd = FunctionDefinition(name="get_weather", description="Get weather")
@@ -856,11 +900,10 @@ class TestFunctionDefinition:
 # llm_adapters.models - ToolDefinition
 # ============================================================================
 
+
 class TestToolDefinition:
     def test_to_dict(self):
-        td = ToolDefinition(
-            function=FunctionDefinition(name="test_fn", description="test")
-        )
+        td = ToolDefinition(function=FunctionDefinition(name="test_fn", description="test"))
         d = td.to_dict()
         assert d["type"] == "function"
         assert d["function"]["name"] == "test_fn"
@@ -884,6 +927,7 @@ class TestToolDefinition:
 # llm_adapters.models - ToolCallFunction
 # ============================================================================
 
+
 class TestToolCallFunction:
     def test_valid(self):
         tcf = ToolCallFunction(name="fn", arguments='{"x": 1}')
@@ -903,11 +947,12 @@ class TestToolCallFunction:
 # llm_adapters.models - ToolCall
 # ============================================================================
 
+
 class TestToolCall:
     def test_to_dict(self):
         tc = ToolCall(
             id="tc-1",
-            function=ToolCallFunction(name="fn", arguments='{}'),
+            function=ToolCallFunction(name="fn", arguments="{}"),
         )
         d = tc.to_dict()
         assert d["id"] == "tc-1"
@@ -927,6 +972,7 @@ class TestToolCall:
 # llm_adapters.models - LLMRequest
 # ============================================================================
 
+
 class TestLLMRequest:
     def test_empty_messages_raises(self):
         with pytest.raises(ValidationError):
@@ -944,9 +990,7 @@ class TestLLMRequest:
         assert "model" not in d
 
     def test_to_dict_full(self):
-        tool = ToolDefinition(
-            function=FunctionDefinition(name="fn", description="d")
-        )
+        tool = ToolDefinition(function=FunctionDefinition(name="fn", description="d"))
         req = LLMRequest(
             messages=[LLMMessage(role="user", content="hi")],
             model="gpt-4",
@@ -973,6 +1017,7 @@ class TestLLMRequest:
 # ============================================================================
 # llm_adapters.models - MessageConverter
 # ============================================================================
+
 
 class TestMessageConverter:
     def _msgs(self) -> list[LLMMessage]:
@@ -1077,6 +1122,7 @@ class TestMessageConverter:
 # llm_adapters.models - RequestConverter
 # ============================================================================
 
+
 class TestRequestConverter:
     def _req(self, **kwargs) -> LLMRequest:
         defaults = {"messages": [LLMMessage(role="user", content="hi")]}
@@ -1089,9 +1135,7 @@ class TestRequestConverter:
         assert "temperature" in r
 
     def test_to_openai_full(self):
-        tool = ToolDefinition(
-            function=FunctionDefinition(name="fn", description="d")
-        )
+        tool = ToolDefinition(function=FunctionDefinition(name="fn", description="d"))
         r = RequestConverter.to_openai_request(
             self._req(
                 model="gpt-4",
@@ -1123,9 +1167,7 @@ class TestRequestConverter:
         assert r["system"] == "Be helpful"
 
     def test_to_anthropic_with_tools(self):
-        tool = ToolDefinition(
-            function=FunctionDefinition(name="fn", description="d")
-        )
+        tool = ToolDefinition(function=FunctionDefinition(name="fn", description="d"))
         r = RequestConverter.to_anthropic_request(self._req(tools=[tool], stream=True))
         assert "tools" in r
         assert r["stream"] is True
@@ -1135,7 +1177,9 @@ class TestRequestConverter:
         assert r["stop_sequences"] == ["END"]
 
     def test_to_bedrock_anthropic(self):
-        r = RequestConverter.to_bedrock_request(self._req(), model_id="claude-v2", provider="anthropic")
+        r = RequestConverter.to_bedrock_request(
+            self._req(), model_id="claude-v2", provider="anthropic"
+        )
         assert r["modelId"] == "claude-v2"
         assert r["contentType"] == "application/json"
 
@@ -1147,6 +1191,7 @@ class TestRequestConverter:
 # ============================================================================
 # llm_adapters.models - ResponseConverter
 # ============================================================================
+
 
 class TestResponseConverter:
     def test_from_openai_response(self):
@@ -1234,6 +1279,7 @@ class TestResponseConverter:
 # capability_matrix - Enums
 # ============================================================================
 
+
 class TestCapabilityEnums:
     def test_capability_dimension(self):
         assert CapabilityDimension.CONTEXT_LENGTH.value == "context_length"
@@ -1250,6 +1296,7 @@ class TestCapabilityEnums:
 # ============================================================================
 # capability_matrix - CapabilityValue
 # ============================================================================
+
 
 class TestCapabilityValue:
     def test_to_dict(self):
@@ -1286,30 +1333,22 @@ class TestCapabilityValue:
 
     def test_is_satisfied_by_numeric_min(self):
         cv = CapabilityValue(dimension=CapabilityDimension.CONTEXT_LENGTH, value=128000)
-        req = CapabilityRequirement(
-            dimension=CapabilityDimension.CONTEXT_LENGTH, min_value=100000
-        )
+        req = CapabilityRequirement(dimension=CapabilityDimension.CONTEXT_LENGTH, min_value=100000)
         assert cv.is_satisfied_by(req) is True
 
     def test_is_satisfied_by_numeric_min_fail(self):
         cv = CapabilityValue(dimension=CapabilityDimension.CONTEXT_LENGTH, value=4096)
-        req = CapabilityRequirement(
-            dimension=CapabilityDimension.CONTEXT_LENGTH, min_value=100000
-        )
+        req = CapabilityRequirement(dimension=CapabilityDimension.CONTEXT_LENGTH, min_value=100000)
         assert cv.is_satisfied_by(req) is False
 
     def test_is_satisfied_by_numeric_max(self):
         cv = CapabilityValue(dimension=CapabilityDimension.INPUT_COST_PER_1K, value=0.01)
-        req = CapabilityRequirement(
-            dimension=CapabilityDimension.INPUT_COST_PER_1K, max_value=0.05
-        )
+        req = CapabilityRequirement(dimension=CapabilityDimension.INPUT_COST_PER_1K, max_value=0.05)
         assert cv.is_satisfied_by(req) is True
 
     def test_is_satisfied_by_numeric_max_fail(self):
         cv = CapabilityValue(dimension=CapabilityDimension.INPUT_COST_PER_1K, value=0.1)
-        req = CapabilityRequirement(
-            dimension=CapabilityDimension.INPUT_COST_PER_1K, max_value=0.05
-        )
+        req = CapabilityRequirement(dimension=CapabilityDimension.INPUT_COST_PER_1K, max_value=0.05)
         assert cv.is_satisfied_by(req) is False
 
     def test_is_satisfied_by_level(self):
@@ -1335,35 +1374,23 @@ class TestCapabilityValue:
         assert cv.is_satisfied_by(req) is False
 
     def test_is_satisfied_by_string_exact(self):
-        cv = CapabilityValue(
-            dimension=CapabilityDimension.LATENCY_CLASS, value="low"
-        )
-        req = CapabilityRequirement(
-            dimension=CapabilityDimension.LATENCY_CLASS, exact_value="low"
-        )
+        cv = CapabilityValue(dimension=CapabilityDimension.LATENCY_CLASS, value="low")
+        req = CapabilityRequirement(dimension=CapabilityDimension.LATENCY_CLASS, exact_value="low")
         assert cv.is_satisfied_by(req) is True
 
     def test_is_satisfied_by_string_exact_fail(self):
-        cv = CapabilityValue(
-            dimension=CapabilityDimension.LATENCY_CLASS, value="high"
-        )
-        req = CapabilityRequirement(
-            dimension=CapabilityDimension.LATENCY_CLASS, exact_value="low"
-        )
+        cv = CapabilityValue(dimension=CapabilityDimension.LATENCY_CLASS, value="high")
+        req = CapabilityRequirement(dimension=CapabilityDimension.LATENCY_CLASS, exact_value="low")
         assert cv.is_satisfied_by(req) is False
 
     def test_is_satisfied_by_string_no_exact(self):
-        cv = CapabilityValue(
-            dimension=CapabilityDimension.LATENCY_CLASS, value="high"
-        )
+        cv = CapabilityValue(dimension=CapabilityDimension.LATENCY_CLASS, value="high")
         req = CapabilityRequirement(dimension=CapabilityDimension.LATENCY_CLASS)
         assert cv.is_satisfied_by(req) is True
 
     def test_is_satisfied_by_dimension_mismatch(self):
         cv = CapabilityValue(dimension=CapabilityDimension.VISION, value=True)
-        req = CapabilityRequirement(
-            dimension=CapabilityDimension.CONTEXT_LENGTH, min_value=1000
-        )
+        req = CapabilityRequirement(dimension=CapabilityDimension.CONTEXT_LENGTH, min_value=1000)
         assert cv.is_satisfied_by(req) is False
 
     def test_is_satisfied_by_none_value(self):
@@ -1375,6 +1402,7 @@ class TestCapabilityValue:
 # ============================================================================
 # capability_matrix - CapabilityRequirement
 # ============================================================================
+
 
 class TestCapabilityRequirement:
     def test_to_dict(self):
@@ -1391,6 +1419,7 @@ class TestCapabilityRequirement:
 # ============================================================================
 # capability_matrix - ProviderCapabilityProfile
 # ============================================================================
+
 
 class TestProviderCapabilityProfile:
     def _profile(self, **kwargs) -> ProviderCapabilityProfile:
@@ -1483,6 +1512,7 @@ class TestProviderCapabilityProfile:
 # ============================================================================
 # capability_matrix - CapabilityRegistry
 # ============================================================================
+
 
 class TestCapabilityRegistry:
     def test_default_profiles_registered(self):
@@ -1622,6 +1652,7 @@ class TestCapabilityRegistry:
 # capability_matrix - CapabilityRouter
 # ============================================================================
 
+
 class TestCapabilityRouter:
     def test_select_provider(self):
         router = CapabilityRouter()
@@ -1731,6 +1762,7 @@ class TestCapabilityRouter:
 # ============================================================================
 # capability_matrix - Global accessors
 # ============================================================================
+
 
 class TestGlobalAccessors:
     def test_get_capability_registry(self):

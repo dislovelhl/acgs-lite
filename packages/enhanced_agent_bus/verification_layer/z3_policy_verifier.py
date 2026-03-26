@@ -759,9 +759,7 @@ class Z3PolicyVerifier:
                             "description": "Z3 solver unavailable and heuristic fallback disabled",
                         }
                     )
-                    result.warnings.append(
-                        "Z3 solver unavailable; verification failed closed"
-                    )
+                    result.warnings.append("Z3 solver unavailable; verification failed closed")
 
             # Fallback to heuristic if Z3 timed out or returned unknown
             if (

@@ -600,9 +600,7 @@ class TestProcessAcsResponse:
 
         with patch("src.core.shared.auth.saml_handler.HAS_PYSAML2", True):
             with pytest.raises(SAMLValidationError, match="Failed to parse"):
-                await handler_with_idp.process_acs_response(
-                    "base64resp", idp_name="test-idp"
-                )
+                await handler_with_idp.process_acs_response("base64resp", idp_name="test-idp")
 
     @pytest.mark.asyncio
     async def test_successful_acs_flow(self, handler_with_idp: SAMLHandler) -> None:
@@ -650,18 +648,14 @@ class TestProcessAcsResponse:
                 )
 
     @pytest.mark.asyncio
-    async def test_wraps_runtime_error_as_validation(
-        self, handler_with_idp: SAMLHandler
-    ) -> None:
+    async def test_wraps_runtime_error_as_validation(self, handler_with_idp: SAMLHandler) -> None:
         mock_client = MagicMock()
         mock_client.parse_authn_request_response.side_effect = RuntimeError("bad xml")
         handler_with_idp._saml_clients["test-idp"] = mock_client
 
         with patch("src.core.shared.auth.saml_handler.HAS_PYSAML2", True):
             with pytest.raises(SAMLValidationError, match="validation failed"):
-                await handler_with_idp.process_acs_response(
-                    "base64resp", idp_name="test-idp"
-                )
+                await handler_with_idp.process_acs_response("base64resp", idp_name="test-idp")
 
     @pytest.mark.asyncio
     async def test_detects_idp_from_request_id(self, handler_with_idp: SAMLHandler) -> None:
@@ -726,9 +720,7 @@ class TestInitiateLogout:
         handler._saml_clients["slo-idp"] = mock_client
 
         with patch("src.core.shared.auth.saml_handler.HAS_PYSAML2", True):
-            url = await handler.initiate_logout(
-                "slo-idp", "user@e.com", relay_state="/logged-out"
-            )
+            url = await handler.initiate_logout("slo-idp", "user@e.com", relay_state="/logged-out")
 
         assert url is not None
         assert "RelayState" in url
@@ -813,9 +805,7 @@ class TestGenerateMetadata:
     """SP metadata generation."""
 
     @pytest.mark.asyncio
-    async def test_generates_minimal_metadata_without_pysaml2(
-        self, handler: SAMLHandler
-    ) -> None:
+    async def test_generates_minimal_metadata_without_pysaml2(self, handler: SAMLHandler) -> None:
         with patch("src.core.shared.auth.saml_handler.HAS_PYSAML2", False):
             xml = await handler.generate_metadata()
 

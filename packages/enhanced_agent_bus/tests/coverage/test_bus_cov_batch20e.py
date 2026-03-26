@@ -530,7 +530,11 @@ class TestConstitutionalHITLIntegration:
             hitl,
             "check_approval_status",
             new_callable=AsyncMock,
-            return_value={"status": "rejected", "rejected_by": "admin-2", "rejection_reason": "nope"},
+            return_value={
+                "status": "rejected",
+                "rejected_by": "admin-2",
+                "rejection_reason": "nope",
+            },
         ):
             result = await hitl.process_approval_decision("req-1", p.proposal_id)
 
@@ -599,9 +603,7 @@ class TestConstitutionalHITLIntegration:
         mock_resp.json.return_value = {"request_id": "r-1"}
         mock_resp.raise_for_status = MagicMock()
 
-        with patch.object(
-            hitl.http_client, "post", new_callable=AsyncMock, return_value=mock_resp
-        ):
+        with patch.object(hitl.http_client, "post", new_callable=AsyncMock, return_value=mock_resp):
             result = await hitl._submit_to_hitl_service({"test": True})
 
         assert result == {"request_id": "r-1"}
@@ -628,17 +630,17 @@ class TestConstitutionalHITLIntegration:
         mock_resp = MagicMock()
         mock_resp.raise_for_status = MagicMock()
 
-        with patch.object(
-            hitl.http_client, "post", new_callable=AsyncMock, return_value=mock_resp
-        ):
-            result = await hitl._send_slack_notification({
-                "request_id": "r",
-                "title": "t",
-                "message": "msg",
-                "priority": "critical",
-                "metadata": {"impact_score": 0.9, "proposal_id": "p1"},
-                "approval_url": "https://example.com",
-            })
+        with patch.object(hitl.http_client, "post", new_callable=AsyncMock, return_value=mock_resp):
+            result = await hitl._send_slack_notification(
+                {
+                    "request_id": "r",
+                    "title": "t",
+                    "message": "msg",
+                    "priority": "critical",
+                    "metadata": {"impact_score": 0.9, "proposal_id": "p1"},
+                    "approval_url": "https://example.com",
+                }
+            )
 
         assert result is True
 
@@ -650,14 +652,16 @@ class TestConstitutionalHITLIntegration:
             new_callable=AsyncMock,
             side_effect=httpx.HTTPError("fail"),
         ):
-            result = await hitl._send_slack_notification({
-                "request_id": "r",
-                "title": "t",
-                "message": "msg",
-                "priority": "high",
-                "metadata": {"impact_score": 0.5, "proposal_id": "p"},
-                "approval_url": "https://example.com",
-            })
+            result = await hitl._send_slack_notification(
+                {
+                    "request_id": "r",
+                    "title": "t",
+                    "message": "msg",
+                    "priority": "high",
+                    "metadata": {"impact_score": 0.5, "proposal_id": "p"},
+                    "approval_url": "https://example.com",
+                }
+            )
 
         assert result is False
 
@@ -672,16 +676,16 @@ class TestConstitutionalHITLIntegration:
         mock_resp = MagicMock()
         mock_resp.raise_for_status = MagicMock()
 
-        with patch.object(
-            hitl.http_client, "post", new_callable=AsyncMock, return_value=mock_resp
-        ):
-            result = await hitl._send_pagerduty_notification({
-                "request_id": "r",
-                "title": "t",
-                "priority": "critical",
-                "metadata": {"proposal_id": "p", "impact_score": 0.9},
-                "approval_url": "https://example.com",
-            })
+        with patch.object(hitl.http_client, "post", new_callable=AsyncMock, return_value=mock_resp):
+            result = await hitl._send_pagerduty_notification(
+                {
+                    "request_id": "r",
+                    "title": "t",
+                    "priority": "critical",
+                    "metadata": {"proposal_id": "p", "impact_score": 0.9},
+                    "approval_url": "https://example.com",
+                }
+            )
 
         assert result is True
 
@@ -693,13 +697,15 @@ class TestConstitutionalHITLIntegration:
         with patch.object(
             hitl.http_client, "post", new_callable=AsyncMock, return_value=mock_resp
         ) as mock_post:
-            await hitl._send_pagerduty_notification({
-                "request_id": "r",
-                "title": "t",
-                "priority": "high",
-                "metadata": {"proposal_id": "p", "impact_score": 0.5},
-                "approval_url": "https://example.com",
-            })
+            await hitl._send_pagerduty_notification(
+                {
+                    "request_id": "r",
+                    "title": "t",
+                    "priority": "high",
+                    "metadata": {"proposal_id": "p", "impact_score": 0.5},
+                    "approval_url": "https://example.com",
+                }
+            )
             payload = mock_post.call_args[1]["json"]
             assert payload["payload"]["severity"] == "warning"
 
@@ -714,17 +720,17 @@ class TestConstitutionalHITLIntegration:
         mock_resp = MagicMock()
         mock_resp.raise_for_status = MagicMock()
 
-        with patch.object(
-            hitl.http_client, "post", new_callable=AsyncMock, return_value=mock_resp
-        ):
-            result = await hitl._send_teams_notification({
-                "request_id": "r",
-                "title": "t",
-                "message": "msg",
-                "priority": "standard",
-                "metadata": {"impact_score": 0.3, "proposal_id": "p"},
-                "approval_url": "https://example.com",
-            })
+        with patch.object(hitl.http_client, "post", new_callable=AsyncMock, return_value=mock_resp):
+            result = await hitl._send_teams_notification(
+                {
+                    "request_id": "r",
+                    "title": "t",
+                    "message": "msg",
+                    "priority": "standard",
+                    "metadata": {"impact_score": 0.3, "proposal_id": "p"},
+                    "approval_url": "https://example.com",
+                }
+            )
 
         assert result is True
 
@@ -736,14 +742,16 @@ class TestConstitutionalHITLIntegration:
             new_callable=AsyncMock,
             side_effect=RuntimeError("fail"),
         ):
-            result = await hitl._send_teams_notification({
-                "request_id": "r",
-                "title": "t",
-                "message": "msg",
-                "priority": "standard",
-                "metadata": {"impact_score": 0.3, "proposal_id": "p"},
-                "approval_url": "https://example.com",
-            })
+            result = await hitl._send_teams_notification(
+                {
+                    "request_id": "r",
+                    "title": "t",
+                    "message": "msg",
+                    "priority": "standard",
+                    "metadata": {"impact_score": 0.3, "proposal_id": "p"},
+                    "approval_url": "https://example.com",
+                }
+            )
 
         assert result is False
 
@@ -753,9 +761,7 @@ class TestConstitutionalHITLIntegration:
         with patch.object(
             hitl, "_send_slack_notification", new_callable=AsyncMock, return_value=True
         ):
-            result = await hitl._send_to_channel(
-                NotificationChannel.SLACK, {"request_id": "r"}
-            )
+            result = await hitl._send_to_channel(NotificationChannel.SLACK, {"request_id": "r"})
         assert result is True
 
     async def test_send_to_channel_pagerduty(self, hitl):
@@ -764,9 +770,7 @@ class TestConstitutionalHITLIntegration:
         with patch.object(
             hitl, "_send_pagerduty_notification", new_callable=AsyncMock, return_value=True
         ):
-            result = await hitl._send_to_channel(
-                NotificationChannel.PAGERDUTY, {"request_id": "r"}
-            )
+            result = await hitl._send_to_channel(NotificationChannel.PAGERDUTY, {"request_id": "r"})
         assert result is True
 
     async def test_send_to_channel_teams(self, hitl):
@@ -775,9 +779,7 @@ class TestConstitutionalHITLIntegration:
         with patch.object(
             hitl, "_send_teams_notification", new_callable=AsyncMock, return_value=True
         ):
-            result = await hitl._send_to_channel(
-                NotificationChannel.TEAMS, {"request_id": "r"}
-            )
+            result = await hitl._send_to_channel(NotificationChannel.TEAMS, {"request_id": "r"})
         assert result is True
 
     async def test_send_notifications_multi_channel(self, mock_storage):
@@ -864,13 +866,20 @@ class TestHITLDataclasses:
         )
 
         chain = ApprovalChainConfig(
-            chain_id="t", name="T", description="D",
+            chain_id="t",
+            name="T",
+            description="D",
             priority=ApprovalPriority.STANDARD,
-            required_approvals=1, timeout_minutes=30,
+            required_approvals=1,
+            timeout_minutes=30,
         )
         req = HITLApprovalRequest(
-            request_id="r1", proposal_id="p1", chain_config=chain,
-            title="Title", description="Desc", context={},
+            request_id="r1",
+            proposal_id="p1",
+            chain_config=chain,
+            title="Title",
+            description="Desc",
+            context={},
             approval_url="https://example.com",
         )
         assert req.status == "pending"
@@ -1368,9 +1377,7 @@ class TestSagaDataClasses:
             SagaEventType,
         )
 
-        e = SagaEvent(
-            event_id="e1", saga_id="s1", event_type=SagaEventType.SAGA_STARTED
-        )
+        e = SagaEvent(event_id="e1", saga_id="s1", event_type=SagaEventType.SAGA_STARTED)
         assert e.timestamp is not None
         assert e.details == {}
 
@@ -1494,7 +1501,10 @@ class TestSagaStore:
         )
 
         saga = Saga(
-            saga_id="s5", tenant_id="t5", name="roundtrip", description="desc",
+            saga_id="s5",
+            tenant_id="t5",
+            name="roundtrip",
+            description="desc",
         )
         saga.status = SagaStatus.COMPENSATED
         saga.started_at = datetime.now(UTC)
@@ -1531,9 +1541,7 @@ class TestSagaEventPublisher:
         )
 
         publisher = SagaEventPublisher()
-        event = SagaEvent(
-            event_id="e1", saga_id="s1", event_type=SagaEventType.SAGA_STARTED
-        )
+        event = SagaEvent(event_id="e1", saga_id="s1", event_type=SagaEventType.SAGA_STARTED)
         await publisher.publish(event)
 
         events = publisher.get_events()
@@ -1561,9 +1569,7 @@ class TestSagaEventPublisher:
             raise RuntimeError("handler failure")
 
         publisher.subscribe(bad_handler)
-        event = SagaEvent(
-            event_id="e2", saga_id="s2", event_type=SagaEventType.SAGA_FAILED
-        )
+        event = SagaEvent(event_id="e2", saga_id="s2", event_type=SagaEventType.SAGA_FAILED)
         # Should not raise
         await publisher.publish(event)
         assert len(publisher._event_log) == 1
@@ -1587,9 +1593,7 @@ class TestSagaEventPublisher:
         publisher.subscribe(handler1)
         publisher.subscribe(handler2)
 
-        event = SagaEvent(
-            event_id="e3", saga_id="s3", event_type=SagaEventType.STEP_STARTED
-        )
+        event = SagaEvent(event_id="e3", saga_id="s3", event_type=SagaEventType.STEP_STARTED)
         await publisher.publish(event)
         assert calls == ["h1", "h2"]
 
@@ -1615,8 +1619,15 @@ class TestSagaOrchestrator:
 
         return SagaOrchestrator(store=mock_store, event_publisher=SagaEventPublisher())
 
-    def _make_step_def(self, name, *, succeeds=True, order=0, compensation_succeeds=True,
-                       compensation_strategy=None):
+    def _make_step_def(
+        self,
+        name,
+        *,
+        succeeds=True,
+        order=0,
+        compensation_succeeds=True,
+        compensation_strategy=None,
+    ):
         from enhanced_agent_bus.enterprise_sso.saga_orchestration import (
             CompensationStrategy,
             SagaStepDefinition,
@@ -1777,7 +1788,8 @@ class TestSagaOrchestrator:
             description="test",
             steps=[
                 self._make_step_def(
-                    "step1", order=0,
+                    "step1",
+                    order=0,
                     compensation_succeeds=False,
                     compensation_strategy=CompensationStrategy.SKIP,
                 ),
@@ -1977,7 +1989,9 @@ class TestMigrationSagaBuilder:
         defn = builder.build_policy_migration_saga()
 
         ctx = SagaContext(
-            saga_id="s1", tenant_id="t1", correlation_id="c1",
+            saga_id="s1",
+            tenant_id="t1",
+            correlation_id="c1",
             data={"source_tenant_id": "src", "target_tenant_id": "tgt"},
         )
 
@@ -2000,7 +2014,9 @@ class TestMigrationSagaBuilder:
         defn = builder.build_policy_migration_saga()
 
         ctx = SagaContext(
-            saga_id="s1", tenant_id="t1", correlation_id="c1",
+            saga_id="s1",
+            tenant_id="t1",
+            correlation_id="c1",
             data={},
         )
 
@@ -2015,7 +2031,9 @@ class TestMigrationSagaBuilder:
         defn = builder.build_database_migration_saga()
 
         ctx = SagaContext(
-            saga_id="s1", tenant_id="t1", correlation_id="c1",
+            saga_id="s1",
+            tenant_id="t1",
+            correlation_id="c1",
             data={"target_version": "v2.0.0", "expected_records": 100},
         )
 

@@ -23,6 +23,7 @@ from enhanced_agent_bus.collaboration.sync_engine import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _op(
     op_type: EditOperationType,
     path: str = "/content",
@@ -63,6 +64,7 @@ def _session(document_id: str = "doc1") -> CollaborationSession:
 # ===========================================================================
 # OperationalTransform unit tests
 # ===========================================================================
+
 
 class TestOperationalTransform:
     """Unit tests for OperationalTransform static methods."""
@@ -167,6 +169,7 @@ class TestOperationalTransform:
 # ===========================================================================
 # SyncEngine unit tests
 # ===========================================================================
+
 
 class TestSyncEngine:
     """Unit tests for SyncEngine document operations."""
@@ -285,10 +288,7 @@ class TestSyncEngine:
     @pytest.mark.asyncio
     async def test_get_operation_history(self, engine, session):
         await engine.initialize_document("doc1", {"a": 0})
-        ops = [
-            _op(EditOperationType.SET_PROPERTY, "/a", value=i, version=0)
-            for i in range(5)
-        ]
+        ops = [_op(EditOperationType.SET_PROPERTY, "/a", value=i, version=0) for i in range(5)]
         for o in ops:
             await engine.apply_operation("doc1", o, session)
 

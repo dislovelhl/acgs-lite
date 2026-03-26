@@ -588,9 +588,7 @@ class TestDunderAll:
     def test_all_classes_exported(self):
         import importlib
 
-        exc_mod = importlib.import_module(
-            "enhanced_agent_bus.langgraph_orchestration.exceptions"
-        )
+        exc_mod = importlib.import_module("enhanced_agent_bus.langgraph_orchestration.exceptions")
 
         expected = {
             "OrchestrationError",

@@ -37,6 +37,7 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_entry(
     tenant_id: str = "tenant-a",
     action: str = AuditAction.CREATE.value,
@@ -72,6 +73,7 @@ def _strict_config() -> AuditLogConfig:
 # AuditEntry
 # ===========================================================================
 
+
 class TestAuditEntry:
     def test_to_dict_roundtrip(self):
         entry = _make_entry()
@@ -99,9 +101,7 @@ class TestAuditEntry:
         assert entry.constitutional_hash == CONSTITUTIONAL_HASH
 
     def test_default_values(self):
-        entry = AuditEntry(
-            id="x", tenant_id="t", timestamp="ts", action="create"
-        )
+        entry = AuditEntry(id="x", tenant_id="t", timestamp="ts", action="create")
         assert entry.severity == AuditSeverity.INFO.value
         assert entry.actor_type == "user"
         assert entry.outcome == "success"
@@ -112,6 +112,7 @@ class TestAuditEntry:
 # ===========================================================================
 # AuditLogConfig
 # ===========================================================================
+
 
 class TestAuditLogConfig:
     def test_defaults(self):
@@ -158,6 +159,7 @@ class TestAuditLogConfig:
 # InMemoryAuditStore
 # ===========================================================================
 
+
 class TestInMemoryAuditStore:
     @pytest.fixture
     def store(self) -> InMemoryAuditStore:
@@ -192,9 +194,7 @@ class TestInMemoryAuditStore:
     async def test_query_filter_action(self, store: InMemoryAuditStore):
         await store.store(_make_entry(action=AuditAction.CREATE.value))
         await store.store(_make_entry(action=AuditAction.DELETE.value))
-        result = await store.query(
-            "tenant-a", AuditQueryParams(action=AuditAction.DELETE)
-        )
+        result = await store.query("tenant-a", AuditQueryParams(action=AuditAction.DELETE))
         assert result.total_count == 1
         assert result.entries[0].action == "delete"
 
@@ -202,45 +202,35 @@ class TestInMemoryAuditStore:
     async def test_query_filter_resource_type(self, store: InMemoryAuditStore):
         await store.store(_make_entry(resource_type="policy"))
         await store.store(_make_entry(resource_type="agent"))
-        result = await store.query(
-            "tenant-a", AuditQueryParams(resource_type="agent")
-        )
+        result = await store.query("tenant-a", AuditQueryParams(resource_type="agent"))
         assert result.total_count == 1
 
     @pytest.mark.asyncio
     async def test_query_filter_resource_id(self, store: InMemoryAuditStore):
         await store.store(_make_entry(resource_id="r1"))
         await store.store(_make_entry(resource_id="r2"))
-        result = await store.query(
-            "tenant-a", AuditQueryParams(resource_id="r1")
-        )
+        result = await store.query("tenant-a", AuditQueryParams(resource_id="r1"))
         assert result.total_count == 1
 
     @pytest.mark.asyncio
     async def test_query_filter_actor_id(self, store: InMemoryAuditStore):
         await store.store(_make_entry(actor_id="alice"))
         await store.store(_make_entry(actor_id="bob"))
-        result = await store.query(
-            "tenant-a", AuditQueryParams(actor_id="bob")
-        )
+        result = await store.query("tenant-a", AuditQueryParams(actor_id="bob"))
         assert result.total_count == 1
 
     @pytest.mark.asyncio
     async def test_query_filter_severity(self, store: InMemoryAuditStore):
         await store.store(_make_entry(severity=AuditSeverity.INFO.value))
         await store.store(_make_entry(severity=AuditSeverity.ERROR.value))
-        result = await store.query(
-            "tenant-a", AuditQueryParams(severity=AuditSeverity.ERROR)
-        )
+        result = await store.query("tenant-a", AuditQueryParams(severity=AuditSeverity.ERROR))
         assert result.total_count == 1
 
     @pytest.mark.asyncio
     async def test_query_filter_outcome(self, store: InMemoryAuditStore):
         await store.store(_make_entry(outcome="success"))
         await store.store(_make_entry(outcome="failure"))
-        result = await store.query(
-            "tenant-a", AuditQueryParams(outcome="failure")
-        )
+        result = await store.query("tenant-a", AuditQueryParams(outcome="failure"))
         assert result.total_count == 1
 
     @pytest.mark.asyncio
@@ -251,9 +241,7 @@ class TestInMemoryAuditStore:
         await store.store(_make_entry(timestamp=new_ts))
 
         cutoff = datetime.now(UTC) - timedelta(hours=1)
-        result = await store.query(
-            "tenant-a", AuditQueryParams(start_time=cutoff)
-        )
+        result = await store.query("tenant-a", AuditQueryParams(start_time=cutoff))
         assert result.total_count == 1
 
     @pytest.mark.asyncio
@@ -264,25 +252,19 @@ class TestInMemoryAuditStore:
         await store.store(_make_entry(timestamp=new_ts))
 
         cutoff = datetime.now(UTC) - timedelta(hours=1)
-        result = await store.query(
-            "tenant-a", AuditQueryParams(end_time=cutoff)
-        )
+        result = await store.query("tenant-a", AuditQueryParams(end_time=cutoff))
         assert result.total_count == 1
 
     @pytest.mark.asyncio
     async def test_query_pagination(self, store: InMemoryAuditStore):
         for i in range(5):
             await store.store(_make_entry(resource_id=f"r-{i}"))
-        result = await store.query(
-            "tenant-a", AuditQueryParams(limit=2, offset=0)
-        )
+        result = await store.query("tenant-a", AuditQueryParams(limit=2, offset=0))
         assert len(result.entries) == 2
         assert result.total_count == 5
         assert result.has_more is True
 
-        result2 = await store.query(
-            "tenant-a", AuditQueryParams(limit=2, offset=4)
-        )
+        result2 = await store.query("tenant-a", AuditQueryParams(limit=2, offset=4))
         assert len(result2.entries) == 1
         assert result2.has_more is False
 
@@ -339,6 +321,7 @@ class TestInMemoryAuditStore:
 # TenantAuditLogger
 # ===========================================================================
 
+
 class TestTenantAuditLogger:
     @pytest.fixture
     def logger_instance(self) -> TenantAuditLogger:
@@ -360,9 +343,7 @@ class TestTenantAuditLogger:
     @pytest.mark.asyncio
     async def test_log_disabled_returns_none(self):
         lgr = TenantAuditLogger(config=_disabled_config())
-        result = await lgr.log(
-            tenant_id="t", action=AuditAction.CREATE
-        )
+        result = await lgr.log(tenant_id="t", action=AuditAction.CREATE)
         assert result is None
 
     @pytest.mark.asyncio
@@ -498,9 +479,7 @@ class TestTenantAuditLogger:
         lgr = TenantAuditLogger()
         await lgr.log(tenant_id="t1", action=AuditAction.CREATE)
         await lgr.log(tenant_id="t1", action=AuditAction.DELETE)
-        result = await lgr.query(
-            "t1", query=AuditQueryParams(action=AuditAction.DELETE)
-        )
+        result = await lgr.query("t1", query=AuditQueryParams(action=AuditAction.DELETE))
         assert result.total_count == 1
 
     @pytest.mark.asyncio
@@ -591,6 +570,7 @@ class TestTenantAuditLogger:
 # TenantAuditLogger - Redis backend selection
 # ===========================================================================
 
+
 class TestLoggerBackendSelection:
     def test_uses_inmemory_by_default(self):
         lgr = TenantAuditLogger(config=AuditLogConfig(use_redis=False))
@@ -606,6 +586,7 @@ class TestLoggerBackendSelection:
 # ===========================================================================
 # RedisAuditStore (mocked Redis)
 # ===========================================================================
+
 
 class TestRedisAuditStore:
     @pytest.fixture
@@ -794,9 +775,7 @@ class TestRedisAuditStore:
     @pytest.mark.asyncio
     async def test_ensure_initialized_redis_unavailable(self):
         s = RedisAuditStore(redis_url="redis://localhost")
-        with patch(
-            "src.core.shared.acgs_logging.audit_logger.REDIS_AVAILABLE", False
-        ):
+        with patch("src.core.shared.acgs_logging.audit_logger.REDIS_AVAILABLE", False):
             result = await s._ensure_initialized()
         assert result is False
         assert s._initialized is True
@@ -812,11 +791,10 @@ class TestRedisAuditStore:
     @pytest.mark.asyncio
     async def test_ensure_initialized_connection_failure(self):
         s = RedisAuditStore(redis_url="redis://localhost")
-        with patch(
-            "src.core.shared.acgs_logging.audit_logger.REDIS_AVAILABLE", True
-        ), patch(
-            "src.core.shared.acgs_logging.audit_logger.aioredis"
-        ) as mock_aioredis:
+        with (
+            patch("src.core.shared.acgs_logging.audit_logger.REDIS_AVAILABLE", True),
+            patch("src.core.shared.acgs_logging.audit_logger.aioredis") as mock_aioredis,
+        ):
             mock_aioredis.from_url = AsyncMock(side_effect=OSError("refused"))
             result = await s._ensure_initialized()
         assert result is False
@@ -826,11 +804,10 @@ class TestRedisAuditStore:
     async def test_ensure_initialized_success(self):
         s = RedisAuditStore(redis_url="redis://localhost")
         fake_conn = AsyncMock()
-        with patch(
-            "src.core.shared.acgs_logging.audit_logger.REDIS_AVAILABLE", True
-        ), patch(
-            "src.core.shared.acgs_logging.audit_logger.aioredis"
-        ) as mock_aioredis:
+        with (
+            patch("src.core.shared.acgs_logging.audit_logger.REDIS_AVAILABLE", True),
+            patch("src.core.shared.acgs_logging.audit_logger.aioredis") as mock_aioredis,
+        ):
             mock_aioredis.from_url = AsyncMock(return_value=fake_conn)
             result = await s._ensure_initialized()
         assert result is True
@@ -840,6 +817,7 @@ class TestRedisAuditStore:
 # ===========================================================================
 # Redaction helper
 # ===========================================================================
+
 
 class TestRedaction:
     def test_all_sensitive_fields_redacted(self):
@@ -880,6 +858,7 @@ class TestRedaction:
 # Factory functions
 # ===========================================================================
 
+
 class TestFactoryFunctions:
     def test_create_tenant_audit_logger_default(self):
         lgr = create_tenant_audit_logger()
@@ -908,6 +887,7 @@ class TestFactoryFunctions:
 # Enums
 # ===========================================================================
 
+
 class TestEnums:
     def test_audit_action_values(self):
         assert AuditAction.CREATE.value == "create"
@@ -922,6 +902,7 @@ class TestEnums:
 # ===========================================================================
 # AuditQueryResult
 # ===========================================================================
+
 
 class TestAuditQueryResult:
     def test_defaults(self):
@@ -950,6 +931,7 @@ class TestAuditQueryResult:
 # ===========================================================================
 # Redis _apply_filters (separate from InMemory to cover the Redis path)
 # ===========================================================================
+
 
 class TestRedisApplyFilters:
     def test_filters_action(self):
@@ -989,9 +971,7 @@ class TestRedisApplyFilters:
             _make_entry(severity="info"),
             _make_entry(severity="error"),
         ]
-        result = s._apply_filters(
-            entries, AuditQueryParams(severity=AuditSeverity.ERROR)
-        )
+        result = s._apply_filters(entries, AuditQueryParams(severity=AuditSeverity.ERROR))
         assert len(result) == 1
 
     def test_filters_outcome(self):

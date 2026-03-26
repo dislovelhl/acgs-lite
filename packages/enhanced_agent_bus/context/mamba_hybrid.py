@@ -18,6 +18,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 logger = get_logger(__name__)
 MODEL_QUANTIZATION_ERRORS = (RuntimeError, ValueError, TypeError, OSError)
 
+
 def _has_real_torch() -> bool:
     try:
         return importlib.util.find_spec("torch") is not None

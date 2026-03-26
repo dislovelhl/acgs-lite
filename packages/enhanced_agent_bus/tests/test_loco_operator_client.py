@@ -35,6 +35,7 @@ class TestGovernanceScoringResult:
         from enhanced_agent_bus.deliberation_layer.loco_operator_client import (
             CONSTITUTIONAL_HASH,
         )
+
         return CONSTITUTIONAL_HASH
 
     def test_valid_result(self):
@@ -105,6 +106,7 @@ class TestPolicyEvaluationResult:
         from enhanced_agent_bus.deliberation_layer.loco_operator_client import (
             CONSTITUTIONAL_HASH,
         )
+
         return CONSTITUTIONAL_HASH
 
     def test_valid_result(self):

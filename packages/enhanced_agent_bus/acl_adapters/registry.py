@@ -92,9 +92,7 @@ class AdapterRegistry:
             for key in totals:
                 totals[key] += int(metrics.get(key, 0))
         total_calls = totals["total_calls"]
-        totals["success_rate"] = (
-            totals["successful_calls"] / total_calls if total_calls else 0.0
-        )
+        totals["success_rate"] = totals["successful_calls"] / total_calls if total_calls else 0.0
         totals["cache_hit_rate"] = totals["cache_hits"] / total_calls if total_calls else 0.0
         return {
             "constitutional_hash": CONSTITUTIONAL_HASH,

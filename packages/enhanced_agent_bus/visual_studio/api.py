@@ -58,9 +58,7 @@ async def create_workflow(
             name=name, description=description, tenant_id=resolved_tenant
         )
     except VISUAL_STUDIO_OPERATION_ERRORS as exc:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to create workflow: {exc}"
-        ) from exc
+        raise HTTPException(status_code=500, detail=f"Failed to create workflow: {exc}") from exc
 
 
 @router.get("/workflows", response_model=WorkflowListResponse)
@@ -95,7 +93,8 @@ async def update_workflow(
 ) -> WorkflowDefinition:
     if workflow_id != workflow.id:
         raise HTTPException(
-            status_code=400, detail=f"Path id {workflow_id!r} does not match body id {workflow.id!r}"
+            status_code=400,
+            detail=f"Path id {workflow_id!r} does not match body id {workflow.id!r}",
         )
     existing = await service.get_workflow(workflow_id)
     if existing is None:
@@ -103,9 +102,7 @@ async def update_workflow(
     try:
         return await service.save_workflow(workflow)
     except VISUAL_STUDIO_OPERATION_ERRORS as exc:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to update workflow: {exc}"
-        ) from exc
+        raise HTTPException(status_code=500, detail=f"Failed to update workflow: {exc}") from exc
 
 
 @router.post("/workflows/{workflow_id}", response_model=WorkflowDefinition)
@@ -116,7 +113,8 @@ async def save_workflow(
 ) -> WorkflowDefinition:
     if workflow_id != workflow.id:
         raise HTTPException(
-            status_code=400, detail=f"Path id {workflow_id!r} does not match body id {workflow.id!r}"
+            status_code=400,
+            detail=f"Path id {workflow_id!r} does not match body id {workflow.id!r}",
         )
     existing = await service.get_workflow(workflow_id)
     if existing is None:

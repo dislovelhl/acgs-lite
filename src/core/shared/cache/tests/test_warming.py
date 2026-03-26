@@ -321,9 +321,7 @@ class TestCacheWarmerErrors:
             return "val"
 
         w = CacheWarmer(config=config, cache_manager=mock_cache_manager)
-        task = asyncio.create_task(
-            w.warm_cache(source_keys=["a", "b"], key_loader=slow_loader)
-        )
+        task = asyncio.create_task(w.warm_cache(source_keys=["a", "b"], key_loader=slow_loader))
         await slow_loader_entered.wait()
 
         # Attempt a second warm while first is running
@@ -427,6 +425,7 @@ class TestCacheWarmerProgress:
     def test_remove_progress_callback(self, warmer):
         def cb(p):
             return None
+
         warmer.on_progress(cb)
         assert warmer.remove_progress_callback(cb) is True
         assert warmer.remove_progress_callback(cb) is False
@@ -576,9 +575,7 @@ class TestSingleton:
 class TestWarmCacheOnStartup:
     @pytest.mark.asyncio
     async def test_warm_cache_on_startup_returns_result(self):
-        with patch(
-            "src.core.shared.cache.warming.get_cache_warmer"
-        ) as mock_get:
+        with patch("src.core.shared.cache.warming.get_cache_warmer") as mock_get:
             mock_warmer = AsyncMock()
             mock_warmer.warm_cache = AsyncMock(
                 return_value=WarmingResult(status=WarmingStatus.COMPLETED)

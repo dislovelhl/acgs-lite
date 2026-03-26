@@ -32,9 +32,7 @@ class TestIntent:
         assert intent.is_primary is True
 
     def test_to_dict(self):
-        intent = Intent(
-            name="help", confidence=0.8, parameters={"key": "value"}, is_primary=False
-        )
+        intent = Intent(name="help", confidence=0.8, parameters={"key": "value"}, is_primary=False)
         d = intent.to_dict()
         assert d["name"] == "help"
         assert d["confidence"] == 0.8
@@ -186,9 +184,7 @@ class TestRuleBasedIntentClassifier:
 
     @pytest.mark.asyncio
     async def test_custom_patterns(self):
-        custom = RuleBasedIntentClassifier(
-            intent_patterns={"custom_intent": [r"\bcustom\b"]}
-        )
+        custom = RuleBasedIntentClassifier(intent_patterns={"custom_intent": [r"\bcustom\b"]})
         intents = await custom.classify("this is custom text")
         names = [i.name for i in intents]
         assert "custom_intent" in names

@@ -37,6 +37,7 @@ def _restore_config_modules():
 # Helpers to import modules under both branches
 # ---------------------------------------------------------------------------
 
+
 def _import_integrations_pydantic():
     """Import integrations module with pydantic_settings available (normal)."""
     mod_name = "src.core.shared.config.integrations"
@@ -92,6 +93,7 @@ def _import_security_dataclass():
 # ===================================================================
 # INTEGRATIONS — pydantic-settings branch
 # ===================================================================
+
 
 class TestIntegrationsPydanticSettings:
     """Test integrations.py classes when pydantic_settings is available."""
@@ -245,6 +247,7 @@ class TestIntegrationsPydanticSettings:
 # ===================================================================
 # INTEGRATIONS — dataclass fallback branch
 # ===================================================================
+
 
 class TestIntegrationsDataclassFallback:
     """Test integrations.py classes when pydantic_settings is NOT available."""
@@ -429,6 +432,7 @@ class TestIntegrationsDataclassFallback:
 # ===================================================================
 # SECURITY — pydantic-settings branch
 # ===================================================================
+
 
 class TestSecurityPydanticSettings:
     """Test security.py classes when pydantic_settings is available."""
@@ -732,6 +736,7 @@ class TestSecurityPydanticSettings:
 # ===================================================================
 # SECURITY — dataclass fallback branch
 # ===================================================================
+
 
 class TestSecurityDataclassFallback:
     """Test security.py classes when pydantic_settings is NOT available."""
@@ -1037,8 +1042,10 @@ class TestSecurityDataclassFallback:
         mod = _import_security_dataclass()
         with patch.dict(os.environ, {}, clear=False):
             for k in [
-                "OIDC_CLIENT_SECRET", "SAML_SP_PRIVATE_KEY",
-                "WORKOS_API_KEY", "WORKOS_WEBHOOK_SECRET",
+                "OIDC_CLIENT_SECRET",
+                "SAML_SP_PRIVATE_KEY",
+                "WORKOS_API_KEY",
+                "WORKOS_WEBHOOK_SECRET",
             ]:
                 os.environ.pop(k, None)
             s = mod.SSOSettings()

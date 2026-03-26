@@ -229,10 +229,7 @@ class TestGraphRAGRetriever:
         )
         from src.core.cognitive.graphrag.retrieval.retriever import GraphRAGRetriever
 
-        nodes = [
-            GraphNode(id=f"n{i}", text_content=f"text{i}")
-            for i in range(5)
-        ]
+        nodes = [GraphNode(id=f"n{i}", text_content=f"text{i}") for i in range(5)]
         traversal = TraversalResult(nodes=nodes, seed_node_ids=["n0"], query="q")
         retriever = GraphRAGRetriever()
 

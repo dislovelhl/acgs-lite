@@ -8,7 +8,6 @@ This ensures consistency and single source of truth for critical values.
 For algorithm-agile constitutional hash management, see constitutional_hash.py
 """
 
-import enum
 from enum import StrEnum
 
 
@@ -45,7 +44,7 @@ def classify_risk_tier(impact_score: float) -> RiskTier:
     return RiskTier.MEDIUM
 
 
-class MACIRole(str, enum.Enum):
+class MACIRole(StrEnum):
     """Multi-Agent Constitutional Intelligence roles (separation of powers).
 
     Values are UPPERCASE to match the JWT payload contract used by agent_runtime.

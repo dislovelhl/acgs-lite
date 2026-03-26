@@ -415,9 +415,7 @@ class TestSessionContextStoreGet:
         mock_redis = _make_mock_redis()
         mock_redis.get.return_value = None
         store.redis_client = mock_redis
-        with patch(
-            "enhanced_agent_bus.session_context.DUAL_READ_MIGRATION_ENABLED", False
-        ):
+        with patch("enhanced_agent_bus.session_context.DUAL_READ_MIGRATION_ENABLED", False):
             result = await store.get("unknown-session", "t1")
         assert result is None
 

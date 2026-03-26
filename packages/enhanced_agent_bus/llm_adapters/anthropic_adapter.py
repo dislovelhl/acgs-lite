@@ -133,9 +133,7 @@ class AnthropicAdapter(BaseLLMAdapter):
             ValueError: If constitutional compliance requirements are not met.
         """
         if not self.constitutional_hash:
-            raise ValueError(
-                "Constitutional hash is required for Anthropic adapter compliance."
-            )
+            raise ValueError("Constitutional hash is required for Anthropic adapter compliance.")
         if self.constitutional_hash != CONSTITUTIONAL_HASH:
             logger.warning(
                 "Anthropic adapter using non-standard constitutional hash: %s",

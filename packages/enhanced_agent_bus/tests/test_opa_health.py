@@ -197,10 +197,12 @@ class TestEvaluatePolicyMultiPath:
     @pytest.mark.asyncio
     async def test_candidate_evaluation_error(self) -> None:
         client = _FakeOPAClient()
-        client.evaluate_policy = AsyncMock(side_effect=[
-            {"allowed": True, "reason": "ok", "result": True, "metadata": {}},
-            ValueError("boom"),
-        ])
+        client.evaluate_policy = AsyncMock(
+            side_effect=[
+                {"allowed": True, "reason": "ok", "result": True, "metadata": {}},
+                ValueError("boom"),
+            ]
+        )
         input_data = {
             "action": "read",
             "support_set_candidates": [{"x": 1}],

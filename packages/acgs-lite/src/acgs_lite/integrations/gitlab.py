@@ -98,8 +98,7 @@ class GitLabGovernanceBot:
     ) -> None:
         if not HTTPX_AVAILABLE:
             raise ImportError(
-                "httpx is required for GitLab integration. "
-                "Install with: pip install acgs[gitlab]"
+                "httpx is required for GitLab integration. Install with: pip install acgs[gitlab]"
             )
 
         self._token = token

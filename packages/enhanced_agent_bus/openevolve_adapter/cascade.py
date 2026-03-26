@@ -60,9 +60,9 @@ class CascadeResult:
     """Outcome of a cascade evaluation run."""
 
     candidate_id: str
-    passed: bool                    # True iff the candidate cleared all stages
-    exit_stage: CascadeStage        # Stage at which evaluation stopped
-    score: float                    # Best score reached (0.0 if syntax failed)
+    passed: bool  # True iff the candidate cleared all stages
+    exit_stage: CascadeStage  # Stage at which evaluation stopped
+    score: float  # Best score reached (0.0 if syntax failed)
     fitness_result: FitnessResult | None  # Only set when FULL stage completes
     rejection_reason: str = ""
     stage_timings_ms: dict[str, float] = field(default_factory=dict)
@@ -181,9 +181,7 @@ class CascadeEvaluator:
 
         if quick_score < self._quick_threshold:
             self._counts["failed_quick"] += 1
-            reason = (
-                f"Quick score {quick_score:.4f} below threshold {self._quick_threshold}"
-            )
+            reason = f"Quick score {quick_score:.4f} below threshold {self._quick_threshold}"
             logger.debug(
                 "Cascade: quick fail",
                 candidate_id=candidate.candidate_id,
@@ -328,7 +326,8 @@ class CascadeEvaluator:
 
         result = self._fitness.evaluate(candidate, performance_score=performance_score)
         reason = (
-            "" if result.passed
+            ""
+            if result.passed
             else f"Full fitness {result.fitness:.4f} below threshold {self._full_threshold}"
         )
         return result, reason

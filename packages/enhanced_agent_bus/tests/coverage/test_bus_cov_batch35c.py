@@ -48,6 +48,7 @@ from enhanced_agent_bus.context_memory.models import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_config(
     name: str = "test_svc",
     failure_threshold: int = 3,
@@ -910,10 +911,7 @@ class TestJRTContextPreparer:
     async def test_prepare_context_max_tokens_limits_window(self):
         """Window respects max_tokens and doesn't overflow."""
         p = JRTContextPreparer(config=JRTConfig(relevance_threshold=0.0))
-        chunks = [
-            _make_chunk(content=f"chunk {i}", token_count=100)
-            for i in range(10)
-        ]
+        chunks = [_make_chunk(content=f"chunk {i}", token_count=100) for i in range(10)]
 
         result = await p.prepare_context(
             query="chunk",
@@ -1044,9 +1042,11 @@ class TestJRTEnsureConstitutionalContext:
         """When constitutional context can't fit, a warning is emitted."""
         p = JRTContextPreparer(config=JRTConfig(relevance_threshold=0.0))
         # Set a very large constitutional context
-        p.set_constitutional_context([
-            _make_chunk(content="huge constitutional doc", token_count=9999),
-        ])
+        p.set_constitutional_context(
+            [
+                _make_chunk(content="huge constitutional doc", token_count=9999),
+            ]
+        )
 
         chunks = [_make_chunk(content="normal data", token_count=5)]
 

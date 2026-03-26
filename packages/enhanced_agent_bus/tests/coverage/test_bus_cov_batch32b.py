@@ -149,9 +149,7 @@ def _make_key_registry_mock(
     else:
         mock_registry._registry = MagicMock()
         if get_key_side_effect:
-            mock_registry._registry.get_key = AsyncMock(
-                side_effect=get_key_side_effect
-            )
+            mock_registry._registry.get_key = AsyncMock(side_effect=get_key_side_effect)
         else:
             mock_registry._registry.get_key = AsyncMock(return_value=key_record)
 
@@ -297,10 +295,12 @@ class TestRegisterHandlersFromTable:
         async def handler_b(sid, data):
             return {}
 
-        server._register_handlers_from_table([
-            ("event_a", handler_a),
-            ("event_b", handler_b),
-        ])
+        server._register_handlers_from_table(
+            [
+                ("event_a", handler_a),
+                ("event_b", handler_b),
+            ]
+        )
         assert len(registered) == 2
         assert registered[0].__name__ == "event_a"
         assert registered[1].__name__ == "event_b"
@@ -378,9 +378,7 @@ class TestBroadcastCursorUpdate:
     async def test_broadcast_cursor_with_collaborator(self, server):
         collaborator = _make_collaborator()
         server.presence.get_collaborator = AsyncMock(return_value=collaborator)
-        await server._broadcast_cursor_update(
-            "sid-1", "doc-1", "client-1", {"x": 10, "y": 20}
-        )
+        await server._broadcast_cursor_update("sid-1", "doc-1", "client-1", {"x": 10, "y": 20})
         server.sio.emit.assert_awaited_once()
         call_args = server.sio.emit.call_args
         assert call_args[0][0] == "cursor-update"
@@ -489,9 +487,7 @@ class TestBroadcastCommentAdded:
             user_name="Alice",
             text="Test comment",
         )
-        await server._broadcast_comment_added(
-            "doc-1", comment, {"x": 1, "y": 2}
-        )
+        await server._broadcast_comment_added("doc-1", comment, {"x": 1, "y": 2})
         server.sio.emit.assert_awaited_once()
         call_args = server.sio.emit.call_args
         assert call_args[0][0] == "comment-added"
@@ -562,23 +558,15 @@ class TestNotifyUserJoined:
 class TestActivityLoggingEdgeCases:
     async def test_log_activity_swallows_type_error(self, server, audit_client):
         audit_client.log_event = AsyncMock(side_effect=TypeError("bad type"))
-        await server._log_activity(
-            ActivityEventType.USER_JOINED, "u1", "d1", {}
-        )
+        await server._log_activity(ActivityEventType.USER_JOINED, "u1", "d1", {})
 
     async def test_log_activity_swallows_value_error(self, server, audit_client):
         audit_client.log_event = AsyncMock(side_effect=ValueError("bad value"))
-        await server._log_activity(
-            ActivityEventType.DOCUMENT_EDITED, "u1", "d1", {}
-        )
+        await server._log_activity(ActivityEventType.DOCUMENT_EDITED, "u1", "d1", {})
 
     async def test_log_activity_swallows_attribute_error(self, server, audit_client):
-        audit_client.log_event = AsyncMock(
-            side_effect=AttributeError("no attr")
-        )
-        await server._log_activity(
-            ActivityEventType.COMMENT_ADDED, "u1", "d1", {}
-        )
+        audit_client.log_event = AsyncMock(side_effect=AttributeError("no attr"))
+        await server._log_activity(ActivityEventType.COMMENT_ADDED, "u1", "d1", {})
 
 
 # ===================================================================
@@ -636,15 +624,11 @@ class TestHealthCheckEdgeCases:
 
 
 class TestValidateEditOperationEdge:
-    async def test_validate_edit_operation_collaboration_validation_error(
-        self, server
-    ):
+    async def test_validate_edit_operation_collaboration_validation_error(self, server):
         server.permissions.validate_operation = AsyncMock(
             side_effect=CollaborationValidationError("Invalid structure")
         )
-        op = EditOperation(
-            type="replace", path="/x", user_id="u1", client_id="c1", version=1
-        )
+        op = EditOperation(type="replace", path="/x", user_id="u1", client_id="c1", version=1)
         result = await server._validate_edit_operation("u1", "doc-1", op, {})
         assert result is not None
         assert result["code"] == "VALIDATION_FAILED"
@@ -783,9 +767,7 @@ class TestValidateSignature:
 class TestValidateConstitutionalHashPqcEnabled:
     async def test_pqc_enabled_v1_classical_signature(self):
         """V1 classical signature with PQC enabled returns valid with deprecation warning."""
-        pqc_config = _make_pqc_config(
-            pqc_enabled=True, migration_phase="phase_5"
-        )
+        pqc_config = _make_pqc_config(pqc_enabled=True, migration_phase="phase_5")
 
         mock_pqc_service = MagicMock()
         mock_pqc_service.config = pqc_config
@@ -805,9 +787,7 @@ class TestValidateConstitutionalHashPqcEnabled:
         assert any("deprecated" in w for w in result.warnings)
 
     async def test_pqc_enabled_v1_classical_no_deprecation_phase_3(self):
-        pqc_config = _make_pqc_config(
-            pqc_enabled=True, migration_phase="phase_3"
-        )
+        pqc_config = _make_pqc_config(pqc_enabled=True, migration_phase="phase_3")
 
         mock_pqc_service = MagicMock()
         mock_pqc_service.config = pqc_config
@@ -881,9 +861,7 @@ class TestValidateConstitutionalHashPqcEnabled:
 
     async def test_pqc_enabled_v1_phase_4_deprecation_warning(self):
         """Phase 4 should also produce deprecation warning."""
-        pqc_config = _make_pqc_config(
-            pqc_enabled=True, migration_phase="phase_4"
-        )
+        pqc_config = _make_pqc_config(pqc_enabled=True, migration_phase="phase_4")
         mock_pqc_service = MagicMock()
         mock_pqc_service.config = pqc_config
 
@@ -961,9 +939,7 @@ class TestValidateMaciRecordEdgeCases:
 
     async def test_maci_record_with_pqc_enabled_and_signature(self):
         """MACI record with PQC enabled delegates to validate_constitutional_hash_pqc."""
-        pqc_config = _make_pqc_config(
-            pqc_enabled=True, migration_phase="phase_3"
-        )
+        pqc_config = _make_pqc_config(pqc_enabled=True, migration_phase="phase_3")
         mock_pqc_service = MagicMock()
         mock_pqc_service.config = pqc_config
 
@@ -1034,9 +1010,12 @@ class TestVerifyComponents:
             classical=SimpleNamespace(signature=b"sig"),
         )
         # Patch the inline import to raise
-        with patch.dict("sys.modules", {
-            "src.core.services.policy_registry.app.services.pqc_algorithm_registry": None,
-        }):
+        with patch.dict(
+            "sys.modules",
+            {
+                "src.core.services.policy_registry.app.services.pqc_algorithm_registry": None,
+            },
+        ):
             # ModuleNotFoundError is in PQC_VALIDATION_OPERATION_ERRORS via OSError chain
             # but actually it's ImportError which is NOT in the tuple.
             # The code catches PQC_VALIDATION_OPERATION_ERRORS which doesn't include
@@ -1052,9 +1031,12 @@ class TestVerifyComponents:
             mock_registry = MagicMock()
             mock_registry.AlgorithmVariant = MagicMock()
             mock_registry.AlgorithmVariant.Ed25519 = "Ed25519"
-            with patch.dict("sys.modules", {
-                "src.core.services.policy_registry.app.services.pqc_algorithm_registry": mock_registry,
-            }):
+            with patch.dict(
+                "sys.modules",
+                {
+                    "src.core.services.policy_registry.app.services.pqc_algorithm_registry": mock_registry,
+                },
+            ):
                 result = _verify_classical_component(keys, sig, b"message")
         assert result is False
 
@@ -1068,9 +1050,12 @@ class TestVerifyComponents:
         )
         mock_registry = MagicMock()
         mock_registry.normalize_algorithm_name = MagicMock(return_value="ML-DSA-65")
-        with patch.dict("sys.modules", {
-            "src.core.services.policy_registry.app.services.pqc_algorithm_registry": mock_registry,
-        }):
+        with patch.dict(
+            "sys.modules",
+            {
+                "src.core.services.policy_registry.app.services.pqc_algorithm_registry": mock_registry,
+            },
+        ):
             with patch(
                 "enhanced_agent_bus.pqc_validators.pqc_verify_signature",
                 side_effect=RuntimeError("verify failed"),
@@ -1115,10 +1100,7 @@ class TestIsSelfValidationEdge:
         assert _is_self_validation("agent_1", "output_999", {}) is False
 
     def test_output_author_different_from_agent(self):
-        assert (
-            _is_self_validation("agent_1", "output_999", {"output_author": "agent_2"})
-            is False
-        )
+        assert _is_self_validation("agent_1", "output_999", {"output_author": "agent_2"}) is False
 
     def test_empty_target_output_id(self):
         assert _is_self_validation("agent_1", "", {"output_author": "agent_2"}) is False
@@ -1215,9 +1197,7 @@ class TestJoinCollaborationSession:
         server.permissions.get_document_permissions = MagicMock(return_value={})
         collaborator = _make_collaborator()
         collab_session = _make_collab_session()
-        server.presence.join_session = AsyncMock(
-            return_value=(collab_session, collaborator)
-        )
+        server.presence.join_session = AsyncMock(return_value=(collab_session, collaborator))
 
         result = await server._join_collaboration_session(
             "doc-1", "policy", "user-1", {"name": "Alice"}, "tenant-1"
@@ -1230,9 +1210,7 @@ class TestJoinCollaborationSession:
         )
         collaborator = _make_collaborator()
         collab_session = _make_collab_session()
-        server.presence.join_session = AsyncMock(
-            return_value=(collab_session, collaborator)
-        )
+        server.presence.join_session = AsyncMock(return_value=(collab_session, collaborator))
 
         result = await server._join_collaboration_session(
             "doc-1", "policy", "user-1", {"name": "Alice", "color": "#FF0000"}, "tenant-1"
@@ -1245,9 +1223,7 @@ class TestJoinCollaborationSession:
             side_effect=SessionFullError("Max capacity reached")
         )
         with pytest.raises(SessionFullError):
-            await server._join_collaboration_session(
-                "doc-1", "policy", "user-1", {}, "tenant-1"
-            )
+            await server._join_collaboration_session("doc-1", "policy", "user-1", {}, "tenant-1")
 
 
 # ===================================================================
@@ -1259,9 +1235,7 @@ class TestUpdateSessionAndJoinRoom:
     async def test_update_session_and_join_room(self, server):
         collaborator = _make_collaborator()
         session = {"user_id": "user-1", "tenant_id": "tenant-1"}
-        await server._update_session_and_join_room(
-            "sid-1", session, "doc-1", collaborator
-        )
+        await server._update_session_and_join_room("sid-1", session, "doc-1", collaborator)
         server.sio.save_session.assert_awaited_once()
         saved_session = server.sio.save_session.call_args[0][1]
         assert saved_session["document_id"] == "doc-1"

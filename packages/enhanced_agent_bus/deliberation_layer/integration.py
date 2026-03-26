@@ -587,9 +587,7 @@ class DeliberationLayer(OPAGuardMixin):
             from src.core.shared.constants import RISK_TIER_HIGH_MIN, RISK_TIER_LOW_MAX
 
             if RISK_TIER_LOW_MAX <= impact_score < RISK_TIER_HIGH_MIN:
-                return await self._process_medium_risk(
-                    message, routing_decision, impact_score
-                )
+                return await self._process_medium_risk(message, routing_decision, impact_score)
         except ImportError:
             pass  # HOTL module unavailable — fall through to standard deliberation
 

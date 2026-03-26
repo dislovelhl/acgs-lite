@@ -23,6 +23,7 @@ logger = get_logger(__name__)
 
 try:
     import cognee
+
     HAS_COGNEE = True
 except ImportError:
     HAS_COGNEE = False
@@ -31,6 +32,7 @@ except ImportError:
 @dataclass
 class CogneeConfig:
     """Configuration for Cognee knowledge graph integration."""
+
     llm_api_key: str | None = None
     graph_backend: str = "networkx"  # networkx, neo4j, falkordb
     vector_backend: str = "lancedb"  # lancedb, qdrant, weaviate
@@ -41,6 +43,7 @@ class CogneeConfig:
 @dataclass
 class ComplianceResult:
     """Result of a constitutional compliance query."""
+
     query: str
     findings: list[dict[str, Any]] = field(default_factory=list)
     is_compliant: bool | None = None
@@ -65,10 +68,7 @@ class ConstitutionalKnowledgeGraph:
 
     def __init__(self, config: CogneeConfig | None = None) -> None:
         if not HAS_COGNEE:
-            raise RuntimeError(
-                "cognee is not installed. "
-                "Install with: pip install cognee"
-            )
+            raise RuntimeError("cognee is not installed. Install with: pip install cognee")
         self._config = config or CogneeConfig()
         self._initialized = False
         self._stats = {
@@ -91,13 +91,13 @@ class ConstitutionalKnowledgeGraph:
         if self._initialized:
             return
         self._initialized = True
-        logger.info("cognee_knowledge_graph_initialized",
-                     graph_backend=self._config.graph_backend,
-                     vector_backend=self._config.vector_backend)
+        logger.info(
+            "cognee_knowledge_graph_initialized",
+            graph_backend=self._config.graph_backend,
+            vector_backend=self._config.vector_backend,
+        )
 
-    async def ingest_principles(
-        self, principles: list[dict[str, Any]]
-    ) -> int:
+    async def ingest_principles(self, principles: list[dict[str, Any]]) -> int:
         """Load constitutional principles into the knowledge graph.
 
         Args:
@@ -125,9 +125,7 @@ class ConstitutionalKnowledgeGraph:
         logger.info("principles_ingested", count=count)
         return count
 
-    async def ingest_precedents(
-        self, decisions: list[dict[str, Any]]
-    ) -> int:
+    async def ingest_precedents(self, decisions: list[dict[str, Any]]) -> int:
         """Load past governance decisions as episodic precedents.
 
         Args:
@@ -178,8 +176,7 @@ class ConstitutionalKnowledgeGraph:
             await cognee.cognify()
 
         self._stats["amendments_ingested"] += 1
-        logger.info("amendment_ingested",
-                     supersedes=supersedes_ids or [])
+        logger.info("amendment_ingested", supersedes=supersedes_ids or [])
 
     async def query_compliance(
         self,
@@ -224,10 +221,12 @@ class ConstitutionalKnowledgeGraph:
         is_compliant, reasoning = self._derive_compliance_verdict(findings)
 
         self._stats["queries_executed"] += 1
-        logger.info("compliance_query_executed",
-                     mode=mode,
-                     results_count=len(findings),
-                     latency_ms=round(latency, 2))
+        logger.info(
+            "compliance_query_executed",
+            mode=mode,
+            results_count=len(findings),
+            latency_ms=round(latency, 2),
+        )
 
         return ComplianceResult(
             query=action_description,
@@ -273,8 +272,7 @@ class ConstitutionalKnowledgeGraph:
     def _ensure_initialized(self) -> None:
         if not self._initialized:
             raise RuntimeError(
-                "ConstitutionalKnowledgeGraph not initialized. "
-                "Call await initialize() first."
+                "ConstitutionalKnowledgeGraph not initialized. Call await initialize() first."
             )
 
     @staticmethod

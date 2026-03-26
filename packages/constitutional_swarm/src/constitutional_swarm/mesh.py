@@ -188,8 +188,7 @@ class ConstitutionalMesh:
     ) -> None:
         if quorum > peers_per_validation:
             raise ValueError(
-                f"Quorum ({quorum}) cannot exceed peers_per_validation "
-                f"({peers_per_validation})"
+                f"Quorum ({quorum}) cannot exceed peers_per_validation ({peers_per_validation})"
             )
         self._constitution = constitution
         self._dna = AgentDNA(constitution=constitution, agent_id="mesh-validator")
@@ -268,8 +267,7 @@ class ConstitutionalMesh:
                     if existing_agent_id != agent_id and existing_agent_id in self._agents
                 ]
                 self._agent_indices = {
-                    existing_agent_id: idx
-                    for idx, existing_agent_id in enumerate(remaining_ids)
+                    existing_agent_id: idx for idx, existing_agent_id in enumerate(remaining_ids)
                 }
                 self._rebuild_manifold()
 
@@ -367,9 +365,7 @@ class ConstitutionalMesh:
 
             existing = self._votes.get(assignment_id, [])
             if any(v.voter_id == voter_id for v in existing):
-                raise DuplicateVoteError(
-                    f"{voter_id} already voted on {assignment_id}"
-                )
+                raise DuplicateVoteError(f"{voter_id} already voted on {assignment_id}")
 
             vote = ValidationVote(
                 assignment_id=assignment_id,

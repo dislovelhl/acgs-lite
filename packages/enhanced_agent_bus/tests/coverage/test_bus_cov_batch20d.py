@@ -55,6 +55,7 @@ class _FakeExplanation:
 
 # ---- DecisionStore init & key helpers ----
 
+
 class TestDecisionStoreKeys:
     def test_make_key_default_tenant(self):
         ds = DecisionStore()
@@ -78,6 +79,7 @@ class TestDecisionStoreKeys:
 
 
 # ---- DecisionStore memory fallback ----
+
 
 class TestDecisionStoreMemoryFallback:
     @pytest.fixture
@@ -1138,18 +1140,14 @@ class TestAIAssistantExecuteAction:
 
 class TestCreateAssistantFactory:
     async def test_create_assistant_default(self):
-        with patch(
-            "enhanced_agent_bus.ai_assistant.core.AgentBusIntegration"
-        ) as mock_cls:
+        with patch("enhanced_agent_bus.ai_assistant.core.AgentBusIntegration") as mock_cls:
             mock_cls.return_value = AsyncMock()
             assistant = await create_assistant(enable_governance=False)
             assert assistant.state == AssistantState.READY
 
     async def test_create_assistant_with_bus(self):
         mock_bus = MagicMock()
-        with patch(
-            "enhanced_agent_bus.ai_assistant.core.AgentBusIntegration"
-        ) as mock_cls:
+        with patch("enhanced_agent_bus.ai_assistant.core.AgentBusIntegration") as mock_cls:
             mock_cls.return_value = AsyncMock()
             assistant = await create_assistant(
                 name="TestBot",
@@ -1409,9 +1407,11 @@ class TestOIDCProviderIdTokenValidation:
     async def test_validate_id_token_disabled(self, config):
         p = OIDCProvider(config)
         # Create a simple JWT-like token (header.payload.signature)
-        payload = base64.urlsafe_b64encode(
-            json.dumps({"sub": "user1", "iss": "test"}).encode()
-        ).decode().rstrip("=")
+        payload = (
+            base64.urlsafe_b64encode(json.dumps({"sub": "user1", "iss": "test"}).encode())
+            .decode()
+            .rstrip("=")
+        )
         token = f"eyJhbGciOiJSUzI1NiJ9.{payload}.fakesig"
 
         claims, errors = await p._validate_id_token(token, "access_tok")
@@ -1428,9 +1428,9 @@ class TestOIDCProviderDecodeJwt:
     def test_decode_jwt_payload_valid(self):
         config = OIDCConfig(issuer_url="https://idp.example.com")
         p = OIDCProvider(config)
-        payload = base64.urlsafe_b64encode(
-            json.dumps({"sub": "user1"}).encode()
-        ).decode().rstrip("=")
+        payload = (
+            base64.urlsafe_b64encode(json.dumps({"sub": "user1"}).encode()).decode().rstrip("=")
+        )
         token = f"header.{payload}.signature"
         result = p._decode_jwt_payload(token)
         assert result["sub"] == "user1"
@@ -1724,9 +1724,7 @@ class TestOIDCProviderFetchJwks:
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
         with patch("enhanced_agent_bus.mcp_integration.auth.oidc_provider.HTTPX_AVAILABLE", True):
-            with patch(
-                "enhanced_agent_bus.mcp_integration.auth.oidc_provider.httpx"
-            ) as mock_httpx:
+            with patch("enhanced_agent_bus.mcp_integration.auth.oidc_provider.httpx") as mock_httpx:
                 mock_httpx.AsyncClient.return_value = mock_client
                 result = await p._fetch_jwks()
 

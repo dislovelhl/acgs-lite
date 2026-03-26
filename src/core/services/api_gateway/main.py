@@ -124,6 +124,7 @@ def _parse_bool_env(value: str | None) -> bool | None:
         return False
     return None
 
+
 app = create_acgs_app(
     "api-gateway",
     environment=environment,
@@ -535,9 +536,7 @@ if X402_MARKETPLACE_ENABLED:
 else:
     logger.info("x402 marketplace routes disabled (set X402_MARKETPLACE=true to enable)")
 
-logger.info(
-    "x402 routes configured: governance + bundles + facilitator + revenue"
-)
+logger.info("x402 routes configured: governance + bundles + facilitator + revenue")
 
 configure_x402_payment_middleware(app, environ=os.environ)
 

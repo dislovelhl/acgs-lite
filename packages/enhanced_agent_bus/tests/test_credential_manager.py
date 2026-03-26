@@ -224,9 +224,7 @@ class TestStoreCredential:
 # ---------------------------------------------------------------------------
 class TestGetCredential:
     async def test_not_found(self, tmp_path):
-        config = CredentialManagerConfig(
-            storage_path=str(tmp_path), encryption_enabled=False
-        )
+        config = CredentialManagerConfig(storage_path=str(tmp_path), encryption_enabled=False)
         mgr = CredentialManager(config=config)
         assert await mgr.get_credential("nonexistent") is None
 
@@ -413,9 +411,7 @@ class TestExtractValue:
 
     def test_basic_auth(self):
         mgr = CredentialManager(config=CredentialManagerConfig(encryption_enabled=False))
-        result = mgr._extract_value(
-            {"username": "u", "password": "p"}, CredentialType.BASIC_AUTH
-        )
+        result = mgr._extract_value({"username": "u", "password": "p"}, CredentialType.BASIC_AUTH)
         assert result == "u:p"
 
     def test_hmac_secret(self):
@@ -447,9 +443,7 @@ class TestRotateCredential:
         )
         old_hash = cred.data_hash
 
-        rotated = await mgr.rotate_credential(
-            cred.credential_id, {"api_key": "new-key"}
-        )
+        rotated = await mgr.rotate_credential(cred.credential_id, {"api_key": "new-key"})
         assert rotated is not None
         assert rotated.data_hash != old_hash
         assert rotated.last_rotation is not None
@@ -634,9 +628,7 @@ class TestListCredentials:
 class TestLoadCredentials:
     async def test_load_from_storage(self, tmp_path):
         storage = tmp_path / "creds"
-        config = CredentialManagerConfig(
-            storage_path=str(storage), encryption_enabled=False
-        )
+        config = CredentialManagerConfig(storage_path=str(storage), encryption_enabled=False)
         mgr1 = CredentialManager(config=config)
         cred = await mgr1.store_credential(
             name="persisted",
@@ -664,9 +656,7 @@ class TestLoadCredentials:
         storage = tmp_path / "creds"
         storage.mkdir()
         (storage / "bad.json").write_text("not valid json{{{")
-        config = CredentialManagerConfig(
-            storage_path=str(storage), encryption_enabled=False
-        )
+        config = CredentialManagerConfig(storage_path=str(storage), encryption_enabled=False)
         mgr = CredentialManager(config=config)
         count = await mgr.load_credentials()
         assert count == 0
@@ -697,9 +687,7 @@ class TestGetStats:
 # ---------------------------------------------------------------------------
 class TestCreateDefaultBinding:
     def test_bearer_binding(self, tmp_path):
-        config = CredentialManagerConfig(
-            storage_path=str(tmp_path), encryption_enabled=False
-        )
+        config = CredentialManagerConfig(storage_path=str(tmp_path), encryption_enabled=False)
         mgr = CredentialManager(config=config)
         cred = Credential(
             credential_id="c1",
@@ -713,9 +701,7 @@ class TestCreateDefaultBinding:
         assert binding.injection_prefix == "Bearer "
 
     def test_api_key_binding(self, tmp_path):
-        config = CredentialManagerConfig(
-            storage_path=str(tmp_path), encryption_enabled=False
-        )
+        config = CredentialManagerConfig(storage_path=str(tmp_path), encryption_enabled=False)
         mgr = CredentialManager(config=config)
         cred = Credential(
             credential_id="c1",
@@ -727,9 +713,7 @@ class TestCreateDefaultBinding:
         assert binding.injection_key == "X-API-Key"
 
     def test_basic_auth_binding(self, tmp_path):
-        config = CredentialManagerConfig(
-            storage_path=str(tmp_path), encryption_enabled=False
-        )
+        config = CredentialManagerConfig(storage_path=str(tmp_path), encryption_enabled=False)
         mgr = CredentialManager(config=config)
         cred = Credential(
             credential_id="c1",
@@ -742,9 +726,7 @@ class TestCreateDefaultBinding:
         assert binding.transform == "base64"
 
     def test_custom_binding(self, tmp_path):
-        config = CredentialManagerConfig(
-            storage_path=str(tmp_path), encryption_enabled=False
-        )
+        config = CredentialManagerConfig(storage_path=str(tmp_path), encryption_enabled=False)
         mgr = CredentialManager(config=config)
         cred = Credential(
             credential_id="c1",
@@ -775,9 +757,7 @@ class TestEncryption:
         assert decrypted == data
 
     def test_no_encryption(self, tmp_path):
-        config = CredentialManagerConfig(
-            storage_path=str(tmp_path), encryption_enabled=False
-        )
+        config = CredentialManagerConfig(storage_path=str(tmp_path), encryption_enabled=False)
         mgr = CredentialManager(config=config)
         data = b"plaintext"
         assert mgr._encrypt(data) == data

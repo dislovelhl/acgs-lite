@@ -249,9 +249,7 @@ class TestCompensation:
 
         success = await engine.execute_transaction(txn)
         assert success is False
-        assert any(
-            entry.get("status") == "no_compensation" for entry in txn.compensation_log
-        )
+        assert any(entry.get("status") == "no_compensation" for entry in txn.compensation_log)
 
     @pytest.mark.asyncio
     async def test_compensation_failure_logged(self, engine):
@@ -266,18 +264,12 @@ class TestCompensation:
         async def bad():
             raise ValueError("fail")
 
-        engine.add_action(
-            txn, TransactionAction.AUDIT_LOGGING, "g", good, comp_fail, max_retries=0
-        )
-        engine.add_action(
-            txn, TransactionAction.GOVERNANCE_DECISION, "b", bad, None, max_retries=0
-        )
+        engine.add_action(txn, TransactionAction.AUDIT_LOGGING, "g", good, comp_fail, max_retries=0)
+        engine.add_action(txn, TransactionAction.GOVERNANCE_DECISION, "b", bad, None, max_retries=0)
 
         success = await engine.execute_transaction(txn)
         assert success is False
-        assert any(
-            entry.get("status") == "compensation_failed" for entry in txn.compensation_log
-        )
+        assert any(entry.get("status") == "compensation_failed" for entry in txn.compensation_log)
 
 
 # ---------------------------------------------------------------------------
@@ -299,9 +291,7 @@ class TestRetryLogic:
                 raise ValueError("flaky")
             return "ok"
 
-        engine.add_action(
-            txn, TransactionAction.GOVERNANCE_DECISION, "flaky", flaky, max_retries=3
-        )
+        engine.add_action(txn, TransactionAction.GOVERNANCE_DECISION, "flaky", flaky, max_retries=3)
         success = await engine.execute_transaction(txn)
         assert success is True
         assert call_count == 3

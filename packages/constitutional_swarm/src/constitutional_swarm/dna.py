@@ -76,9 +76,7 @@ class AgentDNA:
     _disabled: bool = field(init=False, repr=False, default=False)
 
     def __post_init__(self) -> None:
-        object.__setattr__(
-            self, "_engine", GovernanceEngine(self.constitution, strict=self.strict)
-        )
+        object.__setattr__(self, "_engine", GovernanceEngine(self.constitution, strict=self.strict))
         if self.maci_role is not None:
             enforcer = MACIEnforcer()
             enforcer.assign_role(self.agent_id, self.maci_role)
@@ -171,9 +169,7 @@ class AgentDNA:
             "calls": self._call_count,
             "violations": self._violation_count,
             "avg_latency_ns": (
-                self._total_latency_ns // self._call_count
-                if self._call_count > 0
-                else 0
+                self._total_latency_ns // self._call_count if self._call_count > 0 else 0
             ),
         }
 
@@ -187,18 +183,14 @@ class AgentDNA:
             DNADisabledError: If the DNA co-processor has been disabled via kill switch.
         """
         if self._disabled:
-            raise DNADisabledError(
-                f"Agent {self.agent_id} DNA is disabled — all actions blocked"
-            )
+            raise DNADisabledError(f"Agent {self.agent_id} DNA is disabled — all actions blocked")
         start = time.perf_counter_ns()
         try:
             result = self._engine.validate(action)
             elapsed = time.perf_counter_ns() - start
             self._call_count += 1
             self._total_latency_ns += elapsed
-            violations = tuple(
-                f"{v.rule_id}: {v.rule_text}" for v in result.violations
-            )
+            violations = tuple(f"{v.rule_id}: {v.rule_text}" for v in result.violations)
             if violations:
                 self._violation_count += 1
             return DNAValidationResult(

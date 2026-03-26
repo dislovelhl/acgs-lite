@@ -88,11 +88,13 @@ class TestOPASettings:
     def test_opa_custom(self):
         from src.core.shared.config.security import OPASettings
 
-        o = OPASettings.model_validate({
-            "OPA_URL": "http://opa:8181",
-            "OPA_MODE": "embedded",
-            "OPA_SSL_VERIFY": False,
-        })
+        o = OPASettings.model_validate(
+            {
+                "OPA_URL": "http://opa:8181",
+                "OPA_MODE": "embedded",
+                "OPA_SSL_VERIFY": False,
+            }
+        )
         assert o.url == "http://opa:8181"
         assert o.mode == "embedded"
         assert o.ssl_verify is False
@@ -164,14 +166,16 @@ class TestSSOSettings:
     def test_sso_custom_values(self):
         from src.core.shared.config.security import SSOSettings
 
-        s = SSOSettings.model_validate({
-            "OIDC_CLIENT_ID": "my-client",
-            "OIDC_ISSUER_URL": "https://auth.example.com",
-            "SAML_ENTITY_ID": "urn:example",
-            "WORKOS_ENABLED": True,
-            "WORKOS_CLIENT_ID": "wc_test",
-            "SSO_ALLOWED_DOMAINS": ["example.com"],
-        })
+        s = SSOSettings.model_validate(
+            {
+                "OIDC_CLIENT_ID": "my-client",
+                "OIDC_ISSUER_URL": "https://auth.example.com",
+                "SAML_ENTITY_ID": "urn:example",
+                "WORKOS_ENABLED": True,
+                "WORKOS_CLIENT_ID": "wc_test",
+                "SSO_ALLOWED_DOMAINS": ["example.com"],
+            }
+        )
         assert s.oidc_client_id == "my-client"
         assert s.oidc_issuer_url == "https://auth.example.com"
         assert s.saml_entity_id == "urn:example"
@@ -249,10 +253,12 @@ class TestSettingsFactory:
         from src.core.shared.config.factory import Settings
         from src.core.shared.config.security import SecuritySettings
 
-        sec = SecuritySettings.model_validate({
-            "JWT_SECRET": "short",
-            "API_KEY_INTERNAL": "x" * 40,
-        })
+        sec = SecuritySettings.model_validate(
+            {
+                "JWT_SECRET": "short",
+                "API_KEY_INTERNAL": "x" * 40,
+            }
+        )
         with pytest.raises(Exception, match="at least 32 characters"):
             Settings.model_validate({"APP_ENV": "production", "security": sec})
 
@@ -268,10 +274,12 @@ class TestSettingsFactory:
         from src.core.shared.config.factory import Settings
         from src.core.shared.config.security import SecuritySettings
 
-        sec = SecuritySettings.model_validate({
-            "JWT_SECRET": "x" * 40,
-            "API_KEY_INTERNAL": "k" * 40,
-        })
+        sec = SecuritySettings.model_validate(
+            {
+                "JWT_SECRET": "x" * 40,
+                "API_KEY_INTERNAL": "k" * 40,
+            }
+        )
         with pytest.raises(Exception, match=r"JWT_PUBLIC_KEY.*configured.*production"):
             Settings.model_validate({"APP_ENV": "production", "security": sec})
 
@@ -281,11 +289,13 @@ class TestSettingsFactory:
         from src.core.shared.config.factory import Settings
         from src.core.shared.config.security import SecuritySettings
 
-        sec = SecuritySettings.model_validate({
-            "JWT_SECRET": "x" * 40,
-            "API_KEY_INTERNAL": "k" * 40,
-            "JWT_PUBLIC_KEY": "real-key",
-        })
+        sec = SecuritySettings.model_validate(
+            {
+                "JWT_SECRET": "x" * 40,
+                "API_KEY_INTERNAL": "k" * 40,
+                "JWT_PUBLIC_KEY": "real-key",
+            }
+        )
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
             Settings.model_validate({"APP_ENV": "production", "security": sec})
@@ -345,10 +355,12 @@ class TestGovernanceSettings:
     def test_voting_with_custom_values(self):
         from src.core.shared.config.governance import VotingSettings
 
-        v = VotingSettings.model_validate({
-            "VOTING_DEFAULT_TIMEOUT_SECONDS": 60,
-            "VOTING_SIGNATURE_ALGORITHM": "ED25519",
-        })
+        v = VotingSettings.model_validate(
+            {
+                "VOTING_DEFAULT_TIMEOUT_SECONDS": 60,
+                "VOTING_SIGNATURE_ALGORITHM": "ED25519",
+            }
+        )
         assert v.default_timeout_seconds == 60
         assert v.signature_algorithm == "ED25519"
 
@@ -712,9 +724,11 @@ class TestGenerateKeyPair:
         mock_variant = MagicMock()
         mock_variant.__str__ = lambda self: "FAKE_ALG"
 
-        mock_error_cls = type("UnsupportedAlgorithmError", (Exception,), {
-            "__init__": lambda self, msg, details=None: Exception.__init__(self, msg)
-        })
+        mock_error_cls = type(
+            "UnsupportedAlgorithmError",
+            (Exception,),
+            {"__init__": lambda self, msg, details=None: Exception.__init__(self, msg)},
+        )
         MagicMock()
 
         with patch.dict("sys.modules", {}):
@@ -733,9 +747,11 @@ class TestGenerateKeyPair:
         mock_variant.value = "ML-DSA-44"
         mock_variant.__str__ = lambda self: "ML-DSA-44"
 
-        mock_error = type("UnsupportedAlgorithmError", (Exception,), {
-            "__init__": lambda self, msg, details=None: Exception.__init__(self, msg)
-        })
+        mock_error = type(
+            "UnsupportedAlgorithmError",
+            (Exception,),
+            {"__init__": lambda self, msg, details=None: Exception.__init__(self, msg)},
+        )
 
         registry_mock = MagicMock()
         registry_mock.APPROVED_ALGORITHMS = {mock_variant}
@@ -754,10 +770,13 @@ class TestGenerateKeyPair:
         signer_mock.export_secret_key.return_value = b"privkey"
         oqs_mock.Signature.return_value = signer_mock
 
-        with patch.dict("sys.modules", {
-            "src.core.services.policy_registry.app.services.pqc_algorithm_registry": registry_mock,
-            "oqs": oqs_mock,
-        }):
+        with patch.dict(
+            "sys.modules",
+            {
+                "src.core.services.policy_registry.app.services.pqc_algorithm_registry": registry_mock,
+                "oqs": oqs_mock,
+            },
+        ):
             pub, priv = generate_key_pair(mock_variant)
             assert pub == b"pubkey"
             assert priv == b"privkey"
@@ -771,18 +790,23 @@ class TestVerifySignature:
         from src.core.shared.security.pqc_crypto import verify_signature
 
         mock_variant = MagicMock()
-        mock_error = type("UnsupportedAlgorithmError", (Exception,), {
-            "__init__": lambda self, msg, details=None: Exception.__init__(self, msg)
-        })
+        mock_error = type(
+            "UnsupportedAlgorithmError",
+            (Exception,),
+            {"__init__": lambda self, msg, details=None: Exception.__init__(self, msg)},
+        )
 
         registry_mock = MagicMock()
         registry_mock.APPROVED_ALGORITHMS = set()
         registry_mock.UnsupportedAlgorithmError = mock_error
         registry_mock.AlgorithmVariant = MagicMock()
 
-        with patch.dict("sys.modules", {
-            "src.core.services.policy_registry.app.services.pqc_algorithm_registry": registry_mock,
-        }):
+        with patch.dict(
+            "sys.modules",
+            {
+                "src.core.services.policy_registry.app.services.pqc_algorithm_registry": registry_mock,
+            },
+        ):
             with pytest.raises(Exception, match="not approved"):
                 verify_signature(mock_variant, b"pub", b"msg", b"sig")
 
@@ -793,9 +817,11 @@ class TestVerifySignature:
         mock_variant = MagicMock()
         mock_variant.value = "ML-DSA-44"
 
-        mock_error = type("UnsupportedAlgorithmError", (Exception,), {
-            "__init__": lambda self, msg, details=None: Exception.__init__(self, msg)
-        })
+        mock_error = type(
+            "UnsupportedAlgorithmError",
+            (Exception,),
+            {"__init__": lambda self, msg, details=None: Exception.__init__(self, msg)},
+        )
 
         registry_mock = MagicMock()
         registry_mock.APPROVED_ALGORITHMS = {mock_variant}
@@ -813,10 +839,13 @@ class TestVerifySignature:
         verifier_mock.verify.return_value = True
         oqs_mock.Signature.return_value = verifier_mock
 
-        with patch.dict("sys.modules", {
-            "src.core.services.policy_registry.app.services.pqc_algorithm_registry": registry_mock,
-            "oqs": oqs_mock,
-        }):
+        with patch.dict(
+            "sys.modules",
+            {
+                "src.core.services.policy_registry.app.services.pqc_algorithm_registry": registry_mock,
+                "oqs": oqs_mock,
+            },
+        ):
             result = verify_signature(mock_variant, b"pub", b"msg", b"sig")
             assert result is True
 
@@ -827,9 +856,11 @@ class TestVerifySignature:
         mock_variant = MagicMock()
         mock_variant.value = "ML-DSA-44"
 
-        mock_error = type("UnsupportedAlgorithmError", (Exception,), {
-            "__init__": lambda self, msg, details=None: Exception.__init__(self, msg)
-        })
+        mock_error = type(
+            "UnsupportedAlgorithmError",
+            (Exception,),
+            {"__init__": lambda self, msg, details=None: Exception.__init__(self, msg)},
+        )
 
         registry_mock = MagicMock()
         registry_mock.APPROVED_ALGORITHMS = {mock_variant}
@@ -847,10 +878,13 @@ class TestVerifySignature:
         verifier_mock.verify.side_effect = RuntimeError("bad sig")
         oqs_mock.Signature.return_value = verifier_mock
 
-        with patch.dict("sys.modules", {
-            "src.core.services.policy_registry.app.services.pqc_algorithm_registry": registry_mock,
-            "oqs": oqs_mock,
-        }):
+        with patch.dict(
+            "sys.modules",
+            {
+                "src.core.services.policy_registry.app.services.pqc_algorithm_registry": registry_mock,
+                "oqs": oqs_mock,
+            },
+        ):
             result = verify_signature(mock_variant, b"pub", b"msg", b"sig")
             assert result is False
 
@@ -867,6 +901,7 @@ class TestEvalNode:
         import ast
 
         from src.core.shared.security.expression_utils import _eval_node
+
         node = ast.Constant(value=42)
         assert _eval_node(node) == 42.0
 
@@ -874,6 +909,7 @@ class TestEvalNode:
         import ast
 
         from src.core.shared.security.expression_utils import _eval_node
+
         node = ast.Constant(value=3.14)
         assert _eval_node(node) == 3.14
 
@@ -882,6 +918,7 @@ class TestEvalNode:
         import ast
 
         from src.core.shared.security.expression_utils import _eval_node
+
         node = ast.Constant(value=True)
         with pytest.raises(Exception, match="Unsupported"):
             _eval_node(node)
@@ -890,6 +927,7 @@ class TestEvalNode:
         import ast
 
         from src.core.shared.security.expression_utils import _eval_node
+
         node = ast.BinOp(
             left=ast.Constant(value=2),
             op=ast.Add(),
@@ -901,6 +939,7 @@ class TestEvalNode:
         import ast
 
         from src.core.shared.security.expression_utils import _eval_node
+
         node = ast.BinOp(
             left=ast.Constant(value=10),
             op=ast.Sub(),
@@ -912,6 +951,7 @@ class TestEvalNode:
         import ast
 
         from src.core.shared.security.expression_utils import _eval_node
+
         node = ast.BinOp(
             left=ast.Constant(value=3),
             op=ast.Mult(),
@@ -923,6 +963,7 @@ class TestEvalNode:
         import ast
 
         from src.core.shared.security.expression_utils import _eval_node
+
         node = ast.BinOp(
             left=ast.Constant(value=10),
             op=ast.Div(),
@@ -934,6 +975,7 @@ class TestEvalNode:
         import ast
 
         from src.core.shared.security.expression_utils import _eval_node
+
         node = ast.BinOp(
             left=ast.Constant(value=2),
             op=ast.Pow(),
@@ -945,6 +987,7 @@ class TestEvalNode:
         import ast
 
         from src.core.shared.security.expression_utils import _eval_node
+
         node = ast.UnaryOp(op=ast.USub(), operand=ast.Constant(value=5))
         assert _eval_node(node) == -5.0
 
@@ -952,6 +995,7 @@ class TestEvalNode:
         import ast
 
         from src.core.shared.security.expression_utils import _eval_node
+
         node = ast.Name(id="x")
         with pytest.raises(Exception, match="Unsupported"):
             _eval_node(node)
@@ -960,6 +1004,7 @@ class TestEvalNode:
         import ast
 
         from src.core.shared.security.expression_utils import _eval_node
+
         node = ast.Constant(value="hello")
         with pytest.raises(Exception, match="Unsupported"):
             _eval_node(node)

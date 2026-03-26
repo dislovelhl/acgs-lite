@@ -125,9 +125,7 @@ class TestGovernanceStateClient:
         client.off(GovernanceEventType.DECISION_VALIDATED, callback)
 
         # After removing, callbacks list should be empty
-        assert callback not in client._callbacks.get(
-            GovernanceEventType.DECISION_VALIDATED, []
-        )
+        assert callback not in client._callbacks.get(GovernanceEventType.DECISION_VALIDATED, [])
 
     @pytest.mark.usefixtures("_patch_sdk")
     def test_decision_event_dispatch(self):

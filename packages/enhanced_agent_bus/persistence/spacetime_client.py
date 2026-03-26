@@ -32,6 +32,7 @@ logger = get_logger(__name__)
 
 try:
     from spacetimedb_sdk import Identity, SpacetimeDBClient
+
     HAS_SPACETIMEDB = True
 except ImportError:
     HAS_SPACETIMEDB = False
@@ -41,6 +42,7 @@ except ImportError:
 
 class GovernanceEventType(str, Enum):
     """Types of governance state change events."""
+
     DECISION_CREATED = "decision_created"
     DECISION_VALIDATED = "decision_validated"
     PRINCIPLE_AMENDED = "principle_amended"
@@ -51,6 +53,7 @@ class GovernanceEventType(str, Enum):
 @dataclass
 class GovernanceEvent:
     """A governance state change event from SpacetimeDB."""
+
     event_type: GovernanceEventType
     table_name: str
     old_value: dict[str, Any] | None
@@ -65,6 +68,7 @@ EventCallback = Callable[[GovernanceEvent], None]
 @dataclass
 class SpacetimeConfig:
     """Configuration for SpacetimeDB connection."""
+
     host: str = "http://localhost:3000"
     module_name: str = "acgs_governance"
     token: str | None = None
@@ -103,8 +107,7 @@ class GovernanceStateClient:
     def __init__(self, config: SpacetimeConfig | None = None) -> None:
         if not HAS_SPACETIMEDB:
             raise RuntimeError(
-                "spacetimedb-sdk is not installed. "
-                "Install with: pip install spacetimedb-sdk"
+                "spacetimedb-sdk is not installed. Install with: pip install spacetimedb-sdk"
             )
         self._config = config or SpacetimeConfig()
         self._client: SpacetimeDBClient | None = None
@@ -157,20 +160,14 @@ class GovernanceStateClient:
         self._client.on_error(self._on_error)
 
         # Register table update handlers
-        self._client.on_row_update(
-            "governance_decision", self._on_decision_update
-        )
-        self._client.on_row_update(
-            "constitutional_principle", self._on_principle_update
-        )
-        self._client.on_row_update(
-            "maci_role_binding", self._on_role_update
-        )
+        self._client.on_row_update("governance_decision", self._on_decision_update)
+        self._client.on_row_update("constitutional_principle", self._on_principle_update)
+        self._client.on_row_update("maci_role_binding", self._on_role_update)
 
         await self._client.connect(self._config.token)
-        logger.info("spacetimedb_connecting",
-                     host=self._config.host,
-                     module=self._config.module_name)
+        logger.info(
+            "spacetimedb_connecting", host=self._config.host, module=self._config.module_name
+        )
 
     async def disconnect(self) -> None:
         """Disconnect from SpacetimeDB."""
@@ -199,9 +196,7 @@ class GovernanceStateClient:
             principle_ids,
         )
         self._stats["reducer_calls"] += 1
-        logger.info("action_proposed",
-                     tenant_id=tenant_id,
-                     action_hash=action_hash)
+        logger.info("action_proposed", tenant_id=tenant_id, action_hash=action_hash)
 
     async def validate_decision(
         self,
@@ -227,9 +222,7 @@ class GovernanceStateClient:
             reasoning,
         )
         self._stats["reducer_calls"] += 1
-        logger.info("decision_validated",
-                     decision_id=decision_id,
-                     verdict=verdict)
+        logger.info("decision_validated", decision_id=decision_id, verdict=verdict)
 
     async def register_agent(
         self,
@@ -262,11 +255,13 @@ class GovernanceStateClient:
         logger.info("spacetimedb_connected", identity=str(identity))
 
         # Subscribe to all governance tables
-        self._client.subscribe([
-            "SELECT * FROM governance_decision",
-            "SELECT * FROM constitutional_principle",
-            "SELECT * FROM maci_role_binding",
-        ])
+        self._client.subscribe(
+            [
+                "SELECT * FROM governance_decision",
+                "SELECT * FROM constitutional_principle",
+                "SELECT * FROM maci_role_binding",
+            ]
+        )
 
     def _on_disconnect(self) -> None:
         self._connected = False
@@ -325,8 +320,9 @@ class GovernanceStateClient:
             try:
                 callback(event)
             except Exception:
-                logger.exception("governance_event_callback_error",
-                                  event_type=event.event_type.value)
+                logger.exception(
+                    "governance_event_callback_error", event_type=event.event_type.value
+                )
 
     @staticmethod
     def _row_to_dict(row: Any) -> dict[str, Any] | None:
@@ -338,7 +334,4 @@ class GovernanceStateClient:
 
     def _ensure_connected(self) -> None:
         if not self._connected:
-            raise RuntimeError(
-                "Not connected to SpacetimeDB. "
-                "Call await connect() first."
-            )
+            raise RuntimeError("Not connected to SpacetimeDB. Call await connect() first.")

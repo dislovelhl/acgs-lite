@@ -31,8 +31,8 @@ from enhanced_agent_bus.session_governance_sdk import (
 # Tests: Enums
 # ---------------------------------------------------------------------------
 
-class TestEnums:
 
+class TestEnums:
     def test_risk_levels(self):
         assert RiskLevel.LOW.value == "low"
         assert RiskLevel.MEDIUM.value == "medium"
@@ -53,8 +53,8 @@ class TestEnums:
 # Tests: Exception classes
 # ---------------------------------------------------------------------------
 
-class TestExceptions:
 
+class TestExceptions:
     def test_session_sdk_error(self):
         err = SessionSDKError("test error", status_code=500, response_body={"detail": "fail"})
         assert "test error" in str(err)
@@ -83,8 +83,8 @@ class TestExceptions:
 # Tests: GovernanceConfig
 # ---------------------------------------------------------------------------
 
-class TestGovernanceConfig:
 
+class TestGovernanceConfig:
     def test_default_values(self):
         cfg = GovernanceConfig(tenant_id="t1")
         assert cfg.tenant_id == "t1"
@@ -134,8 +134,8 @@ class TestGovernanceConfig:
 # Tests: Session
 # ---------------------------------------------------------------------------
 
-class TestSession:
 
+class TestSession:
     def test_from_dict_minimal(self):
         data = {"session_id": "s1", "tenant_id": "t1"}
         session = Session.from_dict(data)
@@ -173,8 +173,8 @@ class TestSession:
 # Tests: SessionMetrics
 # ---------------------------------------------------------------------------
 
-class TestSessionMetrics:
 
+class TestSessionMetrics:
     def test_from_dict(self):
         data = {
             "cache_hits": 100,
@@ -204,8 +204,8 @@ class TestSessionMetrics:
 # Tests: SessionGovernanceClient
 # ---------------------------------------------------------------------------
 
-class TestSessionGovernanceClient:
 
+class TestSessionGovernanceClient:
     def test_init(self):
         client = SessionGovernanceClient(
             base_url="http://localhost:8000",
@@ -299,8 +299,8 @@ class TestSessionGovernanceClient:
 # Tests: async methods
 # ---------------------------------------------------------------------------
 
-class TestAsyncMethods:
 
+class TestAsyncMethods:
     @pytest.mark.asyncio
     async def test_connect_and_close(self):
         client = SessionGovernanceClient()
@@ -546,8 +546,8 @@ class TestAsyncMethods:
 # Tests: create_client convenience function
 # ---------------------------------------------------------------------------
 
-class TestCreateClient:
 
+class TestCreateClient:
     def test_create_client(self):
         client = create_client(base_url="http://example.com", tenant_id="t1")
         assert isinstance(client, SessionGovernanceClient)

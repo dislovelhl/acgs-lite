@@ -36,13 +36,11 @@ from urllib import request as urllib_request
 from acgs_lite.licensing import (
     LicenseError,
     LicenseExpiredError,
-    LicenseInfo,
     LicenseManager,
     Tier,
     _write_license_file,
     validate_license_key,
 )
-
 
 # ---------------------------------------------------------------------------
 # init
@@ -146,7 +144,7 @@ def cmd_init(args: argparse.Namespace) -> int:
     force: bool = getattr(args, "force", False)
 
     if rules_path.exists() and not force:
-        print(f"  rules.yaml already exists. Use --force to overwrite.", file=sys.stderr)
+        print("  rules.yaml already exists. Use --force to overwrite.", file=sys.stderr)
         return 1
 
     rules_path.write_text(_DEFAULT_RULES_YAML, encoding="utf-8")
@@ -160,12 +158,15 @@ def cmd_init(args: argparse.Namespace) -> int:
             "jurisdiction": "european_union",
             "domain": "",
             "rules": "rules.yaml",
-            "_comment": "Edit jurisdiction/domain for auto-framework selection. See: acgs assess --help",
+            "_comment": (
+                "Edit jurisdiction/domain for auto-framework selection."
+                " See: acgs assess --help"
+            ),
         }
         config_path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
-        print(f"  ✅ Created acgs.json (edit jurisdiction + domain)")
+        print("  ✅ Created acgs.json (edit jurisdiction + domain)")
     else:
-        print(f"  ℹ️  acgs.json already exists")
+        print("  ℹ️  acgs.json already exists")
 
     # Detect CI system
     ci_path: Path | None = None
@@ -216,6 +217,7 @@ def cmd_init(args: argparse.Namespace) -> int:
 # assess
 # ---------------------------------------------------------------------------
 
+
 def _load_system_description(args: argparse.Namespace) -> dict[str, Any]:
     """Build system description from CLI args or config file."""
     desc: dict[str, Any] = {}
@@ -264,7 +266,7 @@ def cmd_assess(args: argparse.Namespace) -> int:
     print()
 
     # Per-framework summary
-    for fw_id, assessment in report.by_framework.items():
+    for _fw_id, assessment in report.by_framework.items():
         score_bar = _cli_bar(assessment.compliance_score)
         gap_count = len(assessment.gaps)
         label = f"  {assessment.framework_name}"
@@ -305,9 +307,7 @@ def cmd_assess(args: argparse.Namespace) -> int:
 
     # Save JSON for report command
     cache_path = Path(".acgs_assessment.json")
-    cache_path.write_text(
-        json.dumps(report.to_dict(), indent=2, default=str), encoding="utf-8"
-    )
+    cache_path.write_text(json.dumps(report.to_dict(), indent=2, default=str), encoding="utf-8")
 
     return 0
 
@@ -321,6 +321,7 @@ def _cli_bar(score: float, width: int = 20) -> str:
 # ---------------------------------------------------------------------------
 # report
 # ---------------------------------------------------------------------------
+
 
 def cmd_report(args: argparse.Namespace) -> int:
     """Generate auditor-ready compliance report (PDF, Markdown, or JSON)."""
@@ -392,6 +393,7 @@ def cmd_report(args: argparse.Namespace) -> int:
 # License commands (preserved from original)
 # ---------------------------------------------------------------------------
 
+
 def cmd_activate(args: argparse.Namespace) -> int:
     """Store a license key."""
     key: str = args.key.strip()
@@ -417,9 +419,9 @@ def cmd_status(_args: argparse.Namespace) -> int:
         info = manager.load()
     except LicenseExpiredError as exc:
         print(f"Warning: {exc}", file=sys.stderr)
-        from acgs_lite.licensing import _read_license_file
-
         import os
+
+        from acgs_lite.licensing import _read_license_file
 
         key = os.environ.get("ACGS_LICENSE_KEY") or _read_license_file()
         if key:
@@ -511,6 +513,7 @@ _print_info = _print_license_info
 # Parser
 # ---------------------------------------------------------------------------
 
+
 def build_parser() -> argparse.ArgumentParser:
     """Build the CLI argument parser."""
     parser = argparse.ArgumentParser(
@@ -533,20 +536,28 @@ def build_parser() -> argparse.ArgumentParser:
         help="Run multi-framework compliance assessment",
     )
     p_assess.add_argument(
-        "--system-id", default=None,
+        "--system-id",
+        default=None,
         help="System identifier (default: current directory name)",
     )
     p_assess.add_argument(
-        "--jurisdiction", default=None,
+        "--jurisdiction",
+        default=None,
         help="Jurisdiction (european_union, united_states, international, new_york_city)",
     )
     p_assess.add_argument(
-        "--domain", default=None,
+        "--domain",
+        default=None,
         help="Application domain (healthcare, lending, employment, financial)",
     )
     p_assess.add_argument(
-        "--framework", action="append", default=None,
-        help="Specific framework(s) to assess (repeatable: --framework gdpr --framework nist_ai_rmf)",
+        "--framework",
+        action="append",
+        default=None,
+        help=(
+            "Specific framework(s) to assess"
+            " (repeatable: --framework gdpr --framework nist_ai_rmf)"
+        ),
     )
 
     # report
@@ -562,7 +573,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_report.add_argument("--jurisdiction", default=None, help="Jurisdiction")
     p_report.add_argument("--domain", default=None, help="Application domain")
     p_report.add_argument(
-        "--framework", action="append", default=None,
+        "--framework",
+        action="append",
+        default=None,
         help="Specific framework(s)",
     )
 
@@ -594,7 +607,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Lint governance rules for quality issues",
     )
     p_lint.add_argument(
-        "rules", nargs="?", default="rules.yaml",
+        "rules",
+        nargs="?",
+        default="rules.yaml",
         help="Path to rules YAML file (default: rules.yaml)",
     )
 
@@ -604,15 +619,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="Run governance test fixtures against the engine",
     )
     p_test.add_argument(
-        "--fixtures", default="tests.yaml",
+        "--fixtures",
+        default="tests.yaml",
         help="Path to test fixtures YAML (default: tests.yaml)",
     )
     p_test.add_argument(
-        "--rules", default="rules.yaml",
+        "--rules",
+        default="rules.yaml",
         help="Path to rules YAML (default: rules.yaml)",
     )
     p_test.add_argument(
-        "--tag", action="append", default=None,
+        "--tag",
+        action="append",
+        default=None,
         help="Filter by tag (repeatable: --tag pii --tag regression)",
     )
     p_test.add_argument("--generate", action="store_true", help="Generate example test fixtures")
@@ -625,22 +644,29 @@ def build_parser() -> argparse.ArgumentParser:
         help="Manage policy promotion lifecycle (draft→review→staged→active)",
     )
     p_lc.add_argument(
-        "action", nargs="?", default="summary",
+        "action",
+        nargs="?",
+        default="summary",
         help="Action: register, review, stage, activate, deprecate, archive, "
-             "approve, lint-gate, test-gate, status, audit, summary",
+        "approve, lint-gate, test-gate, status, audit, summary",
     )
     p_lc.add_argument(
-        "policy_id", nargs="?", default="",
+        "policy_id",
+        nargs="?",
+        default="",
         help="Policy identifier",
     )
     p_lc.add_argument("--actor", default=None, help="Actor identifier for approvals")
     p_lc.add_argument("--force", action="store_true", help="Force transition (bypass gates)")
     p_lc.add_argument(
-        "--supersedes", action="append", default=None,
+        "--supersedes",
+        action="append",
+        default=None,
         help="Policy IDs superseded by this activation (repeatable)",
     )
     p_lc.add_argument(
-        "--state-file", default=".acgs_lifecycle.json",
+        "--state-file",
+        default=".acgs_lifecycle.json",
         help="Path to lifecycle state file (default: .acgs_lifecycle.json)",
     )
     p_lc.add_argument("--json", dest="json_out", action="store_true", help="JSON output")
@@ -652,10 +678,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_refusal.add_argument(
         "action_text",
-        help="The action text to analyze (e.g. \"invest in tech stocks\")",
+        help='The action text to analyze (e.g. "invest in tech stocks")',
     )
     p_refusal.add_argument(
-        "--rules", default="rules.yaml",
+        "--rules",
+        default="rules.yaml",
         help="Path to rules YAML (default: rules.yaml)",
     )
     p_refusal.add_argument("--json", dest="json_out", action="store_true", help="JSON output")
@@ -666,53 +693,69 @@ def build_parser() -> argparse.ArgumentParser:
         help="Export governance telemetry summary or Prometheus metrics",
     )
     p_observe.add_argument(
-        "actions", nargs="*",
+        "actions",
+        nargs="*",
         help="Action texts to evaluate and record as telemetry",
     )
     p_observe.add_argument(
-        "--actions-file", default=None,
+        "--actions-file",
+        default=None,
         help="Newline-delimited file of actions to evaluate",
     )
     p_observe.add_argument(
-        "--rules", default="rules.yaml",
+        "--rules",
+        default="rules.yaml",
         help="Path to rules YAML (default: rules.yaml)",
     )
     p_observe.add_argument(
-        "--service-name", default=None,
+        "--service-name",
+        default=None,
         help="Service name in telemetry resource attributes (default: current directory)",
     )
     p_observe.add_argument(
-        "--environment", default="production",
+        "--environment",
+        default="production",
         help="Deployment environment label (default: production)",
     )
     p_observe.add_argument(
-        "--prometheus", action="store_true",
+        "--prometheus",
+        action="store_true",
         help="Export Prometheus exposition format",
     )
     p_observe.add_argument("--json", dest="json_out", action="store_true", help="JSON summary")
     p_observe.add_argument("--watch", action="store_true", help="Stream cumulative snapshots")
     p_observe.add_argument(
-        "--interval", type=float, default=2.0,
+        "--interval",
+        type=float,
+        default=2.0,
         help="Seconds between watch snapshots (default: 2.0)",
     )
     p_observe.add_argument(
-        "--iterations", type=int, default=0,
+        "--iterations",
+        type=int,
+        default=0,
         help="Stop after N watch snapshots (default: unlimited)",
     )
     p_observe.add_argument(
-        "--bundle-dir", default=None,
+        "--bundle-dir",
+        default=None,
         help="Write a telemetry bundle directory alongside normal output",
     )
     p_observe.add_argument(
-        "--otlp-endpoint", default=None,
+        "--otlp-endpoint",
+        default=None,
         help="POST OTel JSON payloads to an OTLP/collector-compatible HTTP endpoint",
     )
     p_observe.add_argument(
-        "--otlp-header", action="append", default=None,
+        "--otlp-header",
+        action="append",
+        default=None,
         help="Extra OTLP header (repeatable: --otlp-header 'Authorization: Bearer ...')",
     )
     p_observe.add_argument(
-        "--timeout-seconds", type=float, default=10.0,
+        "--timeout-seconds",
+        type=float,
+        default=10.0,
         help="HTTP timeout for OTLP export (default: 10.0)",
     )
     p_observe.add_argument("-o", "--output", default=None, help="Output file path")
@@ -723,27 +766,33 @@ def build_parser() -> argparse.ArgumentParser:
         help="Export OpenTelemetry-compatible governance telemetry",
     )
     p_otel.add_argument(
-        "actions", nargs="*",
+        "actions",
+        nargs="*",
         help="Action texts to evaluate and record as telemetry",
     )
     p_otel.add_argument(
-        "--actions-file", default=None,
+        "--actions-file",
+        default=None,
         help="Newline-delimited file of actions to evaluate",
     )
     p_otel.add_argument(
-        "--rules", default="rules.yaml",
+        "--rules",
+        default="rules.yaml",
         help="Path to rules YAML (default: rules.yaml)",
     )
     p_otel.add_argument(
-        "--service-name", default=None,
+        "--service-name",
+        default=None,
         help="Service name in telemetry resource attributes (default: current directory)",
     )
     p_otel.add_argument(
-        "--environment", default="production",
+        "--environment",
+        default="production",
         help="Deployment environment label (default: production)",
     )
     p_otel.add_argument(
-        "--prometheus", action="store_true",
+        "--prometheus",
+        action="store_true",
         help="Override to Prometheus exposition format",
     )
     p_otel.add_argument("--json", dest="json_out", action="store_true", help="JSON summary")
@@ -751,27 +800,37 @@ def build_parser() -> argparse.ArgumentParser:
         "--watch", action="store_true", help="Stream cumulative OTel snapshots as NDJSON"
     )
     p_otel.add_argument(
-        "--interval", type=float, default=2.0,
+        "--interval",
+        type=float,
+        default=2.0,
         help="Seconds between watch snapshots (default: 2.0)",
     )
     p_otel.add_argument(
-        "--iterations", type=int, default=0,
+        "--iterations",
+        type=int,
+        default=0,
         help="Stop after N watch snapshots (default: unlimited)",
     )
     p_otel.add_argument(
-        "--bundle-dir", default=None,
+        "--bundle-dir",
+        default=None,
         help="Write a telemetry bundle directory alongside normal output",
     )
     p_otel.add_argument(
-        "--otlp-endpoint", default=None,
+        "--otlp-endpoint",
+        default=None,
         help="POST OTel JSON payloads to an OTLP/collector-compatible HTTP endpoint",
     )
     p_otel.add_argument(
-        "--otlp-header", action="append", default=None,
+        "--otlp-header",
+        action="append",
+        default=None,
         help="Extra OTLP header (repeatable: --otlp-header 'Authorization: Bearer ...')",
     )
     p_otel.add_argument(
-        "--timeout-seconds", type=float, default=10.0,
+        "--timeout-seconds",
+        type=float,
+        default=10.0,
         help="HTTP timeout for OTLP export (default: 10.0)",
     )
     p_otel.add_argument("-o", "--output", default=None, help="Output file path")
@@ -782,6 +841,7 @@ def build_parser() -> argparse.ArgumentParser:
 # ---------------------------------------------------------------------------
 # eu-ai-act (one-shot assess + report)
 # ---------------------------------------------------------------------------
+
 
 def cmd_eu_ai_act(args: argparse.Namespace) -> int:
     """One-shot EU AI Act compliance: assess + generate PDF report."""
@@ -813,11 +873,11 @@ def cmd_eu_ai_act(args: argparse.Namespace) -> int:
     print(f"  Compliance Score:  {report.overall_score:.0%}")
     print(f"  ACGS Coverage:     {report.acgs_lite_total_coverage:.0%}")
     print(f"  Frameworks:        {', '.join(report.frameworks_assessed)}")
-    print(f"  Enforcement:       August 2, 2026")
-    print(f"  Max Penalty:       7% global revenue / EUR 35M")
+    print("  Enforcement:       August 2, 2026")
+    print("  Max Penalty:       7% global revenue / EUR 35M")
     print()
 
-    for fw_id, assessment in report.by_framework.items():
+    for _fw_id, assessment in report.by_framework.items():
         bar = _cli_bar(assessment.compliance_score)
         gap_count = len(assessment.gaps)
         label = f"  {assessment.framework_name}"
@@ -878,6 +938,7 @@ def cmd_eu_ai_act(args: argparse.Namespace) -> int:
 # lint
 # ---------------------------------------------------------------------------
 
+
 def cmd_lint(args: argparse.Namespace) -> int:
     """Lint governance rules for quality issues."""
     from acgs_lite.constitution import Constitution
@@ -901,9 +962,7 @@ def cmd_lint(args: argparse.Namespace) -> int:
 
     if report.issues:
         for issue in report.issues:
-            icon = {"error": "❌", "warning": "⚠️ ", "info": "ℹ️ "}.get(
-                issue.severity.value, "?"
-            )
+            icon = {"error": "❌", "warning": "⚠️ ", "info": "ℹ️ "}.get(issue.severity.value, "?")
             rule_label = f" ({issue.rule_id})" if issue.rule_id else ""
             print(f"  {icon} {issue.code.value}{rule_label}: {issue.message}")
             if issue.suggestion:
@@ -958,8 +1017,8 @@ tests:
 def cmd_test(args: argparse.Namespace) -> int:
     """Run governance test fixtures against the governance engine."""
     from acgs_lite.constitution import Constitution
-    from acgs_lite.engine.core import GovernanceEngine
     from acgs_lite.constitution.test_suite import GovernanceTestSuite
+    from acgs_lite.engine.core import GovernanceEngine
 
     rules_path = Path(getattr(args, "rules", "rules.yaml"))
     fixtures_path = Path(getattr(args, "fixtures", "tests.yaml"))
@@ -967,8 +1026,9 @@ def cmd_test(args: argparse.Namespace) -> int:
     # Generate example fixtures if requested
     if getattr(args, "generate", False):
         if fixtures_path.exists() and not getattr(args, "force", False):
-            print(f"  ❌ {fixtures_path} already exists. Use --force to overwrite.",
-                  file=sys.stderr)
+            print(
+                f"  ❌ {fixtures_path} already exists. Use --force to overwrite.", file=sys.stderr
+            )
             return 1
         fixtures_path.write_text(_EXAMPLE_TEST_FIXTURES_YAML, encoding="utf-8")
         print(f"  ✅ Created {fixtures_path} (4 example test cases)")
@@ -980,8 +1040,7 @@ def cmd_test(args: argparse.Namespace) -> int:
         return 1
 
     if not fixtures_path.exists():
-        print(f"  ❌ {fixtures_path} not found. Run 'acgs test --generate' first.",
-              file=sys.stderr)
+        print(f"  ❌ {fixtures_path} not found. Run 'acgs test --generate' first.", file=sys.stderr)
         return 1
 
     constitution = Constitution.from_yaml(str(rules_path))
@@ -998,6 +1057,7 @@ def cmd_test(args: argparse.Namespace) -> int:
     # Load fixtures from YAML
     try:
         import yaml as yaml_mod
+
         with fixtures_path.open(encoding="utf-8") as f:
             data = yaml_mod.safe_load(f)
     except ImportError:
@@ -1056,8 +1116,18 @@ def cmd_test(args: argparse.Namespace) -> int:
 # ---------------------------------------------------------------------------
 
 _LIFECYCLE_ACTIONS = {
-    "register", "review", "stage", "activate", "deprecate", "archive",
-    "approve", "lint-gate", "test-gate", "status", "audit", "summary",
+    "register",
+    "review",
+    "stage",
+    "activate",
+    "deprecate",
+    "archive",
+    "approve",
+    "lint-gate",
+    "test-gate",
+    "status",
+    "audit",
+    "summary",
 }
 
 
@@ -1101,8 +1171,9 @@ def cmd_lifecycle(args: argparse.Namespace) -> int:
         return 0
 
     if not policy_id and action != "summary":
-        print("  ❌ Policy ID required. Usage: acgs lifecycle <action> <policy-id>",
-              file=sys.stderr)
+        print(
+            "  ❌ Policy ID required. Usage: acgs lifecycle <action> <policy-id>", file=sys.stderr
+        )
         return 1
 
     if action == "register":
@@ -1156,9 +1227,7 @@ def cmd_lifecycle(args: argparse.Namespace) -> int:
         if action == "stage":
             p = orch.get(policy_id)
             if p and not p.rollout_plan:
-                orch.set_rollout_plan(
-                    policy_id, RolloutPlan.canary([10.0, 50.0, 100.0])
-                )
+                orch.set_rollout_plan(policy_id, RolloutPlan.canary([10.0, 50.0, 100.0]))
 
         # Set blast radius for activate
         if action == "activate":
@@ -1167,7 +1236,8 @@ def cmd_lifecycle(args: argparse.Namespace) -> int:
                 orch.set_blast_radius(policy_id, 10.0)
 
         result = orch.transition(
-            policy_id, target,
+            policy_id,
+            target,
             actor="cli-user",
             force=force,
             supersedes=supersedes_raw,
@@ -1203,8 +1273,10 @@ def cmd_lifecycle(args: argparse.Namespace) -> int:
             if p.blast_radius_pct is not None:
                 print(f"  Blast radius: {p.blast_radius_pct:.1f}%")
             if p.rollout_plan:
-                print(f"  Rollout: stage {p.rollout_plan.current_stage_index}"
-                      f" ({p.rollout_plan.current_percentage:.0f}%)")
+                print(
+                    f"  Rollout: stage {p.rollout_plan.current_stage_index}"
+                    f" ({p.rollout_plan.current_percentage:.0f}%)"
+                )
             if p.supersedes:
                 print(f"  Supersedes: {', '.join(p.supersedes)}")
             print()
@@ -1221,8 +1293,10 @@ def cmd_lifecycle(args: argparse.Namespace) -> int:
                 print("  No transitions recorded.")
             for t in trail:
                 from_s = t.from_state.value if t.from_state else "—"
-                print(f"  {from_s:12s} → {t.to_state.value:12s}  "
-                      f"actor={t.actor or '—'}  gates={len(t.gate_evaluations)}")
+                print(
+                    f"  {from_s:12s} → {t.to_state.value:12s}  "
+                    f"actor={t.actor or '—'}  gates={len(t.gate_evaluations)}"
+                )
                 if t.notes:
                     print(f"    note: {t.notes}")
             print()
@@ -1284,7 +1358,7 @@ def _lifecycle_load(orch: Any, state_file: Path) -> None:
                 supersedes=list(p_data.get("supersedes", [])),
                 metadata=dict(p_data.get("metadata", {})),
             )
-            getattr(orch, "_policies")[policy.policy_id] = policy
+            orch._policies[policy.policy_id] = policy
 
         audit_records = []
         for record_data in data.get("audit_trail", []):
@@ -1318,7 +1392,7 @@ def _lifecycle_load(orch: Any, state_file: Path) -> None:
                     notes=str(record_data.get("notes", "")),
                 )
             )
-        getattr(orch, "_audit_trail")[:] = audit_records
+        orch._audit_trail[:] = audit_records
     except Exception:
         pass  # graceful degradation — start fresh
 
@@ -1374,11 +1448,12 @@ def _lifecycle_save(orch: Any, state_file: Path) -> None:
 # refusal — explain governance denials
 # ---------------------------------------------------------------------------
 
+
 def cmd_refusal(args: argparse.Namespace) -> int:
     """Explain why a governance action was denied and suggest alternatives."""
     from acgs_lite.constitution import Constitution
-    from acgs_lite.engine.core import GovernanceEngine
     from acgs_lite.constitution.refusal_reasoning import RefusalReasoningEngine
+    from acgs_lite.engine.core import GovernanceEngine
 
     rules_path = Path(getattr(args, "rules", "rules.yaml"))
     action_text: str = getattr(args, "action_text", "")
@@ -1388,8 +1463,9 @@ def cmd_refusal(args: argparse.Namespace) -> int:
         return 1
 
     if not action_text:
-        print("  ❌ Provide an action to analyze. Usage: acgs refusal \"action text\"",
-              file=sys.stderr)
+        print(
+            '  ❌ Provide an action to analyze. Usage: acgs refusal "action text"', file=sys.stderr
+        )
         return 1
 
     constitution = Constitution.from_yaml(str(rules_path))
@@ -1402,11 +1478,18 @@ def cmd_refusal(args: argparse.Namespace) -> int:
 
     if result.valid:
         if json_out:
-            print(json.dumps({"action": action_text, "decision": "allow",
-                              "message": "Action is allowed -- no refusal to explain."}))
+            print(
+                json.dumps(
+                    {
+                        "action": action_text,
+                        "decision": "allow",
+                        "message": "Action is allowed -- no refusal to explain.",
+                    }
+                )
+            )
         else:
             print()
-            print(f"  ✅ Action ALLOWED: \"{action_text}\"")
+            print(f'  ✅ Action ALLOWED: "{action_text}"')
             print("  No refusal to explain -- this action passes all governance rules.")
             print()
         return 0
@@ -1421,10 +1504,10 @@ def cmd_refusal(args: argparse.Namespace) -> int:
         return 0
 
     print()
-    print(f"  ACGS Refusal Analysis")
+    print("  ACGS Refusal Analysis")
     print("  " + "=" * 50)
-    print(f"  Action:   \"{action_text}\"")
-    print(f"  Decision: ❌ DENIED")
+    print(f'  Action:   "{action_text}"')
+    print("  Decision: ❌ DENIED")
     print(f"  Severity: {refusal.refusal_severity}")
     print(f"  Rules:    {refusal.rule_count}")
     print()
@@ -1441,7 +1524,7 @@ def cmd_refusal(args: argparse.Namespace) -> int:
         print("  Suggested alternatives:")
         for i, sug in enumerate(refusal.suggestions, 1):
             conf_bar = "●" * int(sug.confidence * 5) + "○" * (5 - int(sug.confidence * 5))
-            print(f"    {i}. \"{sug.alternative_action}\"")
+            print(f'    {i}. "{sug.alternative_action}"')
             print(f"       Confidence: {conf_bar} ({sug.confidence:.0%})")
             print(f"       Rationale:  {sug.rationale}")
         print()
@@ -1575,7 +1658,9 @@ def _write_telemetry_bundle(
     actions_txt = bundle_dir / "actions.txt"
     manifest_json = bundle_dir / "manifest.json"
 
-    summary_json.write_text(json.dumps(payloads["summary_payload"], indent=2) + "\n", encoding="utf-8")
+    summary_json.write_text(
+        json.dumps(payloads["summary_payload"], indent=2) + "\n", encoding="utf-8"
+    )
     summary_txt.write_text(payloads["summary_text"], encoding="utf-8")
     metrics_prom.write_text(payloads["prometheus_text"], encoding="utf-8")
     otel_json.write_text(json.dumps(payloads["otel_payload"], indent=2) + "\n", encoding="utf-8")
@@ -1597,7 +1682,9 @@ def _write_telemetry_bundle(
     return [summary_json, summary_txt, metrics_prom, otel_json, actions_txt, manifest_json]
 
 
-def _render_selected_format(payloads: dict[str, Any], fmt: str, *, watch_iteration: int | None) -> str:
+def _render_selected_format(
+    payloads: dict[str, Any], fmt: str, *, watch_iteration: int | None
+) -> str:
     """Render payloads in the selected CLI output format."""
     if fmt == "prometheus":
         content = payloads["prometheus_text"]
@@ -1607,18 +1694,24 @@ def _render_selected_format(payloads: dict[str, Any], fmt: str, *, watch_iterati
         if watch_iteration is None:
             content = json.dumps(payloads["otel_payload"], indent=2) + "\n"
         else:
-            content = json.dumps(
-                {"snapshot": watch_iteration, "otel": payloads["otel_payload"]},
-                separators=(",", ":"),
-            ) + "\n"
+            content = (
+                json.dumps(
+                    {"snapshot": watch_iteration, "otel": payloads["otel_payload"]},
+                    separators=(",", ":"),
+                )
+                + "\n"
+            )
     elif fmt == "json":
         if watch_iteration is None:
             content = json.dumps(payloads["summary_payload"], indent=2) + "\n"
         else:
-            content = json.dumps(
-                {"snapshot": watch_iteration, **payloads["summary_payload"]},
-                separators=(",", ":"),
-            ) + "\n"
+            content = (
+                json.dumps(
+                    {"snapshot": watch_iteration, **payloads["summary_payload"]},
+                    separators=(",", ":"),
+                )
+                + "\n"
+            )
     else:
         content = payloads["summary_text"]
         if watch_iteration is not None:
@@ -1692,7 +1785,7 @@ def _cmd_observe(args: argparse.Namespace, *, default_format: str) -> int:
             if not actions:
                 print(
                     "  ❌ Provide one or more actions or --actions-file. "
-                    "Example: acgs observe \"hello world\" \"deploy a weapon\"",
+                    'Example: acgs observe "hello world" "deploy a weapon"',
                     file=sys.stderr,
                 )
                 return 1

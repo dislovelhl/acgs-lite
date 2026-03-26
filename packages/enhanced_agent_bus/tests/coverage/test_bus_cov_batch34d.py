@@ -269,9 +269,7 @@ class TestNotificationServiceStubBodies:
         from src.core.shared.interfaces import NotificationService
 
         Bare = _make_bare_subclass(NotificationService)
-        result = await Bare().send_in_app(
-            "user1", "msg", title="Title", data={"k": "v"}
-        )
+        result = await Bare().send_in_app("user1", "msg", title="Title", data={"k": "v"})
         assert result is None
 
 
@@ -660,9 +658,7 @@ class TestRedisConfigHealthCheckEdgeCases:
 
         config = RedisConfig()
         bad_listener = RedisHealthListener(name="bad")
-        bad_listener.on_health_check_success = MagicMock(
-            side_effect=RuntimeError("listener boom")
-        )
+        bad_listener.on_health_check_success = MagicMock(side_effect=RuntimeError("listener boom"))
         config.add_listener(bad_listener)
 
         mock_client = MagicMock()
@@ -677,9 +673,7 @@ class TestRedisConfigHealthCheckEdgeCases:
 
         config = RedisConfig()
         bad_listener = RedisHealthListener(name="bad")
-        bad_listener.on_health_check_failure = MagicMock(
-            side_effect=RuntimeError("listener boom")
-        )
+        bad_listener.on_health_check_failure = MagicMock(side_effect=RuntimeError("listener boom"))
         config.add_listener(bad_listener)
 
         mock_client = MagicMock()
@@ -693,9 +687,7 @@ class TestRedisConfigHealthCheckEdgeCases:
 
         config = RedisConfig()
         bad_listener = RedisHealthListener(name="bad")
-        bad_listener.on_state_change = MagicMock(
-            side_effect=RuntimeError("state change boom")
-        )
+        bad_listener.on_state_change = MagicMock(side_effect=RuntimeError("state change boom"))
         config.add_listener(bad_listener)
 
         mock_client = MagicMock()
@@ -810,9 +802,7 @@ class TestRedisConfigRecoveringState:
             RedisHealthState,
         )
 
-        config = RedisConfig(
-            health_config=RedisHealthCheckConfig(unhealthy_threshold=3)
-        )
+        config = RedisConfig(health_config=RedisHealthCheckConfig(unhealthy_threshold=3))
         mock_fail = MagicMock()
         mock_fail.ping.side_effect = ConnectionError("down")
 
@@ -942,12 +932,11 @@ class TestDetectNPlus1:
         mock_engine = MagicMock()
         mock_session.bind = mock_engine
 
-        with patch("sqlalchemy.event.listen") as mock_listen, patch(
-            "sqlalchemy.event.remove"
-        ) as mock_remove:
-            async with detect_n_plus_1(
-                mock_session, threshold=5, operation_name="test_op"
-            ):
+        with (
+            patch("sqlalchemy.event.listen") as mock_listen,
+            patch("sqlalchemy.event.remove") as mock_remove,
+        ):
+            async with detect_n_plus_1(mock_session, threshold=5, operation_name="test_op"):
                 pass
 
             mock_listen.assert_called_once()
@@ -969,12 +958,11 @@ class TestDetectNPlus1:
         def fake_remove(engine, event_name, handler):
             pass
 
-        with patch("sqlalchemy.event.listen", side_effect=fake_listen), patch(
-            "sqlalchemy.event.remove", side_effect=fake_remove
+        with (
+            patch("sqlalchemy.event.listen", side_effect=fake_listen),
+            patch("sqlalchemy.event.remove", side_effect=fake_remove),
         ):
-            async with detect_n_plus_1(
-                mock_session, threshold=2, operation_name="n_plus_1_test"
-            ):
+            async with detect_n_plus_1(mock_session, threshold=2, operation_name="n_plus_1_test"):
                 handler = captured_handler["fn"]
                 for i in range(5):
                     handler(None, None, f"SELECT * FROM table_{i}", None, None, False)
@@ -1014,9 +1002,10 @@ class TestPaginateFunction:
 
         pageable = Pageable(page=0, size=10)
 
-        with patch("src.core.shared.database.utils.select") as mock_select, patch(
-            "src.core.shared.database.utils.func"
-        ) as mock_func:
+        with (
+            patch("src.core.shared.database.utils.select") as mock_select,
+            patch("src.core.shared.database.utils.func") as mock_func,
+        ):
             mock_count = MagicMock()
             mock_func.count.return_value = mock_count
             mock_count.select_from.return_value = MagicMock()
@@ -1049,9 +1038,7 @@ class TestPaginateFunction:
         mock_count_stmt = MagicMock()
 
         pageable = Pageable(page=0, size=5)
-        page = await paginate(
-            mock_session, mock_stmt, pageable, count_stmt=mock_count_stmt
-        )
+        page = await paginate(mock_session, mock_stmt, pageable, count_stmt=mock_count_stmt)
         assert page.total_elements == 10
 
     async def test_paginate_with_sort(self):
@@ -1084,9 +1071,10 @@ class TestPaginateFunction:
 
         pageable = Pageable(page=0, size=10, sort=[("name", "desc")])
 
-        with patch("src.core.shared.database.utils.select") as mock_select, patch(
-            "src.core.shared.database.utils.func"
-        ) as mock_func:
+        with (
+            patch("src.core.shared.database.utils.select") as mock_select,
+            patch("src.core.shared.database.utils.func") as mock_func,
+        ):
             mock_count = MagicMock()
             mock_func.count.return_value = mock_count
             mock_count.select_from.return_value = MagicMock()
@@ -1125,9 +1113,10 @@ class TestPaginateFunction:
 
         pageable = Pageable(page=0, size=10, sort=[("id", "asc")])
 
-        with patch("src.core.shared.database.utils.select") as mock_select, patch(
-            "src.core.shared.database.utils.func"
-        ) as mock_func:
+        with (
+            patch("src.core.shared.database.utils.select") as mock_select,
+            patch("src.core.shared.database.utils.func") as mock_func,
+        ):
             mock_count = MagicMock()
             mock_func.count.return_value = mock_count
             mock_count.select_from.return_value = MagicMock()
@@ -1157,9 +1146,10 @@ class TestPaginateFunction:
 
         pageable = Pageable(page=0, size=10)
 
-        with patch("src.core.shared.database.utils.select") as mock_select, patch(
-            "src.core.shared.database.utils.func"
-        ) as mock_func:
+        with (
+            patch("src.core.shared.database.utils.select") as mock_select,
+            patch("src.core.shared.database.utils.func") as mock_func,
+        ):
             mock_count = MagicMock()
             mock_func.count.return_value = mock_count
             mock_count.select_from.return_value = MagicMock()
@@ -1194,9 +1184,10 @@ class TestPaginateFunction:
 
         pageable = Pageable(page=0, size=10, sort=[("nonexistent_field", "asc")])
 
-        with patch("src.core.shared.database.utils.select") as mock_select, patch(
-            "src.core.shared.database.utils.func"
-        ) as mock_func:
+        with (
+            patch("src.core.shared.database.utils.select") as mock_select,
+            patch("src.core.shared.database.utils.func") as mock_func,
+        ):
             mock_count = MagicMock()
             mock_func.count.return_value = mock_count
             mock_count.select_from.return_value = MagicMock()
@@ -1250,9 +1241,10 @@ class TestBaseRepositoryFindAllWithFilters:
         mock_result.scalar.return_value = 7
         session.execute.return_value = mock_result
 
-        with patch("src.core.shared.database.utils.select") as mock_select, patch(
-            "src.core.shared.database.utils.func"
-        ) as mock_func:
+        with (
+            patch("src.core.shared.database.utils.select") as mock_select,
+            patch("src.core.shared.database.utils.func") as mock_func,
+        ):
             mock_count_stmt = MagicMock()
             mock_count_stmt.select_from.return_value = mock_count_stmt
             mock_count_stmt.where.return_value = mock_count_stmt
@@ -1294,9 +1286,7 @@ class TestBulkOperationsAdditional:
             {"tenant_id": "t1", "name": "updated1"},
             {"tenant_id": "t2", "name": "updated2"},
         ]
-        count = await BulkOperations.bulk_update(
-            session, table, values, id_column="tenant_id"
-        )
+        count = await BulkOperations.bulk_update(session, table, values, id_column="tenant_id")
         assert count == 2
 
     async def test_bulk_update_batching(self, session, table):

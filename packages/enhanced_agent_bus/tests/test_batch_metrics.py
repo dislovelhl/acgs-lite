@@ -4,7 +4,6 @@ Unit tests for Batch Processor Metrics.
 Constitutional Hash: 608508a9bd224290
 """
 
-
 from enhanced_agent_bus.batch_processor_infra.metrics import BatchMetrics
 from enhanced_agent_bus.models import BatchItemStatus, BatchResponseStats
 

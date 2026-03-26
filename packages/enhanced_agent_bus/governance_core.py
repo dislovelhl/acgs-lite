@@ -280,7 +280,11 @@ class SwarmGovernanceCore:
         )
 
     def is_available(self) -> bool:
-        return self._dna is not None and self._constitution is not None and ConstitutionalMesh is not None
+        return (
+            self._dna is not None
+            and self._constitution is not None
+            and ConstitutionalMesh is not None
+        )
 
     def _resolve_constitution(
         self,

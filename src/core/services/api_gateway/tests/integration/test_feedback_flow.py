@@ -187,7 +187,9 @@ class TestFeedbackIntegration:
         assert stored_data["url"] == ""  # Default empty
         assert stored_data["metadata"] == {}  # Default empty dict
 
-    def test_feedback_persistence_across_requests(self, client, sample_feedback, mock_feedback_redis):
+    def test_feedback_persistence_across_requests(
+        self, client, sample_feedback, mock_feedback_redis
+    ):
         """Test that feedback persists correctly across multiple requests."""
         # First request
         response1 = client.post("/api/v1/gateway/feedback", json=sample_feedback)

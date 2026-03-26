@@ -34,6 +34,7 @@ except ImportError:
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_item(
     from_agent: str = "agent-a",
     to_agent: str = "agent-b",
@@ -91,6 +92,7 @@ def _make_middleware(
 # Initialization
 # ===========================================================================
 
+
 class TestInit:
     def test_default_init(self):
         mw = BatchGovernanceMiddleware()
@@ -115,6 +117,7 @@ class TestInit:
 # ===========================================================================
 # process() — top-level flow
 # ===========================================================================
+
 
 class TestProcess:
     @pytest.mark.asyncio
@@ -164,8 +167,17 @@ class TestProcess:
 
         # Force _check_maci_roles to return failure
         with patch.object(
-            mw, "_check_maci_roles",
-            return_value=(False, {"cache_hits": 0, "cache_misses": 1, "items_checked": 1, "violations": [{"reason": "unregistered_agent"}]}),
+            mw,
+            "_check_maci_roles",
+            return_value=(
+                False,
+                {
+                    "cache_hits": 0,
+                    "cache_misses": 1,
+                    "items_checked": 1,
+                    "violations": [{"reason": "unregistered_agent"}],
+                },
+            ),
         ):
             result = await mw.process(ctx)
 
@@ -187,6 +199,7 @@ class TestProcess:
 # ===========================================================================
 # _check_maci_roles
 # ===========================================================================
+
 
 class TestCheckMACIRoles:
     def test_no_agent_id_passes(self):
@@ -246,6 +259,7 @@ class TestCheckMACIRoles:
 # Self-validation constraint
 # ===========================================================================
 
+
 class TestSelfValidation:
     def test_self_validation_blocked_fail_closed(self):
         reg = MACIRoleRegistry()
@@ -286,6 +300,7 @@ class TestSelfValidation:
 # ===========================================================================
 # Cross-role validation constraint
 # ===========================================================================
+
 
 class TestCrossRoleValidation:
     def test_cross_role_denied_fail_closed(self):
@@ -328,6 +343,7 @@ class TestCrossRoleValidation:
 # _map_message_type_to_action
 # ===========================================================================
 
+
 class TestMapMessageTypeToAction:
     @pytest.mark.parametrize(
         "msg_type,expected",
@@ -354,6 +370,7 @@ class TestMapMessageTypeToAction:
 # Tenant validation
 # ===========================================================================
 
+
 class TestTenantValidation:
     def test_empty_items(self):
         mw = _make_middleware()
@@ -363,7 +380,9 @@ class TestTenantValidation:
     def test_single_tenant_passes(self):
         reg = MACIRoleRegistry()
         _register_agent(
-            reg, "agent-a", MACIRole.JUDICIAL,
+            reg,
+            "agent-a",
+            MACIRole.JUDICIAL,
             metadata={"allowed_tenants": ["tenant-1"], "tenant_id": "tenant-1"},
         )
         mw = _make_middleware(registry=reg)
@@ -387,7 +406,9 @@ class TestTenantValidation:
         """In fail_open, cross-tenant is logged but continues."""
         reg = MACIRoleRegistry()
         _register_agent(
-            reg, "agent-a", MACIRole.JUDICIAL,
+            reg,
+            "agent-a",
+            MACIRole.JUDICIAL,
             metadata={"allowed_tenants": ["tenant-1", "tenant-2"], "tenant_id": "tenant-1"},
         )
         mw = _make_middleware(fail_closed=False, registry=reg)
@@ -423,7 +444,9 @@ class TestTenantValidation:
     def test_agent_denied_tenant_access(self):
         reg = MACIRoleRegistry()
         _register_agent(
-            reg, "agent-a", MACIRole.JUDICIAL,
+            reg,
+            "agent-a",
+            MACIRole.JUDICIAL,
             metadata={"allowed_tenants": ["tenant-1"], "tenant_id": "tenant-1"},
         )
         mw = _make_middleware(fail_closed=True, registry=reg)
@@ -452,9 +475,7 @@ class TestTenantValidation:
 
         items = [_make_item(from_agent="agent-a", tenant_id="default")]
 
-        with patch.object(
-            mw, "_check_agent_tenant_permissions", side_effect=RuntimeError("boom")
-        ):
+        with patch.object(mw, "_check_agent_tenant_permissions", side_effect=RuntimeError("boom")):
             valid, metrics = mw._validate_tenant_access(items)
         assert valid is False
         assert any(v["reason"] == "tenant_validation_error" for v in metrics["violations"])
@@ -466,9 +487,7 @@ class TestTenantValidation:
 
         items = [_make_item(from_agent="agent-a", tenant_id="default")]
 
-        with patch.object(
-            mw, "_check_agent_tenant_permissions", side_effect=ValueError("nope")
-        ):
+        with patch.object(mw, "_check_agent_tenant_permissions", side_effect=ValueError("nope")):
             valid, metrics = mw._validate_tenant_access(items)
         assert valid is True  # fail_open continues
 
@@ -476,6 +495,7 @@ class TestTenantValidation:
 # ===========================================================================
 # Impact scoring
 # ===========================================================================
+
 
 class TestImpactScoring:
     def test_empty_items_zero(self):
@@ -554,6 +574,7 @@ class TestImpactScoring:
 # Content risk scoring
 # ===========================================================================
 
+
 class TestContentRisk:
     def test_no_items(self):
         mw = _make_middleware()
@@ -588,6 +609,7 @@ class TestContentRisk:
 # ===========================================================================
 # Constitutional compliance
 # ===========================================================================
+
 
 class TestConstitutionalCompliance:
     def test_no_hash_passes(self):
@@ -642,6 +664,7 @@ class TestConstitutionalCompliance:
 # Governance reasoning
 # ===========================================================================
 
+
 class TestGovernanceReasoning:
     @pytest.mark.parametrize(
         "score,expected_level",
@@ -663,6 +686,7 @@ class TestGovernanceReasoning:
 # get_impact_level
 # ===========================================================================
 
+
 class TestGetImpactLevel:
     @pytest.mark.parametrize(
         "score,expected",
@@ -683,6 +707,7 @@ class TestGetImpactLevel:
 # Cache metrics
 # ===========================================================================
 
+
 class TestCacheMetrics:
     def test_get_and_reset(self):
         mw = _make_middleware()
@@ -701,6 +726,7 @@ class TestCacheMetrics:
 # ===========================================================================
 # _build_maci_decision_key
 # ===========================================================================
+
 
 class TestBuildMACIDecisionKey:
     def test_key_with_all_fields(self):
@@ -733,6 +759,7 @@ class TestBuildMACIDecisionKey:
 # MACI validation error handling
 # ===========================================================================
 
+
 class TestMACIValidationError:
     def test_error_fail_closed_returns_false(self):
         mw = _make_middleware(fail_closed=True)
@@ -740,7 +767,9 @@ class TestMACIValidationError:
         metrics: dict = {"violations": []}
         key = ("default", "agent-a", "query", "unknown")
 
-        result = mw._handle_maci_validation_error(cache, key, metrics, 0, "agent-a", RuntimeError("x"))
+        result = mw._handle_maci_validation_error(
+            cache, key, metrics, 0, "agent-a", RuntimeError("x")
+        )
         assert result is False
         assert cache[key] is False
 
@@ -750,7 +779,9 @@ class TestMACIValidationError:
         metrics: dict = {"violations": []}
         key = ("default", "agent-a", "query", "unknown")
 
-        result = mw._handle_maci_validation_error(cache, key, metrics, 0, "agent-a", ValueError("y"))
+        result = mw._handle_maci_validation_error(
+            cache, key, metrics, 0, "agent-a", ValueError("y")
+        )
         assert result is True
         assert cache[key] is False
         assert len(metrics["violations"]) == 1
@@ -759,6 +790,7 @@ class TestMACIValidationError:
 # ===========================================================================
 # Tenant format validation
 # ===========================================================================
+
 
 class TestTenantFormatValidation:
     def test_default_tenant_always_passes(self):
@@ -780,6 +812,7 @@ class TestTenantFormatValidation:
 # ===========================================================================
 # Handle failure methods
 # ===========================================================================
+
 
 class TestHandleFailureMethods:
     def test_handle_maci_failure_fail_closed(self):
@@ -821,6 +854,7 @@ class TestHandleFailureMethods:
 # ===========================================================================
 # _check_agent_tenant_permissions
 # ===========================================================================
+
 
 class TestCheckAgentTenantPermissions:
     def test_default_tenant_allowed(self):

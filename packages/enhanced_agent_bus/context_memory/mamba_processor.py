@@ -32,6 +32,8 @@ from enhanced_agent_bus.bus_types import JSONDict
 from .models import ContextChunk
 
 logger = get_logger(__name__)
+
+
 # Try to import torch for actual model implementation
 def _has_real_torch() -> bool:
     try:

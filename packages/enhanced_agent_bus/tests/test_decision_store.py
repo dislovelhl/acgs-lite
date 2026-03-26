@@ -24,6 +24,7 @@ from enhanced_agent_bus.decision_store import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_explanation(
     decision_id: str = "dec-001",
     tenant_id: str | None = "tenant-a",
@@ -38,13 +39,15 @@ def _make_explanation(
     exp.message_id = message_id
     exp.verdict = verdict
     exp.confidence_score = confidence
-    exp.model_dump_json.return_value = json.dumps({
-        "decision_id": decision_id,
-        "tenant_id": tenant_id,
-        "message_id": message_id,
-        "verdict": verdict,
-        "confidence_score": confidence,
-    })
+    exp.model_dump_json.return_value = json.dumps(
+        {
+            "decision_id": decision_id,
+            "tenant_id": tenant_id,
+            "message_id": message_id,
+            "verdict": verdict,
+            "confidence_score": confidence,
+        }
+    )
     return exp
 
 
@@ -59,6 +62,7 @@ def _memory_store(**overrides) -> DecisionStore:
 # ---------------------------------------------------------------------------
 # Key Generation
 # ---------------------------------------------------------------------------
+
 
 class TestKeyGeneration:
     def test_make_key_normal(self):
@@ -99,6 +103,7 @@ class TestKeyGeneration:
 # ---------------------------------------------------------------------------
 # Initialization
 # ---------------------------------------------------------------------------
+
 
 class TestInitialize:
     @pytest.mark.asyncio
@@ -167,6 +172,7 @@ class TestInitialize:
 # Store (memory fallback)
 # ---------------------------------------------------------------------------
 
+
 class TestStoreMemory:
     @pytest.mark.asyncio
     async def test_store_success(self):
@@ -213,11 +219,14 @@ class TestStoreMemory:
         """Store should call initialize if not yet initialized."""
         store = DecisionStore()
         store._use_memory_fallback = True
-        with patch.object(store, "initialize", new_callable=AsyncMock, return_value=True) as mock_init:
+        with patch.object(
+            store, "initialize", new_callable=AsyncMock, return_value=True
+        ) as mock_init:
             # After initialize, we need the store to be marked initialized
             async def init_side_effect():
                 store._initialized = True
                 return True
+
             mock_init.side_effect = init_side_effect
             exp = _make_explanation()
             result = await store.store(exp)
@@ -228,6 +237,7 @@ class TestStoreMemory:
 # ---------------------------------------------------------------------------
 # Get (memory fallback)
 # ---------------------------------------------------------------------------
+
 
 class TestGetMemory:
     @pytest.mark.asyncio
@@ -260,6 +270,7 @@ class TestGetMemory:
 # Get by message ID (memory fallback)
 # ---------------------------------------------------------------------------
 
+
 class TestGetByMessageId:
     @pytest.mark.asyncio
     async def test_found(self):
@@ -288,6 +299,7 @@ class TestGetByMessageId:
 # ---------------------------------------------------------------------------
 # Delete (memory fallback)
 # ---------------------------------------------------------------------------
+
 
 class TestDeleteMemory:
     @pytest.mark.asyncio
@@ -336,6 +348,7 @@ class TestDeleteMemory:
 # ---------------------------------------------------------------------------
 # List decisions (memory fallback)
 # ---------------------------------------------------------------------------
+
 
 class TestListDecisions:
     @pytest.mark.asyncio
@@ -387,6 +400,7 @@ class TestListDecisions:
 # Exists (memory fallback)
 # ---------------------------------------------------------------------------
 
+
 class TestExists:
     @pytest.mark.asyncio
     async def test_exists_true(self):
@@ -416,6 +430,7 @@ class TestExists:
 # ---------------------------------------------------------------------------
 # TTL operations (memory fallback)
 # ---------------------------------------------------------------------------
+
 
 class TestTTL:
     @pytest.mark.asyncio
@@ -467,6 +482,7 @@ class TestTTL:
 # Metrics
 # ---------------------------------------------------------------------------
 
+
 class TestMetrics:
     def test_initial_metrics(self):
         store = DecisionStore()
@@ -502,6 +518,7 @@ class TestMetrics:
 # ---------------------------------------------------------------------------
 # Health check
 # ---------------------------------------------------------------------------
+
 
 class TestHealthCheck:
     @pytest.mark.asyncio
@@ -539,6 +556,7 @@ class TestHealthCheck:
 # Close
 # ---------------------------------------------------------------------------
 
+
 class TestClose:
     @pytest.mark.asyncio
     async def test_close_clears_state(self):
@@ -556,6 +574,7 @@ class TestClose:
 # ---------------------------------------------------------------------------
 # Constructor
 # ---------------------------------------------------------------------------
+
 
 class TestConstructor:
     def test_defaults(self):
@@ -582,6 +601,7 @@ class TestConstructor:
 # ---------------------------------------------------------------------------
 # Singleton management
 # ---------------------------------------------------------------------------
+
 
 class TestSingleton:
     @pytest.mark.asyncio

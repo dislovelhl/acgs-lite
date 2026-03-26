@@ -239,9 +239,7 @@ class GovernedEvolver:
 
     def get_metrics(self) -> dict[str, Any]:
         total = self._metrics["candidates_evaluated"]
-        approval_rate = (
-            self._metrics["candidates_approved"] / total if total else 0.0
-        )
+        approval_rate = self._metrics["candidates_approved"] / total if total else 0.0
         return {
             **self._metrics,
             "approval_rate": round(approval_rate, 4),

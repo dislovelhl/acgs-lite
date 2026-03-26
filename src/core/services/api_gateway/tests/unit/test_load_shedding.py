@@ -214,16 +214,22 @@ class TestLoadSheddingMiddleware:
     @pytest.fixture
     def mock_app(self):
         """A simple ASGI app that returns 200."""
+
         async def app(scope, receive, send):
-            await send({
-                "type": "http.response.start",
-                "status": 200,
-                "headers": [],
-            })
-            await send({
-                "type": "http.response.body",
-                "body": b"ok",
-            })
+            await send(
+                {
+                    "type": "http.response.start",
+                    "status": 200,
+                    "headers": [],
+                }
+            )
+            await send(
+                {
+                    "type": "http.response.body",
+                    "body": b"ok",
+                }
+            )
+
         return app
 
     @pytest.fixture
@@ -362,6 +368,7 @@ class TestLoadSheddingMiddleware:
     @pytest.mark.asyncio
     async def test_custom_path_classifier(self, mock_app, shedder):
         """Custom path classifier is used when provided."""
+
         def always_analytics(path: str) -> ShedPriority:
             return ShedPriority.ANALYTICS
 

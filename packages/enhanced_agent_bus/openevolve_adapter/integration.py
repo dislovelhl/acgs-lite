@@ -93,12 +93,14 @@ def _build_validation_result(
     """Lazy import of ValidationResult to avoid circular imports at module load."""
     try:
         from enhanced_agent_bus.models import ValidationResult
+
         return ValidationResult(is_valid=is_valid, errors=errors, metadata=metadata)
     except ImportError:
         # Minimal stub for unit-testing without the full bus installed
         class _VR:
             def __init__(self, **kw: Any) -> None:
                 self.__dict__.update(kw)
+
         return _VR(is_valid=is_valid, errors=errors, metadata=metadata)
 
 
@@ -139,11 +141,21 @@ def _deserialise_candidate(meta: dict[str, Any]) -> EvolutionCandidate:
         constitutional_hash=meta["constitutional_hash"],
         risk_tier=RiskTier(meta["risk_tier"]),
         proposed_rollout_stage=RolloutStage(meta["proposed_rollout_stage"]),
-        metadata={k: v for k, v in meta.items() if k not in {
-            "candidate_id", "constitutional_hash", "risk_tier",
-            "proposed_rollout_stage", "performance_score",
-            "verification_payload", "mutation_trace", "fitness_inputs",
-        }},
+        metadata={
+            k: v
+            for k, v in meta.items()
+            if k
+            not in {
+                "candidate_id",
+                "constitutional_hash",
+                "risk_tier",
+                "proposed_rollout_stage",
+                "performance_score",
+                "verification_payload",
+                "mutation_trace",
+                "fitness_inputs",
+            }
+        },
     )
 
 

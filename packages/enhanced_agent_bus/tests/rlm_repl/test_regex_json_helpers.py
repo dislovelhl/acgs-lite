@@ -4,7 +4,6 @@ Constitutional Hash: 608508a9bd224290
 """
 
 
-
 class TestSafeRegex:
     def setup_method(self):
         from enhanced_agent_bus.rlm_repl import _SafeRegex

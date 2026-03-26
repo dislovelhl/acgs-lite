@@ -1,6 +1,6 @@
 """
 Tests for TenantNormalizer utility.
-Constitutional Hash: 608508a9bd224290
+Constitutional Hash: cdd01ef066bc6cf2
 """
 
 from src.core.shared.utilities import TenantNormalizer
@@ -31,7 +31,7 @@ class TestTenantNormalizerNormalize:
     def test_normalize_unicode_nfkc(self) -> None:
         """Test that Unicode is normalized to NFKC form."""
         # Full-width characters should normalize
-        assert TenantNormalizer.normalize("\uff54\uff45\uff4e\uff41\uff4e\uff54") == "tenant"
+        assert TenantNormalizer.normalize("ｔｅｎａｎｔ") == "tenant"
 
 
 class TestTenantNormalizerValidate:

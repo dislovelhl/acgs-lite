@@ -70,6 +70,7 @@ class TestCheckDatabase:
         checker = HealthChecker(database_url="postgresql://fake:5432/db")
         # Hide asyncpg to trigger the ImportError fallback
         import sys
+
         saved = sys.modules.get("asyncpg")
         sys.modules["asyncpg"] = None  # type: ignore[assignment]
         try:
@@ -130,7 +131,9 @@ class TestCheckOpa:
         mock_client.get = AsyncMock(return_value=mock_resp)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
-        with patch("src.core.services.api_gateway.health.httpx.AsyncClient", return_value=mock_client):
+        with patch(
+            "src.core.services.api_gateway.health.httpx.AsyncClient", return_value=mock_client
+        ):
             result = await checker.check_opa()
         assert result.status == "up"
 
@@ -142,7 +145,9 @@ class TestCheckOpa:
         mock_client.get = AsyncMock(return_value=mock_resp)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
-        with patch("src.core.services.api_gateway.health.httpx.AsyncClient", return_value=mock_client):
+        with patch(
+            "src.core.services.api_gateway.health.httpx.AsyncClient", return_value=mock_client
+        ):
             result = await checker.check_opa()
         assert result.status == "degraded"
         assert "status 500" in result.error
@@ -153,7 +158,9 @@ class TestCheckOpa:
         mock_client.get = AsyncMock(side_effect=httpx.TimeoutException("timeout"))
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
-        with patch("src.core.services.api_gateway.health.httpx.AsyncClient", return_value=mock_client):
+        with patch(
+            "src.core.services.api_gateway.health.httpx.AsyncClient", return_value=mock_client
+        ):
             result = await checker.check_opa()
         assert result.status == "down"
         assert "timeout" in result.error.lower()
@@ -164,7 +171,9 @@ class TestCheckOpa:
         mock_client.get = AsyncMock(side_effect=httpx.ConnectError("refused"))
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
-        with patch("src.core.services.api_gateway.health.httpx.AsyncClient", return_value=mock_client):
+        with patch(
+            "src.core.services.api_gateway.health.httpx.AsyncClient", return_value=mock_client
+        ):
             result = await checker.check_opa()
         assert result.status == "down"
         assert "refused" in result.error.lower()
@@ -175,7 +184,9 @@ class TestCheckOpa:
         mock_client.get = AsyncMock(side_effect=ValueError("unexpected"))
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
-        with patch("src.core.services.api_gateway.health.httpx.AsyncClient", return_value=mock_client):
+        with patch(
+            "src.core.services.api_gateway.health.httpx.AsyncClient", return_value=mock_client
+        ):
             result = await checker.check_opa()
         assert result.status == "down"
 
@@ -209,10 +220,16 @@ class TestCheckAll:
         checker = HealthChecker()
         with (
             patch.object(checker, "check_database", side_effect=RuntimeError("boom")),
-            patch.object(checker, "check_redis", return_value=DependencyCheck(status="up", latency_ms=0.1)),
-            patch.object(checker, "check_opa", return_value=DependencyCheck(status="up", latency_ms=0.1)),
             patch.object(
-                checker, "check_constitutional_hash", return_value=DependencyCheck(status="up", latency_ms=0.1)
+                checker, "check_redis", return_value=DependencyCheck(status="up", latency_ms=0.1)
+            ),
+            patch.object(
+                checker, "check_opa", return_value=DependencyCheck(status="up", latency_ms=0.1)
+            ),
+            patch.object(
+                checker,
+                "check_constitutional_hash",
+                return_value=DependencyCheck(status="up", latency_ms=0.1),
             ),
         ):
             results = await checker.check_all()

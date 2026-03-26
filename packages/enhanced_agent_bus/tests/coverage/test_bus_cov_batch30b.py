@@ -222,9 +222,7 @@ class TestMCPCLIKeyboardInterrupt:
                 "enhanced_agent_bus.mcp_server.cli.create_mcp_server",
                 return_value=mock_server,
             ),
-            patch(
-                "enhanced_agent_bus.mcp_server.cli.asyncio"
-            ) as mock_asyncio,
+            patch("enhanced_agent_bus.mcp_server.cli.asyncio") as mock_asyncio,
         ):
             mock_asyncio.run.side_effect = KeyboardInterrupt()
             from enhanced_agent_bus.mcp_server.cli import main
@@ -243,9 +241,7 @@ class TestMCPCLIKeyboardInterrupt:
                 "enhanced_agent_bus.mcp_server.cli.create_mcp_server",
                 return_value=mock_server,
             ),
-            patch(
-                "enhanced_agent_bus.mcp_server.cli.asyncio"
-            ) as mock_asyncio,
+            patch("enhanced_agent_bus.mcp_server.cli.asyncio") as mock_asyncio,
         ):
             mock_asyncio.run.side_effect = KeyboardInterrupt()
             from enhanced_agent_bus.mcp_server.cli import main
@@ -267,9 +263,7 @@ class TestMCPCLIOtherExceptions:
                 "enhanced_agent_bus.mcp_server.cli.create_mcp_server",
                 return_value=mock_server,
             ),
-            patch(
-                "enhanced_agent_bus.mcp_server.cli.asyncio"
-            ) as mock_asyncio,
+            patch("enhanced_agent_bus.mcp_server.cli.asyncio") as mock_asyncio,
         ):
             mock_asyncio.run.side_effect = RuntimeError("Server crashed")
             from enhanced_agent_bus.mcp_server.cli import main

@@ -37,9 +37,7 @@ if _module is not None:
     sys.modules.setdefault("enhanced_agent_bus.deliberation_layer", _module)
     sys.modules.setdefault("core.enhanced_agent_bus.deliberation_layer", _module)
     sys.modules.setdefault("enhanced_agent_bus.deliberation_layer.integration", integration)
-    sys.modules.setdefault(
-        "enhanced_agent_bus.deliberation_layer.integration", integration
-    )
+    sys.modules.setdefault("enhanced_agent_bus.deliberation_layer.integration", integration)
     sys.modules.setdefault("core.enhanced_agent_bus.deliberation_layer.integration", integration)
 
 # Lazy import for impact_scorer - requires numpy (optional ml dependency)

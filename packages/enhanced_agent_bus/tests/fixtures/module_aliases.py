@@ -159,9 +159,7 @@ if _deliberation_layer is not None:
     import importlib as _il
 
     try:
-        _impact_scorer = _il.import_module(
-            "enhanced_agent_bus.deliberation_layer.impact_scorer"
-        )
+        _impact_scorer = _il.import_module("enhanced_agent_bus.deliberation_layer.impact_scorer")
         sys.modules["enhanced_agent_bus.deliberation_layer.impact_scorer"] = _impact_scorer
         sys.modules["core.enhanced_agent_bus.deliberation_layer.impact_scorer"] = _impact_scorer
     except ImportError:

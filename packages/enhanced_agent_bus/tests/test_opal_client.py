@@ -134,7 +134,9 @@ class TestOPALPolicyClientInit:
         assert client.opa_url == "http://opa:8181"
         assert client.opal_server_url == "http://opal:7002"
 
-    @patch.dict("os.environ", {"OPA_URL": "http://env-opa:9999", "OPAL_SERVER_URL": "http://env-opal:7777"})
+    @patch.dict(
+        "os.environ", {"OPA_URL": "http://env-opa:9999", "OPAL_SERVER_URL": "http://env-opal:7777"}
+    )
     def test_env_fallback(self):
         client = OPALPolicyClient(opal_enabled=False)
         assert client.opa_url == "http://env-opa:9999"
@@ -272,9 +274,7 @@ class TestEvaluate:
 
         result = await client.evaluate("data.acgs.allow", {"action": "read"})
         assert result is True
-        client._opa_client.evaluate.assert_awaited_once_with(
-            "data.acgs.allow", {"action": "read"}
-        )
+        client._opa_client.evaluate.assert_awaited_once_with("data.acgs.allow", {"action": "read"})
 
     async def test_evaluate_with_opa_client_deny(self):
         client = _make_client()

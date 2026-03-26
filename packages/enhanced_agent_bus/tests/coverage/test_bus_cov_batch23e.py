@@ -589,15 +589,11 @@ class TestCheckConstitutionalHashRequired:
 
 class TestCheckTenantIsolation:
     def test_same_tenant_passes(self):
-        r = check_tenant_isolation(
-            {}, {"source_tenant_id": "t1", "target_tenant_id": "t1"}
-        )
+        r = check_tenant_isolation({}, {"source_tenant_id": "t1", "target_tenant_id": "t1"})
         assert r.passed is True
 
     def test_cross_tenant_fails(self):
-        r = check_tenant_isolation(
-            {}, {"source_tenant_id": "t1", "target_tenant_id": "t2"}
-        )
+        r = check_tenant_isolation({}, {"source_tenant_id": "t1", "target_tenant_id": "t2"})
         assert r.passed is False
         assert "cannot cross" in r.message
 
@@ -620,9 +616,7 @@ class TestCheckHumanApprovalForActivation:
         assert r.passed is True
 
     def test_activation_with_approval_passes(self):
-        r = check_human_approval_for_activation(
-            {}, {"is_activation": True, "human_approved": True}
-        )
+        r = check_human_approval_for_activation({}, {"is_activation": True, "human_approved": True})
         assert r.passed is True
 
     def test_activation_without_approval_fails(self):

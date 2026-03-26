@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 from uuid import uuid4
 
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+
 from acgs_lite._meta import VERSION
 from acgs_lite.audit import AuditEntry, AuditLog
 from acgs_lite.constitution import Constitution
@@ -17,8 +19,8 @@ from acgs_lite.engine import GovernanceEngine
 from acgs_lite.errors import MACIViolationError
 from acgs_lite.maci import MACIEnforcer, MACIRole
 from acgs_lite.openshell_state import (
-    GovernanceStateChecksumError,
     GovernanceStateBackend,
+    GovernanceStateChecksumError,
     GovernanceStateError,
     GovernanceStateMigrationError,
     GovernanceStateObservabilityHook,
@@ -29,7 +31,6 @@ from acgs_lite.openshell_state import (
     RedisGovernanceStateBackend,
     SQLiteGovernanceStateBackend,
 )
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
 try:
     from src.core.shared.constants import CONSTITUTIONAL_HASH
@@ -520,7 +521,11 @@ def _build_decision(
             compliance=ComplianceResult(
                 is_compliant=True,
                 status=ComplianceStatus.COMPLIANT,
-                reason_codes=["VALIDATION_PASSED", "SEPARATE_EXECUTOR_REQUIRED", *risk_reason_codes],
+                reason_codes=[
+                    "VALIDATION_PASSED",
+                    "SEPARATE_EXECUTOR_REQUIRED",
+                    *risk_reason_codes,
+                ],
                 findings=["The action is valid but must be executed by a distinct executor."],
                 reasoning="MACI requires a separate executor for this governed action.",
                 latency_ms=validation.latency_ms,
@@ -673,7 +678,9 @@ def create_openshell_governance_router(
         status_code=status.HTTP_200_OK,
     )
     async def evaluate_action(
-        payload: ActionEnvelope = Body(..., openapi_examples=EVALUATE_ACTION_EXAMPLES),
+        payload: ActionEnvelope = Body(  # noqa: B008
+            ..., openapi_examples=EVALUATE_ACTION_EXAMPLES
+        ),
     ) -> GovernanceDecision:
         decision = _build_decision(payload, engine=engine, maci=maci)
         decision_store[decision.decision_id] = decision
@@ -905,7 +912,9 @@ def create_openshell_governance_router(
         status_code=status.HTTP_201_CREATED,
     )
     async def record_outcome(
-        payload: ExecutionOutcome = Body(..., openapi_examples=RECORD_OUTCOME_EXAMPLES),
+        payload: ExecutionOutcome = Body(  # noqa: B008
+            ..., openapi_examples=RECORD_OUTCOME_EXAMPLES
+        ),
     ) -> AuditEvent:
         event_type = (
             AuditEventType.EXECUTION
@@ -918,7 +927,9 @@ def create_openshell_governance_router(
             agent_id=payload.executor.actor_id,
             action="record_outcome",
             valid=payload.outcome_status == OutcomeStatus.SUCCEEDED,
-            violations=[] if payload.outcome_status == OutcomeStatus.SUCCEEDED else [payload.summary],
+            violations=[]
+            if payload.outcome_status == OutcomeStatus.SUCCEEDED
+            else [payload.summary],
             constitutional_hash=CONSTITUTIONAL_HASH,
             latency_ms=float(payload.latency_ms or 0.0),
             metadata={
@@ -963,7 +974,9 @@ def create_openshell_governance_router(
 
     @router.get("/examples", response_class=HTMLResponse, status_code=status.HTTP_200_OK)
     async def governance_examples() -> str:
-        eval_json = json.dumps(EVALUATE_ACTION_EXAMPLES["high_risk_github_write"]["value"], indent=2)
+        eval_json = json.dumps(
+            EVALUATE_ACTION_EXAMPLES["high_risk_github_write"]["value"], indent=2
+        )
         outcome_json = json.dumps(
             RECORD_OUTCOME_EXAMPLES["successful_execution"]["value"],
             indent=2,
@@ -981,7 +994,8 @@ def create_openshell_governance_router(
   </head>
   <body>
     <h1>ACGS OpenShell Governance Examples</h1>
-    <p>Interactive OpenAPI docs are available at <code>/docs</code>. These examples are also embedded into the request schemas for the governance endpoints.</p>
+    <p>Interactive OpenAPI docs are available at <code>/docs</code>. These examples are also
+    embedded into the request schemas for the governance endpoints.</p>
     <h2>POST /governance/evaluate-action</h2>
     <pre>{eval_json}</pre>
     <h2>POST /governance/record-outcome</h2>

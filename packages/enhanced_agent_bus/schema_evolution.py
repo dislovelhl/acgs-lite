@@ -89,9 +89,7 @@ class SchemaVersion:
             return True
         return self.prerelease < other.prerelease
 
-    def is_compatible_with(
-        self, other: "SchemaVersion", mode: SchemaCompatibility
-    ) -> bool:
+    def is_compatible_with(self, other: "SchemaVersion", mode: SchemaCompatibility) -> bool:
         if mode == SchemaCompatibility.BACKWARD:
             return self.major == other.major and self >= other
         if mode == SchemaCompatibility.FORWARD:
@@ -230,14 +228,18 @@ class CompatibilityChecker:
     def _evaluate(self, changes: list[SchemaEvolutionChange]) -> bool:
         if self.compatibility_mode == SchemaCompatibility.BACKWARD:
             return not any(
-                change.evolution_type == EvolutionType.ADD_FIELD and change.is_breaking
-                or change.evolution_type == EvolutionType.CHANGE_TYPE and change.is_breaking
+                change.evolution_type == EvolutionType.ADD_FIELD
+                and change.is_breaking
+                or change.evolution_type == EvolutionType.CHANGE_TYPE
+                and change.is_breaking
                 for change in changes
             )
         if self.compatibility_mode == SchemaCompatibility.FORWARD:
             return not any(
-                change.evolution_type == EvolutionType.REMOVE_FIELD and change.is_breaking
-                or change.evolution_type == EvolutionType.CHANGE_TYPE and change.is_breaking
+                change.evolution_type == EvolutionType.REMOVE_FIELD
+                and change.is_breaking
+                or change.evolution_type == EvolutionType.CHANGE_TYPE
+                and change.is_breaking
                 for change in changes
             )
         return not any(change.is_breaking for change in changes)
@@ -348,9 +350,7 @@ class SchemaMigrator:
         self._migrations[key] = migration
         self._transforms[key] = transform
 
-    def get_migration_path(
-        self, schema_name: str, from_version: str, to_version: str
-    ) -> list[str]:
+    def get_migration_path(self, schema_name: str, from_version: str, to_version: str) -> list[str]:
         if self.registry.get_schema(schema_name, from_version) is None:
             return []
         if self.registry.get_schema(schema_name, to_version) is None:

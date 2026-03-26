@@ -10,7 +10,6 @@ Tests cover:
 """
 
 
-
 class TestFallbackAuditLedgerClass:
     """Test the fallback AuditLedger class defined in hitl_manager."""
 

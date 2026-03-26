@@ -121,9 +121,7 @@ class TestPQCExceptions:
         assert err.supported_algorithms == []
 
     def test_pqc_key_required_error_with_algorithms(self):
-        err = PQCKeyRequiredError(
-            message="need pqc", supported_algorithms=["ML-KEM-768"]
-        )
+        err = PQCKeyRequiredError(message="need pqc", supported_algorithms=["ML-KEM-768"])
         assert err.supported_algorithms == ["ML-KEM-768"]
 
     def test_migration_required_error_defaults(self):
@@ -133,9 +131,7 @@ class TestPQCExceptions:
         assert err.supported_algorithms == []
 
     def test_migration_required_error_with_algorithms(self):
-        err = MigrationRequiredError(
-            message="migrate", supported_algorithms=["ML-DSA-65"]
-        )
+        err = MigrationRequiredError(message="migrate", supported_algorithms=["ML-DSA-65"])
         assert err.supported_algorithms == ["ML-DSA-65"]
 
     def test_unsupported_pqc_algorithm_error_defaults(self):
@@ -290,8 +286,11 @@ class TestPQCWrapperKyberKeypair:
         mock_kem.__enter__ = MagicMock(return_value=mock_kem)
         mock_kem.__exit__ = MagicMock(return_value=False)
 
-        with patch.dict("sys.modules", {"oqs": MagicMock(KeyEncapsulation=MagicMock(return_value=mock_kem))}):
+        with patch.dict(
+            "sys.modules", {"oqs": MagicMock(KeyEncapsulation=MagicMock(return_value=mock_kem))}
+        ):
             import sys
+
             oqs_mod = sys.modules["oqs"]
             oqs_mod.KeyEncapsulation.return_value = mock_kem
             result = wrapper.generate_kyber_keypair(768)
@@ -309,7 +308,9 @@ class TestPQCWrapperKyberKeypair:
         mock_kem.__enter__ = MagicMock(return_value=mock_kem)
         mock_kem.__exit__ = MagicMock(return_value=False)
 
-        with patch.dict("sys.modules", {"oqs": MagicMock(KeyEncapsulation=MagicMock(return_value=mock_kem))}):
+        with patch.dict(
+            "sys.modules", {"oqs": MagicMock(KeyEncapsulation=MagicMock(return_value=mock_kem))}
+        ):
             with pytest.raises(UnsupportedAlgorithmError):
                 wrapper.generate_kyber_keypair("ml-kem-512")
 
@@ -343,7 +344,9 @@ class TestPQCWrapperDilithiumKeypair:
         mock_sig.__enter__ = MagicMock(return_value=mock_sig)
         mock_sig.__exit__ = MagicMock(return_value=False)
 
-        with patch.dict("sys.modules", {"oqs": MagicMock(Signature=MagicMock(return_value=mock_sig))}):
+        with patch.dict(
+            "sys.modules", {"oqs": MagicMock(Signature=MagicMock(return_value=mock_sig))}
+        ):
             result = wrapper.generate_dilithium_keypair(3)
 
         assert result.algorithm == "dilithium3"
@@ -357,7 +360,9 @@ class TestPQCWrapperDilithiumKeypair:
         mock_sig.__enter__ = MagicMock(return_value=mock_sig)
         mock_sig.__exit__ = MagicMock(return_value=False)
 
-        with patch.dict("sys.modules", {"oqs": MagicMock(Signature=MagicMock(return_value=mock_sig))}):
+        with patch.dict(
+            "sys.modules", {"oqs": MagicMock(Signature=MagicMock(return_value=mock_sig))}
+        ):
             result = wrapper.generate_dilithium_keypair("ml-dsa-44")
 
         assert result.algorithm == "dilithium2"
@@ -393,7 +398,9 @@ class TestPQCWrapperSphincsKeypair:
         mock_sig.__enter__ = MagicMock(return_value=mock_sig)
         mock_sig.__exit__ = MagicMock(return_value=False)
 
-        with patch.dict("sys.modules", {"oqs": MagicMock(Signature=MagicMock(return_value=mock_sig))}):
+        with patch.dict(
+            "sys.modules", {"oqs": MagicMock(Signature=MagicMock(return_value=mock_sig))}
+        ):
             result = wrapper.generate_sphincs_keypair()
 
         assert result.algorithm == "sphincssha2128ssimple"
@@ -407,7 +414,9 @@ class TestPQCWrapperSphincsKeypair:
         mock_sig.__enter__ = MagicMock(return_value=mock_sig)
         mock_sig.__exit__ = MagicMock(return_value=False)
 
-        with patch.dict("sys.modules", {"oqs": MagicMock(Signature=MagicMock(return_value=mock_sig))}):
+        with patch.dict(
+            "sys.modules", {"oqs": MagicMock(Signature=MagicMock(return_value=mock_sig))}
+        ):
             result = wrapper.generate_sphincs_keypair("sha2-256f-simple")
 
         assert result.algorithm == "sphincssha2256fsimple"
@@ -442,7 +451,9 @@ class TestPQCWrapperSignVerify:
         mock_sig.__enter__ = MagicMock(return_value=mock_sig)
         mock_sig.__exit__ = MagicMock(return_value=False)
 
-        with patch.dict("sys.modules", {"oqs": MagicMock(Signature=MagicMock(return_value=mock_sig))}):
+        with patch.dict(
+            "sys.modules", {"oqs": MagicMock(Signature=MagicMock(return_value=mock_sig))}
+        ):
             result = wrapper.sign_dilithium(b"hello", b"privkey", 3)
 
         assert result == b"signature_bytes"
@@ -454,7 +465,9 @@ class TestPQCWrapperSignVerify:
         mock_sig.__enter__ = MagicMock(return_value=mock_sig)
         mock_sig.__exit__ = MagicMock(return_value=False)
 
-        with patch.dict("sys.modules", {"oqs": MagicMock(Signature=MagicMock(return_value=mock_sig))}):
+        with patch.dict(
+            "sys.modules", {"oqs": MagicMock(Signature=MagicMock(return_value=mock_sig))}
+        ):
             result = wrapper.sign_dilithium(b"msg", b"key", "ml-dsa-87")
 
         assert result == b"sig"
@@ -474,7 +487,9 @@ class TestPQCWrapperSignVerify:
         mock_sig.__enter__ = MagicMock(return_value=mock_sig)
         mock_sig.__exit__ = MagicMock(return_value=False)
 
-        with patch.dict("sys.modules", {"oqs": MagicMock(Signature=MagicMock(return_value=mock_sig))}):
+        with patch.dict(
+            "sys.modules", {"oqs": MagicMock(Signature=MagicMock(return_value=mock_sig))}
+        ):
             result = wrapper.verify_dilithium(b"msg", b"sig", b"pubkey", 3)
 
         assert result is True
@@ -486,7 +501,9 @@ class TestPQCWrapperSignVerify:
         mock_sig.__enter__ = MagicMock(return_value=mock_sig)
         mock_sig.__exit__ = MagicMock(return_value=False)
 
-        with patch.dict("sys.modules", {"oqs": MagicMock(Signature=MagicMock(return_value=mock_sig))}):
+        with patch.dict(
+            "sys.modules", {"oqs": MagicMock(Signature=MagicMock(return_value=mock_sig))}
+        ):
             result = wrapper.verify_dilithium(b"msg", b"bad_sig", b"pubkey", 3)
 
         assert result is False
@@ -498,7 +515,9 @@ class TestPQCWrapperSignVerify:
         mock_sig.__enter__ = MagicMock(return_value=mock_sig)
         mock_sig.__exit__ = MagicMock(return_value=False)
 
-        with patch.dict("sys.modules", {"oqs": MagicMock(Signature=MagicMock(return_value=mock_sig))}):
+        with patch.dict(
+            "sys.modules", {"oqs": MagicMock(Signature=MagicMock(return_value=mock_sig))}
+        ):
             result = wrapper.verify_dilithium(b"msg", b"sig", b"pub", "ml-dsa-44")
 
         assert result is True
@@ -526,7 +545,9 @@ class TestPQCWrapperKEM:
         mock_kem.__enter__ = MagicMock(return_value=mock_kem)
         mock_kem.__exit__ = MagicMock(return_value=False)
 
-        with patch.dict("sys.modules", {"oqs": MagicMock(KeyEncapsulation=MagicMock(return_value=mock_kem))}):
+        with patch.dict(
+            "sys.modules", {"oqs": MagicMock(KeyEncapsulation=MagicMock(return_value=mock_kem))}
+        ):
             result = wrapper.encapsulate_kyber(b"pubkey", 768)
 
         assert isinstance(result, KEMResult)
@@ -541,7 +562,9 @@ class TestPQCWrapperKEM:
         mock_kem.__enter__ = MagicMock(return_value=mock_kem)
         mock_kem.__exit__ = MagicMock(return_value=False)
 
-        with patch.dict("sys.modules", {"oqs": MagicMock(KeyEncapsulation=MagicMock(return_value=mock_kem))}):
+        with patch.dict(
+            "sys.modules", {"oqs": MagicMock(KeyEncapsulation=MagicMock(return_value=mock_kem))}
+        ):
             result = wrapper.encapsulate_kyber(b"pubkey", "ml-kem-1024")
 
         assert result.algorithm == "kyber1024"
@@ -561,7 +584,9 @@ class TestPQCWrapperKEM:
         mock_kem.__enter__ = MagicMock(return_value=mock_kem)
         mock_kem.__exit__ = MagicMock(return_value=False)
 
-        with patch.dict("sys.modules", {"oqs": MagicMock(KeyEncapsulation=MagicMock(return_value=mock_kem))}):
+        with patch.dict(
+            "sys.modules", {"oqs": MagicMock(KeyEncapsulation=MagicMock(return_value=mock_kem))}
+        ):
             result = wrapper.decapsulate_kyber(b"ct", b"privkey", 768)
 
         assert result == b"shared_secret_32bytes"
@@ -573,7 +598,9 @@ class TestPQCWrapperKEM:
         mock_kem.__enter__ = MagicMock(return_value=mock_kem)
         mock_kem.__exit__ = MagicMock(return_value=False)
 
-        with patch.dict("sys.modules", {"oqs": MagicMock(KeyEncapsulation=MagicMock(return_value=mock_kem))}):
+        with patch.dict(
+            "sys.modules", {"oqs": MagicMock(KeyEncapsulation=MagicMock(return_value=mock_kem))}
+        ):
             result = wrapper.decapsulate_kyber(b"ct", b"key", "ml-kem-512")
 
         assert result == b"ss"
@@ -654,7 +681,8 @@ class TestAuthHelpers:
         monkeypatch.delenv("JWT_SECRET", raising=False)
         monkeypatch.delenv("JWT_SECRET_KEY", raising=False)
         monkeypatch.setattr(
-            auth, "settings",
+            auth,
+            "settings",
             _make_settings(jwt_secret_value="settings-secret"),
         )
         result = auth._current_jwt_secret()
@@ -705,7 +733,9 @@ class TestCurrentJwtPrivateKey:
 
     def test_from_env_direct_value(self, monkeypatch):
         monkeypatch.setenv("JWT_PRIVATE_KEY", "raw-key-material")
-        with patch("src.core.shared.security.auth.load_key_material", return_value="raw-key-material"):
+        with patch(
+            "src.core.shared.security.auth.load_key_material", return_value="raw-key-material"
+        ):
             monkeypatch.setattr(auth, "settings", _make_settings())
             result = auth._current_jwt_private_key()
             assert result == "raw-key-material"
@@ -736,7 +766,9 @@ class TestCurrentJwtPublicKey:
 
     def test_from_env_direct_value(self, monkeypatch):
         monkeypatch.setenv("JWT_PUBLIC_KEY", "raw-public-key")
-        with patch("src.core.shared.security.auth.load_key_material", return_value="raw-public-key"):
+        with patch(
+            "src.core.shared.security.auth.load_key_material", return_value="raw-public-key"
+        ):
             monkeypatch.setattr(auth, "settings", _make_settings())
             result = auth._current_jwt_public_key()
             assert result == "raw-public-key"
@@ -874,7 +906,8 @@ class TestCreateAccessToken:
         monkeypatch.setattr(auth, "settings", _make_settings(jwt_secret_value=TEST_JWT_SECRET))
 
         token = auth.create_access_token(
-            user_id="u", tenant_id="t",
+            user_id="u",
+            tenant_id="t",
             expires_delta=timedelta(minutes=5),
         )
         payload = jwt.decode(token, TEST_JWT_SECRET, algorithms=["HS256"], audience="acgs2-api")
@@ -987,8 +1020,10 @@ class TestGetCurrentUser:
         monkeypatch.delenv("REDIS_URL", raising=False)
 
         token = auth.create_access_token(
-            user_id="user-1", tenant_id="tenant-1",
-            roles=["admin"], permissions=["read"],
+            user_id="user-1",
+            tenant_id="tenant-1",
+            roles=["admin"],
+            permissions=["read"],
         )
         creds = SimpleNamespace(credentials=token)
         claims = await auth.get_current_user(credentials=creds)
@@ -1006,7 +1041,8 @@ class TestGetCurrentUser:
         monkeypatch.setattr(auth, "_revocation_service", mock_revocation)
 
         token = auth.create_access_token(
-            user_id="user-1", tenant_id="tenant-1",
+            user_id="user-1",
+            tenant_id="tenant-1",
         )
         creds = SimpleNamespace(credentials=token)
         with pytest.raises(HTTPException) as exc_info:
@@ -1026,7 +1062,8 @@ class TestGetCurrentUser:
         monkeypatch.setattr(auth, "_revocation_service", mock_revocation)
 
         token = auth.create_access_token(
-            user_id="user-1", tenant_id="tenant-1",
+            user_id="user-1",
+            tenant_id="tenant-1",
         )
         creds = SimpleNamespace(credentials=token)
         # Should not raise - graceful degradation
@@ -1089,8 +1126,12 @@ class TestRequireRole:
     async def test_role_present(self):
         checker = auth.require_role("admin")
         user = auth.UserClaims(
-            sub="u", tenant_id="t", roles=["admin"], permissions=[],
-            exp=9999999999, iat=1000000000,
+            sub="u",
+            tenant_id="t",
+            roles=["admin"],
+            permissions=[],
+            exp=9999999999,
+            iat=1000000000,
         )
         result = await checker(user=user)
         assert result.sub == "u"
@@ -1099,8 +1140,12 @@ class TestRequireRole:
     async def test_role_missing_raises(self):
         checker = auth.require_role("superadmin")
         user = auth.UserClaims(
-            sub="u", tenant_id="t", roles=["admin"], permissions=[],
-            exp=9999999999, iat=1000000000,
+            sub="u",
+            tenant_id="t",
+            roles=["admin"],
+            permissions=[],
+            exp=9999999999,
+            iat=1000000000,
         )
         with pytest.raises(HTTPException) as exc_info:
             await checker(user=user)
@@ -1114,8 +1159,12 @@ class TestRequirePermission:
     async def test_permission_present(self):
         checker = auth.require_permission("write")
         user = auth.UserClaims(
-            sub="u", tenant_id="t", roles=[], permissions=["write"],
-            exp=9999999999, iat=1000000000,
+            sub="u",
+            tenant_id="t",
+            roles=[],
+            permissions=["write"],
+            exp=9999999999,
+            iat=1000000000,
         )
         result = await checker(user=user)
         assert result.sub == "u"
@@ -1124,8 +1173,12 @@ class TestRequirePermission:
     async def test_permission_missing_raises(self):
         checker = auth.require_permission("delete")
         user = auth.UserClaims(
-            sub="u", tenant_id="t", roles=[], permissions=["read"],
-            exp=9999999999, iat=1000000000,
+            sub="u",
+            tenant_id="t",
+            roles=[],
+            permissions=["read"],
+            exp=9999999999,
+            iat=1000000000,
         )
         with pytest.raises(HTTPException) as exc_info:
             await checker(user=user)
@@ -1139,8 +1192,12 @@ class TestRequireTenantAccess:
     async def test_matching_tenant(self):
         checker = auth.require_tenant_access("tenant-1")
         user = auth.UserClaims(
-            sub="u", tenant_id="tenant-1", roles=[], permissions=[],
-            exp=9999999999, iat=1000000000,
+            sub="u",
+            tenant_id="tenant-1",
+            roles=[],
+            permissions=[],
+            exp=9999999999,
+            iat=1000000000,
         )
         result = await checker(user=user, request=None)
         assert result.tenant_id == "tenant-1"
@@ -1149,8 +1206,12 @@ class TestRequireTenantAccess:
     async def test_mismatched_tenant_raises(self):
         checker = auth.require_tenant_access("tenant-1")
         user = auth.UserClaims(
-            sub="u", tenant_id="tenant-2", roles=[], permissions=[],
-            exp=9999999999, iat=1000000000,
+            sub="u",
+            tenant_id="tenant-2",
+            roles=[],
+            permissions=[],
+            exp=9999999999,
+            iat=1000000000,
         )
         with pytest.raises(HTTPException) as exc_info:
             await checker(user=user, request=None)
@@ -1160,8 +1221,12 @@ class TestRequireTenantAccess:
     async def test_request_state_tenant_mismatch(self):
         checker = auth.require_tenant_access()
         user = auth.UserClaims(
-            sub="u", tenant_id="tenant-1", roles=[], permissions=[],
-            exp=9999999999, iat=1000000000,
+            sub="u",
+            tenant_id="tenant-1",
+            roles=[],
+            permissions=[],
+            exp=9999999999,
+            iat=1000000000,
         )
         request = MagicMock()
         request.state.tenant_id = "tenant-2"
@@ -1173,8 +1238,12 @@ class TestRequireTenantAccess:
     async def test_no_tenant_constraint_passes(self):
         checker = auth.require_tenant_access()
         user = auth.UserClaims(
-            sub="u", tenant_id="tenant-1", roles=[], permissions=[],
-            exp=9999999999, iat=1000000000,
+            sub="u",
+            tenant_id="tenant-1",
+            roles=[],
+            permissions=[],
+            exp=9999999999,
+            iat=1000000000,
         )
         result = await checker(user=user, request=None)
         assert result.tenant_id == "tenant-1"
@@ -1215,8 +1284,12 @@ class TestUserClaimsModel:
 
     def test_defaults(self):
         claims = auth.UserClaims(
-            sub="u", tenant_id="t", roles=["r"], permissions=["p"],
-            exp=999, iat=100,
+            sub="u",
+            tenant_id="t",
+            roles=["r"],
+            permissions=["p"],
+            exp=999,
+            iat=100,
         )
         assert claims.iss == "acgs2"
         assert claims.aud == "acgs2-api"
@@ -1353,16 +1426,12 @@ class TestConfigMergerMergeWithEnv:
     def test_bool_coercion_variants(self):
         for truthy in ("true", "1", "yes", "on"):
             config = {"flag": False}
-            result = ConfigMerger.merge_with_env(
-                config, "X", env_vars={"X_FLAG": truthy}
-            )
+            result = ConfigMerger.merge_with_env(config, "X", env_vars={"X_FLAG": truthy})
             assert result["flag"] is True
 
         for falsy in ("false", "0", "no", "off"):
             config = {"flag": True}
-            result = ConfigMerger.merge_with_env(
-                config, "X", env_vars={"X_FLAG": falsy}
-            )
+            result = ConfigMerger.merge_with_env(config, "X", env_vars={"X_FLAG": falsy})
             assert result["flag"] is False
 
     def test_int_coercion_invalid_fallback(self):

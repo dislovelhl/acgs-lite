@@ -5,7 +5,6 @@ Constitutional Hash: 608508a9bd224290
 Task 7.1: API integration tests for CRUD operations
 """
 
-
 from .conftest import (
     CONSTITUTIONAL_HASH,
     IntegrationStatus,

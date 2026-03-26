@@ -19,6 +19,7 @@ import pytest
 # Helpers to control module-level availability flags
 # ---------------------------------------------------------------------------
 
+
 def _patch_availability(**overrides):
     """Return a dict suitable for patching module-level flags."""
     defaults = {
@@ -38,6 +39,7 @@ MOD = "enhanced_agent_bus.deliberation_layer.tensorrt_optimizer"
 # ---------------------------------------------------------------------------
 # Initialization & status
 # ---------------------------------------------------------------------------
+
 
 class TestTensorRTOptimizerInit:
     """Tests for __init__ and property accessors."""
@@ -121,6 +123,7 @@ class TestTensorRTOptimizerInit:
 # Fallback embeddings
 # ---------------------------------------------------------------------------
 
+
 class TestFallbackEmbeddings:
     """Tests for _generate_fallback_embeddings."""
 
@@ -158,6 +161,7 @@ class TestFallbackEmbeddings:
 # ---------------------------------------------------------------------------
 # export_onnx
 # ---------------------------------------------------------------------------
+
 
 class TestExportOnnx:
     """Tests for ONNX export logic."""
@@ -200,6 +204,7 @@ class TestExportOnnx:
 # convert_to_tensorrt
 # ---------------------------------------------------------------------------
 
+
 class TestConvertToTensorRT:
     """Tests for TensorRT conversion logic."""
 
@@ -229,6 +234,7 @@ class TestConvertToTensorRT:
 # ---------------------------------------------------------------------------
 # load_tensorrt_engine
 # ---------------------------------------------------------------------------
+
 
 class TestLoadTensorRTEngine:
     """Tests for TensorRT engine loading."""
@@ -268,6 +274,7 @@ class TestLoadTensorRTEngine:
 # validate_engine
 # ---------------------------------------------------------------------------
 
+
 class TestValidateEngine:
     """Tests for engine validation."""
 
@@ -306,6 +313,7 @@ class TestValidateEngine:
 # ---------------------------------------------------------------------------
 # load_onnx_runtime
 # ---------------------------------------------------------------------------
+
 
 class TestLoadOnnxRuntime:
     """Tests for ONNX Runtime fallback loading."""
@@ -380,6 +388,7 @@ class TestLoadOnnxRuntime:
 # ---------------------------------------------------------------------------
 # infer / infer_batch
 # ---------------------------------------------------------------------------
+
 
 class TestInfer:
     """Tests for inference methods."""
@@ -528,6 +537,7 @@ class TestInfer:
 # _infer_tensorrt
 # ---------------------------------------------------------------------------
 
+
 class TestInferTensorRT:
     """Tests for TensorRT inference stub."""
 
@@ -544,6 +554,7 @@ class TestInferTensorRT:
 # ---------------------------------------------------------------------------
 # _infer_onnx
 # ---------------------------------------------------------------------------
+
 
 class TestInferOnnx:
     """Tests for ONNX inference path."""
@@ -572,6 +583,7 @@ class TestInferOnnx:
 # ---------------------------------------------------------------------------
 # _infer_torch
 # ---------------------------------------------------------------------------
+
 
 class TestInferTorch:
     """Tests for PyTorch fallback inference."""
@@ -605,6 +617,7 @@ class TestInferTorch:
 # ---------------------------------------------------------------------------
 # _load_tokenizer
 # ---------------------------------------------------------------------------
+
 
 class TestLoadTokenizer:
     """Tests for tokenizer loading with cache."""
@@ -640,6 +653,7 @@ class TestLoadTokenizer:
 # _load_torch_model
 # ---------------------------------------------------------------------------
 
+
 class TestLoadTorchModel:
     """Tests for torch model loading."""
 
@@ -668,6 +682,7 @@ class TestLoadTorchModel:
 # ---------------------------------------------------------------------------
 # Module-level functions
 # ---------------------------------------------------------------------------
+
 
 class TestModuleFunctions:
     """Tests for get_optimization_status and optimize_distilbert."""
@@ -793,6 +808,7 @@ class TestModuleFunctions:
 # ---------------------------------------------------------------------------
 # benchmark
 # ---------------------------------------------------------------------------
+
 
 class TestBenchmark:
     """Tests for benchmark method."""

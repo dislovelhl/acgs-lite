@@ -25,6 +25,7 @@ from src.core.shared.security.auth import UserClaims, get_current_user
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 def _make_user() -> UserClaims:
     now = int(datetime.now(UTC).timestamp())
     return UserClaims(
@@ -112,8 +113,13 @@ def _mock_explanation(*, include_factors: bool = True, include_cf: bool = True):
     exp.confidence_score = 0.95
     exp.impact_score = 0.2
     exp.governance_vector = {
-        "safety": 0.8, "security": 0.5, "privacy": 0.3,
-        "fairness": 0.4, "reliability": 0.7, "transparency": 0.6, "efficiency": 0.5,
+        "safety": 0.8,
+        "security": 0.5,
+        "privacy": 0.3,
+        "fairness": 0.4,
+        "reliability": 0.7,
+        "transparency": 0.6,
+        "efficiency": 0.5,
     }
     exp.factors = [_mock_factor()] if include_factors else []
     exp.primary_factors = ["f-1"] if include_factors else []
@@ -321,8 +327,13 @@ class TestGovernanceVectorSchema:
         assert "dimensions" in body
         dims = body["dimensions"]
         assert set(dims.keys()) == {
-            "safety", "security", "privacy", "fairness",
-            "reliability", "transparency", "efficiency",
+            "safety",
+            "security",
+            "privacy",
+            "fairness",
+            "reliability",
+            "transparency",
+            "efficiency",
         }
         assert body["constitutional_hash"] == "608508a9bd224290"
         assert body["thresholds"]["escalation"] == 0.8

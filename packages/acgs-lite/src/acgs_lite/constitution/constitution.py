@@ -782,8 +782,11 @@ class Constitution(BaseModel):
     ) -> dict[str, Any]:
         """Evaluate how removing rules would change a decision. See :mod:`comparison`."""
         return comparison.counterfactual(
-            self, action, remove_rules=remove_rules,
-            context=context, agent_id=agent_id,
+            self,
+            action,
+            remove_rules=remove_rules,
+            context=context,
+            agent_id=agent_id,
         )
 
     def dependency_graph(self) -> dict[str, Any]:
@@ -918,7 +921,10 @@ class Constitution(BaseModel):
     ) -> dict[str, Any]:
         """Merge two constitutions with conflict detection and resolution. See :mod:`merging`."""
         return merging.merge(
-            self, other, strategy=strategy, name=name,
+            self,
+            other,
+            strategy=strategy,
+            name=name,
             acknowledged_tensions=acknowledged_tensions,
             allow_hardcoded_override=allow_hardcoded_override,
         )
@@ -1084,7 +1090,9 @@ class Constitution(BaseModel):
     ) -> list[dict[str, Any]]:
         """Find near-duplicate rules by Jaccard keyword overlap. See :mod:`similarity`."""
         return similarity.find_similar_rules(
-            self, threshold=threshold, include_disabled=include_disabled,
+            self,
+            threshold=threshold,
+            include_disabled=include_disabled,
         )
 
     def cosine_similar_rules(
@@ -1103,8 +1111,10 @@ class Constitution(BaseModel):
     ) -> list[dict[str, Any]]:
         """Retrieve rules by embedding similarity. See :mod:`similarity`."""
         return similarity.semantic_search(
-            self, query_embedding=query_embedding,
-            top_k=top_k, threshold=threshold,
+            self,
+            query_embedding=query_embedding,
+            top_k=top_k,
+            threshold=threshold,
         )
 
     def full_report(

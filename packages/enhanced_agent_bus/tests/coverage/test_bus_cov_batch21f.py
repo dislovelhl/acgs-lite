@@ -47,6 +47,7 @@ from enhanced_agent_bus.enterprise_sso.ldap_integration import (
 
 # --- Utility functions ---
 
+
 class TestEscapeDnChars:
     def test_escapes_comma(self):
         assert "\\," in escape_dn_chars("a,b")
@@ -100,9 +101,7 @@ class TestBuildSearchFilter:
         assert "\\2a" in result
 
     def test_multiple_kwargs(self):
-        result = build_search_filter(
-            "(member={user_dn})", user_dn="cn=test,dc=example"
-        )
+        result = build_search_filter("(member={user_dn})", user_dn="cn=test,dc=example")
         assert "cn=test" in result
 
 
@@ -160,6 +159,7 @@ class TestDecodeLdapValue:
 
 # --- Circuit Breaker ---
 
+
 class TestLDAPCircuitBreaker:
     def test_initial_state_closed(self):
         cb = LDAPCircuitBreaker()
@@ -205,6 +205,7 @@ class TestLDAPCircuitBreaker:
 
 # --- LDAPConfig ---
 
+
 class TestLDAPConfig:
     def test_basic_config(self):
         cfg = LDAPConfig(server_uri="ldap://localhost", base_dn="dc=example,dc=com")
@@ -226,6 +227,7 @@ class TestLDAPConfig:
 
 
 # --- LDAPConnection (mock ldap module) ---
+
 
 class TestLDAPConnection:
     def _make_config(self, **overrides):
@@ -252,10 +254,10 @@ class TestLDAPConnection:
         mock_ldap.OPT_X_TLS_REQUIRE_CERT = 0x6006
         mock_ldap.OPT_X_TLS_DEMAND = 2
         mock_ldap.OPT_X_TLS_CACERTFILE = 0x6002
-        with patch(
-            "enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap
-        ):
-            conn = LDAPConnection(self._make_config(verify_cert=True, ca_cert_path="/ca.pem", start_tls=True))
+        with patch("enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap):
+            conn = LDAPConnection(
+                self._make_config(verify_cert=True, ca_cert_path="/ca.pem", start_tls=True)
+            )
             assert conn.connect() is True
             assert conn.is_connected is True
             mock_conn.start_tls_s.assert_called_once()
@@ -264,9 +266,7 @@ class TestLDAPConnection:
     def test_connect_failure_raises(self):
         mock_ldap = MagicMock()
         mock_ldap.initialize.side_effect = OSError("network error")
-        with patch(
-            "enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap
-        ):
+        with patch("enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap):
             conn = LDAPConnection(self._make_config())
             with pytest.raises(LDAPConnectionError):
                 conn.connect()
@@ -274,9 +274,7 @@ class TestLDAPConnection:
     @patch("enhanced_agent_bus.enterprise_sso.ldap_integration.LDAP_AVAILABLE", True)
     def test_bind_not_connected_raises(self):
         mock_ldap = MagicMock()
-        with patch(
-            "enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap
-        ):
+        with patch("enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap):
             conn = LDAPConnection(self._make_config())
             with pytest.raises(LDAPConnectionError, match="Not connected"):
                 conn.bind()
@@ -291,9 +289,7 @@ class TestLDAPConnection:
         mock_ldap.VERSION3 = 3
         mock_ldap.OPT_X_TLS_REQUIRE_CERT = 0
         mock_ldap.OPT_X_TLS_DEMAND = 0
-        with patch(
-            "enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap
-        ):
+        with patch("enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap):
             conn = LDAPConnection(
                 self._make_config(bind_dn="cn=admin", bind_password="pass", verify_cert=False)
             )
@@ -311,9 +307,7 @@ class TestLDAPConnection:
         mock_ldap.VERSION3 = 3
         mock_ldap.OPT_X_TLS_REQUIRE_CERT = 0
         mock_ldap.OPT_X_TLS_DEMAND = 0
-        with patch(
-            "enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap
-        ):
+        with patch("enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap):
             conn = LDAPConnection(self._make_config(verify_cert=False))
             conn.connect()
             conn.bind()
@@ -330,9 +324,7 @@ class TestLDAPConnection:
         mock_ldap.VERSION3 = 3
         mock_ldap.OPT_X_TLS_REQUIRE_CERT = 0
         mock_ldap.OPT_X_TLS_DEMAND = 0
-        with patch(
-            "enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap
-        ):
+        with patch("enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap):
             conn = LDAPConnection(self._make_config(verify_cert=False))
             conn.connect()
             with pytest.raises(LDAPBindError):
@@ -348,9 +340,7 @@ class TestLDAPConnection:
         mock_ldap.VERSION3 = 3
         mock_ldap.OPT_X_TLS_REQUIRE_CERT = 0
         mock_ldap.OPT_X_TLS_DEMAND = 0
-        with patch(
-            "enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap
-        ):
+        with patch("enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap):
             conn = LDAPConnection(self._make_config(verify_cert=False))
             conn.connect()
             conn.disconnect()
@@ -367,9 +357,7 @@ class TestLDAPConnection:
         mock_ldap.VERSION3 = 3
         mock_ldap.OPT_X_TLS_REQUIRE_CERT = 0
         mock_ldap.OPT_X_TLS_DEMAND = 0
-        with patch(
-            "enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap
-        ):
+        with patch("enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap):
             conn = LDAPConnection(self._make_config(verify_cert=False))
             conn.connect()
             conn.disconnect()  # should not raise
@@ -378,9 +366,7 @@ class TestLDAPConnection:
     @patch("enhanced_agent_bus.enterprise_sso.ldap_integration.LDAP_AVAILABLE", True)
     def test_whoami_not_bound_raises(self):
         mock_ldap = MagicMock()
-        with patch(
-            "enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap
-        ):
+        with patch("enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap):
             conn = LDAPConnection(self._make_config())
             with pytest.raises(LDAPConnectionError, match="Not bound"):
                 conn.whoami()
@@ -388,9 +374,7 @@ class TestLDAPConnection:
     @patch("enhanced_agent_bus.enterprise_sso.ldap_integration.LDAP_AVAILABLE", True)
     def test_search_not_bound_raises(self):
         mock_ldap = MagicMock()
-        with patch(
-            "enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap
-        ):
+        with patch("enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap):
             conn = LDAPConnection(self._make_config())
             with pytest.raises(LDAPConnectionError, match="Not bound"):
                 conn.search("dc=example", "(uid=test)")
@@ -406,9 +390,7 @@ class TestLDAPConnection:
         mock_ldap.VERSION3 = 3
         mock_ldap.OPT_X_TLS_REQUIRE_CERT = 0
         mock_ldap.OPT_X_TLS_DEMAND = 0
-        with patch(
-            "enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap
-        ):
+        with patch("enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap):
             conn = LDAPConnection(self._make_config(verify_cert=False))
             conn.connect()
             conn.bind()
@@ -425,9 +407,7 @@ class TestLDAPConnection:
         mock_ldap.VERSION3 = 3
         mock_ldap.OPT_X_TLS_REQUIRE_CERT = 0
         mock_ldap.OPT_X_TLS_DEMAND = 0
-        with patch(
-            "enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap
-        ):
+        with patch("enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap):
             cfg = self._make_config(verify_cert=False)
             with LDAPConnection(cfg) as conn:
                 assert conn.is_connected is True
@@ -436,6 +416,7 @@ class TestLDAPConnection:
 
 
 # --- LDAPConnectionPool ---
+
 
 class TestLDAPConnectionPool:
     def _make_config(self):
@@ -448,9 +429,7 @@ class TestLDAPConnectionPool:
     @patch("enhanced_agent_bus.enterprise_sso.ldap_integration.LDAP_AVAILABLE", True)
     def test_pool_health_check(self):
         mock_ldap = MagicMock()
-        with patch(
-            "enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap
-        ):
+        with patch("enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap):
             pool = LDAPConnectionPool(self._make_config())
             health = pool.health_check()
             assert health["healthy"] is True
@@ -466,9 +445,7 @@ class TestLDAPConnectionPool:
         mock_ldap.VERSION3 = 3
         mock_ldap.OPT_X_TLS_REQUIRE_CERT = 0
         mock_ldap.OPT_X_TLS_DEMAND = 0
-        with patch(
-            "enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap
-        ):
+        with patch("enhanced_agent_bus.enterprise_sso.ldap_integration.ldap", mock_ldap):
             pool = LDAPConnectionPool(self._make_config())
             # acquire creates a conn
             with pool.acquire() as conn:
@@ -478,6 +455,7 @@ class TestLDAPConnectionPool:
 
 
 # --- LDAPIntegration ---
+
 
 class TestLDAPIntegration:
     def _make_config(self, **overrides):
@@ -498,9 +476,7 @@ class TestLDAPIntegration:
 
     @patch("enhanced_agent_bus.enterprise_sso.ldap_integration.LDAP_AVAILABLE", False)
     def test_init_without_circuit_breaker(self):
-        integration = LDAPIntegration(
-            self._make_config(circuit_breaker_enabled=False)
-        )
+        integration = LDAPIntegration(self._make_config(circuit_breaker_enabled=False))
         assert integration.circuit_breaker is None
 
     def test_check_circuit_breaker_open_raises(self):
@@ -547,16 +523,12 @@ class TestLDAPIntegration:
         integration = LDAPIntegration.__new__(LDAPIntegration)
         integration.config = self._make_config()
         # should not raise
-        integration._log_authentication_attempt(
-            username="test", success=True
-        )
+        integration._log_authentication_attempt(username="test", success=True)
 
     def test_log_authentication_attempt_failure(self):
         integration = LDAPIntegration.__new__(LDAPIntegration)
         integration.config = self._make_config()
-        integration._log_authentication_attempt(
-            username="test", success=False, error="bad creds"
-        )
+        integration._log_authentication_attempt(username="test", success=False, error="bad creds")
 
     def test_is_member_of(self):
         integration = LDAPIntegration.__new__(LDAPIntegration)
@@ -601,6 +573,7 @@ class TestLDAPIntegration:
 
 
 # --- Exception classes ---
+
 
 class TestLDAPExceptions:
     def test_ldap_integration_error(self):
@@ -658,9 +631,7 @@ class TestBundleManifest:
         assert "signatures" in d
 
     def test_from_dict(self):
-        m = BundleManifest.from_dict(
-            {"version": "2.0", "revision": "b" * 40}
-        )
+        m = BundleManifest.from_dict({"version": "2.0", "revision": "b" * 40})
         assert m.version == "2.0"
 
     def test_add_signature(self):
@@ -833,9 +804,7 @@ class TestOCIRegistryClient:
     async def test_get_headers_with_bearer_auth(self):
         mock_provider = AsyncMock()
         mock_provider.get_token.return_value = "tok123"
-        client = OCIRegistryClient(
-            "https://registry.example.com", auth_provider=mock_provider
-        )
+        client = OCIRegistryClient("https://registry.example.com", auth_provider=mock_provider)
         headers = await client._get_headers()
         assert headers["Authorization"] == "Bearer tok123"
 
@@ -937,7 +906,9 @@ class TestOCIRegistryClientAdapter:
 
 class TestBundleDistributionService:
     def test_get_distribution_service_none(self):
-        assert get_distribution_service() is not None or get_distribution_service() is None  # coverage
+        assert (
+            get_distribution_service() is not None or get_distribution_service() is None
+        )  # coverage
 
 
 class TestBundleArtifact:
@@ -975,7 +946,9 @@ class TestApproverRole:
 class TestApprover:
     def test_has_role(self):
         a = Approver(
-            id="a1", name="Alice", email="a@x.com",
+            id="a1",
+            name="Alice",
+            email="a@x.com",
             roles=[ApproverRole.SECURITY_TEAM, ApproverRole.PLATFORM_ADMIN],
         )
         assert a.has_role(ApproverRole.SECURITY_TEAM) is True
@@ -1116,9 +1089,7 @@ class TestApprovalRequest:
             "title": "Test Request",
             "description": "Desc",
             "risk_score": 0.5,
-            "policy": ApprovalPolicy(
-                name="p", required_roles=[ApproverRole.SECURITY_TEAM]
-            ),
+            "policy": ApprovalPolicy(name="p", required_roles=[ApproverRole.SECURITY_TEAM]),
             "payload": {"key": "val"},
         }
         defaults.update(overrides)
@@ -1149,18 +1120,25 @@ class TestApprovalRequest:
 class TestSlackNotificationChannel:
     async def test_send_approval_request(self):
         channel = SlackNotificationChannel()
-        policy = ApprovalPolicy(
-            name="p", required_roles=[ApproverRole.SECURITY_TEAM]
-        )
+        policy = ApprovalPolicy(name="p", required_roles=[ApproverRole.SECURITY_TEAM])
         req = ApprovalRequest(
-            id="r1", request_type="test", requester_id="u1",
-            requester_name="User", tenant_id="t1", title="Title",
-            description="Desc", risk_score=0.95, policy=policy,
+            id="r1",
+            request_type="test",
+            requester_id="u1",
+            requester_name="User",
+            tenant_id="t1",
+            title="Title",
+            description="Desc",
+            risk_score=0.95,
+            policy=policy,
             payload={},
         )
         approver = Approver(
-            id="a1", name="Alice", email="a@x.com",
-            roles=[ApproverRole.SECURITY_TEAM], slack_id="U123",
+            id="a1",
+            name="Alice",
+            email="a@x.com",
+            roles=[ApproverRole.SECURITY_TEAM],
+            slack_id="U123",
         )
         result = await channel.send_approval_request(req, [approver])
         assert result is True
@@ -1169,8 +1147,10 @@ class TestSlackNotificationChannel:
         channel = SlackNotificationChannel()
         req = MagicMock(id="r1")
         decision = ApprovalDecision(
-            approver_id="a1", approver_name="Alice",
-            decision=ApprovalStatus.REJECTED, reasoning="no",
+            approver_id="a1",
+            approver_name="Alice",
+            decision=ApprovalStatus.REJECTED,
+            reasoning="no",
         )
         result = await channel.send_decision_notification(req, decision)
         assert result is True
@@ -1178,9 +1158,7 @@ class TestSlackNotificationChannel:
     async def test_send_escalation_notification(self):
         channel = SlackNotificationChannel()
         req = MagicMock(id="r1", title="Test", constitutional_hash="x")
-        result = await channel.send_escalation_notification(
-            req, EscalationLevel.LEVEL_3
-        )
+        result = await channel.send_escalation_notification(req, EscalationLevel.LEVEL_3)
         assert result is True
 
     def test_risk_emoji_thresholds(self):
@@ -1192,13 +1170,17 @@ class TestSlackNotificationChannel:
 class TestTeamsNotificationChannel:
     async def test_send_approval_request(self):
         channel = TeamsNotificationChannel()
-        policy = ApprovalPolicy(
-            name="p", required_roles=[ApproverRole.SECURITY_TEAM]
-        )
+        policy = ApprovalPolicy(name="p", required_roles=[ApproverRole.SECURITY_TEAM])
         req = ApprovalRequest(
-            id="r1", request_type="test", requester_id="u1",
-            requester_name="User", tenant_id="t1", title="Title",
-            description="Desc", risk_score=0.5, policy=policy,
+            id="r1",
+            request_type="test",
+            requester_id="u1",
+            requester_name="User",
+            tenant_id="t1",
+            title="Title",
+            description="Desc",
+            risk_score=0.5,
+            policy=policy,
             payload={},
         )
         result = await channel.send_approval_request(req, [])
@@ -1208,17 +1190,17 @@ class TestTeamsNotificationChannel:
         channel = TeamsNotificationChannel()
         req = MagicMock(id="r1")
         decision = ApprovalDecision(
-            approver_id="a1", approver_name="A",
-            decision=ApprovalStatus.APPROVED, reasoning="ok",
+            approver_id="a1",
+            approver_name="A",
+            decision=ApprovalStatus.APPROVED,
+            reasoning="ok",
         )
         assert await channel.send_decision_notification(req, decision) is True
 
     async def test_send_escalation(self):
         channel = TeamsNotificationChannel()
         req = MagicMock(id="r1")
-        assert await channel.send_escalation_notification(
-            req, EscalationLevel.EXECUTIVE
-        ) is True
+        assert await channel.send_escalation_notification(req, EscalationLevel.EXECUTIVE) is True
 
     def test_theme_colors(self):
         channel = TeamsNotificationChannel()
@@ -1238,18 +1220,30 @@ class TestMultiApproverWorkflowEngine:
         return engine
 
     def _register_approvers(self, engine):
-        engine.register_approver(Approver(
-            id="sec-1", name="Sec", email="s@x.com",
-            roles=[ApproverRole.SECURITY_TEAM],
-        ))
-        engine.register_approver(Approver(
-            id="comp-1", name="Comp", email="c@x.com",
-            roles=[ApproverRole.COMPLIANCE_TEAM],
-        ))
-        engine.register_approver(Approver(
-            id="admin-1", name="Admin", email="a@x.com",
-            roles=[ApproverRole.TENANT_ADMIN],
-        ))
+        engine.register_approver(
+            Approver(
+                id="sec-1",
+                name="Sec",
+                email="s@x.com",
+                roles=[ApproverRole.SECURITY_TEAM],
+            )
+        )
+        engine.register_approver(
+            Approver(
+                id="comp-1",
+                name="Comp",
+                email="c@x.com",
+                roles=[ApproverRole.COMPLIANCE_TEAM],
+            )
+        )
+        engine.register_approver(
+            Approver(
+                id="admin-1",
+                name="Admin",
+                email="a@x.com",
+                roles=[ApproverRole.TENANT_ADMIN],
+            )
+        )
 
     async def test_create_request_auto_approve_low_risk(self):
         engine = self._make_engine()
@@ -1318,9 +1312,7 @@ class TestMultiApproverWorkflowEngine:
 
     async def test_submit_decision_not_found(self):
         engine = self._make_engine()
-        ok, msg = await engine.submit_decision(
-            "missing", "a1", ApprovalStatus.APPROVED, "ok"
-        )
+        ok, msg = await engine.submit_decision("missing", "a1", ApprovalStatus.APPROVED, "ok")
         assert ok is False
         assert "not found" in msg.lower()
 
@@ -1339,9 +1331,7 @@ class TestMultiApproverWorkflowEngine:
             policy_id="standard_request",
         )
         # already approved
-        ok, msg = await engine.submit_decision(
-            req.id, "admin-1", ApprovalStatus.APPROVED, "ok"
-        )
+        ok, msg = await engine.submit_decision(req.id, "admin-1", ApprovalStatus.APPROVED, "ok")
         assert ok is False
         assert "not pending" in msg.lower()
 
@@ -1358,12 +1348,8 @@ class TestMultiApproverWorkflowEngine:
             risk_score=0.85,
             payload={},
         )
-        await engine.submit_decision(
-            req.id, "sec-1", ApprovalStatus.APPROVED, "ok"
-        )
-        ok, msg = await engine.submit_decision(
-            req.id, "sec-1", ApprovalStatus.APPROVED, "again"
-        )
+        await engine.submit_decision(req.id, "sec-1", ApprovalStatus.APPROVED, "ok")
+        ok, msg = await engine.submit_decision(req.id, "sec-1", ApprovalStatus.APPROVED, "again")
         assert ok is False
         assert "already submitted" in msg.lower()
 
@@ -1380,9 +1366,7 @@ class TestMultiApproverWorkflowEngine:
             risk_score=0.85,
             payload={},
         )
-        ok, msg = await engine.submit_decision(
-            req.id, "sec-1", ApprovalStatus.APPROVED, "   "
-        )
+        ok, msg = await engine.submit_decision(req.id, "sec-1", ApprovalStatus.APPROVED, "   ")
         assert ok is False
         assert "Reasoning" in msg
 
@@ -1399,9 +1383,7 @@ class TestMultiApproverWorkflowEngine:
             risk_score=0.85,
             payload={},
         )
-        ok, msg = await engine.submit_decision(
-            req.id, "unknown", ApprovalStatus.APPROVED, "ok"
-        )
+        ok, msg = await engine.submit_decision(req.id, "unknown", ApprovalStatus.APPROVED, "ok")
         assert ok is False
         assert "not registered" in msg.lower()
 
@@ -1472,9 +1454,7 @@ class TestMultiApproverWorkflowEngine:
 
     def test_register_policy(self):
         engine = self._make_engine()
-        custom = ApprovalPolicy(
-            name="Custom", required_roles=[ApproverRole.ON_CALL]
-        )
+        custom = ApprovalPolicy(name="Custom", required_roles=[ApproverRole.ON_CALL])
         engine.register_policy("custom_id", custom)
         assert "custom_id" in engine._policies
 
@@ -1530,9 +1510,15 @@ class TestMultiApproverWorkflowEngine:
             escalation_hours=4.0,
         )
         req = ApprovalRequest(
-            id="r1", request_type="t", requester_id="u1",
-            requester_name="U", tenant_id="t1", title="T",
-            description="D", risk_score=0.5, policy=policy,
+            id="r1",
+            request_type="t",
+            requester_id="u1",
+            requester_name="U",
+            tenant_id="t1",
+            title="T",
+            description="D",
+            risk_score=0.5,
+            policy=policy,
             payload={},
         )
         now = req.created_at + timedelta(hours=5)
@@ -1557,10 +1543,14 @@ class TestMultiApproverWorkflowEngine:
             notification_channels=[AsyncMock()],
             audit_callback=callback,
         )
-        engine.register_approver(Approver(
-            id="sec-1", name="Sec", email="s@x.com",
-            roles=[ApproverRole.SECURITY_TEAM],
-        ))
+        engine.register_approver(
+            Approver(
+                id="sec-1",
+                name="Sec",
+                email="s@x.com",
+                roles=[ApproverRole.SECURITY_TEAM],
+            )
+        )
         req = await engine.create_request(
             request_type="high",
             requester_id="u1",
@@ -1571,9 +1561,7 @@ class TestMultiApproverWorkflowEngine:
             risk_score=0.85,
             payload={},
         )
-        await engine.submit_decision(
-            req.id, "sec-1", ApprovalStatus.APPROVED, "ok"
-        )
+        await engine.submit_decision(req.id, "sec-1", ApprovalStatus.APPROVED, "ok")
         callback.assert_called_once()
 
 
@@ -1740,7 +1728,8 @@ class TestBuildResponses:
 
         req = QuotaCheckRequest(resource="agents", requested_amount=5)
         resp = _build_quota_check_response(
-            "t1", req,
+            "t1",
+            req,
             available=True,
             usage_dict={"agents_count": 10},
             quota_dict={"max_agents": 100},
@@ -1753,7 +1742,8 @@ class TestBuildResponses:
 
         req = QuotaCheckRequest(resource="agents", requested_amount=1)
         resp = _build_quota_check_response(
-            "t1", req,
+            "t1",
+            req,
             available=True,
             usage_dict={"agents_count": "bad"},
             quota_dict={"max_agents": "bad"},
@@ -1778,16 +1768,12 @@ class TestRaiseHelpers:
 
     def test_raise_value_error_duplicate(self):
         with pytest.raises(HTTPException) as exc:
-            _raise_value_http_error(
-                ValueError("already exists"), action="test"
-            )
+            _raise_value_http_error(ValueError("already exists"), action="test")
         assert exc.value.status_code == 409
 
     def test_raise_value_error_generic(self):
         with pytest.raises(HTTPException) as exc:
-            _raise_value_http_error(
-                ValueError("bad input"), action="test"
-            )
+            _raise_value_http_error(ValueError("bad input"), action="test")
         assert exc.value.status_code == 400
 
     def test_raise_value_error_conflict_markers(self):
@@ -1802,21 +1788,15 @@ class TestRaiseHelpers:
 
 class TestValidateAdminApiKey:
     def test_empty_admin_key_returns_false(self):
-        with patch(
-            "enhanced_agent_bus.routes.tenants.TENANT_ADMIN_KEY", ""
-        ):
+        with patch("enhanced_agent_bus.routes.tenants.TENANT_ADMIN_KEY", ""):
             assert _validate_admin_api_key("anything") is False
 
     def test_valid_key(self):
-        with patch(
-            "enhanced_agent_bus.routes.tenants.TENANT_ADMIN_KEY", "secret"
-        ):
+        with patch("enhanced_agent_bus.routes.tenants.TENANT_ADMIN_KEY", "secret"):
             assert _validate_admin_api_key("secret") is True
 
     def test_invalid_key(self):
-        with patch(
-            "enhanced_agent_bus.routes.tenants.TENANT_ADMIN_KEY", "secret"
-        ):
+        with patch("enhanced_agent_bus.routes.tenants.TENANT_ADMIN_KEY", "secret"):
             assert _validate_admin_api_key("wrong") is False
 
 
@@ -1860,15 +1840,11 @@ class TestBuildTenantHierarchyResponse:
             t.suspended_at = None
             t.constitutional_hash = None
             mock_tenants.append(t)
-        resp = _build_tenant_hierarchy_response(
-            "t2", ancestors=mock_tenants, descendants=[]
-        )
+        resp = _build_tenant_hierarchy_response("t2", ancestors=mock_tenants, descendants=[])
         assert resp.depth == 2
         assert len(resp.ancestors) == 2  # all but last
 
     def test_no_ancestors(self):
-        resp = _build_tenant_hierarchy_response(
-            "t1", ancestors=[], descendants=[]
-        )
+        resp = _build_tenant_hierarchy_response("t1", ancestors=[], descendants=[])
         assert resp.depth == 0
         assert resp.ancestors == []

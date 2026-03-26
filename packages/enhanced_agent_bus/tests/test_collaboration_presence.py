@@ -24,6 +24,7 @@ from enhanced_agent_bus.collaboration.presence import PresenceManager
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture()
 def manager() -> PresenceManager:
     return PresenceManager(config=CollaborationConfig(max_users_per_document=3))
@@ -46,6 +47,7 @@ async def _join(manager, doc_id="doc-1", user_id="u1", tenant_id="t1", user_info
 # ---------------------------------------------------------------------------
 # join_session
 # ---------------------------------------------------------------------------
+
 
 class TestJoinSession:
     @pytest.mark.asyncio
@@ -92,6 +94,7 @@ class TestJoinSession:
 # leave_session
 # ---------------------------------------------------------------------------
 
+
 class TestLeaveSession:
     @pytest.mark.asyncio
     async def test_leave_removes_user(self, manager):
@@ -137,6 +140,7 @@ class TestLeaveSession:
 # update_cursor
 # ---------------------------------------------------------------------------
 
+
 class TestUpdateCursor:
     @pytest.mark.asyncio
     async def test_update_cursor_success(self, manager):
@@ -163,6 +167,7 @@ class TestUpdateCursor:
 # ---------------------------------------------------------------------------
 # update_status
 # ---------------------------------------------------------------------------
+
 
 class TestUpdateStatus:
     @pytest.mark.asyncio
@@ -192,6 +197,7 @@ class TestUpdateStatus:
 # set_typing
 # ---------------------------------------------------------------------------
 
+
 class TestSetTyping:
     @pytest.mark.asyncio
     async def test_set_typing_true(self, manager):
@@ -213,6 +219,7 @@ class TestSetTyping:
 # ---------------------------------------------------------------------------
 # get helpers
 # ---------------------------------------------------------------------------
+
 
 class TestGetHelpers:
     @pytest.mark.asyncio
@@ -247,6 +254,7 @@ class TestGetHelpers:
 # ---------------------------------------------------------------------------
 # callbacks
 # ---------------------------------------------------------------------------
+
 
 class TestCallbacks:
     @pytest.mark.asyncio
@@ -289,6 +297,7 @@ class TestCallbacks:
 # broadcast_to_session
 # ---------------------------------------------------------------------------
 
+
 class TestBroadcast:
     @pytest.mark.asyncio
     async def test_broadcast_counts_recipients(self, manager):
@@ -318,6 +327,7 @@ class TestBroadcast:
 # is_user_active
 # ---------------------------------------------------------------------------
 
+
 class TestIsUserActive:
     @pytest.mark.asyncio
     async def test_active_user(self, manager):
@@ -338,6 +348,7 @@ class TestIsUserActive:
 # ---------------------------------------------------------------------------
 # get_session_stats
 # ---------------------------------------------------------------------------
+
 
 class TestSessionStats:
     @pytest.mark.asyncio
@@ -367,6 +378,7 @@ class TestSessionStats:
 # _assign_color
 # ---------------------------------------------------------------------------
 
+
 class TestAssignColor:
     @pytest.mark.asyncio
     async def test_assigns_unique_colors(self, manager):
@@ -378,6 +390,7 @@ class TestAssignColor:
 # ---------------------------------------------------------------------------
 # start / stop
 # ---------------------------------------------------------------------------
+
 
 class TestStartStop:
     @pytest.mark.asyncio
@@ -395,6 +408,7 @@ class TestStartStop:
 # ---------------------------------------------------------------------------
 # _check_idle_users
 # ---------------------------------------------------------------------------
+
 
 class TestCheckIdleUsers:
     @pytest.mark.asyncio

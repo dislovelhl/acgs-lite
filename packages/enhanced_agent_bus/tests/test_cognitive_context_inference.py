@@ -11,9 +11,7 @@ from pathlib import Path
 import pytest
 
 # Import directly from the module file to avoid pulling in graph_rag via __init__.py
-_module_path = (
-    Path(__file__).resolve().parents[1] / "cognitive" / "context_inference.py"
-)
+_module_path = Path(__file__).resolve().parents[1] / "cognitive" / "context_inference.py"
 _spec = importlib.util.spec_from_file_location(
     "enhanced_agent_bus.cognitive.context_inference", _module_path
 )
@@ -25,6 +23,7 @@ _spec.loader.exec_module(_mod)
 def teardown_module() -> None:
     """Remove injected module from sys.modules to avoid polluting other tests."""
     sys.modules.pop(_spec.name, None)
+
 
 ChunkPriority = _mod.ChunkPriority
 ChunkType = _mod.ChunkType
@@ -335,16 +334,12 @@ class TestLongContextManager:
         mgr.add_to_window("w1", "critical", ChunkType.SYSTEM, ChunkPriority.CRITICAL)
 
         window = mgr.get_window("w1")
-        critical_before = len(
-            [c for c in window.chunks if c.priority == ChunkPriority.CRITICAL]
-        )
+        critical_before = len([c for c in window.chunks if c.priority == ChunkPriority.CRITICAL])
 
         # Try adding more -- eviction should not touch CRITICAL
         mgr.add_to_window("w1", "more data", ChunkType.CONTEXT, ChunkPriority.MEDIUM)
 
-        critical_after = len(
-            [c for c in window.chunks if c.priority == ChunkPriority.CRITICAL]
-        )
+        critical_after = len([c for c in window.chunks if c.priority == ChunkPriority.CRITICAL])
         assert critical_after >= critical_before
 
     def test_compact_window_nonexistent(self, manager):

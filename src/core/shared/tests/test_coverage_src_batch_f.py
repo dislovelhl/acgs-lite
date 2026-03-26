@@ -407,18 +407,14 @@ class TestCertBindingValidatorAsync:
         assert binding.cert_fingerprint == VALID_FP.lower()
         assert binding.spiffe_id == "spiffe://acgs2/tenant/tenant-1/agent/agent-1"
 
-    async def test_bind_certificate_with_maci_role(
-        self, validator: CertBindingValidator
-    ) -> None:
+    async def test_bind_certificate_with_maci_role(self, validator: CertBindingValidator) -> None:
         binding = await validator.bind_certificate(
             "agent-1", "tenant-1", VALID_FP, maci_role="proposer"
         )
         assert binding.maci_role == "proposer"
         assert "/role/proposer" in binding.spiffe_id
 
-    async def test_bind_certificate_empty_agent_id(
-        self, validator: CertBindingValidator
-    ) -> None:
+    async def test_bind_certificate_empty_agent_id(self, validator: CertBindingValidator) -> None:
         with pytest.raises(ValueError, match="agent_id"):
             await validator.bind_certificate("", "tenant-1", VALID_FP)
 
@@ -428,9 +424,7 @@ class TestCertBindingValidatorAsync:
         with pytest.raises(ValueError, match="agent_id"):
             await validator.bind_certificate("   ", "tenant-1", VALID_FP)
 
-    async def test_bind_certificate_empty_tenant_id(
-        self, validator: CertBindingValidator
-    ) -> None:
+    async def test_bind_certificate_empty_tenant_id(self, validator: CertBindingValidator) -> None:
         with pytest.raises(ValueError, match="tenant_id"):
             await validator.bind_certificate("agent-1", "", VALID_FP)
 
@@ -458,44 +452,32 @@ class TestCertBindingValidatorAsync:
         with pytest.raises(ValueError, match="64-character hex"):
             await validator.bind_certificate("agent-1", "tenant-1", "g" * 64)
 
-    async def test_bind_certificate_negative_ttl(
-        self, validator: CertBindingValidator
-    ) -> None:
+    async def test_bind_certificate_negative_ttl(self, validator: CertBindingValidator) -> None:
         with pytest.raises(ValueError, match="ttl_hours"):
             await validator.bind_certificate("agent-1", "tenant-1", VALID_FP, ttl_hours=0)
 
-    async def test_bind_certificate_zero_ttl(
-        self, validator: CertBindingValidator
-    ) -> None:
+    async def test_bind_certificate_zero_ttl(self, validator: CertBindingValidator) -> None:
         with pytest.raises(ValueError, match="ttl_hours"):
             await validator.bind_certificate("agent-1", "tenant-1", VALID_FP, ttl_hours=-1)
 
-    async def test_validate_binding_success(
-        self, validator: CertBindingValidator
-    ) -> None:
+    async def test_validate_binding_success(self, validator: CertBindingValidator) -> None:
         await validator.bind_certificate("agent-1", "tenant-1", VALID_FP)
         result = await validator.validate_binding("agent-1", "tenant-1", VALID_FP)
         assert result.valid is True
         assert result.binding is not None
         assert result.error is None
 
-    async def test_validate_binding_case_insensitive(
-        self, validator: CertBindingValidator
-    ) -> None:
+    async def test_validate_binding_case_insensitive(self, validator: CertBindingValidator) -> None:
         await validator.bind_certificate("agent-1", "tenant-1", VALID_FP)
         result = await validator.validate_binding("agent-1", "tenant-1", VALID_FP.upper())
         assert result.valid is True
 
-    async def test_validate_binding_no_binding(
-        self, validator: CertBindingValidator
-    ) -> None:
+    async def test_validate_binding_no_binding(self, validator: CertBindingValidator) -> None:
         result = await validator.validate_binding("agent-1", "tenant-1", VALID_FP)
         assert result.valid is False
         assert "No certificate binding" in result.error
 
-    async def test_validate_binding_expired(
-        self, validator: CertBindingValidator
-    ) -> None:
+    async def test_validate_binding_expired(self, validator: CertBindingValidator) -> None:
         # Bind with 1 hour TTL, then mock time past expiry
         binding = await validator.bind_certificate("agent-1", "tenant-1", VALID_FP, ttl_hours=1)
         # Manually set binding to be expired
@@ -522,47 +504,35 @@ class TestCertBindingValidatorAsync:
         assert result.valid is False
         assert "does not match" in result.error
 
-    async def test_revoke_binding_existing(
-        self, validator: CertBindingValidator
-    ) -> None:
+    async def test_revoke_binding_existing(self, validator: CertBindingValidator) -> None:
         await validator.bind_certificate("agent-1", "tenant-1", VALID_FP)
         result = await validator.revoke_binding("agent-1", "tenant-1")
         assert result is True
 
-    async def test_revoke_binding_nonexistent(
-        self, validator: CertBindingValidator
-    ) -> None:
+    async def test_revoke_binding_nonexistent(self, validator: CertBindingValidator) -> None:
         result = await validator.revoke_binding("agent-1", "tenant-1")
         assert result is False
 
-    async def test_revoke_then_validate(
-        self, validator: CertBindingValidator
-    ) -> None:
+    async def test_revoke_then_validate(self, validator: CertBindingValidator) -> None:
         await validator.bind_certificate("agent-1", "tenant-1", VALID_FP)
         await validator.revoke_binding("agent-1", "tenant-1")
         result = await validator.validate_binding("agent-1", "tenant-1", VALID_FP)
         assert result.valid is False
 
-    async def test_list_bindings_all(
-        self, validator: CertBindingValidator
-    ) -> None:
+    async def test_list_bindings_all(self, validator: CertBindingValidator) -> None:
         await validator.bind_certificate("a1", "t1", VALID_FP)
         await validator.bind_certificate("a2", "t2", "b" * 64)
         bindings = await validator.list_bindings()
         assert len(bindings) == 2
 
-    async def test_list_bindings_filter_tenant(
-        self, validator: CertBindingValidator
-    ) -> None:
+    async def test_list_bindings_filter_tenant(self, validator: CertBindingValidator) -> None:
         await validator.bind_certificate("a1", "t1", VALID_FP)
         await validator.bind_certificate("a2", "t2", "b" * 64)
         bindings = await validator.list_bindings(tenant_id="t1")
         assert len(bindings) == 1
         assert bindings[0].tenant_id == "t1"
 
-    async def test_list_bindings_excludes_expired(
-        self, validator: CertBindingValidator
-    ) -> None:
+    async def test_list_bindings_excludes_expired(self, validator: CertBindingValidator) -> None:
         binding = await validator.bind_certificate("a1", "t1", VALID_FP, ttl_hours=1)
         # Manually expire it
         expired = CertificateBinding(
@@ -579,9 +549,7 @@ class TestCertBindingValidatorAsync:
         bindings = await validator.list_bindings()
         assert len(bindings) == 0
 
-    async def test_cleanup_expired(
-        self, validator: CertBindingValidator
-    ) -> None:
+    async def test_cleanup_expired(self, validator: CertBindingValidator) -> None:
         binding = await validator.bind_certificate("a1", "t1", VALID_FP, ttl_hours=1)
         expired = CertificateBinding(
             agent_id="a1",
@@ -598,16 +566,12 @@ class TestCertBindingValidatorAsync:
         assert removed == 1
         assert len(validator._bindings) == 0
 
-    async def test_cleanup_expired_none(
-        self, validator: CertBindingValidator
-    ) -> None:
+    async def test_cleanup_expired_none(self, validator: CertBindingValidator) -> None:
         await validator.bind_certificate("a1", "t1", VALID_FP, ttl_hours=24)
         removed = await validator.cleanup_expired()
         assert removed == 0
 
-    async def test_get_stats(
-        self, validator: CertBindingValidator
-    ) -> None:
+    async def test_get_stats(self, validator: CertBindingValidator) -> None:
         await validator.bind_certificate("a1", "t1", VALID_FP)
         await validator.validate_binding("a1", "t1", VALID_FP)
         await validator.validate_binding("a1", "t1", "b" * 64)
@@ -619,9 +583,7 @@ class TestCertBindingValidatorAsync:
         assert stats["active_bindings"] == 1
         assert "constitutional_hash" in stats
 
-    async def test_get_stats_with_revoke(
-        self, validator: CertBindingValidator
-    ) -> None:
+    async def test_get_stats_with_revoke(self, validator: CertBindingValidator) -> None:
         await validator.bind_certificate("a1", "t1", VALID_FP)
         await validator.revoke_binding("a1", "t1")
         stats = validator.get_stats()
@@ -1136,6 +1098,7 @@ def _ensure_otel_symbols() -> None:
 # Inject once at module level for all tests
 _ensure_otel_symbols()
 
+
 # Pre-inject mock grpc exporter submodules so patch() can resolve the dotted path.
 # Build the entire chain of parent packages if they do not already exist.
 def _ensure_module_chain(dotted_path: str, **attrs: object) -> None:
@@ -1183,13 +1146,23 @@ class _OtelTestBase:
         """Save and restore otel_config global state around each test."""
         import src.core.shared.otel_config as otel_mod
 
-        orig = (otel_mod.HAS_OTEL, otel_mod._initialized, otel_mod._tracer_provider, otel_mod._meter_provider)
+        orig = (
+            otel_mod.HAS_OTEL,
+            otel_mod._initialized,
+            otel_mod._tracer_provider,
+            otel_mod._meter_provider,
+        )
         otel_mod.HAS_OTEL = True
         otel_mod._initialized = False
         otel_mod._tracer_provider = None
         otel_mod._meter_provider = None
         yield
-        otel_mod.HAS_OTEL, otel_mod._initialized, otel_mod._tracer_provider, otel_mod._meter_provider = orig
+        (
+            otel_mod.HAS_OTEL,
+            otel_mod._initialized,
+            otel_mod._tracer_provider,
+            otel_mod._meter_provider,
+        ) = orig
 
 
 class TestInitOtelWithMocks(_OtelTestBase):
@@ -1392,9 +1365,7 @@ class TestAddHttpTraceExporter(_OtelTestBase):
         with patch(
             "opentelemetry.exporter.otlp.proto.http.trace_exporter.OTLPSpanExporter"
         ) as mock_exp:
-            otel_mod._add_http_trace_exporter(
-                "http://localhost:4318/v1/traces", mock_provider
-            )
+            otel_mod._add_http_trace_exporter("http://localhost:4318/v1/traces", mock_provider)
             mock_exp.assert_called_once_with(endpoint="http://localhost:4318/v1/traces")
 
     def test_http_exporter_import_error_fallback(self) -> None:
@@ -1451,9 +1422,7 @@ class TestInitMetrics(_OtelTestBase):
 
         with (
             patch("src.core.shared.otel_config.metrics") as mock_metrics,
-            patch(
-                "opentelemetry.exporter.otlp.proto.http.metric_exporter.OTLPMetricExporter"
-            ),
+            patch("opentelemetry.exporter.otlp.proto.http.metric_exporter.OTLPMetricExporter"),
         ):
             otel_mod._init_metrics("http://localhost:4318", mock_resource, use_http=True)
             mock_metrics.set_meter_provider.assert_called_once()
@@ -1465,9 +1434,7 @@ class TestInitMetrics(_OtelTestBase):
 
         with (
             patch("src.core.shared.otel_config.metrics") as mock_metrics,
-            patch(
-                "opentelemetry.exporter.otlp.proto.grpc.metric_exporter.OTLPMetricExporter"
-            ),
+            patch("opentelemetry.exporter.otlp.proto.grpc.metric_exporter.OTLPMetricExporter"),
         ):
             otel_mod._init_metrics("http://localhost:4317", mock_resource, use_http=False)
             mock_metrics.set_meter_provider.assert_called_once()
@@ -1483,9 +1450,7 @@ class TestInitMetrics(_OtelTestBase):
                 "opentelemetry.exporter.otlp.proto.http.metric_exporter.OTLPMetricExporter"
             ) as mock_exp,
         ):
-            otel_mod._init_metrics(
-                "http://localhost:4318/v1/metrics", mock_resource, use_http=True
-            )
+            otel_mod._init_metrics("http://localhost:4318/v1/metrics", mock_resource, use_http=True)
             mock_exp.assert_called_once_with(endpoint="http://localhost:4318/v1/metrics")
 
     def test_init_metrics_import_error(self) -> None:

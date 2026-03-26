@@ -73,9 +73,7 @@ class TestUsageRecord:
         assert record.task_complexity is None
 
     def test_usage_record_with_complexity(self):
-        record = UsageRecord(
-            model="claude-opus-4", tokens=5000, cost=0.075, task_complexity=5
-        )
+        record = UsageRecord(model="claude-opus-4", tokens=5000, cost=0.075, task_complexity=5)
         assert record.task_complexity == 5
 
     def test_usage_record_timestamp_is_utc(self):
@@ -189,23 +187,17 @@ class TestCostOptimizerSelectModel:
         opt = CostOptimizer(monthly_budget=100.0)
         # Burn ~60% of budget (budget_ratio ~ 0.4, below 0.5 but above 0.1)
         opt.total_cost = 60.0
-        model = opt.select_optimal_model(
-            task_complexity=4, cost_sensitive=True
-        )
+        model = opt.select_optimal_model(task_complexity=4, cost_sensitive=True)
         assert model == "claude-sonnet-4"
 
     def test_complex_task_not_cost_sensitive(self):
         opt = CostOptimizer()
-        model = opt.select_optimal_model(
-            task_complexity=4, cost_sensitive=False
-        )
+        model = opt.select_optimal_model(task_complexity=4, cost_sensitive=False)
         assert model == "claude-opus-4"
 
     def test_complex_task_cost_sensitive_high_budget(self):
         opt = CostOptimizer(monthly_budget=1000.0)
-        model = opt.select_optimal_model(
-            task_complexity=4, cost_sensitive=True
-        )
+        model = opt.select_optimal_model(task_complexity=4, cost_sensitive=True)
         assert model == "claude-opus-4"
 
     def test_medium_complexity_returns_sonnet(self):
@@ -215,16 +207,12 @@ class TestCostOptimizerSelectModel:
 
     def test_simple_cost_sensitive_returns_haiku(self):
         opt = CostOptimizer()
-        model = opt.select_optimal_model(
-            task_complexity=2, cost_sensitive=True
-        )
+        model = opt.select_optimal_model(task_complexity=2, cost_sensitive=True)
         assert model == "claude-haiku-4"
 
     def test_simple_not_cost_sensitive_returns_sonnet(self):
         opt = CostOptimizer()
-        model = opt.select_optimal_model(
-            task_complexity=2, cost_sensitive=False
-        )
+        model = opt.select_optimal_model(task_complexity=2, cost_sensitive=False)
         assert model == "claude-sonnet-4"
 
     def test_trivial_returns_haiku(self):
@@ -596,9 +584,7 @@ class TestDispatchComplianceIngest:
             "enhanced_agent_bus.agents.chatops_executor.questionnaire_responder",
             mock_responder,
         ):
-            msg = _make_chatops_msg(
-                "/acgs-compliance-ingest report.csv tenant-abc"
-            )
+            msg = _make_chatops_msg("/acgs-compliance-ingest report.csv tenant-abc")
             result = await handle_chatops_command(msg)
         assert result is not None
         assert result.content["job_id"] == "job-123"
@@ -612,9 +598,7 @@ class TestDispatchComplianceIngest:
             "enhanced_agent_bus.agents.chatops_executor.questionnaire_responder",
             mock_responder,
         ):
-            msg = _make_chatops_msg(
-                "/acgs-compliance-ingest report.csv tenant-abc"
-            )
+            msg = _make_chatops_msg("/acgs-compliance-ingest report.csv tenant-abc")
             result = await handle_chatops_command(msg)
         assert result is None
 

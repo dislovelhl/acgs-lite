@@ -213,9 +213,7 @@ class TestZ3SolverWrapperReal:
         # Monkey-patch _variables to raise on __contains__
         original = wrapper._variables
         wrapper._variables = MagicMock()
-        wrapper._variables.__contains__ = MagicMock(
-            side_effect=RuntimeError("internal error")
-        )
+        wrapper._variables.__contains__ = MagicMock(side_effect=RuntimeError("internal error"))
         result = wrapper._parse_expression("(assert (not x))")
         assert result is None
         wrapper._variables = original
@@ -298,9 +296,7 @@ class TestZ3SolverWrapperReal:
         )
         wrapper.add_constraint("c2", c2)
         # Patch unsat_core to raise
-        wrapper.solver.unsat_core = MagicMock(
-            side_effect=RuntimeError("no core")
-        )
+        wrapper.solver.unsat_core = MagicMock(side_effect=RuntimeError("no core"))
         status, _, unsat_core = wrapper.check()
         assert status == Z3VerificationStatus.UNSATISFIABLE
         assert unsat_core == []
@@ -341,11 +337,12 @@ class TestVerifyPolicyErrorPath:
             policy_id="err1",
             constraints=[constraint],
         )
-        with patch.object(
-            verifier, "_verify_with_z3", side_effect=RuntimeError("boom")
-        ), patch(
-            "enhanced_agent_bus.verification_layer.z3_policy_verifier.Z3_AVAILABLE",
-            True,
+        with (
+            patch.object(verifier, "_verify_with_z3", side_effect=RuntimeError("boom")),
+            patch(
+                "enhanced_agent_bus.verification_layer.z3_policy_verifier.Z3_AVAILABLE",
+                True,
+            ),
         ):
             result = await verifier.verify_policy(request)
 
@@ -360,11 +357,12 @@ class TestVerifyPolicyErrorPath:
             policy_id="err2",
             constraints=[PolicyConstraint(name="test")],
         )
-        with patch.object(
-            verifier, "_verify_with_z3", side_effect=ValueError("bad value")
-        ), patch(
-            "enhanced_agent_bus.verification_layer.z3_policy_verifier.Z3_AVAILABLE",
-            True,
+        with (
+            patch.object(verifier, "_verify_with_z3", side_effect=ValueError("bad value")),
+            patch(
+                "enhanced_agent_bus.verification_layer.z3_policy_verifier.Z3_AVAILABLE",
+                True,
+            ),
         ):
             result = await verifier.verify_policy(request)
 
@@ -377,20 +375,19 @@ class TestVerifyPolicyErrorPath:
             policy_id="err3",
             constraints=[PolicyConstraint(name="test")],
         )
-        with patch.object(
-            verifier, "_verify_with_z3", side_effect=TypeError("type err")
-        ), patch(
-            "enhanced_agent_bus.verification_layer.z3_policy_verifier.Z3_AVAILABLE",
-            True,
+        with (
+            patch.object(verifier, "_verify_with_z3", side_effect=TypeError("type err")),
+            patch(
+                "enhanced_agent_bus.verification_layer.z3_policy_verifier.Z3_AVAILABLE",
+                True,
+            ),
         ):
             result = await verifier.verify_policy(request)
 
         assert result.status == Z3VerificationStatus.ERROR
         assert result.proof is not None
         # Proof trace should have error entry
-        assert any(
-            entry["step"] == "error" for entry in result.proof.proof_trace
-        )
+        assert any(entry["step"] == "error" for entry in result.proof.proof_trace)
 
 
 class TestVerifyWithZ3ErrorPath:
@@ -408,9 +405,7 @@ class TestVerifyWithZ3ErrorPath:
             "enhanced_agent_bus.verification_layer.z3_policy_verifier.Z3SolverWrapper",
             side_effect=TypeError("type error in z3"),
         ):
-            result = await verifier._verify_with_z3(
-                [constraint], {}, 1000, proof
-            )
+            result = await verifier._verify_with_z3([constraint], {}, 1000, proof)
         assert result["status"] == Z3VerificationStatus.ERROR
         assert result["is_verified"] is False
         assert any("z3_error" in str(v) for v in result["violations"])
@@ -437,9 +432,7 @@ class TestVerifyWithZ3ErrorPath:
                 expression="(declare-const x Bool)",
                 variables={"x": "Bool"},
             )
-            result = await verifier._verify_with_z3(
-                [constraint], {}, 1000, proof
-            )
+            result = await verifier._verify_with_z3([constraint], {}, 1000, proof)
         # is_verified depends on solver check result
         assert isinstance(result["satisfied"], int)
 
@@ -507,18 +500,14 @@ class TestConstraintGeneratorEdgeCases:
 
     async def test_generate_constraint_sentence_with_multiple_comparisons(self):
         gen = ConstraintGenerator()
-        constraints = await gen.generate_constraints(
-            "Value must be greater than 50."
-        )
+        constraints = await gen.generate_constraints("Value must be greater than 50.")
         comp = [c for c in constraints if "Comparison" in c.name]
         assert len(comp) == 1
         assert ">=" in comp[0].expression
 
     async def test_generate_constraint_less_than_no_number(self):
         gen = ConstraintGenerator()
-        constraints = await gen.generate_constraints(
-            "Cost is less than expected."
-        )
+        constraints = await gen.generate_constraints("Cost is less than expected.")
         comp = [c for c in constraints if "Comparison" in c.name]
         assert len(comp) == 1
         assert "0" in comp[0].expression
@@ -530,9 +519,7 @@ class TestConstraintGeneratorEdgeCases:
 
     async def test_generate_prohibition_forbidden_details(self):
         gen = ConstraintGenerator()
-        constraints = await gen.generate_constraints(
-            "Unencrypted storage is forbidden."
-        )
+        constraints = await gen.generate_constraints("Unencrypted storage is forbidden.")
         assert len(constraints) == 1
         c = constraints[0]
         assert c.generated_by == "pattern_matching"
@@ -636,9 +623,7 @@ class TestVerificationStatsAfterMultipleRuns:
 
     async def test_stats_with_mixed_statuses(self):
         verifier = Z3PolicyVerifier(heuristic_threshold=0.99)
-        await verifier.verify_policy(
-            PolicyVerificationRequest(policy_id="s1")
-        )
+        await verifier.verify_policy(PolicyVerificationRequest(policy_id="s1"))
         await verifier.verify_policy(
             PolicyVerificationRequest(
                 policy_id="s2",
@@ -779,9 +764,7 @@ class TestConstitutionalContextManagerEdgeCases:
         )
 
         mgr = ConstitutionalContextManager.__new__(ConstitutionalContextManager)
-        result = mgr._identify_critical_positions(
-            "this is governance", ["governance"]
-        )
+        result = mgr._identify_critical_positions("this is governance", ["governance"])
         assert 0 in result
         assert 2 in result
 
@@ -791,9 +774,7 @@ class TestConstitutionalContextManagerEdgeCases:
         )
 
         mgr = ConstitutionalContextManager.__new__(ConstitutionalContextManager)
-        result = mgr._identify_critical_positions(
-            "nothing special here", ["constitutional"]
-        )
+        result = mgr._identify_critical_positions("nothing special here", ["constitutional"])
         assert result == []
 
     def test_identify_critical_positions_partial_match(self):
@@ -803,9 +784,7 @@ class TestConstitutionalContextManagerEdgeCases:
 
         mgr = ConstitutionalContextManager.__new__(ConstitutionalContextManager)
         # "govern" should match "governance" via `in` check
-        result = mgr._identify_critical_positions(
-            "the governance rule", ["govern"]
-        )
+        result = mgr._identify_critical_positions("the governance rule", ["govern"])
         assert 1 in result
 
 
@@ -818,11 +797,7 @@ def _patched_conv1d_init(self, *args, **kwargs):
     """Patch Conv1d to accept the buggy call signature from Mamba2SSM."""
     import torch.nn as _nn
 
-    if (
-        len(args) == 1
-        and "kernel_size" in kwargs
-        and "out_channels" not in kwargs
-    ):
+    if len(args) == 1 and "kernel_size" in kwargs and "out_channels" not in kwargs:
         in_channels = args[0]
         kwargs.setdefault("out_channels", in_channels)
         args = (in_channels,)
@@ -857,9 +832,7 @@ class TestMamba2TorchCoverage:
             ConstitutionalMambaHybrid,
         )
 
-        cfg = Mamba2Config(
-            d_model=64, d_state=16, num_mamba_layers=2, jrt_repeat_factor=2
-        )
+        cfg = Mamba2Config(d_model=64, d_state=16, num_mamba_layers=2, jrt_repeat_factor=2)
         model = ConstitutionalMambaHybrid(cfg)
         input_ids = torch.tensor([[10, 20, 30, 40, 50]])
         # len(input_ids) = 1 (batch dim), so positions = [0, 0]
@@ -874,9 +847,7 @@ class TestMamba2TorchCoverage:
             ConstitutionalMambaHybrid,
         )
 
-        cfg = Mamba2Config(
-            d_model=64, d_state=16, num_mamba_layers=2, jrt_repeat_factor=3
-        )
+        cfg = Mamba2Config(d_model=64, d_state=16, num_mamba_layers=2, jrt_repeat_factor=3)
         model = ConstitutionalMambaHybrid(cfg)
         input_ids = torch.tensor([[42]])
         prepared = model._prepare_jrt_context(input_ids, critical_positions=None)
@@ -890,14 +861,10 @@ class TestMamba2TorchCoverage:
             ConstitutionalMambaHybrid,
         )
 
-        cfg = Mamba2Config(
-            d_model=64, d_state=16, num_mamba_layers=2, jrt_repeat_factor=2
-        )
+        cfg = Mamba2Config(d_model=64, d_state=16, num_mamba_layers=2, jrt_repeat_factor=2)
         model = ConstitutionalMambaHybrid(cfg)
         input_ids = torch.tensor([[1, 2, 3]])
-        prepared = model._prepare_jrt_context(
-            input_ids, critical_positions=[0, 100]
-        )
+        prepared = model._prepare_jrt_context(input_ids, critical_positions=[0, 100])
         # Position 100 >= seq_len (3), so only position 0 is repeated
         # total = 2 + 1 + 1 = 4
         assert prepared.shape[1] == 4
@@ -922,9 +889,7 @@ class TestMamba2TorchCoverage:
         # critical_positions=[0, 5]: pos 0 x2, pos 5 x2, others x1
         # expanded = 2 + 1 + 1 + 1 + 1 + 2 = 8, equals max_seq_len
         # No truncation needed but exercises the check path
-        prepared = model._prepare_jrt_context(
-            input_ids, critical_positions=[0, 5]
-        )
+        prepared = model._prepare_jrt_context(input_ids, critical_positions=[0, 5])
         assert prepared.shape[0] == 1
         assert prepared.shape[1] == 8
 
@@ -953,9 +918,7 @@ class TestMamba2TorchCoverage:
         # middle_trunc = 10 - 4 - (-4) = 18 > 0
         # keep_end <= 0 so end_keep = []
         # result = expanded[:4] = first 4 tokens
-        prepared = model._prepare_jrt_context(
-            input_ids, critical_positions=[2, 7]
-        )
+        prepared = model._prepare_jrt_context(input_ids, critical_positions=[2, 7])
         assert prepared.shape[0] == 1
         # The truncation logic preserves start portion
         assert prepared.shape[1] >= 0
@@ -977,9 +940,7 @@ class TestMamba2TorchCoverage:
         )
         model = ConstitutionalMambaHybrid(cfg)
         input_ids = torch.tensor([[1, 2, 3]])
-        prepared = model._prepare_jrt_context(
-            input_ids, critical_positions=[0, 2]
-        )
+        prepared = model._prepare_jrt_context(input_ids, critical_positions=[0, 2])
         # pos 0 x2, pos 1 x1, pos 2 x2 = 5
         assert prepared.shape[1] == 5
 
@@ -1153,9 +1114,7 @@ class TestMamba2SSMInit:
     def test_mamba2ssm_fallback_creates_layers(self):
         from enhanced_agent_bus.mamba2_hybrid_processor import Mamba2SSM
 
-        cfg = Mamba2Config(
-            d_model=64, d_state=16, d_conv=4, expand_factor=2
-        )
+        cfg = Mamba2Config(d_model=64, d_state=16, d_conv=4, expand_factor=2)
         ssm = Mamba2SSM(cfg)
         assert hasattr(ssm, "in_proj")
         assert hasattr(ssm, "conv")
@@ -1166,9 +1125,7 @@ class TestMamba2SSMInit:
     def test_mamba2ssm_config_stored(self):
         from enhanced_agent_bus.mamba2_hybrid_processor import Mamba2SSM
 
-        cfg = Mamba2Config(
-            d_model=32, d_state=8, d_conv=2, expand_factor=2
-        )
+        cfg = Mamba2Config(d_model=32, d_state=8, d_conv=2, expand_factor=2)
         ssm = Mamba2SSM(cfg)
         assert ssm.config.d_model == 32
         assert ssm.config.expand_factor == 2

@@ -105,9 +105,9 @@ def _code(text: str) -> None:
 # Load ACGS-Lite (always available -- it's a local package)
 # ---------------------------------------------------------------------------
 
-from acgs_lite import Constitution
-from acgs_lite.engine import GovernanceEngine, ValidationResult
-from acgs_lite.integrations.gitlab import (
+from acgs_lite import Constitution  # noqa: E402
+from acgs_lite.engine import GovernanceEngine, ValidationResult  # noqa: E402
+from acgs_lite.integrations.gitlab import (  # noqa: E402
     GovernanceReport,
     format_governance_report,
 )

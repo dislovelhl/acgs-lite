@@ -221,9 +221,7 @@ class TestPostgresSagaStateRepositorySave:
         import asyncpg as real_asyncpg
 
         pool, conn = _mock_pool()
-        conn.fetchrow = AsyncMock(
-            side_effect=real_asyncpg.PostgresError("connection lost")
-        )
+        conn.fetchrow = AsyncMock(side_effect=real_asyncpg.PostgresError("connection lost"))
         repo = PostgresSagaStateRepository(pool=pool)
 
         saga = _make_saga()
@@ -290,9 +288,7 @@ class TestPostgresSagaStateRepositoryGet:
         import asyncpg as real_asyncpg
 
         pool, conn = _mock_pool()
-        conn.fetchrow = AsyncMock(
-            side_effect=real_asyncpg.PostgresError("fail")
-        )
+        conn.fetchrow = AsyncMock(side_effect=real_asyncpg.PostgresError("fail"))
         repo = PostgresSagaStateRepository(pool=pool)
 
         with pytest.raises(RepositoryError, match="Failed to get"):
@@ -321,9 +317,7 @@ class TestPostgresSagaStateRepositoryDelete:
         import asyncpg as real_asyncpg
 
         pool, conn = _mock_pool()
-        conn.execute = AsyncMock(
-            side_effect=real_asyncpg.PostgresError("fail")
-        )
+        conn.execute = AsyncMock(side_effect=real_asyncpg.PostgresError("fail"))
         repo = PostgresSagaStateRepository(pool=pool)
 
         with pytest.raises(RepositoryError, match="Failed to delete"):
@@ -351,9 +345,7 @@ class TestPostgresSagaStateRepositoryExists:
         import asyncpg as real_asyncpg
 
         pool, conn = _mock_pool()
-        conn.fetchval = AsyncMock(
-            side_effect=real_asyncpg.PostgresError("fail")
-        )
+        conn.fetchval = AsyncMock(side_effect=real_asyncpg.PostgresError("fail"))
         repo = PostgresSagaStateRepository(pool=pool)
 
         with pytest.raises(RepositoryError, match="Failed to check"):
@@ -1188,9 +1180,24 @@ class TestAgentRegistryManagerQueries:
     def _make_mgr(self):
         registry = MagicMock()
         registry._agents = {
-            "a1": {"agent_type": "worker", "capabilities": ["cap1", "cap2"], "tenant_id": "t1", "status": "active"},
-            "a2": {"agent_type": "validator", "capabilities": ["cap1"], "tenant_id": "t2", "status": "active"},
-            "a3": {"agent_type": "worker", "capabilities": ["cap3"], "tenant_id": "t1", "status": "inactive"},
+            "a1": {
+                "agent_type": "worker",
+                "capabilities": ["cap1", "cap2"],
+                "tenant_id": "t1",
+                "status": "active",
+            },
+            "a2": {
+                "agent_type": "validator",
+                "capabilities": ["cap1"],
+                "tenant_id": "t2",
+                "status": "active",
+            },
+            "a3": {
+                "agent_type": "worker",
+                "capabilities": ["cap3"],
+                "tenant_id": "t1",
+                "status": "inactive",
+            },
         }
         return AgentRegistryManager(registry=registry)
 
