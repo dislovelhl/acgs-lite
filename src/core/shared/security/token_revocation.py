@@ -48,7 +48,13 @@ logger = get_logger(__name__)
 
 
 def _runtime_environment() -> str:
-    return resolve_runtime_environment(getattr(settings, "env", None))
+    configured_env = getattr(settings, "env", None)
+    # Trust an explicitly configured non-default env (e.g. "production") over
+    # raw ENVIRONMENT env vars so that tests patching settings.env work correctly
+    # even when the EAB test conftest sets ENVIRONMENT=test in os.environ.
+    if configured_env and configured_env not in ("development",):
+        return configured_env
+    return resolve_runtime_environment(configured_env)
 
 
 def _parse_bool_env(value: str | None) -> bool | None:

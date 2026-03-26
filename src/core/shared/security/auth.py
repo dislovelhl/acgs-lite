@@ -91,7 +91,11 @@ def _current_jwt_public_key() -> str | None:
         return loaded if loaded else None
 
     local_public_key = getattr(settings, "jwt_public_key", "")
-    if isinstance(local_public_key, str) and local_public_key:
+    if (
+        isinstance(local_public_key, str)
+        and local_public_key
+        and local_public_key != "SYSTEM_PUBLIC_KEY_PLACEHOLDER"
+    ):
         return local_public_key
 
     if settings.security.jwt_public_key != "SYSTEM_PUBLIC_KEY_PLACEHOLDER":
@@ -147,8 +151,8 @@ def _resolve_jwt_material(for_signing: bool) -> tuple[str, str]:
     if requested_algorithm == "RS256":
         raise ConfigurationError(
             message=(
-                "RS256 requested but RSA keys (JWT_PRIVATE_KEY, JWT_PUBLIC_KEY) are not "
-                "configured. Set keys or change JWT_ALGORITHM to HS256."
+                "RS256 requested but RSA verification keys are not configured. Set JWT_PUBLIC_KEY for "
+                "verification, JWT_PRIVATE_KEY for signing, or change JWT_ALGORITHM to HS256."
             ),
             error_code="JWT_RSA_KEYS_MISSING",
         )
@@ -170,6 +174,67 @@ def has_jwt_secret() -> bool:
 def has_jwt_verification_material() -> bool:
     """Return True when any JWT verification material (secret or public key) is configured."""
     return _current_jwt_secret() is not None or _current_jwt_public_key() is not None
+
+
+def _is_production_environment() -> bool:
+    """Return True when the runtime environment resolves to production.
+
+    Checks runtime env vars (AGENT_RUNTIME_ENVIRONMENT, APP_ENV, ENVIRONMENT, ENV)
+    before falling back to ``settings.env``.  This means a container deployed with
+    ``ENVIRONMENT=production`` is treated as production even when ``settings.env``
+    defaults to ``development``.
+    """
+    from src.core.shared.config.runtime_environment import resolve_runtime_environment
+
+    configured_env = getattr(settings, "env", None)
+    env = resolve_runtime_environment(configured_env=configured_env)
+    return env == "production"
+
+
+_NON_PRODUCTION_ENVS = frozenset({"development", "dev", "test", "testing", "local", "ci"})
+
+# Module-level revocation service cache (lazy-initialized from REDIS_URL env var)
+_revocation_service: object | None = None
+_revocation_service_initialized: bool = False
+
+
+def _get_revocation_service() -> object | None:
+    """Return the active TokenRevocationService, initialising lazily if REDIS_URL is set.
+
+    The service is initialised at most once per process.  If initialisation fails
+    (e.g. Redis is unreachable), ``None`` is returned and the flag is left ``False``
+    so the next call can retry.
+
+    The service can also be injected directly by setting ``auth._revocation_service``
+    and ``auth._revocation_service_initialized = True`` (used in tests and by
+    ``auth_dependency.configure_revocation_service``).
+    """
+    global _revocation_service, _revocation_service_initialized  # noqa: PLW0603
+
+    if _revocation_service_initialized:
+        return _revocation_service
+
+    redis_url = os.getenv("REDIS_URL") or os.getenv("TOKEN_REVOCATION_REDIS_URL")
+    if not redis_url:
+        return None
+
+    try:
+        import asyncio
+
+        from src.core.shared.security.token_revocation import (  # noqa: PLC0415
+            TokenRevocationService,
+            create_token_revocation_service,
+        )
+
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            # Running inside an async context — defer; return None for this call
+            return None
+        _revocation_service = loop.run_until_complete(create_token_revocation_service(redis_url))
+        _revocation_service_initialized = True
+        return _revocation_service
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def create_access_token(
@@ -299,7 +364,31 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    return verify_token(credentials.credentials)
+    claims = verify_token(credentials.credentials)
+
+    # Fail-closed revocation check: in production, a missing revocation service
+    # is a configuration error — deny the request rather than silently skipping.
+    revocation_service = _get_revocation_service()
+    if _is_production_environment() and revocation_service is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Revocation service unavailable — cannot authenticate in production",
+        )
+
+    if revocation_service is not None:
+        try:
+            if await revocation_service.is_token_revoked(claims.jti):
+                raise HTTPException(status_code=401, detail="Token has been revoked")
+        except HTTPException:
+            raise
+        except Exception:  # noqa: BLE001
+            if _is_production_environment():
+                raise HTTPException(
+                    status_code=503,
+                    detail="Revocation check failed — cannot authenticate in production",
+                )
+
+    return claims
 
 
 async def get_current_user_optional(
@@ -442,6 +531,8 @@ __all__ = [
     "get_current_user_optional",
     "has_jwt_secret",
     "has_jwt_verification_material",
+    "_is_production_environment",
+    "_get_revocation_service",
     "require_permission",
     "require_role",
     "require_tenant_access",

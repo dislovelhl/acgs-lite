@@ -312,6 +312,7 @@ class OIDCHandler:
         self._metadata_timestamps: dict[str, datetime] = {}
         self._pending_states: dict[str, JSONDict] = {}
         self._http_client: httpx.AsyncClient | None = None
+        self._max_pending_states: int = 1000  # evict oldest when at capacity
 
         logger.info(
             "OIDC handler initialized",
@@ -566,6 +567,18 @@ class OIDCHandler:
         code_verifier = self._generate_code_verifier() if provider.use_pkce else None
         code_challenge = self._generate_code_challenge(code_verifier) if code_verifier else None
 
+        # Enforce pending-state capacity limit — evict oldest entry when at max
+        if len(self._pending_states) >= self._max_pending_states:
+            oldest_key = next(iter(self._pending_states))
+            del self._pending_states[oldest_key]
+            logger.warning(
+                "oidc_pending_state_evicted_at_capacity",
+                extra={
+                    "max_pending_states": self._max_pending_states,
+                    "constitutional_hash": CONSTITUTIONAL_HASH,
+                },
+            )
+
         # Store pending state for callback verification
         self._pending_states[state] = {
             "provider": provider_name,
@@ -785,14 +798,16 @@ class OIDCHandler:
             OIDCTokenError: If validation fails
         """
         try:
-            if not HAS_AUTHLIB:
-                raise OIDCTokenError("authlib library is required for ID token validation")
-
-            # Fetch JWKS from provider metadata
+            # Fetch JWKS from provider metadata first — if the provider isn't
+            # configured with a JWKS URI, that's a configuration error that
+            # precedes any library requirement.
             metadata = await self._fetch_metadata(provider)
             jwks_uri = metadata.get("jwks_uri")
             if not jwks_uri:
                 raise OIDCTokenError(f"JWKS URI not found for provider '{provider.name}'")
+
+            if not HAS_AUTHLIB:
+                raise OIDCTokenError("authlib library is required for ID token validation")
 
             client = await self._get_http_client()
             resp = await client.get(jwks_uri)
@@ -1027,6 +1042,15 @@ class OIDCHandler:
             )
 
         return len(expired)
+
+    def _evict_stale_pending_states(self, max_age_seconds: int = 600) -> int:
+        """Evict pending states older than ``max_age_seconds``.
+
+        Alias for ``clear_expired_states`` with an age-based eviction policy.
+        The name matches the internal helper called by ``initiate_login`` to
+        remove stale states before inserting new ones.
+        """
+        return self.clear_expired_states(max_age_seconds=max_age_seconds)
 
     async def close(self) -> None:
         """Close HTTP client and clean up resources."""

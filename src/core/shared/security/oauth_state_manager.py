@@ -59,7 +59,10 @@ _NON_PRODUCTION_ENVS = frozenset({"development", "dev", "test", "testing", "loca
 
 
 def _runtime_environment() -> str:
-    return resolve_runtime_environment(getattr(settings, "env", None))
+    configured_env = getattr(settings, "env", None)
+    if configured_env and configured_env not in ("development",):
+        return configured_env
+    return resolve_runtime_environment(configured_env)
 
 
 def _parse_bool_env(value: str | None) -> bool:

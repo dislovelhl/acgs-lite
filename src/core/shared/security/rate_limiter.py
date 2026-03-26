@@ -103,7 +103,9 @@ TENANT_CONFIG_AVAILABLE = _module_available("src.core.shared.config")
 
 
 def _runtime_environment() -> str:
-    return settings.env
+    from src.core.shared.config.runtime_environment import resolve_runtime_environment
+
+    return resolve_runtime_environment(configured_env=settings.env)
 
 
 def _parse_bool_env(value: str | None) -> bool | None:
@@ -616,11 +618,12 @@ class RateLimitMiddleware:
         app,
         config: RateLimitConfig | None = None,
         tenant_quota_provider: TenantRateLimitProvider | None = None,
+        redis_client: object | None = None,
     ):
         self.app = app
         self.config = config or RateLimitConfig.from_env()
         self.tenant_quota_provider = tenant_quota_provider
-        self.redis: object | None = None
+        self.redis: object | None = redis_client  # allow injection at construction time
         self.limiter: SlidingWindowRateLimiter | None = None
         self._initialized = False
         self._audit_log: list[JSONDict] = []
@@ -721,8 +724,32 @@ class RateLimitMiddleware:
             await self.app(scope, receive, send)
             return
 
-        # Initialize if needed
-        await self._ensure_initialized()
+        # Initialize if needed — fail-closed if strict mode and backend unavailable
+        try:
+            await self._ensure_initialized()
+        except Exception as e:  # noqa: BLE001
+            if not self.config.fail_open:
+                logger.error(
+                    "rate_limiter_backend_unavailable_strict_mode",
+                    extra={"error": str(e), "path": scope.get("path", "")},
+                )
+                error_response = JSONResponse(
+                    status_code=503,
+                    content={
+                        "error": "Service Unavailable",
+                        "detail": "Rate limiting backend unavailable",
+                        "constitutional_hash": self._constitutional_hash,
+                    },
+                )
+                await error_response(scope, receive, send)
+                return
+            # fail_open=True: log and pass through
+            logger.warning(
+                "rate_limiter_backend_unavailable_fail_open",
+                extra={"error": str(e), "path": scope.get("path", "")},
+            )
+            await self.app(scope, receive, send)
+            return
 
         # Create request for inspection
         request = Request(scope, receive)
@@ -767,8 +794,8 @@ class RateLimitMiddleware:
         """Extract tenant ID from authenticated request state.
 
         Tenant ID is only trusted from auth-middleware-populated request.state
-        to prevent spoofing via raw headers. The X-Tenant-ID header is used as
-        a last-resort fallback for backwards compatibility only, with a warning.
+        to prevent spoofing via raw headers.  Raw X-Tenant-ID headers are
+        explicitly ignored — they are untrusted user-controlled input.
         """
         # 1. Check for tenant_id in request.state (populated by auth middleware)
         if hasattr(request.state, "tenant_id") and request.state.tenant_id:
@@ -782,19 +809,7 @@ class RateLimitMiddleware:
         if hasattr(request.state, "user") and hasattr(request.state.user, "tenant_id"):
             return request.state.user.tenant_id
 
-        # 4. Last resort: X-Tenant-ID header (untrusted — log warning)
-        header_tenant_id = request.headers.get("X-Tenant-ID")
-        if header_tenant_id:
-            logger.warning(
-                "tenant_id_from_header_untrusted",
-                extra={
-                    "tenant_id": header_tenant_id,
-                    "path": request.url.path,
-                    "client": request.client.host if request.client else "unknown",
-                },
-            )
-            return header_tenant_id
-
+        # Raw X-Tenant-ID header is intentionally not trusted — spoofable by any client.
         return None
 
     def _check_rule_match(self, request: Request, rule: RateLimitRule) -> bool:
@@ -803,8 +818,42 @@ class RateLimitMiddleware:
         return True
 
     def _build_key(self, request: Request, rule: RateLimitRule) -> str:
-        # Simple key building logic
-        return f"{rule.key_prefix}:{request.client.host}"
+        """Build a rate-limit bucket key for the given request and rule.
+
+        ``rule.key_prefix`` is already ``ratelimit:{scope}`` (from the property).
+        We append the discriminating identifier so the final key is, e.g.:
+          ratelimit:ip:10.0.0.1
+          ratelimit:ip:tenant-42:10.0.0.1   (trusted tenant present)
+          ratelimit:tenant:tenant-42
+          ratelimit:endpoint:/api/v1/auth/:10.0.0.1
+          ratelimit:user:user-id-123
+        """
+        client_ip = request.client.host if request.client else "unknown"
+        scope = rule.scope
+
+        if scope == RateLimitScope.TENANT:
+            tenant_id = self._get_tenant_id(request) or client_ip
+            return f"{rule.key_prefix}:{tenant_id}"
+
+        if scope == RateLimitScope.USER:
+            user_id = (
+                getattr(request.state, "user_id", None)
+                or getattr(getattr(request.state, "user", None), "sub", None)
+                or client_ip
+            )
+            return f"{rule.key_prefix}:{user_id}"
+
+        if scope == RateLimitScope.ENDPOINT:
+            # Use the first configured endpoint prefix so that grouped multi-endpoint
+            # rules share a single bucket (see test_build_key_shares_bucket_for_grouped…).
+            endpoint_prefix = rule.endpoints[0] if rule.endpoints else request.url.path
+            return f"{rule.key_prefix}:{endpoint_prefix}:{client_ip}"
+
+        # Default: IP scope — include trusted tenant id for per-tenant-IP granularity
+        tenant_id = self._get_tenant_id(request)
+        if tenant_id:
+            return f"{rule.key_prefix}:{tenant_id}:{client_ip}"
+        return f"{rule.key_prefix}:{client_ip}"
 
     def _create_429_response(
         self, result: RateLimitResult, tenant_id: str | None = None
