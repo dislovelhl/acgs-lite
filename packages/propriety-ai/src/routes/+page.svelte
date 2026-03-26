@@ -285,7 +285,7 @@
 		</div>
 		<div class="fade-in aspect-video w-full overflow-hidden rounded-xl border border-border/50 shadow-2xl" use:observe>
 			<iframe
-				src="https://www.youtube.com/embed/do9BCPn29_Q?rel=0&modestbranding=1&color=white"
+				src="https://www.youtube.com/embed/uWacmC3CbYg?rel=0&modestbranding=1&color=white"
 				title="ACGS — 560 Nanoseconds to Compliance"
 				frameborder="0"
 				allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -384,12 +384,12 @@
 $ acgs observe --watch --interval 1
 
 --- Snapshot 1 ---
-{
+{'{'}
   "total_decisions": 1142,
   "compliance_rate": 0.9982,
   "latency_p99_ms": 0.0039,
   "top_violation": "GL-004 (Destructive Ops)"
-}
+{'}'}
 
 <span class="text-accent animate-pulse">▋</span> Streaming telemetry to telemetry-bundle/</pre>
 				</div>
