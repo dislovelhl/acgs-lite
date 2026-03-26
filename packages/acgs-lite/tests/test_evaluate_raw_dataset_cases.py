@@ -11,11 +11,20 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from autoresearch.evaluate_raw_dataset_cases import evaluate_cases
-from autoresearch.raw_dataset_adapter import (
-    _load_rows,
-    adapt_dataset_rows,
-    synthesize_governance_cases,
+try:
+    from autoresearch.evaluate_raw_dataset_cases import evaluate_cases
+    from autoresearch.raw_dataset_adapter import (
+        _load_rows,
+        adapt_dataset_rows,
+        synthesize_governance_cases,
+    )
+    _AUTORESEARCH_AVAILABLE = True
+except ImportError:
+    _AUTORESEARCH_AVAILABLE = False
+
+pytestmark = pytest.mark.skipif(
+    not _AUTORESEARCH_AVAILABLE,
+    reason="autoresearch scripts not present (local dev tooling, not committed)",
 )
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "raw_datasets"
