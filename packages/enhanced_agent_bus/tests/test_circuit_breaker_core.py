@@ -29,11 +29,13 @@ if _SOURCE is None:
         " not found; skipping compat wrapper",
         allow_module_level=True,
     )
-_SPEC = importlib.util.spec_from_file_location("legacy_circuit_breaker_coverage", _SOURCE)
-if _SPEC is None or _SPEC.loader is None:
-    raise ImportError(f"Unable to load compatibility tests from {_SOURCE}")
-_MODULE = importlib.util.module_from_spec(_SPEC)
-_SPEC.loader.exec_module(_MODULE)
+
+if _SOURCE is not None:  # guard: pytest.skip() raises but static analysers don't know that
+    _SPEC = importlib.util.spec_from_file_location("legacy_circuit_breaker_coverage", _SOURCE)
+    if _SPEC is None or _SPEC.loader is None:
+        raise ImportError(f"Unable to load compatibility tests from {_SOURCE}")
+    _MODULE = importlib.util.module_from_spec(_SPEC)
+    _SPEC.loader.exec_module(_MODULE)
 
 for _name in dir(_MODULE):
     if _name.startswith("_"):

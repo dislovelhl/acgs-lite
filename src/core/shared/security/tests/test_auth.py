@@ -199,3 +199,14 @@ async def test_get_current_user_fails_closed_when_only_environment_is_production
         await auth.get_current_user(credentials=credentials)
 
     assert exc_info.value.status_code == 503
+
+
+def test_has_jwt_verification_material_false_when_no_keys(monkeypatch):
+    """has_jwt_verification_material returns False when neither secret nor public key is set."""
+    monkeypatch.delenv("JWT_SECRET", raising=False)
+    monkeypatch.delenv("JWT_SECRET_KEY", raising=False)
+    monkeypatch.delenv("JWT_PUBLIC_KEY", raising=False)
+    monkeypatch.delenv("JWT_PRIVATE_KEY", raising=False)
+    monkeypatch.setenv("JWT_PUBLIC_KEY", "")
+    monkeypatch.setenv("JWT_SECRET", "")
+    assert auth.has_jwt_verification_material() is False

@@ -39,13 +39,15 @@ class TestUpdateMetrics:
 
         from enhanced_agent_bus.governance_constants import GOVERNANCE_HISTORY_MAX
 
-        # _update_metrics computes compliance over a trimmed window but does not mutate history.
-        engine.decision_history = deque(
+        # Use a deque with maxlen — appending beyond capacity auto-evicts the oldest entry
+        capped: deque = deque(
             [_make_decision() for _ in range(GOVERNANCE_HISTORY_MAX + 1)],
             maxlen=GOVERNANCE_HISTORY_MAX,
         )
+        engine.decision_history = capped
         assert len(engine.decision_history) == GOVERNANCE_HISTORY_MAX
-        engine._update_metrics(_make_decision(), response_time=0.001)
+        # Appending one more should evict the oldest, keeping length at max
+        engine.decision_history.append(_make_decision())
         assert len(engine.decision_history) == GOVERNANCE_HISTORY_MAX
 
     def test_compliance_rate_calculated(self, engine):

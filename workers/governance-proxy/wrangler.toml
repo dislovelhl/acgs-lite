@@ -1,10 +1,19 @@
 # ACGS Governance Proxy — Cloudflare Workers Configuration
 # Constitutional Hash: 608508a9bd224290
+#
+# Resource IDs (KV namespace, D1 database) are non-secret Cloudflare
+# infrastructure identifiers committed here for reproducibility.
+# They are also surfaced as GitHub Actions secrets (CF_KV_NAMESPACE_ID,
+# CF_D1_DATABASE_ID) so forks can supply their own without editing this file.
+#
+# Secrets (ADMIN_SECRET) are NEVER stored here — set them with:
+#   wrangler secret put ADMIN_SECRET
 
 name = "acgs-governance-proxy"
 main = "src/index.ts"
 compatibility_date = "2024-03-25"
 compatibility_flags = ["nodejs_compat"]
+workers_dev = true
 
 # Map to production domains
 [[routes]]
@@ -16,11 +25,13 @@ pattern = "acgs.ai/v1/*"
 zone_name = "acgs.ai"
 
 # KV Namespace for storing constitution configurations
+# Fork override: set CF_KV_NAMESPACE_ID in GitHub Actions secrets
 [[kv_namespaces]]
 binding = "CONSTITUTIONS"
 id = "fa596ca7a81a4ea28e24e690642c8d74"
 
 # D1 Database for audit log persistence
+# Fork override: set CF_D1_DATABASE_ID in GitHub Actions secrets
 [[d1_databases]]
 binding = "AUDIT_DB"
 database_name = "acgs_audit_log"
@@ -30,7 +41,6 @@ database_id = "815d7f79-790c-46e0-ae44-666b2ec0e53e"
 CONSTITUTIONAL_HASH = "608508a9bd224290"
 ENVIRONMENT = "production"
 AUDIT_FAIL_CLOSED = "true"
-ADMIN_SECRET = ""  # Set via: wrangler secret put ADMIN_SECRET
 
 # Rules for WASM module handling
 [[rules]]
