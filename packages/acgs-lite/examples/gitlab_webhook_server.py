@@ -277,31 +277,35 @@ def create_app(config: ServerConfig) -> Any:
 
     async def health_endpoint(request: Request) -> JSONResponse:
         """Health check returning service status and constitutional hash."""
-        return JSONResponse({
-            "status": "healthy",
-            "constitutional_hash": constitution.hash,
-            "rules_loaded": len(constitution.rules),
-            "project_id": config.project_id,
-            "gitlab_url": config.gitlab_url,
-            "reports_processed": state.reports_processed,
-            "violations_found": state.violations_found,
-        })
+        return JSONResponse(
+            {
+                "status": "healthy",
+                "constitutional_hash": constitution.hash,
+                "rules_loaded": len(constitution.rules),
+                "project_id": config.project_id,
+                "gitlab_url": config.gitlab_url,
+                "reports_processed": state.reports_processed,
+                "violations_found": state.violations_found,
+            }
+        )
 
     async def governance_summary_endpoint(request: Request) -> JSONResponse:
         """Return the active constitution's governance posture summary."""
         summary = constitution.governance_summary()
-        return JSONResponse({
-            "constitutional_hash": constitution.hash,
-            "constitution_name": constitution.name,
-            "rules_loaded": len(constitution.rules),
-            "summary": summary,
-            "server_stats": {
-                "reports_processed": state.reports_processed,
-                "violations_found": state.violations_found,
-                "last_mr_iid": state.last_mr_iid,
-                "errors": state.errors,
-            },
-        })
+        return JSONResponse(
+            {
+                "constitutional_hash": constitution.hash,
+                "constitution_name": constitution.name,
+                "rules_loaded": len(constitution.rules),
+                "summary": summary,
+                "server_stats": {
+                    "reports_processed": state.reports_processed,
+                    "violations_found": state.violations_found,
+                    "last_mr_iid": state.last_mr_iid,
+                    "errors": state.errors,
+                },
+            }
+        )
 
     # --- Build app ---
 

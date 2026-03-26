@@ -1,6 +1,6 @@
 """
 GraphRAG factory — create_embedding_provider and create_vector_store.
-Constitutional Hash: 608508a9bd224290
+Constitutional Hash: cdd01ef066bc6cf2
 
 Provides lightweight in-memory implementations for dev/test use.
 """
@@ -135,4 +135,4 @@ def _dot_product(a: list[float], b: list[float]) -> float:
     if len(a) != len(b):
         min_len = min(len(a), len(b))
         return sum(x * y for x, y in zip(a[:min_len], b[:min_len], strict=False))
-    return sum(x * y for x, y in zip(a, b, strict=True))
+    return sum(x * y for x, y in zip(a, b, strict=False))

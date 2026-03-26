@@ -5,6 +5,7 @@ import time
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 from src.core.shared.constants import CONSTITUTIONAL_HASH as CONST_HASH
 
 from enhanced_agent_bus.adaptive_governance.governance_engine import (
@@ -26,7 +27,7 @@ _IMPACT_MLFLOW = (
     "enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
 )
 _THRESH_MLFLOW = (
-    "enhanced_agent_bus.adaptive_governance.threshold_manager.AdaptiveThresholds._initialize_mlflow"
+    "enhanced_agent_bus.adaptive_governance.threshold_manager.AdaptiveThresholds._initialize_mlflow"  # noqa: E501
 )
 
 
@@ -615,7 +616,7 @@ class TestAdditionalBranchCoverage:
     def test_dtmc_blending_with_empty_prefix(self, engine, sample_message, sample_context):
         """Branch: DTMC blend branch but prefix is None (empty history)."""
         # This is an async test — but we call the internal sync parts
-        # The branch 431->443 means: enable_dtmc+fitted+weight>0, _get_trajectory_prefix returns None
+        # The branch 431->443 means: enable_dtmc+fitted+weight>0, _get_trajectory_prefix returns None  # noqa: E501
         pass  # Covered by test_dtmc_blending_when_fitted with no history
 
     async def test_ab_test_routing_candidate_cohort(self, engine, sample_message, sample_context):

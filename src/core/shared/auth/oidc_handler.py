@@ -1,6 +1,6 @@
 """
 ACGS-2 OpenID Connect (OIDC) Handler Service
-Constitutional Hash: 608508a9bd224290
+Constitutional Hash: cdd01ef066bc6cf2
 
 Provides enterprise-grade OIDC Relying Party (RP) implementation using Authlib.
 Supports multiple identity providers including Google Workspace, Azure AD, and Okta.
@@ -188,7 +188,7 @@ class OIDCTokenResponse:
     """
 
     access_token: str
-    token_type: str = "Bearer"  # noqa: S105 - OAuth token type literal
+    token_type: str = "Bearer"
     expires_in: int | None = None
     refresh_token: str | None = None
     id_token: str | None = None
@@ -311,29 +311,12 @@ class OIDCHandler:
         self._metadata_cache: dict[str, JSONDict] = {}
         self._metadata_timestamps: dict[str, datetime] = {}
         self._pending_states: dict[str, JSONDict] = {}
-        # H-4 fix: Bound pending states to prevent DoS via login flow flooding.
-        self._max_pending_states: int = 10_000
-        self._pending_state_ttl_seconds: int = 600  # 10 minutes
         self._http_client: httpx.AsyncClient | None = None
 
         logger.info(
             "OIDC handler initialized",
             extra={"constitutional_hash": CONSTITUTIONAL_HASH},
         )
-
-    def _evict_stale_pending_states(self) -> None:
-        """H-4 fix: Remove expired pending OIDC states to bound memory usage."""
-        now = datetime.now(UTC)
-        expired = [
-            state
-            for state, data in self._pending_states.items()
-            if (now - datetime.fromisoformat(data["created_at"])).total_seconds()
-            > self._pending_state_ttl_seconds
-        ]
-        for state in expired:
-            del self._pending_states[state]
-        if expired:
-            logger.info("Evicted %d expired OIDC pending states", len(expired))
 
     def register_provider(
         self,
@@ -583,16 +566,6 @@ class OIDCHandler:
         code_verifier = self._generate_code_verifier() if provider.use_pkce else None
         code_challenge = self._generate_code_challenge(code_verifier) if code_verifier else None
 
-        # H-4 fix: Evict expired/oldest states before adding new ones to prevent OOM.
-        self._evict_stale_pending_states()
-        if len(self._pending_states) >= self._max_pending_states:
-            logger.warning(
-                "Pending OIDC states at capacity (%d), evicting oldest",
-                self._max_pending_states,
-            )
-            oldest_key = next(iter(self._pending_states))
-            del self._pending_states[oldest_key]
-
         # Store pending state for callback verification
         self._pending_states[state] = {
             "provider": provider_name,
@@ -812,18 +785,14 @@ class OIDCHandler:
             OIDCTokenError: If validation fails
         """
         try:
-            # Surface provider metadata/configuration errors even when authlib is unavailable.
+            if not HAS_AUTHLIB:
+                raise OIDCTokenError("authlib library is required for ID token validation")
+
+            # Fetch JWKS from provider metadata
             metadata = await self._fetch_metadata(provider)
             jwks_uri = metadata.get("jwks_uri")
             if not jwks_uri:
                 raise OIDCTokenError(f"JWKS URI not found for provider '{provider.name}'")
-
-            issuer = metadata.get("issuer")
-            if not issuer:
-                raise OIDCTokenError(f"Issuer not found for provider '{provider.name}'")
-
-            if not HAS_AUTHLIB:
-                raise OIDCTokenError("authlib library is required for ID token validation")
 
             client = await self._get_http_client()
             resp = await client.get(jwks_uri)
@@ -834,6 +803,10 @@ class OIDCHandler:
             from authlib.jose import JsonWebKey, JWTClaims
 
             jwk_set = JsonWebKey.import_key_set(jwks_data)
+
+            issuer = metadata.get("issuer")
+            if not issuer:
+                raise OIDCTokenError(f"Issuer not found for provider '{provider.name}'")
 
             # Decode and validate token
             claims = jwt.decode(
@@ -851,11 +824,7 @@ class OIDCHandler:
             claims.validate()
 
             return dict(claims)
-        except OIDCTokenError:
-            raise
         except _OIDC_OPERATION_ERRORS as e:
-            raise OIDCTokenError(f"Failed to validate ID token: {e}") from e
-        except Exception as e:
             raise OIDCTokenError(f"Failed to validate ID token: {e}") from e
 
     async def _fetch_userinfo(
