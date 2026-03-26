@@ -1,0 +1,14 @@
+# GitHub FUNDING configuration
+# Add your sponsor handles or URLs below. Keep up to 4 entries per platform where supported.
+
+github:
+  - dislovelhl
+
+# Optional additional entries you can add later:
+# patreon: your-patreon
+# open_collective: your-open-collective
+# ko_fi: your-kofi
+# buy_me_a_coffee: your-bmc
+# custom:
+#  - "https://paypal.me/yourname"
+#  - "https://example.com/sponsor"
