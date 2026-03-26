@@ -281,7 +281,7 @@
 <section class="relative py-24 md:py-32 px-8 md:px-12">
 	<div class="mx-auto max-w-[1000px]">
 		<div class="fade-in mb-12 text-center" use:observe>
-			<p class="mb-4 font-mono text-xs tracking-[0.3em] text-fg-muted">560 NANOSECONDS TO COMPLIANCE</p>
+			<p class="mb-4 font-mono text-xs tracking-[0.3em] text-fg-muted">GOVERNANCE WATCH</p>
 		</div>
 		<div class="fade-in aspect-video w-full overflow-hidden rounded-xl border border-border/50 shadow-2xl" use:observe>
 			<iframe
