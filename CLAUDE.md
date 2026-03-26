@@ -192,3 +192,48 @@ checks to run on commit.
 
 See `packages/acgs-lite/CLAUDE.md` and `packages/enhanced_agent_bus/CLAUDE.md` for package-level
 guidance.
+
+## gstack
+
+gstack skills are installed as pi skills under `.agents/skills/gstack-*/`. They power browsing,
+planning, review, QA, deployment, and more.
+
+**Web browsing**: always use the `gstack-browse` skill for all web browsing tasks. Never use
+`mcp__claude-in-chrome__*` tools directly.
+
+**Available skills (invoke via `/skill:name`):**
+
+| Skill | Purpose |
+| ----- | ------- |
+| `/skill:gstack-office-hours` | Async Q&A and guidance sessions |
+| `/skill:gstack-plan-ceo-review` | Executive-level plan review |
+| `/skill:gstack-plan-eng-review` | Engineering plan review |
+| `/skill:gstack-plan-design-review` | Design plan review |
+| `/skill:gstack-design-consultation` | Design consultation and feedback |
+| `/skill:gstack-review` | Code and content review |
+| `/skill:gstack-ship` | Ship a change end-to-end |
+| `/skill:gstack-land-and-deploy` | Land a PR and trigger deployment |
+| `/skill:gstack-canary` | Canary release management |
+| `/skill:gstack-benchmark` | Performance benchmarking |
+| `/skill:gstack-browse` | Web browsing (use this, not chrome MCP tools) |
+| `/skill:gstack-qa` | Full QA pass |
+| `/skill:gstack-qa-only` | QA without setup steps |
+| `/skill:gstack-design-review` | Design artifact review |
+| `/skill:gstack-setup-browser-cookies` | Configure browser auth cookies |
+| `/skill:gstack-setup-deploy` | Configure deployment targets |
+| `/skill:gstack-retro` | Retrospective facilitation |
+| `/skill:gstack-investigate` | Deep investigation / root cause analysis |
+| `/skill:gstack-document-release` | Generate release documentation |
+| `/skill:gstack-autoplan` | Automated planning |
+| `/skill:gstack-cso` | Chief Security Officer review |
+| `/skill:gstack-careful` | High-caution mode for risky changes |
+| `/skill:gstack-freeze` | Freeze deploys / change freeze |
+| `/skill:gstack-guard` | Guard rails enforcement |
+| `/skill:gstack-unfreeze` | Lift a deploy or change freeze |
+| `/skill:gstack-upgrade` | Upgrade gstack itself |
+
+**If gstack skills aren't working**, rebuild the binary and re-register skills:
+
+```bash
+cd .claude/skills/gstack && ./setup
+```

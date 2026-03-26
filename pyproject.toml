@@ -4,9 +4,9 @@ requires = ["setuptools>=80.9.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "acgs-monorepo"
-version = "3.0.0"
-description = "ACGS monorepo workspace and developer tooling"
+name = "acgs"
+version = "3.0.1"
+description = "Partial-open-source ACGS package line for governance runtime, shared components, and platform tooling"
 requires-python = ">=3.11"
 license = "AGPL-3.0-or-later"
 dependencies = [
@@ -75,7 +75,7 @@ members = ["packages/enhanced_agent_bus", "packages/acgs-lite", "packages/acgs-d
 
 [tool.uv.sources]
 enhanced-agent-bus = { workspace = true }
-acgs = { workspace = true }
+acgs-lite = { workspace = true }
 acgs-deliberation = { workspace = true }
 
 [tool.ruff]

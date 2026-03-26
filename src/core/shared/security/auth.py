@@ -140,6 +140,10 @@ def _resolve_jwt_material(for_signing: bool) -> tuple[str, str]:
             (private_key, requested_algorithm) if for_signing else (public_key, requested_algorithm)
         )
 
+    # Verification-only path: public key alone is sufficient when not signing
+    if not for_signing and public_key:
+        return public_key, requested_algorithm
+
     if requested_algorithm == "RS256":
         raise ConfigurationError(
             message=(
@@ -161,6 +165,11 @@ def _resolve_jwt_material(for_signing: bool) -> tuple[str, str]:
 def has_jwt_secret() -> bool:
     """Return True when any supported JWT secret source is configured."""
     return _current_jwt_secret() is not None
+
+
+def has_jwt_verification_material() -> bool:
+    """Return True when any JWT verification material (secret or public key) is configured."""
+    return _current_jwt_secret() is not None or _current_jwt_public_key() is not None
 
 
 def create_access_token(
@@ -432,6 +441,7 @@ __all__ = [
     "get_current_user",
     "get_current_user_optional",
     "has_jwt_secret",
+    "has_jwt_verification_material",
     "require_permission",
     "require_role",
     "require_tenant_access",

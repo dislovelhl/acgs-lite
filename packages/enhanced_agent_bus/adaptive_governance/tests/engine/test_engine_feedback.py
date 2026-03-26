@@ -5,7 +5,6 @@ import time
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 from src.core.shared.constants import CONSTITUTIONAL_HASH as CONST_HASH
 
 from enhanced_agent_bus.adaptive_governance.governance_engine import (
@@ -26,9 +25,7 @@ _MLFLOW_PATCH = "mlflow.set_tracking_uri"
 _IMPACT_MLFLOW = (
     "enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
 )
-_THRESH_MLFLOW = (
-    "enhanced_agent_bus.adaptive_governance.threshold_manager.AdaptiveThresholds._initialize_mlflow"  # noqa: E501
-)
+_THRESH_MLFLOW = "enhanced_agent_bus.adaptive_governance.threshold_manager.AdaptiveThresholds._initialize_mlflow"
 
 
 class TestUpdateMetrics:
@@ -38,14 +35,18 @@ class TestUpdateMetrics:
         assert engine.metrics.average_response_time > 0
 
     def test_history_trimmed_when_over_max(self, engine):
+        from collections import deque
+
         from enhanced_agent_bus.governance_constants import GOVERNANCE_HISTORY_MAX
 
-        # Fill exactly at max + 1; _update_metrics pops one entry
-        engine.decision_history = [_make_decision() for _ in range(GOVERNANCE_HISTORY_MAX + 1)]
-        initial_len = len(engine.decision_history)
+        # _update_metrics computes compliance over a trimmed window but does not mutate history.
+        engine.decision_history = deque(
+            [_make_decision() for _ in range(GOVERNANCE_HISTORY_MAX + 1)],
+            maxlen=GOVERNANCE_HISTORY_MAX,
+        )
+        assert len(engine.decision_history) == GOVERNANCE_HISTORY_MAX
         engine._update_metrics(_make_decision(), response_time=0.001)
-        # One item should have been popped from the front
-        assert len(engine.decision_history) == initial_len - 1
+        assert len(engine.decision_history) == GOVERNANCE_HISTORY_MAX
 
     def test_compliance_rate_calculated(self, engine):
         # Add decisions with high confidence
