@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """Optional Context & Memory Module (Phase 2.1 Layer 1 - Mamba-2 Hybrid Processor)."""
 
 try:

@@ -1,6 +1,6 @@
 """
 ACGS-2 Context Optimizer - Main Optimizer
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Main context window optimizer combining all optimizations.
 Provides 30x context length increase with sub-5ms P99 latency.
@@ -57,7 +57,7 @@ class ContextWindowOptimizer:
 
     Provides 30x context length increase with sub-5ms P99 latency.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

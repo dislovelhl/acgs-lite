@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - MACI Utils Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: enhanced_agent_bus/maci/utils.py (44 stmts, 0% -> target 80%+)
 Tests validate_maci_role_matrix() and _ModelProxy lazy loading.

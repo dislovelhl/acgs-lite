@@ -1,6 +1,6 @@
 """
 ACGS-2 Validation Store — In-Memory Ring Buffer
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Thread-safe storage for recent validation results.
 Production: replace with Redis or PostgreSQL.

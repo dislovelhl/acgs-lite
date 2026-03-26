@@ -1,6 +1,6 @@
 """
 Tests for decisions.py route coverage.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: get_decision_explanation, generate_decision_explanation,
         get_governance_vector_schema, _convert_to_response helper.
@@ -24,6 +24,7 @@ from src.core.shared.security.auth import UserClaims, get_current_user
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 def _make_user() -> UserClaims:
     now = int(datetime.now(UTC).timestamp())
@@ -112,8 +113,13 @@ def _mock_explanation(*, include_factors: bool = True, include_cf: bool = True):
     exp.confidence_score = 0.95
     exp.impact_score = 0.2
     exp.governance_vector = {
-        "safety": 0.8, "security": 0.5, "privacy": 0.3,
-        "fairness": 0.4, "reliability": 0.7, "transparency": 0.6, "efficiency": 0.5,
+        "safety": 0.8,
+        "security": 0.5,
+        "privacy": 0.3,
+        "fairness": 0.4,
+        "reliability": 0.7,
+        "transparency": 0.6,
+        "efficiency": 0.5,
     }
     exp.factors = [_mock_factor()] if include_factors else []
     exp.primary_factors = ["f-1"] if include_factors else []
@@ -131,7 +137,7 @@ def _mock_explanation(*, include_factors: bool = True, include_cf: bool = True):
     exp.tenant_id = "tenant-1"
     exp.scope = "decision"
     exp.audit_references = ["audit-1"]
-    exp.constitutional_hash = "cdd01ef066bc6cf2"
+    exp.constitutional_hash = "608508a9bd224290"
     return exp
 
 
@@ -321,10 +327,15 @@ class TestGovernanceVectorSchema:
         assert "dimensions" in body
         dims = body["dimensions"]
         assert set(dims.keys()) == {
-            "safety", "security", "privacy", "fairness",
-            "reliability", "transparency", "efficiency",
+            "safety",
+            "security",
+            "privacy",
+            "fairness",
+            "reliability",
+            "transparency",
+            "efficiency",
         }
-        assert body["constitutional_hash"] == "cdd01ef066bc6cf2"
+        assert body["constitutional_hash"] == "608508a9bd224290"
         assert body["thresholds"]["escalation"] == 0.8
 
     def test_schema_dimension_structure(self, client: TestClient):

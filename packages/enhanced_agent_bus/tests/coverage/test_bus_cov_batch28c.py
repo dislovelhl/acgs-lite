@@ -6,7 +6,7 @@ Targets:
 - enhanced_agent_bus.verification_orchestrator (75.9% -> 85%+)
 - enhanced_agent_bus.interfaces (70.2% -> improved, Protocol stubs excluded)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -534,6 +534,7 @@ class TestMCPServerStdioTransport:
             mock_loop_fn.return_value = mock_loop
 
             with patch("asyncio.StreamWriter", return_value=mock_writer):
+
                 async def stop_later():
                     await asyncio.sleep(0.05)
                     server._running = False
@@ -581,6 +582,7 @@ class TestMCPServerStdioTransport:
             mock_loop_fn.return_value = mock_loop
 
             with patch("asyncio.StreamWriter", return_value=mock_writer):
+
                 async def stop_later():
                     await asyncio.sleep(0.05)
                     server._running = False
@@ -885,7 +887,9 @@ class TestVerificationOrchestratorPQC:
                 pass
 
         # Use a more direct approach: patch the import inside _perform_pqc
-        original_import = __builtins__.__import__ if hasattr(__builtins__, "__import__") else __import__
+        original_import = (
+            __builtins__.__import__ if hasattr(__builtins__, "__import__") else __import__
+        )
 
         def failing_import(name, *args, **kwargs):
             if "pqc_validators" in name:
@@ -1010,12 +1014,8 @@ class TestVerificationOrchestratorVerify:
         orch.asc_verifier.verify = AsyncMock(
             return_value={"is_valid": True, "confidence": 0.95, "results": []}
         )
-        orch.graph_check.verify_entities = AsyncMock(
-            return_value={"is_valid": True, "results": []}
-        )
-        orch.pacar_verifier.verify = AsyncMock(
-            return_value={"is_valid": True, "confidence": 0.9}
-        )
+        orch.graph_check.verify_entities = AsyncMock(return_value={"is_valid": True, "results": []})
+        orch.pacar_verifier.verify = AsyncMock(return_value={"is_valid": True, "confidence": 0.9})
 
         msg = AgentMessage(
             from_agent="test-agent",
@@ -1035,9 +1035,7 @@ class TestVerificationOrchestratorVerify:
         from enhanced_agent_bus.enums import MessageType
 
         orch = self._make_orchestrator()
-        orch.pacar_verifier.verify = AsyncMock(
-            return_value={"is_valid": True, "confidence": 0.85}
-        )
+        orch.pacar_verifier.verify = AsyncMock(return_value={"is_valid": True, "confidence": 0.85})
 
         msg = AgentMessage(
             from_agent="test-agent",
@@ -1406,7 +1404,7 @@ class TestInterfacesConcreteImplementation:
                 pass
 
             def get_status(self):
-                return {"status": "healthy", "constitutional_hash": "cdd01ef066bc6cf2"}
+                return {"status": "healthy", "constitutional_hash": "608508a9bd224290"}
 
         o = ConcreteOrchestrator()
         assert isinstance(o, OrchestratorProtocol)

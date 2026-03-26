@@ -1,7 +1,7 @@
 """
 Enhanced Agent Bus - High-performance agent communication with constitutional validation.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -188,7 +188,7 @@ class EnhancedAgentBus:
         enable_metering: Enable usage metering (default: True)
         tenant_id: Default tenant ID for messages
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -396,7 +396,7 @@ class EnhancedAgentBus:
         """Return the constitutional hash for governance validation.
 
         Returns:
-            str: The cryptographic constitutional hash (cdd01ef066bc6cf2).
+            str: The cryptographic constitutional hash (608508a9bd224290).
         """
         return self._constitutional_hash  # type: ignore[no-any-return]
 

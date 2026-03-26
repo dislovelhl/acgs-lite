@@ -4,18 +4,18 @@
 
 ACGS is dual-licensed:
 
-- **AGPL-3.0** for open-source use (free)
+- **AGPL-3.0-or-later** for open-source use (free)
 - **Commercial License** for proprietary/closed-source use (paid)
 
 ## When You Need a Commercial License
 
-The AGPL-3.0 requires that if you use ACGS as part of a network service (SaaS, API, cloud platform), you must release the complete source code of that service under the AGPL-3.0.
+The AGPL-3.0-or-later license requires that if you use ACGS as part of a network service (SaaS, API, cloud platform), you must release the complete source code of that service under the AGPL-3.0-or-later terms.
 
 **You need a commercial license if:**
 
 - You embed ACGS in a proprietary SaaS product served to external users
 - You offer ACGS functionality as a managed service or API
-- You cannot comply with AGPL-3.0 source disclosure requirements
+- You cannot comply with AGPL-3.0-or-later source disclosure requirements
 - Your legal team prohibits AGPL dependencies
 
 **You do NOT need a commercial license if:**
@@ -36,7 +36,7 @@ The AGPL-3.0 requires that if you use ACGS as part of a network service (SaaS, A
 
 ## What the Commercial License Includes
 
-- Exemption from all AGPL-3.0 obligations
+- Exemption from all AGPL-3.0-or-later obligations
 - Right to use ACGS in proprietary, closed-source software
 - Right to distribute ACGS as part of a commercial product
 - No source code disclosure requirements

@@ -1,6 +1,6 @@
 """Tests for WorkOS webhook event ingestion service.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -20,7 +20,9 @@ from src.core.services.api_gateway.workos_event_ingestion import (
 from src.core.shared.auth import WorkOSWebhookEvent
 
 
-def _make_event(event_id: str = "evt_001", event_type: str = "dsync.user.created") -> WorkOSWebhookEvent:
+def _make_event(
+    event_id: str = "evt_001", event_type: str = "dsync.user.created"
+) -> WorkOSWebhookEvent:
     return WorkOSWebhookEvent(
         id=event_id,
         event=event_type,
@@ -236,14 +238,18 @@ class TestGetRedisClient:
     async def test_returns_none_when_redis_unavailable(self):
         svc = _make_service()
         with patch.dict("os.environ", {}, clear=False):
-            with patch(
-                "src.core.services.api_gateway.workos_event_ingestion.aioredis",
-                create=True,
-            ) if False else patch(
-                "redis.asyncio.ConnectionPool.from_url",
-                side_effect=ImportError("no redis"),
+            with (
+                patch(
+                    "src.core.services.api_gateway.workos_event_ingestion.aioredis",
+                    create=True,
+                )
+                if False
+                else patch(
+                    "redis.asyncio.ConnectionPool.from_url",
+                    side_effect=ImportError("no redis"),
+                )
             ):
-                client = await svc._get_redis_client()
+                await svc._get_redis_client()
         # After import error fallback, should return None
         assert svc._redis_initialized is True
 

@@ -1,6 +1,6 @@
 """
 ACGS-2 Prometheus Metrics Instrumentation Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides standardized Prometheus metrics for all ACGS-2 services.
 """

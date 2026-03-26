@@ -4,7 +4,7 @@ Runtime Safety Guardrails Orchestrator.
 Coordinates all guardrail layers in the OWASP-compliant security pipeline.
 Implements 6-layer protection with fail-closed security.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -68,7 +68,7 @@ class RuntimeSafetyGuardrails:
     Features OWASP Top 10 protection, rate limiting, comprehensive injection detection,
     and multi-layer validation with fail-closed security.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, config: RuntimeSafetyGuardrailsConfig | None = None):

@@ -1,6 +1,6 @@
 """
 ACGS-2 Tenant Configuration Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Pydantic configuration models for multi-tenant quota management.
 Supports namespace-based tenant isolation with configurable resource quotas.

@@ -2,7 +2,7 @@
 ACGS-2 Enhanced Agent Bus Tests - Constitutional & Infrastructure
 Focused tests for constitutional hash, MACI, Policy Client, Kafka, and bus infrastructure.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import uuid

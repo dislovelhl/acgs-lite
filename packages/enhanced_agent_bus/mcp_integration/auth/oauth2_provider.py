@@ -1,7 +1,7 @@
 """
 OAuth2 Provider for MCP Authentication.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 MACI Role: JUDICIAL
 
 Provides OAuth2 token management:
@@ -194,7 +194,7 @@ class OAuth2Provider:
     - PKCE for authorization code flow
     - Token introspection and revocation
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, config: OAuth2Config):

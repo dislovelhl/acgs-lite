@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive coverage tests for deliberation_layer/vote_collector.py.
 Target: bring coverage to >=98%.
@@ -480,9 +480,7 @@ class TestStabilizeWeights:
 class TestCollectorConnect:
     async def test_connect_redis_unavailable(self) -> None:
         c = _collector()
-        with patch(
-            "enhanced_agent_bus.deliberation_layer.vote_collector.REDIS_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.deliberation_layer.vote_collector.REDIS_AVAILABLE", False):
             assert await c.connect() is False
 
     async def test_connect_redis_success(self) -> None:

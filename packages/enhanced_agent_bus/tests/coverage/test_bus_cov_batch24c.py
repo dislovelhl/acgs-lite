@@ -25,7 +25,7 @@ import pytest
 # Helpers
 # ---------------------------------------------------------------------------
 
-_HASH = "cdd01ef066bc6cf2"
+_HASH = "608508a9bd224290"
 
 
 def _make_impact_features(**overrides):
@@ -283,9 +283,7 @@ class TestConfigHelpers:
 
         saved = telemetry.settings
         try:
-            mock_settings = SimpleNamespace(
-                telemetry=SimpleNamespace(export_traces=False)
-            )
+            mock_settings = SimpleNamespace(telemetry=SimpleNamespace(export_traces=False))
             telemetry.settings = mock_settings
             assert telemetry._get_export_traces() is False
         finally:
@@ -306,9 +304,7 @@ class TestConfigHelpers:
 
         saved = telemetry.settings
         try:
-            mock_settings = SimpleNamespace(
-                telemetry=SimpleNamespace(export_metrics=False)
-            )
+            mock_settings = SimpleNamespace(telemetry=SimpleNamespace(export_metrics=False))
             telemetry.settings = mock_settings
             assert telemetry._get_export_metrics() is False
         finally:
@@ -329,9 +325,7 @@ class TestConfigHelpers:
 
         saved = telemetry.settings
         try:
-            mock_settings = SimpleNamespace(
-                telemetry=SimpleNamespace(trace_sample_rate=0.5)
-            )
+            mock_settings = SimpleNamespace(telemetry=SimpleNamespace(trace_sample_rate=0.5))
             telemetry.settings = mock_settings
             assert telemetry._get_trace_sample_rate() == 0.5
         finally:
@@ -491,9 +485,7 @@ class TestTracingContext:
     def test_enter_exit_no_exception(self):
         from enhanced_agent_bus.observability.telemetry import TracingContext
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.get_tracer"
-        ) as mock_get:
+        with patch("enhanced_agent_bus.observability.telemetry.get_tracer") as mock_get:
             mock_tracer = MagicMock()
             mock_span = MagicMock()
             ctx = MagicMock()
@@ -504,16 +496,12 @@ class TestTracingContext:
 
             with TracingContext("test_op", attributes={"custom": "attr"}) as span:
                 assert span is mock_span
-                mock_span.set_attribute.assert_any_call(
-                    "constitutional.hash", _HASH
-                )
+                mock_span.set_attribute.assert_any_call("constitutional.hash", _HASH)
 
     def test_enter_exit_with_exception(self):
         from enhanced_agent_bus.observability.telemetry import TracingContext
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.get_tracer"
-        ) as mock_get:
+        with patch("enhanced_agent_bus.observability.telemetry.get_tracer") as mock_get:
             mock_tracer = MagicMock()
             mock_span = MagicMock()
             ctx = MagicMock()
@@ -543,9 +531,7 @@ class TestTracingContext:
         """TracingContext handles ImportError for tenant context gracefully."""
         from enhanced_agent_bus.observability.telemetry import TracingContext
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.get_tracer"
-        ) as mock_get:
+        with patch("enhanced_agent_bus.observability.telemetry.get_tracer") as mock_get:
             mock_tracer = MagicMock()
             mock_span = MagicMock()
             ctx = MagicMock()
@@ -562,9 +548,7 @@ class TestMetricsRegistry:
     def test_get_counter_creates_and_caches(self):
         from enhanced_agent_bus.observability.telemetry import MetricsRegistry
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.get_meter"
-        ) as mock_get_meter:
+        with patch("enhanced_agent_bus.observability.telemetry.get_meter") as mock_get_meter:
             mock_meter = MagicMock()
             mock_counter = MagicMock()
             mock_meter.create_counter.return_value = mock_counter
@@ -579,9 +563,7 @@ class TestMetricsRegistry:
     def test_get_histogram_creates_and_caches(self):
         from enhanced_agent_bus.observability.telemetry import MetricsRegistry
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.get_meter"
-        ) as mock_get_meter:
+        with patch("enhanced_agent_bus.observability.telemetry.get_meter") as mock_get_meter:
             mock_meter = MagicMock()
             mock_hist = MagicMock()
             mock_meter.create_histogram.return_value = mock_hist
@@ -595,9 +577,7 @@ class TestMetricsRegistry:
     def test_get_gauge_creates_and_caches(self):
         from enhanced_agent_bus.observability.telemetry import MetricsRegistry
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.get_meter"
-        ) as mock_get_meter:
+        with patch("enhanced_agent_bus.observability.telemetry.get_meter") as mock_get_meter:
             mock_meter = MagicMock()
             mock_gauge = MagicMock()
             mock_meter.create_up_down_counter.return_value = mock_gauge
@@ -611,9 +591,7 @@ class TestMetricsRegistry:
     def test_increment_counter(self):
         from enhanced_agent_bus.observability.telemetry import MetricsRegistry
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.get_meter"
-        ) as mock_get_meter:
+        with patch("enhanced_agent_bus.observability.telemetry.get_meter") as mock_get_meter:
             mock_meter = MagicMock()
             mock_counter = MagicMock()
             mock_meter.create_counter.return_value = mock_counter
@@ -629,9 +607,7 @@ class TestMetricsRegistry:
     def test_increment_counter_no_extra_attrs(self):
         from enhanced_agent_bus.observability.telemetry import MetricsRegistry
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.get_meter"
-        ) as mock_get_meter:
+        with patch("enhanced_agent_bus.observability.telemetry.get_meter") as mock_get_meter:
             mock_meter = MagicMock()
             mock_counter = MagicMock()
             mock_meter.create_counter.return_value = mock_counter
@@ -644,9 +620,7 @@ class TestMetricsRegistry:
     def test_record_latency(self):
         from enhanced_agent_bus.observability.telemetry import MetricsRegistry
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.get_meter"
-        ) as mock_get_meter:
+        with patch("enhanced_agent_bus.observability.telemetry.get_meter") as mock_get_meter:
             mock_meter = MagicMock()
             mock_hist = MagicMock()
             mock_meter.create_histogram.return_value = mock_hist
@@ -659,9 +633,7 @@ class TestMetricsRegistry:
     def test_record_latency_no_extra_attrs(self):
         from enhanced_agent_bus.observability.telemetry import MetricsRegistry
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.get_meter"
-        ) as mock_get_meter:
+        with patch("enhanced_agent_bus.observability.telemetry.get_meter") as mock_get_meter:
             mock_meter = MagicMock()
             mock_hist = MagicMock()
             mock_meter.create_histogram.return_value = mock_hist
@@ -674,9 +646,7 @@ class TestMetricsRegistry:
     def test_set_gauge(self):
         from enhanced_agent_bus.observability.telemetry import MetricsRegistry
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.get_meter"
-        ) as mock_get_meter:
+        with patch("enhanced_agent_bus.observability.telemetry.get_meter") as mock_get_meter:
             mock_meter = MagicMock()
             mock_gauge = MagicMock()
             mock_meter.create_up_down_counter.return_value = mock_gauge
@@ -689,9 +659,7 @@ class TestMetricsRegistry:
     def test_set_gauge_no_extra_attrs(self):
         from enhanced_agent_bus.observability.telemetry import MetricsRegistry
 
-        with patch(
-            "enhanced_agent_bus.observability.telemetry.get_meter"
-        ) as mock_get_meter:
+        with patch("enhanced_agent_bus.observability.telemetry.get_meter") as mock_get_meter:
             mock_meter = MagicMock()
             mock_gauge = MagicMock()
             mock_meter.create_up_down_counter.return_value = mock_gauge
@@ -1179,9 +1147,7 @@ class TestApplyMhcStability:
         scorer = ImpactScorer(_HASH)
         scorer.use_mhc_stability = True
         # Simulate torch not being available
-        with patch.dict(
-            scorer.feature_weights, {"bad": "not_a_number"}, clear=False
-        ):
+        with patch.dict(scorer.feature_weights, {"bad": "not_a_number"}, clear=False):
             # Should not raise
             scorer._apply_mhc_stability()
 
@@ -1386,9 +1352,7 @@ class TestEvaluateGovernanceDecision:
 
     async def test_evaluate_error_returns_fallback(self):
         engine = _build_engine_with_mocks()
-        engine.impact_scorer.assess_impact = AsyncMock(
-            side_effect=RuntimeError("boom")
-        )
+        engine.impact_scorer.assess_impact = AsyncMock(side_effect=RuntimeError("boom"))
 
         message = {"content": "test"}
         context = {}
@@ -1543,9 +1507,7 @@ class TestApplyDtmcRiskBlend:
 
     def test_weight_zero(self):
         engine = _build_engine_with_mocks()
-        engine.config = SimpleNamespace(
-            enable_dtmc=True, dtmc_impact_weight=0.0
-        )
+        engine.config = SimpleNamespace(enable_dtmc=True, dtmc_impact_weight=0.0)
         features = _make_impact_features(risk_score=0.5)
         result = engine._apply_dtmc_risk_blend(features)
         assert result.risk_score == 0.5
@@ -1895,9 +1857,7 @@ class TestStoreFeedbackEvent:
                         mock_os.FAILURE = "FAILURE"
 
                         decision = _make_decision()
-                        engine._store_feedback_event(
-                            decision, False, True, 0.5
-                        )
+                        engine._store_feedback_event(decision, False, True, 0.5)
                         mock_handler.store_feedback.assert_called_once()
 
     def test_skipped_when_handler_none(self):

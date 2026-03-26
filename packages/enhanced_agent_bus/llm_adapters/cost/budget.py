@@ -1,6 +1,6 @@
 """
 ACGS-2 Budget Management
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Manages budget limits for tenants and operations with cost tracking.
 """
@@ -31,7 +31,7 @@ class BudgetManager:
     """
     Manages budget limits for tenants and operations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self) -> None:

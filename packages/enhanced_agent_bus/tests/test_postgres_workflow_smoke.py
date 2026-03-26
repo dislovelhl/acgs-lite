@@ -27,7 +27,9 @@ async def test_postgres_workflow_smoke_persists_end_to_end() -> None:
     if asyncpg_module is None:
         pytest.skip("asyncpg not installed")
 
-    repository = PostgresWorkflowRepository(dsn=_postgres_dsn(), min_connections=1, max_connections=2)
+    repository = PostgresWorkflowRepository(
+        dsn=_postgres_dsn(), min_connections=1, max_connections=2
+    )
     try:
         await repository.initialize()
     except Exception as exc:  # pragma: no cover - environment dependent skip
@@ -68,11 +70,14 @@ async def test_postgres_workflow_smoke_persists_end_to_end() -> None:
                     "DELETE FROM workflow_events WHERE workflow_instance_id = $1", instance.id
                 )
                 await conn.execute(
-                    "DELETE FROM workflow_compensations WHERE workflow_instance_id = $1", instance.id
+                    "DELETE FROM workflow_compensations WHERE workflow_instance_id = $1",
+                    instance.id,
                 )
                 await conn.execute(
                     "DELETE FROM workflow_checkpoints WHERE workflow_instance_id = $1", instance.id
                 )
-                await conn.execute("DELETE FROM workflow_steps WHERE workflow_instance_id = $1", instance.id)
+                await conn.execute(
+                    "DELETE FROM workflow_steps WHERE workflow_instance_id = $1", instance.id
+                )
                 await conn.execute("DELETE FROM workflow_instances WHERE id = $1", instance.id)
         await repository.close()

@@ -3,7 +3,7 @@
 These tests validate the security fixes without importing the full gateway,
 which has unresolved import dependencies (api_versioning, otel_config, self_evolution).
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -63,9 +63,7 @@ class TestTokenRevocationIntegration:
         mock_revocation.is_token_revoked = AsyncMock(return_value=False)
 
         with (
-            patch(
-                "src.core.shared.security.auth.verify_token", return_value=claims
-            ),
+            patch("src.core.shared.security.auth.verify_token", return_value=claims),
             patch(
                 "src.core.shared.security.auth._get_revocation_service",
                 return_value=mock_revocation,
@@ -100,9 +98,7 @@ class TestTokenRevocationIntegration:
         mock_revocation.is_token_revoked = AsyncMock(return_value=True)
 
         with (
-            patch(
-                "src.core.shared.security.auth.verify_token", return_value=claims
-            ),
+            patch("src.core.shared.security.auth.verify_token", return_value=claims),
             patch(
                 "src.core.shared.security.auth._get_revocation_service",
                 return_value=mock_revocation,
@@ -113,7 +109,9 @@ class TestTokenRevocationIntegration:
             assert exc_info.value.status_code == 401
             assert "revoked" in exc_info.value.detail.lower()
 
-    async def test_get_current_user_fails_closed_when_revocation_backend_missing_in_production(self):
+    async def test_get_current_user_fails_closed_when_revocation_backend_missing_in_production(
+        self,
+    ):
         """Production auth must reject when revocation backend is unavailable."""
         from fastapi import HTTPException
 

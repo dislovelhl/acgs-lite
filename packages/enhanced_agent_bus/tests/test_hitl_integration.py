@@ -1,6 +1,6 @@
 """
 Tests for enhanced_agent_bus.constitutional.hitl_integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -227,9 +227,7 @@ class TestCreateApprovalRequest:
     async def test_successful_approval_request(self):
         storage = AsyncMock()
         integration = _make_integration(storage=storage, enable_notifications=False)
-        integration._submit_to_hitl_service = AsyncMock(
-            return_value={"request_id": "req_123"}
-        )
+        integration._submit_to_hitl_service = AsyncMock(return_value={"request_id": "req_123"})
 
         proposal = MagicMock()
         proposal.is_proposed = True
@@ -322,9 +320,7 @@ class TestProcessApprovalDecision:
         storage.get_amendment = AsyncMock(return_value=proposal)
 
         integration = _make_integration(storage=storage)
-        integration.check_approval_status = AsyncMock(
-            return_value={"status": "timed_out"}
-        )
+        integration.check_approval_status = AsyncMock(return_value={"status": "timed_out"})
 
         result = await integration.process_approval_decision("req_1", "prop_1")
         assert result is False
@@ -344,9 +340,7 @@ class TestProcessApprovalDecision:
         storage.get_amendment = AsyncMock(return_value=None)
 
         integration = _make_integration(storage=storage)
-        integration.check_approval_status = AsyncMock(
-            return_value={"status": "approved"}
-        )
+        integration.check_approval_status = AsyncMock(return_value={"status": "approved"})
 
         result = await integration.process_approval_decision("req_1", "prop_1")
         assert result is False
@@ -358,9 +352,7 @@ class TestProcessApprovalDecision:
         storage.get_amendment = AsyncMock(return_value=proposal)
 
         integration = _make_integration(storage=storage)
-        integration.check_approval_status = AsyncMock(
-            return_value={"status": "pending"}
-        )
+        integration.check_approval_status = AsyncMock(return_value={"status": "pending"})
 
         result = await integration.process_approval_decision("req_1", "prop_1")
         assert result is False
@@ -371,8 +363,14 @@ class TestNotifications:
     async def test_slack_without_webhook_returns_false(self):
         integration = _make_integration(notification_config={})
         result = await integration._send_slack_notification(
-            {"request_id": "r1", "title": "t", "message": "m", "priority": "high",
-             "approval_url": "http://x", "metadata": {"impact_score": 0.5, "proposal_id": "p1"}}
+            {
+                "request_id": "r1",
+                "title": "t",
+                "message": "m",
+                "priority": "high",
+                "approval_url": "http://x",
+                "metadata": {"impact_score": 0.5, "proposal_id": "p1"},
+            }
         )
         assert result is False
 
@@ -380,8 +378,14 @@ class TestNotifications:
     async def test_pagerduty_without_key_returns_false(self):
         integration = _make_integration(notification_config={})
         result = await integration._send_pagerduty_notification(
-            {"request_id": "r1", "title": "t", "message": "m", "priority": "high",
-             "approval_url": "http://x", "metadata": {"impact_score": 0.5, "proposal_id": "p1"}}
+            {
+                "request_id": "r1",
+                "title": "t",
+                "message": "m",
+                "priority": "high",
+                "approval_url": "http://x",
+                "metadata": {"impact_score": 0.5, "proposal_id": "p1"},
+            }
         )
         assert result is False
 
@@ -389,8 +393,14 @@ class TestNotifications:
     async def test_teams_without_webhook_returns_false(self):
         integration = _make_integration(notification_config={})
         result = await integration._send_teams_notification(
-            {"request_id": "r1", "title": "t", "message": "m", "priority": "high",
-             "approval_url": "http://x", "metadata": {"impact_score": 0.5, "proposal_id": "p1"}}
+            {
+                "request_id": "r1",
+                "title": "t",
+                "message": "m",
+                "priority": "high",
+                "approval_url": "http://x",
+                "metadata": {"impact_score": 0.5, "proposal_id": "p1"},
+            }
         )
         assert result is False
 

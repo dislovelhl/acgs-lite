@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Session Context Management
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides session context storage with Redis backend for dynamic
 per-session governance configuration.
@@ -79,7 +79,7 @@ class SessionContext(BaseModel):
     Stores session-level governance settings, metadata, and lifecycle
     information for dynamic per-session policy enforcement.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     session_id: str = Field(
@@ -420,7 +420,7 @@ class SessionContextManager:
     performance optimization. Tracks metrics for cache hits/misses and
     ensures atomic operations for concurrent access.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

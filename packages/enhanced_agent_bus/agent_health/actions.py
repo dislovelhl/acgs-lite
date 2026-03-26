@@ -1,6 +1,6 @@
 """
 Agent Health — Healing Actions.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements governed healing actions for the agent health sub-system.
 
@@ -49,7 +49,7 @@ class AgentBusGateway(Protocol):
     Callers must inject a concrete implementation (or test double) at
     construction time; no module-level singleton is used.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def drain(self, agent_id: AgentID) -> None:
@@ -98,7 +98,7 @@ class GracefulRestarter:
     All audit log writes and constitutional hash validation are the caller's
     responsibility (handled by the healing engine that constructs this action).
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -216,7 +216,7 @@ class QuarantineManager:
       2. Signal the Agent Bus to re-route messages away from this agent;
          the reroute call must complete within 500ms.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, bus: AgentBusGateway) -> None:
@@ -286,7 +286,7 @@ class HITLRequestor:
     Service URL is read from *hitl_service_url* constructor arg; if None, falls
     back to the ``HITL_SERVICE_URL`` environment variable.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, hitl_service_url: str | None = None) -> None:
@@ -401,7 +401,7 @@ class SupervisorNotifier:
     The *sla_timeout_seconds* parameter configures the SLA window within which
     supervisor approval is expected (used by callers that await a callback).
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

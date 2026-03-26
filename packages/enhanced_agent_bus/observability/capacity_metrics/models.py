@@ -1,6 +1,6 @@
 """
 ACGS-2 Capacity Metrics Data Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Contains all data models for capacity metrics including:
 - CapacityStatus enum for scaling decisions

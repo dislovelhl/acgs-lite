@@ -2,7 +2,7 @@
 Coverage batch 23e: Tests for hp_governance_workflow, resource_registry,
 constitutional invariants, and mcp_server.server.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -206,7 +206,7 @@ def _make_registry(
         resources=resources if resources is not None else {},
         metrics=_make_metrics(),
         audit_log=audit_log if audit_log is not None else [],
-        constitutional_hash="cdd01ef066bc6cf2",
+        constitutional_hash="608508a9bd224290",
         resource_factory=MagicMock(side_effect=lambda **kw: _make_resource(kw.get("uri", "x"))),
         logger_instance=logging.getLogger("test"),
     )
@@ -227,7 +227,7 @@ class TestMCPResourceRegistry:
             resources={},
             metrics=metrics,
             audit_log=[],
-            constitutional_hash="cdd01ef066bc6cf2",
+            constitutional_hash="608508a9bd224290",
             resource_factory=MagicMock(),
             logger_instance=logging.getLogger("test"),
         )
@@ -258,7 +258,7 @@ class TestMCPResourceRegistry:
             resources={},
             metrics=metrics,
             audit_log=[],
-            constitutional_hash="cdd01ef066bc6cf2",
+            constitutional_hash="608508a9bd224290",
             resource_factory=MagicMock(),
             logger_instance=logging.getLogger("test"),
         )
@@ -272,7 +272,7 @@ class TestMCPResourceRegistry:
             resources={},
             metrics=_make_metrics(),
             audit_log=[],
-            constitutional_hash="cdd01ef066bc6cf2",
+            constitutional_hash="608508a9bd224290",
             resource_factory=factory,
             logger_instance=logging.getLogger("test"),
         )
@@ -288,7 +288,7 @@ class TestMCPResourceRegistry:
         reg = _make_registry()
         result = await reg._resource_principles({})
         assert "principles" in result
-        assert result["constitutional_hash"] == "cdd01ef066bc6cf2"
+        assert result["constitutional_hash"] == "608508a9bd224290"
         assert "timestamp" in result
         assert "beneficence" in result["principles"]
 
@@ -299,7 +299,7 @@ class TestMCPResourceRegistry:
             resources={},
             metrics=metrics,
             audit_log=[],
-            constitutional_hash="cdd01ef066bc6cf2",
+            constitutional_hash="608508a9bd224290",
             resource_factory=MagicMock(),
             logger_instance=logging.getLogger("test"),
         )
@@ -312,7 +312,7 @@ class TestMCPResourceRegistry:
         result = await reg._resource_audit({})
         assert result["total_entries"] == 5
         assert len(result["entries"]) == 5
-        assert result["constitutional_hash"] == "cdd01ef066bc6cf2"
+        assert result["constitutional_hash"] == "608508a9bd224290"
 
     async def test_resource_audit_caps_at_100(self):
         audit_log = [{"i": i} for i in range(150)]
@@ -413,7 +413,7 @@ class TestChangeClassification:
 
 class TestInvariantManifest:
     def test_empty_manifest_computes_hash(self):
-        m = InvariantManifest(constitutional_hash="cdd01ef066bc6cf2")
+        m = InvariantManifest(constitutional_hash="608508a9bd224290")
         assert m.invariant_hash != ""
         assert len(m.invariant_hash) == 16
 
@@ -423,21 +423,21 @@ class TestInvariantManifest:
             name="Test",
             scope=InvariantScope.HARD,
         )
-        m = InvariantManifest(constitutional_hash="cdd01ef066bc6cf2", invariants=[inv])
+        m = InvariantManifest(constitutional_hash="608508a9bd224290", invariants=[inv])
         assert m.invariant_hash != ""
 
     def test_manifest_hash_mismatch_raises(self):
         with pytest.raises(ValueError, match="Invariant hash mismatch"):
             InvariantManifest(
-                constitutional_hash="cdd01ef066bc6cf2",
+                constitutional_hash="608508a9bd224290",
                 invariant_hash="0000000000000000",
             )
 
     def test_manifest_correct_hash_accepted(self):
-        m1 = InvariantManifest(constitutional_hash="cdd01ef066bc6cf2")
+        m1 = InvariantManifest(constitutional_hash="608508a9bd224290")
         h = m1.invariant_hash
         m2 = InvariantManifest(
-            constitutional_hash="cdd01ef066bc6cf2",
+            constitutional_hash="608508a9bd224290",
             invariant_hash=h,
         )
         assert m2.invariant_hash == h
@@ -448,18 +448,18 @@ class TestInvariantManifest:
             name="A",
             scope=InvariantScope.HARD,
         )
-        m1 = InvariantManifest(constitutional_hash="cdd01ef066bc6cf2", invariants=[inv])
-        m2 = InvariantManifest(constitutional_hash="cdd01ef066bc6cf2", invariants=[inv])
+        m1 = InvariantManifest(constitutional_hash="608508a9bd224290", invariants=[inv])
+        m2 = InvariantManifest(constitutional_hash="608508a9bd224290", invariants=[inv])
         assert m1.invariant_hash == m2.invariant_hash
 
     def test_manifest_hash_changes_with_invariants(self):
-        m_empty = InvariantManifest(constitutional_hash="cdd01ef066bc6cf2")
+        m_empty = InvariantManifest(constitutional_hash="608508a9bd224290")
         inv = InvariantDefinition(
             invariant_id="INV-B",
             name="B",
             scope=InvariantScope.SOFT,
         )
-        m_with = InvariantManifest(constitutional_hash="cdd01ef066bc6cf2", invariants=[inv])
+        m_with = InvariantManifest(constitutional_hash="608508a9bd224290", invariants=[inv])
         assert m_empty.invariant_hash != m_with.invariant_hash
 
 
@@ -550,14 +550,14 @@ class TestCheckAppendOnlyAudit:
 class TestCheckConstitutionalHashRequired:
     def test_matching_hash_passes(self):
         r = check_constitutional_hash_required(
-            {"constitutional_hash": "cdd01ef066bc6cf2"},
-            {"constitutional_hash": "cdd01ef066bc6cf2"},
+            {"constitutional_hash": "608508a9bd224290"},
+            {"constitutional_hash": "608508a9bd224290"},
         )
         assert r.passed is True
 
     def test_missing_hash_fails(self):
         r = check_constitutional_hash_required(
-            {"constitutional_hash": "cdd01ef066bc6cf2"},
+            {"constitutional_hash": "608508a9bd224290"},
             {},
         )
         assert r.passed is False
@@ -565,7 +565,7 @@ class TestCheckConstitutionalHashRequired:
 
     def test_mismatched_hash_fails(self):
         r = check_constitutional_hash_required(
-            {"constitutional_hash": "cdd01ef066bc6cf2"},
+            {"constitutional_hash": "608508a9bd224290"},
             {"constitutional_hash": "0000000000000000"},
         )
         assert r.passed is False
@@ -581,7 +581,7 @@ class TestCheckConstitutionalHashRequired:
 
     def test_empty_provided_hash_fails(self):
         r = check_constitutional_hash_required(
-            {"constitutional_hash": "cdd01ef066bc6cf2"},
+            {"constitutional_hash": "608508a9bd224290"},
             {"constitutional_hash": ""},
         )
         assert r.passed is False
@@ -589,15 +589,11 @@ class TestCheckConstitutionalHashRequired:
 
 class TestCheckTenantIsolation:
     def test_same_tenant_passes(self):
-        r = check_tenant_isolation(
-            {}, {"source_tenant_id": "t1", "target_tenant_id": "t1"}
-        )
+        r = check_tenant_isolation({}, {"source_tenant_id": "t1", "target_tenant_id": "t1"})
         assert r.passed is True
 
     def test_cross_tenant_fails(self):
-        r = check_tenant_isolation(
-            {}, {"source_tenant_id": "t1", "target_tenant_id": "t2"}
-        )
+        r = check_tenant_isolation({}, {"source_tenant_id": "t1", "target_tenant_id": "t2"})
         assert r.passed is False
         assert "cannot cross" in r.message
 
@@ -620,9 +616,7 @@ class TestCheckHumanApprovalForActivation:
         assert r.passed is True
 
     def test_activation_with_approval_passes(self):
-        r = check_human_approval_for_activation(
-            {}, {"is_activation": True, "human_approved": True}
-        )
+        r = check_human_approval_for_activation({}, {"is_activation": True, "human_approved": True})
         assert r.passed is True
 
     def test_activation_without_approval_fails(self):
@@ -647,7 +641,7 @@ class TestGetDefaultManifest:
     def test_returns_manifest(self):
         m = get_default_manifest()
         assert isinstance(m, InvariantManifest)
-        assert m.constitutional_hash == "cdd01ef066bc6cf2"
+        assert m.constitutional_hash == "608508a9bd224290"
 
     def test_has_six_invariants(self):
         m = get_default_manifest()

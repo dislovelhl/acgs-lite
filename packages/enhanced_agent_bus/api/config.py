@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus API Configuration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module contains all configuration constants for the API layer,
 including rate limits, size limits, and server configuration.
@@ -36,7 +36,7 @@ BATCH_RATE_LIMIT_BASE = _env_positive_int("BATCH_RATE_LIMIT_BASE", 100)
 MAX_ITEM_CONTENT_SIZE = _env_positive_int("MAX_ITEM_CONTENT_SIZE", 1048576)
 
 # ===== Configuration Constants (Phase 3B: Magic Number Extraction) =====
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 
 # Default values for environment variables
 DEFAULT_RATE_LIMIT_REQUESTS_PER_MINUTE = 60

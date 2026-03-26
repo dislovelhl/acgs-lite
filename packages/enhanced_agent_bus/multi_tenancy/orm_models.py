@@ -1,6 +1,6 @@
 """
 ACGS-2 Multi-Tenancy SQLAlchemy ORM Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 SQLAlchemy ORM models for persistent multi-tenant database storage.
 These models correspond to the Pydantic models in models.py and provide
@@ -60,7 +60,7 @@ class TenantORM(Base):
     """
     SQLAlchemy ORM model for enterprise tenants.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Represents an isolated tenant in the multi-tenant ACGS-2 system.
     Each tenant has its own data isolation via PostgreSQL RLS policies.
@@ -254,7 +254,7 @@ class EnterpriseIntegrationORM(Base):
     """
     SQLAlchemy ORM model for enterprise integrations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Stores SSO, LDAP, and other enterprise integration configurations
     per tenant.
@@ -382,7 +382,7 @@ class TenantRoleMappingORM(Base):
     """
     SQLAlchemy ORM model for tenant role mappings.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Maps external identity provider groups/roles to internal ACGS-2 roles.
     Supports SSO group-to-role translation and MACI role assignment.
@@ -499,7 +499,7 @@ class MigrationJobORM(Base):
     """
     SQLAlchemy ORM model for tenant migration jobs.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Tracks tenant data migration operations for cross-region moves,
     schema upgrades, and data transformations.
@@ -634,7 +634,7 @@ class TenantAuditLogORM(Base):
     """
     SQLAlchemy ORM model for tenant audit logs.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Immutable audit trail for tenant operations, configuration changes,
     and security events. Critical for compliance and forensics.

@@ -4,7 +4,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 """
 Integration tests for feedback submission flow.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import json
@@ -187,7 +187,9 @@ class TestFeedbackIntegration:
         assert stored_data["url"] == ""  # Default empty
         assert stored_data["metadata"] == {}  # Default empty dict
 
-    def test_feedback_persistence_across_requests(self, client, sample_feedback, mock_feedback_redis):
+    def test_feedback_persistence_across_requests(
+        self, client, sample_feedback, mock_feedback_redis
+    ):
         """Test that feedback persists correctly across multiple requests."""
         # First request
         response1 = client.post("/api/v1/gateway/feedback", json=sample_feedback)

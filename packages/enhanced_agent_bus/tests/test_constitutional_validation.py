@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Constitutional Validation Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for constitutional validation paths.
 """
@@ -26,7 +26,7 @@ from enhanced_agent_bus.validators import (
 )
 
 # Mark all tests as governance tests (95% coverage required)
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
 

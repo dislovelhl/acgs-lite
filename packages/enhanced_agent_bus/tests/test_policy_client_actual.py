@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Actual Policy Client Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests that exercise the actual policy_client.py module.
 """

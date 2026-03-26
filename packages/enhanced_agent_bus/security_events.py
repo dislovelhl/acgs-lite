@@ -1,7 +1,7 @@
 """
 Security Event Logging Stream for ACGS-2.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides a unified security event logging interface for the Enhanced Agent Bus,
 enabling structured JSON logging suitable for SIEM integration.
@@ -356,7 +356,7 @@ class SecurityEventLogger:
 
         await logger.stop()
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

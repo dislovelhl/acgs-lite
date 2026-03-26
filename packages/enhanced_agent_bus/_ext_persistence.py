@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """Optional Workflow Persistence Module (Phase 9).
 
 When unavailable, all exported names are stubbed to ``object``

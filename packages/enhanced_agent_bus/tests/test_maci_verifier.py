@@ -33,6 +33,7 @@ from enhanced_agent_bus.verification_layer.maci_verifier import (
 # Enum tests
 # ---------------------------------------------------------------------------
 
+
 class TestMACIAgentRole:
     def test_values(self):
         assert MACIAgentRole.EXECUTIVE.value == "executive"
@@ -64,6 +65,7 @@ class TestVerificationStatus:
 # ---------------------------------------------------------------------------
 # Dataclass tests
 # ---------------------------------------------------------------------------
+
 
 class TestMACIVerificationContext:
     def test_defaults(self):
@@ -158,6 +160,7 @@ class TestMACIVerificationResult:
 # Role permissions matrix tests
 # ---------------------------------------------------------------------------
 
+
 class TestRolePermissions:
     def test_executive_can_propose_and_execute(self):
         perms = ROLE_PERMISSIONS[MACIAgentRole.EXECUTIVE]
@@ -186,6 +189,7 @@ class TestRolePermissions:
 # MACIAgentBase tests
 # ---------------------------------------------------------------------------
 
+
 class TestMACIAgentBase:
     def test_register_and_owns_output(self):
         agent = MACIAgentBase("a1", MACIAgentRole.EXECUTIVE)
@@ -211,6 +215,7 @@ class TestMACIAgentBase:
 # ---------------------------------------------------------------------------
 # ExecutiveAgent tests
 # ---------------------------------------------------------------------------
+
 
 class TestExecutiveAgent:
     @pytest.fixture
@@ -280,6 +285,7 @@ class TestExecutiveAgent:
 # LegislativeAgent tests
 # ---------------------------------------------------------------------------
 
+
 class TestLegislativeAgent:
     @pytest.fixture
     def agent(self):
@@ -335,9 +341,7 @@ class TestLegislativeAgent:
     @pytest.mark.asyncio
     async def test_constraints_with_human_approval(self, agent):
         decision = {"action": "test", "output_id": "d-6"}
-        ctx = MACIVerificationContext(
-            decision_context={"requires_human_approval": True}
-        )
+        ctx = MACIVerificationContext(decision_context={"requires_human_approval": True})
         rules, _ = await agent.extract_rules(decision, ctx)
         assert any("Human approval" in c for c in rules["constraints"])
 
@@ -358,6 +362,7 @@ class TestLegislativeAgent:
 # JudicialAgent tests
 # ---------------------------------------------------------------------------
 
+
 class TestJudicialAgent:
     @pytest.fixture
     def agent(self):
@@ -375,19 +380,38 @@ class TestJudicialAgent:
     def _make_rules(self, rule_ids=None):
         rules_list = []
         all_rules = {
-            "policy_integrity": {"rule_id": "policy_integrity", "severity": "critical",
-                                  "description": "Policy integrity", "scope": "all"},
-            "impact_assessment_required": {"rule_id": "impact_assessment_required",
-                                           "severity": "high", "description": "Impact",
-                                           "scope": "changes"},
-            "least_privilege": {"rule_id": "least_privilege", "severity": "critical",
-                                "description": "Least privilege", "scope": "access"},
-            "audit_trail_required": {"rule_id": "audit_trail_required", "severity": "high",
-                                     "description": "Audit trail", "scope": "ops"},
-            "data_protection": {"rule_id": "data_protection", "severity": "critical",
-                                "description": "Data protection", "scope": "data"},
+            "policy_integrity": {
+                "rule_id": "policy_integrity",
+                "severity": "critical",
+                "description": "Policy integrity",
+                "scope": "all",
+            },
+            "impact_assessment_required": {
+                "rule_id": "impact_assessment_required",
+                "severity": "high",
+                "description": "Impact",
+                "scope": "changes",
+            },
+            "least_privilege": {
+                "rule_id": "least_privilege",
+                "severity": "critical",
+                "description": "Least privilege",
+                "scope": "access",
+            },
+            "audit_trail_required": {
+                "rule_id": "audit_trail_required",
+                "severity": "high",
+                "description": "Audit trail",
+                "scope": "ops",
+            },
+            "data_protection": {
+                "rule_id": "data_protection",
+                "severity": "critical",
+                "description": "Data protection",
+                "scope": "data",
+            },
         }
-        for rid in (rule_ids or []):
+        for rid in rule_ids or []:
             if rid in all_rules:
                 rules_list.append(all_rules[rid])
         return {
@@ -449,9 +473,7 @@ class TestJudicialAgent:
         judgment, _ = await agent.validate_compliance(decision, rules, ctx)
 
         assert judgment["is_compliant"] is False
-        assert any(
-            v["rule_id"] == "impact_assessment_required" for v in judgment["violations"]
-        )
+        assert any(v["rule_id"] == "impact_assessment_required" for v in judgment["violations"])
 
     @pytest.mark.asyncio
     async def test_least_privilege_violation(self, agent):
@@ -574,6 +596,7 @@ class TestJudicialAgent:
 # MACIVerifier pipeline tests
 # ---------------------------------------------------------------------------
 
+
 class TestMACIVerifier:
     @pytest.fixture
     def mock_planner(self):
@@ -664,6 +687,7 @@ class TestMACIVerifier:
 # Cross-role validation tests
 # ---------------------------------------------------------------------------
 
+
 class TestVerifyCrossRoleAction:
     @pytest.fixture
     def verifier(self):
@@ -724,6 +748,7 @@ class TestVerifyCrossRoleAction:
 # ---------------------------------------------------------------------------
 # Stats and factory tests
 # ---------------------------------------------------------------------------
+
 
 class TestGetVerificationStats:
     @pytest.fixture

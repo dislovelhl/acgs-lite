@@ -1,6 +1,6 @@
 """
 ACGS-2 AI Assistant - Agent Bus Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Integration layer between AI Assistant and the Enhanced Agent Bus.
 Handles constitutional validation, message routing, and governance.

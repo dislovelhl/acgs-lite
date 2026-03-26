@@ -3,7 +3,7 @@ name = "constitutional_swarm"
 version = "0.1.0"
 description = "Constitutional Swarm Mesh — orchestrator-free multi-agent governance via embedded Agent DNA"
 requires-python = ">=3.11"
-dependencies = ["acgs-lite"]
+dependencies = ["acgs"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "pytest-asyncio>=1.0"]

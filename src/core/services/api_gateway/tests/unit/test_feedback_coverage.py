@@ -1,6 +1,6 @@
 """
 Tests for feedback.py — feedback submission, stats, Redis storage, models.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: FeedbackRequest validation (metadata size, payload size, process),
 get_cached_feedback_stats, update_feedback_stats_cache,
@@ -275,8 +275,12 @@ class TestSubmitFeedbackEndpoint:
         from src.core.shared.security.auth import UserClaims
 
         user = UserClaims(
-            sub="real-user", roles=["user"], tenant_id="t1",
-            permissions=[], exp=9999999999, iat=1000000000,
+            sub="real-user",
+            roles=["user"],
+            tenant_id="t1",
+            permissions=[],
+            exp=9999999999,
+            iat=1000000000,
         )
 
         from src.core.services.api_gateway.main import app as real_app
@@ -314,7 +318,14 @@ class TestFeedbackStatsEndpoint:
         """Admin user gets stats from Redis."""
         from src.core.shared.security.auth import UserClaims
 
-        admin_user = UserClaims(sub="admin-1", roles=["admin"], tenant_id="t1", permissions=[], exp=9999999999, iat=1000000000)
+        admin_user = UserClaims(
+            sub="admin-1",
+            roles=["admin"],
+            tenant_id="t1",
+            permissions=[],
+            exp=9999999999,
+            iat=1000000000,
+        )
 
         monkeypatch.setattr(
             "src.core.services.api_gateway.routes.feedback.get_current_user_optional",
@@ -399,16 +410,24 @@ class TestEnforceFeedbackPolicy:
 
             await _enforce_feedback_submission_policy(request, user=None)
 
-        assert "429" in str(exc_info.value.status_code) or "rate limit" in str(exc_info.value.detail).lower()
+        assert (
+            "429" in str(exc_info.value.status_code)
+            or "rate limit" in str(exc_info.value.detail).lower()
+        )
 
     async def test_authenticated_user_allowed(self):
         from src.core.shared.security.auth import UserClaims
         from src.core.shared.security.rate_limiter import RateLimitResult
 
-        allowed = RateLimitResult(
-            allowed=True, limit=60, remaining=59, retry_after=0, reset_at=0
+        allowed = RateLimitResult(allowed=True, limit=60, remaining=59, retry_after=0, reset_at=0)
+        user = UserClaims(
+            sub="user-1",
+            roles=["user"],
+            tenant_id="t1",
+            permissions=[],
+            exp=9999999999,
+            iat=1000000000,
         )
-        user = UserClaims(sub="user-1", roles=["user"], tenant_id="t1", permissions=[], exp=9999999999, iat=1000000000)
 
         request = MagicMock()
         request.headers = {}

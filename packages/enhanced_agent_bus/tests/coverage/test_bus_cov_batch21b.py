@@ -1,7 +1,7 @@
 """Coverage tests for validation_strategies, processing_strategies,
 adaptive_governance/threshold_manager, and verification_orchestrator.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -612,9 +612,7 @@ class TestConstitutionalValidationStrategy:
         from enhanced_agent_bus.validation_strategies import ConstitutionalValidationStrategy
 
         verifier = AsyncMock()
-        verifier.verify_constitutional_compliance = AsyncMock(
-            side_effect=RuntimeError("z3 crash")
-        )
+        verifier.verify_constitutional_compliance = AsyncMock(side_effect=RuntimeError("z3 crash"))
         strategy = ConstitutionalValidationStrategy(verifier=verifier)
         valid, err = await strategy.validate(_make_msg())
         assert valid is False
@@ -879,9 +877,7 @@ class TestCompositeProcessingStrategy:
         )
         from enhanced_agent_bus.validation_strategies import StaticHashValidationStrategy
 
-        s1 = PythonProcessingStrategy(
-            validation_strategy=StaticHashValidationStrategy(strict=True)
-        )
+        s1 = PythonProcessingStrategy(validation_strategy=StaticHashValidationStrategy(strict=True))
         composite = CompositeProcessingStrategy(strategies=[s1])
         result = await composite.process(_make_msg(), {})
         assert result.is_valid is True
@@ -907,9 +903,7 @@ class TestCompositeProcessingStrategy:
         s1.process = AsyncMock(side_effect=RuntimeError("s1 fail"))
         s1.get_name.return_value = "broken"
 
-        s2 = PythonProcessingStrategy(
-            validation_strategy=StaticHashValidationStrategy(strict=True)
-        )
+        s2 = PythonProcessingStrategy(validation_strategy=StaticHashValidationStrategy(strict=True))
         composite = CompositeProcessingStrategy(strategies=[s1, s2])
         result = await composite.process(_make_msg(), {})
         assert result.is_valid is True
@@ -939,12 +933,8 @@ class TestCompositeProcessingStrategy:
         )
         from enhanced_agent_bus.validation_strategies import StaticHashValidationStrategy
 
-        s1 = PythonProcessingStrategy(
-            validation_strategy=StaticHashValidationStrategy(strict=True)
-        )
-        s2 = PythonProcessingStrategy(
-            validation_strategy=StaticHashValidationStrategy(strict=True)
-        )
+        s1 = PythonProcessingStrategy(validation_strategy=StaticHashValidationStrategy(strict=True))
+        s2 = PythonProcessingStrategy(validation_strategy=StaticHashValidationStrategy(strict=True))
         composite = CompositeProcessingStrategy(strategies=[s1, s2])
         msg = _make_msg(constitutional_hash="bad")
         result = await composite.process(msg, {})
@@ -975,9 +965,7 @@ class TestDynamicPolicyProcessingStrategy:
         from enhanced_agent_bus.processing_strategies import DynamicPolicyProcessingStrategy
 
         client = AsyncMock()
-        client.validate_message_signature = AsyncMock(
-            return_value=_PolicyResult(is_valid=True)
-        )
+        client.validate_message_signature = AsyncMock(return_value=_PolicyResult(is_valid=True))
         strategy = DynamicPolicyProcessingStrategy(policy_client=client)
         msg = _make_msg()
         result = await strategy.process(msg, {})
@@ -1318,15 +1306,17 @@ class TestAdaptiveThresholds:
 
         now = time.time()
         for i in range(120):
-            thresholds.training_data.append({
-                "features": thresholds._extract_feature_vector(features),
-                "target": 0.05 * (i % 10),
-                "timestamp": now - 100,
-                "impact_level": ImpactLevel.MEDIUM.value,
-                "confidence": 0.8,
-                "outcome_success": True,
-                "human_feedback": None,
-            })
+            thresholds.training_data.append(
+                {
+                    "features": thresholds._extract_feature_vector(features),
+                    "target": 0.05 * (i % 10),
+                    "timestamp": now - 100,
+                    "impact_level": ImpactLevel.MEDIUM.value,
+                    "confidence": 0.8,
+                    "outcome_success": True,
+                    "human_feedback": None,
+                }
+            )
         thresholds._retrain_model()
         assert thresholds.model_trained is True
 
@@ -1334,16 +1324,18 @@ class TestAdaptiveThresholds:
         from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
 
         now = time.time()
-        for i in range(120):
-            thresholds.training_data.append({
-                "features": thresholds._extract_feature_vector(features),
-                "target": 0.01,
-                "timestamp": now - 100,
-                "impact_level": ImpactLevel.MEDIUM.value,
-                "confidence": 0.8,
-                "outcome_success": True,
-                "human_feedback": None,
-            })
+        for _i in range(120):
+            thresholds.training_data.append(
+                {
+                    "features": thresholds._extract_feature_vector(features),
+                    "target": 0.01,
+                    "timestamp": now - 100,
+                    "impact_level": ImpactLevel.MEDIUM.value,
+                    "confidence": 0.8,
+                    "outcome_success": True,
+                    "human_feedback": None,
+                }
+            )
         thresholds._retrain_model()
         assert thresholds.model_trained is True
 
@@ -1370,16 +1362,18 @@ class TestAdaptiveThresholds:
         thresholds.last_retraining = time.time() - 7200
 
         now = time.time()
-        for i in range(120):
-            thresholds.training_data.append({
-                "features": thresholds._extract_feature_vector(features),
-                "target": 0.01,
-                "timestamp": now - 100,
-                "impact_level": ImpactLevel.MEDIUM.value,
-                "confidence": 0.8,
-                "outcome_success": True,
-                "human_feedback": None,
-            })
+        for _i in range(120):
+            thresholds.training_data.append(
+                {
+                    "features": thresholds._extract_feature_vector(features),
+                    "target": 0.01,
+                    "timestamp": now - 100,
+                    "impact_level": ImpactLevel.MEDIUM.value,
+                    "confidence": 0.8,
+                    "outcome_success": True,
+                    "human_feedback": None,
+                }
+            )
 
         decision = GovernanceDecision(
             action_allowed=True,
@@ -1395,16 +1389,18 @@ class TestAdaptiveThresholds:
     def test_retrain_insufficient_recent_data(self, thresholds, features):
         """100+ samples but all older than 24h -> skip."""
         old_ts = time.time() - 200_000
-        for i in range(120):
-            thresholds.training_data.append({
-                "features": thresholds._extract_feature_vector(features),
-                "target": 0.01,
-                "timestamp": old_ts,
-                "impact_level": "medium",
-                "confidence": 0.8,
-                "outcome_success": True,
-                "human_feedback": None,
-            })
+        for _i in range(120):
+            thresholds.training_data.append(
+                {
+                    "features": thresholds._extract_feature_vector(features),
+                    "target": 0.01,
+                    "timestamp": old_ts,
+                    "impact_level": "medium",
+                    "confidence": 0.8,
+                    "outcome_success": True,
+                    "human_feedback": None,
+                }
+            )
         thresholds._retrain_model()
         assert thresholds.model_trained is False
 
@@ -1418,7 +1414,9 @@ class TestAdaptiveThresholds:
         data = [{"outcome_success": True, "human_feedback": None}] * 60
 
         thresholds._mlflow_initialized = True
-        with patch("enhanced_agent_bus.adaptive_governance.threshold_manager.mlflow") as mock_mlflow:
+        with patch(
+            "enhanced_agent_bus.adaptive_governance.threshold_manager.mlflow"
+        ) as mock_mlflow:
             mock_mlflow.start_run.side_effect = RuntimeError("mlflow down")
             thresholds._log_training_run_to_mlflow(X, y, data)
         # Should have fallen back to direct fit

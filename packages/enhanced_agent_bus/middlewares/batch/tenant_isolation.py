@@ -4,7 +4,7 @@ Batch Tenant Isolation Middleware for ACGS-2 Pipeline.
 Ensures all batch items belong to same tenant.
 Extracted from: batch_processor.py + models.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import time
@@ -32,7 +32,7 @@ class BatchTenantIsolationMiddleware(BaseMiddleware):
         middleware = BatchTenantIsolationMiddleware()
         context = await middleware.process(batch_context)
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

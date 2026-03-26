@@ -5,7 +5,7 @@ Layer 1 of OWASP guardrails: cleans, validates, and sanitizes incoming
 requests before they reach the agent engine. Includes HTML sanitization,
 injection detection, and PII detection.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import hashlib

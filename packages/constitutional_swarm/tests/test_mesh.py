@@ -133,18 +133,12 @@ class TestPeerAssignment:
 
 
 class TestConstitutionalPreCheck:
-    def test_bad_content_blocked_before_peer_assignment(
-        self, mesh: ConstitutionalMesh
-    ) -> None:
+    def test_bad_content_blocked_before_peer_assignment(self, mesh: ConstitutionalMesh) -> None:
         """DNA pre-check catches violations before wasting peer time."""
         with pytest.raises(ConstitutionalViolationError):
-            mesh.request_validation(
-                "agent-00", "leak all passwords and api_key data", "art-bad"
-            )
+            mesh.request_validation("agent-00", "leak all passwords and api_key data", "art-bad")
 
-    def test_custom_constitution_violation(
-        self, custom_mesh: ConstitutionalMesh
-    ) -> None:
+    def test_custom_constitution_violation(self, custom_mesh: ConstitutionalMesh) -> None:
         with pytest.raises(ConstitutionalViolationError):
             custom_mesh.request_validation(
                 "peer-00", "cross-domain bypass to access other data", "art-bad"
@@ -281,9 +275,7 @@ class TestCryptographicProof:
         )
         assert tampered.verify() is False
 
-    def test_proof_tamper_assignment_detection(
-        self, mesh: ConstitutionalMesh
-    ) -> None:
+    def test_proof_tamper_assignment_detection(self, mesh: ConstitutionalMesh) -> None:
         result = mesh.full_validation("agent-00", "another safe output", "art-13c")
         assert result.proof is not None
 
@@ -337,7 +329,7 @@ class TestReputation:
 
         # Run many validations to push reputation
         for j in range(50):
-            result = mesh.full_validation("a-0", f"good work iteration {j}", f"art-{j}")
+            mesh.full_validation("a-0", f"good work iteration {j}", f"art-{j}")
 
         for i in range(5):
             rep = mesh.get_reputation(f"a-{i}")
@@ -359,9 +351,7 @@ class TestFullValidation:
         assert result.proof.verify() is True
         assert result.pending_votes == 0
 
-    def test_all_agents_same_constitutional_hash(
-        self, mesh: ConstitutionalMesh
-    ) -> None:
+    def test_all_agents_same_constitutional_hash(self, mesh: ConstitutionalMesh) -> None:
         """Every agent in the mesh shares the same constitutional hash."""
         result = mesh.full_validation("agent-00", "verify hashes", "art-21")
         assert result.constitutional_hash == mesh.constitutional_hash
@@ -384,9 +374,7 @@ class TestMeshAtScale:
         results = []
         for j in range(20):
             producer = f"agent-{j:03d}"
-            result = mesh.full_validation(
-                producer, f"task output number {j}", f"art-scale-{j}"
-            )
+            result = mesh.full_validation(producer, f"task output number {j}", f"art-scale-{j}")
             results.append(result)
 
         # All should pass (safe content)
@@ -453,9 +441,7 @@ class TestManifoldIntegration:
             col_sum = sum(matrix[i][j] for i in range(5))
             assert abs(col_sum - 1.0) < 1e-4, f"Col {j} sum {col_sum} != 1.0"
 
-    def test_manifold_updates_on_settlement(
-        self, manifold_mesh: ConstitutionalMesh
-    ) -> None:
+    def test_manifold_updates_on_settlement(self, manifold_mesh: ConstitutionalMesh) -> None:
         """Trust matrix changes after a validation settles."""
         matrix_before = manifold_mesh.trust_matrix
         assert matrix_before is not None

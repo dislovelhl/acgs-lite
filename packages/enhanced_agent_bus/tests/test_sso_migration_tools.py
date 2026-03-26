@@ -60,7 +60,9 @@ class TestDecisionLogImporter:
         assert result.start_time is not None
         assert result.end_time is not None
 
-    async def test_import_csv_returns_correct_import_id(self, importer, basic_mappings, csv_content):
+    async def test_import_csv_returns_correct_import_id(
+        self, importer, basic_mappings, csv_content
+    ):
         result = await importer.import_csv(csv_content, basic_mappings, "t")
         assert result.import_id is not None
         assert len(result.import_id) > 0
@@ -93,7 +95,9 @@ class TestDecisionLogImporter:
             SchemaMapping(source_column="action", target_field="action"),
             SchemaMapping(source_column="resource", target_field="resource"),
             SchemaMapping(source_column="decision", target_field="decision"),
-            SchemaMapping(source_column="ts", target_field="timestamp", transform=lambda _v: fixed_ts),
+            SchemaMapping(
+                source_column="ts", target_field="timestamp", transform=lambda _v: fixed_ts
+            ),
         ]
         csv = "id,action,resource,decision,ts\n1,read,doc,allow,x\n1,read,doc,allow,x\n"
         result = await importer.import_csv(csv, mappings, "t")

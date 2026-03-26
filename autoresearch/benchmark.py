@@ -9,7 +9,7 @@ Runs the governance engine against 847 scenarios and measures:
 - Throughput (requests per second)
 - False positive/negative rates
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -18,8 +18,9 @@ import json
 import statistics
 import sys
 import time
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
 
 # Add acgs-lite to path
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -34,7 +35,55 @@ from acgs_lite.errors import ConstitutionalViolationError
 sys.path.insert(0, str(REPO_ROOT))
 import contextlib
 
-from src.core.shared.metrics.rocs import RoCSTracker
+try:
+    from src.core.shared.metrics.rocs import RoCSTracker
+except ModuleNotFoundError:
+    @dataclass
+    class _FallbackGovernanceSpend:
+        validation_ns: int = 0
+        scoring_ns: int = 0
+
+        @property
+        def total_seconds(self) -> float:
+            return (self.validation_ns + self.scoring_ns) / 1_000_000_000
+
+
+    @dataclass
+    class _FallbackGovernanceValue:
+        total_weighted: float = 0.0
+
+
+    @dataclass
+    class _FallbackRoCSSnapshot:
+        rocs: float
+        spend: _FallbackGovernanceSpend
+        value: _FallbackGovernanceValue
+
+
+    class RoCSTracker:
+        """Local fallback when the platform RoCS module is unavailable."""
+
+        _SEVERITY_WEIGHTS: ClassVar[dict[str, float]] = {
+            "critical": 10.0,
+            "high": 5.0,
+            "medium": 2.0,
+            "low": 1.0,
+            "allow": 1.0,
+        }
+
+        def __init__(self) -> None:
+            self._spend = _FallbackGovernanceSpend()
+            self._value = _FallbackGovernanceValue()
+
+        def record_validation(self, elapsed_ns: int, severity: str = "allow", correct: bool = True) -> None:
+            self._spend.validation_ns += elapsed_ns
+            if correct:
+                self._value.total_weighted += self._SEVERITY_WEIGHTS.get(severity.lower(), 1.0)
+
+        def snapshot(self) -> _FallbackRoCSSnapshot:
+            total_seconds = self._spend.total_seconds
+            rocs = self._value.total_weighted / total_seconds if total_seconds > 0 else 0.0
+            return _FallbackRoCSSnapshot(rocs=rocs, spend=self._spend, value=self._value)
 
 SCENARIOS_DIR = Path(__file__).parent / "scenarios"
 CONSTITUTION_FILE = Path(__file__).parent / "constitution.yaml"

@@ -2,7 +2,7 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 """
 ACGS-2 Auth Rate Limiting Integration Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for strict auth endpoint rate limiting to prevent brute force attacks.
 """

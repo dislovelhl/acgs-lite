@@ -1,6 +1,6 @@
 """
 Integration tests for constitutional invariant system wiring.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests:
 - ProposalInvariantValidator wired into AmendmentProposalEngine
@@ -50,7 +50,7 @@ def _make_mock_storage(
         active_version = ConstitutionalVersion(
             version_id="v-test-001",
             version="1.0.0",
-            constitutional_hash="cdd01ef066bc6cf2",
+            constitutional_hash="608508a9bd224290",
             content={"principles": ["be safe"], "enforcement": {"mode": "strict"}},
             predecessor_version=None,
             status="active",
@@ -156,7 +156,7 @@ class TestSDPCEvolutionControllerInvariantIntegration:
         )
 
         blocking_manifest = InvariantManifest(
-            constitutional_hash="cdd01ef066bc6cf2",
+            constitutional_hash="608508a9bd224290",
             invariants=[
                 InvariantDefinition(
                     invariant_id="INV-TEST-SDPC",

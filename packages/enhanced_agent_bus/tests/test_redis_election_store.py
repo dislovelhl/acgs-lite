@@ -1,6 +1,6 @@
 """Tests for RedisElectionStore.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests Redis-backed election and vote storage with full mock coverage.
 """
@@ -26,9 +26,7 @@ from enhanced_agent_bus.deliberation_layer.redis_election_store import (
 @pytest.fixture
 def mock_settings():
     """Patch settings to avoid real config lookups."""
-    with patch(
-        "enhanced_agent_bus.deliberation_layer.redis_election_store.settings"
-    ) as mock_s:
+    with patch("enhanced_agent_bus.deliberation_layer.redis_election_store.settings") as mock_s:
         mock_s.redis.url = "redis://localhost:6379/0"
         mock_s.voting.redis_election_prefix = "election:"
         mock_s.voting.default_timeout_seconds = 300
@@ -226,36 +224,26 @@ class TestAddVote:
         connected_store.redis_client.get.return_value = json.dumps(data)
         connected_store.redis_client.ttl.return_value = 200
 
-        result = await connected_store.add_vote(
-            "e1", {"agent_id": "agent-1", "choice": "yes"}
-        )
+        result = await connected_store.add_vote("e1", {"agent_id": "agent-1", "choice": "yes"})
         assert result is True
         connected_store.redis_client.setex.assert_awaited_once()
 
-    async def test_add_vote_expired_ttl_uses_default(
-        self, connected_store, mock_settings
-    ) -> None:
+    async def test_add_vote_expired_ttl_uses_default(self, connected_store, mock_settings) -> None:
         data = {"topic": "test", "votes": {}}
         connected_store.redis_client.get.return_value = json.dumps(data)
         connected_store.redis_client.ttl.return_value = -1
 
-        result = await connected_store.add_vote(
-            "e1", {"agent_id": "agent-1", "choice": "yes"}
-        )
+        result = await connected_store.add_vote("e1", {"agent_id": "agent-1", "choice": "yes"})
         assert result is True
         call_args = connected_store.redis_client.setex.call_args
         assert call_args[0][1] == 300  # default_timeout_seconds
 
-    async def test_add_vote_initializes_votes_dict(
-        self, connected_store, mock_settings
-    ) -> None:
+    async def test_add_vote_initializes_votes_dict(self, connected_store, mock_settings) -> None:
         data = {"topic": "test"}  # No "votes" key
         connected_store.redis_client.get.return_value = json.dumps(data)
         connected_store.redis_client.ttl.return_value = 100
 
-        result = await connected_store.add_vote(
-            "e1", {"agent_id": "agent-1", "choice": "yes"}
-        )
+        result = await connected_store.add_vote("e1", {"agent_id": "agent-1", "choice": "yes"})
         assert result is True
 
     async def test_add_vote_connection_error(self, connected_store) -> None:
@@ -347,9 +335,7 @@ class TestUpdateElectionStatus:
         parsed = json.loads(call_args[0][2])
         assert parsed["status"] == "CLOSED"
 
-    async def test_update_expired_ttl_uses_default(
-        self, connected_store, mock_settings
-    ) -> None:
+    async def test_update_expired_ttl_uses_default(self, connected_store, mock_settings) -> None:
         data = {"status": "OPEN"}
         connected_store.redis_client.get.return_value = json.dumps(data)
         connected_store.redis_client.ttl.return_value = 0
@@ -484,9 +470,7 @@ class TestSingleton:
         True,
     )
     @patch("enhanced_agent_bus.deliberation_layer.redis_election_store.aioredis")
-    async def test_get_election_store_creates_singleton(
-        self, mock_aioredis, mock_settings
-    ) -> None:
+    async def test_get_election_store_creates_singleton(self, mock_aioredis, mock_settings) -> None:
         mock_client = AsyncMock()
         mock_aioredis.from_url.return_value = mock_client
         s = await get_election_store()

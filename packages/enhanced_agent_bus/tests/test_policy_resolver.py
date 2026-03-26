@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - PolicyResolver Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive test suite for PolicyResolver covering:
 - Initialization and configuration
@@ -392,16 +392,18 @@ class TestRedisCache:
 
     @pytest.mark.asyncio
     async def test_get_from_redis_deserializes(self, resolver_connected, mock_redis_client):
-        cached_data = json.dumps({
-            "policy": {"id": "cached"},
-            "source": "cache",
-            "reasoning": "from redis",
-            "risk_level": "medium",
-            "tenant_id": "t1",
-            "user_id": "u1",
-            "session_id": "s1",
-            "resolution_metadata": {},
-        })
+        cached_data = json.dumps(
+            {
+                "policy": {"id": "cached"},
+                "source": "cache",
+                "reasoning": "from redis",
+                "risk_level": "medium",
+                "tenant_id": "t1",
+                "user_id": "u1",
+                "session_id": "s1",
+                "resolution_metadata": {},
+            }
+        )
         mock_redis_client.get = AsyncMock(return_value=cached_data)
         resolver_connected._redis_client = mock_redis_client
 
@@ -460,9 +462,7 @@ class TestResolvePolicy:
         assert result.risk_level == RiskLevel.MEDIUM
 
     @pytest.mark.asyncio
-    async def test_resolve_with_session_context_overrides(
-        self, resolver_isolated, session_config
-    ):
+    async def test_resolve_with_session_context_overrides(self, resolver_isolated, session_config):
         result = await resolver_isolated.resolve_policy(session_context=session_config)
         assert result.tenant_id == "tenant-abc"
         assert result.user_id == "user-xyz"
@@ -473,9 +473,7 @@ class TestResolvePolicy:
     async def test_resolve_with_session_context_no_overrides(
         self, resolver_isolated, session_config_no_overrides
     ):
-        result = await resolver_isolated.resolve_policy(
-            session_context=session_config_no_overrides
-        )
+        result = await resolver_isolated.resolve_policy(session_context=session_config_no_overrides)
         assert result.source == "tenant"  # tenant is set, no overrides
 
     @pytest.mark.asyncio
@@ -540,9 +538,7 @@ class TestResolveFromService:
         mock_client.post = AsyncMock(return_value=mock_response)
         resolver_connected._http_client = mock_client
 
-        result = await resolver_connected.resolve_policy(
-            tenant_id="t1", risk_level=RiskLevel.HIGH
-        )
+        result = await resolver_connected.resolve_policy(tenant_id="t1", risk_level=RiskLevel.HIGH)
         assert result.policy == {"id": "service-p1", "name": "Service Policy"}
         assert result.source == "service"
 
@@ -569,9 +565,7 @@ class TestResolveFromService:
         mock_client.post = AsyncMock(side_effect=httpx.ConnectError("refused"))
         resolver_connected._http_client = mock_client
 
-        result = await resolver_connected.resolve_policy(
-            tenant_id="t1", risk_level=RiskLevel.LOW
-        )
+        result = await resolver_connected.resolve_policy(tenant_id="t1", risk_level=RiskLevel.LOW)
         assert result.policy is not None
         assert result.resolution_metadata.get("fallback") is True
 
@@ -753,9 +747,7 @@ class TestConcurrency:
     @pytest.mark.asyncio
     async def test_concurrent_resolutions(self, resolver_isolated):
         tasks = [
-            resolver_isolated.resolve_policy(
-                tenant_id=f"t{i}", risk_level=RiskLevel.MEDIUM
-            )
+            resolver_isolated.resolve_policy(tenant_id=f"t{i}", risk_level=RiskLevel.MEDIUM)
             for i in range(20)
         ]
         results = await asyncio.gather(*tasks)
@@ -874,18 +866,18 @@ class TestTryCacheResolution:
 
     @pytest.mark.asyncio
     async def test_redis_hit_populates_memory(self, resolver_connected, mock_redis_client):
-        cached_data = json.dumps({
-            "policy": {"id": "redis-cached"},
-            "source": "cache",
-            "reasoning": "from redis",
-            "risk_level": "low",
-        })
+        cached_data = json.dumps(
+            {
+                "policy": {"id": "redis-cached"},
+                "source": "cache",
+                "reasoning": "from redis",
+                "risk_level": "low",
+            }
+        )
         mock_redis_client.get = AsyncMock(return_value=cached_data)
         resolver_connected._redis_client = mock_redis_client
 
-        result = await resolver_connected._try_cache_resolution(
-            "policy:k1", time.perf_counter()
-        )
+        result = await resolver_connected._try_cache_resolution("policy:k1", time.perf_counter())
         assert result is not None
         assert result.policy == {"id": "redis-cached"}
         # Should also be in memory now
@@ -894,7 +886,5 @@ class TestTryCacheResolution:
 
     @pytest.mark.asyncio
     async def test_both_miss_returns_none(self, resolver_isolated):
-        result = await resolver_isolated._try_cache_resolution(
-            "policy:miss", time.perf_counter()
-        )
+        result = await resolver_isolated._try_cache_resolution("policy:miss", time.perf_counter())
         assert result is None

@@ -10,7 +10,7 @@ An agent that proposes an action cannot also validate it. An agent that
 validates cannot execute. This prevents any single agent from having
 unchecked power.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

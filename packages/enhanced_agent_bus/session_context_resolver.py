@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Session Context Resolver
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Unified session context extraction from messages with cross-tenant
 security validation and metrics tracking.
@@ -51,7 +51,7 @@ class SessionContextResolver:
     - ``conversation_id`` field
     - ``session_id`` in ``payload`` dict
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

@@ -1,6 +1,6 @@
 """
 Tests for Constitutional Invariant Guard
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers InvariantClassifier, ProposalInvariantValidator, RuntimeMutationGuard,
 ConstitutionalInvariantViolation, and fail-closed behaviour.
@@ -31,7 +31,7 @@ from enhanced_agent_bus.constitutional.invariants import (
 def _make_manifest(invariants: list[InvariantDefinition] | None = None) -> InvariantManifest:
     return InvariantManifest(
         manifest_version="1.0.0",
-        constitutional_hash="cdd01ef066bc6cf2",
+        constitutional_hash="608508a9bd224290",
         invariants=invariants or [],
     )
 

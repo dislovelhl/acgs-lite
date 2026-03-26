@@ -1,6 +1,6 @@
 """
 Unit tests for MessageProcessor helper functions.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for extracted helper methods to reduce C901 complexity while preserving behavior.
 """
@@ -614,8 +614,7 @@ class TestComputeMessageCacheKey:
         )
 
         assert processor._compute_cache_key(sample_message) == (
-            result
-            + TestComputeCacheKey._expected_suffix(processor)
+            result + TestComputeCacheKey._expected_suffix(processor)
         )
 
     def test_helper_uses_fast_hash_when_available(self, sample_message):

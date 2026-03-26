@@ -1,6 +1,6 @@
 """
 Tests for metrics.py — Prometheus metrics, middleware, and helper functions.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: NoOpMetric, _find_existing_metric, _get_or_create_histogram/counter/gauge,
 MetricsMiddleware (dispatch + _normalize_endpoint), record_* helpers,
@@ -149,7 +149,7 @@ class TestGetOrCreateHelpers:
         # Pre-populate cache then remove so it tries to re-register
         orig_cache = metrics_mod._METRICS_CACHE.copy()
         metrics_mod._METRICS_CACHE.pop(name, None)
-        m1 = _get_or_create_histogram(name, "Test", ["l1"])
+        _get_or_create_histogram(name, "Test", ["l1"])
         metrics_mod._METRICS_CACHE.pop(name, None)
         # Second call should find the existing one in registry
         m2 = _get_or_create_histogram(name, "Test", ["l1"])

@@ -1,6 +1,6 @@
 """
 Tests for x402_governance.py — paid governance endpoints coverage.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: _evaluate_action, _sign_receipt, _validate_related_endpoints,
 _audit_related_endpoints, _quick_check_related_endpoints, _pricing_journeys,
@@ -319,9 +319,7 @@ class TestVerifyEndpoint:
             separators=(",", ":"),
         )
         receipt_hash = hashlib.sha256(canonical.encode()).hexdigest()
-        signature = hmac.new(
-            b"test-secret-key", canonical.encode(), hashlib.sha256
-        ).hexdigest()
+        signature = hmac.new(b"test-secret-key", canonical.encode(), hashlib.sha256).hexdigest()
 
         resp = client.get(
             "/x402/verify",
@@ -354,9 +352,7 @@ class TestVerifyEndpoint:
 
     def test_verify_invalid_hash(self, client):
         canonical = json.dumps({"compliant": True}, sort_keys=True, separators=(",", ":"))
-        signature = hmac.new(
-            b"test-secret-key", canonical.encode(), hashlib.sha256
-        ).hexdigest()
+        signature = hmac.new(b"test-secret-key", canonical.encode(), hashlib.sha256).hexdigest()
         resp = client.get(
             "/x402/verify",
             params={

@@ -23,7 +23,7 @@
 
 ### Core Message
 
-> **Lint your AI decisions.** You lint your code. You scan for vulnerabilities. Now lint your AI. `pip install acgs-lite`, five lines of Python, 560 nanoseconds of overhead. Constitutional governance that runs faster than a cache hit.
+> **Lint your AI decisions.** You lint your code. You scan for vulnerabilities. Now lint your AI. `pip install acgs`, five lines of Python, 560 nanoseconds of overhead. Constitutional governance that runs faster than a cache hit.
 
 ### Tone
 Technical, concise, show-don't-tell. Lead with code, not concepts.

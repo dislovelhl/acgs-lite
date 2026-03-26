@@ -1,6 +1,6 @@
 """
 ACGS-2 Versioned Event Schemas
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This package contains versioned event schemas for the ACGS-2 system.
 Each schema type has multiple versions to support schema evolution

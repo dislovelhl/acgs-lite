@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Graph Database Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for the Graph Database Manager module including:
 - GraphDatabaseManager abstract interface

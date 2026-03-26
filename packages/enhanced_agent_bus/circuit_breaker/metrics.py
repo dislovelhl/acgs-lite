@@ -1,7 +1,7 @@
 """
 ACGS-2 Circuit Breaker Prometheus Metrics
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module defines Prometheus metrics for circuit breaker observability,
 with no-op fallbacks when prometheus_client is not available.

@@ -5,7 +5,7 @@ Targets uncovered branches: error paths, TTL expiry, LRU eviction,
 chaos injection/rollback failures, explanation generation edge cases,
 counterfactual engine, and factory functions.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -374,9 +374,7 @@ class TestRedisBatchCache:
     async def test_batch_get_mixed_results(self):
         pipe_mock = AsyncMock()
         pipe_mock.get = MagicMock()
-        pipe_mock.execute = AsyncMock(
-            return_value=[_serialize_value({"v": 1}), None]
-        )
+        pipe_mock.execute = AsyncMock(return_value=[_serialize_value({"v": 1}), None])
         mock_redis = AsyncMock()
         mock_redis.pipeline = MagicMock(return_value=pipe_mock)
         cache = self._make_cache()
@@ -543,7 +541,9 @@ from enhanced_agent_bus.chaos.steady_state import (
 class _MockScenario(BaseScenario):
     """Concrete scenario for testing."""
 
-    def __init__(self, duration_s: float = 0.1, fail_execute: bool = False, fail_rollback: bool = False):
+    def __init__(
+        self, duration_s: float = 0.1, fail_execute: bool = False, fail_rollback: bool = False
+    ):
         super().__init__(name="mock_scenario", duration_s=duration_s)
         self._fail_execute = fail_execute
         self._fail_rollback = fail_rollback
@@ -1252,7 +1252,9 @@ class TestExplanationService:
 
     def test_generate_factor_evidence_priority(self):
         svc = ExplanationService()
-        ev = svc._generate_factor_evidence("priority_factor", 0.5, {"priority": "high"}, {"priority": "high"})
+        ev = svc._generate_factor_evidence(
+            "priority_factor", 0.5, {"priority": "high"}, {"priority": "high"}
+        )
         assert any("high" in e for e in ev)
 
     def test_generate_factor_evidence_volume_high(self):

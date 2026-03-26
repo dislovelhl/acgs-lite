@@ -11,7 +11,7 @@
                         HIGH PERFORMANCE
                              |
                              |
-                    ACGS-Lite (560ns)
+                    ACGS (560ns)
                              |
                              |
       RULE-BASED ---- ------+------ ------ LLM-BASED
@@ -33,7 +33,7 @@
 
 ## 2. Head-to-Head Comparison
 
-| Dimension | ACGS-Lite | Guardrails AI | NeMo Guardrails | OPA/Styra | LlamaGuard |
+| Dimension | ACGS | Guardrails AI | NeMo Guardrails | OPA/Styra | LlamaGuard |
 |-----------|-----------|---------------|-----------------|-----------|------------|
 | **Validation latency** | 560ns P50 | ~5-50ms | ~10-100ms | ~1-5ms | ~100-500ms |
 | **Approach** | Rule + keyword + regex | Validators + LLM | LLM + NIM | Policy language (Rego) | Model inference |
@@ -42,7 +42,7 @@
 | **MACI separation of powers** | Yes | No | No | No | No |
 | **Tamper-evident audit** | Yes (cryptographic chain) | Basic logging | Basic logging | Decision logs | None |
 | **Constitutional hash** | Yes | No | No | No | No |
-| **License** | Apache-2.0 (proposed: AGPL) | Apache-2.0 | Apache-2.0 | Apache-2.0 | Llama License |
+| **License** | AGPL-3.0-or-later + commercial | Apache-2.0 | Apache-2.0 | Apache-2.0 | Llama License |
 | **Revenue** | $0 (pre-revenue) | ~$1.1M | Indirect (GPU sales) | ~$12M (Styra) | $0 (Meta ecosystem) |
 | **Funding** | Bootstrapped | $7.5M seed | NVIDIA-backed | $64M total | Meta-backed |
 | **Team size** | 1 | ~10 | NVIDIA team | ~100 (Styra) | Meta AI team |
@@ -195,7 +195,7 @@
 | **Compliance coverage** (9 frameworks) | Very Strong | High (domain expertise is sticky) | Add frameworks faster than competitors; maintain regulatory accuracy |
 | **Constitutional architecture** (MACI) | Strong | High (architectural innovation is hard to replicate) | Patent consideration; publish research papers |
 | **Brand** ("HTTPS for AI") | Weak (not yet established) | High once established | "ACGS Certified" program; conference presence; content marketing |
-| **Switching costs** | Weak (Apache-2.0 = no lock-in) | Low until audit trail accumulation | AGPL migration; audit log retention as natural lock-in |
+| **Switching costs** | Weak to Medium (open source still lowers lock-in, but AGPL/commercial terms raise managed-service cloning cost) | Low until audit trail accumulation | Audit log retention and commercial packaging as natural lock-in |
 | **Network effects** | None | N/A until certification program | "ACGS Certified" badge creates network effect |
 | **Data** | None | N/A | Anonymized compliance benchmarks across customers |
 

@@ -1,6 +1,6 @@
 """
 PostgreSQL Saga State Repository Implementation
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Production-ready PostgreSQL implementation of SagaStateRepository with:
 - asyncpg for high-performance async database operations
@@ -89,7 +89,7 @@ class PostgresSagaStateRepository(
     - PostgresStateManager: State transitions and checkpoints
     - PostgresLockManager: Distributed locking and maintenance
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

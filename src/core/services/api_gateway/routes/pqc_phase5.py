@@ -1,7 +1,7 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """ACGS-2 PQC Phase 5 Admin API Routes
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 FastAPI routes for PQC-only mode activation and status queries.
 
@@ -9,7 +9,7 @@ Endpoints:
     POST /api/v1/admin/pqc/pqc-only-mode/activate
         Activate system-wide PQC-only enforcement. Requires platform-operator role
         AND a valid council-consensus-token (2/3 ML-DSA council signatures, FR-011).
-        Writes PQC_ONLY_ACTIVATED audit event with constitutional_hash=cdd01ef066bc6cf2.
+        Writes PQC_ONLY_ACTIVATED audit event with constitutional_hash=608508a9bd224290.
 
     GET  /api/v1/admin/pqc/pqc-only-mode/status
         Query current PQC-only mode status. Requires admin role.
@@ -153,7 +153,7 @@ async def _get_redis() -> aioredis.Redis | None:
         "Activate system-wide PQC-only enforcement. "
         "Requires platform-operator role. "
         "Writes PQC_ONLY_ACTIVATED audit event with "
-        "constitutional_hash=cdd01ef066bc6cf2."
+        "constitutional_hash=608508a9bd224290."
     ),
 )
 async def activate_pqc_only_mode(

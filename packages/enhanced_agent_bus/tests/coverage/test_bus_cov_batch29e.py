@@ -6,7 +6,7 @@ Coverage tests for batch 29e:
 - enhanced_agent_bus/api/routes/governance.py (governance routes)
 - acgs_lite/integrations/llamaindex.py (governed query/chat engines)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -435,11 +435,12 @@ class TestAgentEngine:
         from enhanced_agent_bus.guardrails.agent_engine import AgentEngine, AgentEngineConfig
 
         cfg = AgentEngineConfig(impact_scoring=True)
-        with patch(
-            "enhanced_agent_bus.guardrails.agent_engine.IMPACT_SCORING_AVAILABLE", True
-        ), patch(
-            "enhanced_agent_bus.guardrails.agent_engine.get_impact_scorer_service",
-            side_effect=RuntimeError("no scorer"),
+        with (
+            patch("enhanced_agent_bus.guardrails.agent_engine.IMPACT_SCORING_AVAILABLE", True),
+            patch(
+                "enhanced_agent_bus.guardrails.agent_engine.get_impact_scorer_service",
+                side_effect=RuntimeError("no scorer"),
+            ),
         ):
             engine = AgentEngine(config=cfg)
             assert engine._impact_scorer is None
@@ -455,13 +456,15 @@ class TestAgentEngine:
         )
         mock_scorer = MagicMock()
         mock_scorer.minicpm_available = True
-        with patch(
-            "enhanced_agent_bus.guardrails.agent_engine.IMPACT_SCORING_AVAILABLE", True
-        ), patch(
-            "enhanced_agent_bus.guardrails.agent_engine.configure_impact_scorer"
-        ) as mock_configure, patch(
-            "enhanced_agent_bus.guardrails.agent_engine.get_impact_scorer_service",
-            return_value=mock_scorer,
+        with (
+            patch("enhanced_agent_bus.guardrails.agent_engine.IMPACT_SCORING_AVAILABLE", True),
+            patch(
+                "enhanced_agent_bus.guardrails.agent_engine.configure_impact_scorer"
+            ) as mock_configure,
+            patch(
+                "enhanced_agent_bus.guardrails.agent_engine.get_impact_scorer_service",
+                return_value=mock_scorer,
+            ),
         ):
             engine = AgentEngine(config=cfg)
             mock_configure.assert_called_once_with(
@@ -717,10 +720,13 @@ class TestGovernanceRoutes:
         """When both imports fail, _load_governance_dependency returns a callable returning None."""
         from enhanced_agent_bus.api.routes.governance import _load_governance_dependency
 
-        with patch.dict("sys.modules", {
-            "enhanced_agent_bus.governance.ccai_framework": None,
-            "governance.ccai_framework": None,
-        }):
+        with patch.dict(
+            "sys.modules",
+            {
+                "enhanced_agent_bus.governance.ccai_framework": None,
+                "governance.ccai_framework": None,
+            },
+        ):
             # The function is already evaluated at module load; test the fallback directly
             pass
 
@@ -751,10 +757,14 @@ class TestGovernanceRoutes:
         resp = MACIRecordResponse(record_id="r1", status="created")
         assert resp.status == "created"
 
-    def test_get_enforcement_config_returns_none(self):
+    async def test_get_enforcement_config_returns_none(self):
+        from unittest.mock import MagicMock
+
         from enhanced_agent_bus.api.routes.governance import _get_enforcement_config
 
-        assert _get_enforcement_config() is None
+        mock_request = MagicMock()
+        mock_request.app.state = None
+        assert await _get_enforcement_config(mock_request) is None
 
 
 class TestGovernanceRoutesIntegration:
@@ -774,12 +784,15 @@ class TestGovernanceRoutesIntegration:
 
     def test_get_stability_metrics_no_gov(self, client):
         """When governance is not initialized, return 503."""
-        with patch(
-            "enhanced_agent_bus.api.routes.governance.get_ccai_governance",
-            return_value=None,
-        ), patch(
-            "enhanced_agent_bus.api.routes.governance.get_current_user",
-            return_value=MagicMock(),
+        with (
+            patch(
+                "enhanced_agent_bus.api.routes.governance.get_ccai_governance",
+                return_value=None,
+            ),
+            patch(
+                "enhanced_agent_bus.api.routes.governance.get_current_user",
+                return_value=MagicMock(),
+            ),
         ):
             from enhanced_agent_bus.api.routes.governance import router as gov_router
 
@@ -862,9 +875,7 @@ class TestGovernanceRoutesIntegration:
         mock_request = MagicMock()
         mock_request.headers = {}
 
-        with patch(
-            "enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"
-        ):
+        with patch("enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"):
             result = await create_maci_record(
                 body=body,
                 request=mock_request,
@@ -880,19 +891,18 @@ class TestGovernanceRoutesIntegration:
             create_maci_record,
         )
 
-        body = MACIRecordCreateRequest(
-            record_id="r2", key_type="pqc", key_algorithm="ML-DSA-65"
-        )
+        body = MACIRecordCreateRequest(record_id="r2", key_type="pqc", key_algorithm="ML-DSA-65")
         mock_request = MagicMock()
         mock_request.headers = {"X-Migration-Context": "false"}
         mock_enforce = MagicMock()
         mock_check = AsyncMock()
 
-        with patch(
-            "enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"
-        ), patch(
-            "enhanced_agent_bus.api.routes.governance.check_enforcement_for_create",
-            mock_check,
+        with (
+            patch("enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"),
+            patch(
+                "enhanced_agent_bus.api.routes.governance.check_enforcement_for_create",
+                mock_check,
+            ),
         ):
             result = await create_maci_record(
                 body=body,
@@ -924,14 +934,16 @@ class TestGovernanceRoutesIntegration:
 
         mock_check = AsyncMock(side_effect=TestPQCError("rejected"))
 
-        with patch(
-            "enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"
-        ), patch(
-            "enhanced_agent_bus.api.routes.governance.check_enforcement_for_create",
-            mock_check,
-        ), patch(
-            "enhanced_agent_bus.api.routes.governance._PQC_ENFORCEMENT_ERRORS",
-            (TestPQCError,),
+        with (
+            patch("enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"),
+            patch(
+                "enhanced_agent_bus.api.routes.governance.check_enforcement_for_create",
+                mock_check,
+            ),
+            patch(
+                "enhanced_agent_bus.api.routes.governance._PQC_ENFORCEMENT_ERRORS",
+                (TestPQCError,),
+            ),
         ):
             with pytest.raises(HTTPException) as exc_info:
                 await create_maci_record(
@@ -952,9 +964,7 @@ class TestGovernanceRoutesIntegration:
         mock_request = MagicMock()
         mock_request.headers = {}
 
-        with patch(
-            "enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"
-        ):
+        with patch("enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"):
             result = await update_maci_record(
                 record_id="r1",
                 body=body,
@@ -982,14 +992,16 @@ class TestGovernanceRoutesIntegration:
 
         mock_check = AsyncMock(side_effect=TestPQCError("migrate"))
 
-        with patch(
-            "enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"
-        ), patch(
-            "enhanced_agent_bus.api.routes.governance.check_enforcement_for_update",
-            mock_check,
-        ), patch(
-            "enhanced_agent_bus.api.routes.governance._PQC_ENFORCEMENT_ERRORS",
-            (TestPQCError,),
+        with (
+            patch("enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"),
+            patch(
+                "enhanced_agent_bus.api.routes.governance.check_enforcement_for_update",
+                mock_check,
+            ),
+            patch(
+                "enhanced_agent_bus.api.routes.governance._PQC_ENFORCEMENT_ERRORS",
+                (TestPQCError,),
+            ),
         ):
             with pytest.raises(HTTPException) as exc_info:
                 await update_maci_record(
@@ -1004,9 +1016,7 @@ class TestGovernanceRoutesIntegration:
     async def test_get_maci_record(self):
         from enhanced_agent_bus.api.routes.governance import get_maci_record
 
-        with patch(
-            "enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"
-        ):
+        with patch("enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"):
             result = await get_maci_record(record_id="r1", _tenant_id="t1")
         assert result.record_id == "r1"
         assert result.status == "ok"
@@ -1014,9 +1024,7 @@ class TestGovernanceRoutesIntegration:
     async def test_delete_maci_record(self):
         from enhanced_agent_bus.api.routes.governance import delete_maci_record
 
-        with patch(
-            "enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"
-        ):
+        with patch("enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"):
             result = await delete_maci_record(record_id="r1", _tenant_id="t1")
         assert result.record_id == "r1"
         assert result.status == "deleted"
@@ -1061,9 +1069,7 @@ class TestGovernedQueryEngine:
     @pytest.fixture(autouse=True)
     def _patch_llamaindex(self):
         """Make LLAMAINDEX_AVAILABLE True so the classes can be instantiated."""
-        with patch(
-            "acgs_lite.integrations.llamaindex.LLAMAINDEX_AVAILABLE", True
-        ):
+        with patch("acgs_lite.integrations.llamaindex.LLAMAINDEX_AVAILABLE", True):
             yield
 
     def test_init(self):
@@ -1165,9 +1171,7 @@ class TestGovernedChatEngine:
 
     @pytest.fixture(autouse=True)
     def _patch_llamaindex(self):
-        with patch(
-            "acgs_lite.integrations.llamaindex.LLAMAINDEX_AVAILABLE", True
-        ):
+        with patch("acgs_lite.integrations.llamaindex.LLAMAINDEX_AVAILABLE", True):
             yield
 
     def test_init(self):

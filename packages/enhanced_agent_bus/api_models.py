@@ -1,7 +1,7 @@
 """
 ACGS-2 Enhanced Agent Bus API Models
 Pydantic models and Enums for the Enhanced Agent Bus API
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module contains all Pydantic models and Enums extracted from api.py
 for better code organization and maintainability.

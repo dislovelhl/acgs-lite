@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - ACL Adapters Base Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: enhanced_agent_bus/acl_adapters/base.py (230 stmts, 0% -> target 80%+)
 Tests:
@@ -431,9 +431,7 @@ class TestACLAdapter:
     async def test_rate_limit_exceeded(self) -> None:
         from enhanced_agent_bus.acl_adapters.base import AdapterConfig
 
-        cfg = AdapterConfig(
-            max_retries=0, rate_limit_per_second=1.0, rate_limit_burst=1
-        )
+        cfg = AdapterConfig(max_retries=0, rate_limit_per_second=1.0, rate_limit_burst=1)
         adapter = _TestAdapter.create(config=cfg)
         r1 = await adapter.call("a")
         assert r1.success is True

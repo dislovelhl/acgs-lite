@@ -237,9 +237,7 @@ class TestOPABatchClientAsync:
         c = OPABatchClient()
         await c.initialize()
         try:
-            c._http_client.post = AsyncMock(
-                side_effect=httpx.ConnectError("connection refused")
-            )
+            c._http_client.post = AsyncMock(side_effect=httpx.ConnectError("connection refused"))
             res = await c._evaluate_single({"a": 1}, "data.p")
             assert res["allowed"] is False
             assert c._metrics["errors"] == 1
@@ -281,7 +279,9 @@ class TestOPABatchClientAsync:
         mock_response.json.return_value = {"result": False}
         mock_response.raise_for_status = MagicMock()
 
-        with patch.object(httpx.AsyncClient, "post", new_callable=AsyncMock, return_value=mock_response):
+        with patch.object(
+            httpx.AsyncClient, "post", new_callable=AsyncMock, return_value=mock_response
+        ):
             results = await c.batch_evaluate([{"a": 1}], policy_path="data.test")
             assert len(results) == 1
         await c.close()
@@ -369,7 +369,9 @@ class TestOPABatchClientAsync:
         mock_response.json.return_value = {"result": True}
         mock_response.raise_for_status = MagicMock()
 
-        with patch.object(httpx.AsyncClient, "post", new_callable=AsyncMock, return_value=mock_response):
+        with patch.object(
+            httpx.AsyncClient, "post", new_callable=AsyncMock, return_value=mock_response
+        ):
             results = await c.batch_evaluate_multi_policy([({"a": 1}, "data.p")])
             assert len(results) == 1
         await c.close()
@@ -465,7 +467,6 @@ def _make_agent_message(**overrides):
 
 
 class TestLLMAssistantInit:
-
     def test_init_no_langchain(self):
         from enhanced_agent_bus.deliberation_layer.llm_assistant import LLMAssistant
 
@@ -475,7 +476,6 @@ class TestLLMAssistantInit:
 
 
 class TestLLMAssistantFallbackAnalysis:
-
     def test_fallback_low_risk(self):
         from enhanced_agent_bus.deliberation_layer.llm_assistant import LLMAssistant
 
@@ -516,7 +516,6 @@ class TestLLMAssistantFallbackAnalysis:
 
 
 class TestLLMAssistantFallbackReasoning:
-
     def test_fallback_reasoning_approve(self):
         from enhanced_agent_bus.deliberation_layer.llm_assistant import LLMAssistant
 
@@ -558,7 +557,6 @@ class TestLLMAssistantFallbackReasoning:
 
 
 class TestLLMAssistantTrends:
-
     def test_trends_empty_history(self):
         from enhanced_agent_bus.deliberation_layer.llm_assistant import LLMAssistant
 
@@ -605,7 +603,6 @@ class TestLLMAssistantTrends:
 
 
 class TestLLMAssistantSummarizers:
-
     def test_extract_message_summary_short(self):
         from enhanced_agent_bus.deliberation_layer.llm_assistant import LLMAssistant
 
@@ -714,7 +711,6 @@ class TestLLMAssistantSummarizers:
 
 
 class TestLLMAssistantAsyncMethods:
-
     async def test_analyze_message_no_llm(self):
         from enhanced_agent_bus.deliberation_layer.llm_assistant import LLMAssistant
 
@@ -852,13 +848,14 @@ class TestLLMAssistantAsyncMethods:
 
         a = LLMAssistant()
         a.llm = MagicMock()
-        with patch.object(a, "_invoke_llm", new_callable=AsyncMock, side_effect=RuntimeError("fail")):
+        with patch.object(
+            a, "_invoke_llm", new_callable=AsyncMock, side_effect=RuntimeError("fail")
+        ):
             res = await a.ainvoke_multi_turn("sys", [{"role": "user", "content": "x"}])
             assert res == {}
 
 
 class TestLLMAssistantSingleton:
-
     def test_get_and_reset(self):
         import enhanced_agent_bus.deliberation_layer.llm_assistant as mod
 
@@ -881,7 +878,6 @@ class TestLLMAssistantSingleton:
 
 
 class TestDemocraticConstitutionalGovernanceInit:
-
     def test_default_init(self):
         from enhanced_agent_bus.governance.democratic_governance import (
             DemocraticConstitutionalGovernance,
@@ -904,7 +900,6 @@ class TestDemocraticConstitutionalGovernanceInit:
 
 
 class TestDemocraticGovernanceStakeholders:
-
     async def test_register_stakeholder(self):
         from enhanced_agent_bus.governance.democratic_governance import (
             DemocraticConstitutionalGovernance,
@@ -918,7 +913,6 @@ class TestDemocraticGovernanceStakeholders:
 
 
 class TestDemocraticGovernanceProposals:
-
     async def test_propose_constitutional_change(self):
         from enhanced_agent_bus.governance.democratic_governance import (
             DemocraticConstitutionalGovernance,
@@ -936,7 +930,6 @@ class TestDemocraticGovernanceProposals:
 
 
 class TestDemocraticGovernanceRepresentativeMetrics:
-
     def test_empty_clusters(self):
         from enhanced_agent_bus.governance.democratic_governance import (
             DemocraticConstitutionalGovernance,
@@ -996,7 +989,6 @@ class TestDemocraticGovernanceRepresentativeMetrics:
 
 
 class TestDemocraticGovernanceStatementGeneration:
-
     async def test_generate_statement_for_each_group(self):
         from enhanced_agent_bus.governance.democratic_governance import (
             DemocraticConstitutionalGovernance,
@@ -1031,7 +1023,6 @@ class TestDemocraticGovernanceStatementGeneration:
 
 
 class TestDemocraticGovernanceConsensus:
-
     def test_extract_consensus_metrics(self):
         from enhanced_agent_bus.governance.democratic_governance import (
             DemocraticConstitutionalGovernance,
@@ -1139,7 +1130,6 @@ class TestDemocraticGovernanceConsensus:
 
 
 class TestDemocraticGovernanceFastGovern:
-
     async def test_fast_govern_no_stakeholders(self):
         from enhanced_agent_bus.governance.democratic_governance import (
             DemocraticConstitutionalGovernance,
@@ -1189,7 +1179,6 @@ class TestDemocraticGovernanceFastGovern:
 
 
 class TestDemocraticGovernanceStatus:
-
     async def test_get_governance_status(self):
         from enhanced_agent_bus.governance.democratic_governance import (
             DemocraticConstitutionalGovernance,
@@ -1204,7 +1193,6 @@ class TestDemocraticGovernanceStatus:
 
 
 class TestDemocraticGovernanceModuleLevelFunctions:
-
     def test_get_ccai_governance(self):
         from enhanced_agent_bus.governance.democratic_governance import (
             DemocraticConstitutionalGovernance,
@@ -1232,7 +1220,6 @@ class TestDemocraticGovernanceModuleLevelFunctions:
 
 
 class TestDemocraticGovernanceApplyClusterStability:
-
     async def test_apply_cluster_stability_no_mhc(self):
         from enhanced_agent_bus.governance.democratic_governance import (
             DemocraticConstitutionalGovernance,
@@ -1275,7 +1262,6 @@ class TestDemocraticGovernanceApplyClusterStability:
 
 
 class TestDemocraticGovernanceRunDeliberation:
-
     async def test_run_deliberation_end_to_end(self):
         from enhanced_agent_bus.governance.democratic_governance import (
             DemocraticConstitutionalGovernance,
@@ -1285,9 +1271,7 @@ class TestDemocraticGovernanceRunDeliberation:
         gov = DemocraticConstitutionalGovernance(consensus_threshold=0.0, min_participants=2)
         stakeholders = []
         for i in range(5):
-            s = await gov.register_stakeholder(
-                f"s{i}", StakeholderGroup.TECHNICAL_EXPERTS, ["AI"]
-            )
+            s = await gov.register_stakeholder(f"s{i}", StakeholderGroup.TECHNICAL_EXPERTS, ["AI"])
             stakeholders.append(s)
 
         proposer = stakeholders[0]
@@ -1319,9 +1303,7 @@ class TestDemocraticGovernanceRunDeliberation:
         gov = DemocraticConstitutionalGovernance(consensus_threshold=0.99, min_participants=2)
         stakeholders = []
         for i in range(3):
-            s = await gov.register_stakeholder(
-                f"s{i}", StakeholderGroup.END_USERS, ["UX"]
-            )
+            s = await gov.register_stakeholder(f"s{i}", StakeholderGroup.END_USERS, ["UX"])
             stakeholders.append(s)
 
         proposal = await gov.propose_constitutional_change(
@@ -1342,7 +1324,6 @@ class TestDemocraticGovernanceRunDeliberation:
 
 
 class TestDemocraticGovernanceAsyncDeliberation:
-
     async def test_async_deliberation(self):
         from enhanced_agent_bus.governance.democratic_governance import (
             DemocraticConstitutionalGovernance,
@@ -1361,14 +1342,15 @@ class TestDemocraticGovernanceAsyncDeliberation:
         mock_result = MagicMock()
         mock_result.to_dict.return_value = {"consensus_reached": True}
 
-        with patch.object(gov, "run_deliberation", new_callable=AsyncMock, return_value=mock_result):
+        with patch.object(
+            gov, "run_deliberation", new_callable=AsyncMock, return_value=mock_result
+        ):
             await gov._async_deliberation(decision, stakeholders)
             assert decision["legitimacy_reviewed"] is True
             assert decision["deliberation_result"] == {"consensus_reached": True}
 
 
 class TestDemocraticGovernanceStabilityWithMHC:
-
     async def test_stability_constraint_with_mhc_mock(self):
         """Test the mHC stability path by mocking ManifoldHC and torch."""
         from enhanced_agent_bus.governance.democratic_governance import (
@@ -1511,7 +1493,6 @@ class TestDemocraticGovernanceStabilityWithMHC:
 
 
 class TestDemocraticGovernanceDetermineConsensus:
-
     async def test_determine_consensus_reached(self):
         from enhanced_agent_bus.governance.democratic_governance import (
             DemocraticConstitutionalGovernance,

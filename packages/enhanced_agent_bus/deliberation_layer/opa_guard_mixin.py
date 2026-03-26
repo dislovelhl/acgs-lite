@@ -1,7 +1,7 @@
 """
 ACGS-2 Deliberation Layer - OPA Guard Mixin
 Mixin class providing OPA Guard integration for the DeliberationLayer.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This mixin encapsulates all OPA Guard-related methods used by the
 DeliberationLayer class, implementing the VERIFY-BEFORE-ACT pattern

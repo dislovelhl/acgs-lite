@@ -42,12 +42,14 @@ def _make_explanation(
     exp.tenant_id = tenant_id
     exp.message_id = message_id
     exp.verdict = verdict
-    exp.model_dump_json.return_value = json.dumps({
-        "decision_id": decision_id,
-        "tenant_id": tenant_id,
-        "message_id": message_id,
-        "verdict": verdict,
-    })
+    exp.model_dump_json.return_value = json.dumps(
+        {
+            "decision_id": decision_id,
+            "tenant_id": tenant_id,
+            "message_id": message_id,
+            "verdict": verdict,
+        }
+    )
     return exp
 
 
@@ -104,9 +106,7 @@ class TestSplitEngineReadFile:
         )
         # We only want the read_file function, not the module-level side effects.
         # Extract the function source and exec it in isolation.
-        src_path = (
-            Path(__file__).resolve().parents[3] / "acgs-lite" / "src" / "split_engine.py"
-        )
+        src_path = Path(__file__).resolve().parents[3] / "acgs-lite" / "src" / "split_engine.py"
         src_text = src_path.read_text()
 
         # Extract and execute just the read_file function
@@ -156,6 +156,7 @@ class TestSplitEngineGetChunk:
     def test_get_chunk_basic(self):
         """get_chunk(start, end) returns joined lines from start to end (1-indexed)."""
         lines = ["line1\n", "line2\n", "line3\n", "line4\n", "line5\n"]
+
         # Replicate get_chunk logic
         def get_chunk(start, end):
             return "".join(lines[start - 1 : end])
@@ -165,6 +166,7 @@ class TestSplitEngineGetChunk:
     def test_get_chunk_single_line(self):
         """get_chunk with start == end returns one line."""
         lines = ["a\n", "b\n", "c\n"]
+
         def get_chunk(start, end):
             return "".join(lines[start - 1 : end])
 
@@ -173,6 +175,7 @@ class TestSplitEngineGetChunk:
     def test_get_chunk_out_of_range_returns_partial(self):
         """get_chunk beyond list length returns only available lines."""
         lines = ["a\n", "b\n"]
+
         def get_chunk(start, end):
             return "".join(lines[start - 1 : end])
 
@@ -181,6 +184,7 @@ class TestSplitEngineGetChunk:
     def test_get_chunk_empty_range(self):
         """get_chunk with start > end returns empty string."""
         lines = ["a\n", "b\n"]
+
         def get_chunk(start, end):
             return "".join(lines[start - 1 : end])
 
@@ -192,9 +196,7 @@ class TestSplitEngineModuleImport:
 
     def test_split_engine_functions_exist(self):
         """The split_engine source contains read_file and get_chunk definitions."""
-        src_path = (
-            Path(__file__).resolve().parents[3] / "acgs-lite" / "src" / "split_engine.py"
-        )
+        src_path = Path(__file__).resolve().parents[3] / "acgs-lite" / "src" / "split_engine.py"
         content = src_path.read_text()
         assert "def read_file(filepath):" in content
         assert "def get_chunk(start, end):" in content
@@ -632,6 +634,7 @@ class TestInitializeDoubleCheckLock:
             patch("enhanced_agent_bus.decision_store.get_shared_pool", side_effect=fake_get_pool),
         ):
             import asyncio
+
             results = await asyncio.gather(store.initialize(), store.initialize())
         assert all(r is True for r in results)
         # Due to double-check locking, only one should create the pool

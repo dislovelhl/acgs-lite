@@ -1,6 +1,6 @@
 """
 ACGS-2 Context Optimizer - Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Data models for context optimization results and cache entries.
 """
@@ -25,7 +25,7 @@ except ImportError:
 class BatchProcessingResult:
     """Result of batch processing operation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     chunks_processed: int
@@ -44,7 +44,7 @@ class BatchProcessingResult:
 class ScoringResult:
     """Result of vectorized scoring operation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     scores: list[float]
@@ -60,7 +60,7 @@ class ScoringResult:
 class StreamingResult:
     """Result of streaming processing.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     output_embeddings: object
@@ -78,7 +78,7 @@ class StreamingResult:
 class AdaptiveCacheEntry:
     """Cache entry with adaptive TTL.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     key: str

@@ -1,4 +1,4 @@
-name: Release acgs-lite
+name: Release acgs
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   id-token: write   # PyPI Trusted Publisher (OIDC) — no token needed
 
 jobs:
-  # ── 1. Build ────────────────────────────────────────────────────────────────
+  # ── 1. Build Python distribution ───────────────────────────────────────────
   build:
     name: Build distribution
     runs-on: ubuntu-latest
@@ -51,10 +51,50 @@ jobs:
           path: packages/acgs-lite/dist/
           if-no-files-found: error
 
-  # ── 2. GitHub Release ───────────────────────────────────────────────────────
+  # ── 2. Build paper PDFs ─────────────────────────────────────────────────────
+  build-paper:
+    name: Build paper PDF (${{ matrix.mode }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [generic, neurips, icml]
+        submission: [camera-ready]
+    defaults:
+      run:
+        working-directory: docs/generated
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install LaTeX toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            latexmk \
+            lmodern \
+            texlive-fonts-recommended \
+            texlive-latex-base \
+            texlive-latex-extra \
+            texlive-latex-recommended \
+            texlive-pictures
+
+      - name: Show detected tools
+        run: make check-tools
+
+      - name: Build ${{ matrix.mode }} (${{ matrix.submission }}) PDF
+        run: make paper MODE=${{ matrix.mode }} SUBMISSION=${{ matrix.submission }}
+
+      - name: Upload paper artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-${{ matrix.mode }}-${{ matrix.submission }}
+          path: docs/generated/dist/acgs_arxiv_skeleton-${{ matrix.mode }}-${{ matrix.submission }}.pdf
+          if-no-files-found: error
+
+  # ── 3. GitHub Release ───────────────────────────────────────────────────────
   github-release:
     name: Create GitHub Release
-    needs: build
+    needs: [build, build-paper]
     runs-on: ubuntu-latest
 
     steps:
@@ -62,11 +102,18 @@ jobs:
         with:
           fetch-depth: 0   # full history for changelog generation
 
-      - name: Download build artifacts
+      - name: Download Python build artifacts
         uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
+
+      - name: Download paper artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: paper-*
+          path: paper-dist/
+          merge-multiple: true
 
       - name: Extract version from tag
         id: version
@@ -90,41 +137,43 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: "acgs-lite ${{ github.ref_name }}"
+          name: "acgs ${{ github.ref_name }}"
           tag_name: ${{ github.ref_name }}
           body: |
-            ## acgs-lite ${{ github.ref_name }}
+            ## acgs ${{ github.ref_name }}
 
             Constitutional AI governance for any agent. Wrap any LLM agent in enforceable rules, audit trails, and MACI separation of powers.
 
             ### Install
 
             ```bash
-            pip install acgs-lite==${{ steps.version.outputs.version }}
+            pip install acgs==${{ steps.version.outputs.version }}
             # or with all LLM integrations:
-            pip install "acgs-lite[all]==${{ steps.version.outputs.version }}"
+            pip install "acgs[all]==${{ steps.version.outputs.version }}"
             ```
 
             ### Changes
             ${{ steps.changelog.outputs.changes }}
 
             ### Constitutional Hash
-            `cdd01ef066bc6cf2` — embedded in all validation paths.
+            `608508a9bd224290` — embedded in all validation paths.
 
             ---
-            **[Documentation](https://acgs.dev/docs/lite)** · **[PyPI](https://pypi.org/project/acgs-lite/)** · **[Repository](https://github.com/acgs-ai/acgs-lite)**
-          files: dist/*
+            **[Documentation](https://acgs.ai)** · **[PyPI](https://pypi.org/project/acgs/)** · **[Repository](https://github.com/acgs2_admin/acgs)**
+          files: |
+            dist/*
+            paper-dist/*.pdf
           draft: false
           prerelease: ${{ contains(github.ref_name, 'a') || contains(github.ref_name, 'b') || contains(github.ref_name, 'rc') }}
 
-  # ── 3. Publish to PyPI (Trusted Publisher — no token required) ─────────────
+  # ── 4. Publish to PyPI (Trusted Publisher — no token required) ─────────────
   pypi-publish:
     name: Publish to PyPI
     needs: build
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/acgs-lite
+      url: https://pypi.org/project/acgs/
 
     steps:
       - name: Download build artifacts

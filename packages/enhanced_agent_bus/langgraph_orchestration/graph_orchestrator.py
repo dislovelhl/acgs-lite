@@ -1,6 +1,6 @@
 """
 ACGS-2 LangGraph Orchestration - Graph Orchestrator
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Main orchestration engine for graph-based workflow execution:
 - Cyclic state machine with configurable patterns
@@ -95,7 +95,7 @@ ERROR_CHECKPOINT_ERRORS = (
 class GraphOrchestratorConfig:
     """Configuration for the graph orchestrator.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Execution settings
@@ -144,7 +144,7 @@ class GraphOrchestrator:
     - P99 latency < 5ms for state transitions
     - Support for 1000+ concurrent workflows
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -288,7 +288,7 @@ class GraphOrchestrator:
         Returns:
             Execution result with final state and metrics
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         start_time = time.perf_counter()
         workflow_id = workflow_id or str(uuid.uuid4())
@@ -763,7 +763,7 @@ def create_graph_orchestrator(
     Returns:
         Configured graph orchestrator
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     from .persistence import create_state_persistence
 

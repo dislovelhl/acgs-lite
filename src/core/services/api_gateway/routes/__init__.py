@@ -1,6 +1,6 @@
 """
 ACGS-2 API Gateway Routes
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module contains route handlers for the API Gateway service,
 including SSO authentication endpoints for OIDC and SAML protocols,

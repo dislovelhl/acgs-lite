@@ -1,7 +1,7 @@
 """
 Tests for MiniCPM Integration with Agent Bus Components.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests the integration of MiniCPM-enhanced impact scoring with:
 - Deliberation Layer ImpactScorer facade

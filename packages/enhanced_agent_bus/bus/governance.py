@@ -1,7 +1,7 @@
 """
 Adaptive governance integration for EnhancedAgentBus.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ class GovernanceIntegration:
     """
     Handles adaptive governance evaluation for message processing.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

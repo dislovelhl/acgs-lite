@@ -2,7 +2,7 @@
 Coverage tests batch 22a: swarm_intelligence/coordinator, coordinators/swarm_coordinator,
 interfaces, and registry modules.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -77,6 +77,7 @@ from enhanced_agent_bus.swarm_intelligence.models import (
 # ============================================================================
 # Helpers
 # ============================================================================
+
 
 def _caps(*names: str) -> list[AgentCapability]:
     return [
@@ -160,9 +161,7 @@ class TestSwarmCoordinatorSubmitTask:
 
     async def test_submit_task_with_decompose(self):
         sc = SwarmCoordinator()
-        task_id = await sc.submit_task(
-            "code_generation for module", ["coding"], decompose=True
-        )
+        task_id = await sc.submit_task("code_generation for module", ["coding"], decompose=True)
         assert task_id is not None
         stats = sc.get_stats()
         assert stats["metrics"]["tasks_submitted"] >= 1
@@ -188,9 +187,7 @@ class TestSwarmCoordinatorAssignTasks:
     async def test_assign_tasks_with_unsatisfied_dependency(self):
         sc = SwarmCoordinator(max_agents=4)
         await sc.spawn_agent("w1", _caps("py"))
-        await sc.submit_task(
-            "task", ["py"], decompose=False, dependencies=["nonexistent"]
-        )
+        await sc.submit_task("task", ["py"], decompose=False, dependencies=["nonexistent"])
         assigned = await sc.assign_tasks()
         assert assigned == 0
 
@@ -228,9 +225,7 @@ class TestSwarmCoordinatorConsensus:
         sc = SwarmCoordinator(max_agents=4)
         agent = await sc.spawn_agent("voter", _caps("py"))
         assert agent is not None
-        proposal = await sc.request_consensus(
-            agent.id, "deploy", {"env": "prod"}
-        )
+        proposal = await sc.request_consensus(agent.id, "deploy", {"env": "prod"})
         assert proposal is not None
         assert proposal.action == "deploy"
 
@@ -333,9 +328,7 @@ class TestSwarmCoordinatorSelfHealing:
         agent = await sc.spawn_agent("r", _caps("py"))
         assert agent is not None
         agent.state = AgentState.ERROR
-        result = await sc.perform_self_healing(
-            agent.id, {"action": "restart"}
-        )
+        result = await sc.perform_self_healing(agent.id, {"action": "restart"})
         assert result is True
         assert agent.state == AgentState.READY
 
@@ -345,9 +338,7 @@ class TestSwarmCoordinatorSelfHealing:
         assert agent is not None
         task_id = await sc.submit_task("work", ["py"], decompose=False)
         await sc.assign_tasks()
-        result = await sc.perform_self_healing(
-            agent.id, {"action": "restart_task"}
-        )
+        result = await sc.perform_self_healing(agent.id, {"action": "restart_task"})
         assert result is True
         assert agent.state == AgentState.READY
         assert agent.current_task is None
@@ -356,9 +347,7 @@ class TestSwarmCoordinatorSelfHealing:
         sc = SwarmCoordinator(max_agents=4)
         agent = await sc.spawn_agent("t", _caps("py"))
         assert agent is not None
-        result = await sc.perform_self_healing(
-            agent.id, {"action": "terminate"}
-        )
+        result = await sc.perform_self_healing(agent.id, {"action": "terminate"})
         assert result is True
         assert sc.get_agent(agent.id) is None
 
@@ -366,9 +355,7 @@ class TestSwarmCoordinatorSelfHealing:
         sc = SwarmCoordinator(max_agents=4)
         agent = await sc.spawn_agent("u", _caps("py"))
         assert agent is not None
-        result = await sc.perform_self_healing(
-            agent.id, {"action": "unknown_action"}
-        )
+        result = await sc.perform_self_healing(agent.id, {"action": "unknown_action"})
         assert result is False
 
     async def test_perform_self_healing_agent_not_found(self):
@@ -491,9 +478,7 @@ class TestSwarmCoordinatorDependencies:
         await sc.assign_tasks()
         await sc.complete_task(dep_id, "ok")
 
-        main_id = await sc.submit_task(
-            "main", ["py"], decompose=False, dependencies=[dep_id]
-        )
+        main_id = await sc.submit_task("main", ["py"], decompose=False, dependencies=[dep_id])
         task = sc.get_task(main_id)
         assert task is not None
         assert sc._dependencies_satisfied(task) is True
@@ -663,9 +648,7 @@ class TestCoordinatorsSwarmCoordinator:
         coord._enable_consensus = True
         coord._swarm = None
         coord._initialized = False
-        agent = SwarmAgent(
-            id="a1", name="w1", capabilities=_caps("py"), state=AgentState.READY
-        )
+        agent = SwarmAgent(id="a1", name="w1", capabilities=_caps("py"), state=AgentState.READY)
         coord._agents = {"a1": agent}
         result = coord.get_active_agents()
         assert result["active_count"] == 1

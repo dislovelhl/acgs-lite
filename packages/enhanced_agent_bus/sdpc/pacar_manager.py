@@ -14,6 +14,7 @@ sys.modules.setdefault("enhanced_agent_bus.sdpc.pacar_manager", sys.modules[__na
 try:
     import redis.asyncio as redis
 except ImportError:  # pragma: no cover
+
     class _RedisStub:
         @staticmethod
         def from_url(*args: object, **kwargs: object) -> object:

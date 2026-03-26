@@ -4,7 +4,7 @@ Coverage tests for batch17d:
   2. mcp_integration/auth/mcp_auth_provider/token_ops.py
   3. api/routes/z3.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -26,6 +26,7 @@ sys.path.insert(0, "packages/enhanced_agent_bus")
 # ---------------------------------------------------------------------------
 # Helper factories
 # ---------------------------------------------------------------------------
+
 
 def _make_oauth2_token(
     access_token: str = "test-access-token",
@@ -399,9 +400,7 @@ class TestDiscoverProvider:
         mock_meta.discovered_at = datetime.now(UTC)
         provider._discovery_cache["cached"] = mock_meta
 
-        result = await provider.discover_provider(
-            "https://example.com", name="cached"
-        )
+        result = await provider.discover_provider("https://example.com", name="cached")
         assert result is mock_meta
 
     async def test_discover_expired_cache(self):
@@ -420,9 +419,7 @@ class TestDiscoverProvider:
             new_callable=AsyncMock,
             return_value=new_meta,
         ):
-            result = await provider.discover_provider(
-                "https://example.com", name="old"
-            )
+            result = await provider.discover_provider("https://example.com", name="old")
         assert result is new_meta
         assert provider._discovery_cache["old"] is new_meta
 
@@ -1254,7 +1251,13 @@ class TestComputedMetrics:
         assert m["cache_hit_rate"] == 0.0
         assert "verification_times_ms" not in m
         # All policy types present
-        for pt in ("access_control", "resource_constraint", "temporal_governance", "constitutional", "general"):
+        for pt in (
+            "access_control",
+            "resource_constraint",
+            "temporal_governance",
+            "constitutional",
+            "general",
+        ):
             assert pt in m["policy_type_counts"]
 
     def test_with_data(self):
@@ -1362,9 +1365,7 @@ class TestVerifyApiKey:
 
         from enhanced_agent_bus.api.routes.z3 import _verify_api_key
 
-        with patch(
-            "enhanced_agent_bus.api.routes.z3._load_auth_module"
-        ) as mock_load:
+        with patch("enhanced_agent_bus.api.routes.z3._load_auth_module") as mock_load:
             mock_mod = MagicMock()
             mock_mod._is_known_api_key.return_value = False
             mock_load.return_value = mock_mod
@@ -1377,9 +1378,7 @@ class TestVerifyApiKey:
     async def test_valid_key_returns_key(self):
         from enhanced_agent_bus.api.routes.z3 import _verify_api_key
 
-        with patch(
-            "enhanced_agent_bus.api.routes.z3._load_auth_module"
-        ) as mock_load:
+        with patch("enhanced_agent_bus.api.routes.z3._load_auth_module") as mock_load:
             mock_mod = MagicMock()
             mock_mod._is_known_api_key.return_value = True
             mock_load.return_value = mock_mod
@@ -1573,11 +1572,16 @@ class TestZ3Endpoints:
         mock_models.PolicyType.CONSTITUTIONAL = "CONSTITUTIONAL"
 
         try:
-            with patch(
-                "enhanced_agent_bus.api.routes.z3._get_verifier",
-                return_value=mock_verifier,
-            ), patch.object(
-                importlib, "import_module", return_value=mock_models,
+            with (
+                patch(
+                    "enhanced_agent_bus.api.routes.z3._get_verifier",
+                    return_value=mock_verifier,
+                ),
+                patch.object(
+                    importlib,
+                    "import_module",
+                    return_value=mock_models,
+                ),
             ):
                 async with httpx.AsyncClient(
                     transport=httpx.ASGITransport(app=app),
@@ -1613,11 +1617,16 @@ class TestZ3Endpoints:
         mock_verifier = MagicMock()
 
         try:
-            with patch(
-                "enhanced_agent_bus.api.routes.z3._get_verifier",
-                return_value=mock_verifier,
-            ), patch.object(
-                importlib, "import_module", side_effect=RuntimeError("Z3 crash"),
+            with (
+                patch(
+                    "enhanced_agent_bus.api.routes.z3._get_verifier",
+                    return_value=mock_verifier,
+                ),
+                patch.object(
+                    importlib,
+                    "import_module",
+                    side_effect=RuntimeError("Z3 crash"),
+                ),
             ):
                 async with httpx.AsyncClient(
                     transport=httpx.ASGITransport(app=app),

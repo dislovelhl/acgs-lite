@@ -1,6 +1,6 @@
 """Tests for src/core/enhanced_agent_bus/api/app.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 Coverage target: ≥ 90%
 """
 
@@ -232,6 +232,34 @@ class TestCreateApp:
     def test_create_app_returns_fastapi_instance(self):
         result = app_module.create_app()
         assert isinstance(result, FastAPI)
+
+    def test_create_app_uses_shared_governance_backends_when_redis_available(self):
+        fake_redis = MagicMock()
+
+        with patch.object(app_module, "_build_governance_redis_client", return_value=fake_redis):
+            result = app_module.create_app()
+
+        assert isinstance(result.state.maci_record_store, app_module.RedisMACIRecordStore)
+        assert isinstance(result.state.maci_role_registry, app_module.RedisMACIRoleRegistry)
+        assert result.state.maci_enforcer.registry is result.state.maci_role_registry
+        assert result.state.pqc_enforcement_service._redis is fake_redis
+
+    def test_create_app_falls_back_to_in_memory_governance_backends(self):
+        with (
+            patch.object(
+                app_module,
+                "_build_governance_redis_client",
+                side_effect=ImportError("redis unavailable"),
+            ),
+            patch.dict("os.environ", {"ENVIRONMENT": "test"}),
+        ):
+            result = app_module.create_app()
+
+        assert isinstance(result.state.maci_record_store, app_module.MACIRecordStore)
+        assert isinstance(result.state.maci_role_registry, app_module.MACIRoleRegistry)
+        assert isinstance(
+            result.state.pqc_enforcement_service._redis, app_module.InMemoryPQCConfigBackend
+        )
 
     def test_create_app_sets_limiter_state(self):
         result = app_module.create_app()
@@ -466,6 +494,37 @@ class TestLifespanStartup:
 
         assert created_dsns[0].startswith("postgresql://")
         assert "asyncpg" not in created_dsns[0]
+
+    async def test_startup_attaches_pg_fallback_to_pqc_service(self):
+        fake_app = FastAPI()
+        fake_mp = MagicMock()
+        fake_batch = MagicMock()
+        fake_repo = AsyncMock()
+        fake_repo.initialize = AsyncMock()
+        fake_repo.close = AsyncMock()
+        fake_repo._pool = MagicMock()
+        fake_redis = MagicMock()
+
+        with (
+            patch.object(app_module, "MessageProcessor", return_value=fake_mp),
+            patch.object(app_module, "BatchMessageProcessor", return_value=fake_batch),
+            patch.object(app_module, "PostgresWorkflowRepository", return_value=fake_repo),
+            patch.object(app_module, "DurableWorkflowExecutor", return_value=MagicMock()),
+            patch.object(app_module, "_build_governance_redis_client", return_value=fake_redis),
+            patch.dict("os.environ", {"DATABASE_URL": "postgresql://localhost/test"}),
+        ):
+            fake_sessions = MagicMock()
+            fake_sessions.init_session_manager = AsyncMock(return_value=True)
+            fake_sessions.shutdown_session_manager = AsyncMock()
+
+            with patch.dict(
+                sys.modules,
+                {
+                    "enhanced_agent_bus.routes.sessions": fake_sessions,
+                },
+            ):
+                async with app_module._lifespan_context(fake_app):
+                    assert fake_app.state.pqc_enforcement_service._pg is fake_repo._pool
 
     async def test_startup_with_message_processor_failure_in_dev(self):
         """Test dev-mode fallback when MessageProcessor raises."""

@@ -5,7 +5,7 @@
 
 """License management for acgs-lite.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 License key format: ACGS-{TIER}-{expiry8}-{nonce4a}-{nonce4b}-{tier4}-{hmac32}
 Example:           ACGS-PRO-67f2b400-a9c2-3d18-0001-4a8f2c9e1b3d7e5f6a0b1c2d3e4f5a6b

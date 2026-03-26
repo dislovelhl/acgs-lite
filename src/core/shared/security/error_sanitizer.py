@@ -1,6 +1,6 @@
 """
 ACGS-2 Centralized Error Sanitizer
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides a single, comprehensive error-sanitization function that replaces
 fragile per-module regex scrubbing.  All infrastructure clients (Kafka, OPA,
@@ -54,6 +54,7 @@ def sanitize_error(error: Exception | str | None) -> str:
     for pattern, replacement in _PATTERNS:
         msg = pattern.sub(replacement, msg)
     return msg
+
 
 _PRODUCTION_ENVIRONMENTS = frozenset({"production", "prod", "staging"})
 

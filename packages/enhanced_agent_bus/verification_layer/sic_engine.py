@@ -1,6 +1,6 @@
 """
 ACGS-2 Semantic Integrity Constraint (SIC) Engine
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module implements the 2026 PVLDB declarative abstraction for LLMs:
 Semantic Integrity Constraints (SICs). It treats AI outputs like database

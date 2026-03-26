@@ -5,7 +5,7 @@ Comprehensive tests for batch D coverage targets:
 - src.core.shared.auth.provisioning
 - src.core.shared.database.utils
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -90,12 +90,18 @@ class TestOAuth2StateManagerInit:
         assert mgr._use_redis is True
         assert mgr._redis_client is redis
 
-    @patch("src.core.shared.security.oauth_state_manager._allow_degraded_mode_without_redis", return_value=True)
+    @patch(
+        "src.core.shared.security.oauth_state_manager._allow_degraded_mode_without_redis",
+        return_value=True,
+    )
     def test_init_without_redis_degraded_allowed(self, _mock):
         mgr = OAuth2StateManager(redis_client=None)
         assert mgr._use_redis is False
 
-    @patch("src.core.shared.security.oauth_state_manager._allow_degraded_mode_without_redis", return_value=False)
+    @patch(
+        "src.core.shared.security.oauth_state_manager._allow_degraded_mode_without_redis",
+        return_value=False,
+    )
     @patch("src.core.shared.security.oauth_state_manager.settings")
     def test_init_without_redis_production_raises(self, mock_settings, _mock):
         mock_settings.env = "production"
@@ -188,7 +194,10 @@ class TestOAuth2StateManagerCreateState:
                 client_ip="1.2.3.4", user_agent="ua", provider="okta", callback_url="/cb"
             )
 
-    @patch("src.core.shared.security.oauth_state_manager._allow_degraded_mode_without_redis", return_value=True)
+    @patch(
+        "src.core.shared.security.oauth_state_manager._allow_degraded_mode_without_redis",
+        return_value=True,
+    )
     async def test_create_state_degraded_mode(self, _mock):
         mgr = OAuth2StateManager(redis_client=None)
         state = await mgr.create_state(
@@ -245,7 +254,10 @@ class TestOAuth2StateManagerValidateState:
         with pytest.raises(ACGSValidationError, match="state cannot be empty"):
             await manager.validate_state(state="   ", client_ip="10.0.0.1", user_agent="ua")
 
-    @patch("src.core.shared.security.oauth_state_manager._allow_degraded_mode_without_redis", return_value=True)
+    @patch(
+        "src.core.shared.security.oauth_state_manager._allow_degraded_mode_without_redis",
+        return_value=True,
+    )
     async def test_validate_no_redis_raises_not_found(self, _mock):
         mgr = OAuth2StateManager(redis_client=None)
         with pytest.raises(OAuth2StateNotFoundError, match="Redis unavailable"):
@@ -273,8 +285,10 @@ class TestOAuth2StateManagerValidateState:
 
     async def test_validate_missing_constitutional_hash(self, manager, redis_mock):
         data = {
-            "provider": "okta", "callback_url": "/cb",
-            "client_ip": "1.2.3.4", "user_agent": "ua",
+            "provider": "okta",
+            "callback_url": "/cb",
+            "client_ip": "1.2.3.4",
+            "user_agent": "ua",
             "created_at": datetime.now(UTC).isoformat(),
         }
         redis_mock.get.return_value = json.dumps(data)
@@ -290,12 +304,16 @@ class TestOAuth2StateManagerValidateState:
         old_time = (datetime.now(UTC) - timedelta(seconds=600)).isoformat()
         redis_mock.get.return_value = self._make_state_json(created_at=old_time)
         with pytest.raises(OAuth2StateExpiredError, match="expired"):
-            await manager.validate_state(state="abc", client_ip="10.0.0.1", user_agent="Mozilla/5.0")
+            await manager.validate_state(
+                state="abc", client_ip="10.0.0.1", user_agent="Mozilla/5.0"
+            )
 
     async def test_validate_no_created_at_skips_expiry(self, manager, redis_mock):
         data = {
-            "provider": "okta", "callback_url": "/cb",
-            "client_ip": "10.0.0.1", "user_agent": "Mozilla/5.0",
+            "provider": "okta",
+            "callback_url": "/cb",
+            "client_ip": "10.0.0.1",
+            "user_agent": "Mozilla/5.0",
             "constitutional_hash": CONSTITUTIONAL_HASH,
         }
         redis_mock.get.return_value = json.dumps(data)
@@ -307,7 +325,9 @@ class TestOAuth2StateManagerValidateState:
     async def test_validate_ip_mismatch(self, manager, redis_mock):
         redis_mock.get.return_value = self._make_state_json()
         with pytest.raises(OAuth2StateValidationError, match="Client IP mismatch"):
-            await manager.validate_state(state="abc", client_ip="99.99.99.99", user_agent="Mozilla/5.0")
+            await manager.validate_state(
+                state="abc", client_ip="99.99.99.99", user_agent="Mozilla/5.0"
+            )
 
     async def test_validate_user_agent_mismatch(self, manager, redis_mock):
         redis_mock.get.return_value = self._make_state_json()
@@ -346,7 +366,10 @@ class TestOAuth2StateManagerInvalidateState:
         result = await manager.invalidate_state("nonexistent")
         assert result is False
 
-    @patch("src.core.shared.security.oauth_state_manager._allow_degraded_mode_without_redis", return_value=True)
+    @patch(
+        "src.core.shared.security.oauth_state_manager._allow_degraded_mode_without_redis",
+        return_value=True,
+    )
     async def test_invalidate_no_redis(self, _mock):
         mgr = OAuth2StateManager(redis_client=None)
         result = await mgr.invalidate_state("some_state")
@@ -379,6 +402,7 @@ class TestLLMProposer:
     @pytest.fixture()
     def proposer(self):
         from src.core.shared.policy.unified_generator import LLMProposer
+
         return LLMProposer()
 
     async def test_propose_harder_empty_corpus(self, proposer):
@@ -391,9 +415,15 @@ class TestLLMProposer:
     async def test_propose_harder_with_corpus(self, proposer):
         spec = PolicySpecification(spec_id="s1", natural_language="admin access only")
         vp = VerifiedPolicy(
-            policy_id="p1", specification=spec, rego_policy="", dafny_spec="",
-            smt_formulation="", verification_result={}, generation_metadata={},
-            verification_status=VerificationStatus.VERIFIED, confidence_score=0.8,
+            policy_id="p1",
+            specification=spec,
+            rego_policy="",
+            dafny_spec="",
+            smt_formulation="",
+            verification_result={},
+            generation_metadata={},
+            verification_status=VerificationStatus.VERIFIED,
+            confidence_score=0.8,
         )
         results = await proposer.propose_harder([vp])
         assert len(results) == 4
@@ -405,6 +435,7 @@ class TestAlphaVerusTranslator:
     @pytest.fixture()
     def translator(self):
         from src.core.shared.policy.unified_generator import AlphaVerusTranslator
+
         return AlphaVerusTranslator()
 
     async def test_translate_rego_admin(self, translator):
@@ -415,7 +446,9 @@ class TestAlphaVerusTranslator:
         assert "package constitutional.abcd1234" in result
 
     async def test_translate_rego_owner(self, translator):
-        spec = PolicySpecification(spec_id="own12345rest", natural_language="Only the owner can access")
+        spec = PolicySpecification(
+            spec_id="own12345rest", natural_language="Only the owner can access"
+        )
         result = await translator.translate_policy(spec, PolicyLanguage.REGO)
         assert "input.user.id == input.resource.owner_id" in result
 
@@ -435,12 +468,16 @@ class TestAlphaVerusTranslator:
         assert 'input.action == "read"' in result
 
     async def test_translate_rego_mfa(self, translator):
-        spec = PolicySpecification(spec_id="mfa12345rest", natural_language="Require mfa for access")
+        spec = PolicySpecification(
+            spec_id="mfa12345rest", natural_language="Require mfa for access"
+        )
         result = await translator.translate_policy(spec, PolicyLanguage.REGO)
         assert "input.user.mfa_authenticated == true" in result
 
     async def test_translate_rego_multi_factor(self, translator):
-        spec = PolicySpecification(spec_id="mf123456rest", natural_language="multi-factor auth required")
+        spec = PolicySpecification(
+            spec_id="mf123456rest", natural_language="multi-factor auth required"
+        )
         result = await translator.translate_policy(spec, PolicyLanguage.REGO)
         assert "input.user.mfa_authenticated == true" in result
 
@@ -451,7 +488,9 @@ class TestAlphaVerusTranslator:
         assert "default allow = false" in result
 
     async def test_translate_smt(self, translator):
-        spec = PolicySpecification(spec_id="smt12345rest", natural_language="Admin access for delete with mfa")
+        spec = PolicySpecification(
+            spec_id="smt12345rest", natural_language="Admin access for delete with mfa"
+        )
         result = await translator.translate_policy(spec, PolicyLanguage.SMT)
         assert "(set-logic QF_UF)" in result
         assert CONSTITUTIONAL_HASH in result
@@ -467,7 +506,9 @@ class TestAlphaVerusTranslator:
         assert "(assert (not (is_critical read_action)))" in result
 
     async def test_translate_smt_owner(self, translator):
-        spec = PolicySpecification(spec_id="smt12345rest", natural_language="owner can access resources")
+        spec = PolicySpecification(
+            spec_id="smt12345rest", natural_language="owner can access resources"
+        )
         result = await translator.translate_policy(spec, PolicyLanguage.SMT)
         assert "is_owner" in result
 
@@ -485,6 +526,7 @@ class TestDafnyProAnnotator:
     @pytest.fixture()
     def annotator(self):
         from src.core.shared.policy.unified_generator import DafnyProAnnotator
+
         return DafnyProAnnotator()
 
     def test_init_keywords(self, annotator):
@@ -494,6 +536,7 @@ class TestDafnyProAnnotator:
 
     def test_custom_max_refinements(self):
         from src.core.shared.policy.unified_generator import DafnyProAnnotator
+
         ann = DafnyProAnnotator(max_refinements=10)
         assert ann.max_refinements == 10
 
@@ -518,14 +561,18 @@ class TestDafnyProAnnotator:
         assert "ValidSwarm" in result
 
     async def test_annotate_resource_template(self, annotator):
-        spec = PolicySpecification(spec_id="res12345rest", natural_language="resource ownership check")
+        spec = PolicySpecification(
+            spec_id="res12345rest", natural_language="resource ownership check"
+        )
         result = await annotator.annotate("package test\nallow { true }", spec)
         assert "[RESOURCE]" in result
         assert "HasPermission" in result
         assert "IsOwner" in result
 
     async def test_annotate_owner_template(self, annotator):
-        spec = PolicySpecification(spec_id="own12345rest", natural_language="only the owner can access")
+        spec = PolicySpecification(
+            spec_id="own12345rest", natural_language="only the owner can access"
+        )
         result = await annotator.annotate("package test\nallow { true }", spec)
         assert "[RESOURCE]" in result
 
@@ -537,17 +584,19 @@ class TestDafnyProAnnotator:
     @patch("os.path.exists", return_value=True)
     def test_sync_with_rust_read_error(self, _exists, _open):
         from src.core.shared.policy.unified_generator import DafnyProAnnotator
+
         ann = DafnyProAnnotator()
         assert "critical" in ann.high_impact_keywords
 
     @patch("os.path.exists", return_value=True)
     def test_sync_with_rust_with_content(self, _exists):
-        rust_content = '''high_impact_keywords: vec!["custom_kw", "another_kw"]'''
+        rust_content = """high_impact_keywords: vec!["custom_kw", "another_kw"]"""
         m = MagicMock()
         m.__enter__ = MagicMock(return_value=MagicMock(read=MagicMock(return_value=rust_content)))
         m.__exit__ = MagicMock(return_value=False)
         with patch("builtins.open", return_value=m):
             from src.core.shared.policy.unified_generator import DafnyProAnnotator
+
             ann = DafnyProAnnotator()
             assert "custom_kw" in ann.high_impact_keywords
             assert "another_kw" in ann.high_impact_keywords
@@ -557,10 +606,12 @@ class TestUnifiedVerifiedPolicyGenerator:
     @pytest.fixture()
     def generator(self):
         from src.core.shared.policy.unified_generator import UnifiedVerifiedPolicyGenerator
+
         return UnifiedVerifiedPolicyGenerator(max_iterations=2, dafny_path="/fake/dafny")
 
     def test_init_defaults(self):
         from src.core.shared.policy.unified_generator import UnifiedVerifiedPolicyGenerator
+
         gen = UnifiedVerifiedPolicyGenerator()
         assert gen.max_iterations == 5
         assert gen.verified_corpus == []
@@ -568,7 +619,13 @@ class TestUnifiedVerifiedPolicyGenerator:
     @patch("src.core.shared.policy.unified_generator.UnifiedVerifiedPolicyGenerator._verify_smt")
     @patch("src.core.shared.policy.unified_generator.UnifiedVerifiedPolicyGenerator._verify_dafny")
     async def test_generate_verified_policy_success(self, mock_dafny, mock_smt, generator):
-        mock_smt.return_value = {"status": "sat", "model": {}, "alternative_paths": [], "solve_time_ms": 10, "unsat_core": []}
+        mock_smt.return_value = {
+            "status": "sat",
+            "model": {},
+            "alternative_paths": [],
+            "solve_time_ms": 10,
+            "unsat_core": [],
+        }
         mock_dafny.return_value = {"status": "verified", "output": "ok", "verified": True}
         spec = PolicySpecification(spec_id="test1234rest", natural_language="Admin access only")
 
@@ -582,7 +639,12 @@ class TestUnifiedVerifiedPolicyGenerator:
     @patch("src.core.shared.policy.unified_generator.UnifiedVerifiedPolicyGenerator._verify_dafny")
     async def test_generate_verified_policy_sat_not_proven(self, mock_dafny, mock_smt, generator):
         mock_smt.return_value = {"status": "sat", "model": {}, "alternative_paths": []}
-        mock_dafny.return_value = {"status": "failed", "output": "", "error": "err", "verified": False}
+        mock_dafny.return_value = {
+            "status": "failed",
+            "output": "",
+            "error": "err",
+            "verified": False,
+        }
         spec = PolicySpecification(spec_id="test2345rest", natural_language="basic policy")
 
         result = await generator.generate_verified_policy(spec)
@@ -591,7 +653,9 @@ class TestUnifiedVerifiedPolicyGenerator:
 
     @patch("src.core.shared.policy.unified_generator.UnifiedVerifiedPolicyGenerator._verify_smt")
     @patch("src.core.shared.policy.unified_generator.UnifiedVerifiedPolicyGenerator._verify_dafny")
-    async def test_generate_verified_policy_all_iterations_fail(self, mock_dafny, mock_smt, generator):
+    async def test_generate_verified_policy_all_iterations_fail(
+        self, mock_dafny, mock_smt, generator
+    ):
         mock_smt.return_value = {"status": "unsat"}
         mock_dafny.return_value = {"status": "failed", "output": "", "error": "", "verified": False}
         spec = PolicySpecification(spec_id="fail1234rest", natural_language="impossible policy")
@@ -625,6 +689,7 @@ class TestUnifiedVerifiedPolicyGenerator:
     def test_verify_dafny_timeout(self, _mock, generator):
         # subprocess.TimeoutExpired needs specific args
         import subprocess as sp
+
         with patch("subprocess.run", side_effect=sp.TimeoutExpired(cmd="dafny", timeout=30)):
             result = generator._verify_dafny("module Test { }")
             assert result["status"] == "error"
@@ -633,7 +698,13 @@ class TestUnifiedVerifiedPolicyGenerator:
     @patch("src.core.shared.policy.unified_generator.UnifiedVerifiedPolicyGenerator._verify_smt")
     @patch("src.core.shared.policy.unified_generator.UnifiedVerifiedPolicyGenerator._verify_dafny")
     async def test_generate_with_find_multiple(self, mock_dafny, mock_smt, generator):
-        mock_smt.return_value = {"status": "sat", "model": {}, "alternative_paths": ["path1"], "solve_time_ms": 5, "unsat_core": []}
+        mock_smt.return_value = {
+            "status": "sat",
+            "model": {},
+            "alternative_paths": ["path1"],
+            "solve_time_ms": 5,
+            "unsat_core": [],
+        }
         mock_dafny.return_value = {"status": "verified", "verified": True, "output": "ok"}
         spec = PolicySpecification(spec_id="multi123rest", natural_language="Admin access only")
 
@@ -649,9 +720,15 @@ class TestUnifiedVerifiedPolicyGenerator:
         mock_z3_module.LLMAssistedZ3Adapter = mock_adapter_cls
 
         import sys
-        with patch.dict(sys.modules, {"packages.enhanced_agent_bus.verification.z3_adapter": mock_z3_module}):
+
+        with patch.dict(
+            sys.modules, {"packages.enhanced_agent_bus.verification.z3_adapter": mock_z3_module}
+        ):
             result = await generator.generate_verified_policy(spec, find_multiple=True)
-            assert result.verification_status in (VerificationStatus.PROVEN, VerificationStatus.VERIFIED)
+            assert result.verification_status in (
+                VerificationStatus.PROVEN,
+                VerificationStatus.VERIFIED,
+            )
 
     async def test_verify_smt_catches_errors(self, generator):
         # Test with deliberately malformed SMT that will cause the adapter to fail
@@ -777,15 +854,15 @@ class TestJITProvisionerMergeRoles:
         assert changed is False
 
     def test_deduplicates_and_sorts(self, prov):
-        merged, changed = prov._merge_roles([], ["b", "a", "b"])
+        merged, _changed = prov._merge_roles([], ["b", "a", "b"])
         assert merged == ["a", "b"]
 
     def test_no_change_detected(self, prov):
-        merged, changed = prov._merge_roles(["a", "b"], ["a", "b"])
+        _merged, changed = prov._merge_roles(["a", "b"], ["a", "b"])
         assert changed is False
 
     def test_custom_defaults(self, prov):
-        merged, changed = prov._merge_roles([], [], default_roles=["custom"])
+        merged, _changed = prov._merge_roles([], [], default_roles=["custom"])
         assert merged == ["custom"]
 
 
@@ -989,9 +1066,11 @@ class TestBulkOperations:
         """Create a real SQLAlchemy Table for testing."""
         from sqlalchemy import Column, Integer, MetaData, String
         from sqlalchemy import Table as SATable
+
         metadata = MetaData()
         return SATable(
-            "test_table", metadata,
+            "test_table",
+            metadata,
             Column("id", Integer, primary_key=True),
             Column("name", String),
             Column("status", String),
@@ -1031,6 +1110,7 @@ class TestBulkOperations:
 
     async def test_bulk_insert_on_conflict_do_nothing(self, session, table):
         from sqlalchemy.dialects.postgresql import insert as pg_insert
+
         values = [{"id": 1, "name": "a"}]
         with patch("src.core.shared.database.utils.insert", pg_insert):
             await BulkOperations.bulk_insert_on_conflict(
@@ -1040,6 +1120,7 @@ class TestBulkOperations:
 
     async def test_bulk_insert_on_conflict_do_update(self, session, table):
         from sqlalchemy.dialects.postgresql import insert as pg_insert
+
         values = [{"id": 1, "name": "a"}]
         with patch("src.core.shared.database.utils.insert", pg_insert):
             await BulkOperations.bulk_insert_on_conflict(

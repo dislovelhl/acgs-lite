@@ -5,7 +5,7 @@ Coverage tests for batch 22c:
   3. constitutional_classifier/detector.py
   4. opal_client.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -41,7 +41,7 @@ def _make_version(
     return ConstitutionalVersion(
         version_id=version_id,
         version=version,
-        constitutional_hash="cdd01ef066bc6cf2",
+        constitutional_hash="608508a9bd224290",
         content={"policies": []},
         status=status,
     )
@@ -60,15 +60,9 @@ class TestConstitutionalStorageService:
 
     async def test_init_defaults(self) -> None:
         with (
-            patch(
-                "enhanced_agent_bus.constitutional.storage_infra.service.CacheManager"
-            ),
-            patch(
-                "enhanced_agent_bus.constitutional.storage_infra.service.PersistenceManager"
-            ),
-            patch(
-                "enhanced_agent_bus.constitutional.storage_infra.service.LockManager"
-            ),
+            patch("enhanced_agent_bus.constitutional.storage_infra.service.CacheManager"),
+            patch("enhanced_agent_bus.constitutional.storage_infra.service.PersistenceManager"),
+            patch("enhanced_agent_bus.constitutional.storage_infra.service.LockManager"),
         ):
             svc = ConstitutionalStorageService()
             assert svc.config is not None
@@ -243,7 +237,9 @@ class TestConstitutionalStorageService:
     async def test_list_amendments(self) -> None:
         svc = self._make_service()
         svc.persistence.list_amendments = AsyncMock(return_value=([], 0))
-        result = await svc.list_amendments("t1", limit=10, offset=0, status="proposed", proposer_id="p1")
+        result = await svc.list_amendments(
+            "t1", limit=10, offset=0, status="proposed", proposer_id="p1"
+        )
         svc.persistence.list_amendments.assert_awaited_once_with("t1", 10, 0, "proposed", "p1")
         assert result == ([], 0)
 
@@ -581,9 +577,7 @@ class TestThreatDetector:
             description="test",
         )
         match = PatternMatchResult(matched=True, pattern=pattern, match_text="bypass")
-        score = _make_compliance_score(
-            final_score=0.6, is_compliant=False, threat_matches=[match]
-        )
+        score = _make_compliance_score(final_score=0.6, is_compliant=False, threat_matches=[match])
         detector.scoring_engine.calculate_score = MagicMock(return_value=score)
 
         result = await detector.detect("bypass attempt", use_cache=False)
@@ -598,9 +592,7 @@ class TestThreatDetector:
             description="test",
         )
         match = PatternMatchResult(matched=True, pattern=pattern, match_text="inject")
-        score = _make_compliance_score(
-            final_score=0.8, is_compliant=True, threat_matches=[match]
-        )
+        score = _make_compliance_score(final_score=0.8, is_compliant=True, threat_matches=[match])
         detector.scoring_engine.calculate_score = MagicMock(return_value=score)
 
         result = await detector.detect("inject stuff", use_cache=False)
@@ -634,9 +626,7 @@ class TestThreatDetector:
         score = _make_compliance_score(final_score=0.95)
         detector.scoring_engine.calculate_score = MagicMock(return_value=score)
 
-        result = await detector.detect(
-            "content", mode=DetectionMode.COMPREHENSIVE, use_cache=False
-        )
+        result = await detector.detect("content", mode=DetectionMode.COMPREHENSIVE, use_cache=False)
         assert result.mode == DetectionMode.COMPREHENSIVE
 
     async def test_detect_streaming_mode_fallback(self) -> None:
@@ -649,9 +639,7 @@ class TestThreatDetector:
 
     async def test_detect_cache_hit(self) -> None:
         detector = self._make_detector()
-        cached = DetectionResult(
-            decision=DetectionDecision.ALLOW, threat_detected=False
-        )
+        cached = DetectionResult(decision=DetectionDecision.ALLOW, threat_detected=False)
         cache_key = f"standard:{hash('cached content')}"
         detector._cache[cache_key] = (cached, time.monotonic())
 
@@ -660,9 +648,7 @@ class TestThreatDetector:
 
     async def test_detect_cache_expired(self) -> None:
         detector = self._make_detector(cache_ttl_seconds=1)
-        cached = DetectionResult(
-            decision=DetectionDecision.ALLOW, threat_detected=False
-        )
+        cached = DetectionResult(decision=DetectionDecision.ALLOW, threat_detected=False)
         cache_key = f"standard:{hash('old content')}"
         detector._cache[cache_key] = (cached, time.monotonic() - 100)
 
@@ -952,9 +938,7 @@ class TestThreatDetector:
         called = []
         detector.on_threat_detected(lambda r: called.append("threat"))
 
-        result = DetectionResult(
-            decision=DetectionDecision.ALLOW, threat_detected=False
-        )
+        result = DetectionResult(decision=DetectionDecision.ALLOW, threat_detected=False)
         await detector._handle_callbacks_and_logging(result)
         assert len(called) == 0
 
@@ -962,18 +946,20 @@ class TestThreatDetector:
         """Test that max_severity correctly tracks highest severity."""
         detector = self._make_detector()
         p_low = ThreatPattern(
-            pattern="a", category=ThreatCategory.PROMPT_INJECTION,
-            severity=ThreatSeverity.LOW, description="low"
+            pattern="a",
+            category=ThreatCategory.PROMPT_INJECTION,
+            severity=ThreatSeverity.LOW,
+            description="low",
         )
         p_high = ThreatPattern(
-            pattern="b", category=ThreatCategory.ROLE_CONFUSION,
-            severity=ThreatSeverity.HIGH, description="high"
+            pattern="b",
+            category=ThreatCategory.ROLE_CONFUSION,
+            severity=ThreatSeverity.HIGH,
+            description="high",
         )
         m1 = PatternMatchResult(matched=True, pattern=p_low, match_text="a")
         m2 = PatternMatchResult(matched=True, pattern=p_high, match_text="b")
-        score = _make_compliance_score(
-            final_score=0.3, is_compliant=False, threat_matches=[m1, m2]
-        )
+        score = _make_compliance_score(final_score=0.3, is_compliant=False, threat_matches=[m1, m2])
         detector.scoring_engine.calculate_score = MagicMock(return_value=score)
         # Verify via _standard_detect that severity is tracked correctly
         # (tested indirectly through detect)
@@ -991,17 +977,13 @@ class TestGetThreatDetector:
     """Tests for get_threat_detector singleton."""
 
     def test_get_creates_new(self) -> None:
-        with patch(
-            "enhanced_agent_bus.constitutional_classifier.detector._global_detector", None
-        ):
+        with patch("enhanced_agent_bus.constitutional_classifier.detector._global_detector", None):
             detector = get_threat_detector()
             assert isinstance(detector, ThreatDetector)
 
     def test_get_with_config_creates_new(self) -> None:
         config = DetectorConfig(block_threshold=0.5)
-        with patch(
-            "enhanced_agent_bus.constitutional_classifier.detector._global_detector", None
-        ):
+        with patch("enhanced_agent_bus.constitutional_classifier.detector._global_detector", None):
             detector = get_threat_detector(config=config)
             assert detector.config.block_threshold == 0.5
 
@@ -1153,9 +1135,7 @@ class TestOPALPolicyClient:
         client._opa_client = AsyncMock()
         client._opa_client.evaluate = AsyncMock(side_effect=ValueError("bad"))
 
-        result = await client.evaluate(
-            "data.acgs.allow", {"action": "write"}, default_deny=False
-        )
+        result = await client.evaluate("data.acgs.allow", {"action": "write"}, default_deny=False)
         assert result is True  # override to fail_open
 
     async def test_evaluate_direct_http_fallback_success(self) -> None:
@@ -1185,9 +1165,7 @@ class TestOPALPolicyClient:
         client = self._make_client(fail_closed=True)
         client._opa_client = None
         client._http_client = AsyncMock()
-        client._http_client.post = AsyncMock(
-            side_effect=httpx.HTTPError("connection refused")
-        )
+        client._http_client.post = AsyncMock(side_effect=httpx.HTTPError("connection refused"))
 
         result = await client.evaluate("data.acgs.allow", {"action": "read"})
         assert result is False

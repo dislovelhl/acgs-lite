@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - PQC Admin Routes
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides admin endpoints for managing the PQC enforcement mode:
 
@@ -15,7 +15,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 try:
     from src.core.shared.security.auth import UserClaims, get_current_user
@@ -26,6 +26,7 @@ except ImportError:  # pragma: no cover - fallback for isolated test runs
 
     async def get_current_user() -> MagicMock:  # type: ignore[misc]
         raise HTTPException(status_code=401, detail="Auth not configured")
+
 
 try:
     from ...pqc_enforcement_config import (
@@ -63,12 +64,11 @@ PROPAGATION_DEADLINE_SECONDS = 60
 # ---------------------------------------------------------------------------
 
 
-def get_enforcement_service() -> EnforcementModeConfigService:
-    """FastAPI dependency that returns the shared enforcement-mode service.
-
-    In production, the service is built by the app lifespan and stored on
-    app.state. In tests, override this dependency via app.dependency_overrides.
-    """
+def get_enforcement_service(request: Request) -> EnforcementModeConfigService:
+    """FastAPI dependency that returns the shared enforcement-mode service."""
+    service = getattr(request.app.state, "pqc_enforcement_service", None)
+    if isinstance(service, EnforcementModeConfigService):
+        return service
 
     raise HTTPException(
         status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

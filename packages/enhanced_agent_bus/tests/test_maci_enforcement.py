@@ -1,6 +1,6 @@
 """
 ACGS-2 MACI Enforcement Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for MACI role separation enforcement including:
 - Role registration and management
@@ -34,7 +34,7 @@ from enhanced_agent_bus.maci_enforcement import (
 from enhanced_agent_bus.models import AgentMessage, MessageType
 
 # Mark all tests in this module as governance tests (95% coverage required)
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
 # =============================================================================
@@ -951,7 +951,7 @@ class TestReadLockConcurrency:
 
 # =============================================================================
 # Session-Aware MACI Tests
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # =============================================================================
 
 

@@ -1,6 +1,6 @@
 """
 Tests for Sensitive Data Encryption and Vault Integration.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Task 7.2: POST /tenants/{tenant_id}/integrations with encryption
 Task 7.3: HashiCorp Vault integration for encryption key storage

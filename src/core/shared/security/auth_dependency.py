@@ -1,7 +1,7 @@
 """
 Lightweight authentication dependency for FastAPI endpoints.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides a reusable FastAPI dependency that validates Bearer tokens or API keys.
 Supports environment-controlled bypass for development and testing.
@@ -129,7 +129,9 @@ async def _check_revocation(jti: str | None) -> None:
     except Exception as e:
         logger.error("Revocation check error: %s", e)
         if _is_production_environment():
-            raise HTTPException(status_code=503, detail="Token revocation backend unavailable") from e
+            raise HTTPException(
+                status_code=503, detail="Token revocation backend unavailable"
+            ) from e
 
 
 async def require_auth(

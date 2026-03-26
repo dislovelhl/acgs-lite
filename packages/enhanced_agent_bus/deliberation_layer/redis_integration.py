@@ -1,6 +1,6 @@
 """
 ACGS-2 Deliberation Layer - Redis Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides Redis-backed persistence for deliberation queue and voting system.
 """
@@ -617,7 +617,7 @@ def reset_redis_deliberation_queue() -> None:
 
     Used primarily for test isolation to prevent state leakage between tests.
     This clears the singleton instance without closing connections.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     global _redis_deliberation_queue
     _redis_deliberation_queue = None
@@ -628,7 +628,7 @@ def reset_redis_voting_system() -> None:
 
     Used primarily for test isolation to prevent state leakage between tests.
     This clears the singleton instance without closing connections.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     global _redis_voting_system
     _redis_voting_system = None
@@ -638,7 +638,7 @@ def reset_all_redis_singletons() -> None:
     """Reset all Redis-related singleton instances.
 
     Convenience function for test isolation.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     reset_redis_deliberation_queue()
     reset_redis_voting_system()

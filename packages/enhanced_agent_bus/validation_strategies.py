@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Validation Strategies
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Validation strategy implementations for message validation.
 """
@@ -104,7 +104,7 @@ class StaticHashValidationStrategy:
     """Validates messages using a static constitutional hash.
 
     Standard implementation that checks for hash consistency.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, strict: bool = True) -> None:
@@ -138,7 +138,7 @@ class DynamicPolicyValidationStrategy:
     """Validates messages using a dynamic policy client.
 
     Retrieves current policies and validates signatures.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, policy_client: PolicyClientProtocol | None) -> None:
@@ -169,7 +169,7 @@ class DynamicPolicyValidationStrategy:
 class OPAValidationStrategy:
     """Validates messages using OPA (Open Policy Agent).
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, opa_client: OPAClientProtocol | None) -> None:
@@ -201,7 +201,7 @@ class OPAValidationStrategy:
 class RustValidationStrategy:
     """High-performance validation using the Rust backend.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     SECURITY: This strategy implements fail-closed behavior by default.
     Validation only returns True when the Rust backend explicitly confirms
@@ -293,7 +293,7 @@ class PQCValidationStrategy:
     (CRYSTALS-Kyber and CRYSTALS-Dilithium) for quantum-resistant
     constitutional hash validation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -440,7 +440,7 @@ class CompositeValidationStrategy:
     - Falls back gracefully on validation failures
     - Supports hybrid classical/PQC modes
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -524,7 +524,7 @@ class ConstitutionalValidationStrategy:
     mathematical guarantees of policy compliance, supporting per-session
     overrides.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, verifier: ConstitutionalVerifierProtocol | None) -> None:

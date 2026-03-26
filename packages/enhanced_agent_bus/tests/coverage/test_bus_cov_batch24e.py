@@ -5,7 +5,7 @@ Coverage tests for:
 - interfaces.py
 - registry.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -313,9 +313,7 @@ class TestInterfaceProtocols:
         from enhanced_agent_bus.interfaces import ConstitutionalVerifierProtocol
 
         class _Impl:
-            async def verify_constitutional_compliance(
-                self, action_data, context, session_id=None
-            ):
+            async def verify_constitutional_compliance(self, action_data, context, session_id=None):
                 return MagicMock(is_valid=True, failure_reason=None)
 
         assert isinstance(_Impl(), ConstitutionalVerifierProtocol)
@@ -356,9 +354,7 @@ class TestInterfaceProtocols:
         from enhanced_agent_bus.interfaces import ApprovalsValidatorProtocol
 
         class _Impl:
-            def validate_approvals(
-                self, *, policy, decisions, approvers, requester_id
-            ):
+            def validate_approvals(self, *, policy, decisions, approvers, requester_id):
                 return (True, "ok")
 
         assert isinstance(_Impl(), ApprovalsValidatorProtocol)
@@ -663,10 +659,16 @@ class TestRedisAgentRegistry:
 
         reg = RedisAgentRegistry(redis_url="redis://test:6379")
 
-        with patch.dict("sys.modules", {"redis": MagicMock(), "redis.asyncio": MagicMock(
-            ConnectionPool=mock_pool_cls,
-            Redis=mock_redis_cls,
-        )}):
+        with patch.dict(
+            "sys.modules",
+            {
+                "redis": MagicMock(),
+                "redis.asyncio": MagicMock(
+                    ConnectionPool=mock_pool_cls,
+                    Redis=mock_redis_cls,
+                ),
+            },
+        ):
             client = await reg._get_client()
             assert client is not None
 
@@ -821,11 +823,13 @@ class TestDecisionStoreMemoryFallback:
         expl.decision_id = decision_id
         expl.tenant_id = tenant_id
         expl.message_id = message_id
-        expl.model_dump_json.return_value = json.dumps({
-            "decision_id": decision_id,
-            "tenant_id": tenant_id,
-            "message_id": message_id,
-        })
+        expl.model_dump_json.return_value = json.dumps(
+            {
+                "decision_id": decision_id,
+                "tenant_id": tenant_id,
+                "message_id": message_id,
+            }
+        )
         return expl
 
     async def test_store_and_get_memory_fallback(self):
@@ -1038,8 +1042,10 @@ class TestDecisionStoreInit:
         from enhanced_agent_bus.decision_store import DecisionStore
 
         store = DecisionStore()
-        with patch("enhanced_agent_bus.decision_store.REDIS_AVAILABLE", True), \
-             patch("enhanced_agent_bus.decision_store.get_shared_pool", side_effect=OSError("fail")):
+        with (
+            patch("enhanced_agent_bus.decision_store.REDIS_AVAILABLE", True),
+            patch("enhanced_agent_bus.decision_store.get_shared_pool", side_effect=OSError("fail")),
+        ):
             assert await store.initialize()
             assert store._use_memory_fallback is True
 
@@ -1058,9 +1064,7 @@ class TestDecisionStoreInit:
         from enhanced_agent_bus.decision_store import DecisionStore
 
         mock_pool = AsyncMock()
-        mock_pool.health_check = AsyncMock(
-            return_value={"healthy": False, "error": "conn refused"}
-        )
+        mock_pool.health_check = AsyncMock(return_value={"healthy": False, "error": "conn refused"})
         store = DecisionStore(redis_pool=mock_pool)
         store._initialized = True
         store._use_memory_fallback = False
@@ -1471,8 +1475,10 @@ class TestMessageProcessor:
 
     async def test_handle_tool_request_mcp_unavailable(self):
         proc = self._make_processor()
-        with patch("enhanced_agent_bus.message_processor._MCP_AVAILABLE", False), \
-             patch("enhanced_agent_bus.message_processor.MCPToolResult", None):
+        with (
+            patch("enhanced_agent_bus.message_processor._MCP_AVAILABLE", False),
+            patch("enhanced_agent_bus.message_processor.MCPToolResult", None),
+        ):
             result = await proc.handle_tool_request("agent-1", "tool-x")
             assert isinstance(result, dict)
             assert result["status"] == "error"
@@ -1502,9 +1508,7 @@ class TestMessageProcessor:
     def test_extract_rejection_reason(self):
         from enhanced_agent_bus.message_processor import MessageProcessor
 
-        result = ValidationResult(
-            is_valid=False, metadata={"rejection_reason": "test_reason"}
-        )
+        result = ValidationResult(is_valid=False, metadata={"rejection_reason": "test_reason"})
         assert MessageProcessor._extract_rejection_reason(result) == "test_reason"
 
     def test_detect_prompt_injection(self):
@@ -1519,7 +1523,10 @@ class TestMessageProcessor:
         proc._dlq_redis = None
         msg = _msg(priority=Priority.CRITICAL)
         result = ValidationResult(is_valid=False, errors=["fail"])
-        with patch("enhanced_agent_bus.message_processor.schedule_background_task"):
+        with patch(
+            "enhanced_agent_bus.message_processor.schedule_background_task",
+            side_effect=lambda coroutine, _: coroutine.close(),
+        ):
             await proc._handle_failed_processing(msg, result)
         assert proc.failed_count == 1
 
@@ -1527,7 +1534,10 @@ class TestMessageProcessor:
         proc = self._make_processor()
         msg = _msg()
         result = ValidationResult(is_valid=True)
-        with patch("enhanced_agent_bus.message_processor.schedule_background_task"):
+        with patch(
+            "enhanced_agent_bus.message_processor.schedule_background_task",
+            side_effect=lambda coroutine, _: coroutine.close(),
+        ):
             await proc._handle_successful_processing(msg, result, "cache_key", 1.0)
         assert proc.processed_count == 1
 
@@ -1573,8 +1583,10 @@ class TestMessageProcessorMCP:
 
     async def test_initialize_mcp_deps_unavailable(self):
         proc = self._make_processor()
-        with patch("enhanced_agent_bus.message_processor.MCP_ENABLED", True), \
-             patch("enhanced_agent_bus.message_processor._MCP_AVAILABLE", False):
+        with (
+            patch("enhanced_agent_bus.message_processor.MCP_ENABLED", True),
+            patch("enhanced_agent_bus.message_processor._MCP_AVAILABLE", False),
+        ):
             await proc.initialize_mcp({})
         assert proc._mcp_pool is None
 
@@ -1582,8 +1594,10 @@ class TestMessageProcessorMCP:
         proc = self._make_processor()
         mock_tool_result = MagicMock()
         mock_tool_result.error_result = MagicMock(return_value="error")
-        with patch("enhanced_agent_bus.message_processor._MCP_AVAILABLE", True), \
-             patch("enhanced_agent_bus.message_processor.MCPToolResult", mock_tool_result):
+        with (
+            patch("enhanced_agent_bus.message_processor._MCP_AVAILABLE", True),
+            patch("enhanced_agent_bus.message_processor.MCPToolResult", mock_tool_result),
+        ):
             proc._mcp_pool = None
             result = await proc.handle_tool_request("agent-1", "tool-x")
             assert result == "error"

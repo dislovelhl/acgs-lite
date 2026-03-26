@@ -1,186 +1,109 @@
 """
 ACGS-2 Observability Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
-Unified OpenTelemetry instrumentation for the enhanced agent bus
-and breakthrough architecture layers.
-
-Components:
-- telemetry: Core OpenTelemetry integration
-- prometheus_metrics: Prometheus metrics per SPEC Section 6.1
-- structured_logging: Structured JSON logging per SPEC Section 6.2
-- batch_metrics: Batch processing metrics
-- timeout_budget: Timeout management
-- capacity_metrics: Capacity planning metrics for scaling decisions
+Keep package imports lightweight. Many callers import leaf modules such as
+``enhanced_agent_bus.observability.structured_logging``; eager package-level
+imports make those imports pay for the entire observability surface and can
+trigger circular/heavy initialization during tests.
 """
 
-from .batch_metrics import (
-    BatchMetrics,
-    BatchRequestTimer,
-    ItemTimer,
-    get_batch_metrics,
-    reset_batch_metrics,
-)
+from __future__ import annotations
 
-# Capacity planning metrics
-from .capacity_metrics import (
-    # Performance metrics
-    CacheLayer,
-    CacheMissReason,
-    CapacitySnapshot,
-    CapacityStatus,
-    EnhancedAgentBusCapacityMetrics,
-    LatencyPercentiles,
-    PerformanceMetricsRegistry,
-    QueueMetrics,
-    ResourceUtilization,
-    ThroughputMetrics,
-    adaptive_threshold_timer,
-    batch_overhead_timer,
-    deliberation_layer_timer,
-    get_capacity_metrics,
-    get_performance_metrics,
-    maci_enforcement_timer,
-    opa_policy_timer,
-    record_adaptive_threshold_decision,
-    record_batch_processing_overhead,
-    record_cache_miss,
-    record_constitutional_validation,
-    record_deliberation_layer_duration,
-    record_maci_enforcement_latency,
-    record_opa_policy_evaluation,
-    record_z3_solver_latency,
-    reset_capacity_metrics,
-    reset_performance_metrics,
-    track_async_request_latency,
-    track_request_latency,
-    z3_solver_timer,
-)
-from .capacity_metrics import (
-    ValidationResult as CapacityValidationResult,
-)
-from .decorators import metered, timed, traced
+import importlib
+from typing import Any
 
-# Prometheus metrics per SPEC_ACGS2_ENHANCED.md Section 6.1
-from .prometheus_metrics import (
-    CRITICAL_ALERTS,
-    HIGH_ALERTS,
-    WARNING_ALERTS,
-    CacheOperation,
-    CacheTier,
-    MetricsCollector,
-    PolicyDecision,
-    ValidationResult,
-    create_metrics_endpoint,
-    generate_prometheus_alert_rules,
-    get_metrics_collector,
-    reset_metrics_collector,
-)
+_EXPORTS: dict[str, str] = {
+    "BatchMetrics": ".batch_metrics",
+    "BatchRequestTimer": ".batch_metrics",
+    "ItemTimer": ".batch_metrics",
+    "get_batch_metrics": ".batch_metrics",
+    "reset_batch_metrics": ".batch_metrics",
+    "CacheLayer": ".capacity_metrics",
+    "CacheMissReason": ".capacity_metrics",
+    "CapacitySnapshot": ".capacity_metrics",
+    "CapacityStatus": ".capacity_metrics",
+    "EnhancedAgentBusCapacityMetrics": ".capacity_metrics",
+    "LatencyPercentiles": ".capacity_metrics",
+    "PerformanceMetricsRegistry": ".capacity_metrics",
+    "QueueMetrics": ".capacity_metrics",
+    "ResourceUtilization": ".capacity_metrics",
+    "ThroughputMetrics": ".capacity_metrics",
+    "adaptive_threshold_timer": ".capacity_metrics",
+    "batch_overhead_timer": ".capacity_metrics",
+    "deliberation_layer_timer": ".capacity_metrics",
+    "get_capacity_metrics": ".capacity_metrics",
+    "get_performance_metrics": ".capacity_metrics",
+    "maci_enforcement_timer": ".capacity_metrics",
+    "opa_policy_timer": ".capacity_metrics",
+    "record_adaptive_threshold_decision": ".capacity_metrics",
+    "record_batch_processing_overhead": ".capacity_metrics",
+    "record_cache_miss": ".capacity_metrics",
+    "record_constitutional_validation": ".capacity_metrics",
+    "record_deliberation_layer_duration": ".capacity_metrics",
+    "record_maci_enforcement_latency": ".capacity_metrics",
+    "record_opa_policy_evaluation": ".capacity_metrics",
+    "record_z3_solver_latency": ".capacity_metrics",
+    "reset_capacity_metrics": ".capacity_metrics",
+    "reset_performance_metrics": ".capacity_metrics",
+    "track_async_request_latency": ".capacity_metrics",
+    "track_request_latency": ".capacity_metrics",
+    "z3_solver_timer": ".capacity_metrics",
+    "CapacityValidationResult": ".capacity_metrics",
+    "metered": ".decorators",
+    "timed": ".decorators",
+    "traced": ".decorators",
+    "CRITICAL_ALERTS": ".prometheus_metrics",
+    "HIGH_ALERTS": ".prometheus_metrics",
+    "WARNING_ALERTS": ".prometheus_metrics",
+    "CacheOperation": ".prometheus_metrics",
+    "CacheTier": ".prometheus_metrics",
+    "MetricsCollector": ".prometheus_metrics",
+    "PolicyDecision": ".prometheus_metrics",
+    "ValidationResult": ".prometheus_metrics",
+    "create_metrics_endpoint": ".prometheus_metrics",
+    "generate_prometheus_alert_rules": ".prometheus_metrics",
+    "get_metrics_collector": ".prometheus_metrics",
+    "reset_metrics_collector": ".prometheus_metrics",
+    "LogLevel": ".structured_logging",
+    "StructuredJSONFormatter": ".structured_logging",
+    "StructuredLogger": ".structured_logging",
+    "clear_trace_context": ".structured_logging",
+    "configure_structured_logging": ".structured_logging",
+    "get_structured_logger": ".structured_logging",
+    "get_trace_context": ".structured_logging",
+    "redact_dict": ".structured_logging",
+    "redact_sensitive_data": ".structured_logging",
+    "reset_structured_logger": ".structured_logging",
+    "set_trace_context": ".structured_logging",
+    "CONSTITUTIONAL_HASH": ".telemetry",
+    "OTEL_AVAILABLE": ".telemetry",
+    "MetricsRegistry": ".telemetry",
+    "TracingContext": ".telemetry",
+    "configure_telemetry": ".telemetry",
+    "get_meter": ".telemetry",
+    "get_tracer": ".telemetry",
+    "LayerTimeoutBudget": ".timeout_budget",
+    "LayerTimeoutError": ".timeout_budget",
+    "TimeoutBudgetManager": ".timeout_budget",
+}
 
-# Structured logging per SPEC_ACGS2_ENHANCED.md Section 6.2
-from .structured_logging import (
-    LogLevel,
-    StructuredJSONFormatter,
-    StructuredLogger,
-    clear_trace_context,
-    configure_structured_logging,
-    get_structured_logger,
-    get_trace_context,
-    redact_dict,
-    redact_sensitive_data,
-    reset_structured_logger,
-    set_trace_context,
-)
-from .telemetry import (
-    CONSTITUTIONAL_HASH,
-    OTEL_AVAILABLE,
-    MetricsRegistry,
-    TracingContext,
-    configure_telemetry,
-    get_meter,
-    get_tracer,
-)
-from .timeout_budget import LayerTimeoutBudget, LayerTimeoutError, TimeoutBudgetManager
+__all__ = list(_EXPORTS)
 
-__all__ = [
-    "CONSTITUTIONAL_HASH",
-    "CRITICAL_ALERTS",
-    "HIGH_ALERTS",
-    "OTEL_AVAILABLE",
-    "WARNING_ALERTS",
-    # Batch metrics
-    "BatchMetrics",
-    "BatchRequestTimer",
-    # Performance metrics
-    "CacheLayer",
-    "CacheMissReason",
-    "CacheOperation",
-    "CacheTier",
-    "CapacitySnapshot",
-    "CapacityStatus",
-    "CapacityValidationResult",
-    # Capacity metrics
-    "EnhancedAgentBusCapacityMetrics",
-    "ItemTimer",
-    "LatencyPercentiles",
-    # Timeout management
-    "LayerTimeoutBudget",
-    "LayerTimeoutError",
-    "LogLevel",
-    # Prometheus metrics (Section 6.1)
-    "MetricsCollector",
-    "MetricsRegistry",
-    "PerformanceMetricsRegistry",
-    "PolicyDecision",
-    "QueueMetrics",
-    "ResourceUtilization",
-    "StructuredJSONFormatter",
-    # Structured logging (Section 6.2)
-    "StructuredLogger",
-    "ThroughputMetrics",
-    "TimeoutBudgetManager",
-    "TracingContext",
-    "ValidationResult",
-    "adaptive_threshold_timer",
-    "batch_overhead_timer",
-    "clear_trace_context",
-    "configure_structured_logging",
-    # Core telemetry
-    "configure_telemetry",
-    "create_metrics_endpoint",
-    "deliberation_layer_timer",
-    "generate_prometheus_alert_rules",
-    "get_batch_metrics",
-    "get_capacity_metrics",
-    "get_meter",
-    "get_metrics_collector",
-    "get_performance_metrics",
-    "get_structured_logger",
-    "get_trace_context",
-    "get_tracer",
-    "maci_enforcement_timer",
-    "metered",
-    "opa_policy_timer",
-    "record_adaptive_threshold_decision",
-    "record_batch_processing_overhead",
-    "record_cache_miss",
-    "record_constitutional_validation",
-    "record_deliberation_layer_duration",
-    "record_maci_enforcement_latency",
-    "record_opa_policy_evaluation",
-    "record_z3_solver_latency",
-    "redact_dict",
-    "redact_sensitive_data",
-    "reset_batch_metrics",
-    "reset_capacity_metrics",
-    "reset_metrics_collector",
-    "reset_performance_metrics",
-    "reset_structured_logger",
-    "set_trace_context",
-    "timed",
-    # Decorators
-    "traced",
-    "track_async_request_latency",
-    "track_request_latency",
-    "z3_solver_timer",
-]
+
+def __getattr__(name: str) -> Any:
+    module_name = _EXPORTS.get(name)
+    if module_name is None:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+    module = importlib.import_module(module_name, __name__)
+    if name == "CapacityValidationResult":
+        value = module.ValidationResult
+    else:
+        value = getattr(module, name)
+    globals()[name] = value
+    return value
+
+
+def __dir__() -> list[str]:
+    return sorted(set(globals()) | set(__all__))

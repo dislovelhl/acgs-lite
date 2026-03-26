@@ -20,7 +20,7 @@ Usage::
     att = registry.attest(
         action="deploy to production",
         decision="allow",
-        constitution_hash="cdd01ef066bc6cf2",
+        constitution_hash="608508a9bd224290",
         rule_ids_evaluated=["SAFE-001", "SAFE-002"],
     )
 
@@ -183,13 +183,13 @@ class AttestationRegistry:
         a1 = registry.attest(
             action="deploy service",
             decision="allow",
-            constitution_hash="cdd01ef066bc6cf2",
+            constitution_hash="608508a9bd224290",
         )
 
         a2 = registry.attest(
             action="delete database",
             decision="deny",
-            constitution_hash="cdd01ef066bc6cf2",
+            constitution_hash="608508a9bd224290",
             violations_found=["SAFE-003"],
         )
 

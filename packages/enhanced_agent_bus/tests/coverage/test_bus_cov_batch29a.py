@@ -5,7 +5,7 @@ Coverage batch 29a -- tests for:
   3. observability/capacity_metrics/latency_decorators.py (track_request_latency, track_async_request_latency)
   4. _ext_mcp.py (import fallback path)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -229,10 +229,7 @@ class TestGraphRAGRetriever:
         )
         from src.core.cognitive.graphrag.retrieval.retriever import GraphRAGRetriever
 
-        nodes = [
-            GraphNode(id=f"n{i}", text_content=f"text{i}")
-            for i in range(5)
-        ]
+        nodes = [GraphNode(id=f"n{i}", text_content=f"text{i}") for i in range(5)]
         traversal = TraversalResult(nodes=nodes, seed_node_ids=["n0"], query="q")
         retriever = GraphRAGRetriever()
 

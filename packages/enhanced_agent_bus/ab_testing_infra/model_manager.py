@@ -32,8 +32,12 @@ class ABTestModelManager:
             mlflow = importlib.import_module("mlflow")
             tracking = importlib.import_module("mlflow.tracking")
             client = tracking.MlflowClient()
-            champion_mv = client.get_model_version_by_alias(self.model_registry_name, self.champion_alias)
-            candidate_mv = client.get_model_version_by_alias(self.model_registry_name, self.candidate_alias)
+            champion_mv = client.get_model_version_by_alias(
+                self.model_registry_name, self.champion_alias
+            )
+            candidate_mv = client.get_model_version_by_alias(
+                self.model_registry_name, self.candidate_alias
+            )
             self.champion_model = mlflow.sklearn.load_model(
                 f"models:/{self.model_registry_name}@{self.champion_alias}"
             )
@@ -70,5 +74,8 @@ class ABTestModelManager:
         return self.candidate_model
 
     def is_ready(self) -> bool:
-        return bool(self.models_loaded and self.champion_model is not None and self.candidate_model is not None)
-
+        return bool(
+            self.models_loaded
+            and self.champion_model is not None
+            and self.candidate_model is not None
+        )

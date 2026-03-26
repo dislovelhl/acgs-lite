@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Message Security Scanner
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Security scanning and prompt injection detection for agent messages.
 Wraps the runtime security scanner and provides a regex-based
@@ -39,7 +39,7 @@ class MessageSecurityScanner:
        catches common injection patterns even when the runtime
        scanner is unavailable.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self) -> None:

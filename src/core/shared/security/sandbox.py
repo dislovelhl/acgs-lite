@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """Agent code execution sandbox for OWASP AA07 mitigation.
 
 Provides process-level isolation for agent-generated code execution with:
@@ -171,7 +171,7 @@ class ProcessSandbox:
         env.update(config.env_vars)
 
         try:
-            result = subprocess.run(
+            result = subprocess.run(  # noqa: S603 - fixed local interpreter
                 ["/usr/bin/python3", str(code_file)],
                 capture_output=True,
                 timeout=config.timeout_seconds,

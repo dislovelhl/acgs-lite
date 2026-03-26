@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Environment Check Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Validates that the test environment is correctly configured.
 """

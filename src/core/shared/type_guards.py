@@ -4,7 +4,7 @@ Type Guards and Type Narrowing Utilities for ACGS-2
 This module provides TypeGuard functions for runtime type checking
 and type narrowing in security-critical code paths.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Usage:
     from src.core.shared.type_guards import is_json_dict, is_non_empty_str

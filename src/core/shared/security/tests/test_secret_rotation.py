@@ -1,6 +1,6 @@
 """
 ACGS-2 Secret Rotation Lifecycle Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive test suite for secret rotation functionality:
 - Time-based and event-based rotation triggers

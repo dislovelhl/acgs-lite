@@ -1,6 +1,6 @@
 """
 Tests for ACGS-2 Database-Backed Tenant Repository
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Unit tests for DatabaseTenantRepository CRUD operations using SQLAlchemy async.
 """

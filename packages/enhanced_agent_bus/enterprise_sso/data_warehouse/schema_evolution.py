@@ -1,6 +1,6 @@
 """
 Schema Evolution Manager
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Manages schema evolution across source and target data warehouses.
 Detects schema differences and applies changes.

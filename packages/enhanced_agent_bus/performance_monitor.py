@@ -1,6 +1,6 @@
 """
 ACGS-2 Performance Monitor
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Performance monitoring and timing for the Enhanced Agent Bus.
 Provides @timed decorator for automatic latency tracking and metrics aggregation.

@@ -1,7 +1,7 @@
 """
 Task Coordinator - Handles task execution flow.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Part of MetaOrchestrator decomposition - extracts task execution responsibilities
 into a focused coordinator.
@@ -115,7 +115,7 @@ class TaskCoordinatorProtocol(Protocol):
 class TaskCoordinator:
     """
     Coordinates task execution flow.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     constitutional_hash: str = CONSTITUTIONAL_HASH

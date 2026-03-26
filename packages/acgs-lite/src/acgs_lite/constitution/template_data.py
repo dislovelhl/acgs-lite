@@ -21,8 +21,7 @@ TEMPLATES: dict[str, dict[str, Any]] = {
             {
                 "id": "GL-001",
                 "text": (
-                    "MR author cannot approve their own merge request"
-                    " (MACI separation of powers)"
+                    "MR author cannot approve their own merge request (MACI separation of powers)"
                 ),
                 "severity": "critical",
                 "keywords": ["self-approve", "auto-approve", "self-merge"],
@@ -110,8 +109,7 @@ TEMPLATES: dict[str, dict[str, Any]] = {
             {
                 "id": "HC-001",
                 "text": (
-                    "AI must not make autonomous treatment decisions"
-                    " without clinician review"
+                    "AI must not make autonomous treatment decisions without clinician review"
                 ),
                 "severity": "critical",
                 "keywords": [
@@ -129,8 +127,7 @@ TEMPLATES: dict[str, dict[str, Any]] = {
             {
                 "id": "HC-002",
                 "text": (
-                    "Protected Health Information must not be exposed"
-                    " outside authorised scope"
+                    "Protected Health Information must not be exposed outside authorised scope"
                 ),
                 "severity": "critical",
                 "keywords": [
@@ -165,8 +162,7 @@ TEMPLATES: dict[str, dict[str, Any]] = {
             {
                 "id": "HC-004",
                 "text": (
-                    "Patient consent must be obtained before"
-                    " processing sensitive health data"
+                    "Patient consent must be obtained before processing sensitive health data"
                 ),
                 "severity": "high",
                 "keywords": ["without consent", "no consent check", "skip consent"],
@@ -176,9 +172,7 @@ TEMPLATES: dict[str, dict[str, Any]] = {
             },
             {
                 "id": "HC-005",
-                "text": (
-                    "All clinical AI decisions must be logged with patient ID and timestamp"
-                ),
+                "text": ("All clinical AI decisions must be logged with patient ID and timestamp"),
                 "severity": "high",
                 "keywords": ["no audit", "skip log", "disable audit"],
                 "category": "audit",
@@ -253,10 +247,7 @@ TEMPLATES: dict[str, dict[str, Any]] = {
             },
             {
                 "id": "FIN-005",
-                "text": (
-                    "PII and financial account data must not be exposed"
-                    " in logs or responses"
-                ),
+                "text": ("PII and financial account data must not be exposed in logs or responses"),
                 "severity": "critical",
                 "keywords": ["ssn", "account number", "credit card", "pii"],
                 "patterns": [
@@ -432,8 +423,7 @@ TEMPLATES: dict[str, dict[str, Any]] = {
             {
                 "id": "GEN-005",
                 "text": (
-                    "Proposers cannot validate their own proposals"
-                    " (MACI separation of powers)"
+                    "Proposers cannot validate their own proposals (MACI separation of powers)"
                 ),
                 "severity": "critical",
                 "keywords": ["self-approve", "auto-approve", "self-validate"],

@@ -62,12 +62,14 @@ class TestMambaConfig:
         cfg = MambaConfig()
         if TORCH_AVAILABLE:
             import torch
+
             assert cfg.dtype == torch.float16
 
 
 # ---------------------------------------------------------------------------
 # Helper to patch MambaSSM forward (prototype SSM has dim issues)
 # ---------------------------------------------------------------------------
+
 
 def _patch_mamba_forward():
     """Return a patch context that makes MambaSSM.forward an identity fn."""
@@ -175,7 +177,9 @@ class TestConstitutionalMambaHybrid:
         import torch
 
         cfg = MambaConfig(
-            d_model=64, num_mamba_layers=2, device="cpu",
+            d_model=64,
+            num_mamba_layers=2,
+            device="cpu",
             use_shared_attention=True,
         )
         from enhanced_agent_bus.ai_assistant.mamba_hybrid_processor import ConstitutionalMambaHybrid
@@ -217,8 +221,10 @@ class TestConstitutionalMambaHybrid:
         import torch
 
         cfg = MambaConfig(
-            d_model=64, num_mamba_layers=2,
-            device="cpu", use_shared_attention=False,
+            d_model=64,
+            num_mamba_layers=2,
+            device="cpu",
+            use_shared_attention=False,
         )
         from enhanced_agent_bus.ai_assistant.mamba_hybrid_processor import ConstitutionalMambaHybrid
 

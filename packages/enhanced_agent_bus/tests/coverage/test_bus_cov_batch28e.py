@@ -1,6 +1,6 @@
 """
 ACGS-2 Coverage Tests - Batch 28e
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets uncovered lines in:
 1. enhanced_agent_bus/api/routes/governance.py
@@ -590,10 +590,14 @@ class TestGovernanceRoutes:
         resp = MACIRecordResponse(record_id="r1", status="created")
         assert resp.status == "created"
 
-    def test_get_enforcement_config_returns_none(self) -> None:
+    async def test_get_enforcement_config_returns_none(self) -> None:
+        from unittest.mock import MagicMock
+
         from enhanced_agent_bus.api.routes.governance import _get_enforcement_config
 
-        assert _get_enforcement_config() is None
+        mock_request = MagicMock()
+        mock_request.app.state = None
+        assert await _get_enforcement_config(mock_request) is None
 
     async def test_get_stability_metrics_no_governance(self) -> None:
         from fastapi import HTTPException
@@ -667,9 +671,7 @@ class TestGovernanceRoutes:
         mock_request = MagicMock(spec=Request)
         mock_request.headers = {}
 
-        with patch(
-            "enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"
-        ):
+        with patch("enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"):
             result = await create_maci_record(
                 body=body,
                 request=mock_request,
@@ -691,9 +693,7 @@ class TestGovernanceRoutes:
         mock_request = MagicMock(spec=Request)
         mock_request.headers = {}
 
-        with patch(
-            "enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"
-        ):
+        with patch("enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"):
             result = await update_maci_record(
                 record_id="r1",
                 body=body,
@@ -707,18 +707,14 @@ class TestGovernanceRoutes:
     async def test_get_maci_record_sandbox(self) -> None:
         from enhanced_agent_bus.api.routes.governance import get_maci_record
 
-        with patch(
-            "enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"
-        ):
+        with patch("enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"):
             result = await get_maci_record(record_id="r1", _tenant_id="t1")
         assert result.status == "ok"
 
     async def test_delete_maci_record_sandbox(self) -> None:
         from enhanced_agent_bus.api.routes.governance import delete_maci_record
 
-        with patch(
-            "enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"
-        ):
+        with patch("enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"):
             result = await delete_maci_record(record_id="r1", _tenant_id="t1")
         assert result.status == "deleted"
 
@@ -743,9 +739,7 @@ class TestGovernanceRoutes:
         mock_check = AsyncMock(return_value=None)
 
         with (
-            patch(
-                "enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"
-            ),
+            patch("enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"),
             patch(
                 "enhanced_agent_bus.api.routes.governance.check_enforcement_for_create",
                 mock_check,
@@ -776,9 +770,7 @@ class TestGovernanceRoutes:
         mock_check = AsyncMock(return_value=None)
 
         with (
-            patch(
-                "enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"
-            ),
+            patch("enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"),
             patch(
                 "enhanced_agent_bus.api.routes.governance.check_enforcement_for_update",
                 mock_check,
@@ -1013,7 +1005,9 @@ class TestCircuitBreakerOPAClient:
         mock_cb = AsyncMock()
         mock_cb.state = MagicMock(value="closed")
         with (
-            patch("enhanced_agent_bus.cb_opa_client.get_service_circuit_breaker", return_value=mock_cb),
+            patch(
+                "enhanced_agent_bus.cb_opa_client.get_service_circuit_breaker", return_value=mock_cb
+            ),
             patch("httpx.AsyncClient") as mock_httpx,
         ):
             await client.initialize()
@@ -1053,7 +1047,9 @@ class TestCircuitBreakerOPAClient:
         mock_cb = AsyncMock()
         mock_cb.state = MagicMock(value="closed")
         with (
-            patch("enhanced_agent_bus.cb_opa_client.get_service_circuit_breaker", return_value=mock_cb),
+            patch(
+                "enhanced_agent_bus.cb_opa_client.get_service_circuit_breaker", return_value=mock_cb
+            ),
             patch("httpx.AsyncClient"),
         ):
             async with client as c:
@@ -1325,7 +1321,9 @@ class TestCircuitBreakerKafkaProducer:
             return_value=mock_cb,
         ):
             # Patch the import inside initialize
-            original_import = __builtins__.__import__ if hasattr(__builtins__, '__import__') else __import__
+            original_import = (
+                __builtins__.__import__ if hasattr(__builtins__, "__import__") else __import__
+            )
 
             def _import_mock(name, *args, **kwargs):
                 if name == "aiokafka":

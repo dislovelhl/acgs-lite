@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Chaos Framework Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for the chaos testing framework including:
 - Latency injection and measurement
@@ -127,7 +127,7 @@ class TestChaosScenario:
             )
 
         # Error message shows sanitized hash prefix for security
-        assert "cdd01ef0..." in str(exc_info.value)
+        assert "608508a9..." in str(exc_info.value)
         # Full hash still available via property for internal use
         assert exc_info.value.expected_hash == CONSTITUTIONAL_HASH
 

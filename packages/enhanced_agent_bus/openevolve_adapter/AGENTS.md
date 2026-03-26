@@ -1,6 +1,6 @@
 # OpenEvolve Governance Adapter — Agent Guide
 
-> **Reviewed**: 2026-03-22 | **Constitutional Hash**: `cdd01ef066bc6cf2`
+> **Reviewed**: 2026-03-22 | **Constitutional Hash**: `608508a9bd224290`
 > **Package**: `enhanced_agent_bus.openevolve_adapter`
 
 Bridges AI evolution systems (OpenEvolve and compatibles) to the ACGS-2
@@ -36,7 +36,7 @@ Every evolution candidate entering the pipeline must carry:
 | Field | Type | Constraint |
 |-------|------|-----------|
 | `candidate_id` | `str` | non-empty |
-| `constitutional_hash` | `str` | must equal `cdd01ef066bc6cf2` |
+| `constitutional_hash` | `str` | must equal `608508a9bd224290` |
 | `verification_payload` | `VerificationPayload` | produced by external MACI Validator |
 | `risk_tier` | `RiskTier` | `low / medium / high / critical` |
 | `proposed_rollout_stage` | `RolloutStage` | `canary / shadow / partial / full` |
@@ -44,7 +44,7 @@ Every evolution candidate entering the pipeline must carry:
 
 `__post_init__` enforces three hard invariants:
 
-1. Constitutional hash matches `cdd01ef066bc6cf2`.
+1. Constitutional hash matches `608508a9bd224290`.
 2. `verification_payload.constitutional_hash` matches the outer candidate's hash.
 3. `proposed_rollout_stage` is permitted for the given `risk_tier`.
 
@@ -131,14 +131,14 @@ wire_into_processor(processor, handler)
 {
   "evolution_candidate": true,
   "candidate_id": "cand-abc123",
-  "constitutional_hash": "cdd01ef066bc6cf2",
+  "constitutional_hash": "608508a9bd224290",
   "risk_tier": "low",
   "proposed_rollout_stage": "canary",
   "performance_score": 0.85,
   "verification_payload": {
     "validator_id": "validator-001",
     "verified_at": "2026-03-22T10:00:00+00:00",
-    "constitutional_hash": "cdd01ef066bc6cf2",
+    "constitutional_hash": "608508a9bd224290",
     "syntax_valid": true,
     "policy_compliant": true,
     "safety_score": 0.92,
@@ -214,4 +214,4 @@ are protocol stubs.
 | Using `_StubVerifier` in production | Echoes candidate's own payload back | Always inject a real validator service |
 | `RolloutController.gate()` result ignored | Unenforced gate = no governance | Check `decision.allowed` before executing |
 
-Constitutional Hash: `cdd01ef066bc6cf2`
+Constitutional Hash: `608508a9bd224290`

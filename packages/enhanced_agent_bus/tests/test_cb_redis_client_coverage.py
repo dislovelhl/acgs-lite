@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Circuit Breaker Redis Client Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets >=90% coverage on cb_redis_client.py by exercising all branches
 and edge cases in CircuitBreakerRedisClient.

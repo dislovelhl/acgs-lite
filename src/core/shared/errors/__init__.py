@@ -1,6 +1,6 @@
 """
 ACGS-2 Standardized Error Handling Library
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This package provides a unified approach to error handling, retries, circuit breakers,
 and structured error logging across all ACGS-2 services.

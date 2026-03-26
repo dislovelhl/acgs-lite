@@ -5,7 +5,7 @@ import future.keywords.if
 
 # Compliance Policy - NIST/OWASP 2025 hardening
 # No eval/exec, input sanitization, P99 perf
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 
 default allow := false
 
@@ -13,7 +13,7 @@ allow if {
 	not dangerous_input
 	no_eval_attempt
 	input.tenant_id != null
-	input.constitutional_hash == "cdd01ef066bc6cf2"
+	input.constitutional_hash == "608508a9bd224290"
 }
 
 # OWASP A03:2021 Injection - No eval/exec patterns

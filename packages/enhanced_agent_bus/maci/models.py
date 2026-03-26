@@ -5,7 +5,7 @@ Contains the core data types used across the MACI enforcement system:
 role and action enumerations, configuration dataclasses, validation results,
 and the role-permission matrix.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from dataclasses import dataclass, field

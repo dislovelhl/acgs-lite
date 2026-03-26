@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Governance Degradation Detection Engine
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Statistical analysis engine to detect significant governance degradation after
 constitutional amendments using statistical significance testing and configurable
@@ -46,7 +46,7 @@ CHI_SQUARE_TEST_ERRORS = (
 class TimeWindow(str, Enum):
     """Time windows for degradation analysis.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     ONE_HOUR = "1h"
@@ -68,7 +68,7 @@ class TimeWindow(str, Enum):
 class SignificanceLevel(str, Enum):
     """Statistical significance levels.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     VERY_HIGH = "very_high"  # p < 0.001
@@ -95,7 +95,7 @@ class SignificanceLevel(str, Enum):
 class DegradationSeverity(str, Enum):
     """Severity levels for degradation detection.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     CRITICAL = "critical"  # Immediate rollback recommended
@@ -108,7 +108,7 @@ class DegradationSeverity(str, Enum):
 class StatisticalTest(BaseModel):
     """Results from a statistical significance test.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Attributes:
         test_name: Name of the statistical test (t-test, chi-square, etc.)
@@ -143,7 +143,7 @@ class StatisticalTest(BaseModel):
 class MetricDegradationAnalysis(BaseModel):
     """Degradation analysis for a single metric.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Attributes:
         metric_name: Name of the metric being analyzed
@@ -171,7 +171,7 @@ class MetricDegradationAnalysis(BaseModel):
 class DegradationReport(BaseModel):
     """Comprehensive degradation detection report.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Attributes:
         report_id: Unique identifier for this report
@@ -230,7 +230,7 @@ class DegradationReport(BaseModel):
 class DegradationThresholds(BaseModel):
     """Configurable thresholds for degradation detection.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Attributes:
         violations_rate_threshold: Max acceptable increase in violation rate (default: 0.01 = 1%)
@@ -258,7 +258,7 @@ class DegradationThresholds(BaseModel):
 class DegradationDetector:
     """Statistical analysis engine to detect governance degradation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     This engine performs statistical analysis to detect significant governance
     degradation after constitutional amendments. It uses multiple time windows,

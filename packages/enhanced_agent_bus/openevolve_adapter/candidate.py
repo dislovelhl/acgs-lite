@@ -1,6 +1,6 @@
 """
 OpenEvolve Governance Adapter — Evolution Candidate Contract
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Defines the mandatory data contract for every evolution candidate that passes
 through the ACGS-2 governed evolution pipeline.  All fields are immutable after
@@ -18,7 +18,7 @@ from typing import Any
 try:
     from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
-    CONSTITUTIONAL_HASH = "cdd01ef066bc6cf2"  # pragma: allowlist secret
+    CONSTITUTIONAL_HASH = "608508a9bd224290"  # pragma: allowlist secret
 
 
 # ---------------------------------------------------------------------------
@@ -46,8 +46,18 @@ class RolloutStage(str, Enum):
 
 # Risk tier → maximum allowed rollout stage
 _TIER_MAX_STAGE: dict[RiskTier, set[RolloutStage]] = {
-    RiskTier.LOW: {RolloutStage.CANARY, RolloutStage.SHADOW, RolloutStage.PARTIAL, RolloutStage.FULL},
-    RiskTier.MEDIUM: {RolloutStage.CANARY, RolloutStage.SHADOW, RolloutStage.PARTIAL, RolloutStage.FULL},
+    RiskTier.LOW: {
+        RolloutStage.CANARY,
+        RolloutStage.SHADOW,
+        RolloutStage.PARTIAL,
+        RolloutStage.FULL,
+    },
+    RiskTier.MEDIUM: {
+        RolloutStage.CANARY,
+        RolloutStage.SHADOW,
+        RolloutStage.PARTIAL,
+        RolloutStage.FULL,
+    },
     RiskTier.HIGH: {RolloutStage.CANARY, RolloutStage.SHADOW},
     RiskTier.CRITICAL: {RolloutStage.CANARY, RolloutStage.SHADOW, RolloutStage.PARTIAL},
 }

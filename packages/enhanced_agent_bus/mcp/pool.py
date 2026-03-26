@@ -5,7 +5,7 @@ Manages multiple MCPClient instances, provides a unified tool catalogue
 across all connected MCP servers, routes tool calls to the correct server,
 and supports health checks with automatic reconnection on failure.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Quick start::
 
@@ -36,7 +36,7 @@ MACI role restrictions before forwarding the call to the server.
 permitted to call, using the same role-restriction mapping enforced by the
 individual clients.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -116,7 +116,7 @@ class MCPClientPool:
     The pool is designed for single-event-loop, concurrent async usage; it is
     **not** safe to share across OS threads without external locking.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self) -> None:

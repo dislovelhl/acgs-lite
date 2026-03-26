@@ -1,6 +1,6 @@
 """
 Enterprise SSO Integration Service
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Integrates Enterprise SSO with Multi-Tenancy and MACI frameworks.
 Provides unified authentication flow for the Enhanced Agent Bus.
@@ -105,7 +105,7 @@ class SSOIntegrationError(ACGSBaseError):
 class SSOUser:
     """Authenticated SSO user information.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     external_id: str
@@ -134,7 +134,7 @@ class SSOUser:
 class SSOSession:
     """SSO session with tenant and MACI integration.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     session_id: str
@@ -178,7 +178,7 @@ class SSOSession:
 class SSOAuthenticationResult:
     """Result of SSO authentication.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     success: bool
@@ -209,7 +209,7 @@ class SSOAuthenticationResult:
 class EnterpriseSSOService:
     """Enterprise SSO integration service.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Provides unified SSO authentication with:
     - Multi-tenant support

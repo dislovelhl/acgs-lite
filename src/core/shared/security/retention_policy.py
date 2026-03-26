@@ -1,6 +1,6 @@
 """
 ACGS-2 Retention Policy Engine
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements data retention lifecycle management:
 - Policy definition and storage
@@ -402,7 +402,7 @@ class RetentionPolicyEngine:
     """
     Engine for managing data retention lifecycle.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

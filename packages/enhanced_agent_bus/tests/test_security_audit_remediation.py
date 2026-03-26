@@ -2,7 +2,7 @@
 Security Audit Remediation Regression Tests
 Focus: VULN-001 (Rust Validation Bypass) and VULN-002 (OPA Fail-Open)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import pytest

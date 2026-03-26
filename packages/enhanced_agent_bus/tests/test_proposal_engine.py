@@ -1,6 +1,6 @@
 """
 Tests for enhanced_agent_bus.constitutional.proposal_engine
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -182,9 +182,7 @@ class TestValidateProposedChanges:
     async def test_valid_changes(self):
         engine = _make_engine()
         version = _mock_version(content={"rules": ["be good"]})
-        result = await engine._validate_proposed_changes(
-            {"new_section": "content"}, version
-        )
+        result = await engine._validate_proposed_changes({"new_section": "content"}, version)
         assert result["valid"] is True
 
 

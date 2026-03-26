@@ -3,7 +3,7 @@ Comprehensive coverage tests for enhanced_agent_bus modules:
 - message_processor.py (MessageProcessor class and helpers)
 - di_container.py (DIContainer, ServiceDescriptor, create_default_container, get/reset_container)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -79,7 +79,9 @@ class TestServiceDescriptor:
         assert desc.singleton is True
 
     def test_with_factory(self) -> None:
-        factory = lambda: 42
+        def factory():
+            return 42
+
         desc = ServiceDescriptor(service_type=int, factory=factory)
         assert desc.factory is factory
         assert desc.singleton is True
@@ -165,9 +167,7 @@ class TestDIContainer:
 
     def test_resolve_no_factory_no_instance_raises_value_error(self) -> None:
         container = DIContainer()
-        container._services[int] = ServiceDescriptor(
-            service_type=int, factory=None, instance=None
-        )
+        container._services[int] = ServiceDescriptor(service_type=int, factory=None, instance=None)
         with pytest.raises(ValueError, match="No factory for int"):
             container.resolve(int)
 
@@ -182,9 +182,7 @@ class TestDIContainer:
 
     def test_try_resolve_no_factory_returns_none(self) -> None:
         container = DIContainer()
-        container._services[int] = ServiceDescriptor(
-            service_type=int, factory=None, instance=None
-        )
+        container._services[int] = ServiceDescriptor(service_type=int, factory=None, instance=None)
         assert container.try_resolve(int) is None
 
     def test_is_registered_true(self) -> None:
@@ -765,18 +763,14 @@ class TestMessageProcessorRecordAgentWorkflowEvent:
         proc._agent_workflow_metrics = None
         msg = _make_msg()
         # Should not raise
-        proc._record_agent_workflow_event(
-            event_type="test", msg=msg, reason="test"
-        )
+        proc._record_agent_workflow_event(event_type="test", msg=msg, reason="test")
 
     def test_collector_record_called(self) -> None:
         proc = _make_processor()
         collector = MagicMock()
         proc._agent_workflow_metrics = collector
         msg = _make_msg(from_agent="agent-x", tenant_id="t1")
-        proc._record_agent_workflow_event(
-            event_type="intervention", msg=msg, reason="test_reason"
-        )
+        proc._record_agent_workflow_event(event_type="intervention", msg=msg, reason="test_reason")
         collector.record_event.assert_called_once_with(
             event_type="intervention",
             tenant_id="t1",
@@ -791,9 +785,7 @@ class TestMessageProcessorRecordAgentWorkflowEvent:
         proc._agent_workflow_metrics = collector
         msg = _make_msg()
         # Should not raise
-        proc._record_agent_workflow_event(
-            event_type="test", msg=msg, reason="r"
-        )
+        proc._record_agent_workflow_event(event_type="test", msg=msg, reason="r")
 
     def test_collector_default_tenant(self) -> None:
         proc = _make_processor()
@@ -801,9 +793,7 @@ class TestMessageProcessorRecordAgentWorkflowEvent:
         proc._agent_workflow_metrics = collector
         msg = _make_msg()
         msg.tenant_id = None  # type: ignore[assignment]
-        proc._record_agent_workflow_event(
-            event_type="x", msg=msg, reason="y"
-        )
+        proc._record_agent_workflow_event(event_type="x", msg=msg, reason="y")
         call_kwargs = collector.record_event.call_args.kwargs
         assert call_kwargs["tenant_id"] == "default"
 
@@ -813,9 +803,7 @@ class TestMessageProcessorRecordAgentWorkflowEvent:
         proc._agent_workflow_metrics = collector
         msg = _make_msg()
         msg.from_agent = ""
-        proc._record_agent_workflow_event(
-            event_type="x", msg=msg, reason="y"
-        )
+        proc._record_agent_workflow_event(event_type="x", msg=msg, reason="y")
         call_kwargs = collector.record_event.call_args.kwargs
         assert call_kwargs["source"] == "unknown"
 
@@ -1040,9 +1028,7 @@ class TestMessageProcessorHandleToolRequest:
 
     async def test_mcp_unavailable(self) -> None:
         proc = _make_processor()
-        with patch(
-            "enhanced_agent_bus.message_processor._MCP_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.message_processor._MCP_AVAILABLE", False):
             result = await proc.handle_tool_request("agent-1", "tool-x")
         assert isinstance(result, dict)
         assert result["status"] == "error"
@@ -1054,10 +1040,9 @@ class TestMessageProcessorHandleToolRequest:
         try:
             from enhanced_agent_bus.mcp.types import MCPToolResult
 
-            with patch(
-                "enhanced_agent_bus.message_processor._MCP_AVAILABLE", True
-            ), patch(
-                "enhanced_agent_bus.message_processor.MCPToolResult", MCPToolResult
+            with (
+                patch("enhanced_agent_bus.message_processor._MCP_AVAILABLE", True),
+                patch("enhanced_agent_bus.message_processor.MCPToolResult", MCPToolResult),
             ):
                 result = await proc.handle_tool_request("agent-1", "tool-y")
                 assert hasattr(result, "status") or isinstance(result, dict)
@@ -1077,10 +1062,9 @@ class TestMessageProcessorInitializeMCP:
 
     async def test_mcp_dependencies_unavailable(self) -> None:
         proc = _make_processor()
-        with patch(
-            "enhanced_agent_bus.message_processor.MCP_ENABLED", True
-        ), patch(
-            "enhanced_agent_bus.message_processor._MCP_AVAILABLE", False
+        with (
+            patch("enhanced_agent_bus.message_processor.MCP_ENABLED", True),
+            patch("enhanced_agent_bus.message_processor._MCP_AVAILABLE", False),
         ):
             await proc.initialize_mcp({})
         assert proc._mcp_pool is None
@@ -1092,12 +1076,10 @@ class TestMessageProcessorInitializeMCP:
         class FakeMCPConfig:
             pass
 
-        with patch(
-            "enhanced_agent_bus.message_processor.MCP_ENABLED", True
-        ), patch(
-            "enhanced_agent_bus.message_processor._MCP_AVAILABLE", True
-        ), patch(
-            "enhanced_agent_bus.message_processor.MCPConfig", FakeMCPConfig
+        with (
+            patch("enhanced_agent_bus.message_processor.MCP_ENABLED", True),
+            patch("enhanced_agent_bus.message_processor._MCP_AVAILABLE", True),
+            patch("enhanced_agent_bus.message_processor.MCPConfig", FakeMCPConfig),
         ):
             await proc.initialize_mcp(12345)
         assert proc._mcp_pool is None

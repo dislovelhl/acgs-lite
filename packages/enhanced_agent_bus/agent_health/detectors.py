@@ -1,6 +1,6 @@
 """
 Agent Health — Failure and Memory Detectors.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Pure stateful detector classes with no I/O.  All I/O (Redis writes, metric
 emission, healing dispatch) happens in monitor.py and healing_engine.py.
@@ -32,7 +32,7 @@ class FailureLoopDetector:
     The detector is stateful but has no I/O; callers supply ``datetime``
     timestamps so the class is fully deterministic in tests.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, thresholds: AgentHealthThresholds) -> None:
@@ -92,7 +92,7 @@ class MemoryExhaustionDetector:
     This 10-percentage-point clearance matches common system-level conventions
     and directly implements the edge-case requirement from the spec (edge case 4).
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, thresholds: AgentHealthThresholds) -> None:

@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # Sprint 61 — deliberation_layer/vote_consumer.py coverage
 """
 Comprehensive tests for deliberation_layer/vote_consumer.py.
@@ -650,9 +650,7 @@ class TestPublishAuditRecord:
         mock_secret.get_secret_value.return_value = "my-secret-key"
 
         with (
-            patch(
-                "enhanced_agent_bus.deliberation_layer.vote_consumer.settings"
-            ) as mock_settings,
+            patch("enhanced_agent_bus.deliberation_layer.vote_consumer.settings") as mock_settings,
             # sign_audit_record is imported inside the method from .audit_signature
             patch(
                 "enhanced_agent_bus.deliberation_layer.audit_signature.sign_audit_record",
@@ -677,9 +675,7 @@ class TestPublishAuditRecord:
         import logging
 
         with (
-            patch(
-                "enhanced_agent_bus.deliberation_layer.vote_consumer.settings"
-            ) as mock_settings,
+            patch("enhanced_agent_bus.deliberation_layer.vote_consumer.settings") as mock_settings,
             caplog.at_level(logging.WARNING),
         ):
             mock_settings.voting.audit_signature_key = None
@@ -696,9 +692,7 @@ class TestPublishAuditRecord:
         vote_event = _make_vote_event()
         election_data = {"tenant_id": "election-tenant"}
 
-        with patch(
-            "enhanced_agent_bus.deliberation_layer.vote_consumer.settings"
-        ) as mock_settings:
+        with patch("enhanced_agent_bus.deliberation_layer.vote_consumer.settings") as mock_settings:
             mock_settings.voting.audit_signature_key = None
             await consumer._publish_audit_record("elec-1", vote_event, election_data)
 
@@ -715,9 +709,7 @@ class TestPublishAuditRecord:
         vote_event = _make_vote_event()
         election_data = {}  # no tenant_id key
 
-        with patch(
-            "enhanced_agent_bus.deliberation_layer.vote_consumer.settings"
-        ) as mock_settings:
+        with patch("enhanced_agent_bus.deliberation_layer.vote_consumer.settings") as mock_settings:
             mock_settings.voting.audit_signature_key = None
             await consumer._publish_audit_record("elec-1", vote_event, election_data)
 
@@ -739,9 +731,7 @@ class TestPublishAuditRecord:
         import logging
 
         with (
-            patch(
-                "enhanced_agent_bus.deliberation_layer.vote_consumer.settings"
-            ) as mock_settings,
+            patch("enhanced_agent_bus.deliberation_layer.vote_consumer.settings") as mock_settings,
             caplog.at_level(logging.ERROR),
         ):
             mock_settings.voting.audit_signature_key = None
@@ -763,9 +753,7 @@ class TestPublishAuditRecord:
 
         svc.kafka_bus.publish_audit_record = _capture
 
-        with patch(
-            "enhanced_agent_bus.deliberation_layer.vote_consumer.settings"
-        ) as mock_settings:
+        with patch("enhanced_agent_bus.deliberation_layer.vote_consumer.settings") as mock_settings:
             mock_settings.voting.audit_signature_key = None
             await consumer._publish_audit_record("elec-1", vote_event, election_data)
 
@@ -793,9 +781,7 @@ class TestPublishAuditRecord:
         mock_secret = MagicMock()
         mock_secret.get_secret_value.return_value = "secret"
 
-        with patch(
-            "enhanced_agent_bus.deliberation_layer.vote_consumer.settings"
-        ) as mock_settings:
+        with patch("enhanced_agent_bus.deliberation_layer.vote_consumer.settings") as mock_settings:
             mock_settings.voting.audit_signature_key = mock_secret
             await consumer._publish_audit_record("elec-1", vote_event, election_data)
 

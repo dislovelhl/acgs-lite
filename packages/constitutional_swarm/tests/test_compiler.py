@@ -176,9 +176,11 @@ class TestDAGCompiler:
 
     def test_linear_chain(self) -> None:
         steps = [
-            {"title": f"Step-{i}", "domain": "d", "depends_on": (
-                [f"Step-{i - 1}"] if i > 0 else []
-            )}
+            {
+                "title": f"Step-{i}",
+                "domain": "d",
+                "depends_on": ([f"Step-{i - 1}"] if i > 0 else []),
+            }
             for i in range(5)
         ]
         spec = GoalSpec(goal="linear", domains=["d"], steps=steps)
@@ -208,9 +210,11 @@ class TestDAGCompiler:
     def test_large_dag_100_nodes(self) -> None:
         """100-node DAG compiles without error."""
         steps = [
-            {"title": f"Task-{i}", "domain": "d", "depends_on": (
-                [f"Task-{i - 1}"] if i > 0 else []
-            )}
+            {
+                "title": f"Task-{i}",
+                "domain": "d",
+                "depends_on": ([f"Task-{i - 1}"] if i > 0 else []),
+            }
             for i in range(100)
         ]
         spec = GoalSpec(goal="large", domains=["d"], steps=steps)
@@ -235,7 +239,7 @@ class TestDAGCompiler:
         )
         compiler = DAGCompiler()
         dag = compiler.compile(spec)
-        node = list(dag.nodes.values())[0]
+        node = next(iter(dag.nodes.values()))
         assert node.required_capabilities == ("code_review",)
         assert node.priority == 5
         assert node.max_budget_tokens == 1000
@@ -265,9 +269,7 @@ steps:
     depends_on:
       - Design API
 """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".yaml", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(yaml_content)
             f.flush()
             path = Path(f.name)
@@ -286,9 +288,7 @@ steps:
             compiler.compile_from_yaml("/nonexistent/path.yaml")
 
     def test_yaml_invalid_content(self) -> None:
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".yaml", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write("just a string, not a mapping")
             f.flush()
             path = Path(f.name)

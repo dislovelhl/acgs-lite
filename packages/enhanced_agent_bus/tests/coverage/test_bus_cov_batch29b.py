@@ -5,7 +5,7 @@ Coverage tests batch 29b — targeting uncovered lines in:
   3. specs/fixtures/observability.py
   4. components/agent_registry_manager.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -63,7 +63,7 @@ def _make_saga(**overrides) -> PersistedSagaState:
         failure_reason=None,
         timeout_ms=300000,
         version=1,
-        constitutional_hash="cdd01ef066bc6cf2",
+        constitutional_hash="608508a9bd224290",
     )
     defaults.update(overrides)
     return PersistedSagaState(**defaults)
@@ -221,9 +221,7 @@ class TestPostgresSagaStateRepositorySave:
         import asyncpg as real_asyncpg
 
         pool, conn = _mock_pool()
-        conn.fetchrow = AsyncMock(
-            side_effect=real_asyncpg.PostgresError("connection lost")
-        )
+        conn.fetchrow = AsyncMock(side_effect=real_asyncpg.PostgresError("connection lost"))
         repo = PostgresSagaStateRepository(pool=pool)
 
         saga = _make_saga()
@@ -277,7 +275,7 @@ class TestPostgresSagaStateRepositoryGet:
             "total_duration_ms": 0.0,
             "failure_reason": None,
             "timeout_ms": 300000,
-            "constitutional_hash": "cdd01ef066bc6cf2",
+            "constitutional_hash": "608508a9bd224290",
         }
         conn.fetchrow = AsyncMock(return_value=row)
         repo = PostgresSagaStateRepository(pool=pool)
@@ -290,9 +288,7 @@ class TestPostgresSagaStateRepositoryGet:
         import asyncpg as real_asyncpg
 
         pool, conn = _mock_pool()
-        conn.fetchrow = AsyncMock(
-            side_effect=real_asyncpg.PostgresError("fail")
-        )
+        conn.fetchrow = AsyncMock(side_effect=real_asyncpg.PostgresError("fail"))
         repo = PostgresSagaStateRepository(pool=pool)
 
         with pytest.raises(RepositoryError, match="Failed to get"):
@@ -321,9 +317,7 @@ class TestPostgresSagaStateRepositoryDelete:
         import asyncpg as real_asyncpg
 
         pool, conn = _mock_pool()
-        conn.execute = AsyncMock(
-            side_effect=real_asyncpg.PostgresError("fail")
-        )
+        conn.execute = AsyncMock(side_effect=real_asyncpg.PostgresError("fail"))
         repo = PostgresSagaStateRepository(pool=pool)
 
         with pytest.raises(RepositoryError, match="Failed to delete"):
@@ -351,9 +345,7 @@ class TestPostgresSagaStateRepositoryExists:
         import asyncpg as real_asyncpg
 
         pool, conn = _mock_pool()
-        conn.fetchval = AsyncMock(
-            side_effect=real_asyncpg.PostgresError("fail")
-        )
+        conn.fetchval = AsyncMock(side_effect=real_asyncpg.PostgresError("fail"))
         repo = PostgresSagaStateRepository(pool=pool)
 
         with pytest.raises(RepositoryError, match="Failed to check"):
@@ -384,7 +376,7 @@ class TestPostgresSagaStateRepositoryRowConversions:
             "dependencies": [],
             "compensation": None,
             "metadata": {},
-            "constitutional_hash": "cdd01ef066bc6cf2",
+            "constitutional_hash": "608508a9bd224290",
         }
         comp_dict = {
             "compensation_id": str(uuid.uuid4()),
@@ -413,7 +405,7 @@ class TestPostgresSagaStateRepositoryRowConversions:
             "total_duration_ms": 100.0,
             "failure_reason": None,
             "timeout_ms": 300000,
-            "constitutional_hash": "cdd01ef066bc6cf2",
+            "constitutional_hash": "608508a9bd224290",
         }
 
         result = repo._row_to_saga(row)
@@ -450,7 +442,7 @@ class TestPostgresSagaStateRepositoryRowConversions:
             "total_duration_ms": 0.0,
             "failure_reason": None,
             "timeout_ms": 300000,
-            "constitutional_hash": "cdd01ef066bc6cf2",
+            "constitutional_hash": "608508a9bd224290",
         }
 
         result = repo._row_to_saga(row)
@@ -485,7 +477,7 @@ class TestPostgresSagaStateRepositoryRowConversions:
             "total_duration_ms": 0.0,
             "failure_reason": None,
             "timeout_ms": 300000,
-            "constitutional_hash": "cdd01ef066bc6cf2",
+            "constitutional_hash": "608508a9bd224290",
         }
 
         result = repo._row_to_saga(row)
@@ -505,7 +497,7 @@ class TestPostgresSagaStateRepositoryRowConversions:
             "created_at": datetime.now(UTC),
             "is_constitutional": True,
             "metadata": json.dumps({"key": "val"}),
-            "constitutional_hash": "cdd01ef066bc6cf2",
+            "constitutional_hash": "608508a9bd224290",
         }
 
         result = repo._row_to_checkpoint(row)
@@ -531,7 +523,7 @@ class TestPostgresSagaStateRepositoryRowConversions:
             "created_at": datetime.now(UTC),
             "is_constitutional": False,
             "metadata": None,
-            "constitutional_hash": "cdd01ef066bc6cf2",
+            "constitutional_hash": "608508a9bd224290",
         }
 
         result = repo._row_to_checkpoint(row)
@@ -554,7 +546,7 @@ class TestPostgresSagaStateRepositoryRowConversions:
             "created_at": datetime.now(UTC),
             "is_constitutional": False,
             "metadata": {"k": 1},
-            "constitutional_hash": "cdd01ef066bc6cf2",
+            "constitutional_hash": "608508a9bd224290",
         }
 
         result = repo._row_to_checkpoint(row)
@@ -1188,9 +1180,24 @@ class TestAgentRegistryManagerQueries:
     def _make_mgr(self):
         registry = MagicMock()
         registry._agents = {
-            "a1": {"agent_type": "worker", "capabilities": ["cap1", "cap2"], "tenant_id": "t1", "status": "active"},
-            "a2": {"agent_type": "validator", "capabilities": ["cap1"], "tenant_id": "t2", "status": "active"},
-            "a3": {"agent_type": "worker", "capabilities": ["cap3"], "tenant_id": "t1", "status": "inactive"},
+            "a1": {
+                "agent_type": "worker",
+                "capabilities": ["cap1", "cap2"],
+                "tenant_id": "t1",
+                "status": "active",
+            },
+            "a2": {
+                "agent_type": "validator",
+                "capabilities": ["cap1"],
+                "tenant_id": "t2",
+                "status": "active",
+            },
+            "a3": {
+                "agent_type": "worker",
+                "capabilities": ["cap3"],
+                "tenant_id": "t1",
+                "status": "inactive",
+            },
         }
         return AgentRegistryManager(registry=registry)
 

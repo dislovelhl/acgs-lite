@@ -1,7 +1,7 @@
 """
 Verification test for VULN-003 remediation.
 Ensures that the Deliberation Layer fails closed instead of using mocks.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import subprocess

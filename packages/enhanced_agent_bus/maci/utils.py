@@ -4,7 +4,7 @@ MACI Utilities.
 Lazy model loading proxies, model initialization helpers,
 and role matrix validation.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from collections.abc import Callable

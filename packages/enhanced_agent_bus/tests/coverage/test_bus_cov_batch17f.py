@@ -42,10 +42,11 @@ class TestImpactScorerInit:
     """Test ImpactScorer construction and mlflow init."""
 
     def test_init_without_sklearn(self):
-        with patch(
-            "enhanced_agent_bus.adaptive_governance.impact_scorer.SKLEARN_AVAILABLE", False
-        ), patch(
-            "enhanced_agent_bus.adaptive_governance.impact_scorer.RandomForestRegressor", None
+        with (
+            patch("enhanced_agent_bus.adaptive_governance.impact_scorer.SKLEARN_AVAILABLE", False),
+            patch(
+                "enhanced_agent_bus.adaptive_governance.impact_scorer.RandomForestRegressor", None
+            ),
         ):
             from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
@@ -274,9 +275,7 @@ class TestImpactScorerAssessImpact:
         assert isinstance(result, ImpactFeatures)
 
     async def test_assess_impact_error_returns_defaults(self):
-        with patch.object(
-            self.scorer, "_extract_features", side_effect=RuntimeError("fail")
-        ):
+        with patch.object(self.scorer, "_extract_features", side_effect=RuntimeError("fail")):
             msg = {"content": "x"}
             ctx = {}
             result = await self.scorer.assess_impact(msg, ctx)
@@ -327,9 +326,7 @@ class TestImpactScorerUpdateModel:
         assert len(self.scorer.training_samples) == 1
 
     def test_update_model_error_handled(self):
-        with patch.object(
-            self.scorer, "training_samples", side_effect=RuntimeError("fail")
-        ):
+        with patch.object(self.scorer, "training_samples", side_effect=RuntimeError("fail")):
             # Should not raise
             try:
                 self.scorer.update_model(_make_features(), 0.5)
@@ -342,9 +339,7 @@ class TestImpactScorerUpdateModel:
         assert not self.scorer.model_trained
 
     def test_retrain_model_no_numpy(self):
-        with patch(
-            "enhanced_agent_bus.adaptive_governance.impact_scorer.NUMPY_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.adaptive_governance.impact_scorer.NUMPY_AVAILABLE", False):
             self.scorer._retrain_model()
             assert not self.scorer.model_trained
 
@@ -1284,12 +1279,18 @@ class TestSpecPolicyVerifier:
     def test_is_compliant_with_scope_filter(self):
         pv = SpecPolicyVerifier()
         pv.create_rule(
-            "r1", "msg_fail", lambda: False,
-            scope=PolicyScope.MESSAGE, enforcement=PolicyEnforcement.STRICT,
+            "r1",
+            "msg_fail",
+            lambda: False,
+            scope=PolicyScope.MESSAGE,
+            enforcement=PolicyEnforcement.STRICT,
         )
         pv.create_rule(
-            "r2", "global_fail", lambda: False,
-            scope=PolicyScope.GLOBAL, enforcement=PolicyEnforcement.STRICT,
+            "r2",
+            "global_fail",
+            lambda: False,
+            scope=PolicyScope.GLOBAL,
+            enforcement=PolicyEnforcement.STRICT,
         )
         pv.verify_all()
         # Only check MESSAGE scope

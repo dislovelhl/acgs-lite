@@ -159,7 +159,7 @@ rules:
 
 metadata:
   author: ACGS Constitutional Sentinel
-  license: Apache-2.0
+  license: AGPL-3.0-or-later
   hackathon: GitLab AI Hackathon 2026
   constitutional_hash_note: |
     The constitutional hash is computed from all rule IDs + severities + texts.

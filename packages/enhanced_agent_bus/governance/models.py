@@ -1,6 +1,6 @@
 """
 ACGS-2 CCAI Democratic Framework - Data Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module contains all data models (dataclasses and Enums) for the CCAI
 (Collective Constitutional AI) Democratic Governance Framework.
@@ -14,7 +14,7 @@ Models:
     - ConstitutionalProposal: Dataclass for governance proposals
     - DeliberationResult: Dataclass for deliberation outcomes
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from dataclasses import dataclass, field
@@ -58,7 +58,7 @@ class DeliberationPhase(Enum):
         CONSENSUS: Consensus analysis and validation phase
         AMENDMENT: Final amendment and implementation planning phase
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     PROPOSAL = "proposal"
@@ -86,7 +86,7 @@ class StakeholderGroup(Enum):
         CIVIL_SOCIETY: NGOs, community organizations, public interest groups
         REGULATORS: Government officials, policy makers, oversight bodies
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     TECHNICAL_EXPERTS = "technical_experts"
@@ -118,7 +118,7 @@ class Stakeholder:
         last_active: Timestamp of last stakeholder activity (timezone.utc)
         constitutional_hash: Governance framework validation hash
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     stakeholder_id: str
@@ -139,7 +139,7 @@ class Stakeholder:
         Returns:
             Dictionary containing all stakeholder attributes with serialized datetimes
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         return {
             "stakeholder_id": self.stakeholder_id,
@@ -177,7 +177,7 @@ class DeliberationStatement:
         metadata: Additional statement metadata and analytics
         constitutional_hash: Governance framework validation hash
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     statement_id: str
@@ -200,7 +200,7 @@ class DeliberationStatement:
         Returns:
             Dictionary containing all statement attributes with serialized datetimes
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         return {
             "statement_id": self.statement_id,
@@ -242,7 +242,7 @@ class OpinionCluster:
     Algorithm:
         Uses PCA + K-Means clustering on voting matrix to identify opinion groups
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     cluster_id: str
@@ -267,7 +267,7 @@ class OpinionCluster:
         Returns:
             Dictionary containing all cluster attributes with serialized datetimes
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         return {
             "cluster_id": self.cluster_id,
@@ -309,7 +309,7 @@ class ConstitutionalProposal:
         implementation_plan: Implementation roadmap if approved (None if pending)
         constitutional_hash: Governance framework validation hash
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     proposal_id: str
@@ -333,7 +333,7 @@ class ConstitutionalProposal:
         Returns:
             Dictionary containing all proposal attributes with serialized datetimes
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         return {
             "proposal_id": self.proposal_id,
@@ -377,7 +377,7 @@ class DeliberationResult:
         completed_at: Timestamp when deliberation completed (timezone.utc)
         constitutional_hash: Governance framework validation hash
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     deliberation_id: str
@@ -403,7 +403,7 @@ class DeliberationResult:
         Returns:
             Dictionary containing all result attributes with serialized proposal and datetimes
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         return {
             "deliberation_id": self.deliberation_id,

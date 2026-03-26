@@ -1,6 +1,6 @@
 """
 Redis Saga State Repository Implementation
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Production-ready Redis implementation of SagaStateRepository with:
 - Redis HASH for saga state storage
@@ -55,7 +55,7 @@ class RedisSagaStateRepository(
     - acgs2:saga:index:state:{state} - SET of saga IDs in this state
     - acgs2:saga:index:tenant:{tenant_id} - SET of saga IDs for this tenant
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

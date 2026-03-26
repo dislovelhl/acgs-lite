@@ -4,7 +4,7 @@ Durable Execution Engine for ACGS-2.
 Implements checkpoint-based failure recovery and automatic resume capabilities
 for long-running agentic workflows. Based on LangGraph's durable execution pattern.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio

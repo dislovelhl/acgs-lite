@@ -1,6 +1,6 @@
 """
 Tests for ACGS-2 Runtime Security Scanner
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive test suite covering:
 - SecurityEvent and SecurityScanResult dataclasses
@@ -871,9 +871,7 @@ class TestConcurrentOperations:
 
         # Use an infinite side effect to avoid StopIteration
         time_gen = itertools.count(start_time, 0.01)
-        with patch(
-            "enhanced_agent_bus.runtime_security.time.monotonic", side_effect=time_gen
-        ):
+        with patch("enhanced_agent_bus.runtime_security.time.monotonic", side_effect=time_gen):
             # Run many concurrent scans
             tasks = [
                 scanner.scan(content=f"test_{i}", tenant_id="concurrent-tenant") for i in range(20)

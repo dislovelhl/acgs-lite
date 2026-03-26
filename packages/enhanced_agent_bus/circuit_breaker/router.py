@@ -1,7 +1,7 @@
 """
 ACGS-2 Circuit Breaker FastAPI Router
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides FastAPI endpoints for circuit breaker health monitoring.
 """

@@ -1,6 +1,6 @@
 """
 ACGS-2 Prompt Injection Detection Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Dedicated module for detecting and neutralizing prompt injection attacks.
 Consolidates detection logic from multiple sources into a unified interface.

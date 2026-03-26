@@ -1,10 +1,10 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # Sprint 61 — mcp_server/adapters/policy_client.py coverage
 """
 Comprehensive tests for mcp_server/adapters/policy_client.py.
 Targets >=95% coverage of all classes, methods, and branches.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -376,9 +376,7 @@ class TestGetActivePrinciplesWithClient:
         mock_client.get_principles = AsyncMock(side_effect=RuntimeError("boom"))
         adapter = PolicyClientAdapter(policy_client=mock_client)
 
-        with patch(
-            "enhanced_agent_bus.mcp_server.adapters.policy_client.logger"
-        ) as mock_logger:
+        with patch("enhanced_agent_bus.mcp_server.adapters.policy_client.logger") as mock_logger:
             with pytest.raises(RuntimeError):
                 await adapter.get_active_principles()
             mock_logger.error.assert_called_once()
@@ -523,9 +521,7 @@ class TestGetPolicyByNameWithClient:
         mock_client.get_policy = AsyncMock(side_effect=RuntimeError("boom"))
         adapter = PolicyClientAdapter(policy_client=mock_client)
 
-        with patch(
-            "enhanced_agent_bus.mcp_server.adapters.policy_client.logger"
-        ) as mock_logger:
+        with patch("enhanced_agent_bus.mcp_server.adapters.policy_client.logger") as mock_logger:
             result = await adapter.get_policy_by_name("my_policy")
             assert result is None
             mock_logger.error.assert_called_once()

@@ -1,6 +1,6 @@
 """
 ACGS-2 Capacity Metrics Collector
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Main capacity metrics collector class for the Enhanced Agent Bus.
 Tracks throughput, latency percentiles, queue depths, and resource utilization
@@ -30,8 +30,7 @@ try:
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
-from enhanced_agent_bus.observability.structured_logging import get_logger
-
+from ..structured_logging import get_logger
 from .models import (
     CapacitySnapshot,
     CapacityStatus,
@@ -59,7 +58,7 @@ class EnhancedAgentBusCapacityMetrics:
     Tracks throughput, latency percentiles, queue depths, and resource utilization
     with constitutional compliance monitoring for capacity planning decisions.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

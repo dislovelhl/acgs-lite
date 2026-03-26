@@ -9,7 +9,7 @@ Designed for:
 - CI/CD compliance gates (fail build if checklist incomplete)
 - Generating conformity assessment documentation
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Usage::
 
@@ -18,8 +18,14 @@ Usage::
     checklist = ComplianceChecklist(system_id="cv-screener-v1")
 
     # Mark items complete with evidence
-    checklist.mark_complete("Article 12", evidence="Article12Logger attached, 10-year JSONL retention")
-    checklist.mark_complete("Article 14", evidence="HumanOversightGateway with 2-of-3 approval")
+    checklist.mark_complete(
+        "Article 12",
+        evidence="Article12Logger attached, 10-year JSONL retention",
+    )
+    checklist.mark_complete(
+        "Article 14",
+        evidence="HumanOversightGateway with 2-of-3 approval",
+    )
 
     # Check compliance gate
     if not checklist.is_gate_clear:
@@ -310,11 +316,13 @@ class ComplianceChecklist:
         and HumanOversightGateway to auto-populate their evidence.
         """
         acgs_articles = {
-            "Article 9": "acgs-lite RiskClassifier — risk level classification and obligation mapping",
-            "Article 12": "acgs-lite Article12Logger — automatic tamper-evident JSONL logging",
-            "Article 13": "acgs-lite TransparencyDisclosure — Article 13 system card generation",
-            "Article 14": "acgs-lite HumanOversightGateway — configurable HITL approval gates",
-            "Article 72": "acgs-lite ComplianceChecklist — conformity assessment documentation",
+            "Article 9": (
+                "acgs-lite RiskClassifier — risk level classification and obligation mapping"
+            ),
+            "Article 12": ("acgs-lite Article12Logger — automatic tamper-evident JSONL logging"),
+            "Article 13": ("acgs-lite TransparencyDisclosure — Article 13 system card generation"),
+            "Article 14": ("acgs-lite HumanOversightGateway — configurable HITL approval gates"),
+            "Article 72": ("acgs-lite ComplianceChecklist — conformity assessment documentation"),
         }
         for article_ref, evidence in acgs_articles.items():
             self.mark_complete(article_ref, evidence=evidence)

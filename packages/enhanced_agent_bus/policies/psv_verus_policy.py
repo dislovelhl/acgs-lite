@@ -5,7 +5,7 @@ except ImportError:
 
 """
 ACGS-2 PSV-Verus Production Policy
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This policy uses the Propose-Solve-Verify loop to ensure that all
 governance decisions are formally proven against constitutional axioms.

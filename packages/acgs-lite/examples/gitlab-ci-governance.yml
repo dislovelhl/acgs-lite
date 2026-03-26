@@ -1,7 +1,7 @@
-# ACGS-Lite Governance Pipeline for GitLab CI/CD
+# ACGS Governance Pipeline for GitLab CI/CD
 #
 # This pipeline adds constitutional governance validation to your merge requests.
-# ACGS-Lite checks MR diffs against your constitutional rules and blocks the
+# ACGS checks MR diffs against your constitutional rules and blocks the
 # pipeline if any violations are found.
 #
 # Setup:
@@ -35,8 +35,8 @@ governance:
     CONSTITUTION_PATH: "constitution.yaml"
 
   before_script:
-    # Install acgs-lite with GitLab integration extras
-    - pip install --quiet acgs-lite[gitlab]
+    # Install acgs with GitLab integration extras
+    - pip install --quiet acgs[gitlab]
 
   script:
     - |

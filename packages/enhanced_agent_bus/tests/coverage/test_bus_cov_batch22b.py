@@ -5,7 +5,7 @@ Coverage tests for batch22b:
   - context_memory/long_term_memory.py
   - collaboration/sync_engine.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -73,6 +73,7 @@ from enhanced_agent_bus.security.redis_rate_limiter import (
 # Helpers
 # ===================================================================
 
+
 def _make_edit_op(
     op_type: EditOperationType = EditOperationType.SET_PROPERTY,
     path: str = "/title",
@@ -112,6 +113,7 @@ def _make_session(document_id: str = "doc-1") -> CollaborationSession:
 # InMemoryWindow
 # ===================================================================
 
+
 class TestInMemoryWindow:
     def test_add_request_within_window(self):
         w = InMemoryWindow()
@@ -131,6 +133,7 @@ class TestInMemoryWindow:
 # ===================================================================
 # InMemoryRateLimiter
 # ===================================================================
+
 
 class TestInMemoryRateLimiter:
     async def test_is_allowed_within_limit(self):
@@ -172,6 +175,7 @@ class TestInMemoryRateLimiter:
 # ===================================================================
 # RedisRateLimiter
 # ===================================================================
+
 
 class TestRedisRateLimiter:
     def test_initial_state(self):
@@ -441,6 +445,7 @@ class TestRedisRateLimiter:
 # MultiTierRateLimiter
 # ===================================================================
 
+
 class TestMultiTierRateLimiter:
     async def test_configure_and_check(self):
         mt = MultiTierRateLimiter()
@@ -474,6 +479,7 @@ class TestMultiTierRateLimiter:
 # ===================================================================
 # BatchMessageProcessor
 # ===================================================================
+
 
 class TestBatchMessageProcessor:
     def test_default_init(self):
@@ -703,9 +709,7 @@ class TestBatchMessageProcessor:
             auto_tune_batch_size=True,
             target_p99_latency_ms=100.0,
         )
-        items = [
-            BatchRequestItem(content={"text": "x"}, from_agent="a", to_agent="b")
-        ]
+        items = [BatchRequestItem(content={"text": "x"}, from_agent="a", to_agent="b")]
         batch = BatchRequest(items=items)
         await bp.process_batch(batch)
         assert len(bp._latency_history) == 1
@@ -723,6 +727,7 @@ class TestBatchProcessorSingleton:
 # ===================================================================
 # LongTermMemoryStore
 # ===================================================================
+
 
 class TestLongTermMemoryConfig:
     def test_default_config(self):
@@ -806,9 +811,7 @@ class TestLongTermMemoryStore:
             source="admin",
         )
         # Wrong knowledge type
-        result = await store.search_semantic(
-            "test", knowledge_type="workflow", min_confidence=0.5
-        )
+        result = await store.search_semantic("test", knowledge_type="workflow", min_confidence=0.5)
         assert result.total_count == 0
 
         # Below confidence threshold
@@ -830,6 +833,7 @@ class TestLongTermMemoryStore:
         store = self._make_store()
         # Add old entry
         from enhanced_agent_bus.context_memory.models import EpisodicMemoryEntry
+
         old_entry = EpisodicMemoryEntry(
             entry_id="old-1",
             session_id="s1",
@@ -846,6 +850,7 @@ class TestLongTermMemoryStore:
     async def test_consolidate_time_based_accessed_entry(self):
         store = self._make_store()
         from enhanced_agent_bus.context_memory.models import EpisodicMemoryEntry
+
         old_entry = EpisodicMemoryEntry(
             entry_id="old-2",
             session_id="s1",
@@ -863,6 +868,7 @@ class TestLongTermMemoryStore:
     async def test_consolidate_access_based(self):
         store = self._make_store()
         from enhanced_agent_bus.context_memory.models import EpisodicMemoryEntry
+
         stale = EpisodicMemoryEntry(
             entry_id="stale-1",
             session_id="s1",
@@ -879,6 +885,7 @@ class TestLongTermMemoryStore:
     async def test_consolidate_relevance_based(self):
         store = self._make_store()
         from enhanced_agent_bus.context_memory.models import EpisodicMemoryEntry
+
         # Entry with very old timestamp will have low relevance after decay
         very_old = EpisodicMemoryEntry(
             entry_id="very-old",
@@ -912,6 +919,7 @@ class TestLongTermMemoryStore:
     def test_audit_log_bounded(self):
         store = self._make_store()
         from enhanced_agent_bus.context_memory.models import MemoryOperationType
+
         for i in range(10010):
             store._log_operation(
                 operation_type=MemoryOperationType.STORE,
@@ -928,6 +936,7 @@ class TestLongTermMemoryStore:
         cfg = LongTermMemoryConfig(enable_persistence=False, enable_audit_trail=False)
         store = LongTermMemoryStore(config=cfg)
         from enhanced_agent_bus.context_memory.models import MemoryOperationType
+
         store._log_operation(
             operation_type=MemoryOperationType.STORE,
             tenant_id="t1",
@@ -1011,6 +1020,7 @@ class TestLongTermMemoryPersistence:
 # OperationalTransform
 # ===================================================================
 
+
 class TestOperationalTransform:
     def test_different_paths_no_transform(self):
         op1 = _make_edit_op(EditOperationType.INSERT, path="/a", position=0, value="x")
@@ -1021,29 +1031,45 @@ class TestOperationalTransform:
 
     def test_insert_insert_op1_before(self):
         ts = time.time()
-        op1 = _make_edit_op(EditOperationType.INSERT, path="/x", position=2, value="ab", timestamp=ts)
-        op2 = _make_edit_op(EditOperationType.INSERT, path="/x", position=5, value="c", timestamp=ts + 1)
+        op1 = _make_edit_op(
+            EditOperationType.INSERT, path="/x", position=2, value="ab", timestamp=ts
+        )
+        op2 = _make_edit_op(
+            EditOperationType.INSERT, path="/x", position=5, value="c", timestamp=ts + 1
+        )
         r1, r2 = OperationalTransform.transform_operations(op1, op2)
         assert r2.position == 5 + 2  # shifted by len("ab")
 
     def test_insert_insert_op2_before(self):
         ts = time.time()
-        op1 = _make_edit_op(EditOperationType.INSERT, path="/x", position=5, value="a", timestamp=ts)
-        op2 = _make_edit_op(EditOperationType.INSERT, path="/x", position=2, value="bc", timestamp=ts + 1)
+        op1 = _make_edit_op(
+            EditOperationType.INSERT, path="/x", position=5, value="a", timestamp=ts
+        )
+        op2 = _make_edit_op(
+            EditOperationType.INSERT, path="/x", position=2, value="bc", timestamp=ts + 1
+        )
         r1, r2 = OperationalTransform.transform_operations(op1, op2)
         assert r1.position == 5 + 2  # shifted by len("bc")
 
     def test_insert_insert_same_position_ts_tie(self):
         ts = time.time()
-        op1 = _make_edit_op(EditOperationType.INSERT, path="/x", position=3, value="a", timestamp=ts)
-        op2 = _make_edit_op(EditOperationType.INSERT, path="/x", position=3, value="b", timestamp=ts + 1)
+        op1 = _make_edit_op(
+            EditOperationType.INSERT, path="/x", position=3, value="a", timestamp=ts
+        )
+        op2 = _make_edit_op(
+            EditOperationType.INSERT, path="/x", position=3, value="b", timestamp=ts + 1
+        )
         r1, r2 = OperationalTransform.transform_operations(op1, op2)
         assert r2.position == 3 + 1
 
     def test_insert_insert_same_position_op2_older(self):
         ts = time.time()
-        op1 = _make_edit_op(EditOperationType.INSERT, path="/x", position=3, value="a", timestamp=ts + 1)
-        op2 = _make_edit_op(EditOperationType.INSERT, path="/x", position=3, value="b", timestamp=ts)
+        op1 = _make_edit_op(
+            EditOperationType.INSERT, path="/x", position=3, value="a", timestamp=ts + 1
+        )
+        op2 = _make_edit_op(
+            EditOperationType.INSERT, path="/x", position=3, value="b", timestamp=ts
+        )
         r1, r2 = OperationalTransform.transform_operations(op1, op2)
         assert r1.position == 3 + 1
 
@@ -1124,6 +1150,7 @@ class TestOperationalTransform:
 # ===================================================================
 # SyncEngine
 # ===================================================================
+
 
 class TestSyncEngine:
     async def test_initialize_and_get_document(self):
@@ -1546,7 +1573,9 @@ class TestSyncEngine:
         engine = SyncEngine(redis_client=mock_redis)
         await engine.initialize_document("doc1", {"x": 1})
         session = _make_session("doc1")
-        op = _make_edit_op(EditOperationType.SET_PROPERTY, path="/x", value=2, old_value=1, version=1)
+        op = _make_edit_op(
+            EditOperationType.SET_PROPERTY, path="/x", value=2, old_value=1, version=1
+        )
         await engine.apply_operation("doc1", op, session)
         await engine.undo_last_operation("doc1", session)
         # Redis set should be called for persist on undo

@@ -3,7 +3,7 @@
 # Cannot statically verify mixin composition without Protocol-based injection.
 """
 ACGS-2 OPA Client — Cache Mixin
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides all cache-related methods for OPAClient:
 Redis cache, memory cache, cache key generation, cache clearing.

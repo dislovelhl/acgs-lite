@@ -1,6 +1,6 @@
 """
 ACGS-2 Prometheus Metrics Configuration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements the required metrics from SPEC_ACGS2_ENHANCED.md Section 6.1.
 Per Expert Panel Review (Kelsey Hightower - Cloud Native Expert).
@@ -43,7 +43,7 @@ try:
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
-from enhanced_agent_bus.observability.structured_logging import get_logger
+from .structured_logging import get_logger
 
 logger = get_logger(__name__)
 PROMETHEUS_SYSTEM_INFO_ERRORS = (
@@ -233,7 +233,7 @@ class MetricsCollector:
     """
     Centralized metrics collector for ACGS-2.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Provides methods to record metrics following the spec in Section 6.1.
     """

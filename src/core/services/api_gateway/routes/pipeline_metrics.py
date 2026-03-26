@@ -3,7 +3,7 @@
 Returns per-layer latency, throughput, and SLA status matching
 the 4-layer timeout budget architecture.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from pydantic import BaseModel
 router = APIRouter(prefix="/api/v1/pipeline", tags=["pipeline-metrics"])
 
 _START_TIME = time.monotonic()
-CONSTITUTIONAL_HASH = "cdd01ef066bc6cf2"
+CONSTITUTIONAL_HASH = "608508a9bd224290"
 
 
 class StageLatency(BaseModel):

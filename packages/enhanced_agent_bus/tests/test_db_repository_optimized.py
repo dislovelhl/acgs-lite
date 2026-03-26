@@ -1,6 +1,6 @@
 """Tests for enhanced_agent_bus.multi_tenancy.db_repository_optimized — coverage boost.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests DatabaseTenantRepository including ORM conversions, cache key generation,
 helper methods, and CRUD operation logic. All database and cache calls are mocked.
@@ -68,7 +68,7 @@ def _make_orm(**overrides):
         "quota": {},
         "metadata_": {},
         "parent_tenant_id": None,
-        "constitutional_hash": "cdd01ef066bc6cf2",
+        "constitutional_hash": "608508a9bd224290",
         "created_at": now,
         "updated_at": now,
         "activated_at": now,
@@ -89,17 +89,13 @@ def _make_orm(**overrides):
 class TestProjectionDTOs:
     def test_tenant_summary_creation(self):
         now = datetime.now(UTC)
-        s = TenantSummary(
-            tenant_id="t1", name="Test", slug="test", status="active", created_at=now
-        )
+        s = TenantSummary(tenant_id="t1", name="Test", slug="test", status="active", created_at=now)
         assert s.tenant_id == "t1"
         assert s.status == "active"
 
     def test_tenant_summary_is_frozen(self):
         now = datetime.now(UTC)
-        s = TenantSummary(
-            tenant_id="t1", name="Test", slug="test", status="active", created_at=now
-        )
+        s = TenantSummary(tenant_id="t1", name="Test", slug="test", status="active", created_at=now)
         with pytest.raises(AttributeError):
             s.name = "Changed"  # type: ignore[misc]
 

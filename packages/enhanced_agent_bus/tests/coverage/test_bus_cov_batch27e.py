@@ -2,7 +2,7 @@
 Coverage tests for batch27e: cost/batch, streaming, bus/batch,
 invariant_guard, api/routes/batch, builder.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -57,9 +57,7 @@ def _make_cost_batch_request(
         request_id=request_id,
         tenant_id=tenant_id,
         content="hello",
-        requirements=[
-            CapabilityRequirement(dimension=CapabilityDimension.CONTEXT_LENGTH)
-        ],
+        requirements=[CapabilityRequirement(dimension=CapabilityDimension.CONTEXT_LENGTH)],
         urgency=urgency,
         quality=quality,
         max_wait_time=None,
@@ -93,13 +91,9 @@ class TestBatchOptimizer:
     async def test_batch_triggers_at_max_size(self):
         opt = BatchOptimizer(max_batch_size=3, min_batch_size=1)
         for i in range(2):
-            await opt.add_request(
-                _make_cost_batch_request(f"r{i}", urgency=UrgencyLevel.LOW)
-            )
+            await opt.add_request(_make_cost_batch_request(f"r{i}", urgency=UrgencyLevel.LOW))
         # Third request triggers batch
-        result = await opt.add_request(
-            _make_cost_batch_request("r2", urgency=UrgencyLevel.LOW)
-        )
+        result = await opt.add_request(_make_cost_batch_request("r2", urgency=UrgencyLevel.LOW))
         assert result is not None
         assert result.startswith("batch-")
         assert opt.get_pending_count() == 0
@@ -127,9 +121,7 @@ class TestBatchOptimizer:
         opt = BatchOptimizer(min_batch_size=5, max_batch_size=100)
         # Add only 2 requests -- below min
         for i in range(2):
-            await opt.add_request(
-                _make_cost_batch_request(f"r{i}", urgency=UrgencyLevel.LOW)
-            )
+            await opt.add_request(_make_cost_batch_request(f"r{i}", urgency=UrgencyLevel.LOW))
         flushed = await opt.flush_batches()
         assert flushed == []
         assert opt.get_pending_count() == 2
@@ -137,9 +129,7 @@ class TestBatchOptimizer:
     async def test_flush_batches_executes_when_enough(self):
         opt = BatchOptimizer(min_batch_size=2, max_batch_size=100)
         for i in range(3):
-            await opt.add_request(
-                _make_cost_batch_request(f"r{i}", urgency=UrgencyLevel.LOW)
-            )
+            await opt.add_request(_make_cost_batch_request(f"r{i}", urgency=UrgencyLevel.LOW))
         flushed = await opt.flush_batches()
         assert len(flushed) == 1
         assert opt.get_pending_count() == 0
@@ -151,13 +141,9 @@ class TestBatchOptimizer:
             max_batch_size=100,
             max_wait_time=timedelta(seconds=0),  # immediate
         )
-        await opt.add_request(
-            _make_cost_batch_request("r0", urgency=UrgencyLevel.LOW)
-        )
+        await opt.add_request(_make_cost_batch_request("r0", urgency=UrgencyLevel.LOW))
         # Second request should trigger via wait-time path
-        batch_id = await opt.add_request(
-            _make_cost_batch_request("r1", urgency=UrgencyLevel.LOW)
-        )
+        batch_id = await opt.add_request(_make_cost_batch_request("r1", urgency=UrgencyLevel.LOW))
         assert batch_id is not None
 
     async def test_execute_batch_empty_requests(self):
@@ -598,9 +584,7 @@ class TestBusBatchProcessor:
         ):
             await bp.process_batch(req)
         # hooks should not be accessed
-        assert not hasattr(metering, "_mock_children") or "hooks" not in str(
-            metering.method_calls
-        )
+        assert not hasattr(metering, "_mock_children") or "hooks" not in str(metering.method_calls)
 
     async def test_record_batch_metering_no_hooks(self):
         """_record_batch_metering early-returns when hooks is None."""
@@ -656,18 +640,15 @@ def _make_manifest(
             ),
         ]
     return InvariantManifest(
-        constitutional_hash="cdd01ef066bc6cf2",
+        constitutional_hash="608508a9bd224290",
         invariants=invariants,
     )
 
 
 @pytest.mark.skipif(not HAS_INVARIANT, reason="invariant_guard imports unavailable")
 class TestInvariantClassifier:
-
     def test_empty_manifest_blocks_all(self):
-        manifest = InvariantManifest(
-            constitutional_hash="cdd01ef066bc6cf2", invariants=[]
-        )
+        manifest = InvariantManifest(constitutional_hash="608508a9bd224290", invariants=[])
         classifier = InvariantClassifier(manifest)
         result = classifier.classify_change(["anything"])
         assert result.blocked is True
@@ -718,9 +699,7 @@ class TestInvariantClassifier:
     def test_classification_error_fails_closed(self):
         classifier = InvariantClassifier(_make_manifest())
         # Force an error in _do_classify
-        with patch.object(
-            classifier, "_do_classify", side_effect=RuntimeError("boom")
-        ):
+        with patch.object(classifier, "_do_classify", side_effect=RuntimeError("boom")):
             result = classifier.classify_change(["anything"])
         assert result.blocked is True
         assert "Classification error" in (result.reason or "")
@@ -728,7 +707,6 @@ class TestInvariantClassifier:
 
 @pytest.mark.skipif(not HAS_INVARIANT, reason="invariant_guard imports unavailable")
 class TestProposalInvariantValidator:
-
     async def test_clean_proposal_passes(self):
         validator = ProposalInvariantValidator(_make_manifest())
         result = await validator.validate_proposal({}, ["unrelated"])
@@ -764,7 +742,6 @@ class TestProposalInvariantValidator:
 
 @pytest.mark.skipif(not HAS_INVARIANT, reason="invariant_guard imports unavailable")
 class TestRuntimeMutationGuard:
-
     def test_allowed_mutation(self):
         guard = RuntimeMutationGuard(_make_manifest())
         # unrelated path -- should not raise
@@ -841,7 +818,6 @@ except ImportError:
 
 @pytest.mark.skipif(not HAS_API_BATCH, reason="api/routes/batch imports unavailable")
 class TestApiBatchRouteHelpers:
-
     def test_rate_limit_http_exception(self):
         from fastapi import HTTPException
 
@@ -852,19 +828,18 @@ class TestApiBatchRouteHelpers:
         assert exc.status_code == 429
 
     def test_resolve_client_id_no_rate_limiting(self):
-        with patch(
-            "enhanced_agent_bus.api.routes.batch.RATE_LIMITING_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.api.routes.batch.RATE_LIMITING_AVAILABLE", False):
             result = _resolve_client_id(MagicMock())
             assert result == "default"
 
     def test_resolve_client_id_with_rate_limiting(self):
         mock_request = MagicMock()
-        with patch(
-            "enhanced_agent_bus.api.routes.batch.RATE_LIMITING_AVAILABLE", True
-        ), patch(
-            "enhanced_agent_bus.api.routes.batch.get_remote_address",
-            return_value="1.2.3.4",
+        with (
+            patch("enhanced_agent_bus.api.routes.batch.RATE_LIMITING_AVAILABLE", True),
+            patch(
+                "enhanced_agent_bus.api.routes.batch.get_remote_address",
+                return_value="1.2.3.4",
+            ),
         ):
             result = _resolve_client_id(mock_request)
             assert result == "1.2.3.4"
@@ -893,11 +868,14 @@ class TestApiBatchRouteHelpers:
         except ImportError:
             mock_err = RLE(agent_id="x", message="limit", retry_after_ms=100)
 
-        with patch(
-            "enhanced_agent_bus.api.routes.batch.check_batch_rate_limit",
-            new_callable=AsyncMock,
-            side_effect=mock_err,
-        ), patch("enhanced_agent_bus.api.routes.batch.logger"):
+        with (
+            patch(
+                "enhanced_agent_bus.api.routes.batch.check_batch_rate_limit",
+                new_callable=AsyncMock,
+                side_effect=mock_err,
+            ),
+            patch("enhanced_agent_bus.api.routes.batch.logger"),
+        ):
             with pytest.raises(HTTPException) as exc_info:
                 await _check_batch_rate_limit_or_raise("client1", 10)
             assert exc_info.value.status_code == 429
@@ -907,10 +885,13 @@ class TestApiBatchRouteHelpers:
 
         mock_req = MagicMock()
         mock_req.tenant_id = ""
-        with patch(
-            "enhanced_agent_bus.api.routes.batch.validate_item_sizes",
-            return_value="too big",
-        ), patch("enhanced_agent_bus.api.routes.batch.logger"):
+        with (
+            patch(
+                "enhanced_agent_bus.api.routes.batch.validate_item_sizes",
+                return_value="too big",
+            ),
+            patch("enhanced_agent_bus.api.routes.batch.logger"),
+        ):
             with pytest.raises(HTTPException) as exc_info:
                 _validate_batch_request_safety(mock_req, "t1")
             assert exc_info.value.status_code == 413
@@ -934,10 +915,13 @@ class TestApiBatchRouteHelpers:
         mock_req = MagicMock()
         mock_req.tenant_id = ""
         mock_req.validate_tenant_consistency = MagicMock(return_value="error")
-        with patch(
-            "enhanced_agent_bus.api.routes.batch.validate_item_sizes",
-            return_value=None,
-        ), patch("enhanced_agent_bus.api.routes.batch.logger"):
+        with (
+            patch(
+                "enhanced_agent_bus.api.routes.batch.validate_item_sizes",
+                return_value=None,
+            ),
+            patch("enhanced_agent_bus.api.routes.batch.logger"),
+        ):
             with pytest.raises(HTTPException) as exc_info:
                 _validate_batch_request_safety(mock_req, "t1")
             assert exc_info.value.status_code == 400
@@ -972,7 +956,6 @@ except ImportError:
 
 @pytest.mark.skipif(not HAS_BUILDER, reason="builder imports unavailable")
 class TestBuilder:
-
     def setup_method(self):
         """Reset global caches before each test."""
         import enhanced_agent_bus.builder as _b
@@ -1112,7 +1095,6 @@ class TestBuilder:
 
 @pytest.mark.skipif(not HAS_COST_BATCH, reason="cost batch imports unavailable")
 class TestBatchOptimizerEdgeCases:
-
     async def test_batch_urgency(self):
         """BATCH urgency should be queued."""
         opt = BatchOptimizer()

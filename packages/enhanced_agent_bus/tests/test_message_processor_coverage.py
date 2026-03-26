@@ -1,6 +1,6 @@
 """
 ACGS-2 Message Processor Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Extended tests to increase message_processor.py coverage.
 """
@@ -8,6 +8,7 @@ Extended tests to increase message_processor.py coverage.
 from unittest.mock import AsyncMock, MagicMock, patch
 
 try:
+    from enhanced_agent_bus.config import BusConfiguration
     from enhanced_agent_bus.message_processor import (
         PROMPT_INJECTION_PATTERNS,
         LRUCache,
@@ -20,10 +21,16 @@ try:
         Priority,
     )
     from enhanced_agent_bus.validators import ValidationResult
+    from enhanced_agent_bus.verification_orchestrator import (
+        VerificationOrchestrator,
+        VerificationRuntimeDependencies,
+    )
 except ImportError:
+    from config import BusConfiguration
     from message_processor import PROMPT_INJECTION_PATTERNS, LRUCache, MessageProcessor
     from models import CONSTITUTIONAL_HASH, AgentMessage, MessageType, Priority
     from validators import ValidationResult
+    from verification_orchestrator import VerificationOrchestrator, VerificationRuntimeDependencies
 
 
 class TestLRUCache:
@@ -194,6 +201,34 @@ class TestMessageProcessorInit:
         assert orchestrator.ampo_engine is processor.ampo_engine
         assert orchestrator._IntentType is processor._IntentType
         assert orchestrator._enable_pqc is processor._enable_pqc
+
+    def test_verification_orchestrator_uses_configure_runtime_dependencies(self):
+        """Real orchestrators receive explicit runtime dependency bundles."""
+
+        class RecordingOrchestrator(VerificationOrchestrator):
+            def __init__(self, config: BusConfiguration) -> None:
+                super().__init__(config=config, enable_pqc=False)
+                self.runtime_dependencies: VerificationRuntimeDependencies | None = None
+
+            def configure_runtime_dependencies(
+                self,
+                dependencies: VerificationRuntimeDependencies,
+            ) -> None:
+                self.runtime_dependencies = dependencies
+                super().configure_runtime_dependencies(dependencies)
+
+        orchestrator = RecordingOrchestrator(BusConfiguration())
+        processor = MessageProcessor(
+            isolated_mode=True,
+            enable_pqc=False,
+            verification_orchestrator=orchestrator,
+        )
+
+        assert processor._verification_orchestrator is orchestrator
+        assert orchestrator.runtime_dependencies is not None
+        assert orchestrator.runtime_dependencies.intent_classifier is processor.intent_classifier
+        assert orchestrator.runtime_dependencies.intent_type is processor._IntentType
+        assert orchestrator.runtime_dependencies.enable_pqc is processor._enable_pqc
 
 
 class TestMessageProcessorHandlers:

@@ -1,6 +1,6 @@
 """
 ACGS-2 Dependency Bridge
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Bridge module that integrates DependencyRegistry with the existing imports.py.
 This provides a migration path from scattered try/except patterns to the centralized

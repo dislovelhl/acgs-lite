@@ -1,11 +1,11 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Recording and query tests for transaction_coordinator_metrics.py.
 
 Covers: TransactionMetricsInit, TransactionRecording, CompensationRecording,
 CheckpointRecording, InternalTracking, MetricsQueries, all Timer classes.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

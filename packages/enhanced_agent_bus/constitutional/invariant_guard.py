@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Constitutional Invariant Guard
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Three focused components for invariant enforcement (per spec panel review):
 - InvariantClassifier: stateless path-based classification

@@ -4,7 +4,7 @@ Runs compliance assessment across all applicable regulatory frameworks
 and produces a unified MultiFrameworkReport with cross-framework gap
 analysis, overall scoring, and prioritized recommendations.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Usage::
 

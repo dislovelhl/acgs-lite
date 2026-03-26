@@ -4,7 +4,7 @@ MACI Agent Registry with session-scoped support.
 Maintains a mapping of agent IDs to their MACI roles and outputs.
 Supports both global and session-scoped agent registration for multi-tenant scenarios.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio

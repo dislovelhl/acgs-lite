@@ -3,7 +3,7 @@ Governance Metrics MCP Resource.
 
 Provides read access to governance metrics.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import json

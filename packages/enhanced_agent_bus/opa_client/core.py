@@ -33,10 +33,13 @@ from httpx import TimeoutException as HTTPTimeoutException
 try:
     from src.core.shared.errors.exceptions import ConfigurationError
 except ImportError:
+
     class ConfigurationError(Exception):  # type: ignore[no-redef]
         def __init__(self, message: str = "", error_code: str = "") -> None:
             super().__init__(message)
             self.error_code = error_code
+
+
 from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 
 try:
@@ -365,7 +368,7 @@ class OPAClientCore:
 
     def _get_embedded_executor(self) -> ThreadPoolExecutor:
         """Return a dedicated executor for embedded OPA evaluations."""
-        if self._embedded_executor is None:
+        if getattr(self, "_embedded_executor", None) is None:
             self._embedded_executor = ThreadPoolExecutor(
                 max_workers=1,
                 thread_name_prefix="opa-embedded",
@@ -374,7 +377,7 @@ class OPAClientCore:
 
     def _shutdown_embedded_executor(self) -> None:
         """Tear down the dedicated embedded OPA executor."""
-        if self._embedded_executor is None:
+        if getattr(self, "_embedded_executor", None) is None:
             return
         self._embedded_executor.shutdown(wait=False, cancel_futures=True)
         self._embedded_executor = None
@@ -695,9 +698,7 @@ class OPAClientCore:
 
             support_candidates: list[JSONDict] = []
             if self._is_temporal_multi_path_enabled():
-                support_candidates = self._build_temporal_support_set_candidates(
-                    action_history
-                )
+                support_candidates = self._build_temporal_support_set_candidates(action_history)
 
             if not support_candidates:
                 return await _evaluate_enriched(enriched)
@@ -727,14 +728,10 @@ class OPAClientCore:
 
             allowed_paths = [path for path in paths if path.get("allowed")]
             minimal_support_sets = self._minimal_support_sets(allowed_paths)
-            diversity = self._compute_diversity_metrics(
-                paths, allowed_paths, minimal_support_sets
-            )
+            diversity = self._compute_diversity_metrics(paths, allowed_paths, minimal_support_sets)
             self._multipath_evaluation_count += 1
             self._multipath_last_path_count = len(paths)
-            self._multipath_last_diversity_ratio = float(
-                diversity.get("path_diversity_ratio", 0.0)
-            )
+            self._multipath_last_diversity_ratio = float(diversity.get("path_diversity_ratio", 0.0))
             self._multipath_last_support_family_count = int(
                 diversity.get("support_family_count", 0)
             )
@@ -840,9 +837,7 @@ class OPAClientCore:
                 if support_candidates:
                     input_data["support_set_candidates"] = support_candidates
 
-            result = await self.evaluate_policy(
-                input_data, policy_path="data.acgs.rbac.allow"
-            )
+            result = await self.evaluate_policy(input_data, policy_path="data.acgs.rbac.allow")
 
             return result["allowed"]
 

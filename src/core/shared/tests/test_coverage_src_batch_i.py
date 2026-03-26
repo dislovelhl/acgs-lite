@@ -144,9 +144,7 @@ class TestSAMLSPConfigGetCertContent:
 
         key = tmp_path / "k.key"
         key.write_text("FILE")
-        cfg = SAMLSPConfig(
-            entity_id="urn:x", acs_url="/a", key_file=str(key), key_content="INLINE"
-        )
+        cfg = SAMLSPConfig(entity_id="urn:x", acs_url="/a", key_file=str(key), key_content="INLINE")
         assert cfg.get_key_content() == "INLINE"
 
 
@@ -938,7 +936,7 @@ class TestSAMLHandlerInitiateLogin:
         with patch.object(
             handler, "_get_saml_client", new_callable=AsyncMock, return_value=mock_client
         ):
-            url, req_id = await handler.initiate_login("okta")
+            url, _req_id = await handler.initiate_login("okta")
             assert url == "http://idp/login"
 
     @pytest.mark.asyncio
@@ -1102,7 +1100,9 @@ class TestSAMLHandlerProcessACS:
                 handler, "_get_saml_client", new_callable=AsyncMock, return_value=mock_client
             ),
         ):
-            info = await handler.process_acs_response("response", request_id=req_id, idp_name="okta")
+            info = await handler.process_acs_response(
+                "response", request_id=req_id, idp_name="okta"
+            )
             assert info.email == "user@test.com"
 
     @pytest.mark.asyncio
@@ -1295,9 +1295,7 @@ class TestSAMLHandlerInitiateLogout:
                 handler, "_get_saml_client", new_callable=AsyncMock, return_value=mock_client
             ),
         ):
-            result = await handler.initiate_logout(
-                "okta", name_id="user", relay_state="/dashboard"
-            )
+            result = await handler.initiate_logout("okta", name_id="user", relay_state="/dashboard")
             assert "RelayState" in result
             assert "&" in result  # Uses & separator since ? already exists
 
@@ -1909,9 +1907,7 @@ class TestRoleMapperCaseSensitive:
     def test_case_sensitive_match(self):
         from src.core.shared.auth.role_mapper import RoleMapper
 
-        mapper = RoleMapper(
-            default_mappings={"Admin": "admin"}, case_sensitive=True
-        )
+        mapper = RoleMapper(default_mappings={"Admin": "admin"}, case_sensitive=True)
         # Exact case match
         assert mapper.map_groups(["Admin"]) == ["admin"]
         # Wrong case does not match

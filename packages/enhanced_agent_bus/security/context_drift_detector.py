@@ -1,6 +1,6 @@
 """
 ACGS-2 Context Drift Detection
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Detects behavioral anomalies and context drift in agent communications.
 Tracks patterns over time and identifies deviations from normal behavior.

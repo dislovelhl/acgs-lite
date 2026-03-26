@@ -1,7 +1,7 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 ACGS-2 Deliberation Layer - Redis Deliberation Queue Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for RedisDeliberationQueue: constructor, connect, disconnect, enqueue,
 get, update_status, remove, get_pending_items, get_stream_info.
@@ -34,6 +34,7 @@ def _target_module():
     module so that ``patch.object`` always targets the right dict.
     """
     return sys.modules[RedisDeliberationQueue.__module__]
+
 
 # ---------------------------------------------------------------------------
 # Mock infrastructure

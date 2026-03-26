@@ -106,9 +106,7 @@ class TestAgentBusIntegrationInitialize:
     async def test_initialize_no_bus_available(self):
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
 
-        with patch(
-            "enhanced_agent_bus.ai_assistant.integration.AGENT_BUS_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.ai_assistant.integration.AGENT_BUS_AVAILABLE", False):
             integration = AgentBusIntegration()
             result = await integration.initialize()
             assert result is False
@@ -116,9 +114,7 @@ class TestAgentBusIntegrationInitialize:
     async def test_initialize_no_agent_bus_instance(self):
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
 
-        with patch(
-            "enhanced_agent_bus.ai_assistant.integration.AGENT_BUS_AVAILABLE", True
-        ):
+        with patch("enhanced_agent_bus.ai_assistant.integration.AGENT_BUS_AVAILABLE", True):
             integration = AgentBusIntegration(agent_bus=None)
             result = await integration.initialize()
             assert result is False
@@ -126,9 +122,7 @@ class TestAgentBusIntegrationInitialize:
     async def test_initialize_success(self):
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
 
-        with patch(
-            "enhanced_agent_bus.ai_assistant.integration.AGENT_BUS_AVAILABLE", True
-        ):
+        with patch("enhanced_agent_bus.ai_assistant.integration.AGENT_BUS_AVAILABLE", True):
             integration = AgentBusIntegration(agent_bus=MagicMock())
             result = await integration.initialize()
             assert result is True
@@ -388,9 +382,7 @@ class TestSendMessage:
     async def test_bus_not_available(self):
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
 
-        with patch(
-            "enhanced_agent_bus.ai_assistant.integration.AGENT_BUS_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.ai_assistant.integration.AGENT_BUS_AVAILABLE", False):
             integration = AgentBusIntegration()
             result = await integration.send_message("target", "hello")
             assert result is None
@@ -398,9 +390,7 @@ class TestSendMessage:
     async def test_bus_no_instance(self):
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
 
-        with patch(
-            "enhanced_agent_bus.ai_assistant.integration.AGENT_BUS_AVAILABLE", True
-        ):
+        with patch("enhanced_agent_bus.ai_assistant.integration.AGENT_BUS_AVAILABLE", True):
             integration = AgentBusIntegration(agent_bus=None)
             result = await integration.send_message("target", "hello")
             assert result is None
@@ -413,9 +403,7 @@ class TestSendMessage:
         mock_result.to_dict.return_value = {"ok": True}
         mock_bus.send_message.return_value = mock_result
 
-        with patch(
-            "enhanced_agent_bus.ai_assistant.integration.AGENT_BUS_AVAILABLE", True
-        ):
+        with patch("enhanced_agent_bus.ai_assistant.integration.AGENT_BUS_AVAILABLE", True):
             integration = AgentBusIntegration(agent_bus=mock_bus)
             result = await integration.send_message("target", "hello")
             assert result == {"ok": True}
@@ -429,13 +417,9 @@ class TestSendMessage:
         mock_bus.send_message.return_value = mock_result
         ctx = _make_context(state="active")
 
-        with patch(
-            "enhanced_agent_bus.ai_assistant.integration.AGENT_BUS_AVAILABLE", True
-        ):
+        with patch("enhanced_agent_bus.ai_assistant.integration.AGENT_BUS_AVAILABLE", True):
             integration = AgentBusIntegration(agent_bus=mock_bus)
-            result = await integration.send_message(
-                "target", {"data": 1}, context=ctx
-            )
+            result = await integration.send_message("target", {"data": 1}, context=ctx)
             assert result == {"ok": True}
 
     async def test_send_returns_none_when_result_none(self):
@@ -444,9 +428,7 @@ class TestSendMessage:
         mock_bus = AsyncMock()
         mock_bus.send_message.return_value = None
 
-        with patch(
-            "enhanced_agent_bus.ai_assistant.integration.AGENT_BUS_AVAILABLE", True
-        ):
+        with patch("enhanced_agent_bus.ai_assistant.integration.AGENT_BUS_AVAILABLE", True):
             integration = AgentBusIntegration(agent_bus=mock_bus)
             result = await integration.send_message("target", "hello")
             assert result is None
@@ -457,9 +439,7 @@ class TestSendMessage:
         mock_bus = AsyncMock()
         mock_bus.send_message.side_effect = RuntimeError("bus down")
 
-        with patch(
-            "enhanced_agent_bus.ai_assistant.integration.AGENT_BUS_AVAILABLE", True
-        ):
+        with patch("enhanced_agent_bus.ai_assistant.integration.AGENT_BUS_AVAILABLE", True):
             integration = AgentBusIntegration(agent_bus=mock_bus)
             result = await integration.send_message("target", "hello")
             assert result is None
@@ -497,13 +477,14 @@ class TestCheckGovernance:
         ctx = _make_context()
         nlu = _make_nlu()
 
-        with patch.object(
-            integration.policy_generator,
-            "generate_verified_policy",
-            new_callable=AsyncMock,
-            return_value=mock_policy,
-        ), patch(
-            "enhanced_agent_bus.ai_assistant.integration.get_audit_ledger", None
+        with (
+            patch.object(
+                integration.policy_generator,
+                "generate_verified_policy",
+                new_callable=AsyncMock,
+                return_value=mock_policy,
+            ),
+            patch("enhanced_agent_bus.ai_assistant.integration.get_audit_ledger", None),
         ):
             result = await integration._check_governance(nlu, ctx)
             assert result["is_allowed"] is True
@@ -524,13 +505,14 @@ class TestCheckGovernance:
         ctx = _make_context()
         nlu = _make_nlu()
 
-        with patch.object(
-            integration.policy_generator,
-            "generate_verified_policy",
-            new_callable=AsyncMock,
-            return_value=mock_policy,
-        ), patch(
-            "enhanced_agent_bus.ai_assistant.integration.get_audit_ledger", None
+        with (
+            patch.object(
+                integration.policy_generator,
+                "generate_verified_policy",
+                new_callable=AsyncMock,
+                return_value=mock_policy,
+            ),
+            patch("enhanced_agent_bus.ai_assistant.integration.get_audit_ledger", None),
         ):
             result = await integration._check_governance(nlu, ctx)
             assert result["is_allowed"] is False
@@ -553,14 +535,17 @@ class TestCheckGovernance:
         ctx = _make_context()
         nlu = _make_nlu()
 
-        with patch.object(
-            integration.policy_generator,
-            "generate_verified_policy",
-            new_callable=AsyncMock,
-            return_value=mock_policy,
-        ), patch(
-            "enhanced_agent_bus.ai_assistant.integration.get_audit_ledger",
-            mock_get_ledger,
+        with (
+            patch.object(
+                integration.policy_generator,
+                "generate_verified_policy",
+                new_callable=AsyncMock,
+                return_value=mock_policy,
+            ),
+            patch(
+                "enhanced_agent_bus.ai_assistant.integration.get_audit_ledger",
+                mock_get_ledger,
+            ),
         ):
             result = await integration._check_governance(nlu, ctx)
             assert result["is_allowed"] is True
@@ -585,14 +570,17 @@ class TestCheckGovernance:
         ctx = _make_context()
         nlu = _make_nlu()
 
-        with patch.object(
-            integration.policy_generator,
-            "generate_verified_policy",
-            new_callable=AsyncMock,
-            return_value=mock_policy,
-        ), patch(
-            "enhanced_agent_bus.ai_assistant.integration.get_audit_ledger",
-            mock_get_ledger,
+        with (
+            patch.object(
+                integration.policy_generator,
+                "generate_verified_policy",
+                new_callable=AsyncMock,
+                return_value=mock_policy,
+            ),
+            patch(
+                "enhanced_agent_bus.ai_assistant.integration.get_audit_ledger",
+                mock_get_ledger,
+            ),
         ):
             # Should not raise, audit error is logged and swallowed
             result = await integration._check_governance(nlu, ctx)
@@ -683,9 +671,7 @@ class TestExecuteTask:
             "enhanced_agent_bus.ai_assistant.integration.validate_constitutional_hash",
             return_value=mock_vr,
         ):
-            result = await integration.execute_task(
-                "test_task", {"param": "val"}, context=None
-            )
+            result = await integration.execute_task("test_task", {"param": "val"}, context=None)
             # handler should have been called through handle_incoming_message
             assert result["success"] is True
 
@@ -856,9 +842,7 @@ class TestRuleBasedDialogPolicy:
 
         policy = RuleBasedDialogPolicy()
         ctx = _make_context(state="active")
-        entity = Entity(
-            text="12345", type="order_id", value="12345", start=0, end=5
-        )
+        entity = Entity(text="12345", type="order_id", value="12345", start=0, end=5)
         nlu = _make_nlu("order_status", entities=[entity])
 
         result = await policy.select_action(ctx, nlu, [])
@@ -886,9 +870,7 @@ class TestRuleBasedDialogPolicy:
             state="awaiting_input",
             state_data={"pending_slots": ["order_id"], "original_action": {}},
         )
-        entity = Entity(
-            text="12345", type="order_id", value="12345", start=0, end=5
-        )
+        entity = Entity(text="12345", type="order_id", value="12345", start=0, end=5)
         nlu = _make_nlu("order_status", entities=[entity])
 
         result = await policy.select_action(ctx, nlu, [])
@@ -906,9 +888,7 @@ class TestRuleBasedDialogPolicy:
                 "original_action": {},
             },
         )
-        entity = Entity(
-            text="12345", type="order_id", value="12345", start=0, end=5
-        )
+        entity = Entity(text="12345", type="order_id", value="12345", start=0, end=5)
         nlu = _make_nlu("order_status", entities=[entity])
 
         result = await policy.select_action(ctx, nlu, [])
@@ -1079,9 +1059,7 @@ class TestDialogManager:
             FlowNode,
         )
 
-        node = FlowNode(
-            id="n1", name="Question", node_type="question", content="What?"
-        )
+        node = FlowNode(id="n1", name="Question", node_type="question", content="What?")
         flow = ConversationFlow(
             id="f1",
             name="Q Flow",
@@ -1160,9 +1138,7 @@ class TestDialogManager:
         async def validate(ctx, nlu):
             return False
 
-        node = FlowNode(
-            id="n1", name="N1", node_type="validation", content=validate
-        )
+        node = FlowNode(id="n1", name="N1", node_type="validation", content=validate)
         mgr = DialogManager()
         ctx = _make_context()
         nlu = _make_nlu()
@@ -1173,9 +1149,7 @@ class TestDialogManager:
     async def test_execute_node_validation_not_callable(self):
         from enhanced_agent_bus.ai_assistant.dialog import DialogManager, FlowNode
 
-        node = FlowNode(
-            id="n1", name="N1", node_type="validation", content="not callable"
-        )
+        node = FlowNode(id="n1", name="N1", node_type="validation", content="not callable")
         mgr = DialogManager()
         ctx = _make_context()
         nlu = _make_nlu()
@@ -1200,9 +1174,7 @@ class TestDialogManager:
     async def test_execute_node_action_not_callable(self):
         from enhanced_agent_bus.ai_assistant.dialog import DialogManager, FlowNode
 
-        node = FlowNode(
-            id="n1", name="N1", node_type="action", content="not callable"
-        )
+        node = FlowNode(id="n1", name="N1", node_type="action", content="not callable")
         mgr = DialogManager()
         ctx = _make_context()
         nlu = _make_nlu()
@@ -1227,9 +1199,7 @@ class TestDialogManager:
     async def test_execute_node_condition_not_callable(self):
         from enhanced_agent_bus.ai_assistant.dialog import DialogManager, FlowNode
 
-        node = FlowNode(
-            id="n1", name="N1", node_type="condition", content="not callable"
-        )
+        node = FlowNode(id="n1", name="N1", node_type="condition", content="not callable")
         mgr = DialogManager()
         ctx = _make_context()
         nlu = _make_nlu()
@@ -1316,9 +1286,7 @@ class TestDialogManager:
         from enhanced_agent_bus.ai_assistant.dialog import DialogManager, FlowNode
 
         mgr = DialogManager()
-        node = FlowNode(
-            id="n1", name="N1", node_type="response", next_node="n_default"
-        )
+        node = FlowNode(id="n1", name="N1", node_type="response", next_node="n_default")
         result = {"type": "response"}
         nlu = _make_nlu("greeting")
 
@@ -1336,9 +1304,7 @@ class TestDialogManager:
         custom_handler = AsyncMock(return_value={"custom": True})
         mgr.register_action_handler(ActionType.RESPOND, custom_handler)
 
-        action = DialogAction(
-            action_type=ActionType.RESPOND, response_template="test"
-        )
+        action = DialogAction(action_type=ActionType.RESPOND, response_template="test")
         ctx = _make_context()
         nlu = _make_nlu()
 
@@ -1353,9 +1319,7 @@ class TestDialogManager:
         )
 
         mgr = DialogManager()
-        action = DialogAction(
-            action_type=ActionType.ASK_QUESTION, response_template="What?"
-        )
+        action = DialogAction(action_type=ActionType.ASK_QUESTION, response_template="What?")
         ctx = _make_context(state="active")
         nlu = _make_nlu()
 
@@ -1409,9 +1373,7 @@ class TestDialogManager:
         )
 
         mgr = DialogManager()
-        action = DialogAction(
-            action_type=ActionType.EXECUTE_TASK, response_template="Done"
-        )
+        action = DialogAction(action_type=ActionType.EXECUTE_TASK, response_template="Done")
         ctx = _make_context(state="active")
         nlu = _make_nlu()
 
@@ -1426,9 +1388,7 @@ class TestDialogManager:
         )
 
         mgr = DialogManager()
-        action = DialogAction(
-            action_type=ActionType.ESCALATE, response_template="Escalating"
-        )
+        action = DialogAction(action_type=ActionType.ESCALATE, response_template="Escalating")
         ctx = _make_context(state="active")
         nlu = _make_nlu()
 
@@ -1443,9 +1403,7 @@ class TestDialogManager:
         )
 
         mgr = DialogManager()
-        action = DialogAction(
-            action_type=ActionType.END_CONVERSATION, response_template="Bye"
-        )
+        action = DialogAction(action_type=ActionType.END_CONVERSATION, response_template="Bye")
         ctx = _make_context(state="active")
         nlu = _make_nlu()
 
@@ -1460,9 +1418,7 @@ class TestDialogManager:
         )
 
         mgr = DialogManager()
-        action = DialogAction(
-            action_type=ActionType.WAIT_FOR_INPUT, response_template="Waiting..."
-        )
+        action = DialogAction(action_type=ActionType.WAIT_FOR_INPUT, response_template="Waiting...")
         ctx = _make_context(state="active")
         nlu = _make_nlu()
 
@@ -1494,9 +1450,7 @@ class TestDialogManager:
         )
 
         mgr = DialogManager()
-        ctx = _make_context(
-            state="active", state_data={"pending_slots": ["x"]}
-        )
+        ctx = _make_context(state="active", state_data={"pending_slots": ["x"]})
         action = DialogAction(action_type=ActionType.RESPOND)
         mgr._update_context_state(ctx, action, {})
         assert "pending_slots" in ctx.state_data
@@ -1596,9 +1550,7 @@ class TestListAmendments:
             "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
             mock_storage_cls,
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.get("/api/v1/constitutional/amendments")
             assert resp.status_code == 200
             data = resp.json()
@@ -1618,12 +1570,8 @@ class TestListAmendments:
             "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
             mock_storage_cls,
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
-                resp = await ac.get(
-                    "/api/v1/constitutional/amendments?status=proposed"
-                )
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+                resp = await ac.get("/api/v1/constitutional/amendments?status=proposed")
             assert resp.status_code == 200
 
     async def test_list_amendments_invalid_status(self):
@@ -1639,12 +1587,8 @@ class TestListAmendments:
             "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
             mock_storage_cls,
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
-                resp = await ac.get(
-                    "/api/v1/constitutional/amendments?status=invalid_xyz"
-                )
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+                resp = await ac.get("/api/v1/constitutional/amendments?status=invalid_xyz")
             assert resp.status_code == 400
 
     async def test_list_amendments_invalid_order_by(self):
@@ -1660,12 +1604,8 @@ class TestListAmendments:
             "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
             mock_storage_cls,
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
-                resp = await ac.get(
-                    "/api/v1/constitutional/amendments?order_by=invalid_field"
-                )
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+                resp = await ac.get("/api/v1/constitutional/amendments?order_by=invalid_field")
             assert resp.status_code == 400
 
     async def test_list_amendments_invalid_order(self):
@@ -1681,12 +1621,8 @@ class TestListAmendments:
             "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
             mock_storage_cls,
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
-                resp = await ac.get(
-                    "/api/v1/constitutional/amendments?order=invalid_dir"
-                )
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+                resp = await ac.get("/api/v1/constitutional/amendments?order=invalid_dir")
             assert resp.status_code == 400
 
     async def test_list_amendments_storage_error(self):
@@ -1703,9 +1639,7 @@ class TestListAmendments:
             "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
             mock_storage_cls,
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.get("/api/v1/constitutional/amendments")
             assert resp.status_code == 500
 
@@ -1725,9 +1659,7 @@ class TestGetAmendment:
             "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
             mock_storage_cls,
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.get("/api/v1/constitutional/amendments/nonexistent-id")
             assert resp.status_code == 404
 
@@ -1747,12 +1679,8 @@ class TestGetAmendment:
             "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
             mock_storage_cls,
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
-                resp = await ac.get(
-                    "/api/v1/constitutional/amendments/test-id?include_diff=false"
-                )
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+                resp = await ac.get("/api/v1/constitutional/amendments/test-id?include_diff=false")
             assert resp.status_code == 200
             data = resp.json()
             assert data["diff"] is None
@@ -1776,12 +1704,8 @@ class TestGetAmendment:
             "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
             mock_storage_cls,
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
-                resp = await ac.get(
-                    "/api/v1/constitutional/amendments/test-id?include_diff=false"
-                )
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+                resp = await ac.get("/api/v1/constitutional/amendments/test-id?include_diff=false")
             assert resp.status_code == 200
             data = resp.json()
             assert data["governance_metrics_delta"]["accuracy"] == pytest.approx(0.05)
@@ -1804,9 +1728,13 @@ class TestGetAmendment:
             version_id="v1", version="1.0.0", content={"data": "old"}
         )
         mock_diff = SemanticDiff(
-            from_version="1.0.0", to_version="1.0.1",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="abc", to_hash="def", hash_changed=True,
+            from_version="1.0.0",
+            to_version="1.0.1",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="abc",
+            to_hash="def",
+            hash_changed=True,
         )
 
         mock_storage_cls = MagicMock()
@@ -1820,16 +1748,17 @@ class TestGetAmendment:
         mock_diff_engine.compute_diff_from_content.return_value = mock_diff
         mock_diff_engine_cls.return_value = mock_diff_engine
 
-        with patch(
-            "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
-            mock_storage_cls,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.ConstitutionalDiffEngine",
-            mock_diff_engine_cls,
+        with (
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
+                mock_storage_cls,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.ConstitutionalDiffEngine",
+                mock_diff_engine_cls,
+            ),
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.get("/api/v1/constitutional/amendments/test-id")
             assert resp.status_code == 200
             data = resp.json()
@@ -1852,9 +1781,13 @@ class TestGetAmendment:
             version_id="v1", version="1.0.0", content={"data": "old"}
         )
         mock_diff = SemanticDiff(
-            from_version="1.0.0", to_version="2.0.0",
-            from_version_id="v1", to_version_id="v2",
-            from_hash="abc", to_hash="def", hash_changed=True,
+            from_version="1.0.0",
+            to_version="2.0.0",
+            from_version_id="v1",
+            to_version_id="v2",
+            from_hash="abc",
+            to_hash="def",
+            hash_changed=True,
         )
 
         mock_storage_cls = MagicMock()
@@ -1868,16 +1801,17 @@ class TestGetAmendment:
         mock_diff_engine.compute_diff.return_value = mock_diff
         mock_diff_engine_cls.return_value = mock_diff_engine
 
-        with patch(
-            "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
-            mock_storage_cls,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.ConstitutionalDiffEngine",
-            mock_diff_engine_cls,
+        with (
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
+                mock_storage_cls,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.ConstitutionalDiffEngine",
+                mock_diff_engine_cls,
+            ),
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.get("/api/v1/constitutional/amendments/test-id")
             assert resp.status_code == 200
             data = resp.json()
@@ -1897,9 +1831,7 @@ class TestGetAmendment:
             "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
             mock_storage_cls,
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.get("/api/v1/constitutional/amendments/test-id")
             assert resp.status_code == 500
 
@@ -1916,9 +1848,7 @@ class TestApproveAmendment:
             "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
             return_value=mock_enforcer,
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.post(
                     "/api/v1/constitutional/amendments/amend-1/approve",
                     json={"approver_agent_id": "agent-1"},
@@ -1937,16 +1867,17 @@ class TestApproveAmendment:
         mock_storage.get_amendment.return_value = None
         mock_storage_cls.return_value = mock_storage
 
-        with patch(
-            "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
-            return_value=mock_enforcer,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
-            mock_storage_cls,
+        with (
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
+                return_value=mock_enforcer,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
+                mock_storage_cls,
+            ),
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.post(
                     "/api/v1/constitutional/amendments/amend-1/approve",
                     json={"approver_agent_id": "agent-1"},
@@ -1967,16 +1898,17 @@ class TestApproveAmendment:
         mock_storage.get_amendment.return_value = amendment
         mock_storage_cls.return_value = mock_storage
 
-        with patch(
-            "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
-            return_value=mock_enforcer,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
-            mock_storage_cls,
+        with (
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
+                return_value=mock_enforcer,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
+                mock_storage_cls,
+            ),
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.post(
                     "/api/v1/constitutional/amendments/amend-1/approve",
                     json={"approver_agent_id": "agent-1"},
@@ -2008,25 +1940,29 @@ class TestApproveAmendment:
         mock_audit = AsyncMock()
         mock_audit_cls.return_value = mock_audit
 
-        with patch(
-            "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
-            return_value=mock_enforcer,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
-            mock_storage_cls,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.ConstitutionalHITLIntegration",
-            mock_hitl_cls,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.AuditClient",
-            mock_audit_cls,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.AuditClientConfig",
-            MagicMock(),
+        with (
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
+                return_value=mock_enforcer,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
+                mock_storage_cls,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.ConstitutionalHITLIntegration",
+                mock_hitl_cls,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.AuditClient",
+                mock_audit_cls,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.AuditClientConfig",
+                MagicMock(),
+            ),
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.post(
                     "/api/v1/constitutional/amendments/amend-1/approve",
                     json={"approver_agent_id": "judge-1", "comments": "LGTM"},
@@ -2061,25 +1997,29 @@ class TestApproveAmendment:
         mock_audit = AsyncMock()
         mock_audit_cls.return_value = mock_audit
 
-        with patch(
-            "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
-            return_value=mock_enforcer,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
-            mock_storage_cls,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.ConstitutionalHITLIntegration",
-            mock_hitl_cls,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.AuditClient",
-            mock_audit_cls,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.AuditClientConfig",
-            MagicMock(),
+        with (
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
+                return_value=mock_enforcer,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
+                mock_storage_cls,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.ConstitutionalHITLIntegration",
+                mock_hitl_cls,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.AuditClient",
+                mock_audit_cls,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.AuditClientConfig",
+                MagicMock(),
+            ),
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.post(
                     "/api/v1/constitutional/amendments/amend-1/approve",
                     json={"approver_agent_id": "judge-1"},
@@ -2100,16 +2040,17 @@ class TestApproveAmendment:
         mock_storage.get_amendment.side_effect = RuntimeError("db error")
         mock_storage_cls.return_value = mock_storage
 
-        with patch(
-            "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
-            return_value=mock_enforcer,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
-            mock_storage_cls,
+        with (
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
+                return_value=mock_enforcer,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
+                mock_storage_cls,
+            ),
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.post(
                     "/api/v1/constitutional/amendments/amend-1/approve",
                     json={"approver_agent_id": "judge-1"},
@@ -2129,9 +2070,7 @@ class TestRejectAmendment:
             "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
             return_value=mock_enforcer,
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.post(
                     "/api/v1/constitutional/amendments/amend-1/reject",
                     json={
@@ -2153,16 +2092,17 @@ class TestRejectAmendment:
         mock_storage.get_amendment.return_value = None
         mock_storage_cls.return_value = mock_storage
 
-        with patch(
-            "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
-            return_value=mock_enforcer,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
-            mock_storage_cls,
+        with (
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
+                return_value=mock_enforcer,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
+                mock_storage_cls,
+            ),
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.post(
                     "/api/v1/constitutional/amendments/amend-1/reject",
                     json={
@@ -2186,16 +2126,17 @@ class TestRejectAmendment:
         mock_storage.get_amendment.return_value = amendment
         mock_storage_cls.return_value = mock_storage
 
-        with patch(
-            "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
-            return_value=mock_enforcer,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
-            mock_storage_cls,
+        with (
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
+                return_value=mock_enforcer,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
+                mock_storage_cls,
+            ),
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.post(
                     "/api/v1/constitutional/amendments/amend-1/reject",
                     json={
@@ -2223,22 +2164,25 @@ class TestRejectAmendment:
         mock_audit = AsyncMock()
         mock_audit_cls.return_value = mock_audit
 
-        with patch(
-            "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
-            return_value=mock_enforcer,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
-            mock_storage_cls,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.AuditClient",
-            mock_audit_cls,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.AuditClientConfig",
-            MagicMock(),
+        with (
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
+                return_value=mock_enforcer,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
+                mock_storage_cls,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.AuditClient",
+                mock_audit_cls,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.AuditClientConfig",
+                MagicMock(),
+            ),
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.post(
                     "/api/v1/constitutional/amendments/amend-1/reject",
                     json={
@@ -2263,16 +2207,17 @@ class TestRejectAmendment:
         mock_storage.get_amendment.side_effect = RuntimeError("db error")
         mock_storage_cls.return_value = mock_storage
 
-        with patch(
-            "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
-            return_value=mock_enforcer,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
-            mock_storage_cls,
+        with (
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
+                return_value=mock_enforcer,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
+                mock_storage_cls,
+            ),
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.post(
                     "/api/v1/constitutional/amendments/amend-1/reject",
                     json={
@@ -2289,12 +2234,8 @@ class TestRollbackToVersion:
 
         app = _make_test_app()
 
-        with patch(
-            "enhanced_agent_bus.constitutional.review_api.ROLLBACK_AVAILABLE", False
-        ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+        with patch("enhanced_agent_bus.constitutional.review_api.ROLLBACK_AVAILABLE", False):
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.post(
                     "/api/v1/constitutional/versions/v-1/rollback",
                     json={
@@ -2311,15 +2252,14 @@ class TestRollbackToVersion:
         mock_enforcer = AsyncMock()
         mock_enforcer.validate_action.return_value = {"allowed": False}
 
-        with patch(
-            "enhanced_agent_bus.constitutional.review_api.ROLLBACK_AVAILABLE", True
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
-            return_value=mock_enforcer,
+        with (
+            patch("enhanced_agent_bus.constitutional.review_api.ROLLBACK_AVAILABLE", True),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
+                return_value=mock_enforcer,
+            ),
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.post(
                     "/api/v1/constitutional/versions/v-1/rollback",
                     json={
@@ -2341,18 +2281,18 @@ class TestRollbackToVersion:
         mock_storage.get_version.return_value = None
         mock_storage_cls.return_value = mock_storage
 
-        with patch(
-            "enhanced_agent_bus.constitutional.review_api.ROLLBACK_AVAILABLE", True
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
-            return_value=mock_enforcer,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
-            mock_storage_cls,
+        with (
+            patch("enhanced_agent_bus.constitutional.review_api.ROLLBACK_AVAILABLE", True),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
+                return_value=mock_enforcer,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
+                mock_storage_cls,
+            ),
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.post(
                     "/api/v1/constitutional/versions/v-missing/rollback",
                     json={
@@ -2378,18 +2318,18 @@ class TestRollbackToVersion:
         mock_storage.get_active_version.return_value = None
         mock_storage_cls.return_value = mock_storage
 
-        with patch(
-            "enhanced_agent_bus.constitutional.review_api.ROLLBACK_AVAILABLE", True
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
-            return_value=mock_enforcer,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
-            mock_storage_cls,
+        with (
+            patch("enhanced_agent_bus.constitutional.review_api.ROLLBACK_AVAILABLE", True),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
+                return_value=mock_enforcer,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
+                mock_storage_cls,
+            ),
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.post(
                     "/api/v1/constitutional/versions/v-target/rollback",
                     json={
@@ -2415,18 +2355,18 @@ class TestRollbackToVersion:
         mock_storage.get_active_version.return_value = mock_version
         mock_storage_cls.return_value = mock_storage
 
-        with patch(
-            "enhanced_agent_bus.constitutional.review_api.ROLLBACK_AVAILABLE", True
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
-            return_value=mock_enforcer,
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
-            mock_storage_cls,
+        with (
+            patch("enhanced_agent_bus.constitutional.review_api.ROLLBACK_AVAILABLE", True),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
+                return_value=mock_enforcer,
+            ),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.ConstitutionalStorageService",
+                mock_storage_cls,
+            ),
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.post(
                     "/api/v1/constitutional/versions/v-same/rollback",
                     json={
@@ -2443,15 +2383,14 @@ class TestRollbackToVersion:
         mock_enforcer = AsyncMock()
         mock_enforcer.validate_action.side_effect = RuntimeError("unexpected")
 
-        with patch(
-            "enhanced_agent_bus.constitutional.review_api.ROLLBACK_AVAILABLE", True
-        ), patch(
-            "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
-            return_value=mock_enforcer,
+        with (
+            patch("enhanced_agent_bus.constitutional.review_api.ROLLBACK_AVAILABLE", True),
+            patch(
+                "enhanced_agent_bus.constitutional.review_api.MACIEnforcer",
+                return_value=mock_enforcer,
+            ),
         ):
-            async with AsyncClient(
-                transport=ASGITransport(app=app), base_url="http://test"
-            ) as ac:
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
                 resp = await ac.post(
                     "/api/v1/constitutional/versions/v-1/rollback",
                     json={

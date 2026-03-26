@@ -2,7 +2,7 @@
 Coverage batch 28a: Tests for split_engine, psv_verus_policy, permission_scoper,
 http_client, and n1_middleware.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -613,9 +613,7 @@ class TestHttpClient:
 
         with patch.object(client, "_do_request", new_callable=AsyncMock) as mock_do:
             mock_do.return_value = mock_response
-            resp = await client.request(
-                "GET", "http://example.com", retry_on_failure=False
-            )
+            resp = await client.request("GET", "http://example.com", retry_on_failure=False)
             mock_do.assert_called_once()
 
         await client.close()

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Batch Cache Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Additional tests to bring batch_cache.py coverage from ~58% to >=90%.
 Targets uncovered lines: 69, 84, 87-89, 157, 217-219, 245, 328, 331-332,

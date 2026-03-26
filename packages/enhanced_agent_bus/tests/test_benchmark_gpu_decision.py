@@ -1,6 +1,6 @@
 """
 Tests for enhanced_agent_bus.profiling.benchmark_gpu_decision
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import json
@@ -38,7 +38,7 @@ class TestGenerateRandomMessage:
         originals = [m.copy() for m in SAMPLE_MESSAGES]
         for _ in range(20):
             generate_random_message()
-        for orig, current in zip(originals, SAMPLE_MESSAGES):
+        for _orig, current in zip(originals, SAMPLE_MESSAGES, strict=False):
             assert "timestamp" not in current
             assert "agent_id" not in current
 

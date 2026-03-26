@@ -1,4 +1,4 @@
-"""LEGACY: Constitutional Hash cdd01ef066bc6cf2.
+"""LEGACY: Constitutional Hash 608508a9bd224290.
 
 Canonical context subsystem is ``context_memory/``.
 New code should not add modules in this package.

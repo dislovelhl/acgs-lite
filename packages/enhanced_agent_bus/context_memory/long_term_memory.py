@@ -1,6 +1,6 @@
 """
 ACGS-2 Context & Memory - Long Term Memory Store
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Persistent memory management for multi-day autonomous governance.
 Implements episodic and semantic memory with consolidation.
@@ -78,7 +78,7 @@ class ConsolidationStrategy(str, Enum):
 class LongTermMemoryConfig:
     """Configuration for long-term memory store.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     db_path: str = ".acgs2_ltm.db"
@@ -102,7 +102,7 @@ class LongTermMemoryConfig:
 class MemorySearchResult:
     """Result of memory search operation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     entries: JSONList
@@ -119,7 +119,7 @@ class LongTermMemoryStore:
     Manages episodic and semantic memory with consolidation
     and constitutional compliance tracking.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

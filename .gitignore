@@ -24,6 +24,57 @@ mlruns/
 # Codex CLI
 .codex-home/
 .codex-readiness-unit-test/
+.codex_write_check
+
+# AI agent / coding-assistant dev stacks (local tooling, not project source)
+.gstack/
+.openclaw/
+.agents/
+.claude/
+.mcp.json
+.playwright-cli/
+
+# Research / paper artefacts (local LaTeX workspace)
+src/research/docs/research/
+docs/papers/
+docs/generated/
+
+# Autoresearch experiment logs & scratch files
+autoresearch/run_perf_*.log
+autoresearch/candidate_scenarios/
+autoresearch/paper_extracts/
+autoresearch/raw_dataset_adapter.md
+autoresearch/build_paper_adapter_manifest.py
+autoresearch/render_candidate_promotion_patch.py
+autoresearch/review_candidate_promotion.py
+autoresearch/sourced_pack_review.md
+
+# Playwright / browser automation local cache
+packages/acgs-lite/.playwright-cli/
+packages/acgs-lite/output/
+
+# Identity / personality prompts (local agent configuration)
+HEARTBEAT.md
+IDENTITY.md
+SOUL.md
+TOOLS.md
+USER.md
+prompts/
+
+# Local dev docs
+claudedocs/enhanced-agent-bus-reorg-plan-20260321.md
+docs/brand-architecture.md
+
+# Demo harness
+demo/
+
+# One-off scripts
+scripts/generate_project_technical_breakthroughs_pdf.py
+scripts/package_health.py
+scripts/test_segment_timing.py
+
+# Package health manifest (generated)
+package-health.manifest.json
 
 # Environment
 .env
@@ -44,6 +95,7 @@ node_modules/
 
 # Claude Code worktrees (embedded git repos — not submodules)
 .claude/worktrees/
+.claude/settings.local.json
 
 # Demo harnesses (local only)
 constitutional-sentinel-demo/
@@ -62,3 +114,6 @@ x402_revenue.jsonl
 src/acgs_lite/
 src/fix_imports.py
 src/split_engine.py
+.gstack/
+.python-version
+.github/workflows/docs-pdf.yml

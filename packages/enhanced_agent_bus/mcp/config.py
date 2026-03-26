@@ -15,7 +15,7 @@ Configuration priority (highest → lowest):
   3. YAML config file at path specified by ``MCP_CONFIG_FILE`` env var.
   4. Hard-coded defaults.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -396,7 +396,7 @@ def load_from_yaml(path: str | Path) -> MCPConfig:
     .. code-block:: yaml
 
         enabled: true
-        constitutional_hash: cdd01ef066bc6cf2
+        constitutional_hash: 608508a9bd224290
         servers:
           - name: neural-mcp
             transport: stdio

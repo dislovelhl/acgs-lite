@@ -5,7 +5,7 @@ Coverage tests for batch 20f:
 - enhanced_agent_bus.adaptive_governance.amendment_recommender
 - enhanced_agent_bus.saga_persistence.models
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -66,6 +66,7 @@ from enhanced_agent_bus.saga_persistence.models import (
 # =====================================================================
 # Helpers
 # =====================================================================
+
 
 def _make_adapter(**overrides: Any) -> AnthropicAdapter:
     """Build an AnthropicAdapter with sensible test defaults."""
@@ -392,10 +393,12 @@ class TestSagaCheckpoint:
         assert restored.is_constitutional is True
 
     def test_from_dict_non_list_ids(self):
-        cp = SagaCheckpoint.from_dict({
-            "completed_step_ids": "not-a-list",
-            "pending_step_ids": 123,
-        })
+        cp = SagaCheckpoint.from_dict(
+            {
+                "completed_step_ids": "not-a-list",
+                "pending_step_ids": 123,
+            }
+        )
         assert cp.completed_step_ids == []
         assert cp.pending_step_ids == []
 
@@ -474,9 +477,7 @@ class TestAmendmentRecommender:
 
     def test_context_target_area_override(self):
         recommender = AmendmentRecommender(risk_threshold=0.5)
-        result = recommender.evaluate_risk_signal(
-            0.9, [3], context={"target_area": "custom.area"}
-        )
+        result = recommender.evaluate_risk_signal(0.9, [3], context={"target_area": "custom.area"})
         assert result is not None
         assert result.target_area == "custom.area"
 
@@ -604,9 +605,7 @@ class TestDemocraticConstitutionalGovernance:
 
     async def test_register_stakeholder(self):
         gov = DemocraticConstitutionalGovernance()
-        s = await gov.register_stakeholder(
-            "Dr. Test", StakeholderGroup.TECHNICAL_EXPERTS, ["AI"]
-        )
+        s = await gov.register_stakeholder("Dr. Test", StakeholderGroup.TECHNICAL_EXPERTS, ["AI"])
         assert s.name == "Dr. Test"
         assert s.group == StakeholderGroup.TECHNICAL_EXPERTS
         assert s.stakeholder_id in gov.stakeholders
@@ -737,9 +736,7 @@ class TestDemocraticConstitutionalGovernance:
 
     async def test_fast_govern_with_few_stakeholders(self):
         gov = DemocraticConstitutionalGovernance()
-        stakeholders = [
-            _make_stakeholder(name=f"s{i}") for i in range(5)
-        ]
+        stakeholders = [_make_stakeholder(name=f"s{i}") for i in range(5)]
         result = await gov.fast_govern(
             decision={"description": "small group"},
             time_budget_ms=50,
@@ -757,12 +754,12 @@ class TestDemocraticConstitutionalGovernance:
 
     async def test_generate_statement_for_each_group(self):
         gov = DemocraticConstitutionalGovernance()
-        proposer = await gov.register_stakeholder(
-            "P", StakeholderGroup.TECHNICAL_EXPERTS, ["AI"]
-        )
+        proposer = await gov.register_stakeholder("P", StakeholderGroup.TECHNICAL_EXPERTS, ["AI"])
         proposal = await gov.propose_constitutional_change(
-            title="T", description="D",
-            proposed_changes={}, proposer=proposer,
+            title="T",
+            description="D",
+            proposed_changes={},
+            proposer=proposer,
         )
         for group in [
             StakeholderGroup.TECHNICAL_EXPERTS,
@@ -794,9 +791,15 @@ class TestDemocraticConstitutionalGovernance:
 
         clusters = [
             OpinionCluster(
-                cluster_id="c1", name="G1", description="",
-                representative_statements=[], member_stakeholders=[s1.stakeholder_id],
-                consensus_score=0.8, polarization_level=0.1, size=1, metadata={},
+                cluster_id="c1",
+                name="G1",
+                description="",
+                representative_statements=[],
+                member_stakeholders=[s1.stakeholder_id],
+                consensus_score=0.8,
+                polarization_level=0.1,
+                size=1,
+                metadata={},
             ),
         ]
         cross_group = {"consensus_ratio": 0.75}
@@ -809,9 +812,15 @@ class TestDemocraticConstitutionalGovernance:
         gov = DemocraticConstitutionalGovernance()
         clusters = [
             OpinionCluster(
-                cluster_id="c1", name="G1", description="",
-                representative_statements=[], member_stakeholders=["unknown-id"],
-                consensus_score=0.8, polarization_level=0.1, size=1, metadata={},
+                cluster_id="c1",
+                name="G1",
+                description="",
+                representative_statements=[],
+                member_stakeholders=["unknown-id"],
+                consensus_score=0.8,
+                polarization_level=0.1,
+                size=1,
+                metadata={},
             ),
         ]
         _, trust = gov._extract_consensus_metrics(clusters, {})

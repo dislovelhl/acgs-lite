@@ -23,6 +23,7 @@ import pytest
 # Helpers for building minimal valid GraphDefinition fixtures
 # ---------------------------------------------------------------------------
 
+
 def _make_graph_definition(
     *,
     nodes=None,
@@ -86,6 +87,7 @@ def _make_orchestrator(graph=None, **kwargs):
 # ============================================================================
 # GraphOrchestrator tests
 # ============================================================================
+
 
 class TestGraphOrchestratorInit:
     """Tests for GraphOrchestrator.__init__ and _validate_graph."""
@@ -474,9 +476,7 @@ class TestExecuteNodeWithLifecycle:
         )
 
         orch = _make_orchestrator(hitl_enabled=True)
-        node = GraphNode(
-            id="n1", name="N1", node_type=NodeType.FUNCTION, interrupt_before=True
-        )
+        node = GraphNode(id="n1", name="N1", node_type=NodeType.FUNCTION, interrupt_before=True)
         orch._node_map["n1"] = node
 
         async def mock_execute(n, state, ctx):
@@ -521,9 +521,7 @@ class TestExecuteNodeWithLifecycle:
         )
 
         orch = _make_orchestrator(hitl_enabled=True)
-        node = GraphNode(
-            id="n2", name="N2", node_type=NodeType.FUNCTION, interrupt_after=True
-        )
+        node = GraphNode(id="n2", name="N2", node_type=NodeType.FUNCTION, interrupt_after=True)
         orch._node_map["n2"] = node
 
         async def mock_execute(n, state, ctx):
@@ -812,9 +810,7 @@ class TestExecuteNode:
             GraphEdge(source_node_id="par", target_node_id="w2", edge_type=EdgeType.PARALLEL),
             GraphEdge(source_node_id="par", target_node_id="end", edge_type=EdgeType.SEQUENTIAL),
         ]
-        graph = _make_graph_definition(
-            nodes=nodes, edges=edges, start_node_id="par"
-        )
+        graph = _make_graph_definition(nodes=nodes, edges=edges, start_node_id="par")
         orch = _make_orchestrator(graph=graph)
 
         r1 = NodeResult(
@@ -1133,6 +1129,7 @@ class TestRunMetricsCalculation:
 # HybridContextManager tests
 # ============================================================================
 
+
 class TestHybridContextConfig:
     """Tests for HybridContextConfig."""
 
@@ -1177,10 +1174,13 @@ class TestSharedAttentionProcessor:
 
         proc = SharedAttentionProcessor()
         # plain python object -- not torch or numpy
-        with patch(
-            "enhanced_agent_bus.context_memory.hybrid_context_manager.TORCH_AVAILABLE", False
-        ), patch(
-            "enhanced_agent_bus.context_memory.hybrid_context_manager.NUMPY_AVAILABLE", False
+        with (
+            patch(
+                "enhanced_agent_bus.context_memory.hybrid_context_manager.TORCH_AVAILABLE", False
+            ),
+            patch(
+                "enhanced_agent_bus.context_memory.hybrid_context_manager.NUMPY_AVAILABLE", False
+            ),
         ):
             result = proc.forward("not a tensor")
             assert result == "not a tensor"
@@ -1515,6 +1515,7 @@ class TestHybridContextManager:
 # fix_imports.py tests
 # ============================================================================
 
+
 class TestFixImports:
     """Tests for packages/acgs-lite/src/fix_imports.py."""
 
@@ -1587,9 +1588,10 @@ class TestFixImports:
         result = self._run_fix_imports_in_tmpdir(files)
 
         # analytics.py should now contain "from .core import Rule"
-        assert "from .core import Rule" in result[
-            "packages/acgs-lite/src/acgs_lite/constitution/analytics.py"
-        ]
+        assert (
+            "from .core import Rule"
+            in result["packages/acgs-lite/src/acgs_lite/constitution/analytics.py"]
+        )
 
     def test_analytics_idempotent(self):
         """If analytics already has the import, it should not be added again."""

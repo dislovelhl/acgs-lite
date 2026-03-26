@@ -42,7 +42,7 @@ wheels = [
 
 [[package]]
 name = "acgs"
-version = "2.0.1"
+version = "2.4.0"
 source = { editable = "packages/acgs-lite" }
 dependencies = [
     { name = "click" },
@@ -61,6 +61,7 @@ all = [
     { name = "autogen-agentchat" },
     { name = "autogen-core" },
     { name = "crewai" },
+    { name = "fpdf2" },
     { name = "google-cloud-logging" },
     { name = "google-genai" },
     { name = "httpx" },
@@ -85,6 +86,7 @@ dev = [
     { name = "mypy" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
+    { name = "pytest-benchmark" },
     { name = "pytest-cov" },
     { name = "ruff" },
 ]
@@ -113,16 +115,20 @@ mcp = [
 openai = [
     { name = "openai" },
 ]
+pdf = [
+    { name = "fpdf2" },
+]
 
 [package.metadata]
 requires-dist = [
     { name = "a2a-sdk", marker = "extra == 'a2a'", specifier = ">=0.2" },
-    { name = "acgs", extras = ["a2a", "openai", "anthropic", "langchain", "litellm", "google", "llamaindex", "autogen", "mcp", "crewai", "gitlab", "google-cloud"], marker = "extra == 'all'", editable = "packages/acgs-lite" },
+    { name = "acgs", extras = ["a2a", "openai", "anthropic", "langchain", "litellm", "google", "llamaindex", "autogen", "mcp", "crewai", "gitlab", "google-cloud", "pdf"], marker = "extra == 'all'", editable = "packages/acgs-lite" },
     { name = "anthropic", marker = "extra == 'anthropic'", specifier = ">=0.30" },
     { name = "autogen-agentchat", marker = "extra == 'autogen'", specifier = ">=0.4" },
     { name = "autogen-core", marker = "extra == 'autogen'", specifier = ">=0.4" },
     { name = "click", specifier = ">=8.0" },
     { name = "crewai", marker = "extra == 'crewai'", specifier = ">=0.30" },
+    { name = "fpdf2", marker = "extra == 'pdf'", specifier = ">=2.7" },
     { name = "google-cloud-logging", marker = "extra == 'google-cloud'", specifier = ">=3.0" },
     { name = "google-genai", marker = "extra == 'google'", specifier = ">=1.0" },
     { name = "httpx", marker = "extra == 'a2a'", specifier = ">=0.27" },
@@ -136,12 +142,13 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.24" },
+    { name = "pytest-benchmark", marker = "extra == 'dev'", specifier = ">=4.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.1" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8" },
     { name = "starlette", marker = "extra == 'gitlab'", specifier = ">=0.37" },
 ]
-provides-extras = ["a2a", "openai", "anthropic", "langchain", "litellm", "google", "llamaindex", "autogen", "mcp", "crewai", "gitlab", "google-cloud", "all", "dev"]
+provides-extras = ["a2a", "openai", "anthropic", "langchain", "litellm", "google", "llamaindex", "autogen", "mcp", "crewai", "gitlab", "google-cloud", "pdf", "all", "dev"]
 
 [[package]]
 name = "acgs-deliberation"
@@ -1314,6 +1321,15 @@ wheels = [
 ]
 
 [[package]]
+name = "defusedxml"
+version = "0.7.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/0f/d5/c66da9b79e5bdb124974bfe172b4daf3c984ebd9c2a06e2b8a4dc7331c72/defusedxml-0.7.1.tar.gz", hash = "sha256:1bb3032db185915b62d7c6209c5a8792be6a32ab2fedacc84e01b52c51aa3e69", size = 75520, upload-time = "2021-03-08T10:59:26.269Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/07/6c/aa3f2f849e01cb6a001cd8554a88d4c77c5c1a31c95bdf1cf9301e6d9ef4/defusedxml-0.7.1-py2.py3-none-any.whl", hash = "sha256:a352e7e428770286cc899e2542b6cdaedb2b4953ff269a210103ec58f6198a61", size = 25604, upload-time = "2021-03-08T10:59:24.45Z" },
+]
+
+[[package]]
 name = "deprecated"
 version = "1.3.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1779,6 +1795,20 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/90/aa/dfbbe24c6a6afc5c203d90cc0343e24bcbb09e76d67c4d6eef8c2558d7ba/fonttools-4.62.1-cp314-cp314t-win32.whl", hash = "sha256:b820fcb92d4655513d8402d5b219f94481c4443d825b4372c75a2072aa4b357a", size = 2348021, upload-time = "2026-03-13T13:54:16.98Z" },
     { url = "https://files.pythonhosted.org/packages/13/6f/ae9c4e4dd417948407b680855c2c7790efb52add6009aaecff1e3bc50e8e/fonttools-4.62.1-cp314-cp314t-win_amd64.whl", hash = "sha256:59b372b4f0e113d3746b88985f1c796e7bf830dd54b28374cd85c2b8acd7583e", size = 2414147, upload-time = "2026-03-13T13:54:19.416Z" },
     { url = "https://files.pythonhosted.org/packages/fd/ba/56147c165442cc5ba7e82ecf301c9a68353cede498185869e6e02b4c264f/fonttools-4.62.1-py3-none-any.whl", hash = "sha256:7487782e2113861f4ddcc07c3436450659e3caa5e470b27dc2177cade2d8e7fd", size = 1152647, upload-time = "2026-03-13T13:54:22.735Z" },
+]
+
+[[package]]
+name = "fpdf2"
+version = "2.8.7"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "defusedxml" },
+    { name = "fonttools" },
+    { name = "pillow" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/27/f2/72feae0b2827ed38013e4307b14f95bf0b3d124adfef4d38a7d57533f7be/fpdf2-2.8.7.tar.gz", hash = "sha256:7060ccee5a9c7ab0a271fb765a36a23639f83ef8996c34e3d46af0a17ede57f9", size = 362351, upload-time = "2026-02-28T05:39:16.456Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/66/0a/cf50ecffa1e3747ed9380a3adfc829259f1f86b3fdbd9e505af789003141/fpdf2-2.8.7-py3-none-any.whl", hash = "sha256:d391fc508a3ce02fc43a577c830cda4fe6f37646f2d143d489839940932fbc19", size = 327056, upload-time = "2026-02-28T05:39:14.619Z" },
 ]
 
 [[package]]

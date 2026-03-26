@@ -1,7 +1,7 @@
 """
 x402 Governance-as-a-Service — Pay-Per-Call Constitutional Validation
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tiered pricing (zero facilitator fees via xpay.sh):
     GET  /x402/check     — FREE   (pass/fail funnel entry, no auth)
@@ -876,16 +876,18 @@ async def validate_governance(
         disclaimer=PAID_RESPONSE_DISCLAIMER,
         related_endpoints=_validate_related_endpoints(result["decision"]),
     )
-    await emit_revenue_event(RevenueEvent(
-        endpoint="/x402/validate",
-        price_usd=X402_PRICE_VALIDATE,
-        agent_id=body.agent_id,
-        decision=result["decision"],
-        timestamp=result["timestamp"],
-        processing_ms=result["processing_ms"],
-        network=X402_NETWORK,
-        wallet_address=X402_PAY_TO,
-    ))
+    await emit_revenue_event(
+        RevenueEvent(
+            endpoint="/x402/validate",
+            price_usd=X402_PRICE_VALIDATE,
+            agent_id=body.agent_id,
+            decision=result["decision"],
+            timestamp=result["timestamp"],
+            processing_ms=result["processing_ms"],
+            network=X402_NETWORK,
+            wallet_address=X402_PAY_TO,
+        )
+    )
     return response
 
 
@@ -914,16 +916,18 @@ async def audit_governance(
         disclaimer=PAID_RESPONSE_DISCLAIMER,
         related_endpoints=_audit_related_endpoints(result["decision"], result["risk_level"]),
     )
-    await emit_revenue_event(RevenueEvent(
-        endpoint="/x402/audit",
-        price_usd=X402_PRICE_AUDIT,
-        agent_id=body.agent_id,
-        decision=result["decision"],
-        timestamp=result["timestamp"],
-        processing_ms=result["processing_ms"],
-        network=X402_NETWORK,
-        wallet_address=X402_PAY_TO,
-    ))
+    await emit_revenue_event(
+        RevenueEvent(
+            endpoint="/x402/audit",
+            price_usd=X402_PRICE_AUDIT,
+            agent_id=body.agent_id,
+            decision=result["decision"],
+            timestamp=result["timestamp"],
+            processing_ms=result["processing_ms"],
+            network=X402_NETWORK,
+            wallet_address=X402_PAY_TO,
+        )
+    )
     return response
 
 
@@ -960,16 +964,18 @@ async def certify_governance(
         disclaimer=PAID_RESPONSE_DISCLAIMER,
         related_endpoints=_audit_related_endpoints(result["decision"], result["risk_level"]),
     )
-    await emit_revenue_event(RevenueEvent(
-        endpoint="/x402/certify",
-        price_usd=X402_PRICE_CERTIFY,
-        agent_id=body.agent_id,
-        decision=result["decision"],
-        timestamp=result["timestamp"],
-        processing_ms=result["processing_ms"],
-        network=X402_NETWORK,
-        wallet_address=X402_PAY_TO,
-    ))
+    await emit_revenue_event(
+        RevenueEvent(
+            endpoint="/x402/certify",
+            price_usd=X402_PRICE_CERTIFY,
+            agent_id=body.agent_id,
+            decision=result["decision"],
+            timestamp=result["timestamp"],
+            processing_ms=result["processing_ms"],
+            network=X402_NETWORK,
+            wallet_address=X402_PAY_TO,
+        )
+    )
     return response
 
 
@@ -1017,16 +1023,18 @@ async def batch_validate(
             else _validate_related_endpoints("APPROVED")
         ),
     )
-    await emit_revenue_event(RevenueEvent(
-        endpoint="/x402/batch",
-        price_usd=X402_PRICE_BATCH,
-        agent_id=body.agent_id,
-        decision=f"batch:{len(body.actions)}",
-        timestamp=datetime.now(UTC).isoformat(),
-        processing_ms=batch_ms,
-        network=X402_NETWORK,
-        wallet_address=X402_PAY_TO,
-    ))
+    await emit_revenue_event(
+        RevenueEvent(
+            endpoint="/x402/batch",
+            price_usd=X402_PRICE_BATCH,
+            agent_id=body.agent_id,
+            decision=f"batch:{len(body.actions)}",
+            timestamp=datetime.now(UTC).isoformat(),
+            processing_ms=batch_ms,
+            network=X402_NETWORK,
+            wallet_address=X402_PAY_TO,
+        )
+    )
     return response
 
 

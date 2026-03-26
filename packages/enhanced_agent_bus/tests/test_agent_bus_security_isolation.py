@@ -2,7 +2,7 @@
 ACGS-2 Enhanced Agent Bus Tests - Isolation
 Focused tests for multi-tenant isolation and tenant-related security.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import uuid

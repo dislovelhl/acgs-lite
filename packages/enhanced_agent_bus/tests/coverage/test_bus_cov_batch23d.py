@@ -6,7 +6,7 @@ Targets:
 - enhanced_agent_bus.verification_orchestrator (VerificationOrchestrator)
 - enhanced_agent_bus.adaptive_governance.threshold_manager (AdaptiveThresholds)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import time
@@ -61,6 +61,7 @@ from enhanced_agent_bus.verification_orchestrator import (
 # Helpers
 # =========================================================================
 
+
 def _make_features(**overrides) -> ImpactFeatures:
     defaults = dict(
         message_length=100,
@@ -106,6 +107,7 @@ def _make_msg(**overrides) -> AgentMessage:
 # SECTION 1: ToolRunnerSandbox tests
 # =========================================================================
 
+
 class TestSandboxConfig:
     def test_default_config(self):
         cfg = SandboxConfig()
@@ -140,9 +142,7 @@ class TestToolRunnerSandboxInit:
 class TestToolRunnerSandboxInitialize:
     async def test_initialize_docker_provider(self):
         sandbox = ToolRunnerSandbox(config=SandboxConfig(use_docker=True, use_firecracker=False))
-        with patch(
-            "enhanced_agent_bus.guardrails.sandbox.DockerSandboxProvider"
-        ) as mock_cls:
+        with patch("enhanced_agent_bus.guardrails.sandbox.DockerSandboxProvider") as mock_cls:
             mock_provider = AsyncMock()
             mock_provider.initialize = AsyncMock(return_value=True)
             mock_cls.return_value = mock_provider
@@ -153,9 +153,7 @@ class TestToolRunnerSandboxInitialize:
 
     async def test_initialize_firecracker_provider(self):
         sandbox = ToolRunnerSandbox(config=SandboxConfig(use_firecracker=True))
-        with patch(
-            "enhanced_agent_bus.guardrails.sandbox.FirecrackerSandboxProvider"
-        ) as mock_cls:
+        with patch("enhanced_agent_bus.guardrails.sandbox.FirecrackerSandboxProvider") as mock_cls:
             mock_provider = AsyncMock()
             mock_provider.initialize = AsyncMock(return_value=True)
             mock_cls.return_value = mock_provider
@@ -164,12 +162,8 @@ class TestToolRunnerSandboxInitialize:
             assert result is True
 
     async def test_initialize_mock_provider(self):
-        sandbox = ToolRunnerSandbox(
-            config=SandboxConfig(use_docker=False, use_firecracker=False)
-        )
-        with patch(
-            "enhanced_agent_bus.guardrails.sandbox.MockSandboxProvider"
-        ) as mock_cls:
+        sandbox = ToolRunnerSandbox(config=SandboxConfig(use_docker=False, use_firecracker=False))
+        with patch("enhanced_agent_bus.guardrails.sandbox.MockSandboxProvider") as mock_cls:
             mock_provider = AsyncMock()
             mock_provider.initialize = AsyncMock(return_value=True)
             mock_cls.return_value = mock_provider
@@ -185,11 +179,10 @@ class TestToolRunnerSandboxInitialize:
 
     async def test_initialize_fallback_on_provider_failure(self):
         sandbox = ToolRunnerSandbox(config=SandboxConfig(use_docker=True, use_firecracker=False))
-        with patch(
-            "enhanced_agent_bus.guardrails.sandbox.DockerSandboxProvider"
-        ) as docker_cls, patch(
-            "enhanced_agent_bus.guardrails.sandbox.MockSandboxProvider"
-        ) as mock_cls:
+        with (
+            patch("enhanced_agent_bus.guardrails.sandbox.DockerSandboxProvider") as docker_cls,
+            patch("enhanced_agent_bus.guardrails.sandbox.MockSandboxProvider") as mock_cls,
+        ):
             docker_provider = AsyncMock()
             docker_provider.initialize = AsyncMock(return_value=False)
             docker_cls.return_value = docker_provider
@@ -203,11 +196,10 @@ class TestToolRunnerSandboxInitialize:
 
     async def test_initialize_fallback_on_exception(self):
         sandbox = ToolRunnerSandbox(config=SandboxConfig(use_docker=True, use_firecracker=False))
-        with patch(
-            "enhanced_agent_bus.guardrails.sandbox.DockerSandboxProvider"
-        ) as docker_cls, patch(
-            "enhanced_agent_bus.guardrails.sandbox.MockSandboxProvider"
-        ) as mock_cls:
+        with (
+            patch("enhanced_agent_bus.guardrails.sandbox.DockerSandboxProvider") as docker_cls,
+            patch("enhanced_agent_bus.guardrails.sandbox.MockSandboxProvider") as mock_cls,
+        ):
             docker_cls.side_effect = RuntimeError("Docker unavailable")
 
             fallback_provider = AsyncMock()
@@ -256,9 +248,7 @@ class TestToolRunnerSandboxProcess:
         sandbox = ToolRunnerSandbox()
         mock_provider = AsyncMock()
         mock_provider.execute = AsyncMock(
-            return_value=SandboxExecutionResult(
-                success=True, output={"result": 42}, trace_id="t3"
-            )
+            return_value=SandboxExecutionResult(success=True, output={"result": 42}, trace_id="t3")
         )
         sandbox._provider = mock_provider
         sandbox._initialized = True
@@ -274,9 +264,7 @@ class TestToolRunnerSandboxProcess:
         sandbox = ToolRunnerSandbox()
         mock_provider = AsyncMock()
         mock_provider.execute = AsyncMock(
-            return_value=SandboxExecutionResult(
-                success=True, output={"ok": True}, trace_id="t4"
-            )
+            return_value=SandboxExecutionResult(success=True, output={"ok": True}, trace_id="t4")
         )
         sandbox._provider = mock_provider
         sandbox._initialized = True
@@ -378,9 +366,7 @@ class TestToolRunnerSandboxProcess:
 class TestExecuteInSandbox:
     async def test_execute_not_initialized_calls_initialize(self):
         sandbox = ToolRunnerSandbox()
-        with patch(
-            "enhanced_agent_bus.guardrails.sandbox.MockSandboxProvider"
-        ) as mock_cls:
+        with patch("enhanced_agent_bus.guardrails.sandbox.MockSandboxProvider") as mock_cls:
             mock_provider = AsyncMock()
             mock_provider.initialize = AsyncMock(return_value=True)
             mock_provider.execute = AsyncMock(
@@ -418,9 +404,11 @@ class TestExecuteInSandbox:
         assert request.data == {"input": "raw_string"}
 
     async def test_execute_passes_resource_limits(self):
-        sandbox = ToolRunnerSandbox(config=SandboxConfig(
-            cpu_limit=1.0, memory_limit_mb=1024, timeout_ms=5000, network_isolation=False
-        ))
+        sandbox = ToolRunnerSandbox(
+            config=SandboxConfig(
+                cpu_limit=1.0, memory_limit_mb=1024, timeout_ms=5000, network_isolation=False
+            )
+        )
         mock_provider = AsyncMock()
         mock_provider.execute = AsyncMock(
             return_value=SandboxExecutionResult(success=True, output={})
@@ -440,6 +428,7 @@ class TestExecuteInSandbox:
 # =========================================================================
 # SECTION 2: VerificationOrchestrator tests
 # =========================================================================
+
 
 class TestVerificationResult:
     def test_defaults(self):
@@ -468,6 +457,7 @@ class TestVerificationOrchestratorInit:
 class TestVerificationOrchestratorSDPC:
     def _mock_verifiers(self, orch):
         """Replace verifiers with async mocks that accept any args."""
+
         async def _mock_verify(*args, **kwargs):
             return {"is_valid": True, "confidence": 1.0, "results": []}
 
@@ -799,25 +789,26 @@ class TestVerificationOrchestratorVerify:
 # SECTION 3: AdaptiveThresholds tests
 # =========================================================================
 
+
 class TestAdaptiveThresholdsInit:
     def test_init_sets_base_thresholds(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         assert at.base_thresholds[ImpactLevel.NEGLIGIBLE] == 0.1
         assert at.base_thresholds[ImpactLevel.LOW] == 0.3
         assert at.base_thresholds[ImpactLevel.MEDIUM] == 0.6
         assert at.base_thresholds[ImpactLevel.HIGH] == 0.8
         assert at.base_thresholds[ImpactLevel.CRITICAL] == 0.95
         assert at.model_trained is False
-        assert at.constitutional_hash == "cdd01ef066bc6cf2"
+        assert at.constitutional_hash == "608508a9bd224290"
 
     def test_mlflow_not_initialized_in_tests(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         assert at._mlflow_initialized is False
 
 
 class TestGetAdaptiveThreshold:
     def test_untrained_model_returns_base(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         features = _make_features()
 
         for level in ImpactLevel:
@@ -825,7 +816,7 @@ class TestGetAdaptiveThreshold:
             assert result == at.base_thresholds[level]
 
     def test_trained_model_returns_adjusted_threshold(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         at.model_trained = True
 
         features = _make_features(confidence_level=0.9)
@@ -841,7 +832,7 @@ class TestGetAdaptiveThreshold:
         assert 0.0 <= result <= 1.0
 
     def test_trained_model_clamps_to_bounds(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         at.model_trained = True
 
         features = _make_features(confidence_level=1.0)
@@ -857,7 +848,7 @@ class TestGetAdaptiveThreshold:
         assert result <= 1.0
 
     def test_trained_model_error_falls_back(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         at.model_trained = True
 
         features = _make_features()
@@ -870,13 +861,13 @@ class TestGetAdaptiveThreshold:
 
 class TestExtractFeatureVector:
     def test_feature_vector_length(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         features = _make_features()
         vec = at._extract_feature_vector(features)
         assert len(vec) == 11
 
     def test_empty_temporal_patterns(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         features = _make_features(temporal_patterns=[])
         vec = at._extract_feature_vector(features)
         # temporal_mean and temporal_std should be 0.0
@@ -884,7 +875,7 @@ class TestExtractFeatureVector:
         assert vec[4] == 0.0
 
     def test_non_empty_temporal_patterns(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         features = _make_features(temporal_patterns=[1.0, 2.0, 3.0])
         vec = at._extract_feature_vector(features)
         assert vec[3] == pytest.approx(np.mean([1.0, 2.0, 3.0]))
@@ -893,7 +884,7 @@ class TestExtractFeatureVector:
 
 class TestUpdateModel:
     def test_positive_reinforcement(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         decision = _make_decision()
 
         at.update_model(decision, outcome_success=True, human_feedback=True)
@@ -903,7 +894,7 @@ class TestUpdateModel:
         assert sample["human_feedback"] is True
 
     def test_negative_reinforcement(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         decision = _make_decision()
 
         at.update_model(decision, outcome_success=False, human_feedback=False)
@@ -912,7 +903,7 @@ class TestUpdateModel:
         assert sample["outcome_success"] is False
 
     def test_neutral_feedback(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         decision = _make_decision()
 
         # outcome_success=True but human_feedback=False triggers negative
@@ -920,7 +911,7 @@ class TestUpdateModel:
         assert len(at.training_data) == 1
 
     def test_update_triggers_retraining(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         at.last_retraining = time.time() - 7200  # 2 hours ago
 
         with patch.object(at, "_retrain_model") as mock_retrain:
@@ -929,7 +920,7 @@ class TestUpdateModel:
             mock_retrain.assert_called_once()
 
     def test_update_error_handled(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         decision = _make_decision()
         # Corrupt features_used to trigger error
         decision.features_used = None  # type: ignore[assignment]
@@ -940,74 +931,82 @@ class TestUpdateModel:
 
 class TestRetrainModel:
     def test_retrain_insufficient_data(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         # Add only 50 samples (need 100 minimum)
-        for i in range(50):
-            at.training_data.append({
-                "features": [0.1] * 11,
-                "target": 0.05,
-                "timestamp": time.time(),
-                "impact_level": "medium",
-                "confidence": 0.8,
-                "outcome_success": True,
-                "human_feedback": None,
-            })
+        for _i in range(50):
+            at.training_data.append(
+                {
+                    "features": [0.1] * 11,
+                    "target": 0.05,
+                    "timestamp": time.time(),
+                    "impact_level": "medium",
+                    "confidence": 0.8,
+                    "outcome_success": True,
+                    "human_feedback": None,
+                }
+            )
 
         at._retrain_model()
         assert at.model_trained is False
 
     def test_retrain_insufficient_recent_data(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         # Add 100 samples but all old
         old_time = time.time() - 200_000  # way older than 24h
-        for i in range(120):
-            at.training_data.append({
-                "features": [0.1] * 11,
-                "target": 0.05,
-                "timestamp": old_time,
-                "impact_level": "medium",
-                "confidence": 0.8,
-                "outcome_success": True,
-                "human_feedback": None,
-            })
+        for _i in range(120):
+            at.training_data.append(
+                {
+                    "features": [0.1] * 11,
+                    "target": 0.05,
+                    "timestamp": old_time,
+                    "impact_level": "medium",
+                    "confidence": 0.8,
+                    "outcome_success": True,
+                    "human_feedback": None,
+                }
+            )
 
         at._retrain_model()
         assert at.model_trained is False
 
     def test_retrain_success_without_mlflow(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         at._mlflow_initialized = False
 
         now = time.time()
         for i in range(120):
-            at.training_data.append({
-                "features": [float(i % 5) * 0.1 + j * 0.01 for j in range(11)],
-                "target": 0.05 + (i % 3) * 0.01,
-                "timestamp": now - i * 10,
-                "impact_level": "medium",
-                "confidence": 0.8,
-                "outcome_success": i % 2 == 0,
-                "human_feedback": None,
-            })
+            at.training_data.append(
+                {
+                    "features": [float(i % 5) * 0.1 + j * 0.01 for j in range(11)],
+                    "target": 0.05 + (i % 3) * 0.01,
+                    "timestamp": now - i * 10,
+                    "impact_level": "medium",
+                    "confidence": 0.8,
+                    "outcome_success": i % 2 == 0,
+                    "human_feedback": None,
+                }
+            )
 
         at._retrain_model()
         assert at.model_trained is True
 
     def test_retrain_error_handled(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         at._mlflow_initialized = False
 
         now = time.time()
-        for i in range(120):
-            at.training_data.append({
-                "features": [0.1] * 11,
-                "target": 0.05,
-                "timestamp": now,
-                "impact_level": "medium",
-                "confidence": 0.8,
-                "outcome_success": True,
-                "human_feedback": None,
-            })
+        for _i in range(120):
+            at.training_data.append(
+                {
+                    "features": [0.1] * 11,
+                    "target": 0.05,
+                    "timestamp": now,
+                    "impact_level": "medium",
+                    "confidence": 0.8,
+                    "outcome_success": True,
+                    "human_feedback": None,
+                }
+            )
 
         # Patch fit to raise
         at.threshold_model.fit = MagicMock(side_effect=RuntimeError("fit failed"))
@@ -1018,13 +1017,10 @@ class TestRetrainModel:
 
 class TestLogTrainingRunToMLflow:
     def test_mlflow_logging_error_falls_back(self):
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         X = np.array([[0.1] * 11] * 60)
         y = np.array([0.05] * 60)
-        recent_data = [
-            {"outcome_success": True, "human_feedback": None}
-            for _ in range(60)
-        ]
+        recent_data = [{"outcome_success": True, "human_feedback": None} for _ in range(60)]
 
         # Patch mlflow to raise
         with patch(
@@ -1041,10 +1037,10 @@ class TestAdaptiveThresholdsMLflowInit:
             "enhanced_agent_bus.adaptive_governance.threshold_manager.MLFLOW_AVAILABLE",
             False,
         ):
-            at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+            at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
             assert at._mlflow_initialized is False
 
     def test_mlflow_in_pytest_skips_init(self):
         # pytest is in sys.modules, so mlflow init should be skipped
-        at = AdaptiveThresholds(constitutional_hash="cdd01ef066bc6cf2")
+        at = AdaptiveThresholds(constitutional_hash="608508a9bd224290")
         assert at._mlflow_initialized is False

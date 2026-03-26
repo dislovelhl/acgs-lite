@@ -1,6 +1,6 @@
 """
 Tests for under-covered src/core infrastructure and utility modules.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers:
 - database/utils.py (Pageable, Page, BulkOperations)
@@ -150,9 +150,7 @@ class TestBulkOperations:
 
         session = AsyncMock()
         table = MagicMock()
-        await BulkOperations.bulk_insert_on_conflict(
-            session, table, [], index_elements=["id"]
-        )
+        await BulkOperations.bulk_insert_on_conflict(session, table, [], index_elements=["id"])
         session.execute.assert_not_called()
 
     @pytest.mark.asyncio
@@ -256,9 +254,11 @@ class TestDatabaseSession:
         with patch.dict("os.environ", {}, clear=False):
             # Remove DATABASE_URL if present
             import os
+
             old = os.environ.pop("DATABASE_URL", None)
             try:
                 from src.core.shared.database.session import get_database_url
+
                 url = get_database_url()
                 assert "sqlite" in url
             finally:
@@ -268,12 +268,14 @@ class TestDatabaseSession:
     def test_get_database_url_postgres_conversion(self):
         with patch.dict("os.environ", {"DATABASE_URL": "postgres://user:pass@host/db"}):
             from src.core.shared.database.session import get_database_url
+
             url = get_database_url()
             assert url.startswith("postgresql+asyncpg://")
 
     def test_get_database_url_postgresql_conversion(self):
         with patch.dict("os.environ", {"DATABASE_URL": "postgresql://user:pass@host/db"}):
             from src.core.shared.database.session import get_database_url
+
             url = get_database_url()
             assert url.startswith("postgresql+asyncpg://")
 
@@ -318,9 +320,7 @@ class TestAsyncCircuitBreaker:
     async def test_half_open_to_closed_on_success(self):
         from src.core.shared.http_client import _AsyncCircuitBreaker
 
-        cb = _AsyncCircuitBreaker(
-            failure_threshold=1, recovery_timeout=0.0, success_threshold=1
-        )
+        cb = _AsyncCircuitBreaker(failure_threshold=1, recovery_timeout=0.0, success_threshold=1)
         await cb.record_failure()
         # Transition to half_open
         await cb.allow_request()
@@ -399,7 +399,7 @@ class TestErrorLogging:
         assert ctx.operation == "test_op"
         assert ctx.service == "test_svc"
         assert ctx.correlation_id  # auto-generated
-        assert ctx.constitutional_hash == "cdd01ef066bc6cf2"
+        assert ctx.constitutional_hash == "608508a9bd224290"
 
     def test_error_context_to_dict(self):
         with warnings.catch_warnings():
@@ -586,12 +586,15 @@ class TestStructuredLogging:
     def test_structured_json_formatter(self):
         from src.core.shared.structured_logging import StructuredJSONFormatter
 
-        formatter = StructuredJSONFormatter(
-            include_stack_trace=False, redact_sensitive=True
-        )
+        formatter = StructuredJSONFormatter(include_stack_trace=False, redact_sensitive=True)
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="test.py",
-            lineno=1, msg="Test message", args=None, exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="test.py",
+            lineno=1,
+            msg="Test message",
+            args=None,
+            exc_info=None,
         )
         output = formatter.format(record)
         data = json.loads(output)
@@ -603,8 +606,13 @@ class TestStructuredLogging:
 
         formatter = StructuredJSONFormatter(redact_sensitive=True)
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="test.py",
-            lineno=1, msg="Test", args=None, exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="test.py",
+            lineno=1,
+            msg="Test",
+            args=None,
+            exc_info=None,
         )
         record.extra = {"api_key": "sk-secret-123", "name": "public"}  # type: ignore[attr-defined]
         output = formatter.format(record)
@@ -620,8 +628,13 @@ class TestStructuredLogging:
 
         formatter = StructuredJSONFormatter(redact_sensitive=False)
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="test.py",
-            lineno=1, msg="x" * (MAX_LOG_SIZE + 1000), args=None, exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="test.py",
+            lineno=1,
+            msg="x" * (MAX_LOG_SIZE + 1000),
+            args=None,
+            exc_info=None,
         )
         output = formatter.format(record)
         assert len(output) <= MAX_LOG_SIZE + 50  # small margin for suffix
@@ -631,8 +644,13 @@ class TestStructuredLogging:
 
         formatter = TextFormatter()
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="test.py",
-            lineno=1, msg="Hello", args=None, exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="test.py",
+            lineno=1,
+            msg="Hello",
+            args=None,
+            exc_info=None,
         )
         output = formatter.format(record)
         assert "Hello" in output
@@ -788,8 +806,12 @@ class TestRetryDecorator:
 
         call_count = 0
 
-        @retry(max_retries=2, base_delay=0.0, on_retry=on_retry_cb,
-               retryable_exceptions=(ConnectionError,))
+        @retry(
+            max_retries=2,
+            base_delay=0.0,
+            on_retry=on_retry_cb,
+            retryable_exceptions=(ConnectionError,),
+        )
         async def fail():
             nonlocal call_count
             call_count += 1
@@ -1293,9 +1315,7 @@ class TestWorkflowStateCache:
 
         wsc = WorkflowStateCache()
         wsc.cache_manager = MagicMock()
-        wsc.cache_manager.get_async = AsyncMock(
-            return_value='{"status": "running"}'
-        )
+        wsc.cache_manager.get_async = AsyncMock(return_value='{"status": "running"}')
         result = await wsc.get_workflow_state("wf-1")
         assert result == {"status": "running"}
 
@@ -1305,9 +1325,7 @@ class TestWorkflowStateCache:
 
         wsc = WorkflowStateCache()
         wsc.cache_manager = MagicMock()
-        wsc.cache_manager.get_async = AsyncMock(
-            return_value={"status": "done"}
-        )
+        wsc.cache_manager.get_async = AsyncMock(return_value={"status": "done"})
         result = await wsc.get_workflow_state("wf-1")
         assert result == {"status": "done"}
 
@@ -1425,9 +1443,7 @@ class TestMetricsRegistry:
         h1 = _get_or_create_histogram(
             "test_cov_hist_abc", "Test hist", ["label1"], buckets=[0.1, 0.5, 1.0]
         )
-        h2 = _get_or_create_histogram(
-            "test_cov_hist_abc", "Test hist", ["label1"]
-        )
+        h2 = _get_or_create_histogram("test_cov_hist_abc", "Test hist", ["label1"])
         assert h1 is h2
 
     def test_get_or_create_info(self):

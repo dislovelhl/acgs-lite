@@ -5,7 +5,7 @@ Coverage tests for batch 21a:
   3. multi_tenancy/middleware.py
   4. pqc_dual_verify.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ with patch.dict(
     "sys.modules",
     {
         "src.core.shared.types": MagicMock(JSONDict=dict),
-        "src.core.shared.constants": MagicMock(CONSTITUTIONAL_HASH="cdd01ef066bc6cf2"),
+        "src.core.shared.constants": MagicMock(CONSTITUTIONAL_HASH="608508a9bd224290"),
     },
 ):
     from enhanced_agent_bus.mcp_server.tools.validate_compliance import (
@@ -190,7 +190,7 @@ class TestValidationResult:
             principles_checked=["safety", "privacy"],
             violations=[],
             recommendations=["Keep doing well"],
-            constitutional_hash="cdd01ef066bc6cf2",
+            constitutional_hash="608508a9bd224290",
             validation_timestamp="2025-01-01T00:00:00",
             latency_ms=1.5,
         )
@@ -209,7 +209,7 @@ class TestValidationResult:
             principles_checked=["non_maleficence"],
             violations=[{"principle": "non_maleficence", "severity": "critical"}],
             recommendations=[],
-            constitutional_hash="cdd01ef066bc6cf2",
+            constitutional_hash="608508a9bd224290",
             validation_timestamp="2025-01-01T00:00:00",
             latency_ms=2.0,
         )
@@ -240,10 +240,12 @@ class TestValidateComplianceTool:
 
     async def test_execute_local_no_violations(self):
         tool = ValidateComplianceTool()
-        result = await tool.execute({
-            "action": "read_data",
-            "context": {"purpose": "analytics"},
-        })
+        result = await tool.execute(
+            {
+                "action": "read_data",
+                "context": {"purpose": "analytics"},
+            }
+        )
         assert result["isError"] is False
         data = json.loads(result["content"][0]["text"])
         assert data["compliant"] is True
@@ -253,10 +255,12 @@ class TestValidateComplianceTool:
 
     async def test_execute_local_with_harmful_action(self):
         tool = ValidateComplianceTool()
-        result = await tool.execute({
-            "action": "exploit_vulnerability",
-            "context": {"purpose": "testing"},
-        })
+        result = await tool.execute(
+            {
+                "action": "exploit_vulnerability",
+                "context": {"purpose": "testing"},
+            }
+        )
         assert result["isError"] is False
         data = json.loads(result["content"][0]["text"])
         assert data["compliant"] is False
@@ -264,13 +268,15 @@ class TestValidateComplianceTool:
 
     async def test_execute_local_privacy_violation(self):
         tool = ValidateComplianceTool()
-        result = await tool.execute({
-            "action": "access_records",
-            "context": {
-                "data_sensitivity": "confidential",
-                "consent_obtained": False,
-            },
-        })
+        result = await tool.execute(
+            {
+                "action": "access_records",
+                "context": {
+                    "data_sensitivity": "confidential",
+                    "consent_obtained": False,
+                },
+            }
+        )
         data = json.loads(result["content"][0]["text"])
         assert data["compliant"] is False
         violations = data["violations"]
@@ -279,98 +285,102 @@ class TestValidateComplianceTool:
 
     async def test_execute_local_privacy_with_consent_ok(self):
         tool = ValidateComplianceTool()
-        result = await tool.execute({
-            "action": "access_records",
-            "context": {
-                "data_sensitivity": "restricted",
-                "consent_obtained": True,
-            },
-        })
+        result = await tool.execute(
+            {
+                "action": "access_records",
+                "context": {
+                    "data_sensitivity": "restricted",
+                    "consent_obtained": True,
+                },
+            }
+        )
         data = json.loads(result["content"][0]["text"])
         # No privacy violation when consent is obtained
-        privacy_violations = [
-            v for v in data["violations"] if v.get("principle") == "privacy"
-        ]
+        privacy_violations = [v for v in data["violations"] if v.get("principle") == "privacy"]
         assert len(privacy_violations) == 0
 
     async def test_execute_local_safety_high_risk_action(self):
         tool = ValidateComplianceTool()
-        result = await tool.execute({
-            "action": "delete_user_data",
-            "context": {},
-        })
+        result = await tool.execute(
+            {
+                "action": "delete_user_data",
+                "context": {},
+            }
+        )
         data = json.loads(result["content"][0]["text"])
-        safety_violations = [
-            v for v in data["violations"] if v.get("principle") == "safety"
-        ]
+        safety_violations = [v for v in data["violations"] if v.get("principle") == "safety"]
         assert len(safety_violations) >= 1
 
     async def test_execute_local_safety_high_risk_with_auth(self):
         tool = ValidateComplianceTool()
-        result = await tool.execute({
-            "action": "delete_user_data",
-            "context": {"authorization_verified": True},
-        })
+        result = await tool.execute(
+            {
+                "action": "delete_user_data",
+                "context": {"authorization_verified": True},
+            }
+        )
         data = json.loads(result["content"][0]["text"])
-        safety_violations = [
-            v for v in data["violations"] if v.get("principle") == "safety"
-        ]
+        safety_violations = [v for v in data["violations"] if v.get("principle") == "safety"]
         assert len(safety_violations) == 0
 
     async def test_execute_local_transparency_violation(self):
         tool = ValidateComplianceTool()
-        result = await tool.execute({
-            "action": "score_application",
-            "context": {
-                "automated_decision": True,
-                "explanation_provided": False,
-            },
-        })
+        result = await tool.execute(
+            {
+                "action": "score_application",
+                "context": {
+                    "automated_decision": True,
+                    "explanation_provided": False,
+                },
+            }
+        )
         data = json.loads(result["content"][0]["text"])
-        transparency = [
-            v for v in data["violations"] if v.get("principle") == "transparency"
-        ]
+        transparency = [v for v in data["violations"] if v.get("principle") == "transparency"]
         assert len(transparency) >= 1
 
     async def test_execute_local_transparency_ok(self):
         tool = ValidateComplianceTool()
-        result = await tool.execute({
-            "action": "score_application",
-            "context": {
-                "automated_decision": True,
-                "explanation_provided": True,
-            },
-        })
+        result = await tool.execute(
+            {
+                "action": "score_application",
+                "context": {
+                    "automated_decision": True,
+                    "explanation_provided": True,
+                },
+            }
+        )
         data = json.loads(result["content"][0]["text"])
-        transparency = [
-            v for v in data["violations"] if v.get("principle") == "transparency"
-        ]
+        transparency = [v for v in data["violations"] if v.get("principle") == "transparency"]
         assert len(transparency) == 0
 
     async def test_execute_local_strict_mode_confidence_zero(self):
         tool = ValidateComplianceTool()
-        result = await tool.execute({
-            "action": "exploit_data",
-            "context": {
-                "data_sensitivity": "restricted",
-                "consent_obtained": False,
-            },
-            "strict_mode": True,
-        })
+        result = await tool.execute(
+            {
+                "action": "exploit_data",
+                "context": {
+                    "data_sensitivity": "restricted",
+                    "consent_obtained": False,
+                },
+                "strict_mode": True,
+            }
+        )
         data = json.loads(result["content"][0]["text"])
         assert data["compliant"] is False
         assert data["confidence"] == 0.0
 
     async def test_execute_local_non_strict_retains_confidence(self):
         tool = ValidateComplianceTool()
-        result = await tool.execute({
-            "action": "read_data",
-            "context": {
-                "data_sensitivity": "restricted",
-                "consent_obtained": False,
-            },
-            "strict_mode": False,
-        })
+        result = await tool.execute(
+            {
+                "action": "read_data",
+                "context": {
+                    "data_sensitivity": "restricted",
+                    "consent_obtained": False,
+                },
+                "strict_mode": False,
+            }
+        )
         data = json.loads(result["content"][0]["text"])
         assert data["compliant"] is False
         # Confidence is reduced but not zero
@@ -378,11 +388,13 @@ class TestValidateComplianceTool:
 
     async def test_execute_with_specific_principles(self):
         tool = ValidateComplianceTool()
-        result = await tool.execute({
-            "action": "harm_users",
-            "context": {},
-            "principles_to_check": ["non_maleficence"],
-        })
+        result = await tool.execute(
+            {
+                "action": "harm_users",
+                "context": {},
+                "principles_to_check": ["non_maleficence"],
+            }
+        )
         data = json.loads(result["content"][0]["text"])
         assert data["principles_checked"] == ["non_maleficence"]
         assert data["compliant"] is False
@@ -396,10 +408,12 @@ class TestValidateComplianceTool:
             "recommendations": [],
         }
         tool = ValidateComplianceTool(agent_bus_adapter=adapter)
-        result = await tool.execute({
-            "action": "send_email",
-            "context": {"user_id": "u1"},
-        })
+        result = await tool.execute(
+            {
+                "action": "send_email",
+                "context": {"user_id": "u1"},
+            }
+        )
         data = json.loads(result["content"][0]["text"])
         assert data["compliant"] is True
         adapter.validate_action.assert_called_once()
@@ -408,11 +422,13 @@ class TestValidateComplianceTool:
         adapter = AsyncMock()
         adapter.validate_action.side_effect = RuntimeError("boom")
         tool = ValidateComplianceTool(agent_bus_adapter=adapter)
-        result = await tool.execute({
-            "action": "test",
-            "context": {},
-            "strict_mode": True,
-        })
+        result = await tool.execute(
+            {
+                "action": "test",
+                "context": {},
+                "strict_mode": True,
+            }
+        )
         assert result["isError"] is True
         data = json.loads(result["content"][0]["text"])
         assert data["compliant"] is False
@@ -423,11 +439,13 @@ class TestValidateComplianceTool:
         adapter.validate_action.side_effect = RuntimeError("boom")
         tool = ValidateComplianceTool(agent_bus_adapter=adapter)
         with pytest.raises(RuntimeError, match="boom"):
-            await tool.execute({
-                "action": "test",
-                "context": {},
-                "strict_mode": False,
-            })
+            await tool.execute(
+                {
+                    "action": "test",
+                    "context": {},
+                    "strict_mode": False,
+                }
+            )
 
     def test_get_metrics_no_validations(self):
         tool = ValidateComplianceTool()
@@ -460,9 +478,7 @@ class TestValidateComplianceTool:
 
     def test_check_principle_justice(self):
         tool = ValidateComplianceTool()
-        result = tool._check_principle(
-            "justice", "filter_users", {"discriminatory_criteria": True}
-        )
+        result = tool._check_principle("justice", "filter_users", {"discriminatory_criteria": True})
         assert result is not None
         assert result["principle"] == "justice"
 
@@ -512,9 +528,7 @@ class TestSecurityThreat:
         assert t.metadata == {"key": "val"}
 
     def test_metadata_default_none(self):
-        t = SecurityThreat(
-            threat_type="xss", confidence=0.5, description="desc"
-        )
+        t = SecurityThreat(threat_type="xss", confidence=0.5, description="desc")
         assert t.metadata is None
 
 
@@ -894,9 +908,7 @@ class TestTenantMiddleware:
             path="/api/test",
             headers={TENANT_ID_HEADER: "t1"},
         )
-        with patch(
-            "enhanced_agent_bus.multi_tenancy.middleware.TenantContext"
-        ) as mock_tc:
+        with patch("enhanced_agent_bus.multi_tenancy.middleware.TenantContext") as mock_tc:
             mock_ctx = MagicMock()
             mock_ctx.validate.return_value = False
             mock_tc.return_value = mock_ctx
@@ -1093,9 +1105,7 @@ class TestDualVerifyEnforcer:
         import httpx
 
         mock_client = AsyncMock()
-        mock_client.get = AsyncMock(
-            side_effect=httpx.HTTPError("connection refused")
-        )
+        mock_client.get = AsyncMock(side_effect=httpx.HTTPError("connection refused"))
         enforcer = self._make_enforcer(http_client=mock_client)
         old_end = datetime.now(UTC) + timedelta(days=1)
         enforcer._cached_window_end = old_end
@@ -1127,12 +1137,14 @@ class TestDualVerifyEnforcer:
     async def test_emit_audit_event(self):
         enforcer = self._make_enforcer()
         # Should not raise
-        await enforcer._emit_audit_event({
-            "event_type": "test",
-            "key_type": "pqc",
-            "window_active": True,
-            "decision_id": "d1",
-        })
+        await enforcer._emit_audit_event(
+            {
+                "event_type": "test",
+                "key_type": "pqc",
+                "window_active": True,
+                "decision_id": "d1",
+            }
+        )
 
     async def test_url_trailing_slash_stripped(self):
         enforcer = DualVerifyEnforcer(

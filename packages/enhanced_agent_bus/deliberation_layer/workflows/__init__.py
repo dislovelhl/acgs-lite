@@ -1,6 +1,6 @@
 """
 ACGS-2 Temporal Workflow Patterns for Deliberation Layer
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module implements Temporal-based workflow orchestration patterns:
 1. DeliberationWorkflow - Main workflow for high-impact message processing

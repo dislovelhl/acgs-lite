@@ -1,6 +1,6 @@
 """
 Batch Request Queue for ACGS-2 Enhanced Agent Bus
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Manages batch request deduplication, priority sorting, and queue operations.
 """

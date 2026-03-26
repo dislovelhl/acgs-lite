@@ -6,7 +6,7 @@ Targets:
 - enhanced_agent_bus.llm_adapters.openclaw_adapter (OpenClawAdapter)
 - enhanced_agent_bus.observability.capacity_metrics.registry (metrics registry)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -68,6 +68,7 @@ from enhanced_agent_bus.observability.capacity_metrics.registry import (
 # Helpers
 # ===========================================================================
 
+
 def _make_version():
     """Build a minimal ConstitutionalVersion for testing."""
     from enhanced_agent_bus.constitutional.version_model import (
@@ -78,7 +79,7 @@ def _make_version():
     return ConstitutionalVersion(
         version_id="v-test-001",
         version="1.0.0",
-        constitutional_hash="cdd01ef066bc6cf2",
+        constitutional_hash="608508a9bd224290",
         content={"rules": ["be safe"]},
         status=ConstitutionalStatus.ACTIVE,
         metadata={"author": "test"},
@@ -111,7 +112,7 @@ def _make_amendment():
         approval_chain=[],
         rejection_reason=None,
         rollback_reason=None,
-        metadata={"constitutional_hash": "cdd01ef066bc6cf2"},
+        metadata={"constitutional_hash": "608508a9bd224290"},
         created_at=datetime.now(UTC),
         reviewed_at=None,
         activated_at=None,
@@ -124,7 +125,7 @@ def _fake_db_version():
     obj = MagicMock()
     obj.version_id = "v-test-001"
     obj.version = "1.0.0"
-    obj.constitutional_hash = "cdd01ef066bc6cf2"
+    obj.constitutional_hash = "608508a9bd224290"
     obj.content = {"rules": ["be safe"]}
     obj.predecessor_version = None
     obj.status = "active"
@@ -154,7 +155,7 @@ def _fake_db_amendment():
     obj.approval_chain = []
     obj.rejection_reason = None
     obj.rollback_reason = None
-    obj.extra_metadata = {"constitutional_hash": "cdd01ef066bc6cf2"}
+    obj.extra_metadata = {"constitutional_hash": "608508a9bd224290"}
     obj.created_at = datetime.now(UTC)
     obj.reviewed_at = None
     obj.activated_at = None
@@ -174,6 +175,7 @@ def _openclaw_config() -> OpenClawAdapterConfig:
 # ===========================================================================
 # 1. PersistenceManager tests
 # ===========================================================================
+
 
 class TestPersistenceManagerInit:
     def test_init_stores_config(self):
@@ -233,7 +235,6 @@ class TestPersistenceManagerNoEngine:
 
 
 class TestPersistenceManagerConnect:
-
     @pytest.mark.asyncio
     async def test_connect_success(self):
         pm = PersistenceManager(StorageConfig())
@@ -271,7 +272,6 @@ class TestPersistenceManagerConnect:
 
 
 class TestPersistenceManagerDisconnect:
-
     @pytest.mark.asyncio
     async def test_disconnect_with_engine(self):
         pm = PersistenceManager(StorageConfig())
@@ -289,7 +289,6 @@ class TestPersistenceManagerDisconnect:
 
 
 class TestPersistenceManagerSaveVersion:
-
     @pytest.mark.asyncio
     async def test_save_version_success(self):
         pm = PersistenceManager(StorageConfig())
@@ -331,7 +330,6 @@ class TestPersistenceManagerSaveVersion:
 
 
 class TestPersistenceManagerGetVersion:
-
     @pytest.mark.asyncio
     async def test_get_version_found(self):
         pm = PersistenceManager(StorageConfig())
@@ -396,7 +394,6 @@ class TestPersistenceManagerGetVersion:
 
 
 class TestPersistenceManagerUpdateVersion:
-
     @pytest.mark.asyncio
     async def test_update_version_found(self):
         pm = PersistenceManager(StorageConfig())
@@ -462,7 +459,6 @@ class TestPersistenceManagerUpdateVersion:
 
 
 class TestPersistenceManagerSaveAmendment:
-
     @pytest.mark.asyncio
     async def test_save_amendment_success(self):
         pm = PersistenceManager(StorageConfig())
@@ -502,7 +498,6 @@ class TestPersistenceManagerSaveAmendment:
 
 
 class TestPersistenceManagerGetAmendment:
-
     @pytest.mark.asyncio
     async def test_get_amendment_found(self):
         pm = PersistenceManager(StorageConfig())
@@ -567,7 +562,6 @@ class TestPersistenceManagerGetAmendment:
 
 
 class TestPersistenceManagerListVersions:
-
     @pytest.mark.asyncio
     async def test_list_versions_success(self):
         pm = PersistenceManager(StorageConfig())
@@ -637,7 +631,6 @@ class TestPersistenceManagerListVersions:
 
 
 class TestPersistenceManagerListAmendments:
-
     @pytest.mark.asyncio
     async def test_list_amendments_success(self):
         pm = PersistenceManager(StorageConfig())
@@ -654,9 +647,7 @@ class TestPersistenceManagerListAmendments:
         mock_scalars.all.return_value = [db_a]
         mock_rows_result.scalars.return_value = mock_scalars
 
-        mock_session.execute = AsyncMock(
-            side_effect=[mock_count_result, mock_rows_result]
-        )
+        mock_session.execute = AsyncMock(side_effect=[mock_count_result, mock_rows_result])
 
         with patch(
             "enhanced_agent_bus.constitutional.storage_infra.persistence.AsyncSession",
@@ -682,9 +673,7 @@ class TestPersistenceManagerListAmendments:
         mock_scalars = MagicMock()
         mock_scalars.all.return_value = []
         mock_rows_result.scalars.return_value = mock_scalars
-        mock_session.execute = AsyncMock(
-            side_effect=[mock_count_result, mock_rows_result]
-        )
+        mock_session.execute = AsyncMock(side_effect=[mock_count_result, mock_rows_result])
 
         with patch(
             "enhanced_agent_bus.constitutional.storage_infra.persistence.AsyncSession",
@@ -722,7 +711,6 @@ class TestPersistenceManagerListAmendments:
 
 
 class TestPersistenceManagerGetActiveVersion:
-
     @pytest.mark.asyncio
     async def test_get_active_version_found(self):
         pm = PersistenceManager(StorageConfig())
@@ -795,7 +783,7 @@ class TestPersistenceManagerConverters:
         result = pm._db_to_pydantic_version(db_v)
         assert result.version_id == "v-test-001"
         assert result.version == "1.0.0"
-        assert result.constitutional_hash == "cdd01ef066bc6cf2"
+        assert result.constitutional_hash == "608508a9bd224290"
 
     def test_db_to_pydantic_version_no_metadata(self):
         pm = PersistenceManager(StorageConfig())
@@ -831,8 +819,8 @@ class TestPersistenceManagerConverters:
 # 2. OpenClawAdapter tests
 # ===========================================================================
 
-class TestOpenClawAdapterInit:
 
+class TestOpenClawAdapterInit:
     def test_default_init(self):
         adapter = OpenClawAdapter(config=_openclaw_config())
         assert adapter.model == "anthropic/claude-opus-4-6"
@@ -863,7 +851,6 @@ class TestOpenClawAdapterInit:
 
 
 class TestOpenClawAdapterPrepareMessages:
-
     def test_prepare_basic_messages(self):
         adapter = OpenClawAdapter(config=_openclaw_config())
         messages = [
@@ -885,7 +872,6 @@ class TestOpenClawAdapterPrepareMessages:
 
 
 class TestOpenClawAdapterGetClient:
-
     def test_get_client_creates_sync_client(self):
         adapter = OpenClawAdapter(config=_openclaw_config())
         mock_openai_mod = MagicMock()
@@ -926,7 +912,6 @@ class TestOpenClawAdapterGetClient:
 
 
 class TestOpenClawAdapterGetAsyncClient:
-
     @pytest.mark.asyncio
     async def test_get_async_client_creates(self):
         adapter = OpenClawAdapter(config=_openclaw_config())
@@ -972,7 +957,6 @@ class TestOpenClawAdapterGetAsyncClient:
 
 
 class TestOpenClawAdapterComplete:
-
     def _mock_from_openai(self):
         """Return a fake LLMResponse for ResponseConverter mock."""
         from enhanced_agent_bus.llm_adapters.base import CompletionMetadata
@@ -1034,7 +1018,6 @@ class TestOpenClawAdapterComplete:
 
 
 class TestOpenClawAdapterAcomplete:
-
     def _mock_from_openai(self, content="Async hello!"):
         from enhanced_agent_bus.llm_adapters.base import CompletionMetadata
 
@@ -1077,9 +1060,7 @@ class TestOpenClawAdapterAcomplete:
             "enhanced_agent_bus.llm_adapters.openclaw_adapter.ResponseConverter.from_openai_response",
             return_value=self._mock_from_openai("ok"),
         ):
-            result = await adapter.acomplete(
-                messages, max_tokens=5, stop=["DONE"], temperature=0.1
-            )
+            result = await adapter.acomplete(messages, max_tokens=5, stop=["DONE"], temperature=0.1)
 
         assert result.content == "ok"
 
@@ -1087,9 +1068,7 @@ class TestOpenClawAdapterAcomplete:
     async def test_acomplete_raises_on_error(self):
         adapter = OpenClawAdapter(config=_openclaw_config())
         mock_client = AsyncMock()
-        mock_client.chat.completions.create = AsyncMock(
-            side_effect=ConnectionError("refused")
-        )
+        mock_client.chat.completions.create = AsyncMock(side_effect=ConnectionError("refused"))
         adapter._async_client = mock_client
 
         messages = [LLMMessage(role="user", content="test")]
@@ -1098,19 +1077,12 @@ class TestOpenClawAdapterAcomplete:
 
 
 class TestOpenClawAdapterStream:
-
     def test_stream_yields_chunks(self):
         adapter = OpenClawAdapter(config=_openclaw_config())
 
-        chunk1 = SimpleNamespace(
-            choices=[SimpleNamespace(delta=SimpleNamespace(content="He"))]
-        )
-        chunk2 = SimpleNamespace(
-            choices=[SimpleNamespace(delta=SimpleNamespace(content="llo"))]
-        )
-        chunk3 = SimpleNamespace(
-            choices=[SimpleNamespace(delta=SimpleNamespace(content=None))]
-        )
+        chunk1 = SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(content="He"))])
+        chunk2 = SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(content="llo"))])
+        chunk3 = SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(content=None))])
 
         mock_client = MagicMock()
         mock_client.chat.completions.create.return_value = iter([chunk1, chunk2, chunk3])
@@ -1124,9 +1096,7 @@ class TestOpenClawAdapterStream:
     def test_stream_with_max_tokens_and_stop(self):
         adapter = OpenClawAdapter(config=_openclaw_config())
 
-        chunk = SimpleNamespace(
-            choices=[SimpleNamespace(delta=SimpleNamespace(content="ok"))]
-        )
+        chunk = SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(content="ok"))])
         mock_client = MagicMock()
         mock_client.chat.completions.create.return_value = iter([chunk])
         adapter._client = mock_client
@@ -1154,17 +1124,12 @@ class TestOpenClawAdapterStream:
 
 
 class TestOpenClawAdapterAstream:
-
     @pytest.mark.asyncio
     async def test_astream_yields_chunks(self):
         adapter = OpenClawAdapter(config=_openclaw_config())
 
-        chunk1 = SimpleNamespace(
-            choices=[SimpleNamespace(delta=SimpleNamespace(content="A"))]
-        )
-        chunk2 = SimpleNamespace(
-            choices=[SimpleNamespace(delta=SimpleNamespace(content="B"))]
-        )
+        chunk1 = SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(content="A"))])
+        chunk2 = SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(content="B"))])
 
         async def mock_aiter():
             for c in [chunk1, chunk2]:
@@ -1185,9 +1150,7 @@ class TestOpenClawAdapterAstream:
     async def test_astream_with_options(self):
         adapter = OpenClawAdapter(config=_openclaw_config())
 
-        chunk = SimpleNamespace(
-            choices=[SimpleNamespace(delta=SimpleNamespace(content="x"))]
-        )
+        chunk = SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(content="x"))])
 
         async def mock_aiter():
             yield chunk
@@ -1205,7 +1168,6 @@ class TestOpenClawAdapterAstream:
 
 
 class TestOpenClawAdapterCountTokens:
-
     def test_count_tokens_with_tiktoken(self):
         adapter = OpenClawAdapter(config=_openclaw_config())
         messages = [
@@ -1235,7 +1197,6 @@ class TestOpenClawAdapterCountTokens:
 
 
 class TestOpenClawAdapterEstimateCost:
-
     def test_estimate_cost_known_model(self):
         adapter = OpenClawAdapter(config=_openclaw_config())
         cost = adapter.estimate_cost(prompt_tokens=1000, completion_tokens=500)
@@ -1260,7 +1221,6 @@ class TestOpenClawAdapterEstimateCost:
 
 
 class TestOpenClawAdapterHealthCheck:
-
     @pytest.mark.asyncio
     async def test_health_check_healthy(self):
         adapter = OpenClawAdapter(config=_openclaw_config())
@@ -1289,8 +1249,8 @@ class TestOpenClawAdapterHealthCheck:
 # 3. Capacity Metrics Registry tests
 # ===========================================================================
 
-class TestRegistryReset:
 
+class TestRegistryReset:
     def test_reset_clears_all(self):
         reset_performance_metrics()
         # After reset, getting registry should create a fresh one
@@ -1299,7 +1259,6 @@ class TestRegistryReset:
 
 
 class TestZ3SolverMetrics:
-
     def setup_method(self):
         reset_performance_metrics()
 
@@ -1315,7 +1274,6 @@ class TestZ3SolverMetrics:
 
 
 class TestAdaptiveThresholdMetrics:
-
     def setup_method(self):
         reset_performance_metrics()
 
@@ -1328,7 +1286,6 @@ class TestAdaptiveThresholdMetrics:
 
 
 class TestCacheMissMetrics:
-
     def setup_method(self):
         reset_performance_metrics()
 
@@ -1343,7 +1300,6 @@ class TestCacheMissMetrics:
 
 
 class TestBatchProcessingMetrics:
-
     def setup_method(self):
         reset_performance_metrics()
 
@@ -1368,7 +1324,6 @@ class TestBatchProcessingMetrics:
 
 
 class TestMACIEnforcementMetrics:
-
     def setup_method(self):
         reset_performance_metrics()
 
@@ -1388,7 +1343,6 @@ class TestMACIEnforcementMetrics:
 
 
 class TestConstitutionalValidationMetrics:
-
     def setup_method(self):
         reset_performance_metrics()
 
@@ -1409,7 +1363,6 @@ class TestConstitutionalValidationMetrics:
 
 
 class TestOPAPolicyMetrics:
-
     def setup_method(self):
         reset_performance_metrics()
 
@@ -1428,7 +1381,6 @@ class TestOPAPolicyMetrics:
 
 
 class TestDeliberationMetrics:
-
     def setup_method(self):
         reset_performance_metrics()
 
@@ -1453,7 +1405,6 @@ class TestDeliberationMetrics:
 
 
 class TestPerformanceMetricsRegistry:
-
     def setup_method(self):
         reset_performance_metrics()
 

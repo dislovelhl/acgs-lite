@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Session Governance Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: enhanced_agent_bus/session_governance.py (11 stmts, 0% -> target 100%)
 Tests backward-compatibility exception shims.

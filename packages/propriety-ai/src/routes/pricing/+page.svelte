@@ -28,7 +28,7 @@
 				'YAML + code-first rules',
 				'MACI separation of powers',
 				'Local tamper-evident audit trail',
-				'All 11 platform integrations',
+				'Real-time CLI watch mode',
 				'Optional Rust acceleration',
 				'Community support (GitHub)'
 			],
@@ -43,7 +43,7 @@
 			items: [
 				'Everything in Community',
 				'1M validations/month',
-				'3 compliance frameworks (choose from 9)',
+				'Real-time observability stream',
 				'EU AI Act Article 12 audit logger',
 				'Risk classification engine',
 				'Compliance gap report (PDF/JSON)',
@@ -62,8 +62,8 @@
 			items: [
 				'Everything in Pro',
 				'10M validations/month',
-				'All 9 compliance frameworks',
-				'EU AI Act Articles 12, 13 & 14',
+				'Portable telemetry bundles',
+				'OpenTelemetry + Prometheus integration',
 				'Multi-constitution (dev/staging/prod)',
 				'Constitutional change approval workflow',
 				'Cloud audit (1-year retention)',
@@ -81,13 +81,13 @@
 			items: [
 				'Everything in Team',
 				'Unlimited validations',
+				'1.1M RPS throughput SLA',
+				'3.9µs P99 latency guarantee',
 				'Custom regulatory frameworks',
 				'On-premise / VPC deployment',
-				'560ns P50 SLA (Rust backend)',
 				'Dedicated compliance engineer',
 				'Quarterly constitutional review',
 				'Audit integration (Splunk, Datadog, ELK)',
-				'99.99% uptime SLA',
 				'Dedicated support (1h SLA)'
 			],
 			cta: 'Contact sales',

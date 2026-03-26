@@ -1,7 +1,7 @@
 """
 Batch processing for EnhancedAgentBus.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -39,7 +39,7 @@ class BatchProcessor:
     """
     Handles batch message processing for EnhancedAgentBus.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -81,7 +81,7 @@ class BatchProcessor:
 
         This method provides high-throughput batch processing with:
         1. Tenant isolation validation across all batch items
-        2. Constitutional compliance verification (hash: cdd01ef066bc6cf2)
+        2. Constitutional compliance verification (hash: 608508a9bd224290)
         3. Parallel processing via BatchMessageProcessor
         4. Metering for batch operations
         5. MACI role validation support

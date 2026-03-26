@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive coverage tests for deliberation_layer/deliberation_queue.py.
 
@@ -1307,8 +1307,6 @@ class TestAllExports:
     def test_all_names_importable(self) -> None:
         import importlib
 
-        mod = importlib.import_module(
-            "enhanced_agent_bus.deliberation_layer.deliberation_queue"
-        )
+        mod = importlib.import_module("enhanced_agent_bus.deliberation_layer.deliberation_queue")
         for name in mod.__all__:
             assert hasattr(mod, name), f"Missing export: {name}"

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - LLM Adapter Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Standardized request/response formats and conversion utilities for all LLM adapters.
 Provides unified interface for multi-provider LLM integration with constitutional compliance.
@@ -52,7 +52,7 @@ __all__ = [
 class ToolType(Enum):
     """Types of tools/functions that can be called.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     FUNCTION = "function"
@@ -64,7 +64,7 @@ class ToolType(Enum):
 class FunctionParameters(BaseModel):
     """JSON Schema for function parameters.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Follows JSON Schema specification for describing function parameters.
     Compatible with OpenAI, Anthropic, and other major providers.
@@ -95,7 +95,7 @@ class FunctionParameters(BaseModel):
 class FunctionDefinition(BaseModel):
     """Definition of a callable function/tool.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Defines a function that the LLM can call, including its name,
     description, and parameter schema.
@@ -135,7 +135,7 @@ class FunctionDefinition(BaseModel):
 class ToolDefinition(BaseModel):
     """Definition of a tool that can be used by the LLM.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Wraps function definitions with tool type information.
     Compatible with OpenAI Tools API and Anthropic Tool Use.
@@ -165,7 +165,7 @@ class ToolDefinition(BaseModel):
 class ToolCallFunction(BaseModel):
     """Function call details within a tool call.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     name: str = Field(..., description="Function name being called")
@@ -198,7 +198,7 @@ class ToolCallFunction(BaseModel):
 class ToolCall(BaseModel):
     """A tool call made by the LLM.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Represents a request from the LLM to call a specific tool/function.
     """
@@ -230,7 +230,7 @@ class ToolCall(BaseModel):
 class LLMRequest(BaseModel):
     """Standardized LLM completion request.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Unified request format for all LLM adapters. Adapters convert this
     to provider-specific formats using RequestConverter.
@@ -312,7 +312,7 @@ class LLMRequest(BaseModel):
 class MessageConverter:
     """Utilities for converting messages between formats.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Converts between our standard LLMMessage format and provider-specific
     message formats (OpenAI, Anthropic, Bedrock, etc.).
@@ -491,7 +491,7 @@ class MessageConverter:
 class RequestConverter:
     """Utilities for converting LLMRequest to provider-specific formats.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     @staticmethod
@@ -605,7 +605,7 @@ class RequestConverter:
 class ResponseConverter:
     """Utilities for converting provider responses to standard format.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     @staticmethod

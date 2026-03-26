@@ -4,7 +4,7 @@ First-class policy exception workflow with expiring waivers, compensating
 controls, approver chains, SLA enforcement, and evidence collection for
 audit packs.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

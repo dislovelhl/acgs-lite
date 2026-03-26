@@ -1,6 +1,6 @@
 """
 FR-12 Explanation API Unit Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for ExplanationService, CounterfactualEngine, and factor attribution.
 """

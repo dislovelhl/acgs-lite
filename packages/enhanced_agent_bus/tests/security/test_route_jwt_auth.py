@@ -1,6 +1,6 @@
 """
 Security tests: Agent Bus routes must enforce JWT authentication.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 These tests verify that all Agent Bus API routes require a valid Bearer JWT.
 They FAIL before the fix (routes use get_tenant_id — header-only check)

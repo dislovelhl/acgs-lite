@@ -1,6 +1,6 @@
 """
 Tests for Constitutional Mamba-2 Hybrid Processor
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests the breakthrough Mamba-2 hybrid architecture for 4M+ token context processing.
 """

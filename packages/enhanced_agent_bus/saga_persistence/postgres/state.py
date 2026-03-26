@@ -1,6 +1,6 @@
 """
 PostgreSQL Saga Repository State Management
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Contains state transition, checkpoint, and compensation log operations
 for the PostgreSQL saga state repository.
@@ -43,7 +43,7 @@ class PostgresStateManager:
 
     Handles state transitions, checkpoints, and compensation log operations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Type hints for mixin - these are provided by the main repository class

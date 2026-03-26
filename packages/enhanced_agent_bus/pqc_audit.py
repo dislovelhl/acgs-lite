@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - PQC Audit Event Writers
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Writes enriched audit events for PQC governance verifications and enforcement
 mode changes. Increments Redis HINCRBY counters for rolling adoption metrics.

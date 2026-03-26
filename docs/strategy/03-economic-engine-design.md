@@ -16,15 +16,15 @@
 
 ## 1. License Strategy
 
-### Recommended: AGPL-3.0 + Commercial Dual License
+### Recommended: AGPL-3.0-or-later + Commercial Dual License
 
-Migrate from Apache-2.0 to AGPL-3.0 with Contributor License Agreement (CLA).
+ACGS now ships under AGPL-3.0-or-later with a separate commercial license for proprietary and SaaS deployments. Contribution terms are documented in `CONTRIBUTING.md`; maintainers can request additional CLA paperwork when dual-licensing rights are required.
 
 | Component | License | Rationale |
 |-----------|---------|-----------|
-| `acgs-lite` core engine | **AGPL-3.0** | Prevents cloud provider strip-mining; OSI-compliant; validated by Grafana ($270M ARR) |
-| `acgs-lite` integrations | AGPL-3.0 | Follows core |
-| `enhanced-agent-bus` | AGPL-3.0 | Platform layer needs stronger protection |
+| ACGS Python library (`acgs`, compatibility namespace `acgs_lite`) | **AGPL-3.0-or-later** | Prevents cloud provider strip-mining; OSI-compliant; validated by Grafana ($270M ARR) |
+| ACGS integrations | AGPL-3.0-or-later | Follows core |
+| `enhanced-agent-bus` | AGPL-3.0-or-later | Platform layer needs stronger protection |
 | Commercial license | Proprietary | For enterprises that cannot comply with AGPL |
 | `propriety-ai` SaaS | Proprietary | Never open-sourced |
 
@@ -32,28 +32,28 @@ Migrate from Apache-2.0 to AGPL-3.0 with Contributor License Agreement (CLA).
 
 | License | Problem for ACGS |
 |---------|-----------------|
-| Apache-2.0 (current) | AWS/GCP can package as managed service with zero contribution |
+| Apache-2.0 (legacy baseline) | AWS/GCP can package as managed service with zero contribution |
 | SSPL | Not OSI-approved; controversial (Redis/Elastic backlash) |
 | BSL | Not OSI-approved; triggered OpenTofu fork for HashiCorp |
-| **AGPL-3.0** | **OSI-approved; prevents SaaS exploitation; Grafana validated at $270M ARR** |
+| **AGPL-3.0-or-later** | **OSI-approved; prevents SaaS exploitation; Grafana validated at $270M ARR** |
 
-**CLA requirement:** Contributors sign CLA granting dual-license rights to ACGS project. This preserves the ability to offer commercial (non-AGPL) licenses to enterprise customers.
+**Contribution policy:** Contributions land under AGPL-3.0-or-later by default. When maintainers need dual-licensing rights for commercial distribution, they can request separate CLA paperwork before merge.
 
 ### AGPL for Embedded Libraries: Impact Analysis
 
-**Panel critique (Round 2):** Grafana is an observability tool (not embedded in customer products). ACGS-Lite is an embedded library (`pip install` into customer AI pipelines). The AGPL implications differ fundamentally.
+**Panel critique (Round 2):** Grafana is an observability tool (not embedded in customer products). ACGS is an embedded library (`pip install acgs` into customer AI pipelines). The AGPL implications differ fundamentally.
 
-**AGPL trigger for ACGS-Lite users:**
+**AGPL trigger for ACGS users:**
 
 | Usage Pattern | AGPL Triggered? | Explanation |
 |---------------|-----------------|-------------|
 | Internal-only AI pipeline (not exposed over network) | **No** | AGPL only triggers on network interaction with third parties. Internal tools are exempt |
-| SaaS product using ACGS-Lite to validate AI output served to users | **Yes** | Network interaction with external users triggers AGPL Section 13 (Corresponding Source obligation) |
+| SaaS product using ACGS to validate AI output served to users | **Yes** | Network interaction with external users triggers AGPL Section 13 (Corresponding Source obligation) |
 | CI/CD pipeline (GitLab stage) | **No** | CI/CD runs internally; output is a pass/fail, not a network service |
 | On-prem enterprise deployment | **No** | No network interaction with third parties |
 | Cloud provider wrapping ACGS as a managed service | **Yes** | This is the primary protection target |
 
-**Key insight:** Most ACGS-Lite use cases (internal pipelines, CI/CD, on-prem) do **not** trigger AGPL. The license only bites when:
+**Key insight:** Most ACGS use cases (internal pipelines, CI/CD, on-prem) do **not** trigger AGPL. The license only bites when:
 1. A cloud provider offers ACGS-as-a-service (the protection target), or
 2. A SaaS company embeds ACGS validations into a customer-facing service
 
@@ -69,7 +69,7 @@ For case #2, the **commercial dual license** exists: enterprises embedding ACGS 
 
 **Commercial license as revenue accelerator:** Every enterprise that embeds ACGS in a SaaS product needs a commercial license. This converts AGPL from a "developer friction" problem into a **sales qualification signal** -- any SaaS company using ACGS in production is a pre-qualified commercial license buyer.
 
-**Decision: AGPL-3.0 confirmed.** The embedded-library concern is real but manageable through dual licensing. The commercial license requirement for SaaS embedding creates an additional monetization path that Apache-2.0 would not provide.
+**Decision: AGPL-3.0-or-later confirmed and implemented.** The embedded-library concern is real but manageable through dual licensing. The commercial license requirement for SaaS embedding creates an additional monetization path that Apache-2.0 would not provide.
 
 ---
 
@@ -85,7 +85,7 @@ For case #2, the **commercial dual license** exists: enterprises embedding ACGS 
 
 | Feature | Included |
 |---------|----------|
-| acgs-lite complete engine | Yes |
+| ACGS library complete engine | Yes |
 | Single custom constitution | Yes |
 | Local audit log (no cloud sync) | Yes |
 | Community support (GitHub Issues) | Yes |
@@ -226,7 +226,7 @@ For case #2, the **commercial dual license** exists: enterprises embedding ACGS 
                     |  (AGPL engine)    |
                     +--------+---------+
                              |
-                    pip install acgs-lite
+                    pip install acgs
                     5 lines of code, zero friction
                              |
                              v
@@ -282,7 +282,7 @@ For case #2, the **commercial dual license** exists: enterprises embedding ACGS 
 1. **GitLab Marketplace listing** -- every GitLab CI/CD user sees ACGS as a governance stage option
 2. **`X-Governed-By: ACGS` response header** -- viral awareness in every API call
 3. **"ACGS Certified" badge** -- social proof on websites and marketing materials
-4. **AI code generation tools** (Cursor, Copilot, Claude Code) suggesting `acgs-lite` for governance -- similar to Supabase's viral distribution via Bolt.new/Lovable
+4. **AI code generation tools** (Cursor, Copilot, Claude Code) suggesting `acgs` for governance -- similar to Supabase's viral distribution via Bolt.new/Lovable
 5. **EU AI Act countdown content** -- urgency-driven demand generation
 
 ---
@@ -297,7 +297,7 @@ ACGS avoids this trap through four mechanisms:
 |-----------|-----------|------|
 | **Output** | Policy pass/fail | Auditable compliance report with regulatory mapping |
 | **Moat** | Rego language (replicable) | 9-framework compliance knowledge base (domain expertise) |
-| **Trust anchor** | None built-in | Constitutional hash (`cdd01ef066bc6cf2`) providing cryptographic non-repudiation |
+| **Trust anchor** | None built-in | Constitutional hash (`608508a9bd224290`) providing cryptographic non-repudiation |
 | **Forcing function** | Optional (security best practice) | Mandatory (EU AI Act = 7% global revenue fine) |
 
 ---
@@ -491,7 +491,7 @@ Enterprise-only. High-touch engagement.
 |--------|----------|----------|-------|
 | AGPL-3.0 license migration + CLA setup | P0 | 1 week | Founder |
 | Propriety.ai pricing page live | P0 | 1 week | Founder |
-| `pip install acgs-lite` published to PyPI | P0 | 2 weeks | Founder |
+| `pip install acgs` published to PyPI | P0 | 2 weeks | Founder |
 | Stripe integration for Pro/Team billing | P0 | 3 weeks | Founder |
 | Cloud audit log service (Pro feature core) | P1 | 4 weeks | Founder |
 | Compliance report PDF/JSON export | P1 | 2 weeks | Founder |
@@ -534,11 +534,11 @@ Enterprise-only. High-touch engagement.
 
 | Decision | Chosen | Rejected | Rationale |
 |----------|--------|----------|-----------|
-| License | AGPL-3.0 + commercial dual license | Apache-2.0, BSL, SSPL | OSI-compliant + cloud protection; validated by Grafana; embedded-library concern mitigated by dual license |
+| License | AGPL-3.0-or-later + commercial dual license | Apache-2.0, BSL, SSPL | OSI-compliant + cloud protection; validated by Grafana; embedded-library concern mitigated by dual license |
 | Pricing model | Flat tier + usage overage | Pure per-seat, pure usage-based | Flat tier encourages adoption; overage captures heavy users |
 | Primary market | Developers (B2D) | Enterprise (B2B), Consumer advocacy (B2C) | Matches open-source distribution; enables bottom-up enterprise penetration |
 | Entry wedge | GitLab CI/CD integration | Multi-platform simultaneous | Most mature integration; clear buyer persona; GitLab Marketplace distribution |
-| Core product | acgs-lite | enhanced-agent-bus | Simpler product = more antifragile; 80+ subsystems = complexity risk |
+| Core product | ACGS library (`acgs`) | enhanced-agent-bus | Simpler product = more antifragile; 80+ subsystems = complexity risk |
 | Primary sell | Compliance proof | Governance engine | Avoids OPA/Styra $12M infrastructure trap; compliance proof has direct buyer value |
 | Demand strategy | Multi-driver (EU AI Act + insurance + investor DD + SOC 2 + customer contracts) | EU AI Act only | Eliminates single regulatory dependency; some drivers are active today |
 | Funding | Bootstrapped-first, seed optional | Raise immediately | Preserves equity; forces revenue-first discipline; seed only if PMF validated |

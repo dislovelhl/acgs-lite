@@ -1,18 +1,20 @@
 # ACGS Agent Guide
 
 > **Reviewed**: 2026-03-20 | **Commit**: `1d769ab` | **Branch**: `main`
-> **Constitutional Hash**: `cdd01ef066bc6cf2` | **Python**: 3.11+ | **Line Length**: 100
+> **Constitutional Hash**: `608508a9bd224290` | **Python**: 3.11+ | **Line Length**: 100
 
 Constitutional governance infrastructure for AI agents. The repository contains a standalone
 governance library, a large platform runtime, shared services, a Svelte frontend, and supporting
 worker/tooling packages.
+
+Brand and naming rules live in [`docs/brand-architecture.md`](docs/brand-architecture.md).
 
 ## Structure
 
 ```
 acgs/
 ├── packages/
-│   ├── acgs-lite/                  # Standalone governance library (pip install acgs-lite)
+│   ├── acgs-lite/                  # Standalone governance library (PyPI: acgs)
 │   │   ├── src/acgs_lite/          # Engine, constitution, MACI, audit, integrations
 │   │   ├── src/eu_ai_act_tool/     # EU AI Act self-assessment app
 │   │   ├── rust/                   # Optional Rust acceleration workspace
@@ -115,7 +117,7 @@ such as `scripts/pm2/start.cjs`, `src/core/services/arch_fitness/start.py`, and
 - Pydantic models for API boundaries.
 - Ruff line length is 100, target is `py311`, max complexity is 15.
 - Root MyPy is strict, but the `make lint` target intentionally scopes checks to selected files.
-- Constitutional hash `cdd01ef066bc6cf2` is part of validation and service configuration paths.
+- Constitutional hash `608508a9bd224290` is part of validation and service configuration paths.
 
 ## MACI (Separation of Powers)
 
@@ -189,4 +191,4 @@ Never import from `enhanced_agent_bus.middleware` (singular). Avoid cross-import
 | [`src/core/shared/security/AGENTS.md`](src/core/shared/security/AGENTS.md) | Security subsystem |
 | [`autoresearch/AGENTS.md`](autoresearch/AGENTS.md) | Benchmark optimization |
 
-Constitutional Hash: `cdd01ef066bc6cf2`
+Constitutional Hash: `608508a9bd224290`

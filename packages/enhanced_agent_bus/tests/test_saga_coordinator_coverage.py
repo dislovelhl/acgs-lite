@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive pytest test suite for verification_layer/saga_coordinator.py.
 Target: ≥90% coverage of saga_coordinator.py (771 lines).

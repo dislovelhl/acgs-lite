@@ -1,6 +1,6 @@
 """
 Secret Storage Backends
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Abstract base class and implementations for secret storage backends.
 Supports in-memory (testing), HashiCorp Vault, and extensible backends.

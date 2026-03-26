@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Communication Bus
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 High-performance, multi-tenant agent communication infrastructure for ACGS-2
 constitutional governance platform.

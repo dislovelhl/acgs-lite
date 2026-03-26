@@ -9,7 +9,7 @@ Targets missing lines identified by coverage analysis:
   - Hyphen-suffix anchor pattern branch (line 369)
   - valid=True when no HIGH rules (line 1492)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

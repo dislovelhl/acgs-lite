@@ -10,6 +10,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
+from acgs_lite._meta import VERSION
 from acgs_lite.audit import AuditLog
 from acgs_lite.constitution import Constitution
 from acgs_lite.engine import GovernanceEngine
@@ -45,7 +46,7 @@ def create_governance_app(
     gov_constitution = constitution if constitution is not None else Constitution.default()
     engine = GovernanceEngine(gov_constitution, strict=False)
     audit_log = AuditLog()
-    app = FastAPI(title="acgs-lite-governance", version="0.1.0")
+    app = FastAPI(title="acgs-lite-governance", version=VERSION)
 
     @app.post("/validate")  # type: ignore[untyped-decorator]
     def validate_action(payload: dict[str, Any]) -> dict[str, Any]:

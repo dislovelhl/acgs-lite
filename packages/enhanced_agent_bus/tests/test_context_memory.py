@@ -1,6 +1,6 @@
 """
 ACGS-2 Context & Memory - Comprehensive Test Suite
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for Layer 1: Context & Memory (Mamba-2 Hybrid Processor).
 Covers all components with 50+ tests for constitutional compliance.

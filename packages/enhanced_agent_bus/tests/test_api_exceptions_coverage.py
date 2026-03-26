@@ -1,7 +1,7 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 ACGS-2 Enhanced Agent Bus - API Exceptions Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests targeting ≥90% coverage of api_exceptions.py, covering:
 - create_error_response helper
@@ -107,6 +107,18 @@ class TestCreateErrorResponse:
         exc = ValueError("plain value error")
         result = create_error_response(exc, 400)
         assert result["code"] == "INTERNAL_ERROR"
+
+    def test_error_code_attr_is_used_as_fallback(self):
+        class _ErrorWithErrorCode:
+            error_code = "MACI_SELF_VALIDATION"
+            details = {"agent_id": "jud-1"}
+
+            def __str__(self) -> str:
+                return "maci denied"
+
+        result = create_error_response(_ErrorWithErrorCode(), 403)
+        assert result["code"] == "MACI_SELF_VALIDATION"
+        assert result["details"] == {"agent_id": "jud-1"}
 
     def test_exc_without_details_attr(self):
         exc = RuntimeError("runtime error")

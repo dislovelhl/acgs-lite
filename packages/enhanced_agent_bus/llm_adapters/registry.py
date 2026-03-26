@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - LLM Adapter Registry
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Registry system for discovering, registering, and managing LLM adapters
 with fallback chains, health checks, and circuit breaker pattern.
@@ -61,7 +61,7 @@ _REGISTRY_OPERATION_ERRORS = (
 class CircuitBreakerConfig:
     """Configuration for circuit breaker pattern.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     failure_threshold: int = 5
@@ -85,7 +85,7 @@ class CircuitBreakerConfig:
 class AdapterMetrics:
     """Metrics tracking for an adapter.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     adapter_id: str
@@ -205,7 +205,7 @@ class CircuitBreaker:
         This local implementation in the LLM adapter registry exists for
         historical reasons and is not maintained as the canonical version.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Implements the circuit breaker pattern to prevent cascading failures
     and allow adapters to recover from temporary issues.
@@ -328,7 +328,7 @@ class CircuitBreaker:
 class FallbackChain:
     """Configuration for adapter fallback chain.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     primary: str
@@ -351,7 +351,7 @@ class FallbackChain:
 class LLMAdapterRegistry:
     """Registry for managing LLM adapters with fallback chains.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Provides:
     - Dynamic adapter registration and discovery

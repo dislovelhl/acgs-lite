@@ -1,6 +1,6 @@
 """
 ACGS-2 MACI Verification Pipeline
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Multi-Agent Collaborative Intelligence (MACI) for constitutional verification.
 Bypasses Gödel limitations through role separation:

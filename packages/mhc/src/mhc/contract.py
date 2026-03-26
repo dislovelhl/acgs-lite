@@ -60,9 +60,7 @@ class TaskContract:
     def claim(self, agent_id: str) -> TaskContract:
         """Claim this contract for execution. Returns new contract."""
         if self.status != ContractStatus.PENDING:
-            raise ValueError(
-                f"Cannot claim contract in state {self.status.value}"
-            )
+            raise ValueError(f"Cannot claim contract in state {self.status.value}")
         return TaskContract(
             task_id=self.task_id,
             title=self.title,
@@ -85,9 +83,7 @@ class TaskContract:
     def complete(self, result: Any) -> TaskContract:
         """Mark contract as completed with result. Returns new contract."""
         if self.status not in (ContractStatus.CLAIMED, ContractStatus.IN_PROGRESS):
-            raise ValueError(
-                f"Cannot complete contract in state {self.status.value}"
-            )
+            raise ValueError(f"Cannot complete contract in state {self.status.value}")
         return TaskContract(
             task_id=self.task_id,
             title=self.title,

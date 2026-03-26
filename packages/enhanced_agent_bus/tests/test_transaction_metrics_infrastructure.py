@@ -1,11 +1,11 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Infrastructure tests for transaction_coordinator_metrics.py.
 
 Covers: ProtocolStubs, NoOp* classes, Enums, LatencyBuckets,
 GetOrCreateMetric, ResetMetricsCache.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

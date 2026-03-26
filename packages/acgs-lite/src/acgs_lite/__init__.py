@@ -15,6 +15,7 @@ Usage::
     result = agent.run("process this request")
 """
 
+from acgs_lite._meta import CONSTITUTIONAL_HASH, VERSION
 from acgs_lite.audit import AuditEntry, AuditLog
 from acgs_lite.constitution import (
     AcknowledgedTension,
@@ -52,9 +53,9 @@ from acgs_lite.openshell import (
     DecisionType,
     ExecutionOutcome,
     ExternalRef,
-    GovernanceStateChecksumError,
     GovernanceDecision,
     GovernanceStateBackend,
+    GovernanceStateChecksumError,
     GovernanceStateError,
     GovernanceStateMigrationError,
     GovernanceStateObservabilityHook,
@@ -71,7 +72,7 @@ from acgs_lite.openshell import (
     create_openshell_governance_router,
 )
 
-__version__ = "2.0.1"
+__version__ = VERSION
 
 
 def set_license(key: str) -> LicenseInfo:
@@ -91,7 +92,7 @@ def set_license(key: str) -> LicenseInfo:
     return LicenseManager().set_license(key)
 
 
-__constitutional_hash__ = "608508a9bd224290"
+__constitutional_hash__ = CONSTITUTIONAL_HASH
 
 __all__ = [
     # Core

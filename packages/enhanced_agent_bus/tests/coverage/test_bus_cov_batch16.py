@@ -55,7 +55,7 @@ class TestSafeCopy:
         assert safe_copy(original) is original
 
     def test_int_not_copied(self):
-        assert safe_copy(42) is 42
+        assert safe_copy(42) == 42
 
     def test_none_not_copied(self):
         assert safe_copy(None) is None
@@ -205,12 +205,8 @@ class TestOverwriteStateReducer:
             overwrite_keys=["score"],
             preserve_keys=["name"],
         )
-        state = GraphState(
-            data={"name": "test", "score": 10, "extra": "old"}, version=0
-        )
-        new_state = reducer.reduce(
-            state, {"score": 99, "name": "changed", "extra": "new"}, "node1"
-        )
+        state = GraphState(data={"name": "test", "score": 10, "extra": "old"}, version=0)
+        new_state = reducer.reduce(state, {"score": 99, "name": "changed", "extra": "new"}, "node1")
         assert new_state.data["score"] == 99
         assert new_state.data["name"] == "test"  # preserved
         assert new_state.data["extra"] == "new"  # default merge
@@ -247,9 +243,7 @@ class TestAccumulatorStateReducer:
         assert new_state.data["results"] == ["item1", "item2"]
 
     def test_accumulate_max_size(self):
-        reducer = AccumulatorStateReducer(
-            accumulate_keys=["log"], max_accumulate_size=3
-        )
+        reducer = AccumulatorStateReducer(accumulate_keys=["log"], max_accumulate_size=3)
         state = GraphState(data={"log": ["a", "b", "c"]}, version=0)
         new_state = reducer.reduce(state, {"log": "d"}, "node1")
         assert len(new_state.data["log"]) == 3
@@ -294,9 +288,7 @@ class TestCreateStateReducer:
         assert reducer.deep_merge is True
 
     def test_overwrite(self):
-        reducer = create_state_reducer(
-            "overwrite", overwrite_keys=["a"], preserve_keys=["b"]
-        )
+        reducer = create_state_reducer("overwrite", overwrite_keys=["a"], preserve_keys=["b"])
         assert isinstance(reducer, OverwriteStateReducer)
 
     def test_immutable(self):
@@ -308,9 +300,7 @@ class TestCreateStateReducer:
         assert isinstance(reducer, AccumulatorStateReducer)
 
     def test_custom(self):
-        reducer = create_state_reducer(
-            "custom", reduce_fn=lambda d, o, n: {**d, **o}
-        )
+        reducer = create_state_reducer("custom", reduce_fn=lambda d, o, n: {**d, **o})
         assert isinstance(reducer, CustomStateReducer)
 
     def test_custom_no_fn_raises(self):
@@ -582,7 +572,6 @@ class TestHITLInterruptHandler:
         assert count == 2
         assert len(handler._audit_log) == 0
 
-
     @pytest.mark.asyncio
     async def test_handle_interrupt_hash_mismatch_corrected(self):
         """Response with wrong hash gets corrected."""
@@ -702,21 +691,15 @@ class TestSSOSessionContext:
         assert session.is_expired is False
 
     def test_is_expired_true(self):
-        session = self._make_session(
-            expires_at=datetime.now(UTC) - timedelta(hours=1)
-        )
+        session = self._make_session(expires_at=datetime.now(UTC) - timedelta(hours=1))
         assert session.is_expired is True
 
     def test_time_until_expiry(self):
-        session = self._make_session(
-            expires_at=datetime.now(UTC) + timedelta(seconds=60)
-        )
+        session = self._make_session(expires_at=datetime.now(UTC) + timedelta(seconds=60))
         assert session.time_until_expiry > 0
 
     def test_time_until_expiry_past(self):
-        session = self._make_session(
-            expires_at=datetime.now(UTC) - timedelta(seconds=60)
-        )
+        session = self._make_session(expires_at=datetime.now(UTC) - timedelta(seconds=60))
         assert session.time_until_expiry == 0.0
 
     def test_has_role(self):
@@ -1568,7 +1551,6 @@ class TestOPAClientCacheMixinUnit:
         host = self._make_host(_redis_client=mock_redis)
         await host._clear_redis_cache(None)
         mock_redis.scan.assert_called()
-
 
     @pytest.mark.asyncio
     async def test_initialize_redis_cache_success(self):

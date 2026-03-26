@@ -7,7 +7,7 @@ import future.keywords.in
 # Constitutional Evolution Policy - Manage hash transitions and amendments
 # ACGS-2 Constitutional Evolution System
 # Supports grace periods, amendment validation, and MACI enforcement
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 
 # Grace period configuration (5 minutes = 300 seconds)
 grace_period_seconds := 300

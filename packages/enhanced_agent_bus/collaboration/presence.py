@@ -4,7 +4,7 @@ Presence Manager for Real-time Collaboration.
 Tracks active users per document, cursor positions, user activity status,
 and "user is editing" indicators.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

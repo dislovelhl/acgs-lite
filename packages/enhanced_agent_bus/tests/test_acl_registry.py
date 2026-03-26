@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - ACL Adapter Registry Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for the AdapterRegistry class covering:
 - Singleton pattern enforcement

@@ -8,7 +8,7 @@
 Every validation, every decision, every override gets recorded.
 The audit log provides cryptographic proof of governance compliance.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

@@ -1,7 +1,7 @@
 """
 Tests for ML Governance Client.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: enums, exceptions, config, data types, client (circuit breaker,
 outcome reporting, batch, health, callbacks, queue), and module-level helpers.
@@ -35,6 +35,7 @@ pytestmark = [pytest.mark.unit]
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_config(**overrides) -> MLGovernanceConfig:
     """Create a test config with sensible defaults."""
     defaults = {
@@ -52,7 +53,9 @@ def _make_config(**overrides) -> MLGovernanceConfig:
     return MLGovernanceConfig(**defaults)
 
 
-def _make_response(status_code: int = 200, json_data: dict | None = None, text: str = "") -> MagicMock:
+def _make_response(
+    status_code: int = 200, json_data: dict | None = None, text: str = ""
+) -> MagicMock:
     """Build a fake httpx.Response."""
     resp = MagicMock(spec=httpx.Response)
     resp.status_code = status_code
@@ -306,9 +309,11 @@ class TestReportOutcome:
     async def test_success_200(self):
         client = MLGovernanceClient(config=_make_config())
         mock_http = AsyncMock(spec=httpx.AsyncClient)
-        mock_http.post = AsyncMock(return_value=_make_response(
-            200, {"success": True, "sample_count": 5, "current_accuracy": 0.9, "message": "ok"}
-        ))
+        mock_http.post = AsyncMock(
+            return_value=_make_response(
+                200, {"success": True, "sample_count": 5, "current_accuracy": 0.9, "message": "ok"}
+            )
+        )
         client._http_client = mock_http
 
         result = await client.report_outcome(features={"a": 1.0}, label=1)
@@ -321,9 +326,9 @@ class TestReportOutcome:
     async def test_success_202(self):
         client = MLGovernanceClient(config=_make_config())
         mock_http = AsyncMock(spec=httpx.AsyncClient)
-        mock_http.post = AsyncMock(return_value=_make_response(
-            202, {"sample_count": 3, "training_id": "t-42"}
-        ))
+        mock_http.post = AsyncMock(
+            return_value=_make_response(202, {"sample_count": 3, "training_id": "t-42"})
+        )
         client._http_client = mock_http
 
         result = await client.report_outcome(features={"a": 1.0}, label=0)
@@ -360,9 +365,7 @@ class TestReportOutcome:
     async def test_400_returns_failed(self):
         client = MLGovernanceClient(config=_make_config())
         mock_http = AsyncMock(spec=httpx.AsyncClient)
-        mock_http.post = AsyncMock(return_value=_make_response(
-            400, {"detail": "bad request"}
-        ))
+        mock_http.post = AsyncMock(return_value=_make_response(400, {"detail": "bad request"}))
         client._http_client = mock_http
 
         result = await client.report_outcome(features={"a": 1.0}, label=1)
@@ -429,9 +432,7 @@ class TestReportOutcome:
         return_value="sanitized",
     )
     async def test_timeout_raises_when_not_graceful(self, _mock_sanitize):
-        client = MLGovernanceClient(
-            config=_make_config(graceful_degradation=False)
-        )
+        client = MLGovernanceClient(config=_make_config(graceful_degradation=False))
         mock_http = AsyncMock(spec=httpx.AsyncClient)
         mock_http.post = AsyncMock(side_effect=httpx.TimeoutException("timed out"))
         client._http_client = mock_http
@@ -445,9 +446,7 @@ class TestReportOutcome:
         return_value="sanitized",
     )
     async def test_connect_error_raises_when_not_graceful(self, _mock_sanitize):
-        client = MLGovernanceClient(
-            config=_make_config(graceful_degradation=False)
-        )
+        client = MLGovernanceClient(config=_make_config(graceful_degradation=False))
         mock_http = AsyncMock(spec=httpx.AsyncClient)
         mock_http.post = AsyncMock(side_effect=httpx.ConnectError("refused"))
         client._http_client = mock_http
@@ -497,9 +496,7 @@ class TestReportOutcome:
         assert client._http_client is None
 
         with patch.object(client, "_send_request", new_callable=AsyncMock) as mock_send:
-            mock_send.return_value = OutcomeResult(
-                status=OutcomeReportStatus.SUCCESS, success=True
-            )
+            mock_send.return_value = OutcomeResult(status=OutcomeReportStatus.SUCCESS, success=True)
             result = await client.report_outcome(features={"a": 1.0}, label=1)
 
         assert result.success is True
@@ -588,9 +585,11 @@ class TestBatchReporting:
     async def test_batch_success(self):
         client = MLGovernanceClient(config=_make_config())
         mock_http = AsyncMock(spec=httpx.AsyncClient)
-        mock_http.post = AsyncMock(return_value=_make_response(
-            200, {"sample_count": 2, "accepted": 2, "current_accuracy": 0.88}
-        ))
+        mock_http.post = AsyncMock(
+            return_value=_make_response(
+                200, {"sample_count": 2, "accepted": 2, "current_accuracy": 0.88}
+            )
+        )
         client._http_client = mock_http
 
         reports = [
@@ -650,9 +649,9 @@ class TestHealthAndStats:
     async def test_health_check_healthy(self):
         client = MLGovernanceClient(config=_make_config())
         mock_http = AsyncMock(spec=httpx.AsyncClient)
-        mock_http.get = AsyncMock(return_value=_make_response(
-            200, {"service": "ale", "model_status": "ready"}
-        ))
+        mock_http.get = AsyncMock(
+            return_value=_make_response(200, {"service": "ale", "model_status": "ready"})
+        )
         client._http_client = mock_http
 
         health = await client.health_check()

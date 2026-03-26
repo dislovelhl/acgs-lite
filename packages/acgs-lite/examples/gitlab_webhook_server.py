@@ -10,7 +10,7 @@ Endpoints:
     GET  /governance/summary - Active ruleset governance posture
 
 Setup:
-    pip install acgs-lite[gitlab] uvicorn starlette
+    pip install acgs[gitlab] uvicorn starlette
 
 Usage:
     # Minimal (uses default constitution and env vars for secrets):
@@ -44,7 +44,7 @@ Testing with ngrok (for GitLab.com webhooks):
     5. Open or update an MR -- the server will validate it and post
        governance comments automatically.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -187,7 +187,7 @@ def create_app(config: ServerConfig) -> Any:
         from acgs_lite.constitution import Constitution
         from acgs_lite.integrations.gitlab import GitLabGovernanceBot, GitLabWebhookHandler
     except ImportError:
-        logger.error("acgs-lite[gitlab] is required: pip install acgs-lite[gitlab]")
+        logger.error("acgs[gitlab] is required: pip install acgs[gitlab]")
         sys.exit(1)
 
     # --- Validate required config ---
@@ -277,31 +277,35 @@ def create_app(config: ServerConfig) -> Any:
 
     async def health_endpoint(request: Request) -> JSONResponse:
         """Health check returning service status and constitutional hash."""
-        return JSONResponse({
-            "status": "healthy",
-            "constitutional_hash": constitution.hash,
-            "rules_loaded": len(constitution.rules),
-            "project_id": config.project_id,
-            "gitlab_url": config.gitlab_url,
-            "reports_processed": state.reports_processed,
-            "violations_found": state.violations_found,
-        })
+        return JSONResponse(
+            {
+                "status": "healthy",
+                "constitutional_hash": constitution.hash,
+                "rules_loaded": len(constitution.rules),
+                "project_id": config.project_id,
+                "gitlab_url": config.gitlab_url,
+                "reports_processed": state.reports_processed,
+                "violations_found": state.violations_found,
+            }
+        )
 
     async def governance_summary_endpoint(request: Request) -> JSONResponse:
         """Return the active constitution's governance posture summary."""
         summary = constitution.governance_summary()
-        return JSONResponse({
-            "constitutional_hash": constitution.hash,
-            "constitution_name": constitution.name,
-            "rules_loaded": len(constitution.rules),
-            "summary": summary,
-            "server_stats": {
-                "reports_processed": state.reports_processed,
-                "violations_found": state.violations_found,
-                "last_mr_iid": state.last_mr_iid,
-                "errors": state.errors,
-            },
-        })
+        return JSONResponse(
+            {
+                "constitutional_hash": constitution.hash,
+                "constitution_name": constitution.name,
+                "rules_loaded": len(constitution.rules),
+                "summary": summary,
+                "server_stats": {
+                    "reports_processed": state.reports_processed,
+                    "violations_found": state.violations_found,
+                    "last_mr_iid": state.last_mr_iid,
+                    "errors": state.errors,
+                },
+            }
+        )
 
     # --- Build app ---
 

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Cost-Aware LLM Provider Selection
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements cost-aware routing for LLM providers with quality constraints, budget
 management, anomaly detection, and batch optimization for non-urgent operations.

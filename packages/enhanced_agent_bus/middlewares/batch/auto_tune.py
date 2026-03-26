@@ -4,7 +4,7 @@ Batch Auto-Tune Middleware for ACGS-2 Pipeline.
 Auto-tunes batch size based on P99 latency.
 Extracted from: batch_processor_infra/tuning.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import time
@@ -38,7 +38,7 @@ class BatchAutoTuneMiddleware(BaseMiddleware):
         )
         context = await middleware.process(batch_context)
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Batch size limits

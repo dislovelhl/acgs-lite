@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Runtime Security Scanner
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Unified runtime security scanning and validation that aggregates all security features:
 - Prompt injection detection
@@ -219,7 +219,7 @@ class RuntimeSecurityScanner:
     - Anomaly detection
     - Security event logging
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Additional suspicious patterns beyond prompt injection

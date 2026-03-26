@@ -1,6 +1,6 @@
 """
 Tenant SSO Configuration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Per-tenant SSO configuration management for multi-tenant enterprise deployments.
 Each tenant can configure their own identity providers and role mappings.
@@ -57,7 +57,7 @@ class SSOProtocolType(str, Enum):
 class SAMLConfig:
     """SAML 2.0 specific configuration.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     entity_id: str
@@ -116,7 +116,7 @@ class SAMLConfig:
 class OIDCConfig:
     """OIDC/OAuth 2.0 specific configuration.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     issuer: str
@@ -171,7 +171,7 @@ class OIDCConfig:
 class RoleMappingRule:
     """Rule for mapping IdP group to MACI role.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     idp_group: str
@@ -216,7 +216,7 @@ class RoleMappingRule:
 class AttributeMapping:
     """Mapping of IdP attributes to user profile fields.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     email: str = "email"
@@ -282,7 +282,7 @@ class AttributeMapping:
 class TenantIdPConfig:
     """Identity Provider configuration for a specific tenant.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     idp_id: str
@@ -410,7 +410,7 @@ class TenantIdPConfig:
 class TenantSSOConfig:
     """SSO configuration for a tenant.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     tenant_id: str
@@ -466,7 +466,7 @@ class TenantSSOConfig:
 class TenantSSOConfigManager:
     """Manager for tenant SSO configurations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Provides CRUD operations for tenant SSO configurations with
     in-memory storage (suitable for extension to database storage).

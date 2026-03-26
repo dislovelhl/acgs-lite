@@ -180,7 +180,7 @@ class TestMetricAccuracy:
         if not CONSTANTS_FILE.exists():
             pytest.skip("Constants file not found")
         constants_text = CONSTANTS_FILE.read_text()
-        hash_match = re.search(r"['\"]?(cdd01ef066bc6cf2)['\"]?", constants_text)
+        hash_match = re.search(r"['\"]?(608508a9bd224290)['\"]?", constants_text)
         assert hash_match is not None, "Constitutional hash not found in constants.py"
         claimed = paper_macros.get("constitutionalhash", "")
         assert claimed == hash_match.group(1), (

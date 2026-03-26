@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive tests for src/core/enhanced_agent_bus/verification/saga_transaction.py
 
@@ -523,9 +523,7 @@ class TestSagaTransactionCompensate:
 
         txn.add_step("good", good, bad_comp).add_step("bad", bad)
 
-        with patch(
-            "enhanced_agent_bus.verification.saga_transaction.logger"
-        ) as mock_logger:
+        with patch("enhanced_agent_bus.verification.saga_transaction.logger") as mock_logger:
             with pytest.raises(RuntimeError):
                 await txn.execute()
             # error should have been logged for the compensation failure
@@ -543,9 +541,7 @@ class TestSagaTransactionCompensate:
 
         txn.add_step("good", good).add_step("bad", bad)
 
-        with patch(
-            "enhanced_agent_bus.verification.saga_transaction.logger"
-        ) as mock_logger:
+        with patch("enhanced_agent_bus.verification.saga_transaction.logger") as mock_logger:
             with pytest.raises(RuntimeError):
                 await txn.execute()
             assert mock_logger.debug.called
@@ -676,9 +672,7 @@ class TestSagaTransactionCompensate:
 class TestSagaTransactionLogging:
     async def test_execute_logs_start(self):
         txn = SagaTransaction(transaction_id="test-log-txn")
-        with patch(
-            "enhanced_agent_bus.verification.saga_transaction.logger"
-        ) as mock_logger:
+        with patch("enhanced_agent_bus.verification.saga_transaction.logger") as mock_logger:
             await txn.execute()
             assert mock_logger.info.called
             first_call_args = mock_logger.info.call_args_list[0][0][0]
@@ -686,9 +680,7 @@ class TestSagaTransactionLogging:
 
     async def test_execute_logs_completion(self):
         txn = SagaTransaction(transaction_id="test-complete-txn")
-        with patch(
-            "enhanced_agent_bus.verification.saga_transaction.logger"
-        ) as mock_logger:
+        with patch("enhanced_agent_bus.verification.saga_transaction.logger") as mock_logger:
             await txn.execute()
             # Should have info logged for both start and completion
             assert mock_logger.info.call_count >= 2
@@ -700,9 +692,7 @@ class TestSagaTransactionLogging:
             raise RuntimeError("test error")
 
         txn.add_step("bad_step", bad)
-        with patch(
-            "enhanced_agent_bus.verification.saga_transaction.logger"
-        ) as mock_logger:
+        with patch("enhanced_agent_bus.verification.saga_transaction.logger") as mock_logger:
             with pytest.raises(RuntimeError):
                 await txn.execute()
             assert mock_logger.error.called
@@ -717,9 +707,7 @@ class TestSagaTransactionLogging:
             raise RuntimeError("fail")
 
         txn.add_step("good", good).add_step("bad", bad)
-        with patch(
-            "enhanced_agent_bus.verification.saga_transaction.logger"
-        ) as mock_logger:
+        with patch("enhanced_agent_bus.verification.saga_transaction.logger") as mock_logger:
             with pytest.raises(RuntimeError):
                 await txn.execute()
             assert mock_logger.warning.called
@@ -731,9 +719,7 @@ class TestSagaTransactionLogging:
             raise RuntimeError("fail")
 
         txn.add_step("bad", bad)
-        with patch(
-            "enhanced_agent_bus.verification.saga_transaction.logger"
-        ) as mock_logger:
+        with patch("enhanced_agent_bus.verification.saga_transaction.logger") as mock_logger:
             with pytest.raises(RuntimeError):
                 await txn.execute()
             # One of the info calls should mention compensation completed
@@ -970,9 +956,7 @@ class TestEdgeCases:
     async def test_constitutional_hash_in_logs(self):
         """Verify that the constitutional hash appears in log messages."""
         txn = SagaTransaction()
-        with patch(
-            "enhanced_agent_bus.verification.saga_transaction.logger"
-        ) as mock_logger:
+        with patch("enhanced_agent_bus.verification.saga_transaction.logger") as mock_logger:
             await txn.execute()
             all_calls = str(mock_logger.mock_calls)
             assert CONSTITUTIONAL_HASH in all_calls

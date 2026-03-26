@@ -1,6 +1,6 @@
 """
 ACGS-2 Model-Agnostic Adapter Framework
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides unified interface for AI model integration across providers.
 Enables governance across any AI model without code changes.

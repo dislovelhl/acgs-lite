@@ -213,10 +213,15 @@ class TestComplete:
 
         messages = [LLMMessage(role="user", content="Hi")]
         response = adapter.complete(
-            messages, temperature=0.5, max_tokens=100,
-            stop=["END"], tools=[{"type": "function"}],
-            tool_choice="auto", response_format={"type": "json"},
-            frequency_penalty=0.5, presence_penalty=0.5,
+            messages,
+            temperature=0.5,
+            max_tokens=100,
+            stop=["END"],
+            tools=[{"type": "function"}],
+            tool_choice="auto",
+            response_format={"type": "json"},
+            frequency_penalty=0.5,
+            presence_penalty=0.5,
         )
         assert response.content == "Hello!"
 
@@ -280,8 +285,12 @@ class TestStreamingHelpers:
     def test_build_streaming_params(self, adapter):
         messages = [LLMMessage(role="user", content="Hi")]
         params = adapter._build_streaming_params(
-            messages, temperature=0.5, max_tokens=100,
-            top_p=0.9, stop=["END"], tools=[{"type": "function"}],
+            messages,
+            temperature=0.5,
+            max_tokens=100,
+            top_p=0.9,
+            stop=["END"],
+            tools=[{"type": "function"}],
         )
         assert params["stream"] is True
         assert params["temperature"] == 0.5

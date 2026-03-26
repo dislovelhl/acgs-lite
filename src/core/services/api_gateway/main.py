@@ -1,4 +1,4 @@
-"""Constitutional Hash: cdd01ef066bc6cf2
+"""Constitutional Hash: 608508a9bd224290
 ACGS-2 API Gateway
 Simple development API gateway for routing requests to services
 
@@ -124,6 +124,7 @@ def _parse_bool_env(value: str | None) -> bool | None:
         return False
     return None
 
+
 app = create_acgs_app(
     "api-gateway",
     environment=environment,
@@ -149,7 +150,7 @@ app.add_middleware(MetricsMiddleware, service_name="api_gateway")
 app.add_api_route("/metrics", create_metrics_endpoint(), include_in_schema=False)
 
 # ============================================================================
-# API Versioning Configuration (Constitutional Hash: cdd01ef066bc6cf2)
+# API Versioning Configuration (Constitutional Hash: 608508a9bd224290)
 # ============================================================================
 
 # Configure API versioning middleware
@@ -257,7 +258,7 @@ logger.info("CSRF middleware enabled for session-authenticated browser flows")
 ENABLE_RATE_LIMITING = os.getenv("ENABLE_RATE_LIMITING", "true").lower() == "true"
 if ENABLE_RATE_LIMITING:
     # Configure Redis-backed rate limiter with strict auth endpoint limits
-    # Constitutional Hash: cdd01ef066bc6cf2
+    # Constitutional Hash: 608508a9bd224290
     rate_limit_rules = [
         # Auth endpoints - STRICT limits to prevent brute force attacks
         RateLimitRule(
@@ -403,7 +404,7 @@ else:
 
 # PQCOnlyModeMiddleware — rejects classical algorithm requests when PQC_ONLY_MODE is active.
 # Registered before business-logic middleware so classical requests never reach downstream handlers.
-# (Constitutional Hash: cdd01ef066bc6cf2)
+# (Constitutional Hash: 608508a9bd224290)
 _pqc_redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
 try:
     import redis.asyncio as _aioredis
@@ -415,7 +416,7 @@ app.add_middleware(PQCOnlyModeMiddleware, redis_client=_pqc_redis_client)
 logger.info("PQCOnlyModeMiddleware registered in middleware stack")
 
 # AutonomyTierEnforcementMiddleware — added after authentication, before proxy forwarding
-# (Constitutional Hash: cdd01ef066bc6cf2)
+# (Constitutional Hash: 608508a9bd224290)
 # The HITL client is set in lifespan via app.state.hitl_client.
 # The tier repository is resolved per-request via dependency_overrides or app.state.tier_repo_factory.
 app.add_middleware(AutonomyTierEnforcementMiddleware)
@@ -480,7 +481,7 @@ logger.info("Compliance routes configured: /api/v1/compliance/*")
 # Include admin autonomy-tiers router (Safe Autonomy Tiers — ACGS-AI-007)
 # autonomy_tiers_router has /autonomy-tiers prefix; mounted under /api/v1/admin
 # Final paths: /api/v1/admin/autonomy-tiers, /api/v1/admin/autonomy-tiers/{agent_id}
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 app.include_router(autonomy_tiers_router, prefix="/api/v1/admin", tags=["autonomy-tiers"])
 logger.info("Admin autonomy-tiers routes configured: /api/v1/admin/autonomy-tiers/*")
 
@@ -513,13 +514,13 @@ logger.info(
 # Include PQC Phase 5 admin routes (PQC-only mode activation/status)
 # pqc_phase5_router has /pqc-only-mode prefix; mounted under /api/v1/admin/pqc
 # Final paths: /api/v1/admin/pqc/pqc-only-mode/activate, /api/v1/admin/pqc/pqc-only-mode/status
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 app.include_router(pqc_phase5_router, prefix="/api/v1/admin/pqc", tags=["PQC Phase 5 Admin"])
 logger.info("PQC Phase 5 admin routes configured: /api/v1/admin/pqc/pqc-only-mode/*")
 
 # Include x402 Governance-as-a-Service routes (pay-per-call constitutional validation)
 # Endpoints: /x402/pricing, /x402/validate, /x402/treasury, /x402/health
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 ensure_attestation_secret_config()
 app.include_router(x402_governance_router)
 app.include_router(x402_bundles_router)
@@ -535,9 +536,7 @@ if X402_MARKETPLACE_ENABLED:
 else:
     logger.info("x402 marketplace routes disabled (set X402_MARKETPLACE=true to enable)")
 
-logger.info(
-    "x402 routes configured: governance + bundles + facilitator + revenue"
-)
+logger.info("x402 routes configured: governance + bundles + facilitator + revenue")
 
 configure_x402_payment_middleware(app, environ=os.environ)
 

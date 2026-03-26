@@ -4,7 +4,7 @@ Batch Circuit Breaker Middleware for ACGS-2 Pipeline.
 Provides circuit breaker protection for batch processing to prevent
 cascading failures and allow auto-recovery.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import time
@@ -55,7 +55,7 @@ class BatchCircuitBreakerMiddleware(BaseMiddleware):
         )
         context = await middleware.process(batch_context)
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

@@ -1,6 +1,6 @@
 """
 Tests for ACGS-2 Session Variable Management
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Unit tests for PostgreSQL session variable management functions.
 Note: Some tests require PostgreSQL and will be skipped on SQLite.

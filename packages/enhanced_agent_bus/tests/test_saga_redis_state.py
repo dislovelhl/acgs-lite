@@ -29,6 +29,7 @@ from enhanced_agent_bus.saga_persistence.repository import (
 # Concrete subclass that fulfils the mixin's abstract interface
 # ---------------------------------------------------------------------------
 
+
 class ConcreteStateManager(RedisStateManager):
     """Testable subclass providing the required abstract methods."""
 
@@ -50,6 +51,7 @@ class ConcreteStateManager(RedisStateManager):
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 def _make_saga(
     saga_id="saga-1",
@@ -94,6 +96,7 @@ def manager(mock_redis) -> ConcreteStateManager:
 # VALID_STATE_TRANSITIONS
 # ---------------------------------------------------------------------------
 
+
 class TestStateTransitions:
     def test_initialized_can_go_to_running(self):
         assert SagaState.RUNNING in VALID_STATE_TRANSITIONS[SagaState.INITIALIZED]
@@ -115,6 +118,7 @@ class TestStateTransitions:
 # ---------------------------------------------------------------------------
 # update_state
 # ---------------------------------------------------------------------------
+
 
 class TestUpdateState:
     @pytest.mark.asyncio
@@ -173,6 +177,7 @@ class TestUpdateState:
     @pytest.mark.asyncio
     async def test_redis_error_raises_repository_error(self, manager, mock_redis):
         import redis.asyncio as aioredis
+
         mock_redis.hgetall.side_effect = aioredis.RedisError("conn failed")
 
         with pytest.raises(RepositoryError):
@@ -182,6 +187,7 @@ class TestUpdateState:
 # ---------------------------------------------------------------------------
 # update_step_state
 # ---------------------------------------------------------------------------
+
 
 class TestUpdateStepState:
     @pytest.mark.asyncio
@@ -229,6 +235,7 @@ class TestUpdateStepState:
 # update_current_step
 # ---------------------------------------------------------------------------
 
+
 class TestUpdateCurrentStep:
     @pytest.mark.asyncio
     async def test_update_success(self, manager, mock_redis):
@@ -247,6 +254,7 @@ class TestUpdateCurrentStep:
 # ---------------------------------------------------------------------------
 # save_checkpoint / get_checkpoints / delete_checkpoints
 # ---------------------------------------------------------------------------
+
 
 class TestCheckpoints:
     @pytest.mark.asyncio
@@ -323,6 +331,7 @@ class TestCheckpoints:
 # Compensation log
 # ---------------------------------------------------------------------------
 
+
 class TestCompensationLog:
     @pytest.mark.asyncio
     async def test_append_compensation_entry(self, manager, mock_redis):
@@ -368,6 +377,7 @@ class TestCompensationLog:
     @pytest.mark.asyncio
     async def test_redis_error_on_get_log(self, manager, mock_redis):
         import redis.asyncio as aioredis
+
         mock_redis.lrange.side_effect = aioredis.RedisError("fail")
 
         with pytest.raises(RepositoryError):

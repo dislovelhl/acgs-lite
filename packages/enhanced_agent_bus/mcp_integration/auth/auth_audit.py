@@ -1,7 +1,7 @@
 """
 Auth Audit Logger for MCP Authentication.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 MACI Role: AUDITOR
 
 Provides comprehensive authentication audit logging:
@@ -225,7 +225,7 @@ class AuthAuditLogger:
     - Alert triggering
     - Compliance reporting
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, config: AuditLoggerConfig | None = None):

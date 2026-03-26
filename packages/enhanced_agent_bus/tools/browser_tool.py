@@ -131,9 +131,7 @@ class LightpandaBrowserTool:
 
         try:
             async with async_playwright() as pw:
-                browser = await pw.chromium.connect_over_cdp(
-                    self._config.cdp_endpoint
-                )
+                browser = await pw.chromium.connect_over_cdp(self._config.cdp_endpoint)
                 try:
                     yield browser
                 finally:

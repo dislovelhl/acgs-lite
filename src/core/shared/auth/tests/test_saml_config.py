@@ -39,8 +39,10 @@ class TestSAMLSPConfig:
             SAMLSPConfig(entity_id="urn:test:sp", acs_url="")
 
     def test_xmlsec_auto_detect_env_var(self):
-        with patch.dict(os.environ, {"SAML_XMLSEC_BINARY": "/usr/bin/xmlsec1"}), \
-             patch("os.path.isfile", return_value=True):
+        with (
+            patch.dict(os.environ, {"SAML_XMLSEC_BINARY": "/usr/bin/xmlsec1"}),
+            patch("os.path.isfile", return_value=True),
+        ):
             sp = SAMLSPConfig(entity_id="urn:test", acs_url="https://sp/acs")
             assert sp.xmlsec_binary == "/usr/bin/xmlsec1"
 
@@ -48,25 +50,31 @@ class TestSAMLSPConfig:
         def isfile_side_effect(path):
             return path == "/usr/bin/xmlsec1"
 
-        with patch.dict(os.environ, {}, clear=True), \
-             patch("os.path.isfile", side_effect=isfile_side_effect):
+        with (
+            patch.dict(os.environ, {}, clear=True),
+            patch("os.path.isfile", side_effect=isfile_side_effect),
+        ):
             # Remove SAML_XMLSEC_BINARY if present
             os.environ.pop("SAML_XMLSEC_BINARY", None)
             sp = SAMLSPConfig(entity_id="urn:test", acs_url="https://sp/acs")
             assert sp.xmlsec_binary == "/usr/bin/xmlsec1"
 
     def test_xmlsec_from_shutil_which(self):
-        with patch.dict(os.environ, {}, clear=True), \
-             patch("os.path.isfile", return_value=False), \
-             patch("shutil.which", return_value="/custom/path/xmlsec1"):
+        with (
+            patch.dict(os.environ, {}, clear=True),
+            patch("os.path.isfile", return_value=False),
+            patch("shutil.which", return_value="/custom/path/xmlsec1"),
+        ):
             os.environ.pop("SAML_XMLSEC_BINARY", None)
             sp = SAMLSPConfig(entity_id="urn:test", acs_url="https://sp/acs")
             assert sp.xmlsec_binary == "/custom/path/xmlsec1"
 
     def test_xmlsec_not_found(self):
-        with patch.dict(os.environ, {}, clear=True), \
-             patch("os.path.isfile", return_value=False), \
-             patch("shutil.which", return_value=None):
+        with (
+            patch.dict(os.environ, {}, clear=True),
+            patch("os.path.isfile", return_value=False),
+            patch("shutil.which", return_value=None),
+        ):
             os.environ.pop("SAML_XMLSEC_BINARY", None)
             sp = SAMLSPConfig(entity_id="urn:test", acs_url="https://sp/acs")
             assert sp.xmlsec_binary is None
@@ -90,8 +98,7 @@ class TestSAMLSPConfig:
         assert sp.get_cert_content() == "FILE_CERT_DATA"
 
     def test_get_cert_content_none(self):
-        with patch("os.path.isfile", return_value=False), \
-             patch("shutil.which", return_value=None):
+        with patch("os.path.isfile", return_value=False), patch("shutil.which", return_value=None):
             sp = SAMLSPConfig(entity_id="urn:test", acs_url="https://sp/acs")
             sp.cert_file = None
             sp.cert_content = None
@@ -125,8 +132,7 @@ class TestSAMLSPConfig:
         assert sp.has_signing_credentials() is True
 
     def test_has_signing_credentials_false(self):
-        with patch("os.path.isfile", return_value=False), \
-             patch("shutil.which", return_value=None):
+        with patch("os.path.isfile", return_value=False), patch("shutil.which", return_value=None):
             sp = SAMLSPConfig(entity_id="urn:test", acs_url="https://sp/acs")
             sp.cert_file = None
             sp.cert_content = None
@@ -147,8 +153,7 @@ class TestSAMLSPConfig:
         assert not any("ACS URL" in e for e in errors)
 
     def test_validate_signing_without_credentials(self):
-        with patch("os.path.isfile", return_value=False), \
-             patch("shutil.which", return_value=None):
+        with patch("os.path.isfile", return_value=False), patch("shutil.which", return_value=None):
             sp = SAMLSPConfig(
                 entity_id="urn:test",
                 acs_url="https://sp/acs",
@@ -162,8 +167,7 @@ class TestSAMLSPConfig:
             assert any("certificate and key" in e for e in errors)
 
     def test_validate_signing_without_xmlsec(self):
-        with patch("os.path.isfile", return_value=False), \
-             patch("shutil.which", return_value=None):
+        with patch("os.path.isfile", return_value=False), patch("shutil.which", return_value=None):
             sp = SAMLSPConfig(
                 entity_id="urn:test",
                 acs_url="https://sp/acs",
@@ -273,8 +277,7 @@ class TestSAMLIdPConfig:
 
 class TestSAMLConfig:
     def _make_sp(self):
-        with patch("os.path.isfile", return_value=False), \
-             patch("shutil.which", return_value=None):
+        with patch("os.path.isfile", return_value=False), patch("shutil.which", return_value=None):
             return SAMLSPConfig(
                 entity_id="urn:test",
                 acs_url="https://sp/acs",

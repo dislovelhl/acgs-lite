@@ -12,7 +12,7 @@ Usage::
         contents="Hello!",
     )
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -194,9 +194,7 @@ class GovernedGenAI:
         **genai_kwargs: Any,
     ) -> None:
         if not GENAI_AVAILABLE:
-            raise ImportError(
-                "google-genai is required. Install with: pip install acgs-lite[google]"
-            )
+            raise ImportError("google-genai is required. Install with: pip install acgs[google]")
 
         self._client = GenAIClient(api_key=api_key, **genai_kwargs)
         self.constitution = constitution or Constitution.default()

@@ -1,7 +1,7 @@
 """
 Coverage tests for MCP Server (server.py).
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers:
 - MCPServer construction and __post_init__
@@ -37,9 +37,7 @@ def _make_server(transport: TransportType = TransportType.STDIO) -> MCPServer:
     return MCPServer(config=config)
 
 
-def _make_request(
-    method: str, params: dict | None = None, req_id: str | int = "1"
-) -> MCPRequest:
+def _make_request(method: str, params: dict | None = None, req_id: str | int = "1") -> MCPRequest:
     return MCPRequest(jsonrpc="2.0", method=method, id=req_id, params=params)
 
 

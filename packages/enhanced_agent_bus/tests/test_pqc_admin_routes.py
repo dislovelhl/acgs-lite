@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - PQC Admin Routes Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for PATCH/GET /api/v1/admin/pqc-enforcement endpoints covering:
 - 403 when caller has no admin role

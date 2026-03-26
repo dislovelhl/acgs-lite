@@ -1,6 +1,6 @@
 """
 Regression Tests for CCAI Backward Compatibility with mHC Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests ensure that representative statements implementation doesn't break:
 - Existing CCAI functionality

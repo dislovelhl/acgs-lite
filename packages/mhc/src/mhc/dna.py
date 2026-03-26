@@ -70,9 +70,7 @@ class AgentDNA:
     _total_latency_ns: int = field(init=False, repr=False, default=0)
 
     def __post_init__(self) -> None:
-        object.__setattr__(
-            self, "_engine", GovernanceEngine(self.constitution, strict=self.strict)
-        )
+        object.__setattr__(self, "_engine", GovernanceEngine(self.constitution, strict=self.strict))
         if self.maci_role is not None:
             enforcer = MACIEnforcer()
             enforcer.assign_role(self.agent_id, self.maci_role)
@@ -142,9 +140,7 @@ class AgentDNA:
             "calls": self._call_count,
             "violations": self._violation_count,
             "avg_latency_ns": (
-                self._total_latency_ns // self._call_count
-                if self._call_count > 0
-                else 0
+                self._total_latency_ns // self._call_count if self._call_count > 0 else 0
             ),
         }
 
@@ -160,9 +156,7 @@ class AgentDNA:
             elapsed = time.perf_counter_ns() - start
             self._call_count += 1
             self._total_latency_ns += elapsed
-            violations = tuple(
-                f"{v.rule_id}: {v.rule_text}" for v in result.violations
-            )
+            violations = tuple(f"{v.rule_id}: {v.rule_text}" for v in result.violations)
             if violations:
                 self._violation_count += 1
             return DNAValidationResult(
@@ -251,9 +245,7 @@ def constitutional_dna(
                 validate_output=validate_output,
             )
         if rules is not None:
-            return AgentDNA.from_rules(
-                rules, agent_id=agent_id, maci_role=maci_role, strict=strict
-            )
+            return AgentDNA.from_rules(rules, agent_id=agent_id, maci_role=maci_role, strict=strict)
         if yaml_path is not None:
             return AgentDNA.from_yaml(
                 yaml_path, agent_id=agent_id, maci_role=maci_role, strict=strict

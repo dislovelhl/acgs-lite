@@ -190,25 +190,18 @@ def validate_integrity(constitution: Constitution) -> dict[str, Any]:
     # Check workflow_action values
     for r in constitution.rules:
         if r.workflow_action and r.workflow_action not in _KNOWN_WORKFLOW_ACTIONS:
-            warnings.append(
-                f"Rule {r.id} has unknown workflow_action: {r.workflow_action}"
-            )
+            warnings.append(f"Rule {r.id} has unknown workflow_action: {r.workflow_action}")
 
     # Coverage warnings
     no_keywords = [r.id for r in constitution.rules if not r.keywords and not r.patterns]
     if no_keywords:
         warnings.append(
-            f"Rules with no keywords or patterns (will never match): "
-            f"{', '.join(no_keywords)}"
+            f"Rules with no keywords or patterns (will never match): {', '.join(no_keywords)}"
         )
 
-    no_workflow = [
-        r.id for r in constitution.rules if r.enabled and not r.workflow_action
-    ]
+    no_workflow = [r.id for r in constitution.rules if r.enabled and not r.workflow_action]
     if no_workflow:
-        warnings.append(
-            f"Enabled rules without workflow_action: {', '.join(no_workflow)}"
-        )
+        warnings.append(f"Enabled rules without workflow_action: {', '.join(no_workflow)}")
 
     return {
         "valid": len(errors) == 0,

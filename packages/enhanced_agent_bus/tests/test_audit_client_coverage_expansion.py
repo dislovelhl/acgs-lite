@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Audit Client Coverage Expansion Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests to expand audit_client.py coverage from 54% to 70%+.
 Targets: batching, circuit breaker, health checks, global client functions.

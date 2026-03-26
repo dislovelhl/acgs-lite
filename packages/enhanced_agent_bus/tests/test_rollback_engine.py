@@ -126,12 +126,10 @@ class TestInitialize:
         act = _make_activities()
         assert act._http_client is None
 
-        with patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.REDIS_AVAILABLE", False
-        ), patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.OPAClient", None
-        ), patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.AuditClient", None
+        with (
+            patch("enhanced_agent_bus.constitutional.rollback_engine.REDIS_AVAILABLE", False),
+            patch("enhanced_agent_bus.constitutional.rollback_engine.OPAClient", None),
+            patch("enhanced_agent_bus.constitutional.rollback_engine.AuditClient", None),
         ):
             await act.initialize()
 
@@ -144,14 +142,11 @@ class TestInitialize:
         mock_aioredis.from_url = AsyncMock(side_effect=RuntimeError("conn refused"))
 
         act = _make_activities()
-        with patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.REDIS_AVAILABLE", True
-        ), patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.aioredis", mock_aioredis
-        ), patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.OPAClient", None
-        ), patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.AuditClient", None
+        with (
+            patch("enhanced_agent_bus.constitutional.rollback_engine.REDIS_AVAILABLE", True),
+            patch("enhanced_agent_bus.constitutional.rollback_engine.aioredis", mock_aioredis),
+            patch("enhanced_agent_bus.constitutional.rollback_engine.OPAClient", None),
+            patch("enhanced_agent_bus.constitutional.rollback_engine.AuditClient", None),
         ):
             await act.initialize()
 
@@ -166,12 +161,10 @@ class TestInitialize:
         mock_opa_cls.return_value = mock_instance
 
         act = _make_activities()
-        with patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.REDIS_AVAILABLE", False
-        ), patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.OPAClient", mock_opa_cls
-        ), patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.AuditClient", None
+        with (
+            patch("enhanced_agent_bus.constitutional.rollback_engine.REDIS_AVAILABLE", False),
+            patch("enhanced_agent_bus.constitutional.rollback_engine.OPAClient", mock_opa_cls),
+            patch("enhanced_agent_bus.constitutional.rollback_engine.AuditClient", None),
         ):
             await act.initialize()
 
@@ -186,12 +179,10 @@ class TestInitialize:
         mock_audit_cls.return_value = mock_instance
 
         act = _make_activities()
-        with patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.REDIS_AVAILABLE", False
-        ), patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.OPAClient", None
-        ), patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.AuditClient", mock_audit_cls
+        with (
+            patch("enhanced_agent_bus.constitutional.rollback_engine.REDIS_AVAILABLE", False),
+            patch("enhanced_agent_bus.constitutional.rollback_engine.OPAClient", None),
+            patch("enhanced_agent_bus.constitutional.rollback_engine.AuditClient", mock_audit_cls),
         ):
             await act.initialize()
 
@@ -205,14 +196,11 @@ class TestInitialize:
         mock_aioredis.from_url = AsyncMock(return_value=mock_redis_client)
 
         act = _make_activities()
-        with patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.REDIS_AVAILABLE", True
-        ), patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.aioredis", mock_aioredis
-        ), patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.OPAClient", None
-        ), patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.AuditClient", None
+        with (
+            patch("enhanced_agent_bus.constitutional.rollback_engine.REDIS_AVAILABLE", True),
+            patch("enhanced_agent_bus.constitutional.rollback_engine.aioredis", mock_aioredis),
+            patch("enhanced_agent_bus.constitutional.rollback_engine.OPAClient", None),
+            patch("enhanced_agent_bus.constitutional.rollback_engine.AuditClient", None),
         ):
             await act.initialize()
 
@@ -534,9 +522,7 @@ class TestUpdateOPAToPrevious:
         act._http_client = MagicMock()
         act._http_client.put = AsyncMock(return_value=mock_response)
 
-        inp = _make_saga_input(
-            prepare_rollback={"target_hash": "newhash", "target_version": "0.9"}
-        )
+        inp = _make_saga_input(prepare_rollback={"target_hash": "newhash", "target_version": "0.9"})
         result = await act.update_opa_to_previous(inp)
 
         assert result["updated"] is True
@@ -728,9 +714,7 @@ class TestRevertVersionRestoration:
         act = _make_activities()
         act.storage.activate_version = AsyncMock()
 
-        inp = _make_saga_input(
-            prepare_rollback={"current_version_id": "version-abc123"}
-        )
+        inp = _make_saga_input(prepare_rollback={"current_version_id": "version-abc123"})
         result = await act.revert_version_restoration(inp)
 
         assert result is True
@@ -741,9 +725,7 @@ class TestRevertVersionRestoration:
         act = _make_activities()
         act.storage.activate_version = AsyncMock(side_effect=RuntimeError("db err"))
 
-        inp = _make_saga_input(
-            prepare_rollback={"current_version_id": "version-abc123"}
-        )
+        inp = _make_saga_input(prepare_rollback={"current_version_id": "version-abc123"})
         result = await act.revert_version_restoration(inp)
 
         assert result is False
@@ -878,9 +860,7 @@ class TestMarkRollbackAuditFailed:
         act._audit_client = MagicMock()
         act._audit_client.log = AsyncMock()
 
-        inp = _make_saga_input(
-            audit_rollback={"audit_id": "aud-123"}
-        )
+        inp = _make_saga_input(audit_rollback={"audit_id": "aud-123"})
         result = await act.mark_rollback_audit_failed(inp)
 
         assert result is True
@@ -911,9 +891,7 @@ class TestMarkRollbackAuditFailed:
 
 class TestBuildRollbackStep:
     def test_raises_when_saga_types_unavailable(self) -> None:
-        with patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.SagaStep", None
-        ):
+        with patch("enhanced_agent_bus.constitutional.rollback_engine.SagaStep", None):
             with pytest.raises(ImportError, match="saga step types not available"):
                 _build_rollback_step(
                     name="test",
@@ -929,10 +907,9 @@ class TestBuildRollbackStep:
         mock_step = MagicMock()
         mock_comp = MagicMock()
 
-        with patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.SagaStep", mock_step
-        ), patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.SagaCompensation", mock_comp
+        with (
+            patch("enhanced_agent_bus.constitutional.rollback_engine.SagaStep", mock_step),
+            patch("enhanced_agent_bus.constitutional.rollback_engine.SagaCompensation", mock_comp),
         ):
             _build_rollback_step(
                 name="test",
@@ -992,10 +969,11 @@ class TestAddRollbackSagaSteps:
         mock_step_cls = MagicMock()
         mock_comp_cls = MagicMock()
 
-        with patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.SagaStep", mock_step_cls
-        ), patch(
-            "enhanced_agent_bus.constitutional.rollback_engine.SagaCompensation", mock_comp_cls
+        with (
+            patch("enhanced_agent_bus.constitutional.rollback_engine.SagaStep", mock_step_cls),
+            patch(
+                "enhanced_agent_bus.constitutional.rollback_engine.SagaCompensation", mock_comp_cls
+            ),
         ):
             _add_rollback_saga_steps(mock_saga, act)
 

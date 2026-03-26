@@ -1,12 +1,12 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 [build-system]
 requires = ["setuptools>=80.9.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "acgs-monorepo"
-version = "3.0.0"
-description = "ACGS monorepo workspace and developer tooling"
+name = "acgs"
+version = "3.0.1"
+description = "Partial-open-source ACGS package line for governance runtime, shared components, and platform tooling"
 requires-python = ">=3.11"
 license = "AGPL-3.0-or-later"
 dependencies = [
@@ -75,13 +75,13 @@ members = ["packages/enhanced_agent_bus", "packages/acgs-lite", "packages/acgs-d
 
 [tool.uv.sources]
 enhanced-agent-bus = { workspace = true }
-acgs = { workspace = true }
+acgs-lite = { workspace = true }
 acgs-deliberation = { workspace = true }
 
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-exclude = [".claude", ".codex-home", "examples", "node_modules", "__pycache__", "tools"]
+exclude = [".claude", ".codex-home", "demo", "examples", "node_modules", "__pycache__", "tools"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "BLE", "S", "RUF", "C90"]
@@ -98,9 +98,12 @@ ignore = [
 "**/tests/**/*.py" = ["S105", "S106", "S108", "BLE001", "S311", "F811", "B017", "S110"]
 "packages/enhanced_agent_bus/**/*.py" = ["BLE001", "S311"]
 "packages/acgs-lite/**/*.py" = ["BLE001", "S311"]
-"src/**/*.py" = ["BLE001"]
+"src/**/*.py" = ["BLE001", "S105", "S106", "S108", "RUF001", "RUF002", "RUF003"]
+"src/acgs_lite/**/*.py" = ["BLE001", "S311", "F401", "RUF012"]
 "autoresearch/**/*.py" = ["BLE001", "S311", "T201"]
 "**/__init__.py" = ["F401"]
+"**/examples/**/*.py" = ["E402", "S105", "S106", "BLE001"]
+"packages/acgs-lite/examples/*.py" = ["E402", "S105", "S106", "BLE001"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 15

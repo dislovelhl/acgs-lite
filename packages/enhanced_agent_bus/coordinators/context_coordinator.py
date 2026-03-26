@@ -4,7 +4,7 @@ ContextCoordinator - Mamba-2 hybrid context processing coordinator.
 Manages large-context processing via Mamba-2 with graceful fallback.
 Part of the MetaOrchestrator decomposition effort.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

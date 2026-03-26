@@ -4,7 +4,7 @@ Rate Limiter Guardrail Component.
 Implements OWASP DoS protection through request rate limiting using a
 token bucket algorithm with blacklist/whitelist support.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import time

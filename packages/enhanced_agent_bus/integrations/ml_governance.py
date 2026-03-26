@@ -1,6 +1,6 @@
 """
 ACGS-2 ML Governance Client
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides integration with the Adaptive Learning Engine for reporting governance
 decision outcomes. Enables real-time model training through outcome feedback.
@@ -833,7 +833,6 @@ class MLGovernanceClient:
 
         return sanitize_error(error)  # type: ignore[no-any-return]
 
-
         # =============================================================================
         # Global Client Instance
         # =============================================================================
@@ -866,7 +865,6 @@ async def close_ml_governance_client() -> None:
     if _ml_governance_client:
         await _ml_governance_client.close()
         _ml_governance_client = None
-
 
         # =============================================================================
         # Convenience Function
@@ -914,20 +912,20 @@ __all__ = [
     # Enums
     "CircuitState",
     # Client
-        "MLGovernanceClient",
-        "MLGovernanceConfig",
-        "MLGovernanceConnectionError",
-        # Exceptions
-        "MLGovernanceError",
-        "MLGovernanceTimeoutError",
-        # Data types
-        "OutcomeReport",
-        "OutcomeReportStatus",
-        "OutcomeResult",
-        "close_ml_governance_client",
-        # Global instance functions
-        "get_ml_governance_client",
-        "initialize_ml_governance_client",
-        # Convenience function
-        "report_outcome",
-        ]
+    "MLGovernanceClient",
+    "MLGovernanceConfig",
+    "MLGovernanceConnectionError",
+    # Exceptions
+    "MLGovernanceError",
+    "MLGovernanceTimeoutError",
+    # Data types
+    "OutcomeReport",
+    "OutcomeReportStatus",
+    "OutcomeResult",
+    "close_ml_governance_client",
+    # Global instance functions
+    "get_ml_governance_client",
+    "initialize_ml_governance_client",
+    # Convenience function
+    "report_outcome",
+]

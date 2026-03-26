@@ -5,7 +5,7 @@ Provides enhanced MCP server capabilities for exposing ACGS-2 governance
 functionality to external AI systems with constitutional validation and
 MACI role-based access control.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -216,7 +216,7 @@ class MCPIntegrationServer:
     - Bidirectional communication support
     - Comprehensive audit logging
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH

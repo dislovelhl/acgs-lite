@@ -1,6 +1,6 @@
 """
 ACGS-2 PII Detection Engine
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Advanced PII (Personally Identifiable Information) detection engine with:
 - 25+ regex patterns for common PII types
@@ -278,7 +278,7 @@ class PIIDetector:
     """
     Advanced PII detection engine with confidence scoring and batch processing.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

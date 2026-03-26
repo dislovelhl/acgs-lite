@@ -1,6 +1,6 @@
 """
 ACGS-2 LLM Failover - Request Hedging Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements request hedging for critical operations.
 """
@@ -55,7 +55,7 @@ class RequestHedgingManager:
     """
     Implements request hedging for critical operations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Features:
     - Send same request to multiple providers

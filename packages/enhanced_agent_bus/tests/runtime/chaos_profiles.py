@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Deterministic Chaos Profiles
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Deterministic chaos testing profiles for controlled failure injection:
 - Governance-only chaos: Target constitutional validation paths

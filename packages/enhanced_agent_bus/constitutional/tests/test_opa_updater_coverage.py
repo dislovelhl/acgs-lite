@@ -1,6 +1,6 @@
 """
 Comprehensive coverage tests for OPA Policy Updater.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests targeting 92%+ coverage of opa_updater.py.
 """
@@ -482,9 +482,7 @@ class TestBackupCurrentPolicy:
         get_resp = make_mock_response(200, policy_data)
         u._http_client.get = AsyncMock(return_value=get_resp)
 
-        with patch(
-            "enhanced_agent_bus.constitutional.opa_updater.AIOFILES_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.constitutional.opa_updater.AIOFILES_AVAILABLE", False):
             with patch("builtins.open", mock_open()) as m:
                 backup_id = await u._backup_current_policy("constitutional")
                 assert backup_id is not None
@@ -530,9 +528,7 @@ class TestBackupCurrentPolicy:
         mock_aiofiles_module.open.return_value.__aenter__ = AsyncMock(return_value=mock_file)
         mock_aiofiles_module.open.return_value.__aexit__ = AsyncMock(return_value=False)
 
-        with patch(
-            "enhanced_agent_bus.constitutional.opa_updater.AIOFILES_AVAILABLE", True
-        ):
+        with patch("enhanced_agent_bus.constitutional.opa_updater.AIOFILES_AVAILABLE", True):
             with patch(
                 "enhanced_agent_bus.constitutional.opa_updater.aiofiles",
                 mock_aiofiles_module,

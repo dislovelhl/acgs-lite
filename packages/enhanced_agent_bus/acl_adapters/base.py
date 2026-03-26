@@ -119,7 +119,9 @@ class AdapterResult(Generic[ResponseT]):
         if self.error is not None:
             payload["error"] = str(self.error)
             payload["error_details"] = (
-                self.error.to_dict() if hasattr(self.error, "to_dict") else {"error": type(self.error).__name__}
+                self.error.to_dict()
+                if hasattr(self.error, "to_dict")
+                else {"error": type(self.error).__name__}
             )
         else:
             payload.pop("data", None)
@@ -309,8 +311,7 @@ class ACLAdapter(ABC, Generic[RequestT, ResponseT]):
             if attempt < self.config.max_retries:
                 delay_ms = min(
                     self.config.retry_max_delay_ms,
-                    self.config.retry_base_delay_ms
-                    * (self.config.retry_exponential_base ** attempt),
+                    self.config.retry_base_delay_ms * (self.config.retry_exponential_base**attempt),
                 )
                 await asyncio.sleep(delay_ms / 1000)
 

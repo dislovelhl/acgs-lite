@@ -1,4 +1,4 @@
-# ACGS-Lite Example Constitution
+# ACGS Example Constitution
 # Use this as a starting point for your own governance rules.
 #
 # Usage:
@@ -150,5 +150,5 @@ rules:
 
 metadata:
   author: ACGS Team
-  license: Apache-2.0
+  license: AGPL-3.0-or-later
   last_updated: "2026-03-09"

@@ -1,6 +1,6 @@
 # ACGS-2 Core Services API Reference
 
-> Constitutional Hash: `cdd01ef066bc6cf2` — embedded in all validation paths, response headers, and JWT claims.
+> Constitutional Hash: `608508a9bd224290` — embedded in all validation paths, response headers, and JWT claims.
 
 **Audience**: Backend engineers working on auth, gateway routing, or adding new routes.
 **Source root**: `src/core/`
@@ -441,7 +441,7 @@ HTTP 429. Body:
 {
   "error": "Too Many Requests",
   "retry_after": 42,
-  "constitutional_hash": "cdd01ef066bc6cf2"
+  "constitutional_hash": "608508a9bd224290"
 }
 ```
 

@@ -1,6 +1,6 @@
 """
 ACGS-2 Saga-Integrated Migration Service
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Integrates Saga Orchestration with Migration Job Management for
 enterprise-grade migration workflows with automatic rollback.

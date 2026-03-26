@@ -1,6 +1,6 @@
 """
 ACGS-2 Constitutional Refoundation System
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 The ONLY mechanism for changing HARD or META invariants. A refoundation
 creates a new constitutional epoch — not just a version bump.
@@ -37,7 +37,7 @@ __all__ = [
     "SandboxExecutionResult",
 ]
 
-_CONSTITUTIONAL_HASH = "cdd01ef066bc6cf2"
+_CONSTITUTIONAL_HASH = "608508a9bd224290"
 _VALID_ROLES = frozenset({"legislative", "executive", "judicial"})
 _MIN_JUSTIFICATION_LENGTH = 50
 
@@ -171,7 +171,7 @@ class RefoundationEngine:
     - New epoch created on activation with new invariant_hash
     - Old epoch preserved in history (append-only)
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self) -> None:

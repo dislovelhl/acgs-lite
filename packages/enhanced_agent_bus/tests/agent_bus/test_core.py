@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive test coverage for agent_bus.py - the core EnhancedAgentBus class.
 """

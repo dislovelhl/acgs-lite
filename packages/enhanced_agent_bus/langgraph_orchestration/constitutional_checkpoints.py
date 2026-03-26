@@ -1,6 +1,6 @@
 """
 ACGS-2 LangGraph Orchestration - Constitutional Checkpoints
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Constitutional checkpoints ensure governance compliance at
 transition boundaries:
@@ -49,7 +49,7 @@ _CHECKPOINT_OPERATION_ERRORS = (
 class CheckpointValidator(ABC):
     """Abstract validator for checkpoint validation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     @abstractmethod
@@ -73,7 +73,7 @@ class CheckpointValidator(ABC):
 class ConstitutionalHashValidator(CheckpointValidator):
     """Validates constitutional hash compliance.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, expected_hash: str = CONSTITUTIONAL_HASH):
@@ -111,7 +111,7 @@ class ConstitutionalHashValidator(CheckpointValidator):
 class StateIntegrityValidator(CheckpointValidator):
     """Validates state integrity using checksums.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def validate(
@@ -148,7 +148,7 @@ class MACIRoleValidator(CheckpointValidator):
     Integrates with the MACI enforcement system to ensure
     role-based access control at transition boundaries.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, maci_enforcer: object | None = None):
@@ -191,7 +191,7 @@ class ConstitutionalCheckpoint:
     Wraps checkpoint creation with constitutional validation,
     MACI enforcement, and audit logging.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -281,7 +281,7 @@ class ConstitutionalCheckpointManager:
     Handles checkpoint creation, validation, persistence,
     and recovery operations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -529,7 +529,7 @@ def create_checkpoint_manager(
     Returns:
         Configured checkpoint manager
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     return ConstitutionalCheckpointManager(
         persistence=persistence,

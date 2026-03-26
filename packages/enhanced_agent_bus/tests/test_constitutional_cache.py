@@ -1,10 +1,10 @@
 """
 Constitutional Cache Tests — CE-3
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests verify:
-- All cached data embeds constitutional hash cdd01ef066bc6cf2
+- All cached data embeds constitutional hash 608508a9bd224290
 - Retrieval with mismatched hash returns None
 - Tag-based invalidation clears related entries
 - PolicyCache auto-invalidates on policy update

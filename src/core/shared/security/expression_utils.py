@@ -1,7 +1,7 @@
 """
 ACGS-2 Shared Expression Evaluation Utilities
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Safe expression evaluation and PII redaction utilities shared across components.
 These functions prevent code injection while allowing necessary mathematical operations.

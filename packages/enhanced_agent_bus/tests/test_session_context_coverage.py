@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """Comprehensive tests for session_context.py targeting >=98% coverage."""
 
 from __future__ import annotations
@@ -415,9 +415,7 @@ class TestSessionContextStoreGet:
         mock_redis = _make_mock_redis()
         mock_redis.get.return_value = None
         store.redis_client = mock_redis
-        with patch(
-            "enhanced_agent_bus.session_context.DUAL_READ_MIGRATION_ENABLED", False
-        ):
+        with patch("enhanced_agent_bus.session_context.DUAL_READ_MIGRATION_ENABLED", False):
             result = await store.get("unknown-session", "t1")
         assert result is None
 

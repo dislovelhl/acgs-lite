@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus Middleware
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides middleware configuration for the API,
 including CORS, security headers, tenant context, and API versioning.

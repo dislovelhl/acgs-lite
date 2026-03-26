@@ -1,6 +1,6 @@
 """
 Comprehensive pytest test suite for routes/tenants.py
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets ≥90% coverage of the tenant management API routes, including:
 - All route handlers (CRUD, lifecycle, quota, hierarchy, children)

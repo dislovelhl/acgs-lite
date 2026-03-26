@@ -1,6 +1,6 @@
 """Coverage batch 33b: z3_adapter and llm_assistant uncovered lines.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -67,9 +67,7 @@ def _make_message(
 
 class TestZ3Constraint:
     def test_auto_timestamp(self):
-        c = Z3Constraint(
-            name="c1", expression="expr", natural_language="text", confidence=0.8
-        )
+        c = Z3Constraint(name="c1", expression="expr", natural_language="text", confidence=0.8)
         assert c.timestamp is not None
         assert isinstance(c.timestamp, datetime)
 
@@ -85,9 +83,7 @@ class TestZ3Constraint:
         assert c.timestamp == ts
 
     def test_generated_by_default(self):
-        c = Z3Constraint(
-            name="c1", expression="expr", natural_language="text", confidence=0.5
-        )
+        c = Z3Constraint(name="c1", expression="expr", natural_language="text", confidence=0.5)
         assert c.generated_by == "llm"
 
 
@@ -123,9 +119,7 @@ class TestZ3VerificationResult:
 
 class TestConstitutionalPolicy:
     def test_auto_created_at(self):
-        p = ConstitutionalPolicy(
-            id="p1", natural_language="text", z3_constraints=[]
-        )
+        p = ConstitutionalPolicy(id="p1", natural_language="text", z3_constraints=[])
         assert p.created_at is not None
         assert p.verified_at is None
         assert p.is_verified is False
@@ -152,9 +146,7 @@ class TestZ3SolverAdapter:
     def test_reset_solver(self):
         adapter = Z3SolverAdapter()
         x = z3.Bool("x")
-        meta = Z3Constraint(
-            name="c1", expression="x", natural_language="x is true", confidence=1.0
-        )
+        meta = Z3Constraint(name="c1", expression="x", natural_language="x is true", confidence=1.0)
         adapter.add_constraint("c1", x, meta)
         assert len(adapter.named_constraints) == 1
 
@@ -164,18 +156,14 @@ class TestZ3SolverAdapter:
     def test_get_constraint_names(self):
         adapter = Z3SolverAdapter()
         x = z3.Bool("x")
-        meta = Z3Constraint(
-            name="c1", expression="x", natural_language="nl", confidence=1.0
-        )
+        meta = Z3Constraint(name="c1", expression="x", natural_language="nl", confidence=1.0)
         adapter.add_constraint("c1", x, meta)
         assert adapter.get_constraint_names() == ["c1"]
 
     def test_check_sat_satisfiable(self):
         adapter = Z3SolverAdapter()
         x = z3.Bool("x")
-        meta = Z3Constraint(
-            name="c1", expression="x", natural_language="nl", confidence=1.0
-        )
+        meta = Z3Constraint(name="c1", expression="x", natural_language="nl", confidence=1.0)
         adapter.add_constraint("c1", x, meta)
         result = adapter.check_sat()
         assert result.is_sat is True
@@ -206,10 +194,8 @@ class TestZ3SolverAdapter:
         """When there's only one possible model, enumeration stops."""
         adapter = Z3SolverAdapter()
         x = z3.Bool("x")
-        adapter.solver.add(x == True)
-        meta = Z3Constraint(
-            name="c1", expression="x", natural_language="nl", confidence=1.0
-        )
+        adapter.solver.add(x)
+        meta = Z3Constraint(name="c1", expression="x", natural_language="nl", confidence=1.0)
         adapter.named_constraints["c1"] = x
         adapter.constraint_history.append(meta)
         result = adapter.check_sat(find_multiple=True, max_paths=5)
@@ -228,7 +214,7 @@ class TestZ3SolverAdapter:
     def test_model_to_dict_bool_value(self):
         adapter = Z3SolverAdapter()
         b = z3.Bool("b")
-        adapter.solver.add(b == True)
+        adapter.solver.add(b)
         result = adapter.check_sat()
         assert result.is_sat is True
         assert result.model["b"] in (True, "True")
@@ -267,9 +253,7 @@ class TestZ3SolverAdapter:
         adapter.solver.add(x)
         adapter.solver.add(z3.Not(x))
 
-        with patch.object(
-            adapter.solver, "unsat_core", side_effect=RuntimeError("core fail")
-        ):
+        with patch.object(adapter.solver, "unsat_core", side_effect=RuntimeError("core fail")):
             result = adapter.check_sat()
             assert result.is_sat is False
 
@@ -315,9 +299,7 @@ class TestLLMAssistedZ3Adapter:
         adapter = LLMAssistedZ3Adapter()
         # Note: "cannot" contains "can" so it matches "permission" first in the
         # elif chain. "forbidden" alone hits prohibition correctly.
-        elements = adapter._extract_policy_elements(
-            "Deletion is forbidden. Leaking is forbidden."
-        )
+        elements = adapter._extract_policy_elements("Deletion is forbidden. Leaking is forbidden.")
         assert len(elements) == 2
         assert all(e["type"] == "prohibition" for e in elements)
 
@@ -464,25 +446,19 @@ class TestLLMAssistedZ3Adapter:
                 confidence=1.0,
             )
         ]
-        result = await adapter.verify_policy_constraints(
-            constraints, find_multiple=True
-        )
+        result = await adapter.verify_policy_constraints(constraints, find_multiple=True)
         assert result.is_sat is True
 
     # --- parse_z3_expression ---
 
     def test_parse_z3_expression_bool_decl_assert(self):
         adapter = LLMAssistedZ3Adapter()
-        expr = adapter._parse_z3_expression(
-            "(declare-const x Bool)\n(assert x)"
-        )
+        expr = adapter._parse_z3_expression("(declare-const x Bool)\n(assert x)")
         assert expr is not None
 
     def test_parse_z3_expression_int_decl(self):
         adapter = LLMAssistedZ3Adapter()
-        expr = adapter._parse_z3_expression(
-            "(declare-const n Int)\n(assert (== n n))"
-        )
+        expr = adapter._parse_z3_expression("(declare-const n Int)\n(assert (== n n))")
         assert expr is not None
 
     def test_parse_z3_expression_and(self):
@@ -501,9 +477,7 @@ class TestLLMAssistedZ3Adapter:
 
     def test_parse_z3_expression_not(self):
         adapter = LLMAssistedZ3Adapter()
-        expr = adapter._parse_z3_expression(
-            "(declare-const a Bool)\n(assert (not a))"
-        )
+        expr = adapter._parse_z3_expression("(declare-const a Bool)\n(assert (not a))")
         assert expr is not None
 
     def test_parse_z3_expression_eq(self):
@@ -645,9 +619,7 @@ class TestLLMAssistedZ3Adapter:
             )
         ]
         unsat_result = Z3VerificationResult(is_sat=False, unsat_core=["c1"])
-        refined = await adapter.refine_constraints(
-            constraints, unsat_result, max_iterations=1
-        )
+        refined = await adapter.refine_constraints(constraints, unsat_result, max_iterations=1)
         # The constraint was refined (confidence lowered)
         assert refined[0].confidence <= 0.9
         assert refined[0].generated_by.startswith("refined_")
@@ -662,9 +634,7 @@ class TestLLMAssistedZ3Adapter:
 class TestConstitutionalZ3Verifier:
     async def test_verify_constitutional_policy_sat(self):
         verifier = ConstitutionalZ3Verifier()
-        policy = await verifier.verify_constitutional_policy(
-            "p1", "Agents must validate input."
-        )
+        policy = await verifier.verify_constitutional_policy("p1", "Agents must validate input.")
         assert policy.id == "p1"
         assert isinstance(policy.is_verified, bool)
 
@@ -737,9 +707,7 @@ class TestConstitutionalZ3Verifier:
 @pytest.mark.skipif(not Z3_AVAILABLE, reason="z3-solver not installed")
 class TestVerifyPolicyFormally:
     async def test_with_explicit_id(self):
-        policy = await verify_policy_formally(
-            "Agents must validate input.", policy_id="explicit-1"
-        )
+        policy = await verify_policy_formally("Agents must validate input.", policy_id="explicit-1")
         assert policy.id == "explicit-1"
 
     async def test_with_generated_id(self):
@@ -1077,12 +1045,8 @@ class TestLLMAssistant:
         mock_llm = AsyncMock()
         assistant.llm = mock_llm
 
-        with patch.object(
-            assistant, "_invoke_llm", side_effect=ValueError("bad prompt")
-        ):
-            result = await assistant.ainvoke_multi_turn(
-                "sys", [{"role": "user", "content": "hi"}]
-            )
+        with patch.object(assistant, "_invoke_llm", side_effect=ValueError("bad prompt")):
+            result = await assistant.ainvoke_multi_turn("sys", [{"role": "user", "content": "hi"}])
             assert result == {}
 
     # --- analyze_message_impact with mocked LLM ---

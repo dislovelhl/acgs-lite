@@ -1,6 +1,6 @@
 """
 ACGS-2 Centralized Input Validation Framework
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides utilities for sanitizing input, preventing path traversal,
 enforcing size limits, and detecting injection patterns.

@@ -1,6 +1,6 @@
 """Tests for URL and File Validation Security Module.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for SEC-003 (SSRF Protection) and SEC-006 (File Upload Validation).
 """
@@ -27,7 +27,7 @@ from src.core.shared.security.url_file_validator import (
 
 
 class TestConstitutionalHash:
-    # Constitutional Hash: cdd01ef066bc6cf2
+    # Constitutional Hash: 608508a9bd224290
     """Test constitutional hash compliance."""
 
     def test_constitutional_hash_value(self) -> None:
@@ -524,9 +524,7 @@ class TestURLValidatorExtended:
             allowed_domain_patterns=[r".*\.trusted\.org$"],
         )
         validator = URLValidator(config)
-        result = validator.validate_url(
-            "https://api.trusted.org/data", is_production=False
-        )
+        result = validator.validate_url("https://api.trusted.org/data", is_production=False)
         assert "trusted.org" in result
 
     def test_domain_not_in_allowlist(self) -> None:
@@ -538,9 +536,7 @@ class TestURLValidatorExtended:
     def test_subdomain_suffix_match(self) -> None:
         config = SSRFProtectionConfig(allowed_domains={"example.com"})
         validator = URLValidator(config)
-        result = validator.validate_url(
-            "https://sub.example.com/api", is_production=False
-        )
+        result = validator.validate_url("https://sub.example.com/api", is_production=False)
         assert "sub.example.com" in result
 
     def test_add_allowed_domain(self) -> None:
@@ -606,7 +602,7 @@ class TestFileValidatorExtended:
         assert result == FileType.TEXT
 
     def test_rego_file(self) -> None:
-        rego_data = b'package authz\n\ndefault allow = false\n'
+        rego_data = b"package authz\n\ndefault allow = false\n"
         validator = FileValidator()
         result = validator.validate_content(rego_data, filename="policy.rego")
         assert result == FileType.TEXT
@@ -614,7 +610,7 @@ class TestFileValidatorExtended:
     def test_unknown_type_not_text(self) -> None:
         # Invalid UTF-8 (bare continuation bytes) + control chars < 32
         # that are not tab/lf/cr, so both UTF-8 decode and ASCII heuristic fail
-        binary_data = (b"\x80\x01\x02\x03\x04\x05\x06\x07" * 200)
+        binary_data = b"\x80\x01\x02\x03\x04\x05\x06\x07" * 200
         config = FileValidationConfig(verify_magic_bytes=True)
         validator = FileValidator(config)
         with pytest.raises(HTTPException):
@@ -732,7 +728,7 @@ class TestFileValidatorExtended:
         assert result == FileType.ZIP
 
     def test_json_array_detection(self) -> None:
-        json_data = b'[1, 2, 3]'
+        json_data = b"[1, 2, 3]"
         validator = FileValidator()
         result = validator.validate_content(json_data, filename="list.json")
         assert result == FileType.JSON
@@ -759,7 +755,7 @@ class TestConvenienceFunctionsExtended:
         file.seek = AsyncMock()
         file.filename = "test.json"
 
-        content, ftype = await validate_upload(file)
+        _content, ftype = await validate_upload(file)
         assert ftype == FileType.JSON
 
     def test_validate_url_non_production(self) -> None:

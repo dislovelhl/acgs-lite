@@ -1,6 +1,6 @@
 """
 Comprehensive coverage tests for Constitutional Rollback Engine.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests targeting 85%+ coverage of rollback_engine.py.
 """

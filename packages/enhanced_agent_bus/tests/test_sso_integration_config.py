@@ -248,9 +248,7 @@ class TestIntegrationConfigService:
     async def test_update_config_encrypts_sensitive(self):
         svc = IntegrationConfigService()
         created = await svc.create_integration("t1", IntegrationType.LDAP, "LDAP", {})
-        await svc.update_integration(
-            created.id, "t1", {"config": {"api_key": "new-key-value"}}
-        )
+        await svc.update_integration(created.id, "t1", {"config": {"api_key": "new-key-value"}})
         assert "api_key" in created.encrypted_fields
 
     @pytest.mark.asyncio

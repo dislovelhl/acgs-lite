@@ -3,7 +3,7 @@ Tests targeting uncovered lines in:
   1. enhanced_agent_bus.adaptive_governance.governance_engine (78% -> 90%+)
   2. enhanced_agent_bus.observability.telemetry (72.6% -> 90%+)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -76,6 +76,7 @@ from enhanced_agent_bus.observability.telemetry import (
 # Helpers
 # -----------------------------------------------------------------------
 
+
 def _make_features(**overrides) -> ImpactFeatures:
     defaults = dict(
         message_length=100,
@@ -123,10 +124,13 @@ def _make_config(**kwargs):
 # governance_engine: _initialize_feedback_handler (lines 305-311)
 # -----------------------------------------------------------------------
 
+
 class TestInitializeFeedbackHandler:
     """Cover lines 305-311: feedback handler init success and failure."""
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.FEEDBACK_HANDLER_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.FEEDBACK_HANDLER_AVAILABLE", True
+    )
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.get_feedback_handler")
     def test_feedback_handler_success(self, mock_get_fh):
         mock_handler = MagicMock()
@@ -134,19 +138,23 @@ class TestInitializeFeedbackHandler:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         # The handler was called during __init__
         mock_get_fh.assert_called()
         mock_handler.initialize_schema.assert_called()
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.FEEDBACK_HANDLER_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.FEEDBACK_HANDLER_AVAILABLE", True
+    )
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.get_feedback_handler")
     def test_feedback_handler_failure(self, mock_get_fh):
         mock_get_fh.side_effect = RuntimeError("No DB")
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         assert engine._feedback_handler is None
 
 
@@ -154,10 +162,13 @@ class TestInitializeFeedbackHandler:
 # governance_engine: _initialize_drift_detector (lines 313-326)
 # -----------------------------------------------------------------------
 
+
 class TestInitializeDriftDetector:
     """Cover lines 318-326: drift detector init paths."""
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE", True
+    )
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.get_drift_detector")
     def test_drift_detector_success_with_data(self, mock_get_dd):
         mock_dd = MagicMock()
@@ -166,10 +177,13 @@ class TestInitializeDriftDetector:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         assert engine._drift_detector is mock_dd
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE", True
+    )
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.get_drift_detector")
     def test_drift_detector_success_no_data(self, mock_get_dd):
         mock_dd = MagicMock()
@@ -178,17 +192,21 @@ class TestInitializeDriftDetector:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         assert engine._drift_detector is mock_dd
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE", True
+    )
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.get_drift_detector")
     def test_drift_detector_failure(self, mock_get_dd):
         mock_get_dd.side_effect = RuntimeError("fail")
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         assert engine._drift_detector is None
 
 
@@ -196,12 +214,18 @@ class TestInitializeDriftDetector:
 # governance_engine: _initialize_river_model (lines 345-367)
 # -----------------------------------------------------------------------
 
+
 class TestInitializeRiverModel:
     """Cover lines 348-362: River model init paths."""
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.ONLINE_LEARNING_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.ONLINE_LEARNING_AVAILABLE", True
+    )
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.RIVER_AVAILABLE", True)
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.ModelType", SimpleNamespace(REGRESSOR="regressor"))
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.ModelType",
+        SimpleNamespace(REGRESSOR="regressor"),
+    )
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.get_online_learning_pipeline")
     def test_river_model_success_with_trained_scorer(self, mock_get_pipeline):
         mock_pipeline = MagicMock()
@@ -209,13 +233,19 @@ class TestInitializeRiverModel:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         # impact_scorer.model_trained may be False by default, that's OK
         mock_get_pipeline.assert_called()
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.ONLINE_LEARNING_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.ONLINE_LEARNING_AVAILABLE", True
+    )
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.RIVER_AVAILABLE", True)
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.ModelType", SimpleNamespace(REGRESSOR="regressor"))
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.ModelType",
+        SimpleNamespace(REGRESSOR="regressor"),
+    )
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.get_online_learning_pipeline")
     def test_river_model_init_sets_fallback_when_trained(self, mock_get_pipeline):
         mock_pipeline = MagicMock()
@@ -223,28 +253,36 @@ class TestInitializeRiverModel:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         engine.impact_scorer.model_trained = True
         # Re-initialize to trigger line 354
         engine._initialize_river_model()
         mock_pipeline.set_fallback_model.assert_called()
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.ONLINE_LEARNING_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.ONLINE_LEARNING_AVAILABLE", True
+    )
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.RIVER_AVAILABLE", True)
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.ModelType", SimpleNamespace(REGRESSOR="regressor"))
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.ModelType",
+        SimpleNamespace(REGRESSOR="regressor"),
+    )
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.get_online_learning_pipeline")
     def test_river_model_init_failure(self, mock_get_pipeline):
         mock_get_pipeline.side_effect = RuntimeError("bad")
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         assert engine.river_model is None
 
 
 # -----------------------------------------------------------------------
 # governance_engine: _initialize_ab_test_router (lines 369-401)
 # -----------------------------------------------------------------------
+
 
 class TestInitializeABTestRouter:
     """Cover lines 375-401: AB test router init paths."""
@@ -260,7 +298,8 @@ class TestInitializeABTestRouter:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         engine.impact_scorer.model_trained = True
         engine._initialize_ab_test_router()
         mock_router.set_champion_model.assert_called()
@@ -272,7 +311,8 @@ class TestInitializeABTestRouter:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         assert engine._ab_test_router is None
         assert engine._shadow_executor is None
 
@@ -281,33 +321,43 @@ class TestInitializeABTestRouter:
 # governance_engine: _initialize_anomaly_monitor (lines 392-401)
 # -----------------------------------------------------------------------
 
+
 class TestInitializeAnomalyMonitor:
     """Cover lines 397-401: anomaly monitor init paths."""
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.ANOMALY_MONITORING_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.ANOMALY_MONITORING_AVAILABLE",
+        True,
+    )
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.AnomalyMonitor")
     def test_anomaly_monitor_success(self, mock_cls):
         mock_cls.return_value = MagicMock()
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         assert engine._anomaly_monitor is not None
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.ANOMALY_MONITORING_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.ANOMALY_MONITORING_AVAILABLE",
+        True,
+    )
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.AnomalyMonitor")
     def test_anomaly_monitor_failure(self, mock_cls):
         mock_cls.side_effect = RuntimeError("bad")
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         assert engine._anomaly_monitor is None
 
 
 # -----------------------------------------------------------------------
 # governance_engine: _record_ab_test_request (lines 568-585)
 # -----------------------------------------------------------------------
+
 
 class TestRecordABTestRequest:
     """Cover lines 576, 580: champion vs candidate routing metric recording."""
@@ -316,7 +366,8 @@ class TestRecordABTestRequest:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         engine._ab_test_router = MagicMock()
         return engine
 
@@ -354,6 +405,7 @@ class TestRecordABTestRequest:
 # governance_engine: _schedule_shadow_execution_if_needed (lines 587-605)
 # -----------------------------------------------------------------------
 
+
 class TestScheduleShadowExecution:
     """Cover lines 597, 604-605: shadow execution scheduling."""
 
@@ -361,7 +413,8 @@ class TestScheduleShadowExecution:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         return engine
 
     def test_skips_when_not_champion(self):
@@ -409,6 +462,7 @@ class TestScheduleShadowExecution:
 # governance_engine: _update_river_model line 874
 # -----------------------------------------------------------------------
 
+
 class TestUpdateRiverModel:
     """Cover line 874: River model is_ready + scorer not trained path."""
 
@@ -416,10 +470,13 @@ class TestUpdateRiverModel:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         return engine
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.ONLINE_LEARNING_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.ONLINE_LEARNING_AVAILABLE", True
+    )
     def test_river_model_ready_scorer_not_trained(self):
         engine = self._make_engine()
         mock_pipeline = MagicMock()
@@ -438,7 +495,9 @@ class TestUpdateRiverModel:
 
         mock_pipeline.learn_from_feedback.assert_called_once()
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.ONLINE_LEARNING_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.ONLINE_LEARNING_AVAILABLE", True
+    )
     def test_river_model_update_failure_result(self):
         engine = self._make_engine()
         mock_pipeline = MagicMock()
@@ -452,7 +511,9 @@ class TestUpdateRiverModel:
         decision = _make_decision()
         engine._update_river_model(decision, 0.5)
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.ONLINE_LEARNING_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.ONLINE_LEARNING_AVAILABLE", True
+    )
     def test_river_model_update_exception(self):
         engine = self._make_engine()
         mock_pipeline = MagicMock()
@@ -467,6 +528,7 @@ class TestUpdateRiverModel:
 # governance_engine: _run_scheduled_drift_detection (lines 1024-1091)
 # -----------------------------------------------------------------------
 
+
 class TestScheduledDriftDetection:
     """Cover lines 1036-1091: drift detection scheduled runs."""
 
@@ -474,10 +536,13 @@ class TestScheduledDriftDetection:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         return engine
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE", True
+    )
     def test_drift_detection_not_due(self):
         engine = self._make_engine()
         engine._drift_detector = MagicMock()
@@ -486,7 +551,9 @@ class TestScheduledDriftDetection:
         engine._run_scheduled_drift_detection()
         engine._drift_detector.detect_drift.assert_not_called()
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE", True
+    )
     def test_drift_detection_no_data(self):
         engine = self._make_engine()
         engine._drift_detector = MagicMock()
@@ -495,7 +562,9 @@ class TestScheduledDriftDetection:
         engine.decision_history = deque()
         engine._run_scheduled_drift_detection()
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE", True
+    )
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.DriftStatus")
     def test_drift_detection_success_with_drift(self, mock_drift_status):
         engine = self._make_engine()
@@ -527,7 +596,9 @@ class TestScheduledDriftDetection:
 
         assert engine._latest_drift_report is mock_report
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE", True
+    )
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.DriftStatus")
     def test_drift_detection_success_no_drift(self, mock_drift_status):
         engine = self._make_engine()
@@ -547,7 +618,9 @@ class TestScheduledDriftDetection:
 
         engine._run_scheduled_drift_detection()
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE", True
+    )
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.DriftStatus")
     def test_drift_detection_error_status(self, mock_drift_status):
         engine = self._make_engine()
@@ -568,7 +641,9 @@ class TestScheduledDriftDetection:
 
         engine._run_scheduled_drift_detection()
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE", True
+    )
     def test_drift_detection_exception(self):
         engine = self._make_engine()
         mock_dd = MagicMock()
@@ -590,6 +665,7 @@ class TestScheduledDriftDetection:
 # governance_engine: _collect_drift_data empty records (line 1139)
 # -----------------------------------------------------------------------
 
+
 class TestCollectDriftData:
     """Cover line 1139: empty feature_records path."""
 
@@ -597,7 +673,8 @@ class TestCollectDriftData:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        return AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        return AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
 
     def test_no_decision_history(self):
         engine = self._make_engine()
@@ -619,6 +696,7 @@ class TestCollectDriftData:
 # governance_engine: _analyze_performance_trends error (line 1169-1170)
 # -----------------------------------------------------------------------
 
+
 class TestAnalyzePerformanceTrends:
     """Cover lines 1169-1170: error path in trend analysis."""
 
@@ -626,7 +704,8 @@ class TestAnalyzePerformanceTrends:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        return AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        return AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
 
     def test_trend_analysis_normal(self):
         engine = self._make_engine()
@@ -663,6 +742,7 @@ class TestAnalyzePerformanceTrends:
 # governance_engine: _log_performance_summary error (lines 1195-1196)
 # -----------------------------------------------------------------------
 
+
 class TestLogPerformanceSummary:
     """Cover lines 1195-1196."""
 
@@ -670,7 +750,8 @@ class TestLogPerformanceSummary:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        return AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        return AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
 
     def test_log_summary_normal(self):
         engine = self._make_engine()
@@ -689,6 +770,7 @@ class TestLogPerformanceSummary:
 # governance_engine: _background_learning_loop (lines 1004-1022)
 # -----------------------------------------------------------------------
 
+
 class TestBackgroundLearningLoop:
     """Cover lines 1004, 1007-1008, 1012, 1015, 1018, 1021-1022."""
 
@@ -696,7 +778,8 @@ class TestBackgroundLearningLoop:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        return AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        return AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
 
     async def test_one_iteration(self):
         engine = self._make_engine()
@@ -704,6 +787,7 @@ class TestBackgroundLearningLoop:
         call_count = 0
 
         original_sleep = asyncio.sleep
+
         async def mock_sleep(duration):
             nonlocal call_count
             call_count += 1
@@ -735,6 +819,7 @@ class TestBackgroundLearningLoop:
 # governance_engine: _maybe_refit_dtmc (lines 1204-1220)
 # -----------------------------------------------------------------------
 
+
 class TestMaybeRefitDTMC:
     """Cover DTMC refit paths."""
 
@@ -742,7 +827,8 @@ class TestMaybeRefitDTMC:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        return AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config(enable_dtmc=True))
+
+        return AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config(enable_dtmc=True))
 
     def test_refit_with_enough_data(self):
         engine = self._make_engine()
@@ -771,8 +857,9 @@ class TestMaybeRefitDTMC:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
+
         engine = AdaptiveGovernanceEngine(
-            "cdd01ef066bc6cf2", config=_make_config(enable_dtmc=False)
+            "608508a9bd224290", config=_make_config(enable_dtmc=False)
         )
         engine._maybe_refit_dtmc()  # Should return early
 
@@ -781,6 +868,7 @@ class TestMaybeRefitDTMC:
 # governance_engine: _store_feedback_event (lines 732-808)
 # -----------------------------------------------------------------------
 
+
 class TestStoreFeedbackEvent:
     """Cover feedback event storage with handler available."""
 
@@ -788,9 +876,12 @@ class TestStoreFeedbackEvent:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        return AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.FEEDBACK_HANDLER_AVAILABLE", True)
+        return AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
+
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.FEEDBACK_HANDLER_AVAILABLE", True
+    )
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.FeedbackEvent")
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.FeedbackType")
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.OutcomeStatus")
@@ -812,7 +903,9 @@ class TestStoreFeedbackEvent:
         engine._store_feedback_event(decision, True, True, 0.5)
         mock_handler.store_feedback.assert_called_once()
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.FEEDBACK_HANDLER_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.FEEDBACK_HANDLER_AVAILABLE", True
+    )
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.FeedbackEvent")
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.FeedbackType")
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.OutcomeStatus")
@@ -831,7 +924,9 @@ class TestStoreFeedbackEvent:
         decision = _make_decision()
         engine._store_feedback_event(decision, True, None, 0.3)
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.FEEDBACK_HANDLER_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.FEEDBACK_HANDLER_AVAILABLE", True
+    )
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.FeedbackEvent")
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.FeedbackType")
     @patch("enhanced_agent_bus.adaptive_governance.governance_engine.OutcomeStatus")
@@ -849,7 +944,9 @@ class TestStoreFeedbackEvent:
         decision = _make_decision()
         engine._store_feedback_event(decision, False, None, 0.7)
 
-    @patch("enhanced_agent_bus.adaptive_governance.governance_engine.FEEDBACK_HANDLER_AVAILABLE", True)
+    @patch(
+        "enhanced_agent_bus.adaptive_governance.governance_engine.FEEDBACK_HANDLER_AVAILABLE", True
+    )
     def test_store_failure(self):
         engine = self._make_engine()
         mock_handler = MagicMock()
@@ -864,6 +961,7 @@ class TestStoreFeedbackEvent:
 # governance_engine: _load_historical_data / _save_model_state error paths
 # -----------------------------------------------------------------------
 
+
 class TestLoadSaveModelState:
     """Cover lines 1229-1230, 1238-1239: error paths."""
 
@@ -871,14 +969,16 @@ class TestLoadSaveModelState:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         await engine._load_historical_data()
 
     async def test_save_model_state_normal(self):
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         await engine._save_model_state()
 
 
@@ -997,9 +1097,7 @@ class TestCrossModuleNoOpType:
             pass
 
         fake = FakeModule()
-        fake.__class__ = type(
-            "NoOpCounter", (), {"__module__": "some.observability.telemetry"}
-        )
+        fake.__class__ = type("NoOpCounter", (), {"__module__": "some.observability.telemetry"})
         assert isinstance(fake, NoOpCounter)
 
     def test_cross_module_check_mismatch_name(self):
@@ -1009,9 +1107,7 @@ class TestCrossModuleNoOpType:
             pass
 
         fake = FakeModule()
-        fake.__class__ = type(
-            "NoOpHistogram", (), {"__module__": "some.observability.telemetry"}
-        )
+        fake.__class__ = type("NoOpHistogram", (), {"__module__": "some.observability.telemetry"})
         assert not isinstance(fake, NoOpCounter)
 
     def test_cross_module_check_mismatch_module(self):
@@ -1028,6 +1124,7 @@ class TestCrossModuleNoOpType:
 # -----------------------------------------------------------------------
 # telemetry: config helper functions
 # -----------------------------------------------------------------------
+
 
 class TestConfigHelpers:
     """Cover _get_env_default, _get_otlp_endpoint, etc. with settings=None."""
@@ -1089,6 +1186,7 @@ class TestConfigHelpers:
 # telemetry: TelemetryConfig
 # -----------------------------------------------------------------------
 
+
 class TestTelemetryConfig:
     """Cover TelemetryConfig defaults."""
 
@@ -1101,6 +1199,7 @@ class TestTelemetryConfig:
 # -----------------------------------------------------------------------
 # telemetry: configure_telemetry without OTEL
 # -----------------------------------------------------------------------
+
 
 class TestConfigureTelemetry:
     """Cover configure_telemetry when OTEL not available."""
@@ -1122,6 +1221,7 @@ class TestConfigureTelemetry:
 # telemetry: get_tracer / get_meter without OTEL
 # -----------------------------------------------------------------------
 
+
 class TestGetTracerMeter:
     """Cover get_tracer and get_meter paths."""
 
@@ -1135,9 +1235,7 @@ class TestGetTracerMeter:
 
     def test_get_tracer_noop(self):
         with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
-            with patch(
-                "enhanced_agent_bus.observability.telemetry._tracers", {}
-            ):
+            with patch("enhanced_agent_bus.observability.telemetry._tracers", {}):
                 result = get_tracer("unknown-svc")
                 assert isinstance(result, NoOpTracer)
 
@@ -1151,9 +1249,7 @@ class TestGetTracerMeter:
 
     def test_get_meter_noop(self):
         with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
-            with patch(
-                "enhanced_agent_bus.observability.telemetry._meters", {}
-            ):
+            with patch("enhanced_agent_bus.observability.telemetry._meters", {}):
                 result = get_meter("unknown-svc")
                 assert isinstance(result, NoOpMeter)
 
@@ -1174,6 +1270,7 @@ class TestGetTracerMeter:
 # telemetry: _get_resource_attributes
 # -----------------------------------------------------------------------
 
+
 class TestGetResourceAttributes:
     """Cover _get_resource_attributes fallback path."""
 
@@ -1192,6 +1289,7 @@ class TestGetResourceAttributes:
 # -----------------------------------------------------------------------
 # telemetry: TracingContext
 # -----------------------------------------------------------------------
+
 
 class TestTracingContext:
     """Cover TracingContext enter/exit including error paths."""
@@ -1224,11 +1322,14 @@ class TestTracingContext:
             mock_status = MagicMock()
             mock_status_code = MagicMock()
             mock_status_code.ERROR = "ERROR"
-            with patch.dict(sys.modules, {
-                "opentelemetry.trace": MagicMock(
-                    Status=mock_status, StatusCode=mock_status_code
-                ),
-            }):
+            with patch.dict(
+                sys.modules,
+                {
+                    "opentelemetry.trace": MagicMock(
+                        Status=mock_status, StatusCode=mock_status_code
+                    ),
+                },
+            ):
                 exc = ValueError("oops")
                 ctx.__exit__(type(exc), exc, None)
 
@@ -1254,6 +1355,7 @@ class TestTracingContext:
 # -----------------------------------------------------------------------
 # telemetry: MetricsRegistry
 # -----------------------------------------------------------------------
+
 
 class TestMetricsRegistry:
     """Cover MetricsRegistry methods."""
@@ -1307,6 +1409,7 @@ class TestMetricsRegistry:
 # (lines 230-311) — only reachable when OTEL is available
 # -----------------------------------------------------------------------
 
+
 class TestOtelProviderConfiguration:
     """Cover provider configuration functions that require OTEL SDK mocks."""
 
@@ -1325,6 +1428,7 @@ class TestOtelProviderConfiguration:
             from enhanced_agent_bus.observability.telemetry import (
                 _configure_trace_provider,
             )
+
             result = _configure_trace_provider(config, MagicMock())
             assert result is mock_tracer_provider
 
@@ -1342,6 +1446,7 @@ class TestOtelProviderConfiguration:
             from enhanced_agent_bus.observability.telemetry import (
                 _configure_meter_provider,
             )
+
             result = _configure_meter_provider(config, MagicMock())
             assert result is mock_meter_provider
 
@@ -1350,6 +1455,7 @@ class TestOtelProviderConfiguration:
 # governance_engine: _apply_dtmc_risk_blend and _apply_dtmc_escalation
 # -----------------------------------------------------------------------
 
+
 class TestDTMCBlendAndEscalation:
     """Cover DTMC integration paths."""
 
@@ -1357,8 +1463,9 @@ class TestDTMCBlendAndEscalation:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
+
         return AdaptiveGovernanceEngine(
-            "cdd01ef066bc6cf2",
+            "608508a9bd224290",
             config=_make_config(**config_kwargs),
         )
 
@@ -1434,6 +1541,7 @@ class TestDTMCBlendAndEscalation:
 # governance_engine: _should_retrain_models
 # -----------------------------------------------------------------------
 
+
 class TestShouldRetrain:
     """Cover _should_retrain_models conditions."""
 
@@ -1441,7 +1549,8 @@ class TestShouldRetrain:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        return AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        return AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
 
     def test_retrain_low_compliance(self):
         engine = self._make_engine()
@@ -1468,6 +1577,7 @@ class TestShouldRetrain:
 # governance_engine: _get_trajectory_prefix
 # -----------------------------------------------------------------------
 
+
 class TestGetTrajectoryPrefix:
     """Cover _get_trajectory_prefix."""
 
@@ -1475,7 +1585,8 @@ class TestGetTrajectoryPrefix:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        return AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        return AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
 
     def test_empty_history(self):
         engine = self._make_engine()
@@ -1496,6 +1607,7 @@ class TestGetTrajectoryPrefix:
 # governance_engine: evaluate_governance_decision fallback
 # -----------------------------------------------------------------------
 
+
 class TestEvaluateGovernanceDecision:
     """Cover evaluate_governance_decision error path."""
 
@@ -1503,10 +1615,9 @@ class TestEvaluateGovernanceDecision:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
-        engine.impact_scorer.assess_impact = AsyncMock(
-            side_effect=RuntimeError("scorer failed")
-        )
+
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
+        engine.impact_scorer.assess_impact = AsyncMock(side_effect=RuntimeError("scorer failed"))
         result = await engine.evaluate_governance_decision({}, {})
         assert result.action_allowed is False
         assert result.impact_level == ImpactLevel.HIGH
@@ -1517,6 +1628,7 @@ class TestEvaluateGovernanceDecision:
 # governance_engine: initialize and shutdown
 # -----------------------------------------------------------------------
 
+
 class TestInitializeShutdown:
     """Cover initialize and shutdown paths."""
 
@@ -1524,7 +1636,8 @@ class TestInitializeShutdown:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         mock_monitor = AsyncMock()
         engine._anomaly_monitor = mock_monitor
         await engine.initialize()
@@ -1537,7 +1650,8 @@ class TestInitializeShutdown:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        engine = AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        engine = AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
         await engine.initialize()
         assert engine.running is True
         assert engine.learning_task is not None
@@ -1549,6 +1663,7 @@ class TestInitializeShutdown:
 # governance_engine: _classify_impact_level
 # -----------------------------------------------------------------------
 
+
 class TestClassifyImpactLevel:
     """Cover all impact classification branches."""
 
@@ -1556,7 +1671,8 @@ class TestClassifyImpactLevel:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        return AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        return AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
 
     def test_critical(self):
         engine = self._make_engine()
@@ -1583,6 +1699,7 @@ class TestClassifyImpactLevel:
 # governance_engine: _generate_reasoning
 # -----------------------------------------------------------------------
 
+
 class TestGenerateReasoning:
     """Cover reasoning generation paths."""
 
@@ -1590,7 +1707,8 @@ class TestGenerateReasoning:
         from enhanced_agent_bus.adaptive_governance.governance_engine import (
             AdaptiveGovernanceEngine,
         )
-        return AdaptiveGovernanceEngine("cdd01ef066bc6cf2", config=_make_config())
+
+        return AdaptiveGovernanceEngine("608508a9bd224290", config=_make_config())
 
     def test_allowed_high_confidence(self):
         engine = self._make_engine()

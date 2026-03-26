@@ -1,6 +1,6 @@
 """
 ACGS-2 Shared PQC Cryptography Types
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Explicit Protocol definitions to avoid a hard boundary violation (shared → services).
 These interfaces define the contract that concrete PQC implementations must fulfill.

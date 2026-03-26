@@ -3,11 +3,12 @@
 Covers all 5 governance tools, error handling, edge cases,
 and ensures >90% coverage of mcp_server.py.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
 
+import inspect
 import json
 from typing import Any
 from unittest.mock import patch
@@ -634,8 +635,10 @@ class TestRunMcpServer:
             run_mcp_server(server_name="test-gov")
 
             mock_create.assert_called_once()
-            # asyncio.run is called with the _run coroutine
             mock_run.assert_called_once()
+            run_arg = mock_run.call_args.args[0]
+            assert inspect.iscoroutine(run_arg)
+            run_arg.close()
 
 
 # ---------------------------------------------------------------------------

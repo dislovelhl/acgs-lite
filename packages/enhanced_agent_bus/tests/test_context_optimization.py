@@ -1,6 +1,6 @@
 """Tests for enhanced_agent_bus.context_optimization — coverage boost.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests SpecDeltaCompressor, CachedGovernanceValidator, PartitionBroker,
 OptimizedAgentBus, and factory functions.
@@ -291,9 +291,7 @@ class TestCachedGovernanceValidator:
     async def test_negative_caching_disabled(self):
         upstream = AsyncMock()
         upstream.validate = AsyncMock(side_effect=RuntimeError("fail"))
-        v = CachedGovernanceValidator(
-            upstream_validator=upstream, enable_negative_caching=False
-        )
+        v = CachedGovernanceValidator(upstream_validator=upstream, enable_negative_caching=False)
         ctx = ValidationContext(action="write", resource="data", agent_id="a2")
         await v.validate(ctx)
         # Denied decisions should NOT be cached

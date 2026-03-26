@@ -4,7 +4,7 @@ Batch Concurrency Middleware for ACGS-2 Pipeline.
 Controls concurrent batch processing.
 Extracted from: batch_processor_infra/workers.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -29,7 +29,7 @@ class BatchConcurrencyMiddleware(BaseMiddleware):
         middleware = BatchConcurrencyMiddleware(max_concurrency=100)
         context = await middleware.process(batch_context)
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

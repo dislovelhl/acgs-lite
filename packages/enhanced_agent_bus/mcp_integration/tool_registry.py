@@ -4,7 +4,7 @@ MCP Tool Registry for ACGS-2.
 Provides tool discovery, registration, and management for MCP integration,
 enabling dynamic tool registration with constitutional validation.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -316,7 +316,7 @@ class MCPToolRegistry:
     Provides tool discovery, registration, validation, and execution
     with constitutional compliance and MACI integration.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH

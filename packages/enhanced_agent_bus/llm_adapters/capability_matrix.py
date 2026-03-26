@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - LLM Provider Capability Matrix
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Defines capability dimensions for LLM providers and implements capability-based
 routing for multi-provider antifragility. Supports dynamic capability discovery,
@@ -56,7 +56,7 @@ class CapabilityDimension(str, Enum):
     """
     Capability dimensions for LLM providers.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Each dimension represents a specific capability that may vary across providers.
     """
@@ -131,7 +131,7 @@ class CapabilityValue:
     """
     Value for a specific capability.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     dimension: CapabilityDimension
@@ -197,7 +197,7 @@ class CapabilityRequirement:
     """
     Requirement specification for a capability.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     dimension: CapabilityDimension
@@ -228,7 +228,7 @@ class ProviderCapabilityProfile(BaseModel):
     """
     Complete capability profile for an LLM provider/model.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     provider_id: str = Field(..., description="Unique provider identifier")
@@ -393,7 +393,7 @@ class CapabilityRegistry:
     """
     Registry for managing provider capability profiles.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Provides:
     - Provider registration and discovery
@@ -834,7 +834,7 @@ class CapabilityRouter:
     """
     Routes requests to providers based on capability requirements.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Provides:
     - Capability-based provider selection

@@ -3,7 +3,7 @@ Comprehensive pytest test file for mcp_integration/server.py.
 
 Targets full coverage (≥95%) of all classes, methods, and code paths.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

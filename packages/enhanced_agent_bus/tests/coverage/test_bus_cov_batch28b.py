@@ -3,7 +3,7 @@ Tests targeting remaining uncovered lines in:
   1. enhanced_agent_bus.observability.telemetry (73.4% -> 90%+)
   2. enhanced_agent_bus.adaptive_governance.impact_scorer (75.6% -> 90%+)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Batch 28b: covers gaps NOT handled by batch27b.
 """
@@ -36,6 +36,7 @@ from enhanced_agent_bus.observability.telemetry import (
 # -----------------------------------------------------------------------
 # Helper
 # -----------------------------------------------------------------------
+
 
 def _make_features(**overrides) -> ImpactFeatures:
     defaults = dict(
@@ -370,9 +371,7 @@ class TestConfigureTraceProviderPaths:
             ),
         ):
             # Remove the OTLP exporter module to trigger ImportError
-            saved = sys.modules.pop(
-                "opentelemetry.exporter.otlp.proto.grpc.trace_exporter", None
-            )
+            saved = sys.modules.pop("opentelemetry.exporter.otlp.proto.grpc.trace_exporter", None)
             try:
                 with patch.dict(
                     sys.modules,
@@ -386,9 +385,7 @@ class TestConfigureTraceProviderPaths:
                     mock_tp.add_span_processor.assert_not_called()
             finally:
                 if saved is not None:
-                    sys.modules[
-                        "opentelemetry.exporter.otlp.proto.grpc.trace_exporter"
-                    ] = saved
+                    sys.modules["opentelemetry.exporter.otlp.proto.grpc.trace_exporter"] = saved
 
     def test_configure_trace_provider_no_export(self):
         """Cover lines 232-233: export_traces=False returns early."""
@@ -454,9 +451,7 @@ class TestConfigureMeterProviderPaths:
                 return_value=mock_mp,
             ),
         ):
-            saved = sys.modules.pop(
-                "opentelemetry.exporter.otlp.proto.grpc.metric_exporter", None
-            )
+            saved = sys.modules.pop("opentelemetry.exporter.otlp.proto.grpc.metric_exporter", None)
             try:
                 with patch.dict(
                     sys.modules,
@@ -469,9 +464,7 @@ class TestConfigureMeterProviderPaths:
                     assert result is mock_mp
             finally:
                 if saved is not None:
-                    sys.modules[
-                        "opentelemetry.exporter.otlp.proto.grpc.metric_exporter"
-                    ] = saved
+                    sys.modules["opentelemetry.exporter.otlp.proto.grpc.metric_exporter"] = saved
 
     def test_configure_meter_provider_no_export(self):
         """Cover line 261-262: export_metrics=False."""
@@ -506,9 +499,7 @@ class TestConfigurePropagation:
                     ),
                 },
             ),
-            patch(
-                "enhanced_agent_bus.observability.telemetry.set_global_textmap"
-            ) as mock_set,
+            patch("enhanced_agent_bus.observability.telemetry.set_global_textmap") as mock_set,
         ):
             _configure_propagation()
             mock_set.assert_called_once_with(mock_b3)
@@ -569,7 +560,7 @@ class TestImpactScorerInit:
                 ImpactScorer,
             )
 
-            scorer = ImpactScorer("cdd01ef066bc6cf2")
+            scorer = ImpactScorer("608508a9bd224290")
             assert scorer.impact_classifier is None
 
     def test_init_with_mhc_stability(self):
@@ -589,7 +580,7 @@ class TestImpactScorerInit:
                 ImpactScorer,
             )
 
-            scorer = ImpactScorer("cdd01ef066bc6cf2")
+            scorer = ImpactScorer("608508a9bd224290")
             assert scorer.use_mhc_stability is True
 
 
@@ -606,7 +597,7 @@ class TestImpactScorerMLflow:
                 ImpactScorer,
             )
 
-            scorer = ImpactScorer("cdd01ef066bc6cf2")
+            scorer = ImpactScorer("608508a9bd224290")
             assert scorer._mlflow_initialized is False
 
     def test_mlflow_init_in_pytest(self):
@@ -620,7 +611,7 @@ class TestImpactScorerMLflow:
                 ImpactScorer,
             )
 
-            scorer = ImpactScorer("cdd01ef066bc6cf2")
+            scorer = ImpactScorer("608508a9bd224290")
             assert scorer._mlflow_initialized is False
 
     def test_mlflow_init_creates_experiment(self):
@@ -647,7 +638,7 @@ class TestImpactScorerMLflow:
                     ImpactScorer,
                 )
 
-                scorer = ImpactScorer("cdd01ef066bc6cf2")
+                scorer = ImpactScorer("608508a9bd224290")
                 assert scorer._mlflow_initialized is True
                 assert scorer._mlflow_experiment_id == "exp-123"
             finally:
@@ -677,7 +668,7 @@ class TestImpactScorerMLflow:
                     ImpactScorer,
                 )
 
-                scorer = ImpactScorer("cdd01ef066bc6cf2")
+                scorer = ImpactScorer("608508a9bd224290")
                 assert scorer._mlflow_experiment_id == "exp-456"
             finally:
                 if saved_pytest is not None:
@@ -704,7 +695,7 @@ class TestImpactScorerMLflow:
                     ImpactScorer,
                 )
 
-                scorer = ImpactScorer("cdd01ef066bc6cf2")
+                scorer = ImpactScorer("608508a9bd224290")
                 assert scorer._mlflow_initialized is False
             finally:
                 if saved_pytest is not None:
@@ -717,7 +708,7 @@ class TestImpactScorerAssessImpact:
     def _make_scorer(self):
         from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
-        return ImpactScorer("cdd01ef066bc6cf2")
+        return ImpactScorer("608508a9bd224290")
 
     async def test_assess_impact_model_trained(self):
         """Cover lines 195-197: model_trained=True uses ML prediction."""
@@ -760,7 +751,7 @@ class TestImpactScorerPredictRiskScore:
     def _make_scorer(self):
         from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
-        return ImpactScorer("cdd01ef066bc6cf2")
+        return ImpactScorer("608508a9bd224290")
 
     def test_predict_falls_back_when_no_numpy(self):
         """Cover line 300: not NUMPY_AVAILABLE."""
@@ -787,9 +778,7 @@ class TestImpactScorerPredictRiskScore:
         mock_classifier.predict.return_value = [0.65]
         scorer.impact_classifier = mock_classifier
 
-        with patch(
-            "enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np
-        ):
+        with patch("enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np):
             with patch(
                 "enhanced_agent_bus.adaptive_governance.impact_scorer.NUMPY_AVAILABLE",
                 True,
@@ -809,9 +798,7 @@ class TestImpactScorerPredictRiskScore:
         mock_classifier.predict.return_value = [1.5]  # Out of range
         scorer.impact_classifier = mock_classifier
 
-        with patch(
-            "enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np
-        ):
+        with patch("enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np):
             with patch(
                 "enhanced_agent_bus.adaptive_governance.impact_scorer.NUMPY_AVAILABLE",
                 True,
@@ -829,9 +816,7 @@ class TestImpactScorerPredictRiskScore:
         mock_classifier = MagicMock()
         scorer.impact_classifier = mock_classifier
 
-        with patch(
-            "enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np
-        ):
+        with patch("enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np):
             with patch(
                 "enhanced_agent_bus.adaptive_governance.impact_scorer.NUMPY_AVAILABLE",
                 True,
@@ -846,7 +831,7 @@ class TestImpactScorerRuleBasedScore:
     def _make_scorer(self):
         from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
-        return ImpactScorer("cdd01ef066bc6cf2")
+        return ImpactScorer("608508a9bd224290")
 
     def test_high_message_length(self):
         """Cover line 327: message_length > high_threshold."""
@@ -896,7 +881,7 @@ class TestImpactScorerCalculateConfidence:
     def _make_scorer(self):
         from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
-        return ImpactScorer("cdd01ef066bc6cf2")
+        return ImpactScorer("608508a9bd224290")
 
     def test_full_confidence(self):
         """Cover lines 354-361: all conditions boost confidence."""
@@ -927,7 +912,7 @@ class TestImpactScorerUpdateModel:
     def _make_scorer(self):
         from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
-        return ImpactScorer("cdd01ef066bc6cf2")
+        return ImpactScorer("608508a9bd224290")
 
     def test_update_model_error_path(self):
         """Cover lines 406-407: error in update_model."""
@@ -970,7 +955,7 @@ class TestImpactScorerRetrainModel:
     def _make_scorer(self):
         from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
-        return ImpactScorer("cdd01ef066bc6cf2")
+        return ImpactScorer("608508a9bd224290")
 
     def test_retrain_without_numpy(self):
         """Cover lines 411-413: no numpy available."""
@@ -1016,9 +1001,7 @@ class TestImpactScorerRetrainModel:
             scorer.training_samples.append((_make_features(), float(i % 10) / 10))
 
         with (
-            patch(
-                "enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np
-            ),
+            patch("enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np),
             patch(
                 "enhanced_agent_bus.adaptive_governance.impact_scorer.NUMPY_AVAILABLE",
                 True,
@@ -1052,9 +1035,7 @@ class TestImpactScorerRetrainModel:
         scorer._log_training_run_to_mlflow = mock_log_fn
 
         with (
-            patch(
-                "enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np
-            ),
+            patch("enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np),
             patch(
                 "enhanced_agent_bus.adaptive_governance.impact_scorer.NUMPY_AVAILABLE",
                 True,
@@ -1084,9 +1065,7 @@ class TestImpactScorerRetrainModel:
             scorer.training_samples.append((_make_features(), float(i % 10) / 10))
 
         with (
-            patch(
-                "enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np
-            ),
+            patch("enhanced_agent_bus.adaptive_governance.impact_scorer.np", mock_np),
             patch(
                 "enhanced_agent_bus.adaptive_governance.impact_scorer.NUMPY_AVAILABLE",
                 True,
@@ -1101,7 +1080,7 @@ class TestImpactScorerLogTrainingRunToMLflow:
     def _make_scorer(self):
         from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
-        scorer = ImpactScorer("cdd01ef066bc6cf2")
+        scorer = ImpactScorer("608508a9bd224290")
         scorer._mlflow_experiment_id = "exp-001"
         return scorer
 
@@ -1184,7 +1163,7 @@ class TestImpactScorerApplyMHCStability:
     def _make_scorer(self):
         from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
-        return ImpactScorer("cdd01ef066bc6cf2")
+        return ImpactScorer("608508a9bd224290")
 
     def test_apply_mhc_stability_disabled(self):
         """Cover line 368-369: use_mhc_stability=False."""
@@ -1241,7 +1220,7 @@ class TestImpactScorerExtractFeatures:
     def _make_scorer(self):
         from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
 
-        return ImpactScorer("cdd01ef066bc6cf2")
+        return ImpactScorer("608508a9bd224290")
 
     async def test_extract_features_basic(self):
         """Cover lines 221-259: feature extraction."""

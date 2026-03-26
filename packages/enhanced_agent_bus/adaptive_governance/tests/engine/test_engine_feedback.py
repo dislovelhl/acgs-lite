@@ -35,13 +35,18 @@ class TestUpdateMetrics:
         assert engine.metrics.average_response_time > 0
 
     def test_history_trimmed_when_over_max(self, engine):
+        from collections import deque
+
         from enhanced_agent_bus.governance_constants import GOVERNANCE_HISTORY_MAX
 
         # _update_metrics computes compliance over a trimmed window but does not mutate history.
-        engine.decision_history = [_make_decision() for _ in range(GOVERNANCE_HISTORY_MAX + 1)]
-        initial_len = len(engine.decision_history)
+        engine.decision_history = deque(
+            [_make_decision() for _ in range(GOVERNANCE_HISTORY_MAX + 1)],
+            maxlen=GOVERNANCE_HISTORY_MAX,
+        )
+        assert len(engine.decision_history) == GOVERNANCE_HISTORY_MAX
         engine._update_metrics(_make_decision(), response_time=0.001)
-        assert len(engine.decision_history) == initial_len
+        assert len(engine.decision_history) == GOVERNANCE_HISTORY_MAX
 
     def test_compliance_rate_calculated(self, engine):
         # Add decisions with high confidence

@@ -66,9 +66,7 @@ def to_yaml(constitution: Constitution) -> str:
     if constitution.metadata:
         doc["metadata"] = dict(constitution.metadata)
 
-    return cast(
-        str, yaml.dump(doc, default_flow_style=False, sort_keys=False, allow_unicode=True)
-    )
+    return cast(str, yaml.dump(doc, default_flow_style=False, sort_keys=False, allow_unicode=True))
 
 
 def to_bundle(constitution: Constitution) -> dict[str, Any]:

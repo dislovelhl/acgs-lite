@@ -1,6 +1,6 @@
 """
 Tests for Health Monitoring.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Task 7.8: Health monitoring for all integration types
 """

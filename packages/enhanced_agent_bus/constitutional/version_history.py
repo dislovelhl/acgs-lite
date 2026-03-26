@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Constitutional Version History Service
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Service to track all constitutional versions with pagination, filtering,
 and audit trail export capabilities.
@@ -35,7 +35,7 @@ logger = get_logger(__name__)
 class VersionHistoryQuery(BaseModel):
     """Query parameters for version history listing.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     limit: int = Field(default=50, ge=1, le=1000)
@@ -50,7 +50,7 @@ class VersionHistoryQuery(BaseModel):
 class VersionHistorySummary(BaseModel):
     """Summary statistics for version history.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     total_versions: int = Field(default=0)
@@ -72,7 +72,7 @@ class VersionHistoryService:
     - Export version history as audit trail (JSON, CSV)
     - Track version lineage and transitions
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, storage: ConstitutionalStorageService):

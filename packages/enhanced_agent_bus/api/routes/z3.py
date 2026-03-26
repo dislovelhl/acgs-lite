@@ -1,6 +1,6 @@
 """
 ACGS-2 Z3 Formal Verification API Routes
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Exposes Z3 SMT verification metrics and recent verification results for the
 web-console Z3Dashboard.  A module-level verifier singleton accumulates metrics

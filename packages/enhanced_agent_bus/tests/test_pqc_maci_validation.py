@@ -1,11 +1,11 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Test PQC MACI Validation (Gödel Bypass Prevention)
 ==================================================
 
 Unit tests for validate_maci_record_pqc and _is_self_validation logic.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import time

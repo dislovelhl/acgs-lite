@@ -74,7 +74,6 @@ from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 
 from src.core.shared.config import settings
-from src.core.shared.config.runtime_environment import resolve_runtime_environment
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.metrics import _get_or_create_counter, _get_or_create_gauge
 from src.core.shared.structured_logging import get_logger
@@ -104,7 +103,7 @@ TENANT_CONFIG_AVAILABLE = _module_available("src.core.shared.config")
 
 
 def _runtime_environment() -> str:
-    return resolve_runtime_environment(getattr(settings, "env", None))
+    return settings.env
 
 
 def _parse_bool_env(value: str | None) -> bool | None:
@@ -131,7 +130,7 @@ class RateLimitScope(StrEnum):
 class RateLimitAlgorithm(StrEnum):
     """Rate limiting algorithms."""
 
-    TOKEN_BUCKET = "token_bucket"  # noqa: S105 - algorithm label, not a secret
+    TOKEN_BUCKET = "token_bucket"
     SLIDING_WINDOW = "sliding_window"
     FIXED_WINDOW = "fixed_window"
 
@@ -497,9 +496,6 @@ class SlidingWindowRateLimiter:
                     raise
                 logger.warning(f"Redis rate limit error, using memory fallback: {e}")
 
-        if not self.fallback_to_memory:
-            raise RuntimeError("Redis-backed rate limiting is unavailable")
-
         return await self._check_memory(key, limit, window_seconds, scope, now)
 
     async def _check_redis(
@@ -620,12 +616,11 @@ class RateLimitMiddleware:
         app,
         config: RateLimitConfig | None = None,
         tenant_quota_provider: TenantRateLimitProvider | None = None,
-        redis_client: object | None = None,
     ):
         self.app = app
         self.config = config or RateLimitConfig.from_env()
         self.tenant_quota_provider = tenant_quota_provider
-        self.redis: object | None = redis_client
+        self.redis: object | None = None
         self.limiter: SlidingWindowRateLimiter | None = None
         self._initialized = False
         self._audit_log: list[JSONDict] = []
@@ -637,65 +632,17 @@ class RateLimitMiddleware:
         if self.tenant_quota_provider:
             logger.info("Tenant-specific rate limiting enabled via provider")
 
-        if self.redis is not None:
-            logger.info(
-                "rate_limiter_redis_client_injected",
-                constitutional_hash=self._constitutional_hash,
-            )
-
-    async def _initialize_redis_client(self) -> None:
-        """Initialize the Redis backend when configured."""
-        if self.redis is not None or not self.config.redis_url:
-            return
-
-        if not REDIS_AVAILABLE:
-            raise RuntimeError("Redis client library is unavailable")
-
-        try:
-            import redis.asyncio as redis_async
-        except ImportError as exc:
-            raise RuntimeError("Redis client library is unavailable") from exc
-
-        redis_client = redis_async.from_url(self.config.redis_url, decode_responses=True)
-        await redis_client.ping()
-        self.redis = redis_client
-
     async def _ensure_initialized(self) -> None:
         """Lazily initialize rate limiter components."""
         if self._initialized:
             return
 
-        try:
-            await self._initialize_redis_client()
-        except Exception:
-            if not self.config.fallback_to_memory:
-                raise
-            logger.warning("rate_limiter_redis_unavailable", exc_info=True)
-            self.redis = None
-
         if not self.limiter:
             self.limiter = SlidingWindowRateLimiter(
                 redis_client=self.redis, fallback_to_memory=self.config.fallback_to_memory
             )
-            logger.info(
-                "rate_limiter_backend_initialized",
-                backend_mode="redis" if self.redis is not None else "memory",
-                fallback_to_memory=self.config.fallback_to_memory,
-                redis_configured=bool(self.config.redis_url),
-                constitutional_hash=self._constitutional_hash,
-            )
 
         self._initialized = True
-
-    def _create_503_response(self, detail: str = "Rate limiting backend unavailable") -> JSONResponse:
-        return JSONResponse(
-            status_code=503,
-            content={
-                "error": "Service Unavailable",
-                "detail": detail,
-                "constitutional_hash": self._constitutional_hash,
-            },
-        )
 
     def _get_tenant_quota(self, tenant_id: str) -> TenantQuota | None:
         """Get tenant-specific quota from provider if available.
@@ -774,16 +721,8 @@ class RateLimitMiddleware:
             await self.app(scope, receive, send)
             return
 
-        try:
-            await self._ensure_initialized()
-        except Exception as exc:
-            if self.config.fail_open:
-                logger.warning("rate_limiter_initialization_failed", error=str(exc))
-                await self.app(scope, receive, send)
-                return
-            response = self._create_503_response()
-            await response(scope, receive, send)
-            return
+        # Initialize if needed
+        await self._ensure_initialized()
 
         # Create request for inspection
         request = Request(scope, receive)
@@ -795,16 +734,7 @@ class RateLimitMiddleware:
         if self.tenant_quota_provider and tenant_id:
             tenant_quota = self._get_tenant_quota(tenant_id)
             if tenant_quota:
-                try:
-                    result = await self._check_tenant_rate_limit(request, tenant_id, tenant_quota)
-                except Exception as exc:
-                    if self.config.fail_open:
-                        logger.warning("tenant_rate_limit_failed", error=str(exc))
-                        await self.app(scope, receive, send)
-                        return
-                    response = self._create_503_response()
-                    await response(scope, receive, send)
-                    return
+                result = await self._check_tenant_rate_limit(request, tenant_id, tenant_quota)
                 self._log_audit(request, result, None)
 
                 if not result.allowed:
@@ -819,18 +749,9 @@ class RateLimitMiddleware:
                 continue
 
             key = self._build_key(request, rule)
-            try:
-                result = await self.limiter.is_allowed(
-                    key, limit=rule.requests, window_seconds=rule.window_seconds
-                )
-            except Exception as exc:
-                if self.config.fail_open:
-                    logger.warning("rate_limit_check_failed", error=str(exc), path=request.url.path)
-                    await self.app(scope, receive, send)
-                    return
-                response = self._create_503_response()
-                await response(scope, receive, send)
-                return
+            result = await self.limiter.is_allowed(
+                key, limit=rule.requests, window_seconds=rule.window_seconds
+            )
 
             self._log_audit(request, result, rule)
 
@@ -846,7 +767,8 @@ class RateLimitMiddleware:
         """Extract tenant ID from authenticated request state.
 
         Tenant ID is only trusted from auth-middleware-populated request.state
-        to prevent spoofing via raw headers.
+        to prevent spoofing via raw headers. The X-Tenant-ID header is used as
+        a last-resort fallback for backwards compatibility only, with a warning.
         """
         # 1. Check for tenant_id in request.state (populated by auth middleware)
         if hasattr(request.state, "tenant_id") and request.state.tenant_id:
@@ -860,6 +782,19 @@ class RateLimitMiddleware:
         if hasattr(request.state, "user") and hasattr(request.state.user, "tenant_id"):
             return request.state.user.tenant_id
 
+        # 4. Last resort: X-Tenant-ID header (untrusted — log warning)
+        header_tenant_id = request.headers.get("X-Tenant-ID")
+        if header_tenant_id:
+            logger.warning(
+                "tenant_id_from_header_untrusted",
+                extra={
+                    "tenant_id": header_tenant_id,
+                    "path": request.url.path,
+                    "client": request.client.host if request.client else "unknown",
+                },
+            )
+            return header_tenant_id
+
         return None
 
     def _check_rule_match(self, request: Request, rule: RateLimitRule) -> bool:
@@ -868,19 +803,8 @@ class RateLimitMiddleware:
         return True
 
     def _build_key(self, request: Request, rule: RateLimitRule) -> str:
-        client_id = request.client.host if request.client else "unknown"
-        tenant_id = self._get_tenant_id(request)
-        key_parts = [rule.key_prefix]
-        if tenant_id:
-            key_parts.append(tenant_id)
-        key_parts.append(client_id)
-        if rule.scope == RateLimitScope.ENDPOINT:
-            matched_endpoint = next(
-                (endpoint for endpoint in (rule.endpoints or []) if request.url.path.startswith(endpoint)),
-                request.url.path,
-            )
-            key_parts.append(matched_endpoint)
-        return ":".join(key_parts)
+        # Simple key building logic
+        return f"{rule.key_prefix}:{request.client.host}"
 
     def _create_429_response(
         self, result: RateLimitResult, tenant_id: str | None = None

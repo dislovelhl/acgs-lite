@@ -1,6 +1,6 @@
 """
 ACGS-2 Structured Logging Module  [CANONICAL LOGGING MODULE]
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides standardized structured logging with:
 - JSON output for enterprise log aggregation

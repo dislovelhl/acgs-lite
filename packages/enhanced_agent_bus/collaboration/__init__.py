@@ -4,7 +4,7 @@ Real-time Collaboration Module for ACGS-2.
 Enables multiple users to simultaneously edit policies and workflows with
 presence tracking, cursor synchronization, and live updates.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 try:

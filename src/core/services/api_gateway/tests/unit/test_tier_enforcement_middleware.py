@@ -1,5 +1,5 @@
 """Unit tests for AutonomyTierEnforcementMiddleware.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers:
   - Advisory tier path: returns PENDING + submits to HITL
@@ -331,7 +331,7 @@ class TestAuditRecord:
     @pytest.mark.unit
     @pytest.mark.constitutional
     def test_audit_contains_constitutional_hash(self) -> None:
-        """Advisory tier audit log must include constitutional_hash=cdd01ef066bc6cf2."""
+        """Advisory tier audit log must include constitutional_hash=608508a9bd224290."""
         repo = AsyncMock(spec=TierAssignmentRepository)
         repo.get_by_agent.return_value = _make_assignment(AutonomyTier.ADVISORY)
         mock_hitl = AsyncMock(spec=HitlSubmissionClient)

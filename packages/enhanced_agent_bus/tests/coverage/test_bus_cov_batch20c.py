@@ -954,9 +954,7 @@ class TestVotingServiceRedisPath:
 
     async def test_ensure_store_initialized_no_getter(self):
         """When get_election_store is None."""
-        with patch(
-            "enhanced_agent_bus.deliberation_layer.voting_service.get_election_store", None
-        ):
+        with patch("enhanced_agent_bus.deliberation_layer.voting_service.get_election_store", None):
             svc = VotingService(force_in_memory=False)
             svc._store_initialized = False
             result = await svc._ensure_store_initialized()
@@ -1126,9 +1124,7 @@ class TestOPAGuardVerifyAction:
         assert result.decision == GuardDecision.DENY
 
     async def test_fallback_warning(self):
-        guard = self._make_guard(
-            {"allowed": True, "metadata": {"mode": "fallback"}}
-        )
+        guard = self._make_guard({"allowed": True, "metadata": {"mode": "fallback"}})
         result = await guard.verify_action("agent1", {"type": "read"}, {})
         assert any("fallback" in w for w in result.validation_warnings)
 
@@ -1166,9 +1162,7 @@ class TestOPAGuardRiskCalculation:
 
     def test_policy_metadata_risk(self):
         guard = OPAGuard()
-        score = guard._calculate_risk_score(
-            {"type": "read"}, {}, {"metadata": {"risk_score": 5.0}}
-        )
+        score = guard._calculate_risk_score({"type": "read"}, {}, {"metadata": {"risk_score": 5.0}})
         assert score >= 0.5
 
     def test_max_capped_at_1(self):
@@ -1284,9 +1278,7 @@ class TestOPAGuardSignatures:
 class TestOPAGuardReviews:
     async def test_submit_for_review_timeout(self):
         guard = OPAGuard(review_timeout=1)
-        result = await guard.submit_for_review(
-            {"id": "d1"}, ["critic1"], timeout=1
-        )
+        result = await guard.submit_for_review({"id": "d1"}, ["critic1"], timeout=1)
         assert result.status == ReviewStatus.ESCALATED
 
     async def test_submit_review_no_pending(self):
@@ -1328,9 +1320,7 @@ class TestOPAGuardConstitutionalCompliance:
     async def test_hash_mismatch(self):
         mock_client = AsyncMock()
         guard = OPAGuard(opa_client=mock_client)
-        result = await guard.check_constitutional_compliance(
-            {"constitutional_hash": "wrong"}
-        )
+        result = await guard.check_constitutional_compliance({"constitutional_hash": "wrong"})
         assert result is False
 
     async def test_no_opa_client_fail_closed(self):
@@ -1418,9 +1408,7 @@ class TestOPAGuardEvaluate:
 
     async def test_evaluate_with_allow_key(self):
         mock_client = AsyncMock()
-        mock_client.evaluate_policy = AsyncMock(
-            return_value={"allow": True, "reasons": ["passed"]}
-        )
+        mock_client.evaluate_policy = AsyncMock(return_value={"allow": True, "reasons": ["passed"]})
         guard = OPAGuard(opa_client=mock_client)
         result = await guard.evaluate({"msg": "test"})
         assert result["allow"] is True
@@ -1461,23 +1449,15 @@ class TestOPAGuardStatsAndAudit:
 
     async def test_get_audit_log(self):
         guard = OPAGuard()
-        await guard.log_decision(
-            {"action": "test", "agent_id": "a1"}, {"result": "ok"}
-        )
-        await guard.log_decision(
-            {"action": "test2", "agent_id": "a2"}, {"result": "ok"}
-        )
+        await guard.log_decision({"action": "test", "agent_id": "a1"}, {"result": "ok"})
+        await guard.log_decision({"action": "test2", "agent_id": "a2"}, {"result": "ok"})
         logs = guard.get_audit_log(limit=10)
         assert len(logs) == 2
 
     async def test_get_audit_log_filtered(self):
         guard = OPAGuard()
-        await guard.log_decision(
-            {"action": "test", "agent_id": "a1"}, {"result": "ok"}
-        )
-        await guard.log_decision(
-            {"action": "test2", "agent_id": "a2"}, {"result": "ok"}
-        )
+        await guard.log_decision({"action": "test", "agent_id": "a1"}, {"result": "ok"})
+        await guard.log_decision({"action": "test2", "agent_id": "a2"}, {"result": "ok"})
         logs = guard.get_audit_log(agent_id="a1")
         assert len(logs) == 1
 

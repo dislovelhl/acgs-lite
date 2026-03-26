@@ -4,7 +4,7 @@ Coverage tests for:
 - workflows/workflow_base.py
 - message_processor_components.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -92,6 +92,7 @@ from enhanced_agent_bus.workflows.workflow_base import (
 # SAML / OIDC Config tests
 # ===================================================================
 
+
 class TestSAMLConfig:
     def test_to_dict_and_from_dict_roundtrip(self):
         cfg = SAMLConfig(entity_id="eid", sso_url="https://sso.example.com")
@@ -157,6 +158,7 @@ class TestOIDCConfig:
 # RoleMappingRule tests
 # ===================================================================
 
+
 class TestRoleMappingRule:
     def test_matches_group_present(self):
         rule = RoleMappingRule(idp_group="admins", maci_role="ADMIN")
@@ -168,21 +170,24 @@ class TestRoleMappingRule:
 
     def test_matches_with_conditions_pass(self):
         rule = RoleMappingRule(
-            idp_group="admins", maci_role="ADMIN",
+            idp_group="admins",
+            maci_role="ADMIN",
             conditions={"department": "eng"},
         )
         assert rule.matches(["admins"], attributes={"department": "eng"}) is True
 
     def test_matches_with_conditions_fail(self):
         rule = RoleMappingRule(
-            idp_group="admins", maci_role="ADMIN",
+            idp_group="admins",
+            maci_role="ADMIN",
             conditions={"department": "eng"},
         )
         assert rule.matches(["admins"], attributes={"department": "hr"}) is False
 
     def test_matches_conditions_no_attributes(self):
         rule = RoleMappingRule(
-            idp_group="admins", maci_role="ADMIN",
+            idp_group="admins",
+            maci_role="ADMIN",
             conditions={"department": "eng"},
         )
         # conditions present but attributes is None -> conditions not checked
@@ -199,6 +204,7 @@ class TestRoleMappingRule:
 # ===================================================================
 # AttributeMapping tests
 # ===================================================================
+
 
 class TestAttributeMapping:
     def test_extract_single_values(self):
@@ -269,6 +275,7 @@ class TestAttributeMapping:
 # TenantIdPConfig tests
 # ===================================================================
 
+
 class TestTenantIdPConfig:
     def _make_oidc_idp(self, **kwargs):
         defaults = dict(
@@ -297,8 +304,11 @@ class TestTenantIdPConfig:
     def test_post_init_invalid_hash(self):
         with pytest.raises(ConstitutionalViolationError):
             TenantIdPConfig(
-                idp_id="x", tenant_id="t", provider_type=IdPProviderType.OKTA,
-                protocol=SSOProtocolType.OIDC, display_name="x",
+                idp_id="x",
+                tenant_id="t",
+                provider_type=IdPProviderType.OKTA,
+                protocol=SSOProtocolType.OIDC,
+                display_name="x",
                 oidc_config=OIDCConfig(issuer="i", client_id="c"),
                 constitutional_hash="badhash",
             )
@@ -306,15 +316,21 @@ class TestTenantIdPConfig:
     def test_post_init_saml_requires_config(self):
         with pytest.raises(ACGSValidationError):
             TenantIdPConfig(
-                idp_id="x", tenant_id="t", provider_type=IdPProviderType.CUSTOM_SAML,
-                protocol=SSOProtocolType.SAML_2_0, display_name="x",
+                idp_id="x",
+                tenant_id="t",
+                provider_type=IdPProviderType.CUSTOM_SAML,
+                protocol=SSOProtocolType.SAML_2_0,
+                display_name="x",
             )
 
     def test_post_init_oidc_requires_config(self):
         with pytest.raises(ACGSValidationError):
             TenantIdPConfig(
-                idp_id="x", tenant_id="t", provider_type=IdPProviderType.OKTA,
-                protocol=SSOProtocolType.OIDC, display_name="x",
+                idp_id="x",
+                tenant_id="t",
+                provider_type=IdPProviderType.OKTA,
+                protocol=SSOProtocolType.OIDC,
+                display_name="x",
             )
 
     def test_get_maci_roles_default(self):
@@ -375,6 +391,7 @@ class TestTenantIdPConfig:
 # TenantSSOConfig tests
 # ===================================================================
 
+
 class TestTenantSSOConfig:
     def test_post_init_invalid_hash(self):
         with pytest.raises(ConstitutionalViolationError):
@@ -382,13 +399,21 @@ class TestTenantSSOConfig:
 
     def test_get_enabled_idps(self):
         idp_enabled = TenantIdPConfig(
-            idp_id="e", tenant_id="t", provider_type=IdPProviderType.OKTA,
-            protocol=SSOProtocolType.OIDC, display_name="E", enabled=True,
+            idp_id="e",
+            tenant_id="t",
+            provider_type=IdPProviderType.OKTA,
+            protocol=SSOProtocolType.OIDC,
+            display_name="E",
+            enabled=True,
             oidc_config=OIDCConfig(issuer="i", client_id="c"),
         )
         idp_disabled = TenantIdPConfig(
-            idp_id="d", tenant_id="t", provider_type=IdPProviderType.OKTA,
-            protocol=SSOProtocolType.OIDC, display_name="D", enabled=False,
+            idp_id="d",
+            tenant_id="t",
+            provider_type=IdPProviderType.OKTA,
+            protocol=SSOProtocolType.OIDC,
+            display_name="D",
+            enabled=False,
             oidc_config=OIDCConfig(issuer="i", client_id="c"),
         )
         cfg = TenantSSOConfig(tenant_id="t", identity_providers=[idp_enabled, idp_disabled])
@@ -396,8 +421,11 @@ class TestTenantSSOConfig:
 
     def test_get_idp_found(self):
         idp = TenantIdPConfig(
-            idp_id="target", tenant_id="t", provider_type=IdPProviderType.OKTA,
-            protocol=SSOProtocolType.OIDC, display_name="T",
+            idp_id="target",
+            tenant_id="t",
+            provider_type=IdPProviderType.OKTA,
+            protocol=SSOProtocolType.OIDC,
+            display_name="T",
             oidc_config=OIDCConfig(issuer="i", client_id="c"),
         )
         cfg = TenantSSOConfig(tenant_id="t", identity_providers=[idp])
@@ -409,19 +437,27 @@ class TestTenantSSOConfig:
 
     def test_get_default_idp_explicit(self):
         idp = TenantIdPConfig(
-            idp_id="def", tenant_id="t", provider_type=IdPProviderType.OKTA,
-            protocol=SSOProtocolType.OIDC, display_name="D",
+            idp_id="def",
+            tenant_id="t",
+            provider_type=IdPProviderType.OKTA,
+            protocol=SSOProtocolType.OIDC,
+            display_name="D",
             oidc_config=OIDCConfig(issuer="i", client_id="c"),
         )
         cfg = TenantSSOConfig(
-            tenant_id="t", identity_providers=[idp], default_idp_id="def",
+            tenant_id="t",
+            identity_providers=[idp],
+            default_idp_id="def",
         )
         assert cfg.get_default_idp() is idp
 
     def test_get_default_idp_first_enabled(self):
         idp = TenantIdPConfig(
-            idp_id="first", tenant_id="t", provider_type=IdPProviderType.OKTA,
-            protocol=SSOProtocolType.OIDC, display_name="F",
+            idp_id="first",
+            tenant_id="t",
+            provider_type=IdPProviderType.OKTA,
+            protocol=SSOProtocolType.OIDC,
+            display_name="F",
             oidc_config=OIDCConfig(issuer="i", client_id="c"),
         )
         cfg = TenantSSOConfig(tenant_id="t", identity_providers=[idp])
@@ -442,6 +478,7 @@ class TestTenantSSOConfig:
 # ===================================================================
 # TenantSSOConfigManager tests
 # ===================================================================
+
 
 class TestTenantSSOConfigManager:
     def test_invalid_hash_raises(self):
@@ -469,7 +506,9 @@ class TestTenantSSOConfigManager:
     def test_update_config(self):
         mgr = TenantSSOConfigManager()
         mgr.create_config("t1")
-        updated = mgr.update_config("t1", sso_enabled=True, sso_enforced=True, session_timeout_hours=48)
+        updated = mgr.update_config(
+            "t1", sso_enabled=True, sso_enforced=True, session_timeout_hours=48
+        )
         assert updated is not None
         assert updated.sso_enabled is True
         assert updated.sso_enforced is True
@@ -483,8 +522,11 @@ class TestTenantSSOConfigManager:
         mgr = TenantSSOConfigManager()
         mgr.create_config("t1")
         idp = TenantIdPConfig(
-            idp_id="idp-1", tenant_id="t1", provider_type=IdPProviderType.OKTA,
-            protocol=SSOProtocolType.OIDC, display_name="O",
+            idp_id="idp-1",
+            tenant_id="t1",
+            provider_type=IdPProviderType.OKTA,
+            protocol=SSOProtocolType.OIDC,
+            display_name="O",
             oidc_config=OIDCConfig(issuer="i", client_id="c"),
         )
         result = mgr.add_identity_provider("t1", idp)
@@ -495,13 +537,19 @@ class TestTenantSSOConfigManager:
         mgr = TenantSSOConfigManager()
         mgr.create_config("t1")
         idp1 = TenantIdPConfig(
-            idp_id="idp-1", tenant_id="t1", provider_type=IdPProviderType.OKTA,
-            protocol=SSOProtocolType.OIDC, display_name="O",
+            idp_id="idp-1",
+            tenant_id="t1",
+            provider_type=IdPProviderType.OKTA,
+            protocol=SSOProtocolType.OIDC,
+            display_name="O",
             oidc_config=OIDCConfig(issuer="i", client_id="c"),
         )
         idp2 = TenantIdPConfig(
-            idp_id="idp-2", tenant_id="t1", provider_type=IdPProviderType.AUTH0,
-            protocol=SSOProtocolType.OIDC, display_name="A",
+            idp_id="idp-2",
+            tenant_id="t1",
+            provider_type=IdPProviderType.AUTH0,
+            protocol=SSOProtocolType.OIDC,
+            display_name="A",
             oidc_config=OIDCConfig(issuer="i2", client_id="c2"),
         )
         mgr.add_identity_provider("t1", idp1)
@@ -512,8 +560,11 @@ class TestTenantSSOConfigManager:
         mgr = TenantSSOConfigManager()
         mgr.create_config("t1")
         idp = TenantIdPConfig(
-            idp_id="dup", tenant_id="t1", provider_type=IdPProviderType.OKTA,
-            protocol=SSOProtocolType.OIDC, display_name="D",
+            idp_id="dup",
+            tenant_id="t1",
+            provider_type=IdPProviderType.OKTA,
+            protocol=SSOProtocolType.OIDC,
+            display_name="D",
             oidc_config=OIDCConfig(issuer="i", client_id="c"),
         )
         mgr.add_identity_provider("t1", idp)
@@ -523,8 +574,11 @@ class TestTenantSSOConfigManager:
     def test_add_identity_provider_tenant_not_found(self):
         mgr = TenantSSOConfigManager()
         idp = TenantIdPConfig(
-            idp_id="x", tenant_id="t1", provider_type=IdPProviderType.OKTA,
-            protocol=SSOProtocolType.OIDC, display_name="X",
+            idp_id="x",
+            tenant_id="t1",
+            provider_type=IdPProviderType.OKTA,
+            protocol=SSOProtocolType.OIDC,
+            display_name="X",
             oidc_config=OIDCConfig(issuer="i", client_id="c"),
         )
         assert mgr.add_identity_provider("missing", idp) is None
@@ -533,8 +587,11 @@ class TestTenantSSOConfigManager:
         mgr = TenantSSOConfigManager()
         mgr.create_config("t1")
         idp = TenantIdPConfig(
-            idp_id="rem", tenant_id="t1", provider_type=IdPProviderType.OKTA,
-            protocol=SSOProtocolType.OIDC, display_name="R",
+            idp_id="rem",
+            tenant_id="t1",
+            provider_type=IdPProviderType.OKTA,
+            protocol=SSOProtocolType.OIDC,
+            display_name="R",
             oidc_config=OIDCConfig(issuer="i", client_id="c"),
         )
         mgr.add_identity_provider("t1", idp)
@@ -547,13 +604,19 @@ class TestTenantSSOConfigManager:
         mgr = TenantSSOConfigManager()
         mgr.create_config("t1")
         idp1 = TenantIdPConfig(
-            idp_id="keep", tenant_id="t1", provider_type=IdPProviderType.OKTA,
-            protocol=SSOProtocolType.OIDC, display_name="K",
+            idp_id="keep",
+            tenant_id="t1",
+            provider_type=IdPProviderType.OKTA,
+            protocol=SSOProtocolType.OIDC,
+            display_name="K",
             oidc_config=OIDCConfig(issuer="i", client_id="c"),
         )
         idp2 = TenantIdPConfig(
-            idp_id="remove", tenant_id="t1", provider_type=IdPProviderType.AUTH0,
-            protocol=SSOProtocolType.OIDC, display_name="R",
+            idp_id="remove",
+            tenant_id="t1",
+            provider_type=IdPProviderType.AUTH0,
+            protocol=SSOProtocolType.OIDC,
+            display_name="R",
             oidc_config=OIDCConfig(issuer="i2", client_id="c2"),
         )
         mgr.add_identity_provider("t1", idp1)
@@ -588,6 +651,7 @@ class TestTenantSSOConfigManager:
 # Factory function tests
 # ===================================================================
 
+
 class TestFactoryFunctions:
     def test_create_okta_idp_config(self):
         idp = create_okta_idp_config("t1", "company.okta.com", "cid", "secret")
@@ -621,6 +685,7 @@ class TestFactoryFunctions:
 # WorkflowContext tests
 # ===================================================================
 
+
 class TestWorkflowContext:
     def test_get_signal_queue_creates_new(self):
         ctx = WorkflowContext(workflow_id="wf1")
@@ -650,6 +715,7 @@ class TestWorkflowContext:
 # ===================================================================
 # WorkflowDefinition tests
 # ===================================================================
+
 
 class _SimpleWorkflow(WorkflowDefinition):
     @property
@@ -757,6 +823,7 @@ class TestWorkflowDefinition:
 # ===================================================================
 # InMemoryWorkflowExecutor tests
 # ===================================================================
+
 
 class TestInMemoryWorkflowExecutor:
     async def test_start_and_get_result(self):
@@ -870,7 +937,11 @@ class TestInMemoryWorkflowExecutor:
         executor = InMemoryWorkflowExecutor()
         wf = _SimpleWorkflow()
         run_id = await executor.start(
-            wf, "wf-meta", "x", tenant_id="tenant-1", metadata={"k": "v"},
+            wf,
+            "wf-meta",
+            "x",
+            tenant_id="tenant-1",
+            metadata={"k": "v"},
         )
         ctx = executor.get_context("wf-meta")
         assert ctx.tenant_id == "tenant-1"
@@ -880,6 +951,7 @@ class TestInMemoryWorkflowExecutor:
 # ===================================================================
 # signal / query decorators
 # ===================================================================
+
 
 class TestDecorators:
     def test_signal_decorator_default_name(self):
@@ -916,6 +988,7 @@ class TestDecorators:
 # ===================================================================
 # message_processor_components tests
 # ===================================================================
+
 
 class TestExtractSessionIdForGovernance:
     def test_from_headers_x_session_id(self):
@@ -994,7 +1067,9 @@ class TestEnforceAutonomyTierRules:
             message_type=SimpleNamespace(value="execution"),
             metadata={},
         )
-        result = enforce_autonomy_tier_rules(msg=msg, advisory_blocked_types=frozenset({"execution"}))
+        result = enforce_autonomy_tier_rules(
+            msg=msg, advisory_blocked_types=frozenset({"execution"})
+        )
         assert result is not None
         assert result.is_valid is False
 
@@ -1243,7 +1318,9 @@ class TestApplyLatencyMetadata:
 class TestBuildDlqEntry:
     def test_builds_entry(self):
         msg = AgentMessage(
-            message_id="m1", from_agent="a", to_agent="b",
+            message_id="m1",
+            from_agent="a",
+            to_agent="b",
             message_type=MessageType.COMMAND,
         )
         vr = ValidationResult(is_valid=False, errors=["err"])
@@ -1272,8 +1349,11 @@ class TestApplySessionGovernanceMetrics:
     def test_enabled(self):
         metrics: dict = {}
         apply_session_governance_metrics(
-            metrics, enabled=True,
-            resolved_count=10, not_found_count=2, error_count=1,
+            metrics,
+            enabled=True,
+            resolved_count=10,
+            not_found_count=2,
+            error_count=1,
             resolution_rate=0.77,
         )
         assert metrics["session_governance_enabled"] is True
@@ -1282,8 +1362,11 @@ class TestApplySessionGovernanceMetrics:
     def test_disabled(self):
         metrics: dict = {}
         apply_session_governance_metrics(
-            metrics, enabled=False,
-            resolved_count=0, not_found_count=0, error_count=0,
+            metrics,
+            enabled=False,
+            resolved_count=0,
+            not_found_count=0,
+            error_count=0,
             resolution_rate=0.0,
         )
         assert metrics["session_governance_enabled"] is False
@@ -1346,7 +1429,9 @@ class TestEnrichMetricsWithWorkflowTelemetry:
 
 class TestExtractRejectionReason:
     def test_from_metadata(self):
-        vr = ValidationResult(is_valid=False, metadata={"rejection_reason": "autonomy_tier_violation"})
+        vr = ValidationResult(
+            is_valid=False, metadata={"rejection_reason": "autonomy_tier_violation"}
+        )
         assert extract_rejection_reason(vr) == "autonomy_tier_violation"
 
     def test_default(self):

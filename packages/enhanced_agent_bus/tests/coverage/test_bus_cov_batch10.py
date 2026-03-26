@@ -7,7 +7,7 @@ Targets:
 - enhanced_agent_bus.constitutional.review_api (150 missing, 49.8%)
 - enhanced_agent_bus.deliberation_layer.timeout_checker (118 missing, 0%)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -303,9 +303,7 @@ class TestQualityAssessment:
         from enhanced_agent_bus.response_quality.models import QualityAssessment
 
         data = {
-            "dimensions": [
-                {"name": "accuracy", "score": 0.9, "threshold": 0.8, "critique": None}
-            ],
+            "dimensions": [{"name": "accuracy", "score": 0.9, "threshold": 0.8, "critique": None}],
             "overall_score": 0.9,
             "passes_threshold": True,
             "refinement_suggestions": ["improve"],
@@ -817,9 +815,7 @@ class TestCreateValidator:
 class TestTimeoutChecker:
     @pytest.fixture
     def mock_settings(self):
-        with patch(
-            "enhanced_agent_bus.deliberation_layer.timeout_checker.settings"
-        ) as mock_s:
+        with patch("enhanced_agent_bus.deliberation_layer.timeout_checker.settings") as mock_s:
             mock_s.voting.timeout_check_interval_seconds = 1
             mock_s.voting.default_timeout_seconds = 300
             mock_s.voting.audit_signature_key = None

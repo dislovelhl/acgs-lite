@@ -4,7 +4,7 @@ MACI Configuration Loader.
 Supports loading MACI configuration from environment variables, JSON files,
 YAML files, or dictionaries with type-safe extraction.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import json

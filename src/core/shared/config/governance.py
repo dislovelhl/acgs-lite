@@ -1,7 +1,7 @@
 # mypy: disable-error-code="no-redef"
 """Governance and control configuration: MACI, Voting, CircuitBreaker.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import os
@@ -53,7 +53,7 @@ if HAS_PYDANTIC_SETTINGS:
         """
         Circuit Breaker Configuration Settings.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         Expert Reference: Michael Nygard (Release It!)
 
         Configures thresholds for external service circuit breakers:
@@ -201,7 +201,7 @@ else:
 
     @dataclass
     class CircuitBreakerSettings:  # type: ignore[no-redef]
-        """Circuit Breaker Configuration - Constitutional Hash: cdd01ef066bc6cf2."""
+        """Circuit Breaker Configuration - Constitutional Hash: 608508a9bd224290."""
 
         # Global defaults
         default_failure_threshold: int = field(

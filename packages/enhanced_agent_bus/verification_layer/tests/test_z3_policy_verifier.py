@@ -1,6 +1,6 @@
 """
 Tests for Z3 Policy Verifier - VeriPlan SMT Solver Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests cover:
 - Policy constraint generation

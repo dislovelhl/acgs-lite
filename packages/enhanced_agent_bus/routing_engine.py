@@ -20,7 +20,7 @@ class RoutingEngine:
     Decoupled routing engine for MetaOrchestrator.
     Handles task analysis, agent selection, and swarm coordination.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Mapping of TaskComplexity value to number of agents needed

@@ -1,6 +1,6 @@
 """
 ACGS-2 Multi-Tenancy Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Data models for multi-tenant enterprise governance.
 """
@@ -36,7 +36,7 @@ class TenantStatus(str, Enum):
 class TenantQuota:
     """Resource quotas for a tenant.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     max_agents: int = 100
@@ -74,7 +74,7 @@ class TenantQuota:
 class TenantUsage:
     """Current resource usage for a tenant.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     agent_count: int = 0
@@ -109,7 +109,7 @@ class TenantUsage:
 class TenantConfig(BaseModel):
     """Tenant configuration settings.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     constitutional_hash: str = Field(
@@ -184,7 +184,7 @@ class TenantConfig(BaseModel):
 class Tenant(BaseModel):
     """Enterprise tenant model.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Represents an isolated tenant in the multi-tenant ACGS-2 system.
     Each tenant has its own data isolation via PostgreSQL RLS policies.

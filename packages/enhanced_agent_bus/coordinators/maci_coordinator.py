@@ -1,7 +1,7 @@
 """
 MACI Coordinator - Manages constitutional validation and role enforcement.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements Trias Politica separation to prevent Gödel bypass attacks.
 Agents cannot validate their own output (MACI separation principle).

@@ -5,7 +5,7 @@ Comprehensive coverage tests for enhanced_agent_bus modules:
 - health_aggregator.py (HealthAggregator, HealthSnapshot, etc.)
 - performance_optimization.py (AsyncPipelineOptimizer, ResourcePool, etc.)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -223,6 +223,7 @@ class TestGetMambaHybridProcessor:
 
     def test_initialize_mamba_processor(self) -> None:
         import enhanced_agent_bus.ai_assistant.mamba_hybrid_processor as _mod
+
         _orig = _mod.mamba_manager
         try:
             with patch(
@@ -355,9 +356,7 @@ class TestRuntimeSecurityScanner:
         scanner = RuntimeSecurityScanner(config)
         result = await scanner.scan("<script>alert('xss')</script>")
         assert len(result.events) > 0
-        assert any(
-            e.event_type == SecurityEventType.SUSPICIOUS_PATTERN for e in result.events
-        )
+        assert any(e.event_type == SecurityEventType.SUSPICIOUS_PATTERN for e in result.events)
 
     async def test_scan_suspicious_pattern_sql_injection(self) -> None:
         config = RuntimeSecurityConfig(
@@ -373,9 +372,7 @@ class TestRuntimeSecurityScanner:
         )
         scanner = RuntimeSecurityScanner(config)
         result = await scanner.scan("SELECT * FROM users; DROP TABLE users;")
-        assert any(
-            e.event_type == SecurityEventType.SUSPICIOUS_PATTERN for e in result.events
-        )
+        assert any(e.event_type == SecurityEventType.SUSPICIOUS_PATTERN for e in result.events)
 
     async def test_scan_input_length_exceeds_max(self) -> None:
         config = RuntimeSecurityConfig(
@@ -431,9 +428,7 @@ class TestRuntimeSecurityScanner:
         await scanner.scan("a", tenant_id="t1", agent_id="a1")
         await scanner.scan("b", tenant_id="t1", agent_id="a1")
         result = await scanner.scan("c", tenant_id="t1", agent_id="a1")
-        assert any(
-            e.event_type == SecurityEventType.RATE_LIMIT_EXCEEDED for e in result.events
-        )
+        assert any(e.event_type == SecurityEventType.RATE_LIMIT_EXCEEDED for e in result.events)
 
     async def test_scan_anomaly_detection(self) -> None:
         config = RuntimeSecurityConfig(
@@ -463,9 +458,7 @@ class TestRuntimeSecurityScanner:
                 )
             )
         result = await scanner.scan("test", tenant_id="t1", agent_id="a1")
-        assert any(
-            e.event_type == SecurityEventType.ANOMALY_DETECTED for e in result.events
-        )
+        assert any(e.event_type == SecurityEventType.ANOMALY_DETECTED for e in result.events)
 
     async def test_scan_message_convenience(self) -> None:
         config = RuntimeSecurityConfig(
@@ -499,9 +492,7 @@ class TestRuntimeSecurityScanner:
             fail_closed=True,
         )
         scanner = RuntimeSecurityScanner(config)
-        with patch.object(
-            scanner, "_check_suspicious_patterns", side_effect=RuntimeError("boom")
-        ):
+        with patch.object(scanner, "_check_suspicious_patterns", side_effect=RuntimeError("boom")):
             result = await scanner.scan("test")
             assert result.blocked is True
             assert result.is_secure is False
@@ -520,9 +511,7 @@ class TestRuntimeSecurityScanner:
             fail_closed=False,
         )
         scanner = RuntimeSecurityScanner(config)
-        with patch.object(
-            scanner, "_check_suspicious_patterns", side_effect=ValueError("boom")
-        ):
+        with patch.object(scanner, "_check_suspicious_patterns", side_effect=ValueError("boom")):
             result = await scanner.scan("test")
             assert result.blocked is False
 
@@ -540,18 +529,20 @@ class TestRuntimeSecurityScanner:
 
     def test_get_recent_events_with_filters(self) -> None:
         scanner = RuntimeSecurityScanner()
-        scanner._event_buffer.extend([
-            SecurityEvent(
-                event_type=SecurityEventType.SUSPICIOUS_PATTERN,
-                severity=SecuritySeverity.LOW,
-                message="low",
-            ),
-            SecurityEvent(
-                event_type=SecurityEventType.ANOMALY_DETECTED,
-                severity=SecuritySeverity.HIGH,
-                message="high",
-            ),
-        ])
+        scanner._event_buffer.extend(
+            [
+                SecurityEvent(
+                    event_type=SecurityEventType.SUSPICIOUS_PATTERN,
+                    severity=SecuritySeverity.LOW,
+                    message="low",
+                ),
+                SecurityEvent(
+                    event_type=SecurityEventType.ANOMALY_DETECTED,
+                    severity=SecuritySeverity.HIGH,
+                    message="high",
+                ),
+            ]
+        )
         high_events = scanner.get_recent_events(severity_filter=SecuritySeverity.HIGH)
         assert len(high_events) == 1
         assert high_events[0].message == "high"
@@ -614,9 +605,7 @@ class TestRuntimeSecurityScanner:
 
     async def test_check_constitutional_compliance_not_available(self) -> None:
         scanner = RuntimeSecurityScanner()
-        with patch(
-            "enhanced_agent_bus.runtime_security.get_constitutional_classifier", None
-        ):
+        with patch("enhanced_agent_bus.runtime_security.get_constitutional_classifier", None):
             result = SecurityScanResult()
             await scanner._check_constitutional_compliance(result, "test", None, None)
             assert any("not available" in w for w in result.warnings)
@@ -953,9 +942,7 @@ class TestPipelineResult:
     """Tests for PipelineResult dataclass."""
 
     def test_fields(self) -> None:
-        result = PipelineResult(
-            stage_name="s1", output="ok", duration_ms=1.5, success=True
-        )
+        result = PipelineResult(stage_name="s1", output="ok", duration_ms=1.5, success=True)
         assert result.stage_name == "s1"
         assert result.success is True
         assert result.error is None
@@ -1013,12 +1000,8 @@ class TestAsyncPipelineOptimizer:
         async def handler_b(x: int) -> str:
             return f"b:{x}"
 
-        pipeline.add_stage(
-            PipelineStage(name="a", handler=handler_a, parallel=True)
-        )
-        pipeline.add_stage(
-            PipelineStage(name="b", handler=handler_b, parallel=True)
-        )
+        pipeline.add_stage(PipelineStage(name="a", handler=handler_a, parallel=True))
+        pipeline.add_stage(PipelineStage(name="b", handler=handler_b, parallel=True))
         results = await pipeline.run(1)
         assert len(results) == 2
         assert all(r.success for r in results)
@@ -1030,9 +1013,7 @@ class TestAsyncPipelineOptimizer:
             await asyncio.sleep(10)
             return x
 
-        pipeline.add_stage(
-            PipelineStage(name="slow", handler=slow, timeout=0.01)
-        )
+        pipeline.add_stage(PipelineStage(name="slow", handler=slow, timeout=0.01))
         results = await pipeline.run(1)
         assert results[0].success is False
         assert "Timeout" in (results[0].error or "")
@@ -1381,9 +1362,7 @@ class TestHealthAggregatorCollectBreakerState:
             agg = HealthAggregator(registry=None)
             details: dict = {}
             counts = [0, 0, 0]
-            agg._collect_breaker_state(
-                "svc1", "closed", 0, 5, details, counts
-            )
+            agg._collect_breaker_state("svc1", "closed", 0, 5, details, counts)
             assert details["svc1"]["state"] == "closed"
             assert counts[0] == 1
 
@@ -1396,9 +1375,7 @@ class TestHealthAggregatorCollectBreakerState:
             agg = HealthAggregator(registry=None)
             details: dict = {}
             counts = [0, 0, 0]
-            agg._collect_breaker_state(
-                "svc2", "half_open", 2, 0, details, counts
-            )
+            agg._collect_breaker_state("svc2", "half_open", 2, 0, details, counts)
             assert counts[1] == 1
 
     def test_collect_open_state(self) -> None:
@@ -1410,9 +1387,7 @@ class TestHealthAggregatorCollectBreakerState:
             agg = HealthAggregator(registry=None)
             details: dict = {}
             counts = [0, 0, 0]
-            agg._collect_breaker_state(
-                "svc3", "open", 5, 0, details, counts
-            )
+            agg._collect_breaker_state("svc3", "open", 5, 0, details, counts)
             assert counts[2] == 1
 
 
@@ -1428,7 +1403,7 @@ class TestRuntimeSecurityAdditional:
             "enhanced_agent_bus.runtime_security.validate_constitutional_hash",
             return_value=mock_validation,
         ):
-            await scanner._check_constitutional_hash(result, "cdd01ef066bc6cf2", None, None)
+            await scanner._check_constitutional_hash(result, "608508a9bd224290", None, None)
             assert result.blocked is False
 
     async def test_check_constitutional_hash_invalid(self) -> None:
@@ -1446,9 +1421,7 @@ class TestRuntimeSecurityAdditional:
 
     async def test_check_payload_integrity_not_available(self) -> None:
         scanner = RuntimeSecurityScanner()
-        with patch(
-            "enhanced_agent_bus.runtime_security.validate_payload_integrity", None
-        ):
+        with patch("enhanced_agent_bus.runtime_security.validate_payload_integrity", None):
             result = SecurityScanResult()
             await scanner._check_payload_integrity(result, MagicMock(), None, None)
             assert any("not available" in w for w in result.warnings)

@@ -1,6 +1,6 @@
 """Tests for Redis rate limiter backend.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -204,7 +204,7 @@ class TestCheckAndConsume:
         backend._available = True
         backend._last_check = 0.0  # Allow _check_connection to run
 
-        allowed, remaining, reset = await backend.check_and_consume(
+        allowed, remaining, _reset = await backend.check_and_consume(
             "user:789", max_tokens=10.0, refill_rate=1.0
         )
 

@@ -4,7 +4,7 @@ Comprehensive coverage tests for:
 - enhanced_agent_bus.observability.telemetry (NoOp classes, config helpers, TracingContext, MetricsRegistry)
 - enhanced_agent_bus.constitutional_cache (ConstitutionalCache, PolicyCache, ValidationCache)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-CONSTITUTIONAL_HASH = "cdd01ef066bc6cf2"
+CONSTITUTIONAL_HASH = "608508a9bd224290"
 
 
 # =============================================================================
@@ -188,9 +188,7 @@ class TestCheckEnforcementForUpdate:
 
         config = MagicMock()
         config.get_mode = AsyncMock(return_value="permissive")
-        await check_enforcement_for_update(
-            existing_key_type="classical", enforcement_config=config
-        )
+        await check_enforcement_for_update(existing_key_type="classical", enforcement_config=config)
 
     async def test_strict_classical_raises_migration_required(self):
         from src.core.shared.security.pqc import MigrationRequiredError
@@ -274,9 +272,7 @@ class TestValidateConstitutionalHashPqc:
     async def test_hash_mismatch_short_hash(self):
         from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
-        result = await validate_constitutional_hash_pqc(
-            data={"constitutional_hash": "short"}
-        )
+        result = await validate_constitutional_hash_pqc(data={"constitutional_hash": "short"})
         assert not result.valid
         assert any("mismatch" in e for e in result.errors)
 
@@ -335,9 +331,7 @@ class TestValidateConstitutionalHashPqc:
         from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
         config = PQCConfig(pqc_enabled=True)
-        with patch(
-            "enhanced_agent_bus.pqc_validators.PQCCryptoService"
-        ) as mock_svc_cls:
+        with patch("enhanced_agent_bus.pqc_validators.PQCCryptoService") as mock_svc_cls:
             mock_svc = MagicMock()
             mock_svc.config = MagicMock()
             mock_svc.config.migration_phase = "phase_3"
@@ -360,9 +354,7 @@ class TestValidateConstitutionalHashPqc:
         from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
         config = PQCConfig(pqc_enabled=True)
-        with patch(
-            "enhanced_agent_bus.pqc_validators.PQCCryptoService"
-        ) as mock_svc_cls:
+        with patch("enhanced_agent_bus.pqc_validators.PQCCryptoService") as mock_svc_cls:
             mock_svc = MagicMock()
             mock_svc.config = MagicMock()
             mock_svc.config.migration_phase = "phase_5"
@@ -385,9 +377,7 @@ class TestValidateConstitutionalHashPqc:
         from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
         config = PQCConfig(pqc_enabled=True)
-        with patch(
-            "enhanced_agent_bus.pqc_validators.PQCCryptoService"
-        ) as mock_svc_cls:
+        with patch("enhanced_agent_bus.pqc_validators.PQCCryptoService") as mock_svc_cls:
             mock_svc_cls.side_effect = PQCVerificationError("verify failed")
 
             result = await validate_constitutional_hash_pqc(
@@ -406,9 +396,7 @@ class TestValidateConstitutionalHashPqc:
         from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
         config = PQCConfig(pqc_enabled=True)
-        with patch(
-            "enhanced_agent_bus.pqc_validators.PQCCryptoService"
-        ) as mock_svc_cls:
+        with patch("enhanced_agent_bus.pqc_validators.PQCCryptoService") as mock_svc_cls:
             mock_svc_cls.side_effect = RuntimeError("unexpected")
 
             result = await validate_constitutional_hash_pqc(
@@ -428,9 +416,7 @@ class TestValidateConstitutionalHashPqc:
         from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
         config = PQCConfig(pqc_enabled=True)
-        with patch(
-            "enhanced_agent_bus.pqc_validators.PQCCryptoService"
-        ) as mock_svc_cls:
+        with patch("enhanced_agent_bus.pqc_validators.PQCCryptoService") as mock_svc_cls:
             mock_svc_cls.side_effect = ConstitutionalHashMismatchError("hash mismatch")
 
             result = await validate_constitutional_hash_pqc(
@@ -458,9 +444,7 @@ class TestValidateMaciRecordPqc:
     async def test_missing_single_field(self):
         from enhanced_agent_bus.pqc_validators import validate_maci_record_pqc
 
-        result = await validate_maci_record_pqc(
-            record={"agent_id": "a1", "action": "validate"}
-        )
+        result = await validate_maci_record_pqc(record={"agent_id": "a1", "action": "validate"})
         assert not result.valid
         assert any("timestamp" in e for e in result.errors)
 
@@ -544,9 +528,7 @@ class TestValidateMaciRecordPqc:
         from enhanced_agent_bus.pqc_validators import validate_maci_record_pqc
 
         config = PQCConfig(pqc_enabled=True)
-        with patch(
-            "enhanced_agent_bus.pqc_validators.PQCCryptoService"
-        ) as mock_svc_cls:
+        with patch("enhanced_agent_bus.pqc_validators.PQCCryptoService") as mock_svc_cls:
             mock_svc = MagicMock()
             mock_svc.config = MagicMock()
             mock_svc.config.migration_phase = "phase_3"
@@ -791,8 +773,12 @@ class TestCheckKeyStatusForValidation:
         from enhanced_agent_bus.pqc_validators import _check_key_status_for_validation
 
         result = await _check_key_status_for_validation(
-            data={}, signature_data={}, errors=[], warnings=[],
-            expected_hash=CONSTITUTIONAL_HASH, start_time=0.0,
+            data={},
+            signature_data={},
+            errors=[],
+            warnings=[],
+            expected_hash=CONSTITUTIONAL_HASH,
+            start_time=0.0,
         )
         assert result is None
 
@@ -806,9 +792,12 @@ class TestCheckKeyStatusForValidation:
         ):
             errors: list[str] = []
             result = await _check_key_status_for_validation(
-                data={"key_id": "key-1"}, signature_data={},
-                errors=errors, warnings=[],
-                expected_hash=CONSTITUTIONAL_HASH, start_time=0.0,
+                data={"key_id": "key-1"},
+                signature_data={},
+                errors=errors,
+                warnings=[],
+                expected_hash=CONSTITUTIONAL_HASH,
+                start_time=0.0,
             )
             assert result is not None
             assert not result.valid
@@ -824,9 +813,12 @@ class TestCheckKeyStatusForValidation:
         ):
             warnings: list[str] = []
             result = await _check_key_status_for_validation(
-                data={}, signature_data={"key_id": "key-2"},
-                errors=[], warnings=warnings,
-                expected_hash=CONSTITUTIONAL_HASH, start_time=0.0,
+                data={},
+                signature_data={"key_id": "key-2"},
+                errors=[],
+                warnings=warnings,
+                expected_hash=CONSTITUTIONAL_HASH,
+                start_time=0.0,
             )
             assert result is None
             assert any("superseded" in w for w in warnings)
@@ -840,9 +832,12 @@ class TestCheckKeyStatusForValidation:
             return_value="active",
         ):
             result = await _check_key_status_for_validation(
-                data={"key_id": "key-1"}, signature_data={},
-                errors=[], warnings=[],
-                expected_hash=CONSTITUTIONAL_HASH, start_time=0.0,
+                data={"key_id": "key-1"},
+                signature_data={},
+                errors=[],
+                warnings=[],
+                expected_hash=CONSTITUTIONAL_HASH,
+                start_time=0.0,
             )
             assert result is None
 
@@ -901,7 +896,8 @@ class TestExtractPublicKeys:
         )
         with patch("importlib.import_module", return_value=mock_mod):
             result = await _extract_public_keys(
-                data={"key_id": "k1"}, signature_data={},
+                data={"key_id": "k1"},
+                signature_data={},
             )
             assert result["classical"] == b"classical_key"
 
@@ -916,7 +912,8 @@ class TestExtractPublicKeys:
         )
         with patch("importlib.import_module", return_value=mock_mod):
             result = await _extract_public_keys(
-                data={"key_id": "k1"}, signature_data={},
+                data={"key_id": "k1"},
+                signature_data={},
             )
             assert result["pqc"] == b"pqc_key"
 
@@ -926,9 +923,7 @@ class TestExtractPublicKeys:
         mock_mod = MagicMock()
         mock_mod.KeyNotFoundError = type("KeyNotFoundError", (Exception,), {})
         mock_mod.key_registry_client._registry = MagicMock()
-        mock_mod.key_registry_client.get_public_key = AsyncMock(
-            side_effect=RuntimeError("boom")
-        )
+        mock_mod.key_registry_client.get_public_key = AsyncMock(side_effect=RuntimeError("boom"))
         with patch("importlib.import_module", return_value=mock_mod):
             result = await _extract_public_keys(
                 data={"key_id": "k1", "pqc_public_key": b"fallback_pqc"},
@@ -1109,6 +1104,7 @@ class TestConfigHelpers:
 
         with patch("enhanced_agent_bus.observability.telemetry.settings", None):
             import os
+
             with patch.dict(os.environ, {"ENVIRONMENT": "staging"}, clear=False):
                 result = _get_env_default()
                 assert result == "staging"
@@ -1118,6 +1114,7 @@ class TestConfigHelpers:
 
         with patch("enhanced_agent_bus.observability.telemetry.settings", None):
             import os
+
             env = os.environ.copy()
             env.pop("ENVIRONMENT", None)
             with patch.dict(os.environ, env, clear=True):
@@ -1138,6 +1135,7 @@ class TestConfigHelpers:
 
         with patch("enhanced_agent_bus.observability.telemetry.settings", None):
             import os
+
             with patch.dict(
                 os.environ,
                 {"OTEL_EXPORTER_OTLP_ENDPOINT": "http://otel:4317"},
@@ -1272,9 +1270,7 @@ class TestTracingContext:
         from enhanced_agent_bus.observability.telemetry import TracingContext
 
         with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
-            with TracingContext(
-                "test-span", attributes={"custom.key": "custom_value"}
-            ) as span:
+            with TracingContext("test-span", attributes={"custom.key": "custom_value"}) as span:
                 pass
 
     def test_exception_handling(self):
@@ -1333,9 +1329,7 @@ class TestMetricsRegistry:
         with patch("enhanced_agent_bus.observability.telemetry.OTEL_AVAILABLE", False):
             registry = MetricsRegistry("test-svc")
             registry.record_latency("response_time", 42.5)
-            registry.record_latency(
-                "response_time", 10.0, attributes={"endpoint": "/api"}
-            )
+            registry.record_latency("response_time", 10.0, attributes={"endpoint": "/api"})
 
     def test_set_gauge(self):
         from enhanced_agent_bus.observability.telemetry import MetricsRegistry
@@ -1670,9 +1664,7 @@ class TestConstitutionalCache:
 
     async def test_delete_reads_tags_from_redis(self):
         redis_mock = AsyncMock()
-        redis_mock.get = AsyncMock(
-            return_value=json.dumps({"tags": ["rtag"], "value": "x"})
-        )
+        redis_mock.get = AsyncMock(return_value=json.dumps({"tags": ["rtag"], "value": "x"}))
         redis_mock.delete = AsyncMock()
         redis_mock.srem = AsyncMock()
         cache = self._make_cache(redis_mock)
@@ -1836,12 +1828,18 @@ class TestConstitutionalCache:
 
         cache = self._make_cache()
         cache._local_cache["k1"] = CacheEntry(
-            value="a", constitutional_hash=CONSTITUTIONAL_HASH,
-            created_at=datetime.now(), ttl=100, tags=["x", "y"],
+            value="a",
+            constitutional_hash=CONSTITUTIONAL_HASH,
+            created_at=datetime.now(),
+            ttl=100,
+            tags=["x", "y"],
         )
         cache._local_cache["k2"] = CacheEntry(
-            value="b", constitutional_hash=CONSTITUTIONAL_HASH,
-            created_at=datetime.now(), ttl=100, tags=["z"],
+            value="b",
+            constitutional_hash=CONSTITUTIONAL_HASH,
+            created_at=datetime.now(),
+            ttl=100,
+            tags=["z"],
         )
         count = cache._invalidate_local_entries_for_tag("x")
         assert count == 1

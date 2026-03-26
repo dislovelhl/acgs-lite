@@ -10,7 +10,7 @@
 
 ACGS is constitutional governance infrastructure for AI agents. Three domains:
 
-- **acgs-lite** — Standalone governance library. Public API: `Constitution.from_yaml()` + `GovernedAgent()`. Python + optional Rust/PyO3 backend (560ns P50 validation). 13 platform integrations. 9 regulatory framework coverage.
+- **ACGS library** (`acgs` package, `acgs_lite` compatibility namespace) — Standalone governance library. Public API: `Constitution.from_yaml()` + `GovernedAgent()`. Python + optional Rust/PyO3 backend (560ns P50 validation). 13 platform integrations. 9 regulatory framework coverage.
 - **enhanced-agent-bus** — Platform engine with 80+ subsystems: MACI enforcement, constitutional amendments, deliberation, MCP server, OPA integration, circuit breakers, saga persistence.
 - **Propriety.ai** — Commercial SaaS frontend (Next.js/React). Pricing: FREE / $499 Pro / Custom Enterprise.
 
@@ -47,7 +47,7 @@ The narrative -- "HTTPS for AI" -- is a powerful analogy. SSL/TLS made e-commerc
 
 | Force | Assessment | Explanation |
 |-------|------------|-------------|
-| **Threat of new entrants** | **HIGH** | Open-source Apache-2.0 means anyone can fork. AWS/Google/Microsoft can build equivalent in 6 months |
+| **Threat of new entrants** | **HIGH** | Open-source AGPL-3.0-or-later still permits forks, but raises the cost of managed-service cloning and direct cloud-provider wrapping |
 | **Threat of substitutes** | **MEDIUM** | OPA/Rego already established in policy enforcement. Guardrails AI, NeMo Guardrails are direct competitors |
 | **Buyer bargaining power** | **HIGH** | Enterprise customers have massive bargaining power; open source reduces lock-in |
 | **Supplier bargaining power** | **LOW** | Pure software, no hardware dependencies |
@@ -59,7 +59,7 @@ The narrative -- "HTTPS for AI" -- is a powerful analogy. SSL/TLS made e-commerc
 - **9 regulatory framework coverage** is the biggest competitive advantage -- most competitors cover only 1-2
 - **Rust backend** provides 100-1000x speedup -- this is an engineering barrier
 
-**Key weakness:** Apache-2.0 license means AWS can directly package as a managed service. Must consider "open-source core + commercial value-add" model.
+**Key weakness:** Open source still lowers switching costs, so the moat cannot rely on code alone. Brand, audit history, and commercial packaging still matter.
 
 **Recommendation:** Immediately establish "compliance certification" brand -- "ACGS Certified" should become a quality mark for AI deployment, similar to the SOC 2 badge. Brand is harder to replicate than code.
 
@@ -70,7 +70,7 @@ The narrative -- "HTTPS for AI" -- is a powerful analogy. SSL/TLS made e-commerc
 **Core judgment: The project itself is an antifragility tool -- but its business model has fatal fragilities.**
 
 **Strengths (antifragile properties):**
-- **Constitutional hash (`cdd01ef066bc6cf2`) embedded in all validation paths** -- true tamper-evidence. Any rule change alters the hash. This is antifragile -- it becomes stronger under attack.
+- **Constitutional hash (`608508a9bd224290`) embedded in all validation paths** -- true tamper-evidence. Any rule change alters the hash. This is antifragile -- it becomes stronger under attack.
 - **MACI separation of powers** -- agents cannot validate their own output. This is the correct architecture for preventing "black swans" -- single points of failure are eliminated.
 - **Chaos engineering test markers (`chaos`)** -- the project actively tests failure scenarios.
 
@@ -81,7 +81,7 @@ The narrative -- "HTTPS for AI" -- is a powerful analogy. SSL/TLS made e-commerc
 
 **Recommendations:**
 1. Remove the "zero false negatives" claim. Replace with "zero false negatives in tested scenarios, with active fuzzing for unknown failure modes"
-2. acgs-lite (lean) is the antifragile product. enhanced-agent-bus (80+ subsystems) is fragile. Strictly separate them in business strategy
+2. The ACGS library (lean) is the antifragile product. enhanced-agent-bus (80+ subsystems) is fragile. Strictly separate them in business strategy
 3. Establish a red team mechanism -- let external researchers attack the governance engine
 
 ---
@@ -92,7 +92,7 @@ The narrative -- "HTTPS for AI" -- is a powerful analogy. SSL/TLS made e-commerc
 
 **Strategy Canvas Analysis:**
 
-| Factor | Traditional compliance tools | AI Guard Rails | ACGS-Lite |
+| Factor | Traditional compliance tools | AI Guard Rails | ACGS |
 |--------|---------------------------|----------------|-----------|
 | Latency | N/A | ~10ms | **560ns** |
 | Multi-framework compliance | Single | 1-2 | **9** |
@@ -130,7 +130,7 @@ These three customers have completely different purchase motivations, sales cycl
 
 The most advantageous choice is **#3 (developers)**, because:
 - Open source has a natural channel through developer communities
-- `pip install acgs-lite` + 5 lines of code matches developer purchase habits
+- `pip install acgs` + 5 lines of code matches developer purchase habits
 - GitLab integration is an already-validated product-market fit signal
 - Starting with developers enables "bottom-up" enterprise penetration
 
@@ -191,7 +191,7 @@ The README contains an excellent narrative -- a single mother rejected by AI in 
 | What can you be the best in the world at? | Sub-microsecond constitutional validation + multi-framework compliance |
 | What drives your economic engine? | **Not yet clear** |
 
-The economic engine is the weakest link. Apache-2.0 open source means the core product cannot be directly monetized.
+The economic engine is the weakest link. Open source alone does not create monetization; the business still depends on commercial packaging, support, and compliance proof.
 
 **Level 5 Leadership concern:** "One person + AI built the full stack" is an impressive story, but also means:
 - No "right people on the bus"
@@ -227,7 +227,7 @@ This violates the principle of one document, one purpose. Each audience (develop
 
 1. **Market timing is excellent** -- EU AI Act August 2026 is a hard deadline creating urgent purchase motivation
 2. **"HTTPS for AI" positioning is outstanding** -- concise, accurate, memorable
-3. **acgs-lite is the core product** -- enhanced-agent-bus is a technical debt risk
+3. **The ACGS library is the core product** -- enhanced-agent-bus is a technical debt risk
 
 ### Majority Agreement (7/9)
 
@@ -255,5 +255,5 @@ This violates the principle of one document, one purpose. Each audience (develop
 | **P1** | EU AI Act countdown marketing (August 2026) | Godin, Porter | Growth |
 | **P2** | Modify "zero false negatives" to more honest framing | Taleb | Credibility |
 | **P2** | Create "ACGS Certified" brand/badge program | Porter, Godin | Moat |
-| **P3** | Separate enhanced-agent-bus from acgs-lite in business strategy | Taleb, Meadows | Risk management |
+| **P3** | Separate enhanced-agent-bus from the ACGS library in business strategy | Taleb, Meadows | Risk management |
 | **P3** | Establish red team + open-source security audit | Taleb | Credibility |

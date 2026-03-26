@@ -1,5 +1,5 @@
 """Autonomy Tier Enforcement Middleware for the API Gateway.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 # ============================================================================
 # HITL Integration Reference (T011)
@@ -167,7 +167,7 @@ class AutonomyTierEnforcementMiddleware(BaseHTTPMiddleware):
       STORE_OUTAGE    → HTTP 503 {reason: STORE_UNAVAILABLE}; alert log emitted.
 
     Audit: every evaluation emits a structured TierEnforcementDecision log record
-    including constitutional_hash=cdd01ef066bc6cf2.
+    including constitutional_hash=608508a9bd224290.
 
     Testability: User identity and TierAssignmentRepository are resolved via
     request.app.dependency_overrides when set (allows AsyncMock injection in tests),

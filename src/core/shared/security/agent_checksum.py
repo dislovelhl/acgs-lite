@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """Agent checksum computation and verification for JWT binding.
 
 Implements IETF draft-goswami-agentic-jwt-00 inspired agent code integrity

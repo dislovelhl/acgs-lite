@@ -1,6 +1,6 @@
 """
 ACGS-2 DeepSeek Model Adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Adapter for DeepSeek models (DeepSeek-Coder, DeepSeek-Chat, etc.)
 """
@@ -38,7 +38,7 @@ class DeepSeekAdapter(ModelAdapter):
     - DeepSeek-Chat
     - DeepSeek-V2
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

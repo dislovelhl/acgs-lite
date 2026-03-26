@@ -1,6 +1,6 @@
 """
 Adaptive Intent Graph v2 (Wave R)
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module enhances the IntentGraph to use the MCPBridge for dynamic
 routing and task execution in a swarm environment.

@@ -1,6 +1,6 @@
 """
 ACGS-2 Circuit Breaker Wrapper — [CANONICAL]
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This is the **canonical** circuit breaker module for ACGS-2.
 New code should import from here (``src.core.shared.errors.circuit_breaker``).
@@ -131,7 +131,7 @@ class CircuitBreakerConfig:
     """
     Configuration for circuit breaker behavior.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Attributes:
         failure_threshold: Number of failures before opening circuit.
@@ -168,7 +168,7 @@ class SimpleCircuitBreaker:
     This is used when the more complex circuit breaker infrastructure
     is not available or not needed.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, service_name: str, config: CircuitBreakerConfig) -> None:
@@ -292,7 +292,7 @@ def get_circuit_breaker(
     """
     Get or create a circuit breaker for a service.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Args:
         service_name: Name of the service.
@@ -322,7 +322,7 @@ def circuit_breaker(
     """
     Decorator to wrap a function with circuit breaker protection.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Args:
         service_name: Name of the service for the circuit breaker.

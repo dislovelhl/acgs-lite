@@ -41,9 +41,7 @@ def get_governance_metrics(constitution: Constitution) -> dict[str, Any]:
 
     # Complexity metrics
     total_keywords = sum(len(r.keywords) for r in constitution.rules)
-    avg_keywords_per_rule = (
-        total_keywords / len(constitution.rules) if constitution.rules else 0
-    )
+    avg_keywords_per_rule = total_keywords / len(constitution.rules) if constitution.rules else 0
 
     # Dependency analysis
     explicit_deps = sum(len(r.depends_on) for r in constitution.rules)
@@ -62,9 +60,7 @@ def get_governance_metrics(constitution: Constitution) -> dict[str, Any]:
     high_impact_rules = sum(
         1 for r in constitution.rules if r.severity.value in ["high", "critical"]
     )
-    low_impact_rules = sum(
-        1 for r in constitution.rules if r.severity.value in ["info", "low"]
-    )
+    low_impact_rules = sum(1 for r in constitution.rules if r.severity.value in ["info", "low"])
 
     return {
         "rule_counts": {
@@ -90,9 +86,7 @@ def get_governance_metrics(constitution: Constitution) -> dict[str, Any]:
         "usage_patterns": {
             "high_impact_rules": high_impact_rules,
             "low_impact_rules": low_impact_rules,
-            "estimated_coverage": round(
-                (enabled_count / len(constitution.rules)) * 100, 1
-            )
+            "estimated_coverage": round((enabled_count / len(constitution.rules)) * 100, 1)
             if constitution.rules
             else 0,
         },
@@ -183,17 +177,13 @@ def health_score(constitution: Constitution) -> dict[str, Any]:
     if total_deps == 0:
         dependency_soundness = 1.0
     else:
-        valid_deps = sum(
-            sum(1 for dep in r.depends_on if dep in rule_ids) for r in active
-        )
+        valid_deps = sum(sum(1 for dep in r.depends_on if dep in rule_ids) for r in active)
         dependency_soundness = valid_deps / total_deps
 
     # 5. Coverage: fraction of rules with >=1 keyword or pattern
     cov = sum(1.0 if (r.keywords or r.patterns) else 0.0 for r in active) / n
 
-    composite = (
-        documentation + specificity + conflict_freedom + dependency_soundness + cov
-    ) / 5.0
+    composite = (documentation + specificity + conflict_freedom + dependency_soundness + cov) / 5.0
 
     if composite >= 0.9:
         grade = "A"
@@ -311,16 +301,11 @@ def maturity_level(constitution: Constitution) -> dict[str, Any]:
 
     # -- Level 5: Optimising ---------------------------------------------
     criteria["uses_temporal"] = any(
-        getattr(r, "valid_from", None) or getattr(r, "valid_until", None)
-        for r in all_rules
+        getattr(r, "valid_from", None) or getattr(r, "valid_until", None) for r in all_rules
     )
-    criteria["uses_embeddings"] = any(
-        getattr(r, "embedding", None) for r in all_rules
-    )
+    criteria["uses_embeddings"] = any(getattr(r, "embedding", None) for r in all_rules)
     criteria["uses_deprecation"] = any(r.deprecated for r in all_rules)
-    criteria["has_regulatory_tooling"] = hasattr(
-        constitution, "regulatory_alignment"
-    )
+    criteria["has_regulatory_tooling"] = hasattr(constitution, "regulatory_alignment")
     level5 = level4 and all(
         criteria[k]
         for k in [
@@ -377,9 +362,7 @@ def maturity_level(constitution: Constitution) -> dict[str, Any]:
     if level < 5:
         next_keys = level_keys.get(level + 1, [])
         if next_keys:
-            partial = sum(1 for k in next_keys if criteria.get(k)) / len(
-                next_keys
-            )
+            partial = sum(1 for k in next_keys if criteria.get(k)) / len(next_keys)
     score = round(level + partial, 2)
 
     # Next-level gaps
@@ -444,17 +427,14 @@ def coverage_gaps(constitution: Constitution) -> dict[str, Any]:
         signal_cats: set[str] = signals.get("categories", set())
         signal_kws: set[str] = signals.get("keywords", set())
         covered = any(
-            r.category in signal_cats
-            or bool(signal_kws & {kw.lower() for kw in r.keywords})
+            r.category in signal_cats or bool(signal_kws & {kw.lower() for kw in r.keywords})
             for r in active
         )
         domain_covered[domain] = covered
 
     uncovered_domains = sorted(d for d, v in domain_covered.items() if not v)
     covered_count = sum(1 for v in domain_covered.values() if v)
-    coverage_score_val = (
-        covered_count / len(domain_covered) if domain_covered else 1.0
-    )
+    coverage_score_val = covered_count / len(domain_covered) if domain_covered else 1.0
 
     # -- Category analysis ------------------------------------------------
     # Count active rules per category
@@ -466,12 +446,8 @@ def coverage_gaps(constitution: Constitution) -> dict[str, Any]:
         if r.enabled:
             cat_active[cat] = cat_active.get(cat, 0) + 1
 
-    thin_categories = {
-        cat: count for cat, count in cat_active.items() if 0 < count < min_rules
-    }
-    disabled_only_categories = sorted(
-        cat for cat in cat_total if cat_active.get(cat, 0) == 0
-    )
+    thin_categories = {cat: count for cat, count in cat_active.items() if 0 < count < min_rules}
+    disabled_only_categories = sorted(cat for cat in cat_total if cat_active.get(cat, 0) == 0)
 
     return {
         "uncovered_domains": uncovered_domains,
@@ -559,9 +535,7 @@ def full_report(
     }
 
 
-def compliance_report(
-    constitution: Constitution, *, framework: str = "soc2"
-) -> dict[str, Any]:
+def compliance_report(constitution: Constitution, *, framework: str = "soc2") -> dict[str, Any]:
     """exp145: Regulatory-focused compliance report for legal/audit consumers.
 
     Builds a concise, framework-centric compliance report by composing
@@ -661,9 +635,7 @@ def compliance_report(
     }
 
 
-def posture_score(
-    constitution: Constitution, ci_threshold: float = 0.70
-) -> dict[str, Any]:
+def posture_score(constitution: Constitution, ci_threshold: float = 0.70) -> dict[str, Any]:
     """exp139: Unified governance posture score for CI/CD gates and dashboards.
 
     Combines three independent quality axes into a single normalised score:
@@ -725,9 +697,7 @@ def posture_score(
         maturity_val = 0.0
 
     # -- weighted composite -----------------------------------------------
-    posture = round(
-        health_val * 0.40 + coverage_val * 0.35 + maturity_val * 0.25, 4
-    )
+    posture = round(health_val * 0.40 + coverage_val * 0.35 + maturity_val * 0.25, 4)
 
     if posture >= 0.95:
         grade = "A+"
@@ -747,21 +717,16 @@ def posture_score(
     if health_val < 0.7:
         hs_grade = hs.get("grade", "?")
         recommendations.append(
-            f"Improve health score ({hs_grade}) — add tags/keywords/category"
-            " to rules."
+            f"Improve health score ({hs_grade}) — add tags/keywords/category to rules."
         )
     if coverage_val < 0.7:
         try:
             missing = cg.get("missing_domains", [])
             weak = cg.get("weak_domains", [])
             if missing:
-                recommendations.append(
-                    f"Add rules covering missing domains: {', '.join(missing)}."
-                )
+                recommendations.append(f"Add rules covering missing domains: {', '.join(missing)}.")
             elif weak:
-                recommendations.append(
-                    f"Expand thin governance domains: {', '.join(weak)}."
-                )
+                recommendations.append(f"Expand thin governance domains: {', '.join(weak)}.")
             else:
                 recommendations.append("Improve domain coverage breadth.")
         except (KeyError, TypeError, AttributeError):
@@ -770,9 +735,7 @@ def posture_score(
         try:
             gaps = ml.get("next_level_gaps", [])
             if gaps:
-                recommendations.append(
-                    f"Advance maturity by addressing: {', '.join(gaps[:3])}."
-                )
+                recommendations.append(f"Advance maturity by addressing: {', '.join(gaps[:3])}.")
             else:
                 recommendations.append("Advance governance maturity level.")
         except (KeyError, TypeError, AttributeError):

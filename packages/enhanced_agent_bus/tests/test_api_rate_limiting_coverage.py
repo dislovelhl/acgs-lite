@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive test coverage for src/core/enhanced_agent_bus/api/rate_limiting.py
 

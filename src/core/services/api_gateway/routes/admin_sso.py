@@ -1,6 +1,6 @@
 """
 ACGS-2 Admin API for SSO Provider Configuration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides administrative endpoints for managing SSO providers and role mappings.
 These endpoints require admin authentication and authorization.
@@ -342,7 +342,11 @@ async def get_current_admin(
     # Check for development mode bypass — requires explicit opt-in via env var
     # to prevent accidental activation in non-development environments.
     dev_bypass_enabled = os.getenv("ACGS_DEV_ADMIN_BYPASS", "").lower() in ("1", "true", "yes")
-    if dev_bypass_enabled and _runtime_environment() == "development" and settings.sso.enabled is False:
+    if (
+        dev_bypass_enabled
+        and _runtime_environment() == "development"
+        and settings.sso.enabled is False
+    ):
         logger.warning(
             "Development admin bypass enabled - SSO disabled (ACGS_DEV_ADMIN_BYPASS=true)",
             extra={"constitutional_hash": CONSTITUTIONAL_HASH},

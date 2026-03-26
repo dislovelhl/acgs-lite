@@ -11,7 +11,7 @@ persons can effectively oversee them. Specifically, systems must:
 This module provides a lightweight Human-in-the-Loop (HITL) gateway that
 can be wired into any AI pipeline to enforce Article 14 oversight requirements.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Usage::
 
@@ -49,7 +49,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
-CONSTITUTIONAL_HASH = "cdd01ef066bc6cf2"
+CONSTITUTIONAL_HASH = "608508a9bd224290"
 
 # Article 14 threshold: decisions with impact >= this require human oversight
 DEFAULT_OVERSIGHT_THRESHOLD = 0.8
@@ -197,11 +197,7 @@ class HumanOversightGateway:
         """
         impact_score = max(0.0, min(1.0, impact_score))
         requires_review = impact_score >= self.oversight_threshold
-        outcome = (
-            OversightOutcome.PENDING
-            if requires_review
-            else OversightOutcome.AUTO_APPROVED
-        )
+        outcome = OversightOutcome.PENDING if requires_review else OversightOutcome.AUTO_APPROVED
 
         decision = OversightDecision(
             decision_id=str(uuid.uuid4())[:8],

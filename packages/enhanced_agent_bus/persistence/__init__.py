@@ -1,7 +1,7 @@
 """
 ACGS-2 Workflow Persistence Layer
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 Version: 1.0.0
 
 This module provides durable workflow execution with:

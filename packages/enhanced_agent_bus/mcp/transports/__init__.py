@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 MCP transports package for ACGS-2.
 
@@ -13,7 +13,7 @@ Available transports
 - :class:`MCPTransport`   — structural Protocol satisfied by any transport
 - :class:`MCPTransportError` — base exception for transport-layer failures
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from enhanced_agent_bus.mcp.transports.base import (

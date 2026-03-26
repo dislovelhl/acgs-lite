@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Retry Buffer
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Retry buffer for Kafka message delivery with exponential backoff.
 Split from circuit_breaker_clients.py for improved maintainability.
@@ -56,7 +56,7 @@ class RetryBuffer:
 
     Implements bounded buffer with exponential backoff retry.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

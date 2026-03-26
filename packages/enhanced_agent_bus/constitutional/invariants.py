@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Constitutional Invariant System
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Defines hard constitutional invariants that cannot be changed through normal
 amendment processes. These invariants protect core governance properties like
@@ -120,8 +120,7 @@ class InvariantManifest(BaseModel):
         computed = self._compute_hash()
         if self.invariant_hash and self.invariant_hash != computed:
             raise ValueError(
-                f"Invariant hash mismatch: provided={self.invariant_hash}, "
-                f"computed={computed}"
+                f"Invariant hash mismatch: provided={self.invariant_hash}, computed={computed}"
             )
         self.invariant_hash = computed
 
@@ -379,7 +378,7 @@ _DEFAULT_INVARIANTS: list[InvariantDefinition] = [
         scope=InvariantScope.META,
         description=(
             "Every governance decision path must validate the constitutional hash "
-            "against the canonical value (cdd01ef066bc6cf2)."
+            "against the canonical value (608508a9bd224290)."
         ),
         protected_paths=[
             "constitutional/storage.py",
@@ -432,6 +431,6 @@ _DEFAULT_INVARIANTS: list[InvariantDefinition] = [
 def get_default_manifest() -> InvariantManifest:
     """Return the default invariant manifest with all HARD/META invariants."""
     return InvariantManifest(
-        constitutional_hash="cdd01ef066bc6cf2",
+        constitutional_hash="608508a9bd224290",
         invariants=list(_DEFAULT_INVARIANTS),
     )

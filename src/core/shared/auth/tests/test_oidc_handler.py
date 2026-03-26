@@ -1,6 +1,6 @@
 """Comprehensive tests for OIDC handler.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers:
 - Dataclass construction and validation (OIDCProviderConfig, OIDCTokenResponse, OIDCUserInfo)
@@ -138,9 +138,7 @@ class TestOIDCProviderConfig:
         assert config.extra_params == {}
 
     def test_custom_scopes(self):
-        config = OIDCProviderConfig(
-            **{**VALID_PROVIDER_KWARGS, "scopes": ["openid", "custom"]}
-        )
+        config = OIDCProviderConfig(**{**VALID_PROVIDER_KWARGS, "scopes": ["openid", "custom"]})
         assert config.scopes == ["openid", "custom"]
 
     def test_empty_name_rejected(self):
@@ -283,10 +281,12 @@ class TestOIDCUserInfo:
         assert info.groups == ["editor"]
 
     def test_from_claims_azure_ad_groups(self):
-        info = OIDCUserInfo.from_claims({
-            "sub": "x",
-            "https://schemas.microsoft.com/claims/groups": ["g1", "g2"],
-        })
+        info = OIDCUserInfo.from_claims(
+            {
+                "sub": "x",
+                "https://schemas.microsoft.com/claims/groups": ["g1", "g2"],
+            }
+        )
         assert info.groups == ["g1", "g2"]
 
     def test_from_claims_non_list_groups_ignored(self):
@@ -313,9 +313,7 @@ class TestOIDCHandlerSync:
 
     def test_register_multiple_providers(self, handler: OIDCHandler):
         handler.register_provider(**VALID_PROVIDER_KWARGS)
-        handler.register_provider(
-            **{**VALID_PROVIDER_KWARGS, "name": "azure"}
-        )
+        handler.register_provider(**{**VALID_PROVIDER_KWARGS, "name": "azure"})
         assert sorted(handler.list_providers()) == ["azure", "google"]
 
     def test_get_provider_success(self, registered_handler: OIDCHandler):
@@ -584,9 +582,7 @@ class TestOIDCHandlerAsync:
         registered_handler._http_client = mock_client
 
         # Patch _get_user_info to shortcut the full flow
-        registered_handler._get_user_info = AsyncMock(
-            return_value=OIDCUserInfo(sub="u1")
-        )
+        registered_handler._get_user_info = AsyncMock(return_value=OIDCUserInfo(sub="u1"))
 
         await registered_handler.handle_callback(
             "google", "code", state, redirect_uri="https://override/cb"
@@ -652,9 +648,7 @@ class TestOIDCHandlerAsync:
     async def test_refresh_token_non_200(self, registered_handler: OIDCHandler):
         mock_client = AsyncMock()
         mock_client.get = AsyncMock(return_value=_mock_http_response(json_data=MOCK_METADATA))
-        error_resp = _mock_http_response(
-            status_code=400, json_data={"error": "invalid_grant"}
-        )
+        error_resp = _mock_http_response(status_code=400, json_data={"error": "invalid_grant"})
         error_resp.raise_for_status = MagicMock()
         mock_client.post = AsyncMock(return_value=error_resp)
         registered_handler._http_client = mock_client
@@ -760,6 +754,28 @@ class TestOIDCHandlerAsync:
 
         with pytest.raises(OIDCProviderError, match="Failed to fetch OIDC metadata"):
             await registered_handler._fetch_metadata(provider)
+
+    async def test_decode_id_token_missing_jwks_uri_precedes_authlib_requirement(
+        self, registered_handler: OIDCHandler
+    ):
+        provider = registered_handler.get_provider("google")
+        registered_handler._fetch_metadata = AsyncMock(
+            return_value={"issuer": MOCK_METADATA["issuer"]}
+        )
+
+        with patch("src.core.shared.auth.oidc_handler.HAS_AUTHLIB", False):
+            with pytest.raises(OIDCTokenError, match="JWKS URI not found"):
+                await registered_handler._decode_id_token("token", provider)
+
+    async def test_decode_id_token_no_authlib_with_valid_metadata(
+        self, registered_handler: OIDCHandler
+    ):
+        provider = registered_handler.get_provider("google")
+        registered_handler._fetch_metadata = AsyncMock(return_value=MOCK_METADATA)
+
+        with patch("src.core.shared.auth.oidc_handler.HAS_AUTHLIB", False):
+            with pytest.raises(OIDCTokenError, match="authlib library"):
+                await registered_handler._decode_id_token("token", provider)
 
     async def test_fetch_userinfo_success(self, registered_handler: OIDCHandler):
         userinfo = {"sub": "u1", "email": "a@b.com"}

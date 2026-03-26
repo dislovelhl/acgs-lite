@@ -1,6 +1,6 @@
 """
 OpenEvolve Governance Adapter — Governed Evolver
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements MACI separation-of-powers for the evolution loop:
 
@@ -239,9 +239,7 @@ class GovernedEvolver:
 
     def get_metrics(self) -> dict[str, Any]:
         total = self._metrics["candidates_evaluated"]
-        approval_rate = (
-            self._metrics["candidates_approved"] / total if total else 0.0
-        )
+        approval_rate = self._metrics["candidates_approved"] / total if total else 0.0
         return {
             **self._metrics,
             "approval_rate": round(approval_rate, 4),

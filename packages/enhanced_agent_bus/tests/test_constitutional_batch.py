@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Parallel Constitutional Validation Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 TDD tests for parallel constitutional validation in batch operations.
 Tests Phase 4-Task 4 acceptance criteria:
@@ -22,7 +22,7 @@ import pytest
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 # Mark all tests as governance tests (95% coverage required)
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
 

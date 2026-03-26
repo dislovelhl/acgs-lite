@@ -4,7 +4,7 @@ Routes actions to different constitutions based on agent role, domain,
 or custom routing functions. Essential for multi-agent systems where
 different agents have different governance requirements.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

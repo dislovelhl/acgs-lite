@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Anthropic LLM Adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Anthropic adapter supporting Claude 3 models (Opus, Sonnet, Haiku) with
 constitutional AI features, streaming, and tool use capabilities.
@@ -48,7 +48,7 @@ _ANTHROPIC_ADAPTER_OPERATION_ERRORS = (
 class AnthropicAdapter(BaseLLMAdapter):
     """Anthropic LLM adapter for Claude models.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Supports:
     - Claude 3 Opus (most capable)
@@ -133,9 +133,7 @@ class AnthropicAdapter(BaseLLMAdapter):
             ValueError: If constitutional compliance requirements are not met.
         """
         if not self.constitutional_hash:
-            raise ValueError(
-                "Constitutional hash is required for Anthropic adapter compliance."
-            )
+            raise ValueError("Constitutional hash is required for Anthropic adapter compliance.")
         if self.constitutional_hash != CONSTITUTIONAL_HASH:
             logger.warning(
                 "Anthropic adapter using non-standard constitutional hash: %s",

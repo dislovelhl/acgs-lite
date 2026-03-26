@@ -1,6 +1,6 @@
 """
 ACGS-2 Deliberation Layer - OPA Policy Guard
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides OPA-based policy guard integration for the deliberation layer.
 Implements VERIFY-BEFORE-ACT pattern with multi-signature collection,
@@ -927,7 +927,7 @@ def reset_opa_guard() -> None:
 
     Used primarily for test isolation to prevent state leakage between tests.
     For graceful shutdown, use close_opa_guard() instead.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     global _opa_guard
     _opa_guard = None

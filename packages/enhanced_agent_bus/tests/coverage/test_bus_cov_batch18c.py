@@ -5,7 +5,7 @@ Coverage tests for:
   - middlewares/batch/deduplication.py
   - middlewares/batch/metrics.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -56,6 +56,7 @@ from enhanced_agent_bus.validators import ValidationResult
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_message(**kwargs: Any) -> AgentMessage:
     defaults = {
@@ -122,6 +123,7 @@ def _make_batch_item(**kwargs: Any) -> BatchRequestItem:
 # ===================================================================
 # TOOL PRIVILEGE TESTS
 # ===================================================================
+
 
 class TestPrivilegeDecision:
     def test_defaults(self):
@@ -442,6 +444,7 @@ class TestToolPrivilegeMiddleware:
 # BATCH PROCESSING TESTS
 # ===================================================================
 
+
 class TestBatchProcessingMiddleware:
     def setup_method(self):
         self.middleware = BatchProcessingMiddleware()
@@ -542,12 +545,8 @@ class TestBatchProcessingMiddleware:
 
     async def test_aggregate_results_stats(self):
         items_resp = [
-            BatchResponseItem.create_success(
-                request_id="r1", valid=True, processing_time_ms=10.0
-            ),
-            BatchResponseItem.create_success(
-                request_id="r2", valid=True, processing_time_ms=20.0
-            ),
+            BatchResponseItem.create_success(request_id="r1", valid=True, processing_time_ms=10.0),
+            BatchResponseItem.create_success(request_id="r2", valid=True, processing_time_ms=20.0),
             BatchResponseItem.create_error(
                 request_id="r3",
                 error_code="ERR",
@@ -585,9 +584,7 @@ class TestBatchProcessingMiddleware:
         assert result.processed_items[0].valid is True
 
     async def test_fail_closed_raises_on_catastrophic_error(self):
-        mw = BatchProcessingMiddleware(
-            config=MiddlewareConfig(fail_closed=True)
-        )
+        mw = BatchProcessingMiddleware(config=MiddlewareConfig(fail_closed=True))
         ctx = _make_batch_ctx(items=[_make_batch_item()])
         # Patch asyncio.gather itself at module level to raise RuntimeError
         # which is caught by the outer try/except BATCH_PROCESSING_ERRORS
@@ -599,9 +596,7 @@ class TestBatchProcessingMiddleware:
                 await mw.process(ctx)
 
     async def test_fail_open_sets_early_result(self):
-        mw = BatchProcessingMiddleware(
-            config=MiddlewareConfig(fail_closed=False)
-        )
+        mw = BatchProcessingMiddleware(config=MiddlewareConfig(fail_closed=False))
         ctx = _make_batch_ctx(items=[_make_batch_item()])
         with patch(
             "enhanced_agent_bus.middlewares.batch.processing.asyncio.gather",
@@ -669,6 +664,7 @@ class TestBatchProcessingMiddleware:
 # ===================================================================
 # LRU CACHE TESTS
 # ===================================================================
+
 
 class TestLRUCache:
     def test_get_miss(self):
@@ -748,6 +744,7 @@ class TestLRUCache:
 # ===================================================================
 # BATCH DEDUPLICATION TESTS
 # ===================================================================
+
 
 class TestBatchDeduplicationMiddleware:
     def setup_method(self):
@@ -832,9 +829,7 @@ class TestBatchDeduplicationMiddleware:
             config=MiddlewareConfig(fail_closed=True),
         )
         ctx = _make_batch_ctx(items=[_make_batch_item()])
-        with patch.object(
-            mw, "_compute_message_id", side_effect=RuntimeError("hash fail")
-        ):
+        with patch.object(mw, "_compute_message_id", side_effect=RuntimeError("hash fail")):
             with pytest.raises(BatchDeduplicationException):
                 await mw.process(ctx)
 
@@ -843,9 +838,7 @@ class TestBatchDeduplicationMiddleware:
             config=MiddlewareConfig(fail_closed=False),
         )
         ctx = _make_batch_ctx(items=[_make_batch_item()])
-        with patch.object(
-            mw, "_compute_message_id", side_effect=RuntimeError("hash fail")
-        ):
+        with patch.object(mw, "_compute_message_id", side_effect=RuntimeError("hash fail")):
             result = await mw.process(ctx)
         assert result.early_result is not None
         assert result.early_result.is_valid is False
@@ -894,6 +887,7 @@ class TestBatchDeduplicationMiddleware:
 # BATCH METRICS TESTS
 # ===================================================================
 
+
 class TestBatchMetricsMiddleware:
     def setup_method(self):
         self.middleware = BatchMetricsMiddleware()
@@ -910,9 +904,7 @@ class TestBatchMetricsMiddleware:
         br = BatchRequest(items=[_make_batch_item()], batch_id="b-123", tenant_id="t-1")
         items = [_make_batch_item()]
         processed = [
-            BatchResponseItem.create_success(
-                request_id="r1", valid=True, processing_time_ms=10.0
-            )
+            BatchResponseItem.create_success(request_id="r1", valid=True, processing_time_ms=10.0)
         ]
         ctx = _make_batch_ctx(
             items=items,
@@ -929,12 +921,8 @@ class TestBatchMetricsMiddleware:
 
     async def test_records_item_metrics(self):
         processed = [
-            BatchResponseItem.create_success(
-                request_id="r1", valid=True, processing_time_ms=5.0
-            ),
-            BatchResponseItem.create_error(
-                request_id="r2", error_code="ERR", error_message="fail"
-            ),
+            BatchResponseItem.create_success(request_id="r1", valid=True, processing_time_ms=5.0),
+            BatchResponseItem.create_error(request_id="r2", error_code="ERR", error_message="fail"),
         ]
         ctx = _make_batch_ctx()
         ctx.processed_items = processed
@@ -946,12 +934,8 @@ class TestBatchMetricsMiddleware:
 
     async def test_success_rate_calculation(self):
         processed = [
-            BatchResponseItem.create_success(
-                request_id="r1", valid=True, processing_time_ms=5.0
-            ),
-            BatchResponseItem.create_error(
-                request_id="r2", error_code="ERR", error_message="fail"
-            ),
+            BatchResponseItem.create_success(request_id="r1", valid=True, processing_time_ms=5.0),
+            BatchResponseItem.create_error(request_id="r2", error_code="ERR", error_message="fail"),
         ]
         ctx = _make_batch_ctx()
         ctx.processed_items = processed
@@ -993,9 +977,7 @@ class TestBatchMetricsMiddleware:
     async def test_get_summary(self):
         ctx = _make_batch_ctx(batch_tenant_id="tenant-x")
         ctx.processed_items = [
-            BatchResponseItem.create_success(
-                request_id="r1", valid=True, processing_time_ms=5.0
-            ),
+            BatchResponseItem.create_success(request_id="r1", valid=True, processing_time_ms=5.0),
         ]
         await self.middleware.process(ctx)
         summary = self.middleware.get_summary()
@@ -1096,8 +1078,7 @@ class TestBatchMetricsMiddleware:
         mw._metrics_registry = registry
         # Add 150 item metrics to trigger sampling
         mw._recorded_metrics = [
-            {"metric_type": "item_detail", "request_id": f"r{i}"}
-            for i in range(150)
+            {"metric_type": "item_detail", "request_id": f"r{i}"} for i in range(150)
         ]
         ctx = _make_batch_ctx()
         await mw._emit_metrics(ctx)

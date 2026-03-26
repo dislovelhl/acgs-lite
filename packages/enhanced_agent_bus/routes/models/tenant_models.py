@@ -1,4 +1,4 @@
-"""Constitutional Hash: cdd01ef066bc6cf2
+"""Constitutional Hash: 608508a9bd224290
 Tenant-related Pydantic models for the Enhanced Agent Bus API.
 """
 
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 def _to_dict_safe(obj: object) -> dict:
     """Convert object to dict safely using Pydantic V2 model_dump().
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     if obj is None:
         return {}

@@ -1,6 +1,6 @@
 """
 ACGS-2 OCI Bundle Registry Client
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Production-grade OCI registry integration for policy bundle distribution.
 Supports Harbor, AWS ECR, GCR, and generic OCI-compliant registries.
@@ -1121,7 +1121,7 @@ class OCIRegistryClientAdapter:
     concrete OCIRegistryClient, enabling independent testing and future
     registry backend swaps without modifying service code.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, client: "OCIRegistryClient") -> None:

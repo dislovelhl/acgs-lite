@@ -1,6 +1,6 @@
 """
 ACGS-2 Context & Memory - JRT Context Preparer
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements Just-in-Time Retrieval (JRT) context preparation for optimal
 LLM performance. Repeats critical sections for better recall and uses
@@ -52,7 +52,7 @@ class JRTRetrievalStrategy(str, Enum):
 class CriticalSectionMarker:
     """Marks a critical section in the context.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     start_position: int
@@ -75,7 +75,7 @@ class CriticalSectionMarker:
 class JRTPreparationResult:
     """Result of JRT context preparation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     prepared_window: ContextWindow
@@ -100,7 +100,7 @@ class JRTContextPreparer:
     - Priority-based ordering
     - Always including constitutional context
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

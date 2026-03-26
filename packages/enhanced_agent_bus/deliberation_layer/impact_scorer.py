@@ -1,6 +1,6 @@
 """
 Impact Scorer Facade (Deliberation Layer).
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides unified impact scoring with support for:
 - Basic keyword-based semantic scoring (default)
@@ -95,7 +95,7 @@ class ImpactScorer:
     - MiniCPM-enhanced 7-dimensional governance scoring (when enabled)
     - ONNX/TensorRT optimized inference for batch processing
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -268,7 +268,7 @@ class ImpactScorer:
     def loco_operator_available(self) -> bool:
         """Check if LocoOperator-4B scoring is available.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         if self._loco_client is None:
             return False
@@ -505,7 +505,7 @@ class ImpactScorer:
     def _calculate_volume_score(self, agent_id: str) -> float:
         """Calculate volume-based score based on agent request history.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         if not hasattr(self, "_agent_request_counts"):
             self._agent_request_counts: dict[str, int] = {}
@@ -548,7 +548,7 @@ class ImpactScorer:
 
         Detects anomalous behavior by comparing current score to historical average.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         if not hasattr(self, "_agent_score_history"):
             self._agent_score_history: dict[str, list[float]] = {}
@@ -635,7 +635,7 @@ class ImpactScorer:
     ) -> float:
         """Calculate priority factor in range 0-1.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         if context is None:
             context = {}
@@ -750,7 +750,7 @@ class ImpactScorer:
     async def _get_embeddings(self, text: str) -> "np.ndarray":  # type: ignore[name-defined]
         """Get embeddings for text, with fallback for when model is not available.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         if not NUMPY_AVAILABLE:
             raise ImportError("numpy is required for embedding generation")

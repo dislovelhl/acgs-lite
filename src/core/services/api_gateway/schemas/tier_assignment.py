@@ -1,6 +1,6 @@
 """
 Pydantic v2 schemas for agent tier assignment API endpoints.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -84,6 +84,6 @@ class TierEnforcementDecisionSchema(BaseModel):
     )
     constitutional_hash: str = Field(
         ...,
-        description="Constitutional hash at time of decision (must equal cdd01ef066bc6cf2)",
+        description="Constitutional hash at time of decision (must equal 608508a9bd224290)",
     )
     timestamp: datetime = Field(..., description="Decision evaluation time (UTC)")

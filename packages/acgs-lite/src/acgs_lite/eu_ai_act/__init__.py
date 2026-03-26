@@ -6,7 +6,7 @@ for high-risk AI system compliance.
 
 **Deadline: EU AI Act high-risk provisions take effect 2026-08-02.**
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 License Requirements
 --------------------

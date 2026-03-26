@@ -8,7 +8,7 @@ Tests new v3.1 features:
 - Predictive task decomposition with ML patterns
 - Dashboard metrics endpoint
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio

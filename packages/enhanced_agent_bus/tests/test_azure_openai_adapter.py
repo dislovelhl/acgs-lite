@@ -1,6 +1,6 @@
 """Tests for enhanced_agent_bus.llm_adapters.azure_openai_adapter — coverage boost.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests the AzureOpenAIAdapter class including initialization, request preparation,
 response processing, token counting, cost estimation, streaming, and health checks.
@@ -234,9 +234,7 @@ class TestPrepareRequestParams:
     def test_with_max_tokens_and_stop(self):
         adapter = _make_adapter()
         msgs = _make_messages()
-        params = adapter._prepare_request_params(
-            msgs, max_tokens=100, stop=["END"], stream=True
-        )
+        params = adapter._prepare_request_params(msgs, max_tokens=100, stop=["END"], stream=True)
         assert params["max_tokens"] == 100
         assert params["stop"] == ["END"]
         assert params["stream"] is True

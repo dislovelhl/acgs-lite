@@ -1,6 +1,6 @@
 """
 Tests for Governance Degradation Detection Engine.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from unittest.mock import AsyncMock
@@ -230,9 +230,7 @@ class TestDegradationDetector:
 
     def test_init_custom_thresholds(self, mock_collector):
         thresholds = DegradationThresholds(violations_rate_threshold=0.05)
-        det = DegradationDetector(
-            metrics_collector=mock_collector, thresholds=thresholds
-        )
+        det = DegradationDetector(metrics_collector=mock_collector, thresholds=thresholds)
         assert det.thresholds.violations_rate_threshold == 0.05
 
     @pytest.mark.asyncio
@@ -279,9 +277,7 @@ class TestDegradationDetector:
         baseline = GovernanceMetricsSnapshot(deliberation_success_rate=0.99)
         current = GovernanceMetricsSnapshot(deliberation_success_rate=0.80)
         report = await detector.analyze_degradation(baseline, current)
-        delib = [
-            m for m in report.metric_analyses if m.metric_name == "deliberation_success_rate"
-        ]
+        delib = [m for m in report.metric_analyses if m.metric_name == "deliberation_success_rate"]
         assert delib[0].threshold_exceeded is True
 
     @pytest.mark.asyncio
@@ -339,9 +335,7 @@ class TestDegradationDetector:
     @pytest.mark.asyncio
     async def test_analyze_multi_window_custom(self, detector, mock_collector):
         baseline = GovernanceMetricsSnapshot()
-        reports = await detector.analyze_multi_window(
-            baseline, windows=[TimeWindow.ONE_HOUR]
-        )
+        reports = await detector.analyze_multi_window(baseline, windows=[TimeWindow.ONE_HOUR])
         assert len(reports) == 1
 
     # -- severity determination --
@@ -450,24 +444,36 @@ class TestDegradationDetector:
     # -- rollback recommendation --
 
     def test_rollback_critical(self, detector):
-        assert detector._should_recommend_rollback(
-            DegradationSeverity.CRITICAL, 0.5, SignificanceLevel.NONE
-        ) is True
+        assert (
+            detector._should_recommend_rollback(
+                DegradationSeverity.CRITICAL, 0.5, SignificanceLevel.NONE
+            )
+            is True
+        )
 
     def test_rollback_high_confident(self, detector):
-        assert detector._should_recommend_rollback(
-            DegradationSeverity.HIGH, 0.8, SignificanceLevel.HIGH
-        ) is True
+        assert (
+            detector._should_recommend_rollback(
+                DegradationSeverity.HIGH, 0.8, SignificanceLevel.HIGH
+            )
+            is True
+        )
 
     def test_rollback_high_low_confidence(self, detector):
-        assert detector._should_recommend_rollback(
-            DegradationSeverity.HIGH, 0.3, SignificanceLevel.NONE
-        ) is False
+        assert (
+            detector._should_recommend_rollback(
+                DegradationSeverity.HIGH, 0.3, SignificanceLevel.NONE
+            )
+            is False
+        )
 
     def test_rollback_moderate(self, detector):
-        assert detector._should_recommend_rollback(
-            DegradationSeverity.MODERATE, 0.9, SignificanceLevel.VERY_HIGH
-        ) is False
+        assert (
+            detector._should_recommend_rollback(
+                DegradationSeverity.MODERATE, 0.9, SignificanceLevel.VERY_HIGH
+            )
+            is False
+        )
 
     # -- summary generation --
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Admin script to generate acgs-lite license keys.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Usage:
     python generate_license.py --tier PRO --days 365 --secret $ACGS_LICENSE_SECRET

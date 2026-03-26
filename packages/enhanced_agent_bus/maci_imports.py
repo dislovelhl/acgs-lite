@@ -1,6 +1,6 @@
 """
 MACI Import Management
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Centralizes optional dependency imports for MACI enforcement.
 Provides clean fallback handling for imports that may not be available
@@ -43,7 +43,7 @@ GLOBAL_SETTINGS_AVAILABLE: bool = False
 try:
     from src.core.shared.constants import CONSTITUTIONAL_HASH as _DEFAULT_CONSTITUTIONAL_HASH
 except ImportError:
-    _DEFAULT_CONSTITUTIONAL_HASH = "cdd01ef066bc6cf2"  # pragma: allowlist secret
+    _DEFAULT_CONSTITUTIONAL_HASH = "608508a9bd224290"  # pragma: allowlist secret
 
 CONSTITUTIONAL_HASH: str = _DEFAULT_CONSTITUTIONAL_HASH
 
@@ -192,6 +192,7 @@ except ImportError:
 
 _model_cache: JSONDict = {}
 
+
 def _load_models() -> bool:
     """Lazy-load MACI model classes into _model_cache.
 
@@ -217,6 +218,7 @@ def _load_models() -> bool:
         # Refresh CONSTITUTIONAL_HASH from canonical source if available
         try:
             from src.core.shared.constants import CONSTITUTIONAL_HASH as _ch
+
             CONSTITUTIONAL_HASH = _ch
         except ImportError:
             pass
@@ -234,17 +236,21 @@ def get_agent_message() -> object:
         _load_models()
     return _model_cache.get("AgentMessage")
 
+
 def get_message_type() -> object:
     if not _model_cache.get("_loaded"):
         _load_models()
     return _model_cache.get("MessageType")
+
 
 def get_enum_value_func() -> Callable[..., object] | None:
     if not _model_cache.get("_loaded"):
         _load_models()
     return _model_cache.get("get_enum_value")  # type: ignore[no-any-return]
 
+
 _LAZY_MODEL_ATTRS = {"AgentMessage", "MessageType", "get_enum_value"}
+
 
 def __getattr__(name: str) -> object:
     if name in _LAZY_MODEL_ATTRS:
@@ -256,6 +262,7 @@ def __getattr__(name: str) -> object:
             return value
         raise AttributeError(f"MACI model {name!r} could not be loaded")
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 def ensure_maci_models_loaded() -> bool:
     result = _load_models()
@@ -329,7 +336,7 @@ __all__ = [
     "MACIRoleViolationError",
     "MACISelfValidationError",
     "MessageType",
-    "get_enum_value",
+    "get_enum_value",  # noqa: F822 — resolved lazily via __getattr__
     # Utilities
     "get_iso_timestamp",
     # Global settings

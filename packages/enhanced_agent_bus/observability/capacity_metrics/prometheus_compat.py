@@ -1,6 +1,6 @@
 """
 ACGS-2 Prometheus Compatibility Layer
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Re-exports from shared metrics/noop module for backward compatibility.
 """

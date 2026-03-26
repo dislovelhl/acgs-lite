@@ -5,7 +5,7 @@ Covers AdaptiveGovernanceEngine methods: initialization, evaluate_governance_dec
 provide_feedback, classify_impact_level, generate_reasoning, DTMC integration,
 A/B test routing, drift detection, metrics, background learning, and fallback paths.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -46,12 +46,13 @@ from enhanced_agent_bus.governance_constants import (
 
 pytestmark = [pytest.mark.unit]
 
-HASH = "cdd01ef066bc6cf2"
+HASH = "608508a9bd224290"
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_features(**overrides) -> ImpactFeatures:
     defaults = dict(
@@ -87,6 +88,7 @@ def _make_decision(**overrides) -> GovernanceDecision:
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 def _patch_externals():
@@ -163,6 +165,7 @@ def mocks(_patch_externals):
 # Construction & properties
 # ---------------------------------------------------------------------------
 
+
 class TestConstruction:
     def test_initial_state(self, engine):
         assert engine.constitutional_hash == HASH
@@ -184,6 +187,7 @@ class TestConstruction:
 # ---------------------------------------------------------------------------
 # _classify_impact_level
 # ---------------------------------------------------------------------------
+
 
 class TestClassifyImpactLevel:
     @pytest.mark.parametrize(
@@ -208,6 +212,7 @@ class TestClassifyImpactLevel:
 # ---------------------------------------------------------------------------
 # _generate_reasoning
 # ---------------------------------------------------------------------------
+
 
 class TestGenerateReasoning:
     def test_allowed_reasoning_contains_action(self, engine):
@@ -238,6 +243,7 @@ class TestGenerateReasoning:
 # _build_conservative_fallback_decision
 # ---------------------------------------------------------------------------
 
+
 class TestFallbackDecision:
     def test_fallback_is_blocked(self, engine):
         decision = engine._build_conservative_fallback_decision(ValueError("boom"))
@@ -251,6 +257,7 @@ class TestFallbackDecision:
 # ---------------------------------------------------------------------------
 # evaluate_governance_decision
 # ---------------------------------------------------------------------------
+
 
 class TestEvaluateGovernanceDecision:
     @pytest.mark.asyncio
@@ -282,9 +289,7 @@ class TestEvaluateGovernanceDecision:
 
     @pytest.mark.asyncio
     async def test_validation_failure_triggers_fallback(self, engine, mocks):
-        mocks.validator.validate_decision = AsyncMock(
-            return_value=(False, ["hash mismatch"])
-        )
+        mocks.validator.validate_decision = AsyncMock(return_value=(False, ["hash mismatch"]))
 
         decision = await engine.evaluate_governance_decision(
             {"content": "x"}, {"active_agents": []}
@@ -306,6 +311,7 @@ class TestEvaluateGovernanceDecision:
 # ---------------------------------------------------------------------------
 # _apply_dtmc_risk_blend
 # ---------------------------------------------------------------------------
+
 
 class TestDTMCRiskBlend:
     def test_noop_when_dtmc_disabled(self, engine):
@@ -345,6 +351,7 @@ class TestDTMCRiskBlend:
 # ---------------------------------------------------------------------------
 # _apply_dtmc_escalation
 # ---------------------------------------------------------------------------
+
 
 class TestDTMCEscalation:
     def test_noop_when_disabled(self, engine):
@@ -387,6 +394,7 @@ class TestDTMCEscalation:
 # _build_decision_for_features
 # ---------------------------------------------------------------------------
 
+
 class TestBuildDecisionForFeatures:
     def test_returns_correct_structure(self, engine, mocks):
         mocks.thresh.get_adaptive_threshold.return_value = 0.5
@@ -408,6 +416,7 @@ class TestBuildDecisionForFeatures:
 # ---------------------------------------------------------------------------
 # provide_feedback
 # ---------------------------------------------------------------------------
+
 
 class TestProvideFeedback:
     def test_updates_threshold_and_scorer(self, engine, mocks):
@@ -445,6 +454,7 @@ class TestProvideFeedback:
 # _update_metrics
 # ---------------------------------------------------------------------------
 
+
 class TestUpdateMetrics:
     def test_updates_response_time(self, engine):
         engine.metrics.average_response_time = 0.0
@@ -468,6 +478,7 @@ class TestUpdateMetrics:
 # ---------------------------------------------------------------------------
 # _analyze_performance_trends
 # ---------------------------------------------------------------------------
+
 
 class TestAnalyzePerformanceTrends:
     def test_appends_trend_data(self, engine):
@@ -497,6 +508,7 @@ class TestAnalyzePerformanceTrends:
 # _should_retrain_models
 # ---------------------------------------------------------------------------
 
+
 class TestShouldRetrainModels:
     def test_retrain_when_compliance_low(self, engine):
         engine.metrics.constitutional_compliance_rate = 0.5
@@ -521,6 +533,7 @@ class TestShouldRetrainModels:
 # _get_trajectory_prefix
 # ---------------------------------------------------------------------------
 
+
 class TestGetTrajectoryPrefix:
     def test_empty_history_returns_none(self, engine):
         assert engine._get_trajectory_prefix() is None
@@ -533,7 +546,7 @@ class TestGetTrajectoryPrefix:
         assert prefix == [1, 4]  # LOW=1, CRITICAL=4
 
     def test_caps_at_10_entries(self, engine):
-        for i in range(15):
+        for _i in range(15):
             engine.decision_history.append(_make_decision(impact_level=ImpactLevel.MEDIUM))
 
         prefix = engine._get_trajectory_prefix()
@@ -543,6 +556,7 @@ class TestGetTrajectoryPrefix:
 # ---------------------------------------------------------------------------
 # _maybe_refit_dtmc
 # ---------------------------------------------------------------------------
+
 
 class TestMaybeRefitDTMC:
     def test_noop_when_disabled(self, engine, mocks):
@@ -572,6 +586,7 @@ class TestMaybeRefitDTMC:
 # _default_river_feature_names
 # ---------------------------------------------------------------------------
 
+
 class TestDefaultRiverFeatureNames:
     def test_returns_list_of_strings(self):
         names = AdaptiveGovernanceEngine._default_river_feature_names()
@@ -584,6 +599,7 @@ class TestDefaultRiverFeatureNames:
 # ---------------------------------------------------------------------------
 # get_river_model_stats / get_ab_test_router / get_ab_test_metrics / etc.
 # ---------------------------------------------------------------------------
+
 
 class TestAccessors:
     def test_river_stats_none_when_no_model(self, engine):
@@ -627,6 +643,7 @@ class TestAccessors:
 # initialize / shutdown
 # ---------------------------------------------------------------------------
 
+
 class TestLifecycle:
     @pytest.mark.asyncio
     async def test_initialize_starts_learning(self, engine):
@@ -654,6 +671,7 @@ class TestLifecycle:
 # ---------------------------------------------------------------------------
 # _store_feedback_event (with and without feedback handler)
 # ---------------------------------------------------------------------------
+
 
 class TestStoreFeedbackEvent:
     def test_noop_when_handler_unavailable(self, engine):
@@ -694,6 +712,7 @@ class TestStoreFeedbackEvent:
 # _update_river_model
 # ---------------------------------------------------------------------------
 
+
 class TestUpdateRiverModel:
     def test_noop_when_no_model(self, engine):
         engine.river_model = None
@@ -721,6 +740,7 @@ class TestUpdateRiverModel:
 # _collect_drift_data
 # ---------------------------------------------------------------------------
 
+
 class TestCollectDriftData:
     def test_returns_none_for_empty_history(self, engine):
         assert engine._collect_drift_data() is None
@@ -739,6 +759,7 @@ class TestCollectDriftData:
 # _log_performance_summary (smoke)
 # ---------------------------------------------------------------------------
 
+
 class TestLogPerformanceSummary:
     def test_does_not_raise(self, engine):
         engine._log_performance_summary()
@@ -747,6 +768,7 @@ class TestLogPerformanceSummary:
 # ---------------------------------------------------------------------------
 # A/B test routing
 # ---------------------------------------------------------------------------
+
 
 class TestABTestRouting:
     def test_noop_when_router_unavailable(self, engine):
@@ -801,6 +823,7 @@ class TestABTestRouting:
 # ---------------------------------------------------------------------------
 # promote_candidate_model
 # ---------------------------------------------------------------------------
+
 
 class TestPromoteCandidateModel:
     def test_returns_result_on_success(self, engine):

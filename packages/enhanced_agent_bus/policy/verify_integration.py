@@ -1,6 +1,6 @@
 """
 Shadow Mode Verification for Unified PSV-Verus Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 NOTE: This is a standalone verification script, not a library module.
 """

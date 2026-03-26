@@ -19,36 +19,43 @@ import pytest
 # 1. auth_injector.py
 # ---------------------------------------------------------------------------
 
+
 class TestAuthContextAndInjectionResult:
     """Test AuthContext helpers and InjectionResult properties/to_dict."""
 
     def test_auth_context_get_tool_name_from_tool_name(self):
         from enhanced_agent_bus.mcp_integration.auth.auth_injector import AuthContext
+
         ctx = AuthContext(tool_name="my_tool")
         assert ctx.get_tool_name() == "my_tool"
 
     def test_auth_context_get_tool_name_from_tool_id(self):
         from enhanced_agent_bus.mcp_integration.auth.auth_injector import AuthContext
+
         ctx = AuthContext(tool_id="id_tool")
         assert ctx.get_tool_name() == "id_tool"
 
     def test_auth_context_get_tool_name_fallback(self):
         from enhanced_agent_bus.mcp_integration.auth.auth_injector import AuthContext
+
         ctx = AuthContext()
         assert ctx.get_tool_name() == "unknown"
 
     def test_auth_context_get_scopes_required(self):
         from enhanced_agent_bus.mcp_integration.auth.auth_injector import AuthContext
+
         ctx = AuthContext(required_scopes=["read", "write"])
         assert ctx.get_scopes() == ["read", "write"]
 
     def test_auth_context_get_scopes_alias(self):
         from enhanced_agent_bus.mcp_integration.auth.auth_injector import AuthContext
+
         ctx = AuthContext(scopes=["admin"])
         assert ctx.get_scopes() == ["admin"]
 
     def test_auth_context_get_scopes_empty(self):
         from enhanced_agent_bus.mcp_integration.auth.auth_injector import AuthContext
+
         ctx = AuthContext()
         assert ctx.get_scopes() == []
 
@@ -58,6 +65,7 @@ class TestAuthContextAndInjectionResult:
             InjectionResult,
             InjectionStatus,
         )
+
         r = InjectionResult(status=InjectionStatus.SUCCESS, auth_method=AuthMethod.OAUTH2)
         assert r.success is True
 
@@ -67,6 +75,7 @@ class TestAuthContextAndInjectionResult:
             InjectionResult,
             InjectionStatus,
         )
+
         r = InjectionResult(status=InjectionStatus.FAILED, auth_method=AuthMethod.NONE)
         assert r.success is False
 
@@ -76,6 +85,7 @@ class TestAuthContextAndInjectionResult:
             InjectionResult,
             InjectionStatus,
         )
+
         r = InjectionResult(
             status=InjectionStatus.SUCCESS,
             auth_method=AuthMethod.API_KEY,
@@ -93,6 +103,7 @@ class TestAuthContextAndInjectionResult:
             InjectionResult,
             InjectionStatus,
         )
+
         r = InjectionResult(
             status=InjectionStatus.SUCCESS,
             auth_method=AuthMethod.BEARER_TOKEN,
@@ -120,6 +131,7 @@ class TestAuthInjector:
             AuthInjector,
             AuthInjectorConfig,
         )
+
         config = AuthInjectorConfig(**kwargs)
         return AuthInjector(config)
 
@@ -133,6 +145,7 @@ class TestAuthInjector:
 
     def test_configure_tool_auth(self):
         from enhanced_agent_bus.mcp_integration.auth.auth_injector import AuthMethod
+
         injector = self._make_injector()
         injector.configure_tool_auth("tool_a", AuthMethod.OAUTH2, scopes=["read"])
         assert "tool_a" in injector._tool_auth_configs
@@ -144,6 +157,7 @@ class TestAuthInjector:
             AuthMethod,
             InjectionStatus,
         )
+
         injector = self._make_injector()
         ctx = AuthContext(tool_name="t", auth_method=AuthMethod.NONE)
         result = await injector.inject_auth(ctx)
@@ -155,6 +169,7 @@ class TestAuthInjector:
             AuthMethod,
             InjectionStatus,
         )
+
         injector = self._make_injector(enable_audit=False)
         ctx = AuthContext(tool_name="t", auth_method=AuthMethod.CUSTOM)
         result = await injector.inject_auth(ctx)
@@ -167,6 +182,7 @@ class TestAuthInjector:
             AuthMethod,
             InjectionStatus,
         )
+
         injector = self._make_injector(enable_audit=False)
         ctx = AuthContext(tool_name="t", auth_method=AuthMethod.OAUTH2)
         result = await injector.inject_auth(ctx)
@@ -179,6 +195,7 @@ class TestAuthInjector:
             AuthMethod,
             InjectionStatus,
         )
+
         injector = self._make_injector(enable_audit=False)
         ctx = AuthContext(tool_name="t", auth_method=AuthMethod.OIDC)
         result = await injector.inject_auth(ctx)
@@ -191,13 +208,16 @@ class TestAuthInjector:
             AuthMethod,
             InjectionStatus,
         )
+
         injector = self._make_injector(enable_audit=False)
         # Mock credential manager inject_credentials
-        injector._credential_manager.inject_credentials = AsyncMock(return_value={
-            "headers": {"X-API-Key": "secret"},
-            "params": {},
-            "body": {},
-        })
+        injector._credential_manager.inject_credentials = AsyncMock(
+            return_value={
+                "headers": {"X-API-Key": "secret"},
+                "params": {},
+                "body": {},
+            }
+        )
         ctx = AuthContext(tool_name="tool_x", auth_method=AuthMethod.API_KEY)
         result = await injector.inject_auth(ctx)
         assert result.status == InjectionStatus.SUCCESS
@@ -209,12 +229,15 @@ class TestAuthInjector:
             AuthMethod,
             InjectionStatus,
         )
+
         injector = self._make_injector(enable_audit=False)
-        injector._credential_manager.inject_credentials = AsyncMock(return_value={
-            "headers": {},
-            "params": {},
-            "body": {},
-        })
+        injector._credential_manager.inject_credentials = AsyncMock(
+            return_value={
+                "headers": {},
+                "params": {},
+                "body": {},
+            }
+        )
         ctx = AuthContext(tool_name="tool_y", auth_method=AuthMethod.BEARER_TOKEN)
         result = await injector.inject_auth(ctx)
         assert result.status == InjectionStatus.NO_CREDENTIALS
@@ -225,12 +248,15 @@ class TestAuthInjector:
             AuthMethod,
             InjectionStatus,
         )
+
         injector = self._make_injector(enable_audit=False)
-        injector._credential_manager.inject_credentials = AsyncMock(return_value={
-            "headers": {"Authorization": "Basic abc"},
-            "params": {},
-            "body": {},
-        })
+        injector._credential_manager.inject_credentials = AsyncMock(
+            return_value={
+                "headers": {"Authorization": "Basic abc"},
+                "params": {},
+                "body": {},
+            }
+        )
         ctx = AuthContext(tool_name="tool_z", auth_method=AuthMethod.BASIC_AUTH)
         result = await injector.inject_auth(ctx)
         assert result.status == InjectionStatus.SUCCESS
@@ -241,6 +267,7 @@ class TestAuthInjector:
             AuthMethod,
             InjectionStatus,
         )
+
         injector = self._make_injector(enable_audit=False)
         injector._credential_manager.inject_credentials = AsyncMock(
             side_effect=RuntimeError("boom")
@@ -256,13 +283,16 @@ class TestAuthInjector:
             AuthMethod,
             InjectionStatus,
         )
+
         injector = self._make_injector(enable_audit=True)
         injector._audit_logger.log_event = AsyncMock()
-        injector._credential_manager.inject_credentials = AsyncMock(return_value={
-            "headers": {"Authorization": "Bearer x"},
-            "params": {},
-            "body": {},
-        })
+        injector._credential_manager.inject_credentials = AsyncMock(
+            return_value={
+                "headers": {"Authorization": "Bearer x"},
+                "params": {},
+                "body": {},
+            }
+        )
         ctx = AuthContext(
             tool_name="t",
             auth_method=AuthMethod.BEARER_TOKEN,
@@ -281,12 +311,15 @@ class TestAuthInjector:
             AuthContext,
             AuthMethod,
         )
+
         injector = self._make_injector(enable_audit=False)
-        injector._credential_manager.inject_credentials = AsyncMock(return_value={
-            "headers": {"X-Key": "val"},
-            "params": {},
-            "body": {},
-        })
+        injector._credential_manager.inject_credentials = AsyncMock(
+            return_value={
+                "headers": {"X-Key": "val"},
+                "params": {},
+                "body": {},
+            }
+        )
         ctx = AuthContext(tool_name="t", auth_method=AuthMethod.API_KEY)
         await injector.inject_auth(ctx)
         assert injector._stats["injections_attempted"] == 1
@@ -299,6 +332,7 @@ class TestAuthInjector:
             InjectionStatus,
         )
         from enhanced_agent_bus.mcp_integration.auth.oauth2_provider import OAuth2Token
+
         injector = self._make_injector(enable_audit=False)
 
         # Add mock provider
@@ -330,6 +364,7 @@ class TestAuthInjector:
             AuthMethod,
             InjectionStatus,
         )
+
         injector = self._make_injector(enable_audit=False)
         mock_provider = MagicMock()
         injector._oauth2_providers["cached_p"] = mock_provider
@@ -352,6 +387,7 @@ class TestAuthInjector:
             AuthMethod,
             InjectionStatus,
         )
+
         injector = self._make_injector(enable_audit=False)
         mock_provider = MagicMock()
         mock_provider.acquire_token = AsyncMock(return_value=None)
@@ -369,6 +405,7 @@ class TestAuthInjector:
             AuthMethod,
             InjectionStatus,
         )
+
         injector = self._make_injector(enable_audit=False)
 
         mock_provider = MagicMock()
@@ -396,6 +433,7 @@ class TestAuthInjector:
             AuthMethod,
             InjectionStatus,
         )
+
         injector = self._make_injector(enable_audit=False)
         mock_provider = MagicMock()
         injector._oidc_providers["cached_oidc"] = mock_provider
@@ -415,6 +453,7 @@ class TestAuthInjector:
             AuthMethod,
             InjectionStatus,
         )
+
         injector = self._make_injector(enable_audit=False)
         mock_provider = MagicMock()
         mock_provider.acquire_tokens = AsyncMock(return_value=None)
@@ -510,6 +549,7 @@ class TestAuthInjector:
 
     def test_add_oauth2_provider(self):
         from enhanced_agent_bus.mcp_integration.auth.oauth2_provider import OAuth2Config
+
         injector = self._make_injector()
         config = OAuth2Config(
             client_id="cid",
@@ -521,6 +561,7 @@ class TestAuthInjector:
 
     async def test_add_oidc_provider(self):
         from enhanced_agent_bus.mcp_integration.auth.oidc_provider import OIDCConfig
+
         injector = self._make_injector()
         config = OIDCConfig(
             issuer_url="http://issuer",
@@ -528,7 +569,8 @@ class TestAuthInjector:
             client_secret="csec",
         )
         with patch.object(
-            injector.__class__, "add_oidc_provider",
+            injector.__class__,
+            "add_oidc_provider",
             new=injector.__class__.add_oidc_provider,
         ):
             mock_provider_cls = MagicMock()
@@ -544,6 +586,7 @@ class TestAuthInjector:
 
     async def test_add_oidc_provider_no_discover(self):
         from enhanced_agent_bus.mcp_integration.auth.oidc_provider import OIDCConfig
+
         injector = self._make_injector()
         config = OIDCConfig(
             issuer_url="http://issuer",
@@ -618,11 +661,14 @@ class TestAuthInjector:
 
     async def test_get_tool_auth_status_configured(self):
         from enhanced_agent_bus.mcp_integration.auth.auth_injector import AuthMethod
+
         injector = self._make_injector()
         injector.configure_tool_auth("tool_c", AuthMethod.OAUTH2, provider_name="p1", scopes=["r"])
-        injector._token_refresher.list_tokens = MagicMock(return_value=[
-            {"token_id": "oauth2:p1:tool_c:default", "status": "active"},
-        ])
+        injector._token_refresher.list_tokens = MagicMock(
+            return_value=[
+                {"token_id": "oauth2:p1:tool_c:default", "status": "active"},
+            ]
+        )
         mock_cred = MagicMock()
         mock_cred.name = "cred1"
         mock_cred.credential_type.value = "api_key"
@@ -635,11 +681,14 @@ class TestAuthInjector:
 
     async def test_revoke_auth_by_tool_id(self):
         from enhanced_agent_bus.mcp_integration.auth.auth_injector import AuthMethod
+
         injector = self._make_injector(enable_audit=True)
         injector.configure_tool_auth("rev_tool", AuthMethod.API_KEY)
-        injector._token_refresher.list_tokens = MagicMock(return_value=[
-            {"token_id": "oauth2:p:rev_tool:default"},
-        ])
+        injector._token_refresher.list_tokens = MagicMock(
+            return_value=[
+                {"token_id": "oauth2:p:rev_tool:default"},
+            ]
+        )
         injector._token_refresher.unregister_token = AsyncMock()
         injector._credential_manager.revoke_tool_credentials = AsyncMock()
         injector._audit_logger.log_event = AsyncMock()
@@ -652,9 +701,11 @@ class TestAuthInjector:
 
     async def test_revoke_auth_by_agent_id(self):
         injector = self._make_injector(enable_audit=False)
-        injector._token_refresher.list_tokens = MagicMock(return_value=[
-            {"token_id": "oidc:p:t:agent_abc"},
-        ])
+        injector._token_refresher.list_tokens = MagicMock(
+            return_value=[
+                {"token_id": "oidc:p:t:agent_abc"},
+            ]
+        )
         injector._token_refresher.unregister_token = AsyncMock()
         result = await injector.revoke_auth(agent_id="agent_abc")
         assert result["revoked_tokens"] == 1
@@ -670,11 +721,13 @@ class TestAuthInjector:
 # 2. metrics_collector.py
 # ---------------------------------------------------------------------------
 
+
 class TestGovernanceMetricsSnapshot:
     """Test GovernanceMetricsSnapshot properties."""
 
     def test_meets_targets_true(self):
         from enhanced_agent_bus.constitutional.metrics_collector import GovernanceMetricsSnapshot
+
         s = GovernanceMetricsSnapshot(
             violations_rate=0.0,
             governance_latency_p99=4.0,
@@ -685,11 +738,13 @@ class TestGovernanceMetricsSnapshot:
 
     def test_meets_targets_false_violations(self):
         from enhanced_agent_bus.constitutional.metrics_collector import GovernanceMetricsSnapshot
+
         s = GovernanceMetricsSnapshot(violations_rate=0.01)
         assert s.meets_targets is False
 
     def test_meets_targets_false_latency(self):
         from enhanced_agent_bus.constitutional.metrics_collector import GovernanceMetricsSnapshot
+
         s = GovernanceMetricsSnapshot(
             violations_rate=0.0,
             governance_latency_p99=6.0,
@@ -700,6 +755,7 @@ class TestGovernanceMetricsSnapshot:
 
     def test_meets_targets_false_deliberation(self):
         from enhanced_agent_bus.constitutional.metrics_collector import GovernanceMetricsSnapshot
+
         s = GovernanceMetricsSnapshot(
             violations_rate=0.0,
             governance_latency_p99=4.0,
@@ -710,6 +766,7 @@ class TestGovernanceMetricsSnapshot:
 
     def test_meets_targets_false_maci(self):
         from enhanced_agent_bus.constitutional.metrics_collector import GovernanceMetricsSnapshot
+
         s = GovernanceMetricsSnapshot(
             violations_rate=0.0,
             governance_latency_p99=4.0,
@@ -720,6 +777,7 @@ class TestGovernanceMetricsSnapshot:
 
     def test_health_score_perfect(self):
         from enhanced_agent_bus.constitutional.metrics_collector import GovernanceMetricsSnapshot
+
         s = GovernanceMetricsSnapshot(
             violations_rate=0.0,
             governance_latency_p99=1.0,
@@ -731,6 +789,7 @@ class TestGovernanceMetricsSnapshot:
 
     def test_health_score_degraded(self):
         from enhanced_agent_bus.constitutional.metrics_collector import GovernanceMetricsSnapshot
+
         s = GovernanceMetricsSnapshot(
             violations_rate=0.5,
             governance_latency_p99=30.0,
@@ -743,6 +802,7 @@ class TestGovernanceMetricsSnapshot:
 
     def test_health_score_minimum_zero(self):
         from enhanced_agent_bus.constitutional.metrics_collector import GovernanceMetricsSnapshot
+
         s = GovernanceMetricsSnapshot(
             violations_rate=1.0,
             governance_latency_p99=100.0,
@@ -758,6 +818,7 @@ class TestMetricsComparison:
 
     def _make_snapshot(self, **kwargs):
         from enhanced_agent_bus.constitutional.metrics_collector import GovernanceMetricsSnapshot
+
         defaults = {
             "violations_rate": 0.0,
             "governance_latency_p99": 2.0,
@@ -771,6 +832,7 @@ class TestMetricsComparison:
 
     def test_no_degradation(self):
         from enhanced_agent_bus.constitutional.metrics_collector import MetricsComparison
+
         baseline = self._make_snapshot()
         current = self._make_snapshot()
         cmp = MetricsComparison(baseline=baseline, current=current)
@@ -779,6 +841,7 @@ class TestMetricsComparison:
 
     def test_violations_rate_degradation(self):
         from enhanced_agent_bus.constitutional.metrics_collector import MetricsComparison
+
         baseline = self._make_snapshot(violations_rate=0.0)
         current = self._make_snapshot(violations_rate=0.05)
         cmp = MetricsComparison(baseline=baseline, current=current)
@@ -787,6 +850,7 @@ class TestMetricsComparison:
 
     def test_latency_degradation(self):
         from enhanced_agent_bus.constitutional.metrics_collector import MetricsComparison
+
         baseline = self._make_snapshot(governance_latency_p99=2.0)
         current = self._make_snapshot(governance_latency_p99=5.0)
         cmp = MetricsComparison(baseline=baseline, current=current)
@@ -795,6 +859,7 @@ class TestMetricsComparison:
 
     def test_deliberation_degradation(self):
         from enhanced_agent_bus.constitutional.metrics_collector import MetricsComparison
+
         baseline = self._make_snapshot(deliberation_success_rate=0.98)
         current = self._make_snapshot(deliberation_success_rate=0.80)
         cmp = MetricsComparison(baseline=baseline, current=current)
@@ -803,6 +868,7 @@ class TestMetricsComparison:
 
     def test_maci_violations_degradation(self):
         from enhanced_agent_bus.constitutional.metrics_collector import MetricsComparison
+
         baseline = self._make_snapshot(maci_violations_count=0)
         current = self._make_snapshot(maci_violations_count=3)
         cmp = MetricsComparison(baseline=baseline, current=current)
@@ -811,6 +877,7 @@ class TestMetricsComparison:
 
     def test_error_rate_degradation(self):
         from enhanced_agent_bus.constitutional.metrics_collector import MetricsComparison
+
         baseline = self._make_snapshot(error_rate=0.0)
         current = self._make_snapshot(error_rate=0.10)
         cmp = MetricsComparison(baseline=baseline, current=current)
@@ -819,6 +886,7 @@ class TestMetricsComparison:
 
     def test_health_score_degradation(self):
         from enhanced_agent_bus.constitutional.metrics_collector import MetricsComparison
+
         baseline = self._make_snapshot()
         current = self._make_snapshot(
             violations_rate=0.5,
@@ -836,6 +904,7 @@ class TestGovernanceMetricsCollector:
 
     def _make_collector(self):
         from enhanced_agent_bus.constitutional.metrics_collector import GovernanceMetricsCollector
+
         return GovernanceMetricsCollector(
             redis_url="redis://localhost:6379",
             snapshot_retention_hours=24,
@@ -844,6 +913,7 @@ class TestGovernanceMetricsCollector:
 
     async def test_connect_redis_not_available(self):
         import enhanced_agent_bus.constitutional.metrics_collector as mod
+
         old = mod.REDIS_AVAILABLE
         try:
             mod.REDIS_AVAILABLE = False
@@ -855,6 +925,7 @@ class TestGovernanceMetricsCollector:
 
     async def test_connect_redis_error(self):
         import enhanced_agent_bus.constitutional.metrics_collector as mod
+
         old = mod.REDIS_AVAILABLE
         old_aioredis = mod.aioredis
         try:
@@ -871,6 +942,7 @@ class TestGovernanceMetricsCollector:
 
     async def test_connect_redis_success(self):
         import enhanced_agent_bus.constitutional.metrics_collector as mod
+
         old = mod.REDIS_AVAILABLE
         old_aioredis = mod.aioredis
         try:
@@ -923,7 +995,10 @@ class TestGovernanceMetricsCollector:
         mock_client = AsyncMock()
         collector.redis_client = mock_client
         await collector.record_governance_decision(
-            5.0, approved=False, escalated=True, constitutional_violation=True,
+            5.0,
+            approved=False,
+            escalated=True,
+            constitutional_violation=True,
         )
         # total + denied + escalated = 3 hincrby calls
         assert mock_client.hincrby.call_count >= 3
@@ -997,14 +1072,24 @@ class TestGovernanceMetricsCollector:
 
         # Mock internal methods
         collector._get_latencies = AsyncMock(return_value=[1.0, 2.0, 3.0, 4.0, 5.0])
-        collector._get_request_counters = AsyncMock(return_value={
-            "total": 100, "approved": 80, "denied": 15, "escalated": 5,
-        })
+        collector._get_request_counters = AsyncMock(
+            return_value={
+                "total": 100,
+                "approved": 80,
+                "denied": 15,
+                "escalated": 5,
+            }
+        )
         collector._get_violations_count = AsyncMock(return_value=2)
         collector._get_maci_violations_count = AsyncMock(return_value=1)
-        collector._get_deliberation_metrics = AsyncMock(return_value={
-            "total": 50, "success": 48, "failed": 2, "success_rate": 0.96,
-        })
+        collector._get_deliberation_metrics = AsyncMock(
+            return_value={
+                "total": 50,
+                "success": 48,
+                "failed": 2,
+                "success_rate": 0.96,
+            }
+        )
         collector._store_snapshot = AsyncMock()
 
         snapshot = await collector.collect_snapshot(constitutional_version="1.0.0")
@@ -1024,6 +1109,7 @@ class TestGovernanceMetricsCollector:
 
     async def test_compare_snapshots_both_provided(self):
         from enhanced_agent_bus.constitutional.metrics_collector import GovernanceMetricsSnapshot
+
         collector = self._make_collector()
         baseline = GovernanceMetricsSnapshot(violations_rate=0.0, governance_latency_p99=2.0)
         current = GovernanceMetricsSnapshot(violations_rate=0.05, governance_latency_p99=3.0)
@@ -1032,6 +1118,7 @@ class TestGovernanceMetricsCollector:
 
     async def test_compare_snapshots_collects_current(self):
         from enhanced_agent_bus.constitutional.metrics_collector import GovernanceMetricsSnapshot
+
         collector = self._make_collector()
         collector.redis_client = None  # Will produce empty snapshot
         baseline = GovernanceMetricsSnapshot(violations_rate=0.0)
@@ -1046,6 +1133,7 @@ class TestGovernanceMetricsCollector:
 
     async def test_get_baseline_snapshot_found(self):
         from enhanced_agent_bus.constitutional.metrics_collector import GovernanceMetricsSnapshot
+
         collector = self._make_collector()
         mock_client = AsyncMock()
         snap = GovernanceMetricsSnapshot(violations_rate=0.01)
@@ -1073,12 +1161,14 @@ class TestGovernanceMetricsCollector:
 
     async def test_store_baseline_snapshot_no_client(self):
         from enhanced_agent_bus.constitutional.metrics_collector import GovernanceMetricsSnapshot
+
         collector = self._make_collector()
         collector.redis_client = None
         await collector.store_baseline_snapshot(GovernanceMetricsSnapshot(), "1.0.0")
 
     async def test_store_baseline_snapshot_success(self):
         from enhanced_agent_bus.constitutional.metrics_collector import GovernanceMetricsSnapshot
+
         collector = self._make_collector()
         mock_client = AsyncMock()
         collector.redis_client = mock_client
@@ -1087,6 +1177,7 @@ class TestGovernanceMetricsCollector:
 
     async def test_store_baseline_snapshot_error(self):
         from enhanced_agent_bus.constitutional.metrics_collector import GovernanceMetricsSnapshot
+
         collector = self._make_collector()
         mock_client = AsyncMock()
         mock_client.set = AsyncMock(side_effect=ValueError("store err"))
@@ -1130,9 +1221,14 @@ class TestGovernanceMetricsCollector:
     async def test_get_request_counters_success(self):
         collector = self._make_collector()
         mock_client = AsyncMock()
-        mock_client.hgetall = AsyncMock(return_value={
-            "total": "50", "approved": "40", "denied": "8", "escalated": "2",
-        })
+        mock_client.hgetall = AsyncMock(
+            return_value={
+                "total": "50",
+                "approved": "40",
+                "denied": "8",
+                "escalated": "2",
+            }
+        )
         collector.redis_client = mock_client
         result = await collector._get_request_counters()
         assert result == {"total": 50, "approved": 40, "denied": 8, "escalated": 2}
@@ -1188,9 +1284,13 @@ class TestGovernanceMetricsCollector:
     async def test_get_deliberation_metrics_success(self):
         collector = self._make_collector()
         mock_client = AsyncMock()
-        mock_client.hgetall = AsyncMock(return_value={
-            "total": "10", "success": "8", "failed": "2",
-        })
+        mock_client.hgetall = AsyncMock(
+            return_value={
+                "total": "10",
+                "success": "8",
+                "failed": "2",
+            }
+        )
         collector.redis_client = mock_client
         result = await collector._get_deliberation_metrics()
         assert result["success_rate"] == 0.8
@@ -1213,6 +1313,7 @@ class TestGovernanceMetricsCollector:
 
     async def test_store_snapshot_success(self):
         from enhanced_agent_bus.constitutional.metrics_collector import GovernanceMetricsSnapshot
+
         collector = self._make_collector()
         mock_client = AsyncMock()
         collector.redis_client = mock_client
@@ -1224,6 +1325,7 @@ class TestGovernanceMetricsCollector:
 
     async def test_store_snapshot_error(self):
         from enhanced_agent_bus.constitutional.metrics_collector import GovernanceMetricsSnapshot
+
         collector = self._make_collector()
         mock_client = AsyncMock()
         mock_client.set = AsyncMock(side_effect=RuntimeError("store err"))
@@ -1235,8 +1337,10 @@ class TestGovernanceMetricsCollector:
 # 3. threshold_manager.py
 # ---------------------------------------------------------------------------
 
+
 def _make_impact_features(**kwargs):
     from enhanced_agent_bus.adaptive_governance.models import ImpactFeatures
+
     defaults = {
         "message_length": 100,
         "agent_count": 2,
@@ -1258,6 +1362,7 @@ def _make_governance_decision(**kwargs):
         GovernanceDecision,
         ImpactLevel,
     )
+
     defaults = {
         "action_allowed": True,
         "impact_level": ImpactLevel.MEDIUM,
@@ -1275,6 +1380,7 @@ class TestAdaptiveThresholds:
 
     def _make_thresholds(self):
         from enhanced_agent_bus.adaptive_governance.threshold_manager import AdaptiveThresholds
+
         return AdaptiveThresholds(constitutional_hash="test_hash")
 
     def test_init(self):
@@ -1285,6 +1391,7 @@ class TestAdaptiveThresholds:
 
     def test_get_adaptive_threshold_untrained(self):
         from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
+
         at = self._make_thresholds()
         features = _make_impact_features()
         result = at.get_adaptive_threshold(ImpactLevel.MEDIUM, features)
@@ -1292,6 +1399,7 @@ class TestAdaptiveThresholds:
 
     def test_get_adaptive_threshold_trained(self):
         from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
+
         at = self._make_thresholds()
         at.model_trained = True
 
@@ -1306,6 +1414,7 @@ class TestAdaptiveThresholds:
 
     def test_get_adaptive_threshold_trained_clamp_high(self):
         from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
+
         at = self._make_thresholds()
         at.model_trained = True
         at.threshold_model = MagicMock()
@@ -1316,6 +1425,7 @@ class TestAdaptiveThresholds:
 
     def test_get_adaptive_threshold_trained_clamp_low(self):
         from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
+
         at = self._make_thresholds()
         at.model_trained = True
         at.threshold_model = MagicMock()
@@ -1326,6 +1436,7 @@ class TestAdaptiveThresholds:
 
     def test_get_adaptive_threshold_error_fallback(self):
         from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
+
         at = self._make_thresholds()
         at.model_trained = True
         at.threshold_model = MagicMock()
@@ -1396,11 +1507,13 @@ class TestAdaptiveThresholds:
         at = self._make_thresholds()
         # Less than 100 samples
         for _ in range(50):
-            at.training_data.append({
-                "features": [0.0] * 11,
-                "target": 0.1,
-                "timestamp": time.time(),
-            })
+            at.training_data.append(
+                {
+                    "features": [0.0] * 11,
+                    "target": 0.1,
+                    "timestamp": time.time(),
+                }
+            )
         at._retrain_model()
         assert at.model_trained is False
 
@@ -1408,11 +1521,13 @@ class TestAdaptiveThresholds:
         at = self._make_thresholds()
         # 100+ samples but all old
         for _ in range(150):
-            at.training_data.append({
-                "features": [0.0] * 11,
-                "target": 0.1,
-                "timestamp": time.time() - 100000,  # old
-            })
+            at.training_data.append(
+                {
+                    "features": [0.0] * 11,
+                    "target": 0.1,
+                    "timestamp": time.time() - 100000,  # old
+                }
+            )
         at._retrain_model()
         assert at.model_trained is False
 
@@ -1420,12 +1535,14 @@ class TestAdaptiveThresholds:
         at = self._make_thresholds()
         at._mlflow_initialized = False
         # Add enough recent training data
-        for i in range(150):
-            at.training_data.append({
-                "features": list(np.random.rand(11)),
-                "target": np.random.rand() * 0.1,
-                "timestamp": time.time() - np.random.randint(0, 3600),
-            })
+        for _i in range(150):
+            at.training_data.append(
+                {
+                    "features": list(np.random.rand(11)),
+                    "target": np.random.rand() * 0.1,
+                    "timestamp": time.time() - np.random.randint(0, 3600),
+                }
+            )
         at._retrain_model()
         assert at.model_trained is True
 
@@ -1433,12 +1550,14 @@ class TestAdaptiveThresholds:
         at = self._make_thresholds()
         at._mlflow_initialized = False
         # Add enough recent data
-        for i in range(150):
-            at.training_data.append({
-                "features": list(np.random.rand(11)),
-                "target": np.random.rand(),
-                "timestamp": time.time(),
-            })
+        for _i in range(150):
+            at.training_data.append(
+                {
+                    "features": list(np.random.rand(11)),
+                    "target": np.random.rand(),
+                    "timestamp": time.time(),
+                }
+            )
         # Mock fit to raise
         at.threshold_model = MagicMock()
         at.threshold_model.fit.side_effect = RuntimeError("fit err")
@@ -1452,6 +1571,7 @@ class TestAdaptiveThresholds:
         recent_data = [{"outcome_success": True, "human_feedback": None}] * 60
 
         import enhanced_agent_bus.adaptive_governance.threshold_manager as mod
+
         old_available = mod.MLFLOW_AVAILABLE
         old_mlflow = mod.mlflow
         try:
@@ -1482,6 +1602,7 @@ class TestAdaptiveThresholds:
         recent_data = [{"outcome_success": True, "human_feedback": None}] * 60
 
         import enhanced_agent_bus.adaptive_governance.threshold_manager as mod
+
         old_available = mod.MLFLOW_AVAILABLE
         old_mlflow = mod.mlflow
         try:
@@ -1498,6 +1619,7 @@ class TestAdaptiveThresholds:
 
     def test_initialize_mlflow_not_available(self):
         import enhanced_agent_bus.adaptive_governance.threshold_manager as mod
+
         old_available = mod.MLFLOW_AVAILABLE
         try:
             mod.MLFLOW_AVAILABLE = False
@@ -1510,6 +1632,7 @@ class TestAdaptiveThresholds:
 
     def test_all_impact_levels_have_base_thresholds(self):
         from enhanced_agent_bus.adaptive_governance.models import ImpactLevel
+
         at = self._make_thresholds()
         for level in ImpactLevel:
             assert level in at.base_thresholds

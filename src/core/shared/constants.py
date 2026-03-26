@@ -1,6 +1,6 @@
 """
 ACGS-2 Shared Constants
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Central location for all system-wide constants used across ACGS-2 services.
 This ensures consistency and single source of truth for critical values.
@@ -8,14 +8,13 @@ This ensures consistency and single source of truth for critical values.
 For algorithm-agile constitutional hash management, see constitutional_hash.py
 """
 
-import enum
 from enum import StrEnum
 
 
 class RiskTier(StrEnum):
     """Risk tier classification for governance decisions.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     LOW: score < 0.3 — fast lane, no human involvement
     MEDIUM: score 0.3-0.8 — auto-remediate immediately + 15-min human override window
@@ -45,7 +44,7 @@ def classify_risk_tier(impact_score: float) -> RiskTier:
     return RiskTier.MEDIUM
 
 
-class MACIRole(str, enum.Enum):
+class MACIRole(StrEnum):
     """Multi-Agent Constitutional Intelligence roles (separation of powers).
 
     Values are UPPERCASE to match the JWT payload contract used by agent_runtime.
@@ -81,12 +80,16 @@ class MACIRole(str, enum.Enum):
         return cls(value)
 
 
-# Constitutional AI Governance (legacy bare hash for backwards compatibility)
-CONSTITUTIONAL_HASH = "cdd01ef066bc6cf2"
+# Constitutional AI Governance
+# Derived from acgs-lite Constitution.default().hash — the SHA-256 of the canonical
+# rule set.  Keep in sync: if rules change, re-run
+#   python -c "from acgs_lite.constitution import Constitution; print(Constitution.default().hash)"
+# and update this value.
+CONSTITUTIONAL_HASH = "608508a9bd224290"
 
 # Versioned Constitutional Hash (canonical format)
-# Use this for new code: sha256:v1:cdd01ef066bc6cf2
-CONSTITUTIONAL_HASH_VERSIONED = "sha256:v1:cdd01ef066bc6cf2"
+# Use this for new code: sha256:v1:<hash>
+CONSTITUTIONAL_HASH_VERSIONED = "sha256:v1:608508a9bd224290"
 
 # Default Infrastructure Configuration
 DEFAULT_REDIS_URL = "redis://localhost:6379"

@@ -1,6 +1,6 @@
 """
 Tests for ACGS-AI-007: Safe Autonomy Tiers
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for AutonomyTier enum enforcement in the message processing pipeline.
 """

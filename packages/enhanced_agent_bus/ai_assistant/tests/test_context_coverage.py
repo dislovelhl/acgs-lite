@@ -1,6 +1,6 @@
 """
 ACGS-2 AI Assistant - Context Management Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets uncovered lines to boost coverage from 44% to ≥90%.
 """

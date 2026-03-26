@@ -1,6 +1,6 @@
 """
 OpenEvolve Governance Adapter — CLI Entry Point
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Usage
 -----
@@ -26,7 +26,7 @@ from typing import Any
 try:
     from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
-    CONSTITUTIONAL_HASH = "cdd01ef066bc6cf2"  # pragma: allowlist secret
+    CONSTITUTIONAL_HASH = "608508a9bd224290"  # pragma: allowlist secret
 
 _VERSION = "1.0.0"
 
@@ -71,14 +71,11 @@ def _make_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="openevolve-adapter",
         description=(
-            "OpenEvolve Governance Adapter CLI\n"
-            f"Constitutional Hash: {CONSTITUTIONAL_HASH}"
+            f"OpenEvolve Governance Adapter CLI\nConstitutional Hash: {CONSTITUTIONAL_HASH}"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument(
-        "--version", action="version", version=f"%(prog)s {_VERSION}"
-    )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {_VERSION}")
 
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -114,11 +111,14 @@ def _make_parser() -> argparse.ArgumentParser:
         help="Minimum full fitness to pass Stage 3 (default: 0.5).",
     )
     ev.add_argument(
-        "--json", action="store_true", dest="json_output",
+        "--json",
+        action="store_true",
+        dest="json_output",
         help="Emit machine-readable JSON output.",
     )
     ev.add_argument(
-        "--gate", action="store_true",
+        "--gate",
+        action="store_true",
         help="Also run the rollout gate after a successful cascade.",
     )
 
@@ -133,7 +133,9 @@ def _make_parser() -> argparse.ArgumentParser:
         help="Path to a JSON file containing a serialised evolution candidate.",
     )
     gt.add_argument(
-        "--json", action="store_true", dest="json_output",
+        "--json",
+        action="store_true",
+        dest="json_output",
         help="Emit machine-readable JSON output.",
     )
 
@@ -214,11 +216,13 @@ async def _cmd_gate(args: argparse.Namespace) -> int:
     decision = ctrl.gate(candidate)
 
     if args.json_output:
-        _print_json({
-            "command": "gate",
-            "timestamp": datetime.now(UTC).isoformat(),
-            "decision": decision.to_dict(),
-        })
+        _print_json(
+            {
+                "command": "gate",
+                "timestamp": datetime.now(UTC).isoformat(),
+                "decision": decision.to_dict(),
+            }
+        )
     else:
         status = "✓ ALLOWED" if decision.allowed else "✗ DENIED"
         print(f"\nCandidate   : {decision.candidate_id}")

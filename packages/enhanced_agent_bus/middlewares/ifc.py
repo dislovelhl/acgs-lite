@@ -8,7 +8,7 @@ Policies enforced:
 1. No-write-down: SECRET data cannot flow to PUBLIC channels.
 2. No-read-up: UNTRUSTED data cannot flow to TRUSTED contexts.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from dataclasses import dataclass, field

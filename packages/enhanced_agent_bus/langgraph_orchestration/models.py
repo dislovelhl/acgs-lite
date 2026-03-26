@@ -1,6 +1,6 @@
 """
 ACGS-2 LangGraph Orchestration - Data Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Core data models for graph-based workflow orchestration:
 - State models for Memory Object Protocol
@@ -44,7 +44,7 @@ ConditionalFunction = Callable[[JSONDict], str]
 class NodeType(str, Enum):
     """Types of nodes in the execution graph.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     START = "start"
@@ -62,7 +62,7 @@ class NodeType(str, Enum):
 class NodeStatus(str, Enum):
     """Execution status of a node.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     PENDING = "pending"
@@ -77,7 +77,7 @@ class NodeStatus(str, Enum):
 class EdgeType(str, Enum):
     """Types of edges in the execution graph.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     SEQUENTIAL = "sequential"
@@ -89,7 +89,7 @@ class EdgeType(str, Enum):
 class ExecutionStatus(str, Enum):
     """Overall execution status of a graph.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     PENDING = "pending"
@@ -104,7 +104,7 @@ class ExecutionStatus(str, Enum):
 class CheckpointStatus(str, Enum):
     """Status of a checkpoint.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     CREATED = "created"
@@ -116,7 +116,7 @@ class CheckpointStatus(str, Enum):
 class InterruptType(str, Enum):
     """Types of execution interrupts.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     HITL = "hitl"  # Human-in-the-loop
@@ -136,7 +136,7 @@ class GraphState(BaseModel):
     """Graph execution state with typed JSON schema.
 
     Implements Memory Object Protocol with strictly typed mutations.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # State data
@@ -251,7 +251,7 @@ class GraphState(BaseModel):
 class StateSnapshot(BaseModel):
     """Snapshot of graph state for persistence and recovery.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -267,7 +267,7 @@ class StateSnapshot(BaseModel):
 class StateDelta(BaseModel):
     """Represents a state change (delta) for efficient transmission.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     from_version: int
@@ -281,7 +281,7 @@ class StateDelta(BaseModel):
 class StateReducer(BaseModel):
     """Configuration for state reduction strategies.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     strategy: str = Field(default="merge", description="merge, overwrite, or custom")
@@ -303,7 +303,7 @@ class GraphNode(BaseModel):
     """Node definition in the execution graph.
 
     Nodes are pure functions: (CurrentState) -> NewState
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     id: str
@@ -342,7 +342,7 @@ class GraphNode(BaseModel):
 class NodeResult(BaseModel):
     """Result of node execution.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     node_id: str
@@ -370,7 +370,7 @@ class NodeResult(BaseModel):
 class GraphEdge(BaseModel):
     """Edge definition connecting nodes in the graph.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -388,7 +388,7 @@ class GraphEdge(BaseModel):
 class ConditionalEdge(BaseModel):
     """Conditional edge with routing logic.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     source_node_id: str
@@ -413,7 +413,7 @@ class ConditionalEdge(BaseModel):
 class GraphConfig(BaseModel):
     """Configuration for graph execution.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Execution settings
@@ -446,7 +446,7 @@ class GraphConfig(BaseModel):
 class GraphDefinition(BaseModel):
     """Complete graph definition for workflow orchestration.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -558,7 +558,7 @@ class GraphDefinition(BaseModel):
 class ExecutionContext(BaseModel):
     """Context for graph execution.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -597,7 +597,7 @@ class ExecutionContext(BaseModel):
 class ExecutionResult(BaseModel):
     """Result of graph execution.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     workflow_id: str
@@ -632,7 +632,7 @@ class ExecutionResult(BaseModel):
 class Checkpoint(BaseModel):
     """Checkpoint for state persistence and recovery.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -666,7 +666,7 @@ class Checkpoint(BaseModel):
 class InterruptRequest(BaseModel):
     """Request for execution interrupt.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -685,7 +685,7 @@ class InterruptRequest(BaseModel):
 class InterruptResponse(BaseModel):
     """Response to an interrupt request.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     request_id: str

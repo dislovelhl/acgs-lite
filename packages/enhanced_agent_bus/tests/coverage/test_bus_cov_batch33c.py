@@ -4,7 +4,7 @@ Comprehensive coverage tests for:
 - enhanced_agent_bus/deliberation_layer/opa_guard.py
 - enhanced_agent_bus/llm_adapters/openai_adapter.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -92,9 +92,7 @@ def _oai_adapter() -> OpenAIAdapter:
 
 def _mock_opa_client(policy_result=None):
     client = AsyncMock()
-    client.evaluate_policy = AsyncMock(
-        return_value=policy_result or {"allowed": True}
-    )
+    client.evaluate_policy = AsyncMock(return_value=policy_result or {"allowed": True})
     client.close = AsyncMock()
     client.initialize = AsyncMock()
     return client
@@ -210,9 +208,7 @@ class TestHFTokenizer:
         adapter = _hf_adapter()
         adapter._tokenizer = None
         mock_transformers = MagicMock()
-        mock_transformers.AutoTokenizer.from_pretrained.side_effect = OSError(
-            "Model not found"
-        )
+        mock_transformers.AutoTokenizer.from_pretrained.side_effect = OSError("Model not found")
         with patch.dict("sys.modules", {"transformers": mock_transformers}):
             result = adapter._get_tokenizer()
             assert result is None
@@ -354,9 +350,7 @@ class TestHFACompleteBranches:
         mock_client = MagicMock()
         mock_client.text_generation.return_value = "ok"
         adapter._async_client = mock_client
-        await adapter.acomplete(
-            _msgs(user="test"), top_k=50, repetition_penalty=1.2
-        )
+        await adapter.acomplete(_msgs(user="test"), top_k=50, repetition_penalty=1.2)
         mock_client.text_generation.assert_called_once()
 
     async def test_acomplete_object_response(self):
@@ -469,9 +463,7 @@ class TestHFStreamBranches:
         mock_client.text_generation.return_value = _async_gen()
         adapter._async_client = mock_client
         chunks = []
-        async for chunk in adapter.astream(
-            _msgs(user="test"), stop=["END"], top_k=10
-        ):
+        async for chunk in adapter.astream(_msgs(user="test"), stop=["END"], top_k=10):
             chunks.append(chunk)
         assert chunks == ["data"]
 
@@ -501,9 +493,7 @@ class TestHFStreamBranches:
 class TestHFStreamingParams:
     def test_prepare_streaming_params_with_top_k(self):
         adapter = _hf_adapter()
-        params = adapter._prepare_streaming_params(
-            0.7, 256, 0.9, ["STOP"], top_k=50
-        )
+        params = adapter._prepare_streaming_params(0.7, 256, 0.9, ["STOP"], top_k=50)
         assert params["top_k"] == 50
         assert params["max_new_tokens"] == 256
         assert params["stop_sequences"] == ["STOP"]
@@ -603,9 +593,7 @@ class TestOAICompleteErrors:
     async def test_acomplete_error(self):
         adapter = _oai_adapter()
         mock_client = MagicMock()
-        mock_client.chat.completions.create = AsyncMock(
-            side_effect=RuntimeError("async API fail")
-        )
+        mock_client.chat.completions.create = AsyncMock(side_effect=RuntimeError("async API fail"))
         adapter._async_client = mock_client
         with pytest.raises(RuntimeError, match="async API fail"):
             await adapter.acomplete([LLMMessage(role="user", content="test")])
@@ -646,14 +634,10 @@ class TestOAIStreamErrors:
     async def test_astream_error(self):
         adapter = _oai_adapter()
         mock_client = MagicMock()
-        mock_client.chat.completions.create = AsyncMock(
-            side_effect=RuntimeError("astream fail")
-        )
+        mock_client.chat.completions.create = AsyncMock(side_effect=RuntimeError("astream fail"))
         adapter._async_client = mock_client
         with pytest.raises(RuntimeError, match="astream fail"):
-            async for _ in adapter.astream(
-                [LLMMessage(role="user", content="test")]
-            ):
+            async for _ in adapter.astream([LLMMessage(role="user", content="test")]):
                 pass
 
     async def test_astream_basic(self):
@@ -762,9 +746,7 @@ class TestOAIAddOptionalParams:
 class TestOPAGuardInitBranches:
     async def test_initialize_with_none_client(self):
         guard = OPAGuard(opa_client=None)
-        with patch(
-            "enhanced_agent_bus.deliberation_layer.opa_guard.get_opa_client"
-        ) as mock_get:
+        with patch("enhanced_agent_bus.deliberation_layer.opa_guard.get_opa_client") as mock_get:
             mock_client = AsyncMock()
             mock_client.initialize = AsyncMock()
             mock_get.return_value = mock_client
@@ -813,9 +795,7 @@ class TestOPAGuardVerifyBranches:
         ]
         guard = OPAGuard(opa_client=mock_client)
         result = await guard.verify_action("agent_1", {"type": "read"}, {})
-        assert any(
-            "fallback" in w.lower() for w in result.validation_warnings
-        )
+        assert any("fallback" in w.lower() for w in result.validation_warnings)
 
     async def test_verify_action_high_risk_requires_signatures(self):
         mock_client = _mock_opa_client()
@@ -931,30 +911,22 @@ class TestOPAGuardRiskFactors:
 
     def test_affects_users(self):
         guard = OPAGuard(opa_client=_mock_opa_client())
-        factors = guard._identify_risk_factors(
-            {"type": "read", "affects_users": True}, {}
-        )
+        factors = guard._identify_risk_factors({"type": "read", "affects_users": True}, {})
         assert any("user" in f.lower() for f in factors)
 
     def test_irreversible_action(self):
         guard = OPAGuard(opa_client=_mock_opa_client())
-        factors = guard._identify_risk_factors(
-            {"type": "read", "irreversible": True}, {}
-        )
+        factors = guard._identify_risk_factors({"type": "read", "irreversible": True}, {})
         assert any("irreversible" in f.lower() for f in factors)
 
     def test_scope_from_context(self):
         guard = OPAGuard(opa_client=_mock_opa_client())
-        factors = guard._identify_risk_factors(
-            {"type": "read"}, {"scope": "global"}
-        )
+        factors = guard._identify_risk_factors({"type": "read"}, {"scope": "global"})
         assert any("scope" in f.lower() or "global" in f.lower() for f in factors)
 
     def test_production_environment(self):
         guard = OPAGuard(opa_client=_mock_opa_client())
-        factors = guard._identify_risk_factors(
-            {"type": "read"}, {"production": True}
-        )
+        factors = guard._identify_risk_factors({"type": "read"}, {"production": True})
         assert any("production" in f.lower() for f in factors)
 
 
@@ -1176,9 +1148,7 @@ class TestOPAGuardReviewBranches:
 
     async def test_submit_review_unknown_decision(self):
         guard = OPAGuard(opa_client=_mock_opa_client())
-        success = await guard.submit_review(
-            "unknown", "critic_1", verdict="approve"
-        )
+        success = await guard.submit_review("unknown", "critic_1", verdict="approve")
         assert success is False
 
 
@@ -1256,9 +1226,7 @@ class TestHFCompleteBranches:
         mock_client.text_generation.return_value = "ok"
         adapter._client = mock_client
 
-        result = adapter.complete(
-            _msgs(user="test"), repetition_penalty=1.2
-        )
+        result = adapter.complete(_msgs(user="test"), repetition_penalty=1.2)
         assert result.content == "ok"
         call_kwargs = mock_client.text_generation.call_args
         assert call_kwargs[1].get("repetition_penalty") == 1.2
@@ -1387,9 +1355,7 @@ class TestHFFormatEdgeCases:
 
     def test_format_messages_locooperator(self):
         adapter = _hf_adapter(model="LocoreMind/LocoOperator-4B-GGUF")
-        result = adapter._format_messages_for_inference(
-            _msgs(system="sys", user="hi")
-        )
+        result = adapter._format_messages_for_inference(_msgs(system="sys", user="hi"))
         assert "im_start" in result
 
     def test_format_with_template_no_conversation_parts(self):
@@ -1674,9 +1640,7 @@ class TestOpenAICompleteOptionalParams:
     async def test_acomplete_with_tools(self):
         adapter = _oai_adapter()
         mock_client = MagicMock()
-        mock_client.chat.completions.create = AsyncMock(
-            return_value=_mock_openai_response()
-        )
+        mock_client.chat.completions.create = AsyncMock(return_value=_mock_openai_response())
         adapter._async_client = mock_client
 
         result = await adapter.acomplete(
@@ -1695,9 +1659,7 @@ class TestOpenAICompleteOptionalParams:
         mock_client.chat.completions.create.return_value = _mock_openai_response()
         adapter._client = mock_client
 
-        result = adapter.complete(
-            _msgs(user="test"), max_tokens=100, stop=["END"]
-        )
+        result = adapter.complete(_msgs(user="test"), max_tokens=100, stop=["END"])
         assert result.content == "Hello!"
         call_kwargs = mock_client.chat.completions.create.call_args[1]
         assert call_kwargs["max_tokens"] == 100
@@ -1736,7 +1698,11 @@ class TestOpenAIStreamingHelpers:
     def test_build_streaming_params_with_stop_and_max_tokens(self):
         adapter = _oai_adapter()
         params = adapter._build_streaming_params(
-            _msgs(user="hi"), 0.5, 200, 0.9, ["STOP"],
+            _msgs(user="hi"),
+            0.5,
+            200,
+            0.9,
+            ["STOP"],
             tools=[{"type": "function"}],
             frequency_penalty=0.2,
             presence_penalty=0.1,
@@ -1884,9 +1850,7 @@ class TestOPAGuardVerifyActionBranches:
             ]
         )
         guard = OPAGuard(opa_client=client)
-        result = await guard.verify_action(
-            "agent1", {"type": "read"}, {}
-        )
+        result = await guard.verify_action("agent1", {"type": "read"}, {})
         assert result.decision == GuardDecision.DENY
         assert result.is_allowed is False
         assert guard._stats["denied"] == 1
@@ -1910,9 +1874,7 @@ class TestOPAGuardVerifyActionBranches:
         guard = OPAGuard(opa_client=client)
 
         # Make check_constitutional_compliance raise CancelledError
-        guard.check_constitutional_compliance = AsyncMock(
-            side_effect=asyncio.CancelledError()
-        )
+        guard.check_constitutional_compliance = AsyncMock(side_effect=asyncio.CancelledError())
         with pytest.raises(asyncio.CancelledError):
             await guard.verify_action("agent1", {"type": "read"}, {})
 
@@ -1950,9 +1912,7 @@ class TestOPAGuardCollectSignatures:
     async def test_collect_signatures_timeout(self):
         """Cover the timeout expiry branch."""
         guard = OPAGuard(opa_client=_mock_opa_client())
-        result = await guard.collect_signatures(
-            "decision-1", ["signer_a"], timeout=1
-        )
+        result = await guard.collect_signatures("decision-1", ["signer_a"], timeout=1)
         assert result.status == SignatureStatus.EXPIRED
 
     async def test_collect_signatures_completed(self):
@@ -1970,9 +1930,7 @@ class TestOPAGuardCollectSignatures:
                     event.set()
 
         task = asyncio.create_task(submit_after_delay())
-        result = await guard.collect_signatures(
-            "decision-2", ["signer_a"], timeout=5
-        )
+        result = await guard.collect_signatures("decision-2", ["signer_a"], timeout=5)
         await task
         # If signature was accepted and completed
         if result.is_complete:
@@ -2022,9 +1980,7 @@ class TestOPAGuardSubmitForReview:
             )
             review_result.add_review(review)
 
-        guard.register_critic_agent(
-            "critic_1", ["general"], callback=critic_callback
-        )
+        guard.register_critic_agent("critic_1", ["general"], callback=critic_callback)
 
         result = await guard.submit_for_review(
             {"id": "rev-1", "action": "test"},
@@ -2050,9 +2006,7 @@ class TestOPAGuardSubmitForReview:
         def bad_callback(decision, review_result):
             raise RuntimeError("callback exploded")
 
-        guard.register_critic_agent(
-            "critic_bad", ["general"], callback=bad_callback
-        )
+        guard.register_critic_agent("critic_bad", ["general"], callback=bad_callback)
         # Should not raise - error is logged
         result = await guard.submit_for_review(
             {"id": "rev-3"},
@@ -2090,9 +2044,7 @@ class TestOPAGuardInitialize:
         assert client.fail_closed is False
 
     async def test_initialize_creates_client_when_none(self):
-        with patch(
-            "enhanced_agent_bus.deliberation_layer.opa_guard.get_opa_client"
-        ) as mock_get:
+        with patch("enhanced_agent_bus.deliberation_layer.opa_guard.get_opa_client") as mock_get:
             mock_client = _mock_opa_client()
             mock_get.return_value = mock_client
             guard = OPAGuard(opa_client=None)
@@ -2119,18 +2071,14 @@ class TestOPAGuardEvaluateBranches2:
 
     async def test_evaluate_no_allowed_or_allow_key_fail_closed(self):
         """Cover missing both 'allowed' and 'allow' keys with fail_closed=True."""
-        client = _mock_opa_client(
-            policy_result={"reasons": [], "version": "1.0.0"}
-        )
+        client = _mock_opa_client(policy_result={"reasons": [], "version": "1.0.0"})
         guard = OPAGuard(opa_client=client, fail_closed=True)
         result = await guard.evaluate({"type": "test"})
         assert result["allow"] is False
 
     async def test_evaluate_no_allowed_or_allow_key_fail_open(self):
         """Cover missing both keys with fail_closed=False."""
-        client = _mock_opa_client(
-            policy_result={"reasons": [], "version": "1.0.0"}
-        )
+        client = _mock_opa_client(policy_result={"reasons": [], "version": "1.0.0"})
         guard = OPAGuard(opa_client=client, fail_closed=False)
         result = await guard.evaluate({"type": "test"})
         assert result["allow"] is True

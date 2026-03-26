@@ -5,9 +5,9 @@ import future.keywords.if
 import future.keywords.in
 
 # Constitutional Invariant Policy - Runtime enforcement of HARD invariants (Pillar 6)
-# ACGS-2 Standard: cdd01ef066bc6cf2 (baseline)
+# ACGS-2 Standard: 608508a9bd224290 (baseline)
 # Six default HARD invariants enforced at OPA layer
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # P99 eval <1ms: O(1) set membership, early exit patterns
 
 default allow_amendment := false
@@ -139,5 +139,5 @@ all_violations := violation_maci | violation_fail_closed | violation_append_only
 invariant_manifest := {
 	"version": "1.0.0",
 	"invariant_count": 6,
-	"constitutional_hash": "cdd01ef066bc6cf2",
+	"constitutional_hash": "608508a9bd224290",
 }

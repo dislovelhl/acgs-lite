@@ -1,6 +1,6 @@
 """
 ACGS-2 Snapshot Governance Adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Bridges ACGS-2 constitutional governance to Ethereum DAO governance via
 Snapshot's off-chain voting protocol (hub.snapshot.org/graphql).

@@ -57,7 +57,11 @@ def _simple_graph(
     nodes = []
     edges = []
     for i in range(node_count):
-        ntype = NodeType.START if i == 0 else (NodeType.END if i == node_count - 1 else NodeType.FUNCTION)
+        ntype = (
+            NodeType.START
+            if i == 0
+            else (NodeType.END if i == node_count - 1 else NodeType.FUNCTION)
+        )
         nodes.append(
             GraphNode(
                 id=f"node_{i}",

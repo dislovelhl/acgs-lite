@@ -7,7 +7,7 @@ Targets:
 - enhanced_agent_bus.policy.verify_integration
 - enhanced_agent_bus.mcp.shared_bridge
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -750,4 +750,9 @@ class TestMCPBridge:
 
         bridge.mcp_pool.call_tool.assert_awaited_once()
         call_kwargs = bridge.mcp_pool.call_tool.call_args
-        assert call_kwargs.kwargs.get("tool_name", call_kwargs[1].get("tool_name", None)) == "audit_v1" or call_kwargs[0][0] == "audit_v1" if call_kwargs[0] else True
+        assert (
+            call_kwargs.kwargs.get("tool_name", call_kwargs[1].get("tool_name", None)) == "audit_v1"
+            or call_kwargs[0][0] == "audit_v1"
+            if call_kwargs[0]
+            else True
+        )

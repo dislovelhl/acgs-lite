@@ -9,7 +9,7 @@ Reference: OECD Recommendation on Artificial Intelligence (OECD/LEGAL/0449)
 Adopted: May 22, 2019 (updated November 2023)
 Endorsed by 46 countries + the European Union.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

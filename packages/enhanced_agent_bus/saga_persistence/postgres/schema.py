@@ -1,6 +1,6 @@
 """
 PostgreSQL Saga Repository Schema Definitions
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Contains database schema SQL and configuration constants for the
 PostgreSQL saga state repository.

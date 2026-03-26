@@ -5,7 +5,7 @@ Enforces separation of powers (Trias Politica) for AI governance,
 preventing Godel bypass attacks through role-based access control.
 Supports session-scoped agent registration and validation.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -47,7 +47,7 @@ class MACIEnforcer:
     preventing Godel bypass attacks through role-based access control.
     Supports session-scoped agent registration and validation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -408,7 +408,7 @@ class MACIEnforcer:
 
         Note:
             This validation is ALWAYS enforced regardless of session policies.
-            Constitutional hash: cdd01ef066bc6cf2
+            Constitutional hash: 608508a9bd224290
         """
         # CRITICAL: MACI enforcement cannot be bypassed by session policies
         # All session policies must operate within MACI constraints

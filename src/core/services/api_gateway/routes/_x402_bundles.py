@@ -1,7 +1,7 @@
 """
 x402 Endpoint Bundles — Tiered Micropayment Packages
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Bundles aggregate individually-priced x402 governance endpoints into
 discounted tiers.  A single x402 payment settles the full bundle,
@@ -120,7 +120,8 @@ def _savings_pct(bundle_price: Decimal, individual_total: Decimal) -> float:
         return 0.0
     saved = individual_total - bundle_price
     pct = (saved / individual_total * Decimal("100")).quantize(
-        Decimal("0.1"), rounding=ROUND_HALF_UP,
+        Decimal("0.1"),
+        rounding=ROUND_HALF_UP,
     )
     return float(max(pct, Decimal("0")))
 
@@ -136,14 +137,17 @@ class Bundle(BaseModel):
     name: str = Field(..., description="Bundle tier name")
     price_usd: str = Field(..., description="Bundle price in USD")
     endpoints: list[str] = Field(
-        ..., description="Included endpoint paths (relative to /x402)",
+        ...,
+        description="Included endpoint paths (relative to /x402)",
     )
     endpoint_count: int = Field(..., description="Number of included endpoints")
     individual_total_usd: str = Field(
-        ..., description="Sum of individual endpoint prices",
+        ...,
+        description="Sum of individual endpoint prices",
     )
     savings_vs_individual: float = Field(
-        ..., description="Percentage saved vs purchasing individually",
+        ...,
+        description="Percentage saved vs purchasing individually",
     )
     description: str = Field(default="", description="Human-readable tier summary")
 
@@ -152,7 +156,9 @@ class BundleRequest(BaseModel):
     """Request body for executing a bundle."""
 
     action: str = Field(
-        ..., max_length=5000, description="Action string to evaluate",
+        ...,
+        max_length=5000,
+        description="Action string to evaluate",
     )
     agent_id: str = Field(default="anonymous", max_length=200)
     context: dict[str, Any] = Field(default_factory=dict)
@@ -256,9 +262,7 @@ async def _eval_scan(action: str, context: dict[str, Any]) -> dict[str, Any]:
     return {
         "is_injection": result.is_injection,
         "severity": result.severity.value if result.severity else None,
-        "injection_type": (
-            result.injection_type.value if result.injection_type else None
-        ),
+        "injection_type": (result.injection_type.value if result.injection_type else None),
         "confidence": result.confidence,
         "matched_patterns": result.matched_patterns,
     }
@@ -272,7 +276,8 @@ async def _eval_audit(action: str, context: dict[str, Any]) -> dict[str, Any]:
 
 
 async def _eval_classify_risk(
-    action: str, _context: dict[str, Any],
+    action: str,
+    _context: dict[str, Any],
 ) -> dict[str, Any]:
     """Run the /classify-risk evaluation logic."""
     from .x402_marketplace import _get_risk_classifier
@@ -365,7 +370,8 @@ async def _eval_certify(action: str, context: dict[str, Any]) -> dict[str, Any]:
 
 
 async def _eval_compliance(
-    action: str, _context: dict[str, Any],
+    action: str,
+    _context: dict[str, Any],
 ) -> dict[str, Any]:
     """Run the /compliance multi-framework assessment logic."""
     try:
@@ -405,7 +411,8 @@ async def _eval_simulate(action: str, context: dict[str, Any]) -> dict[str, Any]
 
 
 async def _eval_invariant_guard(
-    action: str, context: dict[str, Any],
+    action: str,
+    context: dict[str, Any],
 ) -> dict[str, Any]:
     """Run the /invariant-guard three-tier invariant enforcement logic."""
     from .x402_marketplace import _get_invariant_guard
@@ -428,7 +435,8 @@ async def _eval_invariant_guard(
 
 
 async def _eval_circuit_breaker(
-    action: str, context: dict[str, Any],
+    action: str,
+    context: dict[str, Any],
 ) -> dict[str, Any]:
     """Run the /circuit-breaker governance circuit breaker logic."""
     from .x402_marketplace import _get_circuit_breaker
@@ -451,7 +459,8 @@ async def _eval_circuit_breaker(
 
 
 async def _eval_policy_lint(
-    action: str, _context: dict[str, Any],
+    action: str,
+    _context: dict[str, Any],
 ) -> dict[str, Any]:
     """Run the /policy-lint policy quality scan logic."""
     from .x402_marketplace import _get_policy_linter
@@ -469,7 +478,8 @@ async def _eval_policy_lint(
 
 
 async def _eval_eu_ai_log(
-    action: str, context: dict[str, Any],
+    action: str,
+    context: dict[str, Any],
 ) -> dict[str, Any]:
     """Run the /eu-ai-log Article 12 logging logic."""
     from .x402_marketplace import _get_article12_logger
@@ -604,16 +614,18 @@ async def execute_bundle(
 
     x402_network = os.getenv("X402_NETWORK", "eip155:84532")
     x402_pay_to = os.getenv("EVM_ADDRESS", "")
-    await emit_revenue_event(RevenueEvent(
-        endpoint=f"/x402/bundle/{bundle_key}",
-        price_usd=bundle.price_usd,
-        agent_id=body.agent_id,
-        decision=f"bundle:{succeeded}/{bundle.endpoint_count}",
-        timestamp=datetime.now(UTC).isoformat(),
-        processing_ms=processing_ms,
-        network=x402_network,
-        wallet_address=x402_pay_to,
-    ))
+    await emit_revenue_event(
+        RevenueEvent(
+            endpoint=f"/x402/bundle/{bundle_key}",
+            price_usd=bundle.price_usd,
+            agent_id=body.agent_id,
+            decision=f"bundle:{succeeded}/{bundle.endpoint_count}",
+            timestamp=datetime.now(UTC).isoformat(),
+            processing_ms=processing_ms,
+            network=x402_network,
+            wallet_address=x402_pay_to,
+        )
+    )
 
     return BundleResultResponse(
         bundle=bundle_key,

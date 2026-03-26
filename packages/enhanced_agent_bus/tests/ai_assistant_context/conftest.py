@@ -1,6 +1,6 @@
 """
 Conftest for ai_assistant_context tests.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Skips mamba-dependent tests when torch is not available since the
 MambaHybridProcessor cannot be mocked without the real import.

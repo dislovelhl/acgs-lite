@@ -230,8 +230,10 @@ class TestOIDCProvider:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("enhanced_agent_bus.mcp_integration.auth.oidc_provider.httpx") as mock_httpx, \
-             patch("enhanced_agent_bus.mcp_integration.auth.oidc_provider.HTTPX_AVAILABLE", True):
+        with (
+            patch("enhanced_agent_bus.mcp_integration.auth.oidc_provider.httpx") as mock_httpx,
+            patch("enhanced_agent_bus.mcp_integration.auth.oidc_provider.HTTPX_AVAILABLE", True),
+        ):
             mock_httpx.AsyncClient.return_value = mock_client
             result = await provider.discover()
             assert result is not None

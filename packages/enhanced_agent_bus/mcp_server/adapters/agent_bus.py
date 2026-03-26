@@ -3,9 +3,8 @@ EnhancedAgentBus Adapter for MCP Integration.
 
 Bridges MCP tools/resources with the Enhanced Agent Bus.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
-
 
 try:
     from src.core.shared.types import JSONDict

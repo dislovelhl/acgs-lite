@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Constitutional Amendment Activation Saga
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Saga workflow for activating approved constitutional amendments with
 rollback compensation. Implements the saga pattern for distributed

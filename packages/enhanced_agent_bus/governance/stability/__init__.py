@@ -1,6 +1,6 @@
 """
 ACGS-2 Governance Stability Layer
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This subpackage provides manifold-constrained stability projections for governance.
 """

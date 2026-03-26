@@ -3,6 +3,10 @@
 **Generated:** 2026-03-19
 **Last updated:** 2026-03-19
 
+Current naming reference: the public package is `acgs`, the compatibility namespace is
+`acgs_lite`, and `ACGS-2` is an internal historical platform label. See
+[../brand-architecture.md](../brand-architecture.md).
+
 ---
 
 ## Strategy & Analysis

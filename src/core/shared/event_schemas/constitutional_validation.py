@@ -1,6 +1,6 @@
 """
 ACGS-2 Constitutional Validation Event Schemas
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Versioned schemas for constitutional compliance validation events.
 Records the outcomes of constitutional AI governance checks.
@@ -116,7 +116,7 @@ class ConstitutionalValidationV1(EventSchemaBase):
     """
     Constitutional Validation Schema V1 - Records constitutional compliance checks.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Captures the full context of a constitutional validation including:
     - Validation outcome and mode

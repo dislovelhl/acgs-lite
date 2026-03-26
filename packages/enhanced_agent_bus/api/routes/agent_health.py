@@ -1,6 +1,6 @@
 """
 Agent Health API Routes — GET/POST/DELETE /api/v1/agents/{agent_id}/health*
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Exposes health snapshots and operator override management for agent instances.
 Authentication and operator-role enforcement are provided by require_operator_role.

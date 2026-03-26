@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Validators
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Validation utilities for message and agent compliance.
 """
@@ -42,7 +42,7 @@ class ValidationResult:
         errors (list[str]): A list of error messages if validation failed.
         warnings (list[str]): A list of warning messages.
         metadata (JSONDict): Additional metadata associated with the validation.
-        constitutional_hash (str): The constitutional hash `cdd01ef066bc6cf2`.
+        constitutional_hash (str): The constitutional hash `608508a9bd224290`.
         pqc_metadata (PQCMetadata | None): Post-quantum cryptography metadata including
             algorithm details and verification status. None if PQC is not enabled.
     """

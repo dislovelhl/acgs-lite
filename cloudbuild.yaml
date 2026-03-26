@@ -1,9 +1,9 @@
-# Constitutional Hash: cdd01ef066bc6cf2
-# ACGS-Lite Cloud Build + Cloud Run Deployment
+# Constitutional Hash: 608508a9bd224290
+# ACGS Cloud Build + Cloud Run Deployment
 #
 # Required substitutions (set in Cloud Build trigger or --substitutions):
 #   _REGION:           GCP region (default: us-central1)
-#   _SERVICE_NAME:     Cloud Run service name (default: acgs-lite-governance)
+#   _SERVICE_NAME:     Cloud Run service name (default: acgs-governance)
 #
 # Required secrets (set in Cloud Run env or Secret Manager):
 #   GITLAB_TOKEN:      GitLab API personal access token
@@ -12,7 +12,7 @@
 
 substitutions:
   _REGION: us-central1
-  _SERVICE_NAME: acgs-lite-governance
+  _SERVICE_NAME: acgs-governance
 
 steps:
   # Build the Docker image

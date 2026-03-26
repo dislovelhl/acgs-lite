@@ -1,6 +1,6 @@
 """
 Unit tests for SDPC IntentClassifier.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from unittest.mock import AsyncMock, patch
@@ -184,9 +184,7 @@ async def test_llm_fallback_on_error():
     classifier._llm_client_initialized = True
 
     # Force LITELLM_AVAILABLE to True for tests
-    with patch(
-        "enhanced_agent_bus.deliberation_layer.intent_classifier.LITELLM_AVAILABLE", True
-    ):
+    with patch("enhanced_agent_bus.deliberation_layer.intent_classifier.LITELLM_AVAILABLE", True):
         # Test Case 1: LLM raises an exception
         with patch(
             "enhanced_agent_bus.deliberation_layer.intent_classifier.litellm.acompletion",

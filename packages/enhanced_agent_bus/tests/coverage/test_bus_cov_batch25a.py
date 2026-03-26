@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - response_quality.py (flat file) Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: enhanced_agent_bus/response_quality.py (462 stmts, 0% -> target 80%+)
 Tests:
@@ -165,25 +165,17 @@ class TestValidationResult:
             )
 
     def test_confidence_boundary_values(self):
-        vr0 = ValidationResult(
-            stage=ValidationStage.SYNTAX, passed=True, issues=[], confidence=0.0
-        )
-        vr1 = ValidationResult(
-            stage=ValidationStage.SYNTAX, passed=True, issues=[], confidence=1.0
-        )
+        vr0 = ValidationResult(stage=ValidationStage.SYNTAX, passed=True, issues=[], confidence=0.0)
+        vr1 = ValidationResult(stage=ValidationStage.SYNTAX, passed=True, issues=[], confidence=1.0)
         assert vr0.confidence == 0.0
         assert vr1.confidence == 1.0
 
     def test_metadata_default(self):
-        vr = ValidationResult(
-            stage=ValidationStage.SYNTAX, passed=True, issues=[], confidence=0.5
-        )
+        vr = ValidationResult(stage=ValidationStage.SYNTAX, passed=True, issues=[], confidence=0.5)
         assert vr.metadata == {}
 
     def test_constitutional_hash_default(self):
-        vr = ValidationResult(
-            stage=ValidationStage.SYNTAX, passed=True, issues=[], confidence=0.5
-        )
+        vr = ValidationResult(stage=ValidationStage.SYNTAX, passed=True, issues=[], confidence=0.5)
         assert vr.constitutional_hash == CONSTITUTIONAL_HASH
 
 
@@ -480,9 +472,7 @@ class TestConstitutionalValidator:
         assert any("self-validation" in i.lower() for i in result.issues)
 
     async def test_custom_prohibited_patterns(self):
-        v = ConstitutionalValidator(
-            prohibited_patterns=[("danger_word", "Custom danger detected")]
-        )
+        v = ConstitutionalValidator(prohibited_patterns=[("danger_word", "Custom danger detected")])
         result = await v.validate("This has danger_word inside.", {})
         assert result.passed is False
 
@@ -508,9 +498,7 @@ class TestConstitutionalValidator:
 class TestPipelineRunResult:
     def test_failed_stages(self):
         results = [
-            ValidationResult(
-                stage=ValidationStage.SYNTAX, passed=True, issues=[], confidence=1.0
-            ),
+            ValidationResult(stage=ValidationStage.SYNTAX, passed=True, issues=[], confidence=1.0),
             ValidationResult(
                 stage=ValidationStage.SEMANTIC,
                 passed=False,
@@ -576,9 +564,7 @@ class TestResponseValidationPipeline:
 
     async def test_run_specific_stages(self):
         pipeline = ResponseValidationPipeline()
-        result = await pipeline.run(
-            GOOD_RESPONSE, stages=[ValidationStage.SYNTAX]
-        )
+        result = await pipeline.run(GOOD_RESPONSE, stages=[ValidationStage.SYNTAX])
         assert result.stages_run == [ValidationStage.SYNTAX]
 
     async def test_run_fail_fast(self):
@@ -613,17 +599,11 @@ class TestResponseValidationPipeline:
             )
 
         config = PipelineConfig(
-            stages=[
-                PipelineStageConfig(
-                    stage=ValidationStage.SYNTAX, timeout_seconds=0.01
-                )
-            ]
+            stages=[PipelineStageConfig(stage=ValidationStage.SYNTAX, timeout_seconds=0.01)]
         )
         pipeline = ResponseValidationPipeline(config=config)
         pipeline.register_validator(ValidationStage.SYNTAX, slow_validator)
-        result = await pipeline.run(
-            GOOD_RESPONSE, stages=[ValidationStage.SYNTAX]
-        )
+        result = await pipeline.run(GOOD_RESPONSE, stages=[ValidationStage.SYNTAX])
         assert result.passed is False
         assert any("timed out" in i for i in result.all_issues)
 
@@ -633,9 +613,7 @@ class TestResponseValidationPipeline:
 
         pipeline = ResponseValidationPipeline()
         pipeline.register_validator(ValidationStage.SYNTAX, broken_validator)
-        result = await pipeline.run(
-            GOOD_RESPONSE, stages=[ValidationStage.SYNTAX]
-        )
+        result = await pipeline.run(GOOD_RESPONSE, stages=[ValidationStage.SYNTAX])
         assert result.passed is False
         assert any("exception" in i.lower() for i in result.all_issues)
 
@@ -644,9 +622,7 @@ class TestResponseValidationPipeline:
         pipeline = ResponseValidationPipeline()
         # Remove a validator to test the "no validator" warning path
         del pipeline._validators[ValidationStage.SYNTAX]
-        result = await pipeline.run(
-            GOOD_RESPONSE, stages=[ValidationStage.SYNTAX]
-        )
+        result = await pipeline.run(GOOD_RESPONSE, stages=[ValidationStage.SYNTAX])
         # Should skip without crashing
         assert len(result.stage_results) == 0
 
@@ -661,9 +637,7 @@ class TestResponseValidationPipeline:
 
         pipeline = ResponseValidationPipeline()
         pipeline.register_validator(ValidationStage.SYNTAX, custom_validator)
-        result = await pipeline.run(
-            GOOD_RESPONSE, stages=[ValidationStage.SYNTAX]
-        )
+        result = await pipeline.run(GOOD_RESPONSE, stages=[ValidationStage.SYNTAX])
         assert result.passed is True
         assert result.stage_results[0].confidence == 0.99
 
@@ -685,9 +659,7 @@ class TestResponseValidationPipeline:
     async def test_overall_confidence_empty(self):
         pipeline = ResponseValidationPipeline()
         del pipeline._validators[ValidationStage.SYNTAX]
-        result = await pipeline.run(
-            GOOD_RESPONSE, stages=[ValidationStage.SYNTAX]
-        )
+        result = await pipeline.run(GOOD_RESPONSE, stages=[ValidationStage.SYNTAX])
         assert result.overall_confidence == 0.0
 
 
@@ -890,9 +862,7 @@ class TestQualityScorer:
         assert isinstance(qs, QualityScore)
 
     async def test_score_passing(self):
-        thresholds = ScorerThresholds(
-            coherence=0.1, completeness=0.1, alignment=0.1, overall=0.1
-        )
+        thresholds = ScorerThresholds(coherence=0.1, completeness=0.1, alignment=0.1, overall=0.1)
         scorer = QualityScorer(thresholds=thresholds)
         qs = await scorer.score(GOOD_RESPONSE)
         assert qs.passed is True
@@ -1033,6 +1003,7 @@ class TestResponseRefiner:
 
     async def test_refine_with_callback(self):
         """Refinement with an external callback that improves the response."""
+
         async def improve_callback(response: str, issues: list[str]) -> str:
             # Make response longer and more governance-aligned
             return response + (

@@ -17,7 +17,6 @@ from pydantic import BaseModel, Field
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.core.shared.config import settings
-from src.core.shared.config.runtime_environment import resolve_runtime_environment
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.errors.exceptions import ConfigurationError
 from src.core.shared.security.key_loader import load_key_material
@@ -25,55 +24,11 @@ from src.core.shared.structured_logging import get_logger
 
 logger = get_logger(__name__)
 
-# H-1 fix: Singleton revocation service instance (initialized lazily on first auth check).
-_revocation_service: object | None = None
-_revocation_service_initialized: bool = False
-_NON_PRODUCTION_ENVS = frozenset({"development", "dev", "test", "testing", "local", "ci"})
-
-
-def _is_production_environment() -> bool:
-    environment = resolve_runtime_environment(
-        getattr(settings, "env", None),
-        extra_env_vars=("ACGS2_ENV",),
-    )
-    return environment not in _NON_PRODUCTION_ENVS
-
-
-def _get_revocation_service() -> object | None:
-    """Get the singleton TokenRevocationService, or None if unavailable."""
-    global _revocation_service, _revocation_service_initialized
-    if _revocation_service_initialized:
-        return _revocation_service
-    _revocation_service_initialized = True
-    try:
-        import redis as _redis_mod
-
-        from src.core.shared.security.token_revocation import TokenRevocationService
-
-        redis_url = os.environ.get("REDIS_URL")
-        if not redis_url:
-            logger.info("Token revocation disabled: REDIS_URL not configured")
-            return None
-        redis_async = getattr(_redis_mod, "asyncio", None)
-        if redis_async is None:
-            logger.warning("Token revocation disabled: redis.asyncio not available")
-            return None
-        client = redis_async.from_url(redis_url)
-        _revocation_service = TokenRevocationService(redis_client=client)
-        logger.info("Token revocation service initialized for auth flow")
-        return _revocation_service
-    except Exception as e:
-        logger.warning("Token revocation service initialization failed: %s", e)
-        return None
-
-
 _JWT_SECRET_ENV_KEYS = ("JWT_SECRET", "JWT_SECRET_KEY")
 _JWT_PRIVATE_KEY_ENV_KEY = "JWT_PRIVATE_KEY"
 _JWT_PUBLIC_KEY_ENV_KEY = "JWT_PUBLIC_KEY"
 _JWT_ALGORITHM_ENV_KEY = "JWT_ALGORITHM"
-_ALLOWED_JWT_ALGORITHMS = frozenset(
-    {"RS256", "RS384", "RS512", "ES256", "ES384", "EdDSA", "HS256"}
-)
+_ALLOWED_JWT_ALGORITHMS = frozenset({"RS256", "RS384", "RS512", "ES256", "ES384", "EdDSA", "HS256"})
 _JWT_ALGORITHM_CANONICAL_MAP = {
     algorithm.lower(): algorithm for algorithm in _ALLOWED_JWT_ALGORITHMS
 }
@@ -101,7 +56,7 @@ class TokenResponse(BaseModel):
     """Token response model."""
 
     access_token: str
-    token_type: str = "bearer"  # noqa: S105 - OAuth token type literal
+    token_type: str = "bearer"
 
 
 def _current_jwt_secret() -> str | None:
@@ -119,9 +74,7 @@ def _current_jwt_secret() -> str | None:
 def _current_jwt_private_key() -> str | None:
     configured = (os.getenv(_JWT_PRIVATE_KEY_ENV_KEY) or "").strip()
     if configured:
-        loaded = load_key_material(
-            configured, error_code="JWT_KEY_FILE_READ_FAILED"
-        )
+        loaded = load_key_material(configured, error_code="JWT_KEY_FILE_READ_FAILED")
         return loaded if loaded else None
 
     local_private_key = getattr(settings, "jwt_private_key", "")
@@ -134,17 +87,11 @@ def _current_jwt_private_key() -> str | None:
 def _current_jwt_public_key() -> str | None:
     configured = (os.getenv(_JWT_PUBLIC_KEY_ENV_KEY) or "").strip()
     if configured:
-        loaded = load_key_material(
-            configured, error_code="JWT_KEY_FILE_READ_FAILED"
-        )
+        loaded = load_key_material(configured, error_code="JWT_KEY_FILE_READ_FAILED")
         return loaded if loaded else None
 
     local_public_key = getattr(settings, "jwt_public_key", "")
-    if (
-        isinstance(local_public_key, str)
-        and local_public_key
-        and local_public_key != "SYSTEM_PUBLIC_KEY_PLACEHOLDER"
-    ):
+    if isinstance(local_public_key, str) and local_public_key:
         return local_public_key
 
     if settings.security.jwt_public_key != "SYSTEM_PUBLIC_KEY_PLACEHOLDER":
@@ -188,27 +135,28 @@ def _resolve_jwt_material(for_signing: bool) -> tuple[str, str]:
 
     private_key = _current_jwt_private_key()
     public_key = _current_jwt_public_key()
-    if for_signing and private_key:
-        return private_key, requested_algorithm
+    if private_key and public_key:
+        return (
+            (private_key, requested_algorithm) if for_signing else (public_key, requested_algorithm)
+        )
 
-    if not for_signing and (public_key or private_key):
-        return (public_key or private_key), requested_algorithm
+    # Verification-only path: public key alone is sufficient when not signing
+    if not for_signing and public_key:
+        return public_key, requested_algorithm
 
     if requested_algorithm == "RS256":
         raise ConfigurationError(
             message=(
-                "RS256 requested but RSA verification keys are not configured. Set "
-                "JWT_PUBLIC_KEY for verification, JWT_PRIVATE_KEY for signing, or change "
-                "JWT_ALGORITHM to HS256."
+                "RS256 requested but RSA keys (JWT_PRIVATE_KEY, JWT_PUBLIC_KEY) are not "
+                "configured. Set keys or change JWT_ALGORITHM to HS256."
             ),
             error_code="JWT_RSA_KEYS_MISSING",
         )
 
     raise ConfigurationError(
         message=(
-            f"{requested_algorithm} requested but no asymmetric verification material is "
-            "configured. Set JWT_PUBLIC_KEY for verification, JWT_PRIVATE_KEY for signing, "
-            "or change JWT_ALGORITHM to HS256."
+            f"{requested_algorithm} requested but JWT_PRIVATE_KEY, JWT_PUBLIC_KEY are not "
+            "configured. Set keys or change JWT_ALGORITHM to HS256."
         ),
         error_code="JWT_ASYMMETRIC_KEYS_MISSING",
     )
@@ -220,11 +168,8 @@ def has_jwt_secret() -> bool:
 
 
 def has_jwt_verification_material() -> bool:
-    """Return True when token verification material is configured for the active algorithm."""
-    algorithm = _configured_jwt_algorithm()
-    if algorithm == "HS256":
-        return _current_jwt_secret() is not None
-    return _current_jwt_public_key() is not None or _current_jwt_private_key() is not None
+    """Return True when any JWT verification material (secret or public key) is configured."""
+    return _current_jwt_secret() is not None or _current_jwt_public_key() is not None
 
 
 def create_access_token(
@@ -338,8 +283,6 @@ async def get_current_user(
     """
     FastAPI dependency to get current authenticated user.
 
-    Validates JWT claims AND checks token revocation blacklist (H-1 fix).
-
     Args:
         credentials: HTTP Bearer token credentials
 
@@ -347,7 +290,7 @@ async def get_current_user(
         UserClaims for authenticated user
 
     Raises:
-        HTTPException: If authentication fails or token is revoked
+        HTTPException: If authentication fails
     """
     if not credentials:
         raise HTTPException(
@@ -356,34 +299,7 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    claims = verify_token(credentials.credentials)
-
-    # H-1 fix: Check token revocation blacklist after JWT validation.
-    # Lazy import to avoid circular dependency and allow graceful degradation.
-    try:
-        revocation_service = _get_revocation_service()
-        if revocation_service is None:
-            if _is_production_environment():
-                raise HTTPException(
-                    status_code=503,
-                    detail="Token revocation backend unavailable",
-                )
-        elif await revocation_service.is_token_revoked(claims.jti):
-            logger.warning(
-                "Revoked token used: jti=%s sub=%s", claims.jti[:8], claims.sub
-            )
-            raise HTTPException(status_code=401, detail="Token has been revoked")
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.warning("Token revocation check failed: %s", e)
-        if _is_production_environment():
-            raise HTTPException(
-                status_code=503,
-                detail="Token revocation backend unavailable",
-            ) from e
-
-    return claims
+    return verify_token(credentials.credentials)
 
 
 async def get_current_user_optional(
@@ -525,6 +441,7 @@ __all__ = [
     "get_current_user",
     "get_current_user_optional",
     "has_jwt_secret",
+    "has_jwt_verification_material",
     "require_permission",
     "require_role",
     "require_tenant_access",

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - xAI (Grok) LLM Adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 xAI adapter supporting Grok 4.x models via OpenAI-compatible API.
 Extends OpenAIAdapter with xAI-specific pricing, server-side tools
@@ -47,7 +47,7 @@ _XAI_ADAPTER_OPERATION_ERRORS = (
 class XAIAdapter(OpenAIAdapter):
     """xAI LLM adapter for Grok models.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Extends OpenAIAdapter since xAI exposes an OpenAI-compatible API.
     Adds xAI-specific features:
@@ -243,14 +243,10 @@ class XAIAdapter(OpenAIAdapter):
             latency_ms = (time.time() - start_time) * 1000
 
             response_dict = response.model_dump()
-            llm_response = ResponseConverter.from_openai_response(
-                response_dict, provider="xai"
-            )
+            llm_response = ResponseConverter.from_openai_response(response_dict, provider="xai")
 
             llm_response.metadata.latency_ms = latency_ms
-            llm_response.cost = self._estimate_cost_from_usage(
-                response_dict.get("usage", {})
-            )
+            llm_response.cost = self._estimate_cost_from_usage(response_dict.get("usage", {}))
 
             return llm_response
 
@@ -311,14 +307,10 @@ class XAIAdapter(OpenAIAdapter):
             latency_ms = (time.time() - start_time) * 1000
 
             response_dict = response.model_dump()
-            llm_response = ResponseConverter.from_openai_response(
-                response_dict, provider="xai"
-            )
+            llm_response = ResponseConverter.from_openai_response(response_dict, provider="xai")
 
             llm_response.metadata.latency_ms = latency_ms
-            llm_response.cost = self._estimate_cost_from_usage(
-                response_dict.get("usage", {})
-            )
+            llm_response.cost = self._estimate_cost_from_usage(response_dict.get("usage", {}))
 
             return llm_response
 
@@ -356,19 +348,15 @@ class XAIAdapter(OpenAIAdapter):
                 break
 
         if pricing is None:
-            logger.warning(
-                f"Pricing not found for model {self.model}, "
-                "using grok-4-1-fast pricing"
-            )
+            logger.warning(f"Pricing not found for model {self.model}, using grok-4-1-fast pricing")
             pricing = self.MODEL_PRICING["grok-4-1-fast"]
 
         # Cached tokens use reduced rate; uncached at full prompt rate
         cached_rate = self._get_cached_rate()
         uncached_prompt = max(0, prompt_tokens - cached_tokens)
-        prompt_cost = (
-            (uncached_prompt / 1_000_000.0) * pricing["prompt"]
-            + (cached_tokens / 1_000_000.0) * cached_rate
-        )
+        prompt_cost = (uncached_prompt / 1_000_000.0) * pricing["prompt"] + (
+            cached_tokens / 1_000_000.0
+        ) * cached_rate
 
         # Completion + reasoning tokens both billed at completion rate
         total_completion = completion_tokens + reasoning_tokens

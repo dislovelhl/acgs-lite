@@ -28,7 +28,7 @@ pip install acgs
 - Aho-Corasick single-pass keyword scanning
 - Optional Rust acceleration via PyO3
 - 3,133 tests passing
-- Apache-2.0
+- AGPL-3.0-or-later
 
 I built this entirely with Claude (Anthropic's AI). No CS background. Two years of daily conversations with AI, learning to code by building governance infrastructure.
 

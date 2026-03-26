@@ -13,7 +13,7 @@
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run && npm run test:e2e",
 		"test:e2e": "env -u NO_COLOR playwright test",
-		"test:e2e:fast": "npx @lightpanda/browser serve & sleep 1 && env -u NO_COLOR playwright test --project=lightpanda; kill %1 2>/dev/null || true",
+		"test:e2e:fast": "npx @lightpanda/browser serve & sleep 1 && LIGHTPANDA_WS_ENDPOINT=ws://127.0.0.1:9222 env -u NO_COLOR playwright test --project=lightpanda; kill %1 2>/dev/null || true",
 		"lint": "eslint .",
 		"format": "prettier --plugin prettier-plugin-svelte --write ."
 	},

@@ -56,9 +56,7 @@ def find_similar_rules(
     candidates = constitution.rules if include_disabled else constitution.active_rules()
 
     # Only consider rules with at least one keyword
-    keyed = [
-        (r, frozenset(kw.lower() for kw in r.keywords)) for r in candidates if r.keywords
-    ]
+    keyed = [(r, frozenset(kw.lower() for kw in r.keywords)) for r in candidates if r.keywords]
 
     results: list[dict[str, Any]] = []
     n = len(keyed)
@@ -75,9 +73,7 @@ def find_similar_rules(
                 continue
             severity_match = rule_a.severity == rule_b.severity
             category_match = rule_a.category == rule_b.category
-            recommendation = (
-                "consolidate" if (severity_match and category_match) else "review"
-            )
+            recommendation = "consolidate" if (severity_match and category_match) else "review"
             results.append(
                 {
                     "rule_a": rule_a.id,

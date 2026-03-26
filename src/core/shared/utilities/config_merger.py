@@ -1,6 +1,6 @@
 """
 ACGS-2 Configuration Merger Utility
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Single source of truth for configuration merging across the codebase.
 Replaces scattered config merging logic found in factory.py and other modules.

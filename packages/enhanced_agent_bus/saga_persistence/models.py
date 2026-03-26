@@ -1,6 +1,6 @@
 """
 Saga Persistence Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Core data models for saga state persistence, designed for Redis hash storage
 with efficient serialization and deserialization.

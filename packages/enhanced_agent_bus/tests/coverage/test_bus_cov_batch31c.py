@@ -3,7 +3,7 @@ Comprehensive coverage tests for enhanced_agent_bus modules:
 - collaboration/server.py (CollaborationServer, RateLimiter)
 - ai_assistant/mamba_hybrid_processor.py (MambaSSM, SharedAttention, Manager)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -229,27 +229,21 @@ class TestHandleJoinDocument:
     async def test_join_missing_document_id(self, collab_server):
         collab_server.rate_limiter = AsyncMock()
         collab_server.rate_limiter.is_allowed = AsyncMock(return_value=True)
-        collab_server.sio.get_session = AsyncMock(
-            return_value={"user_id": "u1", "tenant_id": "t1"}
-        )
+        collab_server.sio.get_session = AsyncMock(return_value={"user_id": "u1", "tenant_id": "t1"})
         result = await collab_server._handle_join_document("sid-1", {})
         assert result["code"] == "MISSING_DOC_ID"
 
     async def test_join_missing_tenant(self, collab_server):
         collab_server.rate_limiter = AsyncMock()
         collab_server.rate_limiter.is_allowed = AsyncMock(return_value=True)
-        collab_server.sio.get_session = AsyncMock(
-            return_value={"user_id": "u1", "tenant_id": None}
-        )
+        collab_server.sio.get_session = AsyncMock(return_value={"user_id": "u1", "tenant_id": None})
         result = await collab_server._handle_join_document("sid-1", {"document_id": "doc-1"})
         assert result["code"] == "MISSING_TENANT"
 
     async def test_join_session_full(self, collab_server):
         collab_server.rate_limiter = AsyncMock()
         collab_server.rate_limiter.is_allowed = AsyncMock(return_value=True)
-        collab_server.sio.get_session = AsyncMock(
-            return_value={"user_id": "u1", "tenant_id": "t1"}
-        )
+        collab_server.sio.get_session = AsyncMock(return_value={"user_id": "u1", "tenant_id": "t1"})
         collab_server.presence.join_session = AsyncMock(
             side_effect=SessionFullError("Session is full")
         )
@@ -259,9 +253,7 @@ class TestHandleJoinDocument:
     async def test_join_success(self, collab_server):
         collab_server.rate_limiter = AsyncMock()
         collab_server.rate_limiter.is_allowed = AsyncMock(return_value=True)
-        collab_server.sio.get_session = AsyncMock(
-            return_value={"user_id": "u1", "tenant_id": "t1"}
-        )
+        collab_server.sio.get_session = AsyncMock(return_value={"user_id": "u1", "tenant_id": "t1"})
         collab_obj = _make_collaborator()
         session_obj = _make_session_obj(version=5)
         collab_server.presence.join_session = AsyncMock(return_value=(session_obj, collab_obj))
@@ -620,19 +612,13 @@ class TestHandleGetPresence:
         assert result == {"error": "No session"}
 
     async def test_presence_not_in_document(self, collab_server):
-        collab_server.sio.get_session = AsyncMock(
-            return_value={"document_id": None}
-        )
+        collab_server.sio.get_session = AsyncMock(return_value={"document_id": None})
         result = await collab_server._handle_get_presence("sid-1")
         assert result == {"error": "Not in document"}
 
     async def test_presence_success(self, collab_server):
-        collab_server.sio.get_session = AsyncMock(
-            return_value={"document_id": "doc-1"}
-        )
-        collab_server.presence.get_all_users = AsyncMock(
-            return_value=[_make_collaborator()]
-        )
+        collab_server.sio.get_session = AsyncMock(return_value={"document_id": "doc-1"})
+        collab_server.presence.get_all_users = AsyncMock(return_value=[_make_collaborator()])
         result = await collab_server._handle_get_presence("sid-1")
         assert "users" in result
         assert len(result["users"]) == 1
@@ -952,7 +938,9 @@ class TestConstitutionalMambaHybrid:
             def make_mock(layer):
                 def mock_ssm(x, dt, B, C):
                     return torch.randn_like(x)
+
                 return mock_ssm
+
             p = patch.object(mamba_layer, "_ssm_forward", side_effect=make_mock(mamba_layer))
             p.start()
             patches.append(p)
@@ -1116,9 +1104,7 @@ class TestMambaHybridManager:
     """Tests for MambaHybridManager."""
 
     def _small_config(self):
-        return MambaConfig(
-            d_model=64, d_state=16, dt_rank=8, num_mamba_layers=2, device="cpu"
-        )
+        return MambaConfig(d_model=64, d_state=16, dt_rank=8, num_mamba_layers=2, device="cpu")
 
     def test_init_default_config(self):
         mgr = MambaHybridManager()
@@ -1220,9 +1206,7 @@ class TestModuleFunctions:
         assert isinstance(proc, MambaHybridManager)
 
     def test_initialize_mamba_processor(self):
-        config = MambaConfig(
-            d_model=64, d_state=16, dt_rank=8, num_mamba_layers=2, device="cpu"
-        )
+        config = MambaConfig(d_model=64, d_state=16, dt_rank=8, num_mamba_layers=2, device="cpu")
         result = initialize_mamba_processor(config)
         assert result is True
         proc = get_mamba_hybrid_processor()

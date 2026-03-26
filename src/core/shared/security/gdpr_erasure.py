@@ -1,6 +1,6 @@
 """
 ACGS-2 GDPR Article 17 Erasure Handler
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements GDPR Article 17 "Right to Erasure" (Right to be Forgotten):
 - Erasure request management
@@ -236,7 +236,7 @@ class GDPRErasureHandler:
     """
     Handler for GDPR Article 17 erasure requests.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Implements the complete erasure workflow:
     1. Request validation and identity verification

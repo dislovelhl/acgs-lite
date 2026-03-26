@@ -1,6 +1,6 @@
 """
 Tests for src/core/enhanced_agent_bus/ai_assistant/response.py
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Target: raise coverage from 43% to >= 90%
 asyncio_mode = auto — no @pytest.mark.asyncio needed.

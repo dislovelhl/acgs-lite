@@ -10,7 +10,7 @@ OWASP-compliant layered security architecture for runtime protection:
 5. Output Verifier → Post-execution content validation
 6. Audit Log → Immutable compliance trail
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 # Enums

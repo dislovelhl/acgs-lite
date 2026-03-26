@@ -1,6 +1,6 @@
 """
 ACGS-2 LangGraph Orchestration - Exceptions
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Custom exception types for graph-based workflow orchestration.
 """
@@ -17,7 +17,7 @@ from enhanced_agent_bus.exceptions import AgentBusError
 class OrchestrationError(AgentBusError):
     """Base exception for all orchestration errors.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     http_status_code = 500
@@ -46,7 +46,7 @@ class OrchestrationError(AgentBusError):
 class StateTransitionError(OrchestrationError):
     """Raised when a state transition is invalid.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -77,7 +77,7 @@ class StateTransitionError(OrchestrationError):
 class NodeExecutionError(OrchestrationError):
     """Raised when node execution fails.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -107,7 +107,7 @@ class NodeExecutionError(OrchestrationError):
 class GraphValidationError(OrchestrationError):
     """Raised when graph validation fails.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -132,7 +132,7 @@ class GraphValidationError(OrchestrationError):
 class CheckpointError(OrchestrationError):
     """Raised when checkpoint operations fail.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -163,7 +163,7 @@ class CheckpointError(OrchestrationError):
 class InterruptError(OrchestrationError):
     """Raised when interrupt handling fails.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -196,7 +196,7 @@ class InterruptError(OrchestrationError):
 class TimeoutError(OrchestrationError):
     """Raised when an operation times out.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -229,7 +229,7 @@ class TimeoutError(OrchestrationError):
 class ConstitutionalViolationError(OrchestrationError):
     """Raised when constitutional constraints are violated.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -259,7 +259,7 @@ class ConstitutionalViolationError(OrchestrationError):
 class CyclicDependencyError(OrchestrationError):
     """Raised when a non-allowed cycle is detected in the graph.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -285,7 +285,7 @@ class CyclicDependencyError(OrchestrationError):
 class MACIViolationError(OrchestrationError):
     """Raised when MACI role constraints are violated.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

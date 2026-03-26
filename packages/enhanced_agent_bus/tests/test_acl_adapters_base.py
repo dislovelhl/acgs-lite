@@ -1,6 +1,6 @@
 """
 ACGS-2 ACL Adapter Base Classes Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for ACL adapter exceptions, configuration, circuit breaker,
 rate limiter, and abstract base class.

@@ -4,7 +4,7 @@ Coverage tests for:
 - enhanced_agent_bus/constitutional/review_api.py (84.6% -> target 95%+)
 - enhanced_agent_bus/constitutional/degradation_detector.py (83.8% -> target 95%+)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -54,6 +54,7 @@ from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage
 # ============================================================================
 # Helpers
 # ============================================================================
+
 
 def _make_snapshot(
     *,
@@ -407,23 +408,15 @@ class TestDegradationDetectorDeliberationSuccessRate:
 
     def test_chi_square_with_enough_escalated(self):
         d = _make_detector()
-        baseline = _make_snapshot(
-            deliberation_success_rate=0.95, escalated_requests=50
-        )
-        current = _make_snapshot(
-            deliberation_success_rate=0.80, escalated_requests=50
-        )
+        baseline = _make_snapshot(deliberation_success_rate=0.95, escalated_requests=50)
+        current = _make_snapshot(deliberation_success_rate=0.80, escalated_requests=50)
         result = d._analyze_deliberation_success_rate(baseline, current)
         assert result.metric_name == "deliberation_success_rate"
 
     def test_chi_square_skipped_small_sample(self):
         d = _make_detector()
-        baseline = _make_snapshot(
-            deliberation_success_rate=0.95, escalated_requests=5
-        )
-        current = _make_snapshot(
-            deliberation_success_rate=0.80, escalated_requests=5
-        )
+        baseline = _make_snapshot(deliberation_success_rate=0.95, escalated_requests=5)
+        current = _make_snapshot(deliberation_success_rate=0.80, escalated_requests=5)
         result = d._analyze_deliberation_success_rate(baseline, current)
         assert result.statistical_test is None
 
@@ -557,8 +550,10 @@ class TestDegradationDetectorHealthScore:
         d = _make_detector()
         # baseline: health ~1.0 (all zero penalties)
         baseline = _make_snapshot(
-            error_rate=0.0, violations_rate=0.0,
-            governance_latency_p99=1.0, deliberation_success_rate=0.96
+            error_rate=0.0,
+            violations_rate=0.0,
+            governance_latency_p99=1.0,
+            deliberation_success_rate=0.96,
         )
         # current: violations_rate=1.0 => penalty=0.3, latency=60 => penalty=0.3,
         # deliberation=0.0 => penalty=0.2, maci=10 => penalty=0.1, error=1.0 => 0.1
@@ -568,8 +563,10 @@ class TestDegradationDetectorHealthScore:
         # violations_rate=0.5 => penalty=0.15, error_rate=0.5 => penalty=0.05
         # health ~ 1.0 - 0.15 - 0.05 = 0.80, delta = -0.20
         current = _make_snapshot(
-            error_rate=0.5, violations_rate=0.5,
-            governance_latency_p99=1.0, deliberation_success_rate=0.96
+            error_rate=0.5,
+            violations_rate=0.5,
+            governance_latency_p99=1.0,
+            deliberation_success_rate=0.96,
         )
         result = d._analyze_health_score(baseline, current)
         assert result.threshold_exceeded is True
@@ -584,16 +581,20 @@ class TestDegradationDetectorHealthScore:
         """Cover health_score < 0.6 => CRITICAL."""
         d = _make_detector()
         baseline = _make_snapshot(
-            error_rate=0.0, violations_rate=0.0,
-            governance_latency_p99=1.0, deliberation_success_rate=0.96
+            error_rate=0.0,
+            violations_rate=0.0,
+            governance_latency_p99=1.0,
+            deliberation_success_rate=0.96,
         )
         # Make current health < 0.6:
         # violations=1.0 => penalty 0.3, latency=60 => penalty 0.3,
         # delib=0.0 => penalty 0.2, maci=10 => penalty 0.1, error=1.0 => 0.1
         # health = 1.0 - 1.0 = 0.0 => CRITICAL
         current = _make_snapshot(
-            error_rate=1.0, violations_rate=1.0,
-            governance_latency_p99=60.0, deliberation_success_rate=0.0,
+            error_rate=1.0,
+            violations_rate=1.0,
+            governance_latency_p99=60.0,
+            deliberation_success_rate=0.0,
             maci_violations_count=10,
         )
         result = d._analyze_health_score(baseline, current)
@@ -618,7 +619,10 @@ class TestDegradationDetectorOverallSeverity:
 
     def test_any_critical_returns_critical(self):
         d = _make_detector()
-        analyses = [self._metric(DegradationSeverity.CRITICAL), self._metric(DegradationSeverity.LOW)]
+        analyses = [
+            self._metric(DegradationSeverity.CRITICAL),
+            self._metric(DegradationSeverity.LOW),
+        ]
         assert d._determine_overall_severity(analyses) == DegradationSeverity.CRITICAL
 
     def test_two_high_escalates_to_critical(self):
@@ -647,7 +651,10 @@ class TestDegradationDetectorOverallSeverity:
 
     def test_one_moderate_returns_moderate(self):
         d = _make_detector()
-        analyses = [self._metric(DegradationSeverity.MODERATE), self._metric(DegradationSeverity.NONE)]
+        analyses = [
+            self._metric(DegradationSeverity.MODERATE),
+            self._metric(DegradationSeverity.NONE),
+        ]
         assert d._determine_overall_severity(analyses) == DegradationSeverity.MODERATE
 
     def test_one_low_returns_low(self):
@@ -813,33 +820,40 @@ class TestDegradationDetectorRollbackRecommendation:
 
     def test_critical_always_recommends(self):
         d = _make_detector()
-        assert d._should_recommend_rollback(
-            DegradationSeverity.CRITICAL, 0.5, SignificanceLevel.NONE
-        ) is True
+        assert (
+            d._should_recommend_rollback(DegradationSeverity.CRITICAL, 0.5, SignificanceLevel.NONE)
+            is True
+        )
 
     def test_high_with_confidence_and_significance(self):
         d = _make_detector()
-        assert d._should_recommend_rollback(
-            DegradationSeverity.HIGH, 0.8, SignificanceLevel.VERY_HIGH
-        ) is True
+        assert (
+            d._should_recommend_rollback(DegradationSeverity.HIGH, 0.8, SignificanceLevel.VERY_HIGH)
+            is True
+        )
 
     def test_high_with_low_confidence(self):
         d = _make_detector()
-        assert d._should_recommend_rollback(
-            DegradationSeverity.HIGH, 0.3, SignificanceLevel.VERY_HIGH
-        ) is False
+        assert (
+            d._should_recommend_rollback(DegradationSeverity.HIGH, 0.3, SignificanceLevel.VERY_HIGH)
+            is False
+        )
 
     def test_high_with_low_significance(self):
         d = _make_detector()
-        assert d._should_recommend_rollback(
-            DegradationSeverity.HIGH, 0.8, SignificanceLevel.LOW
-        ) is False
+        assert (
+            d._should_recommend_rollback(DegradationSeverity.HIGH, 0.8, SignificanceLevel.LOW)
+            is False
+        )
 
     def test_moderate_never_recommends(self):
         d = _make_detector()
-        assert d._should_recommend_rollback(
-            DegradationSeverity.MODERATE, 0.9, SignificanceLevel.VERY_HIGH
-        ) is False
+        assert (
+            d._should_recommend_rollback(
+                DegradationSeverity.MODERATE, 0.9, SignificanceLevel.VERY_HIGH
+            )
+            is False
+        )
 
 
 class TestDegradationDetectorAnalyzeDegradation:
@@ -870,9 +884,7 @@ class TestDegradationDetectorAnalyzeDegradation:
     async def test_analyze_multi_window_custom(self):
         d = _make_detector()
         baseline = _make_snapshot()
-        reports = await d.analyze_multi_window(
-            baseline, "amend-3", windows=[TimeWindow.ONE_HOUR]
-        )
+        reports = await d.analyze_multi_window(baseline, "amend-3", windows=[TimeWindow.ONE_HOUR])
         assert len(reports) == 1
 
 
@@ -889,6 +901,7 @@ class TestChiSquareTest:
         d = _make_detector()
         try:
             import scipy
+
             result = d._chi_square_test(90, 100, 70, 100, "test_chi")
             assert result is not None
             assert result.test_name == "test_chi"

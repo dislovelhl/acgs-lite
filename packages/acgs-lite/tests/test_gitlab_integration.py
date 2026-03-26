@@ -4,7 +4,7 @@ Exercises the real GitLabGovernanceBot, GitLabWebhookHandler,
 GitLabMACIEnforcer classes plus helper functions with mocked HTTP layer.
 No real network or database calls.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -336,7 +336,7 @@ class TestFormatGovernanceReport:
     def test_footer_present(self) -> None:
         report = GovernanceReport(mr_iid=1, title="t", passed=True, risk_score=0.0)
         md = format_governance_report(report)
-        assert "ACGS-Lite Governance Bot" in md
+        assert "ACGS Governance Bot" in md
 
 
 # ---------------------------------------------------------------------------
@@ -352,7 +352,7 @@ class TestCreateGitLabCIConfig:
         assert isinstance(config, str)
         assert "governance:" in config
         assert "stage: test" in config
-        assert "pip install acgs-lite[gitlab]" in config
+        assert "pip install acgs[gitlab]" in config
 
     def test_includes_constitutional_hash(self) -> None:
         c = Constitution.default()

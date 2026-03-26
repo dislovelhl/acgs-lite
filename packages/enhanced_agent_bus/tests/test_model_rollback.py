@@ -1,6 +1,6 @@
 """
 ACGS-2 Model Rollback Procedure E2E Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 End-to-end tests for verifying the model rollback procedure as specified in spec.md:
 

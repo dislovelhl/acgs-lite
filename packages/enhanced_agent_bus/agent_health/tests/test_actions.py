@@ -1,6 +1,6 @@
 """
 Unit tests for healing actions in actions.py.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 TDD RED: Tests for GracefulRestarter, QuarantineManager, HITLRequestor, and
 SupervisorNotifier. The latter three fail (RED) until actions.py provides them.

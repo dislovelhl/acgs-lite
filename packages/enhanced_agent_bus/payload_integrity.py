@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Payload Integrity (OWASP AA05)
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 HMAC-SHA256 payload signing and verification to prevent silent mutation
 of AgentMessage payloads between creation and validation.
@@ -24,6 +24,7 @@ except ImportError:
 
     def get_logger(name: str) -> logging.Logger:
         return logging.getLogger(name)
+
 
 logger = get_logger(__name__)
 

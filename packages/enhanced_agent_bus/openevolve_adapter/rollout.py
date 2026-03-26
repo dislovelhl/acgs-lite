@@ -1,6 +1,6 @@
 """
 OpenEvolve Governance Adapter — Rollout Controller
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Bridges EvolutionCandidate risk tiers to concrete rollout constraints:
 
@@ -31,6 +31,7 @@ logger = get_logger(__name__)
 # ---------------------------------------------------------------------------
 # Rollout constraints per risk tier
 # ---------------------------------------------------------------------------
+
 
 @dataclass(frozen=True, slots=True)
 class TierConstraints:
@@ -69,6 +70,7 @@ _TIER_CONSTRAINTS: dict[RiskTier, TierConstraints] = {
 # Decision record
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True, slots=True)
 class RolloutDecision:
     """Immutable record of a single rollout gate decision."""
@@ -96,6 +98,7 @@ class RolloutDecision:
 # ---------------------------------------------------------------------------
 # Rollout Controller
 # ---------------------------------------------------------------------------
+
 
 class RolloutController:
     """
@@ -138,13 +141,17 @@ class RolloutController:
                 f"RolloutStage.{proposed.value.upper()}. "
                 f"Allowed: {sorted(s.value for s in constraints.allowed_stages)}"
             )
-            decision = self._record(candidate, allowed=False, reason=reason, constraints=constraints)
+            decision = self._record(
+                candidate, allowed=False, reason=reason, constraints=constraints
+            )
             logger.warning("Rollout gate DENIED", **_log_fields(decision))
             return decision
 
         if not candidate.is_verified:
             reason = "Candidate is_verified=False — verification payload incomplete or failing"
-            decision = self._record(candidate, allowed=False, reason=reason, constraints=constraints)
+            decision = self._record(
+                candidate, allowed=False, reason=reason, constraints=constraints
+            )
             logger.warning("Rollout gate DENIED (unverified)", **_log_fields(decision))
             return decision
 

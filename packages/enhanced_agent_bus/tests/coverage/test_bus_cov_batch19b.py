@@ -3,7 +3,7 @@ Comprehensive coverage tests for enhanced_agent_bus modules:
 - deliberation_layer/tensorrt_optimizer.py (TensorRTOptimizer)
 - enterprise_sso/middleware.py (SSO middleware, session context, decorators)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -50,6 +50,7 @@ from enhanced_agent_bus.enterprise_sso.middleware import (
 # Helpers
 # ===========================================================================
 
+
 def _make_sso_session(
     *,
     expired: bool = False,
@@ -92,6 +93,7 @@ def _make_sso_session(
 # ===========================================================================
 # TensorRTOptimizer Tests
 # ===========================================================================
+
 
 class TestTensorRTOptimizerInit:
     """Test TensorRTOptimizer initialization."""
@@ -581,7 +583,10 @@ class TestTensorRTOptimizerLoadOnnxRuntime:
         opt.onnx_path.write_bytes(b"fake-onnx")
 
         mock_ort = MagicMock()
-        mock_ort.get_available_providers.return_value = ["CUDAExecutionProvider", "CPUExecutionProvider"]
+        mock_ort.get_available_providers.return_value = [
+            "CUDAExecutionProvider",
+            "CPUExecutionProvider",
+        ]
         mock_session = MagicMock()
         mock_ort.InferenceSession.return_value = mock_session
 
@@ -801,9 +806,7 @@ class TestGetOptimizationStatus:
             with patch.object(
                 TensorRTOptimizer,
                 "status",
-                new_callable=lambda: property(
-                    lambda self: {"active_backend": "none"}
-                ),
+                new_callable=lambda: property(lambda self: {"active_backend": "none"}),
             ):
                 result = get_optimization_status()
                 assert isinstance(result, dict)
@@ -876,9 +879,7 @@ class TestOptimizeDistilbert:
 
         with (
             patch.object(TensorRTOptimizer, "__init__", _init),
-            patch.object(
-                TensorRTOptimizer, "export_onnx", return_value=tmp_path / "m.onnx"
-            ),
+            patch.object(TensorRTOptimizer, "export_onnx", return_value=tmp_path / "m.onnx"),
             patch(
                 "enhanced_agent_bus.deliberation_layer.tensorrt_optimizer.TENSORRT_AVAILABLE",
                 False,
@@ -900,6 +901,7 @@ class TestOptimizeDistilbert:
 # ===========================================================================
 # SSO Middleware Tests
 # ===========================================================================
+
 
 class TestSSOSessionContext:
     """Test SSOSessionContext dataclass."""
@@ -947,9 +949,14 @@ class TestSSOSessionContext:
         session = _make_sso_session()
         # Directly set empty roles to bypass helper default
         session = SSOSessionContext(
-            session_id="s", user_id="u", tenant_id="t",
-            email="e", display_name="d",
-            maci_roles=[], idp_groups=[], attributes={},
+            session_id="s",
+            user_id="u",
+            tenant_id="t",
+            email="e",
+            display_name="d",
+            maci_roles=[],
+            idp_groups=[],
+            attributes={},
             authenticated_at=datetime.now(UTC),
             expires_at=datetime.now(UTC) + timedelta(hours=1),
         )
@@ -1018,9 +1025,7 @@ class TestRaiseAuthError:
     """Test _raise_auth_error."""
 
     def test_raises_http_exception_when_fastapi_available(self):
-        with patch(
-            "enhanced_agent_bus.enterprise_sso.middleware.FASTAPI_AVAILABLE", True
-        ):
+        with patch("enhanced_agent_bus.enterprise_sso.middleware.FASTAPI_AVAILABLE", True):
             from fastapi import HTTPException
 
             with pytest.raises(HTTPException) as exc_info:
@@ -1028,9 +1033,7 @@ class TestRaiseAuthError:
             assert exc_info.value.status_code == 401
 
     def test_raises_permission_error_when_no_fastapi(self):
-        with patch(
-            "enhanced_agent_bus.enterprise_sso.middleware.FASTAPI_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.enterprise_sso.middleware.FASTAPI_AVAILABLE", False):
             with pytest.raises(PermissionError, match="Unauthorized"):
                 _raise_auth_error(401, "Unauthorized")
 

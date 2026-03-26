@@ -9,7 +9,7 @@ Focuses on uncovered branches: error recovery in metric registration,
 _get_counter_value with real values, LDAP authenticate flow, connection
 pool edge cases, health checks, and group search operations.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -73,9 +73,7 @@ class TestGetOrCreateMetricValueError:
         mock_collector._name = "test_dup_metric_ctr_35b"
 
         mock_registry = MagicMock()
-        mock_registry._names_to_collectors = {
-            "test_dup_metric_ctr_35b": mock_collector
-        }
+        mock_registry._names_to_collectors = {"test_dup_metric_ctr_35b": mock_collector}
 
         # Create a class that raises ValueError on instantiation
         class RaisingCounter:
@@ -114,9 +112,7 @@ class TestGetOrCreateMetricValueError:
 
         # Registry whose _names_to_collectors raises AttributeError on .values()
         mock_registry = MagicMock()
-        mock_registry._names_to_collectors.values.side_effect = AttributeError(
-            "no attr"
-        )
+        mock_registry._names_to_collectors.values.side_effect = AttributeError("no attr")
 
         class RaisingCounter:
             __name__ = "Counter"
@@ -193,9 +189,7 @@ class TestGetOrCreateMetricValueError:
             "enhanced_agent_bus.transaction_coordinator_metrics.PROMETHEUS_AVAILABLE",
             True,
         ):
-            with patch.object(
-                hist_cls, "__init__", side_effect=ValueError("random error")
-            ):
+            with patch.object(hist_cls, "__init__", side_effect=ValueError("random error")):
                 result = _get_or_create_metric(
                     hist_cls,
                     "test_hist_fallback_35b",
@@ -221,9 +215,7 @@ class TestGetOrCreateMetricValueError:
             "enhanced_agent_bus.transaction_coordinator_metrics.PROMETHEUS_AVAILABLE",
             True,
         ):
-            with patch.object(
-                gauge_cls, "__init__", side_effect=ValueError("random error")
-            ):
+            with patch.object(gauge_cls, "__init__", side_effect=ValueError("random error")):
                 result = _get_or_create_metric(
                     gauge_cls,
                     "test_gauge_fallback_35b",
@@ -632,9 +624,7 @@ class TestLDAPConnectionPoolAcquireEdgeCases:
             # Make put_nowait raise an OSError (which IS in LDAP_OPERATION_ERRORS)
             with (
                 patch.object(pool._pool, "get_nowait", return_value=mock_conn),
-                patch.object(
-                    pool._pool, "put_nowait", side_effect=OSError("pool broken")
-                ),
+                patch.object(pool._pool, "put_nowait", side_effect=OSError("pool broken")),
             ):
                 with pool.acquire() as conn:
                     assert conn is mock_conn
@@ -768,9 +758,7 @@ class TestLDAPIntegrationSearchUser:
     def test_search_user_with_user_search_base(self):
         integration = self._make_integration(user_search_base="ou=users,dc=example,dc=com")
         mock_conn = MagicMock()
-        mock_conn.search.return_value = [
-            ("uid=john,ou=users,dc=example,dc=com", {"cn": [b"John"]})
-        ]
+        mock_conn.search.return_value = [("uid=john,ou=users,dc=example,dc=com", {"cn": [b"John"]})]
 
         pool_cm = MagicMock()
         pool_cm.__enter__ = MagicMock(return_value=mock_conn)
@@ -845,9 +833,7 @@ class TestLDAPIntegrationAuthenticate:
             patch(
                 "enhanced_agent_bus.enterprise_sso.ldap_integration.LDAPConnection"
             ) as mock_conn_cls,
-            patch.object(
-                integration, "get_user_groups", return_value=["Admins"]
-            ),
+            patch.object(integration, "get_user_groups", return_value=["Admins"]),
         ):
             mock_conn = MagicMock()
             mock_conn_cls.return_value = mock_conn
@@ -862,9 +848,7 @@ class TestLDAPIntegrationAuthenticate:
 
     def test_authenticate_runtime_error_records_failure(self):
         integration = self._make_integration_with_pool()
-        with patch.object(
-            integration, "search_user", side_effect=RuntimeError("ldap down")
-        ):
+        with patch.object(integration, "search_user", side_effect=RuntimeError("ldap down")):
             result = integration.authenticate("john", "pass")
             assert result.success is False
             assert result.error_code == "AUTHENTICATION_ERROR"
@@ -933,9 +917,7 @@ class TestLDAPIntegrationGetUserGroups:
 
     def test_get_user_groups_error_returns_empty(self):
         integration = self._make_integration()
-        with patch.object(
-            integration, "search_user", side_effect=RuntimeError("fail")
-        ):
+        with patch.object(integration, "search_user", side_effect=RuntimeError("fail")):
             groups = integration.get_user_groups("john")
             assert groups == []
             assert integration.circuit_breaker.consecutive_failures == 1
@@ -987,9 +969,7 @@ class TestLDAPIntegrationSearchGroupsForUser:
         assert groups[0]["dn"] == "cn=Admins,dc=example"
 
     def test_search_groups_for_user_with_group_search_base(self):
-        integration = self._make_integration(
-            group_search_base="ou=groups,dc=example,dc=com"
-        )
+        integration = self._make_integration(group_search_base="ou=groups,dc=example,dc=com")
         mock_conn = MagicMock()
         mock_conn.search.return_value = []
 
@@ -1229,9 +1209,7 @@ class TestLDAPIntegrationHealthCheck:
         integration = self._make_integration()
 
         pool_cm = MagicMock()
-        pool_cm.__enter__ = MagicMock(
-            side_effect=LDAPIntegrationError("pool broken")
-        )
+        pool_cm.__enter__ = MagicMock(side_effect=LDAPIntegrationError("pool broken"))
         pool_cm.__exit__ = MagicMock(return_value=False)
         integration._pool = MagicMock()
         integration._pool.acquire.return_value = pool_cm

@@ -1,6 +1,6 @@
 """
 ACGS-2 Deliberation Layer - Timeout Checker
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Background task to check election expiration and trigger escalation events.
 """

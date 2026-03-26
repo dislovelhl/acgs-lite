@@ -715,8 +715,11 @@ class TestDefaultServers:
             assert srv.enabled is False
 
     def test_default_toolbox_server(self):
-        env = {k: v for k, v in os.environ.items()
-               if k not in ("TOOLBOX_URL", "TOOLBOX_AUTH_TOKEN", "TOOLBOX_ENABLED", "TOOLBOX_TIMEOUT")}
+        env = {
+            k: v
+            for k, v in os.environ.items()
+            if k not in ("TOOLBOX_URL", "TOOLBOX_AUTH_TOKEN", "TOOLBOX_ENABLED", "TOOLBOX_TIMEOUT")
+        }
         with patch.dict(os.environ, env, clear=True):
             srv = _default_toolbox_server()
             assert srv.name == TOOLBOX_SERVER_NAME
@@ -864,14 +867,16 @@ class TestLoadConfig:
         from enhanced_agent_bus.mcp.config import _CONSTITUTIONAL_HASH
 
         yaml_file = tmp_path / "mcp.yaml"
-        yaml_file.write_text(textwrap.dedent(f"""\
+        yaml_file.write_text(
+            textwrap.dedent(f"""\
             enabled: false
             constitutional_hash: "{_CONSTITUTIONAL_HASH}"
             servers:
               - name: yaml-srv
                 transport: stdio
                 command: ["echo"]
-        """))
+        """)
+        )
         with patch.dict(os.environ, {"MCP_CONFIG_FILE": str(yaml_file)}):
             cfg = load_config()
             assert cfg.enabled is False
@@ -964,8 +969,9 @@ class TestBid:
 
 
 class TestTaskAuction:
-    def _make_bid(self, agent_id: str = "a1", amount: float = 5.0,
-                  capabilities: list[str] | None = None) -> Bid:
+    def _make_bid(
+        self, agent_id: str = "a1", amount: float = 5.0, capabilities: list[str] | None = None
+    ) -> Bid:
         return Bid(
             agent_id=agent_id,
             task_id="t1",
@@ -1224,9 +1230,13 @@ class TestMarketBasedOrchestrator:
         orch.register_agent("a1", [])
         auction = TaskAuction(task_id="t1", task_description="test", task_requirements=[])
         bid = Bid(
-            agent_id="a1", task_id="t1", bid_amount=5.0,
-            capability_score=0.8, availability_score=0.9,
-            estimated_completion_time=30.0, metadata={"capabilities": []},
+            agent_id="a1",
+            task_id="t1",
+            bid_amount=5.0,
+            capability_score=0.8,
+            availability_score=0.9,
+            estimated_completion_time=30.0,
+            metadata={"capabilities": []},
         )
         auction.bids.append(bid)
         auction.select_winner()
@@ -1261,9 +1271,13 @@ class TestMarketBasedOrchestrator:
         orch = MarketBasedOrchestrator()
         auction = TaskAuction(task_id="t1", task_description="test", task_requirements=[])
         bid = Bid(
-            agent_id="a1", task_id="t1", bid_amount=5.0,
-            capability_score=0.8, availability_score=0.9,
-            estimated_completion_time=30.0, metadata={"capabilities": []},
+            agent_id="a1",
+            task_id="t1",
+            bid_amount=5.0,
+            capability_score=0.8,
+            availability_score=0.9,
+            estimated_completion_time=30.0,
+            metadata={"capabilities": []},
         )
         auction.bids.append(bid)
         auction.select_winner()
@@ -1290,9 +1304,13 @@ class TestMarketBasedOrchestrator:
         orch.register_agent("a2", [])
         auction = TaskAuction(task_id="t1", task_description="test", task_requirements=[])
         bid = Bid(
-            agent_id="a1", task_id="t1", bid_amount=5.0,
-            capability_score=0.8, availability_score=0.9,
-            estimated_completion_time=30.0, metadata={"capabilities": []},
+            agent_id="a1",
+            task_id="t1",
+            bid_amount=5.0,
+            capability_score=0.8,
+            availability_score=0.9,
+            estimated_completion_time=30.0,
+            metadata={"capabilities": []},
         )
         auction.bids.append(bid)
         orch.active_auctions["t1"] = auction
@@ -1306,9 +1324,13 @@ class TestMarketBasedOrchestrator:
         orch.register_agent("a1", [])
         auction = TaskAuction(task_id="t1", task_description="test", task_requirements=[])
         bid = Bid(
-            agent_id="a1", task_id="t1", bid_amount=5.0,
-            capability_score=0.8, availability_score=0.9,
-            estimated_completion_time=30.0, metadata={"capabilities": []},
+            agent_id="a1",
+            task_id="t1",
+            bid_amount=5.0,
+            capability_score=0.8,
+            availability_score=0.9,
+            estimated_completion_time=30.0,
+            metadata={"capabilities": []},
         )
         auction.bids.append(bid)
         orch.active_auctions["t1"] = auction
@@ -1319,8 +1341,10 @@ class TestMarketBasedOrchestrator:
     async def test_auto_close_auction_already_closed(self):
         orch = MarketBasedOrchestrator(auction_timeout_seconds=0.01)
         auction = TaskAuction(
-            task_id="t1", task_description="test",
-            task_requirements=[], status="closed",
+            task_id="t1",
+            task_description="test",
+            task_requirements=[],
+            status="closed",
         )
         orch.active_auctions["t1"] = auction
         await orch._auto_close_auction("t1")

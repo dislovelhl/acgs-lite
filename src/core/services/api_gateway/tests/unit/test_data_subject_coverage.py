@@ -1,6 +1,6 @@
 """
 Tests for data_subject.py route coverage.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: access, erasure (create/status/process/certificate), classify endpoints.
 """
@@ -21,6 +21,7 @@ from src.core.shared.security.auth import UserClaims, get_current_user
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 def _make_user(roles: list[str] | None = None) -> UserClaims:
     now = int(datetime.now(UTC).timestamp())
@@ -67,7 +68,7 @@ class TestDataSubjectAccess:
         assert body["data_subject_id"] == "ds-1"
         assert body["data_count"] == 42
         assert "personal_identifiers" in body["data_categories"]
-        assert body["constitutional_hash"] == "cdd01ef066bc6cf2"
+        assert body["constitutional_hash"] == "608508a9bd224290"
 
     def test_access_with_explicit_categories(self, client: TestClient):
         resp = client.post(

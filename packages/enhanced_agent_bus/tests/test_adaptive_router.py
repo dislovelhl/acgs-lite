@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Adaptive Router Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for the AdaptiveRouter class covering:
 - Dual-path routing (Fast Path vs Deliberation Path)

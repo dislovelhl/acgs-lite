@@ -2,7 +2,7 @@
 ACGS-2 Enhanced Agent Bus Tests - Validation
 Focused tests for validation strategies, JWT identity, and core messaging validation.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import uuid

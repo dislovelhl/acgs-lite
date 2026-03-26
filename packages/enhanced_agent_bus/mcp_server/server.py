@@ -4,7 +4,7 @@ MCP Server for ACGS-2 Constitutional Governance.
 Main server implementation providing constitutional AI governance
 through the Model Context Protocol.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio

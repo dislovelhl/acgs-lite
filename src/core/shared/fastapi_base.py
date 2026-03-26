@@ -32,7 +32,10 @@ def _resolve_trusted_hosts(
     if not trusted_hosts:
         trusted_hosts = ["localhost", "127.0.0.1"]
 
-    if environment in {"development", "dev", "test", "testing", "ci"} and "testserver" not in trusted_hosts:
+    if (
+        environment in {"development", "dev", "test", "testing", "ci"}
+        and "testserver" not in trusted_hosts
+    ):
         trusted_hosts.append("testserver")
 
     return trusted_hosts

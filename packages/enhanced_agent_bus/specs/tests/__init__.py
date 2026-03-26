@@ -1,6 +1,6 @@
 """
 ACGS-2 Specification Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Test suite for executable specification fixtures.
 """

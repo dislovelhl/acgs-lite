@@ -5,7 +5,7 @@ unconstrained agent interaction matrices onto the governance manifold
 via Sinkhorn-Knopp normalization.
 
 Mathematical foundation:
-  - Agent influence is represented as an N×N matrix H where H[i,j]
+  - Agent influence is represented as an N x N matrix H where H[i,j]
     is how much agent i trusts agent j's validation
   - Unconstrained H leads to trust explosion/collapse at scale
     (analogous to signal explosion in unconstrained HC)
@@ -55,7 +55,7 @@ def sinkhorn_knopp(
     unconstrained agent influence → bounded, conserved trust.
 
     Args:
-        matrix: N×N non-negative matrix of raw agent interactions.
+        matrix: N x N non-negative matrix of raw agent interactions.
         max_iterations: Maximum Sinkhorn-Knopp iterations.
         epsilon: Convergence threshold.
 
@@ -65,17 +65,17 @@ def sinkhorn_knopp(
     n = len(matrix)
     if n == 0:
         return ManifoldProjectionResult(
-            matrix=(), iterations=0, converged=True,
-            max_deviation=0.0, spectral_bound=0.0,
+            matrix=(),
+            iterations=0,
+            converged=True,
+            max_deviation=0.0,
+            spectral_bound=0.0,
         )
 
     # Ensure non-negative via exp (same as mHC Eq. 8)
     # Clamp to [-500, 500] to prevent overflow (H4 fix)
     _CLAMP = 500.0
-    m = [
-        [math.exp(max(-_CLAMP, min(_CLAMP, matrix[i][j]))) for j in range(n)]
-        for i in range(n)
-    ]
+    m = [[math.exp(max(-_CLAMP, min(_CLAMP, matrix[i][j]))) for j in range(n)] for i in range(n)]
 
     converged = False
     iterations = 0
@@ -144,9 +144,7 @@ class GovernanceManifold:
         self._n = num_agents
         self._max_iterations = max_iterations
         # Initialize trust matrix as uniform (identity-like in DS space)
-        self._raw_trust: list[list[float]] = [
-            [0.0] * num_agents for _ in range(num_agents)
-        ]
+        self._raw_trust: list[list[float]] = [[0.0] * num_agents for _ in range(num_agents)]
         self._projected: ManifoldProjectionResult | None = None
 
     @property
@@ -171,9 +169,7 @@ class GovernanceManifold:
         """
         if self._projected is not None:
             return self._projected
-        self._projected = sinkhorn_knopp(
-            self._raw_trust, max_iterations=self._max_iterations
-        )
+        self._projected = sinkhorn_knopp(self._raw_trust, max_iterations=self._max_iterations)
         return self._projected
 
     @property
@@ -210,9 +206,7 @@ class GovernanceManifold:
         product = [[sum(a[i][k] * b[k][j] for k in range(n)) for j in range(n)] for i in range(n)]
         result._raw_trust = product
         # Product of DS matrices is DS — but re-project to handle float errors
-        result._projected = sinkhorn_knopp(
-            product, max_iterations=self._max_iterations
-        )
+        result._projected = sinkhorn_knopp(product, max_iterations=self._max_iterations)
         return result
 
     def influence_vector(self, agent_idx: int) -> tuple[float, ...]:

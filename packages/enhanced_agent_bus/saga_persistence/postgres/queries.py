@@ -1,6 +1,6 @@
 """
 PostgreSQL Saga Repository Query Operations
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Contains query operation methods for listing and counting sagas
 by various criteria (tenant, state, timeouts, etc.).
@@ -29,7 +29,7 @@ class PostgresQueryOperations:
 
     Provides methods to list and count sagas by tenant, state, and other criteria.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Type hints for mixin - these are provided by the main repository class

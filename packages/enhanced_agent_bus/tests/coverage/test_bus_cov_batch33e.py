@@ -43,6 +43,7 @@ from enhanced_agent_bus.llm_adapters.config import (
 # Helpers / Fixtures
 # ---------------------------------------------------------------------------
 
+
 def _azure_config(**overrides: Any) -> AzureOpenAIAdapterConfig:
     defaults = {
         "model": "gpt-5.2",
@@ -87,6 +88,7 @@ def _make_system_and_user_messages() -> list[LLMMessage]:
 # Azure OpenAI Adapter Tests
 # ---------------------------------------------------------------------------
 
+
 class TestAzureOpenAIAdapterGetClient:
     """Tests for _get_client covering lines 205-228."""
 
@@ -105,7 +107,9 @@ class TestAzureOpenAIAdapterGetClient:
         mock_azure_openai_cls.return_value = mock_client_instance
 
         with patch.dict("sys.modules", {"openai": MagicMock(AzureOpenAI=mock_azure_openai_cls)}):
-            with patch("enhanced_agent_bus.llm_adapters.azure_openai_adapter.import_module") as mock_import:
+            with patch(
+                "enhanced_agent_bus.llm_adapters.azure_openai_adapter.import_module"
+            ) as mock_import:
                 # Need to make the from import work
                 pass
 
@@ -120,6 +124,7 @@ class TestAzureOpenAIAdapterGetClient:
 
         with patch.object(adapter, "_get_credential", return_value=mock_credential):
             import sys
+
             original = sys.modules.get("openai")
             sys.modules["openai"] = mock_openai_module
             try:
@@ -144,6 +149,7 @@ class TestAzureOpenAIAdapterGetClient:
 
         mock_openai = MagicMock()
         import sys
+
         original = sys.modules.get("openai")
         sys.modules["openai"] = mock_openai
         try:
@@ -168,6 +174,7 @@ class TestAzureOpenAIAdapterGetClient:
         mock_openai.AzureOpenAI = mock_cls
 
         import sys
+
         original = sys.modules.get("openai")
         sys.modules["openai"] = mock_openai
         try:
@@ -192,6 +199,7 @@ class TestAzureOpenAIAdapterGetClient:
         mock_openai.AzureOpenAI = mock_cls
 
         import sys
+
         original = sys.modules.get("openai")
         sys.modules["openai"] = mock_openai
         try:
@@ -228,6 +236,7 @@ class TestAzureOpenAIAdapterGetAsyncClient:
         adapter._async_client = None
 
         import sys
+
         original = sys.modules.get("openai")
         # Force ImportError
         sys.modules["openai"] = None  # type: ignore[assignment]
@@ -253,6 +262,7 @@ class TestAzureOpenAIAdapterGetAsyncClient:
 
         mock_openai = MagicMock()
         import sys
+
         original = sys.modules.get("openai")
         sys.modules["openai"] = mock_openai
         try:
@@ -278,6 +288,7 @@ class TestAzureOpenAIAdapterGetAsyncClient:
         mock_openai.AsyncAzureOpenAI = mock_cls
 
         import sys
+
         original = sys.modules.get("openai")
         sys.modules["openai"] = mock_openai
         try:
@@ -301,6 +312,7 @@ class TestAzureOpenAIAdapterGetAsyncClient:
 
         mock_openai = MagicMock()
         import sys
+
         original = sys.modules.get("openai")
         sys.modules["openai"] = mock_openai
         try:
@@ -325,6 +337,7 @@ class TestAzureOpenAIAdapterGetAsyncClient:
         mock_openai.AsyncAzureOpenAI = mock_cls
 
         import sys
+
         original = sys.modules.get("openai")
         sys.modules["openai"] = mock_openai
         try:
@@ -349,6 +362,7 @@ class TestAzureOpenAIAdapterGetAsyncClient:
         mock_openai.AsyncAzureOpenAI = mock_cls
 
         import sys
+
         original = sys.modules.get("openai")
         sys.modules["openai"] = mock_openai
         try:
@@ -377,6 +391,7 @@ class TestAzureOpenAIAdapterTiktoken:
         mock_tiktoken.encoding_for_model.return_value = mock_encoder
 
         import sys
+
         original = sys.modules.get("tiktoken")
         sys.modules["tiktoken"] = mock_tiktoken
         try:
@@ -403,6 +418,7 @@ class TestAzureOpenAIAdapterTiktoken:
         mock_tiktoken.get_encoding.return_value = mock_fallback_encoder
 
         import sys
+
         original = sys.modules.get("tiktoken")
         sys.modules["tiktoken"] = mock_tiktoken
         try:
@@ -511,6 +527,7 @@ class TestAzureOpenAIAdapterMiscLines:
 
         mock_openai = MagicMock()
         import sys
+
         original = sys.modules.get("openai")
         sys.modules["openai"] = mock_openai
         try:
@@ -531,8 +548,12 @@ class TestAzureOpenAIAdapterMiscLines:
 
         messages = _make_messages()
         params = adapter._prepare_request_params(
-            messages, temperature=0.5, max_tokens=100, top_p=0.9,
-            stop=["END"], stream=True,
+            messages,
+            temperature=0.5,
+            max_tokens=100,
+            top_p=0.9,
+            stop=["END"],
+            stream=True,
         )
         assert params["stream"] is True
         assert params["max_tokens"] == 100
@@ -627,6 +648,7 @@ class TestAzureOpenAIAdapterMiscLines:
 # Deliberation Workflow Tests
 # ---------------------------------------------------------------------------
 
+
 class TestDeliberationWorkflowImportFallbacks:
     """Cover import fallback lines 37-42."""
 
@@ -637,6 +659,7 @@ class TestDeliberationWorkflowImportFallbacks:
         from enhanced_agent_bus.deliberation_layer.workflows.deliberation_workflow import (
             CONSTITUTIONAL_HASH as DW_HASH,
         )
+
         assert isinstance(DW_HASH, str)
 
     def test_json_list_fallback(self):
@@ -644,6 +667,7 @@ class TestDeliberationWorkflowImportFallbacks:
         from enhanced_agent_bus.deliberation_layer.workflows.deliberation_workflow import (
             JSONList,
         )
+
         # Should be list or the actual imported type
         assert JSONList is not None
 
@@ -661,7 +685,8 @@ class TestDefaultDeliberationActivities:
 
         # Mock import failure for impact_scorer
         with patch.object(
-            activities, "calculate_impact_score",
+            activities,
+            "calculate_impact_score",
             wraps=activities.calculate_impact_score,
         ):
             with patch(
@@ -818,12 +843,14 @@ class TestDeliberationWorkflowRun:
         )
 
         activities = DefaultDeliberationActivities()
-        activities.validate_constitutional_hash = AsyncMock(return_value={
-            "is_valid": False,
-            "errors": ["Hash mismatch"],
-            "validation_timestamp": datetime.now(UTC).isoformat(),
-            "message_id": "msg-1",
-        })
+        activities.validate_constitutional_hash = AsyncMock(
+            return_value={
+                "is_valid": False,
+                "errors": ["Hash mismatch"],
+                "validation_timestamp": datetime.now(UTC).isoformat(),
+                "message_id": "msg-1",
+            }
+        )
 
         workflow = DeliberationWorkflow("wf-1", activities=activities)
         input_data = DeliberationWorkflowInput(
@@ -851,20 +878,31 @@ class TestDeliberationWorkflowRun:
         )
 
         activities = DefaultDeliberationActivities()
-        activities.validate_constitutional_hash = AsyncMock(return_value={
-            "is_valid": True, "errors": [], "validation_timestamp": "now", "message_id": "msg-1",
-        })
+        activities.validate_constitutional_hash = AsyncMock(
+            return_value={
+                "is_valid": True,
+                "errors": [],
+                "validation_timestamp": "now",
+                "message_id": "msg-1",
+            }
+        )
         activities.calculate_impact_score = AsyncMock(return_value=0.9)
-        activities.evaluate_opa_policy = AsyncMock(return_value={
-            "allowed": False,
-            "reasons": ["policy violation"],
-            "policy_version": "1.0",
-        })
+        activities.evaluate_opa_policy = AsyncMock(
+            return_value={
+                "allowed": False,
+                "reasons": ["policy violation"],
+                "policy_version": "1.0",
+            }
+        )
 
         workflow = DeliberationWorkflow("wf-2", activities=activities)
         input_data = DeliberationWorkflowInput(
-            message_id="msg-1", content="bad content",
-            from_agent="a", to_agent="b", message_type="text", priority="high",
+            message_id="msg-1",
+            content="bad content",
+            from_agent="a",
+            to_agent="b",
+            message_type="text",
+            priority="high",
         )
 
         result = await workflow.run(input_data)
@@ -881,21 +919,34 @@ class TestDeliberationWorkflowRun:
         )
 
         activities = DefaultDeliberationActivities()
-        activities.validate_constitutional_hash = AsyncMock(return_value={
-            "is_valid": True, "errors": [], "validation_timestamp": "now", "message_id": "msg-1",
-        })
+        activities.validate_constitutional_hash = AsyncMock(
+            return_value={
+                "is_valid": True,
+                "errors": [],
+                "validation_timestamp": "now",
+                "message_id": "msg-1",
+            }
+        )
         activities.calculate_impact_score = AsyncMock(return_value=0.9)
-        activities.evaluate_opa_policy = AsyncMock(return_value={
-            "allowed": True, "reasons": [], "policy_version": "1.0",
-        })
+        activities.evaluate_opa_policy = AsyncMock(
+            return_value={
+                "allowed": True,
+                "reasons": [],
+                "policy_version": "1.0",
+            }
+        )
         activities.request_agent_votes = AsyncMock(return_value="req-1")
         activities.collect_votes = AsyncMock(return_value=[])
         activities.notify_human_reviewer = AsyncMock(return_value="notif-1")
 
         workflow = DeliberationWorkflow("wf-3", activities=activities)
         input_data = DeliberationWorkflowInput(
-            message_id="msg-1", content="test",
-            from_agent="a", to_agent="b", message_type="text", priority="high",
+            message_id="msg-1",
+            content="test",
+            from_agent="a",
+            to_agent="b",
+            message_type="text",
+            priority="high",
             require_human_review=True,
             require_multi_agent_vote=False,
             timeout_seconds=1,
@@ -915,13 +966,22 @@ class TestDeliberationWorkflowRun:
         )
 
         activities = DefaultDeliberationActivities()
-        activities.validate_constitutional_hash = AsyncMock(return_value={
-            "is_valid": True, "errors": [], "validation_timestamp": "now", "message_id": "msg-1",
-        })
+        activities.validate_constitutional_hash = AsyncMock(
+            return_value={
+                "is_valid": True,
+                "errors": [],
+                "validation_timestamp": "now",
+                "message_id": "msg-1",
+            }
+        )
         activities.calculate_impact_score = AsyncMock(return_value=0.5)
-        activities.evaluate_opa_policy = AsyncMock(return_value={
-            "allowed": True, "reasons": [], "policy_version": "1.0",
-        })
+        activities.evaluate_opa_policy = AsyncMock(
+            return_value={
+                "allowed": True,
+                "reasons": [],
+                "policy_version": "1.0",
+            }
+        )
         activities.request_agent_votes = AsyncMock(return_value="req-1")
         activities.collect_votes = AsyncMock(return_value=[])
         activities.notify_human_reviewer = AsyncMock(return_value="notif-1")
@@ -930,8 +990,12 @@ class TestDeliberationWorkflowRun:
 
         workflow = DeliberationWorkflow("wf-4", activities=activities)
         input_data = DeliberationWorkflowInput(
-            message_id="msg-1", content="test",
-            from_agent="a", to_agent="b", message_type="text", priority="high",
+            message_id="msg-1",
+            content="test",
+            from_agent="a",
+            to_agent="b",
+            message_type="text",
+            priority="high",
             require_human_review=True,
             require_multi_agent_vote=False,
             timeout_seconds=5,
@@ -963,8 +1027,12 @@ class TestDeliberationWorkflowRun:
 
         workflow = DeliberationWorkflow("wf-5", activities=activities)
         input_data = DeliberationWorkflowInput(
-            message_id="msg-1", content="test",
-            from_agent="a", to_agent="b", message_type="text", priority="high",
+            message_id="msg-1",
+            content="test",
+            from_agent="a",
+            to_agent="b",
+            message_type="text",
+            priority="high",
         )
 
         result = await workflow.run(input_data)
@@ -1133,7 +1201,9 @@ class TestCheckConsensus:
         ]
         # With weights: a=2.0, b=1.0, c=1.0 -> approved_weight=3.0/4.0=0.75 >= 0.66
         result = workflow._check_consensus(
-            votes, required_votes=3, threshold=0.66,
+            votes,
+            required_votes=3,
+            threshold=0.66,
             agent_weights={"a": 2.0, "b": 1.0, "c": 1.0},
         )
         assert result is True
@@ -1164,7 +1234,9 @@ class TestCheckConsensus:
             Vote(agent_id="c", decision="approve", reasoning="ok", confidence=0.9, weight=0.0),
         ]
         result = workflow._check_consensus(
-            votes, required_votes=3, threshold=0.66,
+            votes,
+            required_votes=3,
+            threshold=0.66,
             agent_weights={"a": 0.0, "b": 0.0, "c": 0.0},
         )
         assert result is False
@@ -1174,12 +1246,14 @@ class TestCheckConsensus:
 # Anthropic Adapter Tests (currently 99.1%, lines 15-16)
 # ---------------------------------------------------------------------------
 
+
 class TestAnthropicAdapterImportFallback:
     """Lines 15-16: JSONDict import fallback."""
 
     def test_anthropic_adapter_loads(self):
         """Verify the anthropic adapter module loads correctly."""
         from enhanced_agent_bus.llm_adapters.anthropic_adapter import AnthropicAdapter
+
         assert AnthropicAdapter is not None
 
     def test_anthropic_provider_name(self):
@@ -1194,6 +1268,7 @@ class TestAnthropicAdapterImportFallback:
 # ---------------------------------------------------------------------------
 # Bedrock Adapter Tests (88.2%, 36 missing lines)
 # ---------------------------------------------------------------------------
+
 
 class TestBedrockAdapterGenericBody:
     """Line 473: _build_generic_body for unknown provider."""
@@ -1224,6 +1299,7 @@ class TestBedrockAdapterAsyncClient:
         adapter._async_client = None
 
         import sys
+
         original = sys.modules.get("aioboto3")
         sys.modules["aioboto3"] = None  # type: ignore[assignment]
         try:
@@ -1289,10 +1365,12 @@ class TestBedrockAdapterAStreamWithClient:
         # Mock async context manager chain
         mock_response_body = AsyncMock()
 
-        chunk_bytes = json.dumps({
-            "content": [{"type": "text", "text": "Hello"}],
-            "delta": {"type": "content_block_delta", "delta": {"text": "Hello"}},
-        }).encode()
+        chunk_bytes = json.dumps(
+            {
+                "content": [{"type": "text", "text": "Hello"}],
+                "delta": {"type": "content_block_delta", "delta": {"text": "Hello"}},
+            }
+        ).encode()
 
         mock_event = {"chunk": {"bytes": chunk_bytes}}
 
@@ -1313,9 +1391,7 @@ class TestBedrockAdapterAStreamWithClient:
                 raise StopAsyncIteration
 
         mock_client = AsyncMock()
-        mock_client.invoke_model_with_response_stream.return_value = {
-            "body": MockAsyncStream()
-        }
+        mock_client.invoke_model_with_response_stream.return_value = {"body": MockAsyncStream()}
 
         class MockAsyncContextManager:
             async def __aenter__(self):
@@ -1396,15 +1472,19 @@ class TestBedrockAdapterExtractStreamText:
         from enhanced_agent_bus.llm_adapters.bedrock_adapter import BedrockAdapter
 
         # Content block delta
-        result = BedrockAdapter._extract_anthropic_chunk_text({
-            "delta": {"type": "content_block_delta", "delta": {"text": "hello"}},
-        })
+        result = BedrockAdapter._extract_anthropic_chunk_text(
+            {
+                "delta": {"type": "content_block_delta", "delta": {"text": "hello"}},
+            }
+        )
         assert result == "hello"
 
         # Non-delta type
-        result = BedrockAdapter._extract_anthropic_chunk_text({
-            "delta": {"type": "message_start"},
-        })
+        result = BedrockAdapter._extract_anthropic_chunk_text(
+            {
+                "delta": {"type": "message_start"},
+            }
+        )
         assert result is None
 
     def test_extract_meta_chunk_text(self):
@@ -1453,10 +1533,12 @@ class TestBedrockAdapterGuardrails:
 
         # Mock sync client
         mock_body = MagicMock()
-        response_data = json.dumps({
-            "content": [{"type": "text", "text": "Hello"}],
-            "usage": {"input_tokens": 10, "output_tokens": 5},
-        })
+        response_data = json.dumps(
+            {
+                "content": [{"type": "text", "text": "Hello"}],
+                "usage": {"input_tokens": 10, "output_tokens": 5},
+            }
+        )
         mock_body.read.return_value = response_data.encode()
 
         mock_client = MagicMock()
@@ -1486,7 +1568,11 @@ class TestBedrockAdapterStreamSync:
         adapter = BedrockAdapter(config=config)
 
         params = adapter._build_streaming_params(
-            _make_messages(), 0.7, 100, 1.0, None,
+            _make_messages(),
+            0.7,
+            100,
+            1.0,
+            None,
         )
         assert params["guardrailIdentifier"] == "gr-456"
         assert params["guardrailVersion"] == "2"
@@ -1540,11 +1626,13 @@ class TestBedrockAdapterParseResponse:
         config = _bedrock_config(model="meta.llama3-70b-instruct-v1:0")
         adapter = BedrockAdapter(config=config)
 
-        body = json.dumps({
-            "generation": "Hello world",
-            "prompt_token_count": 10,
-            "generation_token_count": 5,
-        })
+        body = json.dumps(
+            {
+                "generation": "Hello world",
+                "prompt_token_count": 10,
+                "generation_token_count": 5,
+            }
+        )
         content, usage = adapter._parse_response_body(body)
         assert content == "Hello world"
         assert usage.prompt_tokens == 10
@@ -1555,10 +1643,12 @@ class TestBedrockAdapterParseResponse:
         config = _bedrock_config(model="amazon.titan-text-express-v1")
         adapter = BedrockAdapter(config=config)
 
-        body = json.dumps({
-            "results": [{"outputText": "Titan says hi", "tokenCount": 5}],
-            "inputTextTokenCount": 10,
-        })
+        body = json.dumps(
+            {
+                "results": [{"outputText": "Titan says hi", "tokenCount": 5}],
+                "inputTextTokenCount": 10,
+            }
+        )
         content, usage = adapter._parse_response_body(body)
         assert content == "Titan says hi"
         assert usage.prompt_tokens == 10
@@ -1580,9 +1670,11 @@ class TestBedrockAdapterParseResponse:
         config = _bedrock_config(model="ai21.j2-mid-v1")
         adapter = BedrockAdapter(config=config)
 
-        body = json.dumps({
-            "completions": [{"data": {"text": "AI21 says hi"}}],
-        })
+        body = json.dumps(
+            {
+                "completions": [{"data": {"text": "AI21 says hi"}}],
+            }
+        )
         content, usage = adapter._parse_response_body(body)
         assert content == "AI21 says hi"
 

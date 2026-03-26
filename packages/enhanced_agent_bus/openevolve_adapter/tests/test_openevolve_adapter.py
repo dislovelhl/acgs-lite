@@ -1,6 +1,6 @@
 """
 Tests for enhanced_agent_bus.openevolve_adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers:
 - candidate.py  (EvolutionCandidate contract & validation)
@@ -40,7 +40,7 @@ from enhanced_agent_bus.openevolve_adapter import (
 # Constants & shared helpers
 # ---------------------------------------------------------------------------
 
-HASH = "cdd01ef066bc6cf2"  # pragma: allowlist secret
+HASH = "608508a9bd224290"  # pragma: allowlist secret
 
 
 def _make_payload(
@@ -203,8 +203,16 @@ class TestEvolutionCandidate:
     def test_to_dict_keys(self):
         c = _make_candidate()
         d = c.to_dict()
-        for key in ("candidate_id", "constitutional_hash", "risk_tier", "is_verified",
-                    "generation", "mutation_trace", "verification_payload", "fitness_inputs"):
+        for key in (
+            "candidate_id",
+            "constitutional_hash",
+            "risk_tier",
+            "is_verified",
+            "generation",
+            "mutation_trace",
+            "verification_payload",
+            "fitness_inputs",
+        ):
             assert key in d, f"Missing key: {key}"
 
 
@@ -240,7 +248,9 @@ class TestConstitutionalFitness:
     def test_risk_multiplier_penalises_critical(self):
         cf = ConstitutionalFitness(threshold=0.0)
         low_c = _make_candidate(risk_tier=RiskTier.LOW, proposed_rollout_stage=RolloutStage.CANARY)
-        crit_c = _make_candidate(risk_tier=RiskTier.CRITICAL, proposed_rollout_stage=RolloutStage.CANARY)
+        crit_c = _make_candidate(
+            risk_tier=RiskTier.CRITICAL, proposed_rollout_stage=RolloutStage.CANARY
+        )
         low_r = cf.evaluate(low_c, performance_score=1.0)
         crit_r = cf.evaluate(crit_c, performance_score=1.0)
         assert low_r.fitness > crit_r.fitness
@@ -414,7 +424,9 @@ class TestRolloutController:
 
     def test_critical_partial_approved(self):
         ctrl = RolloutController()
-        c = _make_candidate(risk_tier=RiskTier.CRITICAL, proposed_rollout_stage=RolloutStage.PARTIAL)
+        c = _make_candidate(
+            risk_tier=RiskTier.CRITICAL, proposed_rollout_stage=RolloutStage.PARTIAL
+        )
         d = ctrl.gate(c)
         assert d.allowed is True
         assert "Human approval required" in d.reason
@@ -460,8 +472,15 @@ class TestRolloutController:
         c = _make_candidate()
         d = ctrl.gate(c)
         data = d.to_dict()
-        for key in ("candidate_id", "risk_tier", "proposed_stage", "allowed", "reason",
-                    "constraints", "decided_at"):
+        for key in (
+            "candidate_id",
+            "risk_tier",
+            "proposed_stage",
+            "allowed",
+            "reason",
+            "constraints",
+            "decided_at",
+        ):
             assert key in data
 
     def test_medium_shadow_required_noted(self):
@@ -486,6 +505,7 @@ class TestRolloutController:
 class TestCascadeEvaluator:
     def _evaluator(self, *, quick_threshold=0.3, full_threshold=0.5) -> CascadeEvaluator:
         from enhanced_agent_bus.openevolve_adapter.cascade import CascadeEvaluator
+
         return CascadeEvaluator(
             _GoodVerifier(),
             quick_threshold=quick_threshold,
@@ -507,6 +527,7 @@ class TestCascadeEvaluator:
         import dataclasses
 
         from enhanced_agent_bus.openevolve_adapter.cascade import CascadeEvaluator, CascadeStage
+
         c = _make_candidate()
         broken = dataclasses.replace(c, candidate_id="")
         ev = CascadeEvaluator(_GoodVerifier())
@@ -518,6 +539,7 @@ class TestCascadeEvaluator:
     @pytest.mark.asyncio
     async def test_syntax_fail_syntax_invalid(self):
         from enhanced_agent_bus.openevolve_adapter.cascade import CascadeEvaluator, CascadeStage
+
         ev = CascadeEvaluator(_GoodVerifier())
         bad = _make_candidate(payload=_make_payload(syntax_valid=False))
         result = await ev.evaluate(bad, performance_score=0.9)
@@ -527,6 +549,7 @@ class TestCascadeEvaluator:
     @pytest.mark.asyncio
     async def test_quick_fail_low_score(self):
         from enhanced_agent_bus.openevolve_adapter.cascade import CascadeEvaluator, CascadeStage
+
         ev = CascadeEvaluator(_GoodVerifier(), quick_threshold=0.99)
         # Even perfect compliance: quick = 0.5*0.0 + 0.5*(0.5+0.5*0.9) = ~0.475 < 0.99
         c = _make_candidate(payload=_make_payload(safety_score=0.9))
@@ -537,6 +560,7 @@ class TestCascadeEvaluator:
     @pytest.mark.asyncio
     async def test_full_fail_low_fitness(self):
         from enhanced_agent_bus.openevolve_adapter.cascade import CascadeEvaluator, CascadeStage
+
         ev = CascadeEvaluator(_GoodVerifier(), quick_threshold=0.0, full_threshold=0.99)
         c = _make_candidate(payload=_make_payload(safety_score=0.1))
         result = await ev.evaluate(c, performance_score=0.1)
@@ -554,6 +578,7 @@ class TestCascadeEvaluator:
     @pytest.mark.asyncio
     async def test_batch_passed_first(self):
         from enhanced_agent_bus.openevolve_adapter.cascade import CascadeEvaluator
+
         ev = CascadeEvaluator(_GoodVerifier(), quick_threshold=0.0, full_threshold=0.0)
         good = _make_candidate("good", payload=_make_payload(safety_score=1.0))
         bad = _make_candidate("bad", payload=_make_payload(syntax_valid=False))
@@ -572,6 +597,7 @@ class TestCascadeEvaluator:
 
     def test_to_dict(self):
         from enhanced_agent_bus.openevolve_adapter.cascade import CascadeResult, CascadeStage
+
         r = CascadeResult(
             candidate_id="x",
             passed=True,
@@ -620,6 +646,7 @@ def _make_meta(
 
 class _FakeMsg:
     """Minimal AgentMessage stub for handler tests."""
+
     def __init__(self, meta: dict[str, Any]) -> None:
         self.metadata = meta
         self.message_id = "msg-001"
@@ -628,6 +655,7 @@ class _FakeMsg:
 class TestEvolutionMessageHandler:
     def _handler(self) -> EvolutionMessageHandler:
         from enhanced_agent_bus.openevolve_adapter.integration import EvolutionMessageHandler
+
         return EvolutionMessageHandler(_GoodVerifier())
 
     @pytest.mark.asyncio
@@ -679,6 +707,7 @@ class TestEvolutionMessageHandler:
             EvolutionMessageHandler,
             _deserialise_candidate,
         )
+
         meta = _make_meta()
         meta["mutation_trace"] = [
             {"operator": "crossover", "parent_id": "p-0", "description": "blend"}

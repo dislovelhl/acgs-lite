@@ -1,6 +1,6 @@
 """Coverage tests for interfaces.py and facades/agent_bus_facade.py.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets:
   - enhanced_agent_bus/interfaces.py (Protocol stub bodies, isinstance checks)
@@ -57,7 +57,10 @@ def _make_message() -> AgentMessage:
 
 class ConcreteAgentRegistry:
     async def register(
-        self, agent_id: str, capabilities: list[str] | None = None, metadata: MetadataDict | None = None
+        self,
+        agent_id: str,
+        capabilities: list[str] | None = None,
+        metadata: MetadataDict | None = None,
     ) -> bool:
         return True
 
@@ -112,7 +115,9 @@ class ConcreteMessageHandler:
 
 
 class ConcreteMetricsCollector:
-    def record_message_processed(self, message_type: str, duration_ms: float, success: bool) -> None:
+    def record_message_processed(
+        self, message_type: str, duration_ms: float, success: bool
+    ) -> None:
         pass
 
     def record_agent_registered(self, agent_id: str) -> None:
@@ -170,14 +175,16 @@ class ConcreteOrchestrator:
         pass
 
     def get_status(self) -> JSONDict:
-        return {"status": "healthy", "constitutional_hash": "cdd01ef066bc6cf2"}
+        return {"status": "healthy", "constitutional_hash": "608508a9bd224290"}
 
 
 class ConcreteCircuitBreaker:
     async def record_success(self) -> None:
         pass
 
-    async def record_failure(self, error: Exception | None = None, error_type: str = "unknown") -> None:
+    async def record_failure(
+        self, error: Exception | None = None, error_type: str = "unknown"
+    ) -> None:
         pass
 
     async def can_execute(self) -> bool:
@@ -223,7 +230,9 @@ class ConcreteRustProcessor:
 
 
 class ConcretePQCValidator:
-    def verify_governance_decision(self, decision: JSONDict, signature: object, public_key: bytes) -> bool:
+    def verify_governance_decision(
+        self, decision: JSONDict, signature: object, public_key: bytes
+    ) -> bool:
         return True
 
 
@@ -266,7 +275,9 @@ class ConcreteApprovalsValidator:
 
 
 class ConcreteRecommendationPlanner:
-    def generate_recommendations(self, *, judgment: dict[str, Any], decision: dict[str, Any]) -> list[str]:
+    def generate_recommendations(
+        self, *, judgment: dict[str, Any], decision: dict[str, Any]
+    ) -> list[str]:
         return ["recommendation-1"]
 
 
@@ -351,7 +362,9 @@ class TestProtocolIsinstanceTrue:
         )
 
     def test_constitutional_hash_validator_isinstance(self) -> None:
-        assert isinstance(ConcreteConstitutionalHashValidator(), ConstitutionalHashValidatorProtocol)
+        assert isinstance(
+            ConcreteConstitutionalHashValidator(), ConstitutionalHashValidatorProtocol
+        )
 
     def test_governance_decision_validator_isinstance(self) -> None:
         assert isinstance(
@@ -710,8 +723,8 @@ class TestConstitutionalHashValidatorMethods:
     async def test_validate_hash(self) -> None:
         v = ConcreteConstitutionalHashValidator()
         is_valid, err = await v.validate_hash(
-            provided_hash="cdd01ef066bc6cf2",
-            expected_hash="cdd01ef066bc6cf2",
+            provided_hash="608508a9bd224290",
+            expected_hash="608508a9bd224290",
             context={"source": "test"},
         )
         assert is_valid is True
@@ -719,9 +732,7 @@ class TestConstitutionalHashValidatorMethods:
 
     async def test_validate_hash_no_context(self) -> None:
         v = ConcreteConstitutionalHashValidator()
-        is_valid, _ = await v.validate_hash(
-            provided_hash="abc", expected_hash="abc"
-        )
+        is_valid, _ = await v.validate_hash(provided_hash="abc", expected_hash="abc")
         assert is_valid is True
 
 
@@ -751,9 +762,7 @@ class TestApprovalsValidatorMethods:
 class TestRecommendationPlannerMethods:
     def test_generate_recommendations(self) -> None:
         p = ConcreteRecommendationPlanner()
-        recs = p.generate_recommendations(
-            judgment={"result": "fail"}, decision={"action": "retry"}
-        )
+        recs = p.generate_recommendations(judgment={"result": "fail"}, decision={"action": "retry"})
         assert len(recs) == 1
 
 
@@ -775,6 +784,7 @@ class TestRoleMatrixValidatorMethods:
 class TestInterfacesModuleAttributes:
     def test_all_exports_defined(self) -> None:
         from enhanced_agent_bus import interfaces
+
         for name in interfaces.__all__:
             assert hasattr(interfaces, name), f"{name} in __all__ but not defined"
 
@@ -783,6 +793,7 @@ class TestInterfacesModuleAttributes:
         import inspect
 
         from enhanced_agent_bus import interfaces
+
         for name in interfaces.__all__:
             obj = getattr(interfaces, name, None)
             if obj is None:
@@ -796,7 +807,8 @@ class TestInterfacesModuleAttributes:
 
     def test_constitutional_hash_in_docstring(self) -> None:
         from enhanced_agent_bus import interfaces
-        assert "cdd01ef066bc6cf2" in (interfaces.__doc__ or "")
+
+        assert "608508a9bd224290" in (interfaces.__doc__ or "")
 
 
 # ============================================================================
@@ -807,36 +819,43 @@ class TestInterfacesModuleAttributes:
 class TestFacadeConstitutionalHash:
     def test_constitutional_hash_is_string(self) -> None:
         from enhanced_agent_bus.facades import agent_bus_facade
+
         assert isinstance(agent_bus_facade.CONSTITUTIONAL_HASH, str)
 
     def test_constitutional_hash_value(self) -> None:
         from enhanced_agent_bus.facades import agent_bus_facade
+
         # Either the real hash or standalone fallback
-        assert agent_bus_facade.CONSTITUTIONAL_HASH in ("cdd01ef066bc6cf2", "standalone")
+        assert agent_bus_facade.CONSTITUTIONAL_HASH in ("608508a9bd224290", "standalone")
 
     def test_constitutional_hash_in_all(self) -> None:
         from enhanced_agent_bus.facades import agent_bus_facade
+
         assert "CONSTITUTIONAL_HASH" in agent_bus_facade.__all__
 
 
 class TestFacadeDir:
     def test_dir_contains_all_symbols(self) -> None:
         from enhanced_agent_bus.facades import agent_bus_facade
+
         d = dir(agent_bus_facade)
         for name in agent_bus_facade._SYMBOL_SOURCES:
             assert name in d, f"{name} missing from dir()"
 
     def test_dir_contains_constitutional_hash(self) -> None:
         from enhanced_agent_bus.facades import agent_bus_facade
+
         assert "CONSTITUTIONAL_HASH" in dir(agent_bus_facade)
 
     def test_dir_returns_sorted_list(self) -> None:
         from enhanced_agent_bus.facades import agent_bus_facade
+
         d = dir(agent_bus_facade)
         assert d == sorted(d)
 
     def test_dir_includes_globals(self) -> None:
         from enhanced_agent_bus.facades import agent_bus_facade
+
         d = dir(agent_bus_facade)
         # Standard module globals should be present
         assert "__name__" in d
@@ -846,11 +865,13 @@ class TestFacadeDir:
 class TestFacadeGetattr:
     def test_unknown_attribute_raises(self) -> None:
         from enhanced_agent_bus.facades import agent_bus_facade
+
         with pytest.raises(AttributeError, match="has no attribute"):
             agent_bus_facade.__getattr__("nonexistent_symbol_xyz")
 
     def test_error_message_includes_module_name(self) -> None:
         from enhanced_agent_bus.facades import agent_bus_facade
+
         with pytest.raises(AttributeError, match=r"module .* has no attribute"):
             agent_bus_facade.__getattr__("bogus_name")
 
@@ -884,22 +905,26 @@ class TestFacadeGetattr:
 class TestFacadeSymbolSources:
     def test_symbol_sources_is_dict(self) -> None:
         from enhanced_agent_bus.facades import agent_bus_facade
+
         assert isinstance(agent_bus_facade._SYMBOL_SOURCES, dict)
 
     def test_all_symbol_sources_are_tuples(self) -> None:
         from enhanced_agent_bus.facades import agent_bus_facade
+
         for name, source in agent_bus_facade._SYMBOL_SOURCES.items():
             assert isinstance(source, tuple), f"{name} source is not a tuple"
             assert len(source) == 2, f"{name} source tuple wrong length"
 
     def test_all_entries_have_string_module_and_symbol(self) -> None:
         from enhanced_agent_bus.facades import agent_bus_facade
+
         for name, (mod, sym) in agent_bus_facade._SYMBOL_SOURCES.items():
             assert isinstance(mod, str), f"{name}: module_name is not str"
             assert isinstance(sym, str), f"{name}: symbol_name is not str"
 
     def test_all_exports_in_all(self) -> None:
         from enhanced_agent_bus.facades import agent_bus_facade
+
         for name in agent_bus_facade._SYMBOL_SOURCES:
             assert name in agent_bus_facade.__all__, f"{name} in _SYMBOL_SOURCES but not __all__"
 
@@ -907,16 +932,19 @@ class TestFacadeSymbolSources:
 class TestFacadeAllExports:
     def test_all_is_list(self) -> None:
         from enhanced_agent_bus.facades import agent_bus_facade
+
         assert isinstance(agent_bus_facade.__all__, list)
 
     def test_all_entries_are_strings(self) -> None:
         from enhanced_agent_bus.facades import agent_bus_facade
+
         for name in agent_bus_facade.__all__:
             assert isinstance(name, str)
 
     def test_all_entries_are_accessible(self) -> None:
         """Every name in __all__ should be importable via getattr."""
         from enhanced_agent_bus.facades import agent_bus_facade
+
         for name in agent_bus_facade.__all__:
             val = getattr(agent_bus_facade, name, "MISSING")
             assert val != "MISSING", f"{name} in __all__ but not accessible"
@@ -925,20 +953,24 @@ class TestFacadeAllExports:
 class TestFacadeLazyImportIntegration:
     def test_session_context_accessible(self) -> None:
         from enhanced_agent_bus.facades import agent_bus_facade
+
         sc = agent_bus_facade.SessionContext
         assert sc is not None
 
     def test_session_context_manager_accessible(self) -> None:
         from enhanced_agent_bus.facades import agent_bus_facade
+
         scm = agent_bus_facade.SessionContextManager
         assert scm is not None
 
     def test_explanation_service_accessible(self) -> None:
         from enhanced_agent_bus.facades import agent_bus_facade
+
         es = agent_bus_facade.ExplanationService
         assert es is not None
 
     def test_message_processor_accessible(self) -> None:
         from enhanced_agent_bus.facades import agent_bus_facade
+
         mp = agent_bus_facade.MessageProcessor
         assert mp is not None

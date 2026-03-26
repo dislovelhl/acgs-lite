@@ -1,6 +1,6 @@
 """
 ACGS-2 Retry Utilities
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Canonical location: src.core.shared.resilience.retry
 
@@ -131,7 +131,7 @@ class RetryConfig:
     """
     Configuration for retry behavior.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Attributes:
         max_retries: Maximum number of retry attempts (not including initial).
@@ -217,7 +217,7 @@ def retry(
     """
     Universal retry decorator supporting both async and sync functions.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Args:
         max_retries: Maximum number of retry attempts.
@@ -404,7 +404,7 @@ async def exponential_backoff(
     """
     Async generator yielding delay values for exponential backoff.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Args:
         max_attempts: Maximum number of retry attempts.
@@ -439,7 +439,7 @@ class RetryBudget:
     """
     Token-bucket style retry budget to prevent retry storms.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Limits total retries across all operations within a time window.
 

@@ -1,6 +1,6 @@
 """
 ACGS-2 Critical Edge Case Test Scenarios
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements the 12 critical edge case scenarios defined in SPEC_ACGS2_ENHANCED.md Section 5.
 Per Expert Panel Review (Lisa Crispin - Testing Expert).

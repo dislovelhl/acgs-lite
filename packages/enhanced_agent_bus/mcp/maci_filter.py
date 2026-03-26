@@ -13,7 +13,7 @@ Role definitions (aligned with maci_enforcement.py):
 
 All access denials are logged with structured context for the audit trail.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -247,7 +247,7 @@ class MACIToolFilter:
         allowed = flt.filter_tools(MACIToolRole.PROPOSER, tools)
         # → ["audit_query_logs", "policy_get_v1"]
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     CONSTITUTIONAL_HASH: str = CONSTITUTIONAL_HASH

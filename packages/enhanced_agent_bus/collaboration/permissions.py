@@ -4,7 +4,7 @@ Permission Controller for Collaborative Editing.
 Manages role-based editing rights, read-only vs edit access,
 approval workflows, and audit logging of edits.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

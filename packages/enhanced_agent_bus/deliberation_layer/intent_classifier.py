@@ -1,6 +1,6 @@
 """
 ACGS-2 SDPC - Intent Classifier
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Categorizes user intent for dynamic routing and prompt compilation.
 Implements hybrid classification with LLM fallback for ambiguous cases.

@@ -22,7 +22,9 @@ class _DefaultAssistant:
             "mitigations": ["none"],
         }
 
-    async def ainvoke_multi_turn(self, content: str, history: list[dict[str, Any]]) -> dict[str, Any]:
+    async def ainvoke_multi_turn(
+        self, content: str, history: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         return {
             "recommended_decision": "approve",
             "risk_level": "low",
@@ -66,13 +68,17 @@ class PACARVerifier:
         conversation: dict[str, Any]
         if self.redis_client is not None:
             existing = await self.redis_client.get(redis_key)
-            conversation = json.loads(existing) if existing else {
-                "session_id": session_id,
-                "tenant_id": tenant_id,
-                "messages": [],
-                "created_at": datetime.now(UTC).isoformat(),
-                "updated_at": datetime.now(UTC).isoformat(),
-            }
+            conversation = (
+                json.loads(existing)
+                if existing
+                else {
+                    "session_id": session_id,
+                    "tenant_id": tenant_id,
+                    "messages": [],
+                    "created_at": datetime.now(UTC).isoformat(),
+                    "updated_at": datetime.now(UTC).isoformat(),
+                }
+            )
         else:
             state = await self.manager.get_state(session_id)
             if hasattr(state, "model_dump") and callable(state.model_dump):
@@ -91,7 +97,9 @@ class PACARVerifier:
                 }
             conversation.setdefault("tenant_id", tenant_id)
 
-        multi_turn = await self.assistant.ainvoke_multi_turn(content, conversation.get("messages", []))
+        multi_turn = await self.assistant.ainvoke_multi_turn(
+            content, conversation.get("messages", [])
+        )
         verification_result = {
             "is_valid": multi_turn.get("recommended_decision", "approve") == "approve",
             "confidence": multi_turn.get("confidence", 0.0),
@@ -114,7 +122,9 @@ class PACARVerifier:
             await self.redis_client.setex(redis_key, 3600, json.dumps(conversation))
 
         if self.manager is not None:
-            await self.manager.add_message(session_id, MessageRole.USER, content, {"intent": original_intent})
+            await self.manager.add_message(
+                session_id, MessageRole.USER, content, {"intent": original_intent}
+            )
             await self.manager.add_message(
                 session_id,
                 MessageRole.ASSISTANT,

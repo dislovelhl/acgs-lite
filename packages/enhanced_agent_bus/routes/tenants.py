@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Tenant Management API
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides REST API endpoints for managing multi-tenant configurations,
 enabling tenant lifecycle management, quota enforcement, and hierarchical tenancy.
@@ -204,8 +204,7 @@ JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "")
 JWT_ALGORITHM = os.environ.get("JWT_ALGORITHM", "RS256")
 if JWT_ALGORITHM not in _ALLOWED_JWT_ALGORITHMS:
     raise ValueError(
-        f"Unsupported JWT_ALGORITHM={JWT_ALGORITHM!r}. "
-        f"Allowed: {sorted(_ALLOWED_JWT_ALGORITHMS)}"
+        f"Unsupported JWT_ALGORITHM={JWT_ALGORITHM!r}. Allowed: {sorted(_ALLOWED_JWT_ALGORITHMS)}"
     )
 JWT_ISSUER = os.environ.get("JWT_ISSUER", "acgs2-agent-runtime")
 JWT_AUDIENCE = os.environ.get("JWT_AUDIENCE", "acgs2-services")
@@ -736,7 +735,7 @@ Create a new tenant with the specified configuration.
 - Configurable resource quotas
 - Auto-activation option
 
-**Constitutional Hash:** cdd01ef066bc6cf2
+**Constitutional Hash:** 608508a9bd224290
     """,
 )
 async def create_tenant(

@@ -24,7 +24,7 @@ Usage::
     if learner.should_intervene([0, 1, 2]):
         trigger_hitl()
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 NIST 800-53 SI-3, AC-6 -- Integrity, Least Privilege
 Reference: Pro2Guard (Wang/Poskitt/Sun, Aug 2025)
 """

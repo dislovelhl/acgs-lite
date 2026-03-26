@@ -1,6 +1,6 @@
 """
 Adaptive Intent Graph for Swarm Orchestration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module implements Phase R3 (Agentic Orchestration) of the Research Roadmap.
 It replaces static task lists with a dynamic graph that routes work based on

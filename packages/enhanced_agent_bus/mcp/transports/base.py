@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 MCPTransport Protocol definition for ACGS-2.
 
@@ -6,7 +6,7 @@ Defines the structural Protocol that all MCP transport implementations must
 satisfy, enabling duck-typed interoperability across HTTP, stdio, SSE, and
 WebSocket transports without coupling to a concrete base class.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from typing import Protocol, runtime_checkable

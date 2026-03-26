@@ -156,7 +156,7 @@ class TestRuleVersioning:
         assert changelog[0]["version"] == 1
 
     def test_update_is_immutable(self):
-        c2 = self.c.update_rule("GL-001", workflow_action="block_and_notify", change_reason="audit")
+        self.c.update_rule("GL-001", workflow_action="block_and_notify", change_reason="audit")
         # Original unchanged
         assert self.c.get_rule("GL-001").workflow_action == "block"
         assert self.c.rule_version("GL-001") == 1

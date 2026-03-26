@@ -3,7 +3,7 @@
 Provides automatic failover across multiple x402 payment facilitators so that
 paid endpoints remain available when any single facilitator is unreachable.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

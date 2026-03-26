@@ -1,6 +1,6 @@
 """
 Tests for MessageProcessor Redesign — 4 Coordinator Classes (TDD)
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 These tests define contracts for the new decomposed architecture:
 1. SessionContextResolver — unified session extraction
@@ -425,9 +425,7 @@ class TestMessageSecurityScanner:
         mock_result = MagicMock()
         mock_result.blocked = False
         mock_result.events = []
-        with patch(
-            "enhanced_agent_bus.security_scanner.get_runtime_security_scanner"
-        ) as mock_get:
+        with patch("enhanced_agent_bus.security_scanner.get_runtime_security_scanner") as mock_get:
             mock_scanner = AsyncMock()
             mock_scanner.scan = AsyncMock(return_value=mock_result)
             mock_get.return_value = mock_scanner
@@ -448,9 +446,7 @@ class TestMessageSecurityScanner:
         mock_event = MagicMock()
         mock_event.to_dict.return_value = {"type": "block"}
         mock_result.events = [mock_event]
-        with patch(
-            "enhanced_agent_bus.security_scanner.get_runtime_security_scanner"
-        ) as mock_get:
+        with patch("enhanced_agent_bus.security_scanner.get_runtime_security_scanner") as mock_get:
             mock_scanner = AsyncMock()
             mock_scanner.scan = AsyncMock(return_value=mock_result)
             mock_get.return_value = mock_scanner
@@ -519,9 +515,7 @@ class TestMessageSecurityScanner:
         event1 = MagicMock()
         event1.to_dict.return_value = {"type": "threat", "score": 0.9}
         mock_result.events = [event1]
-        with patch(
-            "enhanced_agent_bus.security_scanner.get_runtime_security_scanner"
-        ) as mock_get:
+        with patch("enhanced_agent_bus.security_scanner.get_runtime_security_scanner") as mock_get:
             mock_scanner = AsyncMock()
             mock_scanner.scan = AsyncMock(return_value=mock_result)
             mock_get.return_value = mock_scanner
@@ -918,7 +912,7 @@ class TestMessageProcessorBackwardCompat:
 
     @pytest.mark.constitutional
     def test_constitutional_hash_value(self, isolated_processor: MessageProcessor) -> None:
-        """Constitutional hash must be cdd01ef066bc6cf2."""
+        """Constitutional hash must be 608508a9bd224290."""
         assert isolated_processor.constitutional_hash == CONSTITUTIONAL_HASH
 
 

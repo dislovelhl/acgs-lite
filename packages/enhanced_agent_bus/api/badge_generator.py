@@ -1,6 +1,6 @@
 """
 ACGS-2 Badge SVG Generator
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Generates shields.io-style SVG badges for governance compliance scores.
 """

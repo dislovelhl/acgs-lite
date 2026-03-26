@@ -10,7 +10,7 @@ Reference: Health Insurance Portability and Accountability Act (1996),
 HITECH Act (2009), 45 CFR Parts 160, 162, 164.
 Penalties: $100-$50,000 per violation; up to $1.5M per year per category.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

@@ -1,6 +1,6 @@
 """
 Session Security Hardening Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Regression tests for:
 - H1: JWT iss/aud claim enforcement (PyJWT migration)
@@ -109,10 +109,7 @@ class TestPrivateKeyValidation:
     def test_non_pem_private_key_is_rejected(self):
         with pytest.raises(
             ValueError,
-            match=(
-                f"private_key must be a PEM-encoded private key for "
-                f"{SESSION_JWT_ALGORITHM}"
-            ),
+            match=(f"private_key must be a PEM-encoded private key for {SESSION_JWT_ALGORITHM}"),
         ):
             SessionTokenManager(private_key="not-a-pem")
 

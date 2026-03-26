@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Fallback Stubs
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Centralized fallback stub definitions for optional dependencies.
 These stubs allow api.py and other modules to run standalone or in

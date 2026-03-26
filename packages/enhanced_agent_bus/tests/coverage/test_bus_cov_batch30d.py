@@ -1,6 +1,6 @@
 """
 Coverage tests for batch 30d: session fallbacks, visual studio service, online learning registry.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets:
 - routes/sessions/_fallbacks.py (63.6% -> 95%+)
@@ -797,9 +797,7 @@ class TestGetOnlineLearningAdapter:
             patch(
                 "enhanced_agent_bus.online_learning_infra.registry.RiverSklearnAdapter"
             ) as MockAdapter,
-            patch(
-                "enhanced_agent_bus.online_learning_infra.registry._load_registry_state"
-            ),
+            patch("enhanced_agent_bus.online_learning_infra.registry._load_registry_state"),
         ):
             mock_instance = MagicMock()
             MockAdapter.return_value = mock_instance
@@ -818,9 +816,7 @@ class TestGetOnlineLearningAdapter:
             patch(
                 "enhanced_agent_bus.online_learning_infra.registry.RiverSklearnAdapter"
             ) as MockAdapter,
-            patch(
-                "enhanced_agent_bus.online_learning_infra.registry._load_registry_state"
-            ),
+            patch("enhanced_agent_bus.online_learning_infra.registry._load_registry_state"),
         ):
             mock_instance = MagicMock()
             MockAdapter.return_value = mock_instance
@@ -840,9 +836,7 @@ class TestGetOnlineLearningAdapter:
             patch(
                 "enhanced_agent_bus.online_learning_infra.registry.RiverSklearnAdapter"
             ) as MockAdapter,
-            patch(
-                "enhanced_agent_bus.online_learning_infra.registry._load_registry_state"
-            ),
+            patch("enhanced_agent_bus.online_learning_infra.registry._load_registry_state"),
         ):
             mock_a = MagicMock()
             mock_b = MagicMock()
@@ -864,9 +858,7 @@ class TestGetOnlineLearningAdapter:
             patch(
                 "enhanced_agent_bus.online_learning_infra.registry.RiverSklearnAdapter"
             ) as MockAdapter,
-            patch(
-                "enhanced_agent_bus.online_learning_infra.registry._load_registry_state"
-            ),
+            patch("enhanced_agent_bus.online_learning_infra.registry._load_registry_state"),
         ):
             from enhanced_agent_bus.online_learning_infra.config import ModelType
             from enhanced_agent_bus.online_learning_infra.registry import (
@@ -887,9 +879,7 @@ class TestGetOnlineLearningAdapter:
     @pytest.mark.usefixtures("_reset_registry")
     def test_calls_load_registry_state(self) -> None:
         with (
-            patch(
-                "enhanced_agent_bus.online_learning_infra.registry.RiverSklearnAdapter"
-            ),
+            patch("enhanced_agent_bus.online_learning_infra.registry.RiverSklearnAdapter"),
             patch(
                 "enhanced_agent_bus.online_learning_infra.registry._load_registry_state"
             ) as mock_load,
@@ -911,9 +901,7 @@ class TestGetOnlineLearningPipeline:
             patch(
                 "enhanced_agent_bus.online_learning_infra.registry.OnlineLearningPipeline"
             ) as MockPipeline,
-            patch(
-                "enhanced_agent_bus.online_learning_infra.registry._load_registry_state"
-            ),
+            patch("enhanced_agent_bus.online_learning_infra.registry._load_registry_state"),
         ):
             mock_instance = MagicMock()
             MockPipeline.return_value = mock_instance
@@ -931,9 +919,7 @@ class TestGetOnlineLearningPipeline:
             patch(
                 "enhanced_agent_bus.online_learning_infra.registry.OnlineLearningPipeline"
             ) as MockPipeline,
-            patch(
-                "enhanced_agent_bus.online_learning_infra.registry._load_registry_state"
-            ),
+            patch("enhanced_agent_bus.online_learning_infra.registry._load_registry_state"),
         ):
             mock_instance = MagicMock()
             MockPipeline.return_value = mock_instance
@@ -953,9 +939,7 @@ class TestGetOnlineLearningPipeline:
             patch(
                 "enhanced_agent_bus.online_learning_infra.registry.OnlineLearningPipeline"
             ) as MockPipeline,
-            patch(
-                "enhanced_agent_bus.online_learning_infra.registry._load_registry_state"
-            ),
+            patch("enhanced_agent_bus.online_learning_infra.registry._load_registry_state"),
         ):
             mock_a = MagicMock()
             mock_b = MagicMock()
@@ -976,9 +960,7 @@ class TestGetOnlineLearningPipeline:
             patch(
                 "enhanced_agent_bus.online_learning_infra.registry.OnlineLearningPipeline"
             ) as MockPipeline,
-            patch(
-                "enhanced_agent_bus.online_learning_infra.registry._load_registry_state"
-            ),
+            patch("enhanced_agent_bus.online_learning_infra.registry._load_registry_state"),
         ):
             from enhanced_agent_bus.online_learning_infra.config import ModelType
             from enhanced_agent_bus.online_learning_infra.registry import (
@@ -997,9 +979,7 @@ class TestGetOnlineLearningPipeline:
     @pytest.mark.usefixtures("_reset_registry")
     def test_calls_load_registry_state(self) -> None:
         with (
-            patch(
-                "enhanced_agent_bus.online_learning_infra.registry.OnlineLearningPipeline"
-            ),
+            patch("enhanced_agent_bus.online_learning_infra.registry.OnlineLearningPipeline"),
             patch(
                 "enhanced_agent_bus.online_learning_infra.registry._load_registry_state"
             ) as mock_load,
@@ -1153,9 +1133,7 @@ class TestStopFeedbackConsumer:
         mock_consumer.stop = AsyncMock()
         reg._feedback_kafka_consumer = mock_consumer
 
-        with patch(
-            "enhanced_agent_bus.online_learning_infra.registry._save_registry_state"
-        ):
+        with patch("enhanced_agent_bus.online_learning_infra.registry._save_registry_state"):
             await reg.stop_feedback_consumer()
             assert reg._feedback_kafka_consumer is None
 

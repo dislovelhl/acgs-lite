@@ -1,6 +1,6 @@
 """
 ACGS-2 Core Service Interfaces
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Interface abstractions for external dependencies to support DIP and testability.
 """

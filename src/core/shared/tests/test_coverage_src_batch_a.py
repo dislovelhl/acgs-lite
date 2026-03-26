@@ -1020,9 +1020,7 @@ class TestTenantAuditLogger:
         logger = self._make_logger()
         store = logger.get_store()
         old_ts = (datetime.now(UTC) - timedelta(days=10)).isoformat()
-        old_entry = AuditEntry(
-            id="old-1", tenant_id="t-1", timestamp=old_ts, action="create"
-        )
+        old_entry = AuditEntry(id="old-1", tenant_id="t-1", timestamp=old_ts, action="create")
         await store.store(old_entry)
 
         removed = await logger.cleanup_old_entries("t-1", retention_days=5)
@@ -1057,9 +1055,18 @@ class TestSensitiveFields:
     """Test SENSITIVE_FIELDS constant."""
 
     def test_contains_expected_fields(self):
-        expected = {"password", "secret", "token", "api_key", "apikey",
-                    "access_token", "refresh_token", "private_key",
-                    "credential", "auth"}
+        expected = {
+            "password",
+            "secret",
+            "token",
+            "api_key",
+            "apikey",
+            "access_token",
+            "refresh_token",
+            "private_key",
+            "credential",
+            "auth",
+        }
         assert SENSITIVE_FIELDS == expected
 
     def test_is_frozen(self):
@@ -1272,8 +1279,9 @@ class TestCacheWarmer:
         mock_tier_module = MagicMock()
         mock_tier_module.CacheTier = CacheTier
         with patch.dict("sys.modules", {"src.core.shared.tiered_cache": mock_tier_module}):
-            with patch.object(warmer, "_load_key_value",
-                              new_callable=AsyncMock, return_value="test-val"):
+            with patch.object(
+                warmer, "_load_key_value", new_callable=AsyncMock, return_value="test-val"
+            ):
                 result = await warmer.warm_cache(source_keys=["key1", "key2"])
                 assert result.status == WarmingStatus.COMPLETED
                 assert result.keys_warmed == 2
@@ -1292,8 +1300,9 @@ class TestCacheWarmer:
         mock_tier_module = MagicMock()
         mock_tier_module.CacheTier = CacheTier
         with patch.dict("sys.modules", {"src.core.shared.tiered_cache": mock_tier_module}):
-            with patch.object(warmer, "_load_key_value",
-                              new_callable=AsyncMock, return_value="loaded-val"):
+            with patch.object(
+                warmer, "_load_key_value", new_callable=AsyncMock, return_value="loaded-val"
+            ):
                 result = await warmer.warm_cache(source_keys=["k1"], key_loader=my_loader)
                 assert result.keys_warmed == 1
 
@@ -1303,9 +1312,9 @@ class TestCacheWarmer:
         with patch("src.core.shared.cache.warming.get_logger"):
             warmer = CacheWarmer(cache_manager=mock_cm)
 
-        with patch.object(warmer, "_get_keys_to_warm",
-                          new_callable=AsyncMock,
-                          side_effect=Exception("unexpected")):
+        with patch.object(
+            warmer, "_get_keys_to_warm", new_callable=AsyncMock, side_effect=Exception("unexpected")
+        ):
             result = await warmer.warm_cache()
             assert result.status == WarmingStatus.FAILED
             assert "unexpected" in result.error_message
@@ -1509,9 +1518,7 @@ class TestCacheWarmer:
         mock_tier_module = MagicMock()
         mock_tier_module.CacheTier = CacheTier
         with patch.dict("sys.modules", {"src.core.shared.tiered_cache": mock_tier_module}):
-            result = await warmer._warm_in_batches(
-                ["k1", "k2"], mock_cm, None, time.monotonic()
-            )
+            result = await warmer._warm_in_batches(["k1", "k2"], mock_cm, None, time.monotonic())
         assert result.status == WarmingStatus.CANCELLED
 
     @pytest.mark.asyncio
@@ -1546,10 +1553,10 @@ class TestCacheWarmer:
         mock_tier_module = MagicMock()
         mock_tier_module.CacheTier = CacheTier
         with patch.dict("sys.modules", {"src.core.shared.tiered_cache": mock_tier_module}):
-            with patch.object(warmer, "_load_key_value", new_callable=AsyncMock, return_value="val"):
-                result = await warmer._warm_in_batches(
-                    ["k1", "k2"], mock_cm, None, time.monotonic()
-                )
+            with patch.object(
+                warmer, "_load_key_value", new_callable=AsyncMock, return_value="val"
+            ):
+                await warmer._warm_in_batches(["k1", "k2"], mock_cm, None, time.monotonic())
         assert cb.called
 
     @pytest.mark.asyncio
@@ -1567,10 +1574,10 @@ class TestCacheWarmer:
         mock_tier_module = MagicMock()
         mock_tier_module.CacheTier = CacheTier
         with patch.dict("sys.modules", {"src.core.shared.tiered_cache": mock_tier_module}):
-            with patch.object(warmer, "_load_key_value", new_callable=AsyncMock, return_value="val"):
-                result = await warmer._warm_in_batches(
-                    ["k1"], mock_cm, None, time.monotonic()
-                )
+            with patch.object(
+                warmer, "_load_key_value", new_callable=AsyncMock, return_value="val"
+            ):
+                result = await warmer._warm_in_batches(["k1"], mock_cm, None, time.monotonic())
         assert result.keys_warmed == 1  # Should continue despite callback error
 
     @pytest.mark.asyncio
@@ -1586,9 +1593,7 @@ class TestCacheWarmer:
         mock_tier_module.CacheTier = CacheTier
         with patch.dict("sys.modules", {"src.core.shared.tiered_cache": mock_tier_module}):
             with patch.object(warmer, "_load_key_value", new_callable=AsyncMock, return_value=None):
-                result = await warmer._warm_in_batches(
-                    ["k1"], mock_cm, None, time.monotonic()
-                )
+                result = await warmer._warm_in_batches(["k1"], mock_cm, None, time.monotonic())
         assert result.keys_failed == 1
 
     @pytest.mark.asyncio
@@ -1603,10 +1608,10 @@ class TestCacheWarmer:
         mock_tier_module = MagicMock()
         mock_tier_module.CacheTier = CacheTier
         with patch.dict("sys.modules", {"src.core.shared.tiered_cache": mock_tier_module}):
-            with patch.object(warmer, "_load_key_value", new_callable=AsyncMock, return_value="val"):
-                result = await warmer._warm_in_batches(
-                    ["k1"], mock_cm, None, time.monotonic()
-                )
+            with patch.object(
+                warmer, "_load_key_value", new_callable=AsyncMock, return_value="val"
+            ):
+                result = await warmer._warm_in_batches(["k1"], mock_cm, None, time.monotonic())
         assert result.keys_failed == 1
 
 
@@ -1833,12 +1838,14 @@ class TestTieredCacheManager:
     def test_on_redis_health_change_unhealthy(self):
         mgr = self._make_manager()
         from src.core.shared.redis_config import RedisHealthState
+
         mgr._on_redis_health_change(RedisHealthState.HEALTHY, RedisHealthState.UNHEALTHY)
         assert mgr._l2_degraded is True
 
     def test_on_redis_health_change_healthy(self):
         mgr = self._make_manager()
         from src.core.shared.redis_config import RedisHealthState
+
         mgr._l2_degraded = True
         mgr._on_redis_health_change(RedisHealthState.UNHEALTHY, RedisHealthState.HEALTHY)
         assert mgr._l2_degraded is False
@@ -1925,7 +1932,7 @@ class TestTieredCacheManager:
         mock_client.get = AsyncMock(side_effect=ConnectionError("fail"))
         mgr._l2_client = mock_client
         mgr._l2_degraded = False
-        result = await mgr.get_async("k2", default="def")
+        await mgr.get_async("k2", default="def")
         assert mgr._l2_degraded is True
 
     @pytest.mark.asyncio

@@ -1,6 +1,6 @@
 """
 OpenEvolve Governance Adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Integrates AI evolution systems (OpenEvolve and compatibles) with the ACGS-2
 constitutional governance framework.

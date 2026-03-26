@@ -1,0 +1,11 @@
+[package]
+name = "spacetime-governance"
+version = "0.1.0"
+edition = "2021"
+description = "SpacetimeDB governance module for ACGS constitutional enforcement"
+
+[dependencies]
+spacetimedb = "1"
+
+[lib]
+crate-type = ["cdylib"]

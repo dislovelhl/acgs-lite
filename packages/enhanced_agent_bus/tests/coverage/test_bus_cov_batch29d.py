@@ -7,7 +7,7 @@ Coverage batch 29d -- targets uncovered lines in:
   5. api/routes/_tenant_auth.py
   6. mcp_server/resources/decisions.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -233,9 +233,7 @@ class TestCancelWorkflow:
     async def test_cancel_success(self):
         from enhanced_agent_bus.api.routes.workflows import cancel_workflow
 
-        instance = SimpleNamespace(
-            id=uuid4(), workflow_id="wf-1", status="cancelled"
-        )
+        instance = SimpleNamespace(id=uuid4(), workflow_id="wf-1", status="cancelled")
         mock_executor = AsyncMock()
         mock_executor.cancel_workflow = AsyncMock(return_value=instance)
         user = SimpleNamespace(tenant_id="t1")
@@ -253,9 +251,7 @@ class TestRetryWorkflow:
     async def test_retry_success(self):
         from enhanced_agent_bus.api.routes.workflows import retry_workflow
 
-        instance = SimpleNamespace(
-            id=uuid4(), workflow_id="wf-1", status="running"
-        )
+        instance = SimpleNamespace(id=uuid4(), workflow_id="wf-1", status="running")
         mock_executor = AsyncMock()
         mock_executor.resume_workflow = AsyncMock(return_value=instance)
         user = SimpleNamespace(tenant_id="t1")
@@ -563,9 +559,7 @@ class TestDafnyAdapter:
         adapter = DafnyAdapter()
 
         mock_process = AsyncMock()
-        mock_process.communicate = AsyncMock(
-            return_value=(b"1 errors", b"some error output")
-        )
+        mock_process.communicate = AsyncMock(return_value=(b"1 errors", b"some error output"))
         mock_process.returncode = 1
 
         with patch("asyncio.create_subprocess_exec", return_value=mock_process):

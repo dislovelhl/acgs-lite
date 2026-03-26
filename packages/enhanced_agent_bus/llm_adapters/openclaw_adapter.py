@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - OpenClaw LLM Adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 OpenClaw adapter for routing LLM requests through a local agent runtime
 gateway. Uses an OpenAI-compatible HTTP API for chat completions and
@@ -92,7 +92,7 @@ class _AsyncOpenAIClientProtocol(Protocol):
 class OpenClawAdapter(BaseLLMAdapter):
     """OpenClaw LLM adapter for gateway-routed models.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Routes requests through the OpenClaw agent runtime gateway using an
     OpenAI-compatible HTTP API. Supports any model available through

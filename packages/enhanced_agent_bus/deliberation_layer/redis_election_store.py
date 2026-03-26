@@ -1,6 +1,6 @@
 """
 ACGS-2 Deliberation Layer - Redis Election Store
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Redis-backed persistent storage for elections and votes.
 Replaces in-memory storage with distributed, persistent storage.

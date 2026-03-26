@@ -1,7 +1,7 @@
 """
 Message validation helpers for EnhancedAgentBus.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -41,7 +41,7 @@ class MessageValidator:
     """
     Validates messages for constitutional compliance and tenant isolation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -75,7 +75,7 @@ class MessageValidator:
             consider using atomic operations or locks if precise counts are
             required for billing/audit purposes.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         self._metrics["messages_failed"] += 1
         self._metrics["failed"] += 1
@@ -93,7 +93,7 @@ class MessageValidator:
             consider using atomic operations or locks if precise counts are
             required for billing/audit purposes.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         self._metrics["sent"] += 1
         self._metrics["messages_sent"] += 1
@@ -105,7 +105,7 @@ class MessageValidator:
         Validate message constitutional hash via governance component.
 
         Ensures the message's constitutional hash matches the expected system
-        hash (cdd01ef066bc6cf2). This is a critical security check that prevents
+        hash (608508a9bd224290). This is a critical security check that prevents
         unauthorized governance policy modifications or bypass attempts.
 
         Args:
@@ -122,7 +122,7 @@ class MessageValidator:
             - Records failure metrics if validation fails
             - Increments sent counter for tracking total attempts
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         valid = self._governance.validate_constitutional_hash(msg, result)
         if not valid:
@@ -161,7 +161,7 @@ class MessageValidator:
             Prevents cross-tenant data leakage by ensuring agents can only
             communicate within their tenant boundary.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         msg.tenant_id = normalize_tenant_id(msg.tenant_id)
         if msg.tenant_id is None:

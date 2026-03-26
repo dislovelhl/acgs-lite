@@ -3,7 +3,7 @@
 2. src/core/shared/config/governance.py (50% -> full coverage)
 3. src/core/shared/config/infrastructure.py (51.7% -> full coverage)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -203,10 +203,12 @@ class TestOrchestratorMiddlewareProcess:
         )
 
         mock_orch = MagicMock()
-        mock_orch.execute_goal = AsyncMock(return_value={
-            "completed_tasks": 2,
-            "failed_tasks": 0,
-        })
+        mock_orch.execute_goal = AsyncMock(
+            return_value={
+                "completed_tasks": 2,
+                "failed_tasks": 0,
+            }
+        )
 
         mw = OrchestratorMiddleware(orchestrator=mock_orch)
         ctx = self._make_context(impact_score=0.9)
@@ -285,10 +287,12 @@ class TestOrchestratorMiddlewareProcess:
         )
 
         mock_orch = MagicMock()
-        mock_orch.execute_goal = AsyncMock(return_value={
-            "completed_tasks": 1,
-            "failed_tasks": 0,
-        })
+        mock_orch.execute_goal = AsyncMock(
+            return_value={
+                "completed_tasks": 1,
+                "failed_tasks": 0,
+            }
+        )
 
         mw = OrchestratorMiddleware(orchestrator=mock_orch)
         ctx = self._make_context(impact_score=0.9)
@@ -307,10 +311,12 @@ class TestOrchestratorMiddlewareProcess:
         )
 
         mock_orch = MagicMock()
-        mock_orch.execute_goal = AsyncMock(return_value={
-            "completed_tasks": 1,
-            "failed_tasks": 0,
-        })
+        mock_orch.execute_goal = AsyncMock(
+            return_value={
+                "completed_tasks": 1,
+                "failed_tasks": 0,
+            }
+        )
 
         mw = OrchestratorMiddleware(orchestrator=mock_orch)
         ctx = self._make_context(impact_score=0.9)
@@ -329,15 +335,19 @@ class TestOrchestratorMiddlewareProcess:
         call_order = []
 
         mock_orch = MagicMock()
+
         async def fake_execute_goal(**kwargs):
             call_order.append("orchestrate")
             return {"completed_tasks": 1, "failed_tasks": 0}
+
         mock_orch.execute_goal = fake_execute_goal
 
         next_mw = MagicMock()
+
         async def fake_process(ctx):
             call_order.append("next_middleware")
             return ctx
+
         next_mw.process = fake_process
         next_mw.config = MagicMock(enabled=True)
 
@@ -686,7 +696,9 @@ class TestInfraDatabaseSettingsPydantic:
     def test_already_asyncpg_url(self):
         from src.core.shared.config.infrastructure import DatabaseSettings
 
-        with patch.dict(os.environ, {"DATABASE_URL": "postgresql+asyncpg://localhost/mydb"}, clear=False):
+        with patch.dict(
+            os.environ, {"DATABASE_URL": "postgresql+asyncpg://localhost/mydb"}, clear=False
+        ):
             s = DatabaseSettings()
             assert s.url == "postgresql+asyncpg://localhost/mydb"
 
@@ -701,7 +713,7 @@ class TestInfraAISettingsPydantic:
         assert s.openrouter_api_key is None
         assert s.hf_token is None
         assert s.openai_api_key is None
-        assert s.constitutional_hash == "cdd01ef066bc6cf2"
+        assert s.constitutional_hash == "608508a9bd224290"
 
     def test_explicit_keys_via_env(self):
         from src.core.shared.config.infrastructure import AISettings
@@ -752,10 +764,17 @@ class TestInfraDataclassFallback:
     def test_redis_settings_env_defaults(self):
         clean = {k: v for k, v in os.environ.items()}
         for key in (
-            "REDIS_URL", "REDIS_HOST", "REDIS_PORT", "REDIS_DB",
-            "REDIS_MAX_CONNECTIONS", "REDIS_SOCKET_TIMEOUT",
-            "REDIS_RETRY_ON_TIMEOUT", "REDIS_SSL", "REDIS_SSL_CERT_REQS",
-            "REDIS_SSL_CA_CERTS", "REDIS_SOCKET_KEEPALIVE",
+            "REDIS_URL",
+            "REDIS_HOST",
+            "REDIS_PORT",
+            "REDIS_DB",
+            "REDIS_MAX_CONNECTIONS",
+            "REDIS_SOCKET_TIMEOUT",
+            "REDIS_RETRY_ON_TIMEOUT",
+            "REDIS_SSL",
+            "REDIS_SSL_CERT_REQS",
+            "REDIS_SSL_CA_CERTS",
+            "REDIS_SOCKET_KEEPALIVE",
             "REDIS_HEALTH_CHECK_INTERVAL",
         ):
             clean.pop(key, None)
@@ -818,11 +837,18 @@ class TestInfraDataclassFallback:
 
     def test_database_settings_env_defaults(self):
         clean = {k: v for k, v in os.environ.items()}
-        for key in ("DATABASE_URL", "DATABASE_POOL_SIZE", "DATABASE_MAX_OVERFLOW",
-                     "DATABASE_POOL_PRE_PING", "DATABASE_ECHO"):
+        for key in (
+            "DATABASE_URL",
+            "DATABASE_POOL_SIZE",
+            "DATABASE_MAX_OVERFLOW",
+            "DATABASE_POOL_PRE_PING",
+            "DATABASE_ECHO",
+        ):
             clean.pop(key, None)
         with patch.dict(os.environ, clean, clear=True):
-            assert "asyncpg" in os.getenv("DATABASE_URL", "postgresql+asyncpg://localhost:5432/acgs2")
+            assert "asyncpg" in os.getenv(
+                "DATABASE_URL", "postgresql+asyncpg://localhost:5432/acgs2"
+            )
             assert int(os.getenv("DATABASE_POOL_SIZE", "5")) == 5
             assert int(os.getenv("DATABASE_MAX_OVERFLOW", "10")) == 10
             assert os.getenv("DATABASE_POOL_PRE_PING", "true").lower() == "true"
@@ -847,7 +873,7 @@ class TestInfraDataclassFallback:
             oai = os.getenv("OPENAI_API_KEY")
             assert oai is not None
 
-            ch = os.getenv("CONSTITUTIONAL_HASH", "cdd01ef066bc6cf2")
+            ch = os.getenv("CONSTITUTIONAL_HASH", "608508a9bd224290")
             assert ch == "test-hash"
 
     def test_ai_settings_env_no_keys(self):

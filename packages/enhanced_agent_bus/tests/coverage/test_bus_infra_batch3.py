@@ -14,7 +14,7 @@ Covers:
   - api/validation_store.py (ValidationStore ring buffer)
   - components/agent_registry_manager.py (AgentRegistryManager CRUD)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

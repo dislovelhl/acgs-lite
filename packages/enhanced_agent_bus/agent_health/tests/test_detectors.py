@@ -1,6 +1,6 @@
 """
 Unit tests for FailureLoopDetector and MemoryExhaustionDetector.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 TDD RED: These tests are written before detectors.py is implemented.
 All tests fail (RED) until detectors.py provides the implementation.

@@ -4,7 +4,7 @@ Test PQC Validation Integration
 
 Tests for Post-Quantum Cryptographic validation in the Enhanced Agent Bus.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Coverage:
 - PQCValidationStrategy functionality
@@ -352,7 +352,7 @@ class TestHybridModeValidateSignature:
         parent_parts = mod_name.rsplit(".", 1)[0]  # ...app.services
         parents_to_clean: list[str] = []
         for i, _part in enumerate(parent_parts.split(".")):
-            dotted = ".".join(parent_parts.split(".")[:i + 1])
+            dotted = ".".join(parent_parts.split(".")[: i + 1])
             if dotted not in sys.modules:
                 stub = types.ModuleType(dotted)
                 stub.__path__ = []  # mark as package

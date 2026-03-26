@@ -1,6 +1,6 @@
 """
 Saga Repository Factory
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Factory for creating saga state repositories based on configuration.
 Supports Redis and PostgreSQL backends with automatic fallback.
@@ -74,7 +74,7 @@ async def create_saga_repository(
     """
     Create a saga state repository based on configuration.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Args:
         backend: The backend to use. If None, uses SAGA_BACKEND env var

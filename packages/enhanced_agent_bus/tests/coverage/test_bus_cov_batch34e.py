@@ -49,11 +49,7 @@ def _patched_conv1d_init(self, *args, **kwargs):
     """Patch Conv1d to accept the buggy call signature from Mamba2SSM."""
     import torch.nn as _nn
 
-    if (
-        len(args) == 1
-        and "kernel_size" in kwargs
-        and "out_channels" not in kwargs
-    ):
+    if len(args) == 1 and "kernel_size" in kwargs and "out_channels" not in kwargs:
         in_channels = args[0]
         kwargs.setdefault("out_channels", in_channels)
         args = (in_channels,)
@@ -343,9 +339,7 @@ class TestClassifierPolicyResolution:
         config = ClassifierConfig(enable_policy_resolver=True)
         classifier = ConstitutionalClassifierV2(config=config, policy_resolver=mock_resolver)
 
-        result = await classifier._resolve_session_policy(
-            None, {"tenant_id": "t1"}
-        )
+        result = await classifier._resolve_session_policy(None, {"tenant_id": "t1"})
         assert result is None
 
     def test_apply_policy_threshold_valid(self):
@@ -466,11 +460,14 @@ class TestClassifierMACIValidation:
             create=True,
         ):
             # Patch the import inside _validate_maci
-            with patch.dict("sys.modules", {
-                "enhanced_agent_bus.maci_enforcement": MagicMock(
-                    MACIAction=MagicMock(QUERY="query")
-                ),
-            }):
+            with patch.dict(
+                "sys.modules",
+                {
+                    "enhanced_agent_bus.maci_enforcement": MagicMock(
+                        MACIAction=MagicMock(QUERY="query")
+                    ),
+                },
+            ):
                 result = await classifier._validate_maci("agent1", None)
         assert result is None
 
@@ -713,10 +710,12 @@ class TestClassifierJailbreakPatterns:
         )
 
         classifier = ConstitutionalClassifierV2(config=ClassifierConfig())
-        results = classifier.test_jailbreak_patterns([
-            "Hello, how are you?",
-            "A" * 150,  # long prompt for truncation branch
-        ])
+        results = classifier.test_jailbreak_patterns(
+            [
+                "Hello, how are you?",
+                "A" * 150,  # long prompt for truncation branch
+            ]
+        )
         assert results["total_tests"] == 2
         assert "accuracy" in results
         assert "detailed_results" in results
@@ -793,6 +792,7 @@ class TestClassifierGlobal:
             ConstitutionalClassifierV2,
             get_constitutional_classifier_v2,
         )
+
         mod._global_classifier = None
 
         c1 = get_constitutional_classifier_v2()
@@ -809,6 +809,7 @@ class TestClassifierGlobal:
     async def test_classify_action_convenience(self):
         import enhanced_agent_bus.constitutional_classifier.classifier as mod
         from enhanced_agent_bus.constitutional_classifier.classifier import classify_action
+
         mod._global_classifier = None
 
         result = await classify_action("hello world")
@@ -1631,13 +1632,17 @@ class TestProcessWithContext:
 
         mgr = ConstitutionalContextManager(Mamba2Config(d_model=64, num_mamba_layers=2))
 
-        with patch.object(mgr, "check_memory_pressure", return_value={
-            "pressure_level": "critical",
-            "process_rss_mb": 8000,
-            "system_percent": 95.0,
-            "gpu_allocated_gb": 0,
-            "gpu_reserved_gb": 0,
-        }):
+        with patch.object(
+            mgr,
+            "check_memory_pressure",
+            return_value={
+                "pressure_level": "critical",
+                "process_rss_mb": 8000,
+                "system_percent": 95.0,
+                "gpu_allocated_gb": 0,
+                "gpu_reserved_gb": 0,
+            },
+        ):
             result = await mgr.process_with_context("test input")
         assert result["fallback"] is True
         assert result["compliance_score"] == 0.95
@@ -1650,20 +1655,26 @@ class TestProcessWithContext:
             Mamba2Config,
         )
 
-        mgr = ConstitutionalContextManager(Mamba2Config(d_model=64, num_mamba_layers=2, max_seq_len=256))
+        mgr = ConstitutionalContextManager(
+            Mamba2Config(d_model=64, num_mamba_layers=2, max_seq_len=256)
+        )
 
         # Mock layers to bypass source bugs in SSM fallback and RoPE
         for layer in mgr.model.mamba_layers:
             layer.forward = lambda x: x
         mgr.model.shared_attention.forward = lambda x, mask=None: x
 
-        with patch.object(mgr, "check_memory_pressure", return_value={
-            "pressure_level": "normal",
-            "process_rss_mb": 200,
-            "system_percent": 40.0,
-            "gpu_allocated_gb": 0,
-            "gpu_reserved_gb": 0,
-        }):
+        with patch.object(
+            mgr,
+            "check_memory_pressure",
+            return_value={
+                "pressure_level": "normal",
+                "process_rss_mb": 200,
+                "system_percent": 40.0,
+                "gpu_allocated_gb": 0,
+                "gpu_reserved_gb": 0,
+            },
+        ):
             result = await mgr.process_with_context(
                 "test input text",
                 context_window=["previous context"],

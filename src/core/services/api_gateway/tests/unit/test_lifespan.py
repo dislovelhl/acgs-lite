@@ -1,6 +1,6 @@
 """Tests for API Gateway lifespan management.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -44,6 +44,7 @@ class TestVerifyConstitutionalHashAtStartup:
         from src.core.services.api_gateway.lifespan import (
             _verify_constitutional_hash_at_startup,
         )
+
         return _verify_constitutional_hash_at_startup()
 
     def test_production_no_env_hash_raises(self):
@@ -132,11 +133,13 @@ class TestLifespan:
         }
         mock_control = _mock_control_plane()
 
-        with patch.dict(os.environ, env, clear=False), \
-             patch.object(lifespan_mod, "_is_development_environment", return_value=True), \
-             _patch_create_control_plane(lifespan_mod, mock_control), \
-             patch.object(lifespan_mod, "close_proxy_client", new_callable=AsyncMock), \
-             patch.object(lifespan_mod, "_close_feedback_redis", new_callable=AsyncMock):
+        with (
+            patch.dict(os.environ, env, clear=False),
+            patch.object(lifespan_mod, "_is_development_environment", return_value=True),
+            _patch_create_control_plane(lifespan_mod, mock_control),
+            patch.object(lifespan_mod, "close_proxy_client", new_callable=AsyncMock),
+            patch.object(lifespan_mod, "_close_feedback_redis", new_callable=AsyncMock),
+        ):
             mock_app = MagicMock()
             mock_app.state = MagicMock()
 
@@ -156,11 +159,13 @@ class TestLifespan:
         mock_close_proxy = AsyncMock()
         mock_close_feedback = AsyncMock()
 
-        with patch.dict(os.environ, env, clear=False), \
-             patch.object(lifespan_mod, "_is_development_environment", return_value=True), \
-             _patch_create_control_plane(lifespan_mod, mock_control), \
-             patch.object(lifespan_mod, "close_proxy_client", mock_close_proxy), \
-             patch.object(lifespan_mod, "_close_feedback_redis", mock_close_feedback):
+        with (
+            patch.dict(os.environ, env, clear=False),
+            patch.object(lifespan_mod, "_is_development_environment", return_value=True),
+            _patch_create_control_plane(lifespan_mod, mock_control),
+            patch.object(lifespan_mod, "close_proxy_client", mock_close_proxy),
+            patch.object(lifespan_mod, "_close_feedback_redis", mock_close_feedback),
+        ):
             mock_app = MagicMock()
             mock_app.state = MagicMock()
 
@@ -181,11 +186,13 @@ class TestLifespan:
         }
         mock_control = _mock_control_plane()
 
-        with patch.dict(os.environ, env, clear=False), \
-             patch.object(lifespan_mod, "_is_development_environment", return_value=True), \
-             _patch_create_control_plane(lifespan_mod, mock_control), \
-             patch.object(lifespan_mod, "close_proxy_client", new_callable=AsyncMock), \
-             patch.object(lifespan_mod, "_close_feedback_redis", new_callable=AsyncMock):
+        with (
+            patch.dict(os.environ, env, clear=False),
+            patch.object(lifespan_mod, "_is_development_environment", return_value=True),
+            _patch_create_control_plane(lifespan_mod, mock_control),
+            patch.object(lifespan_mod, "close_proxy_client", new_callable=AsyncMock),
+            patch.object(lifespan_mod, "_close_feedback_redis", new_callable=AsyncMock),
+        ):
             mock_app = MagicMock()
             mock_app.state = MagicMock()
 
@@ -204,11 +211,13 @@ class TestLifespan:
             "SELF_EVOLUTION_OPERATOR_CONTROL_BACKEND": "memory",
         }
 
-        with patch.dict(os.environ, env, clear=False), \
-             patch.object(lifespan_mod, "_is_development_environment", return_value=True), \
-             _patch_create_control_plane(lifespan_mod, None), \
-             patch.object(lifespan_mod, "close_proxy_client", new_callable=AsyncMock), \
-             patch.object(lifespan_mod, "_close_feedback_redis", new_callable=AsyncMock):
+        with (
+            patch.dict(os.environ, env, clear=False),
+            patch.object(lifespan_mod, "_is_development_environment", return_value=True),
+            _patch_create_control_plane(lifespan_mod, None),
+            patch.object(lifespan_mod, "close_proxy_client", new_callable=AsyncMock),
+            patch.object(lifespan_mod, "_close_feedback_redis", new_callable=AsyncMock),
+        ):
             mock_app = MagicMock()
             mock_app.state = MagicMock()
 

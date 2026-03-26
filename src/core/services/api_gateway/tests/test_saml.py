@@ -6,7 +6,7 @@ os.environ["ENABLE_RATE_LIMITING"] = "false"
 os.environ["SAML_ENABLED"] = "false"
 """
 ACGS-2 API Gateway SAML Flow Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for SAML 2.0 authentication flow with Okta mock.
 Tests cover: login redirect, ACS callback handling, assertion validation,

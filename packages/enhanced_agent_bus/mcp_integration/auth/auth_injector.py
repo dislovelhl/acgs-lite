@@ -1,7 +1,7 @@
 """
 Auth Injector for MCP Tool Requests.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 MACI Role: JUDICIAL
 
 Main entry point for MCP authentication injection:
@@ -203,7 +203,7 @@ class AuthInjector:
     - Credential management and injection
     - Audit logging
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, config: AuthInjectorConfig | None = None):

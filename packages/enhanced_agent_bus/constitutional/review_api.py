@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Constitutional Amendment Review API
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 API endpoints for reviewing, approving, and rejecting constitutional amendments
 with MACI enforcement, governance metrics comparison, and HITL integration.
@@ -248,6 +248,7 @@ async def _prepare_review_action(
         dependencies=dependencies,
     )
 
+
 # =============================================================================
 # Request/Response Models
 # =============================================================================
@@ -382,7 +383,7 @@ async def list_amendments(
     This endpoint supports filtering by status and proposer, pagination,
     and sorting. All amendments are returned with basic metadata.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Args:
         status: Optional status filter (proposed, under_review, approved, etc.)
@@ -479,7 +480,7 @@ async def get_amendment(
     - Governance metrics delta (before vs after)
     - Current HITL approval status
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Args:
         amendment_id: Unique identifier of the amendment proposal
@@ -579,7 +580,7 @@ async def approve_amendment(
     the HITL approval workflow. MACI enforcement ensures only agents with
     the JUDICIAL role can approve amendments.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Flow:
     1. Validate MACI permissions (JUDICIAL role required)
@@ -709,7 +710,7 @@ async def reject_amendment(
     approval workflow. MACI enforcement ensures only agents with
     the JUDICIAL role can reject amendments.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Flow:
     1. Validate MACI permissions (JUDICIAL role required)
@@ -825,7 +826,7 @@ async def rollback_to_version(
     useful for emergency situations or when automatic rollback is not
     triggered but governance issues are detected.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Flow:
     1. Validate MACI permissions (JUDICIAL role required)

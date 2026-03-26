@@ -1,6 +1,6 @@
 """
 Tests for evolution_control.py route coverage.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers: status, pause, resume, stop endpoints plus dependency resolution.
 """
@@ -26,6 +26,7 @@ from src.core.shared.security.auth import UserClaims, get_current_user
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 def _make_user(roles: list[str] | None = None) -> UserClaims:
     now = int(datetime.now(UTC).timestamp())

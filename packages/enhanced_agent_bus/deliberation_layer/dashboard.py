@@ -1,4 +1,4 @@
-"""Constitutional Hash: cdd01ef066bc6cf2
+"""Constitutional Hash: 608508a9bd224290
 ACGS-2 Deliberation Layer - Human Approval Dashboard
 Streamlit-based UI for human-in-the-loop approval of high-risk decisions.
 """

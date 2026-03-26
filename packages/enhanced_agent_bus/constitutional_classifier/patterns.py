@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Constitutional Classifier Patterns
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive threat pattern definitions for jailbreak prevention.
 Targets 95% jailbreak prevention accuracy with sub-5ms detection.
@@ -46,7 +46,7 @@ class ThreatSeverity(Enum):
 class ThreatPattern:
     """Immutable threat pattern definition.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     pattern: str
@@ -72,7 +72,7 @@ class ThreatPattern:
 class PatternMatchResult:
     """Result of pattern matching operation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     matched: bool
@@ -102,7 +102,7 @@ class ThreatPatternRegistry:
     Comprehensive pattern database for 95% jailbreak prevention.
     Optimized for sub-5ms detection performance.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self):

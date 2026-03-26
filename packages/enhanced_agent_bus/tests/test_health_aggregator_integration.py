@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Health Aggregator Integration Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Integration tests validating health aggregator with real circuit breakers.
 """

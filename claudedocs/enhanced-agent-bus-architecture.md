@@ -4,7 +4,7 @@
 **Entry point**: `enhanced_agent_bus.api.app:app`
 **Port**: 8000
 **Version**: 2.0.0
-**Constitutional hash**: `cdd01ef066bc6cf2`
+**Constitutional hash**: `608508a9bd224290`
 **Test suite**: 3,534 tests (`python -m pytest packages/enhanced_agent_bus/tests/ -v --import-mode=importlib`)
 **Performance targets**: P99 < 0.103 ms | throughput > 5,066 RPS | memory < 5 MB / 1,000 messages
 
@@ -130,7 +130,7 @@ Every message passing through the pipeline must satisfy all of the following, or
 
 | Check | Where enforced | Failure mode |
 |---|---|---|
-| Constitutional hash matches `cdd01ef066bc6cf2` | `MessageProcessor` | `ConstitutionalHashMismatchError` |
+| Constitutional hash matches `608508a9bd224290` | `MessageProcessor` | `ConstitutionalHashMismatchError` |
 | Schema version is supported | `SchemaRegistry` | `MessageValidationError` |
 | MACI role permits the requested action | `BatchGovernanceMiddleware` | `MACIRoleViolationError` |
 | Agent is not validating its own output | `MACIEnforcer` | `MACISelfValidationError` |
@@ -221,7 +221,7 @@ class AgentMessage:
     message_type: MessageType
     priority: Priority      # CRITICAL / HIGH / MEDIUM / LOW
     payload: dict
-    constitutional_hash: str  # Must equal cdd01ef066bc6cf2
+    constitutional_hash: str  # Must equal 608508a9bd224290
     tenant_id: str | None
     session_id: str | None
     risk_level: RiskLevel   # Set by MessageProcessor after scoring
@@ -934,7 +934,7 @@ All fields have safe defaults. Override via `BusConfiguration(field=value)` or `
 | `max_queue_size` | `int` | `10_000` | Back-pressure queue limit |
 | `max_message_size_bytes` | `int` | `1_048_576` | Per-message size cap (1 MiB) |
 | `queue_full_behavior` | `str` | `reject` | `reject` (HTTP 429) or `drop_oldest` |
-| `constitutional_hash` | `str` | `cdd01ef066bc6cf2` | Must match embedded hash |
+| `constitutional_hash` | `str` | `608508a9bd224290` | Must match embedded hash |
 
 ### 12.2 Environment Variables (PM2 / Runtime)
 
@@ -942,7 +942,7 @@ These are the variables set by `ecosystem.config.cjs` and read by `BusConfigurat
 
 | Variable | Required | Example | Description |
 |---|---|---|---|
-| `CONSTITUTIONAL_HASH` | Yes | `cdd01ef066bc6cf2` | Constitutional hash; must match package constant |
+| `CONSTITUTIONAL_HASH` | Yes | `608508a9bd224290` | Constitutional hash; must match package constant |
 | `MACI_STRICT_MODE` | Yes | `true` | Fail-closed MACI enforcement |
 | `OPA_URL` | Yes | `http://localhost:8181` | OPA policy engine endpoint |
 | `REDIS_URL` | Yes | `redis://localhost:6379/0` | Redis connection |
@@ -1000,4 +1000,4 @@ curl http://localhost:8000/health
 
 ---
 
-*Document generated from source inspection of `packages/enhanced_agent_bus/` at constitutional hash `cdd01ef066bc6cf2`. Update this document whenever a new subsystem is added or a public API contract changes.*
+*Document generated from source inspection of `packages/enhanced_agent_bus/` at constitutional hash `608508a9bd224290`. Update this document whenever a new subsystem is added or a public API contract changes.*

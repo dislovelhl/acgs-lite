@@ -10,7 +10,7 @@ Reference: Regulation (EU) 2016/679 (General Data Protection Regulation)
 Enforcement: Since May 25, 2018. Fines up to 4% of global annual revenue
 or EUR 20 million, whichever is higher.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

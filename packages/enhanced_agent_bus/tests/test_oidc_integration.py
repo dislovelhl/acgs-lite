@@ -1,6 +1,6 @@
 """
 OAuth/OIDC Integration Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Phase 10 Task 5: OAuth/OIDC Integration
 - Task 5.1: Write unit tests for OAuth authorization URL generation with PKCE
@@ -149,7 +149,7 @@ def generate_valid_jwt(
 class TestOAuthAuthorizationWithPKCE:
     """Test OAuth authorization URL generation with PKCE.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def test_create_authorization_request_basic(self, oidc_handler):
@@ -320,7 +320,7 @@ class TestOAuthAuthorizationWithPKCE:
 class TestOAuthTokenExchange:
     """Test OAuth token exchange functionality.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def test_validate_response_success(self, oidc_handler):
@@ -459,7 +459,7 @@ class TestOAuthTokenExchange:
 class TestJWTValidation:
     """Test JWT ID token validation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def test_parse_valid_jwt(self, oidc_handler):
@@ -554,7 +554,7 @@ class TestJWTValidation:
 class TestTokenRefreshFlow:
     """Test OAuth token refresh functionality.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def test_token_response_includes_refresh_token(self, oidc_handler):
@@ -608,7 +608,7 @@ class TestTokenRefreshFlow:
 class TestOIDCUserInfoRetrieval:
     """Test OIDC userinfo endpoint retrieval.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def test_userinfo_endpoint_derivation(self):
@@ -710,7 +710,7 @@ class TestOIDCUserInfoRetrieval:
 class TestMultiProviderSupport:
     """Test OIDC support for multiple providers.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def test_okta_handler_configuration(self, okta_handler):
@@ -816,7 +816,7 @@ class TestMultiProviderSupport:
 class TestOIDCProtocolHandlerFactory:
     """Test ProtocolHandlerFactory for OIDC.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def test_create_oidc_handler(self):
@@ -862,7 +862,7 @@ class TestOIDCProtocolHandlerFactory:
 class TestOIDCConstitutionalHashValidation:
     """Test constitutional hash validation for OIDC.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def test_valid_constitutional_hash(self):
@@ -902,7 +902,7 @@ class TestOIDCConstitutionalHashValidation:
 class TestOIDCEdgeCases:
     """Test OIDC edge cases and error handling.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def test_handler_with_trailing_slash_issuer(self):

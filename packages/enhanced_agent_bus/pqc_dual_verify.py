@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus — PQC Dual-Verify Enforcer
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Enforcer that decides whether a governance decision may be verified using a
 classical-only signature during the Phase 4 dual-verify window.

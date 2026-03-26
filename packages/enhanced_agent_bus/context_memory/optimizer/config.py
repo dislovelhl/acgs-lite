@@ -1,6 +1,6 @@
 """
 ACGS-2 Context Optimizer - Configuration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Configuration dataclasses and enums for context window optimization.
 """
@@ -28,7 +28,7 @@ class OptimizationStrategy(str, Enum):
 class OptimizerConfig:
     """Configuration for context optimizer.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Parallel processing

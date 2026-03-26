@@ -1,6 +1,6 @@
 """
 ACGS-2 High-Performance JSON Utilities
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides optimized JSON serialization using orjson for maximum performance.
 Includes fallbacks for environments where orjson is not available.

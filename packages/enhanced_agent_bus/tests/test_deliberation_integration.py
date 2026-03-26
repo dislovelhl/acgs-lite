@@ -1,6 +1,6 @@
 """Tests for enhanced_agent_bus.deliberation_layer.integration — coverage boost.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests the DeliberationLayer class, _truncate_content_for_hotl helper,
 and internal methods for impact scoring, routing, and processing.
@@ -36,7 +36,7 @@ def _make_message(**overrides):
         "tenant_id": "tenant-1",
         "priority": "normal",
         "message_type": "request",
-        "constitutional_hash": "cdd01ef066bc6cf2",
+        "constitutional_hash": "608508a9bd224290",
         "impact_score": None,
         "status": "pending",
     }
@@ -212,7 +212,7 @@ class TestPrepareProcessingContext:
         ctx = layer._prepare_processing_context(msg)
         assert ctx["agent_id"] == "agent-a"
         assert ctx["tenant_id"] == "tenant-1"
-        assert ctx["constitutional_hash"] == "cdd01ef066bc6cf2"
+        assert ctx["constitutional_hash"] == "608508a9bd224290"
 
     def test_uses_sender_id_fallback(self):
         layer = _build_layer()

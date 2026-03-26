@@ -1,6 +1,6 @@
 """
 ACGS-2 Agent Message Event Schemas
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Versioned schemas for agent-to-agent communication messages.
 Supports evolution from V1 (basic messaging) to V2 (enhanced with
@@ -73,7 +73,7 @@ class AgentMessageV1(EventSchemaBase):
     """
     Agent Message Schema V1 - Basic agent-to-agent communication.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     This is the foundational message format for the ACGS-2 enhanced agent bus.
     Supports basic routing, content, and constitutional validation.
@@ -128,7 +128,7 @@ class AgentMessageV2(EventSchemaBase):
     """
     Agent Message Schema V2 - Enhanced with session governance and PQC.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     V2 adds:
     - Session governance support for dynamic per-session policies
@@ -256,7 +256,7 @@ def migrate_v1_to_v2(data: JSONDict) -> JSONDict:
     Adds default values for all new V2 fields while preserving
     existing V1 data.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     result = data.copy()
 

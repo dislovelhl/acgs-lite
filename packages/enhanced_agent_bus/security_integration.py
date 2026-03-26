@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """Security integration layer for Enhanced Agent Bus.
 
 Bridges the OWASP Agentic AI security modules into the message processing
@@ -30,6 +30,7 @@ except ImportError:
 
     def get_logger(name: str) -> logging.Logger:
         return logging.getLogger(name)
+
 
 from enhanced_agent_bus.drift_detector import (
     DriftAlert,

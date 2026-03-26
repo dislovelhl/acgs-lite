@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - PQC Enforcement Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Pydantic models for PQC enforcement mode administration and metrics.
 """

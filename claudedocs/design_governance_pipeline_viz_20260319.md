@@ -1,6 +1,6 @@
 # Governance Pipeline Visualization — System Design
 
-**Date:** 2026-03-19 | **Status:** Proposed | **Constitutional Hash:** cdd01ef066bc6cf2
+**Date:** 2026-03-19 | **Status:** Proposed | **Constitutional Hash:** 608508a9bd224290
 
 ## 1. Overview
 
@@ -83,7 +83,7 @@ GET /api/v1/pipeline/metrics
 ```typescript
 interface PipelineMetricsResponse {
   timestamp: string                    // ISO8601
-  constitutional_hash: string          // "cdd01ef066bc6cf2"
+  constitutional_hash: string          // "608508a9bd224290"
   total_sla_ms: number                 // 50.0 (from TimeoutBudgetManager)
   total_elapsed_ms: number             // current total elapsed
   sla_status: "healthy" | "warning" | "critical"

@@ -1,6 +1,6 @@
 # Agent Health & Healing
 
-Constitutional Hash: `cdd01ef066bc6cf2`
+Constitutional Hash: `608508a9bd224290`
 
 ## Overview
 
@@ -121,7 +121,7 @@ Returns the current health snapshot for an agent.
   "last_event_at": "2026-03-05T10:00:00Z",
   "autonomy_tier": "HUMAN_APPROVED",
   "healing_override": null,
-  "constitutional_hash": "cdd01ef066bc6cf2"
+  "constitutional_hash": "608508a9bd224290"
 }
 ```
 
@@ -185,7 +185,7 @@ Removes the active healing override, restoring automatic healing. Written to the
 
 All healing decisions are written to the governance audit log **before** the action executes
 (constitutional constraint). No healing action bypasses constitutional hash validation
-(`cdd01ef066bc6cf2`).
+(`608508a9bd224290`).
 
 ## Prometheus Metrics
 

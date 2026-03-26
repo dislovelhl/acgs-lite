@@ -20,7 +20,7 @@ import future.keywords.in
 # The `action_history` field is a list of completed action labels from the
 # current session, managed by the pipeline and stored in Redis.
 #
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # NIST 800-53 AC-3, AU-9 — Least Privilege, Audit Protection
 # P99 eval <1ms: all rules use set membership (O(1) lookups)
 
@@ -40,7 +40,7 @@ history_set[item] if {
 # so existing deployments without the data key are unaffected.
 _expected_hash := data.acgs.constitutional_hash if {
 	data.acgs.constitutional_hash != ""
-} else := "cdd01ef066bc6cf2"
+} else := "608508a9bd224290"
 
 allow if {
 	count(violations) == 0

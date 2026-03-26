@@ -5,7 +5,7 @@ Tests for batch18b coverage targets:
   3. feedback_handler/handler.py
   4. llm_adapters/bedrock_adapter.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -70,6 +70,7 @@ from enhanced_agent_bus.llm_adapters.config import AWSBedrockAdapterConfig
 # Helpers
 # ===========================================================================
 
+
 def _make_chunk(
     content: str = "test content",
     context_type: ContextType = ContextType.SEMANTIC,
@@ -116,6 +117,7 @@ def _bedrock_config(model: str = "anthropic.claude-sonnet-4-6-v1:0") -> AWSBedro
 # ===========================================================================
 # SECTION 1: VectorizedScorer
 # ===========================================================================
+
 
 class TestVectorizedScorer:
     """Tests for context_memory/optimizer/scorer.py."""
@@ -178,10 +180,16 @@ class TestVectorizedScorer:
     def test_constitutional_boost_sequential(self):
         scorer = VectorizedScorer(constitutional_boost=0.3)
         chunks = [
-            _make_chunk(content="alpha beta gamma", context_type=ContextType.CONSTITUTIONAL,
-                        priority=ContextPriority.BACKGROUND),
-            _make_chunk(content="alpha beta gamma", context_type=ContextType.SEMANTIC,
-                        priority=ContextPriority.BACKGROUND),
+            _make_chunk(
+                content="alpha beta gamma",
+                context_type=ContextType.CONSTITUTIONAL,
+                priority=ContextPriority.BACKGROUND,
+            ),
+            _make_chunk(
+                content="alpha beta gamma",
+                context_type=ContextType.SEMANTIC,
+                priority=ContextPriority.BACKGROUND,
+            ),
         ]
         scores, boosts = scorer._sequential_score("alpha beta gamma delta epsilon", chunks)
         assert boosts == 1
@@ -191,14 +199,26 @@ class TestVectorizedScorer:
     def test_constitutional_boost_vectorized(self):
         scorer = VectorizedScorer(constitutional_boost=0.3)
         chunks = [
-            _make_chunk(content="alpha beta gamma", context_type=ContextType.CONSTITUTIONAL,
-                        priority=ContextPriority.BACKGROUND),
-            _make_chunk(content="alpha beta gamma", context_type=ContextType.SEMANTIC,
-                        priority=ContextPriority.BACKGROUND),
-            _make_chunk(content="alpha beta gamma", context_type=ContextType.POLICY,
-                        priority=ContextPriority.BACKGROUND),
-            _make_chunk(content="alpha beta gamma", context_type=ContextType.GOVERNANCE,
-                        priority=ContextPriority.BACKGROUND),
+            _make_chunk(
+                content="alpha beta gamma",
+                context_type=ContextType.CONSTITUTIONAL,
+                priority=ContextPriority.BACKGROUND,
+            ),
+            _make_chunk(
+                content="alpha beta gamma",
+                context_type=ContextType.SEMANTIC,
+                priority=ContextPriority.BACKGROUND,
+            ),
+            _make_chunk(
+                content="alpha beta gamma",
+                context_type=ContextType.POLICY,
+                priority=ContextPriority.BACKGROUND,
+            ),
+            _make_chunk(
+                content="alpha beta gamma",
+                context_type=ContextType.GOVERNANCE,
+                priority=ContextPriority.BACKGROUND,
+            ),
         ]
         scores, boosts = scorer._vectorized_score("alpha beta gamma delta epsilon", chunks)
         assert boosts == 1
@@ -263,6 +283,7 @@ class TestVectorizedScorer:
 # SECTION 2: ContextWindowOptimizer
 # ===========================================================================
 
+
 class TestContextWindowOptimizer:
     """Tests for context_memory/optimizer/optimizer.py."""
 
@@ -291,7 +312,9 @@ class TestContextWindowOptimizer:
         optimizer = ContextWindowOptimizer()
         chunks = [
             _make_chunk(content="test data", context_type=ContextType.SEMANTIC, token_count=10),
-            _make_chunk(content="test data", context_type=ContextType.CONSTITUTIONAL, token_count=10),
+            _make_chunk(
+                content="test data", context_type=ContextType.CONSTITUTIONAL, token_count=10
+            ),
         ]
         window, scores = await optimizer.optimize_context("test", chunks, max_tokens=1000)
         assert isinstance(window, ContextWindow)
@@ -478,6 +501,7 @@ class TestContextWindowOptimizer:
 # SECTION 3: FeedbackHandler
 # ===========================================================================
 
+
 class TestFeedbackHandler:
     """Tests for feedback_handler/handler.py."""
 
@@ -549,9 +573,7 @@ class TestFeedbackHandler:
 
     def test_store_batch(self):
         handler = FeedbackHandler()
-        events = [
-            _make_feedback_event(decision_id=f"dec-{i}") for i in range(3)
-        ]
+        events = [_make_feedback_event(decision_id=f"dec-{i}") for i in range(3)]
         batch = FeedbackBatchRequest(events=events)
         response = handler.store_batch(batch)
 
@@ -575,9 +597,7 @@ class TestFeedbackHandler:
 
         handler.store_feedback = side_effect
 
-        events = [
-            _make_feedback_event(decision_id=f"dec-{i}") for i in range(3)
-        ]
+        events = [_make_feedback_event(decision_id=f"dec-{i}") for i in range(3)]
         batch = FeedbackBatchRequest(events=events)
         response = handler.store_batch(batch)
 
@@ -617,8 +637,22 @@ class TestFeedbackHandler:
         mock_cursor = MagicMock()
         now = datetime.now(UTC)
         mock_cursor.fetchall.return_value = [
-            ("id-1", "d1", "positive", "success", "u1", "t1",
-             None, None, None, None, None, now, False, False),
+            (
+                "id-1",
+                "d1",
+                "positive",
+                "success",
+                "u1",
+                "t1",
+                None,
+                None,
+                None,
+                None,
+                None,
+                now,
+                False,
+                False,
+            ),
         ]
         mock_conn.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
@@ -646,25 +680,33 @@ class TestFeedbackHandler:
 
     def test_get_feedback_stats_memory_with_data(self):
         handler = FeedbackHandler()
-        handler.store_feedback(_make_feedback_event(
-            feedback_type=FeedbackType.POSITIVE,
-            outcome=OutcomeStatus.SUCCESS,
-            actual_impact=0.8,
-        ))
-        handler.store_feedback(_make_feedback_event(
-            feedback_type=FeedbackType.NEGATIVE,
-            outcome=OutcomeStatus.FAILURE,
-            actual_impact=0.2,
-        ))
-        handler.store_feedback(_make_feedback_event(
-            feedback_type=FeedbackType.NEUTRAL,
-            outcome=OutcomeStatus.UNKNOWN,
-        ))
-        handler.store_feedback(_make_feedback_event(
-            feedback_type=FeedbackType.CORRECTION,
-            outcome=OutcomeStatus.SUCCESS,
-            actual_impact=0.5,
-        ))
+        handler.store_feedback(
+            _make_feedback_event(
+                feedback_type=FeedbackType.POSITIVE,
+                outcome=OutcomeStatus.SUCCESS,
+                actual_impact=0.8,
+            )
+        )
+        handler.store_feedback(
+            _make_feedback_event(
+                feedback_type=FeedbackType.NEGATIVE,
+                outcome=OutcomeStatus.FAILURE,
+                actual_impact=0.2,
+            )
+        )
+        handler.store_feedback(
+            _make_feedback_event(
+                feedback_type=FeedbackType.NEUTRAL,
+                outcome=OutcomeStatus.UNKNOWN,
+            )
+        )
+        handler.store_feedback(
+            _make_feedback_event(
+                feedback_type=FeedbackType.CORRECTION,
+                outcome=OutcomeStatus.SUCCESS,
+                actual_impact=0.5,
+            )
+        )
 
         stats = handler.get_feedback_stats()
         assert stats.total_count == 4
@@ -794,8 +836,22 @@ class TestFeedbackHandler:
         mock_cursor = MagicMock()
         now = datetime.now(UTC)
         mock_cursor.fetchall.return_value = [
-            ("id-1", "d1", "positive", "success", "u1", "t1",
-             None, None, None, None, None, now, False, False),
+            (
+                "id-1",
+                "d1",
+                "positive",
+                "success",
+                "u1",
+                "t1",
+                None,
+                None,
+                None,
+                None,
+                None,
+                now,
+                False,
+                False,
+            ),
         ]
         mock_conn.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
@@ -892,6 +948,7 @@ class TestFeedbackHandler:
             ):
                 with patch.dict("sys.modules", {"psycopg2": None}):
                     import importlib
+
                     # This path exercises the ImportError branch
                     conn = handler._get_db_connection()
                     # Either None or a mock - depends on env
@@ -903,6 +960,7 @@ class TestFeedbackModuleFunctions:
 
     def test_get_feedback_handler_singleton(self):
         import enhanced_agent_bus.feedback_handler.handler as mod
+
         mod._feedback_handler = None
         h1 = get_feedback_handler()
         h2 = get_feedback_handler()
@@ -911,6 +969,7 @@ class TestFeedbackModuleFunctions:
 
     def test_submit_feedback_with_event(self):
         import enhanced_agent_bus.feedback_handler.handler as mod
+
         mod._feedback_handler = None
         event = _make_feedback_event()
         response = submit_feedback(event)
@@ -919,6 +978,7 @@ class TestFeedbackModuleFunctions:
 
     def test_submit_feedback_with_dict(self):
         import enhanced_agent_bus.feedback_handler.handler as mod
+
         mod._feedback_handler = None
         event_dict = {
             "decision_id": "d-dict",
@@ -932,6 +992,7 @@ class TestFeedbackModuleFunctions:
 
     def test_get_feedback_for_decision(self):
         import enhanced_agent_bus.feedback_handler.handler as mod
+
         mod._feedback_handler = None
         submit_feedback(_make_feedback_event(decision_id="dec-lookup"))
         results = get_feedback_for_decision("dec-lookup")
@@ -942,6 +1003,7 @@ class TestFeedbackModuleFunctions:
 # ===========================================================================
 # SECTION 4: BedrockAdapter
 # ===========================================================================
+
 
 class TestBedrockAdapter:
     """Tests for llm_adapters/bedrock_adapter.py."""
@@ -1006,7 +1068,9 @@ class TestBedrockAdapter:
         adapter = BedrockAdapter(config=_bedrock_config())
         messages = [LLMMessage(role="user", content="Hi")]
         body_str = adapter._build_request_body(
-            messages, stop=["END"], top_k=10,
+            messages,
+            stop=["END"],
+            top_k=10,
         )
         body = json.loads(body_str)
         assert body["stop_sequences"] == ["END"]
@@ -1087,13 +1151,15 @@ class TestBedrockAdapter:
 
     def test_parse_response_anthropic(self):
         adapter = BedrockAdapter(config=_bedrock_config())
-        body = json.dumps({
-            "content": [
-                {"type": "text", "text": "Hello world"},
-                {"type": "other", "data": "ignored"},
-            ],
-            "usage": {"input_tokens": 10, "output_tokens": 20},
-        })
+        body = json.dumps(
+            {
+                "content": [
+                    {"type": "text", "text": "Hello world"},
+                    {"type": "other", "data": "ignored"},
+                ],
+                "usage": {"input_tokens": 10, "output_tokens": 20},
+            }
+        )
         content, usage = adapter._parse_response_body(body)
         assert content == "Hello world"
         assert usage.prompt_tokens == 10
@@ -1102,11 +1168,13 @@ class TestBedrockAdapter:
 
     def test_parse_response_meta(self):
         adapter = BedrockAdapter(config=_bedrock_config("meta.llama3-8b-instruct-v1:0"))
-        body = json.dumps({
-            "generation": "Meta response",
-            "prompt_token_count": 5,
-            "generation_token_count": 15,
-        })
+        body = json.dumps(
+            {
+                "generation": "Meta response",
+                "prompt_token_count": 5,
+                "generation_token_count": 15,
+            }
+        )
         content, usage = adapter._parse_response_body(body)
         assert content == "Meta response"
         assert usage.prompt_tokens == 5
@@ -1114,10 +1182,12 @@ class TestBedrockAdapter:
 
     def test_parse_response_amazon(self):
         adapter = BedrockAdapter(config=_bedrock_config("amazon.titan-text-express-v1"))
-        body = json.dumps({
-            "results": [{"outputText": "Titan output", "tokenCount": 8}],
-            "inputTextTokenCount": 3,
-        })
+        body = json.dumps(
+            {
+                "results": [{"outputText": "Titan output", "tokenCount": 8}],
+                "inputTextTokenCount": 3,
+            }
+        )
         content, usage = adapter._parse_response_body(body)
         assert content == "Titan output"
         assert usage.prompt_tokens == 3
@@ -1138,9 +1208,11 @@ class TestBedrockAdapter:
 
     def test_parse_response_ai21(self):
         adapter = BedrockAdapter(config=_bedrock_config("ai21.j2-mid-v1"))
-        body = json.dumps({
-            "completions": [{"data": {"text": "AI21 output"}}],
-        })
+        body = json.dumps(
+            {
+                "completions": [{"data": {"text": "AI21 output"}}],
+            }
+        )
         content, usage = adapter._parse_response_body(body)
         assert content == "AI21 output"
 
@@ -1211,6 +1283,7 @@ class TestBedrockAdapter:
 
     def test_get_client_with_credentials(self):
         from pydantic import SecretStr
+
         config = _bedrock_config()
         config.aws_access_key_id = SecretStr("AKID")
         config.aws_secret_access_key = SecretStr("SECRET")
@@ -1234,6 +1307,7 @@ class TestBedrockAdapter:
 
     def test_get_async_client_with_credentials(self):
         from pydantic import SecretStr
+
         config = _bedrock_config()
         config.aws_access_key_id = SecretStr("AKID")
         config.aws_secret_access_key = SecretStr("SECRET")
@@ -1250,10 +1324,12 @@ class TestBedrockAdapter:
     def test_complete_sync(self):
         adapter = BedrockAdapter(config=_bedrock_config())
         mock_client = MagicMock()
-        response_body = json.dumps({
-            "content": [{"type": "text", "text": "response"}],
-            "usage": {"input_tokens": 5, "output_tokens": 10},
-        }).encode("utf-8")
+        response_body = json.dumps(
+            {
+                "content": [{"type": "text", "text": "response"}],
+                "usage": {"input_tokens": 5, "output_tokens": 10},
+            }
+        ).encode("utf-8")
         mock_body = MagicMock()
         mock_body.read.return_value = response_body
         mock_client.invoke_model.return_value = {
@@ -1277,10 +1353,12 @@ class TestBedrockAdapter:
         adapter = BedrockAdapter(config=config)
 
         mock_client = MagicMock()
-        response_body = json.dumps({
-            "content": [{"type": "text", "text": "ok"}],
-            "usage": {"input_tokens": 1, "output_tokens": 1},
-        }).encode("utf-8")
+        response_body = json.dumps(
+            {
+                "content": [{"type": "text", "text": "ok"}],
+                "usage": {"input_tokens": 1, "output_tokens": 1},
+            }
+        ).encode("utf-8")
         mock_body = MagicMock()
         mock_body.read.return_value = response_body
         mock_client.invoke_model.return_value = {
@@ -1312,10 +1390,12 @@ class TestBedrockAdapter:
         adapter._async_client = None
 
         mock_client = MagicMock()
-        response_body = json.dumps({
-            "content": [{"type": "text", "text": "async response"}],
-            "usage": {"input_tokens": 3, "output_tokens": 7},
-        }).encode("utf-8")
+        response_body = json.dumps(
+            {
+                "content": [{"type": "text", "text": "async response"}],
+                "usage": {"input_tokens": 3, "output_tokens": 7},
+            }
+        ).encode("utf-8")
         mock_body = MagicMock()
         mock_body.read.return_value = response_body
         mock_client.invoke_model.return_value = {
@@ -1346,12 +1426,14 @@ class TestBedrockAdapter:
         adapter = BedrockAdapter(config=_bedrock_config())
         mock_client = MagicMock()
 
-        chunk_data = json.dumps({
-            "delta": {
-                "type": "content_block_delta",
-                "delta": {"text": "streamed "},
+        chunk_data = json.dumps(
+            {
+                "delta": {
+                    "type": "content_block_delta",
+                    "delta": {"text": "streamed "},
+                }
             }
-        }).encode("utf-8")
+        ).encode("utf-8")
         events = [
             {"chunk": {"bytes": chunk_data}},
             {"chunk": {"bytes": chunk_data}},
@@ -1383,12 +1465,14 @@ class TestBedrockAdapter:
         assert result is None
 
     def test_extract_anthropic_chunk(self):
-        result = BedrockAdapter._extract_anthropic_chunk_text({
-            "delta": {
-                "type": "content_block_delta",
-                "delta": {"text": "hello"},
+        result = BedrockAdapter._extract_anthropic_chunk_text(
+            {
+                "delta": {
+                    "type": "content_block_delta",
+                    "delta": {"text": "hello"},
+                }
             }
-        })
+        )
         # The code checks delta.get("type") == "content_block_delta"
         # but the structure has delta.type at top level of delta
         # Let's check actual behavior
@@ -1480,18 +1564,25 @@ class TestBedrockAdapter:
 # SECTION 5: AdaptiveCacheEntry (coverage for optimizer/models.py)
 # ===========================================================================
 
+
 class TestAdaptiveCacheEntry:
     """Additional tests for cache entry behavior exercised by optimizer."""
 
     def test_get_adaptive_ttl_zero_access(self):
         entry = AdaptiveCacheEntry(
-            key="k", value="v", created_at=datetime.now(UTC), base_ttl_seconds=60,
+            key="k",
+            value="v",
+            created_at=datetime.now(UTC),
+            base_ttl_seconds=60,
         )
         assert entry.get_adaptive_ttl() == 60
 
     def test_get_adaptive_ttl_with_accesses(self):
         entry = AdaptiveCacheEntry(
-            key="k", value="v", created_at=datetime.now(UTC), base_ttl_seconds=60,
+            key="k",
+            value="v",
+            created_at=datetime.now(UTC),
+            base_ttl_seconds=60,
         )
         entry.access_count = 5
         ttl = entry.get_adaptive_ttl()
@@ -1499,15 +1590,21 @@ class TestAdaptiveCacheEntry:
 
     def test_get_adaptive_ttl_constitutional(self):
         entry = AdaptiveCacheEntry(
-            key="k", value="v", created_at=datetime.now(UTC),
-            base_ttl_seconds=60, is_constitutional=True,
+            key="k",
+            value="v",
+            created_at=datetime.now(UTC),
+            base_ttl_seconds=60,
+            is_constitutional=True,
         )
         entry.access_count = 5
         ttl_const = entry.get_adaptive_ttl()
 
         entry2 = AdaptiveCacheEntry(
-            key="k", value="v", created_at=datetime.now(UTC),
-            base_ttl_seconds=60, is_constitutional=False,
+            key="k",
+            value="v",
+            created_at=datetime.now(UTC),
+            base_ttl_seconds=60,
+            is_constitutional=False,
         )
         entry2.access_count = 5
         ttl_normal = entry2.get_adaptive_ttl()
@@ -1515,7 +1612,10 @@ class TestAdaptiveCacheEntry:
 
     def test_record_access(self):
         entry = AdaptiveCacheEntry(
-            key="k", value="v", created_at=datetime.now(UTC), base_ttl_seconds=60,
+            key="k",
+            value="v",
+            created_at=datetime.now(UTC),
+            base_ttl_seconds=60,
         )
         entry.record_access()
         assert entry.access_count == 1
@@ -1523,7 +1623,10 @@ class TestAdaptiveCacheEntry:
 
     def test_record_access_prediction(self):
         entry = AdaptiveCacheEntry(
-            key="k", value="v", created_at=datetime.now(UTC), base_ttl_seconds=60,
+            key="k",
+            value="v",
+            created_at=datetime.now(UTC),
+            base_ttl_seconds=60,
         )
         entry.record_access()
         entry.record_access()
@@ -1531,13 +1634,17 @@ class TestAdaptiveCacheEntry:
 
     def test_is_expired_false(self):
         entry = AdaptiveCacheEntry(
-            key="k", value="v", created_at=datetime.now(UTC), base_ttl_seconds=3600,
+            key="k",
+            value="v",
+            created_at=datetime.now(UTC),
+            base_ttl_seconds=3600,
         )
         assert entry.is_expired(datetime.now(UTC)) is False
 
     def test_is_expired_true(self):
         entry = AdaptiveCacheEntry(
-            key="k", value="v",
+            key="k",
+            value="v",
             created_at=datetime.now(UTC) - timedelta(hours=2),
             base_ttl_seconds=60,
         )
@@ -1545,7 +1652,10 @@ class TestAdaptiveCacheEntry:
 
     def test_access_pattern_trimming(self):
         entry = AdaptiveCacheEntry(
-            key="k", value="v", created_at=datetime.now(UTC), base_ttl_seconds=60,
+            key="k",
+            value="v",
+            created_at=datetime.now(UTC),
+            base_ttl_seconds=60,
         )
         for _ in range(110):
             entry.record_access()

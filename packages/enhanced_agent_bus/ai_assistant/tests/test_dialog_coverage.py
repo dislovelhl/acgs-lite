@@ -1,6 +1,6 @@
 """
 ACGS-2 AI Assistant - Dialog Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets uncovered branches/lines to boost dialog.py coverage to ≥90%.
 asyncio_mode = "auto" — no @pytest.mark.asyncio needed.

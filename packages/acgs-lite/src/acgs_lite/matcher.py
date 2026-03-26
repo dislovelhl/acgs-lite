@@ -10,7 +10,7 @@ Implements three tiers of optimization:
 2. Pre-compiled keyword index with context-aware matching — always available
 3. Bloom filter fast path for "definitely clean" detection — always available
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

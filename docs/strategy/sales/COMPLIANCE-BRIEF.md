@@ -74,7 +74,7 @@ Every ACGS validation produces a structured audit record:
   "rules_evaluated": 12,
   "rules_triggered": 0,
   "latency_ns": 487,
-  "constitutional_hash": "cdd01ef066bc6cf2",
+  "constitutional_hash": "608508a9bd224290",
   "chain_hash": "a7f3...9c21",
   "previous_hash": "b2e1...4f87",
   "agent_role": "EXECUTOR",

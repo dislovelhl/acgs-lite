@@ -1,6 +1,6 @@
 """MACI Verification Pipeline for ACGS-2 Constitutional AI Governance.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements Multi-Agent Collaborative Intelligence (MACI) to bypass Gödel's
 incompleteness theorems through strict role separation:
@@ -385,7 +385,7 @@ class MACIVerificationPipeline:
     """
     MACI Verification Pipeline: Bypasses Gödel limitations through role separation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Workflow:
     1. Executive Agent proposes decision

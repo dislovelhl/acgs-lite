@@ -3,7 +3,7 @@
 > Advanced Constitutional Governance System — constitutional governance infrastructure for AI agents.
 > This guide is for engineers onboarding to the project.
 
-Constitutional hash: `cdd01ef066bc6cf2` — this value is embedded in all validation paths and must
+Constitutional hash: `608508a9bd224290` — this value is embedded in all validation paths and must
 never be changed without a full refoundation protocol.
 
 ---
@@ -423,7 +423,7 @@ pm2 start ecosystem.config.cjs --only api-gateway-8080
 
 | Variable | Example value | Required by |
 |----------|--------------|-------------|
-| `CONSTITUTIONAL_HASH` | `cdd01ef066bc6cf2` | All services — must match exactly |
+| `CONSTITUTIONAL_HASH` | `608508a9bd224290` | All services — must match exactly |
 | `MACI_STRICT_MODE` | `true` | `agent-bus` |
 | `REDIS_URL` | `redis://localhost:6379/0` | `agent-bus` |
 | `OPA_URL` | `http://localhost:8181` | `agent-bus` |
@@ -525,7 +525,7 @@ Enforcement is in `packages/enhanced_agent_bus/middlewares/batch/governance.py`.
 
 1. An agent must not appear as both Proposer and Validator for the same decision.
 2. The `middlewares/` (plural) path is canonical. New code must not import from `middleware/` (singular).
-3. The constitutional hash `cdd01ef066bc6cf2` must be present and unchanged in all validation
+3. The constitutional hash `608508a9bd224290` must be present and unchanged in all validation
    paths. It is embedded in `conftest.py`, `docker-compose.yml`, `ecosystem.config.cjs`, and
    `src/core/shared/constants.py`.
 4. MACI enforcement must remain at the middleware layer, not in individual agent logic.
@@ -576,7 +576,7 @@ removed.
 
 **Symptom:** Services refuse to start or validation always fails.
 
-**Fix:** All services and tests expect `CONSTITUTIONAL_HASH=cdd01ef066bc6cf2`. Check
+**Fix:** All services and tests expect `CONSTITUTIONAL_HASH=608508a9bd224290`. Check
 `ecosystem.config.cjs`, `docker-compose.yml`, and your local environment. Never change this
 value without a full refoundation protocol.
 

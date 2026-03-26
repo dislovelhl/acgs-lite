@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Governance Quality Metrics Collector
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Service to collect and analyze governance quality metrics (violations, latency,
 throughput) for constitutional amendment monitoring and automated rollback.
@@ -60,7 +60,7 @@ sys.modules.setdefault("packages.enhanced_agent_bus.constitutional.metrics_colle
 class GovernanceMetricsSnapshot(BaseModel):
     """Snapshot of governance quality metrics at a point in time.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Attributes:
         timestamp: When this snapshot was captured
@@ -163,7 +163,7 @@ class GovernanceMetricsSnapshot(BaseModel):
 class MetricsComparison(BaseModel):
     """Comparison between two governance metrics snapshots.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Used to compare baseline metrics (before amendment) with current metrics
     (after amendment) to detect degradation.
@@ -260,7 +260,7 @@ class MetricsComparison(BaseModel):
 class GovernanceMetricsCollector:
     """Service to collect and analyze governance quality metrics.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     This service collects real-time governance metrics from Redis and provides
     analysis capabilities for amendment monitoring and automated rollback decisions.

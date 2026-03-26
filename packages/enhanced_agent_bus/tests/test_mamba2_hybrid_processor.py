@@ -1,6 +1,6 @@
 """Tests for enhanced_agent_bus.mamba2_hybrid_processor module.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Note: The Mamba2SSM fallback path has a known Conv1d signature bug
 (missing out_channels). Tests that instantiate full models patch around
@@ -22,8 +22,8 @@ from enhanced_agent_bus.mamba2_hybrid_processor import (
 # Tests: Mamba2Config dataclass
 # ---------------------------------------------------------------------------
 
-class TestMamba2Config:
 
+class TestMamba2Config:
     def test_default_values(self):
         cfg = Mamba2Config()
         assert cfg.d_model == 512
@@ -53,8 +53,8 @@ class TestMamba2Config:
 # Tests: ConstitutionalContextManager (non-torch paths)
 # ---------------------------------------------------------------------------
 
-class TestConstitutionalContextManager:
 
+class TestConstitutionalContextManager:
     def test_build_context_no_window(self):
         from enhanced_agent_bus.mamba2_hybrid_processor import ConstitutionalContextManager
 
@@ -93,7 +93,9 @@ class TestConstitutionalContextManager:
         from enhanced_agent_bus.mamba2_hybrid_processor import ConstitutionalContextManager
 
         mgr = ConstitutionalContextManager.__new__(ConstitutionalContextManager)
-        result = mgr._identify_critical_positions("the governance rule applies here", ["governance"])
+        result = mgr._identify_critical_positions(
+            "the governance rule applies here", ["governance"]
+        )
         assert 0 in result  # always includes start
         assert 1 in result  # "governance" at index 1
 
@@ -109,9 +111,11 @@ class TestConstitutionalContextManager:
 # Torch-based tests — patch Conv1d to work around the missing out_channels bug
 # ---------------------------------------------------------------------------
 
+
 def _patched_conv1d_init(self, *args, **kwargs):
     """Patch Conv1d to accept the buggy call signature from Mamba2SSM."""
     import torch.nn as _nn
+
     # If called with positional args only (in_channels,) and kernel_size as kwarg,
     # supply out_channels = in_channels (depthwise).
     if len(args) == 1 and "kernel_size" in kwargs and "out_channels" not in kwargs:
@@ -129,6 +133,7 @@ def _patch_conv1d():
         yield
         return
     import torch.nn as _nn
+
     _nn.Conv1d.__orig_init__ = _nn.Conv1d.__init__
     _nn.Conv1d.__init__ = _patched_conv1d_init
     yield
@@ -139,7 +144,6 @@ def _patch_conv1d():
 @pytest.mark.skipif(not TORCH_AVAILABLE, reason="torch not available")
 @pytest.mark.usefixtures("_patch_conv1d")
 class TestWithTorch:
-
     @pytest.mark.xfail(
         reason="Pre-existing Conv1d channel mismatch bug in Mamba2SSM fallback path",
         strict=False,
@@ -306,17 +310,19 @@ class TestWithTorch:
 # Tests: convenience functions
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.skipif(not TORCH_AVAILABLE, reason="torch not available")
 @pytest.mark.usefixtures("_patch_conv1d")
 class TestConvenienceFunctions:
-
     def test_create_mamba_hybrid_processor(self):
         from enhanced_agent_bus.mamba2_hybrid_processor import (
             ConstitutionalMambaHybrid,
             create_mamba_hybrid_processor,
         )
 
-        model = create_mamba_hybrid_processor(Mamba2Config(d_model=64, d_state=16, num_mamba_layers=2))
+        model = create_mamba_hybrid_processor(
+            Mamba2Config(d_model=64, d_state=16, num_mamba_layers=2)
+        )
         assert isinstance(model, ConstitutionalMambaHybrid)
 
     def test_create_constitutional_context_manager(self):
@@ -325,5 +331,7 @@ class TestConvenienceFunctions:
             create_constitutional_context_manager,
         )
 
-        mgr = create_constitutional_context_manager(Mamba2Config(d_model=64, d_state=16, num_mamba_layers=2))
+        mgr = create_constitutional_context_manager(
+            Mamba2Config(d_model=64, d_state=16, num_mamba_layers=2)
+        )
         assert isinstance(mgr, ConstitutionalContextManager)

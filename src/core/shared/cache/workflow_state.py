@@ -1,6 +1,6 @@
 """
 ACGS-2 Workflow State Cache
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides a Redis-backed caching layer for active workflow state,
 ensuring fast access to workflow context and step data while

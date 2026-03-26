@@ -1,6 +1,6 @@
 """
 PSV-Verus Unified Policy Generator
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Combines breakthrough research with production-grade execution logic.
 Implements the Propose-Solve-Verify (PSV) loop:
@@ -410,9 +410,7 @@ class UnifiedVerifiedPolicyGenerator:
                         VerificationStatus.PROVEN if proven else VerificationStatus.VERIFIED
                     ),
                     confidence_score=(
-                        1.0
-                        if proven
-                        else (0.75 if z3_fallback else (0.8 if success else 0.5))
+                        1.0 if proven else (0.75 if z3_fallback else (0.8 if success else 0.5))
                     ),
                     verified_at=datetime.now(UTC),
                 )

@@ -1,7 +1,7 @@
 """
 Credential Manager for MCP Tool Authentication.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 MACI Role: JUDICIAL
 
 Provides per-tool credential management:
@@ -210,7 +210,7 @@ class CredentialManager:
     - Automatic injection
     - Usage tracking and rotation
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, config: CredentialManagerConfig | None = None):

@@ -3,7 +3,7 @@ Coverage tests for enhanced_agent_bus modules:
 - impact_scorer_infra/algorithms/minicpm_semantic.py
 - enterprise_sso/ldap_integration.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -84,6 +84,7 @@ class TestMiniCPMInitializeProvider:
     def test_initialize_provider_outer_import_error(self):
         """Cover outer ImportError in _initialize_provider (line 290-293)."""
         import builtins
+
         real_import = builtins.__import__
 
         def fake_import(name, *args, **kwargs):
@@ -102,6 +103,7 @@ class TestMiniCPMInitializeProvider:
     def test_initialize_provider_embed_import_error(self):
         """Cover inner ImportError when provider.embed fails (line 279-283)."""
         import builtins
+
         real_import = builtins.__import__
 
         mock_provider = MagicMock()
@@ -126,6 +128,7 @@ class TestMiniCPMInitializeProvider:
     def test_initialize_provider_embed_runtime_error(self):
         """Cover inner RuntimeError when provider.embed fails (line 284-288)."""
         import builtins
+
         real_import = builtins.__import__
 
         mock_provider = MagicMock()
@@ -150,6 +153,7 @@ class TestMiniCPMInitializeProvider:
     def test_initialize_provider_create_raises_runtime(self):
         """Cover outer RuntimeError from create_embedding_provider (line 294-297)."""
         import builtins
+
         real_import = builtins.__import__
 
         mock_module = MagicMock()
@@ -322,9 +326,7 @@ class TestMiniCPMScoreWithSemanticEnabled:
         scorer._provider_available = True
         scorer._initialization_attempted = True
         # Set up domain embeddings manually
-        scorer._domain_embeddings = {
-            domain: [0.1] * 4 for domain in GovernanceDomain
-        }
+        scorer._domain_embeddings = {domain: [0.1] * 4 for domain in GovernanceDomain}
         mock_provider = MagicMock()
         mock_provider.embed.return_value = [0.1] * 4
         scorer._provider = mock_provider
@@ -338,9 +340,7 @@ class TestMiniCPMScoreWithSemanticEnabled:
         scorer = MiniCPMSemanticScorer(config)
         scorer._provider_available = True
         scorer._initialization_attempted = True
-        scorer._domain_embeddings = {
-            domain: [1.0, 0.0] for domain in GovernanceDomain
-        }
+        scorer._domain_embeddings = {domain: [1.0, 0.0] for domain in GovernanceDomain}
         mock_provider = MagicMock()
         mock_provider.embed.return_value = [1.0, 0.0]
         scorer._provider = mock_provider
@@ -356,9 +356,7 @@ class TestMiniCPMBatchWithProvider:
         scorer = MiniCPMSemanticScorer()
         scorer._provider_available = True
         scorer._initialization_attempted = True
-        scorer._domain_embeddings = {
-            domain: [0.1] * 4 for domain in GovernanceDomain
-        }
+        scorer._domain_embeddings = {domain: [0.1] * 4 for domain in GovernanceDomain}
         mock_provider = MagicMock()
         mock_provider.embed.return_value = [0.1] * 4
         mock_provider.embed_batch.return_value = [[0.1] * 4, [0.2] * 4]
@@ -377,9 +375,7 @@ class TestMiniCPMBatchWithProvider:
         scorer = MiniCPMSemanticScorer()
         scorer._provider_available = True
         scorer._initialization_attempted = True
-        scorer._domain_embeddings = {
-            domain: [0.1] * 4 for domain in GovernanceDomain
-        }
+        scorer._domain_embeddings = {domain: [0.1] * 4 for domain in GovernanceDomain}
         mock_provider = MagicMock()
         mock_provider.embed.return_value = [0.1] * 4
         mock_provider.embed_batch.side_effect = RuntimeError("batch fail")
@@ -394,9 +390,7 @@ class TestMiniCPMBatchWithProvider:
         scorer = MiniCPMSemanticScorer()
         scorer._provider_available = True
         scorer._initialization_attempted = True
-        scorer._domain_embeddings = {
-            domain: [0.1] * 4 for domain in GovernanceDomain
-        }
+        scorer._domain_embeddings = {domain: [0.1] * 4 for domain in GovernanceDomain}
         mock_provider = MagicMock()
         mock_provider.embed.return_value = [0.1] * 4
         mock_provider.embed_batch.return_value = [[0.1] * 4]
@@ -888,7 +882,7 @@ class TestLDAPIntegrationLogAuth:
             integration._log_authentication_attempt(
                 username="testuser",
                 success=True,
-                constitutional_hash="cdd01ef066bc6cf2",
+                constitutional_hash="608508a9bd224290",
             )
 
     def test_log_failure_with_error(self):
@@ -899,7 +893,7 @@ class TestLDAPIntegrationLogAuth:
                 username="testuser",
                 success=False,
                 error="bad password",
-                constitutional_hash="cdd01ef066bc6cf2",
+                constitutional_hash="608508a9bd224290",
             )
 
 

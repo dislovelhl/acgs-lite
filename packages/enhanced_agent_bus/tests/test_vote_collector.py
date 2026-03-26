@@ -1,6 +1,6 @@
 """
 Tests for Event-Driven Vote Collector
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Validates:
 - VoteEvent serialization/deserialization

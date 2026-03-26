@@ -4,17 +4,17 @@
 
 **Constitutional governance infrastructure for AI agents. The missing safety layer between your LLM and production.**
 
-`ACGS 2.0.1` | `AGPL-3.0-or-later` | `up to 560ns P50 on benchmark Rust path` | `3,133 tests passing`
+`ACGS 2.4.0` | `AGPL-3.0-or-later` | `optional Rust fast path` | `pytest-backed verification`
 
 [![Demo Video](https://img.youtube.com/vi/do9BCPn29_Q/maxresdefault.jpg)](https://youtu.be/do9BCPn29_Q)
 
 > **Hackathon fast path:** If you're here for the GitLab AI Hackathon demo, start with **Constitutional Sentinel** — an ACGS-powered GitLab merge request governance agent that reviews AI-generated code, posts inline violations, and blocks unsafe merges. See `hackathon/devpost-submission.md`, `hackathon/demo-video-script.md`, `hackathon/constitution.yaml`, and the demo MR: <https://gitlab.com/martin664/constitutional-sentinel-demo/-/merge_requests/1>.
 >
-> **Note:** Performance numbers are from the local benchmark suite (`make bench`) and the fastest figures refer to the optional Rust/PyO3 hot path under benchmark conditions. Python-only and mixed integration paths will be slower. The benchmark target runs focused `pytest-benchmark` microbenchmarks for engine construction and steady-state validation. Run benchmarks on your own hardware before quoting exact latency. The import path is `from acgs import ...` (preferred) or `from acgs_lite import ...` (legacy, still supported).
+> **Note:** Performance numbers are from the local benchmark suite (`make bench`) and the fastest figures refer to the optional Rust/PyO3 hot path under benchmark conditions. Python-only and mixed integration paths will be slower. The benchmark target runs focused `pytest-benchmark` microbenchmarks for engine construction and steady-state validation. Run benchmarks on your own hardware before quoting exact latency. The public import path for this package is `from acgs_lite import ...`. Reserve `from acgs import ...` for the partial-open-source `acgs` distribution.
 >
 > **License:** AGPL-3.0-or-later for open-source use. [Commercial license](COMMERCIAL_LICENSE.md) available for proprietary/SaaS use.
 >
-> **Naming:** `ACGS` is the product name, `acgs` is the PyPI package, and `acgs_lite` is the compatibility import namespace. See [../../docs/brand-architecture.md](../../docs/brand-architecture.md).
+> **Naming:** `ACGS` is the product name, `acgs-lite` is the public PyPI package, and `acgs_lite` is the Python import namespace for this distribution. See [../../docs/brand-architecture.md](../../docs/brand-architecture.md).
 
 ---
 
@@ -73,11 +73,11 @@ Billions of consequential decisions flow through AI systems daily -- none with v
 ## The Solution
 
 ```bash
-pip install acgs
+pip install acgs-lite
 ```
 
 ```python
-from acgs import Constitution, GovernedAgent
+from acgs_lite import Constitution, GovernedAgent
 
 constitution = Constitution.from_yaml("rules.yaml")
 agent = GovernedAgent(my_agent, constitution=constitution)
@@ -116,7 +116,7 @@ Cannot execute.  constitution        explicitly       boundary check.
 
 ## Deployment Without Provable Governance is Uninsurable
 
-**EU AI Act Takes Full Enforcement: August 2026**
+**EU AI Act High-Risk Provisions Take Full Enforcement: August 2, 2026**
 
 Fines up to **7% of Global Annual Revenue**.
 
@@ -189,7 +189,7 @@ Immutable RuleSnapshot history. Inter-rule dependency graphs. OpenTelemetry metr
 **125 total compliance checklist items across 9 global frameworks. 72 auto-populated by ACGS instantly.**
 
 ```python
-from acgs.compliance import MultiFrameworkAssessor
+from acgs_lite.compliance import MultiFrameworkAssessor
 
 assessor = MultiFrameworkAssessor()
 report = assessor.assess({"jurisdiction": "EU", "domain": "healthcare"})
@@ -202,28 +202,52 @@ print(report.cross_framework_gaps) # Items needing manual evidence
 ## Frictionless Adoption: 5 Lines of Code
 
 ```python
-from acgs import Constitution, GovernedAgent
+from acgs_lite import Constitution, GovernedAgent
 
 constitution = Constitution.from_template("general")
 agent = GovernedAgent(my_agent, constitution=constitution)
 result = agent.run("process this request")
 ```
 
-Ships with 11 out-of-the-box platform integrations:
+Ships with 11 integration surfaces for common agent runtimes and deployment paths:
 
 | Platform | Install | Status |
 |----------|---------|--------|
-| **Anthropic** | `acgs[anthropic]` | Production |
-| **MCP** | `acgs[mcp]` | Production |
-| **GitLab CI/CD** | Built-in | Production |
-| OpenAI | `acgs[openai]` | Maintained |
-| LangChain | `acgs[langchain]` | Maintained |
-| LiteLLM | `acgs[litellm]` | Maintained |
-| Google GenAI | `acgs[google]` | Experimental |
-| LlamaIndex | `acgs[llamaindex]` | Experimental |
-| AutoGen | `acgs[autogen]` | Experimental |
-| CrewAI | `acgs[crewai]` | Experimental |
-| A2A | `acgs[a2a]` | Experimental |
+| **Anthropic** | `acgs-lite[anthropic]` | Production |
+| **MCP Server** | `acgs-lite[mcp]` | Production |
+| **GitLab CI/CD** | `acgs-lite[gitlab]` | Production |
+| OpenAI | `acgs-lite[openai]` | Maintained |
+| xAI (OpenAI-compatible) | `acgs-lite[openai]` | Experimental |
+| LangChain | `acgs-lite[langchain]` | Maintained |
+| LiteLLM | `acgs-lite[litellm]` | Maintained |
+| Google GenAI | `acgs-lite[google]` | Experimental |
+| LlamaIndex | `acgs-lite[llamaindex]` | Experimental |
+| AutoGen | `acgs-lite[autogen]` | Experimental |
+| A2A | `acgs-lite[a2a]` | Experimental |
+
+Additional built-in surfaces include HTTP middleware (`acgs_lite.middleware`),
+the OpenShell governance API (`create_openshell_governance_app`), the Cloud
+Run webhook server (`acgs_lite.integrations.cloud_run_server`), and optional
+Cloud Logging export (`acgs-lite[google-cloud]`).
+
+## CLI Surface
+
+`acgs-lite` ships a package-local CLI for scaffolding, compliance scoring, report
+generation, policy lifecycle management, telemetry export, and license flows.
+
+```bash
+acgs-lite init
+acgs-lite assess --jurisdiction european_union --domain healthcare
+acgs-lite report --markdown
+acgs-lite eu-ai-act --domain healthcare
+acgs-lite lint rules.yaml
+acgs-lite test --fixtures tests.yaml
+acgs-lite lifecycle summary
+acgs-lite observe "approve deployment" --prometheus
+acgs-lite activate ACGS-PRO-...
+acgs-lite status
+acgs-lite verify
+```
 
 ---
 
@@ -324,9 +348,10 @@ entries plus chain verification state.
 Stable import surface:
 
 ```python
-from acgs.openshell import (
+from acgs_lite import (
     ActionEnvelope,
     JsonFileGovernanceStateBackend,
+    RedisGovernanceStateBackend,
     SQLiteGovernanceStateBackend,
     create_openshell_governance_app,
 )
@@ -342,6 +367,11 @@ app = create_openshell_governance_app(
 # Or:
 app = create_openshell_governance_app(
     state_backend=SQLiteGovernanceStateBackend("state/openshell-governance.db")
+)
+
+# Or:
+app = create_openshell_governance_app(
+    state_backend=RedisGovernanceStateBackend(redis_client)
 )
 ```
 
@@ -390,12 +420,12 @@ governance:
   stage: test
   image: python:3.11-slim
   before_script:
-    - pip install acgs
+    - pip install acgs-lite
   script:
     - python3 -c "
       import asyncio, os, sys
-      from acgs import Constitution
-      from acgs.integrations.gitlab import GitLabGovernanceBot
+      from acgs_lite import Constitution
+      from acgs_lite.integrations.gitlab import GitLabGovernanceBot
 
       async def main():
           constitution = Constitution.from_yaml('rules.yaml')
@@ -430,7 +460,7 @@ Governance must be democratic. The infrastructure that constrains the machines m
 ## Govern Responsibly.
 
 ```bash
-pip install acgs
+pip install acgs-lite
 ```
 
 AGPL-3.0-or-later Licensed | Open Source | [Commercial License Available](COMMERCIAL_LICENSE.md)
@@ -461,6 +491,6 @@ See [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) for details and FAQ.
 
 ---
 
-**[PyPI](https://pypi.org/project/acgs/) | [GitHub](https://github.com/acgs2_admin/acgs) | [Website](https://acgs.ai)**
+**[PyPI](https://pypi.org/project/acgs-lite/) | [GitHub](https://github.com/acgs2_admin/acgs) | [Website](https://acgs.ai)**
 
 *Constitutional Hash: 608508a9bd224290*

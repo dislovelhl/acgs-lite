@@ -328,20 +328,28 @@ def merge(
                     merged.append(other_rule)
                     from_other += 1
                     reason = f"{other_rule.severity.value} > {rule.severity.value}"
-                    conflict_details.append({
-                        "rule_id": rule.id, "kept": "other",
-                        "strategy": strategy, "reason": reason,
-                    })
+                    conflict_details.append(
+                        {
+                            "rule_id": rule.id,
+                            "kept": "other",
+                            "strategy": strategy,
+                            "reason": reason,
+                        }
+                    )
                     _record_tension(rule.id, "other", reason)
                 else:
                     _guard_hardcoded_override("self", rule, other_rule)
                     merged.append(rule)
                     from_self += 1
                     reason = f"{rule.severity.value} >= {other_rule.severity.value}"
-                    conflict_details.append({
-                        "rule_id": rule.id, "kept": "self",
-                        "strategy": strategy, "reason": reason,
-                    })
+                    conflict_details.append(
+                        {
+                            "rule_id": rule.id,
+                            "kept": "self",
+                            "strategy": strategy,
+                            "reason": reason,
+                        }
+                    )
                     _record_tension(rule.id, "self", reason)
         else:
             merged.append(rule)
@@ -358,7 +366,8 @@ def merge(
         description=f"Merged: {constitution.name} + {other.name}",
         rules=merged,
         metadata={
-            **constitution.metadata, **other.metadata,
+            **constitution.metadata,
+            **other.metadata,
             "merge_strategy": strategy,
             "merge_sources": [constitution.name, other.name],
         },

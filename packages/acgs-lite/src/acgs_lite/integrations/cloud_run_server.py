@@ -17,7 +17,7 @@ Environment variables:
     GCP_PROJECT_ID     — GCP project for Cloud Logging (optional, uses ADC)
     PORT               — Server port (default: 8080)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

@@ -1,6 +1,6 @@
 """
 ACGS-2 Tenant Manager
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 High-level tenant management service providing business logic, quota enforcement,
 event publishing, caching, and hierarchical tenant operations.
@@ -119,7 +119,7 @@ class TenantValidationError(TenantManagerError):
 class TenantManager:
     """High-level tenant management service.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Provides business logic layer on top of TenantRepository:
     - Quota enforcement and warnings

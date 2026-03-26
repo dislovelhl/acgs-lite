@@ -1,6 +1,6 @@
 """Tests for enhanced_agent_bus.llm_adapters.anthropic_adapter module.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -24,6 +24,7 @@ from enhanced_agent_bus.llm_adapters.config import AnthropicAdapterConfig
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_config(**overrides) -> AnthropicAdapterConfig:
     """Create a minimal AnthropicAdapterConfig for testing."""
@@ -56,6 +57,7 @@ def _make_anthropic_response_dict() -> dict:
 # Tests: Initialization
 # ---------------------------------------------------------------------------
 
+
 class TestAnthropicAdapterInit:
     """Tests for AnthropicAdapter construction."""
 
@@ -87,17 +89,15 @@ class TestAnthropicAdapterInit:
 # Tests: _prepare_messages
 # ---------------------------------------------------------------------------
 
-class TestPrepareMessages:
 
+class TestPrepareMessages:
     def test_extracts_system_prompt(self):
         from enhanced_agent_bus.llm_adapters.anthropic_adapter import AnthropicAdapter
 
         adapter = AnthropicAdapter(api_key="k")
         messages = _make_messages()
 
-        with patch(
-            "enhanced_agent_bus.llm_adapters.anthropic_adapter.MessageConverter"
-        ) as mc:
+        with patch("enhanced_agent_bus.llm_adapters.anthropic_adapter.MessageConverter") as mc:
             mc.to_anthropic_format.return_value = [{"role": "user", "content": "Hello!"}]
             system_prompt, conv = adapter._prepare_messages(messages)
 
@@ -110,9 +110,7 @@ class TestPrepareMessages:
         adapter = AnthropicAdapter(api_key="k")
         messages = [LLMMessage(role="user", content="Hi")]
 
-        with patch(
-            "enhanced_agent_bus.llm_adapters.anthropic_adapter.MessageConverter"
-        ) as mc:
+        with patch("enhanced_agent_bus.llm_adapters.anthropic_adapter.MessageConverter") as mc:
             mc.to_anthropic_format.return_value = [{"role": "user", "content": "Hi"}]
             system_prompt, conv = adapter._prepare_messages(messages)
 
@@ -123,8 +121,8 @@ class TestPrepareMessages:
 # Tests: estimate_cost
 # ---------------------------------------------------------------------------
 
-class TestEstimateCost:
 
+class TestEstimateCost:
     def test_known_model(self):
         from enhanced_agent_bus.llm_adapters.anthropic_adapter import AnthropicAdapter
 
@@ -171,8 +169,8 @@ class TestEstimateCost:
 # Tests: get_streaming_mode / get_provider_name
 # ---------------------------------------------------------------------------
 
-class TestAdapterProperties:
 
+class TestAdapterProperties:
     def test_streaming_mode(self):
         from enhanced_agent_bus.llm_adapters.anthropic_adapter import AnthropicAdapter
 
@@ -190,8 +188,8 @@ class TestAdapterProperties:
 # Tests: _convert_tools_to_anthropic
 # ---------------------------------------------------------------------------
 
-class TestConvertTools:
 
+class TestConvertTools:
     def test_converts_function_tools(self):
         from enhanced_agent_bus.llm_adapters.anthropic_adapter import AnthropicAdapter
 
@@ -231,8 +229,8 @@ class TestConvertTools:
 # Tests: _get_client / _get_async_client
 # ---------------------------------------------------------------------------
 
-class TestClientCreation:
 
+class TestClientCreation:
     def test_get_client_no_api_key_raises(self):
         from enhanced_agent_bus.llm_adapters.anthropic_adapter import AnthropicAdapter
 
@@ -280,8 +278,8 @@ class TestClientCreation:
 # Tests: count_tokens
 # ---------------------------------------------------------------------------
 
-class TestCountTokens:
 
+class TestCountTokens:
     def test_fallback_estimation(self):
         from enhanced_agent_bus.llm_adapters.anthropic_adapter import AnthropicAdapter
 
@@ -293,9 +291,7 @@ class TestCountTokens:
         adapter._client.count_tokens = None
         delattr(adapter._client, "count_tokens")
 
-        with patch(
-            "enhanced_agent_bus.llm_adapters.anthropic_adapter.MessageConverter"
-        ) as mc:
+        with patch("enhanced_agent_bus.llm_adapters.anthropic_adapter.MessageConverter") as mc:
             mc.to_anthropic_format.return_value = [{"role": "user", "content": "Hello world"}]
             count = adapter.count_tokens(messages)
 
@@ -310,9 +306,7 @@ class TestCountTokens:
         adapter._client = MagicMock()
         adapter._client.count_tokens = MagicMock(side_effect=RuntimeError("boom"))
 
-        with patch(
-            "enhanced_agent_bus.llm_adapters.anthropic_adapter.MessageConverter"
-        ) as mc:
+        with patch("enhanced_agent_bus.llm_adapters.anthropic_adapter.MessageConverter") as mc:
             mc.to_anthropic_format.return_value = []
             messages = [LLMMessage(role="user", content="test")]
             count = adapter.count_tokens(messages)
@@ -324,8 +318,8 @@ class TestCountTokens:
 # Tests: complete (sync)
 # ---------------------------------------------------------------------------
 
-class TestComplete:
 
+class TestComplete:
     def test_complete_success(self):
         from enhanced_agent_bus.llm_adapters.anthropic_adapter import AnthropicAdapter
 
@@ -340,13 +334,14 @@ class TestComplete:
 
         mock_llm_response = MagicMock(spec=LLMResponse)
         mock_llm_response.usage = TokenUsage(prompt_tokens=10, completion_tokens=5, total_tokens=15)
-        mock_llm_response.metadata = CompletionMetadata(model="claude-sonnet-4-6", provider="anthropic")
+        mock_llm_response.metadata = CompletionMetadata(
+            model="claude-sonnet-4-6", provider="anthropic"
+        )
 
-        with patch(
-            "enhanced_agent_bus.llm_adapters.anthropic_adapter.MessageConverter"
-        ) as mc, patch(
-            "enhanced_agent_bus.llm_adapters.anthropic_adapter.ResponseConverter"
-        ) as rc:
+        with (
+            patch("enhanced_agent_bus.llm_adapters.anthropic_adapter.MessageConverter") as mc,
+            patch("enhanced_agent_bus.llm_adapters.anthropic_adapter.ResponseConverter") as rc,
+        ):
             mc.to_anthropic_format.return_value = [{"role": "user", "content": "Hello!"}]
             rc.from_anthropic_response.return_value = mock_llm_response
 
@@ -371,11 +366,10 @@ class TestComplete:
         mock_llm_response.usage = TokenUsage()
         mock_llm_response.metadata = CompletionMetadata(model="m", provider="p")
 
-        with patch(
-            "enhanced_agent_bus.llm_adapters.anthropic_adapter.MessageConverter"
-        ) as mc, patch(
-            "enhanced_agent_bus.llm_adapters.anthropic_adapter.ResponseConverter"
-        ) as rc:
+        with (
+            patch("enhanced_agent_bus.llm_adapters.anthropic_adapter.MessageConverter") as mc,
+            patch("enhanced_agent_bus.llm_adapters.anthropic_adapter.ResponseConverter") as rc,
+        ):
             mc.to_anthropic_format.return_value = [{"role": "user", "content": "Hi"}]
             rc.from_anthropic_response.return_value = mock_llm_response
 
@@ -385,8 +379,9 @@ class TestComplete:
             )
 
         call_kwargs = mock_client.messages.create.call_args
-        assert call_kwargs[1].get("stop_sequences") == ["STOP"] or \
-               call_kwargs.kwargs.get("stop_sequences") == ["STOP"]
+        assert call_kwargs[1].get("stop_sequences") == ["STOP"] or call_kwargs.kwargs.get(
+            "stop_sequences"
+        ) == ["STOP"]
 
     def test_complete_empty_messages_raises(self):
         from enhanced_agent_bus.llm_adapters.anthropic_adapter import AnthropicAdapter
@@ -400,8 +395,8 @@ class TestComplete:
 # Tests: acomplete (async)
 # ---------------------------------------------------------------------------
 
-class TestAComplete:
 
+class TestAComplete:
     @pytest.mark.asyncio
     async def test_acomplete_success(self):
         from enhanced_agent_bus.llm_adapters.anthropic_adapter import AnthropicAdapter
@@ -419,11 +414,10 @@ class TestAComplete:
         mock_llm_response.usage = TokenUsage(prompt_tokens=10, completion_tokens=5, total_tokens=15)
         mock_llm_response.metadata = CompletionMetadata(model="m", provider="p")
 
-        with patch(
-            "enhanced_agent_bus.llm_adapters.anthropic_adapter.MessageConverter"
-        ) as mc, patch(
-            "enhanced_agent_bus.llm_adapters.anthropic_adapter.ResponseConverter"
-        ) as rc:
+        with (
+            patch("enhanced_agent_bus.llm_adapters.anthropic_adapter.MessageConverter") as mc,
+            patch("enhanced_agent_bus.llm_adapters.anthropic_adapter.ResponseConverter") as rc,
+        ):
             mc.to_anthropic_format.return_value = [{"role": "user", "content": "Hello!"}]
             rc.from_anthropic_response.return_value = mock_llm_response
 
@@ -444,8 +438,8 @@ class TestAComplete:
 # Tests: health_check
 # ---------------------------------------------------------------------------
 
-class TestHealthCheck:
 
+class TestHealthCheck:
     @pytest.mark.asyncio
     async def test_health_check_healthy(self):
         from enhanced_agent_bus.llm_adapters.anthropic_adapter import AnthropicAdapter
@@ -480,8 +474,8 @@ class TestHealthCheck:
 # Tests: MODEL_PRICING class variable
 # ---------------------------------------------------------------------------
 
-class TestModelPricing:
 
+class TestModelPricing:
     def test_pricing_dict_is_not_empty(self):
         from enhanced_agent_bus.llm_adapters.anthropic_adapter import AnthropicAdapter
 

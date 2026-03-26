@@ -3,7 +3,7 @@ Coverage batch 31a -- targeted tests for:
   1. message_processor.py (83.3%, 80 missing lines)
   2. opa_client/core.py (83.8%, 77 missing lines)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Focuses on error-handling branches, conditional paths, optional dependency
 fallbacks, MCP integration, DLQ, metering, retry logic, SSL context building,
@@ -558,9 +558,7 @@ class TestRecordAgentWorkflowEvent:
         mp = MessageProcessor(isolated_mode=True)
         mp._agent_workflow_metrics = None
         # Should silently return
-        mp._record_agent_workflow_event(
-            event_type="test", msg=_make_msg(), reason="r"
-        )
+        mp._record_agent_workflow_event(event_type="test", msg=_make_msg(), reason="r")
 
     def test_collector_error_swallowed(self):
         from enhanced_agent_bus.message_processor import MessageProcessor
@@ -570,9 +568,7 @@ class TestRecordAgentWorkflowEvent:
         mock_collector.record_event.side_effect = TypeError("bad arg")
         mp._agent_workflow_metrics = mock_collector
         # Should not raise
-        mp._record_agent_workflow_event(
-            event_type="test", msg=_make_msg(), reason="r"
-        )
+        mp._record_agent_workflow_event(event_type="test", msg=_make_msg(), reason="r")
 
 
 class TestHandleFailedProcessing:
@@ -826,7 +822,9 @@ class TestInitializeEmbeddedOPA:
         mock_cls = MagicMock(return_value=MagicMock())
         with (
             patch("enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True),
-            patch("enhanced_agent_bus.opa_client.core._get_embedded_opa_class", return_value=mock_cls),
+            patch(
+                "enhanced_agent_bus.opa_client.core._get_embedded_opa_class", return_value=mock_cls
+            ),
         ):
             client = OPAClientCore(mode="embedded")
             await client._initialize_embedded_opa()
@@ -838,7 +836,9 @@ class TestInitializeEmbeddedOPA:
         mock_cls = MagicMock(side_effect=RuntimeError("opa init failed"))
         with (
             patch("enhanced_agent_bus.opa_client.core._opa_sdk_available", return_value=True),
-            patch("enhanced_agent_bus.opa_client.core._get_embedded_opa_class", return_value=mock_cls),
+            patch(
+                "enhanced_agent_bus.opa_client.core._get_embedded_opa_class", return_value=mock_cls
+            ),
         ):
             client = OPAClientCore(mode="embedded")
             client._ensure_http_client = AsyncMock()  # type: ignore[method-assign]
@@ -1163,9 +1163,7 @@ class TestEvaluatePolicy:
         client = OPAClient(mode="fallback")
         client._is_multi_path_candidate_generation_enabled = MagicMock(return_value=False)  # type: ignore[method-assign]
 
-        result = await client.evaluate_policy(
-            {"a": 1}, policy_path="data/invalid/path"
-        )
+        result = await client.evaluate_policy({"a": 1}, policy_path="data/invalid/path")
         assert result["allowed"] is False
 
     async def test_transport_error_returns_fail_closed(self):
@@ -1255,7 +1253,9 @@ class TestCheckAgentAuthorization:
 
         client = OPAClientCore()
         result = await client.check_agent_authorization(
-            "agent-1", "write", "resource-x",
+            "agent-1",
+            "write",
+            "resource-x",
             context={"constitutional_hash": "wrong"},
         )
         assert result is False
@@ -1368,7 +1368,14 @@ class TestVerifyBundle:
         client = OPAClientCore()
         # Patch the CryptoService import to succeed but file doesn't exist
         mock_module = MagicMock()
-        with patch.dict(sys.modules, {"app": MagicMock(), "app.services": MagicMock(), "app.services.crypto_service": mock_module}):
+        with patch.dict(
+            sys.modules,
+            {
+                "app": MagicMock(),
+                "app.services": MagicMock(),
+                "app.services.crypto_service": mock_module,
+            },
+        ):
             result = await client._verify_bundle("/nonexistent/bundle.tar.gz", "sig", "pubkey")
             assert result is False
 
@@ -1400,9 +1407,7 @@ class TestHandleEvaluationError:
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
-        result = client._handle_evaluation_error(
-            ValueError("test error"), "data.acgs.allow"
-        )
+        result = client._handle_evaluation_error(ValueError("test error"), "data.acgs.allow")
         assert result["allowed"] is False
         assert result["result"] is False
         assert result["metadata"]["security"] == "fail-closed"
@@ -1437,7 +1442,8 @@ class TestEvaluateWithHistory:
         )
 
         result = await client.evaluate_with_history(
-            {"action": "deploy"}, action_history=["step1"],
+            {"action": "deploy"},
+            action_history=["step1"],
         )
         assert result["allowed"] is False
 
@@ -1447,7 +1453,8 @@ class TestEvaluateWithHistory:
         client = OPAClientCore(mode="fallback")
 
         result = await client.evaluate_with_history(
-            {"action": "deploy"}, action_history=["step1"],
+            {"action": "deploy"},
+            action_history=["step1"],
             policy_path="data/../../../etc/passwd",
         )
         assert result["allowed"] is False

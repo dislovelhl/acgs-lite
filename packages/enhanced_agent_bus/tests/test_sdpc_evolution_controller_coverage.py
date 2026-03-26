@@ -1,6 +1,6 @@
 """
 Tests for sdpc/evolution_controller.py
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers:
 - __init__ (default and custom failure_threshold)

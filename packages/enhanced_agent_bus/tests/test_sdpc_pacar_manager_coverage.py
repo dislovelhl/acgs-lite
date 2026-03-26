@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # Sprint 56 — sdpc/pacar_manager.py coverage
 """
 Comprehensive tests for sdpc/pacar_manager.py targeting ≥95% coverage.
@@ -104,9 +104,7 @@ class TestGetRedis:
         existing = AsyncMock()
         mgr._redis = existing
 
-        with patch(
-            "enhanced_agent_bus.sdpc.pacar_manager.redis.from_url"
-        ) as mock_from_url:
+        with patch("enhanced_agent_bus.sdpc.pacar_manager.redis.from_url") as mock_from_url:
             result = await mgr._get_redis()
 
         mock_from_url.assert_not_called()

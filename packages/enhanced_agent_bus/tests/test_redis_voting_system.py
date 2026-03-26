@@ -1,7 +1,7 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 ACGS-2 Deliberation Layer - Redis Voting System Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for RedisVotingSystem: constructor, connect, disconnect, submit_vote,
 get_votes_pubsub_instance, get_votes, get_vote_count, check_consensus,
@@ -37,6 +37,7 @@ def _target_module():
     module so that ``patch.object`` always targets the right dict.
     """
     return sys.modules[RedisVotingSystem.__module__]
+
 
 # ---------------------------------------------------------------------------
 # Mock infrastructure

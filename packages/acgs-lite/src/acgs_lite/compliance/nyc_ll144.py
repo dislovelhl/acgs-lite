@@ -11,7 +11,7 @@ Reference: NYC Local Law 144 of 2021; NYC DCWP Rules (Title 6, Ch. 5)
 Effective: July 5, 2023. Enforced by NYC DCWP.
 Penalties: $500 first violation, $1,500 subsequent (per violation).
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

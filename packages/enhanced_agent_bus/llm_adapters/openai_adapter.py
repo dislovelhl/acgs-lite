@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - OpenAI LLM Adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 OpenAI adapter supporting GPT-4, GPT-3.5, and future models with streaming
 and function calling capabilities.
@@ -94,7 +94,7 @@ class _AsyncOpenAIClientProtocol(Protocol):
 class OpenAIAdapter(BaseLLMAdapter):
     """OpenAI LLM adapter for GPT models.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Supports:
     - GPT-4 (all variants: turbo, vision, etc.)

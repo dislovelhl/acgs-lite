@@ -1,6 +1,6 @@
 """
 FR-11 Data Retention Controls Integration Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for RetentionPolicyEngine, disposal handlers, and GDPR compliance.
 """
@@ -859,12 +859,8 @@ class TestInMemoryStorageExtended:
         assert len(expired) == 0
 
     async def test_get_actions_without_filter(self):
-        action1 = RetentionAction(
-            record_id="rec-1", action_type=RetentionActionType.CREATED
-        )
-        action2 = RetentionAction(
-            record_id="rec-2", action_type=RetentionActionType.DISPOSED
-        )
+        action1 = RetentionAction(record_id="rec-1", action_type=RetentionActionType.CREATED)
+        action2 = RetentionAction(record_id="rec-2", action_type=RetentionActionType.DISPOSED)
         await self.storage.log_action(action1)
         await self.storage.log_action(action2)
         actions = await self.storage.get_actions()
@@ -891,6 +887,7 @@ class TestInMemoryStorageExtended:
 
     def test_add_policy(self):
         from src.core.shared.security.data_classification import RetentionPolicy
+
         new_policy = RetentionPolicy(
             name="Custom",
             classification_tier=DataClassificationTier.PUBLIC,
@@ -923,6 +920,7 @@ class TestRetentionPolicyEngineExtended:
 
     async def test_create_record_with_indefinite_retention(self):
         from src.core.shared.security.data_classification import RetentionPolicy
+
         indefinite_policy = RetentionPolicy(
             name="Indefinite",
             classification_tier=DataClassificationTier.RESTRICTED,
@@ -995,6 +993,7 @@ class TestRetentionPolicyEngineExtended:
 
     async def test_enforce_retention_archive_method(self):
         from src.core.shared.security.data_classification import RetentionPolicy
+
         archive_policy = RetentionPolicy(
             name="ArchivePolicy",
             classification_tier=DataClassificationTier.CONFIDENTIAL,
@@ -1015,6 +1014,7 @@ class TestRetentionPolicyEngineExtended:
 
     async def test_enforce_retention_anonymize_method(self):
         from src.core.shared.security.data_classification import RetentionPolicy
+
         anon_policy = RetentionPolicy(
             name="AnonPolicy",
             classification_tier=DataClassificationTier.RESTRICTED,

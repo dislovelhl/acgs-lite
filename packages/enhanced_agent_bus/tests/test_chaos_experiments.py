@@ -181,14 +181,18 @@ class TestChaosExperiment:
             if call_count > 2:  # After baseline
                 return [
                     ValidationResult(
-                        valid=False, metric_name="latency",
-                        expected_value="<= 5.0", actual_value=10.0,
+                        valid=False,
+                        metric_name="latency",
+                        expected_value="<= 5.0",
+                        actual_value=10.0,
                     )
                 ]
             return [
                 ValidationResult(
-                    valid=True, metric_name="latency",
-                    expected_value="<= 5.0", actual_value=1.0,
+                    valid=True,
+                    metric_name="latency",
+                    expected_value="<= 5.0",
+                    actual_value=1.0,
                 )
             ]
 
@@ -245,12 +249,16 @@ class TestChaosExperiment:
             if call_count > 2:
                 return [
                     ValidationResult(
-                        valid=False, metric_name="m",
-                        expected_value="<= 1", actual_value=99.0,
+                        valid=False,
+                        metric_name="m",
+                        expected_value="<= 1",
+                        actual_value=99.0,
                     )
                 ]
             return [
-                ValidationResult(valid=True, metric_name="m", expected_value="<= 1", actual_value=0.5)
+                ValidationResult(
+                    valid=True, metric_name="m", expected_value="<= 1", actual_value=0.5
+                )
             ]
 
         validator.validate = mock_validate
@@ -348,6 +356,7 @@ class TestChaosExperimentDecorator:
     def test_sync_function_raises(self):
         scenario = FakeScenario()
         with pytest.raises(ValueError, match="async"):
+
             @chaos_experiment(
                 hypothesis="h",
                 scenario=scenario,

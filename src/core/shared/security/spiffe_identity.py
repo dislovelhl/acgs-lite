@@ -1,6 +1,6 @@
 """SPIFFE SVID identity validation for ACGS-2 agent attestation.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides X.509 SVID (SPIFFE Verifiable Identity Document) validation as an
 alternative identity attestation mechanism alongside existing JWT auth.
@@ -66,7 +66,7 @@ class SpiffeValidationResult:
 class SpiffeIdentityValidator:
     """Validates X.509 SVID certificates for SPIFFE-based agent identity.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     The validator extracts SPIFFE URIs from certificate SANs, validates the
     trust domain against an allow-list, and checks certificate expiry.

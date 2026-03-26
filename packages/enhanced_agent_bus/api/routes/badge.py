@@ -1,6 +1,6 @@
 """
 ACGS-2 Badge Endpoint
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 GET /v1/badge/{agent_id} — returns an SVG compliance badge.
 No authentication required. Cached for 5 minutes.

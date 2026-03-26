@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - HITL Integration for Constitutional Amendments
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Integrates constitutional amendment proposals with HITL (Human-In-The-Loop)
 approval chains, supporting multi-approver workflows, notifications, and
@@ -63,7 +63,7 @@ class ApprovalPriority(str, Enum):
 class ApprovalChainConfig:
     """Configuration for an approval chain.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     chain_id: str
@@ -84,7 +84,7 @@ class ApprovalChainConfig:
 class HITLApprovalRequest:
     """HITL approval request for constitutional amendments.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     request_id: str
@@ -112,7 +112,7 @@ class ConstitutionalHITLIntegration:
     - Sends notifications via Slack/PagerDuty/Teams
     - Handles timeout escalation
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

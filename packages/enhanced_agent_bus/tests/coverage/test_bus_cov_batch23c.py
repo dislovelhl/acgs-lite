@@ -2,7 +2,7 @@
 Coverage tests for batch tenant isolation, audit client adapter,
 get_metrics tool, and query_precedents tool.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -33,6 +33,7 @@ from enhanced_agent_bus.pipeline.middleware import MiddlewareConfig
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_item(tenant_id: str = "default", content: dict | None = None) -> BatchRequestItem:
     return BatchRequestItem(
@@ -302,9 +303,11 @@ class TestAuditClientAdapterWithClient:
 
     async def test_query_precedents_delegates_to_client(self):
         mock_client = AsyncMock()
-        mock_client.query_precedents = AsyncMock(return_value=[
-            {"context_summary": "test item", "reasoning": "reason"},
-        ])
+        mock_client.query_precedents = AsyncMock(
+            return_value=[
+                {"context_summary": "test item", "reasoning": "reason"},
+            ]
+        )
         adapter = AuditClientAdapter(audit_client=mock_client)
         result = await adapter.query_precedents(action_type="test")
         mock_client.query_precedents.assert_awaited_once()
@@ -312,10 +315,12 @@ class TestAuditClientAdapterWithClient:
 
     async def test_query_precedents_with_semantic_query_filters(self):
         mock_client = AsyncMock()
-        mock_client.query_precedents = AsyncMock(return_value=[
-            {"context_summary": "PII access request", "reasoning": "privacy"},
-            {"context_summary": "Config change", "reasoning": "safety"},
-        ])
+        mock_client.query_precedents = AsyncMock(
+            return_value=[
+                {"context_summary": "PII access request", "reasoning": "privacy"},
+                {"context_summary": "Config change", "reasoning": "safety"},
+            ]
+        )
         adapter = AuditClientAdapter(audit_client=mock_client)
         result = await adapter.query_precedents(semantic_query="PII")
         assert len(result) == 1
@@ -323,9 +328,11 @@ class TestAuditClientAdapterWithClient:
 
     async def test_query_precedents_semantic_no_match(self):
         mock_client = AsyncMock()
-        mock_client.query_precedents = AsyncMock(return_value=[
-            {"context_summary": "Config change", "reasoning": "safety"},
-        ])
+        mock_client.query_precedents = AsyncMock(
+            return_value=[
+                {"context_summary": "Config change", "reasoning": "safety"},
+            ]
+        )
         adapter = AuditClientAdapter(audit_client=mock_client)
         result = await adapter.query_precedents(semantic_query="nonexistent")
         assert len(result) == 0
@@ -406,25 +413,27 @@ class TestGetMetricsToolExecute:
 
     async def test_execute_with_adapter(self):
         mock_adapter = AsyncMock()
-        mock_adapter.get_metrics = AsyncMock(return_value={
-            "total_requests": 100,
-            "approved_count": 80,
-            "denied_count": 10,
-            "conditional_count": 5,
-            "escalated_count": 5,
-            "avg_latency_ms": 2.5,
-            "p99_latency_ms": 10.0,
-            "throughput_rps": 500.0,
-            "validation_count": 100,
-            "violation_count": 2,
-            "compliance_rate": 0.98,
-            "active_principles": 8,
-            "precedent_count": 5,
-            "cache_hit_rate": 0.9,
-            "system_health": "healthy",
-            "constitutional_hash": "cdd01ef066bc6cf2",
-            "timestamp": "2024-01-01T00:00:00Z",
-        })
+        mock_adapter.get_metrics = AsyncMock(
+            return_value={
+                "total_requests": 100,
+                "approved_count": 80,
+                "denied_count": 10,
+                "conditional_count": 5,
+                "escalated_count": 5,
+                "avg_latency_ms": 2.5,
+                "p99_latency_ms": 10.0,
+                "throughput_rps": 500.0,
+                "validation_count": 100,
+                "violation_count": 2,
+                "compliance_rate": 0.98,
+                "active_principles": 8,
+                "precedent_count": 5,
+                "cache_hit_rate": 0.9,
+                "system_health": "healthy",
+                "constitutional_hash": "608508a9bd224290",
+                "timestamp": "2024-01-01T00:00:00Z",
+            }
+        )
         tool = GetMetricsTool(metrics_adapter=mock_adapter)
         result = await tool.execute({})
         assert result["isError"] is False
@@ -525,7 +534,7 @@ class TestGetMetricsToolLocal:
             precedent_count=5,
             cache_hit_rate=0.9,
             system_health="healthy",
-            constitutional_hash="cdd01ef066bc6cf2",
+            constitutional_hash="608508a9bd224290",
             timestamp="2024-01-01T00:00:00Z",
         )
         d = gm.to_dict()
@@ -666,21 +675,23 @@ class TestQueryPrecedentsToolExecuteLocal:
 class TestQueryPrecedentsToolWithAdapter:
     async def test_execute_delegates_to_audit_client(self):
         mock_adapter = AsyncMock()
-        mock_adapter.query_precedents = AsyncMock(return_value=[
-            {
-                "id": "PREC-REMOTE",
-                "action_type": "test",
-                "context_summary": "remote test",
-                "outcome": DecisionOutcome.APPROVED,
-                "principles_applied": ["P001"],
-                "reasoning": "ok",
-                "timestamp": "2024-01-01T00:00:00Z",
-                "confidence_score": 0.9,
-                "appeal_count": 0,
-                "overruled": False,
-                "related_precedents": [],
-            }
-        ])
+        mock_adapter.query_precedents = AsyncMock(
+            return_value=[
+                {
+                    "id": "PREC-REMOTE",
+                    "action_type": "test",
+                    "context_summary": "remote test",
+                    "outcome": DecisionOutcome.APPROVED,
+                    "principles_applied": ["P001"],
+                    "reasoning": "ok",
+                    "timestamp": "2024-01-01T00:00:00Z",
+                    "confidence_score": 0.9,
+                    "appeal_count": 0,
+                    "overruled": False,
+                    "related_precedents": [],
+                }
+            ]
+        )
         tool = QueryPrecedentsTool(audit_client_adapter=mock_adapter)
         result = await tool.execute({"action_type": "test"})
         assert result["isError"] is False
@@ -689,9 +700,7 @@ class TestQueryPrecedentsToolWithAdapter:
 
     async def test_execute_adapter_error_returns_error_response(self):
         mock_adapter = AsyncMock()
-        mock_adapter.query_precedents = AsyncMock(
-            side_effect=RuntimeError("connection refused")
-        )
+        mock_adapter.query_precedents = AsyncMock(side_effect=RuntimeError("connection refused"))
         tool = QueryPrecedentsTool(audit_client_adapter=mock_adapter)
         result = await tool.execute({})
         assert result["isError"] is True

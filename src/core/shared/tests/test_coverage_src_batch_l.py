@@ -10,7 +10,7 @@ Coverage tests for uncovered paths in:
 - config/infrastructure.py
 - config/factory.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -59,9 +59,9 @@ class TestStructuredJSONFormatterUncovered:
         output = formatter.format(record)
         parsed = json.loads(output)
         # Dict args may be nested under "extra" or at top level
-        assert (
-            parsed.get("extra_key") == "extra_value"
-            or (isinstance(parsed.get("extra"), dict) and parsed["extra"].get("extra_key") == "extra_value")
+        assert parsed.get("extra_key") == "extra_value" or (
+            isinstance(parsed.get("extra"), dict)
+            and parsed["extra"].get("extra_key") == "extra_value"
         )
 
     def test_format_with_tuple_args(self):
@@ -180,7 +180,13 @@ class TestStructuredJSONFormatterUncovered:
         from src.core.shared.structured_logging import StructuredJSONFormatter
 
         formatter = StructuredJSONFormatter()
-        for level in [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL]:
+        for level in [
+            logging.DEBUG,
+            logging.INFO,
+            logging.WARNING,
+            logging.ERROR,
+            logging.CRITICAL,
+        ]:
             record = logging.LogRecord(
                 name="test",
                 level=level,
@@ -920,7 +926,9 @@ class TestGovernanceDataclassFallback:
 
         # Save and remove cached module
         saved_modules = {}
-        keys_to_remove = [k for k in sys.modules if k.startswith("src.core.shared.config.governance")]
+        keys_to_remove = [
+            k for k in sys.modules if k.startswith("src.core.shared.config.governance")
+        ]
         for k in keys_to_remove:
             saved_modules[k] = sys.modules.pop(k)
 
@@ -1175,7 +1183,7 @@ class TestInfrastructureAISettingsPydantic:
         assert s.openrouter_api_key is None
         assert s.hf_token is None
         assert s.openai_api_key is None
-        assert s.constitutional_hash == "cdd01ef066bc6cf2"
+        assert s.constitutional_hash == "608508a9bd224290"
 
     def test_from_env_vars(self, monkeypatch):
         from src.core.shared.config.infrastructure import AISettings
@@ -1249,10 +1257,7 @@ class TestInfrastructureDataclassFallback:
                 if k in saved_modules:
                     sys.modules[k] = saved_modules[k]
             for k in list(sys.modules.keys()):
-                if (
-                    k.startswith("src.core.shared.config.infrastructure")
-                    and k not in saved_modules
-                ):
+                if k.startswith("src.core.shared.config.infrastructure") and k not in saved_modules:
                     del sys.modules[k]
 
     def test_redis_settings_dataclass_defaults(self):
@@ -1344,7 +1349,7 @@ class TestInfrastructureDataclassFallback:
         assert s.openrouter_api_key is None
         assert s.hf_token is None
         assert s.openai_api_key is None
-        assert s.constitutional_hash == "cdd01ef066bc6cf2"
+        assert s.constitutional_hash == "608508a9bd224290"
 
     def test_ai_settings_dataclass_from_env(self, monkeypatch):
         monkeypatch.setenv("OPENROUTER_API_KEY", "or-key")
@@ -1504,9 +1509,7 @@ class TestFactorySettingsPydantic:
         redis = RedisSettings()  # defaults to redis://localhost:6379, ssl=False
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
-            Settings.model_validate(
-                {"APP_ENV": "production", "security": sec, "redis": redis}
-            )
+            Settings.model_validate({"APP_ENV": "production", "security": sec, "redis": redis})
             tls_warnings = [x for x in w if "TLS" in str(x.message)]
             assert len(tls_warnings) >= 1
 
@@ -1524,9 +1527,7 @@ class TestFactorySettingsPydantic:
         redis = RedisSettings()
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
-            Settings.model_validate(
-                {"APP_ENV": "production", "security": sec, "redis": redis}
-            )
+            Settings.model_validate({"APP_ENV": "production", "security": sec, "redis": redis})
             tls_warnings = [x for x in w if "TLS" in str(x.message)]
             assert len(tls_warnings) == 0
 
@@ -1544,9 +1545,7 @@ class TestFactorySettingsPydantic:
         redis = RedisSettings()
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
-            Settings.model_validate(
-                {"APP_ENV": "production", "security": sec, "redis": redis}
-            )
+            Settings.model_validate({"APP_ENV": "production", "security": sec, "redis": redis})
             tls_warnings = [x for x in w if "TLS" in str(x.message)]
             assert len(tls_warnings) == 0
 

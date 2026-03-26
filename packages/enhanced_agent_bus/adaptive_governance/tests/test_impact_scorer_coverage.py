@@ -3,7 +3,7 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 """
 Tests for ImpactScorer — targets ≥90% coverage.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import sys
@@ -39,6 +39,7 @@ def _restore_impact_module_state():
     yield
     for name, value in _IMPACT_MODULE_DEFAULTS.items():
         setattr(_IMPACT_MODULE, name, value)
+
 
 # ---------------------------------------------------------------------------
 # Helpers

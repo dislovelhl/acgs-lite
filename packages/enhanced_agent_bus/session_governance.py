@@ -1,6 +1,6 @@
 """
 Backward-compatibility shims for legacy session governance exceptions.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module was previously the home for session governance implementation.
 The implementation moved, but these exception symbols are kept for import

@@ -2,7 +2,7 @@
 ACGS-2 Deliberation Layer - Adaptive Router
 Routes messages based on impact scores to appropriate processing lanes.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from datetime import UTC, datetime
@@ -440,7 +440,7 @@ def reset_adaptive_router() -> None:
     """Reset the global adaptive router instance.
 
     Used primarily for test isolation to prevent state leakage between tests.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     global _adaptive_router
     _adaptive_router = None

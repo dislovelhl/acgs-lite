@@ -1,6 +1,6 @@
 """
 ACGS-2 Z3 Policy Verifier - VeriPlan SMT Solver Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements Z3 SMT solver integration for mathematical policy verification:
 - Constraint-based validation with formal guarantees
@@ -642,7 +642,7 @@ class Z3PolicyVerifier:
     - Heuristic fallback for timeout scenarios
     - Proof generation for audit trail
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -759,9 +759,7 @@ class Z3PolicyVerifier:
                             "description": "Z3 solver unavailable and heuristic fallback disabled",
                         }
                     )
-                    result.warnings.append(
-                        "Z3 solver unavailable; verification failed closed"
-                    )
+                    result.warnings.append("Z3 solver unavailable; verification failed closed")
 
             # Fallback to heuristic if Z3 timed out or returned unknown
             if (

@@ -3,7 +3,7 @@ Mock fixtures for Enhanced Agent Bus tests.
 
 Provides Redis mocking, rate limiting disabling, and test API key fixtures.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import pytest
@@ -16,7 +16,7 @@ def _disable_redis_rate_limiting(monkeypatch):
     Redis requires authentication in this environment; tests that specifically
     need rate limiting should override this fixture.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     try:
         from enhanced_agent_bus.bus.core import EnhancedAgentBus

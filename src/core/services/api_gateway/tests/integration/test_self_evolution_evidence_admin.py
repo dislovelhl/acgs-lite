@@ -10,9 +10,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 _evidence_api = pytest.importorskip("src.core.self_evolution.api.evidence")
-_evidence_store = pytest.importorskip(
-    "src.core.self_evolution.research.experiment_evidence_store"
-)
+_evidence_store = pytest.importorskip("src.core.self_evolution.research.experiment_evidence_store")
 
 set_evidence_store_path = _evidence_api.set_evidence_store_path
 DEFAULT_BOUNDED_EXPERIMENT_EVIDENCE_PATH = _evidence_store.DEFAULT_BOUNDED_EXPERIMENT_EVIDENCE_PATH

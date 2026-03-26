@@ -1,7 +1,7 @@
 """
 Batch Pipeline Context for ACGS-2 Middleware.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from dataclasses import dataclass, field
@@ -27,7 +27,7 @@ class BatchPipelineContext(PipelineContext):
     - Batch-specific metadata (tenant, size, latency)
     - Error aggregation for failed items
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Override message with optional for batch contexts created without single message

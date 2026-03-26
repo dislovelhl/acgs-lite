@@ -1,6 +1,6 @@
 """
 ACGS-2 Saga Coordinator - Compensable Transaction Management
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements SagaLLM transaction guarantees for constitutional governance:
 - Compensable operations with LIFO (Last-In-First-Out) rollback
@@ -275,7 +275,7 @@ class SagaCoordinator:
     - Automatic compensation on validation failure
     - Full audit trail for compliance
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

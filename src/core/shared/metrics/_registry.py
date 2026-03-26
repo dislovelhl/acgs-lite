@@ -1,6 +1,6 @@
 """
 ACGS-2 Metric Registration Helpers (shared)
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Consolidated metric registration utilities used by both
 ``src.core.shared.metrics`` and ``src.core.shared.cache_metrics``.

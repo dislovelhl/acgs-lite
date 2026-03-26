@@ -1,7 +1,7 @@
 """
 Durable Workflow Executor
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 Version: 1.0.0
 
 Provides durable workflow execution with:

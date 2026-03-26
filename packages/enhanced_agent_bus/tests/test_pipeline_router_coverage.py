@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # Sprint 60 — pipeline/router.py coverage
 """
 ACGS-2 Enhanced Agent Bus - Pipeline Router Coverage Tests

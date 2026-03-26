@@ -5,7 +5,7 @@ Meta-Orchestrator Feature Imports Module
 Conditional imports for optional features with graceful fallbacks.
 This module handles all the optional dependency loading.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations

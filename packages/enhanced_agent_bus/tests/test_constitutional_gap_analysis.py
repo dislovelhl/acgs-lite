@@ -1,6 +1,6 @@
 """
 Constitutional Gap Analysis Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Phase 10 Task 10: Constitutional Gap Analysis
 
@@ -31,7 +31,7 @@ from enterprise_sso.gap_analysis import (
 )
 
 # Mark all tests as governance tests (95% coverage required)
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
 # ============================================================================

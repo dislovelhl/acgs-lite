@@ -1,10 +1,10 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # Sprint 59 — swarm_intelligence/consensus.py coverage
 """
 Comprehensive tests for swarm_intelligence/consensus.py
 Targets ≥95% coverage of ConsensusMechanism.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from datetime import UTC, datetime, timedelta, timezone

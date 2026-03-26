@@ -1,7 +1,7 @@
 """
 x402 Revenue Event Instrumentation
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Structured revenue tracking for x402 micropayment endpoints.  Emits events
 to both structlog (for real-time observability) and an append-only JSONL file
@@ -141,7 +141,9 @@ def _aggregate_events(events: list[dict[str, Any]]) -> RevenueSummary:
         endpoint_stats[ep] = EndpointStats(
             revenue_usd=round(bucket["revenue"], 6),
             call_count=bucket["count"],
-            avg_processing_ms=round(bucket["ms_sum"] / bucket["count"], 2) if bucket["count"] else 0.0,
+            avg_processing_ms=round(bucket["ms_sum"] / bucket["count"], 2)
+            if bucket["count"]
+            else 0.0,
         )
 
     return RevenueSummary(

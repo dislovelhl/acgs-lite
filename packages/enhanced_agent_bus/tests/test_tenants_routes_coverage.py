@@ -1,6 +1,6 @@
 """
 Coverage tests for src/core/enhanced_agent_bus/routes/tenants.py
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets missing lines to boost coverage from 70% to 92%+.
 """

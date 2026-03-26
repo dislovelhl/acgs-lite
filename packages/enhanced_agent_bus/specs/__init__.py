@@ -1,6 +1,6 @@
 """
 ACGS-2 Executable Specifications Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides pytest fixtures and base classes for specification-based
 testing following Gojko Adzic's Specification by Example methodology.

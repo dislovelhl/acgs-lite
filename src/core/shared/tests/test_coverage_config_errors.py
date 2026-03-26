@@ -4,7 +4,7 @@ Tests for under-covered src/core/shared modules.
 Covers: config/, errors/, feature_flags, schema_registry, interfaces,
         types/protocol_types, constants, di_container, api_versioning.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -45,10 +45,10 @@ from src.core.shared.constants import (
 
 class TestConstants:
     def test_constitutional_hash_value(self):
-        assert CONSTITUTIONAL_HASH == "cdd01ef066bc6cf2"
+        assert CONSTITUTIONAL_HASH == "608508a9bd224290"
 
     def test_constitutional_hash_versioned(self):
-        assert CONSTITUTIONAL_HASH_VERSIONED == "sha256:v1:cdd01ef066bc6cf2"
+        assert CONSTITUTIONAL_HASH_VERSIONED == "sha256:v1:608508a9bd224290"
 
     def test_get_constitutional_hash(self):
         assert get_constitutional_hash() == CONSTITUTIONAL_HASH
@@ -309,11 +309,19 @@ class TestRedisConfig:
 
         with patch.dict(os.environ, {}, clear=False):
             for key in [
-                "REDIS_TOPOLOGY", "REDIS_URL", "REDIS_DB", "REDIS_PASSWORD",
-                "REDIS_SSL", "REDIS_SENTINEL_MASTER", "REDIS_SENTINEL_NODES",
-                "REDIS_SENTINEL_PASSWORD", "REDIS_CLUSTER_NODES",
-                "REDIS_MAX_CONNECTIONS", "REDIS_SOCKET_TIMEOUT",
-                "REDIS_SOCKET_CONNECT_TIMEOUT", "REDIS_RETRY_ON_TIMEOUT",
+                "REDIS_TOPOLOGY",
+                "REDIS_URL",
+                "REDIS_DB",
+                "REDIS_PASSWORD",
+                "REDIS_SSL",
+                "REDIS_SENTINEL_MASTER",
+                "REDIS_SENTINEL_NODES",
+                "REDIS_SENTINEL_PASSWORD",
+                "REDIS_CLUSTER_NODES",
+                "REDIS_MAX_CONNECTIONS",
+                "REDIS_SOCKET_TIMEOUT",
+                "REDIS_SOCKET_CONNECT_TIMEOUT",
+                "REDIS_RETRY_ON_TIMEOUT",
                 "REDIS_HEALTH_CHECK_INTERVAL",
             ]:
                 os.environ.pop(key, None)
@@ -350,10 +358,12 @@ class TestRedisConfig:
 class TestOverrides:
     def setup_method(self):
         from src.core.shared.config.overrides import clear_overrides
+
         clear_overrides()
 
     def teardown_method(self):
         from src.core.shared.config.overrides import clear_overrides
+
         clear_overrides()
 
     def test_set_and_get_override(self):
@@ -1279,6 +1289,7 @@ class TestContextPoisoning:
 class TestCircuitBreaker:
     def setup_method(self):
         from src.core.shared.errors.circuit_breaker import _circuit_breakers
+
         _circuit_breakers.clear()
 
     def test_circuit_breaker_state_enum(self):
@@ -1963,8 +1974,14 @@ class TestInterfaces:
 
         # Verify they are all types
         for proto in [
-            CacheClient, PolicyEvaluator, AuditService, DatabaseSession,
-            NotificationService, MessageProcessor, CircuitBreaker, MetricsCollector,
+            CacheClient,
+            PolicyEvaluator,
+            AuditService,
+            DatabaseSession,
+            NotificationService,
+            MessageProcessor,
+            CircuitBreaker,
+            MetricsCollector,
         ]:
             assert isinstance(proto, type)
 
@@ -1994,11 +2011,20 @@ class TestProtocolTypes:
         )
 
         for proto in [
-            SupportsCache, SupportsValidation, SupportsAuthentication,
-            SupportsSerialization, SupportsLogging, SupportsMiddleware,
-            SupportsHealthCheck, SupportsCircuitBreaker, SupportsAudit,
-            AgentBus, GovernanceService, SupportsRegistry,
-            SupportsExecution, SupportsCompensation,
+            SupportsCache,
+            SupportsValidation,
+            SupportsAuthentication,
+            SupportsSerialization,
+            SupportsLogging,
+            SupportsMiddleware,
+            SupportsHealthCheck,
+            SupportsCircuitBreaker,
+            SupportsAudit,
+            AgentBus,
+            GovernanceService,
+            SupportsRegistry,
+            SupportsExecution,
+            SupportsCompensation,
         ]:
             assert isinstance(proto, type)
 
@@ -2057,10 +2083,12 @@ class TestProtocolTypes:
 class TestDIContainer:
     def setup_method(self):
         from src.core.shared.di_container import DIContainer
+
         DIContainer.reset()
 
     def teardown_method(self):
         from src.core.shared.di_container import DIContainer
+
         DIContainer.reset()
 
     def test_singleton(self):
@@ -2279,9 +2307,7 @@ class TestAPIVersioningMiddleware:
             return {"ok": True}
 
         app.add_middleware(APIVersioningMiddleware, config=VersioningConfig())
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             resp = await client.get("/api/v1/test")
             assert resp.status_code == 200
             assert resp.headers.get("x-api-version") == "v1"
@@ -2302,9 +2328,7 @@ class TestAPIVersioningMiddleware:
 
         cfg = VersioningConfig(deprecated_versions=("v0",))
         app.add_middleware(APIVersioningMiddleware, config=cfg)
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             resp = await client.get("/api/v0/old")
             assert resp.headers.get("x-api-deprecated") == "true"
 
@@ -2322,9 +2346,7 @@ class TestAPIVersioningMiddleware:
             return {"status": "ok"}
 
         app.add_middleware(APIVersioningMiddleware)
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             resp = await client.get("/health")
             assert resp.headers.get("x-api-version") == "v1"
 
@@ -2351,9 +2373,7 @@ class TestDeprecationNoticeMiddleware:
             DeprecationNoticeMiddleware,
             deprecated_routes={"/old-endpoint"},
         )
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             resp_old = await client.get("/old-endpoint")
             assert resp_old.headers.get("x-api-deprecated") == "true"
 
@@ -2374,9 +2394,7 @@ class TestVersionEndpoints:
         create_version_info_endpoint(router)
         app.include_router(router)
 
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             resp = await client.get("/version")
             assert resp.status_code == 200
             data = resp.json()
@@ -2395,9 +2413,7 @@ class TestVersionEndpoints:
         create_version_metrics_endpoint(router)
         app.include_router(router)
 
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             resp = await client.get("/version/metrics")
             assert resp.status_code == 200
             data = resp.json()

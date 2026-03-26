@@ -5,8 +5,6 @@ Handles lifecycle and singleton management with persistence hooks.
 Constitutional Hash: cdd01ef066bc6cf2
 """
 
-import sys
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from .adapter import RiverSklearnAdapter
@@ -14,10 +12,6 @@ from .config import RIVER_N_MODELS, ModelType
 from .consumer import FeedbackKafkaConsumer
 from .models import ConsumerStats
 from .trainer import OnlineLearningPipeline
-
-_MODULE = sys.modules[__name__]
-sys.modules.setdefault("enhanced_agent_bus.online_learning_infra.registry", _MODULE)
-sys.modules.setdefault("packages.enhanced_agent_bus.online_learning_infra.registry", _MODULE)
 
 logger = get_logger(__name__)
 # Global instances (Internal)

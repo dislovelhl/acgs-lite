@@ -1,7 +1,7 @@
 """
 Tests for src.core.shared.security.rate_limiter
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import time
@@ -686,7 +686,9 @@ class TestRateLimitMiddleware:
 
         scope = _make_asgi_scope()
         send = AsyncMock()
-        with patch.object(RateLimitMiddleware, "_ensure_initialized", side_effect=RuntimeError("down")):
+        with patch.object(
+            RateLimitMiddleware, "_ensure_initialized", side_effect=RuntimeError("down")
+        ):
             await mw(scope, AsyncMock(), send)
 
         found_503 = False
@@ -779,7 +781,9 @@ class TestRateLimitMiddleware:
             scope=RateLimitScope.IP,
             endpoints=["/x402/validate", "/x402/audit"],
         )
-        validate_request = Request(_make_asgi_scope(path="/x402/validate", client=("10.0.0.1", 5000)))
+        validate_request = Request(
+            _make_asgi_scope(path="/x402/validate", client=("10.0.0.1", 5000))
+        )
         audit_request = Request(_make_asgi_scope(path="/x402/audit", client=("10.0.0.1", 5000)))
 
         assert mw._build_key(validate_request, rule) == mw._build_key(audit_request, rule)
@@ -791,7 +795,9 @@ class TestRateLimitMiddleware:
         from starlette.requests import Request
 
         request = Request(scope)
-        rule = RateLimitRule(requests=10, scope=RateLimitScope.ENDPOINT, endpoints=["/api/v1/auth/"])
+        rule = RateLimitRule(
+            requests=10, scope=RateLimitScope.ENDPOINT, endpoints=["/api/v1/auth/"]
+        )
         key = mw._build_key(request, rule)
         assert "/api/v1/auth/" in key
 

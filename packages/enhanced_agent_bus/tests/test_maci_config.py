@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - MACI Configuration Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for configuration-based MACI role management.
 """
@@ -22,7 +22,7 @@ from enhanced_agent_bus.maci_enforcement import (
 )
 
 # Mark all tests as governance tests (95% coverage required)
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
 

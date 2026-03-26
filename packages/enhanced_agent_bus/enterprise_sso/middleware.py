@@ -1,6 +1,6 @@
 """
 ACGS-2 Enterprise SSO Authentication Middleware
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 FastAPI middleware for SSO authentication with multi-tenancy integration.
 Provides request-scoped SSO session management and authentication enforcement.

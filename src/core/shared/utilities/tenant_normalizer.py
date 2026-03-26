@@ -1,6 +1,6 @@
 """
 ACGS-2 Tenant ID Normalizer
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Single source of truth for tenant ID normalization across the codebase.
 Replaces scattered tenant normalization logic in 15+ locations.

@@ -1,6 +1,6 @@
 """
 SSO Protocol Handlers (Facade)
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements SAML 2.0 and OIDC protocol handlers for Enterprise SSO.
 Delegates to specialized modules in .enterprise_sso_infra.

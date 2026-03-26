@@ -1,6 +1,6 @@
 """
 ACGS-2 Context Optimizer - Streaming Processor
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Streaming processor with overlap for context coherence.
 """
@@ -38,7 +38,7 @@ class StreamingProcessor:
     Processes long contexts in overlapping chunks to maintain
     coherence while staying within memory limits.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

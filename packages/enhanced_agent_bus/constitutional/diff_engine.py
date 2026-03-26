@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Constitutional Diff Engine
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Engine to compute semantic diffs between constitutional versions,
 highlighting added/removed/modified principles with detailed analysis.
@@ -61,7 +61,7 @@ logger = get_logger(__name__)
 class DiffChange(BaseModel):
     """Represents a single change in the diff.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     change_type: str = Field(..., pattern="^(added|removed|modified)$")
@@ -74,7 +74,7 @@ class DiffChange(BaseModel):
 class PrincipleChange(BaseModel):
     """Represents a change to a constitutional principle.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     principle_id: str = Field(...)
@@ -87,7 +87,7 @@ class PrincipleChange(BaseModel):
 class SemanticDiff(BaseModel):
     """Semantic diff between two constitutional versions.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     from_version: str = Field(...)
@@ -130,7 +130,7 @@ class ConstitutionalDiffEngine:
     - Text-level diff for principle content
     - Breaking change detection
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, storage: ConstitutionalStorageService):

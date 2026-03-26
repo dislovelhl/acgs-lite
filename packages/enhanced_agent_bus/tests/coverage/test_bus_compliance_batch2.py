@@ -11,7 +11,7 @@ Covers:
 - batch_processor_infra/governance.py
 - batch_processor_infra/metrics.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -1310,8 +1310,15 @@ class TestDecisionExplainer:
                 explanation="e",
             ),
         ]
-        vector = {"safety": 0.7, "security": 0.0, "privacy": 0.0, "fairness": 0.0,
-                  "reliability": 0.0, "transparency": 0.0, "efficiency": 0.0}
+        vector = {
+            "safety": 0.7,
+            "security": 0.0,
+            "privacy": 0.0,
+            "fairness": 0.0,
+            "reliability": 0.0,
+            "transparency": 0.0,
+            "efficiency": 0.0,
+        }
         text = explainer._generate_detailed_reasoning("allow", factors, vector, 0.3)
         assert "Content Analysis" in text
         assert "7-Dimensional Governance Vector" in text
@@ -1381,9 +1388,7 @@ class TestOrmModels:
             TenantORM,
         )
 
-        t = TenantORM(
-            constitutional_hash=CONSTITUTIONAL_HASH, name="t", slug="t2", status="active"
-        )
+        t = TenantORM(constitutional_hash=CONSTITUTIONAL_HASH, name="t", slug="t2", status="active")
         assert t.validate_constitutional_compliance() is True
         t.constitutional_hash = "bad-hash"
         assert t.validate_constitutional_compliance() is False
@@ -1394,8 +1399,11 @@ class TestOrmModels:
         )
 
         e = EnterpriseIntegrationORM(
-            integration_id="int-1", integration_type="sso", provider="okta",
-            name="Okta SSO", tenant_id="tid-1",
+            integration_id="int-1",
+            integration_type="sso",
+            provider="okta",
+            name="Okta SSO",
+            tenant_id="tid-1",
         )
         r = repr(e)
         assert "int-1" in r
@@ -1405,8 +1413,10 @@ class TestOrmModels:
         from enhanced_agent_bus.multi_tenancy.orm_models import TenantRoleMappingORM
 
         m = TenantRoleMappingORM(
-            mapping_id="map-1", external_role="admin-group",
-            internal_role="admin", tenant_id="tid-1",
+            mapping_id="map-1",
+            external_role="admin-group",
+            internal_role="admin",
+            tenant_id="tid-1",
         )
         r = repr(m)
         assert "admin-group" in r
@@ -1416,7 +1426,10 @@ class TestOrmModels:
         from enhanced_agent_bus.multi_tenancy.orm_models import MigrationJobORM
 
         j = MigrationJobORM(
-            job_id="job-1", job_type="region", status="running", tenant_id="tid-1",
+            job_id="job-1",
+            job_type="region",
+            status="running",
+            tenant_id="tid-1",
         )
         r = repr(j)
         assert "job-1" in r
@@ -1426,7 +1439,10 @@ class TestOrmModels:
         from enhanced_agent_bus.multi_tenancy.orm_models import TenantAuditLogORM
 
         log = TenantAuditLogORM(
-            log_id="log-1", action="create", tenant_id="tid-1", actor_id="user-1",
+            log_id="log-1",
+            action="create",
+            tenant_id="tid-1",
+            actor_id="user-1",
         )
         r = repr(log)
         assert "log-1" in r

@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive tests for constitutional/storage.py (facade layer).
 
@@ -145,8 +145,7 @@ class TestGetTenantId:
     def test_multi_tenancy_enabled_with_context(self):
         facade, _ = _make_facade(enable_multi_tenancy=True, default_tenant_id="system")
         with patch(
-            "enhanced_agent_bus.constitutional.storage.ConstitutionalStorageService"
-            "._get_tenant_id"
+            "enhanced_agent_bus.constitutional.storage.ConstitutionalStorageService._get_tenant_id"
         ):
             pass  # We test via the module import path below
 

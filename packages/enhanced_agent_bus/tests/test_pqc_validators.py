@@ -1,6 +1,6 @@
 """
 Tests for enhanced_agent_bus.pqc_validators
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -187,7 +187,7 @@ class TestValidateConstitutionalHashPqc:
     async def test_hash_mismatch_returns_invalid(self):
         result = await validate_constitutional_hash_pqc(
             {"constitutional_hash": "wrong_hash"},
-            expected_hash="cdd01ef066bc6cf2",
+            expected_hash="608508a9bd224290",
         )
         assert result.valid is False
         assert any("mismatch" in e for e in result.errors)
@@ -195,8 +195,8 @@ class TestValidateConstitutionalHashPqc:
     @pytest.mark.asyncio
     async def test_valid_hash_no_signature_returns_valid(self):
         result = await validate_constitutional_hash_pqc(
-            {"constitutional_hash": "cdd01ef066bc6cf2"},
-            expected_hash="cdd01ef066bc6cf2",
+            {"constitutional_hash": "608508a9bd224290"},
+            expected_hash="608508a9bd224290",
         )
         assert result.valid is True
 
@@ -205,10 +205,10 @@ class TestValidateConstitutionalHashPqc:
         """When signature is a dict without 'signature' key, PQC disabled => valid, no metadata."""
         result = await validate_constitutional_hash_pqc(
             {
-                "constitutional_hash": "cdd01ef066bc6cf2",
+                "constitutional_hash": "608508a9bd224290",
                 "signature": {"some_other_key": "value"},
             },
-            expected_hash="cdd01ef066bc6cf2",
+            expected_hash="608508a9bd224290",
             pqc_config=None,
         )
         assert result.valid is True
@@ -217,10 +217,10 @@ class TestValidateConstitutionalHashPqc:
     async def test_valid_hash_with_non_dict_signature(self):
         result = await validate_constitutional_hash_pqc(
             {
-                "constitutional_hash": "cdd01ef066bc6cf2",
+                "constitutional_hash": "608508a9bd224290",
                 "signature": "raw_string",
             },
-            expected_hash="cdd01ef066bc6cf2",
+            expected_hash="608508a9bd224290",
             pqc_config=None,
         )
         assert result.valid is True
@@ -246,7 +246,7 @@ class TestValidateMaciRecordPqc:
             "timestamp": "2025-01-01T00:00:00Z",
             "constitutional_hash": "wrong",
         }
-        result = await validate_maci_record_pqc(record, expected_hash="cdd01ef066bc6cf2")
+        result = await validate_maci_record_pqc(record, expected_hash="608508a9bd224290")
         assert result.valid is False
         assert any("mismatch" in e for e in result.errors)
 
@@ -256,11 +256,11 @@ class TestValidateMaciRecordPqc:
             "agent_id": "agent_1",
             "action": "validate",
             "timestamp": "2025-01-01T00:00:00Z",
-            "constitutional_hash": "cdd01ef066bc6cf2",
+            "constitutional_hash": "608508a9bd224290",
             "target_output_id": "output_42",
             "output_author": "agent_1",
         }
-        result = await validate_maci_record_pqc(record, expected_hash="cdd01ef066bc6cf2")
+        result = await validate_maci_record_pqc(record, expected_hash="608508a9bd224290")
         assert result.valid is False
         assert any("Self-validation" in e for e in result.errors)
 
@@ -270,9 +270,9 @@ class TestValidateMaciRecordPqc:
             "agent_id": "agent_1",
             "action": "validate",
             "timestamp": "2025-01-01T00:00:00Z",
-            "constitutional_hash": "cdd01ef066bc6cf2",
+            "constitutional_hash": "608508a9bd224290",
         }
-        result = await validate_maci_record_pqc(record, expected_hash="cdd01ef066bc6cf2")
+        result = await validate_maci_record_pqc(record, expected_hash="608508a9bd224290")
         assert result.valid is True
 
     @pytest.mark.asyncio
@@ -285,7 +285,7 @@ class TestValidateMaciRecordPqc:
             "timestamp": "2025-01-01T00:00:00Z",
         }
         result = await validate_maci_record_pqc(
-            record, expected_hash="cdd01ef066bc6cf2", pqc_config=pqc_config
+            record, expected_hash="608508a9bd224290", pqc_config=pqc_config
         )
         assert result.valid is True
         assert result.pqc_metadata is not None

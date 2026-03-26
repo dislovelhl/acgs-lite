@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # Sprint 61 -- constitutional/version_model.py coverage
 """
 Comprehensive tests for constitutional/version_model.py achieving ≥95% coverage.
@@ -165,7 +165,7 @@ class TestValidateHashFormat:
             ConstitutionalVersion(
                 version="1.0.0",
                 content=VALID_CONTENT,
-                constitutional_hash="cdd01ef066bc6cf2xx",
+                constitutional_hash="608508a9bd224290xx",
             )
 
     def test_hash_non_hex(self):

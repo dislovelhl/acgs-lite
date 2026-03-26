@@ -1,6 +1,6 @@
 """
 ACGS-2 Multi-Approver Workflow Engine
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Enterprise-grade approval workflow supporting:
 - Multiple required approvers
@@ -35,7 +35,7 @@ from enhanced_agent_bus.interfaces import ApprovalsValidatorProtocol
 try:
     from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
 logger = get_logger(__name__)
 try:
     from acgs2_perf import fast_hash

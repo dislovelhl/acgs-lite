@@ -48,7 +48,7 @@
 **Goal:** 10K monthly downloads within 12 months
 
 **Actions:**
-- Publish `acgs-lite` to PyPI with excellent metadata and classifiers
+- Publish `acgs` to PyPI with excellent metadata and classifiers
 - README optimized for PyPI rendering (the 5-line quickstart)
 - Depends on zero heavy dependencies for initial install
 - Mention in popular AI/ML newsletters and communities
@@ -91,7 +91,7 @@
 
 ### Channel 5: AI Code Generation Tools
 
-**Goal:** `acgs-lite` suggested by AI coding assistants when developers ask about AI governance
+**Goal:** `acgs` suggested by AI coding assistants when developers ask about AI governance
 
 **Actions:**
 - Ensure high-quality documentation that LLMs can index
@@ -306,7 +306,7 @@ EU AI ACT COUNTDOWN: "X days until enforcement. Are you ready?"
 | Week | Action | Deliverable |
 |------|--------|-------------|
 | 1 | AGPL license migration | LICENSE file updated, CLA process live |
-| 1 | PyPI package published | `pip install acgs-lite` works |
+| 1 | PyPI package published | `pip install acgs` works |
 | 2 | Propriety.ai pricing page live | Stripe checkout integrated |
 | 2 | Landing page with "HTTPS for AI" positioning | propriety.ai homepage |
 | 3 | GitLab Marketplace submission | Listing submitted |

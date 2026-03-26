@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus Rate Limiting
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides rate limiting functionality for the API,
 including batch-specific rate limiting based on batch size.

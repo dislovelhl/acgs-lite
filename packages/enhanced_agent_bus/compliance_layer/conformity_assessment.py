@@ -1,6 +1,6 @@
 """
 ACGS-2 EU AI Act Conformity Assessment
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Automated conformity assessment for EU AI Act compliance with
 evidence collection, Z3 formal verification integration, and
@@ -94,7 +94,7 @@ class ConformityAssessment:
     Implements Annex IV technical documentation requirements and
     integrates with Z3 formal verification for policy proofs.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH
@@ -485,7 +485,7 @@ class ConformityAssessment:
 class ContinuousComplianceMonitor:
     """Continuous compliance monitoring for real-time assessment.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH

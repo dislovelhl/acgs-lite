@@ -3,7 +3,7 @@ Swarm Intelligence - Swarm Coordinator
 
 Central swarm coordination engine for agent lifecycle and task management.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Circuit Breaker Redis Client
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Redis Client with circuit breaker protection implementing FAIL-OPEN (BYPASS) strategy.
 When the circuit is open, cache operations are bypassed and the system continues
@@ -48,7 +48,7 @@ class CircuitBreakerRedisClient:
     When the circuit is open, cache operations are bypassed and
     the system continues to function without caching.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
