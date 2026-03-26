@@ -44,12 +44,9 @@ autoresearch/run_perf_*.log
 autoresearch/candidate_scenarios/
 autoresearch/paper_extracts/
 autoresearch/raw_dataset_adapter.md
-autoresearch/raw_dataset_adapter.py
 autoresearch/build_paper_adapter_manifest.py
-autoresearch/run_raw_dataset_manifest.py
 autoresearch/render_candidate_promotion_patch.py
 autoresearch/review_candidate_promotion.py
-autoresearch/evaluate_raw_dataset_cases.py
 autoresearch/sourced_pack_review.md
 
 # Playwright / browser automation local cache
