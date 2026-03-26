@@ -41,7 +41,10 @@ docs/generated/
 
 # Autoresearch experiment logs & scratch files
 autoresearch/run_perf_*.log
-autoresearch/candidate_scenarios/
+autoresearch/candidate_scenarios/*
+!autoresearch/candidate_scenarios/
+!autoresearch/candidate_scenarios/*.json
+!autoresearch/candidate_scenarios/*.patch
 autoresearch/paper_extracts/
 autoresearch/raw_dataset_adapter.md
 autoresearch/build_paper_adapter_manifest.py
