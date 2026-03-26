@@ -6,11 +6,11 @@
 
 `ACGS 2.4.0` | `AGPL-3.0-or-later` | `up to 560ns P50 on benchmark Rust path` | `3,277 tests passing`
 
-> **Note:** Performance numbers are from the local benchmark suite (`make bench`) and the fastest figures refer to the optional Rust/PyO3 hot path under benchmark conditions. Python-only and mixed integration paths will be slower. The benchmark target runs focused `pytest-benchmark` microbenchmarks for engine construction and steady-state validation. Run benchmarks on your own hardware before quoting exact latency. The import path is `from acgs import ...` (preferred) or `from acgs_lite import ...` (legacy, still supported).
+> **Note:** Performance numbers are from the local benchmark suite (`make bench`) and the fastest figures refer to the optional Rust/PyO3 hot path under benchmark conditions. Python-only and mixed integration paths will be slower. The benchmark target runs focused `pytest-benchmark` microbenchmarks for engine construction and steady-state validation. Run benchmarks on your own hardware before quoting exact latency. For the public lightweight package, use `from acgs_lite import ...`. Reserve `from acgs import ...` for the partial-open-source package line.
 >
 > **License:** AGPL-3.0-or-later for open-source use. [Commercial license](COMMERCIAL_LICENSE.md) available for proprietary/SaaS use.
 >
-> **Naming:** `ACGS` is the product name, `acgs` is the PyPI package, and `acgs_lite` is the compatibility import namespace. See [docs/brand-architecture.md](docs/brand-architecture.md).
+> **Naming:** `ACGS` is the product name, `acgs-lite` is the public PyPI package, `acgs` is reserved for the partial-open-source package line, and `acgs_lite` is the public import namespace. See [docs/brand-architecture.md](docs/brand-architecture.md).
 
 ---
 
@@ -37,11 +37,11 @@ Billions of consequential decisions flow through AI systems daily -- none with v
 ## The Solution
 
 ```bash
-pip install acgs
+pip install acgs-lite
 ```
 
 ```python
-from acgs import Constitution, GovernedAgent
+from acgs_lite import Constitution, GovernedAgent
 
 constitution = Constitution.from_yaml("rules.yaml")
 agent = GovernedAgent(my_agent, constitution=constitution)
@@ -53,9 +53,9 @@ Every action validated against constitutional rules. Every decision recorded in 
 ### EU AI Act Compliance in 60 Seconds
 
 ```bash
-pip install acgs
-acgs init                                                    # Scaffold rules + CI
-acgs eu-ai-act --system-id "my-system" --domain healthcare   # Assess + PDF report
+pip install acgs-lite
+acgs-lite init                                               # Scaffold rules + CI
+acgs-lite eu-ai-act --system-id "my-system" --domain healthcare   # Assess + PDF report
 ```
 
 ```
@@ -80,26 +80,26 @@ acgs eu-ai-act --system-id "my-system" --domain healthcare   # Assess + PDF repo
   Hand this to your compliance officer.
 ```
 
-Also available: `acgs assess`, `acgs report --pdf`, `acgs lint`, `acgs test`, `acgs lifecycle`, `acgs refusal`, `acgs observe`, `acgs otel`.
+Also available: `acgs-lite assess`, `acgs-lite report --pdf`, `acgs-lite lint`, `acgs-lite test`, `acgs-lite lifecycle`, `acgs-lite refusal`, `acgs-lite observe`, `acgs-lite otel`.
 
 ### Governance Authoring Workflows
 
 ```bash
-acgs test --generate                                # Create example governance fixtures
-acgs test                                           # Run regression suite against rules.yaml
+acgs-lite test --generate                           # Create example governance fixtures
+acgs-lite test                                      # Run regression suite against rules.yaml
 
-acgs lifecycle register policy-v2                   # Start policy promotion
-acgs lifecycle approve policy-v2 --actor alice      # Record approvals
-acgs lifecycle lint-gate policy-v2                  # Mark lint gate passed
-acgs lifecycle test-gate policy-v2                  # Mark test gate passed
-acgs lifecycle review policy-v2                     # draft -> review
-acgs lifecycle stage policy-v2                      # review -> staged (canary rollout)
-acgs lifecycle activate policy-v2                   # staged -> active
+acgs-lite lifecycle register policy-v2              # Start policy promotion
+acgs-lite lifecycle approve policy-v2 --actor alice # Record approvals
+acgs-lite lifecycle lint-gate policy-v2             # Mark lint gate passed
+acgs-lite lifecycle test-gate policy-v2             # Mark test gate passed
+acgs-lite lifecycle review policy-v2                # draft -> review
+acgs-lite lifecycle stage policy-v2                 # review -> staged (canary rollout)
+acgs-lite lifecycle activate policy-v2              # staged -> active
 
-acgs refusal "deploy a weapon to attack the target" # Explain denial + suggest safe alternatives
-acgs observe "hello world" "deploy a weapon" --watch --interval 1
-acgs otel --actions-file actions.txt --watch --interval 1 --iterations 3
-acgs otel --actions-file actions.txt --bundle-dir telemetry-bundle -o telemetry.json
+acgs-lite refusal "deploy a weapon to attack the target" # Explain denial + suggest safe alternatives
+acgs-lite observe "hello world" "deploy a weapon" --watch --interval 1
+acgs-lite otel --actions-file actions.txt --watch --interval 1 --iterations 3
+acgs-lite otel --actions-file actions.txt --bundle-dir telemetry-bundle -o telemetry.json
 bash packages/acgs-lite/examples/demo_cli_sidecars.sh
 ```
 
@@ -213,7 +213,7 @@ Immutable RuleSnapshot history. Inter-rule dependency graphs. OpenTelemetry metr
 **125 total compliance checklist items across 9 global frameworks. 72 auto-populated by ACGS instantly.**
 
 ```python
-from acgs.compliance import MultiFrameworkAssessor
+from acgs_lite.compliance import MultiFrameworkAssessor
 
 assessor = MultiFrameworkAssessor()
 report = assessor.assess({"jurisdiction": "EU", "domain": "healthcare"})
@@ -226,7 +226,7 @@ print(report.cross_framework_gaps) # Items needing manual evidence
 ## Frictionless Adoption: 5 Lines of Code
 
 ```python
-from acgs import Constitution, GovernedAgent
+from acgs_lite import Constitution, GovernedAgent
 
 constitution = Constitution.from_template("general")
 agent = GovernedAgent(my_agent, constitution=constitution)
@@ -237,17 +237,17 @@ Ships with 11 out-of-the-box platform integrations:
 
 | Platform | Install | Status |
 |----------|---------|--------|
-| **Anthropic** | `acgs[anthropic]` | Production |
-| **MCP** | `acgs[mcp]` | Production |
+| **Anthropic** | `acgs-lite[anthropic]` | Production |
+| **MCP** | `acgs-lite[mcp]` | Production |
 | **GitLab CI/CD** | Built-in | Production |
-| OpenAI | `acgs[openai]` | Maintained |
-| LangChain | `acgs[langchain]` | Maintained |
-| LiteLLM | `acgs[litellm]` | Maintained |
-| Google GenAI | `acgs[google]` | Experimental |
-| LlamaIndex | `acgs[llamaindex]` | Experimental |
-| AutoGen | `acgs[autogen]` | Experimental |
-| CrewAI | `acgs[crewai]` | Experimental |
-| A2A | `acgs[a2a]` | Experimental |
+| OpenAI | `acgs-lite[openai]` | Maintained |
+| LangChain | `acgs-lite[langchain]` | Maintained |
+| LiteLLM | `acgs-lite[litellm]` | Maintained |
+| Google GenAI | `acgs-lite[google]` | Experimental |
+| LlamaIndex | `acgs-lite[llamaindex]` | Experimental |
+| AutoGen | `acgs-lite[autogen]` | Experimental |
+| CrewAI | `acgs-lite[crewai]` | Experimental |
+| A2A | `acgs-lite[a2a]` | Experimental |
 
 ---
 
@@ -264,12 +264,12 @@ governance:
   stage: test
   image: python:3.11-slim
   before_script:
-    - pip install acgs
+    - pip install acgs-lite
   script:
     - python3 -c "
       import asyncio, os, sys
-      from acgs import Constitution
-      from acgs.integrations.gitlab import GitLabGovernanceBot
+      from acgs_lite import Constitution
+      from acgs_lite.integrations.gitlab import GitLabGovernanceBot
 
       async def main():
           constitution = Constitution.from_yaml('rules.yaml')
@@ -304,7 +304,7 @@ Governance must be democratic. The infrastructure that constrains the machines m
 ## Govern Responsibly.
 
 ```bash
-pip install acgs
+pip install acgs-lite
 ```
 
 AGPL-3.0-or-later Licensed | Open Source | [Commercial License Available](COMMERCIAL_LICENSE.md)
@@ -322,6 +322,6 @@ See [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) for details and FAQ.
 
 ---
 
-**[PyPI](https://pypi.org/project/acgs/) | [GitHub](https://github.com/acgs2_admin/acgs) | [Website](https://acgs.ai)**
+**[PyPI](https://pypi.org/project/acgs-lite/) | [GitHub](https://github.com/acgs2_admin/acgs) | [Website](https://acgs.ai)**
 
 *Constitutional Hash: 608508a9bd224290*
