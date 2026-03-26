@@ -6,6 +6,15 @@ main = "src/index.ts"
 compatibility_date = "2024-03-25"
 compatibility_flags = ["nodejs_compat"]
 
+# Map to production domains
+[[routes]]
+pattern = "api.acgs.ai/*"
+custom_domain = true
+
+[[routes]]
+pattern = "acgs.ai/v1/*"
+zone_name = "acgs.ai"
+
 # KV Namespace for storing constitution configurations
 [[kv_namespaces]]
 binding = "CONSTITUTIONS"
