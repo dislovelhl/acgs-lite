@@ -6,6 +6,8 @@ Real-time health monitoring and aggregation across all circuit breakers.
 Designed to maintain P99 latency < 1.31ms by using fire-and-forget patterns.
 """
 
+from __future__ import annotations
+
 import asyncio
 from collections import deque
 from collections.abc import Callable

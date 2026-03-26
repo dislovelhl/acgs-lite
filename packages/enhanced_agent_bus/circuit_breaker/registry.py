@@ -7,6 +7,8 @@ This module implements the circuit breaker registry for managing service-specifi
 circuit breakers and provides global access functions.
 """
 
+from __future__ import annotations
+
 import asyncio
 from datetime import UTC, datetime, timezone
 

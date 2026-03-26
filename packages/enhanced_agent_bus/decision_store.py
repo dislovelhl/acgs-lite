@@ -13,6 +13,8 @@ Performance Targets:
 - Support for high-throughput batch operations
 """
 
+from __future__ import annotations
+
 import asyncio
 import json
 import time

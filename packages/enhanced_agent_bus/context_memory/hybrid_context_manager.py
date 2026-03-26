@@ -12,6 +12,8 @@ Key Features:
 - Smart batching and caching for performance
 """
 
+from __future__ import annotations
+
 import time
 from dataclasses import dataclass, field
 from datetime import UTC, datetime

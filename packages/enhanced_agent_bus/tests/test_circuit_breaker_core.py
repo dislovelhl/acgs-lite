@@ -8,6 +8,8 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
+import pytest
+
 
 def _resolve_source() -> Path:
     current = Path(__file__).resolve()
@@ -22,7 +24,11 @@ def _resolve_source() -> Path:
     )
 
 
-_SOURCE = _resolve_source()
+try:
+    _SOURCE = _resolve_source()
+except ImportError as exc:
+    pytest.skip(str(exc), allow_module_level=True)
+
 _SPEC = importlib.util.spec_from_file_location("legacy_circuit_breaker_coverage", _SOURCE)
 if _SPEC is None or _SPEC.loader is None:
     raise ImportError(f"Unable to load compatibility tests from {_SOURCE}")

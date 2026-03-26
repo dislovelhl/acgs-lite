@@ -7,6 +7,8 @@ and MACI framework for comprehensive jailbreak prevention.
 Targets 95% jailbreak prevention with sub-5ms inference latency.
 """
 
+from __future__ import annotations
+
 import asyncio
 import time
 from collections import OrderedDict
@@ -484,9 +486,7 @@ class ConstitutionalClassifierV2:
 
         return self.config.threshold
 
-    def _extract_policy_patterns(
-        self, policy_result: "PolicyResolutionResult" | None
-    ) -> list[str]:
+    def _extract_policy_patterns(self, policy_result: "PolicyResolutionResult" | None) -> list[str]:
         """Extract custom patterns from policy."""
         if not policy_result or not policy_result.policy:
             return []

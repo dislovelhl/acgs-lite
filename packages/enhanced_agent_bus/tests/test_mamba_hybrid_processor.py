@@ -2,15 +2,19 @@
 
 import pytest
 
-torch = pytest.importorskip("torch", reason="torch not available")
-
 from enhanced_agent_bus.context.mamba_hybrid import (  # noqa: E402
     CONSTITUTIONAL_HASH,
+    TORCH_AVAILABLE,
     ConstitutionalContextProcessor,
     ConstitutionalMambaHybrid,
     Mamba2SSM,
     SharedAttentionLayer,
 )
+
+if not TORCH_AVAILABLE:
+    pytest.skip("torch-backed mamba hybrid unavailable", allow_module_level=True)
+
+import torch  # noqa: E402
 
 
 class TestMamba2SSM:

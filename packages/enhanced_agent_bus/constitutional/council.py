@@ -6,6 +6,8 @@ Manages the ratification of high-risk policy changes through a
 distributed multi-signature voting process.
 """
 
+from __future__ import annotations
+
 import json
 from hashlib import sha256
 

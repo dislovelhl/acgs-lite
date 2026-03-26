@@ -8,6 +8,8 @@ DeliberationLayer class, implementing the VERIFY-BEFORE-ACT pattern
 with multi-signature collection and critic agent reviews.
 """
 
+from __future__ import annotations
+
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 

@@ -5,6 +5,8 @@ Constitutional Hash: cdd01ef066bc6cf2
 Fixtures for MACI role enforcement and Z3 verification testing.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from enum import Enum
 

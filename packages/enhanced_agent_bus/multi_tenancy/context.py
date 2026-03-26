@@ -6,6 +6,8 @@ Provides request-scoped tenant identification using Python contextvars.
 Thread-safe and async-compatible for enterprise multi-tenant operations.
 """
 
+from __future__ import annotations
+
 from contextvars import ContextVar, Token
 from dataclasses import dataclass, field
 from datetime import UTC, datetime

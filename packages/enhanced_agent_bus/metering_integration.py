@@ -6,6 +6,8 @@ Non-blocking async metering integration for production billing.
 Designed to maintain P99 latency < 1.31ms by using fire-and-forget patterns.
 """
 
+from __future__ import annotations
+
 import asyncio
 import time
 from collections.abc import Callable
@@ -32,7 +34,7 @@ try:
     MeteringTier = _models.MeteringTier
     UsageEvent = _models.UsageEvent
     UsageMeteringService = importlib.import_module(
-    "src.core.services.metering.app.service"
+        "src.core.services.metering.app.service"
     ).UsageMeteringService
 
     METERING_AVAILABLE = True

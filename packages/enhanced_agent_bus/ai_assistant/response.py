@@ -6,6 +6,8 @@ Intelligent response generation with template-based and LLM-powered
 options, personality application, and constitutional validation.
 """
 
+from __future__ import annotations
+
 import random
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field

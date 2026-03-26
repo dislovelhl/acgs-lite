@@ -21,6 +21,8 @@ Example: Multi-Service Constitutional Validation
 Reference: https://temporal.io/blog/saga-pattern-made-easy
 """
 
+from __future__ import annotations
+
 import asyncio
 import json
 import uuid
