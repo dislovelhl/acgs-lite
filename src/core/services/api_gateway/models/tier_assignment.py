@@ -11,8 +11,10 @@ from enum import StrEnum
 
 from sqlalchemy import DateTime, Index, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSON, UUID
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
+
+from src.core.shared.database.session import Base
 
 
 class AutonomyTier(StrEnum):
@@ -21,10 +23,6 @@ class AutonomyTier(StrEnum):
     ADVISORY = "ADVISORY"
     BOUNDED = "BOUNDED"
     HUMAN_APPROVED = "HUMAN_APPROVED"
-
-
-class Base(DeclarativeBase):
-    pass
 
 
 class AgentTierAssignment(Base):

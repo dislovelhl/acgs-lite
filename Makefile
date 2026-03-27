@@ -203,7 +203,7 @@ bench:
 
 # === Codex Bootstrap ===
 codex-doctor:
-	bash ./.agents/skills/acgs-codex-bootstrap/scripts/codex-doctor.sh
+	bash ./scripts/codex-doctor.sh
 
 # === Autoresearch ===
 autoresearch-promote:

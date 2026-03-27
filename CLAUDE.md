@@ -195,42 +195,47 @@ guidance.
 
 ## gstack
 
-gstack skills are installed as pi skills under `.agents/skills/gstack-*/`. They power browsing,
-planning, review, QA, deployment, and more.
+gstack is vendored as a git submodule at `.claude/skills/gstack/`. Skill symlinks in
+`.claude/skills/` point into it. Use the `/browse` skill from gstack for all web browsing.
+Never use `mcp__claude-in-chrome__*` tools directly.
 
-**Web browsing**: always use the `gstack-browse` skill for all web browsing tasks. Never use
-`mcp__claude-in-chrome__*` tools directly.
+**Teammate setup** (after clone):
 
-**Available skills (invoke via `/skill:name`):**
+```bash
+git submodule update --init .claude/skills/gstack
+cd .claude/skills/gstack && ./setup
+```
+
+**Available skills:**
 
 | Skill | Purpose |
 | ----- | ------- |
-| `/skill:gstack-office-hours` | Async Q&A and guidance sessions |
-| `/skill:gstack-plan-ceo-review` | Executive-level plan review |
-| `/skill:gstack-plan-eng-review` | Engineering plan review |
-| `/skill:gstack-plan-design-review` | Design plan review |
-| `/skill:gstack-design-consultation` | Design consultation and feedback |
-| `/skill:gstack-review` | Code and content review |
-| `/skill:gstack-ship` | Ship a change end-to-end |
-| `/skill:gstack-land-and-deploy` | Land a PR and trigger deployment |
-| `/skill:gstack-canary` | Canary release management |
-| `/skill:gstack-benchmark` | Performance benchmarking |
-| `/skill:gstack-browse` | Web browsing (use this, not chrome MCP tools) |
-| `/skill:gstack-qa` | Full QA pass |
-| `/skill:gstack-qa-only` | QA without setup steps |
-| `/skill:gstack-design-review` | Design artifact review |
-| `/skill:gstack-setup-browser-cookies` | Configure browser auth cookies |
-| `/skill:gstack-setup-deploy` | Configure deployment targets |
-| `/skill:gstack-retro` | Retrospective facilitation |
-| `/skill:gstack-investigate` | Deep investigation / root cause analysis |
-| `/skill:gstack-document-release` | Generate release documentation |
-| `/skill:gstack-autoplan` | Automated planning |
-| `/skill:gstack-cso` | Chief Security Officer review |
-| `/skill:gstack-careful` | High-caution mode for risky changes |
-| `/skill:gstack-freeze` | Freeze deploys / change freeze |
-| `/skill:gstack-guard` | Guard rails enforcement |
-| `/skill:gstack-unfreeze` | Lift a deploy or change freeze |
-| `/skill:gstack-upgrade` | Upgrade gstack itself |
+| `/office-hours` | Async Q&A and guidance sessions |
+| `/plan-ceo-review` | Executive-level plan review |
+| `/plan-eng-review` | Engineering plan review |
+| `/plan-design-review` | Design plan review |
+| `/design-consultation` | Design consultation and feedback |
+| `/review` | Code and content review |
+| `/ship` | Ship a change end-to-end |
+| `/land-and-deploy` | Land a PR and trigger deployment |
+| `/canary` | Canary release management |
+| `/benchmark` | Performance benchmarking |
+| `/browse` | Web browsing (use this, not chrome MCP tools) |
+| `/qa` | Full QA pass |
+| `/qa-only` | QA without setup steps |
+| `/design-review` | Design artifact review |
+| `/setup-browser-cookies` | Configure browser auth cookies |
+| `/setup-deploy` | Configure deployment targets |
+| `/retro` | Retrospective facilitation |
+| `/investigate` | Deep investigation / root cause analysis |
+| `/document-release` | Generate release documentation |
+| `/autoplan` | Automated planning |
+| `/cso` | Chief Security Officer review |
+| `/careful` | High-caution mode for risky changes |
+| `/freeze` | Freeze deploys / change freeze |
+| `/guard` | Guard rails enforcement |
+| `/unfreeze` | Lift a deploy or change freeze |
+| `/gstack-upgrade` | Upgrade gstack itself |
 
 **If gstack skills aren't working**, rebuild the binary and re-register skills:
 

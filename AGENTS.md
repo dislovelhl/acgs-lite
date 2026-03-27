@@ -71,7 +71,7 @@ All repository pytest invocations should include `--import-mode=importlib`.
 
 - Repo-local Codex entry: `.agents/skills/acgs-codex-bootstrap/`.
 - Use `make codex-doctor` for the quick local readiness check.
-- The target runs `.agents/skills/acgs-codex-bootstrap/scripts/codex-doctor.sh`.
+- The target runs `scripts/codex-doctor.sh`.
 - For OpenAI product/API questions, prefer the configured `openaiDeveloperDocs` MCP server.
 - The stable Codex CLI in this workspace does not expose a repo hook manager; use tracked scripts
   and Make targets instead.

@@ -2,3 +2,6 @@
 	path = constitutional-sentinel-demo
 	url = https://gitlab.com/martin664/constitutional-sentinel-demo.git
 	branch = main
+[submodule ".claude/skills/gstack"]
+	path = .claude/skills/gstack
+	url = https://github.com/garrytan/gstack.git

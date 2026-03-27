@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "acgs-lite"
-version = "2.4.0"
+version = "2.4.1"
 description = "Public ACGS Lite package for constitutional governance in AI agents. Enforce rules, audit decisions, and prevent self-validation in production."
 readme = "README.md"
 license = "AGPL-3.0-or-later"
@@ -66,11 +66,11 @@ dev = [
 "acgs-lite" = "acgs_lite.cli:main"
 
 [project.urls]
-Homepage = "https://acgs.ai"
-Documentation = "https://acgs.ai"
-Repository = "https://github.com/acgs2_admin/acgs"
-Issues = "https://github.com/acgs2_admin/acgs/issues"
-Changelog = "https://github.com/acgs2_admin/acgs/releases"
+Homepage = "https://gitlab.com/martin668/acgs-lite"
+Documentation = "https://gitlab.com/martin668/acgs-lite/-/blob/main/README.md"
+Repository = "https://gitlab.com/martin668/acgs-lite"
+Issues = "https://gitlab.com/martin668/acgs-lite/-/issues"
+Changelog = "https://gitlab.com/martin668/acgs-lite/-/releases"
 PyPI = "https://pypi.org/project/acgs-lite/"
 
 [tool.setuptools.packages.find]

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "acgs"
-version = "3.0.1"
+version = "3.0.2"
 description = "Partial-open-source ACGS package line for governance runtime, shared components, and platform tooling"
 requires-python = ">=3.11"
 license = "AGPL-3.0-or-later"
@@ -65,6 +65,14 @@ postgres = [
     "asyncpg>=0.31.0",
     "sqlalchemy>=2.0.38",
 ]
+
+[project.urls]
+Homepage = "https://github.com/dislovelhl/acgs"
+Documentation = "https://github.com/dislovelhl/acgs/blob/main/README.md"
+Repository = "https://github.com/dislovelhl/acgs"
+Issues = "https://github.com/dislovelhl/acgs/issues"
+Changelog = "https://github.com/dislovelhl/acgs/releases"
+PyPI = "https://pypi.org/project/acgs/"
 
 [tool.uv]
 managed = true

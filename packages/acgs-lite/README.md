@@ -6,7 +6,7 @@
 
 `ACGS 2.4.0` | `AGPL-3.0-or-later` | `optional Rust fast path` | `pytest-backed verification`
 
-[![Demo Video](https://img.youtube.com/vi/do9BCPn29_Q/maxresdefault.jpg)](https://youtu.be/do9BCPn29_Q)
+[![Demo Video](https://img.youtube.com/vi/uWacmC3CbYg/maxresdefault.jpg)](https://youtu.be/uWacmC3CbYg)
 
 > **Hackathon fast path:** If you're here for the GitLab AI Hackathon demo, start with **Constitutional Sentinel** — an ACGS-powered GitLab merge request governance agent that reviews AI-generated code, posts inline violations, and blocks unsafe merges. See `hackathon/devpost-submission.md`, `hackathon/demo-video-script.md`, `hackathon/constitution.yaml`, and the demo MR: <https://gitlab.com/martin664/constitutional-sentinel-demo/-/merge_requests/1>.
 >
@@ -491,6 +491,6 @@ See [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) for details and FAQ.
 
 ---
 
-**[PyPI](https://pypi.org/project/acgs-lite/) | [GitHub](https://github.com/acgs2_admin/acgs) | [Website](https://acgs.ai)**
+**[PyPI](https://pypi.org/project/acgs-lite/) | [Repository](https://gitlab.com/martin668/acgs-lite) | [Docs](https://gitlab.com/martin668/acgs-lite/-/blob/main/README.md)**
 
 *Constitutional Hash: 608508a9bd224290*

@@ -20,7 +20,7 @@ resolution-markers = [
 members = [
     "acgs",
     "acgs-deliberation",
-    "acgs-monorepo",
+    "acgs-lite",
     "enhanced-agent-bus",
 ]
 
@@ -42,139 +42,7 @@ wheels = [
 
 [[package]]
 name = "acgs"
-version = "2.4.0"
-source = { editable = "packages/acgs-lite" }
-dependencies = [
-    { name = "click" },
-    { name = "pydantic" },
-    { name = "pyyaml" },
-]
-
-[package.optional-dependencies]
-a2a = [
-    { name = "a2a-sdk" },
-    { name = "httpx" },
-]
-all = [
-    { name = "a2a-sdk" },
-    { name = "anthropic" },
-    { name = "autogen-agentchat" },
-    { name = "autogen-core" },
-    { name = "crewai" },
-    { name = "fpdf2" },
-    { name = "google-cloud-logging" },
-    { name = "google-genai" },
-    { name = "httpx" },
-    { name = "langchain-core" },
-    { name = "litellm" },
-    { name = "llama-index-core" },
-    { name = "mcp" },
-    { name = "openai" },
-    { name = "starlette" },
-]
-anthropic = [
-    { name = "anthropic" },
-]
-autogen = [
-    { name = "autogen-agentchat" },
-    { name = "autogen-core" },
-]
-crewai = [
-    { name = "crewai" },
-]
-dev = [
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-benchmark" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
-]
-gitlab = [
-    { name = "httpx" },
-    { name = "starlette" },
-]
-google = [
-    { name = "google-genai" },
-]
-google-cloud = [
-    { name = "google-cloud-logging" },
-]
-langchain = [
-    { name = "langchain-core" },
-]
-litellm = [
-    { name = "litellm" },
-]
-llamaindex = [
-    { name = "llama-index-core" },
-]
-mcp = [
-    { name = "mcp" },
-]
-openai = [
-    { name = "openai" },
-]
-pdf = [
-    { name = "fpdf2" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "a2a-sdk", marker = "extra == 'a2a'", specifier = ">=0.2" },
-    { name = "acgs", extras = ["a2a", "openai", "anthropic", "langchain", "litellm", "google", "llamaindex", "autogen", "mcp", "crewai", "gitlab", "google-cloud", "pdf"], marker = "extra == 'all'", editable = "packages/acgs-lite" },
-    { name = "anthropic", marker = "extra == 'anthropic'", specifier = ">=0.30" },
-    { name = "autogen-agentchat", marker = "extra == 'autogen'", specifier = ">=0.4" },
-    { name = "autogen-core", marker = "extra == 'autogen'", specifier = ">=0.4" },
-    { name = "click", specifier = ">=8.0" },
-    { name = "crewai", marker = "extra == 'crewai'", specifier = ">=0.30" },
-    { name = "fpdf2", marker = "extra == 'pdf'", specifier = ">=2.7" },
-    { name = "google-cloud-logging", marker = "extra == 'google-cloud'", specifier = ">=3.0" },
-    { name = "google-genai", marker = "extra == 'google'", specifier = ">=1.0" },
-    { name = "httpx", marker = "extra == 'a2a'", specifier = ">=0.27" },
-    { name = "httpx", marker = "extra == 'gitlab'", specifier = ">=0.27" },
-    { name = "langchain-core", marker = "extra == 'langchain'", specifier = ">=0.2" },
-    { name = "litellm", marker = "extra == 'litellm'", specifier = ">=1.0" },
-    { name = "llama-index-core", marker = "extra == 'llamaindex'", specifier = ">=0.10" },
-    { name = "mcp", marker = "extra == 'mcp'", specifier = ">=1.0" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.13" },
-    { name = "openai", marker = "extra == 'openai'", specifier = ">=1.0" },
-    { name = "pydantic", specifier = ">=2.0" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.24" },
-    { name = "pytest-benchmark", marker = "extra == 'dev'", specifier = ">=4.0" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.1" },
-    { name = "pyyaml", specifier = ">=6.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8" },
-    { name = "starlette", marker = "extra == 'gitlab'", specifier = ">=0.37" },
-]
-provides-extras = ["a2a", "openai", "anthropic", "langchain", "litellm", "google", "llamaindex", "autogen", "mcp", "crewai", "gitlab", "google-cloud", "pdf", "all", "dev"]
-
-[[package]]
-name = "acgs-deliberation"
-version = "0.1.0"
-source = { editable = "packages/acgs-deliberation" }
-dependencies = [
-    { name = "enhanced-agent-bus" },
-]
-
-[package.optional-dependencies]
-dev = [
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "enhanced-agent-bus", editable = "packages/enhanced_agent_bus" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23.0" },
-]
-provides-extras = ["dev"]
-
-[[package]]
-name = "acgs-monorepo"
-version = "3.0.0"
+version = "3.0.2"
 source = { editable = "." }
 dependencies = [
     { name = "cachetools" },
@@ -279,6 +147,138 @@ requires-dist = [
     { name = "uvloop", specifier = ">=0.21.0" },
 ]
 provides-extras = ["dev", "test", "ml", "pqc", "postgres"]
+
+[[package]]
+name = "acgs-deliberation"
+version = "0.1.0"
+source = { editable = "packages/acgs-deliberation" }
+dependencies = [
+    { name = "enhanced-agent-bus" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "enhanced-agent-bus", editable = "packages/enhanced_agent_bus" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23.0" },
+]
+provides-extras = ["dev"]
+
+[[package]]
+name = "acgs-lite"
+version = "2.4.1"
+source = { editable = "packages/acgs-lite" }
+dependencies = [
+    { name = "click" },
+    { name = "pydantic" },
+    { name = "pyyaml" },
+]
+
+[package.optional-dependencies]
+a2a = [
+    { name = "a2a-sdk" },
+    { name = "httpx" },
+]
+all = [
+    { name = "a2a-sdk" },
+    { name = "anthropic" },
+    { name = "autogen-agentchat" },
+    { name = "autogen-core" },
+    { name = "crewai" },
+    { name = "fpdf2" },
+    { name = "google-cloud-logging" },
+    { name = "google-genai" },
+    { name = "httpx" },
+    { name = "langchain-core" },
+    { name = "litellm" },
+    { name = "llama-index-core" },
+    { name = "mcp" },
+    { name = "openai" },
+    { name = "starlette" },
+]
+anthropic = [
+    { name = "anthropic" },
+]
+autogen = [
+    { name = "autogen-agentchat" },
+    { name = "autogen-core" },
+]
+crewai = [
+    { name = "crewai" },
+]
+dev = [
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-benchmark" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
+]
+gitlab = [
+    { name = "httpx" },
+    { name = "starlette" },
+]
+google = [
+    { name = "google-genai" },
+]
+google-cloud = [
+    { name = "google-cloud-logging" },
+]
+langchain = [
+    { name = "langchain-core" },
+]
+litellm = [
+    { name = "litellm" },
+]
+llamaindex = [
+    { name = "llama-index-core" },
+]
+mcp = [
+    { name = "mcp" },
+]
+openai = [
+    { name = "openai" },
+]
+pdf = [
+    { name = "fpdf2" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "a2a-sdk", marker = "extra == 'a2a'", specifier = ">=0.2" },
+    { name = "acgs-lite", extras = ["a2a", "openai", "anthropic", "langchain", "litellm", "google", "llamaindex", "autogen", "mcp", "crewai", "gitlab", "google-cloud", "pdf"], marker = "extra == 'all'", editable = "packages/acgs-lite" },
+    { name = "anthropic", marker = "extra == 'anthropic'", specifier = ">=0.30" },
+    { name = "autogen-agentchat", marker = "extra == 'autogen'", specifier = ">=0.4" },
+    { name = "autogen-core", marker = "extra == 'autogen'", specifier = ">=0.4" },
+    { name = "click", specifier = ">=8.0" },
+    { name = "crewai", marker = "extra == 'crewai'", specifier = ">=0.30" },
+    { name = "fpdf2", marker = "extra == 'pdf'", specifier = ">=2.7" },
+    { name = "google-cloud-logging", marker = "extra == 'google-cloud'", specifier = ">=3.0" },
+    { name = "google-genai", marker = "extra == 'google'", specifier = ">=1.0" },
+    { name = "httpx", marker = "extra == 'a2a'", specifier = ">=0.27" },
+    { name = "httpx", marker = "extra == 'gitlab'", specifier = ">=0.27" },
+    { name = "langchain-core", marker = "extra == 'langchain'", specifier = ">=0.2" },
+    { name = "litellm", marker = "extra == 'litellm'", specifier = ">=1.0" },
+    { name = "llama-index-core", marker = "extra == 'llamaindex'", specifier = ">=0.10" },
+    { name = "mcp", marker = "extra == 'mcp'", specifier = ">=1.0" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.13" },
+    { name = "openai", marker = "extra == 'openai'", specifier = ">=1.0" },
+    { name = "pydantic", specifier = ">=2.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.24" },
+    { name = "pytest-benchmark", marker = "extra == 'dev'", specifier = ">=4.0" },
+    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.1" },
+    { name = "pyyaml", specifier = ">=6.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8" },
+    { name = "starlette", marker = "extra == 'gitlab'", specifier = ">=0.37" },
+]
+provides-extras = ["a2a", "openai", "anthropic", "langchain", "litellm", "google", "llamaindex", "autogen", "mcp", "crewai", "gitlab", "google-cloud", "pdf", "all", "dev"]
 
 [[package]]
 name = "aiofiles"

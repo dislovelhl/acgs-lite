@@ -113,7 +113,7 @@ That means the system that proposes code is never the system that validates it.
 - **GitLab Project**: https://gitlab.com/martin664/constitutional-sentinel-demo
 - **Live Demo MR**: https://gitlab.com/martin664/constitutional-sentinel-demo/-/merge_requests/1
 - **Constitution**: see `hackathon/constitution.yaml`
-- **Video**: add public YouTube/Vimeo link before submission
+- **Video**: https://www.youtube.com/watch?v=uWacmC3CbYg
 
 ---
 

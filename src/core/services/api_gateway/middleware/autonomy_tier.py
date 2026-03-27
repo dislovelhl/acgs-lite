@@ -39,7 +39,8 @@ from datetime import UTC, datetime
 from typing import Protocol, runtime_checkable
 
 import httpx
-from fastapi import Request
+import jwt
+from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
@@ -206,7 +207,7 @@ class AutonomyTierEnforcementMiddleware(BaseHTTPMiddleware):
         if auth.startswith("Bearer "):
             try:
                 return verify_token(auth[7:])
-            except Exception:
+            except Exception:  # noqa: BLE001 — middleware boundary, must not crash
                 logger.debug("Bearer token verification failed during autonomy-tier resolution")
         return None
 
@@ -508,7 +509,7 @@ class AutonomyTierEnforcementMiddleware(BaseHTTPMiddleware):
                         "constitutional_hash": CONSTITUTIONAL_HASH
                     },  # pragma: allowlist secret
                 )
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 — HITL failure must not block request
                 logger.error(
                     "tier_enforcement.hitl_submit_failed",
                     agent_id=agent_id,
