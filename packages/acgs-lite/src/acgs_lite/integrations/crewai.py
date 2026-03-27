@@ -27,9 +27,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from acgs_lite.audit import AuditLog
 from acgs_lite.constitution import Constitution
-from acgs_lite.engine import GovernanceEngine
+from acgs_lite.integrations.base import GovernedBase
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +43,7 @@ except ImportError:
     Task = object  # type: ignore[assignment,misc]
 
 
-class GovernedCrewAgent:
+class GovernedCrewAgent(GovernedBase):
     """CrewAI Agent wrapper with constitutional governance.
 
     Validates task descriptions before the underlying agent executes them
@@ -76,14 +75,9 @@ class GovernedCrewAgent:
             )
 
         self._agent = agent
-        self.constitution = constitution or Constitution.default()
-        self.audit_log = AuditLog()
-        self.engine = GovernanceEngine(
-            self.constitution,
-            audit_log=self.audit_log,
-            strict=strict,
+        self._init_governance(
+            constitution=constitution, agent_id=agent_id, strict=strict,
         )
-        self.agent_id = agent_id
 
     @classmethod
     def wrap(
@@ -110,14 +104,7 @@ class GovernedCrewAgent:
 
     def _validate_output(self, text: str) -> None:
         """Validate output text without raising (log warnings only)."""
-        if text:
-            with self.engine.non_strict():
-                result = self.engine.validate(text, agent_id=f"{self.agent_id}:output")
-            if not result.valid:
-                logger.warning(
-                    "CrewAI agent output governance violations: %s",
-                    [v.rule_id for v in result.violations],
-                )
+        self._validate_nonstrict(text, label="CrewAI agent output")
 
     def execute_task(self, task: Any, **kwargs: Any) -> Any:
         """Execute a task with governance validation.
@@ -135,14 +122,10 @@ class GovernedCrewAgent:
     @property
     def stats(self) -> dict[str, Any]:
         """Return governance statistics for this agent."""
-        return {
-            **self.engine.stats,
-            "agent_id": self.agent_id,
-            "audit_chain_valid": self.audit_log.verify_chain(),
-        }
+        return self.governance_stats
 
 
-class GovernedTask:
+class GovernedTask(GovernedBase):
     """CrewAI Task wrapper with constitutional governance.
 
     Validates the task description and expected_output against the constitution
@@ -171,14 +154,9 @@ class GovernedTask:
             )
 
         self._task = task
-        self.constitution = constitution or Constitution.default()
-        self.audit_log = AuditLog()
-        self.engine = GovernanceEngine(
-            self.constitution,
-            audit_log=self.audit_log,
-            strict=strict,
+        self._init_governance(
+            constitution=constitution, agent_id=agent_id, strict=strict,
         )
-        self.agent_id = agent_id
 
         # Validate task description at construction time
         description = getattr(task, "description", "")
@@ -213,14 +191,10 @@ class GovernedTask:
     @property
     def stats(self) -> dict[str, Any]:
         """Return governance statistics for this task."""
-        return {
-            **self.engine.stats,
-            "agent_id": self.agent_id,
-            "audit_chain_valid": self.audit_log.verify_chain(),
-        }
+        return self.governance_stats
 
 
-class GovernedCrew:
+class GovernedCrew(GovernedBase):
     """CrewAI Crew wrapper with constitutional governance.
 
     Validates all task descriptions before crew kickoff and validates
@@ -253,14 +227,9 @@ class GovernedCrew:
             )
 
         self._crew = crew
-        self.constitution = constitution or Constitution.default()
-        self.audit_log = AuditLog()
-        self.engine = GovernanceEngine(
-            self.constitution,
-            audit_log=self.audit_log,
-            strict=strict,
+        self._init_governance(
+            constitution=constitution, agent_id=agent_id, strict=strict,
         )
-        self.agent_id = agent_id
 
     @classmethod
     def wrap(
@@ -293,14 +262,7 @@ class GovernedCrew:
     def _validate_output(self, output: Any) -> None:
         """Validate crew output without raising (log warnings only)."""
         text = str(output) if output else ""
-        if text:
-            with self.engine.non_strict():
-                result = self.engine.validate(text, agent_id=f"{self.agent_id}:output")
-            if not result.valid:
-                logger.warning(
-                    "CrewAI crew output governance violations: %s",
-                    [v.rule_id for v in result.violations],
-                )
+        self._validate_nonstrict(text, label="CrewAI crew output")
 
     def kickoff(self, **kwargs: Any) -> Any:
         """Run the crew with governance validation.
@@ -327,8 +289,4 @@ class GovernedCrew:
     @property
     def stats(self) -> dict[str, Any]:
         """Return governance statistics for this crew."""
-        return {
-            **self.engine.stats,
-            "agent_id": self.agent_id,
-            "audit_chain_valid": self.audit_log.verify_chain(),
-        }
+        return self.governance_stats

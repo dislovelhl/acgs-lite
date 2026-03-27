@@ -21,9 +21,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from acgs_lite.audit import AuditLog
 from acgs_lite.constitution import Constitution
-from acgs_lite.engine import GovernanceEngine
+from acgs_lite.integrations.base import GovernedBase
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +35,7 @@ except ImportError:
     PydanticAgent = object  # type: ignore[assignment,misc]
 
 
-class GovernedPydanticAgent:
+class GovernedPydanticAgent(GovernedBase):
     """Pydantic AI Agent wrapper with constitutional governance.
 
     Wraps a ``pydantic_ai.Agent`` instance, validating prompts before
@@ -72,14 +71,9 @@ class GovernedPydanticAgent:
             )
 
         self._agent = agent
-        self.constitution = constitution or Constitution.default()
-        self.audit_log = AuditLog()
-        self.engine = GovernanceEngine(
-            self.constitution,
-            audit_log=self.audit_log,
-            strict=strict,
+        self._init_governance(
+            constitution=constitution, agent_id=agent_id, strict=strict,
         )
-        self.agent_id = agent_id
 
     @classmethod
     def wrap(
@@ -106,16 +100,7 @@ class GovernedPydanticAgent:
 
     def _validate_output(self, text: str) -> None:
         """Validate output without raising (just log warnings)."""
-        if text:
-            with self.engine.non_strict():
-                result = self.engine.validate(
-                    text, agent_id=f"{self.agent_id}:output"
-                )
-            if not result.valid:
-                logger.warning(
-                    "Pydantic AI output governance violations: %s",
-                    [v.rule_id for v in result.violations],
-                )
+        self._validate_nonstrict(text, label="Pydantic AI output")
 
     def run_sync(self, prompt: str, **kwargs: Any) -> Any:
         """Run the agent synchronously with governance.
@@ -156,14 +141,10 @@ class GovernedPydanticAgent:
     @property
     def stats(self) -> dict[str, Any]:
         """Return governance statistics for this agent."""
-        return {
-            **self.engine.stats,
-            "agent_id": self.agent_id,
-            "audit_chain_valid": self.audit_log.verify_chain(),
-        }
+        return self.governance_stats
 
 
-class GovernedModel:
+class GovernedModel(GovernedBase):
     """Low-level Pydantic AI model wrapper with constitutional governance.
 
     Intercepts ``request()`` and ``arequest()`` to validate message
@@ -191,14 +172,9 @@ class GovernedModel:
             )
 
         self._model = model
-        self.constitution = constitution or Constitution.default()
-        self.audit_log = AuditLog()
-        self.engine = GovernanceEngine(
-            self.constitution,
-            audit_log=self.audit_log,
-            strict=strict,
+        self._init_governance(
+            constitution=constitution, agent_id=agent_id, strict=strict,
         )
-        self.agent_id = agent_id
 
     def _extract_messages_text(self, messages: Any) -> str:
         """Extract text content from a list of messages."""
@@ -219,16 +195,7 @@ class GovernedModel:
 
     def _validate_output(self, text: str) -> None:
         """Validate output without raising (just log warnings)."""
-        if text:
-            with self.engine.non_strict():
-                result = self.engine.validate(
-                    text, agent_id=f"{self.agent_id}:output"
-                )
-            if not result.valid:
-                logger.warning(
-                    "Pydantic AI model output governance violations: %s",
-                    [v.rule_id for v in result.violations],
-                )
+        self._validate_nonstrict(text, label="Pydantic AI model output")
 
     def request(self, messages: Any, **kwargs: Any) -> Any:
         """Intercept a synchronous model request with governance."""
@@ -267,8 +234,4 @@ class GovernedModel:
     @property
     def stats(self) -> dict[str, Any]:
         """Return governance statistics for this model."""
-        return {
-            **self.engine.stats,
-            "agent_id": self.agent_id,
-            "audit_chain_valid": self.audit_log.verify_chain(),
-        }
+        return self.governance_stats

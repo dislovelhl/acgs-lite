@@ -24,9 +24,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from acgs_lite.audit import AuditLog
 from acgs_lite.constitution import Constitution
-from acgs_lite.engine import GovernanceEngine
+from acgs_lite.integrations.base import GovernedBase
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +90,7 @@ def _extract_texts_from_dict(
     return texts
 
 
-class GovernedHaystackPipeline:
+class GovernedHaystackPipeline(GovernedBase):
     """Haystack Pipeline wrapper with constitutional governance.
 
     Validates text extracted from input data before the pipeline runs
@@ -125,14 +124,9 @@ class GovernedHaystackPipeline:
             )
 
         self._pipeline = pipeline
-        self.constitution = constitution or Constitution.default()
-        self.audit_log = AuditLog()
-        self.engine = GovernanceEngine(
-            self.constitution,
-            audit_log=self.audit_log,
-            strict=strict,
+        self._init_governance(
+            constitution=constitution, agent_id=agent_id, strict=strict,
         )
-        self.agent_id = agent_id
 
     @classmethod
     def wrap(
@@ -169,17 +163,9 @@ class GovernedHaystackPipeline:
         texts = _extract_texts_from_dict(result, _OUTPUT_TEXT_KEYS)
         combined = " ".join(texts)
         if combined.strip():
-            with self.engine.non_strict():
-                vr = self.engine.validate(
-                    combined,
-                    agent_id=f"{self.agent_id}:output",
-                )
-            if not vr.valid:
-                logger.warning(
-                    "Haystack pipeline output governance "
-                    "violations: %s",
-                    [v.rule_id for v in vr.violations],
-                )
+            self._validate_nonstrict(
+                combined, label="Haystack pipeline output",
+            )
 
     def run(
         self, data: dict[str, Any], **kwargs: Any,
@@ -213,14 +199,10 @@ class GovernedHaystackPipeline:
     @property
     def stats(self) -> dict[str, Any]:
         """Return governance statistics for this pipeline."""
-        return {
-            **self.engine.stats,
-            "agent_id": self.agent_id,
-            "audit_chain_valid": self.audit_log.verify_chain(),
-        }
+        return self.governance_stats
 
 
-class GovernedComponent:
+class GovernedComponent(GovernedBase):
     """Wraps any Haystack Component with constitutional governance.
 
     Validates text found in keyword arguments before the component
@@ -251,14 +233,9 @@ class GovernedComponent:
             )
 
         self._component = component
-        self.constitution = constitution or Constitution.default()
-        self.audit_log = AuditLog()
-        self.engine = GovernanceEngine(
-            self.constitution,
-            audit_log=self.audit_log,
-            strict=strict,
+        self._init_governance(
+            constitution=constitution, agent_id=agent_id, strict=strict,
         )
-        self.agent_id = agent_id
 
     @classmethod
     def wrap(
@@ -298,31 +275,20 @@ class GovernedComponent:
             )
             out_combined = " ".join(out_texts)
             if out_combined.strip():
-                with self.engine.non_strict():
-                    vr = self.engine.validate(
-                        out_combined,
-                        agent_id=f"{self.agent_id}:output",
-                    )
-                if not vr.valid:
-                    logger.warning(
-                        "Haystack component output governance "
-                        "violations: %s",
-                        [v.rule_id for v in vr.violations],
-                    )
+                self._validate_nonstrict(
+                    out_combined,
+                    label="Haystack component output",
+                )
 
         return result
 
     @property
     def stats(self) -> dict[str, Any]:
         """Return governance statistics for this component."""
-        return {
-            **self.engine.stats,
-            "agent_id": self.agent_id,
-            "audit_chain_valid": self.audit_log.verify_chain(),
-        }
+        return self.governance_stats
 
 
-class GovernanceComponent:
+class GovernanceComponent(GovernedBase):
     """Standalone governance validation component for pipelines.
 
     Can be inserted into any Haystack pipeline as a node to perform
@@ -350,14 +316,9 @@ class GovernanceComponent:
         agent_id: str = "haystack-governance-node",
         strict: bool = True,
     ) -> None:
-        self.constitution = constitution or Constitution.default()
-        self.audit_log = AuditLog()
-        self.engine = GovernanceEngine(
-            self.constitution,
-            audit_log=self.audit_log,
-            strict=strict,
+        self._init_governance(
+            constitution=constitution, agent_id=agent_id, strict=strict,
         )
-        self.agent_id = agent_id
 
     def run(self, text: str) -> dict[str, Any]:
         """Validate text and return governance metadata.
@@ -411,8 +372,4 @@ class GovernanceComponent:
     @property
     def stats(self) -> dict[str, Any]:
         """Return governance statistics for this component."""
-        return {
-            **self.engine.stats,
-            "agent_id": self.agent_id,
-            "audit_chain_valid": self.audit_log.verify_chain(),
-        }
+        return self.governance_stats

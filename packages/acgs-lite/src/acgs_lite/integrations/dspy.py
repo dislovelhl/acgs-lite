@@ -29,9 +29,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from acgs_lite.audit import AuditLog
 from acgs_lite.constitution import Constitution
-from acgs_lite.engine import GovernanceEngine
+from acgs_lite.integrations.base import GovernedBase
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +43,7 @@ except ImportError:
     dspy = None  # type: ignore[assignment]
 
 
-class GovernedDSPyModule:
+class GovernedDSPyModule(GovernedBase):
     """DSPy Module wrapper with constitutional governance.
 
     Wraps any DSPy Module with governance validation on inputs
@@ -76,14 +75,9 @@ class GovernedDSPyModule:
             )
 
         self._module = module
-        self.constitution = constitution or Constitution.default()
-        self.audit_log = AuditLog()
-        self.engine = GovernanceEngine(
-            self.constitution,
-            audit_log=self.audit_log,
-            strict=strict,
+        self._init_governance(
+            constitution=constitution, agent_id=agent_id, strict=strict,
         )
-        self.agent_id = agent_id
 
     @classmethod
     def wrap(
@@ -169,17 +163,7 @@ class GovernedDSPyModule:
     def _validate_output(self, result: Any) -> None:
         """Validate output text without raising."""
         text = self._extract_output_text(result)
-        if text:
-            with self.engine.non_strict():
-                validation = self.engine.validate(
-                    text,
-                    agent_id=f"{self.agent_id}:output",
-                )
-            if not validation.valid:
-                logger.warning(
-                    "DSPy output governance violations: %s",
-                    [v.rule_id for v in validation.violations],
-                )
+        self._validate_nonstrict(text, label="DSPy output")
 
     def forward(self, **kwargs: Any) -> Any:
         """Execute the module's forward() with governance.
@@ -207,14 +191,10 @@ class GovernedDSPyModule:
     @property
     def stats(self) -> dict[str, Any]:
         """Return governance statistics for this module."""
-        return {
-            **self.engine.stats,
-            "agent_id": self.agent_id,
-            "audit_chain_valid": self.audit_log.verify_chain(),
-        }
+        return self.governance_stats
 
 
-class GovernedPredict:
+class GovernedPredict(GovernedBase):
     """DSPy Predict wrapper with constitutional governance.
 
     Wraps a ``dspy.Predict`` instance (or any callable predictor)
@@ -244,14 +224,9 @@ class GovernedPredict:
             )
 
         self._predict = predict
-        self.constitution = constitution or Constitution.default()
-        self.audit_log = AuditLog()
-        self.engine = GovernanceEngine(
-            self.constitution,
-            audit_log=self.audit_log,
-            strict=strict,
+        self._init_governance(
+            constitution=constitution, agent_id=agent_id, strict=strict,
         )
-        self.agent_id = agent_id
 
     @classmethod
     def wrap(
@@ -325,17 +300,7 @@ class GovernedPredict:
     def _validate_output(self, result: Any) -> None:
         """Validate output text without raising."""
         text = self._extract_output_text(result)
-        if text:
-            with self.engine.non_strict():
-                validation = self.engine.validate(
-                    text,
-                    agent_id=f"{self.agent_id}:output",
-                )
-            if not validation.valid:
-                logger.warning(
-                    "DSPy predict output governance violations: %s",
-                    [v.rule_id for v in validation.violations],
-                )
+        self._validate_nonstrict(text, label="DSPy predict output")
 
     def __call__(self, **kwargs: Any) -> Any:
         """Call the predictor with governance validation."""
@@ -355,8 +320,4 @@ class GovernedPredict:
     @property
     def stats(self) -> dict[str, Any]:
         """Return governance statistics for this predictor."""
-        return {
-            **self.engine.stats,
-            "agent_id": self.agent_id,
-            "audit_chain_valid": self.audit_log.verify_chain(),
-        }
+        return self.governance_stats

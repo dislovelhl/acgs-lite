@@ -156,11 +156,59 @@ def _first_rule_id(violations: list[dict[str, Any]]) -> str:
 
 
 # ---------------------------------------------------------------------------
+# BaseNotifier — shared severity filtering and dispatch skeleton
+# ---------------------------------------------------------------------------
+
+
+class BaseNotifier:
+    """Common base for notifier channels.
+
+    Provides severity filtering, timeout management, and the public
+    :meth:`send` entry-point.  Subclasses implement :meth:`_do_send` for the
+    actual HTTP call and override the :attr:`name` property.
+    """
+
+    def __init__(
+        self,
+        *,
+        severity_filter: str = "LOW",
+        timeout: float = 5.0,
+    ) -> None:
+        self._severity_filter = severity_filter.upper()
+        self._timeout = timeout
+
+    @property
+    def name(self) -> str:  # pragma: no cover — overridden by subclasses
+        raise NotImplementedError
+
+    @property
+    def severity_filter(self) -> str:
+        return self._severity_filter
+
+    @property
+    def timeout(self) -> float:
+        return self._timeout
+
+    def _should_send(self, event: GovernanceEvent) -> bool:
+        """Return ``True`` when *event* severity meets the minimum filter."""
+        return _severity_passes_filter(event.severity, self._severity_filter)
+
+    async def send(self, event: GovernanceEvent) -> bool:
+        """Check the severity filter, then delegate to :meth:`_do_send`."""
+        if not self._should_send(event):
+            return False
+        return await self._do_send(event)
+
+    async def _do_send(self, event: GovernanceEvent) -> bool:  # pragma: no cover
+        raise NotImplementedError
+
+
+# ---------------------------------------------------------------------------
 # SlackNotifier
 # ---------------------------------------------------------------------------
 
 
-class SlackNotifier:
+class SlackNotifier(BaseNotifier):
     """Posts governance events to Slack via an Incoming Webhook.
 
     Formats violations as Block Kit messages with color-coded attachments.
@@ -179,18 +227,13 @@ class SlackNotifier:
                 "httpx is required for SlackNotifier. "
                 "Install with: pip install httpx"
             )
+        super().__init__(severity_filter=severity_filter, timeout=timeout)
         self._webhook_url = webhook_url
         self._channel = channel
-        self._severity_filter = severity_filter.upper()
-        self._timeout = timeout
 
     @property
     def name(self) -> str:
         return "slack"
-
-    @property
-    def severity_filter(self) -> str:
-        return self._severity_filter
 
     def _build_payload(self, event: GovernanceEvent) -> dict[str, Any]:
         severity = event.severity.upper()
@@ -249,9 +292,7 @@ class SlackNotifier:
             payload["channel"] = self._channel
         return payload
 
-    async def send(self, event: GovernanceEvent) -> bool:
-        if not _severity_passes_filter(event.severity, self._severity_filter):
-            return False
+    async def _do_send(self, event: GovernanceEvent) -> bool:
         payload = self._build_payload(event)
         async with httpx.AsyncClient(timeout=self._timeout) as client:
             resp = await client.post(
@@ -267,7 +308,7 @@ class SlackNotifier:
 # ---------------------------------------------------------------------------
 
 
-class TeamsNotifier:
+class TeamsNotifier(BaseNotifier):
     """Posts governance events to Microsoft Teams via an Incoming Webhook.
 
     Formats violations as Adaptive Cards.
@@ -285,17 +326,12 @@ class TeamsNotifier:
                 "httpx is required for TeamsNotifier. "
                 "Install with: pip install httpx"
             )
+        super().__init__(severity_filter=severity_filter, timeout=timeout)
         self._webhook_url = webhook_url
-        self._severity_filter = severity_filter.upper()
-        self._timeout = timeout
 
     @property
     def name(self) -> str:
         return "teams"
-
-    @property
-    def severity_filter(self) -> str:
-        return self._severity_filter
 
     def _build_payload(self, event: GovernanceEvent) -> dict[str, Any]:
         severity = event.severity.upper()
@@ -348,9 +384,7 @@ class TeamsNotifier:
         }
         return card
 
-    async def send(self, event: GovernanceEvent) -> bool:
-        if not _severity_passes_filter(event.severity, self._severity_filter):
-            return False
+    async def _do_send(self, event: GovernanceEvent) -> bool:
         payload = self._build_payload(event)
         async with httpx.AsyncClient(timeout=self._timeout) as client:
             resp = await client.post(
@@ -366,7 +400,7 @@ class TeamsNotifier:
 # ---------------------------------------------------------------------------
 
 
-class WebhookNotifier:
+class WebhookNotifier(BaseNotifier):
     """Generic webhook -- POSTs the GovernanceEvent as JSON to any URL."""
 
     def __init__(
@@ -382,25 +416,18 @@ class WebhookNotifier:
                 "httpx is required for WebhookNotifier. "
                 "Install with: pip install httpx"
             )
+        super().__init__(severity_filter=severity_filter, timeout=timeout)
         self._url = url
         self._headers = {
             "Content-Type": "application/json",
             **(headers or {}),
         }
-        self._severity_filter = severity_filter.upper()
-        self._timeout = timeout
 
     @property
     def name(self) -> str:
         return "webhook"
 
-    @property
-    def severity_filter(self) -> str:
-        return self._severity_filter
-
-    async def send(self, event: GovernanceEvent) -> bool:
-        if not _severity_passes_filter(event.severity, self._severity_filter):
-            return False
+    async def _do_send(self, event: GovernanceEvent) -> bool:
         async with httpx.AsyncClient(timeout=self._timeout) as client:
             resp = await client.post(
                 self._url,
