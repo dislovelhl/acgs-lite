@@ -1206,3 +1206,22 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
             "constitutional_hash": self._const_hash,
             "avg_latency_ms": (sum(e.latency_ms for e in entries) / total if total > 0 else 0.0),
         }
+
+    @contextmanager
+    def non_strict(self) -> Generator[GovernanceEngine, None, None]:
+        """Context manager that temporarily disables strict mode.
+
+        Yields the engine with ``strict=False``, restoring the original
+        value on exit — even if the body raises.  Use this instead of
+        manually toggling ``self.strict`` to avoid race-condition and
+        exception-safety bugs::
+
+            with engine.non_strict():
+                result = engine.validate(text)  # won't raise
+        """
+        old = self.strict
+        self.strict = False
+        try:
+            yield self
+        finally:
+            self.strict = old

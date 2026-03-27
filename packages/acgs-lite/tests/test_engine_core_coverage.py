@@ -310,18 +310,10 @@ class TestGovernanceEngineValidate:
         assert result.valid is True
 
     def test_escalate_high_severity_no_block(self, engine):
-        """Age-based no-anchor rules follow the active backend's strict-mode contract.
-
-        The Rust fast path returns HIGH-severity matches as non-blocking escalations,
-        while the Python fallback blocks HIGH severity in strict mode.
-        """
-        if _HAS_RUST and engine._rust_validator is not None:
-            result = engine.validate("apply age-based insurance pricing")
-            assert result.violations, "Expected FAIRNESS-001 violation"
-            assert any(v.rule_id == "FAIRNESS-001" for v in result.violations)
-        else:
-            with pytest.raises(ConstitutionalViolationError):
-                engine.validate("apply age-based insurance pricing")
+        """HIGH severity raises ConstitutionalViolationError in strict mode."""
+        with pytest.raises(ConstitutionalViolationError) as exc_info:
+            engine.validate("apply age-based insurance pricing")
+        assert exc_info.value.rule_id == "FAIRNESS-001"
 
     def test_validate_with_context(self, engine):
         result = engine.validate(

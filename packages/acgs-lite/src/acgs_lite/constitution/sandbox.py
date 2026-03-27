@@ -208,7 +208,5 @@ class PolicySandbox:
             if hasattr(result, "decision"):
                 decision = result.decision
             return {"decision": decision, "violations": violations}
-        # Sandboxes convert engine exceptions into deny reports so policy
-        # comparisons stay observable even when strict-mode validation raises.
-        except Exception:
+        except (ValueError, TypeError, RuntimeError, AttributeError, ConstitutionalViolationError):
             return {"decision": "deny", "violations": ["EXCEPTION"]}
