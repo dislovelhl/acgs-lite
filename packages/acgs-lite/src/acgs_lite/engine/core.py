@@ -1031,7 +1031,7 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
                     if violations is None:
                         violations = []  # noqa: E701
                     violations.extend(custom_violations)
-                except (ValueError, TypeError, RuntimeError) as e:
+                except Exception as e:
                     if violations is None:
                         violations = []  # noqa: E701
                     violations.append(

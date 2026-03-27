@@ -405,7 +405,7 @@ class GovernancePolicyFuzzer:
                 kws = list(getattr(rule, "keywords", []) or [])
                 if isinstance(rid, str):
                     rule_keywords[rid] = kws
-        except (TypeError, AttributeError):
+        except Exception:
             pass  # Constitution may not support .rules iteration — fall back to blind fuzzing
 
         rule_coverage: dict[str, RuleCoverage] = {
@@ -507,7 +507,7 @@ class GovernancePolicyFuzzer:
                 getattr(v, "rule_id", str(v)) for v in (getattr(result, "violations", []) or [])
             ]
             return outcome, viols
-        except (ValueError, TypeError, RuntimeError, AttributeError) as exc:
+        except Exception as exc:
             return "error", [str(exc)]
 
     def _generate_adversarial(
@@ -602,12 +602,12 @@ class GovernancePolicyFuzzer:
         try:
             # Try constitutional_hash attribute first
             return str(getattr(constitution, "constitutional_hash", None) or "")[:16]
-        except (TypeError, AttributeError):
+        except Exception:
             pass
         try:
             rule_repr = repr(sorted(str(r) for r in constitution.rules))
             return hashlib.sha256(rule_repr.encode()).hexdigest()[:16]
-        except (TypeError, AttributeError):
+        except Exception:
             return "unknown"
 
     # ------------------------------------------------------------------

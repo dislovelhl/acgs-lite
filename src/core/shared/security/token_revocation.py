@@ -111,7 +111,7 @@ class TokenRevocationService:
                     result = close_method()
                     if inspect.isawaitable(result):
                         await result
-        except (ConnectionError, TimeoutError, OSError) as e:
+        except Exception as e:
             logger.warning(
                 f"[{CONSTITUTIONAL_HASH}] Failed to close token revocation Redis client: {e}"
             )
@@ -487,24 +487,25 @@ async def create_token_revocation_service(redis_url: str | None = None) -> Token
         service = await create_token_revocation_service("redis://localhost:6379")
     """
     if not redis_url:
-        import os
-
         redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379")
 
     try:
         # Try to import async Redis
         try:
-            import redis.asyncio as redis_async
-
-            redis_client = await redis_async.from_url(redis_url)
+            redis_async = __import__("redis.asyncio", fromlist=["asyncio"])
+            redis_client = redis_async.from_url(redis_url)
         except ImportError:
             # Fallback to sync Redis (for compatibility)
-            import redis
-
+            redis = __import__("redis")
             redis_client = redis.from_url(redis_url)
 
+        if inspect.isawaitable(redis_client):
+            redis_client = await redis_client
+
         # Test connection
-        await redis_client.ping()
+        ping_result = redis_client.ping()
+        if inspect.isawaitable(ping_result):
+            await ping_result
 
         try:
             from urllib.parse import urlparse
@@ -520,7 +521,7 @@ async def create_token_revocation_service(redis_url: str | None = None) -> Token
         )
         return TokenRevocationService(redis_client=redis_client)
 
-    except (ImportError, ConnectionError, TimeoutError, OSError, ValueError) as e:
+    except Exception as e:
         logger.error(
             f"[{CONSTITUTIONAL_HASH}] Failed to connect to Redis: {e} - "
             "TokenRevocationService will operate in degraded mode"

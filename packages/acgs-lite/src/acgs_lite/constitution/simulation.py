@@ -60,7 +60,7 @@ def _safe_decision(constitution: Any, action: str) -> str:
     engine = GovernanceEngine(constitution, strict=False)
     try:
         result = engine.validate(action)
-    except (ValueError, TypeError, RuntimeError, AttributeError):
+    except Exception:
         return "deny"
     if result.valid:
         return "allow"

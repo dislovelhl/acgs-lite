@@ -65,7 +65,7 @@ def _safe_validate(constitution: Any, action: str, context: dict[str, Any] | Non
     try:
         result = constitution.validate(action, context=context or {})
         return str(getattr(result, "outcome", "allow")).lower()
-    except (ValueError, TypeError, RuntimeError, AttributeError):
+    except Exception:
         return "error"
 
 

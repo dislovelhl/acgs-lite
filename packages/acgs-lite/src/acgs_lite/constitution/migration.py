@@ -291,7 +291,7 @@ class PolicyVersionMigrator:
             try:
                 if not check(constitution):
                     errors.append(f"Pre-check failed: {getattr(check, '__name__', 'anonymous')}")
-            except (ValueError, TypeError, RuntimeError) as exc:
+            except Exception as exc:
                 errors.append(f"Pre-check error: {exc}")
 
         return errors
@@ -365,7 +365,7 @@ class PolicyVersionMigrator:
                             "reason": "No matching rule or no-op",
                         }
                     )
-            except (ValueError, TypeError, KeyError, RuntimeError) as exc:
+            except Exception as exc:
                 result.errors.append(f"Step failed ({step.describe()}): {exc}")
                 result.status = MigrationStatus.FAILED
                 result.completed_at = time.time()
@@ -402,7 +402,7 @@ class PolicyVersionMigrator:
                         patterns=rule_data.get("patterns", []),
                     )
                     constitution.rules.append(rule)
-                except (ValueError, TypeError, KeyError, ImportError):
+                except Exception:
                     continue
 
         result.status = MigrationStatus.ROLLED_BACK

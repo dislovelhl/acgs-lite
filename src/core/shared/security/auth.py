@@ -241,6 +241,11 @@ def _get_revocation_service() -> object | None:
             )
         finally:
             loop.close()
+
+        if _revocation_service is None or not getattr(_revocation_service, "_use_redis", True):
+            _revocation_service = None
+            return None
+
         _revocation_service_initialized = True
         return _revocation_service
     except (ImportError, ConnectionError, TimeoutError, OSError, ValueError, RuntimeError):
@@ -391,7 +396,7 @@ async def get_current_user(
                 raise HTTPException(status_code=401, detail="Token has been revoked")
         except HTTPException:
             raise
-        except (ConnectionError, TimeoutError, OSError, ValueError, RuntimeError) as err:
+        except Exception as err:
             if _is_production_environment():
                 raise HTTPException(
                     status_code=503,

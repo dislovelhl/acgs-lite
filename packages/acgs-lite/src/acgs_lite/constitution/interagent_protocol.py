@@ -309,7 +309,7 @@ class InterAgentGovernanceProtocol:
                 gov_violations = tuple(
                     getattr(v, "rule_id", str(v)) for v in (getattr(result, "violations", []) or [])
                 )
-            except (ValueError, TypeError, RuntimeError, AttributeError) as exc:
+            except Exception as exc:
                 gov_outcome = "error"
                 gov_violations = (str(exc),)
 
@@ -488,7 +488,7 @@ class InterAgentGovernanceProtocol:
                 gov_violations = tuple(
                     getattr(v, "rule_id", str(v)) for v in (getattr(result, "violations", []) or [])
                 )
-            except (ValueError, TypeError, RuntimeError, AttributeError) as exc:
+            except Exception as exc:
                 gov_outcome = "error"
                 gov_violations = (str(exc),)
 

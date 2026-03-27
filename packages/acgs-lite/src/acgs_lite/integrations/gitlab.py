@@ -295,7 +295,7 @@ class GitLabGovernanceBot:
                     discussion_payload,
                 )
                 results.append(resp)
-            except (ConnectionError, TimeoutError, OSError) as _http_exc:
+            except Exception:
                 logger.warning(
                     "Failed to post inline comment on %s:%s",
                     v["file"],
@@ -319,7 +319,7 @@ class GitLabGovernanceBot:
             try:
                 resp = await self._post(f"merge_requests/{mr_iid}/approve", {})
                 return {"action": "approved", "response": resp}
-            except (ConnectionError, TimeoutError, OSError):
+            except Exception:
                 logger.warning("Failed to approve MR !%s", mr_iid, exc_info=True)
                 return {"action": "approve_failed", "response": None}
 
@@ -501,7 +501,7 @@ class GitLabWebhookHandler:
         try:
             result = await self._route_event(event_type, body)
             return JSONResponse({"status": "processed", "result": result})
-        except (ValueError, TypeError, KeyError, RuntimeError):
+        except Exception:
             logger.error("Webhook processing failed", exc_info=True)
             return JSONResponse({"error": "Processing failed"}, status_code=500)
 
