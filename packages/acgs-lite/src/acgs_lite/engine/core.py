@@ -3,20 +3,17 @@
 The engine evaluates actions against constitutional rules and produces
 structured validation results with full audit trails.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
 
-import itertools
 import re
 import time
 from collections import defaultdict
-from collections.abc import Callable
-from dataclasses import dataclass, field
-from typing import Any, NamedTuple
+from typing import Any
 
-from .rust import _HAS_AHO, _HAS_RUST, _RUST_ALLOW, _RUST_DENY, _RUST_DENY_CRITICAL
+from .rust import _HAS_AHO, _HAS_RUST
 
 # Optional Aho-Corasick C extension for O(n) keyword scanning
 if _HAS_AHO:
@@ -36,192 +33,24 @@ from acgs_lite.constitution import (
 )
 from acgs_lite.errors import ConstitutionalViolationError
 
+from ._rust_dispatch import RustDispatchMixin
 from .batch import BatchValidationMixin
 
 
-class Violation(NamedTuple):
-    """A single rule violation (NamedTuple for C-speed construction)."""
-
-    rule_id: str
-    rule_text: str
-    severity: Severity
-    matched_content: str
-    category: str
-
-
-@dataclass(slots=True)
-class ValidationResult:
-    """Result of validating an action against the constitution."""
-
-    valid: bool
-    constitutional_hash: str
-    violations: list[Violation] = field(default_factory=list)
-    rules_checked: int = 0
-    latency_ms: float = 0.0
-    request_id: str = ""
-    timestamp: str = ""
-    action: str = ""
-    agent_id: str = ""
-
-    @property
-    def blocking_violations(self) -> list[Violation]:
-        """Violations that block execution."""
-        return [v for v in self.violations if v.severity.blocks()]
-
-    @property
-    def warnings(self) -> list[Violation]:
-        """Non-blocking violations (warnings)."""
-        return [v for v in self.violations if not v.severity.blocks()]
-
-    def to_dict(self) -> dict[str, Any]:
-        """Serialize to dictionary."""
-        return {
-            "valid": self.valid,
-            "constitutional_hash": self.constitutional_hash,
-            "violations": [
-                {
-                    "rule_id": v.rule_id,
-                    "rule_text": v.rule_text,
-                    "severity": v.severity.value,
-                    "matched_content": v.matched_content,
-                    "category": v.category,
-                }
-                for v in self.violations
-            ],
-            "rules_checked": self.rules_checked,
-            "latency_ms": self.latency_ms,
-            "request_id": self.request_id,
-            "action": self.action,
-            "agent_id": self.agent_id,
-        }
+from .types import (
+    CustomValidator,
+    ValidationResult,
+    Violation,
+    _ANON,
+    _EMPTY_VIOLATIONS,
+    _FastAuditLog,
+    _NoopRecorder,
+    _dedup_violations,
+    _request_counter,
+)
 
 
-def _dedup_violations(violations: list) -> list:
-    """Deduplicate violations by rule_id (called only when len > 1)."""
-    seen: set[str] = set()
-    result = []
-    for v in violations:
-        if v.rule_id not in seen:
-            seen.add(v.rule_id)
-            result.append(v)
-    return result
-
-
-# Type for custom validator functions
-CustomValidator = Callable[[str, dict[str, Any]], list[Violation]]
-
-
-_ANON = "anonymous"  # interned sentinel for compact allow-record detection
-_EMPTY_VIOLATIONS: list = []  # shared empty-violation list for allow-path records
-
-
-class _NoopRecorder:
-    """Discards all appended audit records; tracks call count for stats.
-
-    exp59: Default _fast_records replaces the real list to eliminate per-call
-    tuple creation (~50ns) and list.append overhead (~16ns). Only the count
-    is preserved for engine.stats["total_validations"].
-    """
-
-    __slots__ = ("_count",)
-
-    def __init__(self) -> None:
-        self._count = 0
-
-    def append(self, item: object) -> None:  # noqa: ARG002
-        self._count += 1
-
-    def __len__(self) -> int:
-        return self._count
-
-
-class _FastAuditLog:
-    """Lightweight audit log: stores raw tuples instead of AuditEntry objects.
-
-    Used as the default when GovernanceEngine is constructed without an
-    explicit audit_log. Avoids SHA256 chain hashing AND AuditEntry dataclass
-    instantiation on every validate() call. Pass AuditLog() explicitly for
-    tamper-evident chain verification.
-
-    Allow-path records use a compact 2-tuple (request_id, action) when
-    agent_id is the default "anonymous", saving ~0.15µs vs the full 8-tuple.
-    Deny/escalate records always use the full 8-tuple format.
-    """
-
-    def __init__(self, const_hash: str = "") -> None:
-        self._records: list[tuple] = []
-        self._const_hash = const_hash
-
-    @property
-    def entries(self) -> list[AuditEntry]:
-        # Reconstruct AuditEntry objects on demand (rare operation)
-        _ch = self._const_hash
-        return [
-            AuditEntry(
-                id=r[0],
-                type="validation",
-                agent_id=_ANON,
-                action=r[1],
-                valid=True,
-                violations=[],
-                constitutional_hash=_ch,
-                latency_ms=0.0,
-                timestamp="",
-            )
-            if len(r) == 2  # compact allow record: (request_id, action)
-            else AuditEntry(
-                id=r[0],
-                type="validation",
-                agent_id=r[1],
-                action=r[2],
-                valid=r[3],
-                violations=r[4],
-                constitutional_hash=r[5],
-                latency_ms=r[6],
-                timestamp=r[7],
-            )
-            for r in self._records
-        ]
-
-    def record_fast(
-        self,
-        req_id: str,
-        agent_id: str,
-        action: str,
-        valid: bool,
-        violation_ids: list[str],
-        const_hash: str,
-        latency_ms: float,
-        timestamp: str,
-    ) -> None:
-        self._records.append(
-            (req_id, agent_id, action, valid, violation_ids, const_hash, latency_ms, timestamp)
-        )
-
-    def record(self, entry: AuditEntry) -> str:
-        """Compatibility shim for callers passing AuditEntry objects."""
-        self._records.append(
-            (
-                entry.id,
-                entry.agent_id,
-                entry.action,
-                entry.valid,
-                entry.violations,
-                entry.constitutional_hash,
-                entry.latency_ms,
-                entry.timestamp,
-            )
-        )
-        return ""
-
-    def __len__(self) -> int:
-        return len(self._records)
-
-
-_request_counter = itertools.count(1)
-
-
-class GovernanceEngine(BatchValidationMixin):
+class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
     """Core governance validation engine."""
 
     __slots__ = (
@@ -696,254 +525,6 @@ class GovernanceEngine(BatchValidationMixin):
         # never triggers mid-validate(), eliminating p99 spikes from collection pauses.
         if disable_gc:
             _gc.disable()
-
-    def _validate_rust_no_context(
-        self,
-        action: str,
-        decision: int,
-        data: int,
-        rule_excs: list[Any],
-        fast_records: Any,
-    ) -> ValidationResult | None:
-        if decision == _RUST_ALLOW:
-            # exp108: _is_noop always True here
-            fast_records.append(None)
-            return self._pooled_result
-        elif decision == _RUST_DENY_CRITICAL:
-            # exp111: _data already Python int
-            if not (0 <= data < len(rule_excs)):
-                fast_records.append(None)
-                raise ConstitutionalViolationError(
-                    "Critical rule violation (index out of range)",
-                    rule_id="UNKNOWN",
-                    severity="critical",
-                    action=action[:200],
-                )
-            _e_src = rule_excs[data]
-            # exp108: _is_noop always True here
-            fast_records.append(None)
-            raise ConstitutionalViolationError(
-                str(_e_src),
-                rule_id=_e_src.rule_id,
-                severity=_e_src.severity,
-                action=action[:200],
-            )
-        elif decision == _RUST_DENY:
-            # exp111: _data already Python int
-            _bm = data
-            _a200 = action[:200]
-            _vlist: list[Violation] = []
-            while _bm:
-                _idx = (_bm & -_bm).bit_length() - 1
-                _bm &= _bm - 1
-                _rd = self._rule_data[_idx]
-                _vlist.append(Violation(_rd[0], _rd[1], _rd[2], _a200, _rd[4]))
-            _pool_e = self._pooled_escalate
-            _pool_e.violations = _vlist
-            _pool_e.action = action[:500]
-            # exp108: _is_noop always True here
-            fast_records.append(None)
-            return _pool_e
-        return None
-
-    def _validate_rust_gov_context(
-        self,
-        action: str,
-        decision: int,
-        data: int,
-        context: dict[str, Any],
-        rule_excs: list[Any],
-        fast_records: Any,
-    ) -> ValidationResult | None:
-        _merged_bm = 0
-        _has_critical = False
-        _crit_idx = -1
-        if decision == _RUST_DENY_CRITICAL:
-            # exp111: _data is already Python int (PyO3 i64→int auto-convert)
-            _crit_idx = data
-            _has_critical = True
-        elif decision == _RUST_DENY:
-            _merged_bm = data
-        # exp97: replace dict.items() iteration with direct .get() for known keys.
-        # Avoids iterator creation + key comparison per item; saves ~80ns/call.
-        _ctx_det = context.get("action_detail")
-        _ctx_desc = context.get("action_description")
-        for _cv in (_ctx_det, _ctx_desc):
-            if _cv is not None and isinstance(_cv, str):
-                _ctx_dec, _ctx_data = self._rust_validator.validate_hot(
-                    _cv if _cv.islower() else _cv.lower()
-                )
-                if _ctx_dec == _RUST_DENY_CRITICAL and not _has_critical:
-                    # exp111: _ctx_data already Python int
-                    _crit_idx = _ctx_data
-                    _has_critical = True
-                elif _ctx_dec == _RUST_DENY:
-                    _merged_bm |= _ctx_data
-        if _has_critical:
-            if not (0 <= _crit_idx < len(rule_excs)):
-                fast_records.append(None)
-                raise ConstitutionalViolationError(
-                    "Critical rule violation (index out of range)",
-                    rule_id="UNKNOWN",
-                    severity="critical",
-                    action=action[:200],
-                )
-            _e_src = rule_excs[_crit_idx]
-            # exp108: _is_noop always True here
-            fast_records.append(None)
-            raise ConstitutionalViolationError(
-                str(_e_src),
-                rule_id=_e_src.rule_id,
-                severity=_e_src.severity,
-                action=action[:200],
-            )
-        if _merged_bm:
-            _a200 = action[:200]
-            _vlist: list[Violation] = []
-            # exp91: single-pass blocking detection — avoids any()+next() double scan.
-            _bv_ctx: Violation | None = None
-            while _merged_bm:
-                _idx = (_merged_bm & -_merged_bm).bit_length() - 1
-                _merged_bm &= _merged_bm - 1
-                _rd = self._rule_data[_idx]
-                _v = Violation(_rd[0], _rd[1], _rd[2], _a200, _rd[4])
-                _vlist.append(_v)
-                if _bv_ctx is None and _v.severity.blocks():
-                    _bv_ctx = _v
-            if _bv_ctx is not None and self.strict:
-                raise ConstitutionalViolationError(
-                    f"Action blocked by rule {_bv_ctx.rule_id}: {_bv_ctx.rule_text}",
-                    rule_id=_bv_ctx.rule_id,
-                    severity=_bv_ctx.severity.value,
-                    action=_a200,
-                )
-            _pool_e = self._pooled_escalate
-            _pool_e.violations = _vlist
-            _pool_e.action = action[:500]
-            # exp108: _is_noop always True here
-            fast_records.append(None)
-            return _pool_e
-        # exp108: _is_noop always True here
-        fast_records.append(None)
-        return self._pooled_result
-
-    def _validate_rust_metadata_context(
-        self,
-        action: str,
-        decision: int,
-        data: int,
-        rule_excs: list[Any],
-        fast_records: Any,
-        is_noop: bool,
-    ) -> ValidationResult | None:
-        if decision == _RUST_ALLOW:
-            if is_noop:
-                # exp108: _is_noop always True here
-                fast_records.append(None)
-            return self._pooled_result
-        elif decision == _RUST_DENY_CRITICAL:
-            # exp111: _data already Python int
-            if not (0 <= data < len(rule_excs)):
-                if is_noop:
-                    fast_records.append(None)
-                raise ConstitutionalViolationError(
-                    "Critical rule violation (index out of range)",
-                    rule_id="UNKNOWN",
-                    severity="critical",
-                    action=action[:200],
-                )
-            _e_src = rule_excs[data]
-            if is_noop:
-                fast_records.append(None)
-            raise ConstitutionalViolationError(
-                str(_e_src),
-                rule_id=_e_src.rule_id,
-                severity=_e_src.severity,
-                action=action[:200],
-            )
-        elif decision == _RUST_DENY:
-            # exp111: _data already Python int
-            _bm = data
-            _a200 = action[:200]
-            _vlist: list[Violation] = []
-            while _bm:
-                _idx = (_bm & -_bm).bit_length() - 1
-                _bm &= _bm - 1
-                _rd = self._rule_data[_idx]
-                _vlist.append(Violation(_rd[0], _rd[1], _rd[2], _a200, _rd[4]))
-            _pool_e = self._pooled_escalate
-            _pool_e.violations = _vlist
-            _pool_e.action = action[:500]
-            if is_noop:
-                fast_records.append(None)
-            return _pool_e
-        return None
-
-    def _validate_rust_full(
-        self,
-        action: str,
-        strict: bool,
-        ctx_pairs: list[tuple[str, str]],
-        rule_excs: list[Any],
-        fast_records: Any,
-    ) -> ValidationResult | None:
-        _decision, _violations, _blocking = self._rust_validator.validate_full(
-            action.lower(), ctx_pairs
-        )
-        if _decision == _RUST_ALLOW:
-            if fast_records is not None:
-                fast_records.append(None)
-                return self._pooled_result
-        elif _decision == _RUST_DENY_CRITICAL:
-            # exp83: O(1) dict lookup replaces O(n) linear scan
-            _vt_id = _violations[0][0]
-            _idx = self._rule_id_to_exc_idx.get(_vt_id)
-            if _idx is None:
-                _vt_id, _vt_text, _vt_sev, _, _ = _violations[0]
-                raise ConstitutionalViolationError(
-                    f"Action blocked by rule {_vt_id}: {_vt_text}",
-                    rule_id=_vt_id,
-                    severity=_vt_sev,
-                    action=action[:200],
-                )
-            _e_src = rule_excs[_idx]
-            raise ConstitutionalViolationError(
-                str(_e_src),
-                rule_id=_e_src.rule_id,
-                severity=_e_src.severity,
-                action=action[:200],
-            )
-        elif _decision == _RUST_DENY:
-            _a200 = action[:200]
-            _SEV = Severity
-            _vlist = [
-                Violation(rid, rtxt, _SEV(sev), _a200, cat)
-                for rid, rtxt, sev, _, cat in _violations
-            ]
-            if _blocking and strict:
-                # exp83: use O(1) dict lookup to clone the source exception metadata
-                _bv = next((v for v in _vlist if v.severity.blocks()), _vlist[0])
-                _exc_idx = self._rule_id_to_exc_idx.get(_bv.rule_id, -1)
-                if _exc_idx >= 0:
-                    _e_src = rule_excs[_exc_idx]
-                    raise ConstitutionalViolationError(
-                        str(_e_src),
-                        rule_id=_e_src.rule_id,
-                        severity=_e_src.severity,
-                        action=_a200,
-                    )
-                raise ConstitutionalViolationError(
-                    f"Action blocked by rule {_bv.rule_id}: {_bv.rule_text}",
-                    rule_id=_bv.rule_id,
-                    severity=_bv.severity.value,
-                    action=_a200,
-                )
-            if fast_records is not None:
-                _pool_e = self._pooled_escalate
-                _pool_e.violations = _vlist
-                _pool_e.action = action[:500]
-                return _pool_e
-        return None
 
     def _validate_python_ac(
         self,
