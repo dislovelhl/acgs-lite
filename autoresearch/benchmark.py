@@ -38,6 +38,7 @@ import contextlib
 try:
     from src.core.shared.metrics.rocs import RoCSTracker
 except ModuleNotFoundError:
+
     @dataclass
     class _FallbackGovernanceSpend:
         validation_ns: int = 0
@@ -47,18 +48,15 @@ except ModuleNotFoundError:
         def total_seconds(self) -> float:
             return (self.validation_ns + self.scoring_ns) / 1_000_000_000
 
-
     @dataclass
     class _FallbackGovernanceValue:
         total_weighted: float = 0.0
-
 
     @dataclass
     class _FallbackRoCSSnapshot:
         rocs: float
         spend: _FallbackGovernanceSpend
         value: _FallbackGovernanceValue
-
 
     class RoCSTracker:
         """Local fallback when the platform RoCS module is unavailable."""
@@ -75,7 +73,9 @@ except ModuleNotFoundError:
             self._spend = _FallbackGovernanceSpend()
             self._value = _FallbackGovernanceValue()
 
-        def record_validation(self, elapsed_ns: int, severity: str = "allow", correct: bool = True) -> None:
+        def record_validation(
+            self, elapsed_ns: int, severity: str = "allow", correct: bool = True
+        ) -> None:
             self._spend.validation_ns += elapsed_ns
             if correct:
                 self._value.total_weighted += self._SEVERITY_WEIGHTS.get(severity.lower(), 1.0)
@@ -84,6 +84,7 @@ except ModuleNotFoundError:
             total_seconds = self._spend.total_seconds
             rocs = self._value.total_weighted / total_seconds if total_seconds > 0 else 0.0
             return _FallbackRoCSSnapshot(rocs=rocs, spend=self._spend, value=self._value)
+
 
 SCENARIOS_DIR = Path(__file__).parent / "scenarios"
 CONSTITUTION_FILE = Path(__file__).parent / "constitution.yaml"

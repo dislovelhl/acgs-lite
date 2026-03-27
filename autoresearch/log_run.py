@@ -18,6 +18,7 @@ Status computed automatically; override with --status if needed.
 
 Run from repo root.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -192,7 +193,9 @@ def main() -> int:
         if args.recommend:
             print("discard")
             return 0
-        print("ERROR: no parseable summary block in log. Benchmark may have crashed.", file=sys.stderr)
+        print(
+            "ERROR: no parseable summary block in log. Benchmark may have crashed.", file=sys.stderr
+        )
         print(f"  Check: tail -n 50 {log_path}", file=sys.stderr)
         description = scoped_description(args.description or "crash", args.scope)
         append_row(args.commit, 0.0, 0.0, 0.0, args.scope, "crash", description)

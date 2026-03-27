@@ -1,0 +1,42 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+
+[mcp_servers.acgs_governance]
+command = "bash"
+args = [
+  "-lc",
+  "ROOT=\"$(git rev-parse --show-toplevel)\" && exec bash \"$ROOT/scripts/codex-mcp-acgs-governance.sh\"",
+]
+startup_timeout_sec = 20
+tool_timeout_sec = 60
+required = false
+enabled_tools = [
+  "validate_action",
+  "get_constitution",
+  "get_audit_log",
+  "check_compliance",
+  "governance_stats",
+]
+
+[mcp_servers.acgs_governance.env]
+ACGS_CONSTITUTION = "default"
+
+[mcp_servers.acgs_agent_bus]
+command = "bash"
+args = [
+  "-lc",
+  "ROOT=\"$(git rev-parse --show-toplevel)\" && exec bash \"$ROOT/scripts/codex-mcp-acgs-agent-bus.sh\"",
+]
+startup_timeout_sec = 20
+tool_timeout_sec = 90
+required = false
+enabled_tools = [
+  "validate_constitutional_compliance",
+  "get_active_principles",
+  "query_governance_precedents",
+  "submit_governance_request",
+  "get_governance_metrics",
+]
+
+[mcp_servers.acgs_agent_bus.env]
+ACGS_ENV = "development"
+LOG_LEVEL = "INFO"

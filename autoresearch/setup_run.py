@@ -14,6 +14,7 @@ Actions:
 
 Run from repo root.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -81,10 +82,14 @@ def ensure_ready_to_switch(*, branch_will_change: bool, dirty_allowed: bool) -> 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Initialize an autoresearch benchmark run.")
-    parser.add_argument("--tag", required=True, help="Run tag (e.g. mar15). Branch: autoresearch/<tag>")
+    parser.add_argument(
+        "--tag", required=True, help="Run tag (e.g. mar15). Branch: autoresearch/<tag>"
+    )
     parser.add_argument("--dirty", action="store_true", help="Allow dirty working tree")
     parser.add_argument("--base", default="main", help="Base branch for new autoresearch branches")
-    parser.add_argument("--dry-run", action="store_true", help="Show actions without mutating git state")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Show actions without mutating git state"
+    )
     args = parser.parse_args()
 
     branch_name = f"autoresearch/{args.tag}"
@@ -145,7 +150,9 @@ def main() -> int:
         "Recent sidecar wins",
         recent_rows(rows, scope="sidecar", statuses={"improved", "neutral-kept", "baseline"}),
     )
-    print_rows("Recent hot-path discards", recent_rows(rows, scope="hot-path", statuses={"discard"}))
+    print_rows(
+        "Recent hot-path discards", recent_rows(rows, scope="hot-path", statuses={"discard"})
+    )
 
     print(
         f"""

@@ -68,7 +68,9 @@ def load_rows(results_path: Path) -> list[dict[str, str]]:
                     continuation = parts[0].strip()
                     if continuation:
                         prior = rows[-1]
-                        merged = f"{prior.get('description', '').strip()} | {continuation}".strip(" |")
+                        merged = f"{prior.get('description', '').strip()} | {continuation}".strip(
+                            " |"
+                        )
                         prior["description"] = merged
                 continue
             rows.append(normalize_row(dict(zip(header, parts, strict=False))))
