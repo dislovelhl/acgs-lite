@@ -35,6 +35,7 @@ import asyncio
 import concurrent.futures
 import json
 import logging
+import threading
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Protocol, runtime_checkable
@@ -171,6 +172,7 @@ class SlackNotifier:
         webhook_url: str,
         channel: str | None = None,
         severity_filter: str = "LOW",
+        timeout: float = 5.0,
     ) -> None:
         if not HTTPX_AVAILABLE:
             raise ImportError(
@@ -180,6 +182,7 @@ class SlackNotifier:
         self._webhook_url = webhook_url
         self._channel = channel
         self._severity_filter = severity_filter.upper()
+        self._timeout = timeout
 
     @property
     def name(self) -> str:
@@ -250,7 +253,7 @@ class SlackNotifier:
         if not _severity_passes_filter(event.severity, self._severity_filter):
             return False
         payload = self._build_payload(event)
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with httpx.AsyncClient(timeout=self._timeout) as client:
             resp = await client.post(
                 self._webhook_url,
                 json=payload,
@@ -275,6 +278,7 @@ class TeamsNotifier:
         *,
         webhook_url: str,
         severity_filter: str = "LOW",
+        timeout: float = 5.0,
     ) -> None:
         if not HTTPX_AVAILABLE:
             raise ImportError(
@@ -283,6 +287,7 @@ class TeamsNotifier:
             )
         self._webhook_url = webhook_url
         self._severity_filter = severity_filter.upper()
+        self._timeout = timeout
 
     @property
     def name(self) -> str:
@@ -347,7 +352,7 @@ class TeamsNotifier:
         if not _severity_passes_filter(event.severity, self._severity_filter):
             return False
         payload = self._build_payload(event)
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with httpx.AsyncClient(timeout=self._timeout) as client:
             resp = await client.post(
                 self._webhook_url,
                 json=payload,
@@ -370,6 +375,7 @@ class WebhookNotifier:
         url: str,
         headers: dict[str, str] | None = None,
         severity_filter: str = "LOW",
+        timeout: float = 5.0,
     ) -> None:
         if not HTTPX_AVAILABLE:
             raise ImportError(
@@ -382,6 +388,7 @@ class WebhookNotifier:
             **(headers or {}),
         }
         self._severity_filter = severity_filter.upper()
+        self._timeout = timeout
 
     @property
     def name(self) -> str:
@@ -394,7 +401,7 @@ class WebhookNotifier:
     async def send(self, event: GovernanceEvent) -> bool:
         if not _severity_passes_filter(event.severity, self._severity_filter):
             return False
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with httpx.AsyncClient(timeout=self._timeout) as client:
             resp = await client.post(
                 self._url,
                 content=json.dumps(event.to_dict()),
@@ -422,6 +429,7 @@ class NotificationRouter:
         self._per_channel: dict[str, dict[str, int]] = {
             ch.name: {"sent": 0, "failed": 0} for ch in self._channels
         }
+        self._stats_lock = threading.Lock()
 
     async def notify(self, event: GovernanceEvent) -> None:
         """Fan out *event* to every registered channel concurrently."""
@@ -429,24 +437,24 @@ class NotificationRouter:
             *(self._safe_send(ch, event) for ch in self._channels),
             return_exceptions=True,
         )
-        for ch, result in zip(self._channels, results, strict=True):
-            ch_name = ch.name
-            if ch_name not in self._per_channel:
-                self._per_channel[ch_name] = {"sent": 0, "failed": 0}
-            if isinstance(result, BaseException):
-                self._total_failed += 1
-                self._per_channel[ch_name]["failed"] += 1
-                logger.error(
-                    "Notification channel %s raised %s",
-                    ch_name,
-                    type(result).__name__,
-                )
-            elif result is True:
-                self._total_sent += 1
-                self._per_channel[ch_name]["sent"] += 1
-            else:
-                # send() returned False (e.g. severity filter skipped it)
-                pass
+        with self._stats_lock:
+            for ch, result in zip(self._channels, results, strict=True):
+                ch_name = ch.name
+                if ch_name not in self._per_channel:
+                    self._per_channel[ch_name] = {"sent": 0, "failed": 0}
+                if isinstance(result, BaseException):
+                    self._total_failed += 1
+                    self._per_channel[ch_name]["failed"] += 1
+                    logger.error(
+                        "Notification channel %s raised %s",
+                        ch_name,
+                        type(result).__name__,
+                    )
+                elif result is True:
+                    self._total_sent += 1
+                    self._per_channel[ch_name]["sent"] += 1
+                else:
+                    pass
 
     @staticmethod
     async def _safe_send(
@@ -457,11 +465,12 @@ class NotificationRouter:
 
     @property
     def stats(self) -> dict[str, Any]:
-        return {
-            "total_sent": self._total_sent,
-            "total_failed": self._total_failed,
-            "per_channel": dict(self._per_channel),
-        }
+        with self._stats_lock:
+            return {
+                "total_sent": self._total_sent,
+                "total_failed": self._total_failed,
+                "per_channel": dict(self._per_channel),
+            }
 
 
 # ---------------------------------------------------------------------------
@@ -490,12 +499,14 @@ class GovernanceNotifier:
         notify_on_deny: bool = True,
         notify_on_warning: bool = False,
         notify_on_audit_tamper: bool = True,
+        dispatch_timeout: float = 5.0,
     ) -> None:
         self._engine = engine
         self._router = router
         self.notify_on_deny = notify_on_deny
         self.notify_on_warning = notify_on_warning
         self.notify_on_audit_tamper = notify_on_audit_tamper
+        self._dispatch_timeout = dispatch_timeout
 
     @property
     def engine(self) -> Any:
@@ -654,6 +665,6 @@ class GovernanceNotifier:
             # synchronously from the caller's perspective.
             with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
                 future = pool.submit(asyncio.run, self._router.notify(event))
-                future.result(timeout=15)
+                future.result(timeout=self._dispatch_timeout)
         else:
             asyncio.run(self._router.notify(event))

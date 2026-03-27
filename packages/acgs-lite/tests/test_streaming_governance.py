@@ -509,3 +509,57 @@ class TestEdgeCases:
         assert s.halted is False
         assert s.total_chars == 0
         assert s.latency_ms == 0.0
+
+
+# ---------------------------------------------------------------------------
+# Engine exception during streaming does not kill the stream
+# ---------------------------------------------------------------------------
+
+
+class TestStreamingEngineError:
+    def test_feed_survives_engine_exception(self, engine: GovernanceEngine) -> None:
+        """If the engine raises during validation, feed() returns a passing result."""
+        from unittest.mock import MagicMock
+
+        mock_engine = MagicMock()
+        mock_engine.non_strict.return_value.__enter__ = MagicMock()
+        mock_engine.non_strict.return_value.__exit__ = MagicMock(return_value=False)
+        mock_engine.validate.side_effect = RuntimeError("unexpected engine failure")
+
+        sv = StreamingValidator(mock_engine, flush_interval_chars=10)
+
+        result = sv.feed("a" * 15)
+        assert result.passed is True
+        assert result.should_halt is False
+        assert result.violations == []
+        assert sv.stats.validations_performed == 1
+
+    def test_feed_continues_after_engine_exception(self, engine: GovernanceEngine) -> None:
+        """Stream can process further chunks after an engine error."""
+        from unittest.mock import MagicMock
+
+        call_count = 0
+
+        mock_engine = MagicMock()
+        mock_engine.non_strict.return_value.__enter__ = MagicMock()
+        mock_engine.non_strict.return_value.__exit__ = MagicMock(return_value=False)
+
+        def _fail_then_succeed(text: str):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                raise RuntimeError("transient failure")
+            result = MagicMock()
+            result.violations = []
+            return result
+
+        mock_engine.validate.side_effect = _fail_then_succeed
+
+        sv = StreamingValidator(mock_engine, flush_interval_chars=10)
+
+        r1 = sv.feed("a" * 15)
+        assert r1.passed is True
+
+        r2 = sv.feed("b" * 15)
+        assert r2.passed is True
+        assert sv.stats.validations_performed == 2

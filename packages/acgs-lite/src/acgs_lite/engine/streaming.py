@@ -200,8 +200,21 @@ class StreamingValidator:
         passed = True
 
         t0 = time.monotonic()
-        result = self._validate_nonstrict(window_text)
-        violations = list(result.violations)
+        try:
+            result = self._validate_nonstrict(window_text)
+            violations = list(result.violations)
+        except Exception:
+            log.exception("streaming validation error, treating chunk as passed")
+            elapsed_ms = (time.monotonic() - t0) * 1000
+            self._stats.latency_ms += elapsed_ms
+            return StreamChunkResult(
+                chunk=chunk,
+                passed=True,
+                violations=[],
+                should_halt=False,
+                buffer_position=self._position,
+                window_text=window_text,
+            )
 
         elapsed_ms = (time.monotonic() - t0) * 1000
         self._stats.latency_ms += elapsed_ms

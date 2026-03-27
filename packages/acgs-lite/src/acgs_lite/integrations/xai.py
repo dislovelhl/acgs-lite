@@ -25,7 +25,7 @@ from acgs_lite.audit import AuditLog
 from acgs_lite.constitution import Constitution
 from acgs_lite.engine import GovernanceEngine
 
-from . import GovernedChat, GovernedChatCompletions
+from acgs_lite.integrations.openai import GovernedChat, GovernedChatCompletions
 
 logger = logging.getLogger(__name__)
 

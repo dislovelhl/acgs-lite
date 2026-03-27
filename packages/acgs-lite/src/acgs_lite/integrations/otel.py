@@ -38,6 +38,7 @@ Constitutional Hash: 608508a9bd224290
 from __future__ import annotations
 
 import logging
+import threading
 import time
 from typing import Any
 
@@ -161,6 +162,7 @@ class GovernanceMetrics:
         self._validation_count = 0
         self._violation_count = 0
         self._last_latency_ms = 0.0
+        self._counters_lock = threading.Lock()
 
         if OTEL_AVAILABLE:
             if meter_provider is not None:
@@ -252,8 +254,14 @@ class GovernanceMetrics:
             raise
         finally:
             elapsed_ms = (time.perf_counter() - start) * 1000.0
-            self._last_latency_ms = elapsed_ms
-            self._validation_count += 1
+
+            with self._counters_lock:
+                self._last_latency_ms = elapsed_ms
+                self._validation_count += 1
+
+                if result is not None:
+                    for v in result.violations:
+                        self._violation_count += 1
 
             decision = "deny" if raised or (result is not None and not result.valid) else "allow"
             attrs = {"agent_id": agent_id, "decision": decision}
@@ -263,7 +271,6 @@ class GovernanceMetrics:
 
             if result is not None:
                 for v in result.violations:
-                    self._violation_count += 1
                     self._violations_total.add(
                         1,
                         attributes={
@@ -273,7 +280,6 @@ class GovernanceMetrics:
                         },
                     )
 
-            # Update gauges
             compliance_rate = self._audit_log.compliance_rate
             self._compliance_gauge.set(
                 compliance_rate * 100.0,
@@ -293,13 +299,17 @@ class GovernanceMetrics:
     @property
     def stats(self) -> dict[str, Any]:
         """Return metrics statistics."""
+        with self._counters_lock:
+            validation_count = self._validation_count
+            violation_count = self._violation_count
+            last_latency_ms = self._last_latency_ms
         return {
             **self._engine.stats,
             "otel_available": OTEL_AVAILABLE,
             "prometheus_available": PROMETHEUS_AVAILABLE,
-            "validation_count": self._validation_count,
-            "violation_count": self._violation_count,
-            "last_latency_ms": self._last_latency_ms,
+            "validation_count": validation_count,
+            "violation_count": violation_count,
+            "last_latency_ms": last_latency_ms,
             "audit_chain_valid": self._audit_log.verify_chain(),
             "compliance_score": self._audit_log.compliance_rate * 100.0,
             "constitutional_hash": self._engine.constitution.hash,

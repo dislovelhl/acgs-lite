@@ -8,10 +8,13 @@ Constitutional Hash: 608508a9bd224290
 
 from __future__ import annotations
 
+import logging
 import re
 import time
 from collections import defaultdict
 from typing import Any
+
+log = logging.getLogger(__name__)
 
 from .rust import _HAS_AHO, _HAS_RUST
 
@@ -105,6 +108,25 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
         # Cache frequently accessed values
         self._const_hash: str = constitution.hash
         self._active_rules: list[Rule] = constitution.active_rules()
+
+        # Validate rule patterns and skip rules with invalid regex so that a
+        # single bad pattern does not crash the entire engine.
+        _bad_rule_ids: set[str] = set()
+        for rule in self._active_rules:
+            for pat_str in rule.patterns:
+                try:
+                    re.compile(pat_str)
+                except re.error:
+                    log.warning(
+                        "Skipping rule %s: invalid regex pattern %r",
+                        rule.id,
+                        pat_str,
+                    )
+                    _bad_rule_ids.add(rule.id)
+                    break
+        if _bad_rule_ids:
+            self._active_rules = [r for r in self._active_rules if r.id not in _bad_rule_ids]
+
         self._rules_count: int = len(self._active_rules)
         # Pre-bind method refs and flatten rule attributes to avoid per-loop
         # Pydantic model attribute lookups (rule.id, rule.text, etc.)
