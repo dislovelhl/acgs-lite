@@ -12,6 +12,8 @@ import logging
 import re
 import time
 from collections import defaultdict
+from collections.abc import Generator
+from contextlib import contextmanager
 from typing import Any
 
 log = logging.getLogger(__name__)
