@@ -8,7 +8,7 @@ name = "acgs-lite"
 version = "2.4.1"
 description = "Public ACGS Lite package for constitutional governance in AI agents. Enforce rules, audit decisions, and prevent self-validation in production."
 readme = "README.md"
-license = "AGPL-3.0-or-later"
+license = "Apache-2.0"
 requires-python = ">=3.10"
 authors = [
     {name = "ACGS Team", email = "hello@acgs.dev"},

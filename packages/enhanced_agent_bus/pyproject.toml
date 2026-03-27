@@ -11,7 +11,7 @@ version = "3.0.0"
 description = "ACGS-2 Enhanced Agent Bus with Constitutional Compliance"
 readme = "README.md"
 requires-python = ">=3.11"
-license = "AGPL-3.0-or-later"
+license = "Apache-2.0"
 authors = [
     {name = "ACGS Team"}
 ]

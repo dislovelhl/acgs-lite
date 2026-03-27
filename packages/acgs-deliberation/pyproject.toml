@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "ACGS deliberation and HITL orchestration package"
 readme = "README.md"
 requires-python = ">=3.11"
-license = "AGPL-3.0-or-later"
+license = "Apache-2.0"
 dependencies = [
     "enhanced-agent-bus>=3.0.0",
 ]
