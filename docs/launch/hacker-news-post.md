@@ -1,31 +1,44 @@
 # Hacker News — Show HN Post
 
-**Title:** Show HN: ACGS – Constitutional governance for AI agents (pip install acgs)
+**Title:** Show HN: ACGS – Constitutional governance for AI agents (pip install acgs-lite)
 
 **Body:**
 
-Constitutional governance for AI agents. Rule-based, not LLM-based.
+Constitutional governance for AI agents.
 
-    pip install acgs
+    pip install acgs-lite
 
-    from acgs import Constitution, GovernedAgent
+    from acgs_lite import Constitution, GovernedAgent
     constitution = Constitution.from_yaml("rules.yaml")
     agent = GovernedAgent(my_agent, constitution=constitution)
 
+We built it around a simple thesis:
+
+Once agents start acting in the world, the problem is no longer only whether the output is safe.
+The questions become institutional:
+
+- who proposed the action?
+- who validated it?
+- who is allowed to execute it?
+- which rules were active?
+- can you prove governance actually happened?
+
 What it does:
 
-- Define governance rules in YAML (keywords, regex, severity levels)
-- Every AI decision validated and logged in a SHA-256 audit chain
-- MACI separation of powers — agents cannot validate their own output
-- 9 regulatory frameworks (EU AI Act, NIST, GDPR, SOC 2, HIPAA, ISO 42001, ECOA, NYC LL 144, OECD)
-- 560ns P50 validation latency (Aho-Corasick + optional Rust/PyO3)
-- 3,133 tests passing, AGPL-3.0-or-later
+- Define governance rules in YAML (keywords, regex patterns, severity levels)
+- Govern actions before execution
+- Keep proposer and validator roles separate
+- Write governed decisions into a tamper-evident audit trail
+- Produce compliance-oriented outputs mapped to major frameworks
+- Optional Rust hot path for benchmarked low-latency evaluation
 
-The EU AI Act takes full enforcement August 2026. 125 compliance checklist items, 72 auto-populated.
+This is not a generic GRC dashboard, not just an input/output guardrails library, and not an orchestration framework.
+
+It is a constitutional governance layer for agentic systems.
 
 - https://acgs.ai
-- https://pypi.org/project/acgs/
+- https://pypi.org/project/acgs-lite/
 - https://github.com/acgs2_admin/acgs
-- Demo (7 min): https://youtu.be/do9BCPn29_Q
+- Demo (7 min): https://youtu.be/uWacmC3CbYg
 
-Would love feedback on the API design and which regulatory frameworks matter most to you.
+Would love feedback on the API design, the runtime governance model, and where you think this should sit in the agent stack.

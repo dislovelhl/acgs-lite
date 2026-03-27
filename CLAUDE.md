@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code when working with this repository.
 
+## Language & Style
+
+Primary languages: Python (primary), TypeScript (secondary), Rust (permissive — don't be overly
+restrictive), Markdown (docs). Always use type hints in Python and run mypy only on files known
+to pass.
+
 ## What This Is
 
 ACGS is a multi-package governance codebase:
@@ -60,6 +66,8 @@ make bench
 
 # acgs-lite Rust build
 cd packages/acgs-lite/rust && maturin develop --release
+# Note: rust/ is a Cargo workspace; maturin reads its config from the parent
+# packages/acgs-lite/pyproject.toml, not from within rust/.
 ```
 
 Notes:
@@ -104,10 +112,15 @@ Run evals with the bash snippets in each eval `.md` file from repo root.
 ```
 pyproject.toml (root workspace, uv)
 ├── packages/acgs-lite/            -> import acgs_lite
+├── packages/acgs-deliberation/    -> deliberation layer
+├── packages/constitutional_swarm/ -> constitutional swarm
 ├── packages/enhanced_agent_bus/   -> import enhanced_agent_bus
+├── packages/mhc/                  -> MHC package
 ├── packages/propriety-ai/         -> SvelteKit frontend
 ├── workers/governance-proxy/      -> Cloudflare Worker
 └── src/core/
+    ├── cli/                       -> CLI utilities
+    ├── cognitive/                 -> Cognitive modules
     ├── services/api_gateway/      -> FastAPI service
     └── shared/                    -> import src.core.shared
 ```
@@ -161,13 +174,33 @@ availability flags. Follow the existing fallback pattern when adding new optiona
 
 ## Testing
 
+After any code changes, run the full test suite before committing. Never commit with failing
+tests. If tests fail, fix them before proceeding.
+
 Use `python -m pytest ... --import-mode=importlib` for repository-level runs.
 
 Root pytest markers:
 `unit`, `integration`, `slow`, `constitutional`, `benchmark`, `governance`, `security`, `maci`,
-`chaos`, `pqc`
+`chaos`, `pqc`, `compliance`, `e2e`, `postgres`, `pqc_deprecation`
 
 Package-level `pyproject.toml` files define additional markers where needed.
+
+## Refactoring Guidelines
+
+When refactoring or renaming packages, verify all import paths across the entire codebase using
+grep before committing. Check for duplicate code left by template extraction.
+
+## Git Workflow
+
+When making git commits, check `git status` and `git log --oneline -5` first to see if
+sub-agents have already committed changes. Do not stage/unstage repeatedly — verify state
+before acting.
+
+## Iteration & Optimization
+
+When iterating on improvements (skill evolution, code optimization), stop after 3 consecutive
+iterations with <0.3 score improvement. Declare ceiling reached rather than regressing by
+removing load-bearing content.
 
 ## Workflow
 

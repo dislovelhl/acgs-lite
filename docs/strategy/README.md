@@ -1,7 +1,7 @@
 # ACGS Strategy Documents
 
 **Generated:** 2026-03-19
-**Last updated:** 2026-03-19
+**Last updated:** 2026-03-27
 
 Current naming reference: the public package is `acgs`, the compatibility namespace is
 `acgs_lite`, and `ACGS-2` is an internal historical platform label. See
@@ -34,13 +34,21 @@ Current naming reference: the public package is `acgs`, the compatibility namesp
 | [Compliance Brief](sales/COMPLIANCE-BRIEF.md) | CISO/auditor-facing: 9-framework coverage matrix, evidence types, MACI separation, audit readiness checklist, deployment options, security posture. |
 | [Budget Playbook](sales/BUDGET-PLAYBOOK.md) | How to get ACGS purchased when "AI governance" is not a budget line item. Budget attachment map by trigger event, price anchoring, conversation templates, deal acceleration. |
 | [Design Partner Program](sales/DESIGN-PARTNER-PROGRAM.md) | Terms, ideal partner profile, prospecting sources, outreach cadence, onboarding checklist, exit criteria, success metrics. |
+| [Pitch Deck Outline](sales/PITCH-DECK.md) | 10-slide founder deck narrative: problem, category gap, product, competition, GTM, and closing thesis. |
 
 ## Messaging
 
 | Document | Description |
 |----------|-------------|
+| [Core Messaging](messaging/CORE-MESSAGING.md) | Canonical positioning, one-liners, category framing, founder narrative, language to use and avoid. |
 | [Audience Narratives](messaging/AUDIENCE-NARRATIVES.md) | Segmented messaging for 5 audiences: developers, CTOs, CISOs, investors, design partners. Tone, content angles, channels, what NOT to say. |
 | [Landing Page Copy](messaging/LANDING-PAGE-COPY.md) | Full copy for propriety.ai homepage: hero, problem, solution, metrics, frameworks, how-it-works, integrations, EU AI Act countdown, pricing preview, CTAs. |
+
+## Launch
+
+| Document | Description |
+|----------|-------------|
+| [Launch Pack](../launch/LAUNCH-PACK.md) | Founder-style launch copy in English and Chinese for LinkedIn, X, Hacker News, and short-form posts. |
 
 ---
 
@@ -64,6 +72,7 @@ Current naming reference: the public package is `acgs`, the compatibility namesp
 | 2026-03-19 | Initial creation (docs 01-05) | Business panel analysis |
 | 2026-03-19 | Round 2 revisions (docs 03, 04, 05) | Panel adversarial review: 6 contradictions, 5 omissions fixed |
 | 2026-03-19 | Operational documents (legal, sales, messaging) | Execution readiness |
+| 2026-03-27 | Messaging refresh and launch collateral | Core positioning, landing page refresh, pitch deck outline, bilingual launch pack |
 
 ### Round 2 Fixes Applied
 

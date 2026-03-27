@@ -1,7 +1,7 @@
 /// Severity levels for governance rules.
 ///
 /// Mirrors `constitution.Severity` in Python.
-/// Constitutional Hash: cdd01ef066bc6cf2
+/// Constitutional Hash: 608508a9bd224290
 
 /// Decision codes returned by the validator.
 pub const ALLOW: i32 = 0;

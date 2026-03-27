@@ -1,0 +1,342 @@
+"""ACGS-Lite Haystack Integration.
+
+Wraps Haystack 2.x Pipeline and Component with constitutional governance.
+Every input is validated before execution. Every output is validated
+non-blockingly after execution.
+
+Usage::
+
+    from haystack import Pipeline
+    from haystack.components.generators import OpenAIGenerator
+
+    from acgs_lite.integrations.haystack import GovernedHaystackPipeline
+
+    pipe = Pipeline()
+    pipe.add_component("llm", OpenAIGenerator(model="gpt-4o"))
+    governed = GovernedHaystackPipeline(pipe)
+    result = governed.run({"llm": {"prompt": "What is AI governance?"}})
+
+Constitutional Hash: 608508a9bd224290
+"""
+
+from __future__ import annotations
+
+import logging
+from typing import Any
+
+from acgs_lite.audit import AuditLog
+from acgs_lite.constitution import Constitution
+from acgs_lite.engine import GovernanceEngine
+
+logger = logging.getLogger(__name__)
+
+try:
+    from haystack import Pipeline  # noqa: F401
+    from haystack.core.component import Component  # noqa: F401
+
+    HAYSTACK_AVAILABLE = True
+except ImportError:
+    HAYSTACK_AVAILABLE = False
+    Pipeline = object  # type: ignore[assignment,misc]
+    Component = object  # type: ignore[assignment,misc]
+
+# Keys commonly used for text content in Haystack data dicts.
+_INPUT_TEXT_KEYS = ("query", "queries", "questions", "prompt", "text", "documents")
+_OUTPUT_TEXT_KEYS = ("replies", "answers", "documents")
+
+
+def _extract_texts_from_dict(data: dict[str, Any], keys: tuple[str, ...]) -> list[str]:
+    """Recursively extract text strings from a data dict.
+
+    Checks well-known keys first, then walks remaining values for strings
+    and nested dicts.
+    """
+    texts: list[str] = []
+
+    # Check well-known keys at current level
+    for key in keys:
+        if key not in data:
+            continue
+        val = data[key]
+        if isinstance(val, str):
+            texts.append(val)
+        elif isinstance(val, list):
+            for item in val:
+                if isinstance(item, str):
+                    texts.append(item)
+                elif hasattr(item, "content"):
+                    texts.append(str(item.content))
+
+    # Walk remaining values for strings or nested component-input dicts
+    for key, val in data.items():
+        if key in keys:
+            continue
+        if isinstance(val, str):
+            texts.append(val)
+        elif isinstance(val, dict):
+            texts.extend(_extract_texts_from_dict(val, keys))
+        elif isinstance(val, list):
+            for item in val:
+                if isinstance(item, str):
+                    texts.append(item)
+                elif hasattr(item, "content"):
+                    texts.append(str(item.content))
+
+    return texts
+
+
+class GovernedHaystackPipeline:
+    """Haystack Pipeline wrapper with constitutional governance.
+
+    Validates text extracted from input data before the pipeline runs and
+    validates output text non-blockingly after the pipeline completes.
+
+    Usage::
+
+        from haystack import Pipeline
+        from acgs_lite.integrations.haystack import GovernedHaystackPipeline
+
+        pipe = Pipeline()
+        # ... add components ...
+        governed = GovernedHaystackPipeline(pipe)
+        result = governed.run({"component": {"query": "Hello"}})
+    """
+
+    def __init__(
+        self,
+        pipeline: Any,
+        *,
+        constitution: Constitution | None = None,
+        agent_id: str = "haystack-agent",
+        strict: bool = True,
+    ) -> None:
+        if not HAYSTACK_AVAILABLE:
+            raise ImportError(
+                "haystack-ai is required. Install with: pip install acgs[haystack]"
+            )
+
+        self._pipeline = pipeline
+        self.constitution = constitution or Constitution.default()
+        self.audit_log = AuditLog()
+        self.engine = GovernanceEngine(
+            self.constitution,
+            audit_log=self.audit_log,
+            strict=strict,
+        )
+        self.agent_id = agent_id
+
+    def __getattr__(self, name: str) -> Any:
+        """Delegate attribute access to the underlying Haystack pipeline."""
+        return getattr(self._pipeline, name)
+
+    def _validate_input(self, data: dict[str, Any]) -> None:
+        """Validate text extracted from input data (raises on violation)."""
+        texts = _extract_texts_from_dict(data, _INPUT_TEXT_KEYS)
+        combined = " ".join(texts)
+        if combined.strip():
+            self.engine.validate(combined, agent_id=self.agent_id)
+
+    def _validate_output(self, result: dict[str, Any]) -> None:
+        """Validate text extracted from output data (non-blocking)."""
+        texts = _extract_texts_from_dict(result, _OUTPUT_TEXT_KEYS)
+        combined = " ".join(texts)
+        if combined.strip():
+            with self.engine.non_strict():
+                vr = self.engine.validate(combined, agent_id=f"{self.agent_id}:output")
+            if not vr.valid:
+                logger.warning(
+                    "Haystack pipeline output governance violations: %s",
+                    [v.rule_id for v in vr.violations],
+                )
+
+    def run(self, data: dict[str, Any], **kwargs: Any) -> dict[str, Any]:
+        """Run the pipeline with governance validation.
+
+        Validates text in *data* before execution and validates the output
+        dict non-blockingly after execution.
+        """
+        self._validate_input(data)
+
+        result: dict[str, Any] = self._pipeline.run(data, **kwargs)
+
+        self._validate_output(result)
+        return result
+
+    async def arun(self, data: dict[str, Any], **kwargs: Any) -> dict[str, Any]:
+        """Async version of run() with governance validation."""
+        self._validate_input(data)
+
+        if hasattr(self._pipeline, "arun"):
+            result: dict[str, Any] = await self._pipeline.arun(data, **kwargs)
+        else:
+            result = self._pipeline.run(data, **kwargs)
+
+        self._validate_output(result)
+        return result
+
+    @property
+    def stats(self) -> dict[str, Any]:
+        """Return governance statistics for this pipeline."""
+        return {
+            **self.engine.stats,
+            "agent_id": self.agent_id,
+            "audit_chain_valid": self.audit_log.verify_chain(),
+        }
+
+
+class GovernedComponent:
+    """Wraps any Haystack Component with constitutional governance.
+
+    Validates text found in keyword arguments before the component runs and
+    validates output text non-blockingly after execution.
+
+    Usage::
+
+        from acgs_lite.integrations.haystack import GovernedComponent
+
+        governed = GovernedComponent(my_component)
+        result = governed.run(query="What is governance?")
+    """
+
+    def __init__(
+        self,
+        component: Any,
+        *,
+        constitution: Constitution | None = None,
+        agent_id: str = "haystack-component",
+        strict: bool = True,
+    ) -> None:
+        if not HAYSTACK_AVAILABLE:
+            raise ImportError(
+                "haystack-ai is required. Install with: pip install acgs[haystack]"
+            )
+
+        self._component = component
+        self.constitution = constitution or Constitution.default()
+        self.audit_log = AuditLog()
+        self.engine = GovernanceEngine(
+            self.constitution,
+            audit_log=self.audit_log,
+            strict=strict,
+        )
+        self.agent_id = agent_id
+
+    def __getattr__(self, name: str) -> Any:
+        """Delegate attribute access to the underlying Haystack component."""
+        return getattr(self._component, name)
+
+    def run(self, **kwargs: Any) -> dict[str, Any]:
+        """Run the component with governance validation."""
+        # Validate string inputs
+        texts = _extract_texts_from_dict(kwargs, _INPUT_TEXT_KEYS)
+        combined = " ".join(texts)
+        if combined.strip():
+            self.engine.validate(combined, agent_id=self.agent_id)
+
+        result: dict[str, Any] = self._component.run(**kwargs)
+
+        # Validate output non-blockingly
+        if isinstance(result, dict):
+            out_texts = _extract_texts_from_dict(result, _OUTPUT_TEXT_KEYS)
+            out_combined = " ".join(out_texts)
+            if out_combined.strip():
+                with self.engine.non_strict():
+                    vr = self.engine.validate(
+                        out_combined, agent_id=f"{self.agent_id}:output"
+                    )
+                if not vr.valid:
+                    logger.warning(
+                        "Haystack component output governance violations: %s",
+                        [v.rule_id for v in vr.violations],
+                    )
+
+        return result
+
+    @property
+    def stats(self) -> dict[str, Any]:
+        """Return governance statistics for this component."""
+        return {
+            **self.engine.stats,
+            "agent_id": self.agent_id,
+            "audit_chain_valid": self.audit_log.verify_chain(),
+        }
+
+
+class GovernanceComponent:
+    """Standalone governance validation component for Haystack pipelines.
+
+    Can be inserted into any Haystack pipeline as a node to perform
+    constitutional validation on text flowing through the pipeline.
+
+    Usage::
+
+        from haystack import Pipeline
+        from acgs_lite.integrations.haystack import GovernanceComponent
+
+        pipe = Pipeline()
+        pipe.add_component("governance", GovernanceComponent())
+        pipe.add_component("llm", my_generator)
+        pipe.connect("governance.text", "llm.prompt")
+
+        result = pipe.run({"governance": {"text": "Hello!"}})
+    """
+
+    def __init__(
+        self,
+        *,
+        constitution: Constitution | None = None,
+        agent_id: str = "haystack-governance-node",
+        strict: bool = True,
+    ) -> None:
+        self.constitution = constitution or Constitution.default()
+        self.audit_log = AuditLog()
+        self.engine = GovernanceEngine(
+            self.constitution,
+            audit_log=self.audit_log,
+            strict=strict,
+        )
+        self.agent_id = agent_id
+
+    def run(self, text: str) -> dict[str, Any]:
+        """Validate text and return governance metadata.
+
+        Returns a dict with ``text`` (pass-through) and ``governance``
+        containing ``valid`` and ``violations``.  In strict mode, raises
+        :class:`~acgs_lite.errors.ConstitutionalViolationError` on
+        violation.
+        """
+        was_strict = self.engine.strict
+        with self.engine.non_strict():
+            result = self.engine.validate(text, agent_id=self.agent_id)
+
+        violations = [
+            {"rule_id": v.rule_id, "rule_text": v.rule_text} for v in result.violations
+        ]
+
+        if not result.valid and was_strict:
+            from acgs_lite.errors import ConstitutionalViolationError
+
+            first = result.violations[0] if result.violations else None
+            raise ConstitutionalViolationError(
+                f"Governance validation failed: {violations}",
+                rule_id=first.rule_id if first else "unknown",
+                severity=first.severity.value if first else "high",
+                action=text,
+            )
+
+        return {
+            "text": text,
+            "governance": {
+                "valid": result.valid,
+                "violations": violations,
+            },
+        }
+
+    @property
+    def stats(self) -> dict[str, Any]:
+        """Return governance statistics for this component."""
+        return {
+            **self.engine.stats,
+            "agent_id": self.agent_id,
+            "audit_chain_valid": self.audit_log.verify_chain(),
+        }

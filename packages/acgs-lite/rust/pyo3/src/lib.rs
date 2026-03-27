@@ -2,7 +2,7 @@
 ///
 /// Converts Python types to Rust types and delegates to the core validator.
 ///
-/// Constitutional Hash: cdd01ef066bc6cf2
+/// Constitutional Hash: 608508a9bd224290
 
 use std::collections::{HashMap, HashSet};
 

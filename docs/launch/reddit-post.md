@@ -1,42 +1,40 @@
 # Reddit r/MachineLearning — Post
 
-**Title:** [P] ACGS — Constitutional governance for AI agents. 9 regulatory frameworks, tamper-evident audit trail, 5 lines of code.
+**Title:** [P] ACGS — Constitutional governance for AI agents. Runtime governance, audit evidence, 5 lines of code.
 
 **Body:**
 
-I've been building ACGS for two years — it's a Python library that wraps any AI agent in enforceable constitutional rules.
+I've been building ACGS for two years — it's a Python library that wraps AI agents in enforceable constitutional rules.
 
-```
-pip install acgs
+```bash
+pip install acgs-lite
 ```
 
-**The problem:** The EU AI Act takes full enforcement August 2026. Fines up to 7% of global annual revenue. Most AI deployments have zero governance infrastructure. If you're deploying AI in regulated industries (healthcare, finance, HR), you need provable governance.
+**The problem:** once agents can approve, deploy, deny, escalate, or call tools, the question is no longer only whether the output is safe. The question becomes:
+
+- who proposed the action?
+- who validated it?
+- what rules were active?
+- can governance later be proven?
 
 **What ACGS does:**
 
-- Define rules in YAML — keywords, regex patterns, severity levels
+- Define rules in YAML
 - Wrap any agent: `GovernedAgent(my_agent, constitution=constitution)`
-- Every decision logged in a SHA-256 chain-verified audit trail
-- MACI separation of powers — agents cannot validate their own output
-- Covers 9 regulatory frameworks: EU AI Act, NIST AI RMF, GDPR Art. 22, SOC 2, HIPAA, ISO 42001, ECOA/FCRA, NYC LL 144, OECD AI Principles
-- 125 compliance checklist items, 72 auto-populated
-- Integrations for OpenAI, Anthropic, LangChain, LiteLLM, and 7 more
+- Govern actions before execution
+- Keep proposer and validator roles structurally separate
+- Write decisions into a SHA-256 chain-verified audit trail
+- Produce compliance-oriented outputs mapped to major frameworks
 
-**Technical details:**
+The framing I'm aiming for is:
 
-- Rule-based (not LLM-based) — deterministic, no inference cost
-- Aho-Corasick single-pass keyword scanning
-- Optional Rust acceleration via PyO3
-- 3,133 tests passing
-- AGPL-3.0-or-later
+Guardrails filter outputs. ACGS governs actions.
 
-I built this entirely with Claude (Anthropic's AI). No CS background. Two years of daily conversations with AI, learning to code by building governance infrastructure.
-
-7-minute walkthrough: https://youtu.be/do9BCPn29_Q
+7-minute walkthrough: https://youtu.be/uWacmC3CbYg
 
 Links:
 - Website: https://acgs.ai
-- PyPI: https://pypi.org/project/acgs/
+- PyPI: https://pypi.org/project/acgs-lite/
 - GitHub: https://github.com/acgs2_admin/acgs
 
-Feedback welcome — especially on which regulatory frameworks matter most to your work.
+Feedback welcome — especially on where you think runtime governance should sit in the agent stack.

@@ -5,7 +5,7 @@
 ///
 /// Pure Rust — no FFI dependencies.
 ///
-/// Constitutional Hash: cdd01ef066bc6cf2
+/// Constitutional Hash: 608508a9bd224290
 
 use aho_corasick::{AhoCorasick, MatchKind};
 use regex::Regex;

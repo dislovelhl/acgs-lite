@@ -35,17 +35,15 @@ from acgs_lite.errors import ConstitutionalViolationError
 
 from ._rust_dispatch import RustDispatchMixin
 from .batch import BatchValidationMixin
-
-
 from .types import (
+    _ANON,
+    _EMPTY_VIOLATIONS,
     CustomValidator,
     ValidationResult,
     Violation,
-    _ANON,
-    _EMPTY_VIOLATIONS,
+    _dedup_violations,
     _FastAuditLog,
     _NoopRecorder,
-    _dedup_violations,
     _request_counter,
 )
 

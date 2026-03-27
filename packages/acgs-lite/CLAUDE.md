@@ -6,10 +6,22 @@ For repo-wide rules, see `/CLAUDE.md`.
 
 ```
 src/acgs_lite/
+├── _meta.py          # Package metadata
+├── cli.py            # CLI entry point
+├── cli/              # CLI subcommands
+├── commands/         # Command implementations (assess, init, lifecycle, observe, etc.)
+├── compliance/       # Compliance mapping and assessment helpers
 ├── constitution/     # Constitution models, loading, templates, export
 ├── engine/           # Validation engine and execution helpers
-├── compliance/       # Compliance mapping and assessment helpers
+├── errors.py         # Error definitions including ConstitutionalViolationError
+├── eu_ai_act/        # EU AI Act compliance module
 ├── integrations/     # External ecosystem adapters
+├── licensing.py      # Licensing logic
+├── matcher.py        # Pattern/rule matching
+├── middleware.py     # Middleware utilities
+├── openshell.py      # Interactive shell
+├── report.py         # Reporting utilities
+├── schema/           # Data schemas
 ├── audit.py          # Audit trail
 ├── governed.py       # Governed wrappers
 ├── maci.py           # MACI enforcement
@@ -18,10 +30,11 @@ src/acgs_lite/
 src/eu_ai_act_tool/   # EU AI Act assessment app
 
 rust/
-├── core/             # Core Rust crate
-├── pyo3/             # Python bindings crate
-├── wasm/             # WASM target
-└── src.legacy/       # Legacy Rust sources kept for reference/migration
+├── core/                    # Core Rust crate
+├── pyo3/                    # Python bindings crate
+├── spacetime_governance/    # Spacetime governance crate
+├── wasm/                    # WASM target
+└── src.legacy/              # Legacy Rust sources kept for reference/migration
 ```
 
 ## Testing

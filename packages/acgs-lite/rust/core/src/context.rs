@@ -3,7 +3,7 @@
 /// Handles `action_detail` and `action_description` context keys,
 /// matching them against rules with positive-verb-skip logic.
 ///
-/// Constitutional Hash: cdd01ef066bc6cf2
+/// Constitutional Hash: 608508a9bd224290
 
 use crate::result::Violation;
 use crate::severity::Severity;

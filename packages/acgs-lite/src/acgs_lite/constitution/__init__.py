@@ -104,6 +104,13 @@ from .weighted_policy import RulePenalty, WeightedConstitution, WeightedEvaluati
 #   analysis    — Quality analysis, simulation, compliance, reporting
 
 _LAZY_REGISTRY: dict[str, tuple[str, str]] = {
+    # ── editor ─────────────────────────────────────────────────────────
+    "RuleDraft": ("editor", "lifecycle"),
+    "ConstitutionDiff": ("editor", "lifecycle"),
+    "ConstitutionVersion": ("editor", "lifecycle"),
+    "ConstitutionEditor": ("editor", "lifecycle"),
+    "ConstitutionVersionControl": ("editor", "lifecycle"),
+    "merge_constitutions": ("editor", "lifecycle"),
     # ── lifecycle ─────────────────────────────────────────────────────────
     "Amendment": ("amendments", "lifecycle"),
     "AmendmentProtocol": ("amendments", "lifecycle"),

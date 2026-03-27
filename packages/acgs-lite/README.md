@@ -4,7 +4,7 @@
 
 **Constitutional governance infrastructure for AI agents. The missing safety layer between your LLM and production.**
 
-`ACGS 2.4.0` | `AGPL-3.0-or-later` | `optional Rust fast path` | `pytest-backed verification`
+`ACGS 2.4.1` | `AGPL-3.0-or-later` | `optional Rust fast path` | `pytest-backed verification`
 
 [![Demo Video](https://img.youtube.com/vi/uWacmC3CbYg/maxresdefault.jpg)](https://youtu.be/uWacmC3CbYg)
 
@@ -449,7 +449,7 @@ governance:
 
 ## The Engine Built by the Machines
 
-This entire constitutional governance engine -- 3,133 passing tests, Aho-Corasick optimization, MACI architecture -- was built by a non-technical founder who could not write a for loop two years ago. It was built entirely through conversation with Claude.
+This entire constitutional governance engine -- 3,284 passing tests, Aho-Corasick optimization, MACI architecture -- was built by a non-technical founder who could not write a for loop two years ago. It was built entirely through conversation with Claude.
 
 **If an AI is capable enough to help a non-technical founder build its own constitutional governance engine, it is capable enough to do immense damage without one.**
 
