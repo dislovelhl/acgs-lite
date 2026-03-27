@@ -763,20 +763,23 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
                         violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
             elif self._pattern_rule_idxs:
                 if self._pat_anchor_search is None or self._pat_anchor_search(text_lower):
-                    for rule_idx, pat in self._pattern_rule_idxs:
-                        if pat.search(text_lower):
-                            rid, rtxt, rsev, _, rcat, is_crit, _ = self._rule_data[rule_idx]
-                            if strict and is_crit:
-                                _e_src = self._rule_excs[rule_idx]
-                                raise ConstitutionalViolationError(
-                                    str(_e_src),
-                                    rule_id=_e_src.rule_id,
-                                    severity=_e_src.severity,
-                                    action=action_200,
-                                )
-                            if violations is None:
-                                violations = []  # noqa: E701
-                            violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
+                    _pattern_iter = self._pattern_rule_idxs
+                else:
+                    _pattern_iter = self._no_anchor_patterns
+                for rule_idx, pat in _pattern_iter:
+                    if pat.search(text_lower):
+                        rid, rtxt, rsev, _, rcat, is_crit, _ = self._rule_data[rule_idx]
+                        if strict and is_crit:
+                            _e_src = self._rule_excs[rule_idx]
+                            raise ConstitutionalViolationError(
+                                str(_e_src),
+                                rule_id=_e_src.rule_id,
+                                severity=_e_src.severity,
+                                action=action_200,
+                            )
+                        if violations is None:
+                            violations = []  # noqa: E701
+                        violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
             return violations
         elif self._combined_findall is not None:
             # Regex fallback when Aho-Corasick is not available.
@@ -818,37 +821,43 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
                                 violations = []  # noqa: E701
                             violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
                 if self._pat_anchor_search is None or self._pat_anchor_search(text_lower):
-                    for rule_idx, pat in self._pattern_rule_idxs:
-                        if not (fired & (1 << rule_idx)) and pat.search(text_lower):
-                            fired |= 1 << rule_idx
-                            rid, rtxt, rsev, _, rcat, is_crit, _ = self._rule_data[rule_idx]
-                            if strict and is_crit:
-                                _e_src = self._rule_excs[rule_idx]
-                                raise ConstitutionalViolationError(
-                                    str(_e_src),
-                                    rule_id=_e_src.rule_id,
-                                    severity=_e_src.severity,
-                                    action=action_200,
-                                )
-                            if violations is None:
-                                violations = []  # noqa: E701
-                            violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
+                    _pattern_iter = self._pattern_rule_idxs
+                else:
+                    _pattern_iter = self._no_anchor_patterns
+                for rule_idx, pat in _pattern_iter:
+                    if not (fired & (1 << rule_idx)) and pat.search(text_lower):
+                        fired |= 1 << rule_idx
+                        rid, rtxt, rsev, _, rcat, is_crit, _ = self._rule_data[rule_idx]
+                        if strict and is_crit:
+                            _e_src = self._rule_excs[rule_idx]
+                            raise ConstitutionalViolationError(
+                                str(_e_src),
+                                rule_id=_e_src.rule_id,
+                                severity=_e_src.severity,
+                                action=action_200,
+                            )
+                        if violations is None:
+                            violations = []  # noqa: E701
+                        violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
             elif self._pattern_rule_idxs:
                 if self._pat_anchor_search is None or self._pat_anchor_search(text_lower):
-                    for rule_idx, pat in self._pattern_rule_idxs:
-                        if pat.search(text_lower):
-                            rid, rtxt, rsev, _, rcat, is_crit, _ = self._rule_data[rule_idx]
-                            if strict and is_crit:
-                                _e_src = self._rule_excs[rule_idx]
-                                raise ConstitutionalViolationError(
-                                    str(_e_src),
-                                    rule_id=_e_src.rule_id,
-                                    severity=_e_src.severity,
-                                    action=action_200,
-                                )
-                            if violations is None:
-                                violations = []  # noqa: E701
-                            violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
+                    _pattern_iter = self._pattern_rule_idxs
+                else:
+                    _pattern_iter = self._no_anchor_patterns
+                for rule_idx, pat in _pattern_iter:
+                    if pat.search(text_lower):
+                        rid, rtxt, rsev, _, rcat, is_crit, _ = self._rule_data[rule_idx]
+                        if strict and is_crit:
+                            _e_src = self._rule_excs[rule_idx]
+                            raise ConstitutionalViolationError(
+                                str(_e_src),
+                                rule_id=_e_src.rule_id,
+                                severity=_e_src.severity,
+                                action=action_200,
+                            )
+                        if violations is None:
+                            violations = []  # noqa: E701
+                        violations.append(Violation(rid, rtxt, rsev, action_200, rcat))
             return violations
         return violations
 
