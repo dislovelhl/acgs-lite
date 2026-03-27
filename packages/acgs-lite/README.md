@@ -4,7 +4,7 @@
 
 **Constitutional governance infrastructure for AI agents. The missing safety layer between your LLM and production.**
 
-`ACGS 2.4.1` | `AGPL-3.0-or-later` | `optional Rust fast path` | `pytest-backed verification`
+`ACGS 2.4.1` | `Apache-2.0` | `optional Rust fast path` | `pytest-backed verification`
 
 [![Demo Video](https://img.youtube.com/vi/uWacmC3CbYg/maxresdefault.jpg)](https://youtu.be/uWacmC3CbYg)
 
@@ -12,7 +12,7 @@
 >
 > **Note:** Performance numbers are from the local benchmark suite (`make bench`) and the fastest figures refer to the optional Rust/PyO3 hot path under benchmark conditions. Python-only and mixed integration paths will be slower. The benchmark target runs focused `pytest-benchmark` microbenchmarks for engine construction and steady-state validation. Run benchmarks on your own hardware before quoting exact latency. The public import path for this package is `from acgs_lite import ...`. Reserve `from acgs import ...` for the partial-open-source `acgs` distribution.
 >
-> **License:** AGPL-3.0-or-later for open-source use. [Commercial license](COMMERCIAL_LICENSE.md) available for proprietary/SaaS use.
+> **License:** Apache-2.0. Free to use, modify, and distribute.
 >
 > **Naming:** `ACGS` is the product name, `acgs-lite` is the public PyPI package, and `acgs_lite` is the Python import namespace for this distribution. See [../../docs/brand-architecture.md](../../docs/brand-architecture.md).
 
@@ -463,7 +463,7 @@ Governance must be democratic. The infrastructure that constrains the machines m
 pip install acgs-lite
 ```
 
-AGPL-3.0-or-later Licensed | Open Source | [Commercial License Available](COMMERCIAL_LICENSE.md)
+Apache-2.0 Licensed | Open Source
 
 *The question was never whether power would be constrained -- it was whether the constraints would be built by the people affected or imposed after the damage was done.*
 
@@ -482,12 +482,7 @@ you are editing.
 
 ### License
 
-ACGS is dual-licensed:
-
-- **AGPL-3.0-or-later** -- Free for open-source use, internal pipelines, CI/CD, and on-premise deployment.
-- **Commercial License** -- Required if you embed ACGS in a proprietary SaaS product served to external users. Contact hello@acgs.ai.
-
-See [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) for details and FAQ.
+Apache-2.0. See [LICENSE](LICENSE).
 
 ---
 

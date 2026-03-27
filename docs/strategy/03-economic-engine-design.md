@@ -16,60 +16,24 @@
 
 ## 1. License Strategy
 
-### Recommended: AGPL-3.0-or-later + Commercial Dual License
+### Apache-2.0 (updated 2026-03-27)
 
-ACGS now ships under AGPL-3.0-or-later with a separate commercial license for proprietary and SaaS deployments. Contribution terms are documented in `CONTRIBUTING.md`; maintainers can request additional CLA paperwork when dual-licensing rights are required.
+ACGS ships under Apache-2.0. Previous AGPL-3.0 dual-licensing strategy was removed
+to eliminate adoption friction for the target user (ML platform engineers at 50-500
+person companies). AGPL copyleft triggered legal review that blocked evaluation.
 
-| Component | License | Rationale |
-|-----------|---------|-----------|
-| ACGS Python library (`acgs`, compatibility namespace `acgs_lite`) | **AGPL-3.0-or-later** | Prevents cloud provider strip-mining; OSI-compliant; validated by Grafana ($270M ARR) |
-| ACGS integrations | AGPL-3.0-or-later | Follows core |
-| `enhanced-agent-bus` | AGPL-3.0-or-later | Platform layer needs stronger protection |
-| Commercial license | Proprietary | For enterprises that cannot comply with AGPL |
-| `propriety-ai` SaaS | Proprietary | Never open-sourced |
+| Component | License |
+|-----------|---------|
+| ACGS Python library (`acgs-lite`) | Apache-2.0 |
+| ACGS integrations | Apache-2.0 |
+| `enhanced-agent-bus` | Apache-2.0 |
+| `propriety-ai` SaaS | Proprietary |
 
-**Why AGPL over other options:**
-
-| License | Problem for ACGS |
-|---------|-----------------|
-| Apache-2.0 (legacy baseline) | AWS/GCP can package as managed service with zero contribution |
-| SSPL | Not OSI-approved; controversial (Redis/Elastic backlash) |
-| BSL | Not OSI-approved; triggered OpenTofu fork for HashiCorp |
-| **AGPL-3.0-or-later** | **OSI-approved; prevents SaaS exploitation; Grafana validated at $270M ARR** |
-
-**Contribution policy:** Contributions land under AGPL-3.0-or-later by default. When maintainers need dual-licensing rights for commercial distribution, they can request separate CLA paperwork before merge.
-
-### AGPL for Embedded Libraries: Impact Analysis
-
-**Panel critique (Round 2):** Grafana is an observability tool (not embedded in customer products). ACGS is an embedded library (`pip install acgs` into customer AI pipelines). The AGPL implications differ fundamentally.
-
-**AGPL trigger for ACGS users:**
-
-| Usage Pattern | AGPL Triggered? | Explanation |
-|---------------|-----------------|-------------|
-| Internal-only AI pipeline (not exposed over network) | **No** | AGPL only triggers on network interaction with third parties. Internal tools are exempt |
-| SaaS product using ACGS to validate AI output served to users | **Yes** | Network interaction with external users triggers AGPL Section 13 (Corresponding Source obligation) |
-| CI/CD pipeline (GitLab stage) | **No** | CI/CD runs internally; output is a pass/fail, not a network service |
-| On-prem enterprise deployment | **No** | No network interaction with third parties |
-| Cloud provider wrapping ACGS as a managed service | **Yes** | This is the primary protection target |
-
-**Key insight:** Most ACGS use cases (internal pipelines, CI/CD, on-prem) do **not** trigger AGPL. The license only bites when:
-1. A cloud provider offers ACGS-as-a-service (the protection target), or
-2. A SaaS company embeds ACGS validations into a customer-facing service
-
-For case #2, the **commercial dual license** exists: enterprises embedding ACGS in SaaS products purchase a commercial license (removing AGPL obligations). This is the identical model MongoDB (SSPL) and Grafana (AGPL) use -- and it is itself a revenue stream.
-
-**Enterprise objection mitigation:**
-
-| Enterprise concern | Response |
-|-------------------|----------|
-| "AGPL means we have to open-source our product" | Only if you serve ACGS functionality over a network to external users. Internal use is fully exempt. For SaaS embedding, we offer a commercial license |
-| "Our legal team rejects all AGPL" | We offer a commercial license (included in Team and Enterprise tiers) that removes all AGPL obligations |
-| "What about transitive AGPL contamination?" | AGPL applies to the ACGS library and modifications to it, not to your application that calls it via API. FSF guidance and case law support this interpretation for library usage |
-
-**Commercial license as revenue accelerator:** Every enterprise that embeds ACGS in a SaaS product needs a commercial license. This converts AGPL from a "developer friction" problem into a **sales qualification signal** -- any SaaS company using ACGS in production is a pre-qualified commercial license buyer.
-
-**Decision: AGPL-3.0-or-later confirmed and implemented.** The embedded-library concern is real but manageable through dual licensing. The commercial license requirement for SaaS embedding creates an additional monetization path that Apache-2.0 would not provide.
+**Why Apache-2.0:** Zero friction for `pip install`. The previous AGPL analysis
+(cloud provider protection, dual-license revenue) was theoretically sound but
+premature. With zero users, the priority is adoption speed, not license-based
+monetization. Apache-2.0 is standard for dev tools in this space (Guardrails AI,
+LangSmith, etc.). Can revisit if/when there's actual adoption to protect.
 
 ---
 

@@ -15,16 +15,13 @@ Current naming reference: the public package is `acgs`, the compatibility namesp
 |---|----------|-------------|
 | 01 | [Business Panel Analysis](01-business-panel-analysis.md) | Multi-expert analysis (9 simulated experts: Christensen, Porter, Taleb, Kim/Mauborgne, Drucker, Meadows, Godin, Collins, Doumont). Consensus points, disagreements, priority recommendations. |
 | 02 | [Market Research Evidence](02-market-research-evidence.md) | Competitive intelligence (Guardrails AI, NeMo, OPA/Styra, Snyk, Checkmarx), OSS monetization precedents (HashiCorp, Elastic, Redis, Grafana, PostHog, Supabase), market sizing ($200M-$15.8B), PLG playbook, product surface inventory. |
-| 03 | [Economic Engine Design](03-economic-engine-design.md) | Monetization model: AGPL-3.0 dual license, 4-tier pricing (Free/$299/$999/$5K+), flywheel design, OPA/Styra differentiation, ARR growth path, revenue streams, risk mitigation, framework maintenance, funding strategy. |
+| 03 | [Economic Engine Design](03-economic-engine-design.md) | Monetization model: Apache-2.0 license (updated from AGPL), 4-tier pricing, flywheel design, OPA/Styra differentiation, ARR growth path, revenue streams, risk mitigation, framework maintenance, funding strategy. |
 | 04 | [Competitive Landscape](04-competitive-landscape.md) | Head-to-head comparison matrix (ACGS vs Guardrails AI vs NeMo vs OPA vs LlamaGuard), potential new entrants, partner opportunities, moat assessment, win/loss scenarios. |
 | 05 | [GTM Playbook](05-gtm-playbook.md) | Go-to-market: GitLab wedge, distribution channels, conversion funnel, Day Zero pipeline, design partner program, community building, enterprise sales motion, 90-day launch plan. |
 
 ## Legal
 
-| Document | Description |
-|----------|-------------|
-| [AGPL Migration Plan](legal/AGPL-MIGRATION-PLAN.md) | Step-by-step license migration: files to change, header templates, communication plan, automated migration script, legal checklist. |
-| [AGPL FAQ](legal/AGPL-FAQ.md) | Enterprise-ready FAQ: when AGPL triggers (and when it doesn't), commercial license options, CLA explanation. For developers and legal teams. |
+License changed to Apache-2.0 (2026-03-27). Previous AGPL strategy docs archived.
 
 ## Sales Enablement
 

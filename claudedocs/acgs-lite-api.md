@@ -3,7 +3,7 @@
 > Constitutional AI governance for any agent. Wrap any LLM agent in enforceable rules, audit
 > trails, and separation of powers — in 5 lines of code.
 
-**Version**: 2.0.1 | **License**: AGPL-3.0-or-later | **Python**: 3.10+ | **Constitutional Hash**: `608508a9bd224290`
+**Version**: 2.0.1 | **License**: Apache-2.0 | **Python**: 3.10+ | **Constitutional Hash**: `608508a9bd224290`
 
 ---
 

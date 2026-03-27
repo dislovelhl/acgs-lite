@@ -5,7 +5,7 @@
 [![Tests](https://img.shields.io/badge/tests-pytest-blue)](./tests/)
 [![Coverage](https://img.shields.io/badge/coverage-local--report-blue)](./coverage.json)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://python.org)
-[![License](https://img.shields.io/badge/license-AGPL--3.0--or--later-blue)](../../LICENSE)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue)](../../LICENSE)
 
 > **Version:** 2.5.0
 > **Status:** Active repository package
@@ -366,8 +366,7 @@ AgentBusError (base)
 
 ## License
 
-AGPL-3.0-or-later. See [../../LICENSE](../../LICENSE) for the repository license and
-[../../COMMERCIAL_LICENSE.md](../../COMMERCIAL_LICENSE.md) for proprietary/SaaS licensing terms.
+Apache-2.0. See [../../LICENSE](../../LICENSE).
 
 ---
 
