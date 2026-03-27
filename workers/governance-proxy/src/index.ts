@@ -77,7 +77,10 @@ export default {
     const url = new URL(request.url);
 
     // Health check
-    if (url.pathname === "/health" || url.pathname === "/") {
+    // - Always on /health
+    // - On / only if it's the default workers.dev domain
+    const isDefaultRoot = url.pathname === "/" && url.hostname.includes(".workers.dev");
+    if (url.pathname === "/health" || isDefaultRoot) {
       return healthResponse();
     }
 
@@ -179,14 +182,18 @@ export default {
 
     // Route matching
     const endpoint = matchEndpoint(url.pathname);
-    if (!endpoint) {
-      return new Response(
-        JSON.stringify({ error: { message: "Not found", type: "invalid_request_error" } }),
-        { status: 404, headers: { "Content-Type": "application/json" } },
-      );
+    
+    // If not an API endpoint, proxy to Pages
+    if (!endpoint && !url.pathname.startsWith("/admin/")) {
+      // Return the static site from Pages
+      return fetch(`https://acgs-ai.pages.dev${url.pathname}${url.search}`, {
+        method: request.method,
+        headers: request.headers,
+        body: request.method !== "GET" && request.method !== "HEAD" ? await request.arrayBuffer() : undefined,
+      });
     }
 
-    // Only support POST
+    // OpenAI-compatible POST only
     if (request.method !== "POST") {
       return new Response(
         JSON.stringify({ error: { message: "Method not allowed", type: "invalid_request_error" } }),
