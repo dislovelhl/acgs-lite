@@ -149,9 +149,11 @@ def _record_actions(exporter: Any, engine: Any, actions: list[str]) -> None:
 
 def _build_telemetry_payloads(exporter: Any, actions: list[str]) -> dict[str, Any]:
     """Build all telemetry payload variants from the current exporter state."""
-    summary_payload = exporter.summary()
-    summary_payload["rule_trigger_counts"] = exporter.rule_trigger_counts
-    summary_payload["actions_sample"] = actions[:20]
+    summary_payload = {
+        **exporter.summary(),
+        "rule_trigger_counts": exporter.rule_trigger_counts,
+        "actions_sample": actions[:20],
+    }
     otel_payload = exporter.otel_json()
     prometheus_text = exporter.prometheus_exposition()
     summary_text = _render_observe_summary(summary_payload, exporter.rule_trigger_counts)
@@ -182,6 +184,11 @@ def _post_otlp_json(
     timeout_seconds: float = 10.0,
 ) -> int:
     """POST telemetry payload to an OTLP/collector-compatible HTTP endpoint."""
+    from urllib.parse import urlparse
+
+    parsed = urlparse(endpoint)
+    if parsed.scheme not in ("http", "https"):
+        raise ValueError(f"OTLP endpoint must use http or https scheme, got: {parsed.scheme!r}")
     data = json.dumps(payload).encode("utf-8")
     request = urllib_request.Request(
         endpoint,

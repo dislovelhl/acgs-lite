@@ -183,13 +183,23 @@ export default {
     // Route matching
     const endpoint = matchEndpoint(url.pathname);
     
-    // If not an API endpoint, proxy to Pages
+    // If not an API endpoint, proxy static content to Pages (GET/HEAD only)
     if (!endpoint && !url.pathname.startsWith("/admin/")) {
-      // Return the static site from Pages
+      if (request.method !== "GET" && request.method !== "HEAD") {
+        return new Response(
+          JSON.stringify({ error: { message: "Method not allowed", type: "invalid_request_error" } }),
+          { status: 405, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      // Strip sensitive headers — only forward benign ones to static origin
+      const safeHeaders = new Headers();
+      for (const key of ["Accept", "Accept-Language", "Accept-Encoding", "If-None-Match", "If-Modified-Since"]) {
+        const v = request.headers.get(key);
+        if (v) safeHeaders.set(key, v);
+      }
       return fetch(`https://acgs-ai.pages.dev${url.pathname}${url.search}`, {
         method: request.method,
-        headers: request.headers,
-        body: request.method !== "GET" && request.method !== "HEAD" ? await request.arrayBuffer() : undefined,
+        headers: safeHeaders,
       });
     }
 

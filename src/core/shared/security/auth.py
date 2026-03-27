@@ -179,18 +179,20 @@ def has_jwt_verification_material() -> bool:
 
 
 def _is_production_environment() -> bool:
-    """Return True when the runtime environment resolves to production.
+    """Return True when the runtime environment is NOT a known non-production env.
 
-    Checks runtime env vars (AGENT_RUNTIME_ENVIRONMENT, APP_ENV, ENVIRONMENT, ENV)
-    before falling back to ``settings.env``.  This means a container deployed with
-    ``ENVIRONMENT=production`` is treated as production even when ``settings.env``
-    defaults to ``development``.
+    Uses an allowlist of non-production environments so unknown environments
+    (staging, uat, custom) are treated as production (fail-closed). Aligned with
+    the same logic in auth_dependency.py.
     """
     from src.core.shared.config.runtime_environment import resolve_runtime_environment
 
     configured_env = getattr(settings, "env", None)
+    if configured_env and configured_env not in ("development",):
+        return configured_env not in _NON_PRODUCTION_ENVS
+
     env = resolve_runtime_environment(configured_env=configured_env)
-    return bool(env == "production")
+    return env not in _NON_PRODUCTION_ENVS
 
 
 _NON_PRODUCTION_ENVS = frozenset({"development", "dev", "test", "testing", "local", "ci"})
@@ -225,11 +227,20 @@ def _get_revocation_service() -> object | None:
 
         from src.core.shared.security.token_revocation import create_token_revocation_service
 
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
+        try:
+            asyncio.get_running_loop()
             # Running inside an async context — defer; return None for this call
             return None
-        _revocation_service = loop.run_until_complete(create_token_revocation_service(redis_url))
+        except RuntimeError:
+            pass  # No running loop — safe to create one
+
+        loop = asyncio.new_event_loop()
+        try:
+            _revocation_service = loop.run_until_complete(
+                create_token_revocation_service(redis_url)
+            )
+        finally:
+            loop.close()
         _revocation_service_initialized = True
         return _revocation_service
     except (ImportError, ConnectionError, TimeoutError, OSError, ValueError, RuntimeError):
@@ -386,6 +397,10 @@ async def get_current_user(
                     status_code=503,
                     detail="Revocation check failed — cannot authenticate in production",
                 ) from err
+            logger.warning(
+                "Revocation check failed in non-production — allowing request: %s",
+                type(err).__name__,
+            )
 
     return claims
 
