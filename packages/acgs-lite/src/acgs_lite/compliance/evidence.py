@@ -117,7 +117,12 @@ class SOC2EvidenceCollector:
         stats = engine.stats
         total = stats.get("total_validations", 0)
         rules = stats.get("rules_count", 0)
-        status = _COMPLIANT if rules > 0 and total >= 0 else _NON_COMPLIANT
+        if rules > 0 and total > 0:
+            status = _COMPLIANT
+        elif rules > 0:
+            status = _PARTIAL
+        else:
+            status = _NON_COMPLIANT
         return EvidenceRecord(
             framework="SOC2",
             control_id="CC6.1",
@@ -588,15 +593,24 @@ class EvidenceCollector:
     def generate_report(self) -> dict[str, Any]:
         """Generate a full compliance report with per-framework detail."""
         all_records = self.collect_all()
-        by_framework: dict[str, list[dict[str, Any]]] = {}
-        for rec in all_records:
-            by_framework.setdefault(rec.framework, []).append(
-                rec.to_dict()
-            )
 
+        # Group records by framework for score computation
+        records_by_fw: dict[str, list[EvidenceRecord]] = {}
+        for rec in all_records:
+            records_by_fw.setdefault(rec.framework, []).append(rec)
+
+        # Compute scores from already-collected records (no re-collection)
         framework_scores: dict[str, float] = {}
         for fw_id in self._frameworks:
-            framework_scores[fw_id] = self.compliance_score(fw_id)
+            fw_records = records_by_fw.get(fw_id, [])
+            if fw_records:
+                total_score = sum(
+                    _STATUS_SCORES.get(r.status, 0.0)
+                    for r in fw_records
+                )
+                framework_scores[fw_id] = total_score / len(fw_records)
+            else:
+                framework_scores[fw_id] = 0.0
 
         overall = (
             sum(framework_scores.values()) / len(framework_scores)
@@ -610,6 +624,13 @@ class EvidenceCollector:
                 status_counts.get(rec.status, 0) + 1
             )
 
+        # Serialize records for JSON output
+        by_framework_dicts: dict[str, list[dict[str, Any]]] = {}
+        for rec in all_records:
+            by_framework_dicts.setdefault(rec.framework, []).append(
+                rec.to_dict()
+            )
+
         return {
             "summary": {
                 "overall_score": overall,
@@ -619,7 +640,7 @@ class EvidenceCollector:
                 "frameworks_assessed": list(self._frameworks.keys()),
                 "collected_at": datetime.now(timezone.utc).isoformat(),
             },
-            "frameworks": by_framework,
+            "frameworks": by_framework_dicts,
         }
 
     def export_json(self, path: str | None = None) -> str:

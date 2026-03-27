@@ -7,6 +7,7 @@ installing ``opentelemetry-api``, ``opentelemetry-sdk``, or
 
 from __future__ import annotations
 
+import inspect
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -80,7 +81,7 @@ def _make_metrics(
 
 
 # ---------------------------------------------------------------------------
-# GovernanceMetrics — OTel available
+# GovernanceMetrics -- OTel available
 # ---------------------------------------------------------------------------
 
 
@@ -230,9 +231,17 @@ class TestGovernanceMetricsWithOTel:
         gm, *_ = _make_metrics(engine, audit_log)
         assert gm.audit_log is audit_log
 
+    def test_violation_count_increments(
+        self, engine: GovernanceEngine, audit_log: AuditLog,
+    ) -> None:
+        gm, *_ = _make_metrics(engine, audit_log)
+
+        gm.validate(_VIOLATING_ACTION, agent_id="viol")
+        assert gm.stats["violation_count"] >= 1
+
 
 # ---------------------------------------------------------------------------
-# GovernanceMetrics — OTel NOT available (fallback)
+# GovernanceMetrics -- OTel NOT available (fallback)
 # ---------------------------------------------------------------------------
 
 
@@ -290,9 +299,21 @@ class TestGovernanceMetricsFallback:
         span = tracer.start_as_current_span("test-span")
         assert isinstance(span, _NoopSpan)
 
+    def test_fallback_deny_still_records(
+        self, engine: GovernanceEngine, audit_log: AuditLog,
+    ) -> None:
+        with patch("acgs_lite.integrations.otel.OTEL_AVAILABLE", False):
+            from acgs_lite.integrations.otel import GovernanceMetrics
+
+            gm = GovernanceMetrics(engine, audit_log)
+            result = gm.validate(_VIOLATING_ACTION, agent_id="fb")
+
+        assert result.valid is False
+        assert gm.stats["validation_count"] == 1
+
 
 # ---------------------------------------------------------------------------
-# GovernanceMetrics — strict mode (raises on violation)
+# GovernanceMetrics -- strict mode (raises on violation)
 # ---------------------------------------------------------------------------
 
 
@@ -414,6 +435,37 @@ class TestGovernanceMetricsMiddleware:
 
         assert isinstance(middleware._tracer, _NoopTracer)
 
+    @pytest.mark.asyncio()
+    async def test_middleware_attaches_compliance_score(
+        self, engine: GovernanceEngine, audit_log: AuditLog,
+    ) -> None:
+        mock_tracer = MagicMock()
+        mock_span = MagicMock()
+        mock_span.__enter__ = MagicMock(return_value=mock_span)
+        mock_span.__exit__ = MagicMock(return_value=False)
+        mock_tracer.start_as_current_span.return_value = mock_span
+
+        mock_tracer_provider = MagicMock()
+        mock_tracer_provider.get_tracer.return_value = mock_tracer
+
+        with patch("acgs_lite.integrations.otel.OTEL_AVAILABLE", True):
+            from acgs_lite.integrations.otel import (
+                GovernanceMetrics,
+                GovernanceMetricsMiddleware,
+            )
+
+            gm = GovernanceMetrics(engine, audit_log)
+            inner_app = AsyncMock()
+            middleware = GovernanceMetricsMiddleware(
+                inner_app, gm, tracer_provider=mock_tracer_provider,
+            )
+
+        await middleware({"type": "http"}, AsyncMock(), AsyncMock())
+
+        mock_span.set_attribute.assert_any_call(
+            "acgs.compliance_score", gm.stats["compliance_score"],
+        )
+
 
 # ---------------------------------------------------------------------------
 # create_prometheus_app
@@ -500,10 +552,20 @@ class TestCreatePrometheusApp:
             app = create_prometheus_app()
 
         assert callable(app)
-
-        import inspect
-
         assert inspect.iscoroutinefunction(app)
+
+    @pytest.mark.asyncio()
+    async def test_503_body_text(self) -> None:
+        with patch("acgs_lite.integrations.otel.OTEL_AVAILABLE", False):
+            from acgs_lite.integrations.otel import create_prometheus_app
+
+            app = create_prometheus_app()
+
+        send = AsyncMock()
+        await app({"type": "http"}, AsyncMock(), send)
+
+        body_call = send.call_args_list[1]
+        assert b"unavailable" in body_call[0][0]["body"].lower()
 
 
 # ---------------------------------------------------------------------------

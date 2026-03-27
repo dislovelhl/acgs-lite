@@ -191,16 +191,25 @@ export default {
           { status: 405, headers: { "Content-Type": "application/json" } },
         );
       }
-      // Strip sensitive headers — only forward benign ones to static origin
-      const safeHeaders = new Headers();
-      for (const key of ["Accept", "Accept-Language", "Accept-Encoding", "If-None-Match", "If-Modified-Since"]) {
-        const v = request.headers.get(key);
-        if (v) safeHeaders.set(key, v);
-      }
-      return fetch(`https://acgs-ai.pages.dev${url.pathname}${url.search}`, {
+      
+      const response = await fetch(`https://acgs-ai.pages.dev${url.pathname}${url.search}`, {
         method: request.method,
-        headers: safeHeaders,
+        headers: request.headers,
       });
+
+      // Override content-type for media assets if origin returns text/html (common Pages misconfiguration)
+      if (url.pathname.endsWith(".mp4")) {
+        const newHeaders = new Headers(response.headers);
+        newHeaders.set("Content-Type", "video/mp4");
+        return new Response(response.body, { ...response, headers: newHeaders });
+      }
+      if (url.pathname.endsWith(".pptx")) {
+        const newHeaders = new Headers(response.headers);
+        newHeaders.set("Content-Type", "application/vnd.openxmlformats-officedocument.presentationml.presentation");
+        return new Response(response.body, { ...response, headers: newHeaders });
+      }
+
+      return response;
     }
 
     // OpenAI-compatible POST only

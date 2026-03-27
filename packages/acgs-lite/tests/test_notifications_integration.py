@@ -111,6 +111,36 @@ class TestGovernanceEvent:
         with pytest.raises(AttributeError):
             event.severity = "LOW"  # type: ignore[misc]
 
+    def test_metadata_field(self) -> None:
+        event = GovernanceEvent(
+            event_type="violation",
+            severity="HIGH",
+            agent_id="a",
+            action="b",
+            metadata={"key": "value"},
+        )
+        d = event.to_dict()
+        assert d["metadata"] == {"key": "value"}
+
+    def test_default_constitutional_hash(self) -> None:
+        event = GovernanceEvent(
+            event_type="test",
+            severity="LOW",
+            agent_id="a",
+            action="b",
+        )
+        assert event.constitutional_hash == "608508a9bd224290"
+
+    def test_custom_constitutional_hash(self) -> None:
+        event = GovernanceEvent(
+            event_type="test",
+            severity="LOW",
+            agent_id="a",
+            action="b",
+            constitutional_hash="custom_hash",
+        )
+        assert event.constitutional_hash == "custom_hash"
+
 
 # ---------------------------------------------------------------------------
 # Severity filtering
@@ -140,6 +170,10 @@ class TestSeverityFilter:
         assert _severity_passes_filter("critical", "high") is True
         assert _severity_passes_filter("low", "HIGH") is False
 
+    def test_unknown_severity(self) -> None:
+        # Unknown severities get 0, so they should pass LOW filter
+        assert _severity_passes_filter("UNKNOWN", "LOW") is True
+
 
 # ---------------------------------------------------------------------------
 # Truncation helper
@@ -159,6 +193,11 @@ class TestTruncate:
     def test_exact_boundary(self) -> None:
         exact = "x" * 200
         assert _truncate(exact, 200) == exact
+
+    def test_default_max_len(self) -> None:
+        long = "x" * 250
+        result = _truncate(long)
+        assert len(result) == 200
 
 
 # ---------------------------------------------------------------------------
@@ -251,6 +290,31 @@ class TestSlackNotifier:
         notifier = SlackNotifier(webhook_url="https://test")
         assert notifier.name == "slack"
 
+    def test_severity_filter_property(self) -> None:
+        notifier = SlackNotifier(
+            webhook_url="https://test", severity_filter="critical"
+        )
+        assert notifier.severity_filter == "CRITICAL"
+
+    @pytest.mark.asyncio
+    async def test_send_returns_false_on_server_error(self) -> None:
+        notifier = SlackNotifier(webhook_url="https://hooks.slack.com/test")
+        event = _make_event()
+
+        mock_response = MagicMock()
+        mock_response.status_code = 500
+
+        with patch("acgs_lite.integrations.notifications.httpx") as mock_httpx:
+            mock_client = AsyncMock()
+            mock_client.post.return_value = mock_response
+            mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+            mock_client.__aexit__ = AsyncMock(return_value=False)
+            mock_httpx.AsyncClient.return_value = mock_client
+
+            result = await notifier.send(event)
+
+        assert result is False
+
 
 # ---------------------------------------------------------------------------
 # TeamsNotifier
@@ -306,6 +370,13 @@ class TestTeamsNotifier:
     def test_name_property(self) -> None:
         notifier = TeamsNotifier(webhook_url="https://test")
         assert notifier.name == "teams"
+
+    def test_action_in_payload(self) -> None:
+        notifier = TeamsNotifier(webhook_url="https://test")
+        event = _make_event(action="do something dangerous")
+        payload = notifier._build_payload(event)
+        action_block = payload["attachments"][0]["content"]["body"][2]
+        assert "do something dangerous" in action_block["text"]
 
 
 # ---------------------------------------------------------------------------
@@ -375,6 +446,10 @@ class TestWebhookNotifier:
             result = await notifier.send(event)
         assert result is False
 
+    def test_default_content_type_header(self) -> None:
+        notifier = WebhookNotifier(url="https://test")
+        assert notifier._headers["Content-Type"] == "application/json"
+
 
 # ---------------------------------------------------------------------------
 # NotificationRouter
@@ -443,6 +518,18 @@ class TestNotificationRouter:
         router = NotificationRouter([])
         await router.notify(_make_event())
         assert router.stats["total_sent"] == 0
+
+    @pytest.mark.asyncio
+    async def test_three_channels_mixed(self) -> None:
+        ch1 = _FakeChannel("ok1")
+        ch2 = _FakeChannel("ok2")
+        ch3 = _FakeChannel("fail", should_fail=True)
+        router = NotificationRouter([ch1, ch2, ch3])
+
+        await router.notify(_make_event())
+
+        assert router.stats["total_sent"] == 2
+        assert router.stats["total_failed"] == 1
 
 
 # ---------------------------------------------------------------------------
@@ -616,6 +703,28 @@ class TestGovernanceNotifier:
 
         assert intact is True
         assert len(ch.sent_events) == 0
+
+    @pytest.mark.asyncio
+    async def test_audit_no_log_returns_true(self) -> None:
+        engine = MagicMock(spec=[])
+        ch = _FakeChannel("test")
+        router = NotificationRouter([ch])
+        notifier = GovernanceNotifier(engine=engine, router=router)
+
+        intact = await notifier.check_audit_integrity()
+        assert intact is True
+
+    def test_engine_property(self) -> None:
+        engine = self._make_mock_engine(valid=True)
+        router = NotificationRouter([])
+        notifier = GovernanceNotifier(engine=engine, router=router)
+        assert notifier.engine is engine
+
+    def test_router_property(self) -> None:
+        engine = self._make_mock_engine(valid=True)
+        router = NotificationRouter([])
+        notifier = GovernanceNotifier(engine=engine, router=router)
+        assert notifier.router is router
 
 
 # ---------------------------------------------------------------------------

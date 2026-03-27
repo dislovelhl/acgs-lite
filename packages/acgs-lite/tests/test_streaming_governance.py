@@ -19,9 +19,9 @@ from acgs_lite.engine.streaming import (
 )
 from acgs_lite.engine.types import Violation
 
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Fixtures
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 
 RULES_YAML = """
 rules:
@@ -64,23 +64,32 @@ def constitution() -> Constitution:
 
 
 @pytest.fixture()
-def engine(constitution: Constitution) -> GovernanceEngine:
+def engine(
+    constitution: Constitution,
+) -> GovernanceEngine:
     return GovernanceEngine(constitution, strict=True)
 
 
 @pytest.fixture()
-def nonstrict_engine(constitution: Constitution) -> GovernanceEngine:
+def nonstrict_engine(
+    constitution: Constitution,
+) -> GovernanceEngine:
     return GovernanceEngine(constitution, strict=False)
 
 
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # StreamChunkResult dataclass
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 
 
 class TestStreamChunkResult:
     def test_default_fields(self) -> None:
-        r = StreamChunkResult(chunk="hello", passed=True, buffer_position=5, window_text="hello")
+        r = StreamChunkResult(
+            chunk="hello",
+            passed=True,
+            buffer_position=5,
+            window_text="hello",
+        )
         assert r.chunk == "hello"
         assert r.passed is True
         assert r.violations == []
@@ -108,49 +117,64 @@ class TestStreamChunkResult:
         assert r.should_halt is True
 
 
-# ---------------------------------------------------------------------------
-# StreamingValidator.feed — accumulation and threshold
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
+# StreamingValidator.feed -- accumulation and threshold
+# -------------------------------------------------------------------
 
 
 class TestFeedAccumulation:
-    def test_no_validation_below_threshold(self, engine: GovernanceEngine) -> None:
-        """feed() should NOT validate when buffer is below flush_interval_chars."""
-        sv = StreamingValidator(engine, flush_interval_chars=100)
+    def test_no_validation_below_threshold(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        """feed() should NOT validate below threshold."""
+        sv = StreamingValidator(
+            engine, flush_interval_chars=100,
+        )
         result = sv.feed("short")
         assert result.passed is True
-        assert result.window_text == ""  # no validation happened
+        assert result.window_text == ""
         assert sv.stats.validations_performed == 0
 
-    def test_validation_at_threshold(self, engine: GovernanceEngine) -> None:
-        """Validation fires once accumulated chars >= flush_interval_chars."""
-        sv = StreamingValidator(engine, flush_interval_chars=10)
-        # Feed enough benign text to cross threshold
+    def test_validation_at_threshold(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        """Validation fires when chars >= threshold."""
+        sv = StreamingValidator(
+            engine, flush_interval_chars=10,
+        )
         result = sv.feed("a" * 15)
         assert sv.stats.validations_performed == 1
         assert result.window_text != ""
 
-    def test_multiple_feeds_accumulate(self, engine: GovernanceEngine) -> None:
+    def test_multiple_feeds_accumulate(
+        self, engine: GovernanceEngine,
+    ) -> None:
         """Multiple small feeds accumulate until threshold."""
-        sv = StreamingValidator(engine, flush_interval_chars=20)
-        sv.feed("hello")  # 5 chars, no validation
+        sv = StreamingValidator(
+            engine, flush_interval_chars=20,
+        )
+        sv.feed("hello")  # 5 chars
         assert sv.stats.validations_performed == 0
-        sv.feed("world")  # 10 chars total, no validation
+        sv.feed("world")  # 10 chars total
         assert sv.stats.validations_performed == 0
-        r3 = sv.feed("!" * 15)  # 25 chars total, triggers validation
+        r3 = sv.feed("!" * 15)  # 25 chars total
         assert sv.stats.validations_performed == 1
         assert r3.window_text != ""
 
 
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # StreamingValidator.flush
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 
 
 class TestFlush:
-    def test_flush_validates_remaining(self, engine: GovernanceEngine) -> None:
-        """flush() validates whatever text remains in the window."""
-        sv = StreamingValidator(engine, flush_interval_chars=1000)
+    def test_flush_validates_remaining(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        """flush() validates remaining text in the window."""
+        sv = StreamingValidator(
+            engine, flush_interval_chars=1000,
+        )
         sv.feed("clean text here")
         assert sv.stats.validations_performed == 0
         result = sv.flush()
@@ -158,23 +182,31 @@ class TestFlush:
         assert result.passed is True
         assert "clean text here" in result.window_text
 
-    def test_flush_empty_buffer(self, engine: GovernanceEngine) -> None:
+    def test_flush_empty_buffer(
+        self, engine: GovernanceEngine,
+    ) -> None:
         """flush() on empty buffer returns a passing result."""
-        sv = StreamingValidator(engine, flush_interval_chars=1000)
+        sv = StreamingValidator(
+            engine, flush_interval_chars=1000,
+        )
         result = sv.flush()
         assert result.passed is True
         assert result.window_text == ""
         assert sv.stats.validations_performed == 0
 
 
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # StreamingValidator.reset
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 
 
 class TestReset:
-    def test_reset_clears_state(self, engine: GovernanceEngine) -> None:
-        sv = StreamingValidator(engine, flush_interval_chars=10)
+    def test_reset_clears_state(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        sv = StreamingValidator(
+            engine, flush_interval_chars=10,
+        )
         sv.feed("a" * 15)
         assert sv.stats.chunks_processed == 1
         sv.reset()
@@ -182,8 +214,12 @@ class TestReset:
         assert sv.stats.validations_performed == 0
         assert sv.stats.total_chars == 0
 
-    def test_reset_allows_reuse(self, engine: GovernanceEngine) -> None:
-        sv = StreamingValidator(engine, flush_interval_chars=10)
+    def test_reset_allows_reuse(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        sv = StreamingValidator(
+            engine, flush_interval_chars=10,
+        )
         sv.feed("a" * 15)
         sv.reset()
         result = sv.feed("b" * 15)
@@ -191,19 +227,23 @@ class TestReset:
         assert result.buffer_position == 15
 
 
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Sliding window keeps only last N chunks
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 
 
 class TestSlidingWindow:
-    def test_window_trims_to_size(self, engine: GovernanceEngine) -> None:
-        sv = StreamingValidator(engine, window_size=3, flush_interval_chars=1000)
+    def test_window_trims_to_size(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        sv = StreamingValidator(
+            engine,
+            window_size=3,
+            flush_interval_chars=1000,
+        )
         for i in range(6):
             sv.feed(f"chunk{i} ")
-        # Flush to see what text is in the window
         result = sv.flush()
-        # Only last 3 chunks should be in window
         assert "chunk3" in result.window_text
         assert "chunk4" in result.window_text
         assert "chunk5" in result.window_text
@@ -211,8 +251,14 @@ class TestSlidingWindow:
         assert "chunk1" not in result.window_text
         assert "chunk2" not in result.window_text
 
-    def test_window_size_one(self, engine: GovernanceEngine) -> None:
-        sv = StreamingValidator(engine, window_size=1, flush_interval_chars=1000)
+    def test_window_size_one(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        sv = StreamingValidator(
+            engine,
+            window_size=1,
+            flush_interval_chars=1000,
+        )
         sv.feed("first ")
         sv.feed("second ")
         sv.feed("third ")
@@ -221,73 +267,98 @@ class TestSlidingWindow:
         assert "first" not in result.window_text
 
 
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Non-blocking mode: violations logged but stream continues
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 
 
 class TestNonBlockingMode:
-    def test_violations_detected_but_no_halt(self, engine: GovernanceEngine) -> None:
-        """Without blocking_severities, violations are reported but should_halt=False."""
-        sv = StreamingValidator(engine, flush_interval_chars=10)
-        # Feed text that triggers a critical violation
-        result = sv.feed("deploy model without safety review now")
+    def test_violations_detected_but_no_halt(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        """Without blocking_severities, no halt."""
+        sv = StreamingValidator(
+            engine, flush_interval_chars=10,
+        )
+        result = sv.feed(
+            "deploy model without safety review now",
+        )
         assert result.passed is False
         assert result.should_halt is False
         assert len(result.violations) > 0
 
-    def test_stats_track_violations(self, engine: GovernanceEngine) -> None:
-        sv = StreamingValidator(engine, flush_interval_chars=10)
-        sv.feed("deploy model without safety review now")
+    def test_stats_track_violations(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        sv = StreamingValidator(
+            engine, flush_interval_chars=10,
+        )
+        sv.feed(
+            "deploy model without safety review now",
+        )
         assert sv.stats.violations_detected > 0
         assert sv.stats.halted is False
 
 
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Blocking mode: CRITICAL severity halts stream
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 
 
 class TestBlockingMode:
-    def test_critical_severity_halts(self, engine: GovernanceEngine) -> None:
+    def test_critical_severity_halts(
+        self, engine: GovernanceEngine,
+    ) -> None:
         sv = StreamingValidator(
             engine,
             flush_interval_chars=10,
             blocking_severities={"critical"},
         )
-        result = sv.feed("deploy model without safety review now")
+        result = sv.feed(
+            "deploy model without safety review now",
+        )
         assert result.should_halt is True
         assert sv.stats.halted is True
 
-    def test_non_matching_severity_no_halt(self, engine: GovernanceEngine) -> None:
+    def test_non_matching_severity_no_halt(
+        self, engine: GovernanceEngine,
+    ) -> None:
         """Only severities in blocking_severities cause halt."""
         sv = StreamingValidator(
             engine,
             flush_interval_chars=10,
             blocking_severities={"low"},
         )
-        result = sv.feed("deploy model without safety review now")
-        # Violations exist but none are "low" severity, so no halt
+        result = sv.feed(
+            "deploy model without safety review now",
+        )
         assert result.should_halt is False
 
 
-# ---------------------------------------------------------------------------
-# GovernedStreamWrapper — sync iterator
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
+# GovernedStreamWrapper -- sync iterator
+# -------------------------------------------------------------------
 
 
 class TestGovernedStreamWrapperSync:
-    def test_yields_chunks(self, engine: GovernanceEngine) -> None:
-        chunks = ["Hello ", "world ", "this is clean text."]
+    def test_yields_chunks(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        chunks = [
+            "Hello ", "world ", "this is clean text.",
+        ]
         wrapper = GovernedStreamWrapper(
             iter(chunks),
-            StreamingValidator(engine, flush_interval_chars=1000),
+            StreamingValidator(
+                engine, flush_interval_chars=1000,
+            ),
         )
         collected = list(wrapper)
         assert collected == chunks
 
-    def test_halts_on_blocking_violation(self, engine: GovernanceEngine) -> None:
-        # Long violating chunk to exceed threshold
+    def test_halts_on_blocking_violation(
+        self, engine: GovernanceEngine,
+    ) -> None:
         bad = "deploy model without safety review " * 5
         chunks = [bad, "more text"]
         validator = StreamingValidator(
@@ -295,14 +366,18 @@ class TestGovernedStreamWrapperSync:
             flush_interval_chars=10,
             blocking_severities={"critical"},
         )
-        wrapper = GovernedStreamWrapper(iter(chunks), validator)
+        wrapper = GovernedStreamWrapper(
+            iter(chunks), validator,
+        )
         collected = list(wrapper)
-        # Should have the halt message, NOT the original chunks
-        assert any("[GOVERNANCE]" in c for c in collected)
-        # Stream stopped early — "more text" never yielded
+        assert any(
+            "[GOVERNANCE]" in c for c in collected
+        )
         assert "more text" not in collected
 
-    def test_custom_halt_message(self, engine: GovernanceEngine) -> None:
+    def test_custom_halt_message(
+        self, engine: GovernanceEngine,
+    ) -> None:
         bad = "deploy model without safety review " * 5
         validator = StreamingValidator(
             engine,
@@ -317,28 +392,54 @@ class TestGovernedStreamWrapperSync:
         collected = list(wrapper)
         assert "STOPPED" in collected
 
+    def test_flush_halt_at_stream_end(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        """Flush at end of stream can also trigger halt."""
+        bad = "deploy model without safety review"
+        validator = StreamingValidator(
+            engine,
+            flush_interval_chars=1000,
+            blocking_severities={"critical"},
+        )
+        wrapper = GovernedStreamWrapper(
+            iter([bad]), validator,
+        )
+        collected = list(wrapper)
+        assert any(
+            "[GOVERNANCE]" in c for c in collected
+        )
 
-# ---------------------------------------------------------------------------
-# GovernedStreamWrapper — async iterator
-# ---------------------------------------------------------------------------
+
+# -------------------------------------------------------------------
+# GovernedStreamWrapper -- async iterator
+# -------------------------------------------------------------------
 
 
 class TestGovernedStreamWrapperAsync:
     @pytest.mark.asyncio
-    async def test_yields_chunks_async(self, engine: GovernanceEngine) -> None:
+    async def test_yields_chunks_async(
+        self, engine: GovernanceEngine,
+    ) -> None:
         async def gen():
             for c in ["Hello ", "world."]:
                 yield c
 
-        validator = StreamingValidator(engine, flush_interval_chars=1000)
-        wrapper = GovernedStreamWrapper(gen(), validator)
+        validator = StreamingValidator(
+            engine, flush_interval_chars=1000,
+        )
+        wrapper = GovernedStreamWrapper(
+            gen(), validator,
+        )
         collected = []
         async for chunk in wrapper:
             collected.append(chunk)
         assert collected == ["Hello ", "world."]
 
     @pytest.mark.asyncio
-    async def test_halts_on_blocking_async(self, engine: GovernanceEngine) -> None:
+    async def test_halts_on_blocking_async(
+        self, engine: GovernanceEngine,
+    ) -> None:
         bad = "deploy model without safety review " * 5
 
         async def gen():
@@ -350,25 +451,58 @@ class TestGovernedStreamWrapperAsync:
             flush_interval_chars=10,
             blocking_severities={"critical"},
         )
-        wrapper = GovernedStreamWrapper(gen(), validator)
+        wrapper = GovernedStreamWrapper(
+            gen(), validator,
+        )
         collected = []
         async for chunk in wrapper:
             collected.append(chunk)
-        assert any("[GOVERNANCE]" in c for c in collected)
+        assert any(
+            "[GOVERNANCE]" in c for c in collected
+        )
         assert "more" not in collected
 
+    @pytest.mark.asyncio
+    async def test_flush_halt_at_stream_end_async(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        """Async flush at end can also trigger halt."""
+        bad = "deploy model without safety review"
 
-# ---------------------------------------------------------------------------
+        async def gen():
+            yield bad
+
+        validator = StreamingValidator(
+            engine,
+            flush_interval_chars=1000,
+            blocking_severities={"critical"},
+        )
+        wrapper = GovernedStreamWrapper(
+            gen(), validator,
+        )
+        collected = []
+        async for chunk in wrapper:
+            collected.append(chunk)
+        assert any(
+            "[GOVERNANCE]" in c for c in collected
+        )
+
+
+# -------------------------------------------------------------------
 # governed_stream() convenience function
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 
 
 class TestGovernedStream:
-    def test_returns_governed_wrapper(self, engine: GovernanceEngine) -> None:
+    def test_returns_governed_wrapper(
+        self, engine: GovernanceEngine,
+    ) -> None:
         wrapper = governed_stream(iter(["hi"]), engine)
         assert isinstance(wrapper, GovernedStreamWrapper)
 
-    def test_passthrough_kwargs(self, engine: GovernanceEngine) -> None:
+    def test_passthrough_kwargs(
+        self, engine: GovernanceEngine,
+    ) -> None:
         wrapper = governed_stream(
             iter(["hi"]),
             engine,
@@ -380,7 +514,9 @@ class TestGovernedStream:
         collected = list(wrapper)
         assert collected == ["hi"]
 
-    def test_governed_stream_halts(self, engine: GovernanceEngine) -> None:
+    def test_governed_stream_halts(
+        self, engine: GovernanceEngine,
+    ) -> None:
         bad = "deploy model without safety review " * 5
         wrapper = governed_stream(
             iter([bad, "tail"]),
@@ -391,66 +527,118 @@ class TestGovernedStream:
         collected = list(wrapper)
         assert "tail" not in collected
 
+    def test_with_audit_log(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        audit = AuditLog()
+        wrapper = governed_stream(
+            iter(["a" * 15]),
+            engine,
+            flush_interval_chars=10,
+            audit_log=audit,
+        )
+        list(wrapper)
+        assert len(audit) >= 1
 
-# ---------------------------------------------------------------------------
+
+# -------------------------------------------------------------------
 # Stats tracking
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 
 
 class TestStatsTracking:
-    def test_chunks_processed(self, engine: GovernanceEngine) -> None:
-        sv = StreamingValidator(engine, flush_interval_chars=1000)
+    def test_chunks_processed(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        sv = StreamingValidator(
+            engine, flush_interval_chars=1000,
+        )
         sv.feed("a")
         sv.feed("b")
         sv.feed("c")
         assert sv.stats.chunks_processed == 3
 
-    def test_total_chars(self, engine: GovernanceEngine) -> None:
-        sv = StreamingValidator(engine, flush_interval_chars=1000)
+    def test_total_chars(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        sv = StreamingValidator(
+            engine, flush_interval_chars=1000,
+        )
         sv.feed("hello")
         sv.feed("world")
         assert sv.stats.total_chars == 10
 
-    def test_violations_detected_count(self, engine: GovernanceEngine) -> None:
-        sv = StreamingValidator(engine, flush_interval_chars=10)
-        sv.feed("deploy model without safety review " * 3)
+    def test_violations_detected_count(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        sv = StreamingValidator(
+            engine, flush_interval_chars=10,
+        )
+        sv.feed(
+            "deploy model without safety review " * 3,
+        )
         assert sv.stats.violations_detected > 0
 
-    def test_wrapper_stats_property(self, engine: GovernanceEngine) -> None:
-        validator = StreamingValidator(engine, flush_interval_chars=1000)
-        wrapper = GovernedStreamWrapper(iter(["a", "b"]), validator)
-        list(wrapper)  # consume
+    def test_wrapper_stats_property(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        validator = StreamingValidator(
+            engine, flush_interval_chars=1000,
+        )
+        wrapper = GovernedStreamWrapper(
+            iter(["a", "b"]), validator,
+        )
+        list(wrapper)
         assert wrapper.stats.chunks_processed == 2
 
+    def test_latency_tracked(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        sv = StreamingValidator(
+            engine, flush_interval_chars=10,
+        )
+        sv.feed("a" * 15)
+        assert sv.stats.latency_ms >= 0.0
 
-# ---------------------------------------------------------------------------
+
+# -------------------------------------------------------------------
 # Buffer position tracking
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 
 
 class TestBufferPosition:
-    def test_position_increments(self, engine: GovernanceEngine) -> None:
-        sv = StreamingValidator(engine, flush_interval_chars=1000)
-        r1 = sv.feed("hello")  # 5 chars
+    def test_position_increments(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        sv = StreamingValidator(
+            engine, flush_interval_chars=1000,
+        )
+        r1 = sv.feed("hello")
         assert r1.buffer_position == 5
-        r2 = sv.feed("world!")  # 6 chars
+        r2 = sv.feed("world!")
         assert r2.buffer_position == 11
 
-    def test_position_resets_on_reset(self, engine: GovernanceEngine) -> None:
-        sv = StreamingValidator(engine, flush_interval_chars=1000)
+    def test_position_resets_on_reset(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        sv = StreamingValidator(
+            engine, flush_interval_chars=1000,
+        )
         sv.feed("hello")
         sv.reset()
         r = sv.feed("new")
         assert r.buffer_position == 3
 
 
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Audit log integration
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 
 
 class TestAuditLogIntegration:
-    def test_records_to_audit_log(self, engine: GovernanceEngine) -> None:
+    def test_records_to_audit_log(
+        self, engine: GovernanceEngine,
+    ) -> None:
         audit = AuditLog()
         sv = StreamingValidator(
             engine,
@@ -462,42 +650,82 @@ class TestAuditLogIntegration:
         entry = audit.entries[0]
         assert entry.type == "streaming_validation"
 
-    def test_no_audit_without_log(self, engine: GovernanceEngine) -> None:
-        sv = StreamingValidator(engine, flush_interval_chars=10)
+    def test_no_audit_without_log(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        sv = StreamingValidator(
+            engine, flush_interval_chars=10,
+        )
         sv.feed("a" * 15)
-        # No crash, no audit entries tracked
         assert sv.stats.validations_performed == 1
 
+    def test_audit_chain_integrity(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        audit = AuditLog()
+        sv = StreamingValidator(
+            engine,
+            flush_interval_chars=10,
+            audit_log=audit,
+        )
+        sv.feed("a" * 15)
+        sv.feed("b" * 15)
+        assert audit.verify_chain()
 
-# ---------------------------------------------------------------------------
+
+# -------------------------------------------------------------------
 # Async feed
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 
 
 class TestAsyncFeed:
     @pytest.mark.asyncio
-    async def test_afeed_returns_result(self, engine: GovernanceEngine) -> None:
-        sv = StreamingValidator(engine, flush_interval_chars=10)
+    async def test_afeed_returns_result(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        sv = StreamingValidator(
+            engine, flush_interval_chars=10,
+        )
         result = await sv.afeed("a" * 15)
         assert isinstance(result, StreamChunkResult)
         assert sv.stats.validations_performed == 1
 
+    @pytest.mark.asyncio
+    async def test_afeed_below_threshold(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        sv = StreamingValidator(
+            engine, flush_interval_chars=100,
+        )
+        result = await sv.afeed("short")
+        assert result.passed is True
+        assert sv.stats.validations_performed == 0
 
-# ---------------------------------------------------------------------------
+
+# -------------------------------------------------------------------
 # Edge cases
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 
 
 class TestEdgeCases:
-    def test_empty_chunk(self, engine: GovernanceEngine) -> None:
-        sv = StreamingValidator(engine, flush_interval_chars=10)
+    def test_empty_chunk(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        sv = StreamingValidator(
+            engine, flush_interval_chars=10,
+        )
         result = sv.feed("")
         assert result.passed is True
         assert result.buffer_position == 0
 
-    def test_window_size_clamped_to_one(self, engine: GovernanceEngine) -> None:
-        sv = StreamingValidator(engine, window_size=0, flush_interval_chars=10)
-        # Should not crash; window_size is clamped to 1
+    def test_window_size_clamped_to_one(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        sv = StreamingValidator(
+            engine,
+            window_size=0,
+            flush_interval_chars=10,
+        )
         sv.feed("a" * 15)
         assert sv.stats.validations_performed == 1
 
@@ -510,23 +738,43 @@ class TestEdgeCases:
         assert s.total_chars == 0
         assert s.latency_ms == 0.0
 
+    def test_flush_interval_clamped_to_one(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        sv = StreamingValidator(
+            engine, flush_interval_chars=0,
+        )
+        # Should not crash; interval clamped to 1
+        result = sv.feed("a")
+        assert sv.stats.validations_performed == 1
 
-# ---------------------------------------------------------------------------
-# Engine exception during streaming does not kill the stream
-# ---------------------------------------------------------------------------
+
+# -------------------------------------------------------------------
+# Engine exception during streaming
+# -------------------------------------------------------------------
 
 
 class TestStreamingEngineError:
-    def test_feed_survives_engine_exception(self, engine: GovernanceEngine) -> None:
-        """If the engine raises during validation, feed() returns a passing result."""
+    def test_feed_survives_engine_exception(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        """If engine raises, feed() returns a passing result."""
         from unittest.mock import MagicMock
 
         mock_engine = MagicMock()
-        mock_engine.non_strict.return_value.__enter__ = MagicMock()
-        mock_engine.non_strict.return_value.__exit__ = MagicMock(return_value=False)
-        mock_engine.validate.side_effect = RuntimeError("unexpected engine failure")
+        mock_engine.non_strict.return_value.__enter__ = (
+            MagicMock()
+        )
+        mock_engine.non_strict.return_value.__exit__ = (
+            MagicMock(return_value=False)
+        )
+        mock_engine.validate.side_effect = RuntimeError(
+            "unexpected engine failure",
+        )
 
-        sv = StreamingValidator(mock_engine, flush_interval_chars=10)
+        sv = StreamingValidator(
+            mock_engine, flush_interval_chars=10,
+        )
 
         result = sv.feed("a" * 15)
         assert result.passed is True
@@ -534,15 +782,21 @@ class TestStreamingEngineError:
         assert result.violations == []
         assert sv.stats.validations_performed == 1
 
-    def test_feed_continues_after_engine_exception(self, engine: GovernanceEngine) -> None:
-        """Stream can process further chunks after an engine error."""
+    def test_feed_continues_after_engine_exception(
+        self, engine: GovernanceEngine,
+    ) -> None:
+        """Stream can process further chunks after error."""
         from unittest.mock import MagicMock
 
         call_count = 0
 
         mock_engine = MagicMock()
-        mock_engine.non_strict.return_value.__enter__ = MagicMock()
-        mock_engine.non_strict.return_value.__exit__ = MagicMock(return_value=False)
+        mock_engine.non_strict.return_value.__enter__ = (
+            MagicMock()
+        )
+        mock_engine.non_strict.return_value.__exit__ = (
+            MagicMock(return_value=False)
+        )
 
         def _fail_then_succeed(text: str):
             nonlocal call_count
@@ -553,9 +807,13 @@ class TestStreamingEngineError:
             result.violations = []
             return result
 
-        mock_engine.validate.side_effect = _fail_then_succeed
+        mock_engine.validate.side_effect = (
+            _fail_then_succeed
+        )
 
-        sv = StreamingValidator(mock_engine, flush_interval_chars=10)
+        sv = StreamingValidator(
+            mock_engine, flush_interval_chars=10,
+        )
 
         r1 = sv.feed("a" * 15)
         assert r1.passed is True

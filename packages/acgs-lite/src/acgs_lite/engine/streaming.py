@@ -1,9 +1,10 @@
 """Streaming response governance for incremental validation.
 
-Validates LLM output streams (SSE, WebSocket) against constitutional rules
-using a sliding-window buffer strategy. Chunks are accumulated and validated
-when the buffer exceeds a configurable character threshold, keeping latency
-low while catching violations as they emerge.
+Validates LLM output streams (SSE, WebSocket) against constitutional
+rules using a sliding-window buffer strategy. Chunks are accumulated
+and validated when the buffer exceeds a configurable character
+threshold, keeping latency low while catching violations as they
+emerge.
 
 Constitutional Hash: 608508a9bd224290
 
@@ -30,6 +31,7 @@ Usage::
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import time
 from collections.abc import AsyncIterator, Iterator
@@ -43,9 +45,10 @@ from .types import ValidationResult, Violation
 
 log = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
+
+# -------------------------------------------------------------------
 # Data structures
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 
 
 @dataclass(slots=True)
@@ -72,25 +75,26 @@ class StreamStats:
     latency_ms: float = 0.0
 
 
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Streaming validator
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 
 
 class StreamingValidator:
-    """Validates streaming text against a governance engine using a sliding window.
+    """Validates streaming text using a sliding window.
 
     Parameters
     ----------
     engine:
         A fully initialised :class:`GovernanceEngine`.
     window_size:
-        Maximum number of recent chunks to keep in the sliding window.
+        Maximum number of recent chunks in the sliding window.
     flush_interval_chars:
-        Character count threshold that triggers automatic validation.
+        Character count threshold that triggers automatic
+        validation.
     blocking_severities:
-        Set of severity *values* (e.g. ``{"critical"}``) whose violations
-        set ``should_halt=True``.  By default nothing halts the stream.
+        Set of severity *values* (e.g. ``{"critical"}``) whose
+        violations set ``should_halt=True``.
     audit_log:
         Optional :class:`AuditLog` for tamper-evident recording.
     """
@@ -119,23 +123,25 @@ class StreamingValidator:
         self._engine = engine
         self._window_size = max(1, window_size)
         self._flush_interval = max(1, flush_interval_chars)
-        self._blocking_sevs: set[str] = blocking_severities or set()
+        self._blocking_sevs: set[str] = (
+            blocking_severities or set()
+        )
         self._audit_log = audit_log
         self._window: list[str] = []
         self._pending_chars: int = 0
         self._position: int = 0
         self._stats = StreamStats()
 
-    # -- public properties ---------------------------------------------------
+    # -- public properties ------------------------------------------
 
     @property
     def stats(self) -> StreamStats:
         return self._stats
 
-    # -- feed / flush / reset -----------------------------------------------
+    # -- feed / flush / reset ---------------------------------------
 
     def feed(self, chunk: str) -> StreamChunkResult:
-        """Append *chunk* to the sliding window and validate if threshold met."""
+        """Append *chunk* to the window and validate if needed."""
         self._window.append(chunk)
         self._pending_chars += len(chunk)
         self._position += len(chunk)
@@ -162,13 +168,13 @@ class StreamingValidator:
     async def afeed(self, chunk: str) -> StreamChunkResult:
         """Async version of :meth:`feed`.
 
-        Runs the synchronous :meth:`feed` in the default executor to avoid
-        blocking the event loop.
+        Runs the synchronous :meth:`feed` in the default executor
+        to avoid blocking the event loop.
         """
-        import asyncio
-
         loop = asyncio.get_running_loop()
-        return await loop.run_in_executor(None, self.feed, chunk)
+        return await loop.run_in_executor(
+            None, self.feed, chunk,
+        )
 
     def flush(self) -> StreamChunkResult:
         """Validate whatever remains in the buffer."""
@@ -188,7 +194,7 @@ class StreamingValidator:
         self._position = 0
         self._stats = StreamStats()
 
-    # -- internal ------------------------------------------------------------
+    # -- internal ---------------------------------------------------
 
     def _validate_window(self, chunk: str) -> StreamChunkResult:
         window_text = "".join(self._window)
@@ -204,7 +210,10 @@ class StreamingValidator:
             result = self._validate_nonstrict(window_text)
             violations = list(result.violations)
         except Exception:
-            log.exception("streaming validation error, treating chunk as passed")
+            log.exception(
+                "streaming validation error, "
+                "treating chunk as passed"
+            )
             elapsed_ms = (time.monotonic() - t0) * 1000
             self._stats.latency_ms += elapsed_ms
             return StreamChunkResult(
@@ -223,7 +232,11 @@ class StreamingValidator:
             self._stats.violations_detected += len(violations)
             passed = False
             for v in violations:
-                sev_val = v.severity.value if isinstance(v.severity, Severity) else str(v.severity)
+                sev_val = (
+                    v.severity.value
+                    if isinstance(v.severity, Severity)
+                    else str(v.severity)
+                )
                 if sev_val in self._blocking_sevs:
                     should_halt = True
                 log.warning(
@@ -235,7 +248,9 @@ class StreamingValidator:
         if should_halt:
             self._stats.halted = True
 
-        self._record_audit(window_text, violations, passed, elapsed_ms)
+        self._record_audit(
+            window_text, violations, passed, elapsed_ms,
+        )
 
         return StreamChunkResult(
             chunk=chunk,
@@ -246,8 +261,10 @@ class StreamingValidator:
             window_text=window_text,
         )
 
-    def _validate_nonstrict(self, text: str) -> ValidationResult:
-        """Run validation in non-strict mode to collect violations without raising."""
+    def _validate_nonstrict(
+        self, text: str,
+    ) -> ValidationResult:
+        """Run validation in non-strict mode."""
         with self._engine.non_strict():
             return self._engine.validate(text)
 
@@ -272,19 +289,23 @@ class StreamingValidator:
         self._audit_log.record(entry)
 
 
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Stream wrapper
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 
 
-_HALT_MESSAGE = "[GOVERNANCE] Stream terminated due to constitutional violation."
+_HALT_MESSAGE = (
+    "[GOVERNANCE] Stream terminated due to "
+    "constitutional violation."
+)
 
 
 class GovernedStreamWrapper:
-    """Wraps a sync or async chunk iterator with governance validation.
+    """Wraps a sync or async chunk iterator with governance.
 
-    Yields chunks transparently.  When the validator signals ``should_halt``,
-    a termination message is yielded and iteration stops.
+    Yields chunks transparently.  When the validator signals
+    ``should_halt``, a termination message is yielded and
+    iteration stops.
 
     Parameters
     ----------
@@ -296,7 +317,9 @@ class GovernedStreamWrapper:
         Custom message yielded when the stream is halted.
     """
 
-    __slots__ = ("_stream", "_validator", "_halt_message", "_stats")
+    __slots__ = (
+        "_stream", "_validator", "_halt_message", "_stats",
+    )
 
     def __init__(
         self,
@@ -314,24 +337,26 @@ class GovernedStreamWrapper:
     def stats(self) -> StreamStats:
         return self._validator.stats
 
-    # -- sync iteration ------------------------------------------------------
+    # -- sync iteration ---------------------------------------------
 
     def __iter__(self) -> Iterator[str]:
         stream = self._stream
         if not isinstance(stream, Iterator):
-            raise TypeError("Wrapped stream is not a sync Iterator")
+            raise TypeError(
+                "Wrapped stream is not a sync Iterator"
+            )
         for chunk in stream:
             result = self._validator.feed(chunk)
             if result.should_halt:
                 yield self._halt_message
                 return
             yield chunk
-        # Final flush — check for violations in remaining buffer
+        # Final flush
         final = self._validator.flush()
         if final.should_halt:
             yield self._halt_message
 
-    # -- async iteration -----------------------------------------------------
+    # -- async iteration --------------------------------------------
 
     def __aiter__(self) -> AsyncIterator[str]:
         return self._aiter_impl()
@@ -339,22 +364,24 @@ class GovernedStreamWrapper:
     async def _aiter_impl(self) -> AsyncIterator[str]:
         stream = self._stream
         if not isinstance(stream, AsyncIterator):
-            raise TypeError("Wrapped stream is not an AsyncIterator")
+            raise TypeError(
+                "Wrapped stream is not an AsyncIterator"
+            )
         async for chunk in stream:
             result = await self._validator.afeed(chunk)
             if result.should_halt:
                 yield self._halt_message
                 return
             yield chunk
-        # Final flush — check for violations in remaining buffer
+        # Final flush
         final = self._validator.flush()
         if final.should_halt:
             yield self._halt_message
 
 
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Convenience function
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
 
 
 def governed_stream(
@@ -367,10 +394,10 @@ def governed_stream(
     audit_log: AuditLog | None = None,
     halt_message: str = _HALT_MESSAGE,
 ) -> GovernedStreamWrapper:
-    """Wrap any iterable of text chunks with constitutional governance.
+    """Wrap any iterable of text chunks with governance.
 
-    Returns a :class:`GovernedStreamWrapper` that validates each chunk
-    against *engine* and halts on blocking-severity violations.
+    Returns a :class:`GovernedStreamWrapper` that validates each
+    chunk against *engine* and halts on blocking-severity violations.
 
     Parameters
     ----------
@@ -383,7 +410,7 @@ def governed_stream(
     flush_interval_chars:
         Character threshold before validation fires (default 500).
     blocking_severities:
-        Severity values that halt the stream (e.g. ``{"critical"}``).
+        Severity values that halt the stream.
     audit_log:
         Optional audit log for recording stream validations.
     halt_message:

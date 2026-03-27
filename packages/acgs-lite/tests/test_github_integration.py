@@ -216,6 +216,11 @@ class TestComputeRiskScore:
         # defaults to medium weight 0.3
         assert score == pytest.approx(0.3)
 
+    def test_warnings_reduce_risk(self) -> None:
+        v_only = _compute_risk_score([{"severity": "high"}], [])
+        w_only = _compute_risk_score([], [{"severity": "high"}])
+        assert w_only < v_only
+
 
 # ---------------------------------------------------------------------------
 # GovernanceReport tests
@@ -316,6 +321,15 @@ class TestFormatGovernanceReport:
         md = format_governance_report(report)
         assert "ACGS Governance Bot" in md
 
+    def test_table_structure(self) -> None:
+        report = GovernanceReport(
+            pr_number=1, title="t", passed=True, risk_score=0.5,
+            rules_checked=10, constitutional_hash="608508a9bd224290",
+        )
+        md = format_governance_report(report)
+        assert "| Field | Value |" in md
+        assert "| Risk Score |" in md
+
 
 # ---------------------------------------------------------------------------
 # create_github_actions_config tests
@@ -355,6 +369,13 @@ class TestCreateGitHubActionsConfig:
         config = create_github_actions_config()
         assert "permissions:" in config
         assert "pull-requests: write" in config
+
+    def test_custom_constitution_hash_included(self) -> None:
+        c = Constitution.from_rules(
+            [Rule(id="T-1", text="Test", severity=Severity.LOW, keywords=["x"])]
+        )
+        config = create_github_actions_config(c)
+        assert c.hash in config
 
 
 # ---------------------------------------------------------------------------
@@ -605,6 +626,49 @@ class TestGitHubGovernanceBot:
         assert "repo" in stats
         assert stats["repo"] == "acme/governance"
         assert "audit_chain_valid" in stats
+
+    @pytest.mark.asyncio
+    async def test_validate_pr_empty_body(
+        self, bot: GitHubGovernanceBot, clean_files: list[dict[str, Any]],
+    ) -> None:
+        pr_data = {
+            "number": 10,
+            "title": "feat: minor",
+            "body": None,
+            "user": {"login": "dev"},
+        }
+
+        async def mock_get(path: str) -> Any:
+            if "files" in path:
+                return clean_files
+            return pr_data
+
+        bot._get = mock_get  # type: ignore[assignment]
+
+        report = await bot.validate_pull_request(10)
+        assert report.passed is True
+
+    @pytest.mark.asyncio
+    async def test_validate_pr_no_patch(
+        self, bot: GitHubGovernanceBot,
+    ) -> None:
+        pr_data = {
+            "number": 11,
+            "title": "chore: rename",
+            "body": "",
+            "user": {"login": "dev"},
+        }
+        files = [{"filename": "renamed.py", "patch": ""}]
+
+        async def mock_get(path: str) -> Any:
+            if "files" in path:
+                return files
+            return pr_data
+
+        bot._get = mock_get  # type: ignore[assignment]
+
+        report = await bot.validate_pull_request(11)
+        assert report.passed is True
 
 
 # ---------------------------------------------------------------------------
@@ -860,6 +924,34 @@ class TestGitHubWebhookHandler:
         response = await handler.handle(mock_request)
         assert response.status_code == 500
 
+    @pytest.mark.asyncio
+    async def test_handle_pull_request_reopened(
+        self,
+        handler: GitHubWebhookHandler,
+        clean_pr_data: dict[str, Any],
+        clean_files: list[dict[str, Any]],
+    ) -> None:
+        async def mock_get(path: str) -> Any:
+            if "files" in path:
+                return clean_files
+            return clean_pr_data
+
+        async def mock_post(path: str, json_body: dict[str, Any]) -> Any:
+            return {"id": 1}
+
+        handler._bot._get = mock_get  # type: ignore[assignment]
+        handler._bot._post = mock_post  # type: ignore[assignment]
+
+        body = {
+            "action": "reopened",
+            "pull_request": {"number": 42},
+        }
+        result = await handler._handle_pull_request(body)
+
+        assert result["event"] == "pull_request"
+        assert result["action"] == "reopened"
+        assert result["governance_passed"] is True
+
 
 # ---------------------------------------------------------------------------
 # GitHubMACIEnforcer tests
@@ -1056,6 +1148,26 @@ class TestGitHubMACIEnforcer:
         assert enforcer._ROLE_MAP["author"] == MACIRole.PROPOSER
         assert enforcer._ROLE_MAP["reviewer"] == MACIRole.VALIDATOR
         assert enforcer._ROLE_MAP["merger"] == MACIRole.EXECUTOR
+
+    @pytest.mark.asyncio
+    async def test_multiple_approvers_one_self(
+        self,
+        maci_enforcer: GitHubMACIEnforcer,
+        bot: GitHubGovernanceBot,
+    ) -> None:
+        async def mock_get(path: str) -> Any:
+            if "reviews" in path:
+                return [
+                    {"user": {"login": "dev-user"}, "state": "APPROVED"},
+                    {"user": {"login": "other-user"}, "state": "APPROVED"},
+                ]
+            return {"user": {"login": "dev-user"}}
+
+        bot._get = mock_get  # type: ignore[assignment]
+
+        result = await maci_enforcer.check_pr_separation(bot, pr_number=42)
+        assert result["separation_valid"] is False
+        assert len(result["violations"]) == 1
 
 
 # ---------------------------------------------------------------------------

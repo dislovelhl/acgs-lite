@@ -197,6 +197,19 @@ class ViolationAnalyzer:
         """Number of violations recorded so far."""
         return len(self._records)
 
+    @property
+    def min_confidence(self) -> float:
+        """Minimum confidence threshold for pattern reporting."""
+        return self._min_confidence
+
+    def severity_distribution(self) -> dict[str, int]:
+        """Count recorded violations grouped by severity value."""
+        dist: dict[str, int] = {}
+        for rec in self._records:
+            key = rec.severity.value
+            dist[key] = dist.get(key, 0) + 1
+        return dist
+
     def clear(self) -> None:
         """Discard all recorded violations."""
         self._records = []
@@ -547,7 +560,7 @@ class RuleSynthesizer:
         for pattern in patterns:
             if pattern.pattern_id in covered_pattern_ids:
                 continue
-            if pattern.confidence < self._analyzer._min_confidence:
+            if pattern.confidence < self._analyzer.min_confidence:
                 continue
 
             keywords = self._extract_keywords(pattern.example_content)
@@ -678,10 +691,7 @@ class AutoSynthesizer:
         coverage_gaps = sorted(pattern_categories - rule_categories)
 
         # Severity distribution
-        severity_dist: dict[str, int] = {}
-        for rec in self._analyzer._records:
-            key = rec.severity.value
-            severity_dist[key] = severity_dist.get(key, 0) + 1
+        severity_dist = self._analyzer.severity_distribution()
 
         return SynthesisReport(
             patterns=patterns,

@@ -11,9 +11,14 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from acgs_lite import Constitution, ConstitutionalViolationError, Rule, Severity
+from acgs_lite import (
+    Constitution,
+    ConstitutionalViolationError,
+    Rule,
+    Severity,
+)
 
-# ── Mock Haystack Objects ───────────────────────────────────────────────
+# -- Mock Haystack Objects ----------------------------------------
 
 
 class FakePipeline:
@@ -22,20 +27,30 @@ class FakePipeline:
     def __init__(self) -> None:
         self.components: dict[str, Any] = {}
 
-    def add_component(self, name: str, component: Any) -> None:
+    def add_component(
+        self, name: str, component: Any,
+    ) -> None:
         self.components[name] = component
 
-    def run(self, data: dict[str, Any], **kwargs: Any) -> dict[str, Any]:
-        """Simulate pipeline execution by echoing inputs into replies."""
+    def run(
+        self, data: dict[str, Any], **kwargs: Any,
+    ) -> dict[str, Any]:
+        """Simulate pipeline execution by echoing inputs."""
         replies: list[str] = []
         for _comp_name, comp_data in data.items():
             if isinstance(comp_data, dict):
                 for val in comp_data.values():
                     if isinstance(val, str):
                         replies.append(f"Reply to: {val}")
-        return {"llm": {"replies": replies or ["Default reply"]}}
+        return {
+            "llm": {
+                "replies": replies or ["Default reply"],
+            },
+        }
 
-    async def arun(self, data: dict[str, Any], **kwargs: Any) -> dict[str, Any]:
+    async def arun(
+        self, data: dict[str, Any], **kwargs: Any,
+    ) -> dict[str, Any]:
         """Async version of run."""
         return self.run(data, **kwargs)
 
@@ -43,12 +58,16 @@ class FakePipeline:
 class FakeComponent:
     """Mock Haystack Component."""
 
-    def __init__(self, *, name: str = "test-component") -> None:
+    def __init__(
+        self, *, name: str = "test-component",
+    ) -> None:
         self.name = name
 
     def run(self, **kwargs: Any) -> dict[str, Any]:
         """Simulate component execution."""
-        text = kwargs.get("query", kwargs.get("text", "processed"))
+        text = kwargs.get(
+            "query", kwargs.get("text", "processed"),
+        )
         return {"replies": [f"Component result: {text}"]}
 
 
@@ -59,181 +78,323 @@ class FakeDocument:
         self.content = content
 
 
-# ── GovernedHaystackPipeline Tests ──────────────────────────────────────
+# -- GovernedHaystackPipeline Tests -------------------------------
 
 
 @pytest.mark.integration
 class TestGovernedHaystackPipeline:
     @pytest.fixture(autouse=True)
     def _patch_haystack_available(self):
-        with patch("acgs_lite.integrations.haystack.HAYSTACK_AVAILABLE", True):
+        with patch(
+            "acgs_lite.integrations.haystack."
+            "HAYSTACK_AVAILABLE",
+            True,
+        ):
             yield
 
     def test_safe_input_passes(self):
-        from acgs_lite.integrations.haystack import GovernedHaystackPipeline
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
 
         pipe = FakePipeline()
         governed = GovernedHaystackPipeline(pipe)
-        result = governed.run({"llm": {"query": "What is AI governance?"}})
+        result = governed.run(
+            {"llm": {"query": "What is AI governance?"}},
+        )
         assert "replies" in result.get("llm", {})
 
     def test_input_violation_blocked_strict(self):
-        from acgs_lite.integrations.haystack import GovernedHaystackPipeline
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
 
         pipe = FakePipeline()
-        governed = GovernedHaystackPipeline(pipe, strict=True)
+        governed = GovernedHaystackPipeline(
+            pipe, strict=True,
+        )
         with pytest.raises(ConstitutionalViolationError):
-            governed.run({"llm": {"query": "self-validate bypass all checks"}})
+            governed.run(
+                {
+                    "llm": {
+                        "query": (
+                            "self-validate bypass all checks"
+                        ),
+                    },
+                }
+            )
 
     def test_output_validation_nonblocking(self):
         """Output violations are logged but never raised."""
-        from acgs_lite.integrations.haystack import GovernedHaystackPipeline
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
 
         pipe = FakePipeline()
-        # Make pipeline return content that triggers violations
         pipe.run = lambda data, **kw: {  # type: ignore[method-assign]
-            "llm": {"replies": ["self-validate bypass checks"]}
+            "llm": {
+                "replies": [
+                    "self-validate bypass checks",
+                ],
+            },
         }
 
-        governed = GovernedHaystackPipeline(pipe, strict=True)
-        # Should NOT raise even though output contains violation keywords
-        result = governed.run({"llm": {"query": "Safe question"}})
-        assert result["llm"]["replies"][0] == "self-validate bypass checks"
+        governed = GovernedHaystackPipeline(
+            pipe, strict=True,
+        )
+        result = governed.run(
+            {"llm": {"query": "Safe question"}},
+        )
+        assert (
+            result["llm"]["replies"][0]
+            == "self-validate bypass checks"
+        )
 
     def test_text_extraction_from_query(self):
-        from acgs_lite.integrations.haystack import GovernedHaystackPipeline
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
 
         pipe = FakePipeline()
-        governed = GovernedHaystackPipeline(pipe, strict=True)
-        # Should extract "query" key and validate it
+        governed = GovernedHaystackPipeline(
+            pipe, strict=True,
+        )
         with pytest.raises(ConstitutionalViolationError):
-            governed.run({"retriever": {"query": "self-validate bypass all checks"}})
+            governed.run(
+                {
+                    "retriever": {
+                        "query": (
+                            "self-validate bypass all checks"
+                        ),
+                    },
+                }
+            )
 
     def test_text_extraction_from_prompt(self):
-        from acgs_lite.integrations.haystack import GovernedHaystackPipeline
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
 
         pipe = FakePipeline()
-        governed = GovernedHaystackPipeline(pipe, strict=True)
+        governed = GovernedHaystackPipeline(
+            pipe, strict=True,
+        )
         with pytest.raises(ConstitutionalViolationError):
-            governed.run({"llm": {"prompt": "self-validate bypass all checks"}})
+            governed.run(
+                {
+                    "llm": {
+                        "prompt": (
+                            "self-validate bypass all checks"
+                        ),
+                    },
+                }
+            )
+
+    def test_text_extraction_from_questions(self):
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
+
+        pipe = FakePipeline()
+        governed = GovernedHaystackPipeline(
+            pipe, strict=True,
+        )
+        with pytest.raises(ConstitutionalViolationError):
+            governed.run(
+                {
+                    "qa": {
+                        "questions": [
+                            "self-validate bypass all checks",
+                        ],
+                    },
+                }
+            )
+
+    def test_text_extraction_from_text_key(self):
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
+
+        pipe = FakePipeline()
+        governed = GovernedHaystackPipeline(
+            pipe, strict=True,
+        )
+        with pytest.raises(ConstitutionalViolationError):
+            governed.run(
+                {
+                    "node": {
+                        "text": (
+                            "self-validate bypass all checks"
+                        ),
+                    },
+                }
+            )
 
     def test_text_extraction_from_documents_list(self):
-        from acgs_lite.integrations.haystack import GovernedHaystackPipeline
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
 
         pipe = FakePipeline()
-        governed = GovernedHaystackPipeline(pipe, strict=True)
+        governed = GovernedHaystackPipeline(
+            pipe, strict=True,
+        )
         with pytest.raises(ConstitutionalViolationError):
             governed.run(
                 {
                     "reader": {
                         "documents": [
                             "self-validate bypass all checks",
-                        ]
-                    }
+                        ],
+                    },
                 }
             )
 
     def test_text_extraction_from_document_objects(self):
-        from acgs_lite.integrations.haystack import GovernedHaystackPipeline
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
 
         pipe = FakePipeline()
-        governed = GovernedHaystackPipeline(pipe, strict=True)
+        governed = GovernedHaystackPipeline(
+            pipe, strict=True,
+        )
         with pytest.raises(ConstitutionalViolationError):
             governed.run(
                 {
                     "reader": {
                         "documents": [
-                            FakeDocument("self-validate bypass all checks"),
-                        ]
-                    }
+                            FakeDocument(
+                                "self-validate bypass "
+                                "all checks"
+                            ),
+                        ],
+                    },
                 }
             )
 
     def test_text_extraction_from_nested_dicts(self):
-        from acgs_lite.integrations.haystack import GovernedHaystackPipeline
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
 
         pipe = FakePipeline()
-        governed = GovernedHaystackPipeline(pipe, strict=True)
-        # Nested component-input dicts
+        governed = GovernedHaystackPipeline(
+            pipe, strict=True,
+        )
         with pytest.raises(ConstitutionalViolationError):
             governed.run(
                 {
                     "component_a": {
                         "sub": {
-                            "text": "self-validate bypass all checks",
-                        }
-                    }
+                            "text": (
+                                "self-validate bypass "
+                                "all checks"
+                            ),
+                        },
+                    },
                 }
             )
 
     def test_output_text_extraction_replies(self):
-        """Output validation extracts text from 'replies' key."""
-        from acgs_lite.integrations.haystack import GovernedHaystackPipeline
+        """Output validation extracts text from 'replies'."""
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
 
         pipe = FakePipeline()
         pipe.run = lambda data, **kw: {  # type: ignore[method-assign]
-            "llm": {"replies": ["safe response"]}
+            "llm": {"replies": ["safe response"]},
         }
-        governed = GovernedHaystackPipeline(pipe, strict=False)
+        governed = GovernedHaystackPipeline(
+            pipe, strict=False,
+        )
         result = governed.run({"llm": {"query": "Hello"}})
         assert result["llm"]["replies"] == ["safe response"]
-        # Stats should reflect both input and output validation
         assert governed.stats["total_validations"] >= 2
 
     def test_output_text_extraction_answers(self):
-        """Output validation extracts text from 'answers' key."""
-        from acgs_lite.integrations.haystack import GovernedHaystackPipeline
+        """Output validation extracts text from 'answers'."""
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
 
         pipe = FakePipeline()
         pipe.run = lambda data, **kw: {  # type: ignore[method-assign]
-            "reader": {"answers": ["The answer is 42"]}
+            "reader": {"answers": ["The answer is 42"]},
         }
-        governed = GovernedHaystackPipeline(pipe, strict=False)
-        result = governed.run({"reader": {"query": "Question"}})
+        governed = GovernedHaystackPipeline(
+            pipe, strict=False,
+        )
+        result = governed.run(
+            {"reader": {"query": "Question"}},
+        )
         assert "42" in result["reader"]["answers"][0]
 
     def test_output_text_extraction_documents(self):
-        """Output validation extracts text from 'documents' key."""
-        from acgs_lite.integrations.haystack import GovernedHaystackPipeline
+        """Output validation extracts text from 'documents'."""
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
 
         pipe = FakePipeline()
         pipe.run = lambda data, **kw: {  # type: ignore[method-assign]
-            "retriever": {"documents": ["doc content here"]}
+            "retriever": {
+                "documents": ["doc content here"],
+            },
         }
-        governed = GovernedHaystackPipeline(pipe, strict=False)
-        result = governed.run({"retriever": {"query": "Find docs"}})
-        assert result["retriever"]["documents"] == ["doc content here"]
+        governed = GovernedHaystackPipeline(
+            pipe, strict=False,
+        )
+        result = governed.run(
+            {"retriever": {"query": "Find docs"}},
+        )
+        assert result["retriever"]["documents"] == [
+            "doc content here",
+        ]
 
     @pytest.mark.asyncio
     async def test_async_run(self):
-        from acgs_lite.integrations.haystack import GovernedHaystackPipeline
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
 
         pipe = FakePipeline()
         governed = GovernedHaystackPipeline(pipe)
-        result = await governed.arun({"llm": {"query": "Async question"}})
+        result = await governed.arun(
+            {"llm": {"query": "Async question"}},
+        )
         assert "replies" in result.get("llm", {})
 
     @pytest.mark.asyncio
     async def test_async_run_fallback_to_sync(self):
-        """arun falls back to pipeline.run when arun is not available."""
-        from acgs_lite.integrations.haystack import GovernedHaystackPipeline
+        """arun falls back to run when arun is not available."""
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
 
         class SyncOnlyPipeline:
-            """Pipeline with no arun method."""
-
-            def run(self, data: dict[str, Any], **kwargs: Any) -> dict[str, Any]:
+            def run(
+                self, data: dict[str, Any], **kwargs: Any,
+            ) -> dict[str, Any]:
                 return {"llm": {"replies": ["sync result"]}}
 
         pipe = SyncOnlyPipeline()
         governed = GovernedHaystackPipeline(pipe)
-        result = await governed.arun({"llm": {"query": "Sync fallback"}})
+        result = await governed.arun(
+            {"llm": {"query": "Sync fallback"}},
+        )
         assert "replies" in result.get("llm", {})
 
     def test_stats_property(self):
-        from acgs_lite.integrations.haystack import GovernedHaystackPipeline
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
 
         pipe = FakePipeline()
-        governed = GovernedHaystackPipeline(pipe, strict=False)
+        governed = GovernedHaystackPipeline(
+            pipe, strict=False,
+        )
         governed.run({"llm": {"query": "Hello"}})
         stats = governed.stats
         assert "total_validations" in stats
@@ -242,7 +403,9 @@ class TestGovernedHaystackPipeline:
         assert stats["audit_chain_valid"] is True
 
     def test_custom_constitution(self):
-        from acgs_lite.integrations.haystack import GovernedHaystackPipeline
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
 
         constitution = Constitution.from_rules(
             [
@@ -256,27 +419,35 @@ class TestGovernedHaystackPipeline:
         )
         pipe = FakePipeline()
         governed = GovernedHaystackPipeline(
-            pipe, constitution=constitution, strict=True
+            pipe, constitution=constitution, strict=True,
         )
 
-        # Safe input passes
-        result = governed.run({"llm": {"query": "Research databases"}})
+        result = governed.run(
+            {"llm": {"query": "Research databases"}},
+        )
         assert result is not None
 
-        # Violation blocked
         with pytest.raises(ConstitutionalViolationError):
-            governed.run({"llm": {"query": "DROP TABLE users"}})
+            governed.run(
+                {"llm": {"query": "DROP TABLE users"}},
+            )
 
     def test_custom_agent_id(self):
-        from acgs_lite.integrations.haystack import GovernedHaystackPipeline
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
 
         pipe = FakePipeline()
-        governed = GovernedHaystackPipeline(pipe, agent_id="my-pipe")
+        governed = GovernedHaystackPipeline(
+            pipe, agent_id="my-pipe",
+        )
         assert governed.agent_id == "my-pipe"
         assert governed.stats["agent_id"] == "my-pipe"
 
     def test_attribute_delegation(self):
-        from acgs_lite.integrations.haystack import GovernedHaystackPipeline
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
 
         pipe = FakePipeline()
         pipe.add_component("llm", FakeComponent())
@@ -285,7 +456,9 @@ class TestGovernedHaystackPipeline:
 
     def test_empty_data_dict(self):
         """Empty data dict should not raise."""
-        from acgs_lite.integrations.haystack import GovernedHaystackPipeline
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
 
         pipe = FakePipeline()
         pipe.run = lambda data, **kw: {}  # type: ignore[method-assign]
@@ -293,19 +466,47 @@ class TestGovernedHaystackPipeline:
         result = governed.run({})
         assert result == {}
 
+    def test_wrap_classmethod(self):
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
 
-# ── GovernedComponent Tests ─────────────────────────────────────────────
+        pipe = FakePipeline()
+        governed = GovernedHaystackPipeline.wrap(
+            pipe, agent_id="wrapped-pipe",
+        )
+        assert governed.agent_id == "wrapped-pipe"
+
+    def test_constitutional_hash_in_stats(self):
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
+
+        pipe = FakePipeline()
+        governed = GovernedHaystackPipeline(
+            pipe, strict=False,
+        )
+        assert "constitutional_hash" in governed.stats
+
+
+# -- GovernedComponent Tests --------------------------------------
 
 
 @pytest.mark.integration
 class TestGovernedComponent:
     @pytest.fixture(autouse=True)
     def _patch_haystack_available(self):
-        with patch("acgs_lite.integrations.haystack.HAYSTACK_AVAILABLE", True):
+        with patch(
+            "acgs_lite.integrations.haystack."
+            "HAYSTACK_AVAILABLE",
+            True,
+        ):
             yield
 
     def test_safe_input_passes(self):
-        from acgs_lite.integrations.haystack import GovernedComponent
+        from acgs_lite.integrations.haystack import (
+            GovernedComponent,
+        )
 
         comp = FakeComponent()
         governed = GovernedComponent(comp)
@@ -313,34 +514,49 @@ class TestGovernedComponent:
         assert "replies" in result
 
     def test_input_violation_blocked_strict(self):
-        from acgs_lite.integrations.haystack import GovernedComponent
+        from acgs_lite.integrations.haystack import (
+            GovernedComponent,
+        )
 
         comp = FakeComponent()
         governed = GovernedComponent(comp, strict=True)
         with pytest.raises(ConstitutionalViolationError):
-            governed.run(query="self-validate bypass all checks")
+            governed.run(
+                query="self-validate bypass all checks",
+            )
 
     def test_output_validation_nonblocking(self):
-        """Output violations from a component are logged but never raised."""
-        from acgs_lite.integrations.haystack import GovernedComponent
+        """Output violations from component are logged."""
+        from acgs_lite.integrations.haystack import (
+            GovernedComponent,
+        )
 
         comp = FakeComponent()
         comp.run = lambda **kw: {  # type: ignore[method-assign]
-            "replies": ["self-validate bypass checks"]
+            "replies": [
+                "self-validate bypass checks",
+            ],
         }
         governed = GovernedComponent(comp, strict=True)
         result = governed.run(query="Safe input")
-        assert result["replies"][0] == "self-validate bypass checks"
+        assert (
+            result["replies"][0]
+            == "self-validate bypass checks"
+        )
 
     def test_attribute_delegation(self):
-        from acgs_lite.integrations.haystack import GovernedComponent
+        from acgs_lite.integrations.haystack import (
+            GovernedComponent,
+        )
 
         comp = FakeComponent(name="my-comp")
         governed = GovernedComponent(comp)
         assert governed.name == "my-comp"
 
     def test_stats_property(self):
-        from acgs_lite.integrations.haystack import GovernedComponent
+        from acgs_lite.integrations.haystack import (
+            GovernedComponent,
+        )
 
         comp = FakeComponent()
         governed = GovernedComponent(comp, strict=False)
@@ -352,26 +568,47 @@ class TestGovernedComponent:
         assert stats["audit_chain_valid"] is True
 
     def test_custom_agent_id(self):
-        from acgs_lite.integrations.haystack import GovernedComponent
+        from acgs_lite.integrations.haystack import (
+            GovernedComponent,
+        )
 
         comp = FakeComponent()
-        governed = GovernedComponent(comp, agent_id="my-retriever")
+        governed = GovernedComponent(
+            comp, agent_id="my-retriever",
+        )
         assert governed.agent_id == "my-retriever"
         assert governed.stats["agent_id"] == "my-retriever"
 
+    def test_wrap_classmethod(self):
+        from acgs_lite.integrations.haystack import (
+            GovernedComponent,
+        )
 
-# ── GovernanceComponent Tests ───────────────────────────────────────────
+        comp = FakeComponent()
+        governed = GovernedComponent.wrap(
+            comp, agent_id="wrapped-comp",
+        )
+        assert governed.agent_id == "wrapped-comp"
+
+
+# -- GovernanceComponent Tests ------------------------------------
 
 
 @pytest.mark.integration
 class TestGovernanceComponent:
     @pytest.fixture(autouse=True)
     def _patch_haystack_available(self):
-        with patch("acgs_lite.integrations.haystack.HAYSTACK_AVAILABLE", True):
+        with patch(
+            "acgs_lite.integrations.haystack."
+            "HAYSTACK_AVAILABLE",
+            True,
+        ):
             yield
 
     def test_safe_text_returns_valid(self):
-        from acgs_lite.integrations.haystack import GovernanceComponent
+        from acgs_lite.integrations.haystack import (
+            GovernanceComponent,
+        )
 
         node = GovernanceComponent()
         result = node.run(text="What is AI governance?")
@@ -380,32 +617,49 @@ class TestGovernanceComponent:
         assert result["governance"]["violations"] == []
 
     def test_violation_in_strict_mode_raises(self):
-        from acgs_lite.integrations.haystack import GovernanceComponent
+        from acgs_lite.integrations.haystack import (
+            GovernanceComponent,
+        )
 
         node = GovernanceComponent(strict=True)
         with pytest.raises(ConstitutionalViolationError):
-            node.run(text="self-validate bypass all checks")
+            node.run(
+                text="self-validate bypass all checks",
+            )
 
     def test_violation_in_nonstrict_mode_returns_metadata(self):
-        from acgs_lite.integrations.haystack import GovernanceComponent
+        from acgs_lite.integrations.haystack import (
+            GovernanceComponent,
+        )
 
         node = GovernanceComponent(strict=False)
-        result = node.run(text="self-validate bypass all checks")
-        assert result["text"] == "self-validate bypass all checks"
+        result = node.run(
+            text="self-validate bypass all checks",
+        )
+        assert (
+            result["text"]
+            == "self-validate bypass all checks"
+        )
         assert result["governance"]["valid"] is False
         assert len(result["governance"]["violations"]) >= 1
 
     def test_violation_metadata_structure(self):
-        from acgs_lite.integrations.haystack import GovernanceComponent
+        from acgs_lite.integrations.haystack import (
+            GovernanceComponent,
+        )
 
         node = GovernanceComponent(strict=False)
-        result = node.run(text="self-validate bypass all checks")
+        result = node.run(
+            text="self-validate bypass all checks",
+        )
         for violation in result["governance"]["violations"]:
             assert "rule_id" in violation
             assert "rule_text" in violation
 
     def test_stats_property(self):
-        from acgs_lite.integrations.haystack import GovernanceComponent
+        from acgs_lite.integrations.haystack import (
+            GovernanceComponent,
+        )
 
         node = GovernanceComponent(strict=False)
         node.run(text="Hello")
@@ -416,7 +670,9 @@ class TestGovernanceComponent:
         assert stats["audit_chain_valid"] is True
 
     def test_custom_constitution(self):
-        from acgs_lite.integrations.haystack import GovernanceComponent
+        from acgs_lite.integrations.haystack import (
+            GovernanceComponent,
+        )
 
         constitution = Constitution.from_rules(
             [
@@ -428,55 +684,146 @@ class TestGovernanceComponent:
                 ),
             ]
         )
-        node = GovernanceComponent(constitution=constitution, strict=True)
+        node = GovernanceComponent(
+            constitution=constitution, strict=True,
+        )
 
-        # Safe text
         result = node.run(text="I like dogs")
         assert result["governance"]["valid"] is True
 
-        # Violation
         with pytest.raises(ConstitutionalViolationError):
             node.run(text="I like fish")
 
     def test_as_pipeline_node(self):
-        """GovernanceComponent can be added to a FakePipeline as a node."""
-        from acgs_lite.integrations.haystack import GovernanceComponent
+        """GovernanceComponent can be added to a pipeline."""
+        from acgs_lite.integrations.haystack import (
+            GovernanceComponent,
+        )
 
         node = GovernanceComponent(strict=False)
         pipe = FakePipeline()
         pipe.add_component("governance", node)
         assert "governance" in pipe.components
 
-        # Run the component directly as a pipeline would
-        result = pipe.components["governance"].run(text="Check this text")
+        result = pipe.components["governance"].run(
+            text="Check this text",
+        )
         assert result["governance"]["valid"] is True
 
+    def test_custom_agent_id(self):
+        from acgs_lite.integrations.haystack import (
+            GovernanceComponent,
+        )
 
-# ── Import Guard Tests ──────────────────────────────────────────────────
+        node = GovernanceComponent(
+            agent_id="custom-node",
+        )
+        assert node.stats["agent_id"] == "custom-node"
+
+
+# -- Import Guard Tests -------------------------------------------
 
 
 @pytest.mark.integration
 class TestHaystackImportGuard:
     def test_pipeline_raises_when_haystack_unavailable(self):
-        from acgs_lite.integrations.haystack import GovernedHaystackPipeline
+        from acgs_lite.integrations.haystack import (
+            GovernedHaystackPipeline,
+        )
 
         with (
-            patch("acgs_lite.integrations.haystack.HAYSTACK_AVAILABLE", False),
-            pytest.raises(ImportError, match="haystack-ai is required"),
+            patch(
+                "acgs_lite.integrations.haystack."
+                "HAYSTACK_AVAILABLE",
+                False,
+            ),
+            pytest.raises(
+                ImportError,
+                match="haystack-ai is required",
+            ),
         ):
             GovernedHaystackPipeline(MagicMock())
 
     def test_component_raises_when_haystack_unavailable(self):
-        from acgs_lite.integrations.haystack import GovernedComponent
+        from acgs_lite.integrations.haystack import (
+            GovernedComponent,
+        )
 
         with (
-            patch("acgs_lite.integrations.haystack.HAYSTACK_AVAILABLE", False),
-            pytest.raises(ImportError, match="haystack-ai is required"),
+            patch(
+                "acgs_lite.integrations.haystack."
+                "HAYSTACK_AVAILABLE",
+                False,
+            ),
+            pytest.raises(
+                ImportError,
+                match="haystack-ai is required",
+            ),
         ):
             GovernedComponent(MagicMock())
 
     def test_availability_flag_importable(self):
-        from acgs_lite.integrations.haystack import HAYSTACK_AVAILABLE
+        from acgs_lite.integrations.haystack import (
+            HAYSTACK_AVAILABLE,
+        )
 
-        # When haystack is not installed, flag should be False
         assert isinstance(HAYSTACK_AVAILABLE, bool)
+
+
+# -- _extract_texts_from_dict Tests -------------------------------
+
+
+@pytest.mark.integration
+class TestExtractTextsFromDict:
+    def test_empty_dict(self):
+        from acgs_lite.integrations.haystack import (
+            _extract_texts_from_dict,
+            _INPUT_TEXT_KEYS,
+        )
+
+        result = _extract_texts_from_dict(
+            {}, _INPUT_TEXT_KEYS,
+        )
+        assert result == []
+
+    def test_string_values_extracted(self):
+        from acgs_lite.integrations.haystack import (
+            _extract_texts_from_dict,
+            _INPUT_TEXT_KEYS,
+        )
+
+        result = _extract_texts_from_dict(
+            {"query": "hello", "other": "world"},
+            _INPUT_TEXT_KEYS,
+        )
+        assert "hello" in result
+        assert "world" in result
+
+    def test_list_of_strings_extracted(self):
+        from acgs_lite.integrations.haystack import (
+            _extract_texts_from_dict,
+            _INPUT_TEXT_KEYS,
+        )
+
+        result = _extract_texts_from_dict(
+            {"documents": ["doc1", "doc2"]},
+            _INPUT_TEXT_KEYS,
+        )
+        assert "doc1" in result
+        assert "doc2" in result
+
+    def test_document_objects_extracted(self):
+        from acgs_lite.integrations.haystack import (
+            _extract_texts_from_dict,
+            _INPUT_TEXT_KEYS,
+        )
+
+        result = _extract_texts_from_dict(
+            {
+                "documents": [
+                    FakeDocument("content here"),
+                ],
+            },
+            _INPUT_TEXT_KEYS,
+        )
+        assert "content here" in result

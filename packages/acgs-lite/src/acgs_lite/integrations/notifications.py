@@ -494,7 +494,7 @@ class GovernanceNotifier:
     def __init__(
         self,
         *,
-        engine: Any,  # GovernanceEngine — use Any to avoid circular import
+        engine: Any,  # GovernanceEngine -- use Any to avoid circular import
         router: NotificationRouter,
         notify_on_deny: bool = True,
         notify_on_warning: bool = False,

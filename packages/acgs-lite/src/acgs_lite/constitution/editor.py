@@ -395,14 +395,7 @@ class ConstitutionEditor:
         An empty list means no issues were found.
         """
         issues: list[str] = []
-        seen_ids: set[str] = set()
         for draft in self._drafts.values():
-            if draft.rule_id in seen_ids:
-                issues.append(
-                    f"Duplicate rule ID: '{draft.rule_id}'"
-                )
-            seen_ids.add(draft.rule_id)
-
             if not draft.rule_id.strip():
                 issues.append("Rule has empty ID")
             if not draft.text.strip():

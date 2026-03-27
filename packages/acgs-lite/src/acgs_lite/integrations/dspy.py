@@ -47,10 +47,11 @@ except ImportError:
 class GovernedDSPyModule:
     """DSPy Module wrapper with constitutional governance.
 
-    Wraps any DSPy Module with governance validation on inputs and outputs.
-    Input kwargs are scanned for string values and validated before calling
-    the underlying ``forward()`` method.  Output text is validated
-    non-blockingly (warnings only) after execution.
+    Wraps any DSPy Module with governance validation on inputs
+    and outputs.  Input kwargs are scanned for string values and
+    validated before calling the underlying ``forward()`` method.
+    Output text is validated non-blockingly (warnings only) after
+    execution.
 
     Usage::
 
@@ -70,7 +71,8 @@ class GovernedDSPyModule:
     ) -> None:
         if not DSPY_AVAILABLE:
             raise ImportError(
-                "dspy is required. Install with: pip install acgs[dspy]"
+                "dspy is required. "
+                "Install with: pip install acgs[dspy]"
             )
 
         self._module = module
@@ -100,8 +102,10 @@ class GovernedDSPyModule:
             strict=strict,
         )
 
-    def _extract_input_text(self, kwargs: dict[str, Any]) -> str:
-        """Extract text from input kwargs by concatenating string values."""
+    def _extract_input_text(
+        self, kwargs: dict[str, Any],
+    ) -> str:
+        """Extract text from input kwargs."""
         parts: list[str] = []
         for value in kwargs.values():
             if isinstance(value, str):
@@ -113,10 +117,11 @@ class GovernedDSPyModule:
         return " ".join(parts)
 
     def _extract_output_text(self, result: Any) -> str:
-        """Extract text from a DSPy output (Prediction or similar).
+        """Extract text from a DSPy output.
 
-        Handles dspy.Prediction objects which store results as attributes,
-        as well as plain strings and objects with string attributes.
+        Handles dspy.Prediction objects which store results as
+        attributes, as well as plain strings and objects with
+        string attributes.
         """
         if isinstance(result, str):
             return result
@@ -126,24 +131,35 @@ class GovernedDSPyModule:
             completions = result.completions
             if isinstance(completions, dict):
                 parts = [
-                    str(v) for v in completions.values() if v is not None
+                    str(v)
+                    for v in completions.values()
+                    if v is not None
                 ]
                 return " ".join(parts)
             if isinstance(completions, list):
-                return " ".join(str(c) for c in completions if c is not None)
+                return " ".join(
+                    str(c) for c in completions
+                    if c is not None
+                )
 
-        # Generic attribute scanning for Prediction-like objects with keys()
+        # Generic attribute scanning for Prediction-like objects
         if hasattr(result, "keys") and callable(result.keys):
             parts: list[str] = []
             for key in result.keys():  # noqa: SIM118
-                val = getattr(result, key, None) if not isinstance(result, dict) else result[key]
+                val = (
+                    getattr(result, key, None)
+                    if not isinstance(result, dict)
+                    else result[key]
+                )
                 if isinstance(val, str):
                     parts.append(val)
             if parts:
                 return " ".join(parts)
 
-        # Fallback: check for common output attributes
-        for attr in ("answer", "output", "response", "text", "content"):
+        # Fallback: check common output attributes
+        for attr in (
+            "answer", "output", "response", "text", "content",
+        ):
             val = getattr(result, attr, None)
             if isinstance(val, str):
                 return val
@@ -151,12 +167,13 @@ class GovernedDSPyModule:
         return str(result) if result is not None else ""
 
     def _validate_output(self, result: Any) -> None:
-        """Validate output text without raising (log warnings only)."""
+        """Validate output text without raising."""
         text = self._extract_output_text(result)
         if text:
             with self.engine.non_strict():
                 validation = self.engine.validate(
-                    text, agent_id=f"{self.agent_id}:output"
+                    text,
+                    agent_id=f"{self.agent_id}:output",
                 )
             if not validation.valid:
                 logger.warning(
@@ -165,10 +182,10 @@ class GovernedDSPyModule:
                 )
 
     def forward(self, **kwargs: Any) -> Any:
-        """Execute the module's forward() with governance validation.
+        """Execute the module's forward() with governance.
 
-        Validates concatenated string kwargs before execution and validates
-        the output non-blockingly after.
+        Validates concatenated string kwargs before execution and
+        validates the output non-blockingly after.
         """
         text = self._extract_input_text(kwargs)
         if text:
@@ -180,11 +197,11 @@ class GovernedDSPyModule:
         return result
 
     def __call__(self, **kwargs: Any) -> Any:
-        """Delegate to forward() — DSPy modules are callable."""
+        """Delegate to forward() -- DSPy modules are callable."""
         return self.forward(**kwargs)
 
     def __getattr__(self, name: str) -> Any:
-        """Delegate attribute access to the underlying DSPy module."""
+        """Delegate to the underlying DSPy module."""
         return getattr(self._module, name)
 
     @property
@@ -200,8 +217,8 @@ class GovernedDSPyModule:
 class GovernedPredict:
     """DSPy Predict wrapper with constitutional governance.
 
-    Wraps a ``dspy.Predict`` instance (or any callable predictor) with
-    input and output governance validation.
+    Wraps a ``dspy.Predict`` instance (or any callable predictor)
+    with input and output governance validation.
 
     Usage::
 
@@ -222,7 +239,8 @@ class GovernedPredict:
     ) -> None:
         if not DSPY_AVAILABLE:
             raise ImportError(
-                "dspy is required. Install with: pip install acgs[dspy]"
+                "dspy is required. "
+                "Install with: pip install acgs[dspy]"
             )
 
         self._predict = predict
@@ -252,8 +270,10 @@ class GovernedPredict:
             strict=strict,
         )
 
-    def _extract_input_text(self, kwargs: dict[str, Any]) -> str:
-        """Extract text from input kwargs by concatenating string values."""
+    def _extract_input_text(
+        self, kwargs: dict[str, Any],
+    ) -> str:
+        """Extract text from input kwargs."""
         parts: list[str] = []
         for value in kwargs.values():
             if isinstance(value, str):
@@ -269,22 +289,33 @@ class GovernedPredict:
             completions = result.completions
             if isinstance(completions, dict):
                 parts = [
-                    str(v) for v in completions.values() if v is not None
+                    str(v)
+                    for v in completions.values()
+                    if v is not None
                 ]
                 return " ".join(parts)
             if isinstance(completions, list):
-                return " ".join(str(c) for c in completions if c is not None)
+                return " ".join(
+                    str(c) for c in completions
+                    if c is not None
+                )
 
         if hasattr(result, "keys") and callable(result.keys):
             parts: list[str] = []
             for key in result.keys():  # noqa: SIM118
-                val = getattr(result, key, None) if not isinstance(result, dict) else result[key]
+                val = (
+                    getattr(result, key, None)
+                    if not isinstance(result, dict)
+                    else result[key]
+                )
                 if isinstance(val, str):
                     parts.append(val)
             if parts:
                 return " ".join(parts)
 
-        for attr in ("answer", "output", "response", "text", "content"):
+        for attr in (
+            "answer", "output", "response", "text", "content",
+        ):
             val = getattr(result, attr, None)
             if isinstance(val, str):
                 return val
@@ -292,12 +323,13 @@ class GovernedPredict:
         return str(result) if result is not None else ""
 
     def _validate_output(self, result: Any) -> None:
-        """Validate output text without raising (log warnings only)."""
+        """Validate output text without raising."""
         text = self._extract_output_text(result)
         if text:
             with self.engine.non_strict():
                 validation = self.engine.validate(
-                    text, agent_id=f"{self.agent_id}:output"
+                    text,
+                    agent_id=f"{self.agent_id}:output",
                 )
             if not validation.valid:
                 logger.warning(
@@ -317,7 +349,7 @@ class GovernedPredict:
         return result
 
     def __getattr__(self, name: str) -> Any:
-        """Delegate attribute access to the underlying predictor."""
+        """Delegate to the underlying predictor."""
         return getattr(self._predict, name)
 
     @property

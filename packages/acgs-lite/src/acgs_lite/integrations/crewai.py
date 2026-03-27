@@ -85,6 +85,20 @@ class GovernedCrewAgent:
         )
         self.agent_id = agent_id
 
+    @classmethod
+    def wrap(
+        cls,
+        agent: Any,
+        *,
+        constitution: Constitution | None = None,
+        agent_id: str = "crewai-agent",
+        strict: bool = True,
+    ) -> GovernedCrewAgent:
+        """Wrap a CrewAI Agent with governance."""
+        return cls(
+            agent, constitution=constitution, agent_id=agent_id, strict=strict,
+        )
+
     def __getattr__(self, name: str) -> Any:
         """Delegate attribute access to the underlying CrewAI agent."""
         return getattr(self._agent, name)
@@ -178,6 +192,20 @@ class GovernedTask:
                 str(expected_output), agent_id=f"{self.agent_id}:expected_output"
             )
 
+    @classmethod
+    def wrap(
+        cls,
+        task: Any,
+        *,
+        constitution: Constitution | None = None,
+        agent_id: str = "crewai-task",
+        strict: bool = True,
+    ) -> GovernedTask:
+        """Wrap a CrewAI Task with governance."""
+        return cls(
+            task, constitution=constitution, agent_id=agent_id, strict=strict,
+        )
+
     def __getattr__(self, name: str) -> Any:
         """Delegate attribute access to the underlying CrewAI task."""
         return getattr(self._task, name)
@@ -233,6 +261,20 @@ class GovernedCrew:
             strict=strict,
         )
         self.agent_id = agent_id
+
+    @classmethod
+    def wrap(
+        cls,
+        crew: Any,
+        *,
+        constitution: Constitution | None = None,
+        agent_id: str = "crewai-crew",
+        strict: bool = True,
+    ) -> GovernedCrew:
+        """Wrap a CrewAI Crew with governance."""
+        return cls(
+            crew, constitution=constitution, agent_id=agent_id, strict=strict,
+        )
 
     def __getattr__(self, name: str) -> Any:
         """Delegate attribute access to the underlying CrewAI crew."""

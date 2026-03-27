@@ -29,14 +29,14 @@
 					title: 'Compiling the Law',
 					subtitle: 'Engineering HTTPS for AI',
 					description: 'A deep dive into the technical implementation of executable constitutional governance.',
-					file: 'Compiling_the_Law__Engineering__HTTPS_for_AI_.mp4',
+					file: 'acgs-intro.mp4',
 					type: 'Video (MP4)'
 				},
 				{
 					title: 'Architecting Constraints',
 					subtitle: 'Building the MACI Governance System',
 					description: 'Exploring the Montesquieu-Inspired architecture for multi-agent separation of powers.',
-					file: 'Architecting_Constraints__Building_the_MACI_Governance_System.mp4',
+					file: 'acgs-maci.mp4',
 					type: 'Video (MP4)'
 				}
 			]
@@ -48,14 +48,14 @@
 					title: 'ACGS Cryptographic Infrastructure',
 					subtitle: 'Hash Chains & Audit Integrity',
 					description: 'Technical overview of the SHA-256 tamper-evident audit ledger and constitutional binding.',
-					file: 'ACGS_Cryptographic_Infrastructure.pptx',
+					file: 'acgs-crypto.pptx',
 					type: 'Presentation (PPTX)'
 				},
 				{
 					title: 'Architecting Machine Trust',
 					subtitle: 'Alignment through Infrastructure',
 					description: 'Strategic vision for the transition from model-centric to system-centric AI safety.',
-					file: 'Architecting_Machine_Trust.pptx',
+					file: 'acgs-trust.pptx',
 					type: 'Presentation (PPTX)'
 				}
 			]
@@ -113,7 +113,7 @@
 								</p>
 
 								<a
-									href={resolve(`/resources/${item.file}`)}
+									href={resolve(`/${item.file}`)}
 									download={item.file}
 									class="mt-10 inline-flex items-center justify-between w-full rounded-lg border border-border/60 bg-transparent px-6 py-4 font-mono text-xs tracking-widest uppercase transition-all duration-300 hover:bg-white hover:text-black hover:border-white"
 								>

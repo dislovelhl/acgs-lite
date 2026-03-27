@@ -248,6 +248,7 @@ class GovernanceAdmissionWebhook:
         else:
             self._engine = engine_or_constitution
         self._agent_id = agent_id
+        self._enforcement_mode = "enforce"
 
     def validate_admission(self, request: dict[str, Any]) -> dict[str, Any]:
         """Validate a Kubernetes AdmissionReview request.

@@ -1,0 +1,4 @@
+/site-assets/*.mp4
+  Content-Type: video/mp4
+/site-assets/*.pptx
+  Content-Type: application/vnd.openxmlformats-officedocument.presentationml.presentation

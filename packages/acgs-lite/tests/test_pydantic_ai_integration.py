@@ -213,6 +213,15 @@ class TestGovernedPydanticAgent:
         governed = GovernedPydanticAgent(agent)
         assert governed.model == "openai:gpt-4o-mini"
 
+    def test_empty_prompt_skips_validation(self):
+        from acgs_lite.integrations.pydantic_ai import GovernedPydanticAgent
+
+        agent = FakeAgent()
+        governed = GovernedPydanticAgent(agent, strict=True)
+        # Empty prompt should not trigger validation
+        result = governed.run_sync("")
+        assert result.data == "Agent response text"
+
 
 # --- GovernedModel Tests -------------------------------------------------------
 
@@ -315,6 +324,32 @@ class TestGovernedModel:
         msg = MagicMock(content="Tell me about AI safety")
         response = governed.request([msg])
         assert response is not None
+
+    def test_string_response_output_validation(self):
+        from acgs_lite.integrations.pydantic_ai import GovernedModel
+
+        model = FakeModel()
+        model._response = "plain text response"
+        governed = GovernedModel(model)
+        response = governed.request([{"content": "Hello"}])
+        assert response == "plain text response"
+
+    @pytest.mark.asyncio
+    async def test_arequest_output_validation(self):
+        from acgs_lite.integrations.pydantic_ai import GovernedModel
+
+        model = FakeModel()
+        governed = GovernedModel(model, strict=False)
+        response = await governed.arequest([{"content": "Hello"}])
+        assert response.content == "Model response text"
+
+    def test_attribute_delegation(self):
+        from acgs_lite.integrations.pydantic_ai import GovernedModel
+
+        model = FakeModel()
+        model.model_name = "custom-model"  # type: ignore[attr-defined]
+        governed = GovernedModel(model)
+        assert governed.model_name == "custom-model"
 
 
 # --- Import Guard Tests ---------------------------------------------------------

@@ -1,6 +1,6 @@
 """Tests for acgs-lite CrewAI integration.
 
-Uses mock CrewAI classes — no real crewai dependency required.
+Uses mock CrewAI classes -- no real crewai dependency required.
 Constitutional Hash: 608508a9bd224290
 """
 
@@ -13,7 +13,7 @@ import pytest
 
 from acgs_lite import Constitution, ConstitutionalViolationError, Rule, Severity
 
-# ─── Mock CrewAI Objects ─────────────────────────────────────────────────
+# --- Mock CrewAI Objects ---------------------------------------------------
 
 
 class FakeAgent:
@@ -69,7 +69,7 @@ class FakeCrew:
         return f"Async crew completed: {', '.join(descriptions)}"
 
 
-# ─── GovernedCrewAgent Tests ─────────────────────────────────────────────
+# --- GovernedCrewAgent Tests -----------------------------------------------
 
 
 @pytest.mark.integration
@@ -167,8 +167,24 @@ class TestGovernedCrewAgent:
         assert governed.agent_id == "my-custom-agent"
         assert governed.stats["agent_id"] == "my-custom-agent"
 
+    def test_wrap_classmethod(self):
+        from acgs_lite.integrations.crewai import GovernedCrewAgent
 
-# ─── GovernedCrew Tests ──────────────────────────────────────────────────
+        agent = FakeAgent()
+        governed = GovernedCrewAgent.wrap(agent, agent_id="wrapped")
+        assert governed.agent_id == "wrapped"
+
+    def test_empty_description_skips_validation(self):
+        from acgs_lite.integrations.crewai import GovernedCrewAgent
+
+        agent = FakeAgent()
+        governed = GovernedCrewAgent(agent, strict=True)
+        task = FakeTask(description="")
+        result = governed.execute_task(task)
+        assert result is not None
+
+
+# --- GovernedCrew Tests ----------------------------------------------------
 
 
 @pytest.mark.integration
@@ -290,8 +306,24 @@ class TestGovernedCrew:
         # Both task descriptions validated plus output validation
         assert stats["total_validations"] >= 2
 
+    def test_wrap_classmethod(self):
+        from acgs_lite.integrations.crewai import GovernedCrew
 
-# ─── GovernedTask Tests ──────────────────────────────────────────────────
+        agent = FakeAgent()
+        crew = FakeCrew(agents=[agent], tasks=[])
+        governed = GovernedCrew.wrap(crew, agent_id="wrapped-crew")
+        assert governed.agent_id == "wrapped-crew"
+
+    def test_no_tasks_kickoff(self):
+        from acgs_lite.integrations.crewai import GovernedCrew
+
+        crew = FakeCrew(agents=[], tasks=[])
+        governed = GovernedCrew(crew, strict=True)
+        result = governed.kickoff()
+        assert result is not None
+
+
+# --- GovernedTask Tests ----------------------------------------------------
 
 
 @pytest.mark.integration
@@ -347,8 +379,15 @@ class TestGovernedTask:
         assert stats["agent_id"] == "crewai-task"
         assert stats["audit_chain_valid"] is True
 
+    def test_wrap_classmethod(self):
+        from acgs_lite.integrations.crewai import GovernedTask
 
-# ─── Import Guard Tests ─────────────────────────────────────────────────
+        task = FakeTask(description="Safe task", expected_output="Result")
+        governed = GovernedTask.wrap(task, agent_id="wrapped-task", strict=False)
+        assert governed.agent_id == "wrapped-task"
+
+
+# --- Import Guard Tests ----------------------------------------------------
 
 
 @pytest.mark.integration
