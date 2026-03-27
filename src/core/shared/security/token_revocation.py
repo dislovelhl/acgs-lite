@@ -111,7 +111,7 @@ class TokenRevocationService:
                     result = close_method()
                     if inspect.isawaitable(result):
                         await result
-        except Exception as e:
+        except (ConnectionError, TimeoutError, OSError) as e:
             logger.warning(
                 f"[{CONSTITUTIONAL_HASH}] Failed to close token revocation Redis client: {e}"
             )
@@ -181,7 +181,7 @@ class TokenRevocationService:
             )
             return False
 
-        except Exception as e:
+        except (ValueError, TypeError, RuntimeError) as e:
             logger.error(
                 f"[{CONSTITUTIONAL_HASH}] Unexpected error revoking token: {jti[:8]}... - {e}"
             )
@@ -238,7 +238,7 @@ class TokenRevocationService:
             )
             return True
 
-        except Exception as e:
+        except (ValueError, TypeError, RuntimeError) as e:
             logger.error(
                 f"[{CONSTITUTIONAL_HASH}] Unexpected error checking token revocation: {jti[:8]}... - {e}"
             )
@@ -304,7 +304,7 @@ class TokenRevocationService:
             )
             return 0
 
-        except Exception as e:
+        except (ValueError, TypeError, RuntimeError) as e:
             logger.error(
                 f"[{CONSTITUTIONAL_HASH}] Unexpected error revoking user tokens: {user_id} - {e}"
             )
@@ -374,7 +374,7 @@ class TokenRevocationService:
                 f"[{CONSTITUTIONAL_HASH}] Invalid revocation timestamp for user: {user_id} - {e}"
             )
             return False
-        except Exception as e:
+        except (ValueError, TypeError, RuntimeError) as e:
             logger.error(
                 f"[{CONSTITUTIONAL_HASH}] Unexpected error checking user revocation: {user_id} - {e}"
             )
@@ -511,7 +511,7 @@ async def create_token_revocation_service(redis_url: str | None = None) -> Token
 
             parsed = urlparse(redis_url)
             safe_url = f"{parsed.scheme}://{parsed.hostname}:{parsed.port or 6379}"
-        except Exception:
+        except (ValueError, AttributeError):
             safe_url = "<redis>"
         logger.info(
             "[%s] TokenRevocationService initialized with Redis: %s",
@@ -520,7 +520,7 @@ async def create_token_revocation_service(redis_url: str | None = None) -> Token
         )
         return TokenRevocationService(redis_client=redis_client)
 
-    except Exception as e:
+    except (ImportError, ConnectionError, TimeoutError, OSError, ValueError) as e:
         logger.error(
             f"[{CONSTITUTIONAL_HASH}] Failed to connect to Redis: {e} - "
             "TokenRevocationService will operate in degraded mode"

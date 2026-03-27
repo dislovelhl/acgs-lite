@@ -1,13 +1,15 @@
 """
 ACGS-2 Authentication and Authorization Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides JWT-based authentication and role-based authorization for all services.
 """
 
 import os
 import uuid
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 import jwt
 from fastapi import Depends, HTTPException, Request, params
@@ -37,7 +39,7 @@ _JWT_ALGORITHM_CANONICAL_MAP = {
 security = HTTPBearer(auto_error=False)
 
 
-class UserClaims(BaseModel):
+class UserClaims(BaseModel):  # type: ignore[misc]
     """JWT user claims model."""
 
     sub: str  # User ID
@@ -52,7 +54,7 @@ class UserClaims(BaseModel):
     constitutional_hash: str = CONSTITUTIONAL_HASH  # Constitutional hash binding
 
 
-class TokenResponse(BaseModel):
+class TokenResponse(BaseModel):  # type: ignore[misc]
     """Token response model."""
 
     access_token: str
@@ -66,7 +68,7 @@ def _current_jwt_secret() -> str | None:
             return secret
 
     if settings.security.jwt_secret:
-        return settings.security.jwt_secret.get_secret_value()
+        return str(settings.security.jwt_secret.get_secret_value())
 
     return None
 
@@ -99,7 +101,7 @@ def _current_jwt_public_key() -> str | None:
         return local_public_key
 
     if settings.security.jwt_public_key != "SYSTEM_PUBLIC_KEY_PLACEHOLDER":
-        return settings.security.jwt_public_key
+        return str(settings.security.jwt_public_key)
 
     return None
 
@@ -188,7 +190,7 @@ def _is_production_environment() -> bool:
 
     configured_env = getattr(settings, "env", None)
     env = resolve_runtime_environment(configured_env=configured_env)
-    return env == "production"
+    return bool(env == "production")
 
 
 _NON_PRODUCTION_ENVS = frozenset({"development", "dev", "test", "testing", "local", "ci"})
@@ -209,7 +211,7 @@ def _get_revocation_service() -> object | None:
     and ``auth._revocation_service_initialized = True`` (used in tests and by
     ``auth_dependency.configure_revocation_service``).
     """
-    global _revocation_service, _revocation_service_initialized  # noqa: PLW0603
+    global _revocation_service, _revocation_service_initialized
 
     if _revocation_service_initialized:
         return _revocation_service
@@ -221,10 +223,7 @@ def _get_revocation_service() -> object | None:
     try:
         import asyncio
 
-        from src.core.shared.security.token_revocation import (  # noqa: PLC0415
-            TokenRevocationService,
-            create_token_revocation_service,
-        )
+        from src.core.shared.security.token_revocation import create_token_revocation_service
 
         loop = asyncio.get_event_loop()
         if loop.is_running():
@@ -233,7 +232,7 @@ def _get_revocation_service() -> object | None:
         _revocation_service = loop.run_until_complete(create_token_revocation_service(redis_url))
         _revocation_service_initialized = True
         return _revocation_service
-    except Exception:  # noqa: BLE001
+    except (ImportError, ConnectionError, TimeoutError, OSError, ValueError, RuntimeError):
         return None
 
 
@@ -278,7 +277,7 @@ def create_access_token(
     key_material, algorithm = _resolve_jwt_material(for_signing=True)
     encoded_jwt = jwt.encode(to_encode, key_material, algorithm=algorithm)
 
-    return encoded_jwt
+    return str(encoded_jwt)
 
 
 def verify_token(token: str) -> UserClaims:
@@ -337,7 +336,7 @@ def verify_token(token: str) -> UserClaims:
     except InvalidTokenError as e:
         logger.warning(f"JWT verification failed: {e}")
         raise HTTPException(status_code=401, detail="Invalid authentication token") from e
-    except Exception as e:
+    except (ValueError, TypeError, KeyError, AttributeError) as e:
         logger.error(f"Token verification error: {e}")
         raise HTTPException(status_code=401, detail="Authentication failed") from e
 
@@ -377,16 +376,16 @@ async def get_current_user(
 
     if revocation_service is not None:
         try:
-            if await revocation_service.is_token_revoked(claims.jti):
+            if await revocation_service.is_token_revoked(claims.jti):  # type: ignore[attr-defined]
                 raise HTTPException(status_code=401, detail="Token has been revoked")
         except HTTPException:
             raise
-        except Exception:  # noqa: BLE001
+        except (ConnectionError, TimeoutError, OSError, ValueError, RuntimeError) as err:
             if _is_production_environment():
                 raise HTTPException(
                     status_code=503,
                     detail="Revocation check failed — cannot authenticate in production",
-                )
+                ) from err
 
     return claims
 
@@ -421,7 +420,7 @@ async def get_current_user_optional(
         return None
 
 
-def require_role(required_role: str):
+def require_role(required_role: str) -> Callable[..., Any]:
     """
     Create a dependency that requires a specific role.
 
@@ -441,7 +440,7 @@ def require_role(required_role: str):
     return role_checker
 
 
-def require_permission(required_permission: str):
+def require_permission(required_permission: str) -> Callable[..., Any]:
     """
     Create a dependency that requires a specific permission.
 
@@ -463,7 +462,7 @@ def require_permission(required_permission: str):
     return permission_checker
 
 
-def require_tenant_access(tenant_id: str | None = None):
+def require_tenant_access(tenant_id: str | None = None) -> Callable[..., Any]:
     """
     Create a dependency that ensures user has access to specified tenant.
 
@@ -497,14 +496,14 @@ def require_tenant_access(tenant_id: str | None = None):
 # ============================================================================
 
 
-class AuthenticationMiddleware(BaseHTTPMiddleware):
+class AuthenticationMiddleware(BaseHTTPMiddleware):  # type: ignore[misc]
     """
     FastAPI middleware for automatic authentication.
 
     Adds user information to request state if token is present.
     """
 
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(self, request: Request, call_next: Callable[..., Any]) -> Any:
         """Authenticate the request and attach user info to request state."""
         # Try to authenticate user
         user = await get_current_user_optional(request)
@@ -526,13 +525,13 @@ __all__ = [
     "AuthenticationMiddleware",
     "TokenResponse",
     "UserClaims",
+    "_get_revocation_service",
+    "_is_production_environment",
     "create_access_token",
     "get_current_user",
     "get_current_user_optional",
     "has_jwt_secret",
     "has_jwt_verification_material",
-    "_is_production_environment",
-    "_get_revocation_service",
     "require_permission",
     "require_role",
     "require_tenant_access",

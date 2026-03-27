@@ -1,6 +1,6 @@
 """
 ACGS-2 Rate Limiting Module — [CANONICAL]
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This is the **canonical** rate limiter module for ACGS-2 (Redis-backed,
 production-grade, distributed).  New code should import from here
@@ -64,11 +64,12 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
+from typing import Any
 
 try:
     from src.core.shared.types import JSONDict
 except ImportError:
-    JSONDict = dict  # type: ignore[assignment,misc]
+    JSONDict = dict  # type: ignore[assignment]
 
 from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
@@ -105,7 +106,7 @@ TENANT_CONFIG_AVAILABLE = _module_available("src.core.shared.config")
 def _runtime_environment() -> str:
     from src.core.shared.config.runtime_environment import resolve_runtime_environment
 
-    return resolve_runtime_environment(configured_env=settings.env)
+    return str(resolve_runtime_environment(configured_env=settings.env))
 
 
 def _parse_bool_env(value: str | None) -> bool | None:
@@ -285,7 +286,7 @@ class TenantQuotaProviderProtocol:
         """Set quota for a tenant."""
         ...
 
-    def remove_quota(self, tenant_id: str) -> bool:
+    def remove_quota(self, tenant_id: str) -> bool:  # type: ignore[empty-body]
         """Remove quota for a tenant."""
         ...
 
@@ -305,7 +306,7 @@ class TenantRateLimitProvider(TenantQuotaProviderProtocol):
         self._default_window_seconds = default_window_seconds
         self._default_burst_multiplier = default_burst_multiplier
         self._use_registry = use_registry
-        self._constitutional_hash = CONSTITUTIONAL_HASH
+        self._constitutional_hash: str = CONSTITUTIONAL_HASH
 
     @classmethod
     def from_env(cls) -> "TenantRateLimitProvider":
@@ -406,7 +407,7 @@ class TokenBucket:
     tokens: float = field(init=False)
     last_refill: float = field(init=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.tokens = self.capacity
         self.last_refill = time.time()
 
@@ -471,7 +472,9 @@ class SlidingWindowRateLimiter:
         self.key_prefix = key_prefix
         self.local_windows: dict[str, list[float]] = {}
         self._lock = asyncio.Lock()
-        self._constitutional_hash = CONSTITUTIONAL_HASH
+        self._constitutional_hash: str = CONSTITUTIONAL_HASH
+        self.default_rpm: int | None = None
+        self.default_burst: int | None = None
 
     async def is_allowed(
         self,
@@ -512,7 +515,7 @@ class SlidingWindowRateLimiter:
         redis_key = f"{self.key_prefix}:{key}"
         window_start = now - window_seconds
 
-        pipe = self.redis_client.pipeline()
+        pipe = self.redis_client.pipeline()  # type: ignore[union-attr]
         pipe.zremrangebyscore(redis_key, 0, window_start)
         pipe.zcard(redis_key)
         pipe.execute_command("ZADD", redis_key, now, f"{now}")
@@ -523,7 +526,7 @@ class SlidingWindowRateLimiter:
         allowed = current_count < limit
 
         if not allowed:
-            await self.redis_client.zrem(redis_key, f"{now}")
+            await self.redis_client.zrem(redis_key, f"{now}")  # type: ignore[union-attr]
             current_count = results[1]
         else:
             current_count += 1
@@ -615,7 +618,7 @@ class RateLimitMiddleware:
 
     def __init__(
         self,
-        app,
+        app: Any,
         config: RateLimitConfig | None = None,
         tenant_quota_provider: TenantRateLimitProvider | None = None,
         redis_client: object | None = None,
@@ -627,7 +630,7 @@ class RateLimitMiddleware:
         self.limiter: SlidingWindowRateLimiter | None = None
         self._initialized = False
         self._audit_log: list[JSONDict] = []
-        self._constitutional_hash = CONSTITUTIONAL_HASH
+        self._constitutional_hash: str = CONSTITUTIONAL_HASH
 
         if not self.config.enabled:
             logger.info("Rate limiting is disabled")
@@ -693,6 +696,7 @@ class RateLimitMiddleware:
             )
 
         key = f"tenant:{tenant_id}"
+        assert self.limiter is not None, "limiter not initialized — call _ensure_initialized first"
         result = await self.limiter.is_allowed(
             key=key,
             limit=tenant_quota.effective_limit,
@@ -707,7 +711,7 @@ class RateLimitMiddleware:
             return False
         return any(path.startswith(ep) for ep in self.config.exempt_paths)
 
-    async def __call__(self, scope, receive, send):
+    async def __call__(self, scope: Any, receive: Any, send: Any) -> None:
         """ASGI interface for rate limiting middleware."""
         if scope["type"] != "http":
             await self.app(scope, receive, send)
@@ -727,7 +731,7 @@ class RateLimitMiddleware:
         # Initialize if needed — fail-closed if strict mode and backend unavailable
         try:
             await self._ensure_initialized()
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             if not self.config.fail_open:
                 logger.error(
                     "rate_limiter_backend_unavailable_strict_mode",
@@ -776,6 +780,9 @@ class RateLimitMiddleware:
                 continue
 
             key = self._build_key(request, rule)
+            assert self.limiter is not None, (
+                "limiter not initialized — call _ensure_initialized first"
+            )
             result = await self.limiter.is_allowed(
                 key, limit=rule.requests, window_seconds=rule.window_seconds
             )
@@ -799,15 +806,16 @@ class RateLimitMiddleware:
         """
         # 1. Check for tenant_id in request.state (populated by auth middleware)
         if hasattr(request.state, "tenant_id") and request.state.tenant_id:
-            return request.state.tenant_id
+            return str(request.state.tenant_id)
 
         # 2. Check for auth_claims in request.state (populated by auth middleware)
         if hasattr(request.state, "auth_claims") and request.state.auth_claims:
-            return request.state.auth_claims.get("tenant_id")
+            raw = request.state.auth_claims.get("tenant_id")
+            return str(raw) if raw is not None else None
 
         # 3. Check for user in request.state (populated by some auth middlewares)
         if hasattr(request.state, "user") and hasattr(request.state.user, "tenant_id"):
-            return request.state.user.tenant_id
+            return str(request.state.user.tenant_id)
 
         # Raw X-Tenant-ID header is intentionally not trusted — spoofable by any client.
         return None
@@ -899,7 +907,7 @@ def create_rate_limit_middleware(
     burst_limit: int = 10,
     burst_multiplier: float = 1.5,
     fail_open: bool = True,
-):
+) -> Callable[..., Any]:
     """
     Create FastAPI middleware for rate limiting.
 
@@ -915,7 +923,7 @@ def create_rate_limit_middleware(
     refill_rate = requests_per_minute / 60.0  # Convert to per second
     _burst_capacity = int(burst_limit * burst_multiplier)
 
-    async def rate_limit_middleware(request: Request, call_next):
+    async def rate_limit_middleware(request: Request, call_next: Callable[..., Any]) -> Any:
         """Apply multi-scope rate limiting (user, IP, endpoint) to each request."""
         # Extract identifiers
         client_ip = request.client.host if request.client else "unknown"
@@ -974,7 +982,7 @@ def create_rate_limit_middleware(
 # ============================================================================
 
 
-def _extract_request_from_call(args: tuple, kwargs: dict) -> Request | None:
+def _extract_request_from_call(args: tuple[Any, ...], kwargs: dict[str, Any]) -> Request | None:
     """Extract FastAPI Request from decorated endpoint call."""
     for arg in args:
         if isinstance(arg, Request):
@@ -996,17 +1004,21 @@ def _resolve_rate_limit_identifier(
 
     client_ip = request.client.host if request.client else "unknown"
     if limit_type == "user":
-        return getattr(request.state, "user_id", None) or client_ip
+        user_id: str | None = getattr(request.state, "user_id", None)
+        return str(user_id) if user_id is not None else client_ip
     if limit_type == "ip":
         return client_ip
     if limit_type == "endpoint":
-        return request.url.path
+        return str(request.url.path)
     return "global"
 
 
 def rate_limit(
-    requests_per_minute: int = 60, burst_limit: int = 10, limit_type: str = "user", key_func=None
-):
+    requests_per_minute: int = 60,
+    burst_limit: int = 10,
+    limit_type: str = "user",
+    key_func: Callable[[Request], str] | None = None,
+) -> Callable[..., Any]:
     """
     Decorator for endpoint-specific rate limiting.
 
@@ -1020,9 +1032,9 @@ def rate_limit(
         Decorator function
     """
 
-    def decorator(func):
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(func)
-        async def wrapper(*args, **kwargs):
+        async def wrapper(*args: Any, **kwargs: Any) -> Any:
             request = _extract_request_from_call(args, kwargs)
             if request is None:
                 return await func(*args, **kwargs)
@@ -1061,7 +1073,7 @@ def rate_limit(
 # ============================================================================
 
 
-def add_rate_limit_headers() -> Callable:
+def add_rate_limit_headers() -> Callable[..., Any]:
     """
     Middleware to add rate limit headers to responses.
 
@@ -1069,7 +1081,7 @@ def add_rate_limit_headers() -> Callable:
         app.add_middleware(add_rate_limit_headers())
     """
 
-    async def middleware(request: Request, call_next):
+    async def middleware(request: Request, call_next: Callable[..., Any]) -> Any:
         """Inject X-RateLimit-* headers into each response."""
         response = await call_next(request)
 
@@ -1092,7 +1104,7 @@ def add_rate_limit_headers() -> Callable:
 
 
 def configure_rate_limits(
-    redis_client=None,
+    redis_client: object | None = None,
     default_requests_per_minute: int = 60,
     default_burst_limit: int = 10,
 ) -> None:
