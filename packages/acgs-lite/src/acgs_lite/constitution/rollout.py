@@ -106,7 +106,16 @@ def _simple_decision(constitution: Constitution, action: str) -> str:
         engine = GovernanceEngine(constitution)
         result = engine.validate(action)
         return "allow" if result.valid else "deny"
-    except (ImportError, ValueError, TypeError, RuntimeError, AttributeError):
+    except (
+        ImportError,
+        ValueError,
+        TypeError,
+        RuntimeError,
+        AttributeError,
+    ):
+        return "deny"
+    except Exception:
+        # ConstitutionalViolationError (Rust fast path raises on deny)
         return "deny"
 
 

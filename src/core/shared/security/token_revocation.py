@@ -369,12 +369,12 @@ class TokenRevocationService:
 
         except (ConnectionError, TimeoutError, OSError) as e:
             return self._handle_revocation_backend_error(user_id, e)
-        except (ValueError, TypeError) as e:
+        except (ValueError, TypeError, AttributeError) as e:
             logger.error(
                 f"[{CONSTITUTIONAL_HASH}] Invalid revocation timestamp for user: {user_id} - {e}"
             )
             return False
-        except (ValueError, TypeError, RuntimeError) as e:
+        except RuntimeError as e:
             logger.error(
                 f"[{CONSTITUTIONAL_HASH}] Unexpected error checking user revocation: {user_id} - {e}"
             )
