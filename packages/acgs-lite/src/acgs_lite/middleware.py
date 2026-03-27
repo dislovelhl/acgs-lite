@@ -230,7 +230,7 @@ class GovernanceASGIMiddleware:
 
             if text.strip():
                 self.engine.validate(text, agent_id=agent_id)
-        except Exception as e:
+        except (ValueError, TypeError, RuntimeError) as e:
             logger.debug("Governance middleware validation error: %s", e)
 
     def _validate_output(self, text: str) -> None:
@@ -247,7 +247,7 @@ class GovernanceASGIMiddleware:
                         "HTTP response governance violations: %s",
                         [v.rule_id for v in result.violations],
                     )
-        except Exception as e:
+        except (ValueError, TypeError, RuntimeError) as e:
             logger.debug("Governance middleware output validation error: %s", e)
 
     @property
@@ -319,7 +319,7 @@ class GovernanceWSGIMiddleware:
                             text[:2000],
                             agent_id=f"{self.agent_id}:request",
                         )
-                except Exception as e:
+                except (ValueError, TypeError, RuntimeError) as e:
                     logger.debug("WSGI governance validation error: %s", e)
 
         # Add governance headers to response

@@ -250,7 +250,7 @@ class MemoizedConstitution:
 
             engine = GovernanceEngine(self._constitution)
             result: dict[str, Any] = engine.validate(action, context=ctx).to_dict()
-        except Exception:
+        except (ImportError, ValueError, TypeError, RuntimeError, AttributeError):
             # Fallback: use explain() which always works
             result = self._constitution.explain(action)
 
@@ -368,7 +368,7 @@ class MemoizedConstitution:
             try:
                 self.validate(action, ctx)
                 warmed += 1
-            except Exception as exc:
+            except (ValueError, TypeError, RuntimeError) as exc:
                 errors.append((action, str(exc)))
 
         return {

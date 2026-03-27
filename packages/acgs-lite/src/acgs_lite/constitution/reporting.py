@@ -169,7 +169,7 @@ def health_score(constitution: Constitution) -> dict[str, Any]:
         num_conflicts = len(conflicts.get("conflicts", []))
         # Penalty: each conflict costs 0.1, floor at 0
         conflict_freedom = max(0.0, 1.0 - num_conflicts * 0.1)
-    except Exception:
+    except (AttributeError, TypeError, RuntimeError):
         conflict_freedom = 1.0  # can't assess — assume clean
 
     # 4. Dependency soundness: fraction of depends_on refs that resolve

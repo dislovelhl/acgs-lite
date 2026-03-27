@@ -54,7 +54,7 @@ class AccessCondition:
     def evaluate(self, context: dict[str, Any]) -> bool:
         try:
             return self.predicate(context)
-        except Exception:
+        except (ValueError, TypeError, KeyError, AttributeError):
             return False
 
 

@@ -1441,7 +1441,7 @@ class GovernanceEngine(BatchValidationMixin):
                     if violations is None:
                         violations = []  # noqa: E701
                     violations.extend(custom_violations)
-                except Exception as e:
+                except (ValueError, TypeError, RuntimeError) as e:
                     if violations is None:
                         violations = []  # noqa: E701
                     violations.append(

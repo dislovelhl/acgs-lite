@@ -206,5 +206,5 @@ class PolicySandbox:
             if hasattr(result, "decision"):
                 decision = result.decision
             return {"decision": decision, "violations": violations}
-        except Exception:
+        except (ValueError, TypeError, RuntimeError, AttributeError):
             return {"decision": "deny", "violations": ["EXCEPTION"]}

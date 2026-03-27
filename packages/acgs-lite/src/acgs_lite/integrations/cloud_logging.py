@@ -164,7 +164,7 @@ class CloudLoggingAuditExporter:
         for entry in entries:
             try:
                 self.export_entry(entry)
-            except Exception:
+            except (ConnectionError, TimeoutError, OSError, RuntimeError):
                 logger.error(
                     "Failed to export audit entry %s to Cloud Logging",
                     entry.id,

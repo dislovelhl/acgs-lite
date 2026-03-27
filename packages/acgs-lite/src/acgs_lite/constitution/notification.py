@@ -145,7 +145,7 @@ class GovernanceNotificationBus:
                     subscriber_name=sub.name,
                     status=DeliveryStatus.DELIVERED,
                 )
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 — subscriber callbacks are user-supplied and may raise anything
                 record = DeliveryRecord(
                     notification_id=notification.notification_id,
                     subscriber_name=sub.name,

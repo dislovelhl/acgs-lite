@@ -919,7 +919,7 @@ class TestCmdObserve:
         cmd_init(parser.parse_args(["init", "--force"]))
         capsys.readouterr()
 
-        with patch("acgs_lite.cli._post_otlp_json", return_value=202) as mock_post:
+        with patch("acgs_lite.commands.observe._post_otlp_json", return_value=202) as mock_post:
             rc = cmd_otel(
                 parser.parse_args([
                     "otel",

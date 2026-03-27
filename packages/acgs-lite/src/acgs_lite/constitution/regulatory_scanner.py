@@ -363,7 +363,7 @@ class RegulatoryHorizonScanner:
                     rid = getattr(rule, "id", None) or getattr(rule, "rule_id", str(rule))
                     if isinstance(rid, str):
                         rule_ids_in_constitution.add(rid)
-            except Exception:
+            except (TypeError, AttributeError):
                 pass
 
         total_reqs = 0
