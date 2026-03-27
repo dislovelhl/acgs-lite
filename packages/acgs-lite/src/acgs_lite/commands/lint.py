@@ -16,7 +16,8 @@ def add_parser(sub: argparse._SubParsersAction) -> None:
     """Register the lint subcommand."""
     p = sub.add_parser("lint", help="Lint governance rules for quality issues")
     p.add_argument(
-        "rules", nargs="?", default="rules.yaml", help="Path to rules YAML file (default: rules.yaml)"
+        "rules", nargs="?", default="rules.yaml",
+        help="Path to rules YAML file (default: rules.yaml)",
     )
 
 

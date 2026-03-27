@@ -41,7 +41,9 @@ from acgs_lite.commands import (
     test_cmd,
 )
 from acgs_lite.commands._helpers import cli_bar as _cli_bar  # noqa: F401
-from acgs_lite.commands._helpers import load_system_description as _load_system_description  # noqa: F401
+from acgs_lite.commands._helpers import (
+    load_system_description as _load_system_description,  # noqa: F401
+)
 from acgs_lite.commands.observe import _post_otlp_json  # noqa: F401
 from acgs_lite.licensing import (
     LicenseError,

@@ -52,7 +52,8 @@ def add_parser(sub: argparse._SubParsersAction) -> None:
     )
     p.add_argument("--rules", default="rules.yaml", help="Path to rules YAML (default: rules.yaml)")
     p.add_argument(
-        "--tag", action="append", default=None, help="Filter by tag (repeatable: --tag pii --tag regression)"
+        "--tag", action="append", default=None,
+        help="Filter by tag (repeatable: --tag pii --tag regression)",
     )
     p.add_argument("--generate", action="store_true", help="Generate example test fixtures")
     p.add_argument("--force", action="store_true", help="Overwrite existing fixtures file")
