@@ -32,6 +32,7 @@ enhanced_agent_bus/
 ## Testing
 
 ```bash
+make test-bus  # shortcut
 python -m pytest packages/enhanced_agent_bus/tests/ -v --import-mode=importlib
 python -m pytest packages/enhanced_agent_bus/tests/ -m "not slow" -v --import-mode=importlib
 ```

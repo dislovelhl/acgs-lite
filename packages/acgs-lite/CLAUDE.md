@@ -40,6 +40,7 @@ rust/
 ## Testing
 
 ```bash
+make test-lite  # shortcut
 python -m pytest packages/acgs-lite/tests/ -v --import-mode=importlib
 cd packages/acgs-lite/rust && maturin develop --release
 ```

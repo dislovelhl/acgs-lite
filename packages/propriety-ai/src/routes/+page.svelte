@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { asset, resolve } from '$app/paths';
 	import { Canvas } from '@threlte/core';
 	import TrustCrystal from '$lib/components/TrustCrystal.svelte';
 
@@ -277,16 +277,18 @@
 		<div class="fade-in mb-12 text-center" use:observe>
 			<p class="mb-4 font-mono text-xs tracking-[0.3em] text-fg-muted">GOVERNANCE WATCH</p>
 		</div>
-		<div class="fade-in aspect-video w-full overflow-hidden rounded-xl border border-border/50 shadow-2xl" use:observe>
-			<iframe
-				src="https://www.youtube.com/embed/uWacmC3CbYg?rel=0&modestbranding=1"
-				title="ACGS — Governance Watch & Constitutional AI"
-				frameborder="0"
-				allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-				allowfullscreen
-				class="h-full w-full"
-				loading="lazy"
-			></iframe>
+		<div class="fade-in aspect-video w-full overflow-hidden rounded-xl border border-border/50 shadow-2xl bg-black" use:observe>
+			<video
+				src={asset('/acgs-intro.mp4')}
+				poster="https://img.youtube.com/vi/uWacmC3CbYg/maxresdefault.jpg"
+				preload="metadata"
+				controls
+				class="h-full w-full object-cover"
+				aria-label="ACGS — Governance Watch & Constitutional AI Demo"
+			>
+				<track kind="captions" />
+				Your browser does not support the video tag.
+			</video>
 		</div>
 	</div>
 </section>

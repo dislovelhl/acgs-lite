@@ -25,9 +25,6 @@ Constitutional hash: `608508a9bd224290` — the SHA-256 of the default constitut
 used as both `Constitution.default().hash` and the platform constant in
 `src/core/shared/constants.py`.
 
-Primary languages: Python first, TypeScript second, Rust for hot paths, Markdown for operating
-docs.
-
 ### When to Use Rust
 
 Use Rust when the change is clearly CPU-bound, latency-sensitive, or benefits from stronger type
@@ -55,6 +52,7 @@ make cov-html
 python -m pytest packages/acgs-lite/tests/ -v --import-mode=importlib
 python -m pytest packages/enhanced_agent_bus/tests/ -v --import-mode=importlib
 python -m pytest src/core/services/api_gateway/tests/ -v --import-mode=importlib
+python -m pytest src/core/shared/security/tests/ -v --import-mode=importlib
 
 # Code quality
 make lint
@@ -74,30 +72,6 @@ Notes:
 - `make test` and `make test-quick` also run `packages/propriety-ai` npm test scripts.
 - `make lint` runs Ruff across the repo, scoped MyPy checks, and the frontend type/lint checks.
 
-## Codex CLI
-
-Use Codex from the repository root:
-
-```bash
-codex -C /home/martin/Documents/acgs-clean --sandbox workspace-write --ask-for-approval on-request
-
-codex exec -C /home/martin/Documents/acgs-clean --sandbox workspace-write --full-auto \
-  "Fix failing imports in enhanced_agent_bus and run make test-quick"
-
-codex exec -C /home/martin/Documents/acgs-clean --json \
-  "Run make lint and summarize errors with file:line references"
-```
-
-Preferred defaults:
-- `--sandbox workspace-write`
-- `--ask-for-approval on-request`
-- `--full-auto` only for bounded, non-destructive tasks
-- `--model gpt-5.4` for governance/security-critical changes
-- `--model gpt-5.3-codex` for broad refactors and mechanical fixes
-
-Avoid:
-- `--dangerously-bypass-approvals-and-sandbox`
-- Running Codex outside repo root
 
 ## Evals
 
@@ -162,29 +136,21 @@ availability flags. Follow the existing fallback pattern when adding new optiona
 
 ## Conventions
 
-- Python 3.11+ at the repo level; `acgs-lite` itself supports Python 3.10+.
-- Use `X | Y` unions and explicit type annotations.
-- Use `async def` for I/O code.
-- Use `structlog`, not `print()`, in production paths.
-- Use Pydantic models at API boundaries.
-- Import `Priority` from `enhanced_agent_bus.models`; avoid deprecated or compatibility aliases in
-  new code.
+See `.claude/rules/code-style.md` for always-on style rules (loaded automatically).
+
+Additional notes not covered by rules:
 - `make lint` uses a scoped MyPy invocation; package-level MyPy settings still exist in individual
   `pyproject.toml` files.
+- Token revocation state lives in both `auth.py` and `auth_dependency.py` —
+  `configure_revocation_service()` and `shutdown_revocation_service()` must sync both modules'
+  `_revocation_service` caches.
 
 ## Testing
 
-After any code changes, run the full test suite before committing. Never commit with failing
-tests. If tests fail, fix them before proceeding. At session start, establish a test baseline
-before making changes so pre-existing failures are visible.
+See `.claude/rules/testing.md` for always-on testing rules (loaded automatically).
 
-Use `python -m pytest ... --import-mode=importlib` for repository-level runs.
-
-Root pytest markers:
-`unit`, `integration`, `slow`, `constitutional`, `benchmark`, `governance`, `security`, `maci`,
-`chaos`, `pqc`, `compliance`, `e2e`, `postgres`, `pqc_deprecation`
-
-Package-level `pyproject.toml` files define additional markers where needed.
+At session start, establish a test baseline before making changes so pre-existing failures
+are visible. Package-level `pyproject.toml` files define additional markers where needed.
 
 ## Refactoring Guidelines
 
@@ -206,6 +172,8 @@ tests for its scoped module before returning. Revert the entire agent's work if 
 
 ## Git Workflow
 
+See `.claude/rules/git-workflow.md` for always-on git rules (loaded automatically).
+
 When making git commits, check `git status` and `git log --oneline -5` first to see if
 sub-agents have already committed changes. Do not stage/unstage repeatedly — verify state
 once, then commit. Only one process should manage git state at a time.
@@ -225,15 +193,7 @@ removing load-bearing content.
 
 ## Environment
 
-- Root `conftest.py` sets default test env values including `ACGS2_SERVICE_SECRET`.
 - PM2 service env is defined in `ecosystem.config.cjs`.
-- Root coverage threshold is `fail_under = 70`.
-- `packages/enhanced_agent_bus/pyproject.toml` raises coverage threshold to `80` for that package.
-
-## Pre-commit Hooks
-
-`make setup` installs pre-commit hooks and frontend dependencies. Expect formatting and secret
-checks to run on commit.
 
 ## Sub-Package Instructions
 
@@ -242,50 +202,7 @@ guidance.
 
 ## gstack
 
-gstack is vendored as a git submodule at `.claude/skills/gstack/`. Skill symlinks in
-`.claude/skills/` point into it. Use the `/browse` skill from gstack for all web browsing.
-Never use `mcp__claude-in-chrome__*` tools directly.
-
-**Teammate setup** (after clone):
-
-```bash
-git submodule update --init .claude/skills/gstack
-cd .claude/skills/gstack && ./setup
-```
-
-**Available skills:**
-
-| Skill | Purpose |
-| ----- | ------- |
-| `/office-hours` | Async Q&A and guidance sessions |
-| `/plan-ceo-review` | Executive-level plan review |
-| `/plan-eng-review` | Engineering plan review |
-| `/plan-design-review` | Design plan review |
-| `/design-consultation` | Design consultation and feedback |
-| `/review` | Code and content review |
-| `/ship` | Ship a change end-to-end |
-| `/land-and-deploy` | Land a PR and trigger deployment |
-| `/canary` | Canary release management |
-| `/benchmark` | Performance benchmarking |
-| `/browse` | Web browsing (use this, not chrome MCP tools) |
-| `/qa` | Full QA pass |
-| `/qa-only` | QA without setup steps |
-| `/design-review` | Design artifact review |
-| `/setup-browser-cookies` | Configure browser auth cookies |
-| `/setup-deploy` | Configure deployment targets |
-| `/retro` | Retrospective facilitation |
-| `/investigate` | Deep investigation / root cause analysis |
-| `/document-release` | Generate release documentation |
-| `/autoplan` | Automated planning |
-| `/cso` | Chief Security Officer review |
-| `/careful` | High-caution mode for risky changes |
-| `/freeze` | Freeze deploys / change freeze |
-| `/guard` | Guard rails enforcement |
-| `/unfreeze` | Lift a deploy or change freeze |
-| `/gstack-upgrade` | Upgrade gstack itself |
-
-**If gstack skills aren't working**, rebuild the binary and re-register skills:
-
-```bash
-cd .claude/skills/gstack && ./setup
-```
+gstack is vendored as a git submodule at `.claude/skills/gstack/`. Use `/browse` for all web
+browsing — never use `mcp__claude-in-chrome__*` tools directly. Run `cd .claude/skills/gstack
+&& ./setup` after clone or if skills stop working. See `.claude/skills/gstack/CLAUDE.md` for
+the full skill list.
