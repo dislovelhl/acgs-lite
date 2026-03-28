@@ -86,9 +86,11 @@ class TestGitHubHTTPTimeout:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("httpx.AsyncClient", return_value=mock_client):
-            with pytest.raises(httpx.TimeoutException):
-                await bot._get("pulls/1")
+        with (
+            patch("httpx.AsyncClient", return_value=mock_client),
+            pytest.raises(httpx.TimeoutException),
+        ):
+            await bot._get("pulls/1")
 
     @pytest.mark.asyncio
     async def test_post_raises_on_timeout(self, bot: Any) -> None:
@@ -100,9 +102,11 @@ class TestGitHubHTTPTimeout:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("httpx.AsyncClient", return_value=mock_client):
-            with pytest.raises(httpx.TimeoutException):
-                await bot._post("issues/1/comments", {"body": "test"})
+        with (
+            patch("httpx.AsyncClient", return_value=mock_client),
+            pytest.raises(httpx.TimeoutException),
+        ):
+            await bot._post("issues/1/comments", {"body": "test"})
 
     @pytest.mark.asyncio
     async def test_validate_pr_raises_on_timeout(self, bot: Any) -> None:
@@ -114,9 +118,11 @@ class TestGitHubHTTPTimeout:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("httpx.AsyncClient", return_value=mock_client):
-            with pytest.raises(httpx.TimeoutException):
-                await bot.validate_pull_request(pr_number=42)
+        with (
+            patch("httpx.AsyncClient", return_value=mock_client),
+            pytest.raises(httpx.TimeoutException),
+        ):
+            await bot.validate_pull_request(pr_number=42)
 
 
 # ===========================================================================
@@ -151,9 +157,11 @@ class TestNotificationHTTPTimeout:
         notifier = SlackNotifier(webhook_url="https://hooks.slack.com/test")
         event = _make_event()
 
-        with patch("httpx.AsyncClient", return_value=self._timeout_client()):
-            with pytest.raises(httpx.TimeoutException):
-                await notifier.send(event)
+        with (
+            patch("httpx.AsyncClient", return_value=self._timeout_client()),
+            pytest.raises(httpx.TimeoutException),
+        ):
+            await notifier.send(event)
 
     @pytest.mark.asyncio
     async def test_teams_send_raises_on_timeout(self) -> None:
@@ -165,9 +173,11 @@ class TestNotificationHTTPTimeout:
         notifier = TeamsNotifier(webhook_url="https://outlook.office.com/webhook/test")
         event = _make_event()
 
-        with patch("httpx.AsyncClient", return_value=self._timeout_client()):
-            with pytest.raises(httpx.TimeoutException):
-                await notifier.send(event)
+        with (
+            patch("httpx.AsyncClient", return_value=self._timeout_client()),
+            pytest.raises(httpx.TimeoutException),
+        ):
+            await notifier.send(event)
 
     @pytest.mark.asyncio
     async def test_webhook_send_raises_on_timeout(self) -> None:
@@ -179,15 +189,15 @@ class TestNotificationHTTPTimeout:
         notifier = WebhookNotifier(url="https://my-siem.example.com/events")
         event = _make_event()
 
-        with patch("httpx.AsyncClient", return_value=self._timeout_client()):
-            with pytest.raises(httpx.TimeoutException):
-                await notifier.send(event)
+        with (
+            patch("httpx.AsyncClient", return_value=self._timeout_client()),
+            pytest.raises(httpx.TimeoutException),
+        ):
+            await notifier.send(event)
 
     @pytest.mark.asyncio
     async def test_router_counts_timeout_as_failure(self) -> None:
         """NotificationRouter records a channel timeout as a failure, not a crash."""
-        import httpx
-
         from acgs_lite.integrations.notifications import (
             NotificationRouter,
             SlackNotifier,
@@ -264,7 +274,6 @@ class TestNotificationRouterThreadSafety:
         from acgs_lite.integrations.notifications import NotificationRouter
 
         call_count = 0
-        lock = asyncio.Lock()
 
         class _AlternatingChannel:
             @property
