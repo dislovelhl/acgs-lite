@@ -333,54 +333,25 @@ class TestLicenseManager:
 
 
 @pytest.mark.unit
-class TestEuAiActGating:
-    def test_article12_blocked_on_free(self) -> None:
-        from acgs_lite.eu_ai_act import Article12Logger
+class TestEuAiActNoGating:
+    """EU AI Act classes are now ungated (Apache-2.0, no tier enforcement)."""
 
-        with pytest.raises(LicenseError, match="requires acgs-lite Pro"):
-            Article12Logger(system_id="test")
-
-    def test_article12_allowed_on_pro(self, pro_key: str) -> None:
-        LicenseManager().set_license(pro_key)
+    def test_article12_accessible_without_license(self) -> None:
         from acgs_lite.eu_ai_act import Article12Logger
 
         logger = Article12Logger(system_id="test")
         assert logger is not None
 
-    def test_risk_classifier_blocked_on_free(self) -> None:
-        from acgs_lite.eu_ai_act import RiskClassifier
-
-        with pytest.raises(LicenseError):
-            RiskClassifier()
-
-    def test_risk_classifier_allowed_on_pro(self, pro_key: str) -> None:
-        LicenseManager().set_license(pro_key)
+    def test_risk_classifier_accessible_without_license(self) -> None:
         from acgs_lite.eu_ai_act import RiskClassifier
 
         classifier = RiskClassifier()
         assert classifier is not None
 
-    def test_transparency_blocked_on_pro(self, pro_key: str) -> None:
-        LicenseManager().set_license(pro_key)
+    def test_transparency_accessible_without_license(self) -> None:
         from acgs_lite.eu_ai_act import TransparencyDisclosure
 
-        with pytest.raises(LicenseError, match="TEAM"):
-            TransparencyDisclosure(  # type: ignore[call-arg]
-                system_id="test",
-                system_name="Test",
-                provider="Test",
-                intended_purpose="Test",
-                capabilities=[],
-                limitations=[],
-                human_oversight_measures=[],
-                contact_email="test@example.com",
-            )
-
-    def test_transparency_allowed_on_team(self, team_key: str) -> None:
-        LicenseManager().set_license(team_key)
-        from acgs_lite.eu_ai_act import TransparencyDisclosure
-
-        td = TransparencyDisclosure(  # type: ignore[call-arg]
+        td = TransparencyDisclosure(
             system_id="test",
             system_name="Test",
             provider="Test",
@@ -392,46 +363,17 @@ class TestEuAiActGating:
         )
         assert td is not None
 
-    def test_human_oversight_blocked_on_pro(self, pro_key: str) -> None:
-        LicenseManager().set_license(pro_key)
-        from acgs_lite.eu_ai_act import HumanOversightGateway
-
-        with pytest.raises(LicenseError, match="TEAM"):
-            HumanOversightGateway(system_id="test")
-
-    def test_human_oversight_allowed_on_team(self, team_key: str) -> None:
-        LicenseManager().set_license(team_key)
+    def test_human_oversight_accessible_without_license(self) -> None:
         from acgs_lite.eu_ai_act import HumanOversightGateway
 
         gw = HumanOversightGateway(system_id="test")
         assert gw is not None
 
-    def test_enterprise_has_all_features(self, enterprise_key: str) -> None:
+    def test_enterprise_key_validation_still_works(self, enterprise_key: str) -> None:
         info = validate_license_key(enterprise_key, SECRET)
         assert info.has_tier(Tier.PRO)
         assert info.has_tier(Tier.TEAM)
         assert info.has_tier(Tier.ENTERPRISE)
-        features = info.features
-        assert any("Priority support" in f for f in features)
-
-    def test_check_license_free_returns_no_features(self) -> None:
-        from acgs_lite.eu_ai_act import check_license
-
-        result = check_license()
-        assert result["tier"] == "FREE"
-        assert result["pro_features"] is False
-        assert result["available_classes"] == []
-
-    def test_check_license_pro_has_pro_classes(self, pro_key: str) -> None:
-        LicenseManager().set_license(pro_key)
-        from acgs_lite.eu_ai_act import check_license
-
-        result = check_license()
-        assert result["tier"] == "PRO"
-        assert result["pro_features"] is True
-        assert result["team_features"] is False
-        assert "Article12Logger" in result["available_classes"]
-        assert "TransparencyDisclosure" not in result["available_classes"]
 
 
 # ---------------------------------------------------------------------------
