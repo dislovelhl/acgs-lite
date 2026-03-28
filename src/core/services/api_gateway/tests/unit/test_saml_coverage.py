@@ -8,6 +8,7 @@ All SAML handler interactions are mocked — no real IdP required.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import ClassVar
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -380,7 +381,7 @@ class TestSAMLACS:
 class TestSAMLSLS:
     """GET/POST /sso/saml/sls (Single Logout Service)"""
 
-    _USER_SESSION = {
+    _USER_SESSION: ClassVar[dict[str, object]] = {
         "user": {
             "id": "uid-1",
             "provider": "okta",
@@ -462,7 +463,7 @@ class TestSAMLSLS:
 class TestSAMLLogout:
     """POST /sso/saml/logout"""
 
-    _USER_SESSION = {
+    _USER_SESSION: ClassVar[dict[str, object]] = {
         "user": {
             "id": "uid-1",
             "provider": "okta",

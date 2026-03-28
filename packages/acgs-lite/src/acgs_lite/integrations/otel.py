@@ -260,7 +260,7 @@ class GovernanceMetrics:
                 self._validation_count += 1
 
                 if result is not None:
-                    for v in result.violations:
+                    for _v in result.violations:
                         self._violation_count += 1
 
             decision = "deny" if raised or (result is not None and not result.valid) else "allow"

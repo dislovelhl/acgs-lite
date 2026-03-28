@@ -18,7 +18,7 @@ import types
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 # ---------------------------------------------------------------------------
 # Stub the missing CouncilConsensusToken model before importing pqc_phase5
@@ -48,13 +48,13 @@ for _partial in (
 sys.modules["src.core.tools.pqc_migration.phase5.models"] = _phase5_models_mod
 
 # Now safe to import the module under test.
-from src.core.services.api_gateway.routes.pqc_phase5 import (  # noqa: E402
+from src.core.services.api_gateway.routes.pqc_phase5 import (
     PQCOnlyModeStatusResponse,
     _get_redis,
     _opa_allow,
     pqc_phase5_router,
 )
-from src.core.shared.security.auth import UserClaims  # noqa: E402
+from src.core.shared.security.auth import UserClaims
 
 # ---------------------------------------------------------------------------
 # Shared helpers
@@ -103,7 +103,6 @@ def _build_app(
     async def _fake_role_dep() -> UserClaims:
         return user  # type: ignore[return-value]
 
-    from src.core.shared.security.auth import require_role as real_require_role
 
     app.include_router(pqc_phase5_router)
 

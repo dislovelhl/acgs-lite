@@ -16,8 +16,6 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from typing import Any
 
-log = logging.getLogger(__name__)
-
 from .rust import _HAS_AHO, _HAS_RUST
 
 # Optional Aho-Corasick C extension for O(n) keyword scanning
@@ -51,6 +49,8 @@ from .types import (
     _NoopRecorder,
     _request_counter,
 )
+
+log = logging.getLogger(__name__)
 
 
 class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):

@@ -1,7 +1,22 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { asset } from '$app/paths';
 	import { Canvas } from '@threlte/core';
 	import TrustCrystal from '$lib/components/TrustCrystal.svelte';
+
+	type ResourceItem = {
+		title: string;
+		subtitle: string;
+		description: string;
+		file: string;
+		href: string;
+		type: string;
+		poster?: string;
+	};
+
+	type ResourceGroup = {
+		category: string;
+		items: ResourceItem[];
+	};
 
 	function observe(node: HTMLElement) {
 		if (typeof IntersectionObserver === 'undefined') {
@@ -21,7 +36,7 @@
 		return { destroy: () => observer.disconnect() };
 	}
 
-	const resources = [
+	const resources: ResourceGroup[] = [
 		{
 			category: 'Videos',
 			items: [
@@ -30,16 +45,21 @@
 					subtitle: 'Engineering HTTPS for AI',
 					description: 'A deep dive into the technical implementation of executable constitutional governance.',
 					file: 'acgs-intro.mp4',
-					type: 'Video (MP4)'
+					href: asset('/acgs-intro.mp4'),
+					type: 'Video (MP4)',
+					poster: 'https://img.youtube.com/vi/uWacmC3CbYg/maxresdefault.jpg'
 				},
 				{
 					title: 'Architecting Constraints',
 					subtitle: 'Building the MACI Governance System',
 					description: 'Exploring the Montesquieu-Inspired architecture for multi-agent separation of powers.',
 					file: 'acgs-maci.mp4',
-					type: 'Video (MP4)'
+					href: asset('/acgs-maci.mp4'),
+					type: 'Video (MP4)',
+					poster: 'https://img.youtube.com/vi/do9BCPn29_Q/maxresdefault.jpg'
 				}
 			]
+
 		},
 		{
 			category: 'Presentations',
@@ -49,6 +69,7 @@
 					subtitle: 'Hash Chains & Audit Integrity',
 					description: 'Technical overview of the SHA-256 tamper-evident audit ledger and constitutional binding.',
 					file: 'acgs-crypto.pptx',
+					href: asset('/acgs-crypto.pptx'),
 					type: 'Presentation (PPTX)'
 				},
 				{
@@ -56,6 +77,7 @@
 					subtitle: 'Alignment through Infrastructure',
 					description: 'Strategic vision for the transition from model-centric to system-centric AI safety.',
 					file: 'acgs-trust.pptx',
+					href: asset('/acgs-trust.pptx'),
 					type: 'Presentation (PPTX)'
 				}
 			]
@@ -112,12 +134,28 @@
 									{item.description}
 								</p>
 
+								{#if item.type.includes('Video')}
+									<div class="mt-8 aspect-video w-full overflow-hidden rounded-xl border border-border/40 bg-black">
+										<video
+											src={item.href}
+											poster={item.poster}
+											preload="metadata"
+											controls
+											class="h-full w-full object-cover"
+										>
+											<track kind="captions" />
+										</video>
+									</div>
+								{/if}
+
+								<!-- eslint-disable svelte/no-navigation-without-resolve -- download link, not SPA navigation -->
 								<a
-									href={resolve(`/${item.file}`)}
+									href={item.href}
 									download={item.file}
 									class="mt-10 inline-flex items-center justify-between w-full rounded-lg border border-border/60 bg-transparent px-6 py-4 font-mono text-xs tracking-widest uppercase transition-all duration-300 hover:bg-white hover:text-black hover:border-white"
 								>
-									Download Resource
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
+									{item.type.includes('Video') ? 'Download High Quality' : 'Download Resource'}
 									<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
 									</svg>

@@ -27,6 +27,7 @@ mlruns/
 .codex_write_check
 
 # AI agent / coding-assistant dev stacks (local tooling, not project source)
+.context/
 .gstack/
 .openclaw/
 .agents/
