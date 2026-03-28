@@ -9,7 +9,7 @@ import os
 import uuid
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import jwt
 from fastapi import Depends, HTTPException, Request, params
@@ -23,6 +23,9 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.errors.exceptions import ConfigurationError
 from src.core.shared.security.key_loader import load_key_material
 from src.core.shared.structured_logging import get_logger
+
+if TYPE_CHECKING:
+    from src.core.shared.security.token_revocation import TokenRevocationService
 
 logger = get_logger(__name__)
 
@@ -198,11 +201,31 @@ def _is_production_environment() -> bool:
 _NON_PRODUCTION_ENVS = frozenset({"development", "dev", "test", "testing", "local", "ci"})
 
 # Module-level revocation service cache (lazy-initialized from REDIS_URL env var)
-_revocation_service: object | None = None
+_revocation_service: "TokenRevocationService | None" = None
 _revocation_service_initialized: bool = False
 
 
-def _get_revocation_service() -> object | None:
+def _configured_revocation_redis_url() -> str | None:
+    """Return the configured Redis URL for token revocation, if any."""
+    return os.getenv("REDIS_URL") or os.getenv("TOKEN_REVOCATION_REDIS_URL")
+
+
+def _cache_revocation_service(
+    service: "TokenRevocationService | None",
+) -> "TokenRevocationService | None":
+    """Persist a Redis-backed revocation service for subsequent requests."""
+    global _revocation_service, _revocation_service_initialized
+
+    if service is None or not bool(getattr(service, "_use_redis", True)):
+        _revocation_service = None
+        return None
+
+    _revocation_service = service
+    _revocation_service_initialized = True
+    return service
+
+
+def _get_revocation_service() -> "TokenRevocationService | None":
     """Return the active TokenRevocationService, initialising lazily if REDIS_URL is set.
 
     The service is initialised at most once per process.  If initialisation fails
@@ -218,7 +241,7 @@ def _get_revocation_service() -> object | None:
     if _revocation_service_initialized:
         return _revocation_service
 
-    redis_url = os.getenv("REDIS_URL") or os.getenv("TOKEN_REVOCATION_REDIS_URL")
+    redis_url = _configured_revocation_redis_url()
     if not redis_url:
         return None
 
@@ -236,20 +259,63 @@ def _get_revocation_service() -> object | None:
 
         loop = asyncio.new_event_loop()
         try:
-            _revocation_service = loop.run_until_complete(
-                create_token_revocation_service(redis_url)
-            )
+            service = loop.run_until_complete(create_token_revocation_service(redis_url))
         finally:
             loop.close()
 
-        if _revocation_service is None or not getattr(_revocation_service, "_use_redis", True):
-            _revocation_service = None
-            return None
-
-        _revocation_service_initialized = True
-        return _revocation_service
+        return _cache_revocation_service(service)
     except (ImportError, ConnectionError, TimeoutError, OSError, ValueError, RuntimeError):
         return None
+
+
+async def _get_revocation_service_async() -> "TokenRevocationService | None":
+    """Return the revocation service, initializing it inside async request flows when needed."""
+    revocation_service = _get_revocation_service()
+    if revocation_service is not None or _revocation_service_initialized:
+        return revocation_service
+
+    redis_url = _configured_revocation_redis_url()
+    if not redis_url:
+        return None
+
+    try:
+        from src.core.shared.security.token_revocation import create_token_revocation_service
+
+        service = await create_token_revocation_service(redis_url)
+    except (ImportError, ConnectionError, TimeoutError, OSError, ValueError, RuntimeError):
+        return None
+
+    return _cache_revocation_service(service)
+
+
+async def _check_token_revocation(claims: UserClaims) -> None:
+    """Fail closed in production when revocation cannot be enforced."""
+    is_production = _is_production_environment()
+    revocation_service = await _get_revocation_service_async()
+    if is_production and revocation_service is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Revocation service unavailable — cannot authenticate in production",
+        )
+
+    if revocation_service is None:
+        return
+
+    try:
+        if await revocation_service.is_token_revoked(claims.jti):
+            raise HTTPException(status_code=401, detail="Token has been revoked")
+    except HTTPException:
+        raise
+    except Exception as err:
+        if is_production:
+            raise HTTPException(
+                status_code=503,
+                detail="Revocation check failed — cannot authenticate in production",
+            ) from err
+        logger.warning(
+            "Revocation check failed in non-production — allowing request: %s",
+            type(err).__name__,
+        )
 
 
 def create_access_token(
@@ -381,31 +447,7 @@ async def get_current_user(
 
     claims = verify_token(credentials.credentials)
 
-    # Fail-closed revocation check: in production, a missing revocation service
-    # is a configuration error — deny the request rather than silently skipping.
-    revocation_service = _get_revocation_service()
-    if _is_production_environment() and revocation_service is None:
-        raise HTTPException(
-            status_code=503,
-            detail="Revocation service unavailable — cannot authenticate in production",
-        )
-
-    if revocation_service is not None:
-        try:
-            if await revocation_service.is_token_revoked(claims.jti):  # type: ignore[attr-defined]
-                raise HTTPException(status_code=401, detail="Token has been revoked")
-        except HTTPException:
-            raise
-        except Exception as err:
-            if _is_production_environment():
-                raise HTTPException(
-                    status_code=503,
-                    detail="Revocation check failed — cannot authenticate in production",
-                ) from err
-            logger.warning(
-                "Revocation check failed in non-production — allowing request: %s",
-                type(err).__name__,
-            )
+    await _check_token_revocation(claims)
 
     return claims
 
@@ -435,8 +477,12 @@ async def get_current_user_optional(
         return None
 
     try:
-        return verify_token(token)
-    except HTTPException:
+        claims = verify_token(token)
+        await _check_token_revocation(claims)
+        return claims
+    except HTTPException as exc:
+        if exc.status_code >= 500:
+            raise
         return None
 
 
