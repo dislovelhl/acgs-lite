@@ -175,7 +175,8 @@ availability flags. Follow the existing fallback pattern when adding new optiona
 ## Testing
 
 After any code changes, run the full test suite before committing. Never commit with failing
-tests. If tests fail, fix them before proceeding.
+tests. If tests fail, fix them before proceeding. At session start, establish a test baseline
+before making changes so pre-existing failures are visible.
 
 Use `python -m pytest ... --import-mode=importlib` for repository-level runs.
 
@@ -190,11 +191,24 @@ Package-level `pyproject.toml` files define additional markers where needed.
 When refactoring or renaming packages, verify all import paths across the entire codebase using
 grep before committing. Check for duplicate code left by template extraction.
 
+### Incremental Refactoring (Hard Rule)
+
+When narrowing exceptions, changing error handling, or refactoring cross-cutting patterns:
+make changes **one module at a time** and run tests after each module. Never bulk-change 60+
+files in one pass. If more than 5 tests fail after a module change, revert that module and
+retry with a more conservative approach.
+
+### Sub-Agent Scope Limits
+
+When using sub-agents for parallel work, scope each agent to **<10 files**. Each agent must run
+tests for its scoped module before returning. Revert the entire agent's work if failures exceed
+5 tests. Never let multiple agents touch the same files.
+
 ## Git Workflow
 
 When making git commits, check `git status` and `git log --oneline -5` first to see if
 sub-agents have already committed changes. Do not stage/unstage repeatedly — verify state
-before acting.
+once, then commit. Only one process should manage git state at a time.
 
 ## Iteration & Optimization
 
