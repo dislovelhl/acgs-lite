@@ -6,11 +6,7 @@
 
 `ACGS 2.4.0` | `Apache-2.0` | `up to 560ns P50 on benchmark Rust path` | `3,874 tests passing`
 
-> **Note:** Performance numbers are from the local benchmark suite (`make bench`) and the fastest figures refer to the optional Rust/PyO3 hot path under benchmark conditions. Python-only and mixed integration paths will be slower. The benchmark target runs focused `pytest-benchmark` microbenchmarks for engine construction and steady-state validation. Run benchmarks on your own hardware before quoting exact latency. For the public lightweight package, use `from acgs_lite import ...`. Reserve `from acgs import ...` for the partial-open-source package line.
->
-> **License:** Apache-2.0. Free to use, modify, and distribute.
->
-> **Naming:** `ACGS` is the product name, `acgs-lite` is the public PyPI package, and `acgs_lite` is the public import namespace. See [docs/brand-architecture.md](docs/brand-architecture.md).
+> Performance numbers are from `make bench` under the optional Rust/PyO3 hot path. Python-only paths will be slower. Run benchmarks on your own hardware before quoting latency.
 
 ---
 
@@ -293,7 +289,7 @@ governance:
 
 ## The Engine Built by the Machines
 
-This entire constitutional governance engine -- 3,133 passing tests, Aho-Corasick optimization, MACI architecture -- was built by a non-technical founder who could not write a for loop two years ago. It was built entirely through conversation with Claude.
+This entire constitutional governance engine -- 3,874 passing tests, Aho-Corasick optimization, MACI architecture -- was built by a non-technical founder who could not write a for loop two years ago. It was built entirely through conversation with Claude.
 
 **If an AI is capable enough to help a non-technical founder build its own constitutional governance engine, it is capable enough to do immense damage without one.**
 
