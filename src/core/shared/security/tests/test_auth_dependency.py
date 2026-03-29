@@ -93,6 +93,10 @@ async def test_require_auth_validates_token_with_runtime_secret(monkeypatch):
 
     monkeypatch.setenv("AUTH_DISABLED", "false")
     monkeypatch.setattr(settings, "env", "production")
+    # Clear env vars that would override settings.env (e.g. conftest sets ENVIRONMENT=test)
+    monkeypatch.delenv("ENVIRONMENT", raising=False)
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("ACGS2_ENV", raising=False)
     monkeypatch.setenv("JWT_SECRET_KEY", "test-secret-key-that-is-at-least-32-chars")
 
     token = _build_token(os.environ["JWT_SECRET_KEY"])
@@ -184,6 +188,10 @@ async def test_check_revocation_handles_service_errors():
 
 async def test_check_revocation_production_missing_service_fails_closed(monkeypatch):
     monkeypatch.setattr(settings, "env", "production")
+    # Clear env vars that would override settings.env (e.g. conftest sets ENVIRONMENT=test)
+    monkeypatch.delenv("ENVIRONMENT", raising=False)
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("ACGS2_ENV", raising=False)
     auth_dependency._revocation_service = None
 
     with pytest.raises(HTTPException) as exc_info:
@@ -208,6 +216,10 @@ async def test_check_revocation_production_service_error_fails_closed(monkeypatc
     from unittest.mock import AsyncMock, MagicMock
 
     monkeypatch.setattr(settings, "env", "production")
+    # Clear env vars that would override settings.env (e.g. conftest sets ENVIRONMENT=test)
+    monkeypatch.delenv("ENVIRONMENT", raising=False)
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("ACGS2_ENV", raising=False)
     mock_service = MagicMock()
     mock_service.is_token_revoked = AsyncMock(side_effect=RuntimeError("Redis down"))
     auth_dependency._revocation_service = mock_service
@@ -223,6 +235,10 @@ async def test_require_auth_missing_jwt_secret(monkeypatch):
     """require_auth raises 500 when no verification material is configured."""
     monkeypatch.setenv("AUTH_DISABLED", "false")
     monkeypatch.setattr(settings, "env", "production")
+    # Clear env vars that would override settings.env (e.g. conftest sets ENVIRONMENT=test)
+    monkeypatch.delenv("ENVIRONMENT", raising=False)
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("ACGS2_ENV", raising=False)
     monkeypatch.setenv("JWT_SECRET_KEY", "")
     monkeypatch.setenv("JWT_SECRET", "")
 
@@ -258,6 +274,10 @@ async def test_require_auth_accepts_rs256_public_key_only(monkeypatch):
 
     monkeypatch.setenv("AUTH_DISABLED", "false")
     monkeypatch.setattr(settings, "env", "production")
+    # Clear env vars that would override settings.env (e.g. conftest sets ENVIRONMENT=test)
+    monkeypatch.delenv("ENVIRONMENT", raising=False)
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("ACGS2_ENV", raising=False)
     monkeypatch.setenv("JWT_ALGORITHM", "RS256")
     monkeypatch.setenv("JWT_PRIVATE_KEY", "")
     monkeypatch.setenv("JWT_PUBLIC_KEY", public_key)
@@ -277,6 +297,10 @@ async def test_require_auth_expired_token(monkeypatch):
     """require_auth raises 401 for expired token."""
     monkeypatch.setenv("AUTH_DISABLED", "false")
     monkeypatch.setattr(settings, "env", "production")
+    # Clear env vars that would override settings.env (e.g. conftest sets ENVIRONMENT=test)
+    monkeypatch.delenv("ENVIRONMENT", raising=False)
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("ACGS2_ENV", raising=False)
     monkeypatch.setenv("JWT_SECRET_KEY", TEST_JWT_SECRET)
 
     # Create expired token
@@ -294,6 +318,10 @@ async def test_require_auth_invalid_token(monkeypatch):
     """require_auth raises 401 for invalid token."""
     monkeypatch.setenv("AUTH_DISABLED", "false")
     monkeypatch.setattr(settings, "env", "production")
+    # Clear env vars that would override settings.env (e.g. conftest sets ENVIRONMENT=test)
+    monkeypatch.delenv("ENVIRONMENT", raising=False)
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("ACGS2_ENV", raising=False)
     monkeypatch.setenv("JWT_SECRET_KEY", "test-secret-key-that-is-at-least-32-chars")
 
     credentials = HTTPAuthorizationCredentials(scheme="Bearer", credentials="invalid-token")
@@ -350,6 +378,10 @@ async def test_require_auth_optional_invalid_token_raises(monkeypatch):
 async def test_require_auth_rejects_invalid_audience(monkeypatch):
     monkeypatch.setenv("AUTH_DISABLED", "false")
     monkeypatch.setattr(settings, "env", "production")
+    # Clear env vars that would override settings.env (e.g. conftest sets ENVIRONMENT=test)
+    monkeypatch.delenv("ENVIRONMENT", raising=False)
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("ACGS2_ENV", raising=False)
     monkeypatch.setenv("JWT_SECRET_KEY", TEST_JWT_SECRET)
 
     token = _build_token(TEST_JWT_SECRET, aud="wrong-audience")
@@ -364,6 +396,10 @@ async def test_require_auth_rejects_invalid_audience(monkeypatch):
 async def test_require_auth_rejects_constitutional_hash_mismatch(monkeypatch):
     monkeypatch.setenv("AUTH_DISABLED", "false")
     monkeypatch.setattr(settings, "env", "production")
+    # Clear env vars that would override settings.env (e.g. conftest sets ENVIRONMENT=test)
+    monkeypatch.delenv("ENVIRONMENT", raising=False)
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("ACGS2_ENV", raising=False)
     monkeypatch.setenv("JWT_SECRET_KEY", TEST_JWT_SECRET)
 
     token = _build_token(TEST_JWT_SECRET, constitutional_hash="wrong-hash")
