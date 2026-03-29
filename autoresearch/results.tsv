@@ -325,3 +325,4 @@ def9999	0.999750	1.000000	0.005500	hot-path	discard	exp6: another attempt
 c00a160a	0.878002	1.000000	0.002370	hot-path	baseline	exp273: defer _rule_excs to deny/context branches — allow path 329→304ns (-7.6%), composite 0.875→0.878 (+0.003)
 a67be93f	0.879353	1.000000	0.002310	hot-path	baseline	exp274: direct _count increment on allow — saves 15ns method dispatch; tput 1.49M→1.53M (+2.7%), composite 0.878→0.879
 28d8af99	0.875859	1.000000	0.002460	hot-path	baseline	exp275: _pooled_result in _hot[11] — neutral composite (within noise), architecturally consistent
+d4b5adbc	0.877435	1.000000	0.002380	hot-path	discard	exp276: precomputed guard flag — neutral, reverted (adds complexity without measurable gain)
