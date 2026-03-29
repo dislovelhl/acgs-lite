@@ -320,3 +320,4 @@ b9fb37aa	0.871816	1.000000	0.002620	hot-path	baseline	benchmark: expand corpus 8
 b9fb37aa	0.870979	1.000000	0.002730	hot-path	discard	exp270: skip _fast_records.append on allow — +4.3% throughput but breaks stats; reverted for correctness
 uncommitted	0.999800	1.000000	0.005000	hot-path	discard	test experiment
 def9999	0.999750	1.000000	0.005500	hot-path	discard	exp6: another attempt
+69ee9794	0.877162	1.000000	0.002400	hot-path	baseline	exp271: move str.lower() into Rust — to_ascii_lowercase eliminates 54ns Python lowering; composite 0.872→0.877 (+0.005, clear win)
