@@ -20,11 +20,13 @@ Usage::
 
 from __future__ import annotations
 
+import dataclasses
 from collections import Counter
 from datetime import UTC, datetime
 from typing import Any
 
 from acgs_lite.compliance.base import (
+    ChecklistStatus,
     ComplianceFramework,
     FrameworkAssessment,
     MultiFrameworkReport,
@@ -107,6 +109,82 @@ _DOMAIN_MAP: dict[str, list[str]] = {
     "general_purpose_ai": ["eu_ai_act"],
     "gpai": ["eu_ai_act"],
 }
+
+# ---------------------------------------------------------------------------
+# Evidence integration
+# ---------------------------------------------------------------------------
+
+
+def _apply_evidence_to_assessment(
+    assessment: FrameworkAssessment,
+    bundle: Any,  # EvidenceBundle — imported lazily to avoid circular import
+) -> FrameworkAssessment:
+    """Upgrade PENDING checklist items to COMPLIANT when evidence exists.
+
+    Walks the evidence bundle for items whose ``article_refs`` match a PENDING
+    checklist item, then creates a new :class:`FrameworkAssessment` (via
+    ``dataclasses.replace``) with updated items, score, and gaps.
+
+    Args:
+        assessment: Frozen FrameworkAssessment from a normal ``fw.assess()`` call.
+        bundle: :class:`~acgs_lite.compliance.evidence.EvidenceBundle` with
+            collected runtime / filesystem / env-var evidence.
+
+    Returns:
+        A new ``FrameworkAssessment`` with evidence applied, or the original
+        unchanged if no matching evidence was found.
+    """
+    fw_id = assessment.framework_id
+    evidence_items = bundle.for_framework(fw_id)  # includes "*" wildcards
+    if not evidence_items:
+        return assessment
+
+    # Build ref → best evidence description (highest confidence wins)
+    ref_to_ev: dict[str, str] = {}
+    for ev in sorted(evidence_items, key=lambda e: e.confidence, reverse=True):
+        for ref in ev.article_refs:
+            if ref not in ref_to_ev:
+                ref_to_ev[ref] = ev.description
+
+    if not ref_to_ev:
+        return assessment
+
+    _compliant_statuses = {
+        ChecklistStatus.COMPLIANT.value,
+        ChecklistStatus.NOT_APPLICABLE.value,
+    }
+    _pending = ChecklistStatus.PENDING.value
+    _compliant = ChecklistStatus.COMPLIANT.value
+
+    updated: list[dict[str, Any]] = []
+    changed = False
+    for item_dict in assessment.items:
+        item = dict(item_dict)
+        if item.get("status") == _pending and item.get("ref") in ref_to_ev:
+            item["status"] = _compliant
+            item["evidence"] = ref_to_ev[item["ref"]]
+            changed = True
+        updated.append(item)
+
+    if not changed:
+        return assessment
+
+    total = len(updated)
+    compliant_count = sum(1 for i in updated if i.get("status") in _compliant_statuses)
+    new_score = round(compliant_count / total, 4) if total else 1.0
+    new_gaps = tuple(
+        f"{i['ref']}: {str(i.get('requirement', ''))[:120]}"
+        for i in updated
+        if i.get("status") not in _compliant_statuses and i.get("blocking", True)
+    )
+
+    return dataclasses.replace(
+        assessment,
+        compliance_score=new_score,
+        items=tuple(updated),
+        gaps=new_gaps,
+    )
+
 
 # Gap categories that appear across multiple frameworks
 _CROSS_FRAMEWORK_THEMES: dict[str, list[str]] = {
@@ -234,6 +312,9 @@ class MultiFrameworkAssessor:
                 - jurisdiction: str (optional, for auto-selection)
                 - domain: str (optional, for auto-selection)
                 - purpose: str (optional)
+                - _evidence: :class:`~acgs_lite.compliance.evidence.EvidenceBundle`
+                  (optional) — collected runtime evidence; upgrades matching PENDING
+                  items to COMPLIANT automatically.
                 - Additional framework-specific keys.
 
         Returns:
@@ -242,11 +323,15 @@ class MultiFrameworkAssessor:
         """
         system_id = system_description.get("system_id", "unknown")
         fw_ids = self._resolve_frameworks(system_description)
+        evidence = system_description.get("_evidence")
 
         by_framework: dict[str, FrameworkAssessment] = {}
         for fid in fw_ids:
             fw = self._get_instance(fid)
-            by_framework[fid] = fw.assess(system_description)
+            assessment = fw.assess(system_description)
+            if evidence is not None:
+                assessment = _apply_evidence_to_assessment(assessment, evidence)
+            by_framework[fid] = assessment
 
         overall_score = _compute_overall_score(by_framework)
         acgs_total = _compute_acgs_coverage(by_framework)

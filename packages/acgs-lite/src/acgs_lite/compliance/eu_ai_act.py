@@ -527,15 +527,19 @@ class EUAIActFramework:
             if ref in ("EU-AIA Art.53(1)", "EU-AIA Art.53(2)", "EU-AIA Art.55(1)"):
                 if not is_gpai:
                     continue
-            # Skip high-risk-only articles for minimal/limited tier
-            if risk_tier in ("minimal", "limited") and ref not in (
-                "EU-AIA Art.5(1)",
-                "EU-AIA Art.50(1)",
-                "EU-AIA Art.50(4)",
-            ):
-                # Only prohibited + transparency articles apply
+            # Tier-based article filtering
+            if risk_tier == "unacceptable":
+                # Prohibited systems: only Art.5 prohibition checks apply.
+                # The system must not do these things; no path to compliance exists.
+                # NOTE: use "EU-AIA Art.5(" not "EU-AIA Art.5" — the latter also
+                # matches "EU-AIA Art.50(…)" (Art. 50 transparency obligations).
+                if not ref.startswith("EU-AIA Art.5("):
+                    continue
+            elif risk_tier in ("minimal", "limited"):
+                # Transparency-only track: Arts. 5 + 50 only.
                 if not ref.startswith("EU-AIA Art.5") and not ref.startswith("EU-AIA Art.50"):
                     continue
+            # high tier: all articles included (no filtering)
             items.append(
                 ChecklistItem(
                     ref=ref,
