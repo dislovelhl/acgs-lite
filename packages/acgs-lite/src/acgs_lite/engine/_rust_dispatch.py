@@ -52,12 +52,13 @@ class RustDispatchMixin:
             _e_src = rule_excs[data]
             # exp108: _is_noop always True here
             fast_records.append(None)
-            raise ConstitutionalViolationError(
-                str(_e_src),
-                rule_id=_e_src.rule_id,
-                severity=_e_src.severity,
-                action=action[:200],
-            )
+            # exp278: re-raise pre-allocated exception with mutated action.
+            # Saves ~255ns per deny by avoiding exception __init__ + str().
+            # __traceback__ = None breaks the reference chain that caused
+            # exp260's 30% throughput regression with contextlib.suppress.
+            _e_src.action = action[:200]
+            _e_src.__traceback__ = None
+            raise _e_src
         elif decision == _RUST_DENY:
             # exp111: _data already Python int
             _bm = data
