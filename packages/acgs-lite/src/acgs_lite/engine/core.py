@@ -970,6 +970,12 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
                 if _result is not None:
                     return _result
             else:
+                # exp266: inline the allow path — eliminates one Python method call
+                # (~50-80ns) for the most common code path (allow decisions).
+                # DENY_CRITICAL and DENY still delegate to the mixin method.
+                if _decision == 0:  # _RUST_ALLOW
+                    _fast_records.append(None)
+                    return self._pooled_result
                 _result = self._validate_rust_no_context(
                     action,
                     _decision,
