@@ -29,17 +29,28 @@ from acgs_lite.compliance.base import (
     FrameworkAssessment,
     MultiFrameworkReport,
 )
+from acgs_lite.compliance.australia_ai_ethics import AustraliaAIEthicsFramework
+from acgs_lite.compliance.brazil_lgpd import BrazilLGPDFramework
+from acgs_lite.compliance.canada_aida import CanadaAIDAFramework
+from acgs_lite.compliance.ccpa_cpra import CCPACPRAFramework
+from acgs_lite.compliance.china_ai import ChinaAIFramework
+from acgs_lite.compliance.dora import DORAFramework
+from acgs_lite.compliance.eu_ai_act import EUAIActFramework
 from acgs_lite.compliance.gdpr import GDPRFramework
 from acgs_lite.compliance.hipaa_ai import HIPAAAIFramework
+from acgs_lite.compliance.india_dpdp import IndiaDPDPFramework
 from acgs_lite.compliance.iso_42001 import ISO42001Framework
 from acgs_lite.compliance.nist_ai_rmf import NISTAIRMFFramework
 from acgs_lite.compliance.nyc_ll144 import NYCLL144Framework
 from acgs_lite.compliance.oecd_ai import OECDAIFramework
+from acgs_lite.compliance.singapore_maigf import SingaporeMAIGFFramework
 from acgs_lite.compliance.soc2_ai import SOC2AIFramework
+from acgs_lite.compliance.uk_ai_framework import UKAIFramework
 from acgs_lite.compliance.us_fair_lending import USFairLendingFramework
 
 # Registry of all available compliance frameworks
 _FRAMEWORK_REGISTRY: dict[str, type] = {
+    # Original 8
     "nist_ai_rmf": NISTAIRMFFramework,
     "iso_42001": ISO42001Framework,
     "gdpr": GDPRFramework,
@@ -48,14 +59,35 @@ _FRAMEWORK_REGISTRY: dict[str, type] = {
     "us_fair_lending": USFairLendingFramework,
     "nyc_ll144": NYCLL144Framework,
     "oecd_ai": OECDAIFramework,
+    # Round 2: +5
+    "eu_ai_act": EUAIActFramework,
+    "dora": DORAFramework,
+    "canada_aida": CanadaAIDAFramework,
+    "singapore_maigf": SingaporeMAIGFFramework,
+    "uk_ai_framework": UKAIFramework,
+    # Round 3: +5
+    "india_dpdp": IndiaDPDPFramework,
+    "australia_ai_ethics": AustraliaAIEthicsFramework,
+    "brazil_lgpd": BrazilLGPDFramework,
+    "china_ai": ChinaAIFramework,
+    "ccpa_cpra": CCPACPRAFramework,
 }
 
 # Jurisdiction -> frameworks that apply
 _JURISDICTION_MAP: dict[str, list[str]] = {
-    "united_states": ["nist_ai_rmf", "soc2_ai", "oecd_ai"],
-    "european_union": ["gdpr", "iso_42001", "oecd_ai"],
+    "united_states": ["nist_ai_rmf", "soc2_ai", "oecd_ai", "ccpa_cpra"],
+    "european_union": ["gdpr", "eu_ai_act", "iso_42001", "oecd_ai"],
     "international": ["iso_42001", "oecd_ai"],
     "new_york_city": ["nist_ai_rmf", "soc2_ai", "nyc_ll144", "oecd_ai"],
+    "canada": ["canada_aida", "nist_ai_rmf", "oecd_ai"],
+    "united_kingdom": ["uk_ai_framework", "iso_42001", "oecd_ai"],
+    "singapore": ["singapore_maigf", "iso_42001", "oecd_ai"],
+    "asean": ["singapore_maigf", "oecd_ai"],
+    "india": ["india_dpdp", "oecd_ai"],
+    "australia": ["australia_ai_ethics", "oecd_ai"],
+    "brazil": ["brazil_lgpd", "oecd_ai"],
+    "china": ["china_ai"],
+    "california": ["ccpa_cpra", "nist_ai_rmf"],
 }
 
 # Domain -> additional frameworks
@@ -65,10 +97,15 @@ _DOMAIN_MAP: dict[str, list[str]] = {
     "lending": ["us_fair_lending"],
     "credit": ["us_fair_lending"],
     "credit_scoring": ["us_fair_lending"],
-    "financial": ["us_fair_lending", "soc2_ai"],
-    "finance": ["us_fair_lending", "soc2_ai"],
+    "financial": ["us_fair_lending", "soc2_ai", "dora"],
+    "finance": ["us_fair_lending", "soc2_ai", "dora"],
+    "fintech": ["dora", "soc2_ai"],
+    "banking": ["dora", "us_fair_lending", "soc2_ai"],
+    "insurance": ["dora", "soc2_ai"],
     "employment": ["nyc_ll144"],
     "hiring": ["nyc_ll144"],
+    "general_purpose_ai": ["eu_ai_act"],
+    "gpai": ["eu_ai_act"],
 }
 
 # Gap categories that appear across multiple frameworks
