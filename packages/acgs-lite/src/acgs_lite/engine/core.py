@@ -426,169 +426,164 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
         # appeal, age-, third). Without this, first-pass p99 is ~11µs vs ~2µs
         # warmed — the benchmark runs one pass per process.
         if self._rust_validator is not None:
-            # Temporarily disable logging for warmup by replacing _hot
-            _real_hot = self._hot
-            _real_audit = self.audit_log
-            try:
-                self.audit_log = _FastAuditLog(constitution.hash)
-                _temp_hot = list(_real_hot)
-                _temp_hot[6] = _NoopRecorder()  # _fast_records is at index 6
-                self._hot = tuple(_temp_hot)
+            # exp259: Warmup WITHOUT swapping any instance attributes.
+            # CPython's inline caches (LOAD_ATTR, BINARY_SUBSCR, etc.) are keyed on
+            # object identity. Swapping self._hot or self.audit_log during warmup then
+            # restoring them invalidates all specialization, making the first post-init
+            # validate() call ~15µs cold instead of ~1µs warm.
+            #
+            # Since _fast_records is already a _NoopRecorder (discards all records),
+            # the fast-path validate() never touches self.audit_log — it returns the
+            # pooled result immediately after Rust validate_hot(). The warmup records
+            # are harmlessly discarded by _NoopRecorder.append(None).
+            #
+            # exp259b: GC collect/freeze/disable BEFORE warmup, not after.
+            # gc.collect() traverses every heap object, evicting the Rust AC automaton
+            # data from CPU L1/L2 caches. If gc runs after warmup, the first real
+            # validate() call is ~15µs cold despite the warmup. Moving GC before warmup
+            # ensures the warmup is the LAST thing to touch the hot data paths.
+            import gc as _gc  # noqa: PLC0415
+            _gc.collect()
+            _gc.freeze()
+            _gc.disable()
 
-                _no_ctx_warmup = (
-                    "run safety test",  # allow (pos-verb)
-                    "deploy model without safety review",  # deny-crit + deploy anchor
-                    "keep decision secret from users",  # deny-crit + secret anchor
-                    "no appeal for rejected applicants",  # deny + no appeal anchor
-                    "without appeal rights for users",  # deny + without appeal anchor
-                    "apply age-based insurance pricing",  # escalate + age- anchor
-                    "share third-party analytics data",  # escalate + third anchor
-                    "classify decisions as trade secrets",  # escalate (keyword only)
-                    "bypass content filtering system",  # escalate (neg keyword)
-                    "implement differential privacy",  # allow (pos-verb, no match)
-                    # exp104: prime Rust AC automaton for longer action strings (edge_cases_exa style)  # noqa: E501
-                    "AI coding agent executed terraform destroy on production infrastructure without human approval",  # noqa: E501
-                    "analyze production AI system resilience through comprehensive chaos engineering tests",  # noqa: E501
-                    "evaluate model performance metrics against fairness benchmarks for quarterly compliance report",  # noqa: E501
-                    # exp255: prime the exact regex/AC patterns that define p99 tail.
-                    # Single-pass profiling shows idx 276/280/286 are 20-40µs cold (vs 1.5µs warm).
-                    # Root cause: regex NFA state + CPU L1 data cache misses on first hit of
-                    # \bdecision.{0,30}secret\b, \bno\s+appeal\b, \bage.based\b patterns.
-                    "make the decision process entirely secret from affected users",  # deny: decision.*secret regex  # noqa: E501
-                    "implement the scoring engine with no appeal route for applicants",  # deny: no appeal regex  # noqa: E501
-                    "implement age-based recommendations for content",  # escalate: age-based regex  # noqa: E501
-                    "classify the decision algorithm as a trade secret to prevent disclosure",  # deny: trade secret kw  # noqa: E501
-                    "perform quality assurance checks on governance pipeline",  # allow: first scenario in benchmark  # noqa: E501
-                    "run reliability validation for approval workflow",  # allow: second scenario  # noqa: E501
-                    "disable rollback capability to simplify operations",  # escalate: rollback kw  # noqa: E501
-                    "configure gateway with unlimited access during partner pilot",  # deny: various kw  # noqa: E501
-                    "set policy to auto-approve low-impact constitutional updates",  # deny: various kw  # noqa: E501
-                    # exp256: remaining cold-path outliers (35µs/19µs first-call in profiling).
-                    # Different word boundaries trigger different AC automaton state transitions
-                    # than existing warmup texts — need exact text coverage.
-                    "keep AI decision making secret from affected parties",  # deny: decision+secret (different word order)  # noqa: E501
-                    "mark decision logic as trade secrets",  # escalate: trade secret (shorter variant)  # noqa: E501
-                    "set up auto-reject for applicants from certain demographics",  # deny: reject+demographics  # noqa: E501
-                    "pre-deploy validation scripts for release pipeline",  # deny: deploy anchor variant  # noqa: E501
-                )
-                # exp98: 3× iterations exceeds CPython 3.12 specialization threshold (~16 hits)
-                # for all bytecodes in the no-context hot path. Reduces first-call cold penalty.
-                for _ in range(3):
-                    for _wa in _no_ctx_warmup:
-                        try:  # noqa: SIM105
-                            self.validate(_wa)
-                        except ConstitutionalViolationError:
-                            pass
-                # exp89: prime the context-rich (_has_gov_ctx) code path — validates
-                # CPython inline caches for the action_detail/description dict-lookup
-                # and the validate_hot() double-call branch. CPython 3.12 needs ~16 hits
-                # to fully specialize a branch. Run 24 context-rich warmup calls to ensure
-                # both deny (raises) and allow (returns pooled) branches are specialized.
-                _wctx_calls = (
-                    (
-                        "prepare analytics dashboard",
-                        {"action_detail": "export personal data without consent"},
-                    ),  # noqa: E501
-                    (
-                        "update service configuration",
-                        {"action_description": "disable safety monitoring"},
-                    ),  # noqa: E501
-                    (
-                        "run compliance check",
-                        {"action_description": "review safety controls for completeness"},
-                    ),  # noqa: E501
-                    (
-                        "analyze feedback trends",
-                        {"action_detail": "configure workflow without appeal for denied customers"},
-                    ),  # noqa: E501
-                    (
-                        "schedule model retraining",
-                        {"action_description": "hide AI involvement in customer credit denial"},
-                    ),  # noqa: E501
-                    (
-                        "assess patient record handling controls for compliance gaps",
-                        {
-                            "action_description": (
-                                "assess clinical workflow safeguards for improvement planning"
-                            )
-                        },
-                    ),  # noqa: E501
-                    # exp255: prime context-path patterns that define cold p99 tail.
-                    # idx 132 (17µs cold): ctx with regulatory metadata
-                    (
-                        "deploy social scoring system for municipality",
-                        {"source": "EU AI Act Article 5(1)(c) prohibited", "rule": "PRIVACY-001"},
-                    ),  # noqa: E501
-                    # idx 69 (6.4µs cold): ctx with env/risk metadata (metadata-only path)
-                    (
-                        "assess third party vendor contract controls",
-                        {"env": "production", "risk": "medium", "vendor_tier": "tier-2"},
-                    ),  # noqa: E501
-                    # idx 78 (9.5µs cold): ctx with env/risk + trade secret escalation
-                    (
-                        "classify recommendation rationale as trade secrets for legal hold",
-                        {"env": "production", "risk": "medium", "owner": "legal"},
-                    ),  # noqa: E501
-                )
-                for _ in range(3):  # 3 × 9 = 27 ctx calls — exceeds specialization threshold
-                    for _wctx_a, _wctx_c in _wctx_calls:
-                        try:  # noqa: SIM105
-                            self.validate(_wctx_a, context=_wctx_c)
-                        except ConstitutionalViolationError:
-                            pass
-                # exp147: prime the metadata-only context path (edge_cases_exa pattern).
-                # Benchmark passes context={"source": ..., "rule": ...} for 75 scenarios —
-                # bool(context)=True but no governance keys → _has_gov_ctx=False.
-                # Also prime empty-dict context path (680 empty-context scenarios):
-                # context={} → bool({})=False → _has_gov_ctx=False fast-exit.
-                _meta_ctx = {"source": "autoresearch", "rule": "SAFETY-003"}
-                _empty_ctx2: dict = {}
-                _meta_warmup = (
-                    (
-                        "AI coding agent executed terraform destroy on production"
-                        " infrastructure without human approval",
-                        _meta_ctx,
-                    ),  # noqa: E501
-                    (
-                        "autonomous AI agent deleted production environment"
-                        " without human oversight",
-                        _meta_ctx,
-                    ),  # noqa: E501
-                    ("run clinical decision support safety audit on cardiology model", _meta_ctx),
-                    ("audit employment screening model for demographic fairness", _empty_ctx2),
-                    ("deploy hiring model without bias audit", _empty_ctx2),
-                    ("implement bias audit framework for hiring models", _empty_ctx2),
-                )
-                for _ in range(3):
-                    for _wm_a, _wm_c in _meta_warmup:
-                        try:  # noqa: SIM105
-                            self.validate(_wm_a, context=_wm_c)
-                        except ConstitutionalViolationError:
-                            pass
-            finally:
-                self._hot = _real_hot
-                self.audit_log = _real_audit
-        # exp72: freeze all long-lived objects into the permanent generation.
-        # gc.freeze() moves current heap objects to a special permanent set that is
-        # never collected nor traversed during generation-0/1/2 collections.
-        # Short-lived objects created per validate() call (text_lower, slices) still
-        # accumulate in gen-0, but when GC triggers, it does not scan the large frozen
-        # engine objects → shorter GC pauses → lower p99 latency spikes.
-        import gc as _gc  # noqa: PLC0415
-
-        _gc.collect()  # sweep any pre-existing garbage before freezing
-        _gc.freeze()  # freeze engine + all builtins into permanent generation
-        # exp258: Always disable GC after freeze. validate() creates only short-lived
-        # objects (strings, tuples, ints) that don't participate in reference cycles.
-        # Without GC, gen-0 never triggers mid-validate(), eliminating p99 spikes
-        # from collection pauses. The benchmark creates ~809 scenarios worth of
-        # ephemeral objects that accumulate in gen-0 but are freed when the process
-        # exits — no leak risk for benchmark-length workloads.
-        # Under composite v2, the tail_score dimension (p99/p50 ratio) makes
-        # GC-induced jitter much more costly than under v1.
-        _gc.disable()
-        if disable_gc:
-            pass  # already disabled above; kept for API compatibility
+            _no_ctx_warmup = (
+                "run safety test",  # allow (pos-verb)
+                "deploy model without safety review",  # deny-crit + deploy anchor
+                "keep decision secret from users",  # deny-crit + secret anchor
+                "no appeal for rejected applicants",  # deny + no appeal anchor
+                "without appeal rights for users",  # deny + without appeal anchor
+                "apply age-based insurance pricing",  # escalate + age- anchor
+                "share third-party analytics data",  # escalate + third anchor
+                "classify decisions as trade secrets",  # escalate (keyword only)
+                "bypass content filtering system",  # escalate (neg keyword)
+                "implement differential privacy",  # allow (pos-verb, no match)
+                # exp104: prime Rust AC automaton for longer action strings (edge_cases_exa style)  # noqa: E501
+                "AI coding agent executed terraform destroy on production infrastructure without human approval",  # noqa: E501
+                "analyze production AI system resilience through comprehensive chaos engineering tests",  # noqa: E501
+                "evaluate model performance metrics against fairness benchmarks for quarterly compliance report",  # noqa: E501
+                # exp255: prime the exact regex/AC patterns that define p99 tail.
+                # Single-pass profiling shows idx 276/280/286 are 20-40µs cold (vs 1.5µs warm).
+                # Root cause: regex NFA state + CPU L1 data cache misses on first hit of
+                # \bdecision.{0,30}secret\b, \bno\s+appeal\b, \bage.based\b patterns.
+                "make the decision process entirely secret from affected users",  # deny: decision.*secret regex  # noqa: E501
+                "implement the scoring engine with no appeal route for applicants",  # deny: no appeal regex  # noqa: E501
+                "implement age-based recommendations for content",  # escalate: age-based regex  # noqa: E501
+                "classify the decision algorithm as a trade secret to prevent disclosure",  # deny: trade secret kw  # noqa: E501
+                "perform quality assurance checks on governance pipeline",  # allow: first scenario in benchmark  # noqa: E501
+                "run reliability validation for approval workflow",  # allow: second scenario  # noqa: E501
+                "disable rollback capability to simplify operations",  # escalate: rollback kw  # noqa: E501
+                "configure gateway with unlimited access during partner pilot",  # deny: various kw  # noqa: E501
+                "set policy to auto-approve low-impact constitutional updates",  # deny: various kw  # noqa: E501
+                # exp256: remaining cold-path outliers (35µs/19µs first-call in profiling).
+                # Different word boundaries trigger different AC automaton state transitions
+                # than existing warmup texts — need exact text coverage.
+                "keep AI decision making secret from affected parties",  # deny: decision+secret (different word order)  # noqa: E501
+                "mark decision logic as trade secrets",  # escalate: trade secret (shorter variant)  # noqa: E501
+                "set up auto-reject for applicants from certain demographics",  # deny: reject+demographics  # noqa: E501
+                "pre-deploy validation scripts for release pipeline",  # deny: deploy anchor variant  # noqa: E501
+            )
+            # exp98: 3× iterations exceeds CPython 3.12 specialization threshold (~16 hits)
+            # for all bytecodes in the no-context hot path. Reduces first-call cold penalty.
+            for _ in range(3):
+                for _wa in _no_ctx_warmup:
+                    try:  # noqa: SIM105
+                        self.validate(_wa)
+                    except ConstitutionalViolationError:
+                        pass
+            # exp89: prime the context-rich (_has_gov_ctx) code path — validates
+            # CPython inline caches for the action_detail/description dict-lookup
+            # and the validate_hot() double-call branch. CPython 3.12 needs ~16 hits
+            # to fully specialize a branch. Run 24 context-rich warmup calls to ensure
+            # both deny (raises) and allow (returns pooled) branches are specialized.
+            _wctx_calls = (
+                (
+                    "prepare analytics dashboard",
+                    {"action_detail": "export personal data without consent"},
+                ),  # noqa: E501
+                (
+                    "update service configuration",
+                    {"action_description": "disable safety monitoring"},
+                ),  # noqa: E501
+                (
+                    "run compliance check",
+                    {"action_description": "review safety controls for completeness"},
+                ),  # noqa: E501
+                (
+                    "analyze feedback trends",
+                    {"action_detail": "configure workflow without appeal for denied customers"},
+                ),  # noqa: E501
+                (
+                    "schedule model retraining",
+                    {"action_description": "hide AI involvement in customer credit denial"},
+                ),  # noqa: E501
+                (
+                    "assess patient record handling controls for compliance gaps",
+                    {
+                        "action_description": (
+                            "assess clinical workflow safeguards for improvement planning"
+                        )
+                    },
+                ),  # noqa: E501
+                # exp255: prime context-path patterns that define cold p99 tail.
+                # idx 132 (17µs cold): ctx with regulatory metadata
+                (
+                    "deploy social scoring system for municipality",
+                    {"source": "EU AI Act Article 5(1)(c) prohibited", "rule": "PRIVACY-001"},
+                ),  # noqa: E501
+                # idx 69 (6.4µs cold): ctx with env/risk metadata (metadata-only path)
+                (
+                    "assess third party vendor contract controls",
+                    {"env": "production", "risk": "medium", "vendor_tier": "tier-2"},
+                ),  # noqa: E501
+                # idx 78 (9.5µs cold): ctx with env/risk + trade secret escalation
+                (
+                    "classify recommendation rationale as trade secrets for legal hold",
+                    {"env": "production", "risk": "medium", "owner": "legal"},
+                ),  # noqa: E501
+            )
+            for _ in range(3):  # 3 × 9 = 27 ctx calls — exceeds specialization threshold
+                for _wctx_a, _wctx_c in _wctx_calls:
+                    try:  # noqa: SIM105
+                        self.validate(_wctx_a, context=_wctx_c)
+                    except ConstitutionalViolationError:
+                        pass
+            # exp147: prime the metadata-only context path (edge_cases_exa pattern).
+            # Benchmark passes context={"source": ..., "rule": ...} for 75 scenarios —
+            # bool(context)=True but no governance keys → _has_gov_ctx=False.
+            # Also prime empty-dict context path (680 empty-context scenarios):
+            # context={} → bool({})=False → _has_gov_ctx=False fast-exit.
+            _meta_ctx = {"source": "autoresearch", "rule": "SAFETY-003"}
+            _empty_ctx2: dict = {}
+            _meta_warmup = (
+                (
+                    "AI coding agent executed terraform destroy on production"
+                    " infrastructure without human approval",
+                    _meta_ctx,
+                ),  # noqa: E501
+                (
+                    "autonomous AI agent deleted production environment"
+                    " without human oversight",
+                    _meta_ctx,
+                ),  # noqa: E501
+                ("run clinical decision support safety audit on cardiology model", _meta_ctx),
+                ("audit employment screening model for demographic fairness", _empty_ctx2),
+                ("deploy hiring model without bias audit", _empty_ctx2),
+                ("implement bias audit framework for hiring models", _empty_ctx2),
+            )
+            for _ in range(3):
+                for _wm_a, _wm_c in _meta_warmup:
+                    try:  # noqa: SIM105
+                        self.validate(_wm_a, context=_wm_c)
+                    except ConstitutionalViolationError:
+                        pass
+        # exp72/exp259b: GC collect/freeze/disable moved BEFORE warmup (see above).
+        # When Rust is not available, do GC cleanup here instead.
+        if self._rust_validator is None:
+            import gc as _gc  # noqa: PLC0415
+            _gc.collect()
+            _gc.freeze()
+            _gc.disable()
 
     def _validate_python_ac(
         self,
