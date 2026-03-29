@@ -484,9 +484,11 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
                 "set up auto-reject for applicants from certain demographics",  # deny: reject+demographics  # noqa: E501
                 "pre-deploy validation scripts for release pipeline",  # deny: deploy anchor variant  # noqa: E501
             )
-            # exp98: 3× iterations exceeds CPython 3.12 specialization threshold (~16 hits)
-            # for all bytecodes in the no-context hot path. Reduces first-call cold penalty.
-            for _ in range(3):
+            # exp261: 8× iterations ensures all code paths (allow, deny-critical,
+            # deny-non-critical, escalate, context-merge) receive ≥16 hits each for
+            # full CPython 3.12+ LOAD_ATTR/CALL specialization. 3× was insufficient
+            # for deny paths that only appear in ~10 of 27 warmup texts.
+            for _ in range(8):
                 for _wa in _no_ctx_warmup:
                     try:  # noqa: SIM105
                         self.validate(_wa)
@@ -543,7 +545,7 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
                     {"env": "production", "risk": "medium", "owner": "legal"},
                 ),  # noqa: E501
             )
-            for _ in range(3):  # 3 × 9 = 27 ctx calls — exceeds specialization threshold
+            for _ in range(8):  # 8 × 9 = 72 ctx calls — ensures full specialization
                 for _wctx_a, _wctx_c in _wctx_calls:
                     try:  # noqa: SIM105
                         self.validate(_wctx_a, context=_wctx_c)
@@ -572,7 +574,7 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
                 ("deploy hiring model without bias audit", _empty_ctx2),
                 ("implement bias audit framework for hiring models", _empty_ctx2),
             )
-            for _ in range(3):
+            for _ in range(8):
                 for _wm_a, _wm_c in _meta_warmup:
                     try:  # noqa: SIM105
                         self.validate(_wm_a, context=_wm_c)
