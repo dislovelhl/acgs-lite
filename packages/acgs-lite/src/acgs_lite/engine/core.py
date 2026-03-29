@@ -938,24 +938,17 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
     ) -> ValidationResult:
         """Validate an action against the constitution."""
         strict = self.strict
-        # exp75+92: UNPACK_SEQUENCE(11) — _hot includes _rv at [10] (exp92) to avoid
-        # LOAD_ATTR(self._rust_validator) and _rust_strict comparison per call.
-        (
-            _ac_iter,
-            _anchor_dispatch,
-            _no_anchor_pats,
-            _rule_data,
-            _rule_excs,
-            _has_high,
-            _fast_records,
-            _pos_verbs,
-            _has_ac,
-            _is_noop,
-            _rv,
-        ) = self._hot
+        # exp264: replace UNPACK_SEQUENCE(11) with direct indexed access for the
+        # Rust fast path — only 3 items needed (rv, fast_records, rule_excs).
+        # Tuple indexing costs 63ns for 3 items vs 120ns for UNPACK_SEQUENCE(11).
+        # The full 11-item unpack is deferred to the Python fallback path.
+        _hot = self._hot
+        _rv = _hot[10]
+        _fast_records = _hot[6]
         # exp113: defer start to slow path only — fast path never reads latency_ms.
         # Eliminates one ternary eval (~8ns) from every validate() call.
         if _rv is not None and _fast_records is not None and strict:
+            _rule_excs = _hot[4]
             # exp95: skip str allocation when action is already lowercase (common in governance).
             _action_lower = action if action.islower() else action.lower()
             _decision, _data = _rv.validate_hot(_action_lower)
@@ -987,6 +980,9 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
                 if _result is not None:
                     return _result
         elif _rv is not None and context and strict:
+            # exp264: lazy unpack for context path — only what's needed.
+            _rule_excs = _hot[4]
+            _is_noop = _hot[9]
             # exp236: only pass governance-relevant keys to validate_full(); metadata
             # keys (source, rule, env, risk) carry no violation text.
             _ctx_pairs = [
@@ -1019,6 +1015,20 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
                     return _result
         # exp113: start timer here (slow path only — fast path returns early above).
         start = time.perf_counter()
+        # exp264: full unpack only on Python fallback path (not reached by Rust fast path).
+        (
+            _ac_iter,
+            _anchor_dispatch,
+            _no_anchor_pats,
+            _rule_data,
+            _rule_excs,
+            _has_high,
+            _fast_records,
+            _pos_verbs,
+            _has_ac,
+            _is_noop,
+            _rv,
+        ) = _hot
         # exp62: defer request_id to deny/escalate path only — saves ~40ns on all allow calls.
         # Benchmark never reads result.request_id; NoopRecorder discards the record.
         # exp59: violations = None sentinel — avoids list alloc (~40ns) on allow paths.
