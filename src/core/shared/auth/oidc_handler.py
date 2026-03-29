@@ -49,11 +49,13 @@ if TYPE_CHECKING:
 
 try:
     from authlib.jose import jwt
+    from authlib.jose.errors import JoseError as _AuthlibJoseError
 
     HAS_AUTHLIB = True
 except ImportError:
     HAS_AUTHLIB = False
     jwt = None  # type: ignore[assignment]
+    _AuthlibJoseError = None  # type: ignore[assignment,misc]
 
 try:
     import httpx
@@ -75,6 +77,7 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH
 DEFAULT_SCOPES = ["openid", "profile", "email"]
 _DISALLOWED_SECRET_SENTINELS = frozenset({"your-secret", "replace_me"})
 _HTTPX_OIDC_ERRORS = (httpx.HTTPError,) if HAS_HTTPX else (RuntimeError,)
+_AUTHLIB_JOSE_ERRORS = (_AuthlibJoseError,) if HAS_AUTHLIB else ()
 _OIDC_OPERATION_ERRORS = (
     RuntimeError,
     ValueError,
@@ -85,6 +88,7 @@ _OIDC_OPERATION_ERRORS = (
     TimeoutError,
     ConnectionError,
     *_HTTPX_OIDC_ERRORS,
+    *_AUTHLIB_JOSE_ERRORS,
 )
 
 
