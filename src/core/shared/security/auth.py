@@ -135,6 +135,10 @@ def _resolve_jwt_material(for_signing: bool) -> tuple[str, str]:
 
     private_key = _current_jwt_private_key()
     public_key = _current_jwt_public_key()
+    if for_signing and private_key:
+        return private_key, requested_algorithm
+    if not for_signing and public_key:
+        return public_key, requested_algorithm
     if private_key and public_key:
         return (
             (private_key, requested_algorithm) if for_signing else (public_key, requested_algorithm)
@@ -143,8 +147,9 @@ def _resolve_jwt_material(for_signing: bool) -> tuple[str, str]:
     if requested_algorithm == "RS256":
         raise ConfigurationError(
             message=(
-                "RS256 requested but RSA keys (JWT_PRIVATE_KEY, JWT_PUBLIC_KEY) are not "
-                "configured. Set keys or change JWT_ALGORITHM to HS256."
+                "RS256 requested but RSA verification keys are not configured. Set "
+                "JWT_PUBLIC_KEY for verification, JWT_PRIVATE_KEY for signing, or change "
+                "JWT_ALGORITHM to HS256."
             ),
             error_code="JWT_RSA_KEYS_MISSING",
         )
@@ -161,6 +166,51 @@ def _resolve_jwt_material(for_signing: bool) -> tuple[str, str]:
 def has_jwt_secret() -> bool:
     """Return True when any supported JWT secret source is configured."""
     return _current_jwt_secret() is not None
+
+
+def has_jwt_verification_material() -> bool:
+    """Return True when JWT verification is possible (secret or public key available)."""
+    if _current_jwt_secret() is not None:
+        return True
+    if _current_jwt_public_key() is not None:
+        return True
+    return False
+
+
+# ---------------------------------------------------------------------------
+# Production detection & revocation service accessor
+# ---------------------------------------------------------------------------
+
+_NON_PRODUCTION_ENVS = frozenset({"development", "dev", "test", "testing", "local", "ci"})
+
+
+def _is_production_environment() -> bool:
+    """Return True when the runtime looks like a production (or staging) deployment.
+
+    Checks ``ENVIRONMENT`` (and ``APP_ENV``) env vars first, then falls back to
+    ``settings.env``.  Any value not in the non-production allowlist is treated
+    as production-like so we default to the secure posture.
+    """
+    from src.core.shared.config.runtime_environment import resolve_runtime_environment
+
+    environment = resolve_runtime_environment(
+        getattr(settings, "env", None),
+        extra_env_vars=("ACGS2_ENV",),
+    )
+    return environment not in _NON_PRODUCTION_ENVS
+
+
+def _get_revocation_service():
+    """Return the current ``TokenRevocationService`` singleton, or *None*.
+
+    The service is initialised at app startup via
+    ``auth_dependency.configure_revocation_service``.
+    """
+    from src.core.shared.security.auth_dependency import (
+        _revocation_service,
+    )
+
+    return _revocation_service
 
 
 def create_access_token(
@@ -274,6 +324,10 @@ async def get_current_user(
     """
     FastAPI dependency to get current authenticated user.
 
+    In production-like environments, fail closed when the revocation
+    service is missing (deny all requests rather than silently skipping
+    the check).
+
     Args:
         credentials: HTTP Bearer token credentials
 
@@ -290,7 +344,32 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    return verify_token(credentials.credentials)
+    claims = verify_token(credentials.credentials)
+
+    # Revocation check — fail closed in production
+    revocation_service = _get_revocation_service()
+    if revocation_service is not None:
+        jti = getattr(claims, "jti", None) or (claims.jti if hasattr(claims, "jti") else None)
+        if jti:
+            try:
+                is_revoked = await revocation_service.is_token_revoked(jti)
+                if is_revoked:
+                    raise HTTPException(status_code=401, detail="Token has been revoked")
+            except HTTPException:
+                raise
+            except Exception:
+                if _is_production_environment():
+                    raise HTTPException(
+                        status_code=503,
+                        detail="Revocation check failed — fail closed in production",
+                    )
+    elif _is_production_environment():
+        raise HTTPException(
+            status_code=503,
+            detail="Token revocation service unavailable in production",
+        )
+
+    return claims
 
 
 async def get_current_user_optional(

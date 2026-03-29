@@ -103,7 +103,12 @@ TENANT_CONFIG_AVAILABLE = _module_available("src.core.shared.config")
 
 
 def _runtime_environment() -> str:
-    return settings.env
+    from src.core.shared.config.runtime_environment import resolve_runtime_environment
+
+    return resolve_runtime_environment(
+        getattr(settings, "env", None),
+        extra_env_vars=("ACGS2_ENV",),
+    )
 
 
 def _parse_bool_env(value: str | None) -> bool | None:
@@ -616,11 +621,12 @@ class RateLimitMiddleware:
         app,
         config: RateLimitConfig | None = None,
         tenant_quota_provider: TenantRateLimitProvider | None = None,
+        redis_client: object | None = None,
     ):
         self.app = app
         self.config = config or RateLimitConfig.from_env()
         self.tenant_quota_provider = tenant_quota_provider
-        self.redis: object | None = None
+        self.redis: object | None = redis_client
         self.limiter: SlidingWindowRateLimiter | None = None
         self._initialized = False
         self._audit_log: list[JSONDict] = []
@@ -722,7 +728,21 @@ class RateLimitMiddleware:
             return
 
         # Initialize if needed
-        await self._ensure_initialized()
+        try:
+            await self._ensure_initialized()
+        except Exception as exc:
+            if not self.config.fail_open:
+                logger.error("Rate limiter init failed (fail_open=False): %s", exc)
+                response = JSONResponse(
+                    status_code=503,
+                    content={
+                        "error": "Service temporarily unavailable",
+                        "constitutional_hash": self._constitutional_hash,
+                    },
+                )
+                await response(scope, receive, send)
+                return
+            logger.warning("Rate limiter init failed (fail_open=True): %s", exc)
 
         # Create request for inspection
         request = Request(scope, receive)
@@ -782,7 +802,9 @@ class RateLimitMiddleware:
         if hasattr(request.state, "user") and hasattr(request.state.user, "tenant_id"):
             return request.state.user.tenant_id
 
-        # 4. Last resort: X-Tenant-ID header (untrusted — log warning)
+        # 4. X-Tenant-ID header is intentionally NOT trusted here.
+        # It can be spoofed by any client.  Only auth-middleware-populated
+        # state is accepted.  Log and ignore.
         header_tenant_id = request.headers.get("X-Tenant-ID")
         if header_tenant_id:
             logger.warning(
@@ -793,7 +815,6 @@ class RateLimitMiddleware:
                     "client": request.client.host if request.client else "unknown",
                 },
             )
-            return header_tenant_id
 
         return None
 
@@ -803,8 +824,20 @@ class RateLimitMiddleware:
         return True
 
     def _build_key(self, request: Request, rule: RateLimitRule) -> str:
-        # Simple key building logic
-        return f"{rule.key_prefix}:{request.client.host}"
+        parts = [rule.key_prefix]
+        client_ip = request.client.host if request.client else "unknown"
+        parts.append(client_ip)
+
+        # Include tenant for tenant-scoped or general keys
+        tenant_id = self._get_tenant_id(request)
+        if tenant_id:
+            parts.append(tenant_id)
+
+        # Include endpoint path for endpoint-scoped rules
+        if rule.scope == RateLimitScope.ENDPOINT:
+            parts.append(request.url.path)
+
+        return ":".join(parts)
 
     def _create_429_response(
         self, result: RateLimitResult, tenant_id: str | None = None
