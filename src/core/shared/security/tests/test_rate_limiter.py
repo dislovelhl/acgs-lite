@@ -178,6 +178,10 @@ class TestRateLimitConfig:
                     "RATE_LIMIT_REQUESTS_PER_MINUTE": "120",
                     "RATE_LIMIT_BURST_LIMIT": "20",
                     "REDIS_URL": "redis://localhost:6379",
+                    # Clear env vars that override settings.env (e.g. EAB conftest sets ENVIRONMENT=test)
+                    "ENVIRONMENT": "",
+                    "APP_ENV": "",
+                    "ACGS2_ENV": "",
                 },
             ),
             patch.object(settings, "env", "production"),
