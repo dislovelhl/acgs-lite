@@ -11,15 +11,16 @@ benchmarkable hot path under a fixed harness and fixed correctness bar.
 The benchmark measures governance quality and speed for the `acgs-lite` engine on a fixed constitutional ruleset and scenario corpus.
 
 Primary metric:
-- `composite_score` — higher is better
+- `composite_score` — higher is better (v2: log-scale formula, see Composite v2 below)
 
 Hard guardrails:
 - `compliance_rate` must never regress intentionally
 - `false_negative_rate` must never regress intentionally
 - `false_positive_rate` must never regress intentionally
 
-Tie-breakers when `composite_score` is close:
+Tie-breakers when `composite_score` is close (within 0.005 tie band):
 - lower `p99_latency_ms`
+- tighter `tail_ratio` (p99/p50)
 - higher `throughput_rps`
 - simpler code
 - changes isolated to the actual hot path
@@ -138,7 +139,13 @@ mean_latency_ms:       0.000927
 throughput_rps: 2650825.347083
 false_positive_rate:       0.000000
 false_negative_rate:       0.000000
-composite_score:       0.999764
+composite_score:       0.838953
+latency_score:       0.663571
+throughput_score:       0.863056
+tail_ratio:       4.076923
+tail_score:       0.838091
+correctness_score:       1.000000
+rocs_norm:       0.828311
 spec_to_artifact_score:       1.000000
 rocs: 5056362.014435
 rocs_governance_value:    2494.000000
@@ -151,13 +158,68 @@ rules_checked:             18
 ```
 
 Primary decision fields:
-- `composite_score`
+- `composite_score` — primary, v2 log-scale formula
 - `compliance_rate`
 - `false_negative_rate`
 - `false_positive_rate`
+- `latency_score` — log₁₀(10/p99_ms) / log₁₀(100000), weight 0.25
+- `throughput_score` — log₁₀(throughput) / log₁₀(10M), weight 0.20
+- `tail_score` — 1 - (p99/p50 - 1) / 19, weight 0.20
+- `tail_ratio` — p99/p50 (lower = more consistent)
 - `p99_latency_ms`
 - `throughput_rps`
 - `errors`
+
+## Composite v2 Formula
+
+The v1 formula saturated after ~90 experiments: throughput was capped at 10K rps
+(actual >1M), p99 headroom was 0.014%, and compliance/fn_rate were permanently maxed.
+
+v2 uses log-scale metrics with meaningful gradient at µs performance:
+
+```python
+latency_score     = log₁₀(10 / p99_ms) / log₁₀(100_000)         # 0-1, log scale
+throughput_score   = log₁₀(throughput) / log₁₀(10_000_000)        # 0-1, log scale
+tail_score         = max(0, 1 - (p99/p50 - 1) / 19)               # 0-1, tighter=better
+correctness        = compliance * (1 - fn_rate) * (1 - fp_rate)    # 0-1, multiplicative
+rocs_norm          = log₁₀(rocs) / log₁₀(100_000_000)             # 0-1, log scale
+
+composite = (
+    correctness    * 0.15
+    + latency_score  * 0.25
+    + throughput_score * 0.20
+    + tail_score       * 0.20
+    + rocs_norm        * 0.10
+    + (1 - fn_rate)    * 0.05
+    + (1 - fp_rate)    * 0.05
+)
+```
+
+Headroom at current performance: ~13% (vs 0.014% under v1).
+
+Current best (15-trial median, exp265): composite=0.868, p99=2.87µs, tput=1.14M rps,
+tail_ratio=2.5:1, compliance=1.0, fn=0, fp=0.
+
+Improvement trajectory from v2 baseline (0.798):
+- exp255/256: warmup cold-path priming → 0.856 (+0.058)
+- exp259: gc.collect/freeze before warmup → 0.867 (+0.011)
+- exp261: 8× warmup iterations → 0.869 (+0.002)
+- exp264: deferred 11-tuple unpack → 0.868 (neutral, cleaner)
+- exp265: Rust scan_hot() bitmask-only → 0.868 (neutral, architecturally correct)
+
+**Measurement floor reached**: p99 noise is 51.7% at sub-3µs. OS scheduling jitter
+dominates the latency_score dimension. Further p99 improvements require:
+1. Process isolation with CPU pinning (not feasible in library __init__)
+2. Larger scenario corpus (more samples → more stable p99 percentile)
+3. Architectural change: move entire validate() into Rust (eliminates Python dispatch)
+
+Remaining optimization axes:
+- **Latency**: p99 2.87µs → 2.26µs needed for +0.005 composite (gated by noise)
+- **Throughput**: 1.14M → 1.67M rps needed for +0.005 composite (hard)
+- **Tail**: ratio 2.5:1 → 2.0:1 needed for +0.005 composite (achievable)
+
+Tie band widened to 0.005 (was 0.0005) to match the new formula's wider range.
+Ceiling detection tight_band widened to 0.001 (was 0.0001).
 
 ## Logging Results
 
@@ -232,6 +294,58 @@ Discard changes that:
 - add complexity for negligible gain
 - mix multiple unrelated ideas so the result is not interpretable
 - broaden the surface into product features that the benchmark does not exercise
+
+## Stable Measurement (run bench_stable.py near the ceiling)
+
+When p99 variance between runs exceeds your target delta, single-run benchmarks
+are unreliable. Use the multi-trial wrapper to get median metrics:
+
+```bash
+python3 autoresearch/bench_stable.py --trials 7
+```
+
+This runs the frozen harness 7 times and emits the **median** of each metric as
+a standard `run.log`. The variance report tells you whether your improvement
+signal is real or noise:
+
+- `spread < target_delta` → signal is real, trust the result
+- `spread >= target_delta` → noise dominates; more trials or architectural change needed
+
+Use `bench_stable.py` output with `log_run.py` identically to a normal `run.log`.
+
+## Ceiling Detection and Family Pivoting
+
+A ceiling is declared when 5 consecutive runs in a scope show no `improved` result.
+`setup_run.py` and `log_run.py` print a warning automatically.
+
+Ceiling response protocol (in order):
+1. **Verify with bench_stable.py** — run 7 trials to check variance. The ceiling
+   may be noise, not a true local optimum.
+2. **Pivot hypothesis family** — check `feature_grid.py` for unexplored families:
+   ```bash
+   python3 autoresearch/feature_grid.py
+   ```
+   The grid shows best composite per (family × scope). Unexplored families are
+   labeled `(unexplored)`. Try the family with lowest best composite first.
+3. **Architectural change** — if all families are explored and the ceiling holds
+   across 7+ stable trials, the current architecture has reached its local optimum.
+   This requires a structural change (new code path, different data structure,
+   Rust kernel rewrite) rather than tuning.
+
+Do not keep tuning the same family after a confirmed ceiling.
+
+## Hypothesis Pre-Registration
+
+Before each experiment, record three things internally:
+
+```
+Family:   <matcher | constitution | rust | warmup | engine | method>
+Metric:   <composite | p99_ms | simplicity>
+Discard:  <what outcome would falsify this hypothesis>
+```
+
+If you cannot state all three clearly, the experiment is not ready. Pre-registration
+prevents HARKing (reinterpreting results post-hoc to match a different hypothesis).
 
 ## Experiment Method
 

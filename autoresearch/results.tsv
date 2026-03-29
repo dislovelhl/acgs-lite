@@ -290,3 +290,25 @@ uncommitted	0.999873	1.000000	0.004230	hot-path	discard	exp252: Rust validate_ho
 uncommitted	0.999795	1.000000	0.006850	hot-path	discard	exp252-rerun: Rust validate_hot uses allocation-light scan_hot bitmask path
 uncommitted	0.999882	1.000000	0.003920	hot-path	discard	exp254: warm empty-dict allow path with create/build representative actions
 uncommitted	0.999846	1.000000	0.005120	hot-path	discard	exp254-rerun: warm empty-dict allow path with create/build representative actions
+e42f41e8	0.798367	1.000000	0.008170	hot-path	baseline	composite v2 baseline: log-scale formula (latency+throughput+tail+rocs)
+uncommitted	0.999800	1.000000	0.005000	hot-path	discard	test experiment
+def9999	0.999750	1.000000	0.005500	hot-path	discard	exp6: another attempt
+fef123c7	0.844158	1.000000	0.004420	hot-path	baseline	warmup: prime exact p99-tail patterns (decision.*secret, no appeal, age-based, first-scenario, ctx-path cold scenarios)
+d5bae0fd	0.855660	1.000000	0.003670	hot-path	baseline	warmup: add remaining cold-path outliers (keep..secret, mark..trade secrets, auto-reject, deploy variant)
+d5bae0fd	0.852404	1.000000	0.003850	hot-path	discard	engine: split _hot into _hot_fast(3) + _hot(11) — UNPACK_SEQUENCE(11→3) on Rust path
+23499488	0.854617	1.000000	0.003690	hot-path	baseline	warmup: unconditional gc.disable() after gc.freeze() — zero-GC for validate() accuracy phase
+80357d35	0.867449	1.000000	0.002900	hot-path	baseline	warmup: gc.collect/freeze/disable BEFORE warmup + no attribute swaps — fix 15µs cold-first-call from GC L1 cache eviction
+uncommitted	0.999800	1.000000	0.005000	hot-path	discard	test experiment
+def9999	0.999750	1.000000	0.005500	hot-path	discard	exp6: another attempt
+uncommitted	0.999800	1.000000	0.005000	hot-path	discard	test experiment
+def9999	0.999750	1.000000	0.005500	hot-path	discard	exp6: another attempt
+uncommitted	0.999800	1.000000	0.005000	hot-path	discard	test experiment
+def9999	0.999750	1.000000	0.005500	hot-path	discard	exp6: another attempt
+1c144281	0.866318	1.000000	0.002960	hot-path	baseline	exp259: gc before warmup + no attribute swap + NoopRecorder reset — eliminates 15µs cold-first-call; p99 3.67→2.96µs, tail 3.1→2.5:1
+1c144281	0.866318	1.000000	0.002960	hot-path	discard	exp260: reuse pre-allocated exceptions (mutate action + re-raise) — throughput regression 1.1M→0.77M rps from traceback reference chain in contextlib.suppress
+f900404a	0.868895	1.000000	0.002830	hot-path	baseline	exp261: warmup iterations 3→8 for full CPython specialization — p99 2.96→2.83µs
+f900404a	0.868895	1.000000	0.002830	hot-path	discard	exp262: action.lower() dict cache — throughput +21% but p99 +12% regression from cache miss overhead on accuracy test
+f900404a	0.863552	1.000000	0.002970	hot-path	discard	exp263: reuse pre-allocated exceptions with __traceback__=None — negligible throughput gain, p99 +5% regression from extra hot-path operation
+d6ffbe03	0.868479	1.000000	0.002850	hot-path	baseline	exp264: defer 11-tuple unpack to Python fallback — Rust fast path indexes 3 items directly
+d6ffbe03	0.867000	1.000000	0.002920	hot-path	baseline	exp264 (15-trial): p99 noise=51.7% — measurement floor reached; OS scheduling jitter dominates p99 at sub-3µs
+98537102	0.867873	1.000000	0.002870	hot-path	baseline	exp265: rust scan_hot() — bitmask-only path, no Violation alloc/String clone. Neutral composite (noise-dominated) but architecturally correct

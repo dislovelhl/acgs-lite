@@ -125,3 +125,81 @@ def recent_rows(
         if infer_scope(row) == scope and normalize_status(row.get("status")) in statuses
     ]
     return filtered[-limit:]
+
+
+# ---------------------------------------------------------------------------
+# Ceiling detection, family classification, and data-quality helpers
+# ---------------------------------------------------------------------------
+
+# Hypothesis family signals — order matters, first match wins.
+# Each entry: (family_name, [substrings_to_match_in_lowercase_description])
+_FAMILY_SIGNALS: list[tuple[str, list[str]]] = [
+    ("matcher",      ["matcher:", "aho-corasick", "keyword"]),
+    ("constitution", ["constitution:", "precompute", "rule tuple", "rule representation"]),
+    ("rust",         ["rust:", "bitmask", "pyo3", "maturin", "scan_hot", "zero-alloc"]),
+    ("warmup",       ["warmup", "gc.", "jit", "warm "]),
+    ("engine",       ["engine:", "validate", "dispatch", "fast-path", "hot-path:"]),
+    ("method",       ["method:", "baseline", "tie-band", "discipline"]),
+]
+_DEFAULT_FAMILY = "general"
+
+
+def extract_family(description: str) -> str:
+    """Classify an experiment description into a hypothesis family."""
+    desc = description.lstrip(SIDECAR_MARKER).strip().lower()
+    for family, signals in _FAMILY_SIGNALS:
+        if any(s in desc for s in signals):
+            return family
+    return _DEFAULT_FAMILY
+
+
+def ceiling_detected(
+    rows: list[dict[str, str]],
+    scope: str = "hot-path",
+    window: int = 5,
+) -> bool:
+    """Return True if the last `window` runs in `scope` contain no 'improved' result.
+
+    A ceiling means the current architecture has no low-hanging fruit left —
+    it's time to pivot to a different experiment family or architectural approach.
+    """
+    scoped = [r for r in rows if infer_scope(r) == scope]
+    if len(scoped) < window:
+        return False
+    recent = scoped[-window:]
+    return not any(normalize_status(r.get("status")) == "improved" for r in recent)
+
+
+def ceiling_tightness(
+    rows: list[dict[str, str]],
+    scope: str = "hot-path",
+    window: int = 5,
+    tight_band: float = 0.001,
+) -> str | None:
+    """Classify a detected ceiling as 'tight' or 'loose', or None if no ceiling.
+
+    tight: composite spread across the window < tight_band.
+        The system is at a true measurement floor — pivot family now.
+
+    loose: composite spread >= tight_band.
+        Measurement noise is masking the signal — run bench_stable.py first
+        before declaring the ceiling real.
+    """
+    if not ceiling_detected(rows, scope, window):
+        return None
+    scoped = [r for r in rows if infer_scope(r) == scope]
+    if len(scoped) < window:
+        return None
+    recent = scoped[-window:]
+    composites = [float(r.get("composite", "0")) for r in recent]
+    spread = max(composites) - min(composites)
+    return "tight" if spread < tight_band else "loose"
+
+
+def uncommitted_count(rows: list[dict[str, str]]) -> int:
+    """Count rows where the commit SHA is the literal string 'uncommitted'.
+
+    High counts mean experiments are unrecoverable — the code that produced
+    those results cannot be checked out. Commit before logging.
+    """
+    return sum(1 for r in rows if r.get("commit", "").strip() == "uncommitted")
