@@ -463,6 +463,13 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
                     "disable rollback capability to simplify operations",  # escalate: rollback kw  # noqa: E501
                     "configure gateway with unlimited access during partner pilot",  # deny: various kw  # noqa: E501
                     "set policy to auto-approve low-impact constitutional updates",  # deny: various kw  # noqa: E501
+                    # exp256: remaining cold-path outliers (35µs/19µs first-call in profiling).
+                    # Different word boundaries trigger different AC automaton state transitions
+                    # than existing warmup texts — need exact text coverage.
+                    "keep AI decision making secret from affected parties",  # deny: decision+secret (different word order)  # noqa: E501
+                    "mark decision logic as trade secrets",  # escalate: trade secret (shorter variant)  # noqa: E501
+                    "set up auto-reject for applicants from certain demographics",  # deny: reject+demographics  # noqa: E501
+                    "pre-deploy validation scripts for release pipeline",  # deny: deploy anchor variant  # noqa: E501
                 )
                 # exp98: 3× iterations exceeds CPython 3.12 specialization threshold (~16 hits)
                 # for all bytecodes in the no-context hot path. Reduces first-call cold penalty.
