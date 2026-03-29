@@ -1,11 +1,11 @@
 # ACGS Agent Guide
 
-> **Reviewed**: 2026-03-20 | **Commit**: `1d769ab` | **Branch**: `main`
+> **Reviewed**: 2026-03-29 | **Commit**: `a691eee6` | **Branch**: `main`
 > **Constitutional Hash**: `608508a9bd224290` | **Python**: 3.11+ | **Line Length**: 100
 
 Constitutional governance infrastructure for AI agents. The repository contains a standalone
-governance library, a large platform runtime, shared services, a Svelte frontend, and supporting
-worker/tooling packages.
+governance library, a deliberation extraction package, a large platform runtime, shared services,
+a Svelte frontend, GitLab/demo governance agent assets, and supporting worker/tooling packages.
 
 Brand and naming rules live in [`docs/brand-architecture.md`](docs/brand-architecture.md).
 
@@ -20,6 +20,7 @@ acgs/
 │   │   ├── rust/                   # Optional Rust acceleration workspace
 │   │   ├── tests/                  # Package test suite
 │   │   └── examples/               # Quickstarts and examples
+│   ├── acgs-deliberation/          # Compatibility package for deliberation extraction
 │   ├── enhanced_agent_bus/         # Platform runtime and governance engine
 │   │   ├── api/                    # FastAPI app factory and routes
 │   │   ├── constitutional/         # Amendment engine and storage
@@ -40,6 +41,8 @@ acgs/
 │   ├── services/api_gateway/       # API Gateway service
 │   └── shared/                     # Shared types, config, auth, logging, security
 ├── workers/governance-proxy/       # Cloudflare Worker governance proxy
+├── constitutional-sentinel-demo/   # Example governance validator app/demo
+├── gitlab-duo/                     # GitLab Duo governance agent assets
 ├── sdk/                            # Client SDK artifacts
 ├── autoresearch/                   # Benchmark optimization harness
 └── ecosystem.config.cjs            # PM2 service definitions
@@ -173,6 +176,7 @@ Never import from `enhanced_agent_bus.middleware` (singular). Avoid cross-import
 | Path | Scope |
 | ---- | ----- |
 | [`packages/acgs-lite/AGENTS.md`](packages/acgs-lite/AGENTS.md) | Standalone governance library |
+| [`packages/acgs-deliberation/AGENTS.md`](packages/acgs-deliberation/AGENTS.md) | Deliberation extraction compatibility package |
 | [`packages/enhanced_agent_bus/AGENTS.md`](packages/enhanced_agent_bus/AGENTS.md) | Platform engine |
 | [`packages/enhanced_agent_bus/maci/AGENTS.md`](packages/enhanced_agent_bus/maci/AGENTS.md) | MACI role separation |
 | [`packages/enhanced_agent_bus/opa_client/AGENTS.md`](packages/enhanced_agent_bus/opa_client/AGENTS.md) | OPA policy evaluation client |
@@ -189,6 +193,8 @@ Never import from `enhanced_agent_bus.middleware` (singular). Avoid cross-import
 | [`src/core/services/api_gateway/AGENTS.md`](src/core/services/api_gateway/AGENTS.md) | API Gateway |
 | [`src/core/shared/AGENTS.md`](src/core/shared/AGENTS.md) | Shared types, config, logging |
 | [`src/core/shared/security/AGENTS.md`](src/core/shared/security/AGENTS.md) | Security subsystem |
+| [`constitutional-sentinel-demo/AGENTS.md`](constitutional-sentinel-demo/AGENTS.md) | Example GitLab governance validator demo |
+| [`gitlab-duo/AGENTS.md`](gitlab-duo/AGENTS.md) | GitLab Duo governance agent assets |
 | [`autoresearch/AGENTS.md`](autoresearch/AGENTS.md) | Benchmark optimization |
 
 Constitutional Hash: `608508a9bd224290`

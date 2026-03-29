@@ -8,12 +8,16 @@ ACGS is a multi-package governance codebase:
 
 - **acgs-lite** (`packages/acgs-lite/`) — standalone governance library with optional Rust
   acceleration and integration adapters.
+- **acgs-deliberation** (`packages/acgs-deliberation/`) — compatibility package for the ongoing
+  extraction of deliberation/HITL functionality from the platform runtime.
 - **enhanced_agent_bus** (`packages/enhanced_agent_bus/`) — platform runtime with MACI,
   constitutional workflows, MCP, persistence, observability, and service integrations.
 - **Shared services** (`src/core/`) — API gateway plus shared auth, config, logging, and
   security code.
 - **Frontend and edge** (`packages/propriety-ai/`, `workers/governance-proxy/`) — SvelteKit UI
   and a Cloudflare Worker proxy.
+- **Governance agent examples/integrations** (`constitutional-sentinel-demo/`, `gitlab-duo/`) —
+  reference validator/demo assets and GitLab Duo flow configuration.
 
 Constitutional hash: `608508a9bd224290` — the SHA-256 of the default constitutional rule set,
 used as both `Constitution.default().hash` and the platform constant in
@@ -104,9 +108,12 @@ Run evals with the bash snippets in each eval `.md` file from repo root.
 ```
 pyproject.toml (root workspace, uv)
 ├── packages/acgs-lite/            -> import acgs_lite
+├── packages/acgs-deliberation/    -> extracted deliberation compatibility surface
 ├── packages/enhanced_agent_bus/   -> import enhanced_agent_bus
 ├── packages/propriety-ai/         -> SvelteKit frontend
 ├── workers/governance-proxy/      -> Cloudflare Worker
+├── constitutional-sentinel-demo/  -> example governance validator app
+├── gitlab-duo/                    -> GitLab Duo governance-agent assets
 └── src/core/
     ├── services/api_gateway/      -> FastAPI service
     └── shared/                    -> import src.core.shared
@@ -174,7 +181,12 @@ Package-level `pyproject.toml` files define additional markers where needed.
 - After code changes, run the narrowest meaningful verification first, then expand if the change
   touches shared or critical paths.
 - Scope lint/test commands to changed areas before paying for a full repo run.
-- Do not commit known failures unless the user explicitly asks for a partial checkpoint.
+- Run `make test-quick` before committing. Never commit known failures unless the user explicitly
+  approves a partial checkpoint.
+- Before pushing, verify remote state:
+  `git status && git log --oneline origin/$(git rev-parse --abbrev-ref HEAD)..HEAD`
+- When restarting a dev server, check for port conflicts first: `lsof -i :<port>` and kill stale
+  processes before starting a new instance.
 
 ## Environment
 
@@ -192,3 +204,19 @@ checks to run on commit.
 
 See `packages/acgs-lite/CLAUDE.md` and `packages/enhanced_agent_bus/CLAUDE.md` for package-level
 guidance.
+
+## General Behavior
+
+- Take action immediately. State assumptions and proceed rather than asking clarifying questions.
+  Only ask if the task is genuinely impossible without more information.
+- When the scope is ambiguous, state which project/package you are targeting before starting.
+
+## Refactoring Guidelines
+
+When narrowing exception handlers, changing error handling, or refactoring cross-cutting patterns,
+work **one module at a time** and run tests after each module. Never bulk-change multiple modules
+in a single pass. If more than 5 tests fail after a module change, revert that module and retry
+with a more conservative approach.
+
+When using sub-agents for parallel work, scope each agent to <10 files. Each agent must run tests
+for its scoped module before returning. Revert the entire agent's work if failures exceed 5 tests.
