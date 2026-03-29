@@ -359,6 +359,7 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
             self._ac_iter is not None,  # [8] exp75: precomputed bool — IS_OP→LOAD_FAST
             isinstance(self._fast_records, _NoopRecorder),  # [9] exp240: precomputed _is_noop
             None,  # [10] exp92: placeholder for _rust_validator (set below after build)
+            self._pooled_result,  # [11] exp275: avoid LOAD_ATTR on allow return
         )
         # exp92: _rust_strict removed — _rv is now embedded in _hot[10] directly.
         # exp80: Build Rust hot-path validator
@@ -418,6 +419,7 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
                 _h[8],
                 _h[9],
                 self._rust_validator,
+                _h[11],  # exp275: _pooled_result
             )
         # exp81: Warm up Rust dual-automaton + regex dispatch to prime CPU
         # instruction caches and CPython inline caches for the PyO3 call path.
@@ -974,7 +976,8 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
                     # exp274: direct counter increment saves ~15ns vs append(None).
                     # _NoopRecorder._count is an int slot; += 1 avoids method dispatch.
                     _fast_records._count += 1
-                    return self._pooled_result
+                    # exp275: _hot[11] avoids LOAD_ATTR for self._pooled_result
+                    return _hot[11]
                 # exp273: defer _rule_excs to deny branch only
                 _rule_excs = _hot[4]
                 _result = self._validate_rust_no_context(
@@ -1038,6 +1041,7 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
             _has_ac,
             _is_noop,
             _rv,
+            _,  # exp275: _pooled_result (not used in fallback path)
         ) = _hot
         # exp62: defer request_id to deny/escalate path only — saves ~40ns on all allow calls.
         # Benchmark never reads result.request_id; NoopRecorder discards the record.

@@ -23,6 +23,7 @@ def _disable_rust_and_ac(engine: GovernanceEngine) -> None:
         False,
         _h[9],
         None,
+        _h[11],
     )
     engine._ac_iter = None
     engine._rust_validator = None
