@@ -67,6 +67,10 @@ async def test_require_auth_allows_bypass_only_in_development(monkeypatch):
 async def test_require_auth_rejects_bypass_in_production(monkeypatch):
     monkeypatch.setenv("AUTH_DISABLED", "true")
     monkeypatch.setattr(settings, "env", "production")
+    # Clear env vars that would override settings.env (e.g. conftest sets ENVIRONMENT=test)
+    monkeypatch.delenv("ENVIRONMENT", raising=False)
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("ACGS2_ENV", raising=False)
 
     with pytest.raises(HTTPException, match="Authentication required") as exc_info:
         await auth_dependency.require_auth(None)
