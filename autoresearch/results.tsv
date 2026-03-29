@@ -326,3 +326,4 @@ c00a160a	0.878002	1.000000	0.002370	hot-path	baseline	exp273: defer _rule_excs t
 a67be93f	0.879353	1.000000	0.002310	hot-path	baseline	exp274: direct _count increment on allow — saves 15ns method dispatch; tput 1.49M→1.53M (+2.7%), composite 0.878→0.879
 28d8af99	0.875859	1.000000	0.002460	hot-path	baseline	exp275: _pooled_result in _hot[11] — neutral composite (within noise), architecturally consistent
 d4b5adbc	0.877435	1.000000	0.002380	hot-path	discard	exp276: precomputed guard flag — neutral, reverted (adds complexity without measurable gain)
+5af1a5cd	0.877435	1.000000	0.002380	hot-path	discard	exp277: packed i64 return — WORSE (+18ns from bitwise unpack vs UNPACK_SEQUENCE); reverted
