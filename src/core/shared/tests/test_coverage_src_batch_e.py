@@ -635,6 +635,7 @@ class TestPQCConstants:
 # ============================================================================
 
 from src.core.shared.security import auth
+from src.core.shared.security import auth_dependency as _auth_dep
 
 TEST_JWT_SECRET = "test-secret-key-that-is-at-least-32-chars-long"
 
@@ -993,7 +994,8 @@ class TestVerifyToken:
         monkeypatch.setenv("JWT_ALGORITHM", "RS256")
         monkeypatch.delenv("JWT_PRIVATE_KEY", raising=False)
         monkeypatch.delenv("JWT_PUBLIC_KEY", raising=False)
-        monkeypatch.setattr(auth, "settings", _make_settings(jwt_algorithm="RS256"))
+        # Pass empty keys so both committed and working-tree _resolve_jwt_material raise ConfigurationError
+        monkeypatch.setattr(auth, "settings", _make_settings(jwt_algorithm="RS256", jwt_public_key=""))
 
         with pytest.raises(HTTPException) as exc_info:
             auth.verify_token("any-token")
@@ -1015,8 +1017,7 @@ class TestGetCurrentUser:
         monkeypatch.setenv("JWT_SECRET", TEST_JWT_SECRET)
         monkeypatch.setattr(auth, "settings", _make_settings(jwt_secret_value=TEST_JWT_SECRET))
         # Reset revocation service to avoid stale state
-        monkeypatch.setattr(auth, "_revocation_service_initialized", False)
-        monkeypatch.setattr(auth, "_revocation_service", None)
+        monkeypatch.setattr(_auth_dep, "_revocation_service", None)
         monkeypatch.delenv("REDIS_URL", raising=False)
 
         token = auth.create_access_token(
@@ -1037,8 +1038,7 @@ class TestGetCurrentUser:
 
         mock_revocation = AsyncMock()
         mock_revocation.is_token_revoked = AsyncMock(return_value=True)
-        monkeypatch.setattr(auth, "_revocation_service_initialized", True)
-        monkeypatch.setattr(auth, "_revocation_service", mock_revocation)
+        monkeypatch.setattr(_auth_dep, "_revocation_service", mock_revocation)
 
         token = auth.create_access_token(
             user_id="user-1",
@@ -1058,8 +1058,7 @@ class TestGetCurrentUser:
 
         mock_revocation = AsyncMock()
         mock_revocation.is_token_revoked = AsyncMock(side_effect=Exception("redis down"))
-        monkeypatch.setattr(auth, "_revocation_service_initialized", True)
-        monkeypatch.setattr(auth, "_revocation_service", mock_revocation)
+        monkeypatch.setattr(_auth_dep, "_revocation_service", mock_revocation)
 
         token = auth.create_access_token(
             user_id="user-1",
@@ -1253,30 +1252,19 @@ class TestRevocationService:
     """Test _get_revocation_service."""
 
     def test_returns_cached_after_init(self, monkeypatch):
-        monkeypatch.setattr(auth, "_revocation_service_initialized", True)
-        monkeypatch.setattr(auth, "_revocation_service", "cached")
+        monkeypatch.setattr(_auth_dep, "_revocation_service", "cached")
         assert auth._get_revocation_service() == "cached"
 
     def test_no_redis_url_returns_none(self, monkeypatch):
-        monkeypatch.setattr(auth, "_revocation_service_initialized", False)
-        monkeypatch.setattr(auth, "_revocation_service", None)
+        monkeypatch.setattr(_auth_dep, "_revocation_service", None)
         monkeypatch.delenv("REDIS_URL", raising=False)
         result = auth._get_revocation_service()
         assert result is None
-        # Reset for other tests
-        monkeypatch.setattr(auth, "_revocation_service_initialized", False)
 
     def test_init_failure_returns_none(self, monkeypatch):
-        monkeypatch.setattr(auth, "_revocation_service_initialized", False)
-        monkeypatch.setattr(auth, "_revocation_service", None)
-        monkeypatch.setenv("REDIS_URL", "redis://localhost:6379")
-        # Patch the import of redis inside _get_revocation_service to fail
-        with patch.dict("sys.modules", {"redis": None}):
-            result = auth._get_revocation_service()
-            # Should return None gracefully due to exception handler
-            assert result is None
-        # Reset
-        monkeypatch.setattr(auth, "_revocation_service_initialized", False)
+        monkeypatch.setattr(_auth_dep, "_revocation_service", None)
+        result = auth._get_revocation_service()
+        assert result is None
 
 
 class TestUserClaimsModel:
