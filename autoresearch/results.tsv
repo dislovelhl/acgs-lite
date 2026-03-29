@@ -312,3 +312,7 @@ f900404a	0.863552	1.000000	0.002970	hot-path	discard	exp263: reuse pre-allocated
 d6ffbe03	0.868479	1.000000	0.002850	hot-path	baseline	exp264: defer 11-tuple unpack to Python fallback — Rust fast path indexes 3 items directly
 d6ffbe03	0.867000	1.000000	0.002920	hot-path	baseline	exp264 (15-trial): p99 noise=51.7% — measurement floor reached; OS scheduling jitter dominates p99 at sub-3µs
 98537102	0.867873	1.000000	0.002870	hot-path	baseline	exp265: rust scan_hot() — bitmask-only path, no Violation alloc/String clone. Neutral composite (noise-dominated) but architecturally correct
+08aa72c7	0.871191	1.000000	0.002720	hot-path	baseline	exp266: inline allow-path — eliminate method call overhead for RUST_ALLOW; allow 422→375ns, tput +1.9%
+4cf7749b	0.867571	1.000000	0.002920	hot-path	baseline	exp267: truthiness short-circuit for context — neutral (26ns saving on 680 empty-dict scenarios too small to measure)
+7cdcf476	0.869753	1.000000	0.002780	hot-path	baseline	exp268: remove islower() guard — .lower() is 33ns faster for already-lowercase strings; throughput 1.16M→1.38M (+19%)
+ac1cdd99	0.868458	1.000000	0.002840	hot-path	baseline	exp269: defer strict local to slow paths — self.strict in fast-path guard eliminates 1 STORE_FAST on allow path

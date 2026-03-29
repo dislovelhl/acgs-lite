@@ -197,8 +197,8 @@ composite = (
 
 Headroom at current performance: ~13% (vs 0.014% under v1).
 
-Current best (15-trial median, exp265): composite=0.868, p99=2.87µs, tput=1.14M rps,
-tail_ratio=2.5:1, compliance=1.0, fn=0, fp=0.
+Current best (7-trial median, exp269): composite=0.869, p99=2.84µs, tput=1.34M rps,
+tail_ratio=2.5:1, allow_path=328ns, compliance=1.0, fn=0, fp=0.
 
 Improvement trajectory from v2 baseline (0.798):
 - exp255/256: warmup cold-path priming → 0.856 (+0.058)
@@ -206,17 +206,26 @@ Improvement trajectory from v2 baseline (0.798):
 - exp261: 8× warmup iterations → 0.869 (+0.002)
 - exp264: deferred 11-tuple unpack → 0.868 (neutral, cleaner)
 - exp265: Rust scan_hot() bitmask-only → 0.868 (neutral, architecturally correct)
+- exp266: inline allow-path in validate() → 0.871 (+0.003)
+- exp268: remove islower() guard → 0.870 (+0.002, throughput +19%)
+- exp269: defer strict to slow paths → 0.869 (neutral, cleaner)
 
-**Measurement floor reached**: p99 noise is 51.7% at sub-3µs. OS scheduling jitter
-dominates the latency_score dimension. Further p99 improvements require:
+**Measurement floor reached**: p99 noise is 21% and composite noise is 1.3% at sub-3µs.
+OS scheduling jitter dominates the latency_score dimension. Further improvements require:
 1. Process isolation with CPU pinning (not feasible in library __init__)
 2. Larger scenario corpus (more samples → more stable p99 percentile)
 3. Architectural change: move entire validate() into Rust (eliminates Python dispatch)
 
+Discarded experiments (instructive):
+- exp257: _hot_fast(3) split — CPython inline cache neutral
+- exp260: exception reuse — traceback chain caused 30% throughput regression
+- exp262: action.lower() dict cache — throughput +21% but p99 +12% regression
+- exp263: exception reuse v2 with __traceback__=None — p99 +5% regression
+
 Remaining optimization axes:
-- **Latency**: p99 2.87µs → 2.26µs needed for +0.005 composite (gated by noise)
-- **Throughput**: 1.14M → 1.67M rps needed for +0.005 composite (hard)
-- **Tail**: ratio 2.5:1 → 2.0:1 needed for +0.005 composite (achievable)
+- **Latency**: p99 2.84µs → 2.26µs needed for +0.005 composite (gated by noise)
+- **Throughput**: 1.34M → 1.67M rps needed for +0.005 composite (approaching)
+- **Tail**: ratio 2.5:1 → 2.0:1 needed for +0.005 composite (gated by noise)
 
 Tie band widened to 0.005 (was 0.0005) to match the new formula's wider range.
 Ceiling detection tight_band widened to 0.001 (was 0.0001).
