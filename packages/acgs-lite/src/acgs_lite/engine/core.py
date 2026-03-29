@@ -937,17 +937,15 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
         context: dict[str, Any] | None = None,
     ) -> ValidationResult:
         """Validate an action against the constitution."""
-        strict = self.strict
-        # exp264: replace UNPACK_SEQUENCE(11) with direct indexed access for the
-        # Rust fast path — only 3 items needed (rv, fast_records, rule_excs).
-        # Tuple indexing costs 63ns for 3 items vs 120ns for UNPACK_SEQUENCE(11).
-        # The full 11-item unpack is deferred to the Python fallback path.
+        # exp269: access _hot first, then extract fast-path items.
+        # Combine strict + rv + fast_records into a single pre-computed flag
+        # would save 3 comparisons, but risks correctness if strict changes.
+        # Instead, just defer `strict = self.strict` to after the fast-path guard.
         _hot = self._hot
         _rv = _hot[10]
         _fast_records = _hot[6]
         # exp113: defer start to slow path only — fast path never reads latency_ms.
-        # Eliminates one ternary eval (~8ns) from every validate() call.
-        if _rv is not None and _fast_records is not None and strict:
+        if _rv is not None and _fast_records is not None and self.strict:
             _rule_excs = _hot[4]
             # exp268: always call .lower() — for already-lowercase strings, CPython's
             # str.lower() is 54ns vs islower() guard at 87ns (-33ns). The guard was
@@ -990,7 +988,8 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
                 )
                 if _result is not None:
                     return _result
-        elif _rv is not None and context and strict:
+        elif _rv is not None and context and self.strict:
+            strict = self.strict
             # exp264: lazy unpack for context path — only what's needed.
             _rule_excs = _hot[4]
             _is_noop = _hot[9]
@@ -1026,6 +1025,7 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
                     return _result
         # exp113: start timer here (slow path only — fast path returns early above).
         start = time.perf_counter()
+        strict = self.strict
         # exp264: full unpack only on Python fallback path (not reached by Rust fast path).
         (
             _ac_iter,
