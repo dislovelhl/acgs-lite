@@ -1,13 +1,13 @@
 # Eval Dashboard
 
-> **Last updated**: 2026-03-29 | **Branch**: main | **Commit**: `a360d907`
+> **Last updated**: 2026-03-29 | **Branch**: main | **Commit**: `HEAD`
 
 ## Summary
 
 | Package | Tests | Passed | Failed | Skipped | Status |
 |---------|-------|--------|--------|---------|--------|
 | acgs-lite | 3284+135 | 3124+314 | 0 | 31 | ✅ PASS |
-| acgs-lite/compliance | 314 | 314 | 0 | 0 | ✅ PASS |
+| acgs-lite/compliance | 365 | 365 | 0 | 0 | ✅ PASS |
 | enhanced_agent_bus | 37740 | 41159 | 0* | 513 | ✅ PASS* |
 | sdk/typescript | 15 | 15 | 0 | 0 | ✅ PASS |
 | src/core/shared/security | 628 | 627 | 0 | 1 | ✅ PASS |
@@ -38,6 +38,9 @@
 | [compliance-eu-ai-act-risk-tier](compliance-eu-ai-act-risk-tier.md) | Capability | HIGH | ✅ PASS | 6/6 |
 | [compliance-evidence-collectors](compliance-evidence-collectors.md) | Capability | HIGH | ✅ PASS | 8/8 |
 | [compliance-cli-module](compliance-cli-module.md) | Capability | HIGH | ✅ PASS | 9/9 |
+| [compliance-report-exporter](compliance-report-exporter.md) | Regression | LOW | ✅ PASS | 3/3 |
+| [compliance-evidence-integration](compliance-evidence-integration.md) | Capability | MEDIUM | ✅ PASS | 6/6 |
+| [compliance-eu-ai-act-unacceptable-tier](compliance-eu-ai-act-unacceptable-tier.md) | Capability | LOW | ✅ PASS | 4/4 |
 
 ---
 
@@ -123,8 +126,4 @@
 
 ## Open Evals Needed
 
-| Feature | Eval needed | Priority |
-|---------|------------|---------|
-| `evidence.py` + `MultiFrameworkAssessor` integration | Does evidence feed into checklist `mark_complete()` calls? | MEDIUM |
-| `ComplianceReportExporter` text/markdown/json output | Regression test for all 3 formats | LOW |
-| EU AI Act `unacceptable` tier | Verify all Art.5 items present; no high-risk articles | LOW |
+None.
