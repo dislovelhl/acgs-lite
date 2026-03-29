@@ -355,6 +355,115 @@ _ACGS_LITE_MAP: dict[str, str] = {
 }
 
 
+# ---------------------------------------------------------------------------
+# Risk-tier auto-detection from domain (EU AI Act Annex III)
+# ---------------------------------------------------------------------------
+
+# Domains that map to HIGH-risk under Annex III
+_HIGH_RISK_DOMAINS: frozenset[str] = frozenset(
+    {
+        # Annex III point 1 — Biometrics
+        "biometrics",
+        "biometric_identification",
+        "facial_recognition",
+        # Annex III point 2 — Critical infrastructure
+        "critical_infrastructure",
+        "energy",
+        "water",
+        "transport",
+        "infrastructure",
+        # Annex III point 3 — Education
+        "education",
+        "vocational_training",
+        "exam",
+        "admissions",
+        # Annex III point 4 — Employment / HR
+        "employment",
+        "hiring",
+        "hr",
+        "human_resources",
+        "recruitment",
+        "performance_evaluation",
+        # Annex III point 5 — Essential services
+        "credit",
+        "credit_scoring",
+        "lending",
+        "insurance",
+        # Annex III point 6 — Law enforcement
+        "law_enforcement",
+        "police",
+        "criminal_justice",
+        # Annex III point 7 — Migration / border control
+        "migration",
+        "border_control",
+        "asylum",
+        "immigration",
+        # Annex III point 8 — Justice / democracy
+        "justice",
+        "legal",
+        "judicial",
+        "elections",
+        # Healthcare (Annex III point 5 essential services overlap)
+        "healthcare",
+        "medical",
+        "clinical",
+        "diagnostic",
+        "hospital",
+    }
+)
+
+# Domains that map to LIMITED-risk (transparency-only under Art. 50)
+_LIMITED_RISK_DOMAINS: frozenset[str] = frozenset(
+    {
+        "chatbot",
+        "customer_service",
+        "virtual_assistant",
+        "content_generation",
+        "creative",
+        "entertainment",
+        "recommendation",
+        "search",
+    }
+)
+
+
+def infer_risk_tier(system_description: dict[str, Any]) -> str:
+    """Infer the EU AI Act risk tier from system_description fields.
+
+    Returns one of: ``"unacceptable"`` | ``"high"`` | ``"limited"`` | ``"minimal"``.
+
+    Priority order:
+    1. Explicit ``risk_tier`` key (overrides all inference)
+    2. ``domain`` matched against Annex III high-risk domains
+    3. ``domain`` matched against limited-risk domains
+    4. Default: ``"high"`` (conservative — triggers full compliance track)
+
+    Usage::
+
+        tier = infer_risk_tier({"domain": "healthcare"})  # → "high"
+        tier = infer_risk_tier({"domain": "chatbot"})     # → "limited"
+        tier = infer_risk_tier({"risk_tier": "minimal"})  # → "minimal" (explicit)
+        tier = infer_risk_tier({})                        # → "high" (conservative)
+    """
+    # 1. Explicit override
+    explicit: str | None = system_description.get("risk_tier")
+    if explicit:
+        return explicit.lower()
+
+    domain: str = (system_description.get("domain") or "").lower()
+
+    # 2. High-risk domain match
+    if domain in _HIGH_RISK_DOMAINS:
+        return "high"
+
+    # 3. Limited-risk domain match
+    if domain in _LIMITED_RISK_DOMAINS:
+        return "limited"
+
+    # 4. Conservative default
+    return "high"
+
+
 class EUAIActFramework:
     """EU Artificial Intelligence Act (Regulation (EU) 2024/1689) compliance assessor.
 
@@ -375,9 +484,22 @@ class EUAIActFramework:
         from acgs_lite.compliance.eu_ai_act import EUAIActFramework
 
         framework = EUAIActFramework()
+
+        # Explicit risk tier
         assessment = framework.assess({
             "system_id": "my-system",
             "risk_tier": "high",   # unacceptable | high | limited | minimal
+        })
+
+        # Auto-inferred from domain (Annex III mapping)
+        assessment = framework.assess({
+            "system_id": "my-hiring-tool",
+            "domain": "hiring",    # → inferred "high" (Annex III point 4)
+        })
+
+        assessment = framework.assess({
+            "system_id": "my-chatbot",
+            "domain": "chatbot",   # → inferred "limited" (Art. 50 only)
         })
     """
 
@@ -390,10 +512,13 @@ class EUAIActFramework:
     def get_checklist(self, system_description: dict[str, Any]) -> list[ChecklistItem]:
         """Generate EU AI Act checklist items.
 
-        Applies risk-tier filtering: MINIMAL-risk systems skip high-risk
-        articles; non-GPAI systems skip Arts. 53/55.
+        Applies risk-tier filtering: MINIMAL/LIMITED-risk systems get only
+        Arts. 5 + 50; non-GPAI systems skip Arts. 53/55.
+
+        Risk tier is inferred from ``domain`` if ``risk_tier`` is not set.
+        See :func:`infer_risk_tier` for the full Annex III mapping.
         """
-        risk_tier = system_description.get("risk_tier", "high").lower()
+        risk_tier = infer_risk_tier(system_description)
         is_gpai = system_description.get("is_gpai", False)
 
         items: list[ChecklistItem] = []
@@ -429,15 +554,19 @@ class EUAIActFramework:
                 item.mark_complete(_ACGS_LITE_MAP[item.ref])
 
     def assess(self, system_description: dict[str, Any]) -> FrameworkAssessment:
-        """Run full EU AI Act compliance assessment."""
+        """Run full EU AI Act compliance assessment.
+
+        Risk tier is inferred from ``domain`` if ``risk_tier`` is not set.
+        """
         checklist = self.get_checklist(system_description)
         self.auto_populate_acgs_lite(checklist)
-        return _build_assessment(self, checklist)
+        return _build_assessment(self, checklist, infer_risk_tier(system_description))
 
 
 def _build_assessment(
     fw: EUAIActFramework,
     checklist: list[ChecklistItem],
+    risk_tier: str = "high",
 ) -> FrameworkAssessment:
     total = len(checklist)
     compliant = sum(
