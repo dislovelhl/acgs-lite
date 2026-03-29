@@ -955,7 +955,10 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
             # exp85: use precomputed _is_noop; inline "action_detail" in context check
             # exp162: check action_description first (appears in 25/36 gov-ctx scenarios
             # vs action_detail in 11/36) — saves ~14 dict lookups across benchmark.
-            _has_gov_ctx = context is not None and (
+            # exp267: use truthiness short-circuit for None and empty dict (773/809 scenarios).
+            # `context and (...)` short-circuits for None (31ns) and {} (38ns) vs
+            # `context is not None and (...)` which does 2 dict-in lookups for {} (64ns).
+            _has_gov_ctx = context and (
                 "action_description" in context or "action_detail" in context
             )
             if _has_gov_ctx:
