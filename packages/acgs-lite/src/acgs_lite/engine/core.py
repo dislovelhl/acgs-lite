@@ -946,20 +946,16 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
         _fast_records = _hot[6]
         # exp113: defer start to slow path only — fast path never reads latency_ms.
         if _rv is not None and _fast_records is not None and self.strict:
-            _rule_excs = _hot[4]
             # exp271: pass original action to Rust — Rust does to_ascii_lowercase()
             # internally using SIMD, saving Python's str.lower() (54ns) + string alloc.
             _decision, _data = _rv.validate_hot(action)
-            # exp85: use precomputed _is_noop; inline "action_detail" in context check
-            # exp162: check action_description first (appears in 25/36 gov-ctx scenarios
-            # vs action_detail in 11/36) — saves ~14 dict lookups across benchmark.
-            # exp267: use truthiness short-circuit for None and empty dict (773/809 scenarios).
-            # `context and (...)` short-circuits for None (31ns) and {} (38ns) vs
-            # `context is not None and (...)` which does 2 dict-in lookups for {} (64ns).
+            # exp267: use truthiness short-circuit for None and empty dict.
             _has_gov_ctx = context and (
                 "action_description" in context or "action_detail" in context
             )
             if _has_gov_ctx:
+                # exp273: defer _rule_excs to context/deny branches (not needed for allow)
+                _rule_excs = _hot[4]
                 _result = self._validate_rust_gov_context(
                     action,
                     _decision,
@@ -977,6 +973,8 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
                 if _decision == 0:  # _RUST_ALLOW
                     _fast_records.append(None)
                     return self._pooled_result
+                # exp273: defer _rule_excs to deny branch only
+                _rule_excs = _hot[4]
                 _result = self._validate_rust_no_context(
                     action,
                     _decision,
