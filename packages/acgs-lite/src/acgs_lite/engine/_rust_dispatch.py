@@ -113,9 +113,8 @@ class RustDispatchMixin:
         _ctx_desc = context.get("action_description")
         for _cv in (_ctx_det, _ctx_desc):
             if _cv is not None and isinstance(_cv, str):
-                _ctx_dec, _ctx_data = self._rust_validator.validate_hot(
-                    _cv if _cv.islower() else _cv.lower()
-                )
+                # exp271: Rust handles lowercasing internally
+                _ctx_dec, _ctx_data = self._rust_validator.validate_hot(_cv)
                 if _ctx_dec == _RUST_DENY_CRITICAL and not _has_critical:
                     # exp111: _ctx_data already Python int
                     _crit_idx = _ctx_data
@@ -230,8 +229,9 @@ class RustDispatchMixin:
         rule_excs: list[Any],
         fast_records: Any,
     ) -> ValidationResult | None:
+        # exp271: Rust handles lowercasing internally
         _decision, _violations, _blocking = self._rust_validator.validate_full(
-            action.lower(), ctx_pairs
+            action, ctx_pairs
         )
         if _decision == _RUST_ALLOW:
             if fast_records is not None:

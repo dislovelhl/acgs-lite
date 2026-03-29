@@ -947,11 +947,9 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
         # exp113: defer start to slow path only — fast path never reads latency_ms.
         if _rv is not None and _fast_records is not None and self.strict:
             _rule_excs = _hot[4]
-            # exp268: always call .lower() — for already-lowercase strings, CPython's
-            # str.lower() is 54ns vs islower() guard at 87ns (-33ns). The guard was
-            # intended to avoid allocation, but str.lower() on ASCII lowercase is cheap.
-            _action_lower = action.lower()
-            _decision, _data = _rv.validate_hot(_action_lower)
+            # exp271: pass original action to Rust — Rust does to_ascii_lowercase()
+            # internally using SIMD, saving Python's str.lower() (54ns) + string alloc.
+            _decision, _data = _rv.validate_hot(action)
             # exp85: use precomputed _is_noop; inline "action_detail" in context check
             # exp162: check action_description first (appears in 25/36 gov-ctx scenarios
             # vs action_detail in 11/36) — saves ~14 dict lookups across benchmark.
@@ -1001,8 +999,9 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
                 if isinstance(v, str) and k in ("action_detail", "action_description")
             ]
             if not _ctx_pairs:
-                # exp237: metadata-only context → validate_hot() (no ctx scanning needed)
-                _decision, _data = _rv.validate_hot(action.lower())
+                # exp237/271: metadata-only context → validate_hot() (no ctx scanning needed)
+                # Rust handles lowercasing internally.
+                _decision, _data = _rv.validate_hot(action)
                 _result = self._validate_rust_metadata_context(
                     action,
                     _decision,

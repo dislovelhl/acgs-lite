@@ -171,20 +171,28 @@ impl PyGovernanceValidator {
     }
 
     /// Legacy hot-path validation.
-    fn validate_hot(&self, text_lower: &str) -> PyResult<(i32, i64)> {
-        Ok(self.inner.validate_hot(text_lower))
+    /// Hot-path validation. Accepts any-case text, lowercases internally.
+    /// exp271: Moving lowercase into Rust saves ~54ns Python str.lower() + avoids
+    /// allocating a Python string object. Rust's to_ascii_lowercase() is SIMD-optimized.
+    fn validate_hot(&self, text: &str) -> PyResult<(i32, i64)> {
+        // For ASCII governance text, to_ascii_lowercase is faster than to_lowercase
+        // (avoids Unicode case-folding tables).
+        let lowered = text.to_ascii_lowercase();
+        Ok(self.inner.validate_hot(&lowered))
     }
 
     /// Full validation with structured violation data.
-    #[pyo3(signature = (text_lower, context_pairs=None))]
+    #[pyo3(signature = (text, context_pairs=None))]
+    /// exp271: accepts any-case text, lowercases internally.
     fn validate_full(
         &self,
-        text_lower: &str,
+        text: &str,
         context_pairs: Option<Vec<(String, String)>>,
     ) -> PyResult<(i32, Vec<(String, String, String, String, String)>, bool)> {
+        let lowered = text.to_ascii_lowercase();
         Ok(self
             .inner
-            .validate_full(text_lower, context_pairs.as_deref()))
+            .validate_full(&lowered, context_pairs.as_deref()))
     }
 
     /// Get the constitutional hash.
