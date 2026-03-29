@@ -197,9 +197,21 @@ composite = (
 
 Headroom at current performance: ~13% (vs 0.014% under v1).
 
-Current best (7-trial median, post-corpus-expansion): composite=0.872, p99=2.62µs,
-tput=1.36M rps, tail_ratio=2.5:1, allow_path=328ns, compliance=1.0, fn=0, fp=0.
-Corpus: 3290 scenarios (expanded from 809). Noise: composite 0.83%, p99 13.7%.
+Current best (11-trial median, exp278): composite=0.873, p99=2.45µs,
+tput=1.66M rps, tail_ratio=2.4:1, allow_path=290ns, deny_path=905ns,
+compliance=1.0, fn=0, fp=0.
+Corpus: 3290 scenarios (expanded from 809). Noise: composite 0.91%, p99 12.2%.
+
+Recent trajectory (post-corpus-expansion):
+- exp272: stack-buffer lowercasing in Rust — FFI 185→168ns, noise reduction
+- exp273: defer _rule_excs to deny/context — allow 329→304ns
+- exp274: direct _count increment — allow 304→295ns
+- exp275: _pooled_result in _hot[11] — neutral but cleaner
+- exp278: pre-alloc exception reuse on deny-critical — deny 1200→905ns, tput +12%
+
+Key insight: deny path (1200ns) was 4× slower than allow (300ns) due to exception
+creation overhead. Pre-allocated exception re-raise with __traceback__=None
+cut deny cost by 25% and boosted throughput 12%.
 
 Improvement trajectory from v2 baseline (0.798):
 - exp255/256: warmup cold-path priming → 0.856 (+0.058)
