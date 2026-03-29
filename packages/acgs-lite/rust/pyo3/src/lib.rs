@@ -175,10 +175,20 @@ impl PyGovernanceValidator {
     /// exp271: Moving lowercase into Rust saves ~54ns Python str.lower() + avoids
     /// allocating a Python string object. Rust's to_ascii_lowercase() is SIMD-optimized.
     fn validate_hot(&self, text: &str) -> PyResult<(i32, i64)> {
-        // For ASCII governance text, to_ascii_lowercase is faster than to_lowercase
-        // (avoids Unicode case-folding tables).
-        let lowered = text.to_ascii_lowercase();
-        Ok(self.inner.validate_hot(&lowered))
+        // exp272: Use stack buffer for short strings (≤256 bytes, covers 99%+ of
+        // governance actions). Avoids heap allocation for to_ascii_lowercase().
+        let len = text.len();
+        if len <= 256 {
+            let mut buf = [0u8; 256];
+            buf[..len].copy_from_slice(text.as_bytes());
+            buf[..len].make_ascii_lowercase();
+            // SAFETY: input was valid UTF-8, ASCII lowercase preserves validity
+            let lowered = unsafe { std::str::from_utf8_unchecked(&buf[..len]) };
+            Ok(self.inner.validate_hot(lowered))
+        } else {
+            let lowered = text.to_ascii_lowercase();
+            Ok(self.inner.validate_hot(&lowered))
+        }
     }
 
     /// Full validation with structured violation data.
