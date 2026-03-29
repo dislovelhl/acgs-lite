@@ -425,7 +425,7 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
         # and ALL anchor regex patterns (deploy, secret, no appeal, without
         # appeal, age-, third). Without this, first-pass p99 is ~11µs vs ~2µs
         # warmed — the benchmark runs one pass per process.
-        if self._rust_validator is not None:
+        if self._rust_validator is not None and self._fast_records is not None:
             # exp259: Warmup WITHOUT swapping any instance attributes.
             # CPython's inline caches (LOAD_ATTR, BINARY_SUBSCR, etc.) are keyed on
             # object identity. Swapping self._hot or self.audit_log during warmup then
@@ -445,7 +445,8 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
             import gc as _gc  # noqa: PLC0415
             _gc.collect()
             _gc.freeze()
-            _gc.disable()
+            if disable_gc:
+                _gc.disable()
 
             _no_ctx_warmup = (
                 "run safety test",  # allow (pos-verb)
@@ -577,13 +578,19 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
                         self.validate(_wm_a, context=_wm_c)
                     except ConstitutionalViolationError:
                         pass
+            # exp259: Reset NoopRecorder counter so warmup calls don't inflate
+            # engine.stats["total_validations"]. The counter should start at 0
+            # for actual user calls.
+            if isinstance(self._fast_records, _NoopRecorder):
+                self._fast_records._count = 0
         # exp72/exp259b: GC collect/freeze/disable moved BEFORE warmup (see above).
         # When Rust is not available, do GC cleanup here instead.
         if self._rust_validator is None:
             import gc as _gc  # noqa: PLC0415
             _gc.collect()
             _gc.freeze()
-            _gc.disable()
+            if disable_gc:
+                _gc.disable()
 
     def _validate_python_ac(
         self,
