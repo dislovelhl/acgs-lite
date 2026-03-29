@@ -35,6 +35,8 @@ from acgs_lite.errors import (
 from acgs_lite.governed import GovernedAgent, GovernedCallable
 from acgs_lite.licensing import LicenseInfo, LicenseManager, Tier
 from acgs_lite.maci import MACIEnforcer, MACIRole
+from acgs_lite.scoring import ConstitutionalImpactScorer, RuleBasedScorer, score_impact
+from acgs_lite.z3_verify import Z3ConstraintVerifier, Z3VerifyResult, Z3_AVAILABLE, Z3_RISK_THRESHOLD
 from acgs_lite.openshell import (
     ActionContext,
     ActionEnvelope,
@@ -116,6 +118,15 @@ __all__ = [
     # MACI
     "MACIRole",
     "MACIEnforcer",
+    # Scoring
+    "ConstitutionalImpactScorer",
+    "RuleBasedScorer",
+    "score_impact",
+    # Z3 formal verification
+    "Z3ConstraintVerifier",
+    "Z3VerifyResult",
+    "Z3_AVAILABLE",
+    "Z3_RISK_THRESHOLD",
     # OpenShell governance integration
     "ActionContext",
     "ActionEnvelope",

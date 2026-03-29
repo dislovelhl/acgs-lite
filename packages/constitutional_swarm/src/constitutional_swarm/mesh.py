@@ -185,13 +185,19 @@ class ConstitutionalMesh:
         quorum: int = 2,
         seed: int | None = None,
         use_manifold: bool = False,
+        risk_scoring: bool = False,
     ) -> None:
         if quorum > peers_per_validation:
             raise ValueError(
                 f"Quorum ({quorum}) cannot exceed peers_per_validation ({peers_per_validation})"
             )
         self._constitution = constitution
-        self._dna = AgentDNA(constitution=constitution, agent_id="mesh-validator")
+        self._dna = AgentDNA(
+            constitution=constitution,
+            agent_id="mesh-validator",
+            risk_scoring=risk_scoring,
+        )
+        self._risk_scoring = risk_scoring
         self._peers_per_validation = peers_per_validation
         self._quorum = quorum
         # Seeded randomness is only used for deterministic peer assignment in tests/benchmarks.
@@ -305,12 +311,24 @@ class ConstitutionalMesh:
             if producer_id not in self._agents:
                 raise KeyError(f"Producer {producer_id} not registered")
 
-            # Step 1: DNA pre-check — fail fast on constitutional violations
-            self._dna.validate(content)
+            # Step 1: DNA pre-check — fail fast on constitutional violations.
+            # When risk_scoring is enabled, the result carries a semantic risk
+            # score that drives adaptive peer selection in Step 2.
+            dna_result = self._dna.validate(content)
 
-            # Step 2: Select peers (exclude producer — MACI)
+            # Step 2: Select peers (exclude producer — MACI).
+            # Adaptive scaling: high-risk content (score >= 0.5) gets extra
+            # peers up to max available, increasing Byzantine fault tolerance.
             available = [aid for aid in self._agents if aid != producer_id]
-            needed = min(self._peers_per_validation, len(available))
+            base_needed = min(self._peers_per_validation, len(available))
+            if self._risk_scoring and dna_result.risk_score >= 0.8:
+                # critical — use all available peers
+                needed = len(available)
+            elif self._risk_scoring and dna_result.risk_score >= 0.5:
+                # high — one extra peer
+                needed = min(base_needed + 1, len(available))
+            else:
+                needed = base_needed
             if needed < self._quorum:
                 raise InsufficientPeersError(
                     f"Need {self._quorum} peers for quorum, only {needed} available"

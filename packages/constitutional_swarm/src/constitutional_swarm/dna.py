@@ -24,6 +24,8 @@ from acgs_lite import (
     MACIRole,
     Rule,
 )
+from acgs_lite.scoring import ConstitutionalImpactScorer, _risk_level
+from acgs_lite.z3_verify import Z3ConstraintVerifier, Z3VerifyResult, Z3_RISK_THRESHOLD
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -41,6 +43,10 @@ class DNAValidationResult:
     violations: tuple[str, ...] = ()
     latency_ns: int = 0
     constitutional_hash: str = ""
+    risk_score: float = 0.0
+    risk_level: str = "unknown"
+    scoring_method: str = "keyword"
+    z3_result: Z3VerifyResult | None = None
 
 
 @dataclass
@@ -68,8 +74,12 @@ class AgentDNA:
     maci_role: MACIRole | None = None
     strict: bool = True
     validate_output: bool = True
+    risk_scoring: bool = False
+    z3_verify: bool = False
     _engine: GovernanceEngine = field(init=False, repr=False)
     _maci: MACIEnforcer | None = field(init=False, repr=False, default=None)
+    _scorer: ConstitutionalImpactScorer | None = field(init=False, repr=False, default=None)
+    _z3: Z3ConstraintVerifier | None = field(init=False, repr=False, default=None)
     _call_count: int = field(init=False, repr=False, default=0)
     _violation_count: int = field(init=False, repr=False, default=0)
     _total_latency_ns: int = field(init=False, repr=False, default=0)
@@ -81,6 +91,10 @@ class AgentDNA:
             enforcer = MACIEnforcer()
             enforcer.assign_role(self.agent_id, self.maci_role)
             object.__setattr__(self, "_maci", enforcer)
+        if self.risk_scoring:
+            object.__setattr__(self, "_scorer", ConstitutionalImpactScorer())
+        if self.z3_verify:
+            object.__setattr__(self, "_z3", Z3ConstraintVerifier())
 
     @classmethod
     def from_rules(
@@ -92,6 +106,8 @@ class AgentDNA:
         maci_role: MACIRole | None = None,
         strict: bool = True,
         validate_output: bool = True,
+        risk_scoring: bool = False,
+        z3_verify: bool = False,
     ) -> AgentDNA:
         """Create DNA from a list of rules."""
         return cls(
@@ -100,6 +116,8 @@ class AgentDNA:
             maci_role=maci_role,
             strict=strict,
             validate_output=validate_output,
+            risk_scoring=risk_scoring,
+            z3_verify=z3_verify,
         )
 
     @classmethod
@@ -111,6 +129,8 @@ class AgentDNA:
         maci_role: MACIRole | None = None,
         strict: bool = True,
         validate_output: bool = True,
+        risk_scoring: bool = False,
+        z3_verify: bool = False,
     ) -> AgentDNA:
         """Create DNA from a YAML constitution file."""
         return cls(
@@ -119,6 +139,8 @@ class AgentDNA:
             maci_role=maci_role,
             strict=strict,
             validate_output=validate_output,
+            risk_scoring=risk_scoring,
+            z3_verify=z3_verify,
         )
 
     @classmethod
@@ -128,6 +150,8 @@ class AgentDNA:
         agent_id: str = "anonymous",
         maci_role: MACIRole | None = None,
         validate_output: bool = True,
+        risk_scoring: bool = False,
+        z3_verify: bool = False,
     ) -> AgentDNA:
         """Create DNA with the default ACGS constitution."""
         return cls(
@@ -135,6 +159,8 @@ class AgentDNA:
             agent_id=agent_id,
             maci_role=maci_role,
             validate_output=validate_output,
+            risk_scoring=risk_scoring,
+            z3_verify=z3_verify,
         )
 
     def disable(self) -> None:
@@ -184,6 +210,18 @@ class AgentDNA:
         """
         if self._disabled:
             raise DNADisabledError(f"Agent {self.agent_id} DNA is disabled — all actions blocked")
+
+        # Layer 1: semantic risk scoring (opt-in, ~1ms)
+        risk_score = 0.0
+        risk_lv = "unknown"
+        scoring_method = "keyword"
+        if self._scorer is not None:
+            impact = self._scorer.score(action)
+            risk_score = impact["score"]
+            risk_lv = impact["risk_level"]
+            scoring_method = impact["scoring_method"]
+
+        # Layer 2: constitutional keyword/rule engine (always, ~443ns)
         start = time.perf_counter_ns()
         try:
             result = self._engine.validate(action)
@@ -193,12 +231,23 @@ class AgentDNA:
             violations = tuple(f"{v.rule_id}: {v.rule_text}" for v in result.violations)
             if violations:
                 self._violation_count += 1
+
+            # Layer 3: Z3 formal verification (opt-in, ~50-500ms).
+            # Only invoked for critical-risk actions to keep cost proportional.
+            z3_result: Z3VerifyResult | None = None
+            if self._z3 is not None and risk_score >= Z3_RISK_THRESHOLD:
+                z3_result = self._z3.verify(action)
+
             return DNAValidationResult(
                 valid=result.valid,
                 action=action,
                 violations=violations,
                 latency_ns=elapsed,
                 constitutional_hash=self.hash,
+                risk_score=risk_score,
+                risk_level=risk_lv,
+                scoring_method=scoring_method,
+                z3_result=z3_result,
             )
         except ConstitutionalViolationError:
             elapsed = time.perf_counter_ns() - start
