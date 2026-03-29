@@ -971,7 +971,9 @@ class GovernanceEngine(BatchValidationMixin, RustDispatchMixin):
                 # (~50-80ns) for the most common code path (allow decisions).
                 # DENY_CRITICAL and DENY still delegate to the mixin method.
                 if _decision == 0:  # _RUST_ALLOW
-                    _fast_records.append(None)
+                    # exp274: direct counter increment saves ~15ns vs append(None).
+                    # _NoopRecorder._count is an int slot; += 1 avoids method dispatch.
+                    _fast_records._count += 1
                     return self._pooled_result
                 # exp273: defer _rule_excs to deny branch only
                 _rule_excs = _hot[4]
