@@ -139,10 +139,11 @@ class _BloomFilter:
                 self._bits[h] = 1
 
     def _hashes(self, item: str) -> list[int]:
-        """Generate k hash positions using double-hashing."""
-        # Two base hashes from built-in hash + shifted hash
-        h1 = hash(item) % self._size
-        h2 = hash(item + "\x00") % self._size
+        """Generate k hash positions using double-hashing with deterministic SHA-256."""
+        import hashlib
+        data = item.encode()
+        h1 = int.from_bytes(hashlib.sha256(data).digest()[:4], "little") % self._size
+        h2 = int.from_bytes(hashlib.sha256(data + b"\x00").digest()[:4], "little") % self._size
         if h2 == 0:
             h2 = 1
         return [(h1 + i * h2) % self._size for i in range(self._num_hashes)]
