@@ -197,8 +197,9 @@ composite = (
 
 Headroom at current performance: ~13% (vs 0.014% under v1).
 
-Current best (7-trial median, exp269): composite=0.869, p99=2.84µs, tput=1.34M rps,
-tail_ratio=2.5:1, allow_path=328ns, compliance=1.0, fn=0, fp=0.
+Current best (7-trial median, post-corpus-expansion): composite=0.872, p99=2.62µs,
+tput=1.36M rps, tail_ratio=2.5:1, allow_path=328ns, compliance=1.0, fn=0, fp=0.
+Corpus: 3290 scenarios (expanded from 809). Noise: composite 0.83%, p99 13.7%.
 
 Improvement trajectory from v2 baseline (0.798):
 - exp255/256: warmup cold-path priming → 0.856 (+0.058)
