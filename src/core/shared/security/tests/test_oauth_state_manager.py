@@ -404,6 +404,10 @@ class TestGracefulDegradation:
         from src.core.shared.config import settings
 
         monkeypatch.setattr(settings, "env", "development")
+        # Clear env vars that override settings.env (e.g. EAB conftest sets ENVIRONMENT=test)
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.delenv("ACGS2_ENV", raising=False)
         monkeypatch.delenv("APP_ENV", raising=False)
         monkeypatch.setenv("ENVIRONMENT", "production")
         monkeypatch.delenv("OAUTH_STATE_ALLOW_DEGRADED_MODE", raising=False)

@@ -58,6 +58,10 @@ def _generate_rsa_keypair() -> tuple[str, str]:
 async def test_require_auth_allows_bypass_only_in_development(monkeypatch):
     monkeypatch.setenv("AUTH_DISABLED", "true")
     monkeypatch.setattr(settings, "env", "development")
+    # Clear env vars that override settings.env (e.g. EAB conftest sets ENVIRONMENT=test)
+    monkeypatch.delenv("ENVIRONMENT", raising=False)
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("ACGS2_ENV", raising=False)
 
     result = await auth_dependency.require_auth(None)
 
@@ -81,6 +85,10 @@ async def test_require_auth_rejects_bypass_in_production(monkeypatch):
 async def test_require_auth_uses_runtime_environment_precedence(monkeypatch):
     monkeypatch.setenv("AUTH_DISABLED", "true")
     monkeypatch.setattr(settings, "env", "development")
+    # Clear env vars that override settings.env (e.g. EAB conftest sets ENVIRONMENT=test)
+    monkeypatch.delenv("ENVIRONMENT", raising=False)
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("ACGS2_ENV", raising=False)
     monkeypatch.delenv("APP_ENV", raising=False)
     monkeypatch.setenv("ENVIRONMENT", "production")
 
@@ -202,6 +210,10 @@ async def test_check_revocation_production_missing_service_fails_closed(monkeypa
 
 async def test_check_revocation_environment_only_production_fails_closed(monkeypatch):
     monkeypatch.setattr(settings, "env", "development")
+    # Clear env vars that override settings.env (e.g. EAB conftest sets ENVIRONMENT=test)
+    monkeypatch.delenv("ENVIRONMENT", raising=False)
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("ACGS2_ENV", raising=False)
     monkeypatch.delenv("APP_ENV", raising=False)
     monkeypatch.setenv("ENVIRONMENT", "production")
     auth_dependency._revocation_service = None
