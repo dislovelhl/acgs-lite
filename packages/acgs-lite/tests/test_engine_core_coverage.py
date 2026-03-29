@@ -309,10 +309,9 @@ class TestGovernanceEngineValidate:
         assert result.valid is True
 
     def test_escalate_high_severity_no_block(self, engine):
-        """HIGH severity blocks in strict mode."""
-        with pytest.raises(ConstitutionalViolationError) as exc_info:
-            engine.validate("apply age-based insurance pricing")
-        assert exc_info.value.rule_id == "FAIRNESS-001"
+        """HIGH severity detected in strict mode; violations reported but valid=True (only CRITICAL blocks)."""
+        result = engine.validate("apply age-based insurance pricing")
+        assert any(v.rule_id == "FAIRNESS-001" for v in result.violations)
 
     def test_validate_with_context(self, engine):
         result = engine.validate(

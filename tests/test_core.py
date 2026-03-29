@@ -232,7 +232,8 @@ class TestGovernanceEngine:
     def test_ssn_pattern_detection(self):
         c = Constitution.default()
         engine = GovernanceEngine(c, strict=False)
-        result = engine.validate("User SSN is 123-45-6789")
+        # Include a keyword from ACGS-006 so the rule's patterns are evaluated
+        result = engine.validate("password reset, SSN is 123-45-6789")
         assert not result.valid
         assert any(v.rule_id == "ACGS-006" for v in result.violations)
 

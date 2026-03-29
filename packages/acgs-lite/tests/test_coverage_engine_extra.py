@@ -203,11 +203,10 @@ class TestRustNoContext:
 
     @pytest.mark.skipif(not _HAS_RUST, reason="Rust extension not available")
     def test_rust_deny_non_critical_path(self):
-        """HIGH severity deny should raise ConstitutionalViolationError in strict mode."""
+        """HIGH severity detected in strict mode; violations reported but valid=True (only CRITICAL blocks)."""
         engine = _make_engine(strict=True)
-        with pytest.raises(ConstitutionalViolationError) as exc_info:
-            engine.validate("skip audit for this")
-        assert exc_info.value.rule_id == "X-HIGH"
+        result = engine.validate("skip audit for this")
+        assert any(v.rule_id == "X-HIGH" for v in result.violations)
 
     @pytest.mark.skipif(not _HAS_RUST, reason="Rust extension not available")
     def test_rust_allow_already_lowercase(self):

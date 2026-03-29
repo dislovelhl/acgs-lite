@@ -36,7 +36,7 @@ class TestInstantiation:
 
         assert engine.constitutional_hash == CONST_HASH
         assert engine.mode == GovernanceMode.ADAPTIVE
-        assert engine.decision_history == []
+        assert len(engine.decision_history) == 0
         assert engine.running is False
         assert engine.learning_task is None
 
