@@ -285,7 +285,7 @@
 		</div>
 		<div class="fade-in aspect-video w-full overflow-hidden rounded-xl border border-border/50 shadow-2xl" use:observe>
 			<iframe
-				src="https://www.youtube.com/embed/do9BCPn29_Q?rel=0&modestbranding=1&color=white"
+				src="https://www.youtube.com/embed/uWacmC3CbYg?rel=0&modestbranding=1&color=white"
 				title="ACGS — 560 Nanoseconds to Compliance"
 				frameborder="0"
 				allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
