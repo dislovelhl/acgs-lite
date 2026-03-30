@@ -1051,9 +1051,12 @@ class TestGetCurrentUser:
         assert "revoked" in exc_info.value.detail
 
     @pytest.mark.asyncio
-    async def test_revocation_check_failure_is_graceful(self, monkeypatch):
+    async def test_revocation_check_failure_is_graceful_in_non_production(self, monkeypatch):
         monkeypatch.setenv("JWT_ALGORITHM", "HS256")
         monkeypatch.setenv("JWT_SECRET", TEST_JWT_SECRET)
+        monkeypatch.setenv("ENVIRONMENT", "development")
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.delenv("ACGS2_ENV", raising=False)
         monkeypatch.setattr(auth, "settings", _make_settings(jwt_secret_value=TEST_JWT_SECRET))
 
         mock_revocation = AsyncMock()
@@ -1065,9 +1068,31 @@ class TestGetCurrentUser:
             tenant_id="tenant-1",
         )
         creds = SimpleNamespace(credentials=token)
-        # Should not raise - graceful degradation
         claims = await auth.get_current_user(credentials=creds)
         assert claims.sub == "user-1"
+
+    @pytest.mark.asyncio
+    async def test_revocation_check_failure_fails_closed_in_production(self, monkeypatch):
+        monkeypatch.setenv("JWT_ALGORITHM", "HS256")
+        monkeypatch.setenv("JWT_SECRET", TEST_JWT_SECRET)
+        monkeypatch.setenv("ENVIRONMENT", "production")
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.delenv("ACGS2_ENV", raising=False)
+        monkeypatch.setattr(auth, "settings", _make_settings(jwt_secret_value=TEST_JWT_SECRET))
+
+        mock_revocation = AsyncMock()
+        mock_revocation.is_token_revoked = AsyncMock(side_effect=Exception("redis down"))
+        monkeypatch.setattr(_auth_dep, "_revocation_service", mock_revocation)
+
+        token = auth.create_access_token(
+            user_id="user-1",
+            tenant_id="tenant-1",
+        )
+        creds = SimpleNamespace(credentials=token)
+        with pytest.raises(HTTPException) as exc_info:
+            await auth.get_current_user(credentials=creds)
+        assert exc_info.value.status_code == 503
+        assert "revocation check failed" in exc_info.value.detail.lower()
 
 
 class TestGetCurrentUserOptional:
