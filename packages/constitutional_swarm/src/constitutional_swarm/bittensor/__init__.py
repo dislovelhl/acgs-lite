@@ -68,6 +68,27 @@ from constitutional_swarm.bittensor.precedent_store import (
     PrecedentStore,
     RetrievalResult,
 )
+from constitutional_swarm.bittensor.threshold_updater import (
+    BayesianThresholdUpdater,
+    DEFAULT_WEIGHTS,
+    DimensionEvidence,
+    UpdateCycle,
+    WeightUpdate,
+)
+from constitutional_swarm.bittensor.rule_codifier import (
+    PrecedentCluster,
+    RuleCandidate,
+    RuleCandidateStatus,
+    RuleCodifier,
+)
+
+# Phase 4: Authenticity Detection
+from constitutional_swarm.bittensor.authenticity_detector import (
+    AuthenticityDetector,
+    AuthenticityDimension,
+    AuthenticityScore,
+    DimensionScore,
+)
 
 __all__ = [
     # Phase 1 — Protocol Bridge
@@ -106,4 +127,20 @@ __all__ = [
     "PrecedentRecord",
     "PrecedentStore",
     "RetrievalResult",
+    # Phase 3.2 — Bayesian Threshold Updater
+    "BayesianThresholdUpdater",
+    "DEFAULT_WEIGHTS",
+    "DimensionEvidence",
+    "UpdateCycle",
+    "WeightUpdate",
+    # Phase 3.3 — Rule Codifier
+    "PrecedentCluster",
+    "RuleCandidate",
+    "RuleCandidateStatus",
+    "RuleCodifier",
+    # Phase 4 — Authenticity Detection
+    "AuthenticityDetector",
+    "AuthenticityDimension",
+    "AuthenticityScore",
+    "DimensionScore",
 ]
