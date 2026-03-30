@@ -111,6 +111,27 @@ from constitutional_swarm.bittensor.compliance_certificate import (
     ZKPStubProver,
 )
 
+# Phase 2.3: Arweave Audit Log
+from constitutional_swarm.bittensor.arweave_audit_log import (
+    AuditBatch,
+    AuditDecisionType,
+    AuditLogEntry,
+    AuditLogReceipt,
+    ArweaveAuditLogger,
+    InMemoryArweaveClient,
+    verify_merkle_path,
+)
+
+# Phase 2.4: NMC Multi-Miner Protocol
+from constitutional_swarm.bittensor.nmc_protocol import (
+    ConsensusJudgment,
+    NMCCoordinator,
+    NMCSession,
+    NMCSessionState,
+    SybilFlag,
+    SynthesisMethod,
+)
+
 # Economic Model: Emission Calculator
 from constitutional_swarm.bittensor.emission_calculator import (
     DEFAULT_EMISSION_WEIGHTS,
@@ -195,6 +216,21 @@ __all__ = [
     "HMACProver",
     "ProofType",
     "ZKPStubProver",
+    # Phase 2.3 — Arweave Audit Log
+    "AuditBatch",
+    "AuditDecisionType",
+    "AuditLogEntry",
+    "AuditLogReceipt",
+    "ArweaveAuditLogger",
+    "InMemoryArweaveClient",
+    "verify_merkle_path",
+    # Phase 2.4 — NMC Multi-Miner Protocol
+    "ConsensusJudgment",
+    "NMCCoordinator",
+    "NMCSession",
+    "NMCSessionState",
+    "SybilFlag",
+    "SynthesisMethod",
     # Economic Model — Emission Calculator
     "DEFAULT_EMISSION_WEIGHTS",
     "EmissionCalculator",
