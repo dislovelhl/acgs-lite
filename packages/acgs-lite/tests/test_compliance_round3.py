@@ -160,7 +160,7 @@ class TestAustraliaAIEthicsFramework:
         fw = AustraliaAIEthicsFramework()
         checklist = fw.get_checklist(base_desc)
         refs = [item.ref for item in checklist]
-        for prin in ("PRIN-1", "PRIN-2", "PRIN-3", "PRIN-4", "PRIN-5", "PRIN-6", "PRIN-7", "PRIN-8"):
+        for prin in ("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8"):
             assert any(prin in r for r in refs), f"Missing {prin} items"
 
     def test_auto_populate_marks_governance_engine_items(self, base_desc: dict) -> None:
@@ -168,21 +168,21 @@ class TestAustraliaAIEthicsFramework:
         checklist = fw.get_checklist(base_desc)
         fw.auto_populate_acgs_lite(checklist)
         compliant_refs = {i.ref for i in checklist if i.status == ChecklistStatus.COMPLIANT}
-        assert "AU-AI PRIN-5.2" in compliant_refs  # GovernanceEngine fail-safe
-        assert "AU-AI PRIN-7.1" in compliant_refs  # HumanOversightGateway
-        assert "AU-AI PRIN-8.1" in compliant_refs  # MACIEnforcer accountability
+        assert "AU-AI P5-2" in compliant_refs  # GovernanceEngine fail-safe
+        assert "AU-AI P7-1" in compliant_refs  # HumanOversightGateway
+        assert "AU-AI P8-1" in compliant_refs  # MACIEnforcer accountability
 
     def test_privacy_impact_assessment_not_blocking(self, base_desc: dict) -> None:
         fw = AustraliaAIEthicsFramework()
         checklist = fw.get_checklist(base_desc)
-        pia = next(i for i in checklist if i.ref == "AU-AI PRIN-4.3")
+        pia = next(i for i in checklist if i.ref == "AU-AI P4-3")
         assert not pia.blocking
 
     def test_disaggregated_testing_not_auto_satisfied(self, base_desc: dict) -> None:
         fw = AustraliaAIEthicsFramework()
         checklist = fw.get_checklist(base_desc)
         fw.auto_populate_acgs_lite(checklist)
-        prin32 = next(i for i in checklist if i.ref == "AU-AI PRIN-3.2")
+        prin32 = next(i for i in checklist if i.ref == "AU-AI P3-2")
         assert prin32.status == ChecklistStatus.PENDING
 
     def test_assess_returns_valid_assessment(self, base_desc: dict) -> None:

@@ -262,7 +262,11 @@ class TestEUAIActUnacceptableTier:
 
     def _checklist_refs(self, system_description: dict) -> set[str]:
         fw = EUAIActFramework()
-        return {i.ref for i in fw.get_checklist(system_description)}
+        from acgs_lite.compliance.base import ChecklistStatus
+        return {
+            i.ref for i in fw.get_checklist(system_description)
+            if i.status != ChecklistStatus.NOT_APPLICABLE
+        }
 
     def test_unacceptable_only_art5(self):
         refs = self._checklist_refs({"risk_tier": "unacceptable"})

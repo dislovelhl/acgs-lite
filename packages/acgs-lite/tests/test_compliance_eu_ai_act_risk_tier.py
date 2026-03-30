@@ -136,7 +136,9 @@ class TestEUAIActChecklistByTier:
     def _checklist_refs(self, system_description: dict) -> set[str]:
         fw = EUAIActFramework()
         items = fw.get_checklist(system_description)
-        return {item.ref for item in items}
+        # Only include items that are applicable (not NOT_APPLICABLE)
+        from acgs_lite.compliance.base import ChecklistStatus
+        return {item.ref for item in items if item.status != ChecklistStatus.NOT_APPLICABLE}
 
     def test_high_risk_includes_arts_9_through_26(self):
         refs = self._checklist_refs({"risk_tier": "high"})

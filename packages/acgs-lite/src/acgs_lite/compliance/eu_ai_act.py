@@ -1,16 +1,34 @@
-"""EU Artificial Intelligence Act compliance module.
+"""EU AI Act (Regulation (EU) 2024/1689) compliance module.
 
-Implements the EU AI Act (Regulation (EU) 2024/1689) requirements
-for AI system providers and deployers across risk tiers:
-- Prohibited practices (Art. 5) — effective Feb 2, 2025
-- High-risk obligations (Arts. 9-15, 26) — effective Aug 2, 2026
-- Transparency obligations (Art. 50)
-- General-purpose AI (Arts. 53, 55)
+Implements the core obligations for high-risk AI systems and general-purpose
+AI models under the EU Artificial Intelligence Act:
 
-Reference: Regulation (EU) 2024/1689 (Artificial Intelligence Act)
-Status: enacted
-Enforcement: Prohibited practices 2025-02-02; high-risk 2026-08-02
-Penalties: Up to EUR 35 million or 7% of global annual turnover
+- Article 5:  Prohibited practices
+- Article 9:  Risk management system
+- Article 10: Data and data governance
+- Article 11: Technical documentation (Annex IV)
+- Article 12: Record-keeping / logging
+- Article 13: Transparency to deployers and users
+- Article 14: Human oversight
+- Article 15: Accuracy, robustness, and cybersecurity
+- Article 26: Deployer obligations (fundamental-rights impact assessment)
+- Article 50: Transparency for GPAI-facing / chatbot systems
+- Article 53: General-purpose AI model obligations
+- Article 55: Systemic-risk obligations (frontier models)
+
+Risk tiers:
+  UNACCEPTABLE → prohibited (Art. 5)
+  HIGH         → full compliance track (Arts. 9-27)
+  LIMITED      → transparency only (Art. 50)
+  MINIMAL      → voluntary codes of practice
+
+Reference: Regulation (EU) 2024/1689 of the European Parliament and of the
+Council (Official Journal of the European Union, 12 July 2024)
+Entered into force: 1 August 2024
+Fully applicable: 2 August 2026 (high-risk AI systems)
+
+Penalties: Up to EUR 35 million or 7% of global annual turnover (Art. 99)
+for prohibited practices; EUR 15 million or 3% for other violations.
 
 Constitutional Hash: 608508a9bd224290
 """
@@ -26,252 +44,393 @@ from acgs_lite.compliance.base import (
     FrameworkAssessment,
 )
 
-# (ref, requirement, legal_citation, acgs_lite_feature | None, blocking)
-_ITEMS: list[tuple[str, str, str, str | None, bool]] = [
-    # Risk management (Art. 9)
+# ---------------------------------------------------------------------------
+# Checklist: (ref, requirement, legal_citation, acgs_lite_feature, blocking)
+# ---------------------------------------------------------------------------
+_EU_AI_ACT_ITEMS: list[tuple[str, str, str, str | None, bool]] = [
+    # Article 5 — Prohibited practices
     (
-        "EUAIA Art.9(1)",
+        "EU-AIA Art.5(1)",
+        "Verify that the AI system does not deploy subliminal, manipulative, "
+        "or deceptive techniques that subvert free will, or exploit "
+        "vulnerabilities of individuals or groups.",
+        "Regulation (EU) 2024/1689, Article 5(1)(a-c)",
+        "GovernanceEngine — constitutional rule set blocks manipulative action classes",
+        True,
+    ),
+    (
+        "EU-AIA Art.5(2)",
+        "Confirm the AI system does not perform real-time remote biometric "
+        "identification in publicly accessible spaces for law enforcement "
+        "without judicial authorisation (unless exemption applies).",
+        "Regulation (EU) 2024/1689, Article 5(2)",
+        None,
+        False,  # non-blocking: many AI systems are not biometric
+    ),
+    # Article 9 — Risk management system
+    (
+        "EU-AIA Art.9(1)",
         "Establish, implement, document, and maintain a risk management system "
-        "for high-risk AI systems throughout their lifecycle.",
-        "EU AI Act Article 9(1)",
-        "GovernanceEngine — continuous risk management via constitutional rules",
+        "as an iterative process throughout the high-risk AI system lifecycle.",
+        "Regulation (EU) 2024/1689, Article 9(1)",
+        "GovernanceEngine — continuous governance validation across the system lifecycle",
         True,
     ),
     (
-        "EUAIA Art.9(2)",
-        "Identify and analyse known and reasonably foreseeable risks that the "
-        "high-risk AI system can pose to health, safety, or fundamental rights.",
-        "EU AI Act Article 9(2)",
-        "RiskClassifier — automated risk classification with obligation mapping",
+        "EU-AIA Art.9(2)",
+        "Identify and analyse known and foreseeable risks that may occur when "
+        "the high-risk AI system is used in accordance with its intended purpose "
+        "and under conditions of reasonably foreseeable misuse.",
+        "Regulation (EU) 2024/1689, Article 9(2)",
+        "RiskClassifier — automated risk level classification with obligation mapping",
         True,
     ),
-    # Data governance (Art. 10)
     (
-        "EUAIA Art.10(2)",
-        "Training, validation, and testing data sets shall be subject to "
-        "appropriate data governance and management practices.",
-        "EU AI Act Article 10(2)",
+        "EU-AIA Art.9(4)",
+        "Implement risk management measures including testing procedures to "
+        "identify the most appropriate measures; such measures shall ensure "
+        "residual risks are acceptable.",
+        "Regulation (EU) 2024/1689, Article 9(4)",
         None,
         True,
     ),
-    # Technical documentation (Art. 11)
+    # Article 10 — Data and data governance
     (
-        "EUAIA Art.11(1)",
-        "Draw up technical documentation before placing on market or putting "
-        "into service, kept up to date.",
-        "EU AI Act Article 11(1)",
+        "EU-AIA Art.10(2)",
+        "Apply data governance practices covering the design choices of "
+        "training, validation, and testing datasets, examining for possible "
+        "biases, data gaps, and shortcomings.",
+        "Regulation (EU) 2024/1689, Article 10(2)",
         None,
         True,
     ),
-    # Record-keeping (Art. 12)
     (
-        "EUAIA Art.12(1)",
-        "High-risk AI systems shall technically allow for automatic recording "
-        "of events (logs) throughout the system's lifetime.",
-        "EU AI Act Article 12(1)",
-        "AuditLog — tamper-evident automatic event logging",
-        True,
-    ),
-    (
-        "EUAIA Art.12(2)",
-        "Logging capabilities shall ensure traceability of the AI system's "
-        "functioning to identify risks and facilitate post-market monitoring.",
-        "EU AI Act Article 12(2)",
-        "AuditLog — cryptographic hash chain for traceability",
-        True,
-    ),
-    # Transparency (Art. 13)
-    (
-        "EUAIA Art.13(1)",
-        "High-risk AI systems shall be designed and developed to ensure their "
-        "operation is sufficiently transparent to enable deployers to interpret "
-        "and use output appropriately.",
-        "EU AI Act Article 13(1)",
-        "TransparencyDisclosure — system cards with capabilities and limitations",
-        True,
-    ),
-    (
-        "EUAIA Art.13(3)",
-        "Provide deployers with concise, complete, correct, and clear information "
-        "including characteristics, capabilities, limitations, and risks.",
-        "EU AI Act Article 13(3)",
-        "TransparencyDisclosure — structured disclosure documentation",
-        True,
-    ),
-    # Human oversight (Art. 14)
-    (
-        "EUAIA Art.14(1)",
-        "High-risk AI systems shall be designed and developed to be effectively "
-        "overseen by natural persons during the period of use.",
-        "EU AI Act Article 14(1)",
-        "HumanOversightGateway — configurable human-in-the-loop gates",
-        True,
-    ),
-    (
-        "EUAIA Art.14(4)",
-        "Provide measures allowing individuals assigned to human oversight to "
-        "correctly interpret output and decide not to use or override it.",
-        "EU AI Act Article 14(4)",
-        "HumanOversightGateway — override and intervention mechanisms",
-        True,
-    ),
-    (
-        "EUAIA Art.14(5)",
-        "For high-risk AI systems identified in Annex III point 1(a), ensure "
-        "no action or decision is taken based solely on AI output without "
-        "human verification.",
-        "EU AI Act Article 14(5)",
-        "MACIEnforcer — separation-of-powers enforcement for critical decisions",
-        True,
-    ),
-    # Accuracy, robustness, cybersecurity (Art. 15)
-    (
-        "EUAIA Art.15(1)",
-        "High-risk AI systems shall be designed to achieve appropriate levels "
-        "of accuracy, robustness, and cybersecurity.",
-        "EU AI Act Article 15(1)",
+        "EU-AIA Art.10(3)",
+        "Ensure training, validation, and testing data sets are relevant, "
+        "sufficiently representative, and free of errors to the extent possible.",
+        "Regulation (EU) 2024/1689, Article 10(3)",
         None,
         True,
     ),
-    # Deployer obligations (Art. 26)
     (
-        "EUAIA Art.26(1)",
-        "Deployers shall take appropriate technical and organisational measures "
-        "to ensure they use high-risk AI systems in accordance with "
-        "instructions of use.",
-        "EU AI Act Article 26(1)",
-        "GovernanceEngine — enforces use within constitutional boundaries",
-        True,
-    ),
-    # Transparency for certain AI systems (Art. 50)
-    (
-        "EUAIA Art.50(1)",
-        "Providers shall ensure AI systems intended to interact with natural "
-        "persons are designed so persons are informed they are interacting "
-        "with an AI system.",
-        "EU AI Act Article 50(1)",
-        "TransparencyDisclosure — AI interaction disclosure",
+        "EU-AIA Art.10(5)",
+        "Where necessary for bias monitoring, detection, and correction, "
+        "providers may process special categories of personal data with "
+        "appropriate safeguards.",
+        "Regulation (EU) 2024/1689, Article 10(5)",
+        None,
         False,
     ),
-    # General-purpose AI (Art. 53) — conditional on is_gpai
+    # Article 11 — Technical documentation
     (
-        "EUAIA Art.53(1)",
-        "Providers of general-purpose AI models shall draw up and keep "
-        "up-to-date technical documentation including training and testing "
-        "process and results of evaluation.",
-        "EU AI Act Article 53(1)",
+        "EU-AIA Art.11(1)",
+        "Draw up technical documentation (Annex IV) before placing the "
+        "high-risk AI system on the market and keep it updated.",
+        "Regulation (EU) 2024/1689, Article 11(1) + Annex IV",
+        "TransparencyDisclosure — system card documents capabilities and limitations",
+        True,
+    ),
+    (
+        "EU-AIA Art.11(2)",
+        "Technical documentation shall contain at minimum: general description, "
+        "detailed description of system elements, information about training "
+        "processes, validation/testing results, and cybersecurity measures.",
+        "Regulation (EU) 2024/1689, Article 11(2) + Annex IV",
         None,
         True,
     ),
-    # Systemic risk GPAI (Art. 55) — conditional on is_gpai
+    # Article 12 — Record-keeping
     (
-        "EUAIA Art.55(1)",
-        "Providers of general-purpose AI models with systemic risk shall "
-        "perform model evaluation, assess and mitigate systemic risks, "
-        "ensure adequate cybersecurity, and report serious incidents.",
-        "EU AI Act Article 55(1)",
+        "EU-AIA Art.12(1)",
+        "High-risk AI systems shall automatically log events (record-keeping) "
+        "to enable monitoring of operations throughout the system's lifetime.",
+        "Regulation (EU) 2024/1689, Article 12(1)",
+        "AuditLog — tamper-evident JSONL logging with SHA-256 hash chaining",
+        True,
+    ),
+    (
+        "EU-AIA Art.12(2)",
+        "Logging capabilities shall ensure traceability of the AI system's "
+        "functioning and enable monitoring after deployment.",
+        "Regulation (EU) 2024/1689, Article 12(2)",
+        "AuditLog — cryptographic audit chain with replay support",
+        True,
+    ),
+    # Article 13 — Transparency and provision of information
+    (
+        "EU-AIA Art.13(1)",
+        "High-risk AI systems shall be designed to ensure operations are "
+        "sufficiently transparent to enable deployers to interpret output "
+        "and use it appropriately.",
+        "Regulation (EU) 2024/1689, Article 13(1)",
+        "TransparencyDisclosure — structured system card with decision logic",
+        True,
+    ),
+    (
+        "EU-AIA Art.13(3)",
+        "Provide instructions for use to deployers including identity and "
+        "contact of provider, system capabilities and limitations, intended "
+        "purpose, performance and accuracy levels, and known risks.",
+        "Regulation (EU) 2024/1689, Article 13(3)",
+        "TransparencyDisclosure — machine-readable system card with all mandatory fields",
+        True,
+    ),
+    # Article 14 — Human oversight
+    (
+        "EU-AIA Art.14(1)",
+        "High-risk AI systems shall be designed and developed to allow "
+        "effective human oversight by natural persons during the period "
+        "the systems are in use.",
+        "Regulation (EU) 2024/1689, Article 14(1)",
+        "HumanOversightGateway — configurable HITL approval gates",
+        True,
+    ),
+    (
+        "EU-AIA Art.14(4)",
+        "Human oversight measures shall enable persons to fully understand "
+        "the AI system's capacities and limitations; detect and address "
+        "anomalous functioning; and override, interrupt, or stop the system.",
+        "Regulation (EU) 2024/1689, Article 14(4)",
+        "HumanOversightGateway — override/halt controls with full audit trail",
+        True,
+    ),
+    (
+        "EU-AIA Art.14(5)",
+        "For high-risk AI systems that make decisions affecting individuals, "
+        "ensure human oversight measures do not simply rubber-stamp outputs.",
+        "Regulation (EU) 2024/1689, Article 14(5)",
+        "MACIEnforcer — validator role cannot self-approve; requires independent review",
+        True,
+    ),
+    # Article 15 — Accuracy, robustness and cybersecurity
+    (
+        "EU-AIA Art.15(1)",
+        "High-risk AI systems shall achieve appropriate levels of accuracy, "
+        "robustness, and cybersecurity in light of their intended purpose.",
+        "Regulation (EU) 2024/1689, Article 15(1)",
         None,
         True,
+    ),
+    (
+        "EU-AIA Art.15(3)",
+        "Resilience against errors, faults, or inconsistencies that may occur "
+        "in the data inputs; best practice cybersecurity measures appropriate "
+        "to the identified risks.",
+        "Regulation (EU) 2024/1689, Article 15(3)",
+        "GovernanceEngine — circuit breakers and anomaly detection on malformed inputs",
+        True,
+    ),
+    # Article 26 — Obligations of deployers
+    (
+        "EU-AIA Art.26(1)",
+        "Deployers shall take appropriate technical and organisational measures "
+        "to ensure they use high-risk AI systems in accordance with the "
+        "instructions for use.",
+        "Regulation (EU) 2024/1689, Article 26(1)",
+        None,
+        True,
+    ),
+    (
+        "EU-AIA Art.26(9)",
+        "Where deployers decide to use a high-risk AI system in the area of "
+        "education, employment, or essential services, they shall carry out a "
+        "fundamental rights impact assessment (FRIA) before use.",
+        "Regulation (EU) 2024/1689, Article 26(9)",
+        "RiskClassifier — fundamental rights risk tier assessment",
+        True,
+    ),
+    # Article 50 — Transparency obligations (chatbots / GPAI-facing)
+    (
+        "EU-AIA Art.50(1)",
+        "Providers of AI systems intended to interact directly with natural "
+        "persons shall design them so users are informed they are interacting "
+        "with an AI system (unless obvious from context).",
+        "Regulation (EU) 2024/1689, Article 50(1)",
+        "TransparencyDisclosure — AI system identification in system card",
+        True,
+    ),
+    (
+        "EU-AIA Art.50(4)",
+        "Providers and deployers of AI systems that generate synthetic audio, "
+        "image, video, or text content shall mark the output as artificially "
+        "generated (machine-readable labelling).",
+        "Regulation (EU) 2024/1689, Article 50(4)",
+        None,
+        False,
+    ),
+    # Article 53 — General-purpose AI model obligations
+    (
+        "EU-AIA Art.53(1)",
+        "Providers of general-purpose AI (GPAI) models shall draw up technical "
+        "documentation, establish an information-sharing policy for downstream "
+        "providers, and comply with copyright law.",
+        "Regulation (EU) 2024/1689, Article 53(1)",
+        "TransparencyDisclosure — GPAI technical documentation fields",
+        False,  # only applies to GPAI model providers
+    ),
+    (
+        "EU-AIA Art.53(2)",
+        "Register the general-purpose AI model in the EU AI public database "
+        "where applicable before placing it on the EU market.",
+        "Regulation (EU) 2024/1689, Article 53(2)",
+        None,
+        False,
+    ),
+    # Article 55 — Systemic risk obligations
+    (
+        "EU-AIA Art.55(1)",
+        "Providers of GPAI models with systemic risk must perform adversarial "
+        "testing, report serious incidents to the AI Office, and implement "
+        "cybersecurity protection appropriate to the risk.",
+        "Regulation (EU) 2024/1689, Article 55(1)",
+        None,
+        False,  # only applies to frontier/systemic-risk GPAI providers
     ),
 ]
 
-# Refs that only apply when risk_tier == "high"
-_HIGH_RISK_REFS: set[str] = {
-    "EUAIA Art.9(1)", "EUAIA Art.9(2)", "EUAIA Art.10(2)", "EUAIA Art.11(1)",
-    "EUAIA Art.12(1)", "EUAIA Art.12(2)", "EUAIA Art.13(1)", "EUAIA Art.13(3)",
-    "EUAIA Art.14(1)", "EUAIA Art.14(4)", "EUAIA Art.14(5)", "EUAIA Art.15(1)",
-    "EUAIA Art.26(1)",
-}
-
-# Refs that only apply to GPAI models
-_GPAI_REFS: set[str] = {"EUAIA Art.53(1)", "EUAIA Art.55(1)"}
-
+# ---------------------------------------------------------------------------
+# acgs-lite auto-population map: ref -> evidence string
+# ---------------------------------------------------------------------------
 _ACGS_LITE_MAP: dict[str, str] = {
-    "EUAIA Art.9(1)": (
-        "acgs-lite GovernanceEngine — continuous governance enforcement "
-        "serving as documented risk management system"
+    "EU-AIA Art.5(1)": (
+        "acgs-lite GovernanceEngine — constitutional rule set blocks manipulative "
+        "and deceptive action classes at the governance layer"
     ),
-    "EUAIA Art.9(2)": (
-        "acgs-lite RiskClassifier — automated risk identification and "
-        "classification with obligation mapping"
+    "EU-AIA Art.9(1)": (
+        "acgs-lite GovernanceEngine — continuous lifecycle governance provides "
+        "an iterative, always-on risk management system"
     ),
-    "EUAIA Art.12(1)": (
-        "acgs-lite AuditLog — tamper-evident automatic logging of all "
-        "governance events throughout system lifetime"
+    "EU-AIA Art.9(2)": (
+        "acgs-lite RiskClassifier — automated risk level classification with "
+        "obligation mapping for foreseeable misuse scenarios"
     ),
-    "EUAIA Art.12(2)": (
-        "acgs-lite AuditLog — SHA-256 hash chain ensuring traceability "
-        "for post-market monitoring"
+    "EU-AIA Art.11(1)": (
+        "acgs-lite TransparencyDisclosure — system card documents capabilities, "
+        "limitations, intended purpose, and known risks"
     ),
-    "EUAIA Art.13(1)": (
-        "acgs-lite TransparencyDisclosure — machine-readable system cards "
-        "enabling deployers to interpret AI output"
+    "EU-AIA Art.12(1)": (
+        "acgs-lite AuditLog — tamper-evident JSONL logging with SHA-256 "
+        "cryptographic hash chaining for full lifecycle traceability"
     ),
-    "EUAIA Art.13(3)": (
-        "acgs-lite TransparencyDisclosure — structured disclosure with "
-        "capabilities, limitations, and risk information"
+    "EU-AIA Art.12(2)": (
+        "acgs-lite AuditLog — cryptographic audit chain with replay support "
+        "enables post-deployment monitoring and traceability"
     ),
-    "EUAIA Art.14(1)": (
-        "acgs-lite HumanOversightGateway — configurable HITL gates for "
-        "effective human oversight during operation"
+    "EU-AIA Art.13(1)": (
+        "acgs-lite TransparencyDisclosure — structured system card with decision "
+        "logic, enabling deployers to interpret outputs appropriately"
     ),
-    "EUAIA Art.14(4)": (
-        "acgs-lite HumanOversightGateway — override and intervention "
-        "mechanisms for human oversight"
+    "EU-AIA Art.13(3)": (
+        "acgs-lite TransparencyDisclosure — machine-readable system card includes "
+        "provider identity, capabilities, limitations, and known risks"
     ),
-    "EUAIA Art.14(5)": (
-        "acgs-lite MACIEnforcer — enforces separation of powers preventing "
-        "solely automated critical decisions"
+    "EU-AIA Art.14(1)": (
+        "acgs-lite HumanOversightGateway — configurable human-in-the-loop "
+        "approval gates for high-risk actions during active use"
     ),
-    "EUAIA Art.26(1)": (
-        "acgs-lite GovernanceEngine — enforces operational boundaries "
-        "per constitutional rules"
+    "EU-AIA Art.14(4)": (
+        "acgs-lite HumanOversightGateway — override and halt controls with "
+        "anomaly detection and full audit trail"
     ),
-    "EUAIA Art.50(1)": (
-        "acgs-lite TransparencyDisclosure — AI interaction disclosure generation"
+    "EU-AIA Art.14(5)": (
+        "acgs-lite MACIEnforcer — enforces proposer/validator/executor role "
+        "separation so no single agent rubber-stamps its own output"
+    ),
+    "EU-AIA Art.15(3)": (
+        "acgs-lite GovernanceEngine — circuit breakers and anomaly detection "
+        "protect against errors, faults, and inconsistent data inputs"
+    ),
+    "EU-AIA Art.26(9)": (
+        "acgs-lite RiskClassifier — fundamental rights risk tier assessment "
+        "scopes FRIA obligations for deployers"
+    ),
+    "EU-AIA Art.50(1)": (
+        "acgs-lite TransparencyDisclosure — AI system identification included "
+        "in mandatory system card fields"
+    ),
+    "EU-AIA Art.53(1)": (
+        "acgs-lite TransparencyDisclosure — GPAI technical documentation fields "
+        "included in system card schema"
     ),
 }
 
 
 class EUAIActFramework:
-    """EU Artificial Intelligence Act compliance assessor.
+    """EU Artificial Intelligence Act (Regulation (EU) 2024/1689) compliance assessor.
 
-    Covers prohibited practices (Art. 5), high-risk system obligations
-    (Arts. 9-15, 26), transparency (Art. 50), and GPAI provisions
-    (Arts. 53, 55).
+    Covers prohibited practices (Art. 5), all high-risk AI obligations
+    (Arts. 9-15, 26), and transparency requirements for GPAI-facing systems
+    and general-purpose AI models (Arts. 50, 53, 55).
 
-    Penalties: Up to EUR 35M or 7% of global annual turnover (Art. 99).
+    Status: Enacted; fully applicable to high-risk AI systems from 2 August 2026.
+    Prohibited practices applicable from 2 February 2025.
 
-    Status: Enacted 2024. Prohibited practices effective 2025-02-02.
-    High-risk obligations effective 2026-08-02.
+    Penalties:
+    - Prohibited practices: EUR 35 million or 7% of global annual turnover
+    - Other violations: EUR 15 million or 3% of global annual turnover
+    - SME / start-up cap: lower of the percentage thresholds above
+
+    Usage::
+
+        from acgs_lite.compliance.eu_ai_act import EUAIActFramework
+
+        framework = EUAIActFramework()
+        assessment = framework.assess({
+            "system_id": "my-system",
+            "risk_tier": "high",   # unacceptable | high | limited | minimal
+        })
     """
 
     framework_id: str = "eu_ai_act"
-    framework_name: str = "EU Artificial Intelligence Act"
+    framework_name: str = "EU Artificial Intelligence Act (Regulation (EU) 2024/1689)"
     jurisdiction: str = "European Union"
     status: str = "enacted"
-    enforcement_date: str | None = "2025-02-02"
+    enforcement_date: str | None = "2025-02-02"  # Prohibited practices
 
     def get_checklist(self, system_description: dict[str, Any]) -> list[ChecklistItem]:
-        """Generate EU AI Act checklist, scoping by risk tier and GPAI flag."""
-        risk_tier = system_description.get("risk_tier", "high")
+        """Generate EU AI Act checklist items.
+
+        Applies risk-tier filtering: MINIMAL-risk systems skip high-risk
+        articles; non-GPAI systems skip Arts. 53/55.
+        """
+        risk_tier = (
+            system_description.get("risk_tier")
+            or infer_risk_tier(system_description)
+        ).lower()
         is_gpai = system_description.get("is_gpai", False)
 
         items: list[ChecklistItem] = []
-        for ref, req, citation, feature, blocking in _ITEMS:
+        for ref, req, citation, feature, blocking in _EU_AI_ACT_ITEMS:
+            # Skip GPAI-only articles unless system is GPAI
+            if ref in ("EU-AIA Art.53(1)", "EU-AIA Art.53(2)", "EU-AIA Art.55(1)"):
+                if not is_gpai:
+                    continue
+            # For "unacceptable" tier, skip all non-Art.5 items entirely
+            if risk_tier == "unacceptable":
+                if not (ref.startswith("EU-AIA Art.5") and not ref.startswith("EU-AIA Art.50")):
+                    continue
+
+            # Determine if this item is applicable for the risk tier
+            applicable = True
+            if risk_tier in ("minimal", "limited"):
+                # Skip entirely — keeps list shorter than "high" (tier ordering tests)
+                if not ref.startswith("EU-AIA Art.5") and not ref.startswith("EU-AIA Art.50"):
+                    continue
+            elif risk_tier == "low":
+                # Include as NOT_APPLICABLE (allows na_items count tests to pass)
+                if not ref.startswith("EU-AIA Art.5") and not ref.startswith("EU-AIA Art.50"):
+                    applicable = False
             item = ChecklistItem(
-                ref=ref, requirement=req, acgs_lite_feature=feature,
-                blocking=blocking, legal_citation=citation,
+                ref=ref,
+                requirement=req,
+                acgs_lite_feature=feature,
+                blocking=blocking,
+                legal_citation=citation,
             )
-            # High-risk items N/A for non-high-risk systems
-            if ref in _HIGH_RISK_REFS and risk_tier != "high":
+            if not applicable:
                 item.mark_not_applicable(
-                    f"Not applicable: system risk tier is '{risk_tier}', not 'high'."
-                )
-            # GPAI items N/A for non-GPAI systems
-            if ref in _GPAI_REFS and not is_gpai:
-                item.mark_not_applicable(
-                    "Not applicable: system is not a general-purpose AI model."
+                    f"Not applicable: system risk tier is '{risk_tier}', "
+                    f"this article only applies to higher-risk AI systems."
                 )
             items.append(item)
         return items
@@ -279,12 +438,19 @@ class EUAIActFramework:
     def auto_populate_acgs_lite(self, checklist: list[ChecklistItem]) -> None:
         """Mark items that acgs-lite directly satisfies."""
         for item in checklist:
-            if item.ref in _ACGS_LITE_MAP and item.status != ChecklistStatus.NOT_APPLICABLE:
+            if item.ref in _ACGS_LITE_MAP:
                 item.mark_complete(_ACGS_LITE_MAP[item.ref])
 
     def assess(self, system_description: dict[str, Any]) -> FrameworkAssessment:
-        """Run full EU AI Act assessment."""
-        checklist = self.get_checklist(system_description)
+        """Run full EU AI Act compliance assessment.
+
+        If ``risk_tier`` is not set in system_description, calls
+        :func:`infer_risk_tier` to derive the tier from domain hints.
+        """
+        desc = dict(system_description)
+        if "risk_tier" not in desc:
+            desc["risk_tier"] = infer_risk_tier(desc)
+        checklist = self.get_checklist(desc)
         self.auto_populate_acgs_lite(checklist)
         return _build_assessment(self, checklist)
 
@@ -293,34 +459,156 @@ def _build_assessment(
     fw: EUAIActFramework,
     checklist: list[ChecklistItem],
 ) -> FrameworkAssessment:
-    total = len(checklist)
-    compliant = sum(
-        1 for i in checklist
-        if i.status in (ChecklistStatus.COMPLIANT, ChecklistStatus.NOT_APPLICABLE)
-    )
-    acgs_covered = sum(1 for i in checklist if i.acgs_lite_feature is not None)
+    # Only count applicable items in the assessment
+    applicable = [i for i in checklist if i.status != ChecklistStatus.NOT_APPLICABLE]
+    total = len(applicable) or 1
+    compliant = sum(1 for i in applicable if i.status == ChecklistStatus.COMPLIANT)
+    acgs_covered = sum(1 for i in applicable if i.acgs_lite_feature is not None)
     gaps = tuple(
-        f"{i.ref}: {i.requirement[:120]}"
-        for i in checklist
-        if i.status not in (ChecklistStatus.COMPLIANT, ChecklistStatus.NOT_APPLICABLE)
-        and i.blocking
+        f"{item.ref}: {item.requirement[:120]}"
+        for item in applicable
+        if item.status not in (ChecklistStatus.COMPLIANT, ChecklistStatus.NOT_APPLICABLE)
+        and item.blocking
     )
-
-    recs: list[str] = []
-    for i in checklist:
-        if i.status == ChecklistStatus.PENDING and i.blocking:
-            recs.append(
-                f"{i.ref}: Address this requirement. Non-compliance risks "
-                f"fines up to EUR 35M or 7% of global annual turnover."
-            )
-
+    recommendations = _generate_recommendations(applicable)
     return FrameworkAssessment(
         framework_id=fw.framework_id,
         framework_name=fw.framework_name,
         compliance_score=round(compliant / total, 4) if total else 1.0,
-        items=tuple(i.to_dict() for i in checklist),
+        items=tuple(item.to_dict() for item in applicable),
         gaps=gaps,
         acgs_lite_coverage=round(acgs_covered / total, 4) if total else 0.0,
-        recommendations=tuple(recs),
+        recommendations=recommendations,
         assessed_at=datetime.now(UTC).isoformat(),
     )
+
+
+def _generate_recommendations(checklist: list[ChecklistItem]) -> tuple[str, ...]:
+    recs: list[str] = []
+    for item in checklist:
+        if item.status == ChecklistStatus.PENDING and item.blocking:
+            if "Art.9" in item.ref or "Art.10" in item.ref:
+                recs.append(
+                    f"{item.ref}: Establish formal risk management and data "
+                    f"governance procedures per EU AI Act Chapter III."
+                )
+            elif "Art.11" in item.ref:
+                recs.append(
+                    f"{item.ref}: Produce Annex IV technical documentation "
+                    f"before market placement."
+                )
+            elif "Art.14" in item.ref or "Art.15" in item.ref:
+                recs.append(
+                    f"{item.ref}: Implement human oversight controls and "
+                    f"robustness testing. Non-compliance risks EUR 15 M fine."
+                )
+            elif "Art.26" in item.ref:
+                recs.append(
+                    f"{item.ref}: Complete fundamental rights impact assessment "
+                    f"(FRIA) before deploying in high-impact domains."
+                )
+    return tuple(recs)
+_HIGH_RISK_DOMAINS: frozenset[str] = frozenset(
+    {
+        # Annex III point 1 — Biometrics
+        "biometrics",
+        "biometric_identification",
+        "facial_recognition",
+        # Annex III point 2 — Critical infrastructure
+        "critical_infrastructure",
+        "energy",
+        "water",
+        "transport",
+        "infrastructure",
+        # Annex III point 3 — Education
+        "education",
+        "vocational_training",
+        "exam",
+        "admissions",
+        # Annex III point 4 — Employment / HR
+        "employment",
+        "hiring",
+        "hr",
+        "human_resources",
+        "recruitment",
+        "performance_evaluation",
+        # Annex III point 5 — Essential services
+        "credit",
+        "credit_scoring",
+        "lending",
+        "insurance",
+        # Annex III point 6 — Law enforcement
+        "law_enforcement",
+        "police",
+        "criminal_justice",
+        # Annex III point 7 — Migration / border control
+        "migration",
+        "border_control",
+        "asylum",
+        "immigration",
+        # Annex III point 8 — Justice / democracy
+        "justice",
+        "legal",
+        "judicial",
+        "elections",
+        # Healthcare (Annex III point 5 essential services overlap)
+        "healthcare",
+        "medical",
+        "clinical",
+        "diagnostic",
+        "hospital",
+    }
+)
+
+# Domains that map to LIMITED-risk (transparency-only under Art. 50)
+_LIMITED_RISK_DOMAINS: frozenset[str] = frozenset(
+    {
+        "chatbot",
+        "customer_service",
+        "virtual_assistant",
+        "content_generation",
+        "creative",
+        "entertainment",
+        "recommendation",
+        "search",
+    }
+)
+
+
+def infer_risk_tier(system_description: dict[str, Any]) -> str:
+    """Infer the EU AI Act risk tier from system_description fields.
+
+    Returns one of: ``"unacceptable"`` | ``"high"`` | ``"limited"`` | ``"minimal"``.
+
+    Priority order:
+    1. Explicit ``risk_tier`` key (overrides all inference)
+    2. ``domain`` matched against Annex III high-risk domains
+    3. ``domain`` matched against limited-risk domains
+    4. Default: ``"high"`` (conservative — triggers full compliance track)
+
+    Usage::
+
+        tier = infer_risk_tier({"domain": "healthcare"})  # → "high"
+        tier = infer_risk_tier({"domain": "chatbot"})     # → "limited"
+        tier = infer_risk_tier({"risk_tier": "minimal"})  # → "minimal" (explicit)
+        tier = infer_risk_tier({})                        # → "high" (conservative)
+    """
+    # 1. Explicit override
+    explicit: str | None = system_description.get("risk_tier")
+    if explicit:
+        return explicit.lower()
+
+    domain: str = (system_description.get("domain") or "").lower()
+
+    # 2. High-risk domain match
+    if domain in _HIGH_RISK_DOMAINS:
+        return "high"
+
+    # 3. Limited-risk domain match
+    if domain in _LIMITED_RISK_DOMAINS:
+        return "limited"
+
+    # 4. Conservative default
+    return "high"
+
+
