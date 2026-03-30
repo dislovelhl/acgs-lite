@@ -7,10 +7,17 @@ Extracted from main.py: startup/shutdown lifecycle for the FastAPI application.
 import os
 from contextlib import asynccontextmanager
 from inspect import isawaitable
+from pathlib import Path
 
 from fastapi import FastAPI
 
+from enhanced_agent_bus.data_flywheel.dataset_builder import (
+    InMemoryFeedbackEventSource,
+    RedisFeedbackEventSource,
+)
+from enhanced_agent_bus.data_flywheel.run_orchestrator import FlywheelRunOrchestrator
 from enhanced_agent_bus.persistence import InMemoryWorkflowRepository, PostgresWorkflowRepository
+from enhanced_agent_bus.saga_persistence import create_saga_repository
 
 try:
     from src.core.self_evolution.evidence_store import SelfEvolutionEvidenceStore
@@ -108,7 +115,9 @@ async def _initialize_self_evolution_evidence_store(app_instance: FastAPI) -> ob
         await repository.initialize()
         app_instance.state.self_evolution_workflow_repository = repository
         if SelfEvolutionEvidenceStore is not None:
-            app_instance.state.self_evolution_evidence_store = SelfEvolutionEvidenceStore(repository)
+            app_instance.state.self_evolution_evidence_store = SelfEvolutionEvidenceStore(
+                repository
+            )
         logger.info("Self-evolution evidence persistence initialized", backend="postgres")
         return repository
 
@@ -116,13 +125,56 @@ async def _initialize_self_evolution_evidence_store(app_instance: FastAPI) -> ob
         repository = InMemoryWorkflowRepository()
         app_instance.state.self_evolution_workflow_repository = repository
         if SelfEvolutionEvidenceStore is not None:
-            app_instance.state.self_evolution_evidence_store = SelfEvolutionEvidenceStore(repository)
+            app_instance.state.self_evolution_evidence_store = SelfEvolutionEvidenceStore(
+                repository
+            )
         logger.info("Self-evolution evidence persistence initialized", backend="memory")
         return repository
 
     raise RuntimeError(
         "DATABASE_URL is required to initialize self-evolution evidence persistence in production"
     )
+
+
+async def _initialize_self_evolution_run_orchestrator(app_instance: FastAPI) -> object | None:
+    repository = getattr(app_instance.state, "self_evolution_workflow_repository", None)
+    if repository is None:
+        logger.warning("Self-evolution run orchestrator unavailable: missing workflow repository")
+        return None
+
+    try:
+        saga_repository = await create_saga_repository()
+    except Exception as exc:
+        logger.warning(
+            "Self-evolution run orchestrator unavailable: failed to initialize saga repository",
+            error=str(exc),
+        )
+        return None
+
+    artifact_root = Path(
+        os.getenv("SELF_EVOLUTION_DATASET_ARTIFACT_ROOT", "/tmp/acgs-self-evolution")
+    )
+    redis_url = get_redis_url(db=0)
+    if _is_development_environment():
+        feedback_source = InMemoryFeedbackEventSource([])
+    else:
+        feedback_source = RedisFeedbackEventSource(redis_url)
+
+    orchestrator = FlywheelRunOrchestrator(
+        repository,
+        saga_repository,
+        feedback_source,
+        artifact_root=artifact_root,
+    )
+    app_instance.state.self_evolution_run_feedback_source = feedback_source
+    app_instance.state.self_evolution_saga_repository = saga_repository
+    app_instance.state.self_evolution_run_orchestrator = orchestrator
+    logger.info(
+        "Self-evolution run orchestrator initialized",
+        backend="memory" if isinstance(feedback_source, InMemoryFeedbackEventSource) else "redis",
+        artifact_root=str(artifact_root),
+    )
+    return orchestrator
 
 
 async def _close_if_available(resource: object | None) -> None:
@@ -161,6 +213,7 @@ async def lifespan(app_instance: FastAPI):
         operator_control_plane = await operator_control_plane
     app_instance.state.research_operator_control_plane = operator_control_plane
     self_evolution_repository = await _initialize_self_evolution_evidence_store(app_instance)
+    await _initialize_self_evolution_run_orchestrator(app_instance)
     logger.info(
         "AutonomyTierEnforcementMiddleware initialized",
         hitl_url=hitl_url,
@@ -181,6 +234,12 @@ async def lifespan(app_instance: FastAPI):
             None,
         )
         await _close_if_available(research_operator_control_plane)
+        await _close_if_available(
+            getattr(app_instance.state, "self_evolution_run_feedback_source", None)
+        )
+        await _close_if_available(
+            getattr(app_instance.state, "self_evolution_saga_repository", None)
+        )
         await _close_if_available(self_evolution_repository)
         await close_proxy_client()
         await _close_feedback_redis()
