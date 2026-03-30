@@ -32,6 +32,12 @@ def _mock_control_plane():
     return mock
 
 
+def _mock_saga_repository():
+    mock = MagicMock()
+    mock.aclose = AsyncMock()
+    return mock
+
+
 # ---------------------------------------------------------------------------
 # _verify_constitutional_hash_at_startup
 # ---------------------------------------------------------------------------
@@ -132,11 +138,17 @@ class TestLifespan:
             "SELF_EVOLUTION_OPERATOR_CONTROL_BACKEND": "memory",
         }
         mock_control = _mock_control_plane()
+        mock_saga = _mock_saga_repository()
 
         with (
             patch.dict(os.environ, env, clear=False),
             patch.object(lifespan_mod, "_is_development_environment", return_value=True),
             _patch_create_control_plane(lifespan_mod, mock_control),
+            patch.object(
+                lifespan_mod,
+                "create_saga_repository",
+                AsyncMock(return_value=mock_saga),
+            ),
             patch.object(lifespan_mod, "close_proxy_client", new_callable=AsyncMock),
             patch.object(lifespan_mod, "_close_feedback_redis", new_callable=AsyncMock),
         ):
@@ -145,6 +157,7 @@ class TestLifespan:
 
             async with lifespan_mod.lifespan(mock_app):
                 assert hasattr(mock_app.state, "hitl_client")
+                assert hasattr(mock_app.state, "self_evolution_run_orchestrator")
 
     @pytest.mark.asyncio
     async def test_lifespan_shutdown_closes_clients(self):
@@ -156,6 +169,7 @@ class TestLifespan:
             "SELF_EVOLUTION_OPERATOR_CONTROL_BACKEND": "memory",
         }
         mock_control = _mock_control_plane()
+        mock_saga = _mock_saga_repository()
         mock_close_proxy = AsyncMock()
         mock_close_feedback = AsyncMock()
 
@@ -163,6 +177,11 @@ class TestLifespan:
             patch.dict(os.environ, env, clear=False),
             patch.object(lifespan_mod, "_is_development_environment", return_value=True),
             _patch_create_control_plane(lifespan_mod, mock_control),
+            patch.object(
+                lifespan_mod,
+                "create_saga_repository",
+                AsyncMock(return_value=mock_saga),
+            ),
             patch.object(lifespan_mod, "close_proxy_client", mock_close_proxy),
             patch.object(lifespan_mod, "_close_feedback_redis", mock_close_feedback),
         ):
@@ -174,6 +193,7 @@ class TestLifespan:
 
             mock_close_proxy.assert_awaited_once()
             mock_close_feedback.assert_awaited_once()
+            mock_saga.aclose.assert_awaited_once()
 
     @pytest.mark.asyncio
     async def test_lifespan_closes_operator_control_plane(self):
@@ -185,11 +205,17 @@ class TestLifespan:
             "SELF_EVOLUTION_OPERATOR_CONTROL_BACKEND": "memory",
         }
         mock_control = _mock_control_plane()
+        mock_saga = _mock_saga_repository()
 
         with (
             patch.dict(os.environ, env, clear=False),
             patch.object(lifespan_mod, "_is_development_environment", return_value=True),
             _patch_create_control_plane(lifespan_mod, mock_control),
+            patch.object(
+                lifespan_mod,
+                "create_saga_repository",
+                AsyncMock(return_value=mock_saga),
+            ),
             patch.object(lifespan_mod, "close_proxy_client", new_callable=AsyncMock),
             patch.object(lifespan_mod, "_close_feedback_redis", new_callable=AsyncMock),
         ):
@@ -210,11 +236,17 @@ class TestLifespan:
             "ENVIRONMENT": "test",
             "SELF_EVOLUTION_OPERATOR_CONTROL_BACKEND": "memory",
         }
+        mock_saga = _mock_saga_repository()
 
         with (
             patch.dict(os.environ, env, clear=False),
             patch.object(lifespan_mod, "_is_development_environment", return_value=True),
             _patch_create_control_plane(lifespan_mod, None),
+            patch.object(
+                lifespan_mod,
+                "create_saga_repository",
+                AsyncMock(return_value=mock_saga),
+            ),
             patch.object(lifespan_mod, "close_proxy_client", new_callable=AsyncMock),
             patch.object(lifespan_mod, "_close_feedback_redis", new_callable=AsyncMock),
         ):
