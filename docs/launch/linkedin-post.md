@@ -37,7 +37,7 @@ I have no CS degree. I built this entirely with Claude (Anthropic's AI assistant
 
 That's the democratization that matters.
 
-Watch the 7-minute walkthrough: https://youtu.be/do9BCPn29_Q
+Watch the 7-minute walkthrough: https://youtu.be/uWacmC3CbYg?si=q6wsOs4Z3OlZX6po
 
 Website: https://acgs.ai
 PyPI: https://pypi.org/project/acgs/
