@@ -49,6 +49,35 @@ Deferred work from /autoplan review (2026-03-30). Items gated on testnet validat
 **Gate:** After testnet runs multiple constitution rotations.
 **Effort:** M (human) / S (CC)
 
+## P2 — From /autoplan cookbook review (2026-03-30)
+
+### Generic semantic-guardrail adapter (was: openai-guardrails adapter)
+**What:** Create `acgs_lite.integrations.semantic_guardrails` — a generic adapter interface that wraps any provider's LLM-based guardrails (OpenAI, Anthropic, custom) with ACGS constitutional governance on top.
+**Why:** Codex CEO review flagged that a named `openai-guardrails` adapter contradicts the vendor-neutral premise. Design as provider-agnostic interface with pluggable backends.
+**Gate:** After Priority 1 (per-rule eval harness) ships and validates the engine's rule accuracy.
+**Effort:** M (human) / S (CC)
+**Depends on:** Per-rule eval harness (Priority 1)
+
+### Red-team CI pipeline (expanded scope)
+**What:** Adversarial testing targeting the ACGS governance engine via Promptfoo + custom abuse-case corpus. Must cover paraphrase bypass, multi-turn agent abuse, tool-call escalation, memory poisoning, and policy ambiguity — not just single-turn keyword bypass.
+**Why:** Codex CEO + Eng both flagged: Promptfoo alone covers only one abuse surface. Real-world abuse is multi-dimensional.
+**Gate:** After eval harness identifies weakest rules (target red-teaming at those rules first).
+**Effort:** L (human) / M (CC)
+**Depends on:** Per-rule eval harness (Priority 1)
+
+### ZDR observability mode (needs compliance design)
+**What:** Zero Data Retention tracing mode for enhanced_agent_bus. Codex CEO flagged: egress constraint alone ≠ compliance. Needs encryption, access control, deletion semantics, tenant isolation, and deployment story.
+**Why:** Financial services / healthcare deployments need observability without data leaving the trust boundary.
+**Gate:** First enterprise customer expressing this need, or compliance certification initiative.
+**Effort:** XL (human) / L (CC) — research + design before implementation
+**Depends on:** Compliance certification strategy (P3)
+
+### Reference app / demo
+**What:** A polished reference application showing ACGS wrapping an AI agent (e.g., OpenAI agent) with constitutional governance. Shows the full stack: GovernedAgent → constitutional rules → audit trail → compliance report.
+**Why:** Codex CEO argued "a polished reference app beats a governance diagram for devtool adoption." For distribution and adoption, showing beats telling.
+**Gate:** Strategic decision on go-to-market approach.
+**Effort:** M (human) / S (CC)
+
 ## P3 — Nice to have
 
 ### Centralized SaaS alternative track
@@ -72,3 +101,15 @@ Deferred work from /autoplan review (2026-03-30). Items gated on testnet validat
 ### ~~Throughput model~~ DONE (2026-03-30)
 **What:** ~~Size on-chain write rate at target customer volumes.~~
 **Delivered:** `docs/strategy/10-throughput-model.md`. Chain is not the bottleneck at any volume (100K/day uses <1% of block capacity). Real bottleneck is miner supply. Batch size 100 confirmed correct for testnet.
+
+## ClinicalGuard Hackathon — Deferred Items
+
+### Post-hackathon if wins
+**RxNorm/DrugBank integration**: Real drug interaction database via API. Requires agreements. Significant trust improvement for real deployment.
+**Multi-tenant audit isolation**: Per-customer audit log scoping. Required for any real healthcare deployment.
+**Constitutional amendment UI**: Web UI for clinical experts to propose and vote on new rules. Uses existing amendment engine.
+**Streaming A2A responses**: Real-time validation progress for slow LLM calls.
+
+### Out of scope (explicit decision 2026-03-30)
+- Bittensor subnet integration (different product line)
+- EU AI Act compliance module for ClinicalGuard (overkill for hackathon)

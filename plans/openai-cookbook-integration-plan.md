@@ -72,126 +72,49 @@ layer that works with any provider's probabilistic guardrails on top:
 
 ---
 
-## Work Items
+## Approved Work Item
 
-### Priority 1: Constitutional Rule Eval Harness
+### Per-Rule Eval Harness (Priority 1, eval-first)
 
-**Objective:** Build a labeled eval dataset and precision/recall/F1 scoring for the
-ACGS constitutional rule engine, integrated with the `autoresearch/` benchmark harness.
+**Objective:** Add per-rule precision/recall/F1 metrics and scenario-level outcome
+metrics to the ACGS governance engine, extending the existing `GovernanceTestSuite`.
 
-**What it does:** For each rule in the constitution, create test cases with expected
-firing behavior. Run the engine. Measure TP/FP/FN/TN per rule and per category.
-Produce a regression gate: `make eval-rules` fails if any metric drops.
-
-**Files affected:**
-- `autoresearch/eval_rules.py` (new) — eval runner
-- `autoresearch/eval_data/rule_test_data.jsonl` (new) — labeled dataset
-- `autoresearch/eval_data/` (new directory) — eval artifacts
-- `packages/acgs-lite/tests/test_eval_harness.py` (new) — pytest integration
-- `Makefile` — add `eval-rules` target
-
-**Approach:**
-1. Extract the existing `autoresearch/scenarios/` corpus and add expected rule-firing
-   labels (which rule IDs should fire for each scenario).
-2. Build a `RuleEval` class that runs `GovernanceEngine.validate()` on each labeled
-   input and computes precision/recall/F1 per rule.
-3. Output: JSON metrics file + markdown summary table.
-4. CI integration: `make eval-rules` runs as part of `make test`.
-
-**Why this matters:** The autoresearch harness currently measures `composite_score`,
-`compliance_rate`, and latency — but has no standard ML metrics per rule. A rule change
-that improves speed but introduces 3 new false positives is invisible today. This eval
-harness makes it visible.
-
-**Estimated effort:** human ~3 days / CC ~45 min
-
-### Priority 2: `openai-guardrails` Integration Adapter
-
-**Objective:** Create `acgs_lite.integrations.openai_guardrails` that wraps
-`GuardrailsOpenAI` with ACGS constitutional governance on top.
-
-**What it does:** Users get deterministic rule checks (µs) + LLM-based semantic
-checks (ms) + MACI enforcement + tamper-evident audit in one client.
+**What it does:** For each of the 18 active constitutional rules, measure how
+accurately the engine fires (or doesn't fire) against 809 labeled scenarios.
+Primary CI gate: scenario-level decision accuracy. Diagnostic: per-rule P/R/F1
+for rule authors.
 
 **Files affected:**
-- `packages/acgs-lite/src/acgs_lite/integrations/openai_guardrails.py` (new)
-- `packages/acgs-lite/tests/test_openai_guardrails_integration.py` (new)
-- `packages/acgs-lite/pyproject.toml` — add `openai-guardrails` optional extra
+- `autoresearch/eval_rules.py` (new) — loads scenarios + sidecar annotations, runs suite, outputs metrics
+- `autoresearch/eval_data/rule_annotations.yaml` (new) — per-scenario rule labels joined by content hash
+- `packages/acgs-lite/src/acgs_lite/constitution/test_suite.py` — extend with `compute_rule_metrics()`
+- `packages/acgs-lite/tests/test_rule_metrics.py` (new) — unit tests for metrics math
+- `Makefile` — add `eval-rules` target (standalone, NOT in `make test`)
 
-**Approach:**
-1. Wrap `GuardrailsOpenAI` the same way `GovernedOpenAI` wraps `OpenAI`:
-   validate input against constitution before the guardrails client processes it,
-   validate output after.
-2. Merge audit trails: ACGS audit entries + guardrails trigger events in one log.
-3. Preserve `GovernedOpenAI` as the standalone (no-guardrails-lib) path.
-4. Optional dependency: `pip install acgs[openai-guardrails]`.
+**Key implementation constraints:**
+1. **strict=False required** — engine raises on first CRITICAL rule in strict mode,
+   losing bundled violations. Eval must capture ALL rules that fire.
+2. **Sidecar annotations** — do NOT modify frozen `autoresearch/scenarios/`. Use
+   `autoresearch/eval_data/rule_annotations.yaml` joined by SHA256 content hash.
+3. **Reuse GovernanceTestSuite** — don't reinvent. Extend `TestReport` with
+   `compute_rule_metrics()` and `scenario_outcome_metrics()`.
+4. **Canonicalize rule IDs** — uppercase before comparison (CLI uses lowercase,
+   engine uses uppercase).
+5. **Label validation** — fail fast if annotation references rule IDs not in
+   the active constitution.
 
-**Why this matters:** Positions ACGS as the superset, not a competitor. Users who
-adopt `openai-guardrails` (as the cookbook recommends) get ACGS governance for free
-on top. Users who don't want the OpenAI dependency keep using `GovernedOpenAI`.
+**Output:** `eval_results/rule_metrics.json` (machine-readable) + `eval_results/summary.md` (human-readable).
 
 **Estimated effort:** human ~2 days / CC ~30 min
 
-### Priority 3: Red-Team CI Pipeline
+## Deferred Work Items (see TODOS.md)
 
-**Objective:** Add adversarial testing targeting the ACGS governance engine,
-running automatically on policy/rule changes.
-
-**What it does:** Generates hundreds of adversarial inputs designed to bypass
-keyword/pattern matching through paraphrasing, encoding, and indirection.
-Tests them against `GovernedAgent` and reports bypass rates.
-
-**Files affected:**
-- `.github/workflows/redteam.yml` (new) — CI pipeline
-- `tests/redteam/` (new directory) — red team config and target scripts
-- `tests/redteam/target.py` (new) — bridges Promptfoo to GovernedAgent
-- `tests/redteam/promptfooconfig.yaml` (new) — red team configuration
-- `docs/security/red-teaming.md` (new) — documentation
-
-**Approach:**
-1. Install Promptfoo. Create a target script that runs adversarial inputs
-   through `GovernedAgent` with the default constitution.
-2. Configure plugins: `prompt-injection`, `system-prompt-override`, `policy`,
-   `off-topic`, encoding strategies (`base64`, `leetspeak`, `rot13`).
-3. CI trigger: on changes to `packages/acgs-lite/src/acgs_lite/constitution/`,
-   `autoresearch/constitution.yaml`, or `packages/acgs-lite/src/acgs_lite/engine/`.
-4. Report: artifact upload with pass/fail rates per vulnerability category.
-
-**Why this matters:** The constitutional engine's keyword+pattern matching is
-inherently bypassable through paraphrasing. "Deploy without safety review" is
-caught; "put into production skipping the safety check" may not be. Red-teaming
-finds these gaps systematically instead of waiting for production incidents.
-
-**Estimated effort:** human ~1 week / CC ~1 hour
-
-### Priority 4: ZDR Observability Mode
-
-**Objective:** Add Zero Data Retention tracing mode to the enhanced agent bus
-observability subsystem.
-
-**What it does:** Provides a trace processor that never sends data to external
-systems. Traces stay within the deployment boundary. Supports HIPAA, financial
-services, and government deployments.
-
-**Files affected:**
-- `packages/enhanced_agent_bus/observability/zdr.py` (new)
-- `packages/enhanced_agent_bus/observability/__init__.py` — register ZDR mode
-- `packages/enhanced_agent_bus/tests/test_zdr_observability.py` (new)
-- `docs/deployment/zdr-mode.md` (new) — compliance documentation
-
-**Approach:**
-1. Create a `ZDRTraceProcessor` that writes structured traces to local
-   storage (file, internal DB, or memory ring buffer) — never to external APIs.
-2. PII redaction before storage (using the existing ACGS rule engine for detection).
-3. Configurable retention policies (auto-purge after N hours/days).
-4. Configuration: `ACGS_ZDR_MODE=true` environment variable.
-
-**Why this matters:** Real compliance need called out explicitly in the cookbook.
-Financial services and healthcare deployments need observability without data
-leaving the trust boundary. Without this, organizations default to "disable
-tracing entirely," losing all observability.
-
-**Estimated effort:** human ~3 days / CC ~45 min
+| Item | Why Deferred | Depends On |
+|------|-------------|------------|
+| Generic semantic-guardrail adapter | Needs provider-agnostic design (Codex: OpenAI-specific contradicts Premise 6) | Eval harness results |
+| Red-team CI pipeline | Narrow scope covers only paraphrase; needs multi-turn/tool-call/memory abuse design | Eval harness identifying weakest rules |
+| ZDR observability mode | One egress constraint ≠ compliance story; needs encryption/access/deletion/tenant design | Enterprise customer demand |
+| Reference app / demo | Go-to-market question, not engineering question | Strategic decision |
 
 ---
 
@@ -208,26 +131,176 @@ tracing entirely," losing all observability.
 
 ## Success Criteria
 
-1. **Rule eval harness:** `make eval-rules` runs in <30s, produces per-rule
-   precision/recall/F1 metrics, and fails CI on any metric regression.
-2. **Guardrails adapter:** `GovernedGuardrailsOpenAI` passes the same test suite
-   as `GovernedOpenAI` plus guardrails-specific trigger tests.
-3. **Red-team CI:** Promptfoo runs on policy changes, reports bypass rates,
-   and blocks merge if critical bypasses are found.
-4. **ZDR mode:** Traces are written only to local storage. No data leaves
-   the process. Configurable retention. Tests verify no external network calls.
+1. **`make eval-rules`** runs in <30s, produces per-rule precision/recall/F1 + scenario-level accuracy.
+2. **Label validation** catches stale rule IDs and case mismatches before eval runs.
+3. **Regression detection** via `GovernanceTestSuite.assert_no_regressions()` flags any metric drop.
+4. **12 tests** pass (unit math, validation, integration, edge cases).
 
 ## Dependencies
 
-- `openai-guardrails` PyPI package (Priority 2 only)
-- `promptfoo` npm package + Node.js 20+ (Priority 3 only)
-- No new dependencies for Priorities 1 and 4
+- No new external dependencies. Uses existing `acgs_lite` + `autoresearch/` infrastructure.
 
 ## Risk Assessment
 
 | Risk | Mitigation |
 |------|------------|
-| `openai-guardrails` API instability | Pin version. Optional dependency. Adapter wraps, doesn't inherit. |
-| Promptfoo requires Node.js in CI | Already available in most CI environments. Document as optional. |
-| Red-team false positives blocking CI | Separate "advisory" and "blocking" severity levels. Only critical bypasses block merge. |
-| ZDR mode performance impact | Ring buffer for recent traces, async file writes. Benchmark to verify <5% overhead. |
+| Annotation effort for 809 scenarios | Auto-generate initial labels by running engine with strict=False, then hand-verify outliers |
+| Scenario content hash collisions | SHA256 on (action + sorted context) — collision probability negligible |
+| GovernanceTestSuite API changes | Pin to existing interface, extend via new methods only |
+
+---
+
+## /autoplan CEO Review Findings
+
+### Approach Selected: C (Eval-First)
+Ship only Priority 1 (per-rule eval harness). Use its results to inform subsequent work.
+Priorities 2-4 deferred to TODOS.md with redesign notes.
+
+### Corrected Premise
+Premise 3 overstated — 809 labeled scenarios already exist with decision-level FP/FN.
+The real gap is per-rule granularity.
+
+### NOT in scope (this plan)
+- Priority 2 (openai-guardrails adapter) — deferred; needs redesign as generic semantic-guardrail adapter per Codex feedback
+- Priority 3 (red-team CI) — deferred; narrow scope covers only paraphrase bypass, not multi-turn/tool-call/memory abuse
+- Priority 4 (ZDR observability) — deferred; one egress constraint ≠ compliance story, needs encryption/access/deletion/tenant-isolation design
+- Cookbook-style demo app — deferred; go-to-market question, not engineering question
+- Customer wedge/ICP definition — deferred; upstream strategy work
+
+### What already exists
+- `autoresearch/benchmark.py` — 809 scenarios, decision-level FP/FN, composite_score
+- `autoresearch/scenarios/` — 6 JSON files with action/expected/context labels
+- `packages/acgs-lite/src/acgs_lite/engine/core.py` — `validate()` returns `ValidationResult` with `violations: list[Violation]` (per-rule data already available)
+- `GovernedOpenAI` — drop-in OpenAI wrapper (pattern to mirror for any future adapter)
+- 15 integration adapters — vendor-neutral pattern established
+
+### Dream State Delta
+This plan (eval harness only) advances us from "correctness at decision level" to
+"correctness at rule level." The 12-month ideal is automated eval regression in every
+PR with per-rule tracking over time. This plan delivers the foundation.
+
+### Error & Rescue Registry
+
+| METHOD/CODEPATH | WHAT CAN GO WRONG | RESCUED? | USER SEES |
+|---|---|---|---|
+| load_scenarios() | Missing file | Y | Clear error message |
+| load_scenarios() | Malformed JSON | Y | Warning + skip file |
+| evaluate_per_rule() | Rule ID in labels not in constitution | **N ← GAP** | KeyError crash |
+| compute_metrics() | Zero samples for a rule | **N ← GAP** | ZeroDivisionError |
+
+### Failure Modes Registry
+
+| CODEPATH | FAILURE MODE | RESCUED? | TEST? | USER SEES | LOGGED? |
+|---|---|---|---|---|---|
+| label_validation | Stale rule IDs after constitution change | N | N | Crash | N |
+| compute_metrics | All-negative rule (0 positive samples) | N | N | NaN/Inf | N |
+| scenario_loading | Duplicate scenario IDs | N | N | Silent double-count | N |
+
+**2 CRITICAL GAPS** (rescue + test needed for stale rule IDs and zero-division).
+
+### Codex CEO Findings (verbatim summary)
+1. No customer wedge — technology comparison, not market strategy
+2. Priority 2 contradicts Premise 6 — named OpenAI adapter = vendor lock
+3. Per-rule metrics wrong truth metric — internal calibration, not outcome
+4. Red-team too narrow — misses multi-turn, tool-call, memory abuse
+5. ZDR overstated — one egress constraint ≠ compliance
+6. Demo app dismissed too quickly — reference apps drive devtool adoption
+
+### Cross-Phase Themes
+None yet (CEO only). Will assess after Eng review.
+
+<!-- AUTONOMOUS DECISION LOG -->
+## Decision Audit Trail
+
+| # | Phase | Decision | Principle | Rationale | Rejected |
+|---|-------|----------|-----------|-----------|----------|
+| 1 | CEO | Mode: SELECTIVE EXPANSION | P3 pragmatic | Feature enhancement on existing system, not greenfield | EXPANSION, HOLD, REDUCTION |
+| 2 | CEO | Approach C (eval-first) | P3 pragmatic | Eval data drives all other decisions | Approach A (extend only), B (all 4 at once) |
+| 3 | CEO | Correct Premise 3 | P5 explicit | 809 scenarios already exist; gap is per-rule, not correctness | Original wording |
+| 4 | CEO | Defer Priorities 2-4 | P2 boil lakes | P1 is the lake; P2-4 are separate lakes needing their own eval data | Ship all 4 together |
+| 5 | CEO | Accept Codex: generic adapter | P4 DRY | OpenAI-specific adapter contradicts vendor neutrality premise | Named openai-guardrails adapter |
+| 6 | CEO | Both per-rule + scenario metrics | P1 completeness | Per-rule for rule authors + scenario-level for operators | Per-rule only (TASTE) |
+| 7 | CEO | Defer demo app question | P6 action | Go-to-market question outside this plan's scope | Build demo now (TASTE) |
+| 8 | CEO | Note multi-turn abuse gap | P2 boil lakes | Promptfoo on engine is lake; runtime abuse testing is ocean | Expand red-team scope |
+| 9 | CEO-S2 | Fix KeyError gap | P1 completeness | Label validation must check rule IDs exist in constitution | Leave unhandled |
+| 10 | CEO-S2 | Fix ZeroDivision gap | P1 completeness | Guard zero-sample rules with explicit handling | Leave unhandled |
+| 11 | CEO-S4 | Add label validation step | P1 completeness | Fail fast when scenario labels reference removed rules | Silent mismatch |
+| 12 | CEO-S5 | Extract shared load_scenarios | P4 DRY | Don't duplicate scenario loading between benchmark.py and eval_rules.py | Copy-paste |
+| 13 | CEO-S6 | All 4 test types needed | P1 completeness | Unit (math), unit (validation), integration, edge cases | Skip edge cases |
+| 14 | CEO-S8 | JSON + markdown output | P5 explicit | Machine-readable for CI + human-readable for PRs | JSON only |
+| 15 | ENG | Use GovernanceTestSuite not new JSONL | P4 DRY | test_suite.py already has GovernanceTestCase with expected_rules_triggered/not_triggered | New parallel schema |
+| 16 | ENG | Must run strict=False | P1 completeness | strict=True raises on first CRITICAL, losing bundled violations | Default strict mode |
+| 17 | ENG | Sidecar annotation file | P5 explicit | Respects frozen autoresearch contract, doesn't modify scenarios/ | Modify frozen corpus |
+| 18 | ENG | Separate CI target | P3 pragmatic | Keep dev loop fast; eval is diagnostic, not gating every test run | Fold into make test |
+| 19 | ENG | Content hash as join key | P1 completeness | Scenarios have no IDs; need deterministic join to sidecar annotations | Assume ordered match |
+| 20 | ENG | Clean up plan scope | P5 explicit | Remove P2-P4 active details; future implementer will misread scope | Keep all 4 visible |
+| 21 | ENG | Canonicalize rule IDs uppercase | P1 completeness | CLI uses lowercase, engine uses uppercase; silent mis-scoring risk | Trust input casing |
+
+## GSTACK REVIEW REPORT
+
+| Review | Trigger | Why | Runs | Status | Findings |
+|--------|---------|-----|------|--------|----------|
+| CEO Review | `/plan-ceo-review` | Scope & strategy | 1 | CLEAR (via /autoplan) | 4 proposed, 0 accepted, 4 deferred |
+| Codex Review | `/codex review` | Independent 2nd opinion | 0 | — | — |
+| Eng Review | `/plan-eng-review` | Architecture & tests (required) | 1 | CLEAR (via /autoplan) | 6 issues, 0 critical gaps |
+| Design Review | `/plan-design-review` | UI/UX gaps | 0 | SKIPPED (no UI scope) | — |
+
+**VERDICT:** CEO + ENG CLEARED — ready to implement (Priority 1 only, eval-first approach).
+
+## Eng Review Findings
+
+### Architecture
+Reuse `GovernanceTestSuite` (410 LOC, already has rule-level assertions).
+Add `compute_rule_metrics()` to `TestReport`. New `eval_rules.py` joins frozen
+scenarios with sidecar annotations by content hash.
+
+### Critical Codex Finding: strict=False Required
+`GovernanceEngine.validate()` raises `ConstitutionalViolationError` on first CRITICAL
+rule when `strict=True`. This collapses multi-rule scenarios into a single exception,
+losing the full fired-rule set. The eval harness MUST run with `strict=False` to capture
+all violations.
+
+### Key Discovery: GovernanceTestSuite Already Exists
+`packages/acgs-lite/src/acgs_lite/constitution/test_suite.py` provides:
+- `GovernanceTestCase` with `expected_rules_triggered` + `expected_rules_not_triggered`
+- `TestReport` with pass/fail/error/skip, coverage %, regressions
+- `GovernanceTestSuite.run()` that captures triggered rules
+- `assert_no_regressions()` — baseline comparison
+- 410 lines of existing, tested infrastructure
+
+**The plan's JSONL format is unnecessary.** Use YAML fixtures loaded into GovernanceTestSuite.
+
+### Frozen Benchmark Contract
+`autoresearch/program.md` says scenarios/ and benchmark.py are read-only.
+Solution: sidecar `autoresearch/eval_data/rule_annotations.yaml` joined to
+frozen scenarios by SHA256 content hash of (action + context).
+
+### Revised File List (Priority 1 only)
+- `autoresearch/eval_rules.py` (new) — loads scenarios + annotations, runs suite, outputs metrics
+- `autoresearch/eval_data/rule_annotations.yaml` (new) — per-scenario rule labels
+- `packages/acgs-lite/src/acgs_lite/constitution/test_suite.py` — extend with `compute_rule_metrics()`
+- `packages/acgs-lite/tests/test_rule_metrics.py` (new) — unit tests for metrics math
+- `Makefile` — add `eval-rules` target (standalone, NOT in `make test`)
+
+### Eng Completion Summary
+```
++====================================================================+
+|            ENG REVIEW — COMPLETION SUMMARY                          |
++====================================================================+
+| Scope Challenge    | P1 only (eval-first). Reuse GovernanceTestSuite|
+| Architecture       | 1 critical (strict=False), 1 high (reuse suite)|
+| Errors             | 2 gaps (KeyError, ZeroDivision) — both fixable |
+| Security           | 0 issues (dev tool, no new attack surface)      |
+| Data/Edge Cases    | 3 edge cases mapped (empty, zero-positive, hash)|
+| Code Quality       | 1 DRY issue (shared scenario loading)           |
+| Tests              | 12 tests planned across 4 types                 |
+| Performance        | 0 issues (same engine, same scenarios)           |
+| Observability      | JSON + markdown output for CI and humans         |
+| Deployment         | Feature branch → PR → merge                     |
+| Long-term          | Reversibility 5/5. Foundation for eval-driven gov|
++--------------------------------------------------------------------+
+| Codex eng findings | 6 (1 critical, 2 high, 3 medium)                |
+| Critical gaps      | 0 (all addressed in decisions)                  |
+| Test plan          | Written to ~/.gstack/projects/                  |
++====================================================================+
+```

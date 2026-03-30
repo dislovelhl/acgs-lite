@@ -207,6 +207,13 @@ cov-html:
 bench:
 	$(PYTHON) -m pytest packages/acgs-lite/tests/test_benchmark_engine.py -m benchmark -v --import-mode=importlib
 
+# === Per-Rule Eval Harness ===
+eval-rules:
+	$(PYTHON) autoresearch/eval_rules.py --output-dir eval_results
+
+eval-rules-generate:
+	$(PYTHON) autoresearch/eval_rules.py --generate
+
 # === Codex Bootstrap ===
 codex-doctor:
 	bash ./.agents/skills/acgs-codex-bootstrap/scripts/codex-doctor.sh
