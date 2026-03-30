@@ -206,7 +206,7 @@ class TestJudgmentConversion:
         bt_syn.dna_violations = ["none"]
         bt_syn.dna_latency_ns = 443
         bt_syn.miner_uid = "miner-42"
-        bt_syn.constitutional_hash = "hash-a"
+        bt_syn.miner_constitution_hash = "hash-a"
 
         judgment = bt_to_judgment(bt_syn)
 
@@ -216,6 +216,7 @@ class TestJudgmentConversion:
         assert judgment.judgment == "Privacy wins"
         assert judgment.reasoning == "ECHR applies"
         assert judgment.artifact_hash == "art-hash-01"
+        assert judgment.constitutional_hash == "hash-a"
         assert judgment.dna_valid is True
         assert judgment.dna_violations == ("none",)
         assert judgment.dna_latency_ns == 443

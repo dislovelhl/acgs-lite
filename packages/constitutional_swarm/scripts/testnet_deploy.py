@@ -15,10 +15,6 @@ Usage:
 
 Requirements:
     pip install bittensor>=7.0.0
-
-Note: This script requires the bittensor package. The constitutional_swarm
-primitives work without it, but deployment needs the real bt.subtensor and
-bt.wallet interfaces.
 """
 
 from __future__ import annotations
@@ -49,11 +45,10 @@ def cmd_register(args: argparse.Namespace) -> None:
     print(f"  Wallet coldkey: {wallet.coldkeypub.ss58_address}")
     print(f"  Network: test")
 
-    # Register subnet
     success = subtensor.register_subnet(wallet=wallet)
     if success:
         print("Subnet registered successfully.")
-        print(f"  Use --netuid flag with the assigned netuid for miner/validator commands.")
+        print("  Use --netuid flag with the assigned netuid for miner/validator commands.")
     else:
         print("ERROR: Subnet registration failed.")
         sys.exit(1)
@@ -66,8 +61,10 @@ def cmd_miner(args: argparse.Namespace) -> None:
 
     import bittensor as bt
 
+    from constitutional_swarm.bittensor.axon_server import MinerAxonServer
     from constitutional_swarm.bittensor.miner import ConstitutionalMiner
     from constitutional_swarm.bittensor.protocol import MinerConfig
+    from constitutional_swarm.bittensor.synapse_adapter import GovernanceDeliberation
 
     wallet = bt.wallet(name=args.wallet_name, hotkey=args.wallet_hotkey)
     subtensor = bt.subtensor(network="test")
@@ -76,7 +73,6 @@ def cmd_miner(args: argparse.Namespace) -> None:
     print(f"  Constitution: {args.constitution}")
     print(f"  Wallet: {wallet.name} / {wallet.hotkey_str}")
 
-    # Create the constitutional miner
     async def _deliberation_handler(
         task: str, context: str, meta: dict
     ) -> tuple[str, str]:
@@ -105,6 +101,7 @@ def cmd_miner(args: argparse.Namespace) -> None:
         config=config,
         deliberation_handler=_deliberation_handler,
     )
+    server = MinerAxonServer(miner)
 
     print(f"  Constitution hash: {miner.constitution_hash}")
     print(f"  Agent ID: {config.agent_id}")
@@ -115,31 +112,14 @@ def cmd_miner(args: argparse.Namespace) -> None:
     subtensor.register(wallet=wallet, netuid=args.netuid)
     print(f"  Registered on metagraph (netuid={args.netuid})")
 
-    # Set up axon to serve the miner's forward function
+    # Set up axon with adapter layer handlers
     axon = bt.axon(wallet=wallet, port=args.port)
-
-    async def _forward(synapse: bt.Synapse) -> bt.Synapse:
-        """Bridge bt.Synapse to ConstitutionalMiner.process()."""
-        from constitutional_swarm.bittensor.synapses import DeliberationSynapse
-
-        # Convert bt.Synapse fields to our DeliberationSynapse
-        delib = DeliberationSynapse(
-            task_id=getattr(synapse, "task_id", "unknown"),
-            task_dag_json=getattr(synapse, "task_dag_json", "{}"),
-            constitution_hash=getattr(synapse, "constitution_hash", ""),
-            domain=getattr(synapse, "domain", "general"),
-            deadline_seconds=getattr(synapse, "deadline_seconds", 3600),
-        )
-        result = await miner.process(delib)
-        # Copy result fields back to synapse
-        synapse.judgment = result.judgment
-        synapse.reasoning = result.reasoning
-        synapse.artifact_hash = result.artifact_hash
-        synapse.dna_valid = result.dna_valid
-        synapse.constitutional_hash = result.constitutional_hash
-        return synapse
-
-    axon.attach(forward_fn=_forward)
+    axon.attach(
+        forward_fn=server.forward,
+        blacklist_fn=server.blacklist,
+        verify_fn=server.verify,
+        priority_fn=server.priority,
+    )
     axon.serve(netuid=args.netuid, subtensor=subtensor)
     axon.start()
 
@@ -158,11 +138,19 @@ def cmd_miner(args: argparse.Namespace) -> None:
 def cmd_validator(args: argparse.Namespace) -> None:
     """Start a constitutional governance validator on testnet."""
     _check_bittensor()
+    import asyncio
     import time
 
     import bittensor as bt
 
+    from constitutional_swarm.bittensor.dendrite_client import ValidatorDendriteClient
     from constitutional_swarm.bittensor.protocol import ValidatorConfig
+    from constitutional_swarm.bittensor.subnet_owner import SubnetOwner
+    from constitutional_swarm.bittensor.synapse_adapter import (
+        GovernanceDeliberation,
+        bt_to_judgment,
+        deliberation_to_bt,
+    )
     from constitutional_swarm.bittensor.validator import ConstitutionalValidator
 
     wallet = bt.wallet(name=args.wallet_name, hotkey=args.wallet_hotkey)
@@ -179,6 +167,12 @@ def cmd_validator(args: argparse.Namespace) -> None:
     )
 
     validator = ConstitutionalValidator(config=config)
+    owner = SubnetOwner(args.constitution)
+    client = ValidatorDendriteClient(
+        constitution_path=args.constitution,
+        wallet=wallet,
+    )
+
     print(f"  Constitution hash: {validator.constitution_hash}")
 
     # Register on the metagraph
@@ -187,6 +181,8 @@ def cmd_validator(args: argparse.Namespace) -> None:
 
     print(f"  Registered. Metagraph has {metagraph.n} neurons.")
     print("  Validator is running. Press Ctrl+C to stop.")
+
+    dendrite = bt.Dendrite(wallet=wallet)
 
     try:
         while True:
@@ -199,11 +195,42 @@ def cmd_validator(args: argparse.Namespace) -> None:
                 if hotkey not in validator._known_miners:
                     validator.register_miner(hotkey)
 
+            # Query miners with a governance case via adapter layer
+            if metagraph.n > 0:
+                case = owner.package_case(
+                    "Periodic governance validation",
+                    "general",
+                )
+                bt_syn = deliberation_to_bt(case.synapse)
+
+                responses = asyncio.get_event_loop().run_until_complete(
+                    dendrite(
+                        axons=metagraph.axons,
+                        synapse=bt_syn,
+                        timeout=args.epoch_seconds * 0.8,
+                    )
+                )
+
+                for resp in responses:
+                    if not isinstance(resp, GovernanceDeliberation):
+                        continue
+                    if not resp.has_response or resp.error_message is not None:
+                        continue
+                    try:
+                        judgment = bt_to_judgment(resp)
+                        validation = validator.validate(judgment)
+                        owner.record_result(case, judgment, validation)
+                    except (ValueError, KeyError):
+                        continue
+
             # Compute and set weights every epoch
             weights = validator.compute_emission_weights()
             if weights:
-                uids = list(range(len(weights)))
-                weight_values = [weights.get(metagraph.hotkeys[uid], 0.0) for uid in uids]
+                uids = list(range(metagraph.n))
+                weight_values = [
+                    weights.get(metagraph.hotkeys[uid], 0.0)
+                    for uid in uids
+                ]
                 subtensor.set_weights(
                     wallet=wallet,
                     netuid=args.netuid,

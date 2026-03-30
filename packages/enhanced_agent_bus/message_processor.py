@@ -20,6 +20,7 @@ except ImportError:
     JSONValue = object  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.data_flywheel.ingest import build_decision_event
 
 # Local imports
 from .config import BusConfiguration
@@ -1181,6 +1182,12 @@ class MessageProcessor:
         self, msg: AgentMessage, result: ValidationResult, cache_key: str, latency_ms: float
     ) -> None:
         """Handle successful message processing with caching and metrics."""
+        if isinstance(result.metadata, dict):
+            result.metadata.setdefault("latency_ms", latency_ms)
+            result.metadata.setdefault(
+                "flywheel_decision_event",
+                build_decision_event(msg, result).model_dump(mode="json"),
+            )
         self._validation_cache.set(cache_key, self._clone_validation_result(result))
         self._processed_count += 1
         self._schedule_governance_audit_event(msg, result)
@@ -1199,6 +1206,11 @@ class MessageProcessor:
 
     async def _handle_failed_processing(self, msg: AgentMessage, result: ValidationResult) -> None:
         """Handle failed message processing with DLQ and metrics."""
+        if isinstance(result.metadata, dict):
+            result.metadata.setdefault(
+                "flywheel_decision_event",
+                build_decision_event(msg, result).model_dump(mode="json"),
+            )
         self._failed_count += 1
         rejection_reason = self._extract_rejection_reason(result)
         self._schedule_governance_audit_event(msg, result)

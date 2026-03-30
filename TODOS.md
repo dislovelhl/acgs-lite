@@ -10,11 +10,9 @@ Deferred work from /autoplan review (2026-03-30). Items gated on testnet validat
 **Gate:** Before mainnet. Testnet gives signal on organic vs. recruited participation.
 **Effort:** M (human) / S (CC)
 
-### bt.Synapse adapter layer
-**What:** Replace frozen dataclass synapse mocks with real `bittensor.Synapse` wrappers. Integrate with `bt.axon`, `bt.dendrite`, `bt.metagraph`.
-**Why:** Current code validates logic but doesn't talk real Bittensor protocol. testnet_deploy.py bridges this but needs hardening.
-**Gate:** Before testnet launch. Requires `pip install bittensor>=7.0.0`.
-**Effort:** M (human) / S (CC)
+### ~~bt.Synapse adapter layer~~ DONE (2026-03-30)
+**What:** ~~Replace frozen dataclass synapse mocks with real `bittensor.Synapse` wrappers.~~
+**Delivered:** `synapse_adapter.py` (GovernanceDeliberation + conversions), `axon_server.py` (MinerAxonServer), `dendrite_client.py` (ValidatorDendriteClient). 24 tests. testnet_deploy.py rewired to use adapter. Falls back to Pydantic BaseModel when bittensor not installed.
 
 ## P2 — Blocked on research
 
@@ -71,8 +69,6 @@ Deferred work from /autoplan review (2026-03-30). Items gated on testnet validat
 **Gate:** After first enterprise customer.
 **Effort:** Ongoing, S per framework per quarter.
 
-### Throughput model
-**What:** Size on-chain write rate at target customer volumes (1K, 10K, 100K decisions/day). Confirm Bittensor chain can handle it.
-**Why:** CEO review flagged: on-chain/off-chain split not sized against real workload.
-**Gate:** Before Phase 2.
-**Effort:** S (human) / S (CC)
+### ~~Throughput model~~ DONE (2026-03-30)
+**What:** ~~Size on-chain write rate at target customer volumes.~~
+**Delivered:** `docs/strategy/10-throughput-model.md`. Chain is not the bottleneck at any volume (100K/day uses <1% of block capacity). Real bottleneck is miner supply. Batch size 100 confirmed correct for testnet.

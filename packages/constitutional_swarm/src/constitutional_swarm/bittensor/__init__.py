@@ -148,6 +148,18 @@ from constitutional_swarm.bittensor.governance_coordinator import (
     GovernanceCoordinator,
 )
 
+# bt.Synapse Adapter Layer (testnet protocol bridge)
+from constitutional_swarm.bittensor.synapse_adapter import (
+    GovernanceDeliberation,
+    HAS_BITTENSOR,
+    bt_to_deliberation,
+    bt_to_judgment,
+    deliberation_to_bt,
+    judgment_to_bt,
+)
+from constitutional_swarm.bittensor.axon_server import MinerAxonServer
+from constitutional_swarm.bittensor.dendrite_client import ValidatorDendriteClient
+
 __all__ = [
     # Phase 1 — Protocol Bridge
     "ConstitutionMismatchError",
@@ -241,4 +253,13 @@ __all__ = [
     "AuditCycleResult",
     "CoordinatorConfig",
     "GovernanceCoordinator",
+    # bt.Synapse Adapter Layer
+    "GovernanceDeliberation",
+    "HAS_BITTENSOR",
+    "MinerAxonServer",
+    "ValidatorDendriteClient",
+    "bt_to_deliberation",
+    "bt_to_judgment",
+    "deliberation_to_bt",
+    "judgment_to_bt",
 ]
