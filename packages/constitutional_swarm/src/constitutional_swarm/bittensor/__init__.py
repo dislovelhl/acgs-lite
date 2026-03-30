@@ -90,6 +90,13 @@ from constitutional_swarm.bittensor.authenticity_detector import (
     DimensionScore,
 )
 
+# Governance Coordinator (acgs-lite ↔ subnet bridge)
+from constitutional_swarm.bittensor.governance_coordinator import (
+    AuditCycleResult,
+    CoordinatorConfig,
+    GovernanceCoordinator,
+)
+
 __all__ = [
     # Phase 1 — Protocol Bridge
     "ConstitutionMismatchError",
@@ -143,4 +150,8 @@ __all__ = [
     "AuthenticityDimension",
     "AuthenticityScore",
     "DimensionScore",
+    # Governance Coordinator
+    "AuditCycleResult",
+    "CoordinatorConfig",
+    "GovernanceCoordinator",
 ]
