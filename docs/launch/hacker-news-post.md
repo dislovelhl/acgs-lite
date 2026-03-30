@@ -26,6 +26,6 @@ The EU AI Act takes full enforcement August 2026. 125 compliance checklist items
 - https://acgs.ai
 - https://pypi.org/project/acgs/
 - https://github.com/acgs2_admin/acgs
-- Demo (7 min): https://youtu.be/do9BCPn29_Q
+- Demo (7 min): https://youtu.be/uWacmC3CbYg?si=q6wsOs4Z3OlZX6po
 
 Would love feedback on the API design and which regulatory frameworks matter most to you.

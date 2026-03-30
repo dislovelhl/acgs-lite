@@ -32,7 +32,7 @@ pip install acgs
 
 I built this entirely with Claude (Anthropic's AI). No CS background. Two years of daily conversations with AI, learning to code by building governance infrastructure.
 
-7-minute walkthrough: https://youtu.be/do9BCPn29_Q
+7-minute walkthrough: https://youtu.be/uWacmC3CbYg?si=q6wsOs4Z3OlZX6po
 
 Links:
 - Website: https://acgs.ai

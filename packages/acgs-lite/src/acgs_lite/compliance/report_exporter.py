@@ -1,175 +1,93 @@
-"""Compliance report exporter — text, Markdown, and JSON output.
+"""Compliance report exporter — text, markdown, and JSON output formats.
 
-Converts a MultiFrameworkReport or FrameworkAssessment into
-human-readable output suitable for auditors, executives, and developers.
+Converts MultiFrameworkReport and individual FrameworkAssessment objects
+into human-readable and machine-readable formats for auditors, executives,
+and automated pipelines.
 
-Three output formats:
-- **text**:     Plain-text executive summary + per-framework detail
-- **markdown**: GitHub-flavoured Markdown with tables and status badges
-- **json**:     Full machine-readable report (delegates to report.to_dict())
+Constitutional Hash: 608508a9bd224290
 
 Usage::
 
     from acgs_lite.compliance import MultiFrameworkAssessor
     from acgs_lite.compliance.report_exporter import ComplianceReportExporter
 
-    report = MultiFrameworkAssessor().assess({"system_id": "my-ai"})
-    exporter = ComplianceReportExporter(report)
+    report = MultiFrameworkAssessor().assess({"system_id": "my-ai", ...})
+    exporter = ComplianceReportExporter(report, title="Q1 Compliance Report")
 
-    print(exporter.to_text())
-    exporter.to_markdown_file("compliance_report.md")
-    exporter.to_json_file("compliance_report.json")
-
-Constitutional Hash: 608508a9bd224290
+    exporter.to_text()               # plain text
+    exporter.to_markdown()           # GitHub-flavoured markdown
+    exporter.to_json()               # machine-readable JSON string
+    exporter.to_text_file("out.txt")
+    exporter.to_markdown_file("out.md")
+    exporter.to_json_file("out.json")
 """
 
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 
-from acgs_lite.compliance.base import (
-    ChecklistStatus,
-    FrameworkAssessment,
-    MultiFrameworkReport,
-)
-
-# ---------------------------------------------------------------------------
-# Status helpers
-# ---------------------------------------------------------------------------
-
-_STATUS_EMOJI: dict[str, str] = {
-    ChecklistStatus.COMPLIANT: "✅",
-    ChecklistStatus.PARTIAL: "🔶",
-    ChecklistStatus.NON_COMPLIANT: "❌",
-    ChecklistStatus.PENDING: "⏳",
-    ChecklistStatus.NOT_APPLICABLE: "➖",
-}
-
-_SCORE_LABEL = {
-    (0.9, 1.01): "Excellent",
-    (0.75, 0.9): "Good",
-    (0.5, 0.75): "Fair",
-    (0.25, 0.5): "Needs Improvement",
-    (0.0, 0.25): "Critical Gaps",
-}
-
-
-def _score_label(score: float) -> str:
-    for (lo, hi), label in _SCORE_LABEL.items():
-        if lo <= score < hi:
-            return label
-    return "Unknown"
-
-
-def _score_bar(score: float, width: int = 20) -> str:
-    filled = round(score * width)
-    return "█" * filled + "░" * (width - filled)
-
-
-def _pct(score: float) -> str:
-    return f"{score:.1%}"
-
-
-# ---------------------------------------------------------------------------
-# Exporter
-# ---------------------------------------------------------------------------
+from acgs_lite.compliance.base import FrameworkAssessment, MultiFrameworkReport
 
 
 class ComplianceReportExporter:
-    """Export a MultiFrameworkReport in text, Markdown, or JSON format.
+    """Export compliance reports to text, markdown, and JSON formats.
 
     Args:
-        report: The MultiFrameworkReport produced by MultiFrameworkAssessor.
+        report: A MultiFrameworkReport to export.
         title: Optional report title.
-
     """
 
     def __init__(
         self,
         report: MultiFrameworkReport,
-        title: str = "ACGS AI Governance — Compliance Report",
+        title: str = "Multi-Framework Compliance Report",
     ) -> None:
         self._report = report
         self._title = title
-        self._generated_at = datetime.now(UTC).isoformat()
 
     # ------------------------------------------------------------------
     # Plain text
     # ------------------------------------------------------------------
 
     def to_text(self) -> str:
-        """Return a full plain-text compliance report."""
-        r = self._report
+        """Render the report as plain text."""
         lines: list[str] = []
+        r = self._report
 
-        # Header
-        lines += [
-            "=" * 72,
-            self._title.center(72),
-            "=" * 72,
-            f"  System:       {r.system_id}",
-            f"  Generated:    {self._generated_at}",
-            f"  Frameworks:   {len(r.frameworks_assessed)}",
-            f"  Overall:      {_pct(r.overall_score)}  "
-            f"{_score_bar(r.overall_score)}  {_score_label(r.overall_score)}",
-            f"  ACGS coverage:{_pct(r.acgs_lite_total_coverage)} "
-            f"(requirements auto-satisfied by acgs-lite)",
-            "=" * 72,
-            "",
-        ]
+        lines.append(f"{'=' * 72}")
+        lines.append(f"  {self._title}")
+        lines.append(f"{'=' * 72}")
+        lines.append(f"System:           {r.system_id}")
+        lines.append(f"Assessed at:      {r.assessed_at}")
+        lines.append(f"Overall score:    {r.overall_score:.1%}")
+        lines.append(f"ACGS-lite coverage: {r.acgs_lite_total_coverage:.1%}")
+        lines.append(f"Frameworks:       {len(r.frameworks_assessed)}")
+        lines.append("")
 
-        # Framework summary table
-        lines += [
-            "FRAMEWORK SUMMARY",
-            "-" * 72,
-            f"  {'Framework':<42} {'Score':>6}  {'Coverage':>8}  {'Gaps':>4}",
-            "  " + "-" * 66,
-        ]
-        for fid in sorted(r.frameworks_assessed):
-            fa = r.by_framework.get(fid)
-            if fa is None:
-                continue
-            lines.append(
-                f"  {fa.framework_name[:42]:<42} "
-                f"{_pct(fa.compliance_score):>6}  "
-                f"{_pct(fa.acgs_lite_coverage):>8}  "
-                f"{len(fa.gaps):>4}"
-            )
-        lines += ["", ""]
+        for fid in r.frameworks_assessed:
+            a = r.by_framework[fid]
+            lines.append(self.framework_summary_text(a))
+            lines.append("")
 
-        # Cross-framework gaps
         if r.cross_framework_gaps:
-            lines += ["CROSS-FRAMEWORK GAPS", "-" * 72]
-            for i, gap in enumerate(r.cross_framework_gaps, 1):
-                lines.append(f"  {i}. {gap}")
-            lines += ["", ""]
+            lines.append("CROSS-FRAMEWORK GAPS")
+            lines.append("-" * 40)
+            for gap in r.cross_framework_gaps:
+                lines.append(f"  • {gap}")
+            lines.append("")
 
-        # Per-framework detail
-        lines += ["FRAMEWORK DETAIL", "-" * 72, ""]
-        for fid in sorted(r.frameworks_assessed):
-            fa = r.by_framework.get(fid)
-            if fa is None:
-                continue
-            lines += _text_framework_section(fa)
-
-        # Prioritised recommendations
         if r.recommendations:
-            lines += ["PRIORITISED RECOMMENDATIONS", "-" * 72]
-            for i, rec in enumerate(r.recommendations, 1):
-                lines.append(f"  {i}. {rec}")
-            lines += ["", ""]
+            lines.append("RECOMMENDATIONS")
+            lines.append("-" * 40)
+            for rec in r.recommendations:
+                lines.append(f"  {rec}")
+            lines.append("")
 
-        # Footer
-        lines += [
-            "=" * 72,
-            "DISCLAIMER".center(72),
-            "This is an indicative self-assessment only. It is not legal advice.",
-            "Consult qualified legal counsel for binding compliance opinions.",
-            "=" * 72,
-        ]
+        lines.append(
+            "DISCLAIMER: Indicative self-assessment only. Not legal advice. "
+            "Consult qualified legal counsel for binding compliance opinions."
+        )
         return "\n".join(lines)
 
     # ------------------------------------------------------------------
@@ -177,78 +95,44 @@ class ComplianceReportExporter:
     # ------------------------------------------------------------------
 
     def to_markdown(self) -> str:
-        """Return a GitHub-flavoured Markdown compliance report."""
-        r = self._report
+        """Render the report as GitHub-flavoured markdown."""
         lines: list[str] = []
+        r = self._report
 
-        # Title
-        lines += [
-            f"# {self._title}",
-            "",
-            f"| Field | Value |",
-            f"|-------|-------|",
-            f"| **System** | `{r.system_id}` |",
-            f"| **Generated** | {self._generated_at} |",
-            f"| **Frameworks assessed** | {len(r.frameworks_assessed)} |",
-            f"| **Overall score** | {_pct(r.overall_score)} — {_score_label(r.overall_score)} |",
-            f"| **ACGS-lite auto-coverage** | {_pct(r.acgs_lite_total_coverage)} |",
-            "",
-        ]
+        lines.append(f"# {self._title}")
+        lines.append("")
+        lines.append("| Field | Value |")
+        lines.append("|-------|-------||")
+        lines.append(f"| System | `{r.system_id}` |")
+        lines.append(f"| Assessed at | {r.assessed_at} |")
+        lines.append(f"| Overall score | **{r.overall_score:.1%}** |")
+        lines.append(f"| ACGS-lite coverage | {r.acgs_lite_total_coverage:.1%} |")
+        lines.append(f"| Frameworks assessed | {len(r.frameworks_assessed)} |")
+        lines.append("")
 
-        # Summary table
-        lines += [
-            "## Framework Summary",
-            "",
-            "| Framework | Score | ACGS Coverage | Gaps | Status |",
-            "|-----------|------:|-------------:|-----:|--------|",
-        ]
-        for fid in sorted(r.frameworks_assessed):
-            fa = r.by_framework.get(fid)
-            if fa is None:
-                continue
-            badge = _md_score_badge(fa.compliance_score)
-            lines.append(
-                f"| {fa.framework_name} "
-                f"| {_pct(fa.compliance_score)} "
-                f"| {_pct(fa.acgs_lite_coverage)} "
-                f"| {len(fa.gaps)} "
-                f"| {badge} |"
-            )
-        lines += ["", ""]
+        for fid in r.frameworks_assessed:
+            a = r.by_framework[fid]
+            lines.append(self.framework_summary_markdown(a))
+            lines.append("")
 
-        # Cross-framework gaps
         if r.cross_framework_gaps:
-            lines += ["## ⚠️ Cross-Framework Gaps", ""]
+            lines.append("## Cross-Framework Gaps")
+            lines.append("")
             for gap in r.cross_framework_gaps:
                 lines.append(f"- {gap}")
-            lines += ["", ""]
+            lines.append("")
 
-        # Per-framework detail
-        lines += ["## Framework Detail", ""]
-        for fid in sorted(r.frameworks_assessed):
-            fa = r.by_framework.get(fid)
-            if fa is None:
-                continue
-            lines += _md_framework_section(fa)
-
-        # Prioritised recommendations
         if r.recommendations:
-            lines += ["## Prioritised Recommendations", ""]
-            for i, rec in enumerate(r.recommendations, 1):
-                lines.append(f"{i}. {rec}")
-            lines += ["", ""]
+            lines.append("## Recommendations")
+            lines.append("")
+            for rec in r.recommendations:
+                lines.append(f"1. {rec}")
+            lines.append("")
 
-        # Footer
-        lines += [
-            "---",
-            "",
-            "> **Disclaimer**: This is an indicative self-assessment only. "
-            "It is not legal advice. Consult qualified legal counsel for "
-            "binding compliance opinions.",
-            "",
-            f"*Generated by acgs-lite ComplianceReportExporter · "
-            f"Constitutional Hash: `608508a9bd224290`*",
-        ]
+        lines.append(
+            "> **Disclaimer:** Indicative self-assessment only. Not legal advice. "
+            "Consult qualified legal counsel for binding compliance opinions."
+        )
         return "\n".join(lines)
 
     # ------------------------------------------------------------------
@@ -256,122 +140,69 @@ class ComplianceReportExporter:
     # ------------------------------------------------------------------
 
     def to_json(self, indent: int = 2) -> str:
-        """Return the full report as a JSON string."""
+        """Render the report as a JSON string."""
         data = self._report.to_dict()
-        data["report_title"] = self._title
-        data["generated_at"] = self._generated_at
-        return json.dumps(data, indent=indent, default=str)
+        data["title"] = self._title
+        return json.dumps(data, indent=indent, ensure_ascii=False)
 
     # ------------------------------------------------------------------
-    # File output helpers
+    # File writers
     # ------------------------------------------------------------------
 
-    def to_text_file(self, path: str | Path) -> Path:
-        """Write plain-text report to *path*. Returns resolved Path."""
+    def to_text_file(self, path: str | Path) -> None:
+        """Write the text report to a file, creating directories as needed."""
         p = Path(path)
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(self.to_text(), encoding="utf-8")
-        return p
 
-    def to_markdown_file(self, path: str | Path) -> Path:
-        """Write Markdown report to *path*. Returns resolved Path."""
+    def to_markdown_file(self, path: str | Path) -> None:
+        """Write the markdown report to a file."""
         p = Path(path)
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(self.to_markdown(), encoding="utf-8")
-        return p
 
-    def to_json_file(self, path: str | Path) -> Path:
-        """Write JSON report to *path*. Returns resolved Path."""
+    def to_json_file(self, path: str | Path) -> None:
+        """Write the JSON report to a file."""
         p = Path(path)
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(self.to_json(), encoding="utf-8")
-        return p
 
     # ------------------------------------------------------------------
-    # Single-framework helper
+    # Single-framework helpers
     # ------------------------------------------------------------------
 
     @staticmethod
     def framework_summary_text(assessment: FrameworkAssessment) -> str:
-        """Return a concise text summary for a single FrameworkAssessment."""
-        lines = _text_framework_section(assessment)
+        """Render a single framework assessment as plain text."""
+        lines: list[str] = []
+        a = assessment
+        lines.append(f"--- {a.framework_name} ({a.framework_id}) ---")
+        lines.append(f"  Score:          {a.compliance_score:.1%}")
+        lines.append(f"  ACGS coverage:  {a.acgs_lite_coverage:.1%}")
+        lines.append(f"  Items:          {len(a.items)}")
+        lines.append(f"  Gaps:           {len(a.gaps)}")
+        if a.gaps:
+            for gap in a.gaps[:5]:
+                lines.append(f"    ✗ {gap}")
+            if len(a.gaps) > 5:
+                lines.append(f"    ... and {len(a.gaps) - 5} more")
         return "\n".join(lines)
 
     @staticmethod
     def framework_summary_markdown(assessment: FrameworkAssessment) -> str:
-        """Return Markdown for a single FrameworkAssessment."""
-        lines = _md_framework_section(assessment)
+        """Render a single framework assessment as markdown."""
+        lines: list[str] = []
+        a = assessment
+        lines.append(f"### {a.framework_name} (`{a.framework_id}`)")
+        lines.append("")
+        lines.append(f"- **Score:** {a.compliance_score:.1%}")
+        lines.append(f"- **ACGS coverage:** {a.acgs_lite_coverage:.1%}")
+        lines.append(f"- **Items:** {len(a.items)}")
+        lines.append(f"- **Gaps:** {len(a.gaps)}")
+        if a.gaps:
+            lines.append("")
+            for gap in a.gaps[:5]:
+                lines.append(f"  - ✗ {gap}")
+            if len(a.gaps) > 5:
+                lines.append(f"  - ... and {len(a.gaps) - 5} more")
         return "\n".join(lines)
-
-
-# ---------------------------------------------------------------------------
-# Private helpers
-# ---------------------------------------------------------------------------
-
-def _text_framework_section(fa: FrameworkAssessment) -> list[str]:
-    lines: list[str] = [
-        f"  ┌─ {fa.framework_name}",
-        f"  │  ID: {fa.framework_id}  │  "
-        f"Score: {_pct(fa.compliance_score)}  │  "
-        f"Coverage: {_pct(fa.acgs_lite_coverage)}  │  "
-        f"Assessed: {fa.assessed_at[:10]}",
-    ]
-    if fa.gaps:
-        lines.append("  │  GAPS:")
-        for g in fa.gaps:
-            lines.append(f"  │    - {g[:100]}")
-    if fa.recommendations:
-        lines.append("  │  RECOMMENDATIONS:")
-        for rec in fa.recommendations[:3]:
-            lines.append(f"  │    → {rec[:100]}")
-    lines += ["  └─" + "─" * 66, ""]
-    return lines
-
-
-def _md_framework_section(fa: FrameworkAssessment) -> list[str]:
-    lines: list[str] = [
-        f"### {fa.framework_name}",
-        "",
-        f"**Score**: {_pct(fa.compliance_score)} {_md_score_badge(fa.compliance_score)} "
-        f"| **ACGS coverage**: {_pct(fa.acgs_lite_coverage)} "
-        f"| **Assessed**: {fa.assessed_at[:10]}",
-        "",
-    ]
-
-    # Checklist items as a table (compliant only shown in summary mode)
-    compliant_items = [i for i in fa.items if i.get("status") == "compliant"]
-    gap_items = [i for i in fa.items if i.get("status") not in ("compliant", "not_applicable")]
-
-    if gap_items:
-        lines += [
-            "<details><summary>⚠️ Open gaps</summary>",
-            "",
-            "| Ref | Requirement | Blocking |",
-            "|-----|-------------|----------|",
-        ]
-        for item in gap_items:
-            req = (item.get("requirement") or "")[:80]
-            blocking = "🔴 Yes" if item.get("blocking") else "🟡 No"
-            lines.append(f"| `{item['ref']}` | {req} | {blocking} |")
-        lines += ["", "</details>", ""]
-
-    if fa.recommendations:
-        lines += ["**Recommendations:**", ""]
-        for rec in fa.recommendations[:5]:
-            lines.append(f"- {rec}")
-        lines += ["", ""]
-
-    return lines
-
-
-def _md_score_badge(score: float) -> str:
-    if score >= 0.9:
-        return "🟢 Excellent"
-    elif score >= 0.75:
-        return "🔵 Good"
-    elif score >= 0.5:
-        return "🟡 Fair"
-    elif score >= 0.25:
-        return "🟠 Needs Improvement"
-    else:
-        return "🔴 Critical Gaps"

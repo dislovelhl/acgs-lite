@@ -1,32 +1,17 @@
-"""India Digital Personal Data Protection Act (DPDP Act) compliance module.
+"""India Digital Personal Data Protection Act (DPDP) compliance module.
 
-Implements AI-relevant obligations from the Digital Personal Data Protection
-Act, 2023 (Act 22 of 2023), India's first comprehensive data protection law.
+Implements the DPDP Act, 2023 requirements relevant to AI systems
+processing personal data in India:
+- Consent and notice (§§4-6)
+- Rights of Data Principals (§§8-14)
+- Obligations of Data Fiduciaries (§§7-10)
+- Significant Data Fiduciary obligations (§16)
+- Children's data (§9)
 
-Sections covered:
-- Section 4:  Lawfulness of personal data processing
-- Section 6:  Consent requirements
-- Section 8:  Obligations of Data Fiduciary (controller)
-- Section 9:  Processing of children's data
-- Section 11: Right to access and information
-- Section 12: Right to correction and erasure
-- Section 16: Additional obligations of Significant Data Fiduciary (SDF)
-- Section 17: Obligations of Data Processor
-- Section 19: Establishment and powers of Data Protection Board
-- Section 25: Intimation of personal data breach
-
-Significant Data Fiduciary (SDF) obligations (Section 16) include:
-- Data Protection Impact Assessment (DPIA)
-- Auditing AI systems
-- Algorithmic accountability
-
-Reference: Digital Personal Data Protection Act, 2023 (India)
-           No. 22 of 2023, Ministry of Electronics and Information Technology
-Enacted: August 11, 2023 (Presidential assent)
-Rules: DPDP Rules under development (2024-2025)
-
-Penalties: Up to INR 250 crore per instance (≈ USD 30 million) for
-significant data fiduciary violations.
+Reference: Digital Personal Data Protection Act, 2023 (Act No. 22 of 2023)
+Status: enacted
+Enforcement: 2023-08-11 (Royal Assent); sectoral rules TBD
+Penalties: Up to INR 250 crore (~USD 30M) per violation (§33)
 
 Constitutional Hash: 608508a9bd224290
 """
@@ -42,311 +27,233 @@ from acgs_lite.compliance.base import (
     FrameworkAssessment,
 )
 
-# ---------------------------------------------------------------------------
-# Checklist: (ref, requirement, legal_citation, acgs_lite_feature, blocking)
-# ---------------------------------------------------------------------------
-_DPDP_ITEMS: list[tuple[str, str, str, str | None, bool]] = [
-    # Section 4 — Lawfulness of processing
+_ITEMS: list[tuple[str, str, str, str | None, bool]] = [
+    # Notice and consent (§§4-6)
     (
-        "DPDP §4",
-        "Process personal data only for a lawful purpose for which an "
-        "individual has consented, or for certain legitimate uses specified "
-        "in the Act. AI inference on personal data must have a legal basis.",
-        "India DPDP Act 2023, Section 4",
-        "GovernanceEngine — constitutional rules enforce lawful-purpose checks",
-        True,
-    ),
-    # Section 6 — Consent
-    (
-        "DPDP §6(1)",
-        "Personal data may be processed only upon the consent of the Data "
-        "Principal, which must be free, specific, informed, unconditional, "
-        "and unambiguous.",
-        "India DPDP Act 2023, Section 6(1)",
+        "DPDP §4(1)",
+        "Process personal data only for a lawful purpose for which the Data "
+        "Principal has given consent, or for certain legitimate uses.",
+        "DPDP Act §4(1)",
         None,
         True,
     ),
     (
-        "DPDP §6(4)",
-        "Provide the Data Principal with a clear notice before seeking "
-        "consent, specifying personal data to be processed, purpose, and "
-        "the manner in which consent may be withdrawn.",
-        "India DPDP Act 2023, Section 6(4)",
-        "TransparencyDisclosure — notice and consent information in system card",
+        "DPDP §5(1)",
+        "Give the Data Principal a notice containing a description of "
+        "personal data sought and the purpose of processing before or "
+        "at the time of requesting consent.",
+        "DPDP Act §5(1)",
+        "TransparencyDisclosure — pre-processing notice generation",
         True,
     ),
-    # Section 8 — Data Fiduciary obligations
+    # Data Principal rights (§§8-14)
     (
         "DPDP §8(1)",
-        "Ensure the accuracy, completeness, and consistency of personal data "
-        "used in the AI system before and during processing.",
-        "India DPDP Act 2023, Section 8(1)",
-        None,
+        "Data Principal has the right to obtain information about the "
+        "processing of their personal data, including a summary of "
+        "personal data processed.",
+        "DPDP Act §8(1)",
+        "AuditLog — queryable per-principal data processing records",
         True,
     ),
     (
         "DPDP §8(3)",
-        "Implement appropriate technical and organisational measures to ensure "
-        "observance of data processing obligations and prevent unauthorised "
-        "access, use, alteration, or deletion of personal data.",
-        "India DPDP Act 2023, Section 8(3)",
-        "GovernanceEngine — circuit breakers and access controls prevent unauthorised processing",
+        "Data Principal has the right to correction, completion, updating, "
+        "and erasure of their personal data.",
+        "DPDP Act §8(3)",
+        None,
         True,
     ),
     (
         "DPDP §8(5)",
-        "Publish the contact details of a Data Protection Officer (or "
-        "authorised person) to address grievances raised by Data Principals.",
-        "India DPDP Act 2023, Section 8(5)",
+        "Data Principal has the right of grievance redressal and the right "
+        "to nominate another person to exercise rights on their behalf.",
+        "DPDP Act §8(5)",
+        "HumanOversightGateway — grievance redressal mechanism",
+        True,
+    ),
+    # Data Fiduciary obligations (§§7, 10)
+    (
+        "DPDP §7(1)",
+        "Data Fiduciary shall implement appropriate technical and "
+        "organisational measures to ensure compliance with this Act.",
+        "DPDP Act §7(1)",
+        "GovernanceEngine — technical governance measures for compliance",
+        True,
+    ),
+    (
+        "DPDP §7(3)",
+        "Protect personal data in its possession or under its control by "
+        "taking reasonable security safeguards to prevent personal data breach.",
+        "DPDP Act §7(3)",
         None,
         True,
     ),
     (
-        "DPDP §8(6)",
-        "Erase personal data when the purpose for which it was collected has "
-        "been met or when consent is withdrawn, unless retention is required "
-        "by applicable law.",
-        "India DPDP Act 2023, Section 8(6)",
+        "DPDP §10(1)",
+        "In the event of a personal data breach, notify the Board and "
+        "each affected Data Principal in the prescribed manner.",
+        "DPDP Act §10(1)",
         None,
         True,
     ),
-    # Section 9 — Children's data
+    # Children's data (§9) — conditional on processes_children_data
     (
         "DPDP §9(1)",
-        "Before processing personal data of a child, obtain verifiable parental "
-        "consent. Do not process personal data in a manner that is detrimental "
-        "to the well-being of a child.",
-        "India DPDP Act 2023, Section 9(1)",
-        "GovernanceEngine — age-related processing restrictions",
-        False,  # only relevant for systems processing children's data
+        "Before processing any personal data of a child, obtain verifiable "
+        "consent of the parent or lawful guardian.",
+        "DPDP Act §9(1)",
+        None,
+        True,
     ),
     (
         "DPDP §9(3)",
-        "Do not undertake tracking or behavioural monitoring of children, or "
-        "targeted advertising directed at children.",
-        "India DPDP Act 2023, Section 9(3)",
-        "GovernanceEngine — constitutional rules block prohibited profiling categories",
-        False,
-    ),
-    # Section 11 — Right to information
-    (
-        "DPDP §11(1)",
-        "Upon request, inform the Data Principal of the personal data being "
-        "processed, the processing activities, and the identities of all "
-        "Data Processors and recipients.",
-        "India DPDP Act 2023, Section 11(1)",
-        "AuditLog — queryable per-subject processing record",
+        "Do not undertake processing of personal data that is likely to "
+        "cause any detrimental effect on the well-being of a child.",
+        "DPDP Act §9(3)",
+        "GovernanceEngine — constitutional rules preventing harmful processing",
         True,
     ),
-    # Section 12 — Right to correction and erasure
-    (
-        "DPDP §12",
-        "Correct inaccurate or misleading personal data, complete incomplete "
-        "data, update data, or erase data that is no longer necessary for the "
-        "purpose of processing, upon request from the Data Principal.",
-        "India DPDP Act 2023, Section 12",
-        None,
-        True,
-    ),
-    # Section 16 — Significant Data Fiduciary (SDF) obligations
-    (
-        "DPDP §16(1)(a)",
-        "Significant Data Fiduciaries must appoint a Data Protection Officer "
-        "based in India who is accountable to the Board of the entity.",
-        "India DPDP Act 2023, Section 16(1)(a)",
-        None,
-        False,  # Only for SDFs
-    ),
-    (
-        "DPDP §16(1)(b)",
-        "Significant Data Fiduciaries must appoint an independent data auditor "
-        "to evaluate compliance with the Act and rules.",
-        "India DPDP Act 2023, Section 16(1)(b)",
-        "AuditLog — tamper-evident audit chain supports independent audit",
-        False,
-    ),
-    (
-        "DPDP §16(1)(c)",
-        "Significant Data Fiduciaries must conduct a Data Protection Impact "
-        "Assessment (DPIA) for high-risk AI processing activities.",
-        "India DPDP Act 2023, Section 16(1)(c)",
-        "RiskClassifier — risk tier assessment scopes DPIA obligations",
-        False,
-    ),
+    # Significant Data Fiduciary (§16) — conditional on is_significant_data_fiduciary
     (
         "DPDP §16(2)",
-        "Significant Data Fiduciaries must implement additional safeguards "
-        "including algorithmic accountability measures ensuring AI outputs "
-        "do not pose systemic risk.",
-        "India DPDP Act 2023, Section 16(2)",
-        "GovernanceEngine — constitutional rule set provides algorithmic accountability",
-        False,
+        "Significant Data Fiduciary shall appoint a Data Protection Officer "
+        "based in India who shall represent the Data Fiduciary and be the "
+        "point of contact for grievance redressal.",
+        "DPDP Act §16(2)",
+        None,
+        True,
     ),
-    # Section 25 — Data breach notification
     (
-        "DPDP §25(1)",
-        "In the event of a personal data breach, notify each affected Data "
-        "Principal and the Data Protection Board in such form and manner as "
-        "prescribed.",
-        "India DPDP Act 2023, Section 25(1)",
-        "AuditLog — breach event detection and immutable record for notification",
+        "DPDP §16(3)",
+        "Significant Data Fiduciary shall appoint an independent data "
+        "auditor to evaluate compliance and carry out periodic data "
+        "protection impact assessments.",
+        "DPDP Act §16(3)",
+        None,
+        True,
+    ),
+    (
+        "DPDP §16(5)",
+        "Significant Data Fiduciary processing personal data for AI "
+        "or algorithmic decisions that significantly affect Data Principals "
+        "shall ensure transparency and accountability.",
+        "DPDP Act §16(5)",
+        "TransparencyDisclosure — algorithmic decision transparency",
         True,
     ),
 ]
 
-# ---------------------------------------------------------------------------
-# acgs-lite auto-population map
-# ---------------------------------------------------------------------------
+# Refs conditional on is_significant_data_fiduciary
+_SDF_REFS: set[str] = {"DPDP §16(2)", "DPDP §16(3)", "DPDP §16(5)"}
+
+# Refs conditional on processes_children_data
+_CHILDREN_REFS: set[str] = {"DPDP §9(1)", "DPDP §9(3)"}
+
 _ACGS_LITE_MAP: dict[str, str] = {
-    "DPDP §4": (
-        "acgs-lite GovernanceEngine — constitutional rules enforce lawful-purpose "
-        "checks before any personal data processing action"
+    "DPDP §5(1)": (
+        "acgs-lite TransparencyDisclosure — generates pre-processing "
+        "notices describing data and purpose"
     ),
-    "DPDP §6(4)": (
-        "acgs-lite TransparencyDisclosure — notice and consent information "
-        "fields in system card satisfy prior notice obligation"
+    "DPDP §8(1)": (
+        "acgs-lite AuditLog — queryable per-principal audit trail with "
+        "processing records"
     ),
-    "DPDP §8(3)": (
-        "acgs-lite GovernanceEngine — circuit breakers and access controls "
-        "prevent unauthorised access, use, or alteration of personal data"
+    "DPDP §8(5)": (
+        "acgs-lite HumanOversightGateway — grievance redressal and "
+        "human review mechanism"
     ),
-    "DPDP §9(1)": (
-        "acgs-lite GovernanceEngine — constitutional rules can enforce "
-        "age-related processing restrictions for children's data"
+    "DPDP §7(1)": (
+        "acgs-lite GovernanceEngine — technical and organisational "
+        "governance measures for compliance"
     ),
     "DPDP §9(3)": (
-        "acgs-lite GovernanceEngine — constitutional rules block prohibited "
-        "profiling and behavioural tracking categories"
+        "acgs-lite GovernanceEngine — constitutional rules preventing "
+        "processing detrimental to children"
     ),
-    "DPDP §11(1)": (
-        "acgs-lite AuditLog — queryable per-subject processing record "
-        "satisfies right to access information obligation"
-    ),
-    "DPDP §16(1)(b)": (
-        "acgs-lite AuditLog — tamper-evident audit chain with hash integrity "
-        "supports independent auditor review"
-    ),
-    "DPDP §16(1)(c)": (
-        "acgs-lite RiskClassifier — risk tier assessment scopes DPIA "
-        "obligations for Significant Data Fiduciaries"
-    ),
-    "DPDP §16(2)": (
-        "acgs-lite GovernanceEngine — constitutional rule set provides "
-        "algorithmic accountability with full audit trail"
-    ),
-    "DPDP §25(1)": (
-        "acgs-lite AuditLog — breach event detection and immutable record "
-        "supports notification obligations"
+    "DPDP §16(5)": (
+        "acgs-lite TransparencyDisclosure — algorithmic decision transparency "
+        "for significant data fiduciaries"
     ),
 }
 
 
 class IndiaDPDPFramework:
-    """India Digital Personal Data Protection Act (DPDP Act 2023) compliance assessor.
+    """India DPDP (Digital Personal Data Protection Act, 2023) compliance assessor.
 
-    Covers lawfulness, consent, Data Fiduciary obligations, children's data,
-    rights of Data Principals, Significant Data Fiduciary additional obligations,
-    and breach notification.
+    Covers consent/notice, Data Principal rights, Data Fiduciary obligations,
+    Significant Data Fiduciary obligations, and children's data.
 
-    Status: Enacted August 2023; Rules pending (2024-2025).
+    Penalties: Up to INR 250 crore (~USD 30M) per violation (§33).
 
-    Penalties: Up to INR 250 crore (≈ USD 30 million) per instance.
-
-    Usage::
-
-        from acgs_lite.compliance.india_dpdp import IndiaDPDPFramework
-
-        framework = IndiaDPDPFramework()
-        assessment = framework.assess({
-            "system_id": "my-system",
-            "jurisdiction": "india",
-            "is_significant_data_fiduciary": False,
-        })
+    Status: Enacted 2023-08-11. Sectoral rules pending.
     """
 
     framework_id: str = "india_dpdp"
-    framework_name: str = "India Digital Personal Data Protection Act (DPDP Act 2023)"
+    framework_name: str = "India Digital Personal Data Protection Act (DPDP), 2023"
     jurisdiction: str = "India"
     status: str = "enacted"
     enforcement_date: str | None = "2023-08-11"
 
     def get_checklist(self, system_description: dict[str, Any]) -> list[ChecklistItem]:
-        """Generate India DPDP checklist items.
-
-        SDF-specific obligations are N/A unless is_significant_data_fiduciary=True.
-        Child-data obligations are N/A unless processes_children_data=True.
-        """
         is_sdf = system_description.get("is_significant_data_fiduciary", False)
         processes_children = system_description.get("processes_children_data", False)
 
-        _sdf_refs = {"DPDP §16(1)(a)", "DPDP §16(1)(b)", "DPDP §16(1)(c)", "DPDP §16(2)"}
-        _child_refs = {"DPDP §9(1)", "DPDP §9(3)"}
-
         items: list[ChecklistItem] = []
-        for ref, req, citation, feature, blocking in _DPDP_ITEMS:
+        for ref, req, citation, feature, blocking in _ITEMS:
             item = ChecklistItem(
-                ref=ref,
-                requirement=req,
-                acgs_lite_feature=feature,
-                blocking=blocking,
-                legal_citation=citation,
+                ref=ref, requirement=req, acgs_lite_feature=feature,
+                blocking=blocking, legal_citation=citation,
             )
-            if ref in _sdf_refs and not is_sdf:
-                item.mark_not_applicable("Not a Significant Data Fiduciary.")
-            elif ref in _child_refs and not processes_children:
-                item.mark_not_applicable("System does not process children's data.")
+            if ref in _SDF_REFS and not is_sdf:
+                item.mark_not_applicable(
+                    "Not applicable: entity is not a Significant Data Fiduciary."
+                )
+            if ref in _CHILDREN_REFS and not processes_children:
+                item.mark_not_applicable(
+                    "Not applicable: system does not process children's data."
+                )
             items.append(item)
         return items
 
     def auto_populate_acgs_lite(self, checklist: list[ChecklistItem]) -> None:
-        """Mark items that acgs-lite directly satisfies."""
         for item in checklist:
             if item.ref in _ACGS_LITE_MAP and item.status != ChecklistStatus.NOT_APPLICABLE:
                 item.mark_complete(_ACGS_LITE_MAP[item.ref])
 
     def assess(self, system_description: dict[str, Any]) -> FrameworkAssessment:
-        """Run full India DPDP compliance assessment."""
         checklist = self.get_checklist(system_description)
         self.auto_populate_acgs_lite(checklist)
         return _build_assessment(self, checklist)
 
 
-def _build_assessment(fw: IndiaDPDPFramework, checklist: list[ChecklistItem]) -> FrameworkAssessment:
+def _build_assessment(
+    fw: IndiaDPDPFramework, checklist: list[ChecklistItem],
+) -> FrameworkAssessment:
     total = len(checklist)
     compliant = sum(
-        1 for item in checklist
-        if item.status in (ChecklistStatus.COMPLIANT, ChecklistStatus.NOT_APPLICABLE)
+        1 for i in checklist
+        if i.status in (ChecklistStatus.COMPLIANT, ChecklistStatus.NOT_APPLICABLE)
     )
-    acgs_covered = sum(1 for item in checklist if item.acgs_lite_feature is not None)
+    acgs_covered = sum(1 for i in checklist if i.acgs_lite_feature is not None)
     gaps = tuple(
-        f"{item.ref}: {item.requirement[:120]}"
-        for item in checklist
-        if item.status not in (ChecklistStatus.COMPLIANT, ChecklistStatus.NOT_APPLICABLE)
-        and item.blocking
+        f"{i.ref}: {i.requirement[:120]}"
+        for i in checklist
+        if i.status not in (ChecklistStatus.COMPLIANT, ChecklistStatus.NOT_APPLICABLE)
+        and i.blocking
     )
     recs: list[str] = []
-    for item in checklist:
-        if item.status == ChecklistStatus.PENDING and item.blocking:
-            if "§6" in item.ref:
-                recs.append(
-                    f"{item.ref}: Implement consent mechanism with required notice "
-                    f"per DPDP Act Section 6. Consent must be free, specific, informed."
-                )
-            elif "§8" in item.ref:
-                recs.append(
-                    f"{item.ref}: Implement Data Fiduciary obligations including "
-                    f"data accuracy, security measures, and DPO contact publication."
-                )
-            elif "§12" in item.ref:
-                recs.append(
-                    f"{item.ref}: Implement correction/erasure workflow for "
-                    f"Data Principal rights requests."
-                )
+    for i in checklist:
+        if i.status == ChecklistStatus.PENDING and i.blocking:
+            recs.append(
+                f"{i.ref}: Address this DPDP requirement. "
+                f"Penalties up to INR 250 crore per violation."
+            )
     return FrameworkAssessment(
         framework_id=fw.framework_id,
         framework_name=fw.framework_name,
         compliance_score=round(compliant / total, 4) if total else 1.0,
-        items=tuple(item.to_dict() for item in checklist),
+        items=tuple(i.to_dict() for i in checklist),
         gaps=gaps,
         acgs_lite_coverage=round(acgs_covered / total, 4) if total else 0.0,
         recommendations=tuple(recs),
