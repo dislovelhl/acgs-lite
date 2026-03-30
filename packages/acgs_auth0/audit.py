@@ -182,6 +182,32 @@ class TokenAuditLog:
             )
         )
 
+    def record_step_up_initiated(
+        self,
+        *,
+        agent_id: str,
+        role: str,
+        connection: str,
+        scopes: list[str],
+        binding_message: str,
+        user_id: str | None = None,
+        tool_name: str | None = None,
+    ) -> TokenAccessAuditEntry:
+        """Record the initiation of a CIBA step-up request."""
+        return self._append(
+            TokenAccessAuditEntry(
+                agent_id=agent_id,
+                role=role,
+                connection=connection,
+                requested_scopes=scopes,
+                granted_scopes=[],
+                outcome=TokenAccessOutcome.STEP_UP_INITIATED,
+                user_id=user_id,
+                tool_name=tool_name,
+                step_up_binding_message=binding_message,
+            )
+        )
+
     def record_step_up(
         self,
         *,
@@ -194,7 +220,7 @@ class TokenAuditLog:
         user_id: str | None = None,
         tool_name: str | None = None,
     ) -> TokenAccessAuditEntry:
-        """Record a CIBA step-up initiation or completion."""
+        """Record a CIBA step-up completion (approved or denied)."""
         outcome = (
             TokenAccessOutcome.STEP_UP_APPROVED
             if approved
