@@ -34,6 +34,7 @@ from acgs_lite.constitution.test_suite import GovernanceTestCase, GovernanceTest
 from acgs_lite.engine import GovernanceEngine
 
 SCENARIOS_DIR = Path(__file__).parent / "scenarios"
+EXTRA_SCENARIOS_DIR = Path(__file__).parent / "eval_data"
 CONSTITUTION_FILE = Path(__file__).parent / "constitution.yaml"
 DEFAULT_ANNOTATIONS = Path(__file__).parent / "eval_data" / "rule_annotations.yaml"
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "eval_results"
@@ -49,15 +50,16 @@ def content_hash(action: str, context: dict[str, Any]) -> str:
 
 
 def load_scenarios() -> list[dict[str, Any]]:
-    """Load all frozen test scenarios from JSON files."""
+    """Load frozen test scenarios + extra eval scenarios from JSON files."""
     scenarios: list[dict[str, Any]] = []
-    for f in sorted(SCENARIOS_DIR.glob("*.json")):
-        with open(f) as fh:
-            data = json.load(fh)
-            if isinstance(data, list):
-                scenarios.extend(data)
-            else:
-                scenarios.append(data)
+    for search_dir in [SCENARIOS_DIR, EXTRA_SCENARIOS_DIR]:
+        for f in sorted(search_dir.glob("*.json")):
+            with open(f) as fh:
+                data = json.load(fh)
+                if isinstance(data, list):
+                    scenarios.extend(data)
+                else:
+                    scenarios.append(data)
     return scenarios
 
 
