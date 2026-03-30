@@ -177,6 +177,142 @@ class TestConstitutionalTokenVaultExchange:
 
 
 # ---------------------------------------------------------------------------
+# Auth0 configuration validation
+# ---------------------------------------------------------------------------
+
+
+class TestAuth0ConfigValidation:
+    @pytest.mark.asyncio
+    async def test_exchange_raises_when_domain_not_configured(self) -> None:
+        """exchange() must raise RuntimeError early when domain is empty."""
+        empty_vault = ConstitutionalTokenVault(
+            policy=MACIScopePolicy(
+                rules=[
+                    ConnectionScopeRule(
+                        connection="github",
+                        role="EXECUTIVE",
+                        permitted_scopes=["repo:read"],
+                    )
+                ]
+            ),
+            auth0_domain="",
+            auth0_client_id="",
+        )
+        with pytest.raises(RuntimeError, match="AUTH0_DOMAIN|domain and client_id"):
+            await empty_vault.exchange(
+                TokenVaultRequest(
+                    agent_id="planner",
+                    role="EXECUTIVE",
+                    connection="github",
+                    scopes=["repo:read"],
+                    refresh_token="rt_test",
+                )
+            )
+
+
+# ---------------------------------------------------------------------------
+# YAML edge cases
+# ---------------------------------------------------------------------------
+
+
+class TestYAMLEdgeCases:
+    def test_yaml_without_token_vault_key_falls_back_to_root(self, tmp_path) -> None:
+        """YAML without 'token_vault' key uses root dict (fallback behaviour)."""
+        yaml_content = """
+connections:
+  github:
+    EXECUTIVE:
+      permitted_scopes: ["repo:read"]
+      high_risk_scopes: []
+"""
+        yaml_file = tmp_path / "flat.yaml"
+        yaml_file.write_text(yaml_content)
+        policy = MACIScopePolicy.from_yaml(yaml_file)
+        rule = policy.get_rule(connection="github", role="EXECUTIVE")
+        assert rule is not None
+        assert "repo:read" in rule.permitted_scopes
+
+    def test_yaml_with_empty_connections_loads_empty_policy(self, tmp_path) -> None:
+        """A YAML with no connections loads without error."""
+        yaml_content = """
+token_vault:
+  constitutional_hash: "608508a9bd224290"
+  connections: {}
+"""
+        yaml_file = tmp_path / "empty.yaml"
+        yaml_file.write_text(yaml_content)
+        policy = MACIScopePolicy.from_yaml(yaml_file)
+        assert policy.constitutional_hash == "608508a9bd224290"
+        assert policy.get_rule(connection="github", role="EXECUTIVE") is None
+
+
+# ---------------------------------------------------------------------------
+# ConstitutionalAuth0AI (after bug fix)
+# ---------------------------------------------------------------------------
+
+
+class TestConstitutionalAuth0AI:
+    def test_with_token_vault_returns_callable(self) -> None:
+        """with_token_vault() must return a decorator, not raise."""
+        from acgs_auth0.governed_tool import ConstitutionalAuth0AI
+
+        auth0_ai = ConstitutionalAuth0AI(
+            policy=MACIScopePolicy(
+                rules=[
+                    ConnectionScopeRule(
+                        connection="github",
+                        role="EXECUTIVE",
+                        permitted_scopes=["repo:read"],
+                    )
+                ]
+            ),
+            auth0_domain="test.auth0.com",
+            auth0_client_id="client123",
+            auth0_client_secret="secret456",
+        )
+        decorator = auth0_ai.with_token_vault(connection="github", scopes=["repo:read"])
+        assert callable(decorator)
+
+    @pytest.mark.asyncio
+    async def test_with_token_vault_denies_unauthorized_scope(self) -> None:
+        """ConstitutionalAuth0AI.with_token_vault must enforce MACI policy."""
+        from acgs_auth0.exceptions import ConstitutionalScopeViolation
+        from acgs_auth0.governed_tool import ConstitutionalAuth0AI
+
+        policy = MACIScopePolicy(
+            rules=[
+                ConnectionScopeRule(
+                    connection="github",
+                    role="EXECUTIVE",
+                    permitted_scopes=["repo:read"],
+                    high_risk_scopes=[],
+                )
+            ]
+        )
+        auth0_ai = ConstitutionalAuth0AI(policy=policy)
+
+        def get_agent_context() -> tuple[str, str]:
+            return ("planner", "EXECUTIVE")
+
+        def get_refresh_token() -> str:
+            return "rt_test"
+
+        with_write = auth0_ai.with_token_vault(
+            connection="github",
+            scopes=["repo:write"],  # EXECUTIVE not permitted
+            get_agent_context=get_agent_context,
+            get_refresh_token=get_refresh_token,
+        )
+
+        async def dummy_tool(query: str) -> str:
+            return "should not reach here"
+
+        governed = with_write(dummy_tool)
+        with pytest.raises(ConstitutionalScopeViolation):
+            await governed(query="test")
+
+
+# ---------------------------------------------------------------------------
 # get_token_vault_credentials()
 # ---------------------------------------------------------------------------
 

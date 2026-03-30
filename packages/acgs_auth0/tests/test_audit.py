@@ -163,6 +163,22 @@ class TestTokenAuditLog:
         data = json.loads(lines[0])
         assert data["agent_id"] == "a"
 
+    def test_record_step_up_initiated(self) -> None:
+        log = TokenAuditLog()
+        log.record_step_up_initiated(
+            agent_id="executor",
+            role="IMPLEMENTER",
+            connection="github",
+            scopes=["repo:write"],
+            binding_message="Approve PR creation",
+            user_id="auth0|demo",
+            tool_name="create_pr",
+        )
+        entries = log.get_entries(outcome=TokenAccessOutcome.STEP_UP_INITIATED)
+        assert len(entries) == 1
+        assert entries[0].step_up_binding_message == "Approve PR creation"
+        assert entries[0].granted_scopes == []
+
     def test_thread_safety(self) -> None:
         """Multiple threads can write to the audit log without corruption."""
         import threading

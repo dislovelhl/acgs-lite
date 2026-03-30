@@ -197,8 +197,13 @@ class ConstitutionalAuth0AI:
     ) -> Callable[[Callable], Callable]:
         """Wrap a tool with constitutional validation + Auth0 Token Vault exchange.
 
-        MACI validation runs first (synchronously).  If permitted, the upstream
-        auth0-ai-langchain ``with_token_vault`` handles the actual OAuth exchange.
+        MACI validation runs first (synchronously).  If permitted, the underlying
+        ConstitutionalTokenVault handles the OAuth exchange and sets the credentials
+        context variable so ``get_token_vault_credentials()`` works inside the tool.
+
+        If ``auth0-ai-langchain`` is installed, ``StepUpAuthRequiredError`` is
+        automatically converted to a ``GraphInterrupt`` so LangGraph graphs can
+        handle CIBA interrupts natively.
 
         Args:
             connection: External provider connection name.
@@ -207,79 +212,60 @@ class ConstitutionalAuth0AI:
             get_refresh_token: Returns the Auth0 refresh token.
             get_user_id: Returns the Auth0 user ID.
             ciba_binding_message: CIBA approval message for step-up.
-            **auth0_ai_kwargs: Extra kwargs forwarded to Auth0AI.with_token_vault().
+            **auth0_ai_kwargs: Extra kwargs (reserved for future upstream use).
 
         Returns:
             A decorator function.
         """
+        constitutionally_wrapped = self._vault.for_connection(
+            connection=connection,
+            scopes=scopes,
+            get_agent_context=get_agent_context,
+            get_refresh_token=get_refresh_token,
+            get_user_id=get_user_id,
+            ciba_binding_message=ciba_binding_message,
+        )
         auth0_ai = self._get_auth0_ai()
 
         def decorator(tool_fn: Callable) -> Callable:
             from functools import wraps
 
-            # First, apply constitutional gate
-            constitutionally_wrapped = self._vault.for_connection(
-                connection=connection,
-                scopes=scopes,
-                get_agent_context=get_agent_context,
-                get_refresh_token=get_refresh_token,
-                get_user_id=get_user_id,
-                ciba_binding_message=ciba_binding_message,
-            )(tool_fn)
+            # Apply constitutional vault wrapping (sets _token_vault_credentials_ctx
+            # correctly so get_token_vault_credentials() works inside the tool).
+            governed = constitutionally_wrapped(tool_fn)
 
-            # Then, if auth0-ai-langchain is available, also apply its wrapper
-            # to handle the actual token exchange plumbing (interrupt / resume flow)
-            if auth0_ai is not None:
+            if auth0_ai is None:
+                return governed
+
+            # If auth0-ai-langchain is available, wrap the governed function so that
+            # StepUpAuthRequiredError surfaces as a GraphInterrupt for LangGraph.
+            @wraps(tool_fn)
+            async def with_graph_interrupt(*args: Any, **kwargs: Any) -> Any:
+                from acgs_auth0.exceptions import StepUpAuthRequiredError
+
                 try:
-                    upstream_wrapped = auth0_ai.with_token_vault(
-                        connection=connection,
-                        scopes=scopes,
-                        **auth0_ai_kwargs,
-                    )(tool_fn)
+                    import inspect
 
-                    @wraps(tool_fn)
-                    async def double_wrapped(*args: Any, **kwargs: Any) -> Any:
-                        # Constitutional gate first
-                        from acgs_auth0.token_vault import _token_vault_credentials_ctx
+                    if inspect.iscoroutinefunction(governed):
+                        return await governed(*args, **kwargs)
+                    return governed(*args, **kwargs)
+                except StepUpAuthRequiredError as step_up:
+                    # Convert to GraphInterrupt so LangGraph can handle CIBA inline.
+                    try:
+                        from langgraph.errors import GraphInterrupt  # type: ignore[import-untyped]
 
-                        agent_id, role = (get_agent_context or _default_agent_context_fn)()
-                        result = self.policy.validate(
-                            agent_id=agent_id,
-                            role=role,
-                            connection=connection,
-                            requested_scopes=scopes,
-                        )
-                        if not result.permitted:
-                            self.audit_log.record_denied(
-                                agent_id=agent_id,
-                                role=role,
-                                connection=connection,
-                                scopes=scopes,
-                                reason="scope_violation"
-                                if result.denied_scopes
-                                else "role_not_permitted",
-                                error_message=str(result.error),
-                                tool_name=getattr(tool_fn, "__name__", None),
-                            )
-                            assert result.error is not None
-                            raise result.error
+                        raise GraphInterrupt(
+                            {
+                                "type": "ciba_step_up",
+                                "connection": step_up.connection,
+                                "high_risk_scopes": step_up.high_risk_scopes,
+                                "binding_message": step_up.binding_message,
+                            }
+                        ) from step_up
+                    except ImportError:
+                        raise  # Re-raise original if langgraph not available
 
-                        # Delegate to auth0-ai-langchain for actual token exchange
-                        import inspect
-
-                        if inspect.iscoroutinefunction(upstream_wrapped):
-                            return await upstream_wrapped(*args, **kwargs)
-                        return upstream_wrapped(*args, **kwargs)
-
-                    return double_wrapped
-                except Exception as exc:
-                    logger.warning(
-                        "Failed to apply auth0-ai-langchain wrapper: %s. "
-                        "Falling back to ACGS-only governance.",
-                        exc,
-                    )
-
-            return constitutionally_wrapped
+            return with_graph_interrupt
 
         return decorator
 

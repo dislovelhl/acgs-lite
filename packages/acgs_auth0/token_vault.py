@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable
 
 from acgs_auth0._meta import CONSTITUTIONAL_HASH
-from acgs_auth0.audit import TokenAccessOutcome, TokenAuditLog
+from acgs_auth0.audit import TokenAuditLog
 from acgs_auth0.exceptions import (
     ConstitutionalScopeViolation,
     MACIRoleNotPermittedError,
@@ -229,20 +229,14 @@ class ConstitutionalTokenVault:
                 high_risk_scopes=result.step_up_required,
                 binding_message=binding_message,
             )
-            from acgs_auth0.audit import TokenAccessAuditEntry  # noqa: PLC0415
-
-            self.audit_log._append(  # noqa: SLF001
-                TokenAccessAuditEntry(
-                    agent_id=request.agent_id,
-                    role=request.role,
-                    connection=request.connection,
-                    requested_scopes=request.scopes,
-                    granted_scopes=[],
-                    outcome=TokenAccessOutcome.STEP_UP_INITIATED,
-                    user_id=request.user_id,
-                    tool_name=request.tool_name,
-                    step_up_binding_message=binding_message,
-                )
+            self.audit_log.record_step_up_initiated(
+                agent_id=request.agent_id,
+                role=request.role,
+                connection=request.connection,
+                scopes=request.scopes,
+                binding_message=binding_message,
+                user_id=request.user_id,
+                tool_name=request.tool_name,
             )
             raise step_up_error
 
