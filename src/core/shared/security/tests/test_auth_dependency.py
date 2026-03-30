@@ -179,18 +179,21 @@ async def test_check_revocation_raises_when_token_revoked():
     auth_dependency._revocation_service = None
 
 
-async def test_check_revocation_handles_service_errors():
-    """_check_revocation handles service errors gracefully."""
+async def test_check_revocation_handles_service_errors_in_non_production(monkeypatch):
+    """_check_revocation degrades gracefully outside production."""
     from unittest.mock import AsyncMock, MagicMock
+
+    monkeypatch.setattr(settings, "env", "development")
+    monkeypatch.delenv("ENVIRONMENT", raising=False)
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("ACGS2_ENV", raising=False)
 
     mock_service = MagicMock()
     mock_service.is_token_revoked = AsyncMock(side_effect=RuntimeError("Redis down"))
     auth_dependency._revocation_service = mock_service
 
-    # Should not raise - errors are logged but not propagated
     await auth_dependency._check_revocation("test-jti")
 
-    # Clean up
     auth_dependency._revocation_service = None
 
 

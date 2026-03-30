@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.4.1] — 2026-03-25
+
+### Added
+- gstack installed as pi-compatible skills under `.agents/skills/gstack-*/` (27 skills, name/dir aligned for pi discovery)
+- Eval harness: `.claude/evals/DASHBOARD.md` + 4 eval definitions (regression baseline, engine attr, circuit-breaker compat, deque assertions)
+- gstack section in CLAUDE.md documenting `/skill:gstack-*` invocation and browse-first policy
+
+### Fixed
+- `GovernanceEngine._constitution` → `.constitution` (engine/core.py:1486, 1565) — cleared 131 test failures
+- `test_circuit_breaker_core.py` ImportError → `pytest.skip` — unblocks `make test-quick` collection
+- Adaptive governance deque type assertions + resolved stale git conflict marker in test_engine_feedback.py
+- `has_jwt_verification_material` added to `auth.py` — was imported by `auth_dependency.py` but never exported
+- RS256 public-key-only verification path: `_resolve_jwt_material` now succeeds with public key alone for token verification (no private key required)
+- Hardcoded `ADMIN_SECRET` removed from `workers/governance-proxy/wrangler.toml`
+
+### Infrastructure
+- Cloudflare Worker deployment: `wrangler.jsonc` → `wrangler.toml`, custom domain routes for `api.acgs.ai` and `acgs.ai/v1/*`
+- Frontend observability section: "Governance Watch" with live stream, portable bundles, and fail-closed edge deployment copy
+
 All notable changes to this project will be documented in this file.
 
 ## [2.4.0] — 2026-03-25

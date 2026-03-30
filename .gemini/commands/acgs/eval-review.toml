@@ -1,0 +1,16 @@
+name = "eval-review"
+description = "Review an eval definition for deterministic graders, regression coverage, and release usefulness."
+prompt = """
+Review the referenced eval definition in this repository.
+Check for:
+- clear capability vs regression separation
+- deterministic, code-based graders where possible
+- realistic pass criteria
+- specific commands that can be run from repo root
+- overlap or duplication with existing evals
+Return:
+1. strengths
+2. gaps
+3. exact edits to improve the eval
+4. whether it is ready to gate work
+"""

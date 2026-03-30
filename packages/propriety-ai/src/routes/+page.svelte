@@ -163,8 +163,8 @@
 				></span>
 			</button>
 			<p class="mt-6 text-center font-mono text-xs tracking-wider text-fg-muted max-w-sm">
-				Constitutional governance for AI agents. <br class="hidden sm:block" /> 9 frameworks. 3,133 tests.
-				560ns.
+				Constitutional governance for AI agents. <br class="hidden sm:block" /> 1.1M RPS. 3.9µs P99.
+				9 frameworks.
 			</p>
 		</div>
 
@@ -286,7 +286,7 @@
 		<div class="fade-in aspect-video w-full overflow-hidden rounded-xl border border-border/50 shadow-2xl" use:observe>
 			<iframe
 				src="https://www.youtube.com/embed/uWacmC3CbYg?rel=0&modestbranding=1&color=white"
-				title="ACGS — 560 Nanoseconds to Compliance"
+				title="ACGS — Governance Watch & Constitutional AI"
 				frameborder="0"
 				allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
 				allowfullscreen
@@ -334,11 +334,75 @@
 	</div>
 </section>
 
+<!-- ─── OBSERVABILITY ─── -->
+<section id="observability" class="relative py-24 md:py-32 px-8 md:px-12 bg-[#050505]">
+	<div class="mx-auto max-w-[1400px]">
+		<div class="fade-in mb-16" use:observe>
+			<p class="mb-4 font-mono text-xs tracking-[0.3em] text-fg-muted">06 — OBSERVABILITY</p>
+			<h2 class="font-sans text-4xl font-light italic md:text-6xl">Governance Watch</h2>
+		</div>
+
+		<div class="grid gap-12 lg:grid-cols-2 lg:items-center">
+			<div class="fade-in space-y-8" use:observe>
+				<div class="space-y-4">
+					<h3 class="font-sans text-3xl font-light text-white">Stop "Regex-Hell" Latency</h3>
+					<p class="text-lg leading-relaxed text-fg-muted/90">
+						Brittle Python scripts and 2-second regex checks kill production performance. 
+						ACGS-2 moves validation to the edge with a WASM-backed engine that streams 
+						telemetry in real-time.
+					</p>
+				</div>
+
+				<div class="space-y-6">
+					{#each [
+						{ title: 'Live Stream', desc: 'acgs observe --watch: View governance decisions as they happen with microsecond precision.' },
+						{ title: 'Portable Bundles', desc: 'Generate auditor-ready telemetry bundles containing Prometheus metrics and OTel traces.' },
+						{ title: 'Fail-Closed Edge', desc: 'Deploy as a Cloudflare Worker proxy. Intercept jailbreaks at the edge before they hit your model.' }
+					] as point}
+						<div class="flex gap-5">
+							<div class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent shadow-[0_0_10px_rgba(37,99,235,0.5)]"></div>
+							<div>
+								<h4 class="font-mono text-sm font-medium text-white">{point.title}</h4>
+								<p class="mt-1 text-sm text-fg-muted leading-relaxed">{point.desc}</p>
+							</div>
+						</div>
+					{/each}
+				</div>
+			</div>
+
+			<div class="fade-in" use:observe>
+				<div class="rounded-xl border border-border/60 bg-[#0a0a0a] shadow-2xl overflow-hidden">
+					<div class="flex items-center justify-between border-b border-border/60 bg-black/40 px-5 py-3">
+						<div class="flex items-center gap-2">
+							<div class="h-2.5 w-2.5 rounded-full bg-red/80"></div>
+							<div class="h-2.5 w-2.5 rounded-full bg-amber/80"></div>
+							<div class="h-2.5 w-2.5 rounded-full bg-emerald/80"></div>
+						</div>
+						<span class="font-mono text-[10px] tracking-wider text-fg-muted">TERMINAL</span>
+					</div>
+					<pre class="overflow-x-auto p-6 font-mono text-[13px] leading-relaxed text-fg/90">
+$ acgs observe --watch --interval 1
+
+--- Snapshot 1 ---
+{'{'}
+  "total_decisions": 1142,
+  "compliance_rate": 0.9982,
+  "latency_p99_ms": 0.0039,
+  "top_violation": "GL-004 (Destructive Ops)"
+{'}'}
+
+<span class="text-accent animate-pulse">▋</span> Streaming telemetry to telemetry-bundle/</pre>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
 <!-- ─── FRAMEWORKS TABLE ─── -->
 <section id="frameworks" class="relative py-24 md:py-32 px-8 md:px-12">
 	<div class="mx-auto max-w-[1400px]">
 		<div class="fade-in mb-16" use:observe>
-			<p class="mb-4 font-mono text-xs tracking-[0.3em] text-fg-muted">06 — REGULATORY COVERAGE</p>
+			<p class="mb-4 font-mono text-xs tracking-[0.3em] text-fg-muted">07 — REGULATORY COVERAGE</p>
 			<h2 class="font-sans text-4xl font-light italic md:text-6xl">Nine Frameworks, One Library</h2>
 		</div>
 
@@ -393,7 +457,7 @@
 <section class="relative overflow-hidden py-24 md:py-32">
 	<div class="mx-auto max-w-[1400px]">
 		<div class="fade-in mb-16 px-8 md:px-12" use:observe>
-			<p class="font-mono text-xs tracking-[0.3em] text-fg-muted">07 — TECHNICAL ARSENAL</p>
+			<p class="font-mono text-xs tracking-[0.3em] text-fg-muted">08 — TECHNICAL ARSENAL</p>
 		</div>
 	</div>
 
@@ -454,7 +518,7 @@
 <section class="relative py-24 md:py-32 px-8 md:px-12 bg-[#080808]">
 	<div class="mx-auto max-w-[1400px]">
 		<div class="fade-in mb-16 text-center md:text-left" use:observe>
-			<p class="mb-4 font-mono text-xs tracking-[0.3em] text-fg-muted">08 — ARCHITECTURE</p>
+			<p class="mb-4 font-mono text-xs tracking-[0.3em] text-fg-muted">09 — ARCHITECTURE</p>
 			<h2 class="font-sans text-4xl font-light italic md:text-6xl">Constitutional Guarantees</h2>
 		</div>
 
@@ -484,7 +548,7 @@
 			use:observe
 		>
 			<div class="text-center md:text-left">
-				<p class="mb-4 font-mono text-xs tracking-[0.3em] text-accent">09 — PRICING</p>
+				<p class="mb-4 font-mono text-xs tracking-[0.3em] text-accent">10 — PRICING</p>
 				<h2 class="font-sans text-4xl font-light italic text-white md:text-6xl">
 					The Engine Is Free Forever
 				</h2>

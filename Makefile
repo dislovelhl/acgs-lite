@@ -1,4 +1,4 @@
-.PHONY: help setup lock-sync lock-validate test test-quick test-lite test-bus test-gw health-manifest health-overview health-lite health-bus health-bus-governance health-gw health-constitutional-swarm health-frontend health-worker lint format clean bench cov cov-html codex-doctor autoresearch-promote agent-commit
+.PHONY: help setup lock-sync lock-validate test test-quick test-lite test-bus test-gw build-root-package publish-root-dry-run publish-root-package build-acgs-lite publish-acgs-lite-dry-run publish-acgs-lite build-acgs publish-dry-run publish-acgs health-manifest health-overview health-lite health-bus health-bus-governance health-gw health-constitutional-swarm health-frontend health-worker lint format clean bench cov cov-html codex-doctor autoresearch-promote agent-commit
 
 LOCK_PYTHON ?= 3.11
 UV ?= uv
@@ -28,6 +28,17 @@ help:
 	@echo "    make test-lite    acgs-lite tests only"
 	@echo "    make test-bus     Enhanced Agent Bus tests only"
 	@echo "    make test-gw      API Gateway tests only"
+	@echo ""
+	@echo "  Release:"
+	@echo "    make build-root-package    Build the root package artifacts"
+	@echo "    make publish-root-dry-run  Build and dry-run the root package publish"
+	@echo "    make publish-root-package  Build and publish the root package (requires UV_PUBLISH_TOKEN)"
+	@echo "    make build-acgs-lite       Build the public acgs-lite package artifacts"
+	@echo "    make publish-acgs-lite-dry-run Build and dry-run the public acgs-lite publish"
+	@echo "    make publish-acgs-lite     Build and publish the public acgs-lite package"
+	@echo "    make build-acgs            Legacy alias for make build-root-package"
+	@echo "    make publish-dry-run       Legacy alias for make publish-root-dry-run"
+	@echo "    make publish-acgs          Legacy alias for make publish-root-package"
 	@echo ""
 	@echo "  Package Health:"
 	@echo "    make health-manifest Validate package health metadata"
@@ -87,6 +98,30 @@ test-bus:
 
 test-gw:
 	$(PYTHON) -m pytest $(or $(PYTEST_TARGETS),src/core/services/api_gateway/tests/) -v --import-mode=importlib $(PYTEST_ARGS)
+
+build-root-package:
+	bash scripts/publish-acgs.sh --build-only
+
+publish-root-dry-run:
+	bash scripts/publish-acgs.sh --dry-run
+
+publish-root-package:
+	bash scripts/publish-acgs.sh
+
+build-acgs-lite:
+	PACKAGE_DIR=packages/acgs-lite bash scripts/publish-acgs.sh --build-only
+
+publish-acgs-lite-dry-run:
+	PACKAGE_DIR=packages/acgs-lite bash scripts/publish-acgs.sh --dry-run
+
+publish-acgs-lite:
+	PACKAGE_DIR=packages/acgs-lite bash scripts/publish-acgs.sh
+
+build-acgs: build-root-package
+
+publish-dry-run: publish-root-dry-run
+
+publish-acgs: publish-root-package
 
 health-manifest:
 	$(PYTHON) scripts/package_health.py validate
