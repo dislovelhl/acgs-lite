@@ -228,6 +228,24 @@ class TestRequiresIndependentValidation:
         # Assert
         assert result is False
 
+    @pytest.mark.asyncio
+    async def test_persist_flywheel_decision_event_writes_to_workflow_repository(
+        self,
+        processor,
+        sample_message,
+    ):
+        """Decision persistence should hand normalized events to workflow storage."""
+        repository = AsyncMock()
+        processor._workflow_repository = repository
+        result = ValidationResult(is_valid=False, errors=["blocked"], metadata={"latency_ms": 7.5})
+
+        await processor._persist_flywheel_decision_event(sample_message, result)
+
+        repository.save_decision_event.assert_awaited_once()
+        persisted_event = repository.save_decision_event.await_args.args[0]
+        assert persisted_event.decision_id == sample_message.message_id
+        assert persisted_event.outcome == "deny"
+
     def test_none_impact_score_no_validation_required(self, processor):
         """Test that None impact score doesn't require independent validation."""
         # Arrange

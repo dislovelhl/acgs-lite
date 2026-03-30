@@ -19,8 +19,8 @@ except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]
 
-from enhanced_agent_bus.observability.structured_logging import get_logger
 from enhanced_agent_bus.data_flywheel.ingest import build_decision_event
+from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # Local imports
 from .config import BusConfiguration
@@ -285,6 +285,7 @@ class MessageProcessor:
             use_manifold=self._governance_manifold_enabled,
         )
         self._audit_client = kwargs.get("audit_client")
+        self._workflow_repository = kwargs.get("workflow_repository")
         self._opa_client = self._initialize_opa_client()
         self._constitutional_verifier = kwargs.get("constitutional_verifier")
         # OPTIMIZATION: Increased cache size from 1000 to 10000 for enterprise scale
@@ -1191,6 +1192,7 @@ class MessageProcessor:
         self._validation_cache.set(cache_key, self._clone_validation_result(result))
         self._processed_count += 1
         self._schedule_governance_audit_event(msg, result)
+        await self._persist_flywheel_decision_event(msg, result)
 
         if not self._requires_independent_validation(msg):
             self._record_agent_workflow_event(
@@ -1214,6 +1216,7 @@ class MessageProcessor:
         self._failed_count += 1
         rejection_reason = self._extract_rejection_reason(result)
         self._schedule_governance_audit_event(msg, result)
+        await self._persist_flywheel_decision_event(msg, result)
 
         self._record_agent_workflow_event(
             event_type="gate_failure",
@@ -1304,6 +1307,26 @@ class MessageProcessor:
                 )
         except (AttributeError, OSError, RuntimeError, TypeError, ValueError) as e:
             logger.warning("governance_audit_event_failed", message_id=msg.message_id, error=str(e))
+
+    async def _persist_flywheel_decision_event(
+        self,
+        msg: AgentMessage,
+        result: ValidationResult,
+    ) -> None:
+        """Persist a normalized flywheel decision event when repository access is available."""
+        repository = getattr(self, "_workflow_repository", None)
+        if repository is None:
+            return
+
+        try:
+            await repository.save_decision_event(build_decision_event(msg, result))
+        except (AttributeError, OSError, RuntimeError, TypeError, ValueError) as exc:
+            logger.warning(
+                "flywheel_decision_event_persistence_failed",
+                message_id=msg.message_id,
+                tenant_id=msg.tenant_id,
+                error=str(exc),
+            )
 
     async def _get_dlq_redis(self) -> object:
         """Get or create a cached Redis client for DLQ writes."""
