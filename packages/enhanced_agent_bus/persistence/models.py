@@ -13,6 +13,14 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from enhanced_agent_bus.data_flywheel.models import (
+    CandidateArtifact,
+    DatasetSnapshot,
+    DecisionEvent,
+    EvaluationRun,
+    EvidenceBundle,
+)
+
 try:
     from src.core.shared.constants import CONSTITUTIONAL_HASH
 except ImportError:
@@ -218,3 +226,21 @@ class CheckpointData(BaseModel):
     step_index: int
     state: dict
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+
+__all__ = [
+    "CandidateArtifact",
+    "CheckpointData",
+    "DatasetSnapshot",
+    "DecisionEvent",
+    "EvaluationRun",
+    "EventType",
+    "EvidenceBundle",
+    "StepStatus",
+    "StepType",
+    "WorkflowCompensation",
+    "WorkflowEvent",
+    "WorkflowInstance",
+    "WorkflowStatus",
+    "WorkflowStep",
+]

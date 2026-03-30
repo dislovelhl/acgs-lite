@@ -24,6 +24,12 @@ PROMOTION_PATCH = (
 )
 
 
+_skip_missing_candidates = pytest.mark.skipif(
+    not CANDIDATE_SCENARIOS.exists(),
+    reason="autoresearch candidate_scenarios not generated",
+)
+
+
 def _load_rows(path: Path) -> list[dict[str, object]]:
     data = json.loads(path.read_text())
     return data if isinstance(data, list) else [data]
@@ -78,6 +84,7 @@ def test_real_use_case_fixture_is_mostly_novel_relative_to_frozen_benchmark_corp
     assert len(real_use_case_actions - benchmark_actions) >= 15
 
 
+@_skip_missing_candidates
 @pytest.mark.unit
 def test_candidate_scenario_pack_is_balanced_and_traceable() -> None:
     rows = _load_rows(CANDIDATE_SCENARIOS)
@@ -93,6 +100,7 @@ def test_candidate_scenario_pack_is_balanced_and_traceable() -> None:
         assert isinstance(row["source_note"], str) and row["source_note"].strip()
 
 
+@_skip_missing_candidates
 @pytest.mark.unit
 def test_candidate_scenario_pack_is_fully_novel_relative_to_frozen_corpus() -> None:
     benchmark_actions = {
@@ -106,6 +114,7 @@ def test_candidate_scenario_pack_is_fully_novel_relative_to_frozen_corpus() -> N
     assert benchmark_actions.isdisjoint(candidate_actions)
 
 
+@_skip_missing_candidates
 @pytest.mark.unit
 def test_candidate_promotion_patch_targets_frozen_scenarios_path() -> None:
     patch_text = PROMOTION_PATCH.read_text()

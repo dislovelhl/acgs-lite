@@ -66,9 +66,12 @@ except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
 from .models import (
+    FLYWHEEL_RUN_SAGA_NAME,
     CompensationEntry,
     CompensationFunc,
     CompensationStrategy,
+    FlywheelRunRecord,
+    FlywheelRunStage,
     PersistedSagaState,
     PersistedStepSnapshot,
     SagaActionFunc,
@@ -165,6 +168,9 @@ __all__ = [
     "CompensationEntry",
     "CompensationFunc",
     "CompensationStrategy",
+    "FLYWHEEL_RUN_SAGA_NAME",
+    "FlywheelRunRecord",
+    "FlywheelRunStage",
     "InvalidStateTransitionError",
     "LockError",
     # Core Models

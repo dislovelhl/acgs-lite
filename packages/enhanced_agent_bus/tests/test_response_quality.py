@@ -18,7 +18,9 @@ from enhanced_agent_bus.response_quality import (
     CONSTITUTIONAL_HASH,
     ConstitutionalHashError,
     DefaultConstitutionalCorrector,
+    AdapterConstitutionalCorrector,
     DefaultLLMRefiner,
+    AdapterLLMRefiner,
     DimensionScores,
     DimensionSpec,
     QualityAssessment,
@@ -38,6 +40,38 @@ from enhanced_agent_bus.response_quality import (
     create_refiner,
     create_validator,
 )
+from enhanced_agent_bus.llm_adapters.base import BaseLLMAdapter, LLMResponse, LLMMessage, TokenUsage, CostEstimate, CompletionMetadata
+
+class MockLLMAdapter(BaseLLMAdapter):
+    def __init__(self, expected_response="Mock refined response"):
+        super().__init__(model="test-model")
+        self.expected_response = expected_response
+        self.calls = []
+
+    def complete(self, messages, **kwargs):
+        self.calls.append(messages)
+        return LLMResponse(
+            content=self.expected_response,
+            metadata=CompletionMetadata(model="test-model", provider="test"),
+            usage=TokenUsage(),
+            cost=CostEstimate()
+        )
+
+    async def acomplete(self, messages, **kwargs):
+        self.calls.append(messages)
+        return LLMResponse(
+            content=self.expected_response,
+            metadata=CompletionMetadata(model="test-model", provider="test"),
+            usage=TokenUsage(),
+            cost=CostEstimate()
+        )
+        
+    def stream(self, messages, **kwargs): pass
+    async def astream(self, messages, **kwargs): pass
+    def count_tokens(self, messages): return 0
+    def estimate_cost(self, p, c): return CostEstimate()
+    async def health_check(self): pass
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -713,6 +747,40 @@ class TestDefaultConstitutionalCorrector:
         result = await corrector.correct_async("test", violations=["harmful"])
         assert isinstance(result, str)
 
+
+class TestAdapterLLMRefiner:
+    def test_refine_with_adapter(self):
+        adapter = MockLLMAdapter(expected_response="LLM Refined Response")
+        refiner = AdapterLLMRefiner(adapter)
+        assessment = _make_assessment(dimension_overrides={"coherence": 0.3})
+        result = refiner.refine("incomplete response", assessment)
+        assert result == "LLM Refined Response"
+        assert len(adapter.calls) == 1
+
+    @pytest.mark.asyncio
+    async def test_refine_async_with_adapter(self):
+        adapter = MockLLMAdapter(expected_response="LLM Refined Response")
+        refiner = AdapterLLMRefiner(adapter)
+        assessment = _make_assessment()
+        result = await refiner.refine_async("good response", assessment)
+        assert result == "LLM Refined Response"
+        assert len(adapter.calls) == 1
+
+class TestAdapterConstitutionalCorrector:
+    def test_correct_with_adapter(self):
+        adapter = MockLLMAdapter(expected_response="Constitutional Corrected Response")
+        corrector = AdapterConstitutionalCorrector(adapter)
+        result = corrector.correct("test response", violations=["harmful content"])
+        assert result == "Constitutional Corrected Response"
+        assert len(adapter.calls) == 1
+
+    @pytest.mark.asyncio
+    async def test_correct_async_with_adapter(self):
+        adapter = MockLLMAdapter(expected_response="Constitutional Corrected Response")
+        corrector = AdapterConstitutionalCorrector(adapter)
+        result = await corrector.correct_async("test", violations=["harmful"])
+        assert result == "Constitutional Corrected Response"
+        assert len(adapter.calls) == 1
 
 class TestResponseRefiner:
     @pytest.fixture()

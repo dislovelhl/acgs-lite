@@ -69,6 +69,10 @@ def create_governance_app(
         )
         return result.to_dict()
 
+    @app.get("/health")  # type: ignore[untyped-decorator]
+    def health_check() -> dict[str, str]:
+        return {"status": "ok", "engine": "ready"}
+
     @app.get("/stats")  # type: ignore[untyped-decorator]
     def get_stats() -> dict[str, Any]:
         return {

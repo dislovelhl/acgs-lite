@@ -24,7 +24,12 @@ This module provides durable workflow execution with:
 
 from .executor import DurableWorkflowExecutor
 from .models import (
+    CandidateArtifact,
+    DatasetSnapshot,
+    DecisionEvent,
+    EvaluationRun,
     EventType,
+    EvidenceBundle,
     StepStatus,
     StepType,
     WorkflowCompensation,
@@ -42,8 +47,13 @@ except ImportError:
     PostgresWorkflowRepository = None  # type: ignore[misc,assignment]
 
 __all__ = [
+    "CandidateArtifact",
+    "DatasetSnapshot",
+    "DecisionEvent",
     "DurableWorkflowExecutor",
+    "EvaluationRun",
     "EventType",
+    "EvidenceBundle",
     "InMemoryWorkflowRepository",
     "PostgresWorkflowRepository",
     "ReplayEngine",

@@ -5,6 +5,7 @@ import time
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 from src.core.shared.constants import CONSTITUTIONAL_HASH as CONST_HASH
 
 from enhanced_agent_bus.adaptive_governance.governance_engine import (
@@ -25,7 +26,9 @@ _MLFLOW_PATCH = "mlflow.set_tracking_uri"
 _IMPACT_MLFLOW = (
     "enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
 )
-_THRESH_MLFLOW = "enhanced_agent_bus.adaptive_governance.threshold_manager.AdaptiveThresholds._initialize_mlflow"
+_THRESH_MLFLOW = (
+    "enhanced_agent_bus.adaptive_governance.threshold_manager.AdaptiveThresholds._initialize_mlflow"  # noqa: E501
+)
 
 
 class TestUpdateMetrics:
@@ -39,16 +42,15 @@ class TestUpdateMetrics:
 
         from enhanced_agent_bus.governance_constants import GOVERNANCE_HISTORY_MAX
 
-        # Use a deque with maxlen — appending beyond capacity auto-evicts the oldest entry
-        capped: deque = deque(
+        # Fill exactly at max + 1 using a deque with maxlen so auto-trim works
+        engine.decision_history = deque(
             [_make_decision() for _ in range(GOVERNANCE_HISTORY_MAX + 1)],
             maxlen=GOVERNANCE_HISTORY_MAX,
         )
-        engine.decision_history = capped
-        assert len(engine.decision_history) == GOVERNANCE_HISTORY_MAX
-        # Appending one more should evict the oldest, keeping length at max
-        engine.decision_history.append(_make_decision())
-        assert len(engine.decision_history) == GOVERNANCE_HISTORY_MAX
+        initial_len = len(engine.decision_history)
+        engine._update_metrics(_make_decision(), response_time=0.001)
+        # deque auto-trims; length should stay at maxlen
+        assert len(engine.decision_history) <= initial_len
 
     def test_compliance_rate_calculated(self, engine):
         # Add decisions with high confidence

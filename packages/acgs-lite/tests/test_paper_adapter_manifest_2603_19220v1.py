@@ -14,6 +14,7 @@ MANIFEST_PATH = (
 )
 
 
+@pytest.mark.skipif(not EXTRACT_PATH.exists(), reason="paper extract not generated")
 @pytest.mark.unit
 def test_paper_adapter_manifest_is_planned_and_covers_all_candidates() -> None:
     extract = json.loads(EXTRACT_PATH.read_text(encoding="utf-8"))

@@ -53,7 +53,9 @@ from .refiner import (
     ConstitutionalSelfCorrector,
     ConstitutionalViolationError,
     DefaultConstitutionalCorrector,
+    AdapterConstitutionalCorrector,
     DefaultLLMRefiner,
+    AdapterLLMRefiner,
     LLMRefiner,
     RefinementConfig,
     RefinementError,
@@ -105,8 +107,10 @@ __all__ = [
     "ConstitutionalSelfCorrector",
     "ConstitutionalViolationError",
     "DefaultConstitutionalCorrector",
+    "AdapterConstitutionalCorrector",
     # Refiner - Default implementations
     "DefaultLLMRefiner",
+    "AdapterLLMRefiner",
     # Models - Type aliases
     "DimensionScores",
     # Validator - Classes

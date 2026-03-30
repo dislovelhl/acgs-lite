@@ -180,6 +180,12 @@ lint:
 		packages/enhanced_agent_bus/agent_health/__init__.py \
 		packages/enhanced_agent_bus/mcp/__init__.py \
 		packages/enhanced_agent_bus/multi_tenancy/__init__.py \
+		packages/acgs-lite/src/acgs_lite/compliance/__init__.py \
+		packages/acgs-lite/src/acgs_lite/compliance/base.py \
+		packages/acgs-lite/src/acgs_lite/compliance/multi_framework.py \
+		packages/acgs-lite/src/acgs_lite/compliance/evidence.py \
+		packages/acgs-lite/src/acgs_lite/compliance/report_exporter.py \
+		packages/acgs-lite/src/acgs_lite/compliance/__main__.py \
 		--ignore-missing-imports \
 		--follow-imports skip
 	cd packages/propriety-ai && npm run check && npm run lint

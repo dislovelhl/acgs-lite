@@ -7,14 +7,12 @@ Constitutional governance infrastructure for AI agents. The repository contains 
 governance library, a large platform runtime, shared services, a Svelte frontend, and supporting
 worker/tooling packages.
 
-Brand and naming rules live in [`docs/brand-architecture.md`](docs/brand-architecture.md).
-
 ## Structure
 
 ```
 acgs/
 ├── packages/
-│   ├── acgs-lite/                  # Standalone governance library (PyPI: acgs)
+│   ├── acgs-lite/                  # Standalone governance library (pip install acgs-lite)
 │   │   ├── src/acgs_lite/          # Engine, constitution, MACI, audit, integrations
 │   │   ├── src/eu_ai_act_tool/     # EU AI Act self-assessment app
 │   │   ├── rust/                   # Optional Rust acceleration workspace
