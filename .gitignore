@@ -120,3 +120,6 @@ src/split_engine.py
 .gstack/
 .python-version
 .github/workflows/docs-pdf.yml
+
+# Per-rule eval harness output
+eval_results/
