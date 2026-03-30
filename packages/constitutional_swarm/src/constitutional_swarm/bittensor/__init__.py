@@ -90,6 +90,36 @@ from constitutional_swarm.bittensor.authenticity_detector import (
     DimensionScore,
 )
 
+# Phase 5: Miner Qualification Tiers
+from constitutional_swarm.bittensor.tier_manager import (
+    MinerPerformance,
+    RoutingResult,
+    TaskComplexity,
+    TierManager,
+    TierPromotion,
+)
+
+# Phase 2.2: Compliance Certificates
+from constitutional_swarm.bittensor.compliance_certificate import (
+    AuditPeriod,
+    CertificateIssuer,
+    CertificateStatus,
+    ComplianceCertificate,
+    ComplianceSnapshot,
+    HMACProver,
+    ProofType,
+    ZKPStubProver,
+)
+
+# Economic Model: Emission Calculator
+from constitutional_swarm.bittensor.emission_calculator import (
+    DEFAULT_EMISSION_WEIGHTS,
+    EmissionCalculator,
+    EmissionCycle,
+    EmissionWeights,
+    MinerEmissionInput,
+)
+
 # Governance Coordinator (acgs-lite ↔ subnet bridge)
 from constitutional_swarm.bittensor.governance_coordinator import (
     AuditCycleResult,
@@ -150,6 +180,27 @@ __all__ = [
     "AuthenticityDimension",
     "AuthenticityScore",
     "DimensionScore",
+    # Phase 5 — Miner Qualification Tiers
+    "MinerPerformance",
+    "RoutingResult",
+    "TaskComplexity",
+    "TierManager",
+    "TierPromotion",
+    # Phase 2.2 — Compliance Certificates
+    "AuditPeriod",
+    "CertificateIssuer",
+    "CertificateStatus",
+    "ComplianceCertificate",
+    "ComplianceSnapshot",
+    "HMACProver",
+    "ProofType",
+    "ZKPStubProver",
+    # Economic Model — Emission Calculator
+    "DEFAULT_EMISSION_WEIGHTS",
+    "EmissionCalculator",
+    "EmissionCycle",
+    "EmissionWeights",
+    "MinerEmissionInput",
     # Governance Coordinator
     "AuditCycleResult",
     "CoordinatorConfig",
