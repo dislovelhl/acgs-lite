@@ -2,8 +2,13 @@
 
 ## constitutional_swarm as Bittensor Subnet Runtime
 
-This document maps existing `constitutional_swarm` primitives to the Bittensor subnet
-architecture and defines the implementation phases needed to go from prototype to live subnet.
+**Strategy: Testnet-First Validation.** Deploy Phase 1 on Bittensor testnet to validate
+miner participation and governance quality before committing to Phases 2-6. This reframe
+was the outcome of a 4-reviewer /autoplan audit (March 2026) that identified the original
+plan as architecture-first without customer validation.
+
+**Current status:** Phase 1 complete (protocol bridge, evolutionary systems, security
+hardening, testnet deploy script). 549 tests passing. Ready for testnet deployment.
 
 *March 2026. Cross-references `06-subnet-concept.md`, `07-subnet-concept-qa-responses.md`,
 and `packages/constitutional_swarm/`.*
@@ -481,16 +486,27 @@ output = model.generate(input_ids, past_key_values=kv_cache)
 
 ---
 
-## Implementation Priority
+## Implementation Priority (Testnet-First)
 
-| Phase | Weeks | Dependencies | Enables |
-|-------|-------|-------------|---------|
-| 1. Protocol Bridge | 1-4 | None | Live subnet with basic miner/validator flow |
-| 2. On-Chain + Privacy | 5-8 | Phase 1 | Revenue Stream 2 (certification) |
-| 3. Precedent Loop | 9-12 | Phase 2 | Revenue Stream 3 (intelligence), decreasing escalation rate |
-| 4. Authenticity | 13-16 | Phase 3 | Anti-gaming, Sybil resistance |
-| 5. Qualification | 17-20 | Phase 4 | Complex case routing, TAO multipliers |
-| 6. TurboQuant | Cross-cutting | None (pure Python ready) | 6x memory reduction, lower miner/validator hardware bar |
+| Phase | Status | Dependencies | Enables | Gate |
+|-------|--------|-------------|---------|------|
+| **1. Protocol Bridge** | **DONE** | None | Testnet deployment | -- |
+| **1.5 Testnet Validation** | **NEXT** | Phase 1 | Real miner participation data | Testnet results |
+| 2. On-Chain + Privacy | DEFERRED | Testnet validation | Revenue Stream 2 (certification) | Miner count > 10 |
+| 3. Precedent Loop | DEFERRED | Phase 2 + anti-gaming | Revenue Stream 3 (intelligence) | Authenticity solved |
+| 4. Authenticity | DEFERRED | Research | Anti-gaming, Sybil resistance | Research breakthrough |
+| 5. Qualification | DEFERRED | Phase 4 | Complex case routing, TAO multipliers | Stable miner pool |
+| 6. TurboQuant | DEFERRED | None (pure Python ready) | 6x memory reduction | vLLM PR merged |
+
+### Phase 1.5: Testnet Validation Criteria
+
+Before proceeding to Phase 2, the testnet must demonstrate:
+
+1. **Miner participation:** >= 10 independent miners registered and completing tasks
+2. **Quality signal:** Spearman correlation > 0.5 between miner reputation and judgment quality
+3. **Latency budget:** End-to-end (package_case -> record_result) < 30 seconds p95
+4. **Constitution sync:** All miners converge on the same constitution hash within 1 epoch
+5. **Economic viability:** TAO emission weights correlate with governance contribution quality
 
 ---
 
