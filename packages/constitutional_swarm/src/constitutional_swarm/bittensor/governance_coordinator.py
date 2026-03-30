@@ -54,14 +54,13 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any
 
 from acgs_lite.constitution.claim_lifecycle import (
     CaseConfig,
     CaseManager,
     CaseRecord,
-    CaseState,
 )
 from acgs_lite.constitution.spot_check import (
     AuditPolicy,
@@ -79,7 +78,6 @@ from acgs_lite.constitution.validator_selection import (
     ValidatorPool,
     ValidatorSelector,
 )
-
 
 # ── Configuration ────────────────────────────────────────────────────────────
 

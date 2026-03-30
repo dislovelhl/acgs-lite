@@ -52,7 +52,6 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 
-
 # ── Risk tier → quorum size mapping ──────────────────────────────────────────
 
 _DEFAULT_K_BY_RISK: dict[str, int] = {
@@ -357,9 +356,11 @@ class ValidatorPool:
                 continue
             if v.trust_score < min_trust:
                 continue
-            if domain and require_domain and v.domains:
-                if domain.lower() not in (d.lower() for d in v.domains):
-                    continue
+            if (
+                domain and require_domain and v.domains
+                and domain.lower() not in (d.lower() for d in v.domains)
+            ):
+                continue
             result.append(v)
         result.sort(key=lambda v: v.validator_id)
         return result
@@ -464,7 +465,7 @@ def _weighted_shuffle_select(
 
     # Generate deterministic sort keys using Efraimidis-Spirakis
     keyed: list[tuple[float, str]] = []
-    for vid, w in zip(eligible_ids, weights):
+    for vid, w in zip(eligible_ids, weights, strict=True):
         # HMAC-SHA256 gives us a deterministic pseudo-random value per validator
         h = hmac.new(seed_bytes, vid.encode(), hashlib.sha256).digest()
         # Convert first 8 bytes to a uniform float in (0, 1)
@@ -511,7 +512,7 @@ def _compute_diversity_weights(
 
     total = len(eligible)
     adjusted: list[float] = []
-    for v, w in zip(eligible, base_weights):
+    for v, w in zip(eligible, base_weights, strict=True):
         m = v.model or "unknown"
         freq = model_counts[m] / total
         # Inverse frequency bonus: rare models get higher bonus

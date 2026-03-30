@@ -39,7 +39,6 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 
-
 # Key for the global (non-domain-scoped) trust state
 _GLOBAL_DOMAIN = "__global__"
 
