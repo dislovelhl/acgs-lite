@@ -52,6 +52,10 @@ class ValidatorStats:
         return self.total_validation_time_ms / self.validations_performed
 
 
+class UnknownMinerError(ValueError):
+    """Raised when an unregistered miner submits a judgment."""
+
+
 class ConstitutionalValidator:
     """Bittensor validator runtime for constitutional governance subnet.
 
@@ -81,12 +85,39 @@ class ConstitutionalValidator:
             use_manifold=config.use_manifold,
         )
         self._stats = ValidatorStats()
+        self._known_miners: set[str] = set()
         self._miner_tiers: dict[str, MinerTier] = {}
         self._miner_domains: dict[str, str] = {}
+        self._previous_hash: str | None = None
 
     @property
     def constitution_hash(self) -> str:
         return self._constitution.hash
+
+    @property
+    def previous_hash(self) -> str | None:
+        return self._previous_hash
+
+    def rotate_constitution(self, new_constitution: Constitution) -> None:
+        """Rotate to a new constitution, preserving the old hash as a grace window.
+
+        During the grace window, synapses matching either the current or
+        previous constitution hash are accepted. Call this again to close
+        the window (the previous hash advances to the now-old current hash).
+        """
+        old_hash = self._constitution.hash
+        self._constitution = new_constitution
+        self._mesh = ConstitutionalMesh(
+            new_constitution,
+            peers_per_validation=self._config.peers_per_validation,
+            quorum=self._config.quorum,
+            use_manifold=self._config.use_manifold,
+        )
+        # Re-register all known miners in the new mesh
+        for miner_uid in self._known_miners:
+            domain = self._miner_domains.get(miner_uid, "")
+            self._mesh.register_agent(miner_uid, domain=domain)
+        self._previous_hash = old_hash
 
     @property
     def stats(self) -> ValidatorStats:
@@ -102,23 +133,29 @@ class ConstitutionalValidator:
         domain: str = "",
         tier: MinerTier = MinerTier.APPRENTICE,
     ) -> None:
-        """Register a miner as a mesh participant."""
+        """Register a miner as a mesh participant.
+
+        Adds the miner to the known set, mesh, tier map, and domain map.
+        Only miners registered via this method may submit judgments.
+        """
+        self._known_miners = self._known_miners | {miner_uid}
         self._mesh.register_agent(miner_uid, domain=domain)
-        self._miner_tiers[miner_uid] = tier
-        self._miner_domains[miner_uid] = domain
+        self._miner_tiers = {**self._miner_tiers, miner_uid: tier}
+        self._miner_domains = {**self._miner_domains, miner_uid: domain}
 
     def unregister_miner(self, miner_uid: str) -> None:
         """Remove a miner from the mesh."""
         self._mesh.unregister_agent(miner_uid)
-        self._miner_tiers.pop(miner_uid, None)
-        self._miner_domains.pop(miner_uid, None)
+        self._known_miners = self._known_miners - {miner_uid}
+        self._miner_tiers = {k: v for k, v in self._miner_tiers.items() if k != miner_uid}
+        self._miner_domains = {k: v for k, v in self._miner_domains.items() if k != miner_uid}
 
     def validate(self, synapse: JudgmentSynapse) -> ValidationSynapse:
         """Validate a miner's governance judgment.
 
         Steps:
-          1. Verify constitution hash matches
-          2. Register miner if not already registered
+          1. Verify constitution hash matches (current or previous during rollover)
+          2. Reject unknown miners (must be pre-registered)
           3. Run full mesh validation (DNA + peers + Merkle proof)
           4. Return ValidationSynapse with proof
 
@@ -130,11 +167,18 @@ class ConstitutionalValidator:
           e. Generates Merkle proof
           f. Updates reputation scores
           g. Projects trust onto governance manifold
+
+        Raises:
+            UnknownMinerError: If the miner is not pre-registered.
         """
         start = time.monotonic()
 
-        # Step 1: Verify constitution hash
-        if synapse.constitutional_hash != self._constitution.hash:
+        # Step 1: Verify constitution hash (accept current or previous during rollover)
+        accepted_hashes = {self._constitution.hash}
+        if self._previous_hash is not None:
+            accepted_hashes = accepted_hashes | {self._previous_hash}
+
+        if synapse.constitutional_hash not in accepted_hashes:
             self._stats.constitution_mismatches += 1
             return ValidationSynapse(
                 task_id=synapse.task_id,
@@ -146,9 +190,12 @@ class ConstitutionalValidator:
                 constitutional_hash=self._constitution.hash,
             )
 
-        # Step 2: Ensure miner is registered
-        if synapse.miner_uid not in self._miner_tiers:
-            self.register_miner(synapse.miner_uid, domain=synapse.domain)
+        # Step 2: Reject unknown miners — no auto-registration
+        if synapse.miner_uid not in self._known_miners:
+            raise UnknownMinerError(
+                f"Miner {synapse.miner_uid!r} is not registered. "
+                f"Call register_miner() before submitting judgments."
+            )
 
         # Step 3: Full mesh validation
         result = self._mesh.full_validation(

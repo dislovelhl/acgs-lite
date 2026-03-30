@@ -534,3 +534,38 @@ output = model.generate(input_ids, past_key_values=kv_cache)
 | TurboQuant paper | arXiv:2504.19874 (ICLR 2026) |
 | turboquant PyPI package | `pip install turboquant` (back2matching/turboquant) |
 | vLLM integration PR | vllm-project/vllm#38280 |
+
+---
+
+<!-- AUTONOMOUS DECISION LOG -->
+## Decision Audit Trail
+
+| # | Phase | Decision | Classification | Principle | Rationale | Rejected |
+|---|-------|----------|---------------|-----------|-----------|----------|
+| 1 | CEO | Mode: SELECTIVE EXPANSION | Mechanical | P6 action | Feature enhancement on existing code | SCOPE EXPANSION |
+| 2 | CEO | Approach: Testnet-first (user chose) | User gate | N/A | User selected from 4 options | Full 6-phase, SDK+subnet, Phase 1 only |
+| 3 | CEO-S1 | bt.Synapse adapter task needed | Mechanical | P5 explicit | Mock dataclasses ≠ real protocol | N/A |
+| 4 | CEO-S2 | 3 error gaps acceptable for testnet | Mechanical | P3 pragmatic | Handler timeout, DAG fail, no miners | N/A |
+| 5 | CEO-S3 | Defer authenticity detection | Mechanical | P6 action | Both voices: unsolved research problem | Build Phase 4 now |
+| 6 | CEO-S6 | bt SDK integration tests are Phase 1.5 | Mechanical | P3 pragmatic | Can't test without real bittensor | N/A |
+| 7 | CEO-S8 | Add structlog to bittensor layer | Mechanical | P1 complete | Observability is non-negotiable | Skip logging |
+| 8 | CEO-S9 | Testnet deploy scripts are blockers | Mechanical | P1 complete | Can't deploy without scripts | N/A |
+| 9 | ENG | Scope: commit existing code + testnet prep | Mechanical | P6 action | 14 new files, all untracked | N/A |
+| 10 | ENG | Constitution rollout needs grace window | Taste | P5 explicit | Split-brain risk on version bump | Hard reject on mismatch |
+| 11 | ENG | Auto-registration is a security hole | Mechanical | P5 explicit | Any entity can spoof miner_uid | N/A |
+| 12 | ENG | Manifold rebuild discarding trust is HIGH | Taste | P1 complete | Defeats purpose of trust accumulation | Accept current behavior |
+
+## GSTACK REVIEW REPORT
+
+| Review | Trigger | Why | Runs | Status | Findings |
+|--------|---------|-----|------|--------|----------|
+| CEO Review | `/plan-ceo-review` | Scope & strategy | 1 | ISSUES_OPEN (via /autoplan) | 4 critical gaps, mode: SELECTIVE_EXPANSION, reframed to testnet-first |
+| Codex Review | `/codex review` | Independent 2nd opinion | 0 | -- | -- |
+| Eng Review | `/plan-eng-review` | Architecture & tests (required) | 1 | ISSUES_OPEN (via /autoplan) | 20 findings (5 HIGH), 5 critical test gaps |
+| Design Review | `/plan-design-review` | UI/UX gaps | 0 | SKIPPED | No UI scope |
+
+- **CEO VOICES:** Codex (9 strategic findings) + Claude subagent (10 findings, 1 CRITICAL). Consensus: 6/6 confirmed.
+- **ENG VOICES:** Codex (9 findings, 5 HIGH) + Claude subagent (20 findings, 5 HIGH). Consensus: 6/6 confirmed.
+- **CROSS-PHASE THEMES:** Authentication/identity gap, precedent poisoning risk, document/decision scope mismatch.
+- **UNRESOLVED:** 0 decisions unresolved. 2 taste choices accepted (dual-hash grace window, manifold preservation).
+- **VERDICT:** CEO + ENG reviewed. Testnet-first reframe approved. Action items: commit untracked files, add 5 critical tests, fix auto-registration security hole, create testnet deploy scripts. Run `/ship` when ready.

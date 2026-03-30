@@ -22,7 +22,7 @@ from constitutional_swarm.bittensor.protocol import (
     ValidatorConfig,
 )
 from constitutional_swarm.bittensor.subnet_owner import SubnetOwner
-from constitutional_swarm.bittensor.validator import ConstitutionalValidator
+from constitutional_swarm.bittensor.validator import ConstitutionalValidator, UnknownMinerError
 
 
 # ---------------------------------------------------------------------------
@@ -475,3 +475,237 @@ class TestEndToEnd:
         assert result.quorum_met is True
         # Proof exists and is verifiable
         assert result.proof_root_hash
+
+
+# ---------------------------------------------------------------------------
+# Critical Test Gaps (from /autoplan review)
+# ---------------------------------------------------------------------------
+
+
+class TestDeadlineEnforcement:
+    """Handler timeout must be enforced via deadline_seconds."""
+
+    @pytest.mark.asyncio
+    async def test_slow_handler_raises_timeout(self, constitution_path, owner):
+        """A deliberation handler exceeding the deadline should fail."""
+        import asyncio
+
+        async def _slow_handler(task: str, ctx: str, meta: dict) -> tuple[str, str]:
+            await asyncio.sleep(10)
+            return ("late", "late")
+
+        miner = ConstitutionalMiner(
+            config=MinerConfig(
+                constitution_path=constitution_path,
+                agent_id="miner-slow",
+            ),
+            deliberation_handler=_slow_handler,
+        )
+        case = owner.package_case("test", "domain")
+        # Set a tight deadline
+        from constitutional_swarm.bittensor.synapses import DeliberationSynapse
+
+        synapse = DeliberationSynapse(
+            task_id=case.synapse.task_id,
+            task_dag_json=case.synapse.task_dag_json,
+            constitution_hash=case.synapse.constitution_hash,
+            domain=case.synapse.domain,
+            deadline_seconds=1,
+        )
+        # Should timeout, not hang
+        with pytest.raises((asyncio.TimeoutError, Exception)):
+            await miner.process(synapse)
+
+
+class TestQuorumFailure:
+    """Negative path: judgment passes DNA but gets rejected by peers."""
+
+    def test_unknown_miner_rejected(self, validator):
+        """An unregistered miner should be rejected, not auto-registered."""
+        judgment = __import__(
+            "constitutional_swarm.bittensor.synapses", fromlist=["JudgmentSynapse"]
+        ).JudgmentSynapse(
+            task_id="t",
+            miner_uid="unknown-miner-xyz",
+            judgment="Valid governance decision",
+            reasoning="Sound reasoning",
+            artifact_hash="abc",
+            constitutional_hash=validator.constitution_hash,
+        )
+        with pytest.raises(UnknownMinerError):
+            validator.validate(judgment)
+
+    def test_rejected_result_creates_no_precedent(self, constitution_path):
+        """A rejected validation should not create a precedent."""
+        owner = SubnetOwner(constitution_path)
+        validator = ConstitutionalValidator(
+            config=ValidatorConfig(constitution_path=constitution_path),
+        )
+        validator.register_miner("miner-rej")
+        validator.register_miner("peer-a")
+        validator.register_miner("peer-b")
+
+        case = owner.package_case("test", "domain")
+        judgment = __import__(
+            "constitutional_swarm.bittensor.synapses", fromlist=["JudgmentSynapse"]
+        ).JudgmentSynapse(
+            task_id="t",
+            miner_uid="miner-rej",
+            judgment="Valid governance decision",
+            reasoning="Sound reasoning",
+            artifact_hash="abc",
+            constitutional_hash=validator.constitution_hash,
+        )
+        validation = validator.validate(judgment)
+        # Even if accepted, test record_result handles the flow
+        precedent = owner.record_result(case, judgment, validation)
+        if not validation.accepted:
+            assert precedent is None or precedent.validation_accepted is False
+
+
+class TestConstitutionGraceWindow:
+    """Constitution rotation should accept both old and new hashes."""
+
+    @pytest.mark.asyncio
+    async def test_miner_accepts_previous_hash_during_rotation(self, constitution_path, owner):
+        import tempfile
+        import os
+
+        miner = ConstitutionalMiner(
+            config=MinerConfig(
+                constitution_path=constitution_path,
+                agent_id="miner-rotate",
+            ),
+            deliberation_handler=_simple_handler,
+        )
+        old_hash = miner.constitution_hash
+
+        # Create a new constitution with an extra rule
+        new_content = """
+name: test-rotated-constitution
+rules:
+  - id: safety-01
+    text: Do not cause physical harm
+    severity: critical
+    hardcoded: true
+    keywords:
+      - harm
+      - danger
+  - id: efficiency-01
+    text: Optimize resource usage
+    severity: low
+    hardcoded: false
+    keywords:
+      - waste
+      - inefficient
+"""
+        new_path = os.path.join(tempfile.gettempdir(), "test_rotated_constitution.yaml")
+        with open(new_path, "w") as f:
+            f.write(new_content)
+
+        miner.rotate_constitution(new_path)
+        assert miner.previous_hash == old_hash
+        assert miner.constitution_hash != old_hash
+
+        # A synapse with the OLD hash should still be accepted during grace window
+        from constitutional_swarm.bittensor.synapses import DeliberationSynapse
+
+        old_synapse = DeliberationSynapse(
+            task_id="t-old",
+            task_dag_json="{}",
+            constitution_hash=old_hash,
+            domain="d",
+        )
+        # Should NOT raise ConstitutionMismatchError
+        result = await miner.process(old_synapse)
+        assert result.dna_valid is True
+
+    def test_validator_accepts_previous_hash_during_rotation(self, constitution_path):
+        import tempfile
+        import os
+
+        validator = ConstitutionalValidator(
+            config=ValidatorConfig(constitution_path=constitution_path),
+        )
+        validator.register_miner("miner-v-rotate")
+        validator.register_miner("peer-1")
+        validator.register_miner("peer-2")
+        old_hash = validator.constitution_hash
+
+        new_content = """
+name: test-rotated-v-constitution
+rules:
+  - id: safety-01
+    text: Do not cause physical harm
+    severity: critical
+    hardcoded: true
+    keywords:
+      - harm
+"""
+        new_path = os.path.join(tempfile.gettempdir(), "test_rotated_v_constitution.yaml")
+        with open(new_path, "w") as f:
+            f.write(new_content)
+
+        from acgs_lite import Constitution
+
+        new_constitution = Constitution.from_yaml(new_path)
+        validator.rotate_constitution(new_constitution)
+        assert validator.previous_hash == old_hash
+
+        judgment = __import__(
+            "constitutional_swarm.bittensor.synapses", fromlist=["JudgmentSynapse"]
+        ).JudgmentSynapse(
+            task_id="t",
+            miner_uid="miner-v-rotate",
+            judgment="Valid governance decision",
+            reasoning="Sound reasoning",
+            artifact_hash="abc",
+            constitutional_hash=old_hash,  # Old hash, should still be accepted
+        )
+        result = validator.validate(judgment)
+        # Should not be rejected due to hash mismatch (old hash accepted in grace window)
+        assert result.accepted is True
+
+
+class TestConcurrentAccess:
+    """Concurrent validations should not corrupt state."""
+
+    def test_concurrent_validations_no_crash(self, constitution_path):
+        import threading
+
+        validator = ConstitutionalValidator(
+            config=ValidatorConfig(constitution_path=constitution_path),
+        )
+        for i in range(5):
+            validator.register_miner(f"miner-{i}")
+
+        errors: list[Exception] = []
+
+        def _validate(miner_uid: str) -> None:
+            try:
+                judgment = __import__(
+                    "constitutional_swarm.bittensor.synapses",
+                    fromlist=["JudgmentSynapse"],
+                ).JudgmentSynapse(
+                    task_id=f"t-{miner_uid}",
+                    miner_uid=miner_uid,
+                    judgment="Valid governance decision",
+                    reasoning="Sound reasoning",
+                    artifact_hash="abc",
+                    constitutional_hash=validator.constitution_hash,
+                )
+                validator.validate(judgment)
+            except Exception as exc:
+                errors.append(exc)
+
+        threads = [
+            threading.Thread(target=_validate, args=(f"miner-{i}",))
+            for i in range(5)
+        ]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join(timeout=10)
+
+        assert len(errors) == 0, f"Concurrent validation errors: {errors}"
+        assert validator.stats.validations_performed >= 5

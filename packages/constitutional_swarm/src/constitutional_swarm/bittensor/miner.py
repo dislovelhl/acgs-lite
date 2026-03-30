@@ -114,6 +114,7 @@ class ConstitutionalMiner:
             ],
         )
         self._stats = MinerStats()
+        self._previous_hash: str | None = None
 
     @property
     def constitution_hash(self) -> str:
@@ -128,6 +129,10 @@ class ConstitutionalMiner:
         return self._config.tier
 
     @property
+    def previous_hash(self) -> str | None:
+        return self._previous_hash
+
+    @property
     def stats(self) -> MinerStats:
         return self._stats
 
@@ -135,11 +140,27 @@ class ConstitutionalMiner:
     def dna_stats(self) -> dict[str, Any]:
         return self._dna.stats
 
+    def rotate_constitution(self, new_constitution_path: str) -> None:
+        """Rotate to a new constitution, preserving the old hash as a grace window.
+
+        During the grace window, synapses matching either the current or
+        previous constitution hash are accepted.
+        """
+        old_hash = self._dna.hash
+        self._dna = AgentDNA.from_yaml(
+            new_constitution_path,
+            agent_id=self._config.agent_id,
+            maci_role=MACIRole.EXECUTOR,
+            strict=self._config.strict_dna,
+            validate_output=self._config.validate_output,
+        )
+        self._previous_hash = old_hash
+
     async def process(self, synapse: DeliberationSynapse) -> JudgmentSynapse:
         """Process an escalated governance case.
 
         Steps:
-          1. Verify constitution hash matches
+          1. Verify constitution hash matches (current or previous during rollover)
           2. Run deliberation handler (human or AI)
           3. DNA pre-check on judgment (443ns)
           4. Create content-addressed artifact
@@ -149,17 +170,24 @@ class ConstitutionalMiner:
             ConstitutionMismatchError: Hash doesn't match.
             DNAPreCheckFailedError: Miner's own DNA rejects the judgment.
         """
-        # Step 1: Verify constitution hash
-        if synapse.constitution_hash != self._dna.hash:
+        # Step 1: Verify constitution hash (accept current or previous during rollover)
+        accepted_hashes = {self._dna.hash}
+        if self._previous_hash is not None:
+            accepted_hashes = accepted_hashes | {self._previous_hash}
+
+        if synapse.constitution_hash not in accepted_hashes:
             self._stats.constitution_mismatches += 1
             raise ConstitutionMismatchError(
-                f"Expected {synapse.constitution_hash}, "
-                f"miner has {self._dna.hash}"
+                f"Expected one of {accepted_hashes}, "
+                f"got {synapse.constitution_hash}"
             )
 
-        # Step 2: Run deliberation
+        # Step 2: Run deliberation (with deadline enforcement)
+        import asyncio
+
         start = time.monotonic()
-        judgment, reasoning = await self._handler(
+        timeout = synapse.deadline_seconds if synapse.deadline_seconds > 0 else None
+        handler_coro = self._handler(
             synapse.context or synapse.task_dag_json,
             synapse.domain,
             {
@@ -170,6 +198,10 @@ class ConstitutionalMiner:
                 "required_capabilities": synapse.required_capabilities,
             },
         )
+        if timeout is not None:
+            judgment, reasoning = await asyncio.wait_for(handler_coro, timeout=timeout)
+        else:
+            judgment, reasoning = await handler_coro
         elapsed_ms = (time.monotonic() - start) * 1000
         self._stats.total_deliberation_time_ms += elapsed_ms
 
