@@ -1,6 +1,6 @@
 # Enhanced Agent Bus
 
-For repo-wide rules, see `/CLAUDE.md`.
+For repo-wide rules, see `/AGENTS.md`. Use `/CLAUDE.md` only if a tool specifically loads it.
 
 ## Imports
 

@@ -1,17 +1,17 @@
 # Codex Workspace
 
-Repo-local Codex configuration lives in `config.toml`.
+Repo-local Codex defaults live in `config.toml`.
 
-## Quick Start
+Use:
 
 ```bash
 make codex-doctor
 ```
 
-This validates:
-- repo bootstrap files exist
-- `.codex/config.toml` parses
-- repo-local MCP launcher scripts exist
-- Python MCP imports resolve
+This checks:
+- `AGENTS.md`
+- `PLANS.md`
+- active repo-local skills in `.agents/skills/`
+- `.codex/config.toml` presence and parseability
 
-See also: `docs/ai-workspace.md`
+Keep user-wide trust levels, plugins, and personal defaults in `~/.codex/config.toml`.

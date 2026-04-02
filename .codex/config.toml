@@ -1,0 +1,14 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+
+# Repo-local Codex defaults for acgs-clean.
+# Keep personal trust levels, notices, plugins, and user-wide preferences in ~/.codex/config.toml.
+
+model = "gpt-5.4"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+web_search = "cached"
+model_reasoning_effort = "high"
+personality = "pragmatic"
+
+[mcp_servers.openaiDeveloperDocs]
+url = "https://developers.openai.com/mcp"

@@ -30,6 +30,11 @@ mlruns/
 .gstack/
 .openclaw/
 .agents/
+!.agents/
+!.agents/archive/
+!.agents/archive/**
+!.agents/skills/
+!.agents/skills/**
 .claude/
 .mcp.json
 .playwright-cli/
