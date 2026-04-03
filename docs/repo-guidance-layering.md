@@ -8,6 +8,8 @@ quickly.
 This is **not** a claim about literal runtime prompt assembly in ACGS. It is a practical content
 layering model for this repository.
 
+> Part of the ACGS workflow docs. Start at [`README.md`](README.md) for the full workflow/reference set.
+
 ## The short version
 
 | Location | Put this here | Do not put this here |
@@ -183,7 +185,7 @@ For most ACGS tasks:
 
 That gives a good balance of speed, safety, and depth.
 
-## See also
+## Related docs
 
 - [`README.md`](README.md) — docs index for the workflow/reference set
 - [`ai-workspace.md`](ai-workspace.md) — repo-local operator workflow and entry points

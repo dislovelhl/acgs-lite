@@ -4,6 +4,8 @@ This index highlights the most useful tracked documentation for active engineeri
 It is intentionally biased toward operator and coding-agent workflows rather than strategy or paper
 content.
 
+> Part of the ACGS workflow docs. Start here when you need the tracked workflow/reference set.
+
 ## Start Here
 
 | Doc | Use when |
@@ -53,3 +55,9 @@ For most engineering tasks:
 
 When a new tracked workflow or operator doc is added under `docs/`, update this index so later
 sessions can discover it quickly.
+
+## Related docs
+
+- [`ai-workspace.md`](ai-workspace.md) — repo-local tooling and operator workflow
+- [`repo-guidance-layering.md`](repo-guidance-layering.md) — where new shared guidance should live
+- [`subagent-execution.md`](subagent-execution.md) — delegated implementation/review workflow

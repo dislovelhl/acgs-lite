@@ -27,6 +27,13 @@ Use package-specific commands when possible:
 - expand to broader checks when shared, security-sensitive, or governance-critical paths change
 - do not hand off code without reporting what you ran and what still remains unverified
 
+## Refactoring
+
+- Never batch-refactor (exception narrowing, type changes, import rewrites) across 20+ files without incremental verification
+- Work in batches of 5–10 files, run the affected package tests after each batch, commit passing states
+- If a batch causes >5 test failures, revert it and try a more conservative approach
+- Sub-agents may explore/analyze in parallel, but mutations flow through one sequential path with test gates
+
 ## Constraints
 
 - use canonical enhanced-agent-bus namespaces

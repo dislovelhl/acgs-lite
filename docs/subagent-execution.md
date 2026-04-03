@@ -4,6 +4,8 @@ This guide adapts the strongest remaining workflow pattern from the inspected Cl
 sub-agent delegation should be structured, evidence-based, and verification-first. It is rewritten
 for ACGS and aligned with this repository's existing `/do` and planning commands.
 
+> Part of the ACGS workflow docs. Start at [`README.md`](README.md) for the full workflow/reference set.
+
 ## Why this matters in ACGS
 
 Sub-agents are useful here because ACGS is a large, mixed-language, multi-package repository. But
@@ -201,7 +203,7 @@ This guide complements:
 
 Those files define the workflow mechanics; this guide defines the quality bar for sub-agent outputs.
 
-## See also
+## Related docs
 
 - [`README.md`](README.md) — docs index for the workflow/reference set
 - [`worktree-isolation.md`](worktree-isolation.md) — isolation model for risky or parallel delegated work

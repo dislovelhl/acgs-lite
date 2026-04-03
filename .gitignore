@@ -128,3 +128,4 @@ src/split_engine.py
 
 # Per-rule eval harness output
 eval_results/
+.omx/

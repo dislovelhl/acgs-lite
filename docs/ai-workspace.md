@@ -3,6 +3,8 @@
 Repo-local AI workspace bootstrap for **Claude Code**, **Codex CLI**, and **Gemini CLI**.
 This document is the source of truth for agent-facing tooling in this repository.
 
+> Part of the ACGS workflow docs. Start at [`docs/README.md`](README.md) for the full workflow/reference set.
+
 ## Workspace Layout
 
 | Tool | Repo-local entry | Purpose |
@@ -138,7 +140,7 @@ To decide where new shared guidance should live, use
 between `AGENTS.md`, `CLAUDE.md`, `.claude/rules/`, package-local `AGENTS.md`, `docs/`, and
 `.claude/evals/`.
 
-## Related Workflow Docs
+## Related docs
 
 Common companions to this workspace guide:
 - [`docs/README.md`](README.md) — docs index for the workflow/reference set

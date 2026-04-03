@@ -4,6 +4,8 @@ This guide adapts the best part of the external Claude CLI workspace docs: treat
 primary safety mechanism for parallel agent work. It is intentionally rewritten for ACGS instead of
 copying the original implementation.
 
+> Part of the ACGS workflow docs. Start at [`README.md`](README.md) for the full workflow/reference set.
+
 ## Why worktrees matter here
 
 ACGS is a multi-package repository with frequent parallel work across governance, security,
@@ -146,7 +148,7 @@ When reporting work from a worktree, include:
 
 That keeps parallel agents from stepping on each other during merge, cherry-pick, or cleanup.
 
-## See also
+## Related docs
 
 - [`README.md`](README.md) — docs index for the workflow/reference set
 - [`subagent-execution.md`](subagent-execution.md) — how delegated workers should use worktrees

@@ -3,6 +3,8 @@
 This guide adapts the best parts of the external Claude CLI memory model for ACGS and combines them
 with the local `claude-mem` workflow already available in this workspace.
 
+> Part of the ACGS workflow docs. Start at [`README.md`](README.md) for the full workflow/reference set.
+
 ## Principle
 
 Store only facts that are worth remembering across sessions.
@@ -156,7 +158,7 @@ Never store:
 
 Memory is for durable context, not sensitive material.
 
-## See also
+## Related docs
 
 - [`README.md`](README.md) — docs index for the workflow/reference set
 - [`context-compaction.md`](context-compaction.md) — session-state carry-forward versus durable memory

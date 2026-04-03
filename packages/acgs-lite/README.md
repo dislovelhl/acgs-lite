@@ -77,14 +77,14 @@ pip install acgs-lite
 ```
 
 ```python
-from acgs_lite import Constitution, GovernedAgent
+from acgs_lite import Constitution, GovernedAgent, MACIRole
 
 constitution = Constitution.from_yaml("rules.yaml")
 agent = GovernedAgent(my_agent, constitution=constitution)
 result = agent.run("process this request")  # Governed.
 ```
 
-Every action validated against constitutional rules. Every decision recorded in a tamper-evident audit trail. Every role boundary enforced.
+Every action is validated against constitutional rules. Durable audit trails are enabled in public API surfaces. MACI role boundaries are enforced when you opt in with `enforce_maci=True` and pass an explicit `governance_action`.
 
 ---
 
@@ -202,11 +202,15 @@ print(report.cross_framework_gaps) # Items needing manual evidence
 ## Frictionless Adoption: 5 Lines of Code
 
 ```python
-from acgs_lite import Constitution, GovernedAgent
+from acgs_lite import Constitution, GovernedAgent, MACIRole
 
 constitution = Constitution.from_template("general")
 agent = GovernedAgent(my_agent, constitution=constitution)
 result = agent.run("process this request")
+
+# Optional: turn on explicit MACI role enforcement
+# agent = GovernedAgent(my_agent, constitution=constitution, maci_role=MACIRole.PROPOSER, enforce_maci=True)
+# result = agent.run("draft change", governance_action="propose")
 ```
 
 Ships with 11 integration surfaces for common agent runtimes and deployment paths:
@@ -232,21 +236,20 @@ Cloud Logging export (`acgs-lite[google-cloud]`).
 
 ## CLI Surface
 
-`acgs-lite` ships a package-local CLI for scaffolding, compliance scoring, report
-generation, policy lifecycle management, telemetry export, and license flows.
+The wheel exports both `acgs` and `acgs-lite`; `acgs` is the preferred short form and `acgs-lite` remains a compatibility alias.
 
 ```bash
-acgs-lite init
-acgs-lite assess --jurisdiction european_union --domain healthcare
-acgs-lite report --markdown
-acgs-lite eu-ai-act --domain healthcare
-acgs-lite lint rules.yaml
-acgs-lite test --fixtures tests.yaml
-acgs-lite lifecycle summary
-acgs-lite observe "approve deployment" --prometheus
-acgs-lite activate ACGS-PRO-...
-acgs-lite status
-acgs-lite verify
+acgs init
+acgs assess --jurisdiction european_union --domain healthcare
+acgs report --markdown
+acgs eu-ai-act --domain healthcare
+acgs lint rules.yaml
+acgs test --fixtures tests.yaml
+acgs lifecycle summary
+acgs observe "approve deployment" --prometheus
+acgs activate ACGS-PRO-...
+acgs status
+acgs verify
 ```
 
 ---
@@ -279,6 +282,8 @@ app.wsgi_app = GovernanceWSGIMiddleware(
 
 Both middleware variants restore engine strictness after non-blocking validation
 paths, so response/request checks do not leak validation mode across requests.
+
+Public HTTP surfaces use `audit_mode="full"`, so `/stats` and exported audit data reflect the durable `AuditLog` instead of the lightweight counter-only fast path used by raw `GovernanceEngine(...)` defaults.
 
 ---
 
