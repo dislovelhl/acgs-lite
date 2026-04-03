@@ -7,11 +7,12 @@
 
 from __future__ import annotations
 
+from importlib import import_module
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from acgs_lite._meta import VERSION
-from acgs_lite.audit import AuditLog
+from acgs_lite.audit import AuditEntry, AuditLog
 from acgs_lite.constitution import Constitution
 from acgs_lite.engine import GovernanceEngine
 from acgs_lite.integrations.openshell_governance import (
@@ -25,9 +26,63 @@ if TYPE_CHECKING:
     from fastapi import FastAPI
 
 
+class _AuditStoreLike(Protocol):
+    def append(self, entry: AuditEntry) -> str: ...
+
+    def get(self, entry_id: str) -> AuditEntry | None: ...
+
+    def list_entries(
+        self,
+        *,
+        limit: int = 100,
+        offset: int = 0,
+        agent_id: str | None = None,
+    ) -> list[AuditEntry]: ...
+
+    def count(self) -> int: ...
+
+    def verify_chain(self) -> bool: ...
+
+
+class _AuditStoreAdapter:
+    """Present an AuditStore through the AuditLog interface expected by the engine."""
+
+    def __init__(self, store: _AuditStoreLike) -> None:
+        self._store = store
+
+    @property
+    def entries(self) -> list[AuditEntry]:
+        total = self._store.count()
+        return self._store.list_entries(limit=total if total > 0 else 1, offset=0)
+
+    def record(self, entry: AuditEntry) -> str:
+        return self._store.append(entry)
+
+    def verify_chain(self) -> bool:
+        return self._store.verify_chain()
+
+    def __len__(self) -> int:
+        return self._store.count()
+
+
+def _build_default_audit_store(path: str | Path) -> _AuditStoreLike | None:
+    """Prefer SQLite persistence when the public ``acgs`` package is installed."""
+    try:
+        module = import_module("acgs.audit_sqlite")
+    except ImportError:
+        return None
+
+    store_cls = getattr(module, "SQLiteAuditStore", None)
+    if store_cls is None:
+        return None
+    return cast(_AuditStoreLike, store_cls(path))
+
+
 def create_governance_app(
     constitution: Constitution | None = None,
     *,
+    audit_store: _AuditStoreLike | None = None,
+    audit_db_path: str | Path = "acgs_audit.db",
     include_openshell_governance: bool = True,
     include_openshell_experimental: bool | None = None,
     openshell_observability_hook: GovernanceStateObservabilityHook | None = None,
@@ -39,14 +94,52 @@ def create_governance_app(
     When ``include_openshell_governance`` is true, the app also mounts the
     stable OpenShell/OpenClaw governance router under ``/governance``.
 
+    When ``audit_store`` is omitted, the server tries to use
+    ``acgs.audit_sqlite.SQLiteAuditStore(audit_db_path)`` and falls back to the
+    legacy in-memory ``AuditLog`` when the public ``acgs`` package is not installed.
+
     ``include_openshell_experimental`` is kept as a compatibility alias.
     """
-    from fastapi import FastAPI, HTTPException
+    from fastapi import FastAPI, HTTPException, Query
 
     gov_constitution = constitution if constitution is not None else Constitution.default()
-    audit_log = AuditLog()
-    engine = GovernanceEngine(gov_constitution, audit_log=audit_log, strict=False, audit_mode="full")
+    resolved_audit_store = audit_store if audit_store is not None else _build_default_audit_store(audit_db_path)
+    audit_log: AuditLog | _AuditStoreAdapter
+    if resolved_audit_store is None:
+        audit_log = AuditLog()
+    else:
+        audit_log = _AuditStoreAdapter(resolved_audit_store)
+    engine = GovernanceEngine(
+        gov_constitution,
+        audit_log=cast(Any, audit_log),
+        strict=False,
+        audit_mode="full",
+    )
     app = FastAPI(title="acgs-lite-governance", version=VERSION)
+
+    def _list_audit_entries(
+        *,
+        limit: int,
+        offset: int,
+        agent_id: str | None,
+    ) -> list[AuditEntry]:
+        if resolved_audit_store is not None:
+            return resolved_audit_store.list_entries(limit=limit, offset=offset, agent_id=agent_id)
+
+        entries = audit_log.entries
+        if agent_id is not None:
+            entries = [entry for entry in entries if entry.agent_id == agent_id]
+        return entries[offset : offset + limit]
+
+    def _audit_count() -> int:
+        if resolved_audit_store is not None:
+            return resolved_audit_store.count()
+        return len(audit_log)
+
+    def _audit_chain_valid() -> bool:
+        if resolved_audit_store is not None:
+            return resolved_audit_store.verify_chain()
+        return audit_log.verify_chain()
 
     @app.post("/validate")  # type: ignore[untyped-decorator]
     def validate_action(payload: dict[str, Any]) -> dict[str, Any]:
@@ -171,43 +264,36 @@ def create_governance_app(
     def _rebuild_engine() -> None:
         """Rebuild engine internals after rule changes."""
         nonlocal engine
-        engine = GovernanceEngine(gov_constitution, audit_log=audit_log, strict=False, audit_mode="full")
+        engine = GovernanceEngine(
+            gov_constitution,
+            audit_log=cast(Any, audit_log),
+            strict=False,
+            audit_mode="full",
+        )
 
     # --- Audit Trail ---
 
     @app.get("/audit/entries")  # type: ignore[untyped-decorator]
     def list_audit_entries(
-        limit: int = 100,
-        offset: int = 0,
+        limit: int = Query(default=100, ge=1, le=1000),
+        offset: int = Query(default=0, ge=0),
         agent_id: str | None = None,
     ) -> list[dict[str, Any]]:
-        entries = audit_log.entries
-        if agent_id is not None:
-            entries = [e for e in entries if e.agent_id == agent_id]
-        page = entries[offset : offset + limit]
         return [
-            {
-                "id": e.id,
-                "type": e.type,
-                "agent_id": e.agent_id,
-                "action": e.action,
-                "valid": e.valid,
-                "violations": e.violations,
-                "timestamp": e.timestamp,
-            }
-            for e in page
+            entry.to_dict()
+            for entry in _list_audit_entries(limit=limit, offset=offset, agent_id=agent_id)
         ]
 
     @app.get("/audit/chain")  # type: ignore[untyped-decorator]
     def audit_chain_status() -> dict[str, Any]:
         return {
-            "valid": audit_log.verify_chain(),
-            "entry_count": len(audit_log),
+            "valid": _audit_chain_valid(),
+            "entry_count": _audit_count(),
         }
 
     @app.get("/audit/count")  # type: ignore[untyped-decorator]
     def audit_count() -> dict[str, int]:
-        return {"count": len(audit_log)}
+        return {"count": _audit_count()}
 
     # --- Health & Stats ---
 
@@ -219,8 +305,8 @@ def create_governance_app(
     def get_stats() -> dict[str, Any]:
         return {
             **engine.stats,
-            "audit_entry_count": len(audit_log),
-            "audit_chain_valid": audit_log.verify_chain(),
+            "audit_entry_count": _audit_count(),
+            "audit_chain_valid": _audit_chain_valid(),
         }
 
     if include_openshell_experimental is not None:

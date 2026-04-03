@@ -1,78 +1,98 @@
-# acgs
+# ACGS Core
 
-Constitutional AI Governance for Any Agent.
+`acgs` is the thin public ACGS namespace for constitutional governance in agent systems.
+It layers the stable `acgs` import surface over `acgs-lite`, adds pluggable policy backends,
+and exposes persistent audit stores for productized deployments.
 
-Validate agent actions against constitutional rules, enforce MACI role
-separation (Proposer / Validator / Executor / Observer), and maintain
-hash-chained audit trails. Framework-agnostic — works with any AI agent.
+No external policy server is required. Policy evaluation stays embedded in-process through
+the default heuristic backend or the optional Cedar backend.
 
 ## Quickstart
 
 ```python
 from acgs import Constitution, GovernanceEngine, Rule, Severity
 
-constitution = Constitution.from_rules([
-    Rule(id="R1", text="No self-approval", severity=Severity.HIGH,
-         keywords=["self-approve"])
-])
+constitution = Constitution.from_rules(
+    [
+        Rule(
+            id="NO-SELF-APPROVAL",
+            text="Agents may not self-approve production changes",
+            severity=Severity.HIGH,
+            keywords=["self-approve"],
+        )
+    ]
+)
+
 engine = GovernanceEngine(constitution, strict=False)
-result = engine.validate("self-approve this change")
-print(result.valid)       # False
-print(result.violations)  # [Violation(rule_id='R1', ...)]
+result = engine.validate("self-approve this deployment", agent_id="agent-7")
+
+assert result.valid is False
+assert result.violations[0].rule_id == "NO-SELF-APPROVAL"
 ```
 
-## Install
+## Audit Persistence
 
-```bash
-pip install acgs                  # core (zero heavy deps)
-pip install acgs[cedar]           # embedded Cedar policy engine
-pip install acgs[fastapi]         # HTTP server
-pip install acgs[anthropic]       # Anthropic adapter
-pip install acgs[langchain]       # LangChain adapter
+Use the in-memory wrapper for tests and ephemeral runs:
+
+```python
+from acgs.audit_memory import InMemoryAuditStore
 ```
 
-## Architecture
+Use SQLite for durable audit retention:
 
-```
-Agent (any framework)
-  │
-  ▼
-GovernanceEngine.validate(action)
-  │
-  ├── PolicyBackend (pluggable)
-  │   ├── HeuristicBackend (default, <0.3ms)
-  │   └── CedarBackend     (pip install acgs[cedar], sub-ms)
-  │
-  ├── MACIEnforcer (role separation)
-  │   ├── Proposer  → propose, draft, suggest, read
-  │   ├── Validator → validate, review, audit, read
-  │   ├── Executor  → execute, deploy, apply, read
-  │   └── Observer  → read, query, export, observe
-  │
-  └── AuditStore (pluggable)
-      ├── InMemoryAuditStore (default)
-      └── SQLiteAuditStore   (persistent, hash-chained)
+```python
+from acgs.audit_sqlite import SQLiteAuditStore
+
+store = SQLiteAuditStore("acgs_audit.db")
 ```
 
-No external policy server required. No OPA. No Rego.
-Cedar is optional and embedded (cedarpy, Rust-backed).
+Each record stores a SHA-256 chain hash over:
 
-## Public API
+`previous_hash + entry_id + action + valid`
 
-| Export | Purpose |
-|--------|---------|
-| `Constitution` | Rule set with hash integrity |
-| `Rule` | Individual governance rule |
-| `Severity` | CRITICAL / HIGH / MEDIUM / LOW |
-| `GovernanceEngine` | Core validation engine |
-| `ValidationResult` | Validation outcome |
-| `Violation` | Individual rule violation |
-| `MACIRole` | Role enum for separation of powers |
-| `MACIEnforcer` | Role-based access control |
-| `AuditEntry` | Single audit record |
-| `AuditLog` | In-memory audit trail |
-| `fail_closed` | Decorator for fail-closed error handling |
+`verify_chain()` replays the chain to detect tampering.
 
-## License
+## Extras
 
-AGPL-3.0-or-later. Commercial license available at https://acgs.ai.
+- `pip install acgs[cedar]` for embedded Cedar evaluation through `cedarpy`
+- `pip install acgs[fastapi]` for FastAPI and Uvicorn server surfaces
+- `pip install acgs[openai]` for OpenAI adapters
+- `pip install acgs[anthropic]` for Anthropic adapters
+- `pip install acgs[langchain]` for LangChain integration helpers
+
+## PolicyBackend Architecture
+
+```text
+                        +----------------------+
+                        |   Application Code   |
+                        +----------+-----------+
+                                   |
+                                   v
+                        +----------------------+
+                        |    PolicyBackend     |
+                        |        ABC           |
+                        +----+------------+----+
+                             |            |
+                  evaluate() |            | evaluate()
+                             |            |
+               +-------------v--+      +--v----------------+
+               | HeuristicBackend|      |   CedarBackend    |
+               |  acgs-lite      |      | cedarpy / in-proc |
+               | GovernanceEngine|      | embedded Cedar    |
+               +--------+--------+      +---------+---------+
+                        |                         |
+                        +------------+------------+
+                                     |
+                                     v
+                          +----------------------+
+                          |  PolicyDecision      |
+                          | allowed / violations |
+                          +----------------------+
+```
+
+## Notes
+
+- `acgs` keeps the public API surface small and stable.
+- `acgs-lite` remains the underlying governance engine implementation.
+- Persistent audit storage and policy backend swapping are opt-in extensions on top of the
+  same constitutional validation flow.
