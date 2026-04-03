@@ -173,6 +173,42 @@ def create_governance_app(
         nonlocal engine
         engine = GovernanceEngine(gov_constitution, audit_log=audit_log, strict=False, audit_mode="full")
 
+    # --- Audit Trail ---
+
+    @app.get("/audit/entries")  # type: ignore[untyped-decorator]
+    def list_audit_entries(
+        limit: int = 100,
+        offset: int = 0,
+        agent_id: str | None = None,
+    ) -> list[dict[str, Any]]:
+        entries = audit_log.entries
+        if agent_id is not None:
+            entries = [e for e in entries if e.agent_id == agent_id]
+        page = entries[offset : offset + limit]
+        return [
+            {
+                "id": e.id,
+                "type": e.type,
+                "agent_id": e.agent_id,
+                "action": e.action,
+                "valid": e.valid,
+                "violations": e.violations,
+                "timestamp": e.timestamp,
+            }
+            for e in page
+        ]
+
+    @app.get("/audit/chain")  # type: ignore[untyped-decorator]
+    def audit_chain_status() -> dict[str, Any]:
+        return {
+            "valid": audit_log.verify_chain(),
+            "entry_count": len(audit_log),
+        }
+
+    @app.get("/audit/count")  # type: ignore[untyped-decorator]
+    def audit_count() -> dict[str, int]:
+        return {"count": len(audit_log)}
+
     # --- Health & Stats ---
 
     @app.get("/health")  # type: ignore[untyped-decorator]

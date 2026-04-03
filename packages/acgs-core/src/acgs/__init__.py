@@ -1,4 +1,13 @@
-"""Thin public ACGS namespace backed by ``acgs_lite``."""
+"""ACGS: Constitutional AI Governance for Any Agent.
+
+Constitutional Hash: 608508a9bd224290
+
+Framework-agnostic governance SDK. Validate agent actions against constitutional
+rules, enforce MACI role separation, and maintain hash-chained audit trails.
+
+ACGS uses embedded policy evaluation (heuristic or Cedar). No external policy
+server (such as OPA) is required.
+"""
 
 from __future__ import annotations
 
