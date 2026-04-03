@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import pytest
-
+from constitutional_swarm.bittensor.precedent_store import PrecedentRecord
+from constitutional_swarm.bittensor.protocol import EscalationType
 from constitutional_swarm.bittensor.rule_codifier import (
     PrecedentCluster,
     RuleCandidate,
@@ -14,9 +15,6 @@ from constitutional_swarm.bittensor.rule_codifier import (
     _generate_rule_text,
     _infer_severity,
 )
-from constitutional_swarm.bittensor.precedent_store import PrecedentRecord
-from constitutional_swarm.bittensor.protocol import EscalationType
-
 
 CONST_HASH = "608508a9bd224290"
 
@@ -302,7 +300,7 @@ class TestApprovalWorkflow:
         hash_after_1 = codifier.constitutional_hash
 
         codifier.approve(c2.candidate_id)
-        _, yaml2 = codifier.activate(c2.candidate_id, yaml1)
+        _, _yaml2 = codifier.activate(c2.candidate_id, yaml1)
         hash_after_2 = codifier.constitutional_hash
 
         assert hash_after_1 != hash_after_2  # each activation produces new hash

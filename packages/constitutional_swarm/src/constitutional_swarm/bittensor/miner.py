@@ -19,13 +19,12 @@ from __future__ import annotations
 import time
 import uuid
 from collections.abc import Awaitable, Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from acgs_lite import MACIRole
-
 from constitutional_swarm.artifact import Artifact, ArtifactStore
-from constitutional_swarm.bittensor.protocol import MinerConfig, MinerTier, SubnetMetrics
+from constitutional_swarm.bittensor.protocol import MinerConfig, MinerTier
 from constitutional_swarm.bittensor.synapses import DeliberationSynapse, JudgmentSynapse
 from constitutional_swarm.capability import Capability, CapabilityRegistry
 from constitutional_swarm.dna import AgentDNA

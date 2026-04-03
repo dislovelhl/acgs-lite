@@ -11,10 +11,8 @@ from acgs_auth0.exceptions import ConstitutionalScopeViolation, MACIRoleNotPermi
 from acgs_auth0.scope_policy import (
     ConnectionScopeRule,
     MACIScopePolicy,
-    PolicyValidationResult,
     ScopeRiskLevel,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

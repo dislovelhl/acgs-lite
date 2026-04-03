@@ -7,28 +7,24 @@ correctly with the constitutional_swarm bittensor runtime.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-from typing import Any
+from datetime import UTC, datetime, timedelta
 
 import pytest
+from constitutional_swarm.bittensor.governance_coordinator import (
+    CoordinatorConfig,
+    GovernanceCoordinator,
+)
 
 from acgs_lite.constitution.claim_lifecycle import CaseConfig, CaseState
 from acgs_lite.constitution.spot_check import AuditPolicy
 from acgs_lite.constitution.trust_score import TrustConfig, TrustTier
 from acgs_lite.constitution.validator_selection import SelectionPolicy
 
-from constitutional_swarm.bittensor.governance_coordinator import (
-    AuditCycleResult,
-    CoordinatorConfig,
-    GovernanceCoordinator,
-)
-
-
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 
 def _ts(minutes: float = 0) -> datetime:
-    return datetime(2026, 3, 30, 12, 0, 0, tzinfo=timezone.utc) + timedelta(minutes=minutes)
+    return datetime(2026, 3, 30, 12, 0, 0, tzinfo=UTC) + timedelta(minutes=minutes)
 
 
 def _make_coordinator(
@@ -320,7 +316,7 @@ class TestMultiCase:
         gc.assign_miner(cid, "slow-miner", _now=_ts(1))
 
         # Time out (submission timeout = 120 min)
-        expired = gc.expire_stale_cases(_now=_ts(125))
+        gc.expire_stale_cases(_now=_ts(125))
 
         # Should be re-queued (auto_requeue_on_expiry=True)
         case = gc.case(cid)
@@ -367,7 +363,7 @@ class TestTrustFeedback:
             )
 
             # Oracle disagrees → val-000 was lazy
-            audit = gc.run_audit_cycle(check_fn=_oracle_disagrees, _now=_ts(5))
+            gc.run_audit_cycle(check_fn=_oracle_disagrees, _now=_ts(5))
 
             # Pool score should have changed
             after_score = gc.validator_pool.get("val-000").trust_score

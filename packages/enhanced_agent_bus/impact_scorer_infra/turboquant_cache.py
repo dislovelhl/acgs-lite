@@ -27,7 +27,7 @@ import hashlib
 import math
 import random
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from enhanced_agent_bus.observability.structured_logging import get_logger

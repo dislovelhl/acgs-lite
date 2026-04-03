@@ -15,11 +15,10 @@ primitives only.
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from acgs_lite import Constitution
-
 from constitutional_swarm.artifact import Artifact, ArtifactStore
 from constitutional_swarm.bittensor.protocol import (
     EscalationType,

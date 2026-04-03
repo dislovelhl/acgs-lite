@@ -11,7 +11,6 @@ import pytest
 
 from acgs_auth0.audit import TokenAccessAuditEntry, TokenAccessOutcome, TokenAuditLog
 
-
 # ---------------------------------------------------------------------------
 # TokenAccessAuditEntry
 # ---------------------------------------------------------------------------

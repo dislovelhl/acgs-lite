@@ -39,10 +39,9 @@ import hashlib
 import time
 import uuid
 from collections import Counter
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -164,7 +163,7 @@ class ConsensusJudgment:
     session_id: str
     case_id: str
     judgment_text: str
-    confidence: float        # 0.0–1.0 (fraction agreeing)
+    confidence: float        # 0.0-1.0 (fraction agreeing)
     method: SynthesisMethod
     committed_count: int     # how many miners committed
     reveal_count: int        # how many miners revealed

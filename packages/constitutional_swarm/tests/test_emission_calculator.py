@@ -3,17 +3,16 @@
 from __future__ import annotations
 
 import pytest
-
 from constitutional_swarm.bittensor.emission_calculator import (
     DEFAULT_EMISSION_WEIGHTS,
     EmissionCalculator,
+    EmissionCycle,
     EmissionWeights,
     MinerEmissionInput,
     _normalize_vec,
     _safe_normalize,
 )
 from constitutional_swarm.bittensor.protocol import MinerTier
-
 
 # ---------------------------------------------------------------------------
 # EmissionWeights
@@ -27,7 +26,7 @@ class TestEmissionWeights:
         assert abs(total - 1.0) < 1e-9
 
     def test_invalid_weights_raise(self):
-        with pytest.raises(ValueError, match="sum to 1.0"):
+        with pytest.raises(ValueError, match=r"sum to 1\.0"):
             EmissionWeights(
                 manifold_trust=0.5, reputation=0.5, tier=0.5,
                 precedent=0.5, authenticity=0.5,
@@ -228,7 +227,7 @@ class TestFloorAndCap:
 
 
 class TestEmissionCycle:
-    def _cycle(self) -> "EmissionCycle":
+    def _cycle(self) -> EmissionCycle:
         calc = EmissionCalculator()
         inputs = [
             MinerEmissionInput(f"m{i}", tier=MinerTier.JOURNEYMAN,

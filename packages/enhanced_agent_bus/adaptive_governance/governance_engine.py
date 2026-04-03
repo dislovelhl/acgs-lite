@@ -32,6 +32,7 @@ from typing import TYPE_CHECKING
 
 from enhanced_agent_bus.interfaces import GovernanceDecisionValidatorProtocol
 from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.plugin_registry import available, require
 
 if TYPE_CHECKING:
     from enhanced_agent_bus.config import BusConfiguration
@@ -47,161 +48,95 @@ except ImportError:
     MessagePayload = dict  # type: ignore[misc,assignment]
     PolicyContext = dict  # type: ignore[misc,assignment]
 
-# Optional ML dependency — lazy-imported
-try:
-    import numpy as np
-
+if available("numpy"):
+    np = import_module(require("numpy"))
     NUMPY_AVAILABLE = True
-except ImportError:
+else:
     np = None  # type: ignore[assignment]
     NUMPY_AVAILABLE = False
 
-# Feedback handler imports
-try:
-    from ..feedback_handler import (
-        FeedbackEvent,
-        FeedbackHandler,
-        FeedbackType,
-        OutcomeStatus,
-        get_feedback_handler,
-    )
-
+if available("feedback_handler"):
+    _feedback_handler_module = import_module(require("feedback_handler"))
+    FeedbackEvent = _feedback_handler_module.FeedbackEvent
+    FeedbackHandler = _feedback_handler_module.FeedbackHandler
+    FeedbackType = _feedback_handler_module.FeedbackType
+    OutcomeStatus = _feedback_handler_module.OutcomeStatus
+    get_feedback_handler = _feedback_handler_module.get_feedback_handler
     FEEDBACK_HANDLER_AVAILABLE = True
-except ImportError:
-    try:
-        from feedback_handler import (  # type: ignore[no-redef]
-            FeedbackEvent,
-            FeedbackHandler,
-            FeedbackType,
-            OutcomeStatus,
-            get_feedback_handler,
-        )
+else:
+    FEEDBACK_HANDLER_AVAILABLE = False
+    FeedbackEvent = None  # type: ignore[assignment, misc]
+    FeedbackHandler = None  # type: ignore[assignment, misc]
+    FeedbackType = None  # type: ignore[assignment, misc]
+    OutcomeStatus = None  # type: ignore[assignment, misc]
+    get_feedback_handler = None  # type: ignore[assignment, misc]
 
-        FEEDBACK_HANDLER_AVAILABLE = True
-    except ImportError:
-        FEEDBACK_HANDLER_AVAILABLE = False  # type: ignore[no-redef]
-        FeedbackEvent = None  # type: ignore[no-redef, misc]
-        FeedbackHandler = None  # type: ignore[no-redef, misc]
-        FeedbackType = None  # type: ignore[no-redef, misc]
-        OutcomeStatus = None  # type: ignore[no-redef, misc]
-        get_feedback_handler = None  # type: ignore[no-redef, misc]
-
-# Drift monitoring imports
-try:
-    from ..drift_monitoring import (
-        DRIFT_CHECK_INTERVAL_HOURS,
-        DriftDetector,
-        DriftReport,
-        DriftSeverity,
-        DriftStatus,
-        get_drift_detector,
-    )
-
+if available("drift_monitoring"):
+    _drift_module = import_module(require("drift_monitoring"))
+    DRIFT_CHECK_INTERVAL_HOURS = _drift_module.DRIFT_CHECK_INTERVAL_HOURS
+    DriftDetector = _drift_module.DriftDetector
+    DriftReport = _drift_module.DriftReport
+    DriftSeverity = _drift_module.DriftSeverity
+    DriftStatus = _drift_module.DriftStatus
+    get_drift_detector = _drift_module.get_drift_detector
     DRIFT_MONITORING_AVAILABLE = True
-except ImportError:
-    try:
-        from drift_monitoring import (  # type: ignore[no-redef]
-            DRIFT_CHECK_INTERVAL_HOURS,
-            DriftDetector,
-            DriftReport,
-            DriftSeverity,
-            DriftStatus,
-            get_drift_detector,
-        )
+else:
+    DRIFT_MONITORING_AVAILABLE = False
+    DRIFT_CHECK_INTERVAL_HOURS = 6
+    DriftDetector = None  # type: ignore[assignment, misc]
+    DriftReport = None  # type: ignore[assignment, misc]
+    DriftSeverity = None  # type: ignore[assignment, misc]
+    DriftStatus = None  # type: ignore[assignment, misc]
+    get_drift_detector = None  # type: ignore[assignment, misc]
 
-        DRIFT_MONITORING_AVAILABLE = True
-    except ImportError:
-        DRIFT_MONITORING_AVAILABLE = False  # type: ignore[no-redef]
-        DRIFT_CHECK_INTERVAL_HOURS = 6  # type: ignore[no-redef]
-        DriftDetector = None  # type: ignore[no-redef, misc]
-        DriftReport = None  # type: ignore[no-redef, misc]
-        DriftSeverity = None  # type: ignore[no-redef, misc]
-        DriftStatus = None  # type: ignore[no-redef, misc]
-        get_drift_detector = None  # type: ignore[no-redef, misc]
-
-# Online learning imports (River model)
-try:
-    from ..online_learning import (
-        RIVER_AVAILABLE,
-        LearningResult,
-        LearningStatus,
-        ModelType,
-        OnlineLearningPipeline,
-        PredictionResult,
-        get_online_learning_pipeline,
-    )
-
+if available("online_learning"):
+    _online_learning_module = import_module(require("online_learning"))
+    RIVER_AVAILABLE = _online_learning_module.RIVER_AVAILABLE
+    LearningResult = _online_learning_module.LearningResult
+    LearningStatus = _online_learning_module.LearningStatus
+    ModelType = _online_learning_module.ModelType
+    OnlineLearningPipeline = _online_learning_module.OnlineLearningPipeline
+    PredictionResult = _online_learning_module.PredictionResult
+    get_online_learning_pipeline = _online_learning_module.get_online_learning_pipeline
     ONLINE_LEARNING_AVAILABLE = True
-except ImportError:
-    try:
-        from online_learning import (  # type: ignore[no-redef]
-            RIVER_AVAILABLE,
-            LearningResult,
-            LearningStatus,
-            ModelType,
-            OnlineLearningPipeline,
-            PredictionResult,
-            get_online_learning_pipeline,
-        )
+else:
+    ONLINE_LEARNING_AVAILABLE = False
+    RIVER_AVAILABLE = False
+    LearningResult = None  # type: ignore[assignment, misc]
+    LearningStatus = None  # type: ignore[assignment, misc]
+    ModelType = None  # type: ignore[assignment, misc]
+    OnlineLearningPipeline = None  # type: ignore[assignment, misc]
+    PredictionResult = None  # type: ignore[assignment, misc]
+    get_online_learning_pipeline = None  # type: ignore[assignment, misc]
 
-        ONLINE_LEARNING_AVAILABLE = True
-    except ImportError:
-        ONLINE_LEARNING_AVAILABLE = False  # type: ignore[no-redef]
-        RIVER_AVAILABLE = False  # type: ignore[no-redef]
-        LearningResult = None  # type: ignore[no-redef, misc]
-        LearningStatus = None  # type: ignore[no-redef, misc]
-        ModelType = None  # type: ignore[no-redef, misc]
-        OnlineLearningPipeline = None  # type: ignore[no-redef, misc]
-        PredictionResult = None  # type: ignore[no-redef, misc]
-        get_online_learning_pipeline = None  # type: ignore[no-redef, misc]
-
-# Anomaly monitoring import
-try:
-    from src.core.integrations.anomaly_monitoring import AnomalyMonitor
-
+if available("anomaly_monitoring"):
+    AnomalyMonitor = import_module(require("anomaly_monitoring")).AnomalyMonitor
     ANOMALY_MONITORING_AVAILABLE = True
-except ImportError:
+else:
     ANOMALY_MONITORING_AVAILABLE = False
-    AnomalyMonitor = None  # type: ignore[misc]
+    AnomalyMonitor = None  # type: ignore[assignment, misc]
 
-# A/B testing imports for traffic routing between champion and candidate models
-try:
-    from ..ab_testing import (
-        AB_TEST_SPLIT,
-        ABTestRouter,
-        CohortType,
-        MetricsComparison,
-        PromotionResult,
-        RoutingResult,
-        ShadowPolicyExecutor,
-        get_ab_test_router,
-    )
-
+if available("ab_testing"):
+    _ab_testing_module = import_module(require("ab_testing"))
+    AB_TEST_SPLIT = _ab_testing_module.AB_TEST_SPLIT
+    ABTestRouter = _ab_testing_module.ABTestRouter
+    CohortType = _ab_testing_module.CohortType
+    MetricsComparison = _ab_testing_module.MetricsComparison
+    PromotionResult = _ab_testing_module.PromotionResult
+    RoutingResult = _ab_testing_module.RoutingResult
+    ShadowPolicyExecutor = getattr(_ab_testing_module, "ShadowPolicyExecutor", None)
+    get_ab_test_router = _ab_testing_module.get_ab_test_router
     AB_TESTING_AVAILABLE = True
-except ImportError:
-    try:
-        from ab_testing import (  # type: ignore[no-redef]
-            AB_TEST_SPLIT,
-            ABTestRouter,
-            CohortType,
-            MetricsComparison,
-            PromotionResult,
-            RoutingResult,
-            ShadowPolicyExecutor,
-            get_ab_test_router,
-        )
-
-        AB_TESTING_AVAILABLE = True
-    except ImportError:
-        AB_TESTING_AVAILABLE = False  # type: ignore[no-redef]
-        AB_TEST_SPLIT = 0.1  # type: ignore[no-redef]
-        ABTestRouter = None  # type: ignore[no-redef, misc]
-        CohortType = None  # type: ignore[no-redef, misc]
-        MetricsComparison = None  # type: ignore[no-redef, misc]
-        PromotionResult = None  # type: ignore[no-redef, misc]
-        RoutingResult = None  # type: ignore[no-redef, misc]
-        get_ab_test_router = None  # type: ignore[no-redef, misc]
-        ShadowPolicyExecutor = None  # type: ignore[no-redef, misc]
+else:
+    AB_TESTING_AVAILABLE = False
+    AB_TEST_SPLIT = 0.1
+    ABTestRouter = None  # type: ignore[assignment, misc]
+    CohortType = None  # type: ignore[assignment, misc]
+    MetricsComparison = None  # type: ignore[assignment, misc]
+    PromotionResult = None  # type: ignore[assignment, misc]
+    RoutingResult = None  # type: ignore[assignment, misc]
+    get_ab_test_router = None  # type: ignore[assignment, misc]
+    ShadowPolicyExecutor = None  # type: ignore[assignment, misc]
 
 # Import from our own modules
 from enhanced_agent_bus.governance_constants import (
@@ -1110,12 +1045,10 @@ class AdaptiveGovernanceEngine:
     def _collect_drift_data(self):
         """Collect recent decision data for drift analysis."""
         try:
-            # Need pandas for DataFrame creation
-            try:
-                import pandas as pd
-            except ImportError:
+            if not available("pandas"):
                 logger.warning("pandas not available for drift data collection")
                 return None
+            pd = import_module(require("pandas"))
 
             # Collect features from recent decisions
             if not self.decision_history:

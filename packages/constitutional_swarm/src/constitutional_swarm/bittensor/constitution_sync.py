@@ -21,9 +21,8 @@ from __future__ import annotations
 import hashlib
 import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
-
 
 # ---------------------------------------------------------------------------
 # Version record (immutable)
@@ -51,7 +50,7 @@ class ConstitutionVersionRecord:
         yaml_content: str,
         description: str = "",
         block_height: int | None = None,
-    ) -> "ConstitutionVersionRecord":
+    ) -> ConstitutionVersionRecord:
         content_hash = hashlib.sha256(yaml_content.encode()).hexdigest()[:16]
         return cls(
             version_id=uuid.uuid4().hex[:8],
@@ -105,7 +104,7 @@ class ConstitutionSyncMessage:
         }
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> "ConstitutionSyncMessage":
+    def from_dict(cls, d: dict[str, Any]) -> ConstitutionSyncMessage:
         return cls(
             version_id=d["version_id"],
             expected_hash=d["expected_hash"],

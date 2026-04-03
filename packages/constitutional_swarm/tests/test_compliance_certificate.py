@@ -2,21 +2,15 @@
 
 from __future__ import annotations
 
-import time
-
 import pytest
-
 from constitutional_swarm.bittensor.compliance_certificate import (
     AuditPeriod,
     CertificateIssuer,
-    CertificateStatus,
-    ComplianceCertificate,
     ComplianceSnapshot,
     HMACProver,
     ProofType,
     ZKPStubProver,
 )
-
 
 CONST_HASH = "608508a9bd224290"
 
@@ -169,6 +163,12 @@ class TestZKPStubProver:
 class TestCertificateIssuer:
     def _issuer(self) -> CertificateIssuer:
         return CertificateIssuer(issuer_id="test-issuer", secret_key="test-secret")
+
+    def test_default_secret_requires_env_var(self, monkeypatch):
+        monkeypatch.delenv("CONSTITUTIONAL_SWARM_COMPLIANCE_CERTIFICATE_SECRET", raising=False)
+
+        with pytest.raises(ValueError, match="CONSTITUTIONAL_SWARM_COMPLIANCE_CERTIFICATE_SECRET"):
+            CertificateIssuer(issuer_id="test-issuer")
 
     def test_issue_valid_snapshot(self):
         issuer = self._issuer()

@@ -3,17 +3,15 @@
 from __future__ import annotations
 
 import pytest
-
 from constitutional_swarm.bittensor.authenticity_detector import (
+    _DIMENSION_WEIGHTS,
     AuthenticityDetector,
     AuthenticityDimension,
     AuthenticityScore,
     DimensionScore,
-    _DIMENSION_WEIGHTS,
 )
 from constitutional_swarm.bittensor.precedent_store import PrecedentRecord, PrecedentStore
 from constitutional_swarm.bittensor.protocol import EscalationType
-
 
 CONST_HASH = "608508a9bd224290"
 

@@ -12,21 +12,18 @@ Covers:
 from __future__ import annotations
 
 import pytest
-
-from constitutional_swarm.bittensor.synapses import (
-    DeliberationSynapse,
-    JudgmentSynapse,
-    ValidationSynapse,
-)
 from constitutional_swarm.bittensor.synapse_adapter import (
-    GovernanceDeliberation,
     HAS_BITTENSOR,
+    GovernanceDeliberation,
     bt_to_deliberation,
     bt_to_judgment,
     deliberation_to_bt,
     judgment_to_bt,
 )
-
+from constitutional_swarm.bittensor.synapses import (
+    DeliberationSynapse,
+    JudgmentSynapse,
+)
 
 # ---------------------------------------------------------------------------
 # GovernanceDeliberation creation

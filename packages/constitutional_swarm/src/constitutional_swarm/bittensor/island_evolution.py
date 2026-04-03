@@ -13,7 +13,6 @@ selection, Gaussian mutation, single-point crossover.
 
 from __future__ import annotations
 
-import math
 import random
 import uuid
 from dataclasses import dataclass, field
@@ -143,7 +142,7 @@ class EmissionEvolver:
         self._mutation_sigma = mutation_sigma
         self._crossover_rate = crossover_rate
         self._stagnation_threshold = stagnation_threshold
-        self._rng = random.Random(seed)
+        self._rng = random.Random(seed)  # noqa: S311 - deterministic simulation, not crypto
         self._islands: dict[str, Island] = {}
         self._migrations: list[MigrationEvent] = []
         self._global_best: EmissionGenome | None = None

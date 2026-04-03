@@ -15,11 +15,10 @@ primitives only.
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from acgs_lite import Constitution
-
 from constitutional_swarm.bittensor.protocol import (
     TIER_TAO_MULTIPLIER,
     MinerTier,

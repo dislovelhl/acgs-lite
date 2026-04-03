@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 from constitutional_swarm.bittensor.protocol import (
+    TIER_REQUIREMENTS,
+    TIER_TAO_MULTIPLIER,
     EscalationType,
     MinerConfig,
     MinerTier,
     SubnetMetrics,
-    TIER_TAO_MULTIPLIER,
-    TIER_REQUIREMENTS,
     ValidatorConfig,
 )
 from constitutional_swarm.bittensor.synapses import (
@@ -102,7 +102,7 @@ class TestDeliberationSynapse:
         )
         try:
             synapse.task_id = "changed"  # type: ignore[misc]
-            assert False, "Should be immutable"
+            raise AssertionError("Should be immutable")
         except AttributeError:
             pass
 

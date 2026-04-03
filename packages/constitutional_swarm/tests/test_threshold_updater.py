@@ -3,18 +3,15 @@
 from __future__ import annotations
 
 import pytest
-
+from constitutional_swarm.bittensor.precedent_store import PrecedentRecord
+from constitutional_swarm.bittensor.protocol import EscalationType
 from constitutional_swarm.bittensor.threshold_updater import (
     DEFAULT_WEIGHTS,
     BayesianThresholdUpdater,
     DimensionEvidence,
-    WeightUpdate,
     _fill_defaults,
     _normalize,
 )
-from constitutional_swarm.bittensor.precedent_store import PrecedentRecord
-from constitutional_swarm.bittensor.protocol import EscalationType
-
 
 CONST_HASH = "608508a9bd224290"
 
@@ -214,7 +211,7 @@ class TestUpdateCycle:
         cycle = updater.update(evidence, domain="healthcare")
         sec = next(u for u in cycle.updates if u.dimension == "security")
 
-        # Expected shift: (0.872 - 0.5) × 0.08 ≈ 0.030
+        # Expected shift: (0.872 - 0.5) x 0.08 ~= 0.030
         assert sec.shift == pytest.approx(0.030, abs=0.005)
         assert sec.direction == "increased"
         assert sec.posterior > sec.prior
@@ -250,7 +247,7 @@ class TestUpdateCycle:
         updater = BayesianThresholdUpdater(
             max_shift_per_cycle=0.01, min_evidence_count=1
         )
-        # 100% confirmed → raw_shift = (1.0 - 0.5) × 0.01 = 0.005 (not capped)
+        # 100% confirmed -> raw_shift = (1.0 - 0.5) x 0.01 = 0.005 (not capped)
         # But if max_shift is very small, bigger obs rates get capped
         evidence = [DimensionEvidence("safety", "", 100, 100.0, 0.0)]
         for dim in ("security", "privacy", "fairness", "reliability",

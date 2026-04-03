@@ -19,9 +19,9 @@ from __future__ import annotations
 
 import hashlib
 import time
-from typing import Any, ClassVar
+from typing import ClassVar
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from constitutional_swarm.bittensor.synapses import (
     DeliberationSynapse,
@@ -57,11 +57,11 @@ class GovernanceDeliberation(_SynapseBase):
     task_dag_json: str = ""
     constitution_hash: str = ""
     domain: str = ""
-    required_capabilities: list[str] = []
+    required_capabilities: list[str] = Field(default_factory=list)
     deadline_seconds: int = 3600
     escalation_type: str = ""
     impact_score: float = 0.0
-    impact_vector: dict[str, float] = {}
+    impact_vector: dict[str, float] = Field(default_factory=dict)
     context: str = ""
     request_timestamp: float = 0.0
 
@@ -70,7 +70,7 @@ class GovernanceDeliberation(_SynapseBase):
     reasoning: str | None = None
     artifact_hash: str | None = None
     dna_valid: bool | None = None
-    dna_violations: list[str] = []
+    dna_violations: list[str] = Field(default_factory=list)
     dna_latency_ns: int = 0
     miner_uid: str = ""
     response_timestamp: float = 0.0

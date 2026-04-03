@@ -192,9 +192,10 @@ def compute_message_cache_key(
     content_str = content if isinstance(content, str) else str(content)
     autonomy_tier = msg.autonomy_tier
     tier_val = get_enum_value(autonomy_tier) if autonomy_tier else "none"
+    session_scope = getattr(msg, "session_id", None) or extract_session_id_for_governance(msg) or ""
     cache_dimensions = (
         f"{content_str}:{msg.constitutional_hash}:{msg.tenant_id}:"
-        f"{msg.from_agent}:{get_enum_value(msg.message_type)}:{tier_val}"
+        f"{msg.from_agent}:{get_enum_value(msg.message_type)}:{tier_val}:{session_scope}"
     )
     if cache_hash_mode == "fast" and fast_hash_available and fast_hash_func is not None:
         return f"fast:{fast_hash_func(cache_dimensions):016x}"

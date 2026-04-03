@@ -5,7 +5,7 @@ Constitutional Hash: 608508a9bd224290
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -22,7 +22,6 @@ from acgs_auth0.token_vault import (
     TokenVaultResponse,
     get_token_vault_credentials,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

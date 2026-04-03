@@ -7,9 +7,6 @@ primitives. No actual Bittensor SDK required.
 from __future__ import annotations
 
 import pytest
-
-from acgs_lite import Constitution
-
 from constitutional_swarm.bittensor.miner import (
     ConstitutionalMiner,
     ConstitutionMismatchError,
@@ -24,7 +21,6 @@ from constitutional_swarm.bittensor.protocol import (
 from constitutional_swarm.bittensor.subnet_owner import SubnetOwner
 from constitutional_swarm.bittensor.validator import ConstitutionalValidator, UnknownMinerError
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -34,8 +30,8 @@ CONSTITUTION_PATH = None  # Will use default constitution
 
 def _default_constitution_path() -> str:
     """Get the path to a test constitution YAML, or use default."""
-    import tempfile
     import os
+    import tempfile
 
     content = """
 name: test-subnet-constitution
@@ -568,8 +564,8 @@ class TestConstitutionGraceWindow:
 
     @pytest.mark.asyncio
     async def test_miner_accepts_previous_hash_during_rotation(self, constitution_path, owner):
-        import tempfile
         import os
+        import tempfile
 
         miner = ConstitutionalMiner(
             config=MinerConfig(
@@ -621,8 +617,8 @@ rules:
         assert result.dna_valid is True
 
     def test_validator_accepts_previous_hash_during_rotation(self, constitution_path):
-        import tempfile
         import os
+        import tempfile
 
         validator = ConstitutionalValidator(
             config=ValidatorConfig(constitution_path=constitution_path),

@@ -225,7 +225,7 @@ class RuleCodifier:
 
     def find_clusters(
         self,
-        precedents: list["PrecedentRecord"],
+        precedents: list[PrecedentRecord],
         domain: str = "",
     ) -> list[PrecedentCluster]:
         """Group active precedents into similarity clusters.
