@@ -17,7 +17,12 @@ import logging
 from collections.abc import Awaitable, Callable
 from typing import Any, cast
 
-from acgs_lite.fail_closed import FailClosedError  # noqa: F401
+try:
+    from acgs_lite.fail_closed import FailClosedError  # noqa: F401
+except ImportError:
+
+    class FailClosedError(Exception):  # type: ignore[no-redef]
+        """Fallback when acgs_lite is not on the import path."""
 
 logger = logging.getLogger(__name__)
 

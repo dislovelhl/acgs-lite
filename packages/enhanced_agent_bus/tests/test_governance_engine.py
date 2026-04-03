@@ -746,13 +746,15 @@ class TestCollectDriftData:
         assert engine._collect_drift_data() is None
 
     def test_returns_dataframe_with_data(self, engine):
+        pd = pytest.importorskip("pandas", reason="pandas required for drift data")
         engine.decision_history.append(_make_decision())
         engine.decision_history.append(_make_decision())
 
         result = engine._collect_drift_data()
-        # If pandas is available it returns a DataFrame, otherwise None
-        if result is not None:
-            assert len(result) == 2
+        if result is None:
+            pytest.skip("drift data collection returned None (pandas mock or unavailable)")
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) == 2
 
 
 # ---------------------------------------------------------------------------

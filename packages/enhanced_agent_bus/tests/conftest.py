@@ -351,6 +351,14 @@ def reset_global_state():
 
     yield  # Run the test
 
+    # Restore cached _ENVIRONMENT to the real OS value to prevent test pollution
+    try:
+        import enhanced_agent_bus.api.routes.messages as _msg_mod
+
+        _msg_mod._ENVIRONMENT = os.environ.get("ENVIRONMENT", "").lower()
+    except (ImportError, AttributeError):
+        pass
+
     _reset_singletons()
 
 

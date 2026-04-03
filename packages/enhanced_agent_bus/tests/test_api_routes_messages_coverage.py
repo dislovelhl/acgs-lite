@@ -324,47 +324,29 @@ class TestRecordFailedBackgroundTask:
 
 
 class TestIsDevelopmentEnvironment:
-    def test_development_env_returns_true(self) -> None:
+    def test_development_env_returns_true(self, monkeypatch) -> None:
         import enhanced_agent_bus.api.routes.messages as mod
 
-        with patch.dict(mod.__dict__, {"_ENVIRONMENT": "development"}):
-            # Patch the module-level variable used by the function
-            original = mod._ENVIRONMENT
-            mod._ENVIRONMENT = "development"
-            try:
-                assert _is_development_environment() is True
-            finally:
-                mod._ENVIRONMENT = original
+        monkeypatch.setattr(mod, "_ENVIRONMENT", "development")
+        assert _is_development_environment() is True
 
-    def test_production_env_returns_false(self) -> None:
+    def test_production_env_returns_false(self, monkeypatch) -> None:
         import enhanced_agent_bus.api.routes.messages as mod
 
-        original = mod._ENVIRONMENT
-        mod._ENVIRONMENT = "production"
-        try:
-            assert _is_development_environment() is False
-        finally:
-            mod._ENVIRONMENT = original
+        monkeypatch.setattr(mod, "_ENVIRONMENT", "production")
+        assert _is_development_environment() is False
 
-    def test_test_env_returns_true(self) -> None:
+    def test_test_env_returns_true(self, monkeypatch) -> None:
         import enhanced_agent_bus.api.routes.messages as mod
 
-        original = mod._ENVIRONMENT
-        mod._ENVIRONMENT = "test"
-        try:
-            assert _is_development_environment() is True
-        finally:
-            mod._ENVIRONMENT = original
+        monkeypatch.setattr(mod, "_ENVIRONMENT", "test")
+        assert _is_development_environment() is True
 
-    def test_ci_env_returns_true(self) -> None:
+    def test_ci_env_returns_true(self, monkeypatch) -> None:
         import enhanced_agent_bus.api.routes.messages as mod
 
-        original = mod._ENVIRONMENT
-        mod._ENVIRONMENT = "ci"
-        try:
-            assert _is_development_environment() is True
-        finally:
-            mod._ENVIRONMENT = original
+        monkeypatch.setattr(mod, "_ENVIRONMENT", "ci")
+        assert _is_development_environment() is True
 
 
 # ---------------------------------------------------------------------------
@@ -763,17 +745,13 @@ class TestGetMessageStatusEndpoint:
         # or 500 (response_model validation error) — not 400/404/501
         assert resp.status_code not in (400, 404, 501)
 
-    def test_valid_id_non_dev_env_returns_501(self) -> None:
+    def test_valid_id_non_dev_env_returns_501(self, monkeypatch) -> None:
         import enhanced_agent_bus.api.routes.messages as mod
 
-        original = mod._ENVIRONMENT
-        mod._ENVIRONMENT = "production"
-        try:
-            app = _make_app()
-            client = TestClient(app, raise_server_exceptions=False)
-            resp = client.get(f"/api/v1/messages/{VALID_UUID}")
-        finally:
-            mod._ENVIRONMENT = original
+        monkeypatch.setattr(mod, "_ENVIRONMENT", "production")
+        app = _make_app()
+        client = TestClient(app, raise_server_exceptions=False)
+        resp = client.get(f"/api/v1/messages/{VALID_UUID}")
         assert resp.status_code == 501
 
     def test_response_tenant_id_via_helper(self) -> None:
@@ -787,23 +765,17 @@ class TestGetMessageStatusEndpoint:
         assert data["tenant_id"] == "tenant-abc"
         assert data["message_id"] == VALID_UUID
 
-    def test_uppercase_uuid_passes_pattern_check(self) -> None:
+    def test_uppercase_uuid_passes_pattern_check(self, monkeypatch) -> None:
         """The MESSAGE_ID_PATTERN uses re.IGNORECASE, so uppercase UUIDs should
         not be rejected with 400. They may hit the dev/non-dev branch instead."""
         import enhanced_agent_bus.api.routes.messages as mod
         from enhanced_agent_bus.api.routes.messages import MESSAGE_ID_PATTERN
 
         upper_uuid = VALID_UUID.upper()
-        # Confirm the pattern itself accepts uppercase
         assert MESSAGE_ID_PATTERN.match(upper_uuid) is not None
 
-        # In non-dev the endpoint raises 501, not 400 (pattern matched)
-        original = mod._ENVIRONMENT
-        mod._ENVIRONMENT = "production"
-        try:
-            app = _make_app()
-            client = TestClient(app, raise_server_exceptions=False)
-            resp = client.get(f"/api/v1/messages/{upper_uuid}")
-        finally:
-            mod._ENVIRONMENT = original
+        monkeypatch.setattr(mod, "_ENVIRONMENT", "production")
+        app = _make_app()
+        client = TestClient(app, raise_server_exceptions=False)
+        resp = client.get(f"/api/v1/messages/{upper_uuid}")
         assert resp.status_code == 501
