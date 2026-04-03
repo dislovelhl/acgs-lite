@@ -6,12 +6,14 @@ Covers: dataclasses, ConstraintGenerator, HeuristicVerifier, Z3PolicyVerifier,
         factory function, and edge cases.
 """
 
+import asyncio
 import uuid
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from enhanced_agent_bus.verification_layer import z3_policy_verifier as z3_policy_module
 from enhanced_agent_bus.verification_layer.z3_policy_verifier import (
     ConstraintGenerator,
     ConstraintType,
@@ -628,6 +630,57 @@ class TestZ3PolicyVerifier:
         assert result.is_verified is False
         assert result.proof.unsat_core == ["constraint_1"]
         assert len(result.violations) > 0
+
+    @pytest.mark.skipif(
+        not z3_policy_module.Z3_AVAILABLE,
+        reason="z3-solver not installed in test environment",
+    )
+    async def test_verify_with_z3_extracts_real_unsat_core(self, verifier):
+        constraints = [
+            PolicyConstraint(
+                constraint_id="must_be_true",
+                name="must be true",
+                expression="(assert policy_flag)",
+                variables={"policy_flag": "Bool"},
+            ),
+            PolicyConstraint(
+                constraint_id="must_be_false",
+                name="must be false",
+                expression="(assert (not policy_flag))",
+                variables={"policy_flag": "Bool"},
+            ),
+        ]
+
+        result = await verifier.verify_policy(
+            PolicyVerificationRequest(
+                policy_id="contradiction",
+                constraints=constraints,
+            )
+        )
+
+        assert result.status == Z3VerificationStatus.UNSATISFIABLE
+        assert result.is_verified is False
+        assert set(result.proof.unsat_core or []) == {"must_be_true", "must_be_false"}
+
+    async def test_verify_policy_handles_concurrent_requests(self, verifier):
+        async def verify(policy_id: str) -> PolicyVerificationResult:
+            return await verifier.verify_policy(
+                PolicyVerificationRequest(
+                    policy_id=policy_id,
+                    constraints=[
+                        PolicyConstraint(
+                            name=f"obligation-{policy_id}",
+                            expression="(assert obligation_flag)",
+                            variables={"obligation_flag": "Bool"},
+                        )
+                    ],
+                )
+            )
+
+        results = await asyncio.gather(verify("policy-a"), verify("policy-b"))
+
+        assert [result.policy_id for result in results] == ["policy-a", "policy-b"]
+        assert len(verifier._verification_history) >= 2
 
     @pytest.mark.asyncio
     @patch(

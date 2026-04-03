@@ -105,6 +105,23 @@ class TestSetupMemoryProfilingContext:
         # Assert
         assert isinstance(result, type(nullcontext()))
 
+
+class TestCloneValidationResult:
+    def test_clone_validation_result_isolates_nested_state(self, processor):
+        original = ValidationResult(
+            metadata={"outer": {"nested": 1}},
+            pqc_metadata={"algorithm": "ml-dsa-65"},
+        )
+
+        cloned = processor._clone_validation_result(original)
+        cloned.metadata["outer"]["nested"] = 99
+        assert isinstance(cloned.pqc_metadata, dict)
+        cloned.pqc_metadata["algorithm"] = "mutated"
+
+        assert original.metadata["outer"]["nested"] == 1
+        assert isinstance(original.pqc_metadata, dict)
+        assert original.pqc_metadata["algorithm"] == "ml-dsa-65"
+
     @patch("enhanced_agent_bus.message_processor.get_memory_profiler")
     def test_no_profiler_returns_null_context(self, mock_get_profiler, processor, sample_message):
         """Test memory profiling context when profiler is None."""
@@ -195,316 +212,6 @@ class TestAutoSelectStrategy:
         assert strategy is not None
 
 
-class TestRequiresIndependentValidation:
-    """Tests for _requires_independent_validation helper."""
-
-    def test_high_impact_score_requires_validation(self, processor):
-        """Test that high impact score requires independent validation."""
-        # Arrange
-        processor._independent_validator_threshold = 0.8
-        message = AgentMessage(
-            impact_score=0.9,
-            message_type=MessageType.COMMAND,
-        )
-
-        # Act
-        result = processor._requires_independent_validation(message)
-
-        # Assert
-        assert result is True
-
-    def test_low_impact_score_no_validation_required(self, processor):
-        """Test that low impact score doesn't require independent validation."""
-        # Arrange
-        processor._independent_validator_threshold = 0.8
-        message = AgentMessage(
-            impact_score=0.5,
-            message_type=MessageType.COMMAND,
-        )
-
-        # Act
-        result = processor._requires_independent_validation(message)
-
-        # Assert
-        assert result is False
-
-    @pytest.mark.asyncio
-    async def test_persist_flywheel_decision_event_writes_to_workflow_repository(
-        self,
-        processor,
-        sample_message,
-    ):
-        """Decision persistence should hand normalized events to workflow storage."""
-        repository = AsyncMock()
-        processor._workflow_repository = repository
-        result = ValidationResult(is_valid=False, errors=["blocked"], metadata={"latency_ms": 7.5})
-
-        await processor._persist_flywheel_decision_event(sample_message, result)
-
-        repository.save_decision_event.assert_awaited_once()
-        persisted_event = repository.save_decision_event.await_args.args[0]
-        assert persisted_event.decision_id == sample_message.message_id
-        assert persisted_event.outcome == "deny"
-
-    def test_none_impact_score_no_validation_required(self, processor):
-        """Test that None impact score doesn't require independent validation."""
-        # Arrange
-        processor._independent_validator_threshold = 0.8
-        message = AgentMessage(
-            impact_score=None,
-            message_type=MessageType.COMMAND,
-        )
-
-        # Act
-        result = processor._requires_independent_validation(message)
-
-        # Assert
-        assert result is False
-
-    def test_constitutional_validation_requires_validation(self, processor):
-        """Test that constitutional validation message requires independent validation."""
-        # Arrange
-        processor._independent_validator_threshold = 0.8
-        message = AgentMessage(
-            impact_score=0.2,
-            message_type=MessageType.CONSTITUTIONAL_VALIDATION,
-        )
-
-        # Act
-        result = processor._requires_independent_validation(message)
-
-        # Assert
-        assert result is True
-
-    def test_governance_request_requires_validation(self, processor):
-        """Test that governance request requires independent validation."""
-        # Arrange
-        processor._independent_validator_threshold = 0.8
-        message = AgentMessage(
-            impact_score=0.2,
-            message_type=MessageType.GOVERNANCE_REQUEST,
-        )
-
-        # Act
-        result = processor._requires_independent_validation(message)
-
-        # Assert
-        assert result is True
-
-
-class TestEnforceIndependentValidatorGate:
-    """Tests for _enforce_independent_validator_gate helper."""
-
-    def test_gate_disabled_returns_none(self, processor, sample_message):
-        """Test that gate returns None when disabled."""
-        # Arrange
-        processor._require_independent_validator = False
-
-        # Act
-        result = processor._enforce_independent_validator_gate(sample_message)
-
-        # Assert
-        assert result is None
-
-    def test_no_validation_required_returns_none(self, processor, sample_message):
-        """Test that gate returns None when validation not required."""
-        # Arrange
-        processor._require_independent_validator = True
-        processor._independent_validator_threshold = 0.8
-        sample_message.impact_score = 0.2
-        sample_message.message_type = MessageType.COMMAND
-
-        # Act
-        result = processor._enforce_independent_validator_gate(sample_message)
-
-        # Assert
-        assert result is None
-
-    @patch.object(MessageProcessor, "_record_agent_workflow_event")
-    def test_missing_validator_returns_error(self, mock_record_event, processor, sample_message):
-        """Test that missing validator metadata returns validation error."""
-        # Arrange
-        processor._require_independent_validator = True
-        processor._independent_validator_threshold = 0.8
-        sample_message.impact_score = 0.9
-        sample_message.metadata = {}
-
-        # Act
-        result = processor._enforce_independent_validator_gate(sample_message)
-
-        # Assert
-        assert result is not None
-        assert result.is_valid is False
-        assert any("Independent validator metadata is required" in error for error in result.errors)
-        assert result.metadata["rejection_reason"] == "independent_validator_missing"
-        mock_record_event.assert_called()
-
-    @patch.object(MessageProcessor, "_record_agent_workflow_event")
-    def test_self_validation_returns_error(self, mock_record_event, processor, sample_message):
-        """Test that self-validation returns validation error."""
-        # Arrange
-        processor._require_independent_validator = True
-        processor._independent_validator_threshold = 0.8
-        sample_message.impact_score = 0.9
-        sample_message.from_agent = "test-agent"
-        sample_message.metadata = {
-            "validated_by_agent": "test-agent",
-            "validation_stage": "independent",
-        }
-
-        # Act
-        result = processor._enforce_independent_validator_gate(sample_message)
-
-        # Assert
-        assert result is not None
-        assert result.is_valid is False
-        assert "Independent validator must not be the originating agent" in result.errors
-        assert result.metadata["rejection_reason"] == "independent_validator_self_validation"
-
-    @patch.object(MessageProcessor, "_record_agent_workflow_event")
-    def test_invalid_validation_stage_returns_error(
-        self, mock_record_event, processor, sample_message
-    ):
-        """Test that invalid validation stage returns validation error."""
-        # Arrange
-        processor._require_independent_validator = True
-        processor._independent_validator_threshold = 0.8
-        sample_message.impact_score = 0.9
-        sample_message.metadata = {
-            "validated_by_agent": "different-agent",
-            "validation_stage": "preliminary",
-        }
-
-        # Act
-        result = processor._enforce_independent_validator_gate(sample_message)
-
-        # Assert
-        assert result is not None
-        assert result.is_valid is False
-        assert any("validation_stage must be 'independent'" in error for error in result.errors)
-        assert result.metadata["rejection_reason"] == "independent_validator_invalid_stage"
-
-    def test_valid_validator_returns_none(self, processor, sample_message):
-        """Test that valid validator metadata returns None."""
-        # Arrange
-        processor._require_independent_validator = True
-        processor._independent_validator_threshold = 0.8
-        sample_message.impact_score = 0.9
-        sample_message.metadata = {
-            "validated_by_agent": "different-agent",
-            "validation_stage": "independent",
-        }
-
-        # Act
-        result = processor._enforce_independent_validator_gate(sample_message)
-
-        # Assert
-        assert result is None
-
-    def test_independent_validator_id_works(self, processor, sample_message):
-        """Test that independent_validator_id field works as alternative."""
-        # Arrange
-        processor._require_independent_validator = True
-        processor._independent_validator_threshold = 0.8
-        sample_message.impact_score = 0.9
-        sample_message.metadata = {"independent_validator_id": "different-agent"}
-
-        # Act
-        result = processor._enforce_independent_validator_gate(sample_message)
-
-        # Assert
-        assert result is None
-
-
-class TestEnforceAutonomyTier:
-    """Tests for _enforce_autonomy_tier helper."""
-
-    @patch("enhanced_agent_bus.message_processor.enforce_autonomy_tier_rules")
-    @patch(
-        "enhanced_agent_bus.message_processor._ADVISORY_BLOCKED_TYPES",
-        frozenset({"command", "governance_request", "task_request"}),
-    )
-    def test_calls_enforcement_function_with_correct_parameters(
-        self, mock_enforce_rules, processor, sample_message
-    ):
-        """Test that autonomy tier enforcement calls the helper function correctly."""
-        # Arrange
-        mock_result = ValidationResult(is_valid=True)
-        mock_enforce_rules.return_value = mock_result
-        from enhanced_agent_bus.message_processor import _ADVISORY_BLOCKED_TYPES
-
-        # Act
-        result = processor._enforce_autonomy_tier(sample_message)
-
-        # Assert
-        mock_enforce_rules.assert_called_once_with(
-            msg=sample_message, advisory_blocked_types=_ADVISORY_BLOCKED_TYPES
-        )
-        assert result == mock_result
-
-    @patch("enhanced_agent_bus.message_processor.enforce_autonomy_tier_rules")
-    def test_returns_validation_result(self, mock_enforce_rules, processor, sample_message):
-        """Test that autonomy tier enforcement returns validation result."""
-        # Arrange
-        mock_result = ValidationResult(
-            is_valid=False,
-            errors=["Advisory agent cannot execute commands"],
-            metadata={"rejection_reason": "autonomy_tier_violation"},
-        )
-        mock_enforce_rules.return_value = mock_result
-
-        # Act
-        result = processor._enforce_autonomy_tier(sample_message)
-
-        # Assert
-        assert result == mock_result
-        assert result.is_valid is False
-
-    @patch("enhanced_agent_bus.message_processor.enforce_autonomy_tier_rules")
-    def test_returns_none_when_no_violation(self, mock_enforce_rules, processor, sample_message):
-        """Test that autonomy tier enforcement returns None when no violation."""
-        # Arrange
-        mock_enforce_rules.return_value = None
-
-        # Act
-        result = processor._enforce_autonomy_tier(sample_message)
-
-        # Assert
-        assert result is None
-
-
-class TestExtractMessageSessionId:
-    """Tests for _extract_message_session_id helper."""
-
-    @patch("enhanced_agent_bus.message_processor.extract_session_id_for_pacar")
-    def test_calls_pacar_function_with_message(
-        self, mock_extract_session, processor, sample_message
-    ):
-        """Test that session ID extraction calls PACAR function correctly."""
-        # Arrange
-        expected_session_id = "session-123"
-        mock_extract_session.return_value = expected_session_id
-
-        # Act
-        result = processor._extract_message_session_id(sample_message)
-
-        # Assert
-        mock_extract_session.assert_called_once_with(sample_message)
-        assert result == expected_session_id
-
-    @patch("enhanced_agent_bus.message_processor.extract_session_id_for_pacar")
-    def test_returns_none_when_no_session_id(self, mock_extract_session, processor, sample_message):
-        """Test that session ID extraction returns None when no session ID found."""
-        # Arrange
-        mock_extract_session.return_value = None
-
-        # Act
-        result = processor._extract_message_session_id(sample_message)
-
-        # Assert
-        assert result is None
-
-
 class TestComputeCacheKey:
     """Tests for _compute_cache_key helper."""
 
@@ -568,6 +275,18 @@ class TestComputeCacheKey:
         # Assert
         assert result1 != result2
 
+    def test_cache_key_different_for_different_session(self, processor, sample_message):
+        """Session governance must not share cache entries across sessions."""
+        message1 = AgentMessage(**sample_message.__dict__)
+        message1.session_id = "session-123"
+        message2 = AgentMessage(**sample_message.__dict__)
+        message2.session_id = "session-456"
+
+        result1 = processor._compute_cache_key(message1)
+        result2 = processor._compute_cache_key(message2)
+
+        assert result1 != result2
+
     def test_cache_key_handles_non_string_content(self, processor, sample_message):
         """Test that cache key handles non-string content."""
         # Arrange
@@ -614,7 +333,7 @@ class TestComputeCacheKey:
         # Assert
         # Calculate expected hash manually to verify logic
         cache_dimensions = (
-            f"test content:{CONSTITUTIONAL_HASH}:test-tenant:test-agent:command:bounded"
+            f"test content:{CONSTITUTIONAL_HASH}:test-tenant:test-agent:command:bounded:"
         )
         expected = hashlib.sha256(cache_dimensions.encode()).hexdigest() + self._expected_suffix(
             processor
@@ -664,25 +383,6 @@ class TestPrepareMessageContentString:
 
         assert prepare_message_content_string(sample_message) == str({"nested": [1, 2, 3]})
 
-    async def test_execute_verification_passes_normalized_content(self, processor, sample_message):
-        sample_message.content = {"nested": [1, 2, 3]}
-        verification_result = Mock(
-            sdpc_metadata={},
-            pqc_metadata={},
-            pqc_result=None,
-        )
-        processor._verification_orchestrator.verify = AsyncMock(return_value=verification_result)
-        processor._processing_strategy.process = AsyncMock(
-            return_value=ValidationResult(is_valid=True, metadata={})
-        )
-        processor._handle_successful_processing = AsyncMock()
-        processor._handle_failed_processing = AsyncMock()
-
-        await processor._execute_verification_and_processing(sample_message, "cache-key", 0.0)
-
-        processor._verification_orchestrator.verify.assert_awaited_once_with(
-            sample_message, str({"nested": [1, 2, 3]})
-        )
 
 
 class TestMergeVerificationMetadata:
@@ -702,27 +402,6 @@ class TestMergeVerificationMetadata:
         assert result == {"sdpc": "ok"}
         assert result is not sdpc_metadata
 
-    async def test_execute_verification_applies_merged_metadata_to_result(
-        self, processor, sample_message
-    ):
-        verification_result = Mock(
-            sdpc_metadata={"sdpc": "ok", "shared": "sdpc"},
-            pqc_metadata={"pqc": "ok", "shared": "pqc"},
-            pqc_result=None,
-        )
-        process_result = ValidationResult(is_valid=True, metadata={})
-        processor._verification_orchestrator.verify = AsyncMock(return_value=verification_result)
-        processor._processing_strategy.process = AsyncMock(return_value=process_result)
-        processor._handle_successful_processing = AsyncMock()
-        processor._handle_failed_processing = AsyncMock()
-
-        result = await processor._execute_verification_and_processing(
-            sample_message, "cache-key", 0.0
-        )
-
-        assert result.metadata["sdpc"] == "ok"
-        assert result.metadata["pqc"] == "ok"
-        assert result.metadata["shared"] == "pqc"
 
 
 class TestExtractPqcFailureResult:
@@ -731,26 +410,6 @@ class TestExtractPqcFailureResult:
 
         assert extract_pqc_failure_result(verification_result) is None
 
-    async def test_execute_verification_returns_pqc_failure_and_increments_count(
-        self, processor, sample_message
-    ):
-        pqc_failure = ValidationResult(is_valid=False, errors=["pqc failed"], metadata={})
-        verification_result = Mock(
-            sdpc_metadata={"sdpc": "ok"},
-            pqc_metadata={"pqc": "meta"},
-            pqc_result=pqc_failure,
-        )
-        processor._verification_orchestrator.verify = AsyncMock(return_value=verification_result)
-        processor._processing_strategy.process = AsyncMock()
-        starting_failed_count = processor._failed_count
-
-        result = await processor._execute_verification_and_processing(
-            sample_message, "cache-key", 0.0
-        )
-
-        assert result is pqc_failure
-        assert processor._failed_count == starting_failed_count + 1
-        processor._processing_strategy.process.assert_not_awaited()
 
 
 class TestApplyLatencyMetadata:
@@ -761,47 +420,7 @@ class TestApplyLatencyMetadata:
 
         assert result.metadata["latency_ms"] == 12.5
 
-    async def test_execute_verification_applies_latency_metadata(self, processor, sample_message):
-        verification_result = Mock(
-            sdpc_metadata={},
-            pqc_metadata={},
-            pqc_result=None,
-        )
-        process_result = ValidationResult(is_valid=True, metadata={})
-        processor._verification_orchestrator.verify = AsyncMock(return_value=verification_result)
-        processor._processing_strategy.process = AsyncMock(return_value=process_result)
-        processor._handle_successful_processing = AsyncMock()
-        processor._handle_failed_processing = AsyncMock()
 
-        result = await processor._execute_verification_and_processing(
-            sample_message, "cache-key", 0.0
-        )
-
-        assert "latency_ms" in result.metadata
-        assert isinstance(result.metadata["latency_ms"], float)
-
-    async def test_execute_verification_passes_same_latency_to_success_handler(
-        self, processor, sample_message
-    ):
-        verification_result = Mock(
-            sdpc_metadata={},
-            pqc_metadata={},
-            pqc_result=None,
-        )
-        process_result = ValidationResult(is_valid=True, metadata={})
-        processor._verification_orchestrator.verify = AsyncMock(return_value=verification_result)
-        processor._processing_strategy.process = AsyncMock(return_value=process_result)
-        processor._handle_successful_processing = AsyncMock()
-        processor._handle_failed_processing = AsyncMock()
-
-        result = await processor._execute_verification_and_processing(
-            sample_message, "cache-key", 0.0
-        )
-
-        await_args = processor._handle_successful_processing.await_args
-        assert await_args is not None
-        passed_latency = await_args.args[3]
-        assert passed_latency == result.metadata["latency_ms"]
 
 
 class TestBuildDlqEntry:
@@ -1135,7 +754,7 @@ class TestBackgroundTaskSchedulingIntegration:
         result = processor._compute_cache_key(message)
 
         cache_dimensions = (
-            f"test content:{CONSTITUTIONAL_HASH}:test-tenant:test-agent:command:bounded"
+            f"test content:{CONSTITUTIONAL_HASH}:test-tenant:test-agent:command:bounded:"
         )
         expected = hashlib.sha256(cache_dimensions.encode()).hexdigest() + ":legacy:1:0"
         assert result == expected
@@ -1217,60 +836,12 @@ class TestExtractRejectionReason:
         assert reason == "validation_failed"
 
 
-class TestDetectPromptInjection:
-    """Tests for _detect_prompt_injection helper."""
-
-    def test_calls_security_scanner(self, processor, sample_message):
-        """Test that prompt injection detection calls security scanner."""
-        # Arrange
-        mock_result = ValidationResult(is_valid=True)
-        processor._security_scanner = Mock()
-        processor._security_scanner.detect_prompt_injection.return_value = mock_result
-
-        # Act
-        result = processor._detect_prompt_injection(sample_message)
-
-        # Assert
-        processor._security_scanner.detect_prompt_injection.assert_called_once_with(sample_message)
-        assert result == mock_result
-
-    def test_returns_validation_result_when_injection_detected(self, processor, sample_message):
-        """Test return value when prompt injection is detected."""
-        # Arrange
-        mock_result = ValidationResult(
-            is_valid=False,
-            errors=["Prompt injection detected"],
-            metadata={"rejection_reason": "prompt_injection"},
-        )
-        processor._security_scanner = Mock()
-        processor._security_scanner.detect_prompt_injection.return_value = mock_result
-
-        # Act
-        result = processor._detect_prompt_injection(sample_message)
-
-        # Assert
-        assert result == mock_result
-        assert result.is_valid is False
-
-    def test_returns_none_when_no_injection(self, processor, sample_message):
-        """Test return value when no prompt injection detected."""
-        # Arrange
-        processor._security_scanner = Mock()
-        processor._security_scanner.detect_prompt_injection.return_value = None
-
-        # Act
-        result = processor._detect_prompt_injection(sample_message)
-
-        # Assert
-        assert result is None
-
-
 @pytest.mark.constitutional
 class TestHelperIntegration:
     """Integration tests for helper functions working together."""
 
     def test_cache_key_consistency_with_session_extraction(self, processor):
-        """Test that cache key remains consistent with session ID extraction."""
+        """Session-scoped governance should remain isolated at the cache layer."""
         # Arrange
         message1 = AgentMessage(
             content="test",
@@ -1297,32 +868,8 @@ class TestHelperIntegration:
         key2 = processor._compute_cache_key(message2)
 
         # Assert
-        # Cache key should be the same since session_id is not part of cache dimensions
-        assert key1 == key2
+        assert key1 != key2
 
-    def test_validation_helpers_work_with_different_message_types(self, processor):
-        """Test that validation helpers work correctly with different message types."""
-        # Arrange
-        processor._require_independent_validator = True
-        processor._independent_validator_threshold = 0.8
-
-        governance_msg = AgentMessage(
-            message_type=MessageType.GOVERNANCE_REQUEST,
-            impact_score=0.5,  # Low score but governance type
-            metadata={"validated_by_agent": "validator-agent"},
-        )
-
-        command_msg = AgentMessage(
-            message_type=MessageType.COMMAND,
-            impact_score=0.9,  # High score
-            metadata={"validated_by_agent": "validator-agent"},
-        )
-
-        # Act & Assert
-        assert processor._requires_independent_validation(governance_msg) is True
-        assert processor._requires_independent_validation(command_msg) is True
-        assert processor._enforce_independent_validator_gate(governance_msg) is None
-        assert processor._enforce_independent_validator_gate(command_msg) is None
 
 
 if __name__ == "__main__":

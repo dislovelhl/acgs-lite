@@ -275,6 +275,38 @@ class TestCircuitBreakerOPAClient:
 
             await client.close()
 
+    async def test_opa_circuit_open_ignores_cached_allow(self):
+        """Open breaker must deny even when an allow result is cached."""
+        from enhanced_agent_bus.circuit_breaker_clients import (
+            CircuitBreakerOPAClient,
+        )
+
+        with patch("httpx.AsyncClient"):
+            client = CircuitBreakerOPAClient(enable_cache=True)
+            await client.initialize()
+
+            cache_key = client._get_cache_key("data.acgs.allow", {"action": "read"})
+            client._set_cache(
+                cache_key,
+                {
+                    "result": True,
+                    "allowed": True,
+                    "reason": "cached allow",
+                    "metadata": {"source": "cache"},
+                },
+            )
+
+            for _ in range(5):
+                await client._circuit_breaker.record_failure(Exception("boom"), "TestError")
+
+            result = await client.evaluate_policy({"action": "read"}, "data.acgs.allow")
+
+            assert result["allowed"] is False
+            assert result["metadata"]["security"] == "fail-closed"
+            assert "circuit breaker open" in result["reason"].lower()
+
+            await client.close()
+
     async def test_opa_successful_evaluation(self):
         """Test successful OPA policy evaluation."""
         from enhanced_agent_bus.circuit_breaker_clients import (

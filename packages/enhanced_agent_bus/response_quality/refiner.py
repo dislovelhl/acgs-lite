@@ -22,8 +22,8 @@ try:
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
-from enhanced_agent_bus.observability.structured_logging import get_logger
 from enhanced_agent_bus.llm_adapters.base import BaseLLMAdapter, LLMMessage
+from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from .models import (
     QualityAssessment,
