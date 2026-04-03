@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import asyncio
 import dataclasses
+import importlib
 import time
 from collections import deque
 from types import SimpleNamespace
@@ -115,7 +116,13 @@ def _patch_externals():
         mock_validator.GovernanceDecisionValidator.return_value.validate_decision = AsyncMock(
             return_value=(True, [])
         )
-        mock_import.return_value = mock_validator
+
+        def _import_side_effect(module_name: str):
+            if module_name == "enhanced_agent_bus.validators":
+                return mock_validator
+            return importlib.import_module(module_name)
+
+        mock_import.side_effect = _import_side_effect
 
         # ImpactScorer instance
         scorer = MagicMock()
