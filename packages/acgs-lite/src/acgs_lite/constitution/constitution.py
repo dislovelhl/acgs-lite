@@ -569,6 +569,28 @@ class Constitution(BaseModel):
         """Apply a sequence of amendment-like payloads to this constitution."""
         return merging.apply_amendments(self, amendments)
 
+    def add_rule(self, rule: Rule) -> None:
+        """Add a rule to the constitution and invalidate caches."""
+        self.rules.append(rule)
+        self._rebuild_caches()
+
+    def replace_rule(self, rule_id: str, updated: Rule) -> None:
+        """Replace a rule by ID and invalidate caches."""
+        self.rules = [updated if r.id == rule_id else r for r in self.rules]
+        self._rebuild_caches()
+
+    def remove_rule(self, rule_id: str) -> None:
+        """Remove a rule by ID and invalidate caches."""
+        self.rules = [r for r in self.rules if r.id != rule_id]
+        self._rebuild_caches()
+
+    def _rebuild_caches(self) -> None:
+        """Invalidate hash and active rules caches after mutation."""
+        object.__setattr__(self, "_hash_cache", "")
+        object.__setattr__(self, "_active_rules_cache", [r for r in self.rules if r.enabled])
+        # Force hash recomputation
+        _ = self.hash
+
     def active_rules(self) -> list[Rule]:
         """Return only enabled rules (cached)."""
         return self._active_rules_cache
