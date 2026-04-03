@@ -193,7 +193,7 @@ async def request_dataset_build(
     except (FlywheelRunPausedError, FlywheelRunTerminalStateError) as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=str(exc),
+            detail=f"Run is not in an executable state: {type(exc).__name__}",
         ) from exc
     except FlywheelRunOrchestrationError as exc:
         logger.warning(

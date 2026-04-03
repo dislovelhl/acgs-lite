@@ -28,7 +28,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from constitutional_swarm.bittensor.precedent_store import PrecedentStore
@@ -138,7 +138,7 @@ class DimensionScore:
     """Score for a single authenticity dimension."""
 
     dimension: AuthenticityDimension
-    score: float            # 0.0 – 1.0
+    score: float            # 0.0 - 1.0
     weight: float
     evidence: str           # human-readable explanation
 
@@ -151,7 +151,7 @@ class DimensionScore:
 class AuthenticityScore:
     """Composite authenticity score for a miner judgment."""
 
-    overall: float                      # weighted sum, 0.0 – 1.0
+    overall: float                      # weighted sum, 0.0 - 1.0
     dimension_scores: tuple[DimensionScore, ...]
     judgment_word_count: int
     is_authentic: bool                  # overall >= threshold
@@ -215,7 +215,7 @@ class AuthenticityDetector:
         self,
         judgment: str,
         reasoning: str = "",
-        precedent_store: "PrecedentStore | None" = None,
+        precedent_store: PrecedentStore | None = None,
         query_vector: dict[str, float] | None = None,
     ) -> AuthenticityScore:
         """Score a judgment + reasoning pair for authenticity.
@@ -268,7 +268,7 @@ class AuthenticityDetector:
         signals = []
         score = 0.0
 
-        # Word count contribution (0.0 – 0.40)
+        # Word count contribution (0.0 - 0.40)
         wc_score = min(word_count / 200.0, 1.0) * 0.4
         score += wc_score
         if word_count < self._min_words:
@@ -277,18 +277,18 @@ class AuthenticityDetector:
         else:
             signals.append(f"{word_count} words")
 
-        # Logical connectives (0.0 – 0.25)
+        # Logical connectives (0.0 - 0.25)
         conns = len(_LOGICAL_CONNECTIVES.findall(text))
         conn_score = min(conns / 3.0, 1.0) * 0.25
         score += conn_score
         signals.append(f"{conns} logical connectives")
 
-        # Qualifying phrases (0.0 – 0.20)
+        # Qualifying phrases (0.0 - 0.20)
         quals = len(_QUALIFYING_PHRASES.findall(text))
         qual_score = min(quals / 2.0, 1.0) * 0.20
         score += qual_score
 
-        # Trade-off language (0.0 – 0.15)
+        # Trade-off language (0.0 - 0.15)
         trades = len(_TRADEOFF_LANGUAGE.findall(text))
         trade_score = min(trades / 2.0, 1.0) * 0.15
         score += trade_score
@@ -384,7 +384,7 @@ class AuthenticityDetector:
     def _score_precedent_compatibility(
         self,
         text: str,
-        precedent_store: "PrecedentStore | None",
+        precedent_store: PrecedentStore | None,
         query_vector: dict[str, float] | None,
         flags: list[str],
     ) -> DimensionScore:

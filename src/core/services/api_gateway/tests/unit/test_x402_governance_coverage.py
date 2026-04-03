@@ -292,6 +292,10 @@ class TestCheckEndpoint:
         resp = client.get("/x402/check")
         assert resp.status_code == 422
 
+    def test_check_whitespace_action_rejected(self, client):
+        resp = client.get("/x402/check", params={"action": "   "})
+        assert resp.status_code == 422
+
 
 class TestPricingEndpoint:
     def test_pricing_structure(self, client):
@@ -403,6 +407,17 @@ class TestValidateEndpoint:
 
     def test_validate_missing_action(self, client):
         resp = client.post("/x402/validate", json={"agent_id": "a1"})
+        assert resp.status_code == 422
+
+    def test_validate_blank_action_rejected(self, client):
+        resp = client.post("/x402/validate", json={"action": "   ", "agent_id": "a1"})
+        assert resp.status_code == 422
+
+    def test_validate_whitespace_action_rejected(self, client):
+        resp = client.post(
+            "/x402/validate",
+            json={"action": "   ", "agent_id": "a1", "context": {}},
+        )
         assert resp.status_code == 422
 
 
@@ -524,6 +539,13 @@ class TestBatchEndpoint:
         assert resp.status_code == 200
         assert resp.json()["total_actions"] == 1
 
+    def test_batch_whitespace_action_rejected(self, client):
+        resp = client.post(
+            "/x402/batch",
+            json={"actions": ["hello", "   "], "agent_id": "a1", "context": {}},
+        )
+        assert resp.status_code == 422
+
 
 class TestTreasuryEndpoint:
     def test_treasury_valid(self, client):
@@ -563,6 +585,14 @@ class TestModels:
         assert req.agent_id == "anonymous"
         assert req.context == {}
 
+    def test_governance_validation_request_rejects_whitespace_action(self):
+        with pytest.raises(Exception):
+            GovernanceValidationRequest(action="   ")
+
     def test_batch_validation_request_max_actions(self):
         with pytest.raises(Exception):
             BatchValidationRequest(actions=["x"] * 21)
+
+    def test_batch_validation_request_rejects_whitespace_action(self):
+        with pytest.raises(Exception):
+            BatchValidationRequest(actions=["ok", "   "])

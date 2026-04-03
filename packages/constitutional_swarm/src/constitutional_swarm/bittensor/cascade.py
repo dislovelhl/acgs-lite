@@ -21,8 +21,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
-from acgs_lite import Constitution
-
+from acgs_lite import Constitution, ConstitutionalViolationError
 from constitutional_swarm.dna import AgentDNA
 from constitutional_swarm.mesh import ConstitutionalMesh
 
@@ -347,7 +346,7 @@ class PrecedentCascade:
         try:
             strict_dna.validate(candidate.judgment_text)
             strict_pass = True
-        except Exception:
+        except ConstitutionalViolationError:
             strict_pass = False
 
         nonstrict_result = nonstrict_dna.validate(candidate.judgment_text)

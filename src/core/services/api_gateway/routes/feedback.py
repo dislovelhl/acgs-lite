@@ -17,6 +17,7 @@ from fastapi import BackgroundTasks, Depends, HTTPException, Request
 from pydantic import BaseModel, Field, field_validator, model_validator
 from redis.exceptions import RedisError
 
+from enhanced_agent_bus.data_flywheel.ingest import build_feedback_event
 from src.core.shared.api_versioning import (
     create_version_info_endpoint,
     create_version_metrics_endpoint,
@@ -38,8 +39,6 @@ from src.core.shared.security.rate_limiter import (
 )
 from src.core.shared.structured_logging import get_logger
 from src.core.shared.types import JSONDict
-
-from enhanced_agent_bus.data_flywheel.ingest import build_feedback_event
 
 from ..metrics import record_feedback_rejection, record_feedback_submission
 

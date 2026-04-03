@@ -1,4 +1,4 @@
-.PHONY: help setup lock-sync lock-validate test test-quick test-lite test-bus test-gw build-root-package publish-root-dry-run publish-root-package build-acgs-lite publish-acgs-lite-dry-run publish-acgs-lite build-acgs publish-dry-run publish-acgs health-manifest health-overview health-lite health-bus health-bus-governance health-gw health-constitutional-swarm health-frontend health-worker lint format clean bench cov cov-html codex-doctor autoresearch-promote agent-commit
+.PHONY: help setup lock-sync lock-validate test test-quick test-lite test-bus test-gw build-root-package publish-root-dry-run publish-root-package build-acgs-lite publish-acgs-lite-dry-run publish-acgs-lite build-acgs publish-dry-run publish-acgs health-manifest health-overview health-lite health-bus health-bus-governance health-bus-wrappers health-bus-wrappers-batch1-ready health-gw health-constitutional-swarm health-frontend health-worker lint format clean bench cov cov-html codex-doctor autoresearch-promote agent-commit dashboard-install dashboard-dev dashboard-build dashboard-backend
 
 LOCK_PYTHON ?= 3.11
 UV ?= uv
@@ -46,6 +46,8 @@ help:
 	@echo "    make health-lite    First-class acgs-lite health gate"
 	@echo "    make health-bus     First-class enhanced-agent-bus health gate"
 	@echo "    make health-bus-governance Governance-core slice for enhanced-agent-bus"
+	@echo "    make health-bus-wrappers MessageProcessor wrapper-audit gate"
+	@echo "    make health-bus-wrappers-batch1-ready Fail until Batch 1 wrappers are delete-ready"
 	@echo "    make health-gw      First-class API Gateway health gate"
 	@echo "    make health-constitutional-swarm First-class constitutional-swarm health gate"
 	@echo "    make health-frontend First-class propriety-ai health gate"
@@ -55,6 +57,11 @@ help:
 	@echo "    make lint         Ruff + MyPy"
 	@echo "    make format       Auto-fix formatting"
 	@echo "    make clean        Remove cache files"
+	@echo ""
+	@echo "  Dashboard:"
+	@echo "    make dashboard-dev     Start dashboard dev server (port 3100)"
+	@echo "    make dashboard-backend Start acgs-lite backend (port 8100)"
+	@echo "    make dashboard-build   Production build"
 	@echo ""
 	@echo "  Benchmarks:"
 	@echo "    make bench        Run acgs-lite benchmark suite"
@@ -150,6 +157,17 @@ health-bus-governance:
 		packages/enhanced_agent_bus/tests/test_security_defaults.py \
 		packages/enhanced_agent_bus/tests/test_message_processor_independent_validator_gate.py
 
+health-bus-wrappers:
+	$(PYTHON) packages/enhanced_agent_bus/tools/message_processor_wrapper_audit.py --check
+	$(PYTHON) -m ruff check \
+		packages/enhanced_agent_bus/tools/message_processor_wrapper_audit.py \
+		packages/enhanced_agent_bus/docs/MESSAGE_PROCESSOR_ARCHITECTURE.md \
+		packages/enhanced_agent_bus/docs/MESSAGE_PROCESSOR_FINAL_ARCHITECTURE_AUDIT.md \
+		packages/enhanced_agent_bus/docs/MESSAGE_PROCESSOR_COVERAGE_REGEN_CLEANUP_PLAN.md
+
+health-bus-wrappers-batch1-ready:
+	$(PYTHON) packages/enhanced_agent_bus/tools/message_processor_wrapper_audit.py --ready-batch batch1
+
 health-gw: test-gw
 
 health-constitutional-swarm:
@@ -213,6 +231,19 @@ eval-rules:
 
 eval-rules-generate:
 	$(PYTHON) autoresearch/eval_rules.py --generate
+
+# === Dashboard ===
+dashboard-install:
+	cd packages/acgs-dashboard && npm install
+
+dashboard-dev:
+	cd packages/acgs-dashboard && npm run dev
+
+dashboard-build:
+	cd packages/acgs-dashboard && npm run build
+
+dashboard-backend:
+	$(PYTHON) packages/acgs-dashboard/scripts/start-backend.py
 
 # === Codex Bootstrap ===
 codex-doctor:

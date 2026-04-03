@@ -43,7 +43,7 @@ def cmd_register(args: argparse.Namespace) -> None:
 
     print(f"Registering subnet on testnet with wallet {wallet.name}...")
     print(f"  Wallet coldkey: {wallet.coldkeypub.ss58_address}")
-    print(f"  Network: test")
+    print("  Network: test")
 
     success = subtensor.register_subnet(wallet=wallet)
     if success:
@@ -60,11 +60,9 @@ def cmd_miner(args: argparse.Namespace) -> None:
     import asyncio
 
     import bittensor as bt
-
     from constitutional_swarm.bittensor.axon_server import MinerAxonServer
     from constitutional_swarm.bittensor.miner import ConstitutionalMiner
     from constitutional_swarm.bittensor.protocol import MinerConfig
-    from constitutional_swarm.bittensor.synapse_adapter import GovernanceDeliberation
 
     wallet = bt.wallet(name=args.wallet_name, hotkey=args.wallet_hotkey)
     subtensor = bt.subtensor(network="test")
@@ -142,7 +140,6 @@ def cmd_validator(args: argparse.Namespace) -> None:
     import time
 
     import bittensor as bt
-
     from constitutional_swarm.bittensor.dendrite_client import ValidatorDendriteClient
     from constitutional_swarm.bittensor.protocol import ValidatorConfig
     from constitutional_swarm.bittensor.subnet_owner import SubnetOwner
@@ -168,7 +165,7 @@ def cmd_validator(args: argparse.Namespace) -> None:
 
     validator = ConstitutionalValidator(config=config)
     owner = SubnetOwner(args.constitution)
-    client = ValidatorDendriteClient(
+    ValidatorDendriteClient(
         constitution_path=args.constitution,
         wallet=wallet,
     )
