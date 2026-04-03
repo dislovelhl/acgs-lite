@@ -12,20 +12,18 @@ Features:
 - Checkpoint management for recovery
 """
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 
-try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
-except ImportError:
-    CONSTITUTIONAL_HASH = "standalone"
 from src.core.shared.errors.exceptions import ACGSBaseError
 
 try:
     from src.core.shared.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
+
+from enhanced_agent_bus.persistence.repository import GovernanceRepository
 
 from .models import (
     FLYWHEEL_RUN_SAGA_NAME,
@@ -39,7 +37,7 @@ from .models import (
 )
 
 
-class SagaStateRepository(ABC):
+class SagaStateRepository(GovernanceRepository[str, SagaCheckpoint, bool]):
     """
     Abstract repository for saga state persistence.
 
@@ -48,11 +46,6 @@ class SagaStateRepository(ABC):
 
     Constitutional Hash: 608508a9bd224290
     """
-
-    @property
-    def constitutional_hash(self) -> str:
-        """Return the constitutional hash for validation."""
-        return CONSTITUTIONAL_HASH  # type: ignore[no-any-return]
 
     # =========================================================================
     # Core CRUD Operations
@@ -344,25 +337,6 @@ class SagaStateRepository(ABC):
     # =========================================================================
 
     @abstractmethod
-    async def save_checkpoint(self, checkpoint: SagaCheckpoint) -> bool:
-        """
-        Save a saga checkpoint for recovery.
-
-        Checkpoints capture the saga state at critical points and enable
-        recovery after system failures.
-
-        Args:
-            checkpoint: The checkpoint to persist.
-
-        Returns:
-            True if save was successful.
-
-        Raises:
-            RepositoryError: On storage backend failures.
-        """
-        ...
-
-    @abstractmethod
     async def get_checkpoints(
         self,
         saga_id: str,
@@ -377,25 +351,6 @@ class SagaStateRepository(ABC):
 
         Returns:
             List of checkpoints, ordered by created_at descending.
-
-        Raises:
-            RepositoryError: On storage backend failures.
-        """
-        ...
-
-    @abstractmethod
-    async def get_latest_checkpoint(
-        self,
-        saga_id: str,
-    ) -> SagaCheckpoint | None:
-        """
-        Get the most recent checkpoint for a saga.
-
-        Args:
-            saga_id: Unique identifier of the saga.
-
-        Returns:
-            The latest checkpoint if any exist, None otherwise.
 
         Raises:
             RepositoryError: On storage backend failures.
