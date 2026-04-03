@@ -44,8 +44,8 @@ def create_governance_app(
     from fastapi import FastAPI, HTTPException
 
     gov_constitution = constitution if constitution is not None else Constitution.default()
-    engine = GovernanceEngine(gov_constitution, strict=False)
     audit_log = AuditLog()
+    engine = GovernanceEngine(gov_constitution, audit_log=audit_log, strict=False, audit_mode="full")
     app = FastAPI(title="acgs-lite-governance", version=VERSION)
 
     @app.post("/validate")  # type: ignore[untyped-decorator]

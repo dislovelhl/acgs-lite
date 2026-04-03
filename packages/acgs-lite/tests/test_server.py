@@ -55,6 +55,8 @@ class TestGovernanceServer:
 
         stats = get_stats()
         assert stats["total_validations"] >= 2
+        assert stats["audit_entry_count"] >= 2
+        assert stats["audit_chain_valid"] is True
         assert "constitutional_hash" in stats
 
     def test_app_mounts_experimental_openshell_routes_by_default(self) -> None:

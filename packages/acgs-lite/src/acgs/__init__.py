@@ -6,7 +6,7 @@ Commercial license available at https://acgs.ai for proprietary use.
 
 This module re-exports the full acgs_lite public API so users can write:
 
-    from acgs import Constitution, GovernedAgent
+    from acgs import Constitution, GovernedAgent, MACIRole
 
 Constitutional Hash: 608508a9bd224290
 """

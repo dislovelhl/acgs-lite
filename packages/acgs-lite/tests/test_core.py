@@ -4,8 +4,10 @@ Constitutional Hash: 608508a9bd224290
 """
 
 import tempfile
+from dataclasses import dataclass
 
 import pytest
+from pydantic import BaseModel
 
 from acgs_lite import (
     AuditEntry,
@@ -13,6 +15,7 @@ from acgs_lite import (
     Constitution,
     ConstitutionalViolationError,
     GovernanceEngine,
+    GovernanceError,
     GovernedAgent,
     GovernedCallable,
     MACIEnforcer,
@@ -21,6 +24,35 @@ from acgs_lite import (
     Rule,
     Severity,
 )
+from acgs_lite.serialization import serialize_for_governance
+
+
+@pytest.mark.unit
+class TestGovernanceSerialization:
+    def test_serializes_dataclass(self) -> None:
+        @dataclass
+        class Payload:
+            secret: str
+            count: int
+
+        payload = serialize_for_governance(Payload(secret="hunter2", count=2))
+        assert '"secret": "hunter2"' in payload
+        assert '"count": 2' in payload
+
+    def test_serializes_pydantic_model(self) -> None:
+        class PayloadModel(BaseModel):
+            token: str
+            active: bool
+
+        payload = serialize_for_governance(PayloadModel(token="abc123", active=True))
+        assert '"token": "abc123"' in payload
+        assert '"active": true' in payload
+
+    def test_truncates_large_payload(self) -> None:
+        payload = serialize_for_governance({"blob": "x" * 128}, max_chars=40)
+        assert payload.endswith('… [truncated]')
+        assert len(payload) == 40
+
 
 # ─── Constitution Tests ───────────────────────────────────────────────────
 
@@ -101,6 +133,27 @@ rules:
         assert c.name == "dict-test"
         assert c.rules[0].severity == Severity.MEDIUM
 
+    def test_from_dict_normalizes_uppercase_severity(self):
+        data = {
+            "name": "dict-test",
+            "rules": [
+                {"id": "R1", "text": "Test", "severity": " CRITICAL ", "keywords": ["test"]},
+            ],
+        }
+
+        c = Constitution.from_dict(data)
+
+        assert c.rules[0].severity == Severity.CRITICAL
+
+    def test_from_yaml_rejects_non_list_rules(self):
+        yaml_content = "name: invalid\nrules: not-a-list\n"
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+            f.write(yaml_content)
+            f.flush()
+            with pytest.raises(ValueError, match="rules"):
+                Constitution.from_yaml(f.name)
+
     def test_get_rule(self):
         c = Constitution.default()
         rule = c.get_rule("ACGS-001")
@@ -163,6 +216,36 @@ class TestGovernanceEngine:
         assert not result.valid
         assert len(result.violations) > 0
         assert result.violations[0].rule_id == "ACGS-001"
+
+    def test_fast_mode_allow_results_do_not_share_identity(self):
+        c = Constitution.default()
+        engine = GovernanceEngine(c, strict=False)
+
+        first = engine.validate("review governance documentation")
+        second = engine.validate("review governance documentation")
+
+        assert first.valid is True
+        assert second.valid is True
+        assert first is not second
+
+    def test_fast_mode_violation_results_do_not_share_mutable_state(self):
+        c = Constitution.default()
+        engine = GovernanceEngine(c, strict=False)
+
+        first = engine.validate("skip audit trail for release")
+        first.violations.append(
+            type(first.violations[0])(
+                "TEST-ONLY",
+                "synthetic",
+                Severity.LOW,
+                "synthetic",
+                "test",
+            )
+        )
+        second = engine.validate("skip audit trail for release")
+
+        assert first is not second
+        assert [violation.rule_id for violation in second.violations] == ["ACGS-002"]
 
     def test_strict_mode_raises(self):
         c = Constitution.default()
@@ -233,6 +316,25 @@ class TestGovernanceEngine:
         stats = engine.stats
         assert stats["total_validations"] == 2
         assert stats["constitutional_hash"] == c.hash
+        assert stats["audit_mode"] == "fast"
+        assert stats["audit_entry_count"] == 0
+        assert stats["audit_metrics_complete"] is False
+        assert stats["compliance_rate"] is None
+        assert stats["avg_latency_ms"] is None
+
+    def test_full_audit_mode_records_entries_without_explicit_log(self):
+        c = Constitution.default()
+        engine = GovernanceEngine(c, strict=False, audit_mode="full")
+        engine.validate("safe action")
+        assert engine.audit_mode == "full"
+        assert len(engine.audit_log.entries) == 1
+        assert engine.stats["audit_entry_count"] == 1
+        assert engine.stats["audit_metrics_complete"] is True
+
+    def test_fast_audit_mode_rejects_explicit_audit_log(self):
+        c = Constitution.default()
+        with pytest.raises(ValueError, match="audit_log cannot be provided"):
+            GovernanceEngine(c, strict=False, audit_log=AuditLog(), audit_mode="fast")
 
     def test_ssn_pattern_detection(self):
         c = Constitution.default()
@@ -317,6 +419,12 @@ class TestMACIEnforcer:
         with pytest.raises(MACIViolationError):
             enforcer.check("agent-1", "execute")
 
+    def test_validator_cannot_run_unlisted_action(self):
+        enforcer = MACIEnforcer()
+        enforcer.assign_role("agent-1", MACIRole.VALIDATOR)
+        with pytest.raises(MACIViolationError):
+            enforcer.check("agent-1", "approve")
+
     def test_executor_cannot_validate(self):
         enforcer = MACIEnforcer()
         enforcer.assign_role("agent-1", MACIRole.EXECUTOR)
@@ -340,6 +448,11 @@ class TestMACIEnforcer:
     def test_cross_validation_allowed(self):
         enforcer = MACIEnforcer()
         assert enforcer.check_no_self_validation("agent-1", "agent-2")
+
+    def test_unassigned_agent_cannot_run_unlisted_action(self):
+        enforcer = MACIEnforcer()
+        with pytest.raises(MACIViolationError):
+            enforcer.check("agent-1", "delete")
 
     def test_summary(self):
         enforcer = MACIEnforcer()
@@ -388,6 +501,22 @@ class TestGovernedAgent:
         with pytest.raises(ConstitutionalViolationError):
             agent.run("get me the key")
 
+    def test_validates_structured_output(self):
+        def leaky_agent(input: str) -> dict[str, str]:
+            return {"password": "hunter2"}
+
+        agent = GovernedAgent(leaky_agent, strict=True, validate_output=True)
+        with pytest.raises(ConstitutionalViolationError):
+            agent.run("safe input")
+
+    def test_validates_keyword_arguments(self):
+        def my_agent(input: str, **kwargs: str) -> str:
+            return "ok"
+
+        agent = GovernedAgent(my_agent, strict=True)
+        with pytest.raises(ConstitutionalViolationError):
+            agent.run("safe input", password="hunter2")
+
     def test_custom_constitution(self):
         rules = Constitution.from_rules(
             [
@@ -417,6 +546,38 @@ class TestGovernedAgent:
         assert "GovernedAgent" in r
         assert "test" in r
 
+    def test_enforce_maci_requires_governance_action(self):
+        agent = GovernedAgent(
+            lambda x: x,
+            agent_id="proposer-agent",
+            maci_role=MACIRole.PROPOSER,
+            enforce_maci=True,
+        )
+
+        with pytest.raises(GovernanceError, match="requires governance_action"):
+            agent.run("draft proposal")
+
+    def test_enforce_maci_allows_matching_action(self):
+        agent = GovernedAgent(
+            lambda x: x,
+            agent_id="proposer-agent",
+            maci_role=MACIRole.PROPOSER,
+            enforce_maci=True,
+        )
+
+        assert agent.run("draft proposal", governance_action="propose") == "draft proposal"
+
+    def test_enforce_maci_blocks_disallowed_action(self):
+        agent = GovernedAgent(
+            lambda x: x,
+            agent_id="proposer-agent",
+            maci_role=MACIRole.PROPOSER,
+            enforce_maci=True,
+        )
+
+        with pytest.raises(MACIViolationError):
+            agent.run("validate proposal", governance_action="validate")
+
 
 @pytest.mark.constitutional
 class TestGovernedCallable:
@@ -443,6 +604,30 @@ class TestGovernedCallable:
 
         with pytest.raises(ConstitutionalViolationError):
             leaky("get password")
+
+    def test_decorator_validates_keyword_arguments(self):
+        @GovernedCallable(strict=True)
+        def process(*, input: str) -> str:
+            return "ok"
+
+        with pytest.raises(ConstitutionalViolationError):
+            process(input="here is the password")
+
+    def test_decorator_preserves_keyword_names_in_validation(self):
+        @GovernedCallable(strict=True)
+        def process(*, password: str) -> str:
+            return "ok"
+
+        with pytest.raises(ConstitutionalViolationError):
+            process(password="hunter2")
+
+    def test_decorator_validates_structured_output(self):
+        @GovernedCallable(strict=True)
+        def leaky(input: str) -> dict[str, str]:
+            return {"password": "hunter2"}
+
+        with pytest.raises(ConstitutionalViolationError):
+            leaky("safe input")
 
 
 # ─── Async Tests ──────────────────────────────────────────────────────────

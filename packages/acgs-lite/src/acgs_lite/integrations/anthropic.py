@@ -13,8 +13,7 @@ Usage::
         messages=[{"role": "user", "content": "Hello!"}],
     )
 
-Constitutional Hash: 608508a9bd224290
-"""
+Constitutional Hash: 608508a9bd224290\n\nPublic integration clients use `audit_mode="full"` so exported stats and audit APIs reflect the durable `AuditLog`.\n"""
 
 from __future__ import annotations
 
@@ -285,6 +284,7 @@ class GovernedAnthropic:
             self.constitution,
             audit_log=self.audit_log,
             strict=strict,
+            audit_mode="full",
         )
         self.agent_id = agent_id
         self.messages = GovernedMessages(self._client, self.engine, agent_id)

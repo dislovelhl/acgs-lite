@@ -483,7 +483,9 @@ class TestGovernanceEngineStats:
         engine.validate("world")
         stats = engine.stats
         assert stats["total_validations"] >= 2
-        assert stats["compliance_rate"] == 1.0
+        assert stats["compliance_rate"] is None
+        assert stats["avg_latency_ms"] is None
+        assert stats["audit_metrics_complete"] is False
         assert "rules_count" in stats
         assert "constitutional_hash" in stats
 
@@ -494,13 +496,15 @@ class TestGovernanceEngineStats:
         engine.validate("expose secret key")
         stats = engine.stats
         assert stats["total_validations"] >= 2
-        assert "avg_latency_ms" in stats
+        assert stats["audit_metrics_complete"] is True
+        assert stats["avg_latency_ms"] is not None
 
     def test_stats_empty_engine(self):
         engine = _make_engine()
         stats = engine.stats
         assert stats["total_validations"] == 0
-        assert stats["compliance_rate"] == 1.0
+        assert stats["compliance_rate"] is None
+        assert stats["audit_metrics_complete"] is False
 
 
 # ===================================================================

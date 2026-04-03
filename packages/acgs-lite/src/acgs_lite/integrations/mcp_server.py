@@ -57,7 +57,7 @@ def create_mcp_server(
 
     constitution = constitution if constitution is not None else Constitution.default()
     audit_log = AuditLog()
-    engine = GovernanceEngine(constitution, audit_log=audit_log, strict=strict)
+    engine = GovernanceEngine(constitution, audit_log=audit_log, strict=strict, audit_mode="full")
 
     server = Server(server_name)
 

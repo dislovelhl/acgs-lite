@@ -168,12 +168,28 @@ class Constitution(BaseModel):
 
     @classmethod
     def _from_dict(cls, data: dict[str, Any]) -> Constitution:
+        def _coerce_severity(value: Any) -> Severity:
+            if isinstance(value, Severity):
+                return value
+            if isinstance(value, str):
+                return Severity(value.strip().lower())
+            return Severity(value)
+
+        if not isinstance(data, dict):
+            raise ValueError("Constitution data must be a mapping/object")
         rules_data = data.get("rules", [])
+        if not isinstance(rules_data, list):
+            raise ValueError("Constitution 'rules' must be a list of rule objects")
+        for index, raw_rule in enumerate(rules_data):
+            if not isinstance(raw_rule, dict):
+                raise ValueError(
+                    f"Constitution rule at index {index} must be a mapping/object"
+                )
         rules = [
             Rule(
                 id=r["id"],
                 text=r["text"],
-                severity=Severity(r.get("severity", "high")),
+                severity=_coerce_severity(r.get("severity", "high")),
                 keywords=r.get("keywords", []),
                 patterns=r.get("patterns", []),
                 category=r.get("category", "general"),
@@ -190,6 +206,7 @@ class Constitution(BaseModel):
                 valid_from=str(r.get("valid_from", "")),
                 valid_until=str(r.get("valid_until", "")),
                 embedding=list(r.get("embedding", [])),
+                provenance=list(r.get("provenance", [])),
                 metadata=r.get("metadata", {}),
             )
             for r in rules_data

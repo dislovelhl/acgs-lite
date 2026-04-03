@@ -63,6 +63,7 @@ dev = [
 ]
 
 [project.scripts]
+"acgs" = "acgs_lite.cli:main"
 "acgs-lite" = "acgs_lite.cli:main"
 
 [project.urls]

@@ -12,11 +12,11 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
-import tomllib
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+import tomllib
 
 
 @pytest.fixture()
@@ -337,6 +337,14 @@ class TestPackageMetadata:
         pyproject_data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
 
         assert acgs_lite.__version__ == pyproject_data["project"]["version"]
+
+    def test_console_scripts_include_acgs_alias(self) -> None:
+        pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+        pyproject_data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+        scripts = pyproject_data["project"]["scripts"]
+
+        assert scripts["acgs"] == "acgs_lite.cli:main"
+        assert scripts["acgs-lite"] == "acgs_lite.cli:main"
 
 
 # ---------------------------------------------------------------------------

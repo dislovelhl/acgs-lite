@@ -1,9 +1,10 @@
 """Governance validation engine.
 
 The engine evaluates actions against constitutional rules and produces
-structured validation results with full audit trails.
+structured validation results. `GovernanceEngine` supports explicit `audit_mode="fast"`
+    (aggregate counters only) and `audit_mode="full"` (durable `AuditLog` entries).
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -14,7 +15,7 @@ import time
 from collections import defaultdict
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, NamedTuple
+from typing import Any, Literal, NamedTuple
 
 from .rust import _HAS_AHO, _HAS_RUST, _RUST_ALLOW, _RUST_DENY, _RUST_DENY_CRITICAL
 
@@ -112,7 +113,6 @@ CustomValidator = Callable[[str, dict[str, Any]], list[Violation]]
 
 
 _ANON = "anonymous"  # interned sentinel for compact allow-record detection
-_EMPTY_VIOLATIONS: list = []  # shared empty-violation list for allow-path records
 
 
 class _NoopRecorder:
@@ -246,12 +246,12 @@ class GovernanceEngine(BatchValidationMixin):
         "_pat_anchor_dispatch",
         "_no_anchor_patterns",
         "_ac_iter",
-        "_pooled_result",
-        "_pooled_escalate",
         "_has_high_rules",
         "_hot",  # exp66: pre-bundled validate() locals — 1 LOAD_ATTR vs 15
         "_rust_validator",  # exp80: optional Rust hot-path validator
         "_rule_id_to_exc_idx",  # pre-built dict: rule_id → _rule_excs index
+        "_audit_mode",
+        "_requires_runtime_rule_filtering",
     )
 
     def __init__(
@@ -262,19 +262,29 @@ class GovernanceEngine(BatchValidationMixin):
         custom_validators: list[CustomValidator] | None = None,
         strict: bool = True,
         disable_gc: bool = False,
+        audit_mode: Literal["fast", "full"] | None = None,
     ) -> None:
         self.constitution = constitution
-        # Default to _FastAuditLog when none supplied — avoids SHA256 chain
-        # hashing on every validate() call. Pass AuditLog() explicitly for
-        # tamper-evident chain verification.
-        fast_log = _FastAuditLog(constitution.hash) if audit_log is None else None
-        self.audit_log: Any = fast_log if fast_log is not None else audit_log
-        # exp59: Use _NoopRecorder (discards records) as default _fast_records to
-        # eliminate per-call tuple creation (~50ns) and list.append overhead (~16ns).
-        # Pass AuditLog() explicitly to GovernanceEngine for full audit trails.
-        self._fast_records: Any = _NoopRecorder() if fast_log is not None else None
+        effective_audit_mode = audit_mode or ("full" if audit_log is not None else "fast")
+        if effective_audit_mode not in {"fast", "full"}:
+            raise ValueError("audit_mode must be 'fast' or 'full'")
+        if effective_audit_mode == "fast" and audit_log is not None:
+            raise ValueError("audit_log cannot be provided when audit_mode='fast'")
+
+        self._audit_mode = effective_audit_mode
+        if effective_audit_mode == "full":
+            self.audit_log: Any = audit_log if audit_log is not None else AuditLog()
+            self._fast_records: Any = None
+        else:
+            # Fast mode preserves aggregate counters but skips durable audit persistence.
+            self.audit_log = _FastAuditLog(constitution.hash)
+            self._fast_records = _NoopRecorder()
         self.custom_validators = custom_validators if custom_validators is not None else []
         self.strict = strict
+        self._requires_runtime_rule_filtering = any(
+            rule.condition or rule.deprecated or rule.valid_from or rule.valid_until
+            for rule in constitution.rules
+        )
         # Cache frequently accessed values
         self._const_hash: str = constitution.hash
         self._active_rules: list[Rule] = constitution.active_rules()
@@ -462,36 +472,6 @@ class GovernanceEngine(BatchValidationMixin):
         # the blocking list comp at validate() time always yields [] and can be skipped.
         self._has_high_rules: bool = any(r.severity.value == "high" for r in self._active_rules)
 
-        # exp59: Pre-allocate a single ValidationResult per engine instance.
-        # On the allow fast path, we mutate only the 3 varying fields (violations,
-        # request_id, action) and return the same object every call, eliminating
-        # one 143ns allocation per call. Safe only for single-threaded sequential
-        # use — the benchmark consumes each result before the next validate() call.
-        self._pooled_result = ValidationResult(
-            True,
-            constitution.hash,
-            _EMPTY_VIOLATIONS,
-            len(self._active_rules),
-            0.0,
-            0,  # request_id: int (no str() conversion cost)
-            "",
-            "",
-            _ANON,
-        )
-        # exp62: Pre-allocate pooled ValidationResult for the escalate/non-blocking path.
-        # Same pattern as _pooled_result for the allow path: mutate 3 varying fields per call
-        # instead of constructing a new 9-field dataclass object (~125ns saved).
-        self._pooled_escalate = ValidationResult(
-            True,
-            constitution.hash,
-            [],
-            len(self._active_rules),
-            0.0,
-            0,
-            "",
-            "",
-            _ANON,
-        )
         # exp71: shrink _hot tuple to only the 8 items actually used in the AC hot path.
         # Items only used in regex fallback (when AC unavailable) or rare slow path (real
         # AuditLog) are removed — accessed via self._ in those cold paths instead.
@@ -697,6 +677,208 @@ class GovernanceEngine(BatchValidationMixin):
         if disable_gc:
             _gc.disable()
 
+    def _new_fast_allow_result(self) -> ValidationResult:
+        """Return an isolated fast-path allow result."""
+        return ValidationResult(
+            True,
+            self._const_hash,
+            [],
+            self._rules_count,
+            0.0,
+            0,
+            "",
+            "",
+            _ANON,
+        )
+
+    def _new_fast_result(
+        self,
+        *,
+        valid: bool,
+        violations: list[Violation],
+        action: str,
+    ) -> ValidationResult:
+        """Return an isolated fast-path result.
+
+        Fast-mode validation used to reuse mutable ValidationResult instances.
+        That leaked state across repeated or concurrent validations because
+        callers observed the same object reference. Returning a fresh object
+        preserves fast-mode semantics without cross-request aliasing.
+        """
+        return ValidationResult(
+            valid,
+            self._const_hash,
+            list(violations),
+            self._rules_count,
+            0.0,
+            0,
+            "",
+            action[:500],
+            _ANON,
+        )
+
+    def _runtime_active_rules(self, context: dict[str, Any] | None) -> list[Rule]:
+        """Resolve rules that are currently enforceable for the given runtime context."""
+        ctx = context or {}
+        evaluation_time = self._resolve_runtime_evaluation_time(ctx)
+        return [
+            rule
+            for rule in self.constitution.rules
+            if rule.enabled
+            and not rule.deprecated
+            and rule.condition_matches(ctx)
+            and rule.is_valid_at(evaluation_time)
+        ]
+
+    @staticmethod
+    def _resolve_runtime_evaluation_time(context: dict[str, Any]) -> str:
+        """Resolve the timestamp used for temporal rule activation."""
+        for key in ("timestamp", "evaluation_time", "valid_at", "at"):
+            value = context.get(key)
+            if isinstance(value, str) and value:
+                return value
+        return time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime())
+
+    def _validate_with_runtime_rule_filtering(
+        self,
+        action: str,
+        *,
+        agent_id: str,
+        context: dict[str, Any] | None,
+    ) -> ValidationResult:
+        """Validate using per-call rule activation semantics.
+
+        This path is intentionally slower than the hot path, but it preserves correct
+        behavior for constitutions that use context-gated, deprecated, or time-bounded rules.
+        """
+        start = time.perf_counter()
+        applicable_rules = self._runtime_active_rules(context)
+        text_lower = action.lower()
+        has_neg = bool(_NEGATIVE_VERBS_RE.search(text_lower))
+        has_pos = (not has_neg) and any(w in _POSITIVE_VERBS_SET for w in text_lower.split()[:4])
+        action_trimmed = action[:500]
+        action_200 = action[:200]
+        violations: list[Violation] = []
+
+        for rule in applicable_rules:
+            if rule.matches_with_signals(text_lower, has_neg, has_pos):
+                violations.append(
+                    Violation(
+                        rule_id=rule.id,
+                        rule_text=rule.text,
+                        severity=rule.severity,
+                        matched_content=action_200,
+                        category=rule.category,
+                    )
+                )
+
+        if context and ("action_detail" in context or "action_description" in context):
+            for key, value in context.items():
+                if key not in ("action_detail", "action_description") or not isinstance(value, str):
+                    continue
+                value_lower = value.lower()
+                value_has_neg = bool(_NEGATIVE_VERBS_RE.search(value_lower))
+                value_has_pos = (not value_has_neg) and any(
+                    word in _POSITIVE_VERBS_SET for word in value_lower.split()[:4]
+                )
+                for rule in applicable_rules:
+                    if rule.matches_with_signals(value_lower, value_has_neg, value_has_pos):
+                        violations.append(
+                            Violation(
+                                rule_id=rule.id,
+                                rule_text=rule.text,
+                                severity=rule.severity,
+                                matched_content=f"context[{key}]: {value[:100]}",
+                                category=rule.category,
+                            )
+                        )
+
+        if self.custom_validators and (
+            not violations or not any(v.severity == Severity.CRITICAL for v in violations)
+        ):
+            ctx = context or {}
+            for validator in self.custom_validators:
+                try:
+                    violations.extend(validator(action, ctx))
+                except Exception as exc:
+                    violations.append(
+                        Violation(
+                            "CUSTOM-ERROR",
+                            f"Custom validator failed: {exc}",
+                            Severity.HIGH,
+                            action_200,
+                            "validator-error",
+                        )
+                    )
+
+        unique_violations = violations if len(violations) <= 1 else _dedup_violations(violations)
+        blocking = [violation for violation in unique_violations if violation.severity.blocks()]
+        if self.strict and blocking:
+            violation = blocking[0]
+            if self._fast_records is not None:
+                self._fast_records.append(None)
+            raise ConstitutionalViolationError(
+                f"Action blocked by rule {violation.rule_id}: {violation.rule_text}",
+                rule_id=violation.rule_id,
+                severity=violation.severity.value,
+                action=action_200,
+            )
+
+        valid = not bool(blocking)
+        latency_ms = (time.perf_counter() - start) * 1000
+        request_id = str(next(_request_counter))
+        timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        result = ValidationResult(
+            valid=valid,
+            constitutional_hash=self._const_hash,
+            violations=unique_violations,
+            rules_checked=len(applicable_rules),
+            latency_ms=latency_ms,
+            request_id=request_id,
+            timestamp=timestamp,
+            action=action_trimmed,
+            agent_id=agent_id,
+        )
+
+        if self._fast_records is not None:
+            self._fast_records.append(None)
+        else:
+            violation_rule_ids = {violation.rule_id for violation in unique_violations}
+            rule_evaluations = []
+            for rule in self.constitution.rules:
+                active = rule in applicable_rules
+                rule_evaluations.append(
+                    {
+                        "rule_id": rule.id,
+                        "severity": rule.severity.value,
+                        "evaluated": active,
+                        "matched": rule.id in violation_rule_ids,
+                        "reason": (
+                            "violation"
+                            if rule.id in violation_rule_ids
+                            else "no_match"
+                            if active
+                            else "inactive"
+                        ),
+                    }
+                )
+            self.audit_log.record(
+                AuditEntry(
+                    id=request_id,
+                    type="validation",
+                    agent_id=agent_id,
+                    action=action_trimmed,
+                    valid=valid,
+                    violations=[violation.rule_id for violation in unique_violations],
+                    constitutional_hash=self._const_hash,
+                    latency_ms=latency_ms,
+                    timestamp=timestamp,
+                    metadata={"rule_evaluations": rule_evaluations},
+                )
+            )
+
+        return result
+
     def _validate_rust_no_context(
         self,
         action: str,
@@ -708,7 +890,7 @@ class GovernanceEngine(BatchValidationMixin):
         if decision == _RUST_ALLOW:
             # exp108: _is_noop always True here
             fast_records.append(None)
-            return self._pooled_result
+            return self._new_fast_allow_result()
         elif decision == _RUST_DENY_CRITICAL:
             # exp111: _data already Python int
             if not (0 <= data < len(rule_excs)):
@@ -738,12 +920,10 @@ class GovernanceEngine(BatchValidationMixin):
                 _bm &= _bm - 1
                 _rd = self._rule_data[_idx]
                 _vlist.append(Violation(_rd[0], _rd[1], _rd[2], _a200, _rd[4]))
-            _pool_e = self._pooled_escalate
-            _pool_e.violations = _vlist
-            _pool_e.action = action[:500]
             # exp108: _is_noop always True here
             fast_records.append(None)
-            return _pool_e
+            _has_blocking = any(v.severity.blocks() for v in _vlist)
+            return self._new_fast_result(valid=not _has_blocking, violations=_vlist, action=action)
         return None
 
     def _validate_rust_gov_context(
@@ -817,15 +997,13 @@ class GovernanceEngine(BatchValidationMixin):
                     severity=_bv_ctx.severity.value,
                     action=_a200,
                 )
-            _pool_e = self._pooled_escalate
-            _pool_e.violations = _vlist
-            _pool_e.action = action[:500]
             # exp108: _is_noop always True here
             fast_records.append(None)
-            return _pool_e
+            _has_blocking = any(v.severity.blocks() for v in _vlist)
+            return self._new_fast_result(valid=not _has_blocking, violations=_vlist, action=action)
         # exp108: _is_noop always True here
         fast_records.append(None)
-        return self._pooled_result
+        return self._new_fast_allow_result()
 
     def _validate_rust_metadata_context(
         self,
@@ -840,7 +1018,7 @@ class GovernanceEngine(BatchValidationMixin):
             if is_noop:
                 # exp108: _is_noop always True here
                 fast_records.append(None)
-            return self._pooled_result
+            return self._new_fast_allow_result()
         elif decision == _RUST_DENY_CRITICAL:
             # exp111: _data already Python int
             if not (0 <= data < len(rule_excs)):
@@ -871,12 +1049,10 @@ class GovernanceEngine(BatchValidationMixin):
                 _bm &= _bm - 1
                 _rd = self._rule_data[_idx]
                 _vlist.append(Violation(_rd[0], _rd[1], _rd[2], _a200, _rd[4]))
-            _pool_e = self._pooled_escalate
-            _pool_e.violations = _vlist
-            _pool_e.action = action[:500]
             if is_noop:
                 fast_records.append(None)
-            return _pool_e
+            _has_blocking = any(v.severity.blocks() for v in _vlist)
+            return self._new_fast_result(valid=not _has_blocking, violations=_vlist, action=action)
         return None
 
     def _validate_rust_full(
@@ -893,7 +1069,7 @@ class GovernanceEngine(BatchValidationMixin):
         if _decision == _RUST_ALLOW:
             if fast_records is not None:
                 fast_records.append(None)
-                return self._pooled_result
+                return self._new_fast_allow_result()
         elif _decision == _RUST_DENY_CRITICAL:
             # exp83: O(1) dict lookup replaces O(n) linear scan
             _vt_id = _violations[0][0]
@@ -939,10 +1115,11 @@ class GovernanceEngine(BatchValidationMixin):
                     action=_a200,
                 )
             if fast_records is not None:
-                _pool_e = self._pooled_escalate
-                _pool_e.violations = _vlist
-                _pool_e.action = action[:500]
-                return _pool_e
+                return self._new_fast_result(
+                    valid=not _blocking,
+                    violations=_vlist,
+                    action=action,
+                )
         return None
 
     def _validate_python_ac(
@@ -1279,6 +1456,12 @@ class GovernanceEngine(BatchValidationMixin):
         context: dict[str, Any] | None = None,
     ) -> ValidationResult:
         """Validate an action against the constitution."""
+        if self._requires_runtime_rule_filtering:
+            return self._validate_with_runtime_rule_filtering(
+                action,
+                agent_id=agent_id,
+                context=context,
+            )
         strict = self.strict
         # exp75+92: UNPACK_SEQUENCE(11) — _hot includes _rv at [10] (exp92) to avoid
         # LOAD_ATTR(self._rust_validator) and _rust_strict comparison per call.
@@ -1459,12 +1642,10 @@ class GovernanceEngine(BatchValidationMixin):
             # === ALLOW FAST PATH (most common) ===
             # violations empty → valid=True, no blocking, skip all secondary checks
             if _fast_records is not None:
-                # exp62: skip append + all pool mutations — benchmark reads only .valid/.violations.
-                # NoopRecorder._count unincremented (never read); pooled result has valid=True,
-                # violations=_EMPTY_VIOLATIONS which is all the benchmark needs.
-                # exp108: _is_noop always True here (inside _fast_records is not None)
+                # Fast mode skips durable audit persistence but still returns
+                # an isolated result object for each validation.
                 _fast_records.append(None)
-                return self._pooled_result
+                return self._new_fast_allow_result()
             # Slow path (real AuditLog) — rare
             # exp62: request_id/latency_ms deferred from allow fast-path; compute here.
             request_id = next(_request_counter)
@@ -1531,15 +1712,10 @@ class GovernanceEngine(BatchValidationMixin):
             valid = True
 
         if _fast_records is not None:
-            # exp62: pooled escalate result — mutate fields, skip 9-field construction
-            # (~125ns saved) + skip request_id/latency_ms computation (~60ns saved).
-            # exp108: _is_noop always True here (inside _fast_records is not None)
+            # Fast mode skips durable audit persistence but still returns
+            # an isolated result object for each validation.
             _fast_records.append(None)
-            _pool_e = self._pooled_escalate
-            _pool_e.violations = unique_violations
-            _pool_e.action = action_trimmed
-            _pool_e.valid = valid
-            return _pool_e
+            return self._new_fast_result(valid=valid, violations=unique_violations, action=action)
 
         # Slow path: real AuditLog — compute deferred fields.
         request_id = next(_request_counter)
@@ -1595,16 +1771,24 @@ class GovernanceEngine(BatchValidationMixin):
         self.custom_validators.append(validator)
 
     @property
+    def audit_mode(self) -> str:
+        """Current audit mode: 'fast' (aggregate-only) or 'full' (durable log)."""
+        return self._audit_mode
+
+    @property
     def stats(self) -> dict[str, Any]:
         """Return engine statistics."""
         if isinstance(self._fast_records, _NoopRecorder):
             total = len(self._fast_records)
             return {
                 "total_validations": total,
-                "compliance_rate": 1.0,  # NoopRecorder doesn't track compliance rate accurately
+                "compliance_rate": None,  # Fast mode does not retain per-entry validity.
                 "rules_count": len(self.constitution.rules),
                 "constitutional_hash": self._const_hash,
-                "avg_latency_ms": 0.0,
+                "avg_latency_ms": None,  # Fast mode tracks aggregate count only.
+                "audit_mode": self.audit_mode,
+                "audit_entry_count": 0,
+                "audit_metrics_complete": False,
             }
         entries = self.audit_log.entries
         total = len(entries)
@@ -1615,4 +1799,7 @@ class GovernanceEngine(BatchValidationMixin):
             "rules_count": len(self.constitution.rules),
             "constitutional_hash": self._const_hash,
             "avg_latency_ms": (sum(e.latency_ms for e in entries) / total if total > 0 else 0.0),
+            "audit_mode": self.audit_mode,
+            "audit_entry_count": total,
+            "audit_metrics_complete": True,
         }

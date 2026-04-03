@@ -40,6 +40,7 @@ Usage::
     print(report.cross_framework_gaps)
 """
 
+from acgs_lite.compliance.australia_ai_ethics import AustraliaAIEthicsFramework
 from acgs_lite.compliance.base import (
     ChecklistItem,
     ChecklistStatus,
@@ -47,33 +48,34 @@ from acgs_lite.compliance.base import (
     FrameworkAssessment,
     MultiFrameworkReport,
 )
-from acgs_lite.compliance.australia_ai_ethics import AustraliaAIEthicsFramework
 from acgs_lite.compliance.brazil_lgpd import BrazilLGPDFramework
 from acgs_lite.compliance.canada_aida import CanadaAIDAFramework
 from acgs_lite.compliance.ccpa_cpra import CCPACPRAFramework
 from acgs_lite.compliance.china_ai import ChinaAIFramework
 from acgs_lite.compliance.dora import DORAFramework
 from acgs_lite.compliance.eu_ai_act import EUAIActFramework, infer_risk_tier
-from acgs_lite.compliance.gdpr import GDPRFramework
-from acgs_lite.compliance.hipaa_ai import HIPAAAIFramework
-from acgs_lite.compliance.india_dpdp import IndiaDPDPFramework
-from acgs_lite.compliance.iso_42001 import ISO42001Framework
 from acgs_lite.compliance.evidence import (
     ACGSLiteImportCollector,
     ComplianceEvidenceEngine,
     EnvironmentVarCollector,
     EvidenceBundle,
-    EvidenceCollectorImpl as EvidenceCollector,
-    EvidenceRecord,
     EvidenceItem,
+    EvidenceRecord,
     FileSystemCollector,
     collect_evidence,
 )
+from acgs_lite.compliance.evidence import (
+    EvidenceCollectorImpl as EvidenceCollector,
+)
+from acgs_lite.compliance.gdpr import GDPRFramework
+from acgs_lite.compliance.hipaa_ai import HIPAAAIFramework
+from acgs_lite.compliance.india_dpdp import IndiaDPDPFramework
+from acgs_lite.compliance.iso_42001 import ISO42001Framework
 from acgs_lite.compliance.multi_framework import MultiFrameworkAssessor
-from acgs_lite.compliance.report_exporter import ComplianceReportExporter
 from acgs_lite.compliance.nist_ai_rmf import NISTAIRMFFramework
 from acgs_lite.compliance.nyc_ll144 import NYCLL144Framework
 from acgs_lite.compliance.oecd_ai import OECDAIFramework
+from acgs_lite.compliance.report_exporter import ComplianceReportExporter
 from acgs_lite.compliance.singapore_maigf import SingaporeMAIGFFramework
 from acgs_lite.compliance.soc2_ai import SOC2AIFramework
 from acgs_lite.compliance.uk_ai_framework import UKAIFramework

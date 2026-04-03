@@ -33,10 +33,12 @@ class MACIRole(str, Enum):
 
 
 # Actions each role is allowed to perform
+_UNIVERSAL_READ_ACTIONS: set[str] = {"read", "query"}
+
 _ROLE_PERMISSIONS: dict[MACIRole, set[str]] = {
-    MACIRole.PROPOSER: {"propose", "draft", "suggest", "amend"},
-    MACIRole.VALIDATOR: {"validate", "review", "audit", "verify"},
-    MACIRole.EXECUTOR: {"execute", "deploy", "apply", "run"},
+    MACIRole.PROPOSER: {"propose", "draft", "suggest", "amend"} | _UNIVERSAL_READ_ACTIONS,
+    MACIRole.VALIDATOR: {"validate", "review", "audit", "verify"} | _UNIVERSAL_READ_ACTIONS,
+    MACIRole.EXECUTOR: {"execute", "deploy", "apply", "run"} | _UNIVERSAL_READ_ACTIONS,
     MACIRole.OBSERVER: {"read", "query", "export", "observe"},
 }
 
@@ -238,9 +240,10 @@ class MACIEnforcer:
             role = MACIRole.OBSERVER
 
         action_lower = action.lower()
+        allowed = _ROLE_PERMISSIONS.get(role, set())
         denied = _ROLE_DENIALS.get(role, set())
 
-        if action_lower in denied:
+        if action_lower in denied or action_lower not in allowed:
             self.audit_log.record(
                 AuditEntry(
                     id=f"maci-deny-{agent_id}",
@@ -249,12 +252,16 @@ class MACIEnforcer:
                     action=action,
                     valid=False,
                     violations=["MACI"],
-                    metadata={"role": role.value, "denied_action": action_lower},
+                    metadata={
+                        "role": role.value,
+                        "denied_action": action_lower,
+                        "allowed_actions": sorted(allowed),
+                    },
                 )
             )
             raise MACIViolationError(
                 f"MACI violation: {role.value} cannot {action_lower}. "
-                f"Role {role.value} is denied: {', '.join(sorted(denied))}",
+                f"Role {role.value} may only: {', '.join(sorted(allowed))}",
                 actor_role=role.value,
                 attempted_action=action_lower,
             )

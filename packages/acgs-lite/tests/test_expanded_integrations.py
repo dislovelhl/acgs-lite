@@ -700,6 +700,42 @@ class TestGovernanceASGIMiddleware:
         assert response.status_code == 200
         assert response.headers.get("x-governance-hash") is not None
 
+    def test_strict_post_blocked_before_downstream_app(self):
+        from starlette.applications import Starlette
+        from starlette.requests import Request
+        from starlette.responses import JSONResponse
+        from starlette.routing import Route
+        from starlette.testclient import TestClient
+
+        from acgs_lite.middleware import GovernanceASGIMiddleware
+
+        app_calls = 0
+        constitution = Constitution.from_rules(
+            [
+                Rule(
+                    id="BAN-SQL",
+                    text="No SQL",
+                    severity=Severity.CRITICAL,
+                    keywords=["drop table"],
+                ),
+            ]
+        )
+
+        async def api(request: Request) -> JSONResponse:
+            nonlocal app_calls
+            app_calls += 1
+            body = await request.json()
+            return JSONResponse({"received": body})
+
+        app = Starlette(routes=[Route("/api", api, methods=["POST"])])
+        app = GovernanceASGIMiddleware(app, constitution=constitution, strict=True)
+        client = TestClient(app)
+
+        with pytest.raises(ConstitutionalViolationError):
+            client.post("/api", json={"content": "drop table users"})
+
+        assert app_calls == 0
+
     def test_stats(self):
         from acgs_lite.middleware import GovernanceASGIMiddleware
 

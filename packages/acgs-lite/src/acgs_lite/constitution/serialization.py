@@ -55,6 +55,20 @@ def to_yaml(constitution: Constitution) -> str:
             rule_dict["tags"] = list(r.tags)
         if r.priority != 0:
             rule_dict["priority"] = r.priority
+        if r.condition:
+            rule_dict["condition"] = dict(r.condition)
+        if r.deprecated:
+            rule_dict["deprecated"] = True
+        if r.replaced_by:
+            rule_dict["replaced_by"] = r.replaced_by
+        if r.valid_from:
+            rule_dict["valid_from"] = r.valid_from
+        if r.valid_until:
+            rule_dict["valid_until"] = r.valid_until
+        if r.provenance:
+            rule_dict["provenance"] = list(r.provenance)
+        if r.metadata:
+            rule_dict["metadata"] = dict(r.metadata)
         rules_data.append(rule_dict)
 
     doc: dict[str, Any] = {
@@ -65,6 +79,10 @@ def to_yaml(constitution: Constitution) -> str:
     }
     if constitution.metadata:
         doc["metadata"] = dict(constitution.metadata)
+    if constitution.permission_ceiling != "standard":
+        doc["permission_ceiling"] = constitution.permission_ceiling
+    if constitution.version_name:
+        doc["version_name"] = constitution.version_name
 
     return cast(str, yaml.dump(doc, default_flow_style=False, sort_keys=False, allow_unicode=True))
 
@@ -124,6 +142,8 @@ def to_bundle(constitution: Constitution) -> dict[str, Any]:
             rule_dict["valid_from"] = r.valid_from
         if r.valid_until:
             rule_dict["valid_until"] = r.valid_until
+        if r.provenance:
+            rule_dict["provenance"] = list(r.provenance)
         if r.metadata:
             rule_dict["metadata"] = dict(r.metadata)
         rules_data.append(rule_dict)
