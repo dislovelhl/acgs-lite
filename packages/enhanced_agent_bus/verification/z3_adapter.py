@@ -2,6 +2,12 @@
 
 Constitutional Hash: 608508a9bd224290
 
+.. deprecated::
+    This module is scheduled for consolidation into
+    ``verification_layer.z3_policy_verifier`` (Phase 2). New Z3 verification
+    code should be added there. This file is retained for backward compatibility
+    with existing consumers (tests/, breakthrough/, workflows/).
+
 Implements LLM-assisted formal verification using Z3 SMT solver.
 Provides mathematical guarantees for constitutional policy verification.
 
