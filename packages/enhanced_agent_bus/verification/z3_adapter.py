@@ -125,6 +125,7 @@ class Z3SolverAdapter:
 
         # Track constraints and their names
         self.named_constraints: dict[str, z3.ExprRef] = {}
+        self.constraint_trackers: dict[str, z3.BoolRef] = {}
         self.constraint_history: list[Z3Constraint] = []
 
         logger.info(f"Z3 Solver Adapter initialized with timeout {timeout_ms}ms")
@@ -133,6 +134,7 @@ class Z3SolverAdapter:
         """Reset the solver state."""
         self.solver.reset()
         self.named_constraints.clear()
+        self.constraint_trackers.clear()
 
     def add_constraint(self, name: str, constraint: z3.ExprRef, metadata: Z3Constraint):
         """
@@ -144,7 +146,9 @@ class Z3SolverAdapter:
             metadata: Constraint metadata
         """
         self.named_constraints[name] = constraint
-        self.solver.add(constraint)
+        tracker = z3.Bool(name)
+        self.constraint_trackers[name] = tracker
+        self.solver.assert_and_track(constraint, tracker)
         self.constraint_history.append(metadata)
 
     async def async_check_sat(

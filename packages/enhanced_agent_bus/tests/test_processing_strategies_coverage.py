@@ -541,6 +541,8 @@ class TestMACIProcessingStrategy:
             result = await maci.process(message, handlers)
             # In non-strict mode, should delegate to inner strategy
             mock_inner_strategy.process.assert_called_once()
+        else:
+            pytest.skip("MACI strategy not available in test environment")
 
     def test_init_with_custom_registry_enforcer(self, mock_inner_strategy):
         """MACI accepts custom registry and enforcer."""
