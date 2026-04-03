@@ -15,16 +15,23 @@ import functools
 import inspect
 import logging
 from collections.abc import Awaitable, Callable
+from importlib import import_module
 from typing import Any, cast
 
+logger = logging.getLogger(__name__)
+
 try:
-    from acgs_lite.fail_closed import FailClosedError  # noqa: F401
-except ImportError:
+    FailClosedError = import_module("acgs_lite.fail_closed").FailClosedError  # type: ignore[attr-defined]
+except ModuleNotFoundError as exc:
+    if exc.name not in {"acgs_lite", "acgs_lite.fail_closed"}:
+        raise
+    logger.warning(
+        "acgs_lite.fail_closed is unavailable; enhanced_agent_bus is using a local "
+        "FailClosedError fallback"
+    )
 
     class FailClosedError(Exception):  # type: ignore[no-redef]
         """Fallback when acgs_lite is not on the import path."""
-
-logger = logging.getLogger(__name__)
 
 __all__ = ["FailClosedError", "fail_closed"]
 

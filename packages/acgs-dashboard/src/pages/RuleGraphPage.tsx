@@ -32,7 +32,7 @@ const CATEGORY_COLORS = [
 
 export function RuleGraphPage() {
   const rulesFetcher = useCallback(() => acgsLite.getRules(), []);
-  const { data: rules, loading } = useApi(rulesFetcher);
+  const { data: rules, loading, error } = useApi(rulesFetcher);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Category distribution
@@ -130,6 +130,12 @@ export function RuleGraphPage() {
           {categoryData.length} categories
         </p>
       </div>
+
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          {error}
+        </div>
+      )}
 
       {/* Overview stats */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

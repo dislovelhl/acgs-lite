@@ -22,7 +22,7 @@ import type { ValidationResult } from "@/lib/types";
 
 export function AuditPage() {
   const statsFetcher = useCallback(() => acgsLite.stats(), []);
-  const { data: stats, loading } = useApi(statsFetcher, 5000);
+  const { data: stats, loading, error } = useApi(statsFetcher, 5000);
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "pass" | "fail">("all");
@@ -103,6 +103,12 @@ export function AuditPage() {
           Export CSV
         </button>
       </div>
+
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          {error}
+        </div>
+      )}
 
       {/* Distribution chart */}
       {hourlyData.length > 0 && (

@@ -17,8 +17,16 @@ import type {
   StabilityMetrics,
 } from "@/lib/types";
 
-const ACGS_LITE_BASE = import.meta.env.VITE_ACGS_LITE_URL ?? "";
-const GATEWAY_BASE = import.meta.env.VITE_GATEWAY_URL ?? "";
+function normalizeBase(url: string | undefined, fallback: string): string {
+  const value = (url ?? fallback).trim();
+  if (!value) return "";
+  return value.endsWith("/") ? value.slice(0, -1) : value;
+}
+
+const ACGS_LITE_BASE = normalizeBase(import.meta.env.VITE_ACGS_LITE_URL, "");
+const GATEWAY_BASE = normalizeBase(import.meta.env.VITE_GATEWAY_URL, "/api");
+const ENABLE_DEMO_FALLBACK =
+  import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEMO_FALLBACK === "true";
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
@@ -35,9 +43,28 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-/** Wrap a fetcher so network errors resolve to a fallback instead of throwing. */
-function withFallback<T>(fetcher: () => Promise<T>, fallback: T): () => Promise<T> {
-  return () => fetcher().catch(() => fallback);
+function shouldUseDemoFallback(error: unknown): boolean {
+  if (!ENABLE_DEMO_FALLBACK) return false;
+  if (error instanceof TypeError) return true;
+  if (!(error instanceof Error)) return false;
+  return (
+    /^5\d\d\b/.test(error.message) ||
+    /failed to fetch|networkerror|load failed/i.test(error.message)
+  );
+}
+
+/** Wrap a fetcher so demo data is only used when explicitly enabled. */
+function withDemoFallback<T>(fetcher: () => Promise<T>, fallback: T): () => Promise<T> {
+  return async () => {
+    try {
+      return await fetcher();
+    } catch (error) {
+      if (shouldUseDemoFallback(error)) {
+        return fallback;
+      }
+      throw error;
+    }
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -234,12 +261,12 @@ const DEMO_GOVERNANCE_STATE: GovernanceState = {
 // ---------------------------------------------------------------------------
 
 export const acgsLite = {
-  health: withFallback(
+  health: withDemoFallback(
     () => fetchJson<HealthResponse>(`${ACGS_LITE_BASE}/health`),
     DEMO_HEALTH,
   ),
 
-  stats: withFallback(
+  stats: withDemoFallback(
     () => fetchJson<StatsResponse>(`${ACGS_LITE_BASE}/stats`),
     DEMO_STATS,
   ),
@@ -250,12 +277,12 @@ export const acgsLite = {
       body: JSON.stringify({ action, agent_id: agentId, context }),
     }),
 
-  getGovernanceState: withFallback(
+  getGovernanceState: withDemoFallback(
     () => fetchJson<GovernanceState>(`${ACGS_LITE_BASE}/governance/state`),
     DEMO_GOVERNANCE_STATE,
   ),
 
-  getRules: withFallback(
+  getRules: withDemoFallback(
     () =>
       fetchJson<GovernanceState>(`${ACGS_LITE_BASE}/governance/state`).then(
         (s) => s.rules,
@@ -274,7 +301,7 @@ export const acgsLite = {
 export const gateway = {
   stabilityMetrics: () =>
     fetchJson<StabilityMetrics>(
-      `${GATEWAY_BASE}/api/v1/governance/stability/metrics`,
+      `${GATEWAY_BASE}/v1/governance/stability/metrics`,
     ),
 
   busHealth: () =>

@@ -44,8 +44,8 @@ export function DashboardPage() {
   const statsFetcher = useCallback(() => acgsLite.stats(), []);
   const healthFetcher = useCallback(() => acgsLite.health(), []);
 
-  const { data: stats, loading: statsLoading } = useApi(statsFetcher, 5000);
-  const { data: health } = useApi(healthFetcher, 10000);
+  const { data: stats, loading: statsLoading, error: statsError } = useApi(statsFetcher, 5000);
+  const { data: health, error: healthError } = useApi(healthFetcher, 10000);
 
   const engineStatus = health?.status === "ok" ? "ok" : health ? "error" : "unknown";
   const isDemo = health?.engine === "demo";
@@ -95,6 +95,12 @@ export function DashboardPage() {
         </div>
         <StatusDot status={engineStatus} label={`Engine: ${health?.engine ?? "connecting..."}`} />
       </div>
+
+      {(statsError || healthError) && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          {statsError ?? healthError}
+        </div>
+      )}
 
       {/* Metric cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
