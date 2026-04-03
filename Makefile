@@ -7,7 +7,7 @@ UV_CACHE_DIR ?= $(ROOT_DIR)/.uv-cache
 VENV_PYTHON := $(ROOT_DIR)/.venv/bin/python
 PYTHON ?= $(if $(wildcard $(VENV_PYTHON)),$(VENV_PYTHON),python3)
 PIP ?= $(PYTHON) -m pip
-WORKSPACE_PYTHONPATH := $(ROOT_DIR)/packages/enhanced_agent_bus:$(ROOT_DIR)/packages/acgs-lite/src:$(ROOT_DIR)/packages/acgs-deliberation/src:$(ROOT_DIR)/packages/constitutional_swarm/src:$(ROOT_DIR)/packages/mhc/src:$(ROOT_DIR)/src:$(ROOT_DIR)
+WORKSPACE_PYTHONPATH := $(ROOT_DIR)/packages/enhanced_agent_bus:$(ROOT_DIR)/packages/acgs-core/src:$(ROOT_DIR)/packages/acgs-lite/src:$(ROOT_DIR)/packages/acgs-deliberation/src:$(ROOT_DIR)/packages/constitutional_swarm/src:$(ROOT_DIR)/packages/mhc/src:$(ROOT_DIR)/src:$(ROOT_DIR)
 export PYTHONPATH := $(WORKSPACE_PYTHONPATH)$(if $(PYTHONPATH),:$(PYTHONPATH))
 PYTEST_TARGETS ?=
 PYTEST_ARGS ?=
@@ -231,6 +231,10 @@ eval-rules:
 
 eval-rules-generate:
 	$(PYTHON) autoresearch/eval_rules.py --generate
+
+# === ACGS Core ===
+test-core:
+	$(PYTHON) -m pytest packages/acgs-core/tests/ -v --import-mode=importlib
 
 # === Dashboard ===
 dashboard-install:
