@@ -71,7 +71,7 @@ _PHI_PATTERNS: list[tuple[str, re.Pattern[str], str]] = [
     ),
     (
         "PHI-IP",
-        re.compile(r"\b(?:IP\s*(?:address)?\s*[:\-]?\s*)?\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"),
+        re.compile(r"\bIP\s*(?:address)?\s*[:\-]?\s*\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b", re.IGNORECASE),
         "IP address pattern detected",
     ),
     (

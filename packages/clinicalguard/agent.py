@@ -87,7 +87,7 @@ _AGENT_CARD: dict[str, Any] = {
             "id": "check_hipaa_compliance",
             "name": "Check HIPAA Compliance",
             "description": (
-                "Run a 29-item HIPAA compliance checklist against an AI agent system "
+                "Run a HIPAA compliance checklist against an AI agent system "
                 "description. Returns: compliant bool, items_checked, checklist with "
                 "status and MACI-mapped mitigations, constitutional_hash."
             ),
@@ -192,13 +192,17 @@ class ClinicalGuardApp:
             try:
                 audit_log.export_json(self.audit_log_path)
             except Exception as exc:
-                logger.warning("Audit log persistence failed: %s", exc)
+                logger.warning("Audit log persistence failed: %s", type(exc).__name__)
 
     def _check_auth(self, request: Request) -> bool:
         """Return True if auth passes (or no API key configured)."""
+        import hmac
         if not self._api_key:
             return True
-        return request.headers.get("X-API-Key", "") == self._api_key
+        return hmac.compare_digest(
+            request.headers.get("X-API-Key", "").encode(),
+            self._api_key.encode(),
+        )
 
     # ── Route handlers ────────────────────────────────────────────────────────
 
@@ -220,7 +224,11 @@ class ClinicalGuardApp:
         """Main A2A task handler — dispatches to skills by name."""
         if not self._check_auth(request):
             return JSONResponse(
-                {"error": "Unauthorized — provide X-API-Key header"},
+                {
+                    "jsonrpc": "2.0",
+                    "id": None,
+                    "error": {"code": -32001, "message": "Unauthorized — provide X-API-Key header"},
+                },
                 status_code=401,
             )
 
@@ -389,7 +397,7 @@ class ClinicalGuardApp:
                 parts = stripped.lower().split()
                 idx = parts.index("recent")
                 if idx + 1 < len(parts) and parts[idx + 1].isdigit():
-                    limit = int(parts[idx + 1])
+                    limit = min(int(parts[idx + 1]), 500)
             return query_audit_trail(
                 self.audit_log, audit_id=audit_id, limit=limit
             )

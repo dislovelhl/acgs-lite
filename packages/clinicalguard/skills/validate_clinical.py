@@ -164,36 +164,42 @@ async def _call_llm_pi_rpc(action_text: str) -> dict[str, Any]:
     buffer = b""
 
     assert proc.stdout is not None
-    while True:
-        chunk = await asyncio.wait_for(proc.stdout.read(4096), timeout=30.0)
-        if not chunk:
-            break
-        buffer += chunk
-        while b"\n" in buffer:
-            line_bytes, buffer = buffer.split(b"\n", 1)
-            line = line_bytes.decode("utf-8", errors="replace").rstrip("\r")
-            if not line:
-                continue
-            try:
-                event = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            etype = event.get("type", "")
-            if etype == "message_update":
-                delta = event.get("assistantMessageEvent", {})
-                if delta.get("type") == "text_delta":
-                    collected.append(delta["delta"])
-            elif etype == "agent_end":
-                break
-        else:
-            continue
-        break
-
     try:
-        proc.stdin.close()
-        await asyncio.wait_for(proc.wait(), timeout=5.0)
-    except Exception:
-        proc.kill()
+        while True:
+            chunk = await asyncio.wait_for(proc.stdout.read(4096), timeout=30.0)
+            if not chunk:
+                break
+            buffer += chunk
+            while b"\n" in buffer:
+                line_bytes, buffer = buffer.split(b"\n", 1)
+                line = line_bytes.decode("utf-8", errors="replace").rstrip("\r")
+                if not line:
+                    continue
+                try:
+                    event = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                etype = event.get("type", "")
+                if etype == "message_update":
+                    delta = event.get("assistantMessageEvent", {})
+                    if delta.get("type") == "text_delta":
+                        collected.append(delta["delta"])
+                elif etype == "agent_end":
+                    break
+            else:
+                continue
+            break
+    finally:
+        try:
+            proc.stdin.close()
+        except Exception:
+            pass
+        if proc.returncode is None:
+            proc.kill()
+        try:
+            await asyncio.wait_for(proc.wait(), timeout=2.0)
+        except Exception:
+            pass
 
     full_text = "".join(collected).strip()
     if full_text.startswith("```"):
@@ -250,10 +256,10 @@ async def get_llm_assessment(action_text: str) -> LLMClinicalAssessment:
             llm_available=True,
         )
     except Exception as exc:
-        logger.warning("%s clinical reasoning failed: %s — rule-only fallback", label, exc)
+        logger.warning("%s clinical reasoning failed: %s — rule-only fallback", label, type(exc).__name__)
         return LLMClinicalAssessment(
             llm_available=False,
-            error=str(exc),
+            error=type(exc).__name__,
             reasoning="LLM reasoning unavailable — constitutional rules only.",
             recommended_decision=CONDITIONAL,
             risk_tier=RISK_MEDIUM,
@@ -375,7 +381,7 @@ async def validate_clinical_action(
     reasoning = " ".join(reasoning_parts) or "Assessment complete."
 
     # Step 4: Audit trail entry
-    audit_id = f"HC-{datetime.now(UTC).strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
+    audit_id = f"HC-{datetime.now(UTC).strftime('%Y%m%d')}-{uuid.uuid4().hex[:10].upper()}"
     constitutional_hash = ""
     try:
         constitutional_hash = engine.constitution.hash
@@ -408,7 +414,7 @@ async def validate_clinical_action(
         try:
             on_persist(audit_log)
         except Exception as exc:
-            logger.warning("Audit persistence callback failed: %s", exc)
+            logger.warning("Audit persistence callback failed: %s", type(exc).__name__)
 
     return {
         "decision": decision,
@@ -424,7 +430,7 @@ async def validate_clinical_action(
         "constitutional_hash": constitutional_hash,
         "maci_role": MACIRole.VALIDATOR,
         "timestamp": entry.timestamp,
-        "appeal_path": f"POST /appeal?audit_id={audit_id}" if decision != APPROVED else None,
+        "appeal_path": f"Contact your governance administrator with audit_id={audit_id}" if decision != APPROVED else None,
     }
 
 
