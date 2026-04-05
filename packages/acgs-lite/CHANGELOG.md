@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.5.2] - 2026-04-05
 
+### Added
+- Open-source distribution scaffolding: MkDocs documentation site, CONTRIBUTING.md,
+  SECURITY.md, CODE_OF_CONDUCT.md, GitHub Actions CI/CD, issue and PR templates
+- Apache-2.0 license with Commons Clause
+
 ### Fixed
 - Updated all package URLs to individual GitHub repositories
 - Pinned Node 22 and uv 0.10.9 in eval-rules and GitLab CI

@@ -1,4 +1,4 @@
-# ACGS-Lite 2.5.0 — Examples
+# ACGS-Lite 2.5.2 — Examples
 
 Runnable quickstarts covering the core governance patterns.
 **No API keys or network access required** for any of these examples.
@@ -6,7 +6,7 @@ Runnable quickstarts covering the core governance patterns.
 ## Quickstart
 
 ```bash
-pip install acgs-lite==2.5.0
+pip install acgs-lite==2.5.2
 
 # Run any example
 python packages/acgs-lite/examples/basic_governance/main.py
