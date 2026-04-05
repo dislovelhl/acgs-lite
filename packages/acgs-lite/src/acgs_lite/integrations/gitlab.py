@@ -296,11 +296,12 @@ class GitLabGovernanceBot:
                     discussion_payload,
                 )
                 results.append(resp)
-            except Exception:
+            except Exception as exc:
                 logger.warning(
-                    "Failed to post inline comment on %s:%s",
+                    "Failed to post inline comment on %s:%s: %s",
                     v["file"],
                     v["line"],
+                    exc,
                     exc_info=True,
                 )
 
@@ -320,8 +321,8 @@ class GitLabGovernanceBot:
             try:
                 resp = await self._post(f"merge_requests/{mr_iid}/approve", {})
                 return {"action": "approved", "response": resp}
-            except Exception:
-                logger.warning("Failed to approve MR !%s", mr_iid, exc_info=True)
+            except Exception as exc:
+                logger.warning("Failed to approve MR !%s: %s", mr_iid, exc, exc_info=True)
                 return {"action": "approve_failed", "response": None}
 
         block_body = (
@@ -502,8 +503,8 @@ class GitLabWebhookHandler:
         try:
             result = await self._route_event(event_type, body)
             return JSONResponse({"status": "processed", "result": result})
-        except Exception:
-            logger.error("Webhook processing failed", exc_info=True)
+        except Exception as exc:
+            logger.error("Webhook processing failed: %s", exc, exc_info=True)
             return JSONResponse({"error": "Processing failed"}, status_code=500)
 
     async def _route_event(self, event_type: str, body: dict[str, Any]) -> dict[str, Any]:

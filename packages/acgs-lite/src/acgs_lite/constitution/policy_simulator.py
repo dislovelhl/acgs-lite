@@ -36,9 +36,12 @@ Usage::
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 _RISK_MATRIX: dict[tuple[str, str], str] = {
     ("allow", "allow"): "none",
@@ -65,7 +68,13 @@ def _safe_validate(constitution: Any, action: str, context: dict[str, Any] | Non
     try:
         result = constitution.validate(action, context=context or {})
         return str(getattr(result, "outcome", "allow")).lower()
-    except Exception:
+    except Exception as exc:
+        logger.debug(
+            "policy simulator validation failed for action %r; returning error outcome: %s",
+            action,
+            exc,
+            exc_info=True,
+        )
         return "error"
 
 

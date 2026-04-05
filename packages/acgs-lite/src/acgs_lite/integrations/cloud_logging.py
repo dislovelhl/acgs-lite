@@ -164,10 +164,11 @@ class CloudLoggingAuditExporter:
         for entry in entries:
             try:
                 self.export_entry(entry)
-            except Exception:
+            except Exception as exc:
                 logger.error(
-                    "Failed to export audit entry %s to Cloud Logging",
+                    "Failed to export audit entry %s to Cloud Logging: %s",
                     entry.id,
+                    exc,
                     exc_info=True,
                 )
 

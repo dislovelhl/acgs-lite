@@ -23,7 +23,12 @@ try:
     from transformers import pipeline
 
     TRANSFORMERS_AVAILABLE = True
-except Exception:
+except Exception as exc:
+    _log.debug(
+        "transformers pipeline import failed; falling back to rule-based scoring: %s",
+        exc,
+        exc_info=True,
+    )
     TRANSFORMERS_AVAILABLE = False
 
 try:
