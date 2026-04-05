@@ -74,12 +74,6 @@ messaging = [
     "aiokafka>=0.10.0",
 ]
 
-[tool.setuptools]
-packages = [
-    "enhanced_agent_bus",
-    "enhanced_agent_bus.deliberation_layer",
-]
-
 [tool.setuptools.package-dir]
 enhanced_agent_bus = "."
 
