@@ -112,7 +112,7 @@ ignore = [
 max-complexity = 15
 
 [tool.ruff.lint.isort]
-known-first-party = ["src", "packages", "acgs_lite", "enhanced_agent_bus", "acgs_deliberation"]
+known-first-party = ["src", "packages", "acgs_lite", "enhanced_agent_bus", "acgs_deliberation", "clinicalguard"]
 
 [tool.mypy]
 python_version = "3.11"
