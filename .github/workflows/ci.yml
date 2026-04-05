@@ -88,7 +88,10 @@ jobs:
           cache-dependency-glob: "uv.lock"
 
       - name: Install workspace
-        run: uv sync --frozen --all-extras
+        run: |
+          uv sync --frozen --all-extras
+          # Ensure anthropic SDK is present (workspace extra may not pull it)
+          uv pip install "anthropic>=0.30" --quiet
 
       - name: Build Rust extension (optional)
         working-directory: packages/acgs-lite/rust
@@ -129,12 +132,11 @@ jobs:
           uv pip install -e packages/acgs-core --no-deps
 
       - name: pytest (acgs-core)
-        # --pythonpath ensures acgs-core/src/acgs/ is found before the shim in
-        # acgs-lite/src/acgs/ (both packages provide an acgs/ namespace).
+        # conftest.py in acgs-core/tests inserts src/ at front of sys.path so
+        # acgs.audit_memory etc. resolve from acgs-core, not the acgs-lite shim.
         run: |
           uv run pytest packages/acgs-core/tests/ \
             --import-mode=importlib \
-            --pythonpath packages/acgs-core/src \
             -x -q \
             --timeout=60 \
             --tb=short
@@ -155,7 +157,10 @@ jobs:
           cache-dependency-glob: "uv.lock"
 
       - name: Install workspace
-        run: uv sync --frozen --all-extras
+        run: |
+          uv sync --frozen --all-extras
+          # Ensure aiofiles is present for bus tests
+          uv pip install "aiofiles>=24.1.0" --quiet
 
       - name: MessageProcessor wrapper audit
         run: make health-bus-wrappers
@@ -213,7 +218,6 @@ jobs:
         run: |
           uv run pytest packages/acgs-core/tests/ \
             --import-mode=importlib \
-            --pythonpath packages/acgs-core/src \
             -q \
             --timeout=120 \
             --tb=short
