@@ -23,7 +23,7 @@ rules:
 **Code:**
 
 ```python
-from acgs_lite import ConstitutionBuilder, Severity
+from acgs import ConstitutionBuilder, Severity
 
 constitution = (
     ConstitutionBuilder()
@@ -36,7 +36,7 @@ constitution = (
 ## Govern an Agent
 
 ```python
-from acgs_lite import Constitution, GovernedAgent
+from acgs import Constitution, GovernedAgent
 
 constitution = Constitution.from_yaml("rules.yaml")
 agent = GovernedAgent(my_agent, constitution=constitution)
@@ -50,7 +50,7 @@ result = agent.run("process this request")
 ## Check the Audit Trail
 
 ```python
-from acgs_lite import AuditLog
+from acgs import AuditLog
 log = AuditLog()
 for entry in log.entries:
     print(entry.timestamp, entry.action, entry.result)
@@ -66,7 +66,7 @@ acgs report --markdown
 ## Use Built-in Templates
 
 ```python
-from acgs_lite import Constitution
+from acgs import Constitution
 general = Constitution.from_template("general")
 gitlab = Constitution.from_template("gitlab")
 merged = Constitution.merge(general, gitlab)

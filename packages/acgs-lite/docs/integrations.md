@@ -19,7 +19,7 @@ ACGS ships with 11 platform integrations. Install the relevant extra and wrap yo
 ## Anthropic
 
 ```python
-from acgs_lite.integrations.anthropic import GovernedAnthropic
+from acgs.integrations.anthropic import GovernedAnthropic
 client = GovernedAnthropic(constitution=constitution)
 response = client.messages.create(model="claude-sonnet-4-20250514", messages=[...])
 ```
@@ -27,7 +27,7 @@ response = client.messages.create(model="claude-sonnet-4-20250514", messages=[..
 ## OpenAI
 
 ```python
-from acgs_lite.integrations.openai import GovernedOpenAI
+from acgs.integrations.openai import GovernedOpenAI
 client = GovernedOpenAI(constitution=constitution)
 response = client.chat.completions.create(model="gpt-4o", messages=[...])
 ```
@@ -35,14 +35,14 @@ response = client.chat.completions.create(model="gpt-4o", messages=[...])
 ## MCP Server
 
 ```python
-from acgs_lite.integrations.mcp_server import create_mcp_server
+from acgs.integrations.mcp_server import create_mcp_server
 server = create_mcp_server(constitution=constitution)
 ```
 
 ## LangChain
 
 ```python
-from acgs_lite.integrations.langchain import GovernanceRunnable
+from acgs.integrations.langchain import GovernanceRunnable
 governed = GovernanceRunnable(constitution=constitution)
 chain = governed | my_llm | output_parser
 ```
@@ -50,7 +50,7 @@ chain = governed | my_llm | output_parser
 ## LiteLLM
 
 ```python
-from acgs_lite.integrations.litellm import GovernedLiteLLM
+from acgs.integrations.litellm import GovernedLiteLLM
 client = GovernedLiteLLM(constitution=constitution)
 response = client.completion(model="gpt-4o", messages=[...])
 ```
@@ -58,7 +58,7 @@ response = client.completion(model="gpt-4o", messages=[...])
 ## Google GenAI
 
 ```python
-from acgs_lite.integrations.google_genai import GovernedGenAI
+from acgs.integrations.google_genai import GovernedGenAI
 client = GovernedGenAI(constitution=constitution)
 response = client.models.generate_content(model="gemini-2.0-flash", contents="...")
 ```
@@ -66,7 +66,7 @@ response = client.models.generate_content(model="gemini-2.0-flash", contents="..
 ## LlamaIndex
 
 ```python
-from acgs_lite.integrations.llamaindex import GovernedQueryEngine
+from acgs.integrations.llamaindex import GovernedQueryEngine
 engine = GovernedQueryEngine(base_query_engine, constitution=constitution)
 response = engine.query("summarize this document")
 ```
@@ -74,14 +74,14 @@ response = engine.query("summarize this document")
 ## AutoGen
 
 ```python
-from acgs_lite.integrations.autogen import GovernedModelClient
+from acgs.integrations.autogen import GovernedModelClient
 client = GovernedModelClient(base_client, constitution=constitution)
 ```
 
 ## CrewAI
 
 ```python
-from acgs_lite.integrations.crewai import GovernedCrew
+from acgs.integrations.crewai import GovernedCrew
 governed = GovernedCrew(crew, constitution=constitution)
 result = governed.kickoff()
 ```
@@ -89,7 +89,7 @@ result = governed.kickoff()
 ## A2A
 
 ```python
-from acgs_lite.integrations.a2a import A2AGovernedClient
+from acgs.integrations.a2a import A2AGovernedClient
 client = A2AGovernedClient(constitution=constitution)
 ```
 
@@ -101,8 +101,8 @@ governance:
   script:
     - pip install acgs-lite[gitlab]
     - python3 -c "
-      from acgs_lite import Constitution
-      from acgs_lite.integrations.gitlab import GitLabGovernanceBot
+      from acgs import Constitution
+      from acgs.integrations.gitlab import GitLabGovernanceBot
       import asyncio, os
       asyncio.run(GitLabGovernanceBot(
           token=os.environ['GITLAB_TOKEN'],

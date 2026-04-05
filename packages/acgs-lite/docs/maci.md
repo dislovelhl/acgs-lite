@@ -30,7 +30,7 @@ structurally impossible -- the Proposer role physically cannot call validation f
 ## Code Example
 
 ```python
-from acgs_lite import MACIEnforcer, MACIRole, Constitution
+from acgs import MACIEnforcer, MACIRole, Constitution
 
 constitution = Constitution.from_yaml("rules.yaml")
 enforcer = MACIEnforcer(constitution=constitution)
@@ -65,7 +65,7 @@ if decision.approved:
 ## GovernedAgent with MACI
 
 ```python
-from acgs_lite import GovernedAgent, MACIRole, Constitution
+from acgs import GovernedAgent, MACIRole, Constitution
 constitution = Constitution.from_yaml("rules.yaml")
 agent = GovernedAgent(
     my_agent, constitution=constitution,

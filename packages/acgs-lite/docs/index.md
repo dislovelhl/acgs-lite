@@ -9,7 +9,7 @@ audit trails.
 ## 5-Line Quickstart
 
 ```python
-from acgs_lite import Constitution, GovernedAgent, MACIRole
+from acgs import Constitution, GovernedAgent, MACIRole
 
 constitution = Constitution.from_template("general")
 agent = GovernedAgent(my_agent, constitution=constitution)

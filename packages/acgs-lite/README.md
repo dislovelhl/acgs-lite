@@ -1,4 +1,4 @@
-# acgs-lite
+# acgs
 
 [![PyPI](https://img.shields.io/pypi/v/acgs-lite)](https://pypi.org/project/acgs-lite/)
 [![Python](https://img.shields.io/pypi/pyversions/acgs-lite)](https://pypi.org/project/acgs-lite/)
@@ -7,13 +7,15 @@
 
 **Constitutional governance infrastructure for AI agents.**
 
-`acgs-lite` lets you define constitutional rules in YAML or code, validate inputs and
+ACGS lets you define constitutional rules in YAML or code, validate inputs and
 outputs deterministically, enforce MACI role separation, and maintain tamper-evident
-audit trails. Install name: `acgs-lite`. Import namespace: `acgs_lite`.
+audit trails. Install: `pip install acgs-lite`. Import: `from acgs import ...`.
+
+> **Note:** `acgs_lite` remains available as a compatibility import namespace.
 
 ## Installation
 
-`acgs-lite` supports Python 3.10+.
+Python 3.10+.
 
 ```bash
 pip install acgs-lite
@@ -30,7 +32,7 @@ pip install acgs-lite[all]
 ## Quick Start
 
 ```python
-from acgs_lite import Constitution, GovernedAgent
+from acgs import Constitution, GovernedAgent
 
 constitution = Constitution.from_template("general")
 agent = GovernedAgent(my_agent, constitution=constitution)
@@ -40,7 +42,7 @@ result = agent.run("process this request")
 ### Custom Rules
 
 ```python
-from acgs_lite import Constitution, GovernedAgent, Rule, Severity
+from acgs import Constitution, GovernedAgent, Rule, Severity
 
 constitution = Constitution.from_rules([
     Rule(
@@ -77,7 +79,7 @@ rules:
 ```
 
 ```python
-from acgs_lite import Constitution, GovernedAgent
+from acgs import Constitution, GovernedAgent
 
 constitution = Constitution.from_yaml("rules.yaml")
 agent = GovernedAgent(my_agent, constitution=constitution)
@@ -86,7 +88,7 @@ agent = GovernedAgent(my_agent, constitution=constitution)
 ### MACI Role Separation
 
 ```python
-from acgs_lite import Constitution, GovernedAgent, MACIRole
+from acgs import Constitution, GovernedAgent, MACIRole
 
 constitution = Constitution.from_template("general")
 agent = GovernedAgent(
@@ -102,7 +104,7 @@ result = agent.run("draft deployment plan", governance_action="propose")
 ### Compliance Assessment
 
 ```python
-from acgs_lite.compliance import MultiFrameworkAssessor
+from acgs.compliance import MultiFrameworkAssessor
 
 assessor = MultiFrameworkAssessor()
 report = assessor.assess(
@@ -120,8 +122,8 @@ print(f"Coverage: {report.acgs_lite_total_coverage:.0%}")
 ### HTTP Middleware
 
 ```python
-from acgs_lite import Constitution
-from acgs_lite.middleware import GovernanceASGIMiddleware
+from acgs import Constitution
+from acgs.middleware import GovernanceASGIMiddleware
 
 constitution = Constitution.from_template("general")
 app.add_middleware(

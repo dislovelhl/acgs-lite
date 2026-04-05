@@ -131,7 +131,7 @@ that any unexpected exception in a governance check results in a denial rather t
 an accidental approval.
 
 ```python
-from acgs_lite import fail_closed
+from acgs import fail_closed
 
 @fail_closed
 def check_permission(action: str, constitution: Constitution) -> bool:
