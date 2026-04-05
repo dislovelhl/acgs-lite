@@ -17,9 +17,9 @@ TEST_DIR    = tests
 # Detect repo root (two levels up from this Makefile)
 REPO_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null || echo ../..)
 
-.PHONY: help install install-dev test test-quick test-cov test-examples \
+.PHONY: help dev-setup install install-dev test test-quick test-cov test-examples \
         lint format typecheck check build publish-dry-run publish \
-        examples clean
+        examples visualize clean
 
 # ── Help ──────────────────────────────────────────────────────────────────────
 help:
@@ -27,6 +27,7 @@ help:
 	@echo "  acgs-lite development targets"
 	@echo ""
 	@echo "  Setup:"
+	@echo "    make dev-setup     One-shot: create .venv + install all dev deps"
 	@echo "    make install       Install package in editable mode"
 	@echo "    make install-dev   Install package + dev deps (pytest, ruff, mypy)"
 	@echo ""
@@ -49,10 +50,25 @@ help:
 	@echo ""
 	@echo "  Utilities:"
 	@echo "    make examples      Run all examples interactively"
+	@echo "    make visualize     Open visualizer help (see scripts/visualizer.py)"
 	@echo "    make clean         Remove caches, dist, build artifacts"
 	@echo ""
 
 # ── Setup ─────────────────────────────────────────────────────────────────────
+dev-setup:
+	@echo "Creating .venv and installing dev deps..."
+	python3 -m venv .venv
+	.venv/bin/pip install --upgrade pip -q
+	.venv/bin/pip install -e ".[dev]" -q
+	@echo ""
+	@echo "  Virtual environment : .venv/"
+	@echo "  Activate (Unix/macOS): source .venv/bin/activate"
+	@echo "  Activate (Windows)  : .venv\\Scripts\\activate"
+	@echo ""
+	@if [ ! -f .env.test ]; then cp .env.example .env.test 2>/dev/null || true; fi
+	@echo "  API keys: see .env.example (all placeholders, no real keys needed)"
+	@echo "  Ready.  Run: source .venv/bin/activate && make test"
+
 install:
 	$(PYTHON) -m pip install -e .
 
@@ -60,7 +76,8 @@ install-dev:
 	$(PYTHON) -m pip install -e ".[dev]"
 	@echo ""
 	@echo "Dev environment ready. No API keys required for tests."
-	@echo "Set OPENAI_API_KEY=test-key for tests that import openai."
+	@echo "Placeholder keys: OPENAI_API_KEY=test-key ANTHROPIC_API_KEY=test-key"
+	@echo "See .env.example for the full set."
 
 # ── Testing ───────────────────────────────────────────────────────────────────
 # ACGS tests use InMemory* stubs — zero external deps in CI.
@@ -132,6 +149,9 @@ examples:
 	$(PYTHON) examples/maci_separation/main.py
 	$(PYTHON) examples/audit_trail/main.py
 	$(PYTHON) examples/mock_stub_testing/main.py
+
+visualize:
+	$(PYTHON) scripts/visualizer.py --help
 
 clean-dist:
 	rm -rf dist/ build/
