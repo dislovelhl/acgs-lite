@@ -20,8 +20,8 @@ except ImportError:
 from enhanced_agent_bus.observability.structured_logging import get_logger
 from enhanced_agent_bus.verification_layer.z3_policy_verifier import (
     CONSTITUTIONAL_HASH,
-    HeuristicVerifier,
     Z3_AVAILABLE,
+    HeuristicVerifier,
     z3,
 )
 

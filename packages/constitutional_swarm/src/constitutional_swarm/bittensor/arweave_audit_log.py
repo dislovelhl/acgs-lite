@@ -46,7 +46,7 @@ from typing import Any, Protocol
 
 
 class AuditDecisionType(Enum):
-    AUTO_PASS    = "auto_pass"    # noqa: S105 - enum label, not a credential
+    AUTO_PASS    = "auto_pass"
     AUTO_REJECT  = "auto_reject"  # constitutional violation, hard reject
     ESCALATED    = "escalated"    # sent to human miners
     INFRA_ERROR  = "infra_error"  # timeout, missing data, service failure

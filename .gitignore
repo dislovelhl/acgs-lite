@@ -22,7 +22,9 @@ htmlcov/
 mlruns/
 
 # Codex CLI
+.codex/
 .codex-home/
+.codex-readiness-integration-test/
 .codex-readiness-unit-test/
 .codex_write_check
 
@@ -129,3 +131,14 @@ src/split_engine.py
 # Per-rule eval harness output
 eval_results/
 .omx/
+
+# Session memory / local output
+.remember/
+output/
+
+# SQLite WAL/SHM (transient)
+*.db-shm
+*.db-wal
+
+# TypeScript build info
+*.tsbuildinfo
