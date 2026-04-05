@@ -34,7 +34,6 @@ Constitutional Hash: 608508a9bd224290
 from __future__ import annotations
 
 import logging
-import os
 import tempfile
 import threading
 import time
@@ -134,11 +133,7 @@ class GovernanceCircuitBreaker:
     @property
     def is_tripped(self) -> bool:
         """Check if the breaker is tripped (in-process or cross-process)."""
-        if self._event.is_set():
-            return True
-        if self._check_file and self._signal_path.exists():
-            return True
-        return False
+        return self._event.is_set() or bool(self._check_file and self._signal_path.exists())
 
     @property
     def trip_reason(self) -> str:

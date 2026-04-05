@@ -18,10 +18,10 @@ Constitutional Hash: 608508a9bd224290
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
-import logging
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:

@@ -21,8 +21,6 @@ from fastapi import (
     HTTPException,
     Request,
 )
-
-from ..rate_limiting import limiter
 from pydantic import BaseModel, Field
 
 from enhanced_agent_bus._compat.security.auth import UserClaims, get_current_user
@@ -36,6 +34,7 @@ from ...maci_enforcement import (
     MACIRole,
     MACIRoleRegistry,
 )
+from ..rate_limiting import limiter
 from ..runtime_guards import require_sandbox_endpoint
 from ._tenant_auth import get_tenant_id
 

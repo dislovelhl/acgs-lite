@@ -23,7 +23,7 @@ from typing import Any, Protocol, TypeVar, cast, runtime_checkable
 _MAX_RETRIES_LIMIT = 10
 
 from acgs_lite.audit import AuditEntry, AuditLog
-from acgs_lite.circuit_breaker import GovernanceCircuitBreaker, GovernanceHaltError
+from acgs_lite.circuit_breaker import GovernanceCircuitBreaker
 from acgs_lite.constitution import Constitution
 from acgs_lite.constitution.refusal_reasoning import RefusalReasoningEngine
 from acgs_lite.engine import GovernanceEngine

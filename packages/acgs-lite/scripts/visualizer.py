@@ -20,13 +20,12 @@ Generate sample data:
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
-import os
 import sys
 from collections import Counter
 from pathlib import Path
 from typing import Any
-
 
 # ── Colour helpers (no deps) ───────────────────────────────────────────────────
 
@@ -77,8 +76,8 @@ def cmd_rules(args: argparse.Namespace) -> None:
     path = Path(args.constitution)
     if not path.exists():
         print(f"File not found: {path.resolve()}", file=sys.stderr)
-        print(f"Hint: run from packages/acgs-lite/ and use a path like", file=sys.stderr)
-        print(f"      examples/basic_governance/constitution.yaml", file=sys.stderr)
+        print("Hint: run from packages/acgs-lite/ and use a path like", file=sys.stderr)
+        print("      examples/basic_governance/constitution.yaml", file=sys.stderr)
         sys.exit(1)
 
     data = _load_yaml(path)
@@ -142,10 +141,8 @@ def _read_jsonl(path: Path) -> list[dict[str, Any]]:
         for line in f:
             line = line.strip()
             if line:
-                try:
+                with contextlib.suppress(json.JSONDecodeError):
                     records.append(json.loads(line))
-                except json.JSONDecodeError:
-                    pass
     return records
 
 
@@ -154,9 +151,9 @@ def cmd_audit(args: argparse.Namespace) -> None:
     path = Path(args.path)
     if not path.exists():
         print(f"File not found: {path.resolve()}", file=sys.stderr)
-        print(f"Hint: generate sample data with:", file=sys.stderr)
-        print(f"  OPENAI_API_KEY=test-key python examples/audit_trail/main.py", file=sys.stderr)
-        print(f"  # then use: -p examples/audit_trail/audit_sample.jsonl", file=sys.stderr)
+        print("Hint: generate sample data with:", file=sys.stderr)
+        print("  OPENAI_API_KEY=test-key python examples/audit_trail/main.py", file=sys.stderr)
+        print("  # then use: -p examples/audit_trail/audit_sample.jsonl", file=sys.stderr)
         sys.exit(1)
 
     records = _read_jsonl(path)
@@ -249,10 +246,10 @@ def cmd_bench(args: argparse.Namespace) -> None:
     base = Path(args.path)
     if not base.exists():
         print(f"Path not found: {base.resolve()}", file=sys.stderr)
-        print(f"Hint: use the bundled sample data:", file=sys.stderr)
-        print(f"  python scripts/visualizer.py bench -p examples/bench_sample/", file=sys.stderr)
-        print(f"Or point to any directory containing *.json files with", file=sys.stderr)
-        print(f"  latency_p50_us / latency_p99_us / score / throughput fields.", file=sys.stderr)
+        print("Hint: use the bundled sample data:", file=sys.stderr)
+        print("  python scripts/visualizer.py bench -p examples/bench_sample/", file=sys.stderr)
+        print("Or point to any directory containing *.json files with", file=sys.stderr)
+        print("  latency_p50_us / latency_p99_us / score / throughput fields.", file=sys.stderr)
         sys.exit(0)
 
     files = _find_bench_files(base)
@@ -304,7 +301,7 @@ def cmd_bench(args: argparse.Namespace) -> None:
         print(DIM(f"  {'Run':<30}  {'Value':>10}  {'Chart'}"))
         print(DIM("  " + "─" * 60))
 
-        for run, val in zip([r["_file"] for r in runs if key in r], values):
+        for run, val in zip([r["_file"] for r in runs if key in r], values, strict=False):
             normalized = (val - min_v) / rng
             bar_len    = int(normalized * 20)
             bar        = "█" * bar_len + "░" * (20 - bar_len)

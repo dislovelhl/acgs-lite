@@ -16,9 +16,9 @@ from fastapi import (
     Request,
 )
 
-from ..rate_limiting import limiter
-
 from enhanced_agent_bus._compat.security.auth import UserClaims, get_current_user
+
+from ..rate_limiting import limiter
 
 try:
     from enhanced_agent_bus._compat.types import JSONDict

@@ -19,7 +19,6 @@ Usage::
 """
 
 from acgs_lite._meta import CONSTITUTIONAL_HASH, VERSION
-from acgs_lite.circuit_breaker import GovernanceCircuitBreaker, GovernanceHaltError
 from acgs_lite.audit import (
     AuditBackend,
     AuditEntry,
@@ -27,6 +26,7 @@ from acgs_lite.audit import (
     InMemoryAuditBackend,
     JSONLAuditBackend,
 )
+from acgs_lite.circuit_breaker import GovernanceCircuitBreaker, GovernanceHaltError
 from acgs_lite.constitution import (
     AcknowledgedTension,
     Constitution,
@@ -44,6 +44,13 @@ from acgs_lite.errors import (
 )
 from acgs_lite.fail_closed import fail_closed as fail_closed
 from acgs_lite.governed import GovernedAgent, GovernedCallable
+from acgs_lite.lean_verify import (
+    LEAN_AVAILABLE,
+    MISTRAL_AVAILABLE,
+    LeanstralVerifier,
+    LeanVerifyResult,
+    ProofCertificate,
+)
 from acgs_lite.licensing import LicenseInfo, LicenseManager, Tier
 from acgs_lite.maci import MACIEnforcer, MACIRole
 from acgs_lite.openshell import (
@@ -88,13 +95,6 @@ from acgs_lite.z3_verify import (
     Z3_RISK_THRESHOLD,
     Z3ConstraintVerifier,
     Z3VerifyResult,
-)
-from acgs_lite.lean_verify import (
-    LEAN_AVAILABLE,
-    LeanstralVerifier,
-    LeanVerifyResult,
-    MISTRAL_AVAILABLE,
-    ProofCertificate,
 )
 
 __version__ = VERSION

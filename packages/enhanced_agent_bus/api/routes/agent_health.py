@@ -15,8 +15,6 @@ from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-
-from ..rate_limiting import limiter
 from pydantic import BaseModel, Field
 
 from enhanced_agent_bus.agent_health.models import (
@@ -28,6 +26,8 @@ from enhanced_agent_bus.agent_health.models import (
 )
 from enhanced_agent_bus.agent_health.store import AgentHealthStore
 from enhanced_agent_bus.observability.structured_logging import get_logger
+
+from ..rate_limiting import limiter
 
 logger = get_logger(__name__)
 

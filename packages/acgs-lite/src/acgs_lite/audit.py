@@ -17,7 +17,6 @@ import hashlib
 import json
 import logging
 import os
-import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -211,7 +210,7 @@ class AuditLog:
             self._backend.flush()
 
     @classmethod
-    def from_backend(cls, backend: AuditBackend, max_entries: int = 10000) -> "AuditLog":
+    def from_backend(cls, backend: AuditBackend, max_entries: int = 10000) -> AuditLog:
         """Reconstruct an AuditLog from a durable backend.
 
         Reads all persisted entries and rebuilds the in-memory chain.

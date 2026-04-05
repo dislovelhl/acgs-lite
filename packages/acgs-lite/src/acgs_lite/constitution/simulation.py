@@ -8,9 +8,9 @@ Constitutional Hash: 608508a9bd224290
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Sequence
 from dataclasses import dataclass
-import logging
 from typing import Any
 
 logger = logging.getLogger(__name__)
