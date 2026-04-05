@@ -18,8 +18,8 @@
 		"format": "prettier --plugin prettier-plugin-svelte --write ."
 	},
 	"devDependencies": {
-		"@lightpanda/browser": "^1.0.0",
 		"@eslint/js": "^10.0.1",
+		"@lightpanda/browser": "^1.0.0",
 		"@playwright/test": "^1.58.2",
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.50.2",
@@ -46,12 +46,17 @@
 		"vitest-browser-svelte": "^2.0.2"
 	},
 	"dependencies": {
+		"@threlte/core": "^8.5.3",
+		"@threlte/extras": "^9.13.0",
+		"@threlte/theatre": "^3.2.1",
+		"@types/three": "^0.183.1",
 		"@xyflow/svelte": "^1.5.1",
 		"bits-ui": "^2.16.3",
 		"clsx": "^2.1.1",
 		"d3": "^7.9.0",
 		"layerchart": "^1.0.13",
 		"lucide-svelte": "^0.577.0",
-		"tailwind-merge": "^3.5.0"
+		"tailwind-merge": "^3.5.0",
+		"three": "^0.183.2"
 	}
 }

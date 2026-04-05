@@ -19,6 +19,7 @@ import httpx
 
 _project_root = os.path.dirname(os.path.abspath(__file__))
 
+
 def _prepend_sys_path(path: str) -> None:
     if path in sys.path:
         sys.path.remove(path)

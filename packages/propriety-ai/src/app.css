@@ -1,30 +1,78 @@
 @import 'tailwindcss';
 
 @theme {
-	--font-sans: 'Playfair Display', 'Georgia', serif;
-	--font-mono: 'JetBrains Mono', 'Geist Mono', monospace;
+	/* 2026 Institutional Frontier Typography */
+	--font-sans: 'Space Grotesk', 'Inter Variable', sans-serif;
+	--font-serif: 'Instrument Serif', 'Playfair Display', serif;
+	--font-mono: 'Geist Mono', 'JetBrains Mono', monospace;
 
 	--color-bg: #050505;
 	--color-bg-card: #0a0a0a;
 	--color-fg: #fafafa;
-	--color-fg-muted: #707070;
-	--color-fg-dim: #404040;
-	--color-border: rgba(255, 255, 255, 0.1);
-	--color-accent: #2563eb;
-	--color-accent-glow: rgba(37, 99, 235, 0.15);
+	--color-fg-muted: #888888;
+	--color-fg-dim: #444444;
+	--color-border: rgba(255, 255, 255, 0.08);
+	--color-accent: #3b82f6;
+	--color-accent-glow: rgba(59, 130, 246, 0.12);
 	--color-amber: #f59e0b;
 	--color-emerald: #10b981;
 	--color-red: #ef4444;
+
+	/* Advanced Animations */
+	@keyframes float-slow {
+		0%, 100% { transform: translateY(0); }
+		50% { transform: translateY(-15px); }
+	}
+	--animate-float: float-slow 6s ease-in-out infinite;
+
+	@keyframes scan-line {
+		0% { transform: translateY(-100%); }
+		100% { transform: translateY(100%); }
+	}
+	--animate-scan: scan-line 4s linear infinite;
 }
 
-/* Noise overlay */
+/* Base Adjustments */
+body {
+	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+}
+
+.font-serif {
+	font-family: var(--font-serif);
+}
+
+/* Noise overlay - Refined */
 .noise-overlay {
 	position: fixed;
 	inset: 0;
 	pointer-events: none;
 	z-index: 9999;
-	opacity: 0.03;
-	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+	opacity: 0.04;
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Glassmorphism 2.0 (Liquid Glass) */
+.glass {
+	background: rgba(255, 255, 255, 0.02);
+	backdrop-filter: blur(12px) saturate(180%);
+	-webkit-backdrop-filter: blur(12px) saturate(180%);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-accent {
+	background: rgba(59, 130, 246, 0.03);
+	backdrop-filter: blur(10px);
+	border: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+/* Ultra-thin grid */
+.grid-mesh {
+	background-size: 40px 40px;
+	background-image: 
+		linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+		linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
 }
 
 /* Scrollbar */

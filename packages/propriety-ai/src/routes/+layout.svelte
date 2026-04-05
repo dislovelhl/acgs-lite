@@ -38,60 +38,68 @@
 		{scrolled ? 'bg-bg/80 backdrop-blur-md border-b border-border' : ''}"
 >
 	<nav class="flex items-center justify-between px-6 py-4 md:px-12 md:py-5 max-w-[1600px] mx-auto">
-			<a href={resolve('/')} class="group flex items-center gap-2">
-			<span class="font-mono text-xs tracking-widest text-fg-muted">ACGS</span>
+			<a href={resolve('/')} class="group flex items-center gap-3">
+			<span class="font-mono text-sm tracking-[0.4em] text-white font-bold">ACGS</span>
 			<span
-				class="h-1.5 w-1.5 rounded-full bg-accent transition-transform duration-300 group-hover:scale-150"
+				class="h-1.5 w-1.5 rounded-full bg-accent transition-all duration-300 group-hover:scale-150 group-hover:shadow-[0_0_10px_rgba(59,130,246,0.8)]"
 			></span>
 			</a>
 
-			<ul class="hidden items-center gap-8 md:flex">
+			<ul class="hidden items-center gap-10 md:flex">
 					<li>
 						<a
 							href={resolve('/#frameworks')}
-							class="group relative font-mono text-xs tracking-wider text-fg-muted transition-colors duration-300 hover:text-fg"
+							class="group relative font-mono text-[10px] tracking-[0.3em] text-fg-muted transition-colors duration-300 hover:text-white"
 						>
-						<span class="mr-1 text-accent">01</span>
 						FRAMEWORKS
 						<span
-							class="absolute -bottom-1 left-0 h-px w-0 bg-fg transition-all duration-300 group-hover:w-full"
+							class="absolute -bottom-1 left-0 h-px w-0 bg-accent transition-all duration-300 group-hover:w-full"
 						></span>
 					</a>
 				</li>
 					<li>
 						<a
 							href={resolve('/#works')}
-							class="group relative font-mono text-xs tracking-wider text-fg-muted transition-colors duration-300 hover:text-fg"
+							class="group relative font-mono text-[10px] tracking-[0.3em] text-fg-muted transition-colors duration-300 hover:text-white"
 						>
-						<span class="mr-1 text-accent">02</span>
 						HOW IT WORKS
 						<span
-							class="absolute -bottom-1 left-0 h-px w-0 bg-fg transition-all duration-300 group-hover:w-full"
+							class="absolute -bottom-1 left-0 h-px w-0 bg-accent transition-all duration-300 group-hover:w-full"
 						></span>
 					</a>
 				</li>
 				<li>
 					<a
 						href={resolve('/pricing')}
-						class="group relative font-mono text-xs tracking-wider text-fg-muted transition-colors duration-300 hover:text-fg"
+						class="group relative font-mono text-[10px] tracking-[0.3em] text-fg-muted transition-colors duration-300 hover:text-white"
 					>
-						<span class="mr-1 text-accent">03</span>
 						PRICING
 						<span
-							class="absolute -bottom-1 left-0 h-px w-0 bg-fg transition-all duration-300 group-hover:w-full"
+							class="absolute -bottom-1 left-0 h-px w-0 bg-accent transition-all duration-300 group-hover:w-full"
+						></span>
+					</a>
+				</li>
+				<li>
+					<a
+						href={resolve('/resources')}
+						class="group relative font-mono text-[10px] tracking-[0.3em] text-fg-muted transition-colors duration-300 hover:text-white"
+					>
+						RESOURCES
+						<span
+							class="absolute -bottom-1 left-0 h-px w-0 bg-accent transition-all duration-300 group-hover:w-full"
 						></span>
 					</a>
 				</li>
 			</ul>
 
-		<div class="hidden items-center gap-3 md:flex">
+		<div class="hidden items-center gap-4 md:flex">
 			<span class="relative flex h-2 w-2">
 				<span
 					class="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber opacity-75"
 				></span>
 				<span class="relative inline-flex h-2 w-2 rounded-full bg-amber"></span>
 			</span>
-			<span class="font-mono text-xs tracking-wider text-fg-muted"
+			<span class="font-mono text-[10px] tracking-[0.2em] text-fg-muted uppercase font-medium"
 				>{daysUntil} DAYS TO EU AI ACT</span
 			>
 		</div>

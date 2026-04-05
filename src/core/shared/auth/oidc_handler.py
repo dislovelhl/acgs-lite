@@ -1,6 +1,6 @@
 """
 ACGS-2 OpenID Connect (OIDC) Handler Service
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides enterprise-grade OIDC Relying Party (RP) implementation using Authlib.
 Supports multiple identity providers including Google Workspace, Azure AD, and Okta.
@@ -49,13 +49,11 @@ if TYPE_CHECKING:
 
 try:
     from authlib.jose import jwt
-    from authlib.jose.errors import JoseError as _AuthlibJoseError
 
     HAS_AUTHLIB = True
 except ImportError:
     HAS_AUTHLIB = False
     jwt = None  # type: ignore[assignment]
-    _AuthlibJoseError = None  # type: ignore[assignment,misc]
 
 try:
     import httpx
@@ -77,7 +75,6 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH
 DEFAULT_SCOPES = ["openid", "profile", "email"]
 _DISALLOWED_SECRET_SENTINELS = frozenset({"your-secret", "replace_me"})
 _HTTPX_OIDC_ERRORS = (httpx.HTTPError,) if HAS_HTTPX else (RuntimeError,)
-_AUTHLIB_JOSE_ERRORS = (_AuthlibJoseError,) if HAS_AUTHLIB else ()
 _OIDC_OPERATION_ERRORS = (
     RuntimeError,
     ValueError,
@@ -88,7 +85,6 @@ _OIDC_OPERATION_ERRORS = (
     TimeoutError,
     ConnectionError,
     *_HTTPX_OIDC_ERRORS,
-    *_AUTHLIB_JOSE_ERRORS,
 )
 
 
@@ -309,9 +305,6 @@ class OIDCHandler:
         user_info = await handler.handle_callback("google", code, state)
     """
 
-    _DEFAULT_MAX_PENDING_STATES: int = 1000
-    _DEFAULT_STATE_MAX_AGE: int = 600  # 10 minutes
-
     def __init__(self) -> None:
         """Initialize OIDC handler."""
         self._providers: dict[str, OIDCProviderConfig] = {}
@@ -319,7 +312,7 @@ class OIDCHandler:
         self._metadata_timestamps: dict[str, datetime] = {}
         self._pending_states: dict[str, JSONDict] = {}
         self._http_client: httpx.AsyncClient | None = None
-        self._max_pending_states: int = self._DEFAULT_MAX_PENDING_STATES
+        self._max_pending_states: int = 1000  # evict oldest when at capacity
 
         logger.info(
             "OIDC handler initialized",
@@ -574,11 +567,17 @@ class OIDCHandler:
         code_verifier = self._generate_code_verifier() if provider.use_pkce else None
         code_challenge = self._generate_code_challenge(code_verifier) if code_verifier else None
 
-        # Evict stale states first, then enforce capacity (H-4 DoS fix)
-        self._evict_stale_pending_states()
-        while len(self._pending_states) >= self._max_pending_states:
+        # Enforce pending-state capacity limit — evict oldest entry when at max
+        if len(self._pending_states) >= self._max_pending_states:
             oldest_key = next(iter(self._pending_states))
             del self._pending_states[oldest_key]
+            logger.warning(
+                "oidc_pending_state_evicted_at_capacity",
+                extra={
+                    "max_pending_states": self._max_pending_states,
+                    "constitutional_hash": CONSTITUTIONAL_HASH,
+                },
+            )
 
         # Store pending state for callback verification
         self._pending_states[state] = {
@@ -799,8 +798,9 @@ class OIDCHandler:
             OIDCTokenError: If validation fails
         """
         try:
-            # Fetch JWKS from provider metadata (check before authlib so missing
-            # jwks_uri produces the specific error rather than a generic authlib error)
+            # Fetch JWKS from provider metadata first — if the provider isn't
+            # configured with a JWKS URI, that's a configuration error that
+            # precedes any library requirement.
             metadata = await self._fetch_metadata(provider)
             jwks_uri = metadata.get("jwks_uri")
             if not jwks_uri:
@@ -839,7 +839,9 @@ class OIDCHandler:
             claims.validate()
 
             return dict(claims)
-        except _OIDC_OPERATION_ERRORS as e:
+        except OIDCTokenError:
+            raise
+        except Exception as e:
             raise OIDCTokenError(f"Failed to validate ID token: {e}") from e
 
     async def _fetch_userinfo(
@@ -1012,14 +1014,6 @@ class OIDCHandler:
         """
         return state in self._pending_states
 
-    def _evict_stale_pending_states(self, max_age_seconds: int | None = None) -> int:
-        """Remove pending states older than *max_age_seconds* (default: 600s).
-
-        This is the internal eviction helper called before storing a new
-        pending state so unbounded growth is prevented (H-4 DoS fix).
-        """
-        return self.clear_expired_states(max_age_seconds or self._DEFAULT_STATE_MAX_AGE)
-
     def clear_expired_states(self, max_age_seconds: int = 600) -> int:
         """Clear expired pending states.
 
@@ -1050,6 +1044,15 @@ class OIDCHandler:
             )
 
         return len(expired)
+
+    def _evict_stale_pending_states(self, max_age_seconds: int = 600) -> int:
+        """Evict pending states older than ``max_age_seconds``.
+
+        Alias for ``clear_expired_states`` with an age-based eviction policy.
+        The name matches the internal helper called by ``initiate_login`` to
+        remove stale states before inserting new ones.
+        """
+        return self.clear_expired_states(max_age_seconds=max_age_seconds)
 
     async def close(self) -> None:
         """Close HTTP client and clean up resources."""

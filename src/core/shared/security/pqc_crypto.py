@@ -254,7 +254,7 @@ def verify_signature(
             verifier = oqs.Signature(algorithm_variant.value)
             try:
                 is_valid: bool = verifier.verify(message, signature, public_key_bytes)
-            except Exception:
+            except (ValueError, TypeError, RuntimeError):
                 return False
             return is_valid
 

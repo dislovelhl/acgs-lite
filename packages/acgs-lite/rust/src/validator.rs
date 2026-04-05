@@ -3,7 +3,7 @@
 /// Implements keyword-scan + anchor-dispatch + regex validation using
 /// Aho-Corasick automaton for O(N) multi-pattern matching.
 ///
-/// Constitutional Hash: cdd01ef066bc6cf2
+/// Constitutional Hash: 608508a9bd224290
 
 use aho_corasick::{AhoCorasick, MatchKind};
 use pyo3::exceptions::PyValueError;

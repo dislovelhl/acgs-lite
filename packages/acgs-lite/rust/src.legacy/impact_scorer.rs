@@ -12,7 +12,7 @@
 ///   score = scorer.score("deploy service without approval")
 ///   scores = scorer.score_batch(["action a", "action b"])
 ///
-/// Constitutional Hash: cdd01ef066bc6cf2
+/// Constitutional Hash: 608508a9bd224290
 use candle_core::{DType, Device, Tensor};
 use candle_nn::VarBuilder;
 use candle_transformers::models::distilbert::{Config, DistilBertModel};

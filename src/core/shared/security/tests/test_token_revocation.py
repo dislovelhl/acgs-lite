@@ -575,7 +575,7 @@ class TestTokenRevocationEdgeCases:
         from src.core.shared.security.token_revocation import TokenRevocationService
 
         oom_redis = AsyncMock()
-        oom_redis.setex.side_effect = Exception("OOM command not allowed")
+        oom_redis.setex.side_effect = RuntimeError("OOM command not allowed")
 
         service = TokenRevocationService(redis_client=oom_redis)
 

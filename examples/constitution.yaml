@@ -150,5 +150,5 @@ rules:
 
 metadata:
   author: ACGS Team
-  license: AGPL-3.0-or-later
+  license: Apache-2.0
   last_updated: "2026-03-09"

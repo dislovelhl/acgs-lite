@@ -7,7 +7,7 @@
 /// The Python `engine.py` calls into this crate via PyO3. When the Rust
 /// extension is not available, Python falls back to its own implementation.
 ///
-/// Constitutional Hash: cdd01ef066bc6cf2
+/// Constitutional Hash: 608508a9bd224290
 
 pub mod context;
 pub mod hash;

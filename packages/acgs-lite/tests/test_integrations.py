@@ -13,7 +13,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from acgs_lite import Constitution, ConstitutionalViolationError, Rule, Severity
-from acgs_lite.integrations import GovernedOpenAI
+from acgs_lite.integrations.openai import GovernedOpenAI
 
 # ─── Mock Objects ──────────────────────────────────────────────────────────
 
@@ -57,14 +57,14 @@ class MockAnthropicResponse:
 class TestGovernedOpenAI:
     @pytest.fixture(autouse=True)
     def _patch_openai_available(self):
-        with patch("acgs_lite.integrations.OPENAI_AVAILABLE", True):
+        with patch("acgs_lite.integrations.openai.OPENAI_AVAILABLE", True):
             yield
 
     def _make_client(
         self, strict: bool = True, constitution: Constitution | None = None
     ) -> GovernedOpenAI:
         """Create a GovernedOpenAI with mocked underlying client."""
-        with patch("acgs_lite.integrations.OpenAI") as mock_openai:
+        with patch("acgs_lite.integrations.openai.OpenAI") as mock_openai:
             mock_instance = MagicMock()
             mock_openai.return_value = mock_instance
 
@@ -100,7 +100,7 @@ class TestGovernedOpenAI:
 
     def test_output_validation_warns(self):
         """Output violations are logged but not raised."""
-        with patch("acgs_lite.integrations.OpenAI") as mock_openai:
+        with patch("acgs_lite.integrations.openai.OpenAI") as mock_openai:
             mock_instance = MagicMock()
             mock_openai.return_value = mock_instance
 

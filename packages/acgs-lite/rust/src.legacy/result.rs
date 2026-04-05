@@ -3,7 +3,7 @@
 /// These are internal Rust types used within the crate. They are converted
 /// to Python-compatible tuples at the FFI boundary in the validator.
 ///
-/// Constitutional Hash: cdd01ef066bc6cf2
+/// Constitutional Hash: 608508a9bd224290
 
 use crate::severity::Severity;
 

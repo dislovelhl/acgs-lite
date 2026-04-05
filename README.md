@@ -4,13 +4,9 @@
 
 **Constitutional governance infrastructure for AI agents. The missing safety layer between your LLM and production.**
 
-`ACGS 2.4.0` | `AGPL-3.0-or-later` | `up to 560ns P50 on benchmark Rust path` | `3,277 tests passing`
+`ACGS 2.4.0` | `Apache-2.0` | `up to 560ns P50 on benchmark Rust path` | `3,874 tests passing`
 
-> **Note:** Performance numbers are from the local benchmark suite (`make bench`) and the fastest figures refer to the optional Rust/PyO3 hot path under benchmark conditions. Python-only and mixed integration paths will be slower. The benchmark target runs focused `pytest-benchmark` microbenchmarks for engine construction and steady-state validation. Run benchmarks on your own hardware before quoting exact latency. For the public lightweight package, use `from acgs_lite import ...`. Reserve `from acgs import ...` for the partial-open-source package line.
->
-> **License:** AGPL-3.0-or-later for open-source use. [Commercial license](COMMERCIAL_LICENSE.md) available for proprietary/SaaS use.
->
-> **Naming:** `ACGS` is the product name, `acgs-lite` is the public PyPI package, `acgs` is reserved for the partial-open-source package line, and `acgs_lite` is the public import namespace. See [docs/brand-architecture.md](docs/brand-architecture.md).
+> Performance numbers are from `make bench` under the optional Rust/PyO3 hot path. Python-only paths will be slower. Run benchmarks on your own hardware before quoting latency.
 
 ---
 
@@ -293,7 +289,7 @@ governance:
 
 ## The Engine Built by the Machines
 
-This entire constitutional governance engine -- 3,133 passing tests, Aho-Corasick optimization, MACI architecture -- was built by a non-technical founder who could not write a for loop two years ago. It was built entirely through conversation with Claude.
+This entire constitutional governance engine -- 3,874 passing tests, Aho-Corasick optimization, MACI architecture -- was built by a non-technical founder who could not write a for loop two years ago. It was built entirely through conversation with Claude.
 
 **If an AI is capable enough to help a non-technical founder build its own constitutional governance engine, it is capable enough to do immense damage without one.**
 
@@ -307,21 +303,16 @@ Governance must be democratic. The infrastructure that constrains the machines m
 pip install acgs-lite
 ```
 
-AGPL-3.0-or-later Licensed | Open Source | [Commercial License Available](COMMERCIAL_LICENSE.md)
+Apache-2.0 Licensed | Open Source
 
 *The question was never whether power would be constrained -- it was whether the constraints would be built by the people affected or imposed after the damage was done.*
 
 ### License
 
-ACGS is dual-licensed:
-
-- **AGPL-3.0-or-later** -- Free for open-source use, internal pipelines, CI/CD, and on-premise deployment.
-- **Commercial License** -- Required if you embed ACGS in a proprietary SaaS product served to external users. Contact hello@acgs.ai.
-
-See [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) for details and FAQ.
+Apache-2.0. See [LICENSE](LICENSE).
 
 ---
 
-**[PyPI](https://pypi.org/project/acgs-lite/) | [GitHub](https://github.com/acgs2_admin/acgs) | [Website](https://acgs.ai)**
+**[PyPI](https://pypi.org/project/acgs-lite/) | [Repository](https://gitlab.com/martin668/acgs-lite) | [Docs](https://gitlab.com/martin668/acgs-lite/-/blob/main/README.md)**
 
 *Constitutional Hash: 608508a9bd224290*

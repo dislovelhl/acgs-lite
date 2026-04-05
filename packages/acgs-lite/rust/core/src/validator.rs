@@ -5,7 +5,7 @@
 ///
 /// Pure Rust — no FFI dependencies.
 ///
-/// Constitutional Hash: cdd01ef066bc6cf2
+/// Constitutional Hash: 608508a9bd224290
 
 use aho_corasick::{AhoCorasick, MatchKind};
 use regex::Regex;
@@ -206,8 +206,10 @@ impl GovernanceValidator {
     ///   (DENY_CRITICAL=1, rule_idx) — critical violation
     ///   (DENY=2, fired_bitmask)   — non-critical violations
     pub fn validate_hot(&self, text_lower: &str) -> (i32, i64) {
-        let decision = self.scan(text_lower);
-        decision.to_legacy_tuple()
+        // exp265: scan_hot() — bitmask-only path, skips Violation struct allocation
+        // and String cloning. For allow paths, this eliminates Vec<Violation> alloc.
+        // For deny paths, returns only the fired bitmask (Python reconstructs violations).
+        self.scan_hot(text_lower)
     }
 
     /// Full validation with structured violation data.
@@ -317,6 +319,107 @@ impl GovernanceValidator {
     }
 
     /// Core scan logic — shared between validate_hot and validate_full.
+    /// Hot-path scan — returns (decision_code, data) directly as a tuple.
+    /// Unlike `scan()`, this never allocates Violation structs or clones Strings.
+    /// For Allow: returns (ALLOW, 0).
+    /// For DenyCritical: returns (DENY_CRITICAL, rule_idx).
+    /// For Deny: returns (DENY, fired_bitmask) — caller reconstructs violations from bitmask.
+    fn scan_hot(&self, text_lower: &str) -> (i32, i64) {
+        let first_word = match text_lower.find(' ') {
+            Some(i) => &text_lower[..i],
+            None => text_lower,
+        };
+        let is_pos_verb = self.positive_verbs.contains(first_word);
+
+        let mut fired: u64 = 0;
+        let mut hit_anchors: u64 = 0;
+
+        // AC scan — single pass, tracks both keywords and anchors
+        for mat in self.automaton.find_overlapping_iter(text_lower) {
+            match &self.payloads[mat.pattern().as_usize()] {
+                AcPayload::Keyword(kw_data) => {
+                    for &(rule_idx, kw_has_neg) in kw_data {
+                        if is_pos_verb && !kw_has_neg {
+                            continue;
+                        }
+                        let bit = 1u64 << rule_idx;
+                        if fired & bit != 0 {
+                            continue;
+                        }
+                        fired |= bit;
+                        let rd = &self.rule_data[rule_idx];
+                        if self.strict && rd.is_critical {
+                            return (severity::DENY_CRITICAL, rule_idx as i64);
+                        }
+                    }
+                }
+                AcPayload::Anchor(ai) => {
+                    hit_anchors |= 1u64 << ai;
+                }
+                AcPayload::Both {
+                    kw_data,
+                    anchor_idx,
+                } => {
+                    hit_anchors |= 1u64 << anchor_idx;
+                    for &(rule_idx, kw_has_neg) in kw_data {
+                        if is_pos_verb && !kw_has_neg {
+                            continue;
+                        }
+                        let bit = 1u64 << rule_idx;
+                        if fired & bit != 0 {
+                            continue;
+                        }
+                        fired |= bit;
+                        let rd = &self.rule_data[rule_idx];
+                        if self.strict && rd.is_critical {
+                            return (severity::DENY_CRITICAL, rule_idx as i64);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Anchor dispatch (regex patterns)
+        if hit_anchors != 0 || !self.no_anchor_pats.is_empty() {
+            if hit_anchors != 0 {
+                let mut tmp = hit_anchors;
+                while tmp != 0 {
+                    let lsb = tmp & tmp.wrapping_neg();
+                    let ai = lsb.trailing_zeros() as usize;
+                    tmp ^= lsb;
+                    if ai < self.anchor_dispatch.len() {
+                        for (rule_idx, re) in &self.anchor_dispatch[ai].patterns {
+                            let bit = 1u64 << rule_idx;
+                            if fired & bit == 0 && re.is_match(text_lower) {
+                                fired |= bit;
+                                let rd = &self.rule_data[*rule_idx];
+                                if self.strict && rd.is_critical {
+                                    return (severity::DENY_CRITICAL, *rule_idx as i64);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            for (rule_idx, re) in &self.no_anchor_pats {
+                let bit = 1u64 << rule_idx;
+                if fired & bit == 0 && re.is_match(text_lower) {
+                    fired |= bit;
+                    let rd = &self.rule_data[*rule_idx];
+                    if self.strict && rd.is_critical {
+                        return (severity::DENY_CRITICAL, *rule_idx as i64);
+                    }
+                }
+            }
+        }
+
+        if fired == 0 {
+            (severity::ALLOW, 0)
+        } else {
+            (severity::DENY, fired as i64)
+        }
+    }
+
     fn scan(&self, text_lower: &str) -> Decision {
         let first_word = match text_lower.find(' ') {
             Some(i) => &text_lower[..i],

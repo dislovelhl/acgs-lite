@@ -442,7 +442,7 @@ async def _eval_invariant_guard(
             context=context or None,
         )
         return result.to_dict() if hasattr(result, "to_dict") else {"result": str(result)}
-    except Exception:
+    except (ValueError, TypeError, RuntimeError, AttributeError):
         logger.exception("invariant_guard_eval_failed")
         return {"error": "Invariant check failed"}
 
@@ -466,7 +466,7 @@ async def _eval_circuit_breaker(
             context=context or None,
         )
         return result.to_dict() if hasattr(result, "to_dict") else {"result": str(result)}
-    except Exception:
+    except (ValueError, TypeError, RuntimeError, AttributeError):
         logger.exception("circuit_breaker_eval_failed")
         return {"error": "Circuit breaker evaluation failed"}
 
@@ -485,7 +485,7 @@ async def _eval_policy_lint(
     try:
         result = linter.lint(rules=[action], strict=False)
         return result.to_dict() if hasattr(result, "to_dict") else {"result": str(result)}
-    except Exception:
+    except (ValueError, TypeError, RuntimeError, AttributeError):
         logger.exception("policy_lint_eval_failed")
         return {"error": "Policy lint failed"}
 
@@ -510,7 +510,7 @@ async def _eval_eu_ai_log(
             context=context or None,
         )
         return result.to_dict() if hasattr(result, "to_dict") else {"result": str(result)}
-    except Exception:
+    except (ValueError, TypeError, RuntimeError, AttributeError):
         logger.exception("eu_ai_log_eval_failed")
         return {"error": "Article 12 logging failed"}
 
@@ -598,7 +598,7 @@ async def execute_bundle(
             result = await evaluator(body.action, body.context)
             has_error = isinstance(result, dict) and "error" in result
             return endpoint, result, not has_error
-        except Exception:
+        except (ImportError, ValueError, TypeError, RuntimeError, AttributeError, KeyError):
             logger.exception("bundle_evaluator_failed", endpoint=endpoint)
             return endpoint, {"error": "Evaluator failed"}, False
 

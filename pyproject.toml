@@ -5,10 +5,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "acgs"
-version = "3.0.1"
+version = "3.0.2"
 description = "Partial-open-source ACGS package line for governance runtime, shared components, and platform tooling"
 requires-python = ">=3.11"
-license = "AGPL-3.0-or-later"
+license = "Apache-2.0"
 dependencies = [
     "fastapi>=0.127.0",
     "httpx>=0.27.0",
@@ -66,6 +66,14 @@ postgres = [
     "sqlalchemy>=2.0.38",
 ]
 
+[project.urls]
+Homepage = "https://github.com/dislovelhl/acgs"
+Documentation = "https://github.com/dislovelhl/acgs/blob/main/README.md"
+Repository = "https://github.com/dislovelhl/acgs"
+Issues = "https://github.com/dislovelhl/acgs/issues"
+Changelog = "https://github.com/dislovelhl/acgs/releases"
+PyPI = "https://pypi.org/project/acgs/"
+
 [tool.uv]
 managed = true
 package = true
@@ -103,7 +111,7 @@ ignore = [
 "packages/constitutional_swarm/**/*.py" = ["S105"]
 "src/**/*.py" = ["BLE001", "S105", "S106", "S108", "RUF001", "RUF002", "RUF003"]
 "src/acgs_lite/**/*.py" = ["BLE001", "S311", "F401", "RUF012"]
-"autoresearch/**/*.py" = ["BLE001", "S311", "T201"]
+"autoresearch/**/*.py" = ["BLE001", "S311", "T201", "S603", "S110", "RUF001", "RUF002", "RUF003", "RUF005", "RUF046"]
 "**/__init__.py" = ["F401"]
 "**/examples/**/*.py" = ["E402", "S105", "S106", "BLE001"]
 "packages/acgs-lite/examples/*.py" = ["E402", "S105", "S106", "BLE001"]

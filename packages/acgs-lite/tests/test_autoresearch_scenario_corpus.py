@@ -22,6 +22,7 @@ PROMOTION_PATCH = (
     / "candidate_scenarios"
     / "promote_sourced_real_use_case_candidates.patch"
 )
+_CANDIDATE_FILES_AVAILABLE = CANDIDATE_SCENARIOS.exists() and PROMOTION_PATCH.exists()
 
 
 _skip_missing_candidates = pytest.mark.skipif(
@@ -86,6 +87,10 @@ def test_real_use_case_fixture_is_mostly_novel_relative_to_frozen_benchmark_corp
 
 @_skip_missing_candidates
 @pytest.mark.unit
+@pytest.mark.skipif(
+    not _CANDIDATE_FILES_AVAILABLE,
+    reason="autoresearch/candidate_scenarios/ is gitignored; files unavailable in CI",
+)
 def test_candidate_scenario_pack_is_balanced_and_traceable() -> None:
     rows = _load_rows(CANDIDATE_SCENARIOS)
     counts = Counter(str(row["expected"]) for row in rows)
@@ -102,6 +107,10 @@ def test_candidate_scenario_pack_is_balanced_and_traceable() -> None:
 
 @_skip_missing_candidates
 @pytest.mark.unit
+@pytest.mark.skipif(
+    not _CANDIDATE_FILES_AVAILABLE,
+    reason="autoresearch/candidate_scenarios/ is gitignored; files unavailable in CI",
+)
 def test_candidate_scenario_pack_is_fully_novel_relative_to_frozen_corpus() -> None:
     benchmark_actions = {
         str(row["action"])
@@ -116,6 +125,10 @@ def test_candidate_scenario_pack_is_fully_novel_relative_to_frozen_corpus() -> N
 
 @_skip_missing_candidates
 @pytest.mark.unit
+@pytest.mark.skipif(
+    not _CANDIDATE_FILES_AVAILABLE,
+    reason="autoresearch/candidate_scenarios/ is gitignored; files unavailable in CI",
+)
 def test_candidate_promotion_patch_targets_frozen_scenarios_path() -> None:
     patch_text = PROMOTION_PATCH.read_text()
 
