@@ -17,12 +17,13 @@ import asyncio
 import functools
 import inspect
 import uuid
-from collections.abc import Callable
-from typing import Any, Protocol, TypeVar, runtime_checkable
+from collections.abc import Callable, Iterable
+from typing import Any, Protocol, TypeVar, cast, runtime_checkable
 
 _MAX_RETRIES_LIMIT = 10
 
 from acgs_lite.audit import AuditEntry, AuditLog
+from acgs_lite.circuit_breaker import GovernanceCircuitBreaker, GovernanceHaltError
 from acgs_lite.constitution import Constitution
 from acgs_lite.constitution.refusal_reasoning import RefusalReasoningEngine
 from acgs_lite.engine import GovernanceEngine
@@ -45,6 +46,71 @@ class AsyncAgentProtocol(Protocol):
     """Protocol for async agent-like objects."""
 
     async def run(self, input: str, **kwargs: Any) -> Any: ...
+
+
+@runtime_checkable
+class CapabilityProfileProtocol(Protocol):
+    """Minimal capability profile surface used by GovernedAgent."""
+
+    model_id: str
+    provider_type: str
+
+
+class CapabilityRegistryProtocol(Protocol):
+    """Minimal capability registry surface used by GovernedAgent."""
+
+    def get_all_profiles(self, active_only: bool = True) -> Iterable[CapabilityProfileProtocol]:
+        ...
+
+
+class GetCapabilityRegistryProtocol(Protocol):
+    """Lazy capability registry loader."""
+
+    def __call__(self) -> CapabilityRegistryProtocol: ...
+
+
+class AttachResponseFormatProtocol(Protocol):
+    """Lazy constrained-output hook."""
+
+    def __call__(
+        self,
+        execution_kwargs: dict[str, Any],
+        constitution: Constitution,
+        capability_profile: CapabilityProfileProtocol | None,
+    ) -> dict[str, Any]: ...
+
+
+class _NoOpCapabilityRegistry:
+    def get_all_profiles(self, active_only: bool = True) -> Iterable[CapabilityProfileProtocol]:
+        return ()
+
+
+def _noop_get_capability_registry() -> CapabilityRegistryProtocol:
+    return _NoOpCapabilityRegistry()
+
+
+def _noop_attach_response_format(
+    execution_kwargs: dict[str, Any],
+    constitution: Constitution,
+    capability_profile: CapabilityProfileProtocol | None,
+) -> dict[str, Any]:
+    return execution_kwargs
+
+
+def _load_get_capability_registry() -> GetCapabilityRegistryProtocol:
+    try:
+        from enhanced_agent_bus.llm_adapters.capability_matrix import get_capability_registry
+    except ImportError:
+        return _noop_get_capability_registry
+    return cast(GetCapabilityRegistryProtocol, get_capability_registry)
+
+
+def _load_attach_response_format() -> AttachResponseFormatProtocol:
+    try:
+        from enhanced_agent_bus.llm_adapters.constrained_output import attach_response_format
+    except ImportError:
+        return _noop_attach_response_format
+    return cast(AttachResponseFormatProtocol, attach_response_format)
 
 
 class GovernedAgent:
@@ -90,6 +156,7 @@ class GovernedAgent:
         maci_role: MACIRole | None = None,
         enforce_maci: bool = False,
         max_retries: int = 0,
+        circuit_breaker: GovernanceCircuitBreaker | None = None,
     ) -> None:
         self._agent = agent
         self.agent_id = agent_id
@@ -97,6 +164,7 @@ class GovernedAgent:
         self.maci_role = maci_role
         self.enforce_maci = enforce_maci
         self.max_retries = min(max(0, max_retries), _MAX_RETRIES_LIMIT)
+        self._circuit_breaker = circuit_breaker
         self.constitution = constitution or Constitution.default()
         self.audit_log = AuditLog()
         self.engine = GovernanceEngine(
@@ -175,14 +243,17 @@ class GovernedAgent:
                 rule_id="AGENT-PROTOCOL",
             )
 
-    def _resolve_capability_profile(self, explicit_profile: Any | None) -> Any | None:
+    def _resolve_capability_profile(
+        self,
+        explicit_profile: CapabilityProfileProtocol | None,
+    ) -> CapabilityProfileProtocol | None:
         if explicit_profile is not None:
             return explicit_profile
 
         for attr_name in ("capability_profile", "provider_capability_profile"):
             profile = getattr(self._agent, attr_name, None)
             if profile is not None:
-                return profile
+                return cast(CapabilityProfileProtocol, profile)
 
         provider_name_getter = getattr(self._agent, "get_provider_name", None)
         provider_name = provider_name_getter() if callable(provider_name_getter) else None
@@ -193,12 +264,8 @@ class GovernedAgent:
         if not isinstance(model, str):
             return None
 
-        try:
-            from enhanced_agent_bus.llm_adapters.capability_matrix import get_capability_registry
-        except ImportError:
-            return None
-
-        for profile in get_capability_registry().get_all_profiles(active_only=False):
+        capability_registry = _load_get_capability_registry()()
+        for profile in capability_registry.get_all_profiles(active_only=False):
             if profile.model_id != model:
                 continue
             if isinstance(provider_name, str) and profile.provider_type != provider_name:
@@ -208,24 +275,23 @@ class GovernedAgent:
 
     def _prepare_execution_kwargs(self, kwargs: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
         execution_kwargs = dict(kwargs)
-        explicit_profile = execution_kwargs.pop("capability_profile", None)
+        explicit_profile = cast(
+            CapabilityProfileProtocol | None,
+            execution_kwargs.pop("capability_profile", None),
+        )
         if explicit_profile is None:
-            explicit_profile = execution_kwargs.pop("provider_capability_profile", None)
+            explicit_profile = cast(
+                CapabilityProfileProtocol | None,
+                execution_kwargs.pop("provider_capability_profile", None),
+            )
 
         if self.validate_output:
             capability_profile = self._resolve_capability_profile(explicit_profile)
-            try:
-                from enhanced_agent_bus.llm_adapters.constrained_output import (
-                    attach_response_format,
-                )
-            except ImportError:
-                pass
-            else:
-                execution_kwargs = attach_response_format(
-                    execution_kwargs,
-                    self.constitution,
-                    capability_profile,
-                )
+            execution_kwargs = _load_attach_response_format()(
+                execution_kwargs,
+                self.constitution,
+                capability_profile,
+            )
 
         governance_kwargs = {
             key: value for key, value in execution_kwargs.items() if key != "response_format"
@@ -258,7 +324,12 @@ class GovernedAgent:
         Raises:
             ConstitutionalViolationError: If input/output violates rules
                 after all retries are exhausted.
+            GovernanceHaltError: If the circuit breaker is tripped.
         """
+        # Step 0: Check circuit breaker (Article 14 kill-switch)
+        if self._circuit_breaker is not None:
+            self._circuit_breaker.check()
+
         # Step 1: Enforce MACI boundary, when enabled
         self._check_maci(governance_action)
         execution_kwargs, governance_kwargs = self._prepare_execution_kwargs(kwargs)

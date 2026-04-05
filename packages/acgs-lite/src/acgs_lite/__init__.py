@@ -19,7 +19,14 @@ Usage::
 """
 
 from acgs_lite._meta import CONSTITUTIONAL_HASH, VERSION
-from acgs_lite.audit import AuditEntry, AuditLog
+from acgs_lite.circuit_breaker import GovernanceCircuitBreaker, GovernanceHaltError
+from acgs_lite.audit import (
+    AuditBackend,
+    AuditEntry,
+    AuditLog,
+    InMemoryAuditBackend,
+    JSONLAuditBackend,
+)
 from acgs_lite.constitution import (
     AcknowledgedTension,
     Constitution,
@@ -124,6 +131,12 @@ __all__ = [
     # Audit
     "AuditLog",
     "AuditEntry",
+    "AuditBackend",
+    "InMemoryAuditBackend",
+    "JSONLAuditBackend",
+    # Circuit breaker (Article 14 kill-switch)
+    "GovernanceCircuitBreaker",
+    "GovernanceHaltError",
     # MACI
     "MACIRole",
     "MACIEnforcer",

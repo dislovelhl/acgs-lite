@@ -811,6 +811,114 @@ class ComplianceEvidenceEngine:
 
 
 # ---------------------------------------------------------------------------
+# Audit log evidence collector
+# ---------------------------------------------------------------------------
+
+# Maps audit entry types to article references with confidence factors
+_AUDIT_TYPE_EVIDENCE: dict[str, list[tuple[str, str, float]]] = {
+    "validation": [
+        ("eu_ai_act", "EU-AIA Art.9(1)", 0.85),   # Risk management
+        ("eu_ai_act", "EU-AIA Art.12(1)", 0.90),   # Automatic logging
+        ("nist_ai_rmf", "NIST MEASURE 1.3", 0.80),
+        ("iso_42001", "ISO 42001 §9.1", 0.80),
+        ("dora", "DORA Art.8(6)", 0.80),
+    ],
+    "maci_check": [
+        ("eu_ai_act", "EU-AIA Art.14(5)", 0.90),   # Human oversight design
+        ("eu_ai_act", "EU-AIA Art.14(1)", 0.85),   # Effective oversight
+        ("nist_ai_rmf", "NIST GOVERN 2.1", 0.80),
+        ("iso_42001", "ISO 42001 §5.3", 0.80),
+    ],
+    "override": [
+        ("eu_ai_act", "EU-AIA Art.14(4)", 0.90),   # Intervention capability
+        ("gdpr", "GDPR Art.22(3)", 0.85),           # Right to contest
+        ("nist_ai_rmf", "NIST MANAGE 1.2", 0.80),
+    ],
+}
+
+
+class AuditLogEvidenceCollector:
+    """Generate compliance evidence from actual governance audit log entries.
+
+    Bridges runtime behavior to regulatory evidence: if the audit log
+    contains validation entries, that's proof of Article 9 risk management.
+    If it contains MACI checks, that's proof of Article 14 oversight.
+
+    Args:
+        audit_log: An :class:`~acgs_lite.audit.AuditLog` instance to analyze.
+        min_entries: Minimum entries required to generate evidence (default 1).
+    """
+
+    def __init__(self, audit_log: Any, min_entries: int = 1) -> None:
+        self._audit_log = audit_log
+        self._min_entries = min_entries
+
+    def collect(self, system_description: dict[str, Any]) -> list[EvidenceItem]:  # noqa: ARG002
+        items: list[EvidenceItem] = []
+
+        if not hasattr(self._audit_log, "entries"):
+            return items
+
+        entries = self._audit_log.entries
+        if len(entries) < self._min_entries:
+            return items
+
+        # Count entries by type
+        type_counts: dict[str, int] = {}
+        for entry in entries:
+            entry_type = getattr(entry, "type", "unknown")
+            type_counts[entry_type] = type_counts.get(entry_type, 0) + 1
+
+        total = len(entries)
+
+        for entry_type, count in type_counts.items():
+            refs = _AUDIT_TYPE_EVIDENCE.get(entry_type, [])
+            if not refs:
+                continue
+
+            # Scale confidence by volume: 1 entry = base * 0.5, 100+ = base * 1.0
+            volume_factor = min(1.0, 0.5 + (count / 200))
+
+            # Group refs by framework
+            fw_refs: dict[str, list[tuple[str, float]]] = {}
+            for fw_id, ref, base_conf in refs:
+                fw_refs.setdefault(fw_id, []).append((ref, base_conf * volume_factor))
+
+            for fw_id, ref_list in fw_refs.items():
+                article_refs = tuple(r for r, _ in ref_list)
+                confidence = max(c for _, c in ref_list)
+                items.append(
+                    EvidenceItem(
+                        framework_id=fw_id,
+                        article_refs=article_refs,
+                        source=f"audit:{entry_type}:{count}/{total}",
+                        description=(
+                            f"Runtime audit log contains {count} {entry_type} "
+                            f"entries out of {total} total — governance actively enforced"
+                        ),
+                        confidence=round(confidence, 3),
+                    )
+                )
+
+        # Chain integrity as additional evidence
+        if hasattr(self._audit_log, "verify_chain") and self._audit_log.verify_chain():
+            items.append(
+                EvidenceItem(
+                    framework_id="eu_ai_act",
+                    article_refs=("EU-AIA Art.12(2)",),
+                    source=f"audit:chain_valid:{total}",
+                    description=(
+                        f"Audit chain integrity verified — {total} entries, "
+                        f"SHA-256 hash chain intact"
+                    ),
+                    confidence=0.95,
+                )
+            )
+
+        return items
+
+
+# ---------------------------------------------------------------------------
 # Convenience entry point
 # ---------------------------------------------------------------------------
 
@@ -818,6 +926,7 @@ class ComplianceEvidenceEngine:
 def collect_evidence(
     system_description: dict[str, Any] | None = None,
     search_root: Path | None = None,
+    audit_log: Any | None = None,
 ) -> EvidenceBundle:
     """Collect all available evidence for *system_description*.
 
@@ -827,6 +936,8 @@ def collect_evidence(
         system_description: System metadata dict (may include ``system_id``,
             ``jurisdiction``, ``domain``).
         search_root: Override the filesystem search root (default: ``Path.cwd()``).
+        audit_log: Optional :class:`~acgs_lite.audit.AuditLog` instance for
+            runtime evidence collection.
 
     Returns:
         An :class:`EvidenceBundle` with all findings.
@@ -837,6 +948,8 @@ def collect_evidence(
         FileSystemCollector(search_root),
         EnvironmentVarCollector(),
     ]
+    if audit_log is not None:
+        collectors.append(AuditLogEvidenceCollector(audit_log))
     return ComplianceEvidenceEngine(collectors=collectors).collect(desc)
 
 

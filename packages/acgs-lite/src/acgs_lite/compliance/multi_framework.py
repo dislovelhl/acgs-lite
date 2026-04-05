@@ -21,9 +21,13 @@ Usage::
 from __future__ import annotations
 
 import dataclasses
+import importlib.metadata
+import logging
 from collections import Counter
 from datetime import UTC, datetime
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 from acgs_lite.compliance.australia_ai_ethics import AustraliaAIEthicsFramework
 from acgs_lite.compliance.base import (
@@ -109,6 +113,82 @@ _DOMAIN_MAP: dict[str, list[str]] = {
     "general_purpose_ai": ["eu_ai_act"],
     "gpai": ["eu_ai_act"],
 }
+
+_plugins_loaded = False
+
+
+def _load_plugins() -> None:
+    """Discover and load third-party compliance frameworks via entry points.
+
+    Entry point group: ``acgs_lite.compliance_frameworks``
+
+    Example pyproject.toml for a plugin::
+
+        [project.entry-points."acgs_lite.compliance_frameworks"]
+        my_framework = "my_package:MyFrameworkClass"
+    """
+    global _plugins_loaded
+    if _plugins_loaded:
+        return
+    _plugins_loaded = True
+
+    try:
+        eps = importlib.metadata.entry_points()
+        # Python 3.12+ returns a SelectableGroups; 3.10-3.11 returns a dict
+        if hasattr(eps, "select"):
+            group = eps.select(group="acgs_lite.compliance_frameworks")
+        else:
+            group = eps.get("acgs_lite.compliance_frameworks", [])
+
+        for ep in group:
+            if ep.name in _FRAMEWORK_REGISTRY:
+                logger.debug("plugin %s skipped: ID already registered", ep.name)
+                continue
+            try:
+                cls = ep.load()
+                _FRAMEWORK_REGISTRY[ep.name] = cls
+                logger.debug("plugin framework registered: %s", ep.name)
+            except Exception:
+                logger.warning(
+                    "failed to load compliance plugin %s", ep.name, exc_info=True
+                )
+    except Exception:
+        logger.debug("entry point discovery failed", exc_info=True)
+
+
+def register_framework(framework_id: str, cls: type) -> None:
+    """Programmatically register a compliance framework.
+
+    Args:
+        framework_id: Unique identifier (e.g. "my_custom_fw").
+        cls: Framework class implementing the ComplianceFramework protocol.
+    """
+    _FRAMEWORK_REGISTRY[framework_id] = cls
+
+
+def register_jurisdiction(jurisdiction: str, framework_ids: list[str]) -> None:
+    """Add or extend a jurisdiction mapping.
+
+    Args:
+        jurisdiction: Jurisdiction key (e.g. "south_korea").
+        framework_ids: List of framework IDs that apply.
+    """
+    existing = _JURISDICTION_MAP.get(jurisdiction, [])
+    merged = list(dict.fromkeys(existing + framework_ids))
+    _JURISDICTION_MAP[jurisdiction] = merged
+
+
+def register_domain(domain: str, framework_ids: list[str]) -> None:
+    """Add or extend a domain mapping.
+
+    Args:
+        domain: Domain key (e.g. "autonomous_vehicles").
+        framework_ids: List of framework IDs that apply.
+    """
+    existing = _DOMAIN_MAP.get(domain, [])
+    merged = list(dict.fromkeys(existing + framework_ids))
+    _DOMAIN_MAP[domain] = merged
+
 
 # ---------------------------------------------------------------------------
 # Evidence integration
@@ -248,6 +328,7 @@ class MultiFrameworkAssessor:
 
     def __init__(self, frameworks: list[str] | None = None) -> None:
         """Initialize with an optional list of framework IDs to assess."""
+        _load_plugins()
         self._requested_frameworks = frameworks
         self._instances: dict[str, ComplianceFramework] = {}
 
