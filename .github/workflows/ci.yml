@@ -71,7 +71,7 @@ jobs:
         run: |
           .venv/bin/python -c "import enhanced_agent_bus; print('enhanced_agent_bus:', enhanced_agent_bus.__file__)" || echo "WARN: enhanced_agent_bus not importable"
       - name: Test (quick)
-        run: make test-quick PYTEST_TARGETS="packages/acgs-lite/tests/ packages/acgs-core/tests/ packages/clinicalguard/tests/ src/core/services/api_gateway/tests/"
+        run: make test-quick PYTEST_TARGETS="packages/acgs-lite/tests/ packages/acgs-core/tests/ packages/clinicalguard/tests/ src/core/services/api_gateway/tests/unit/"
 
   test-full:
     if: github.ref == 'refs/heads/main'
