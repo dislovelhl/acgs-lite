@@ -26,7 +26,9 @@ jobs:
         run: ruff check src/acgs_lite/
       - name: Type check
         if: matrix.python-version == '3.11'
-        run: mypy src/acgs_lite/ --ignore-missing-imports --explicit-package-bases
+        env:
+          MYPYPATH: src
+        run: mypy src/acgs_lite/ --ignore-missing-imports --namespace-packages --explicit-package-bases
       - name: Test
         env:
           OPENAI_API_KEY: test-key-for-unit-tests
