@@ -1,3 +1,8 @@
+# ACGS - Constitutional AI Governance
+# Copyright (C) 2024-2026 ACGS Contributors
+# Licensed under AGPL-3.0-or-later. See LICENSE for details.
+# Commercial license: https://acgs.ai
+
 """High-performance multi-pattern matching for constitutional rule evaluation.
 
 Implements three tiers of optimization:
@@ -5,7 +10,7 @@ Implements three tiers of optimization:
 2. Pre-compiled keyword index with context-aware matching — always available
 3. Bloom filter fast path for "definitely clean" detection — always available
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -134,10 +139,11 @@ class _BloomFilter:
                 self._bits[h] = 1
 
     def _hashes(self, item: str) -> list[int]:
-        """Generate k hash positions using double-hashing."""
-        # Two base hashes from built-in hash + shifted hash
-        h1 = hash(item) % self._size
-        h2 = hash(item + "\x00") % self._size
+        """Generate k hash positions using double-hashing with deterministic SHA-256."""
+        import hashlib
+        data = item.encode()
+        h1 = int.from_bytes(hashlib.sha256(data).digest()[:4], "little") % self._size
+        h2 = int.from_bytes(hashlib.sha256(data + b"\x00").digest()[:4], "little") % self._size
         if h2 == 0:
             h2 = 1
         return [(h1 + i * h2) % self._size for i in range(self._num_hashes)]

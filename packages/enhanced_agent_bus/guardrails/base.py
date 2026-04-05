@@ -4,13 +4,13 @@ Guardrail Base Classes and Constants.
 Provides the abstract base class for guardrail components and shared constants
 including PII detection patterns used across multiple layers.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from abc import ABC, abstractmethod
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

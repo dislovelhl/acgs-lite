@@ -1,6 +1,6 @@
 """
 Tests for Saga Store.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import pytest
@@ -17,7 +17,6 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 class TestSagaStore:
     """Tests for saga persistence store."""
 
-    @pytest.mark.asyncio
     async def test_save_and_get_saga(self, saga_store: SagaStore):
         """Test saving and retrieving a saga."""
         saga = Saga(
@@ -34,13 +33,11 @@ class TestSagaStore:
         assert retrieved.saga_id == "saga-001"
         assert retrieved.tenant_id == "tenant-001"
 
-    @pytest.mark.asyncio
     async def test_get_nonexistent_saga(self, saga_store: SagaStore):
         """Test retrieving a non-existent saga."""
         result = await saga_store.get("nonexistent")
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_list_sagas_by_tenant(self, saga_store: SagaStore):
         """Test listing sagas by tenant."""
         saga1 = Saga(
@@ -72,7 +69,6 @@ class TestSagaStore:
         tenant2_sagas = await saga_store.list_by_tenant("tenant-002")
         assert len(tenant2_sagas) == 1
 
-    @pytest.mark.asyncio
     async def test_list_sagas_by_status(self, saga_store: SagaStore):
         """Test filtering sagas by status."""
         saga1 = Saga(
@@ -97,7 +93,6 @@ class TestSagaStore:
         assert len(completed) == 1
         assert completed[0].saga_id == "saga-001"
 
-    @pytest.mark.asyncio
     async def test_delete_saga(self, saga_store: SagaStore):
         """Test deleting a saga."""
         saga = Saga(
@@ -114,13 +109,11 @@ class TestSagaStore:
         assert deleted is True
         assert await saga_store.get("saga-001") is None
 
-    @pytest.mark.asyncio
     async def test_delete_nonexistent_saga(self, saga_store: SagaStore):
         """Test deleting a non-existent saga."""
         result = await saga_store.delete("nonexistent")
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_get_pending_compensations(self, saga_store: SagaStore):
         """Test getting sagas pending compensation."""
         saga1 = Saga(
@@ -145,7 +138,6 @@ class TestSagaStore:
         assert len(pending) == 1
         assert pending[0].saga_id == "saga-001"
 
-    @pytest.mark.asyncio
     async def test_list_with_pagination(self, saga_store: SagaStore):
         """Test listing sagas with pagination."""
         for i in range(10):

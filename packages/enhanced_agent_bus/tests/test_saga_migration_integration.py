@@ -1,6 +1,6 @@
 """
 Tests for ACGS-2 Saga-Migration Integration Service
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive test coverage for saga-managed migration workflows.
 
@@ -321,7 +321,6 @@ class TestCheckpointStore:
         """Create a checkpoint store."""
         return CheckpointStore()
 
-    @pytest.mark.asyncio
     async def test_save_checkpoint(self, store):
         """Test saving a checkpoint."""
         checkpoint = MigrationCheckpoint(
@@ -335,7 +334,6 @@ class TestCheckpointStore:
         assert len(checkpoints) == 1
         assert checkpoints[0].checkpoint_id == "cp-001"
 
-    @pytest.mark.asyncio
     async def test_save_multiple_checkpoints(self, store):
         """Test saving multiple checkpoints."""
         for i, phase in enumerate(
@@ -355,7 +353,6 @@ class TestCheckpointStore:
         checkpoints = await store.list_checkpoints("mig-001")
         assert len(checkpoints) == 3
 
-    @pytest.mark.asyncio
     async def test_get_latest_checkpoint(self, store):
         """Test getting latest checkpoint."""
         for i in range(3):
@@ -372,7 +369,6 @@ class TestCheckpointStore:
         assert latest.checkpoint_id == "cp-2"
         assert latest.data["batch"] == 2
 
-    @pytest.mark.asyncio
     async def test_get_latest_by_phase(self, store):
         """Test getting latest checkpoint by phase."""
         await store.save(
@@ -401,19 +397,16 @@ class TestCheckpointStore:
         assert latest is not None
         assert latest.checkpoint_id == "cp-3"
 
-    @pytest.mark.asyncio
     async def test_get_latest_nonexistent(self, store):
         """Test getting latest from nonexistent migration."""
         latest = await store.get_latest("nonexistent")
         assert latest is None
 
-    @pytest.mark.asyncio
     async def test_list_checkpoints_empty(self, store):
         """Test listing checkpoints for nonexistent migration."""
         checkpoints = await store.list_checkpoints("nonexistent")
         assert checkpoints == []
 
-    @pytest.mark.asyncio
     async def test_delete_checkpoints(self, store):
         """Test deleting checkpoints."""
         await store.save(
@@ -436,12 +429,10 @@ class TestCheckpointStore:
         checkpoints = await store.list_checkpoints("mig-001")
         assert checkpoints == []
 
-    @pytest.mark.asyncio
     async def test_delete_nonexistent(self, store):
         """Test deleting nonexistent checkpoints (no error)."""
         await store.delete("nonexistent")  # Should not raise
 
-    @pytest.mark.asyncio
     async def test_multi_migration_isolation(self, store):
         """Test checkpoints are isolated per migration."""
         await store.save(
@@ -524,7 +515,6 @@ class TestSagaMigrationServiceStartMigration:
         """Create a saga migration service."""
         return SagaMigrationService()
 
-    @pytest.mark.asyncio
     async def test_start_policy_migration(self, service):
         """Test starting a policy migration."""
         config = SagaMigrationConfig(
@@ -542,7 +532,6 @@ class TestSagaMigrationServiceStartMigration:
         assert result.saga_id is not None
         assert len(result.phases_completed) > 0
 
-    @pytest.mark.asyncio
     async def test_start_schema_migration(self, service):
         """Test starting a schema migration."""
         config = SagaMigrationConfig(
@@ -556,7 +545,6 @@ class TestSagaMigrationServiceStartMigration:
         assert result.success is True
         assert result.status == MigrationJobStatus.COMPLETED
 
-    @pytest.mark.asyncio
     async def test_start_data_migration(self, service):
         """Test starting a data migration."""
         config = SagaMigrationConfig(
@@ -570,7 +558,6 @@ class TestSagaMigrationServiceStartMigration:
         assert result.success is True
         assert result.status == MigrationJobStatus.COMPLETED
 
-    @pytest.mark.asyncio
     async def test_start_full_migration(self, service):
         """Test starting a full migration."""
         config = SagaMigrationConfig(
@@ -588,7 +575,6 @@ class TestSagaMigrationServiceStartMigration:
         assert result.success is True
         assert result.status == MigrationJobStatus.COMPLETED
 
-    @pytest.mark.asyncio
     async def test_migration_creates_checkpoints(self, service):
         """Test migration creates checkpoints."""
         config = SagaMigrationConfig(
@@ -604,7 +590,6 @@ class TestSagaMigrationServiceStartMigration:
         for cp in result.checkpoints:
             assert cp.migration_id == result.migration_id
 
-    @pytest.mark.asyncio
     async def test_migration_records_execution_time(self, service):
         """Test migration records execution time."""
         config = SagaMigrationConfig(
@@ -616,7 +601,6 @@ class TestSagaMigrationServiceStartMigration:
 
         assert result.execution_time_ms > 0
 
-    @pytest.mark.asyncio
     async def test_migration_with_backup_disabled(self, service):
         """Test migration with backup disabled."""
         config = SagaMigrationConfig(
@@ -629,7 +613,6 @@ class TestSagaMigrationServiceStartMigration:
 
         assert result.success is True
 
-    @pytest.mark.asyncio
     async def test_migration_with_verification_disabled(self, service):
         """Test migration with verification disabled."""
         config = SagaMigrationConfig(
@@ -652,7 +635,6 @@ class TestSagaMigrationServiceStatus:
         return SagaMigrationService()
 
     @_SKIP_NO_REDIS
-    @pytest.mark.asyncio
     async def test_get_completed_migration_status(self, service):
         """Test getting status of completed migration."""
         config = SagaMigrationConfig(
@@ -671,7 +653,6 @@ class TestSagaMigrationServiceStatus:
         assert status.migration_id == migration_result.migration_id
         assert status.status == MigrationJobStatus.COMPLETED
 
-    @pytest.mark.asyncio
     async def test_get_nonexistent_migration_status(self, service):
         """Test getting status of nonexistent migration."""
         status = await service.get_migration_status(
@@ -682,7 +663,6 @@ class TestSagaMigrationServiceStatus:
         assert status is None
 
     @_SKIP_NO_REDIS
-    @pytest.mark.asyncio
     async def test_status_includes_checkpoints(self, service):
         """Test status includes checkpoints."""
         config = SagaMigrationConfig(
@@ -710,7 +690,6 @@ class TestSagaMigrationServiceCancel:
         return SagaMigrationService()
 
     @_SKIP_NO_REDIS
-    @pytest.mark.asyncio
     async def test_cancel_migration(self, service):
         """Test cancelling a migration."""
         config = SagaMigrationConfig(
@@ -730,7 +709,6 @@ class TestSagaMigrationServiceCancel:
         # Cancel should succeed even for completed migrations
         assert cancelled is True
 
-    @pytest.mark.asyncio
     async def test_cancel_nonexistent_migration(self, service):
         """Test cancelling nonexistent migration."""
         cancelled = await service.cancel_migration(
@@ -750,7 +728,6 @@ class TestSagaMigrationServiceMetrics:
         """Create a saga migration service."""
         return SagaMigrationService()
 
-    @pytest.mark.asyncio
     async def test_metrics_recorded(self, service):
         """Test metrics are recorded after migration."""
         config = SagaMigrationConfig(
@@ -765,7 +742,6 @@ class TestSagaMigrationServiceMetrics:
         assert "total_sagas" in metrics
         assert metrics["total_sagas"] >= 1
 
-    @pytest.mark.asyncio
     async def test_multiple_migrations_metrics(self, service):
         """Test metrics accumulate across migrations."""
         for i in range(3):
@@ -970,7 +946,6 @@ class TestMultiTenantMigration:
         """Create a saga migration service."""
         return SagaMigrationService()
 
-    @pytest.mark.asyncio
     async def test_migration_between_tenants(self, service):
         """Test migration from one tenant to another."""
         config = SagaMigrationConfig(
@@ -983,7 +958,6 @@ class TestMultiTenantMigration:
 
         assert result.success is True
 
-    @pytest.mark.asyncio
     async def test_tenant_isolation_in_status(self, service):
         """Test tenant isolation when getting status."""
         config = SagaMigrationConfig(
@@ -1002,7 +976,6 @@ class TestMultiTenantMigration:
         # Should not find migration for wrong tenant
         assert status is None
 
-    @pytest.mark.asyncio
     async def test_concurrent_tenant_migrations(self, service):
         """Test concurrent migrations for different tenants."""
         configs = [
@@ -1038,7 +1011,6 @@ class TestEdgeCases:
         """Create a saga migration service."""
         return SagaMigrationService()
 
-    @pytest.mark.asyncio
     async def test_empty_options(self, service):
         """Test migration with empty options."""
         config = SagaMigrationConfig(
@@ -1051,7 +1023,6 @@ class TestEdgeCases:
 
         assert result.success is True
 
-    @pytest.mark.asyncio
     async def test_same_source_and_target(self, service):
         """Test migration with same source and target tenant."""
         config = SagaMigrationConfig(
@@ -1064,7 +1035,6 @@ class TestEdgeCases:
 
         assert result.success is True
 
-    @pytest.mark.asyncio
     async def test_large_batch_size(self, service):
         """Test migration with large batch configuration."""
         config = SagaMigrationConfig(
@@ -1080,7 +1050,6 @@ class TestEdgeCases:
 
         assert result.success is True
 
-    @pytest.mark.asyncio
     async def test_zero_records(self, service):
         """Test migration with zero records."""
         config = SagaMigrationConfig(
@@ -1093,7 +1062,6 @@ class TestEdgeCases:
 
         assert result.success is True
 
-    @pytest.mark.asyncio
     async def test_migration_result_constitutional_hash(self, service):
         """Test all migration results include constitutional hash."""
         configs = [
@@ -1130,7 +1098,6 @@ class TestSagaMigrationIntegration:
         """Create a saga migration service."""
         return SagaMigrationService()
 
-    @pytest.mark.asyncio
     async def test_full_migration_workflow(self, service):
         """Test complete migration workflow from start to status."""
         # 1. Configure migration
@@ -1172,7 +1139,6 @@ class TestSagaMigrationIntegration:
         metrics = service.get_metrics()
         assert metrics["total_sagas"] >= 1
 
-    @pytest.mark.asyncio
     async def test_checkpoint_persistence(self, service):
         """Test checkpoints are persisted throughout migration."""
         config = SagaMigrationConfig(
@@ -1189,7 +1155,6 @@ class TestSagaMigrationIntegration:
         # Should have checkpoints for multiple phases
         assert len(phases_with_checkpoints) >= 2
 
-    @pytest.mark.asyncio
     async def test_job_and_saga_coordination(self, service):
         """Test job manager and saga orchestrator work together."""
         config = SagaMigrationConfig(

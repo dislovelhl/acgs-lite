@@ -1,7 +1,7 @@
 """
 Message Router Component.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 MACI Role: EXECUTIVE (message routing and delivery)
 """
 
@@ -9,7 +9,7 @@ import asyncio
 from collections.abc import Callable
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -51,13 +51,13 @@ class MessageRouter:
 
     async def initialize(self) -> None:
         """Initialize router resources (Kafka, etc)."""
-        if self.config.get("use_kafka") is True and self._kafka_bus:  # noqa: SIM102
+        if self.config.get("use_kafka") is True and self._kafka_bus:
             if hasattr(self._kafka_bus, "start"):
                 await self._kafka_bus.start()
 
     async def shutdown(self) -> None:
         """Shutdown router resources."""
-        if self._kafka_bus:  # noqa: SIM102
+        if self._kafka_bus:
             if hasattr(self._kafka_bus, "stop"):
                 await self._kafka_bus.stop()
 
@@ -88,7 +88,7 @@ class MessageRouter:
 
     async def _deliver(self, msg: AgentMessage) -> bool:
         """Internal delivery logic."""
-        if self._kafka_bus:  # noqa: SIM102
+        if self._kafka_bus:
             if hasattr(self._kafka_bus, "send_message"):
                 res = self._kafka_bus.send_message(msg)
                 if asyncio.iscoroutine(res):

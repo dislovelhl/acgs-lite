@@ -1,6 +1,6 @@
 """
 Redis Query Operations for Saga Persistence
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides query operations for listing and counting sagas by various criteria.
 Implements index-based lookups for efficient querying.
@@ -11,7 +11,7 @@ from datetime import datetime
 import redis.asyncio as redis
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -31,7 +31,7 @@ class RedisQueryOperations(RedisKeyMixin):
     Implements listing and counting operations using Redis SET indexes
     for efficient lookups without full table scans.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Type hints for mixin - these are provided by the main repository class

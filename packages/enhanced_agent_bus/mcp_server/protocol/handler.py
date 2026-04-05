@@ -3,19 +3,19 @@ MCP Protocol Handler for ACGS-2 Constitutional Governance.
 
 Handles JSON-RPC 2.0 based MCP protocol messages with constitutional validation.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 
-from src.core.shared.errors.exceptions import (
+from enhanced_agent_bus._compat.errors import (
     ResourceNotFoundError,
     ServiceUnavailableError,
 )
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -57,7 +57,7 @@ class MCPHandler:
     """
 
     PROTOCOL_VERSION = "2024-11-05"
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
     def __init__(self, config: MCPConfig):
         """Initialize the MCP handler."""
@@ -220,7 +220,7 @@ class MCPHandler:
             tool_name = params.get("name", "")
             tool_def = self._tools.get(tool_name)
 
-            if tool_def and tool_def.constitutional_required:  # noqa: SIM102
+            if tool_def and tool_def.constitutional_required:
                 # Validate constitutional hash is present in context
                 if "constitutional_hash" not in params.get("arguments", {}):
                     # Auto-inject constitutional hash

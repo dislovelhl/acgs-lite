@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus — Metering Integration Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets ≥90% coverage of metering_integration.py.
 Uses direct src.core.* import path; no module-level skip guard.
@@ -430,7 +430,7 @@ class TestFlushLogic:
         # Let it run one iteration
         await asyncio.sleep(0.1)
         task.cancel()
-        try:  # noqa: SIM105
+        try:
             await task
         except asyncio.CancelledError:
             pass

@@ -1,7 +1,7 @@
 # pyright: reportMissingImports=false, reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportAssignmentType=false, reportArgumentType=false, reportMissingTypeArgument=false
 """Processing strategies for the Enhanced Agent Bus message processing pipeline.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides a hierarchy of processing strategies that handle message
 validation and execution within the Enhanced Agent Bus architecture. Each strategy
@@ -35,7 +35,7 @@ Example:
         ])
         result = await composite.process(message, handlers)
 # pyright: reportMissingImports=false, reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportArgumentType=false, reportAssignmentType=false
-"""  # noqa: E501
+"""
 
 from __future__ import annotations
 
@@ -43,10 +43,13 @@ import asyncio
 import inspect
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
+from importlib import import_module
 from threading import Lock
 from typing import TYPE_CHECKING, Protocol, cast
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.plugin_registry import available, require
+from enhanced_agent_bus.shared.fail_closed import fail_closed
 
 if TYPE_CHECKING:
     from .validation_strategies import (
@@ -70,7 +73,7 @@ class _StrategyLike(Protocol):
 
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
     from .models import AgentMessage, MessageStatus
     from .validation_strategies import (
@@ -81,21 +84,26 @@ try:
     )
     from .validators import ValidationResult
 except (ImportError, ValueError):
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
-    from models import (  # type: ignore[no-redef]
+    from .models import (  # type: ignore[no-redef]
         AgentMessage,
         MessageStatus,
     )
-    from validation_strategies import (  # type: ignore[no-redef]
+    from .validation_strategies import (  # type: ignore[no-redef]
         DynamicPolicyValidationStrategy,
         OPAValidationStrategy,
         RustValidationStrategy,
         StaticHashValidationStrategy,
     )
-    from validators import ValidationResult  # type: ignore[no-redef]
+    from .validators import ValidationResult  # type: ignore[no-redef]
 
 logger = get_logger(__name__)
+try:
+    from .maci_imports import MACIError
+except (ImportError, ValueError):
+    MACIError = RuntimeError  # type: ignore[assignment,misc]
+
 _PROCESSING_STRATEGY_ERRORS = (
     RuntimeError,
     ValueError,
@@ -104,6 +112,7 @@ _PROCESSING_STRATEGY_ERRORS = (
     LookupError,
     OSError,
     asyncio.TimeoutError,
+    MACIError,
 )
 
 
@@ -790,27 +799,84 @@ class MACIProcessingStrategy:
         self._inner: _StrategyLike = inner_strategy
 
         # Initialize MACI components if not provided (VULN-001)
-        if maci_registry is None:
+        if maci_registry is None and available("maci_enforcement"):
             try:
-                from .maci_enforcement import MACIRoleRegistry
-
-                maci_registry = MACIRoleRegistry()
-            except (ImportError, ValueError):
+                maci_registry = import_module(require("maci_enforcement")).MACIRoleRegistry()
+            except ValueError:
                 pass
 
-        if maci_enforcer is None and maci_registry is not None:
+        if maci_enforcer is None and maci_registry is not None and available("maci_enforcement"):
             try:
-                from .maci_enforcement import MACIEnforcer
-
-                maci_enforcer = MACIEnforcer(registry=maci_registry, strict_mode=strict_mode)
-            except (ImportError, ValueError):
+                maci_enforcer = import_module(require("maci_enforcement")).MACIEnforcer(
+                    registry=maci_registry, strict_mode=strict_mode
+                )
+            except ValueError:
                 pass
 
         self._registry = maci_registry
         self._enforcer = maci_enforcer
         self._strict: bool = strict_mode
         self._maci_available: bool = maci_registry is not None and maci_enforcer is not None
-        self._maci_strategy = maci_enforcer
+        self._maci_strategy = self._build_maci_validator(maci_enforcer)
+
+    @staticmethod
+    def _build_maci_validator(maci_enforcer: object | None) -> object | None:
+        """Normalize MACI enforcement onto a validator-style interface.
+
+        Accepts either a validation strategy exposing ``validate(msg)`` or a raw
+        enforcer exposing ``validate_action(...)``. Raw enforcers are wrapped in
+        ``MACIValidationStrategy`` so the processing path always consumes one
+        validation contract.
+        """
+        if maci_enforcer is None:
+            return None
+
+        validator = getattr(maci_enforcer, "validate", None)
+        if callable(validator):
+            return maci_enforcer
+
+        validate_action = getattr(maci_enforcer, "validate_action", None)
+        if callable(validate_action):
+            try:
+                if available("maci_strategy"):
+                    return import_module(require("maci_strategy")).MACIValidationStrategy(
+                        maci_enforcer
+                    )
+            except ValueError:
+                return maci_enforcer
+
+        return maci_enforcer
+
+    async def _validate_message(self, msg: AgentMessage) -> tuple[bool, str | None]:
+        """Run MACI validation and normalize the result."""
+        if self._maci_strategy is None:
+            raise RuntimeError("MACI validator unavailable")
+
+        validator = getattr(self._maci_strategy, "validate", None)
+        if callable(validator):
+            maybe_result = validator(msg)
+            if asyncio.iscoroutine(maybe_result):
+                maybe_result = await cast(Awaitable[object], maybe_result)
+            return self._coerce_validation_result(maybe_result)
+
+        raise RuntimeError("MACI validator does not expose validate(msg)")
+
+    @staticmethod
+    def _coerce_validation_result(result: object) -> tuple[bool, str | None]:
+        """Coerce supported MACI result shapes into ``(is_valid, error)``."""
+        if isinstance(result, tuple) and len(result) == 2:
+            valid = bool(result[0])
+            error = result[1] if isinstance(result[1], str) else None
+            return valid, error
+
+        if hasattr(result, "is_valid"):
+            valid = bool(result.is_valid)
+            error_message = getattr(result, "error_message", None)
+            violation_type = getattr(result, "violation_type", None)
+            error = error_message or violation_type
+            return valid, error if isinstance(error, str) else None
+
+        raise TypeError("Unsupported MACI validation result contract")
 
     @property
     def registry(self):
@@ -854,36 +920,35 @@ class MACIProcessingStrategy:
             ValidationResult.errors list.
         """
         if self._maci_available and self._maci_strategy:
-            try:
-                valid: bool
-                error: str | None
-                validator = getattr(self._maci_strategy, "validate", None)
-                if callable(validator):
-                    maybe_result = validator(msg)
-                    if asyncio.iscoroutine(maybe_result):
-                        maybe_result = await cast(Awaitable[object], maybe_result)
-                    if isinstance(maybe_result, tuple) and len(maybe_result) == 2:
-                        valid = bool(maybe_result[0])
-                        error = maybe_result[1] if isinstance(maybe_result[1], str) else None
-                    else:
-                        valid, error = (True, None)
-                else:
-                    valid, error = (True, None)
-                if not valid:  # noqa: SIM102
-                    if self._strict:
-                        return ValidationResult(
-                            is_valid=False,
-                            errors=(
-                                [f"MACIRoleViolationError: {error}"]
-                                if error
-                                else ["MACIRoleViolationError: MACI violation"]
-                            ),
-                        )
-            except _PROCESSING_STRATEGY_ERRORS as e:
-                if self._strict:
-                    return ValidationResult(is_valid=False, errors=[f"{type(e).__name__}: {e!s}"])
+            return await self._process_with_maci_validation(msg, handlers)
 
         return await self._inner.process(msg, handlers)
+
+    @fail_closed(
+        lambda self, msg, handlers, *, error: self._handle_maci_validation_error(error),
+        exceptions=(Exception,),
+    )
+    async def _process_with_maci_validation(
+        self,
+        msg: AgentMessage,
+        handlers: dict[object, list[Callable[[AgentMessage], object]]],
+    ) -> ValidationResult:
+        valid, error = await self._validate_message(msg)
+        if not valid and self._strict:
+            return ValidationResult(
+                is_valid=False,
+                errors=(
+                    [f"MACIRoleViolationError: {error}"]
+                    if error
+                    else ["MACIRoleViolationError: MACI violation"]
+                ),
+            )
+        return await self._inner.process(msg, handlers)
+
+    def _handle_maci_validation_error(self, error: BaseException) -> ValidationResult:
+        if self._strict:
+            return ValidationResult(is_valid=False, errors=[f"{type(error).__name__}: {error!s}"])
+        return ValidationResult(is_valid=True)
 
     def is_available(self) -> bool:
         """Check if the MACI strategy is available.

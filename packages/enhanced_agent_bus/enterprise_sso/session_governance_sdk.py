@@ -1,6 +1,6 @@
 """
 Session Governance SDK
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Phase 10 Task 13: Session Governance SDK
 
@@ -25,11 +25,10 @@ from typing import Any
 import jwt
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.errors.exceptions import ACGSBaseError
-
+from enhanced_agent_bus._compat.errors import ACGSBaseError
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
@@ -243,7 +242,7 @@ class ConcurrencyPolicy:
     async def enforce(self, user_id: str, session_store: "TenantSessionStore") -> None:
         """Enforce concurrency policy."""
         result = await self.check_concurrency(user_id, session_store)
-        if not result.allowed:  # noqa: SIM102
+        if not result.allowed:
             if self.enforcement_mode == "strict":
                 raise SessionGovernanceError(
                     f"Concurrent session limit exceeded: "
@@ -256,7 +255,7 @@ class SessionToken:
     """Session token."""
 
     access_token: str
-    token_type: str = "Bearer"  # noqa: S105
+    token_type: str = "Bearer"
     expires_in: int = 3600
     refresh_token: str | None = None
     scope: str | None = None
@@ -590,7 +589,7 @@ class SessionTokenManager:
         if self._redis is not None:
             try:
                 return bool(await self._redis.sismember("session_revoked_jtis", jti))
-            except Exception:  # noqa: S110
+            except Exception:
                 pass
         return False
 
@@ -602,7 +601,7 @@ class SessionTokenManager:
                 await self._redis.sadd("session_revoked_jtis", jti)
                 # Expire the whole set when the last added token would have expired
                 await self._redis.expire("session_revoked_jtis", ttl_seconds)
-            except Exception:  # noqa: S110
+            except Exception:
                 pass
 
     async def generate_access_token(
@@ -630,7 +629,7 @@ class SessionTokenManager:
 
         return SessionToken(
             access_token=token,
-            token_type="Bearer",  # noqa: S106
+            token_type="Bearer",
             expires_in=self.token_ttl_minutes * 60,
             constitutional_hash=self.constitutional_hash,
         )

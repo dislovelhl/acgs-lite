@@ -1,6 +1,6 @@
 """SPIFFE SAN extraction from X.509 certificates.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Extracts spiffe:// URIs from certificate Subject Alternative Names
 and validates them against ACGS-2's trust domain.

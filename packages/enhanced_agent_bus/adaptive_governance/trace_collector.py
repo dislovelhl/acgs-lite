@@ -14,7 +14,7 @@ Usage::
     records = collector.collect_from_decision_history(engine.decision_history)
     dtmc.fit(records)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 NIST 800-53 SI-3, AU-9 — System / Information Integrity, Audit Protection
 """
 
@@ -24,7 +24,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

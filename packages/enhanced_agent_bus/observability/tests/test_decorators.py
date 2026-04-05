@@ -1,6 +1,6 @@
 """
 ACGS-2 Decorators Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -22,7 +22,6 @@ except ImportError:
 class TestTracedDecorator:
     """Tests for @traced decorator."""
 
-    @pytest.mark.asyncio
     async def test_traced_async_function(self):
         """@traced works with async functions."""
         call_count = 0
@@ -53,7 +52,6 @@ class TestTracedDecorator:
         assert result == 10
         assert call_count == 1
 
-    @pytest.mark.asyncio
     async def test_traced_with_args_recording(self):
         """@traced records arguments when enabled."""
 
@@ -65,7 +63,6 @@ class TestTracedDecorator:
 
         assert result == "1-test-False"
 
-    @pytest.mark.asyncio
     async def test_traced_exception_handling(self):
         """@traced handles exceptions correctly."""
 
@@ -86,7 +83,6 @@ class TestTracedDecorator:
         with pytest.raises(RuntimeError, match="sync error"):
             sync_failing()
 
-    @pytest.mark.asyncio
     async def test_traced_default_name(self):
         """@traced uses function name as default span name."""
 
@@ -97,7 +93,6 @@ class TestTracedDecorator:
         result = await my_custom_function()
         assert result == "done"
 
-    @pytest.mark.asyncio
     async def test_traced_with_service_name(self):
         """@traced accepts service name."""
 
@@ -108,7 +103,6 @@ class TestTracedDecorator:
         result = await service_operation()
         assert result == "ok"
 
-    @pytest.mark.asyncio
     async def test_traced_with_attributes(self):
         """@traced accepts custom attributes."""
         attrs = {"operation.type": "test", "priority": "high"}
@@ -124,7 +118,6 @@ class TestTracedDecorator:
 class TestMeteredDecorator:
     """Tests for @metered decorator."""
 
-    @pytest.mark.asyncio
     async def test_metered_async_function(self):
         """@metered works with async functions."""
 
@@ -147,7 +140,6 @@ class TestMeteredDecorator:
 
         assert result == 11
 
-    @pytest.mark.asyncio
     async def test_metered_tracks_exceptions(self):
         """@metered tracks failed operations."""
 
@@ -168,7 +160,6 @@ class TestMeteredDecorator:
         with pytest.raises(RuntimeError):
             sync_failing_metered()
 
-    @pytest.mark.asyncio
     async def test_metered_custom_histogram_name(self):
         """@metered accepts custom histogram name."""
 
@@ -183,7 +174,6 @@ class TestMeteredDecorator:
 class TestTimedDecorator:
     """Tests for @timed decorator."""
 
-    @pytest.mark.asyncio
     async def test_timed_async_function(self):
         """@timed works with async functions."""
 
@@ -207,7 +197,6 @@ class TestTimedDecorator:
 
         assert result == 4950
 
-    @pytest.mark.asyncio
     async def test_timed_seconds_unit(self):
         """@timed supports seconds unit."""
 
@@ -218,7 +207,6 @@ class TestTimedDecorator:
         result = await seconds_timed()
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_timed_exception_still_records(self):
         """@timed records time even on exception."""
 
@@ -238,7 +226,6 @@ class TestSpanContext:
         with SpanContext("child_operation") as span:
             span.set_attribute("child.attr", "value")
 
-    @pytest.mark.asyncio
     async def test_span_context_async(self):
         """SpanContext works asynchronously."""
         async with SpanContext("async_child") as span:
@@ -257,7 +244,6 @@ class TestSpanContext:
             with SpanContext("failing_child"):
                 raise RuntimeError("child failure")
 
-    @pytest.mark.asyncio
     async def test_span_context_async_exception(self):
         """SpanContext handles async exceptions."""
         with pytest.raises(ValueError):
@@ -273,7 +259,6 @@ class TestSpanContext:
 class TestDecoratorCombinations:
     """Tests for combining decorators."""
 
-    @pytest.mark.asyncio
     async def test_traced_and_metered(self):
         """@traced and @metered work together."""
 
@@ -286,7 +271,6 @@ class TestDecoratorCombinations:
 
         assert result == "combined"
 
-    @pytest.mark.asyncio
     async def test_traced_and_timed(self):
         """@traced and @timed work together."""
 

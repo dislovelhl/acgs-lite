@@ -1,6 +1,6 @@
 """
 Tests for Conversation Models (Pydantic v2 Serialization)
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests the ConversationMessage and ConversationState Pydantic models
 for proper serialization/deserialization with Pydantic v2 API.

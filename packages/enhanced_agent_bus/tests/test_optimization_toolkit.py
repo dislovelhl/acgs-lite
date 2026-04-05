@@ -1,6 +1,6 @@
 """
 Tests for Multi-Agent Optimization Toolkit
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive test coverage for performance profiling, optimization,
 and multi-agent coordination.
@@ -113,7 +113,6 @@ class TestPerformanceProfile:
 class TestDatabasePerformanceAgent:
     """Test DatabasePerformanceAgent."""
 
-    @pytest.mark.asyncio
     async def test_profile_database(self):
         """Test database profiling."""
         agent = DatabasePerformanceAgent()
@@ -124,7 +123,6 @@ class TestDatabasePerformanceAgent:
         assert profile.throughput_rps > 0
         assert 0 <= profile.error_rate <= 1
 
-    @pytest.mark.asyncio
     async def test_database_history(self):
         """Test profiling history is maintained."""
         agent = DatabasePerformanceAgent()
@@ -138,7 +136,6 @@ class TestDatabasePerformanceAgent:
 class TestApplicationPerformanceAgent:
     """Test ApplicationPerformanceAgent."""
 
-    @pytest.mark.asyncio
     async def test_profile_application(self):
         """Test application profiling."""
         # Mock the performance monitor to avoid xdist singleton pollution
@@ -146,7 +143,7 @@ class TestApplicationPerformanceAgent:
         mock_monitor = MagicMock()
         mock_monitor.get_metrics.return_value = {"operations": {}}
         with patch(
-            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()
@@ -157,13 +154,12 @@ class TestApplicationPerformanceAgent:
         assert profile.latency_p99_ms <= 5.0
         assert profile.throughput_rps >= 100.0
 
-    @pytest.mark.asyncio
     async def test_application_resource_metrics(self):
         """Test CPU and memory metrics."""
         mock_monitor = MagicMock()
         mock_monitor.get_metrics.return_value = {"operations": {}}
         with patch(
-            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()
@@ -176,7 +172,6 @@ class TestApplicationPerformanceAgent:
 class TestCachePerformanceAgent:
     """Test CachePerformanceAgent."""
 
-    @pytest.mark.asyncio
     async def test_profile_cache(self):
         """Test cache profiling."""
         with patch("src.core.shared.cache.manager.TieredCacheManager") as MockCacheManager:
@@ -195,7 +190,6 @@ class TestCachePerformanceAgent:
             # ACGS-2 target: cache hit rate > 85%
             assert profile.cache_hit_rate >= 0.85
 
-    @pytest.mark.asyncio
     async def test_cache_low_latency(self):
         """Test cache has low latency."""
         agent = CachePerformanceAgent()
@@ -208,7 +202,6 @@ class TestCachePerformanceAgent:
 class TestAgentCoordinationProfiler:
     """Test AgentCoordinationProfiler."""
 
-    @pytest.mark.asyncio
     async def test_profile_coordination(self):
         """Test agent coordination profiling."""
         agent = AgentCoordinationProfiler()
@@ -217,7 +210,6 @@ class TestAgentCoordinationProfiler:
         assert profile.domain == OptimizationDomain.AGENT_COORDINATION
         assert profile.resource_utilization <= 1.0  # Parallel efficiency
 
-    @pytest.mark.asyncio
     async def test_coordination_recommendations(self):
         """Test coordination recommendations are generated."""
         agent = AgentCoordinationProfiler()
@@ -346,7 +338,6 @@ class TestPerformanceTracker:
 class TestMultiAgentOrchestrator:
     """Test MultiAgentOrchestrator."""
 
-    @pytest.mark.asyncio
     async def test_create_orchestrator(self):
         """Test orchestrator creation."""
         orchestrator = create_optimization_toolkit()
@@ -354,7 +345,6 @@ class TestMultiAgentOrchestrator:
         assert orchestrator.scope == OptimizationScope.MODERATE
         assert len(orchestrator.agents) >= 4
 
-    @pytest.mark.asyncio
     async def test_profile_all(self):
         """Test parallel profiling of all components."""
         orchestrator = MultiAgentOrchestrator()
@@ -366,7 +356,6 @@ class TestMultiAgentOrchestrator:
         assert OptimizationDomain.CACHE in profiles
         assert OptimizationDomain.AGENT_COORDINATION in profiles
 
-    @pytest.mark.asyncio
     async def test_optimize(self):
         """Test optimization execution."""
         orchestrator = MultiAgentOrchestrator()
@@ -375,7 +364,6 @@ class TestMultiAgentOrchestrator:
         # Results may be empty if no bottlenecks detected
         assert isinstance(results, list)
 
-    @pytest.mark.asyncio
     async def test_optimize_specific_domains(self):
         """Test optimization of specific domains."""
         orchestrator = MultiAgentOrchestrator()
@@ -385,7 +373,6 @@ class TestMultiAgentOrchestrator:
         for result in results:
             assert result.domain == OptimizationDomain.CACHE
 
-    @pytest.mark.asyncio
     async def test_optimization_report(self):
         """Test optimization report generation."""
         orchestrator = MultiAgentOrchestrator()
@@ -397,7 +384,6 @@ class TestMultiAgentOrchestrator:
         assert "constitutional_hash" in report
         assert report["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_orchestrator_scope(self):
         """Test different optimization scopes."""
         quick = create_optimization_toolkit(scope=OptimizationScope.QUICK_WIN)
@@ -441,7 +427,6 @@ class TestOptimizationResult:
 class TestIntegration:
     """Integration tests for the optimization toolkit."""
 
-    @pytest.mark.asyncio
     async def test_full_optimization_cycle(self):
         """Test complete optimization cycle."""
         # Create orchestrator
@@ -463,7 +448,6 @@ class TestIntegration:
         for _domain, profile in profiles.items():
             assert profile.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_context_and_cost_optimization(self):
         """Test context and cost optimization together."""
         orchestrator = create_optimization_toolkit()

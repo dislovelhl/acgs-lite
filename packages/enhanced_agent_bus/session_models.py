@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Session Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Session governance models for dynamic policy application.
 Split from models.py for improved maintainability.
@@ -12,11 +12,11 @@ from pydantic import BaseModel, Field
 
 # Import constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -32,7 +32,7 @@ class SessionGovernanceConfig(BaseModel):
     allowing fine-grained control over AI behavior based on use case,
     risk level, or tenant requirements.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     session_id: str = Field(..., description="Unique session identifier")
@@ -145,7 +145,7 @@ class SessionContext(BaseModel):
     Tracks the current state of a session including active policies,
     audit trail, and accumulated context for governance decisions.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     session_id: str = Field(..., description="Unique session identifier")

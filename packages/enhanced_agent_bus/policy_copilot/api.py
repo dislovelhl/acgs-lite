@@ -1,17 +1,18 @@
 from __future__ import annotations
 
 import logging
+import sys
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field, field_validator
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.errors.exceptions import ValidationError
-from src.core.shared.security.auth import UserClaims, get_current_user
+from enhanced_agent_bus._compat.errors import ValidationError
+from enhanced_agent_bus._compat.security.auth import UserClaims, get_current_user
 
 from .models import (
     CopilotRequest,
@@ -30,6 +31,11 @@ from .models import (
 )
 
 logger = logging.getLogger(__name__)
+
+_module = sys.modules.get(__name__)
+if _module is not None:
+    sys.modules.setdefault("enhanced_agent_bus.policy_copilot.api", _module)
+    sys.modules.setdefault("packages.enhanced_agent_bus.policy_copilot.api", _module)
 
 router = APIRouter(
     prefix="/api/v1/policy-copilot",
@@ -93,6 +99,7 @@ class ValidateRequest(BaseModel):
 def get_nlp_engine() -> Any:
     global _nlp_engine
     if _nlp_engine is None:
+
         class _Engine:
             def extract_entities(self, _description: str) -> list:
                 return []
@@ -107,6 +114,7 @@ def get_nlp_engine() -> Any:
 def get_rego_generator() -> Any:
     global _rego_generator
     if _rego_generator is None:
+
         class _Generator:
             TEMPLATES: dict[str, PolicyTemplate] = {}
 
@@ -137,6 +145,7 @@ def get_rego_generator() -> Any:
 def get_policy_validator() -> Any:
     global _policy_validator
     if _policy_validator is None:
+
         class _Validator:
             def validate_syntax(self, _policy: str) -> ValidationResult:
                 return ValidationResult(valid=True, syntax_check=True)
@@ -314,9 +323,7 @@ async def get_template(
     templates = getattr(generator, "TEMPLATES", {})
     template = templates.get(template_id)
     if template is None:
-        raise HTTPException(
-            status_code=404, detail=f"template not found: {template_id}"
-        )
+        raise HTTPException(status_code=404, detail=f"template not found: {template_id}")
     return template
 
 

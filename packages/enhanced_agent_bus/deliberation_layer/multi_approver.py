@@ -1,6 +1,6 @@
 """
 ACGS-2 Multi-Approver Workflow Engine
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Enterprise-grade approval workflow supporting:
 - Multiple required approvers
@@ -33,9 +33,9 @@ from enhanced_agent_bus.interfaces import ApprovalsValidatorProtocol
 
 # Import centralized constitutional hash from shared module
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 logger = get_logger(__name__)
 try:
     from acgs2_perf import fast_hash
@@ -347,7 +347,7 @@ class SlackNotificationChannel(NotificationChannel):
                         {"type": "mrkdwn", "text": f"*type:*\n{request.request_type}"},
                         {
                             "type": "mrkdwn",
-                            "text": f"*Deadline:*\n{request.deadline.strftime('%Y-%m-%d %H:%M timezone.utc') if request.deadline else 'N/A'}",  # noqa: E501
+                            "text": f"*Deadline:*\n{request.deadline.strftime('%Y-%m-%d %H:%M timezone.utc') if request.deadline else 'N/A'}",
                         },
                     ],
                 },
@@ -362,7 +362,7 @@ class SlackNotificationChannel(NotificationChannel):
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": f"*Approvers Needed:*\n{approver_mentions or 'See policy requirements'}",  # noqa: E501
+                        "text": f"*Approvers Needed:*\n{approver_mentions or 'See policy requirements'}",
                     },
                 },
                 {
@@ -392,7 +392,7 @@ class SlackNotificationChannel(NotificationChannel):
                     "elements": [
                         {
                             "type": "mrkdwn",
-                            "text": f"Request ID: `{request.id}` | Constitutional Hash: `{request.constitutional_hash}`",  # noqa: E501
+                            "text": f"Request ID: `{request.id}` | Constitutional Hash: `{request.constitutional_hash}`",
                         }
                     ],
                 },
@@ -408,7 +408,7 @@ class SlackNotificationChannel(NotificationChannel):
     ) -> bool:
         emoji = "\u2705" if decision.decision == ApprovalStatus.APPROVED else "\u274c"
         payload = {
-            "text": f"{emoji} *{decision.approver_name}* {decision.decision.value} request `{request.id}`",  # noqa: E501
+            "text": f"{emoji} *{decision.approver_name}* {decision.decision.value} request `{request.id}`",
             "attachments": [
                 {
                     "color": "good" if decision.decision == ApprovalStatus.APPROVED else "danger",
@@ -631,7 +631,7 @@ class MultiApproverWorkflowEngine:
         self._running = False
         if self._escalation_task:
             self._escalation_task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._escalation_task
             except asyncio.CancelledError:
                 pass

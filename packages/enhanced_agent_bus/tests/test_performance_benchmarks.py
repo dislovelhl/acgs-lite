@@ -13,7 +13,7 @@ Usage:
 Requires:
     pip install pytest-benchmark memory-profiler
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import gc
@@ -256,7 +256,7 @@ class TestKeywordScoringLatency:
 
         # Assert P99 < 10ms (keyword scoring should be very fast)
         assert metrics.latency_p99 < PERFORMANCE_TARGETS["p99_latency_ms"], (
-            f"P99 latency {metrics.latency_p99:.2f}ms exceeds target {PERFORMANCE_TARGETS['p99_latency_ms']}ms"  # noqa: E501
+            f"P99 latency {metrics.latency_p99:.2f}ms exceeds target {PERFORMANCE_TARGETS['p99_latency_ms']}ms"
         )
 
     def test_batch_score_latency(self, scorer, sample_messages):
@@ -294,7 +294,7 @@ class TestKeywordScoringLatency:
 
         assert len(results) == 50
         assert elapsed < PERFORMANCE_TARGETS["batch_50_latency_sec"], (
-            f"Batch 50 took {elapsed:.2f}s, target is <{PERFORMANCE_TARGETS['batch_50_latency_sec']}s"  # noqa: E501
+            f"Batch 50 took {elapsed:.2f}s, target is <{PERFORMANCE_TARGETS['batch_50_latency_sec']}s"
         )
 
 
@@ -410,7 +410,7 @@ class TestBatchThroughput:
 
         # For keyword scoring (fallback path), should easily exceed 500 req/sec
         assert throughput >= PERFORMANCE_TARGETS["throughput_req_per_sec"], (
-            f"Throughput {throughput:.0f} req/sec below target {PERFORMANCE_TARGETS['throughput_req_per_sec']}"  # noqa: E501
+            f"Throughput {throughput:.0f} req/sec below target {PERFORMANCE_TARGETS['throughput_req_per_sec']}"
         )
 
     def test_throughput_scales_with_batch_size(self, scorer, sample_messages):

@@ -3,7 +3,7 @@ Submit Governance Request MCP Tool.
 
 Submits a governance request for constitutional validation and approval.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from ..adapters.agent_bus import AgentBusAdapter
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -92,7 +92,7 @@ class SubmitGovernanceTool:
     including validation, approval workflow, and status tracking.
     """
 
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
     def __init__(
         self,
@@ -327,7 +327,7 @@ class SubmitGovernanceTool:
                     "status": "denied",
                     "validation_result": validation_result,
                     "conditions": [],
-                    "reasoning": f"Denied: {', '.join([v['description'] for v in validation_result.get('violations', [])])}",  # noqa: E501
+                    "reasoning": f"Denied: {', '.join([v['description'] for v in validation_result.get('violations', [])])}",
                 }
 
     async def _validate_request(
@@ -339,7 +339,7 @@ class SubmitGovernanceTool:
         confidence = 1.0
 
         # Check for sensitive data access
-        if request.context.get("data_sensitivity") in ["confidential", "restricted"]:  # noqa: SIM102
+        if request.context.get("data_sensitivity") in ["confidential", "restricted"]:
             if not request.context.get("consent_obtained"):
                 violations.append(
                     {
@@ -352,7 +352,7 @@ class SubmitGovernanceTool:
 
         # Check for high-risk actions
         high_risk_keywords = ["delete", "drop", "admin", "root", "system"]
-        if any(kw in request.action.lower() for kw in high_risk_keywords):  # noqa: SIM102
+        if any(kw in request.action.lower() for kw in high_risk_keywords):
             if request.priority != RequestPriority.CRITICAL:
                 violations.append(
                     {
@@ -364,7 +364,7 @@ class SubmitGovernanceTool:
                 confidence -= 0.2
 
         # Check for impact assessment
-        if request.priority in [RequestPriority.HIGH, RequestPriority.CRITICAL]:  # noqa: SIM102
+        if request.priority in [RequestPriority.HIGH, RequestPriority.CRITICAL]:
             if not request.context.get("impact_assessment"):
                 violations.append(
                     {

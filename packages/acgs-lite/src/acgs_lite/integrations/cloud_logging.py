@@ -12,7 +12,7 @@ Usage::
     exporter.export_entry(audit_entry)
     exporter.export_batch([entry1, entry2, entry3])
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -120,12 +120,11 @@ class CloudLoggingAuditExporter:
     ) -> None:
         if not CLOUD_LOGGING_AVAILABLE:
             raise ImportError(
-                "google-cloud-logging is required. "
-                "Install with: pip install acgs-lite[google-cloud]"
+                "google-cloud-logging is required. Install with: pip install acgs[google-cloud]"
             )
 
-        self._client = cloud_logging.Client(project=project_id)  # type: ignore[union-attr]
-        self._logger = self._client.logger(log_name)
+        self._client = cloud_logging.Client(project=project_id)  # type: ignore[no-untyped-call]
+        self._logger = self._client.logger(log_name)  # type: ignore[no-untyped-call]
         self._log_name = log_name
         self._exported_count = 0
 

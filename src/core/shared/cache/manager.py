@@ -1,6 +1,6 @@
 """
 ACGS-2 Tiered Cache Manager Implementation
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -259,7 +259,7 @@ class TieredCacheManager:
             self._access_records[key].record_access()
             # Periodic cleanup with low probability
             # Low-probability maintenance sampling; security properties are not required here.
-            if random.random() < 0.01:  # noqa: S311
+            if random.random() < 0.01:  # noqa: S311 - maintenance sampling only
                 self._cleanup_old_records()
 
     def _cleanup_old_records(self) -> None:

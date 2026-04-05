@@ -15,7 +15,7 @@ Usage::
     governed_chat = GovernedChatEngine(index.as_chat_engine())
     response = governed_chat.chat("Tell me about the policy")
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -80,9 +80,7 @@ class GovernedQueryEngine:
         strict: bool = True,
     ) -> None:
         if not LLAMAINDEX_AVAILABLE:
-            raise ImportError(
-                "llama-index is required. Install with: pip install acgs-lite[llamaindex]"
-            )
+            raise ImportError("llama-index is required. Install with: pip install acgs[llamaindex]")
         self._engine = engine
         self.constitution = constitution or Constitution.default()
         self.audit_log = AuditLog()
@@ -90,6 +88,7 @@ class GovernedQueryEngine:
             self.constitution,
             audit_log=self.audit_log,
             strict=strict,
+            audit_mode="full",
         )
         self.agent_id = agent_id
 
@@ -137,6 +136,7 @@ class GovernedQueryEngine:
 
     @property
     def stats(self) -> dict[str, Any]:
+        """Return governance statistics."""
         return {
             **self.gov_engine.stats,
             "agent_id": self.agent_id,
@@ -166,9 +166,7 @@ class GovernedChatEngine:
         strict: bool = True,
     ) -> None:
         if not LLAMAINDEX_AVAILABLE:
-            raise ImportError(
-                "llama-index is required. Install with: pip install acgs-lite[llamaindex]"
-            )
+            raise ImportError("llama-index is required. Install with: pip install acgs[llamaindex]")
         self._engine = engine
         self.constitution = constitution or Constitution.default()
         self.audit_log = AuditLog()
@@ -176,6 +174,7 @@ class GovernedChatEngine:
             self.constitution,
             audit_log=self.audit_log,
             strict=strict,
+            audit_mode="full",
         )
         self.agent_id = agent_id
 
@@ -236,6 +235,7 @@ class GovernedChatEngine:
 
     @property
     def stats(self) -> dict[str, Any]:
+        """Return governance statistics."""
         return {
             **self.gov_engine.stats,
             "agent_id": self.agent_id,

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Agent Behavioral Contracts
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements formal agent behavioral contracts C=(P,I,G,R) per arXiv:2602.22302:
 - P: Permissions — what the agent is allowed to do

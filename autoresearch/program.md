@@ -50,6 +50,11 @@ Treat these as read-only unless the human explicitly says to redefine the benchm
 
 Do not modify the benchmark to make results look better.
 
+If you discover better real-world or sourced scenarios during research, keep them outside
+`autoresearch/scenarios/` first, add tests for them, and promote them into the frozen corpus only
+when the human explicitly approves a benchmark redefinition. Candidate packs should carry dataset
+provenance, domain, use-case, and expected decision metadata so future promotion is auditable.
+
 ## High-Leverage Files
 
 Read these first and focus here unless you have evidence another file is hotter:
@@ -159,8 +164,12 @@ Primary decision fields:
 Log to `autoresearch/results.tsv` as tab-separated rows with this header:
 
 ```text
-commit	composite	compliance	p99_ms	status	description
+commit	composite	compliance	p99_ms	scope	status	description
 ```
+
+Notes:
+- `scope` is `hot-path` by default and separates benchmark-facing runs from sidecar work.
+- Existing legacy rows without a `scope` column are inferred and upgraded by the helpers.
 
 Status values:
 - `baseline` — first comparable run for the branch or repo state
@@ -284,6 +293,7 @@ LOOP FOREVER:
    - `python3 log_run.py run.log --commit "$(git rev-parse --short HEAD || echo uncommitted)" --description "short hypothesis"`
    - hot-path runs rely on the default comparable scope
    - sidecar runs must say `--scope sidecar`
+   - do not hand-edit `results.tsv`; the helper will preserve or migrate the canonical header
 9. Ask the helper for the shell-friendly recommendation when needed:
    - `python3 log_run.py run.log --recommend`
 10. If the result is `improved` or `neutral-kept`, keep the commit and advance.

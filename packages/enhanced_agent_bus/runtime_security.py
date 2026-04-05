@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Runtime Security Scanner
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Unified runtime security scanning and validation that aggregates all security features:
 - Prompt injection detection
@@ -22,7 +22,7 @@ from enum import Enum
 from typing import ClassVar
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -219,7 +219,7 @@ class RuntimeSecurityScanner:
     - Anomaly detection
     - Security event logging
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Additional suspicious patterns beyond prompt injection
@@ -576,7 +576,7 @@ class RuntimeSecurityScanner:
             event = SecurityEvent(
                 event_type=SecurityEventType.ANOMALY_DETECTED,
                 severity=SecuritySeverity.HIGH,
-                message=f"Anomaly detected: {len(recent_events)} events in {self.config.anomaly_window_seconds}s",  # noqa: E501
+                message=f"Anomaly detected: {len(recent_events)} events in {self.config.anomaly_window_seconds}s",
                 tenant_id=tenant_id,
                 agent_id=agent_id,
                 metadata={

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - SagaLLM Transactions
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements compensable transaction guarantees for LLM workflows.
 Bypasses self-verification limitations through LIFO rollback and formal checkpoints.
@@ -13,14 +13,14 @@ from dataclasses import dataclass
 from enum import Enum
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         SupportsAudit,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     SupportsAudit = object  # type: ignore[misc,assignment]
@@ -73,7 +73,7 @@ class SagaTransaction:
 
     Ensures that multi-step governance decisions are atomic and compensable.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, transaction_id: str | None = None):

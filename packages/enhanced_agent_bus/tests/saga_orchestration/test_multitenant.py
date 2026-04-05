@@ -1,6 +1,6 @@
 """
 Tests for Multi-Tenant Saga Isolation.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -18,7 +18,6 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 class TestMultiTenantSagas:
     """Tests for multi-tenant saga isolation."""
 
-    @pytest.mark.asyncio
     async def test_saga_tenant_isolation(
         self,
         orchestrator: SagaOrchestrator,
@@ -37,7 +36,6 @@ class TestMultiTenantSagas:
         assert len(tenant2_sagas) == 1
         assert tenant1_sagas[0].saga_id != tenant2_sagas[0].saga_id
 
-    @pytest.mark.asyncio
     async def test_saga_context_contains_tenant_id(
         self,
         orchestrator: SagaOrchestrator,
@@ -51,7 +49,6 @@ class TestMultiTenantSagas:
         assert saga.context is not None
         assert saga.context.tenant_id == "tenant-001"
 
-    @pytest.mark.asyncio
     async def test_concurrent_tenant_sagas(
         self,
         orchestrator: SagaOrchestrator,

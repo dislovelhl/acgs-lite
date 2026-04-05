@@ -1,7 +1,7 @@
 """
 ACGS-2 Circuit Breaker Registry
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module implements the circuit breaker registry for managing service-specific
 circuit breakers and provides global access functions.
@@ -13,11 +13,11 @@ import asyncio
 from datetime import UTC, datetime, timezone
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -34,7 +34,7 @@ class ServiceCircuitBreakerRegistry:
     """
     Registry for managing service-specific circuit breakers.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     _instance: "ServiceCircuitBreakerRegistry" | None = None
@@ -115,7 +115,7 @@ class ServiceCircuitBreakerRegistry:
                     critical_open.append(name)
 
         # Calculate health score
-        if total == 0:  # noqa: SIM108
+        if total == 0:
             health_score = 1.0
         else:
             health_score = (closed_count + (half_open_count * 0.5)) / total

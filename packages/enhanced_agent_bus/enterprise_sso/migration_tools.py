@@ -1,6 +1,6 @@
 """
 Decision Log Import and Shadow Mode Migration Tools
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Phase 10 Task 9: Decision Log Import and Shadow Mode
 
@@ -24,7 +24,7 @@ from datetime import UTC, datetime, timezone
 from enum import Enum
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 

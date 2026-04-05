@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - OpenAI LLM Adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 OpenAI adapter supporting GPT-4, GPT-3.5, and future models with streaming
 and function calling capabilities.
@@ -94,7 +94,7 @@ class _AsyncOpenAIClientProtocol(Protocol):
 class OpenAIAdapter(BaseLLMAdapter):
     """OpenAI LLM adapter for GPT models.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Supports:
     - GPT-4 (all variants: turbo, vision, etc.)
@@ -110,9 +110,11 @@ class OpenAIAdapter(BaseLLMAdapter):
     config: OpenAIAdapterConfig  # type: ignore[assignment]
 
     # Model pricing per 1M tokens (USD)
-    # Updated as of February 2026
+    # Updated as of March 2026
     MODEL_PRICING: ClassVar[dict] = {
         # Current generation (GPT-5.x)
+        "gpt-5.4": {"prompt": 2.00, "completion": 16.00},
+        "gpt-5.3": {"prompt": 1.75, "completion": 14.00},
         "gpt-5.2": {"prompt": 1.75, "completion": 14.00},
         "gpt-5.1": {"prompt": 1.25, "completion": 10.00},
         "gpt-5": {"prompt": 1.25, "completion": 10.00},
@@ -155,7 +157,7 @@ class OpenAIAdapter(BaseLLMAdapter):
         # Create default config if not provided
         if config is None:
             if model is None:
-                model = "gpt-5.2"
+                model = "gpt-5.4"
             config = OpenAIAdapterConfig.from_environment(model=model, **kwargs)
 
         # Initialize base adapter
@@ -171,6 +173,18 @@ class OpenAIAdapter(BaseLLMAdapter):
         self._client: _OpenAIClientProtocol | None = None
         self._async_client: _AsyncOpenAIClientProtocol | None = None
         self._tiktoken_encoder: _TokenEncoderProtocol | None = None
+
+    def validate_constitutional_compliance(self, **kwargs: object) -> None:
+        """Validate constitutional compliance for OpenAI adapter."""
+        if not self.constitutional_hash:
+            raise ValueError("Constitutional hash is required for OpenAI adapter compliance.")
+        if self.constitutional_hash != CONSTITUTIONAL_HASH:
+            logger.warning(
+                "OpenAI adapter using non-standard constitutional hash: %s",
+                self.constitutional_hash,
+            )
+        if not self.model:
+            raise ValueError("OpenAI adapter constitutional compliance requires a model.")
 
     def _get_client(self) -> _OpenAIClientProtocol:
         """Get or create synchronous OpenAI client.
@@ -622,8 +636,8 @@ class OpenAIAdapter(BaseLLMAdapter):
 
         # Default to GPT-5.2 pricing if model not found
         if pricing is None:
-            logger.warning(f"Pricing not found for model {self.model}, using GPT-5.2 pricing")
-            pricing = self.MODEL_PRICING["gpt-5.2"]
+            logger.warning(f"Pricing not found for model {self.model}, using GPT-5.4 pricing")
+            pricing = self.MODEL_PRICING["gpt-5.4"]
 
         # Calculate costs (pricing is per 1K tokens)
         prompt_cost = (prompt_tokens / 1000.0) * pricing["prompt"]

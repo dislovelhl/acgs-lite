@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # Sprint 59 — ab_testing_infra/metrics.py coverage
 """
 Comprehensive tests for src/core/enhanced_agent_bus/ab_testing_infra/metrics.py
@@ -524,17 +524,14 @@ class TestGetTrafficDistribution:
         assert dist["variance"] == pytest.approx(expected_var)
 
     def test_zero_n_requests(self, manager: ABTestMetricsManager) -> None:
-        # Edge case: 0 requests — avoid ZeroDivisionError
-        # The implementation divides by n_requests; skip if it would crash,
-        # or verify graceful handling.
-        try:
-            dist = manager.get_traffic_distribution(n_requests=0)
-            # If it returns a result, champion+candidate should both be 0
-            assert dist["champion_count"] == 0
-            assert dist["candidate_count"] == 0
-        except ZeroDivisionError:
-            # Division by zero is an acceptable known edge case — test documents behaviour
-            pytest.xfail("get_traffic_distribution(0) raises ZeroDivisionError (known edge case)")
+        # Edge case: 0 requests — guard returns empty/zero result without ZeroDivisionError.
+        dist = manager.get_traffic_distribution(n_requests=0)
+        assert dist["n_requests"] == 0
+        assert dist["champion_count"] == 0
+        assert dist["candidate_count"] == 0
+        assert dist["actual_champion_split"] == 0.0
+        assert dist["actual_candidate_split"] == 0.0
+        assert dist["within_tolerance"] is False
 
 
 # ---------------------------------------------------------------------------

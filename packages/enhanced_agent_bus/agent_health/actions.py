@@ -1,6 +1,6 @@
 """
 Agent Health — Healing Actions.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements governed healing actions for the agent health sub-system.
 
@@ -15,13 +15,14 @@ Classes:
 from __future__ import annotations
 
 import asyncio
+import inspect
 import os
 from collections.abc import Awaitable, Callable
 from typing import Any, Protocol, runtime_checkable
 
 import httpx
-from src.core.shared.types import AgentID
 
+from enhanced_agent_bus._compat.types import AgentID
 from enhanced_agent_bus.agent_health.models import (
     CONSTITUTIONAL_HASH,
     AgentHealthThresholds,
@@ -48,7 +49,7 @@ class AgentBusGateway(Protocol):
     Callers must inject a concrete implementation (or test double) at
     construction time; no module-level singleton is used.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def drain(self, agent_id: AgentID) -> None:
@@ -97,7 +98,7 @@ class GracefulRestarter:
     All audit log writes and constitutional hash validation are the caller's
     responsibility (handled by the healing engine that constructs this action).
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -138,9 +139,10 @@ class GracefulRestarter:
         )
 
         drained = False
+        drain_operation = self._bus.drain(agent_id)
         try:
             await asyncio.wait_for(
-                self._bus.drain(agent_id),
+                drain_operation,
                 timeout=timeout,
             )
             drained = True
@@ -154,6 +156,9 @@ class GracefulRestarter:
                 agent_id=agent_id,
                 drain_timeout_seconds=timeout,
             )
+        finally:
+            if inspect.iscoroutine(drain_operation) and drain_operation.cr_frame is not None:
+                drain_operation.close()
 
         # ------------------------------------------------------------------
         # Step 3 (timeout path only): Requeue remaining in-flight messages.
@@ -211,7 +216,7 @@ class QuarantineManager:
       2. Signal the Agent Bus to re-route messages away from this agent;
          the reroute call must complete within 500ms.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, bus: AgentBusGateway) -> None:
@@ -240,9 +245,10 @@ class QuarantineManager:
         )
 
         # Step 2: Signal bus to re-route within 500ms (FR-006).
+        reroute_operation = self._bus.reroute_agent(agent_id)
         try:
             await asyncio.wait_for(
-                self._bus.reroute_agent(agent_id),
+                reroute_operation,
                 timeout=_QUARANTINE_REROUTE_TIMEOUT,
             )
             logger.info(
@@ -254,6 +260,9 @@ class QuarantineManager:
                 "QuarantineManager: bus reroute timed out (>500ms); quarantine persists",
                 agent_id=agent_id,
             )
+        finally:
+            if inspect.iscoroutine(reroute_operation) and reroute_operation.cr_frame is not None:
+                reroute_operation.close()
 
 
 # ---------------------------------------------------------------------------
@@ -277,7 +286,7 @@ class HITLRequestor:
     Service URL is read from *hitl_service_url* constructor arg; if None, falls
     back to the ``HITL_SERVICE_URL`` environment variable.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, hitl_service_url: str | None = None) -> None:
@@ -392,7 +401,7 @@ class SupervisorNotifier:
     The *sla_timeout_seconds* parameter configures the SLA window within which
     supervisor approval is expected (used by callers that await a callback).
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

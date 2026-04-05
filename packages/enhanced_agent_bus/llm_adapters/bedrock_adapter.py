@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - AWS Bedrock LLM Adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 AWS Bedrock adapter supporting multiple foundation models:
 - Anthropic Claude (Opus, Sonnet, Haiku)
@@ -63,7 +63,7 @@ _BEDROCK_ADAPTER_OPERATION_ERRORS = (
 class BedrockAdapter(BaseLLMAdapter):
     """AWS Bedrock LLM adapter for multiple foundation models.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Supports:
     - Anthropic Claude models (via Bedrock)
@@ -174,6 +174,18 @@ class BedrockAdapter(BaseLLMAdapter):
         self._client: object | None = None
         self._async_client: object | None = None
         self._provider: str | None = None
+
+    def validate_constitutional_compliance(self, **kwargs: object) -> None:
+        """Validate constitutional compliance for Bedrock adapter."""
+        if not self.constitutional_hash:
+            raise ValueError("Constitutional hash is required for Bedrock adapter compliance.")
+        if self.constitutional_hash != CONSTITUTIONAL_HASH:
+            logger.warning(
+                "Bedrock adapter using non-standard constitutional hash: %s",
+                self.constitutional_hash,
+            )
+        if not self.model:
+            raise ValueError("Bedrock adapter constitutional compliance requires a model.")
 
     def _get_provider(self) -> str:
         """Get the provider name from model ID.
@@ -923,7 +935,7 @@ class BedrockAdapter(BaseLLMAdapter):
                         yield text
             else:
                 logger.warning(
-                    "Using sync client for async streaming - install aioboto3 for better performance"  # noqa: E501
+                    "Using sync client for async streaming - install aioboto3 for better performance"
                 )
                 async for text in self._async_stream_fallback(
                     messages, temperature, max_tokens, top_p, stop, **kwargs

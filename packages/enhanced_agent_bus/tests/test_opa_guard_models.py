@@ -1,6 +1,6 @@
 """
 ACGS-2 Deliberation Layer - OPA Guard Models Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for OPA guard data models.
 """
@@ -10,7 +10,8 @@ import os
 import sys
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # Governance and constitutional compliance test markers
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]

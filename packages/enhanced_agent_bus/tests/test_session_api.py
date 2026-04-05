@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Session Governance API Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for session governance API endpoints including:
 - Session creation with governance configuration
@@ -21,8 +21,9 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.types import JSONDict
 
 # =============================================================================
 # Mock Classes for Testing
@@ -263,7 +264,8 @@ def app_with_sessions(mock_manager: MockSessionContextManager) -> FastAPI:
     import time
 
     from fastapi import FastAPI
-    from src.core.shared.security.auth import UserClaims, get_current_user
+
+    from enhanced_agent_bus._compat.security.auth import UserClaims, get_current_user
 
     app = FastAPI()
 

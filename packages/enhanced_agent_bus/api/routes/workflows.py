@@ -1,13 +1,15 @@
 """
 Workflow Admin API routes.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
+
+from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict
-from src.core.shared.security.auth import UserClaims, get_current_user
 
+from enhanced_agent_bus._compat.security.auth import UserClaims, get_current_user
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from ...persistence.executor import DurableWorkflowExecutor
@@ -39,6 +41,24 @@ class WorkflowInspectResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class CreateWorkflowRequest(BaseModel):
+    workflow_type: str = "builtin.echo"
+    workflow_id: str | None = None
+    input_data: dict[str, object] | None = None
+    execute_immediately: bool = True
+
+
+class CreateWorkflowResponse(BaseModel):
+    id: str
+    workflow_id: str
+    workflow_type: str
+    tenant_id: str
+    status: object
+    output: dict[str, object] | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class CancelRequest(BaseModel):
     reason: str = "User cancelled via Admin API"
 
@@ -48,6 +68,40 @@ def _resolve_tenant_id(user: UserClaims, requested_tenant_id: str | None) -> str
     if requested_tenant_id and requested_tenant_id != user.tenant_id:
         raise HTTPException(status_code=403, detail="Cross-tenant access denied")
     return user.tenant_id  # type: ignore[no-any-return]
+
+
+@router.post("", response_model=CreateWorkflowResponse)
+async def create_workflow(
+    req: CreateWorkflowRequest,
+    tenant_id: str | None = Query(None, description="Tenant ID (must match authenticated tenant)"),
+    user: UserClaims = Depends(get_current_user),
+    executor: DurableWorkflowExecutor = Depends(get_workflow_executor),
+):
+    """Create a workflow instance and optionally execute it immediately."""
+    scoped_tenant_id = _resolve_tenant_id(user, tenant_id)
+    workflow_id = req.workflow_id or f"wf-{uuid4().hex[:12]}"
+
+    try:
+        instance = await executor.start_workflow(
+            workflow_type=req.workflow_type,
+            workflow_id=workflow_id,
+            tenant_id=scoped_tenant_id,
+            input_data=req.input_data,
+        )
+        if req.execute_immediately:
+            instance = await executor.execute_workflow(instance)
+    except ValueError as e:
+        logger.error("Workflow create failed for %s: %s", workflow_id, e, exc_info=True)
+        raise HTTPException(status_code=400, detail="Invalid workflow request") from e
+
+    return {
+        "id": str(instance.id),
+        "workflow_id": instance.workflow_id,
+        "workflow_type": instance.workflow_type,
+        "tenant_id": instance.tenant_id,
+        "status": _enum_value(instance.status),
+        "output": instance.output,
+    }
 
 
 @router.get("", response_model=WorkflowListResponse)

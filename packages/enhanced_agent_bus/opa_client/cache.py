@@ -3,7 +3,7 @@
 # Cannot statically verify mixin composition without Protocol-based injection.
 """
 ACGS-2 OPA Client — Cache Mixin
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides all cache-related methods for OPAClient:
 Redis cache, memory cache, cache key generation, cache clearing.
@@ -14,7 +14,7 @@ import json
 import time
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -22,7 +22,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # Import centralized Redis config for caching
 try:
-    from src.core.shared.redis_config import get_redis_url
+    from enhanced_agent_bus._compat.redis_config import get_redis_url
 
     REDIS_AVAILABLE = True
 except ImportError:

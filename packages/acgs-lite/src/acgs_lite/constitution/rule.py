@@ -3,7 +3,7 @@
 A Constitution is a set of Rules that govern agent behavior.
 Rules can be loaded from YAML, dicts, or created programmatically.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -45,7 +45,7 @@ def _cosine_sim(a: list[float], b: list[float]) -> float | None:
     mag_b = sum(x * x for x in b) ** 0.5
     if mag_a == 0.0 or mag_b == 0.0:
         return None
-    return dot / (mag_a * mag_b)
+    return float(dot / (mag_a * mag_b))
 
 
 class Severity(str, Enum):
@@ -261,13 +261,13 @@ class Rule(BaseModel):
         if not self.enabled:
             return False
 
-        for kw_lower in self._kw_lower:  # type: ignore[attr-defined]
+        for kw_lower in self._kw_lower:
             if kw_lower in text_lower:
                 if has_pos and not has_neg and not _KW_NEGATIVE_RE.search(kw_lower):
                     continue
                 return True
 
-        return any(pat.search(text_lower) for pat in self._compiled_pats)  # type: ignore[attr-defined]
+        return any(pat.search(text_lower) for pat in self._compiled_pats)
 
     def match_detail(self, text: str) -> dict[str, Any]:
         """exp93: Return structured match information for governance consumers.
@@ -309,7 +309,7 @@ class Rule(BaseModel):
         has_pos = (not has_neg) and any(w in _POSITIVE_VERBS_SET for w in text_lower.split()[:4])
 
         # Check keywords
-        for kw_lower in self._kw_lower:  # type: ignore[attr-defined]
+        for kw_lower in self._kw_lower:
             if kw_lower in text_lower:
                 if has_pos and not has_neg and not _KW_NEGATIVE_RE.search(kw_lower):
                     continue
@@ -325,7 +325,7 @@ class Rule(BaseModel):
                 }
 
         # Check patterns
-        for pat in self._compiled_pats:  # type: ignore[attr-defined]
+        for pat in self._compiled_pats:
             if m := pat.search(text_lower):
                 return {
                     "matched": True,
@@ -574,7 +574,7 @@ class Rule(BaseModel):
                 or op == "not_equals"
                 and ctx_val == expected
                 or op == "contains"
-                and (not isinstance(ctx_val, str) or expected not in ctx_val)
+                and (not isinstance(ctx_val, str) or str(expected) not in ctx_val)
                 or op == "in"
                 and ctx_val not in (expected or [])
                 or op == "not_in"

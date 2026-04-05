@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - HITL Manager Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for the HITLManager class.
 Tests cover:
@@ -9,13 +9,10 @@ Tests cover:
 - Integration with related components
 """
 
-import pytest
-
 
 class TestHITLManagerAdditionalScenarios:
     """Additional test scenarios for comprehensive coverage."""
 
-    @pytest.mark.asyncio
     async def test_process_approval_with_various_decisions(self):
         """Test process_approval with different decision types."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -49,7 +46,6 @@ class TestHITLManagerAdditionalScenarios:
         assert result is True
         await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_request_approval_logs_correctly(self, caplog):
         """Test that request_approval logs notification correctly."""
         import logging
@@ -80,7 +76,6 @@ class TestHITLManagerAdditionalScenarios:
 
             await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_process_approval_logs_decision(self, caplog):
         """Test that process_approval logs the decision."""
         import logging
@@ -120,7 +115,6 @@ class TestHITLManagerAdditionalScenarios:
 
             await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_multiple_sequential_approvals(self):
         """Test handling multiple sequential approval workflows."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (

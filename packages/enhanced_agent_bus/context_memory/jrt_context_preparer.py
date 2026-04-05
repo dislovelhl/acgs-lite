@@ -1,6 +1,6 @@
 """
 ACGS-2 Context & Memory - JRT Context Preparer
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements Just-in-Time Retrieval (JRT) context preparation for optimal
 LLM performance. Repeats critical sections for better recall and uses
@@ -20,7 +20,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -38,7 +38,7 @@ from .models import (
 logger = get_logger(__name__)
 
 
-class JRTRetrievalStrategy(str, Enum):  # noqa: UP042
+class JRTRetrievalStrategy(str, Enum):
     """Retrieval strategies for JRT context preparation."""
 
     RELEVANCE_FIRST = "relevance_first"  # Sort by relevance score
@@ -52,7 +52,7 @@ class JRTRetrievalStrategy(str, Enum):  # noqa: UP042
 class CriticalSectionMarker:
     """Marks a critical section in the context.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     start_position: int
@@ -75,7 +75,7 @@ class CriticalSectionMarker:
 class JRTPreparationResult:
     """Result of JRT context preparation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     prepared_window: ContextWindow
@@ -100,7 +100,7 @@ class JRTContextPreparer:
     - Priority-based ordering
     - Always including constitutional context
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Constitutional Version Model
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Data model for constitutional versions with semantic versioning,
 hash tracking, and metadata. Extends existing PolicyVersion pattern.
@@ -14,19 +14,19 @@ from pydantic import BaseModel, Field, field_serializer, field_validator
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
 
-class ConstitutionalStatus(str, Enum):  # noqa: UP042
+class ConstitutionalStatus(str, Enum):
     """Constitutional version status enumeration.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     DRAFT = "draft"  # Initial draft, not yet activated
@@ -45,7 +45,7 @@ class ConstitutionalVersion(BaseModel):
     This model tracks versions of the constitutional framework, enabling
     evolution, rollback, and audit trails for governance changes.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Attributes:
         version_id: Unique identifier for this version

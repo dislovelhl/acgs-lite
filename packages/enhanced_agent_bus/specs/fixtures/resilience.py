@@ -1,6 +1,6 @@
 """
 ACGS-2 Resilience Fixtures
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Fixtures for circuit breakers, chaos testing, and saga patterns.
 """
@@ -14,7 +14,7 @@ from enum import Enum
 import pytest
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -70,7 +70,7 @@ class SpecCircuitBreaker:
     @property
     def state(self) -> CircuitState:
         """Current circuit state, with automatic HALF_OPEN transition."""
-        if self._state == CircuitState.OPEN:  # noqa: SIM102
+        if self._state == CircuitState.OPEN:
             if self._last_failure_time:
                 elapsed = (datetime.now(UTC) - self._last_failure_time).total_seconds()
                 if elapsed >= self.recovery_timeout_s:

@@ -2,7 +2,7 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 """
 ACGS-2 Application Settings
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Centralized settings for all ACGS-2 services.
 """
@@ -155,4 +155,4 @@ _config_pkg = sys.modules.get("src.core.shared.config")
 if _config_pkg is not None:
     from src.core.shared.config.unified import settings as _unified_settings
 
-    setattr(_config_pkg, "settings", _unified_settings)  # noqa: B010
+    _config_pkg.settings = _unified_settings

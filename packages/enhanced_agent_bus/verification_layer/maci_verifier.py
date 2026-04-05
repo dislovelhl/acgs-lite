@@ -1,6 +1,6 @@
 """
 ACGS-2 MACI Verifier - Role-Based Verification Pipeline
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements Multi-Agent Collaborative Intelligence (MACI) verification to bypass
 Godel's incompleteness limitations through strict role separation:
@@ -28,15 +28,17 @@ from importlib import import_module
 
 # Constitutional hash for immutable validation
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
+from enhanced_agent_bus._compat.constants import MACIRole
 from enhanced_agent_bus.interfaces import RecommendationPlannerProtocol
+from enhanced_agent_bus.maci_role_projection import project_to_verification_role
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from ..governance_constants import (
@@ -79,6 +81,21 @@ class MACIAgentRole(Enum):
     JUDICIAL = "judicial"
     MONITOR = "monitor"
     AUDITOR = "auditor"
+
+    @classmethod
+    def parse(cls, value: "MACIAgentRole | MACIRole | str") -> "MACIAgentRole":
+        """Parse verifier roles from verifier-native or canonical MACI roles."""
+        if isinstance(value, cls):
+            return value
+
+        projected_role = project_to_verification_role(value)
+        if projected_role is not None:
+            return cls(projected_role)
+
+        if isinstance(value, str):
+            return cls(value.strip().lower())
+
+        raise ValueError(f"Unsupported MACI verifier role: {value!r}")
 
 
 class VerificationPhase(Enum):
@@ -243,9 +260,9 @@ VALIDATION_CONSTRAINTS: dict[MACIAgentRole, set[MACIAgentRole]] = {
 class MACIAgentBase:
     """Base class for MACI agents with common functionality."""
 
-    def __init__(self, agent_id: str, role: MACIAgentRole):
+    def __init__(self, agent_id: str, role: MACIAgentRole | MACIRole | str):
         self.agent_id = agent_id
-        self.role = role
+        self.role = MACIAgentRole.parse(role)
         self.output_registry: dict[str, str] = {}  # output_id -> hash
         self.constitutional_hash = CONSTITUTIONAL_HASH
 
@@ -681,7 +698,7 @@ class JudicialAgent(MACIAgentBase):
                 )
                 confidence = 0.6
 
-        elif rule_id == "data_protection":  # noqa: SIM102
+        elif rule_id == "data_protection":
             if decision_context.get("data_unprotected"):
                 violations.append(
                     {
@@ -715,7 +732,7 @@ class JudicialAgent(MACIAgentBase):
         for principle in principles:
             principle_lower = principle.lower()
 
-            if "harm" in principle_lower:  # noqa: SIM102
+            if "harm" in principle_lower:
                 if context.get("potential_harm"):
                     violations.append(
                         {
@@ -745,7 +762,7 @@ class JudicialAgent(MACIAgentBase):
         for constraint in constraints:
             constraint_lower = constraint.lower()
 
-            if "technically feasible" in constraint_lower:  # noqa: SIM102
+            if "technically feasible" in constraint_lower:
                 if not context.get("technically_feasible", True):
                     violations.append(
                         {
@@ -755,7 +772,7 @@ class JudicialAgent(MACIAgentBase):
                         }
                     )
 
-            if "human approval" in constraint_lower:  # noqa: SIM102
+            if "human approval" in constraint_lower:
                 if context.get("requires_human_approval") and not context.get("human_approved"):
                     violations.append(
                         {
@@ -795,7 +812,7 @@ class MACIVerifier:
 
     No agent validates its own output, bypassing Godel limitations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -1029,7 +1046,7 @@ class MACIVerifier:
             role=MACIAgentRole.JUDICIAL,
             phase=VerificationPhase.JUDGMENT,
             action="validate_compliance",
-            input_hash=f"{self.executive.output_registry.get(decision_id, '')}:{self.legislative.output_registry.get(rules_id, '')}",  # noqa: E501
+            input_hash=f"{self.executive.output_registry.get(decision_id, '')}:{self.legislative.output_registry.get(rules_id, '')}",
             output_hash=self.judicial.output_registry.get(judgment_id, ""),
             confidence=judgment.get("confidence", 0.5),
             reasoning=judgment.get("judgment_reasoning", ""),
@@ -1052,9 +1069,9 @@ class MACIVerifier:
     async def verify_cross_role_action(
         self,
         validator_agent_id: str,
-        validator_role: MACIAgentRole,
+        validator_role: MACIAgentRole | MACIRole | str,
         target_agent_id: str,
-        target_role: MACIAgentRole,
+        target_role: MACIAgentRole | MACIRole | str,
         target_output_id: str,
     ) -> bool:
         """
@@ -1067,6 +1084,13 @@ class MACIVerifier:
         Returns:
             True if validation is permitted, False otherwise
         """
+        try:
+            resolved_validator_role = MACIAgentRole.parse(validator_role)
+            resolved_target_role = MACIAgentRole.parse(target_role)
+        except ValueError as exc:
+            logger.warning(f"Unsupported verifier role mapping: {exc}")
+            return False
+
         # Self-validation check (Godel bypass prevention)
         if validator_agent_id == target_agent_id:
             logger.warning(
@@ -1076,11 +1100,11 @@ class MACIVerifier:
             return False
 
         # Check role permissions
-        permitted_targets = VALIDATION_CONSTRAINTS.get(validator_role, set())
-        if target_role not in permitted_targets:
+        permitted_targets = VALIDATION_CONSTRAINTS.get(resolved_validator_role, set())
+        if resolved_target_role not in permitted_targets:
             logger.warning(
-                f"Role constraint violation: {validator_role.value} "
-                f"cannot validate {target_role.value}"
+                f"Role constraint violation: {resolved_validator_role.value} "
+                f"cannot validate {resolved_target_role.value}"
             )
             return False
 

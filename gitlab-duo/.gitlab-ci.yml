@@ -1,0 +1,492 @@
+# ACGS Governance Pipeline — GitLab CI/CD Configuration
+# Constitutional Hash: 608508a9bd224290
+#
+# Adds a `governance` stage that runs before merge to validate MR diffs
+# against constitutional rules, check MACI separation of powers, verify
+# the constitutional hash, and produce an EU AI Act compliance report.
+
+stages:
+  - governance
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.pip-cache"
+  ACGS_CONSTITUTIONAL_HASH: "608508a9bd224290"
+  ACGS_STRICT_MODE: "false"
+  ACGS_EU_AI_ACT_CHECK: "false"
+  ACGS_MACI_EXEMPT: ""
+
+# ---------------------------------------------------------------------------
+# Governance validation — runs on every MR pipeline
+# ---------------------------------------------------------------------------
+acgs-governance-validation:
+  stage: governance
+  image: python:3.11-slim
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+  cache:
+    key: acgs-governance-pip
+    paths:
+      - .pip-cache/
+    policy: pull-push
+  before_script:
+    - pip install --quiet --no-cache-dir
+        acgs>=2.0.1
+        pydantic>=2.0
+        pyyaml>=6.0
+  script:
+    - |
+      cat <<'PYEOF' > /tmp/acgs_ci_validate.py
+      """ACGS CI/CD governance validation.
+
+      Validates MR diffs against constitutional rules, checks MACI separation
+      of powers, verifies the constitutional hash, and optionally generates
+      an EU AI Act compliance report.
+      """
+      import json
+      import os
+      import subprocess
+      import sys
+      from pathlib import Path
+
+      from acgs_lite.constitution import Constitution, score_context_risk, governance_decision_report
+      from acgs_lite.engine import GovernanceEngine
+      from acgs_lite.audit import AuditLog
+      from acgs_lite.maci import MACIEnforcer, MACIRole
+
+      # --- Configuration from CI variables ---
+      expected_hash = os.environ.get("ACGS_CONSTITUTIONAL_HASH", "608508a9bd224290")
+      strict_mode = os.environ.get("ACGS_STRICT_MODE", "false").lower() == "true"
+      eu_ai_act_check = os.environ.get("ACGS_EU_AI_ACT_CHECK", "false").lower() == "true"
+      maci_exempt = set(
+          u.strip()
+          for u in os.environ.get("ACGS_MACI_EXEMPT", "").split(",")
+          if u.strip()
+      )
+
+      # MR metadata from CI predefined variables
+      mr_iid = os.environ.get("CI_MERGE_REQUEST_IID", "")
+      mr_author = os.environ.get("CI_MERGE_REQUEST_AUTHOR", os.environ.get("GITLAB_USER_LOGIN", "unknown"))
+      mr_title = os.environ.get("CI_MERGE_REQUEST_TITLE", "")
+      project_path = os.environ.get("CI_PROJECT_PATH", "")
+      source_branch = os.environ.get("CI_MERGE_REQUEST_SOURCE_BRANCH_NAME", "")
+      target_branch = os.environ.get("CI_MERGE_REQUEST_TARGET_BRANCH_NAME", "main")
+
+      # --- Step 1: Load and verify constitution ---
+      constitution_path = os.environ.get("ACGS_CONSTITUTION_PATH", "")
+      if constitution_path and Path(constitution_path).exists():
+          constitution = Constitution.from_yaml(constitution_path)
+          print(f"Loaded custom constitution: {constitution.name} v{constitution.version}")
+      else:
+          constitution = Constitution.default()
+          print(f"Using default constitution: {constitution.name} v{constitution.version}")
+
+      print(f"Constitutional hash: {constitution.hash}")
+      print(f"Expected hash:       {expected_hash}")
+
+      hash_valid = constitution.hash == expected_hash
+      if not hash_valid:
+          print(f"ERROR: Constitutional hash mismatch!")
+          print(f"  Expected: {expected_hash}")
+          print(f"  Actual:   {constitution.hash}")
+          if strict_mode:
+              sys.exit(1)
+
+      # --- Step 2: Get MR diff ---
+      diff_text = ""
+      changed_files = []
+      try:
+          result = subprocess.run(
+              ["git", "diff", f"origin/{target_branch}...HEAD", "--name-only"],
+              capture_output=True, text=True, timeout=30,
+          )
+          if result.returncode == 0:
+              changed_files = [f.strip() for f in result.stdout.strip().split("\n") if f.strip()]
+
+          result = subprocess.run(
+              ["git", "diff", f"origin/{target_branch}...HEAD"],
+              capture_output=True, text=True, timeout=60,
+          )
+          if result.returncode == 0:
+              diff_text = result.stdout
+      except subprocess.SubprocessError as e:
+          print(f"Warning: Could not get git diff: {e}")
+
+      print(f"\nFiles changed: {len(changed_files)}")
+      for f in changed_files:
+          print(f"  - {f}")
+
+      # --- Step 3: Constitutional validation ---
+      audit_log = AuditLog()
+      engine = GovernanceEngine(constitution, audit_log=audit_log, strict=False)
+
+      violations_by_file = {}
+      total_violations = 0
+      blocking_violations = 0
+
+      for file_path in changed_files:
+          action_text = f"modify {file_path}"
+
+          # Include actual diff content for pattern matching
+          try:
+              file_diff = subprocess.run(
+                  ["git", "diff", f"origin/{target_branch}...HEAD", "--", file_path],
+                  capture_output=True, text=True, timeout=30,
+              )
+              if file_diff.returncode == 0 and file_diff.stdout:
+                  action_text = f"modify {file_path}: {file_diff.stdout[:2000]}"
+          except subprocess.SubprocessError:
+              pass
+
+          result = engine.validate(action_text, agent_id=mr_author)
+          if result.violations:
+              violations_by_file[file_path] = [
+                  {
+                      "rule_id": v.rule_id,
+                      "severity": v.severity.value,
+                      "rule_text": v.rule_text,
+                      "category": v.category,
+                      "blocking": v.severity.blocks(),
+                  }
+                  for v in result.violations
+              ]
+              total_violations += len(result.violations)
+              blocking_violations += len(result.blocking_violations)
+
+      # --- Step 4: MACI separation of powers check ---
+      maci_pass = True
+      maci_detail = "No self-approval detected"
+
+      # Check if MR author is in exempt list
+      if mr_author not in maci_exempt:
+          # Check diff for self-approval patterns
+          self_approve_patterns = ["self-approve", "auto-approve", "self-validate"]
+          for pattern in self_approve_patterns:
+              if pattern in diff_text.lower():
+                  maci_pass = False
+                  maci_detail = f"Self-approval pattern detected in diff: '{pattern}'"
+                  break
+
+      # --- Step 5: Generate governance decision report ---
+      mr_report = governance_decision_report(
+          action=f"{mr_title} (MR !{mr_iid} by {mr_author})",
+          context={
+              "environment": "merge_request_pipeline",
+              "project": project_path,
+              "source_branch": source_branch,
+              "target_branch": target_branch,
+          },
+          rules=constitution.active_rules(),
+      )
+
+      # --- Step 6: Determine decision ---
+      if blocking_violations > 0 or not maci_pass or not hash_valid:
+          decision = "BLOCK"
+      elif total_violations > 0:
+          decision = "FLAG"
+      else:
+          decision = "APPROVE"
+
+      # --- Step 7: Print report ---
+      print("\n" + "=" * 70)
+      print("ACGS GOVERNANCE REPORT")
+      print("=" * 70)
+      print(f"Decision:            {decision}")
+      print(f"Constitutional Hash: {constitution.hash}")
+      print(f"Hash Valid:          {hash_valid}")
+      print(f"Files Reviewed:      {len(changed_files)}")
+      print(f"Rules Checked:       {len(constitution.active_rules())}")
+      print(f"Total Violations:    {total_violations}")
+      print(f"Blocking Violations: {blocking_violations}")
+      print(f"MACI Check:          {'PASS' if maci_pass else 'FAIL'}")
+      print(f"MACI Detail:         {maci_detail}")
+      print(f"Context Risk:        {mr_report['context_risk']['risk_score']}")
+      print(f"Handling Tier:       {mr_report['context_risk']['handling_tier']}")
+
+      if violations_by_file:
+          print("\nViolations by file:")
+          for fpath, violations in violations_by_file.items():
+              print(f"\n  {fpath}:")
+              for v in violations:
+                  status = "BLOCK" if v["blocking"] else "WARN"
+                  print(f"    [{status}] {v['rule_id']} ({v['severity']}): {v['rule_text']}")
+
+      print("\n" + "=" * 70)
+
+      # --- Step 8: Write artifacts ---
+      report_data = {
+          "decision": decision,
+          "constitutional_hash": constitution.hash,
+          "hash_valid": hash_valid,
+          "mr_iid": mr_iid,
+          "mr_author": mr_author,
+          "mr_title": mr_title,
+          "files_reviewed": len(changed_files),
+          "rules_checked": len(constitution.active_rules()),
+          "total_violations": total_violations,
+          "blocking_violations": blocking_violations,
+          "violations_by_file": violations_by_file,
+          "maci_pass": maci_pass,
+          "maci_detail": maci_detail,
+          "context_risk": mr_report["context_risk"],
+          "decision_hint": mr_report["decision_hint"],
+          "engine_stats": engine.stats,
+      }
+
+      os.makedirs("governance-reports", exist_ok=True)
+      report_path = "governance-reports/governance-report.json"
+      with open(report_path, "w") as f:
+          json.dump(report_data, f, indent=2, default=str)
+      print(f"\nReport written to: {report_path}")
+
+      # --- Step 9: Exit code ---
+      if decision == "BLOCK" and strict_mode:
+          print(f"\nFAILED: Governance check blocked merge ({blocking_violations} blocking violations)")
+          sys.exit(1)
+      elif decision == "BLOCK":
+          print(f"\nWARNING: Governance violations detected but strict mode is off")
+          print("Set ACGS_STRICT_MODE=true to enforce blocking")
+          sys.exit(0)
+      else:
+          print(f"\nPASSED: Governance check {decision.lower()}")
+          sys.exit(0)
+      PYEOF
+
+      python3 /tmp/acgs_ci_validate.py
+  artifacts:
+    paths:
+      - governance-reports/
+    reports:
+      dotenv: governance-reports/governance-report.json
+    when: always
+    expire_in: 30 days
+
+# ---------------------------------------------------------------------------
+# MACI separation of powers — dedicated check
+# ---------------------------------------------------------------------------
+acgs-maci-check:
+  stage: governance
+  image: python:3.11-slim
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  before_script:
+    - pip install --quiet --no-cache-dir acgs>=2.0.1
+  script:
+    - |
+      cat <<'PYEOF' > /tmp/acgs_maci_check.py
+      """ACGS MACI separation of powers CI check.
+
+      Verifies that the MR author is not the sole approver and that the diff
+      does not contain self-approval or self-validation patterns.
+      """
+      import os
+      import subprocess
+      import sys
+
+      from acgs_lite.maci import MACIEnforcer, MACIRole
+
+      mr_author = os.environ.get("CI_MERGE_REQUEST_AUTHOR", os.environ.get("GITLAB_USER_LOGIN", "unknown"))
+      target_branch = os.environ.get("CI_MERGE_REQUEST_TARGET_BRANCH_NAME", "main")
+      maci_exempt = set(
+          u.strip()
+          for u in os.environ.get("ACGS_MACI_EXEMPT", "").split(",")
+          if u.strip()
+      )
+
+      print(f"MACI Check for MR author: {mr_author}")
+
+      if mr_author in maci_exempt:
+          print(f"Author {mr_author} is in MACI exempt list, skipping")
+          sys.exit(0)
+
+      # Get diff content
+      diff_text = ""
+      try:
+          result = subprocess.run(
+              ["git", "diff", f"origin/{target_branch}...HEAD"],
+              capture_output=True, text=True, timeout=60,
+          )
+          if result.returncode == 0:
+              diff_text = result.stdout.lower()
+      except subprocess.SubprocessError:
+          pass
+
+      # Check for self-approval/self-validation patterns in diff
+      violations = []
+      patterns = {
+          "self-approve": "Self-approval pattern found in code",
+          "auto-approve": "Auto-approval pattern found in code",
+          "self-validate": "Self-validation pattern found in code",
+          "skip audit": "Audit bypass pattern found in code",
+          "bypass validation": "Validation bypass pattern found in code",
+      }
+
+      for pattern, message in patterns.items():
+          if pattern in diff_text:
+              violations.append(f"  MACI VIOLATION: {message} (pattern: '{pattern}')")
+
+      if violations:
+          print("\nMACI VIOLATIONS DETECTED:")
+          for v in violations:
+              print(v)
+          print(f"\nTotal MACI violations: {len(violations)}")
+          print("Merge is BLOCKED until violations are resolved.")
+          sys.exit(1)
+      else:
+          print("MACI separation of powers: PASS")
+          print("No self-approval or self-validation patterns detected.")
+          sys.exit(0)
+      PYEOF
+
+      python3 /tmp/acgs_maci_check.py
+  allow_failure: false
+
+# ---------------------------------------------------------------------------
+# Constitutional hash verification
+# ---------------------------------------------------------------------------
+acgs-hash-verification:
+  stage: governance
+  image: python:3.11-slim
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  before_script:
+    - pip install --quiet --no-cache-dir acgs>=2.0.1
+  script:
+    - |
+      python3 -c "
+      import os, sys
+      from acgs_lite.constitution import Constitution
+
+      expected = os.environ.get('ACGS_CONSTITUTIONAL_HASH', '608508a9bd224290')
+      constitution_path = os.environ.get('ACGS_CONSTITUTION_PATH', '')
+
+      if constitution_path:
+          from pathlib import Path
+          if Path(constitution_path).exists():
+              c = Constitution.from_yaml(constitution_path)
+          else:
+              print(f'ERROR: Constitution file not found: {constitution_path}')
+              sys.exit(1)
+      else:
+          c = Constitution.default()
+
+      print(f'Constitution: {c.name} v{c.version}')
+      print(f'Expected hash: {expected}')
+      print(f'Actual hash:   {c.hash}')
+      print(f'Versioned:     {c.hash_versioned}')
+      print(f'Rules:         {len(c.rules)} total, {len(c.active_rules())} active')
+
+      if c.hash == expected:
+          print('PASS: Constitutional hash verified')
+          sys.exit(0)
+      else:
+          print('FAIL: Constitutional hash mismatch!')
+          print('The constitution may have been tampered with.')
+          sys.exit(1)
+      "
+  allow_failure: false
+
+# ---------------------------------------------------------------------------
+# EU AI Act compliance report (optional, enabled via variable)
+# ---------------------------------------------------------------------------
+acgs-eu-ai-act-report:
+  stage: governance
+  image: python:3.11-slim
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $ACGS_EU_AI_ACT_CHECK == "true"
+  before_script:
+    - pip install --quiet --no-cache-dir acgs>=2.0.1
+  script:
+    - |
+      cat <<'PYEOF' > /tmp/acgs_eu_ai_act.py
+      """ACGS EU AI Act compliance report.
+
+      Scans changed files for AI/ML patterns and produces a compliance
+      assessment against Articles 12, 13, and 14 of the EU AI Act.
+      """
+      import json
+      import os
+      import subprocess
+      import sys
+
+      target_branch = os.environ.get("CI_MERGE_REQUEST_TARGET_BRANCH_NAME", "main")
+
+      # Get changed files
+      changed_files = []
+      try:
+          result = subprocess.run(
+              ["git", "diff", f"origin/{target_branch}...HEAD", "--name-only"],
+              capture_output=True, text=True, timeout=30,
+          )
+          if result.returncode == 0:
+              changed_files = [f.strip() for f in result.stdout.strip().split("\n") if f.strip()]
+      except subprocess.SubprocessError:
+          pass
+
+      # Identify AI/ML relevant files
+      ai_ml_patterns = [
+          "model", "training", "inference", "scoring", "predict",
+          "classifier", "neural", "embedding", "tokenizer", "pipeline",
+          "ml/", "ai/", "llm", "agent", "prompt",
+      ]
+
+      ai_files = []
+      for f in changed_files:
+          f_lower = f.lower()
+          if any(p in f_lower for p in ai_ml_patterns):
+              ai_files.append(f)
+
+      if not ai_files:
+          print("No AI/ML files detected in this MR.")
+          print("EU AI Act compliance check: N/A")
+          sys.exit(0)
+
+      print(f"AI/ML files detected: {len(ai_files)}")
+      for f in ai_files:
+          print(f"  - {f}")
+
+      # Produce compliance assessment
+      report = {
+          "ai_ml_files_detected": len(ai_files),
+          "files": ai_files,
+          "deadline": "2026-08-02",
+          "assessment": {
+              "article_12_record_keeping": {
+                  "status": "REVIEW_NEEDED",
+                  "detail": "Verify that all AI operations produce audit-grade logs",
+              },
+              "article_13_transparency": {
+                  "status": "REVIEW_NEEDED",
+                  "detail": "Ensure system purpose, capabilities, and limitations are documented",
+              },
+              "article_14_human_oversight": {
+                  "status": "REVIEW_NEEDED",
+                  "detail": "Verify human-in-the-loop mechanisms for high-impact decisions",
+              },
+          },
+          "recommendation": (
+              "This MR modifies AI/ML components. Review against EU AI Act "
+              "requirements before the 2026-08-02 deadline for high-risk provisions."
+          ),
+      }
+
+      os.makedirs("governance-reports", exist_ok=True)
+      with open("governance-reports/eu-ai-act-report.json", "w") as f:
+          json.dump(report, f, indent=2)
+
+      print("\nEU AI Act Compliance Assessment")
+      print("=" * 50)
+      for article, info in report["assessment"].items():
+          print(f"  {article}: {info['status']}")
+          print(f"    {info['detail']}")
+      print(f"\nDeadline: {report['deadline']}")
+      print(f"Report: governance-reports/eu-ai-act-report.json")
+      PYEOF
+
+      python3 /tmp/acgs_eu_ai_act.py
+  artifacts:
+    paths:
+      - governance-reports/eu-ai-act-report.json
+    when: always
+    expire_in: 30 days
+  allow_failure: true

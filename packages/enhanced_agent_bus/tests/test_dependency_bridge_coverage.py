@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # Sprint 53 — dependency_bridge.py coverage
 """
 Comprehensive tests for src/core/enhanced_agent_bus/dependency_bridge.py.
@@ -11,8 +11,8 @@ import logging
 from unittest.mock import MagicMock, patch
 
 import pytest
-from src.core.shared.utilities.dependency_registry import DependencyRegistry, FeatureFlag
 
+from enhanced_agent_bus._compat.utilities.dependency_registry import DependencyRegistry, FeatureFlag
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # ---------------------------------------------------------------------------

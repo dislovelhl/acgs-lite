@@ -3,7 +3,7 @@ Get Governance Metrics MCP Tool.
 
 Retrieves real-time governance metrics from ACGS-2.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -31,11 +31,11 @@ class _InternalMetrics(TypedDict):
 
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
-from ..protocol.types import ToolDefinition, ToolInputSchema  # noqa: E402
+from ..protocol.types import ToolDefinition, ToolInputSchema
 
 logger = get_logger(__name__)
 
@@ -108,7 +108,7 @@ class GetMetricsTool:
     performance, compliance rates, and operational metrics.
     """
 
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
     def __init__(self, metrics_adapter: object | None = None):
         """

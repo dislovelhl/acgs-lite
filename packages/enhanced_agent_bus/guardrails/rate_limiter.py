@@ -4,14 +4,14 @@ Rate Limiter Guardrail Component.
 Implements OWASP DoS protection through request rate limiting using a
 token bucket algorithm with blacklist/whitelist support.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import time
 from dataclasses import dataclass, field
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -106,7 +106,7 @@ class RateLimiter(GuardrailComponent):
                             layer=self.get_layer(),
                             violation_type="rate_limit_blocked",
                             severity=ViolationSeverity.HIGH,
-                            message=f"Client {client_id} is rate limited until {self._blocked_until[client_id]}",  # noqa: E501
+                            message=f"Client {client_id} is rate limited until {self._blocked_until[client_id]}",
                             trace_id=trace_id,
                         )
                     ],

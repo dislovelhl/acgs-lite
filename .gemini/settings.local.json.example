@@ -1,0 +1,14 @@
+{
+  "notes": [
+    "Copy this file to .gemini/settings.local.json for machine-local or user-local overrides.",
+    "Do not commit secrets or personal paths. The real settings.local.json is gitignored."
+  ],
+  "overrides": {
+    "geminiBin": "/absolute/path/to/gemini",
+    "defaultArgs": [
+      "--model",
+      "gemini-2.5-pro"
+    ],
+    "profile": "local-dev"
+  }
+}

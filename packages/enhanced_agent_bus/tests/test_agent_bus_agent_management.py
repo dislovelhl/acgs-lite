@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus Tests - Agent Management
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive test coverage for agent_bus.py - the core EnhancedAgentBus class.
 """
@@ -9,7 +9,8 @@ import uuid
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 try:
     from enhanced_agent_bus.agent_bus import (
@@ -163,7 +164,6 @@ class TestAgentRegistration:
             return None
         return input_value
 
-    @pytest.mark.asyncio
     async def test_register_agent_success(self, agent_bus, constitutional_hash):
         """Test successful agent registration."""
         result = await agent_bus.register_agent(
@@ -174,7 +174,6 @@ class TestAgentRegistration:
         )
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_register_agent_with_constitutional_hash(self, agent_bus, constitutional_hash):
         """Test agent registration includes constitutional hash."""
         await agent_bus.register_agent(
@@ -188,7 +187,6 @@ class TestAgentRegistration:
         assert "constitutional_hash" in info
         assert info["constitutional_hash"] == constitutional_hash
 
-    @pytest.mark.asyncio
     async def test_register_multiple_agents(self, agent_bus):
         """Test registering multiple agents."""
         await agent_bus.register_agent("agent-1", "worker", [], None)
@@ -201,7 +199,6 @@ class TestAgentRegistration:
         assert "agent-2" in agents
         assert "agent-3" in agents
 
-    @pytest.mark.asyncio
     async def test_unregister_agent_success(self, agent_bus):
         """Test successful agent unregistration."""
         await agent_bus.register_agent("test-agent", "worker", [], None)
@@ -209,13 +206,11 @@ class TestAgentRegistration:
         assert result is True
         assert "test-agent" not in agent_bus.get_registered_agents()
 
-    @pytest.mark.asyncio
     async def test_unregister_nonexistent_agent(self, agent_bus):
         """Test unregistering agent that doesn't exist."""
         result = await agent_bus.unregister_agent("nonexistent-agent")
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_get_agent_info_exists(self, agent_bus):
         """Test getting info for registered agent."""
         await agent_bus.register_agent(
@@ -230,7 +225,6 @@ class TestAgentRegistration:
         assert info["capabilities"] == ["cap1", "cap2"]
         assert info["tenant_id"] == "tenant-x"
 
-    @pytest.mark.asyncio
     async def test_get_agent_info_not_exists(self, agent_bus):
         """Test getting info for non-existent agent."""
         info = agent_bus.get_agent_info("nonexistent")
@@ -245,7 +239,6 @@ class TestAgentRegistration:
 class TestAgentFiltering:
     """Test agent filtering by type and capability."""
 
-    @pytest.mark.asyncio
     async def test_get_agents_by_type(self, agent_bus):
         """Test filtering agents by type."""
         await agent_bus.register_agent("worker-1", "worker", [], None)
@@ -257,7 +250,6 @@ class TestAgentFiltering:
         assert "worker-1" in workers
         assert "worker-2" in workers
 
-    @pytest.mark.asyncio
     async def test_get_agents_by_type_empty(self, agent_bus):
         """Test filtering by type returns empty for no matches."""
         await agent_bus.register_agent("worker-1", "worker", [], None)
@@ -265,7 +257,6 @@ class TestAgentFiltering:
         result = agent_bus.get_agents_by_type("nonexistent_type")
         assert result == []
 
-    @pytest.mark.asyncio
     async def test_get_agents_by_capability(self, agent_bus):
         """Test filtering agents by capability."""
         await agent_bus.register_agent("agent-1", "worker", ["analyze", "process"], None)
@@ -278,7 +269,6 @@ class TestAgentFiltering:
         assert "agent-2" in analyzers
         assert "agent-3" not in analyzers
 
-    @pytest.mark.asyncio
     async def test_get_agents_by_capability_empty(self, agent_bus):
         """Test filtering by capability returns empty for no matches."""
         await agent_bus.register_agent("agent-1", "worker", ["analyze"], None)

@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive tests for ResearchCoordinator.
 
@@ -16,7 +16,8 @@ from typing import ClassVar
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH
 
@@ -608,7 +609,7 @@ class TestSearchAll:
         async def mock_search(query, sources, research_type, max_results):
             # Return appropriate results based on source
             s = sources[0]
-            if hasattr(s, "value"):  # noqa: SIM108
+            if hasattr(s, "value"):
                 src_val = s.value
             else:
                 src_val = str(s)

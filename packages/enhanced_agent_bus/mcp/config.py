@@ -15,7 +15,7 @@ Configuration priority (highest → lowest):
   3. YAML config file at path specified by ``MCP_CONFIG_FILE`` env var.
   4. Hard-coded defaults.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -28,11 +28,10 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
-
+from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
@@ -50,7 +49,7 @@ _ENV_NEURAL_MCP_ENABLED = "NEURAL_MCP_ENABLED"
 _ENV_NEURAL_MCP_COMMAND = "NEURAL_MCP_COMMAND"  # JSON-encoded list
 _ENV_TOOLBOX_ENABLED = "TOOLBOX_ENABLED"
 _ENV_TOOLBOX_URL = "TOOLBOX_URL"
-_ENV_TOOLBOX_AUTH_TOKEN = "TOOLBOX_AUTH_TOKEN"  # noqa: S105
+_ENV_TOOLBOX_AUTH_TOKEN = "TOOLBOX_AUTH_TOKEN"
 _ENV_TOOLBOX_TIMEOUT = "TOOLBOX_TIMEOUT"
 
 # Default server identifiers
@@ -158,7 +157,7 @@ class MCPServerConfig(BaseModel):
                     f"MCPServerConfig '{self.name}': transport={self.transport!r} "
                     "requires 'url' to be set."
                 )
-        elif self.transport == "stdio":  # noqa: SIM102
+        elif self.transport == "stdio":
             if not self.command:
                 raise ValueError(
                     f"MCPServerConfig '{self.name}': transport='stdio' "
@@ -396,7 +395,7 @@ def load_from_yaml(path: str | Path) -> MCPConfig:
     .. code-block:: yaml
 
         enabled: true
-        constitutional_hash: cdd01ef066bc6cf2
+        constitutional_hash: 608508a9bd224290
         servers:
           - name: neural-mcp
             transport: stdio

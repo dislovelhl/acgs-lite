@@ -1,6 +1,6 @@
 """
 ACGS-2 OPA Guard Actual Implementation Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for the actual OPAGuard class implementation (not mocks).
 """
@@ -9,7 +9,8 @@ import asyncio
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # Governance and constitutional compliance test markers
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
@@ -169,7 +170,6 @@ class TestOPAGuardInitialization:
 class TestOPAGuardEvaluate:
     """Tests for OPAGuard.evaluate fail-closed behavior."""
 
-    @pytest.mark.asyncio
     async def test_evaluate_missing_allowed_fails_closed(self, opa_guard, mock_opa_client) -> None:
         mock_opa_client.evaluate_policy.return_value = {"metadata": {"mode": "test"}}
 
@@ -178,7 +178,6 @@ class TestOPAGuardEvaluate:
         assert result["allow"] is False
         assert result["version"] == "1.0.0"
 
-    @pytest.mark.asyncio
     async def test_evaluate_non_dict_fails_closed(self, opa_guard, mock_opa_client) -> None:
         mock_opa_client.evaluate_policy.return_value = ["not", "a", "dict"]
 
@@ -186,7 +185,6 @@ class TestOPAGuardEvaluate:
 
         assert result["allow"] is False
 
-    @pytest.mark.asyncio
     async def test_evaluate_missing_allowed_allows_when_fail_open(
         self, opa_guard_fail_open, mock_opa_client
     ) -> None:
@@ -200,14 +198,12 @@ class TestOPAGuardEvaluate:
 class TestOPAGuardLifecycle:
     """Tests for OPAGuard lifecycle management."""
 
-    @pytest.mark.asyncio
     async def test_initialize_with_client(self, opa_guard):
         """Test initialization with existing client."""
         await opa_guard.initialize()
         # Should not raise and client should remain the same
         assert opa_guard.opa_client is not None
 
-    @pytest.mark.asyncio
     async def test_close(self, opa_guard):
         """Test close method."""
         await opa_guard.initialize()
@@ -219,7 +215,6 @@ class TestOPAGuardLifecycle:
 class TestConstitutionalCompliance:
     """Tests for constitutional compliance checking."""
 
-    @pytest.mark.asyncio
     async def test_valid_constitutional_hash(self, opa_guard, low_risk_action):
         """Test action with valid constitutional hash passes."""
         low_risk_action["constitutional_hash"] = GUARD_CONSTITUTIONAL_HASH
@@ -228,7 +223,6 @@ class TestConstitutionalCompliance:
         result = await opa_guard.check_constitutional_compliance(low_risk_action)
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_invalid_constitutional_hash(self, opa_guard, low_risk_action):
         """Test action with invalid constitutional hash fails."""
         low_risk_action["constitutional_hash"] = "invalid_hash_123"
@@ -236,7 +230,6 @@ class TestConstitutionalCompliance:
         result = await opa_guard.check_constitutional_compliance(low_risk_action)
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_no_constitutional_hash(self, opa_guard, low_risk_action):
         """Test action without constitutional hash uses policy evaluation."""
         opa_guard.opa_client.evaluate_policy.return_value = {"allowed": True}
@@ -244,7 +237,6 @@ class TestConstitutionalCompliance:
         result = await opa_guard.check_constitutional_compliance(low_risk_action)
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_fail_closed_on_error(self, opa_guard, low_risk_action):
         """Test fail_closed=True denies on error."""
         opa_guard.opa_client.evaluate_policy.side_effect = RuntimeError("OPA unavailable")
@@ -252,7 +244,6 @@ class TestConstitutionalCompliance:
         result = await opa_guard.check_constitutional_compliance(low_risk_action)
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_fail_open_on_error(self, opa_guard_fail_open, low_risk_action):
         """Test fail_closed=False allows on error."""
         opa_guard_fail_open.opa_client.evaluate_policy.side_effect = RuntimeError("OPA unavailable")
@@ -371,7 +362,6 @@ class TestRiskFactorIdentification:
 class TestActionVerification:
     """Tests for action verification."""
 
-    @pytest.mark.asyncio
     async def test_allow_low_risk_action(self, opa_guard, low_risk_action):
         """Test low-risk action is allowed."""
         opa_guard.opa_client.evaluate_policy.return_value = {"allowed": True}
@@ -382,7 +372,6 @@ class TestActionVerification:
         assert result.is_allowed is True
         assert opa_guard.get_stats()["allowed"] == 1
 
-    @pytest.mark.asyncio
     async def test_deny_policy_denied(self, opa_guard, low_risk_action):
         """Test action denied by policy."""
         # First call for constitutional compliance check returns allowed
@@ -402,7 +391,6 @@ class TestActionVerification:
         )
         assert has_policy_error
 
-    @pytest.mark.asyncio
     async def test_require_signatures_high_risk(self, opa_guard, high_risk_action):
         """Test high-risk action requires signatures."""
         opa_guard.opa_client.evaluate_policy.return_value = {"allowed": True}
@@ -418,7 +406,6 @@ class TestActionVerification:
             GuardDecision.ALLOW,
         ]
 
-    @pytest.mark.asyncio
     async def test_require_review_critical_risk(self, opa_guard, critical_risk_action):
         """Test critical-risk action requires review."""
         opa_guard.opa_client.evaluate_policy.return_value = {"allowed": True}
@@ -428,7 +415,6 @@ class TestActionVerification:
         # For critical risk, should require review or be at high threshold
         assert result.risk_score > 0.5  # Should have significant risk
 
-    @pytest.mark.asyncio
     async def test_deny_constitutional_failure(self, opa_guard, low_risk_action):
         """Test action denied on constitutional failure."""
         low_risk_action["constitutional_hash"] = "invalid_hash"
@@ -438,7 +424,6 @@ class TestActionVerification:
         assert result.decision == GuardDecision.DENY
         assert result.constitutional_valid is False
 
-    @pytest.mark.asyncio
     async def test_stats_updated(self, opa_guard, low_risk_action):
         """Test statistics are updated after verification."""
         opa_guard.opa_client.evaluate_policy.return_value = {"allowed": True}
@@ -486,7 +471,6 @@ class TestCriticAgentManagement:
 class TestAuditLogging:
     """Tests for audit logging."""
 
-    @pytest.mark.asyncio
     async def test_log_decision(self, opa_guard):
         """Test logging a decision."""
         decision = {"action": "test", "agent_id": "test_agent"}
@@ -500,7 +484,6 @@ class TestAuditLogging:
         assert audit_log[0]["decision"] == decision
         assert audit_log[0]["result"] == result
 
-    @pytest.mark.asyncio
     async def test_get_audit_log(self, opa_guard):
         """Test retrieving audit log."""
         # Log multiple decisions
@@ -510,7 +493,6 @@ class TestAuditLogging:
         audit_log = opa_guard.get_audit_log()
         assert len(audit_log) == 5
 
-    @pytest.mark.asyncio
     async def test_audit_log_limit(self, opa_guard):
         """Test audit log respects limit parameter."""
         for i in range(10):
@@ -523,7 +505,6 @@ class TestAuditLogging:
 class TestSignatureCollection:
     """Tests for signature collection."""
 
-    @pytest.mark.asyncio
     async def test_collect_signatures_timeout(self, opa_guard):
         """Test signature collection times out."""
         # Use very short timeout for testing
@@ -539,7 +520,6 @@ class TestSignatureCollection:
 
         assert result.status == SignatureStatus.EXPIRED
 
-    @pytest.mark.asyncio
     async def test_submit_signature(self, opa_guard):
         """Test submitting a signature."""
         # Create pending signature
@@ -562,7 +542,6 @@ class TestSignatureCollection:
         result = opa_guard._pending_signatures[decision_id]
         assert result.collected_count == 1
 
-    @pytest.mark.asyncio
     async def test_reject_signature(self, opa_guard):
         """Test rejecting a signature."""
         decision_id = "test_decision_3"
@@ -586,7 +565,6 @@ class TestSignatureCollection:
 class TestReviewSubmission:
     """Tests for review submission."""
 
-    @pytest.mark.asyncio
     async def test_submit_for_review_timeout(self, opa_guard, high_risk_action):
         """Test review submission times out."""
         opa_guard.register_critic_agent("critic_1", review_types=["general"])
@@ -601,14 +579,13 @@ class TestReviewSubmission:
         # Times out and becomes ESCALATED (status on timeout per implementation)
         assert result.status == ReviewStatus.ESCALATED
 
-    @pytest.mark.asyncio
     async def test_submit_review(self, opa_guard):
         """Test submitting a review."""
         decision_id = "test_review_2"
         review_result = ReviewResult(decision_id=decision_id)
         opa_guard._pending_reviews[decision_id] = review_result
 
-        # submit_review takes: decision_id, critic_id, verdict, reasoning, concerns, recommendations, confidence  # noqa: E501
+        # submit_review takes: decision_id, critic_id, verdict, reasoning, concerns, recommendations, confidence
         success = await opa_guard.submit_review(
             decision_id,
             "critic_1",
@@ -625,7 +602,6 @@ class TestReviewSubmission:
 class TestGlobalFunctions:
     """Tests for global OPAGuard functions."""
 
-    @pytest.mark.asyncio
     async def test_initialize_opa_guard(self, mock_opa_client):
         """Test global initialization."""
         with patch("deliberation_layer.opa_guard._opa_guard", None):
@@ -634,7 +610,6 @@ class TestGlobalFunctions:
             assert guard is not None
             assert isinstance(guard, OPAGuard)
 
-    @pytest.mark.asyncio
     async def test_get_opa_guard_after_init(self, mock_opa_client):
         """Test getting guard after initialization."""
         with patch("deliberation_layer.opa_guard._opa_guard", None):
@@ -643,7 +618,6 @@ class TestGlobalFunctions:
 
             assert guard is not None
 
-    @pytest.mark.asyncio
     async def test_close_opa_guard(self, mock_opa_client):
         """Test closing global guard."""
         with patch("deliberation_layer.opa_guard._opa_guard", None):
@@ -671,7 +645,6 @@ class TestConstitutionalHashExport:
 class TestEdgeCases:
     """Tests for edge cases and error handling."""
 
-    @pytest.mark.asyncio
     async def test_verify_action_with_exception(self, opa_guard, low_risk_action):
         """Test verify_action handles exceptions gracefully."""
         opa_guard.opa_client.evaluate_policy.side_effect = RuntimeError("Unexpected error")
@@ -681,7 +654,6 @@ class TestEdgeCases:
         assert result.decision == GuardDecision.DENY
         assert result.is_allowed is False
 
-    @pytest.mark.asyncio
     async def test_verify_action_with_cancelled_error(self, opa_guard, low_risk_action):
         """Test verify_action propagates CancelledError."""
         opa_guard.opa_client.evaluate_policy.side_effect = asyncio.CancelledError()
@@ -700,7 +672,6 @@ class TestEdgeCases:
         factors = opa_guard._identify_risk_factors({}, {})
         assert isinstance(factors, list)
 
-    @pytest.mark.asyncio
     async def test_submit_signature_unknown_decision(self, opa_guard):
         """Test submitting signature for unknown decision."""
         # Should handle gracefully and return False
@@ -710,7 +681,6 @@ class TestEdgeCases:
         # Returns False for unknown decision
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_submit_review_unknown_decision(self, opa_guard):
         """Test submitting review for unknown decision."""
         result = await opa_guard.submit_review(
@@ -723,7 +693,6 @@ class TestEdgeCases:
 class TestFallbackBehavior:
     """Tests for fallback behavior when OPA is unavailable."""
 
-    @pytest.mark.asyncio
     async def test_fallback_mode_warning(self, opa_guard, low_risk_action):
         """Test fallback mode adds warning to result."""
         opa_guard.opa_client.evaluate_policy.return_value = {

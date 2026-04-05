@@ -1,7 +1,7 @@
 """
 Impact Scoring Infrastructure for ACGS-2.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides comprehensive impact scoring with multiple algorithms:
 - Semantic: Basic keyword-based scoring

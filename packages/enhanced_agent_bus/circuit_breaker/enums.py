@@ -1,7 +1,7 @@
 """
 ACGS-2 Circuit Breaker Enums
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module defines the core enums for circuit breaker states,
 fallback strategies, and service severity levels.
@@ -10,7 +10,7 @@ fallback strategies, and service severity levels.
 from enum import Enum
 
 
-class CircuitState(str, Enum):  # noqa: UP042
+class CircuitState(str, Enum):
     """Circuit breaker states."""
 
     CLOSED = "closed"  # Normal operation, requests pass through
@@ -18,7 +18,7 @@ class CircuitState(str, Enum):  # noqa: UP042
     HALF_OPEN = "half_open"  # Testing if service recovered
 
 
-class FallbackStrategy(str, Enum):  # noqa: UP042
+class FallbackStrategy(str, Enum):
     """Fallback strategies when circuit is open."""
 
     FAIL_CLOSED = "fail_closed"  # Reject all requests (critical services)
@@ -28,7 +28,7 @@ class FallbackStrategy(str, Enum):  # noqa: UP042
     DEFAULT_VALUE = "default_value"  # Return a default value
 
 
-class ServiceSeverity(str, Enum):  # noqa: UP042
+class ServiceSeverity(str, Enum):
     """Service criticality levels."""
 
     CRITICAL = "critical"  # Constitutional validation cannot be skipped

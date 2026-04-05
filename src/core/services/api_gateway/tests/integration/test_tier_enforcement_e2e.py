@@ -1,6 +1,6 @@
 """
 Integration tests for the autonomy-tier enforcement pipeline (end-to-end).
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Test mapping:
   T010 (this file) -- no-tier-assignment → HTTP 403 / NO_TIER_ASSIGNED
@@ -101,7 +101,7 @@ class TestNoTierAssignmentRejected:
       - Assignment not found → immediate HTTP 403
       - Response body: {"reason": "NO_TIER_ASSIGNED"}
       - Audit log entry: outcome=BLOCKED, reason=NO_TIER_ASSIGNED,
-                        constitutional_hash=cdd01ef066bc6cf2
+                        constitutional_hash=608508a9bd224290
 
     RED test: this test will FAIL until AutonomyTierEnforcementMiddleware
     is wired into main.py.
@@ -138,7 +138,7 @@ class TestNoTierAssignmentRejected:
         The enforcement middleware must emit a TierEnforcementDecision with:
             outcome=BLOCKED
             reason=NO_TIER_ASSIGNED
-            constitutional_hash=cdd01ef066bc6cf2
+            constitutional_hash=608508a9bd224290
         """
         repo = AsyncMock(spec=TierAssignmentRepository)
         repo.get_by_agent.return_value = None

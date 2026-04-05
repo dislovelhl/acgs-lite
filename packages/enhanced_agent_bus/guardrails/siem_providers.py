@@ -4,7 +4,7 @@ SIEM Provider Abstraction for Audit Log Integration.
 Provides pluggable SIEM backends for the AuditLog guardrail component.
 Supports Splunk HTTP Event Collector (HEC) and Elasticsearch.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -17,18 +17,18 @@ from enum import Enum
 import httpx
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.errors.exceptions import (
+from enhanced_agent_bus._compat.errors import (
     ServiceUnavailableError,
 )
-from src.core.shared.errors.exceptions import (
+from enhanced_agent_bus._compat.errors import (
     ValidationError as ACGSValidationError,
 )
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -85,7 +85,7 @@ class SIEMProvider(ABC):
     All SIEM implementations must inherit from this class and implement
     the send_event method for shipping audit events.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, config: SIEMProviderConfig):
@@ -165,7 +165,7 @@ class SplunkHECProvider(SIEMProvider):
 
     Documentation: https://docs.splunk.com/Documentation/Splunk/latest/Data/HECExamples
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, config: SIEMProviderConfig):
@@ -347,7 +347,7 @@ class ElasticsearchProvider(SIEMProvider):
 
     Supports both single events and bulk operations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, config: SIEMProviderConfig):

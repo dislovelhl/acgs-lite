@@ -1,7 +1,7 @@
 """
 Transaction Coordinator Health Check Module
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Health check endpoints and dashboard query helpers for
 TransactionCoordinator observability.
@@ -13,10 +13,10 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         CONSTITUTIONAL_HASH,
         JSONDict,
-    )  # noqa: E402
+    )
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"  # type: ignore[misc,assignment]
     JSONDict = dict  # type: ignore[misc,assignment]

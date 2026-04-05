@@ -1,6 +1,6 @@
 """
 Redis Distributed Locking for Saga Persistence
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides distributed locking operations and maintenance utilities
 for saga state management using Redis SET NX with TTL.
@@ -15,11 +15,11 @@ from datetime import UTC, datetime
 import redis.asyncio as redis
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -40,7 +40,7 @@ class RedisLockManager(RedisKeyMixin):
     Implements distributed locks using Redis SET NX with TTL,
     providing safe concurrent access to saga state.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Type hints for mixin - these are provided by the main repository class
@@ -285,7 +285,7 @@ class RedisLockManager(RedisKeyMixin):
                         or saga.created_at
                     )
 
-                    if check_time < older_than:  # noqa: SIM102
+                    if check_time < older_than:
                         if await self.delete(saga_id_str):
                             deleted_count += 1
 

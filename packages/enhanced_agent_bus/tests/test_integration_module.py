@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Integration Module Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for the deliberation layer integration module.
 """
@@ -158,7 +158,6 @@ class TestMessageProcessing:
             content={"action": "delete", "scope": "production"},
         )
 
-    @pytest.mark.asyncio
     async def test_process_message_returns_result(self, layer, low_risk_message):
         """Test process_message returns a result dictionary."""
         result = await layer.process_message(low_risk_message)
@@ -167,7 +166,6 @@ class TestMessageProcessing:
         assert "success" in result
         assert "processing_time" in result
 
-    @pytest.mark.asyncio
     async def test_process_message_calculates_impact_score(self, layer, low_risk_message):
         """Test impact score is calculated if not present."""
         assert low_risk_message.impact_score is None
@@ -176,7 +174,6 @@ class TestMessageProcessing:
 
         assert low_risk_message.impact_score is not None
 
-    @pytest.mark.asyncio
     async def test_process_low_risk_to_fast_lane(self, layer, low_risk_message):
         """Test low-risk messages go to fast lane."""
         # Set low impact score
@@ -187,7 +184,6 @@ class TestMessageProcessing:
         assert result.get("lane") == "fast"
         assert result.get("status") == "delivered"
 
-    @pytest.mark.asyncio
     async def test_process_high_risk_to_deliberation(self, layer, high_risk_message):
         """Test high-risk messages go to deliberation."""
         # Set high impact score
@@ -233,7 +229,6 @@ class TestCallbacks:
 
         assert layer.deliberation_callback == callback
 
-    @pytest.mark.asyncio
     async def test_fast_lane_callback_executed(self, layer, test_message):
         """Test fast lane callback is executed on fast lane messages."""
         callback = AsyncMock()
@@ -243,7 +238,6 @@ class TestCallbacks:
 
         callback.assert_called_once_with(test_message)
 
-    @pytest.mark.asyncio
     async def test_deliberation_callback_executed(self, layer):
         """Test deliberation callback is executed on deliberation messages."""
         callback = AsyncMock()
@@ -286,7 +280,6 @@ class TestHumanDecision:
         result = await layer.process_message(msg)
         return result.get("item_id")
 
-    @pytest.mark.asyncio
     async def test_submit_human_decision_approved(self, layer, queued_item):
         """Test submitting approved decision."""
         # First set the item to under_review status
@@ -306,7 +299,6 @@ class TestHumanDecision:
 
             assert result is True
 
-    @pytest.mark.asyncio
     async def test_submit_human_decision_rejected(self, layer, queued_item):
         """Test submitting rejected decision."""
         item = layer.deliberation_queue.queue.get(queued_item)
@@ -325,7 +317,6 @@ class TestHumanDecision:
 
             assert result is True
 
-    @pytest.mark.asyncio
     async def test_submit_human_decision_nonexistent_item(self, layer):
         """Test decision for nonexistent item returns False."""
         result = await layer.submit_human_decision(
@@ -360,7 +351,6 @@ class TestAgentVote:
         result = await layer.process_message(msg)
         return result.get("item_id")
 
-    @pytest.mark.asyncio
     async def test_submit_agent_vote(self, layer, queued_item):
         """Test submitting agent vote."""
         result = await layer.submit_agent_vote(
@@ -373,7 +363,6 @@ class TestAgentVote:
 
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_submit_multiple_agent_votes(self, layer, queued_item):
         """Test submitting multiple agent votes."""
         await layer.submit_agent_vote(
@@ -389,7 +378,6 @@ class TestAgentVote:
         item = layer.deliberation_queue.queue.get(queued_item)
         assert len(item.current_votes) == 3
 
-    @pytest.mark.asyncio
     async def test_submit_agent_vote_nonexistent_item(self, layer):
         """Test vote for nonexistent item returns False."""
         result = await layer.submit_agent_vote(
@@ -467,7 +455,6 @@ class TestForceDeliberation:
         msg.impact_score = 0.2
         return msg
 
-    @pytest.mark.asyncio
     async def test_force_deliberation(self, layer, low_risk_message):
         """Test forcing a low-risk message into deliberation."""
         result = await layer.force_deliberation(low_risk_message, reason="manual_override")
@@ -476,7 +463,6 @@ class TestForceDeliberation:
         assert result.get("forced") is True
         assert result.get("force_reason") == "manual_override"
 
-    @pytest.mark.asyncio
     async def test_force_deliberation_preserves_original_score(self, layer, low_risk_message):
         """Test original impact score is preserved after forcing."""
         original_score = low_risk_message.impact_score
@@ -499,7 +485,6 @@ class TestTrendAnalysis:
         """Create a layer without LLM."""
         return DeliberationLayer(enable_llm=False)
 
-    @pytest.mark.asyncio
     async def test_analyze_trends_without_llm(self, layer_without_llm):
         """Test trend analysis returns error without LLM."""
         result = await layer_without_llm.analyze_trends()
@@ -507,7 +492,6 @@ class TestTrendAnalysis:
         assert "error" in result
         assert "not enabled" in result["error"]
 
-    @pytest.mark.asyncio
     async def test_analyze_trends_with_llm(self, layer_with_llm):
         """Test trend analysis works with LLM."""
         result = await layer_with_llm.analyze_trends()
@@ -541,7 +525,6 @@ class TestErrorHandling:
         """Create a deliberation layer."""
         return DeliberationLayer(enable_learning=False, enable_llm=False, enable_opa_guard=False)
 
-    @pytest.mark.asyncio
     async def test_process_message_handles_error(self, layer):
         """Test message processing handles errors gracefully."""
         msg = AgentMessage(
@@ -557,7 +540,6 @@ class TestErrorHandling:
 class TestAsyncInitialize:
     """Tests for async initialization."""
 
-    @pytest.mark.asyncio
     async def test_initialize_without_redis(self):
         """Test initialization without Redis."""
         layer = DeliberationLayer(enable_redis=False, enable_llm=False, enable_opa_guard=False)

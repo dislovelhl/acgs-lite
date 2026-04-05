@@ -1,6 +1,6 @@
 """
 ACGS-2 Decision Explanation API Routes
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements FR-12 Decision Explanation API endpoints for structured
 factor attribution, governance vector analysis, and counterfactual reasoning.
@@ -8,9 +8,10 @@ factor attribution, governance vector analysis, and counterfactual reasoning.
 
 import uuid
 from datetime import UTC, datetime
+from typing import ClassVar
 
 from fastapi import Depends, HTTPException, Query, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from src.core.shared.api_versioning import create_versioned_router
 from src.core.shared.constants import CONSTITUTIONAL_HASH
@@ -128,12 +129,25 @@ class DecisionExplanationResponse(BaseModel):
 class ExplainDecisionRequest(BaseModel):
     """Request to generate explanation for a message/action."""
 
+    _ALLOWED_VERDICTS: ClassVar[frozenset[str]] = frozenset(
+        {"ALLOW", "DENY", "CONDITIONAL", "ESCALATE"}
+    )
+
     message: JSONDict = Field(..., description="Message or action to explain")
     verdict: str = Field(..., description="Decision verdict")
     context: JSONDict = Field(default_factory=dict, description="Additional context")
     include_counterfactuals: bool = Field(
         default=True, description="Include counterfactual analysis"
     )
+
+    @field_validator("verdict")
+    @classmethod
+    def validate_verdict(cls, value: str) -> str:
+        normalized = value.strip().upper()
+        if normalized not in cls._ALLOWED_VERDICTS:
+            allowed = ", ".join(sorted(cls._ALLOWED_VERDICTS))
+            raise ValueError(f"verdict must be one of: {allowed}")
+        return normalized
 
 
 class ExplainDecisionResponse(BaseModel):
@@ -172,7 +186,7 @@ decisions_v1_router = create_versioned_router(
     - Counterfactual analysis hints
     - EU AI Act Article 13 transparency compliance
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """,
 )
 @track_request_metrics("api-gateway", "/api/v1/decisions/{decision_id}/explain")
@@ -262,7 +276,7 @@ async def get_decision_explanation(
     Use this endpoint to create explanations for new decisions that
     haven't been stored yet, or to get explanations without persistence.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """,
 )
 @track_request_metrics("api-gateway", "/api/v1/decisions/explain")

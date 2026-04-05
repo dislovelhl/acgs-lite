@@ -1,7 +1,7 @@
 """
 Tests for ACGS-2 Service-to-Service Authentication
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import time
@@ -97,6 +97,18 @@ class TestServiceAuth:
 
     def test_production_secret_requires_configuration(self, monkeypatch):
         monkeypatch.setenv("ACGS2_ENV", "production")
+        monkeypatch.delenv("ACGS2_SERVICE_SECRET", raising=False)
+
+        with pytest.raises(ConfigurationError, match="ACGS2_SERVICE_SECRET not configured"):
+            _get_service_secret()
+
+    def test_environment_var_also_blocks_dev_fallback(self, monkeypatch):
+        """ENVIRONMENT=production without ACGS2_ENV must still block dev fallback.
+
+        This is the exact PM2 deployment scenario that triggered the P0.
+        """
+        monkeypatch.delenv("ACGS2_ENV", raising=False)
+        monkeypatch.setenv("ENVIRONMENT", "production")
         monkeypatch.delenv("ACGS2_SERVICE_SECRET", raising=False)
 
         with pytest.raises(ConfigurationError, match="ACGS2_SERVICE_SECRET not configured"):

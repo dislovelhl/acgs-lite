@@ -1,6 +1,6 @@
 """
 Tests for Edge Cases in CCAI Representative Statements.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -22,7 +22,6 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 class TestEdgeCases:
     """Test suite for edge cases in centrality calculation and selection."""
 
-    @pytest.mark.asyncio
     async def test_constitutional_hash_validation(self, engine, sample_cluster):
         """Test that all operations maintain constitutional hash."""
         statement_id = "stmt-hash-test"
@@ -37,7 +36,6 @@ class TestEdgeCases:
         assert engine.statements[statement_id].constitutional_hash == CONSTITUTIONAL_HASH
         assert sample_cluster.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_large_cluster_performance(self, engine):
         """Test centrality calculation with large cluster (100+ members)."""
         large_cluster = OpinionCluster(
@@ -75,7 +73,6 @@ class TestEdgeCases:
         assert 0.0 <= centrality <= 1.0, "Centrality not in valid range"
         assert elapsed < 1.0, f"Performance issue: took {elapsed:.3f}s for 100 members"
 
-    @pytest.mark.asyncio
     async def test_concurrent_centrality_calculations(self, engine, sample_cluster):
         """Test multiple concurrent centrality calculations."""
         statements = []

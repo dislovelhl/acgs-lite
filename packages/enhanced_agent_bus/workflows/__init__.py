@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Workflow Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Entity Workflow patterns for agent lifecycle management.
 Implements the Actor Model pattern with signals, queries, and activities.

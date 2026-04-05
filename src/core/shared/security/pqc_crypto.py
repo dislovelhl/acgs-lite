@@ -1,6 +1,6 @@
 """
 ACGS-2 Shared PQC Cryptography Types
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Explicit Protocol definitions to avoid a hard boundary violation (shared → services).
 These interfaces define the contract that concrete PQC implementations must fulfill.
@@ -104,6 +104,8 @@ else:
         warnings: list[str] = field(default_factory=list)
         pqc_metadata: PQCMetadata | None = None
         validation_duration_ms: float | None = None
+        classical_verification_ms: float | None = None
+        pqc_verification_ms: float | None = None
 
 
 PQC_CRYPTO_AVAILABLE = True  # The interfaces are always available

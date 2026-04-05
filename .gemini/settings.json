@@ -1,0 +1,31 @@
+{
+  "workspace": "acgs-clean",
+  "constitutionHash": "608508a9bd224290",
+  "primaryDocs": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "docs/ai-workspace.md"
+  ],
+  "verificationCommands": {
+    "quick": "bash .claude/commands/test-and-verify.sh --quick",
+    "full": "bash .claude/commands/test-and-verify.sh",
+    "codexDoctor": "make codex-doctor"
+  },
+  "paths": {
+    "claude": ".claude/",
+    "codex": ".codex/config.toml",
+    "geminiCommands": ".gemini/commands/acgs/",
+    "geminiPolicies": ".gemini/policies/",
+    "evals": ".claude/evals/"
+  },
+  "principles": [
+    "Respect MACI separation of powers: proposer != validator != executor.",
+    "Prefer deterministic evals and code-based graders before broader implementation.",
+    "Use repo-local scripts and Make targets before inventing ad hoc commands.",
+    "Treat the constitutional hash as a runtime and documentation invariant."
+  ],
+  "notes": [
+    "This repo already has Claude Code and Codex configuration; Gemini is added as a repo-local workspace layer.",
+    "Create .gemini/settings.local.json for personal overrides; it is gitignored."
+  ]
+}

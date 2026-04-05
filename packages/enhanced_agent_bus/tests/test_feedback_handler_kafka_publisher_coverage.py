@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # Sprint 57 -- feedback_handler/kafka_publisher.py coverage
 """
 Comprehensive tests for FeedbackKafkaPublisher to achieve ≥95% coverage.
@@ -28,8 +28,6 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
-
-import pytest
 
 from enhanced_agent_bus.feedback_handler.enums import FeedbackType, OutcomeStatus
 from enhanced_agent_bus.feedback_handler.models import StoredFeedbackEvent

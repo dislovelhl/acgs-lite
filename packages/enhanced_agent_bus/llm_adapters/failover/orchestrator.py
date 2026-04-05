@@ -1,6 +1,6 @@
 """
 ACGS-2 LLM Failover - Orchestrator Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Main orchestrator for LLM provider failover integrating all components.
 """
@@ -12,7 +12,7 @@ from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -50,7 +50,7 @@ class LLMFailoverOrchestrator:
     """
     Main orchestrator for LLM provider failover.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Integrates:
     - Circuit breakers (from existing module)

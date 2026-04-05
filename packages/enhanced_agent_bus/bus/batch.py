@@ -1,7 +1,7 @@
 """
 Batch processing for EnhancedAgentBus.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -39,7 +39,7 @@ class BatchProcessor:
     """
     Handles batch message processing for EnhancedAgentBus.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -81,7 +81,7 @@ class BatchProcessor:
 
         This method provides high-throughput batch processing with:
         1. Tenant isolation validation across all batch items
-        2. Constitutional compliance verification (hash: cdd01ef066bc6cf2)
+        2. Constitutional compliance verification (hash: 608508a9bd224290)
         3. Parallel processing via BatchMessageProcessor
         4. Metering for batch operations
         5. MACI role validation support
@@ -132,7 +132,7 @@ class BatchProcessor:
                         processing_time_ms=0.0,
                     ),
                     constitutional_hash=CONSTITUTIONAL_HASH,
-                    errors=["Tenant isolation violation: Not all items belong to the same tenant"]  # noqa: RUF005
+                    errors=["Tenant isolation violation: Not all items belong to the same tenant"]
                     + tenant_errors[:5],
                     completed_at=datetime.now(UTC),
                 )

@@ -13,8 +13,7 @@ Usage::
         messages=[{"role": "user", "content": "Hello!"}],
     )
 
-Constitutional Hash: cdd01ef066bc6cf2
-"""
+Constitutional Hash: 608508a9bd224290\n\nPublic integration clients use `audit_mode="full"` so exported stats and audit APIs reflect the durable `AuditLog`.\n"""
 
 from __future__ import annotations
 
@@ -167,7 +166,10 @@ class GovernedMessages:
         # Also validate system prompt if present
         system = kwargs.get("system", "")
         if isinstance(system, str) and system:
-            self._engine.validate(system, agent_id=f"{self._agent_id}:system", strict=False)
+            old_strict = self._engine.strict
+            self._engine.strict = False
+            self._engine.validate(system, agent_id=f"{self._agent_id}:system")
+            self._engine.strict = old_strict
 
         # Call Anthropic
         response = self._client.messages.create(**kwargs)
@@ -186,7 +188,10 @@ class GovernedMessages:
 
     def _validate_output_text(self, text: str) -> None:
         """Validate a text output block against the constitution."""
-        result = self._engine.validate(text, agent_id=f"{self._agent_id}:output", strict=False)
+        old_strict = self._engine.strict
+        self._engine.strict = False
+        result = self._engine.validate(text, agent_id=f"{self._agent_id}:output")
+        self._engine.strict = old_strict
 
         if not result.valid:
             logger.warning(
@@ -209,11 +214,13 @@ class GovernedMessages:
         serialized = json.dumps(tool_input, sort_keys=True)
         tool_name = getattr(block, "name", "unknown_tool")
 
+        old_strict = self._engine.strict
+        self._engine.strict = False
         result = self._engine.validate(
             serialized,
             agent_id=f"{self._agent_id}:tool_use:{tool_name}",
-            strict=False,
         )
+        self._engine.strict = old_strict
 
         if not result.valid:
             logger.warning(
@@ -267,19 +274,17 @@ class GovernedAnthropic:
     ) -> None:
         if not ANTHROPIC_AVAILABLE:
             raise ImportError(
-                "The 'anthropic' package is required. "
-                "Install with: pip install acgs-lite[anthropic]"
+                "The 'anthropic' package is required. Install with: pip install acgs[anthropic]"
             )
 
-        self._client = Anthropic(  # type: ignore[operator]
-            api_key=api_key, **anthropic_kwargs
-        )
+        self._client = Anthropic(api_key=api_key, **anthropic_kwargs)
         self.constitution = constitution or Constitution.default()
         self.audit_log = AuditLog()
         self.engine = GovernanceEngine(
             self.constitution,
             audit_log=self.audit_log,
             strict=strict,
+            audit_mode="full",
         )
         self.agent_id = agent_id
         self.messages = GovernedMessages(self._client, self.engine, agent_id)
@@ -351,7 +356,10 @@ class GovernedAnthropic:
         if not isinstance(agent_id, str) or not _AGENT_ID_PATTERN.match(agent_id):
             return {"error": f"Invalid agent_id format: {agent_id!r}"}
 
-        result = self.engine.validate(text, agent_id=f"{self.agent_id}:{agent_id}", strict=False)
+        old_strict = self.engine.strict
+        self.engine.strict = False
+        result = self.engine.validate(text, agent_id=f"{self.agent_id}:{agent_id}")
+        self.engine.strict = old_strict
 
         return {
             "valid": result.valid,
@@ -375,11 +383,13 @@ class GovernedAnthropic:
         if not text or not text.strip():
             return {"error": "text parameter is required and must not be empty"}
 
+        old_strict = self.engine.strict
+        self.engine.strict = False
         result = self.engine.validate(
             text,
             agent_id=f"{self.agent_id}:compliance_check",
-            strict=False,
         )
+        self.engine.strict = old_strict
 
         return {
             "compliant": result.valid,
@@ -437,6 +447,7 @@ class GovernedAnthropic:
 
     @property
     def stats(self) -> dict[str, Any]:
+        """Return governance statistics for this client."""
         return {
             **self.engine.stats,
             "agent_id": self.agent_id,

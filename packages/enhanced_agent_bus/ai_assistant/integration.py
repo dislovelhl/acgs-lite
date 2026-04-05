@@ -1,6 +1,6 @@
 """
 ACGS-2 AI Assistant - Agent Bus Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Integration layer between AI Assistant and the Enhanced Agent Bus.
 Handles constitutional validation, message routing, and governance.
@@ -13,9 +13,8 @@ from datetime import UTC, datetime, timezone
 from typing import TypeAlias
 
 # Policy imports
-from src.core.shared.policy.models import PolicySpecification, VerificationStatus
-from src.core.shared.policy.unified_generator import UnifiedVerifiedPolicyGenerator
-
+from enhanced_agent_bus._compat.policy.models import PolicySpecification, VerificationStatus
+from enhanced_agent_bus._compat.policy.unified_generator import UnifiedVerifiedPolicyGenerator
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from .context import ConversationContext
@@ -33,14 +32,14 @@ except ImportError:
 
 # Import centralized constitutional hash with fallback
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]
@@ -336,7 +335,7 @@ class AgentBusIntegration:
             # Create policy specification from NLU result
             spec = PolicySpecification(
                 spec_id=f"gov_{uuid.uuid4().hex[:8]}",
-                natural_language=f"Verify if intent '{intent_name}' is allowed for user {context.user_id}",  # noqa: E501
+                natural_language=f"Verify if intent '{intent_name}' is allowed for user {context.user_id}",
                 context={
                     "user_id": context.user_id,
                     "session_id": context.session_id,

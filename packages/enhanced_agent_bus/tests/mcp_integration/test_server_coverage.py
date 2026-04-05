@@ -2,7 +2,7 @@
 Additional coverage tests for MCP Integration Server.
 
 Targets uncovered lines to boost coverage from ~70% to 90%+.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -353,7 +353,6 @@ class TestRegistrationEdgeCases:
 class TestServerLifecycle:
     """Test server lifecycle edge cases."""
 
-    @pytest.mark.asyncio
     async def test_start_when_already_running(self, caplog):
         server = _make_server()
         await server.start()
@@ -362,7 +361,6 @@ class TestServerLifecycle:
         assert "already running" in caplog.text
         await server.stop()
 
-    @pytest.mark.asyncio
     async def test_stop_when_not_running_is_noop(self):
         from ...mcp_integration.server import MCPServerState
 
@@ -372,7 +370,6 @@ class TestServerLifecycle:
         await server.stop()
         assert server.state == MCPServerState.STOPPED
 
-    @pytest.mark.asyncio
     async def test_stop_closes_connections(self):
         server = _make_server()
         await server.start()
@@ -385,7 +382,6 @@ class TestServerLifecycle:
         await server.stop()
         assert len(server._connections) == 0
 
-    @pytest.mark.asyncio
     async def test_stop_with_shutdown_event(self):
         server = _make_server()
         await server.start()
@@ -394,7 +390,6 @@ class TestServerLifecycle:
         # Event should have been set
         assert server._shutdown_event.is_set()
 
-    @pytest.mark.asyncio
     async def test_stop_with_no_start_time(self):
         """Stop should handle None start_time gracefully via audit log."""
         server = _make_server()
@@ -411,7 +406,6 @@ class TestServerLifecycle:
 class TestHandleRequestNotification:
     """Test handle_request with notifications (no id)."""
 
-    @pytest.mark.asyncio
     async def test_notification_returns_none(self):
         server = _make_server()
         await server.start()
@@ -420,7 +414,6 @@ class TestHandleRequestNotification:
         result = await server.handle_request(notif)
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_notification_no_id_on_exception(self):
         """Exception during notification handling returns None (no id)."""
         server = _make_server()
@@ -444,7 +437,6 @@ class TestHandleRequestNotification:
 class TestHandleRequestLogging:
     """Test log_requests config flag."""
 
-    @pytest.mark.asyncio
     async def test_no_log_requests(self):
         server = _make_server(log_requests=False)
         await server.start()
@@ -452,7 +444,6 @@ class TestHandleRequestLogging:
         response = await server.handle_request(_rpc("ping"))
         assert response["result"]["status"] == "ok"
 
-    @pytest.mark.asyncio
     async def test_log_requests_enabled(self):
         server = _make_server(log_requests=True)
         await server.start()
@@ -469,7 +460,6 @@ class TestHandleRequestLogging:
 class TestHandleRequestExceptions:
     """Test error handling in handle_request."""
 
-    @pytest.mark.asyncio
     async def test_value_error_returns_error_response(self):
         server = _make_server()
         await server.start()
@@ -483,7 +473,6 @@ class TestHandleRequestExceptions:
         assert response["error"]["code"] == -32603
         assert server._metrics.failed_requests == 1
 
-    @pytest.mark.asyncio
     async def test_runtime_error_in_handler(self):
         from ...mcp_integration.server import InternalTool
 
@@ -507,7 +496,6 @@ class TestHandleRequestExceptions:
         assert "error" in response
         assert response["error"]["code"] == -32603
 
-    @pytest.mark.asyncio
     async def test_unknown_resource_raises_value_error(self):
         server = _make_server()
         await server.start()
@@ -527,7 +515,6 @@ class TestHandleRequestExceptions:
 class TestHandleRequestWithValidator:
     """Test handle_request when a validator is provided."""
 
-    @pytest.mark.asyncio
     async def test_validator_valid_passes(self):
         from ...mcp_integration.server import MCPIntegrationConfig, MCPIntegrationServer
 
@@ -547,7 +534,6 @@ class TestHandleRequestWithValidator:
             response = await server.handle_request(_rpc("tools/list"))
             assert "result" in response
 
-    @pytest.mark.asyncio
     async def test_validator_invalid_strict_mode_blocks(self):
         from ...mcp_integration.server import MCPIntegrationConfig, MCPIntegrationServer
 
@@ -571,7 +557,6 @@ class TestHandleRequestWithValidator:
             assert "error" in response
             assert response["error"]["code"] == -32001
 
-    @pytest.mark.asyncio
     async def test_validator_invalid_non_strict_continues(self):
         from ...mcp_integration.server import MCPIntegrationConfig, MCPIntegrationServer
 
@@ -670,7 +655,6 @@ class TestTrackLatency:
 class TestCloseConnection:
     """Test _close_connection method."""
 
-    @pytest.mark.asyncio
     async def test_close_existing_connection(self):
         server = _make_server()
         server._connections["c1"] = {"info": "test"}
@@ -681,7 +665,6 @@ class TestCloseConnection:
         assert "c1" not in server._connections
         assert server._metrics.active_connections == 0
 
-    @pytest.mark.asyncio
     async def test_close_nonexistent_connection_is_noop(self):
         server = _make_server()
         server._metrics.active_connections = 0
@@ -736,7 +719,6 @@ class TestLogAuditEvent:
 class TestHandleInitializeCapabilities:
     """Test _handle_initialize with various config flags."""
 
-    @pytest.mark.asyncio
     async def test_initialize_tools_disabled(self):
         from ...mcp_integration.server import MCPIntegrationConfig, MCPIntegrationServer
 
@@ -747,7 +729,6 @@ class TestHandleInitializeCapabilities:
         result = await server._handle_initialize({"clientInfo": {}})
         assert result["capabilities"]["tools"] is None
 
-    @pytest.mark.asyncio
     async def test_initialize_resources_disabled(self):
         from ...mcp_integration.server import MCPIntegrationConfig, MCPIntegrationServer
 
@@ -758,7 +739,6 @@ class TestHandleInitializeCapabilities:
         result = await server._handle_initialize({"clientInfo": {}})
         assert result["capabilities"]["resources"] is None
 
-    @pytest.mark.asyncio
     async def test_initialize_prompts_disabled(self):
         from ...mcp_integration.server import MCPIntegrationConfig, MCPIntegrationServer
 
@@ -778,7 +758,6 @@ class TestHandleInitializeCapabilities:
 class TestHandleInitialized:
     """Test _handle_initialized increments connections."""
 
-    @pytest.mark.asyncio
     async def test_initialized_increments_connections(self):
         server = _make_server()
         await server.start()
@@ -796,7 +775,6 @@ class TestHandleInitialized:
 class TestHandleToolsCall:
     """Test tools/call handler edge cases."""
 
-    @pytest.mark.asyncio
     async def test_unknown_tool_raises(self):
         server = _make_server()
         await server.start()
@@ -804,7 +782,6 @@ class TestHandleToolsCall:
         with pytest.raises(ValueError, match="Unknown tool"):
             await server._handle_tools_call({"name": "nonexistent", "arguments": {}})
 
-    @pytest.mark.asyncio
     async def test_tool_result_with_content_key_passthrough(self):
         """Result already containing 'content' key should be returned as-is."""
         from ...mcp_integration.server import InternalTool
@@ -826,7 +803,6 @@ class TestHandleToolsCall:
         result = await server._handle_tools_call({"name": "wrapped_tool", "arguments": {}})
         assert result["content"][0]["text"] == "pre-wrapped"
 
-    @pytest.mark.asyncio
     async def test_tool_result_non_dict_is_stringified(self):
         from ...mcp_integration.server import InternalTool
 
@@ -847,7 +823,6 @@ class TestHandleToolsCall:
         result = await server._handle_tools_call({"name": "string_tool", "arguments": {}})
         assert result["content"][0]["text"] == "plain string result"
 
-    @pytest.mark.asyncio
     async def test_maci_validation_with_enforcer(self):
         """MACI enforcement path when enable_maci=True and enforcer provided."""
         from ...mcp_integration.server import (
@@ -879,7 +854,6 @@ class TestHandleToolsCall:
             )
             assert "content" in result or "result" in result
 
-    @pytest.mark.asyncio
     async def test_maci_validation_error_strict_raises(self):
         """MACI error in strict mode should re-raise."""
         from ...mcp_integration.server import (
@@ -908,7 +882,6 @@ class TestHandleToolsCall:
             with pytest.raises(ValueError, match="MACI rejected"):
                 await server._handle_tools_call({"name": "strict_maci_tool", "arguments": {}})
 
-    @pytest.mark.asyncio
     async def test_maci_validation_error_non_strict_continues(self):
         """MACI error in non-strict mode should log and continue."""
         from ...mcp_integration.server import (
@@ -949,7 +922,6 @@ class TestHandleToolsCall:
 class TestHandleResourcesRead:
     """Test resources/read edge cases."""
 
-    @pytest.mark.asyncio
     async def test_unknown_resource_raises_value_error(self):
         server = _make_server()
         await server.start()
@@ -957,7 +929,6 @@ class TestHandleResourcesRead:
         with pytest.raises(ValueError, match="Unknown resource"):
             await server._handle_resources_read({"uri": "nonexistent://res"})
 
-    @pytest.mark.asyncio
     async def test_resource_without_handler(self):
         from ...mcp_integration.server import InternalResource
 
@@ -977,7 +948,6 @@ class TestHandleResourcesRead:
         contents = result["contents"][0]
         assert "error" in contents["text"]
 
-    @pytest.mark.asyncio
     async def test_resource_with_non_dict_handler_result(self):
         from ...mcp_integration.server import InternalResource
 
@@ -1007,7 +977,6 @@ class TestHandleResourcesRead:
 class TestHandleResourcesSubscribe:
     """Test resources/subscribe handler."""
 
-    @pytest.mark.asyncio
     async def test_subscribe_returns_subscribed_true(self):
         server = _make_server()
         await server.start()
@@ -1015,7 +984,6 @@ class TestHandleResourcesSubscribe:
         result = await server._handle_resources_subscribe({"uri": "acgs2://some/resource"})
         assert result["subscribed"] is True
 
-    @pytest.mark.asyncio
     async def test_subscribe_via_handle_request(self):
         server = _make_server()
         await server.start()
@@ -1036,7 +1004,6 @@ class TestHandleResourcesSubscribe:
 class TestPromptsHandlers:
     """Test prompts/list and prompts/get handlers."""
 
-    @pytest.mark.asyncio
     async def test_prompts_list_empty(self):
         server = _make_server()
         await server.start()
@@ -1044,7 +1011,6 @@ class TestPromptsHandlers:
         result = await server._handle_prompts_list({})
         assert result["prompts"] == []
 
-    @pytest.mark.asyncio
     async def test_prompts_list_with_entries(self):
         server = _make_server()
         await server.start()
@@ -1056,7 +1022,6 @@ class TestPromptsHandlers:
         result = await server._handle_prompts_list({})
         assert len(result["prompts"]) == 1
 
-    @pytest.mark.asyncio
     async def test_prompts_get_existing(self):
         server = _make_server()
         await server.start()
@@ -1065,7 +1030,6 @@ class TestPromptsHandlers:
         result = await server._handle_prompts_get({"name": "my_prompt"})
         assert result["name"] == "my_prompt"
 
-    @pytest.mark.asyncio
     async def test_prompts_get_unknown_raises(self):
         server = _make_server()
         await server.start()
@@ -1073,7 +1037,6 @@ class TestPromptsHandlers:
         with pytest.raises(ValueError, match="Unknown prompt"):
             await server._handle_prompts_get({"name": "nonexistent"})
 
-    @pytest.mark.asyncio
     async def test_prompts_list_via_handle_request(self):
         server = _make_server()
         await server.start()
@@ -1082,7 +1045,6 @@ class TestPromptsHandlers:
         assert "result" in response
         assert "prompts" in response["result"]
 
-    @pytest.mark.asyncio
     async def test_prompts_get_via_handle_request_unknown(self):
         server = _make_server()
         await server.start()
@@ -1099,7 +1061,6 @@ class TestPromptsHandlers:
 class TestHandleLoggingSetLevel:
     """Test logging/setLevel handler."""
 
-    @pytest.mark.asyncio
     async def test_set_level_debug(self):
         server = _make_server()
         await server.start()
@@ -1107,7 +1068,6 @@ class TestHandleLoggingSetLevel:
         result = await server._handle_logging_set_level({"level": "debug"})
         assert result["level"] == "debug"
 
-    @pytest.mark.asyncio
     async def test_set_level_warning(self):
         server = _make_server()
         await server.start()
@@ -1115,7 +1075,6 @@ class TestHandleLoggingSetLevel:
         result = await server._handle_logging_set_level({"level": "warning"})
         assert result["level"] == "warning"
 
-    @pytest.mark.asyncio
     async def test_set_level_default_info(self):
         server = _make_server()
         await server.start()
@@ -1123,7 +1082,6 @@ class TestHandleLoggingSetLevel:
         result = await server._handle_logging_set_level({})
         assert result["level"] == "info"
 
-    @pytest.mark.asyncio
     async def test_set_level_via_handle_request(self):
         server = _make_server()
         await server.start()
@@ -1141,7 +1099,6 @@ class TestHandleLoggingSetLevel:
 class TestHandleGovernanceRequest:
     """Test governance/request handler."""
 
-    @pytest.mark.asyncio
     async def test_governance_request_returns_pending(self):
         server = _make_server()
         await server.start()
@@ -1151,7 +1108,6 @@ class TestHandleGovernanceRequest:
         assert "request_id" in result
         assert result["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_governance_request_via_handle_request(self):
         server = _make_server()
         await server.start()
@@ -1171,7 +1127,6 @@ class TestHandleGovernanceRequest:
 class TestToolValidateCompliance:
     """Test compliance validation for harmful patterns and data sensitivity."""
 
-    @pytest.mark.asyncio
     async def test_harmless_action_is_compliant(self):
         server = _make_server()
         result = await server._tool_validate_compliance(
@@ -1181,7 +1136,6 @@ class TestToolValidateCompliance:
         assert result["violations"] == []
         assert result["confidence"] == 1.0
 
-    @pytest.mark.asyncio
     async def test_harmful_pattern_harm_detected(self):
         server = _make_server()
         result = await server._tool_validate_compliance({"action": "harm the users", "context": {}})
@@ -1189,7 +1143,6 @@ class TestToolValidateCompliance:
         assert len(result["violations"]) > 0
         assert result["confidence"] == 0.0
 
-    @pytest.mark.asyncio
     async def test_harmful_pattern_attack_detected(self):
         server = _make_server()
         result = await server._tool_validate_compliance(
@@ -1197,7 +1150,6 @@ class TestToolValidateCompliance:
         )
         assert result["compliant"] is False
 
-    @pytest.mark.asyncio
     async def test_harmful_pattern_exploit_detected(self):
         server = _make_server()
         result = await server._tool_validate_compliance(
@@ -1205,7 +1157,6 @@ class TestToolValidateCompliance:
         )
         assert result["compliant"] is False
 
-    @pytest.mark.asyncio
     async def test_harmful_pattern_abuse_detected(self):
         server = _make_server()
         result = await server._tool_validate_compliance(
@@ -1213,7 +1164,6 @@ class TestToolValidateCompliance:
         )
         assert result["compliant"] is False
 
-    @pytest.mark.asyncio
     async def test_harmful_pattern_deceive_detected(self):
         server = _make_server()
         result = await server._tool_validate_compliance(
@@ -1221,7 +1171,6 @@ class TestToolValidateCompliance:
         )
         assert result["compliant"] is False
 
-    @pytest.mark.asyncio
     async def test_confidential_data_without_consent(self):
         server = _make_server()
         result = await server._tool_validate_compliance(
@@ -1234,7 +1183,6 @@ class TestToolValidateCompliance:
         assert any(v["principle"] == "privacy" for v in result["violations"])
         assert "Obtain explicit user consent" in result["recommendations"]
 
-    @pytest.mark.asyncio
     async def test_restricted_data_without_consent(self):
         server = _make_server()
         result = await server._tool_validate_compliance(
@@ -1245,7 +1193,6 @@ class TestToolValidateCompliance:
         )
         assert result["compliant"] is False
 
-    @pytest.mark.asyncio
     async def test_confidential_data_with_consent_is_compliant(self):
         server = _make_server()
         result = await server._tool_validate_compliance(
@@ -1256,7 +1203,6 @@ class TestToolValidateCompliance:
         )
         assert result["compliant"] is True
 
-    @pytest.mark.asyncio
     async def test_public_data_no_consent_needed(self):
         server = _make_server()
         result = await server._tool_validate_compliance(
@@ -1273,14 +1219,12 @@ class TestToolValidateCompliance:
 class TestToolGetMetrics:
     """Test get_metrics tool handler."""
 
-    @pytest.mark.asyncio
     async def test_get_metrics_without_audit(self):
         server = _make_server()
         result = await server._tool_get_metrics({})
         assert "total_requests" in result
         assert "recent_audit" not in result
 
-    @pytest.mark.asyncio
     async def test_get_metrics_with_audit(self):
         server = _make_server()
         await server.start()  # generates audit entry
@@ -1297,14 +1241,12 @@ class TestToolGetMetrics:
 class TestBuiltinResourceHandlers:
     """Test built-in resource handler functions directly."""
 
-    @pytest.mark.asyncio
     async def test_resource_metrics_returns_dict(self):
         server = _make_server()
         result = await server._resource_metrics({})
         assert "total_requests" in result
         assert "constitutional_hash" in result
 
-    @pytest.mark.asyncio
     async def test_resource_audit_returns_entries(self):
         server = _make_server()
         await server.start()  # triggers audit entry
@@ -1313,7 +1255,6 @@ class TestBuiltinResourceHandlers:
         assert "total_entries" in result
         assert result["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_resource_metrics_via_handle_request(self):
         server = _make_server()
         await server.start()
@@ -1323,7 +1264,6 @@ class TestBuiltinResourceHandlers:
         assert "result" in response
         assert "contents" in response["result"]
 
-    @pytest.mark.asyncio
     async def test_resource_audit_via_handle_request(self):
         server = _make_server()
         await server.start()
@@ -1447,7 +1387,6 @@ class TestPublicAPIHelpers:
 class TestEndToEndFlow:
     """Integration-style tests exercising multiple components together."""
 
-    @pytest.mark.asyncio
     async def test_full_tool_call_updates_metrics(self):
         server = _make_server()
         await server.start()
@@ -1462,7 +1401,6 @@ class TestEndToEndFlow:
         assert server._metrics.total_tool_calls >= 1
         assert server._metrics.successful_requests >= 1
 
-    @pytest.mark.asyncio
     async def test_full_resource_read_updates_metrics(self):
         server = _make_server()
         await server.start()
@@ -1473,7 +1411,6 @@ class TestEndToEndFlow:
         assert "result" in response
         assert server._metrics.total_resource_reads >= 1
 
-    @pytest.mark.asyncio
     async def test_error_increments_failed_requests(self):
         server = _make_server()
         await server.start()
@@ -1483,7 +1420,6 @@ class TestEndToEndFlow:
 
         assert server._metrics.failed_requests >= 1
 
-    @pytest.mark.asyncio
     async def test_get_governance_metrics_tool_via_handle_request(self):
         server = _make_server()
         await server.start()
@@ -1498,7 +1434,6 @@ class TestEndToEndFlow:
         response = await server.handle_request(request)
         assert "result" in response
 
-    @pytest.mark.asyncio
     async def test_validate_compliance_tool_via_handle_request(self):
         server = _make_server()
         await server.start()
@@ -1519,7 +1454,6 @@ class TestEndToEndFlow:
         content_text = response["result"]["content"][0]["text"]
         assert "compliant" in content_text
 
-    @pytest.mark.asyncio
     async def test_get_constitutional_status_tool(self):
         server = _make_server()
         await server.start()

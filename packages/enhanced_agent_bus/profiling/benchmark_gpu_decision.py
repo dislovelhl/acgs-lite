@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ACGS-2 GPU Acceleration Benchmark
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Runs load testing on ML models to determine if GPU acceleration is beneficial.
 
@@ -30,7 +30,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -174,7 +174,7 @@ class GPUBenchmark:
     def run_concurrent_benchmark(self, scorer) -> float:
         """Run concurrent (multi-threaded) benchmark."""
         logger.info(
-            f"🚀 Running concurrent benchmark ({self.num_samples} samples, {self.concurrency} threads)..."  # noqa: E501
+            f"🚀 Running concurrent benchmark ({self.num_samples} samples, {self.concurrency} threads)..."
         )
 
         def process_message(_):
@@ -194,7 +194,7 @@ class GPUBenchmark:
         """Run the complete benchmark suite."""
         logger.info("=" * 70)
         logger.info("ACGS-2 GPU ACCELERATION BENCHMARK")
-        logger.info("Constitutional Hash: cdd01ef066bc6cf2")
+        logger.info("Constitutional Hash: 608508a9bd224290")
         logger.info(f"Started: {datetime.now(UTC).isoformat()}")
         logger.info("=" * 70)
         logger.info("")

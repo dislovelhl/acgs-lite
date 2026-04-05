@@ -1,7 +1,7 @@
 """
 Kafka consumer for ACGS-2 Online Learning feedback.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -159,7 +159,7 @@ class FeedbackKafkaConsumer:
 
             if self._consume_task:
                 self._consume_task.cancel()
-                try:  # noqa: SIM105
+                try:
                     await self._consume_task
                 except asyncio.CancelledError:
                     pass

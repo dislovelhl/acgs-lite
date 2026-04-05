@@ -1,6 +1,6 @@
 """
 ACGS-2 Hierarchical Orchestration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements supervisor-worker topology for multi-agent orchestration.
 Based on CEOS architecture with planning, delegation, and critique loops.
@@ -24,7 +24,7 @@ class _CritiqueResult(TypedDict):
 
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -208,7 +208,7 @@ class SupervisorNode:
         for worker_id, capability in self.worker_capabilities.items():
             # Check if worker can handle this task type
             task_type = task.metadata.get("task_type", "generic")
-            if task_type in capability.capabilities or "generic" in capability.capabilities:  # noqa: SIM102
+            if task_type in capability.capabilities or "generic" in capability.capabilities:
                 # Check if worker has capacity
                 if capability.current_load < capability.capacity:
                     suitable_workers.append((worker_id, capability))

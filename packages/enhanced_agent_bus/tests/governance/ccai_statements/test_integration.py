@@ -1,6 +1,6 @@
 """
 Integration Tests for CCAI Representative Statement Identification.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import warnings
@@ -22,7 +22,6 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 class TestIntegrationEndToEnd:
     """Integration tests for representative statement identification."""
 
-    @pytest.mark.asyncio
     async def test_full_deliberation_with_representative_identification(self):
         """Test complete deliberation flow with representative statement identification."""
         governance = DemocraticConstitutionalGovernance(consensus_threshold=0.6)
@@ -70,7 +69,7 @@ class TestIntegrationEndToEnd:
                 f"Cluster {cluster.cluster_id} representative_statements should be a list"
             )
 
-            if cluster.size > 0:  # noqa: SIM102
+            if cluster.size > 0:
                 if len(governance.polis_engine.statements) > 0:
                     assert len(cluster.representative_statements) >= 0, (
                         f"Cluster {cluster.cluster_id} should have representatives"
@@ -94,7 +93,6 @@ class TestIntegrationEndToEnd:
             or len(result.stability_analysis) > 0
         ), "Stability analysis should be populated"
 
-    @pytest.mark.asyncio
     async def test_multiple_clusters_with_representative_ranking(self):
         """Test deliberation with multiple clusters and verify representative ranking order."""
         engine = PolisDeliberationEngine(
@@ -194,7 +192,6 @@ class TestIntegrationEndToEnd:
             assert "selection_timestamp" in cluster.metadata
             assert cluster.metadata["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_representatives_populated_in_opinion_cluster(self):
         """Test that OpinionCluster.representative_statements is correctly populated."""
         engine = PolisDeliberationEngine(enable_diversity_filter=False)
@@ -249,7 +246,6 @@ class TestIntegrationEndToEnd:
             f"Representatives {cluster.representative_statements} should match {expected_top5}"
         )
 
-    @pytest.mark.asyncio
     async def test_diverse_representatives_in_large_cluster(self):
         """Test representative selection with diversity filtering in a large cluster."""
         engine = PolisDeliberationEngine(
@@ -331,7 +327,6 @@ class TestIntegrationEndToEnd:
                 "First representative should be highest centrality"
             )
 
-    @pytest.mark.asyncio
     async def test_ranking_order_verification(self):
         """Test that representatives are ranked by centrality score (descending order)."""
         engine = PolisDeliberationEngine(enable_diversity_filter=False)

@@ -1,12 +1,12 @@
 """
 ACGS-2 Circuit Breaker Exceptions
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module defines exceptions for circuit breaker operations.
 """
 
-from src.core.shared.errors.exceptions import ACGSBaseError
+from enhanced_agent_bus._compat.errors import ACGSBaseError
 
 
 class CircuitBreakerOpen(ACGSBaseError):

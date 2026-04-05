@@ -1,6 +1,6 @@
 """
 ACGS-2 Feedback Handler - Schema Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Database schema definitions for feedback events.
 """
@@ -37,7 +37,7 @@ CREATE INDEX IF NOT EXISTS idx_feedback_tenant_id ON feedback_events(tenant_id) 
 CREATE INDEX IF NOT EXISTS idx_feedback_created_at ON feedback_events(created_at);
 CREATE INDEX IF NOT EXISTS idx_feedback_processed ON feedback_events(processed) WHERE processed = FALSE;
 CREATE INDEX IF NOT EXISTS idx_feedback_type ON feedback_events(feedback_type);
-"""  # noqa: E501
+"""
 
 
 __all__ = [

@@ -1,14 +1,27 @@
 """
 Tests for Constitutional Mamba-2 Hybrid Processor
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests the breakthrough Mamba-2 hybrid architecture for 4M+ token context processing.
 """
 
+import importlib.util
 import os
 import sys
 
 import pytest
+
+
+def _has_real_torch() -> bool:
+    try:
+        return importlib.util.find_spec("torch") is not None
+    except (ImportError, ValueError):
+        return False
+
+
+if not _has_real_torch():
+    pytest.skip("could not import 'torch': No module named 'torch'", allow_module_level=True)
+
 import torch
 
 # Add parent directory to path for imports

@@ -6,7 +6,7 @@ for high-risk AI system compliance.
 
 **Deadline: EU AI Act high-risk provisions take effect 2026-08-02.**
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 License Requirements
 --------------------
@@ -91,7 +91,7 @@ from acgs_lite.licensing import LicenseError, LicenseManager, Tier
 def _gated(tier: Tier, original_cls: type, feature: str = "") -> type:
     """Return a subclass whose __init__ checks the license tier first."""
 
-    class _Gated(original_cls):  # type: ignore[valid-type]
+    class _Gated(original_cls):  # type: ignore[misc]
         def __init__(self, *args: Any, **kwargs: Any) -> None:
             # Always resolve the current singleton so test resets work correctly
             LicenseManager().require(tier, feature or original_cls.__name__)

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - HITL Integration for Constitutional Amendments
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Integrates constitutional amendment proposals with HITL (Human-In-The-Loop)
 approval chains, supporting multi-approver workflows, notifications, and
@@ -15,11 +15,11 @@ import httpx
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -42,7 +42,7 @@ _HITL_OPERATION_ERRORS = (
 )
 
 
-class NotificationChannel(str, Enum):  # noqa: UP042
+class NotificationChannel(str, Enum):
     """Supported notification channels."""
 
     SLACK = "slack"
@@ -50,7 +50,7 @@ class NotificationChannel(str, Enum):  # noqa: UP042
     TEAMS = "teams"
 
 
-class ApprovalPriority(str, Enum):  # noqa: UP042
+class ApprovalPriority(str, Enum):
     """Approval priority levels for HITL requests."""
 
     LOW = "low"
@@ -63,7 +63,7 @@ class ApprovalPriority(str, Enum):  # noqa: UP042
 class ApprovalChainConfig:
     """Configuration for an approval chain.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     chain_id: str
@@ -84,7 +84,7 @@ class ApprovalChainConfig:
 class HITLApprovalRequest:
     """HITL approval request for constitutional amendments.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     request_id: str
@@ -112,7 +112,7 @@ class ConstitutionalHITLIntegration:
     - Sends notifications via Slack/PagerDuty/Teams
     - Handles timeout escalation
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

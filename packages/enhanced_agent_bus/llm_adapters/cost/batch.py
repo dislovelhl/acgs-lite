@@ -1,6 +1,6 @@
 """
 ACGS-2 Batch Optimization
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Optimizes costs through request batching for non-urgent operations.
 """
@@ -22,7 +22,7 @@ class BatchOptimizer:
     """
     Optimizes costs through request batching.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Groups non-urgent requests together for batch processing
     to achieve volume discounts and reduce per-request overhead.
@@ -80,7 +80,7 @@ class BatchOptimizer:
                 for rid in batch_requests
                 if rid in self._pending_requests
             )
-            if datetime.now(UTC) - oldest_time > self._max_wait_time:  # noqa: SIM102
+            if datetime.now(UTC) - oldest_time > self._max_wait_time:
                 if len(batch_requests) >= self._min_batch_size:
                     return await self._execute_batch(batch_key)
 

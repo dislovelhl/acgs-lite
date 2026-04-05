@@ -1,5 +1,5 @@
 """Unit tests for fnmatch-based action boundary matching.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests the boundary matching logic used by AutonomyTierEnforcementMiddleware
 to evaluate whether a BOUNDED-tier agent's action_type falls within configured

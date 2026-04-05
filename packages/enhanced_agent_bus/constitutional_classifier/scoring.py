@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Constitutional Classifier Scoring Engine
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Advanced compliance scoring engine for constitutional validation.
 Combines multiple signals for accurate jailbreak prevention scoring.
@@ -13,7 +13,7 @@ from enum import Enum
 from typing import ClassVar
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -40,7 +40,7 @@ class ScoreComponent(Enum):
 class ScoreBreakdown:
     """Detailed breakdown of compliance score components.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     component: ScoreComponent
@@ -55,7 +55,7 @@ class ScoreBreakdown:
 class ComplianceScore:
     """Complete compliance score with breakdown.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     final_score: float  # 0.0 to 1.0 (1.0 = fully compliant)
@@ -95,7 +95,7 @@ class ComplianceScore:
 class ScoringConfig:
     """Configuration for the scoring engine.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -157,7 +157,7 @@ class ComplianceScoringEngine:
 
     Targets 95% jailbreak prevention with sub-5ms latency.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

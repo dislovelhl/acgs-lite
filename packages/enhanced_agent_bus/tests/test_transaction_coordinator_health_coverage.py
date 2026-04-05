@@ -1,9 +1,9 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive coverage tests for transaction_coordinator_health.py.
 
 Targets ≥95% coverage of all classes, methods, branches, and edge cases.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -12,8 +12,7 @@ from dataclasses import fields
 from typing import Any
 from unittest.mock import MagicMock, patch
 
-import pytest
-from src.core.shared.types import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.types import CONSTITUTIONAL_HASH
 
 # Import via the metrics module to avoid circular import issues.
 # transaction_coordinator_metrics re-exports everything from the health module.

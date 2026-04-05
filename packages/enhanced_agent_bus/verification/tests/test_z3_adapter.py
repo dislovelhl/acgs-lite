@@ -1,6 +1,6 @@
 """
 Tests for Z3 SMT Solver Integration (z3_adapter.py).
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers:
 - Z3Constraint, Z3VerificationResult, ConstitutionalPolicy dataclasses
@@ -16,9 +16,8 @@ import pytest
 
 z3 = pytest.importorskip("z3")
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
-
-from enhanced_agent_bus.verification.z3_adapter import (  # noqa: E402
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.verification.z3_adapter import (
     ConstitutionalPolicy,
     ConstitutionalZ3Verifier,
     LLMAssistedZ3Adapter,
@@ -167,7 +166,6 @@ class TestZ3SolverAdapter:
         adapter.reset_solver()
         assert len(adapter.named_constraints) == 0
 
-    @pytest.mark.asyncio
     async def test_async_check_sat_satisfiable(self, adapter):
         var = z3.Bool("async_var")
         meta = Z3Constraint(name="c1", expression="", natural_language="", confidence=1.0)
@@ -175,7 +173,6 @@ class TestZ3SolverAdapter:
         result = await adapter.async_check_sat()
         assert result.is_sat is True
 
-    @pytest.mark.asyncio
     async def test_async_check_sat_unsatisfiable(self, adapter):
         var = z3.Bool("async_unsat")
         meta = Z3Constraint(name="c1", expression="", natural_language="", confidence=1.0)
@@ -258,7 +255,6 @@ class TestLLMAssistedZ3Adapter:
         result = adapter._parse_z3_expression("(declare-const x Bool)")
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_natural_language_to_constraints_obligation(self, adapter):
         policy = "Users must authenticate before accessing resources."
         constraints = await adapter.natural_language_to_constraints(policy)
@@ -266,13 +262,11 @@ class TestLLMAssistedZ3Adapter:
         # Should produce at least one constraint
         assert len(constraints) >= 0  # May be 0 if pattern doesn't match hash
 
-    @pytest.mark.asyncio
     async def test_natural_language_to_constraints_prohibition(self, adapter):
         policy = "Users cannot read other users' private data."
         constraints = await adapter.natural_language_to_constraints(policy)
         assert isinstance(constraints, list)
 
-    @pytest.mark.asyncio
     async def test_natural_language_to_constraints_with_context(self, adapter):
         policy = "System must validate all inputs."
         constraints = await adapter.natural_language_to_constraints(
@@ -280,12 +274,10 @@ class TestLLMAssistedZ3Adapter:
         )
         assert isinstance(constraints, list)
 
-    @pytest.mark.asyncio
     async def test_verify_policy_constraints_empty(self, adapter):
         result = await adapter.verify_policy_constraints([])
         assert isinstance(result, Z3VerificationResult)
 
-    @pytest.mark.asyncio
     async def test_verify_policy_constraints_with_valid_constraint(self, adapter):
         constraint = Z3Constraint(
             name="c1",
@@ -297,7 +289,6 @@ class TestLLMAssistedZ3Adapter:
         assert isinstance(result, Z3VerificationResult)
         assert result.is_sat is True
 
-    @pytest.mark.asyncio
     async def test_verify_policy_constraints_with_unparseable_skipped(self, adapter):
         """Unparseable constraints should be skipped, not raise."""
         constraint = Z3Constraint(
@@ -309,7 +300,6 @@ class TestLLMAssistedZ3Adapter:
         result = await adapter.verify_policy_constraints([constraint])
         assert isinstance(result, Z3VerificationResult)
 
-    @pytest.mark.asyncio
     async def test_refine_constraints_already_sat(self, adapter):
         """If already SAT, refinement returns original constraints unchanged."""
         c = Z3Constraint(
@@ -323,7 +313,6 @@ class TestLLMAssistedZ3Adapter:
         assert len(refined) == 1
         assert refined[0].confidence == 0.9  # unchanged
 
-    @pytest.mark.asyncio
     async def test_refine_constraints_no_unsat_core(self, adapter):
         """If UNSAT but no unsat_core, refinement stops immediately."""
         c = Z3Constraint(
@@ -336,7 +325,6 @@ class TestLLMAssistedZ3Adapter:
         refined = await adapter.refine_constraints([c], unsat_result)
         assert len(refined) == 1  # no modification attempted
 
-    @pytest.mark.asyncio
     async def test_refine_constraints_reduces_confidence_on_problematic(self, adapter):
         """Constraints in unsat_core should have confidence reduced."""
         c = Z3Constraint(
@@ -375,7 +363,6 @@ class TestConstitutionalZ3Verifier:
         assert stats["verification_rate"] == 0.0
         assert stats["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_verify_constitutional_policy_stores_result(self, verifier):
         policy = await verifier.verify_constitutional_policy(
             policy_id="pol-001",
@@ -384,7 +371,6 @@ class TestConstitutionalZ3Verifier:
         assert isinstance(policy, ConstitutionalPolicy)
         assert "pol-001" in verifier.verified_policies
 
-    @pytest.mark.asyncio
     async def test_verify_constitutional_policy_sets_verified_at_when_sat(self, verifier):
         policy = await verifier.verify_constitutional_policy(
             policy_id="pol-002",
@@ -395,7 +381,6 @@ class TestConstitutionalZ3Verifier:
         if policy.is_verified:
             assert policy.verified_at is not None
 
-    @pytest.mark.asyncio
     async def test_verify_constitutional_policy_with_context(self, verifier):
         policy = await verifier.verify_constitutional_policy(
             policy_id="pol-003",
@@ -404,7 +389,6 @@ class TestConstitutionalZ3Verifier:
         )
         assert isinstance(policy, ConstitutionalPolicy)
 
-    @pytest.mark.asyncio
     async def test_verify_policy_compliance_unknown_policy(self, verifier):
         result = await verifier.verify_policy_compliance(
             policy_id="nonexistent",
@@ -412,7 +396,6 @@ class TestConstitutionalZ3Verifier:
         )
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_verify_policy_compliance_unverified_policy(self, verifier):
         """An unverified policy should return False for compliance."""
         unverified = ConstitutionalPolicy(
@@ -428,7 +411,6 @@ class TestConstitutionalZ3Verifier:
         )
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_verify_policy_compliance_verified_policy(self, verifier):
         verified = ConstitutionalPolicy(
             id="pol-verified",
@@ -443,7 +425,6 @@ class TestConstitutionalZ3Verifier:
         )
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_get_verification_stats_after_verification(self, verifier):
         await verifier.verify_constitutional_policy(
             policy_id="pol-stats",
@@ -453,7 +434,6 @@ class TestConstitutionalZ3Verifier:
         assert stats["total_policies"] == 1
         assert 0.0 <= stats["verification_rate"] <= 1.0
 
-    @pytest.mark.asyncio
     async def test_verify_policy_triggers_refinement_on_unsat(self, verifier):
         """Policy with contradictory constraints should attempt refinement."""
         # "cannot" policies generate prohibition constraints
@@ -472,17 +452,14 @@ class TestConstitutionalZ3Verifier:
 
 
 class TestVerifyPolicyFormally:
-    @pytest.mark.asyncio
     async def test_auto_generates_policy_id(self):
         policy = await verify_policy_formally("Users must authenticate.")
         assert policy.id.startswith("policy_")
 
-    @pytest.mark.asyncio
     async def test_uses_provided_policy_id(self):
         policy = await verify_policy_formally("Users must authenticate.", policy_id="my-pol-001")
         assert policy.id == "my-pol-001"
 
-    @pytest.mark.asyncio
     async def test_returns_constitutional_policy(self):
         policy = await verify_policy_formally("System shall log all actions.")
         assert isinstance(policy, ConstitutionalPolicy)

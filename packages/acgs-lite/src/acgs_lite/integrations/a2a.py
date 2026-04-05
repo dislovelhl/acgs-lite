@@ -21,7 +21,7 @@ Usage::
     client = A2AGovernedClient("http://governance-agent:9000")
     result = await client.validate("deploy to production")
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -58,7 +58,7 @@ class A2AGovernedClient:
         timeout: float = 30.0,
     ) -> None:
         if not HTTPX_AVAILABLE:
-            raise ImportError("httpx is required for A2A. Install with: pip install acgs-lite[a2a]")
+            raise ImportError("httpx is required for A2A. Install with: pip install acgs[a2a]")
         self.agent_url = agent_url.rstrip("/")
         self.timeout = timeout
 
@@ -161,7 +161,7 @@ def create_a2a_app(
 
     constitution = constitution or Constitution.default()
     audit_log = AuditLog()
-    engine = GovernanceEngine(constitution, audit_log=audit_log, strict=False)
+    engine = GovernanceEngine(constitution, audit_log=audit_log, strict=False, audit_mode="full")
 
     a2a_agent_card = {
         "name": f"ACGS Governance Agent ({constitution.name})",
@@ -256,6 +256,5 @@ def create_a2a_app(
             Route("/", handle_a2a, methods=["POST"]),
         ],
     )
-    app.title = "ACGS Governance Agent"
 
     return app

@@ -1,5 +1,5 @@
 # ACGS-2 Enhanced Agent Bus - Project Configuration
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 
 [build-system]
 requires = ["setuptools>=80.9.0", "wheel>=0.46.0"]  # CVE-2025-69226, CVE-2025-69229 patched
@@ -7,15 +7,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "enhanced-agent-bus"
-version = "3.0.0"
+version = "3.0.1"
 description = "ACGS-2 Enhanced Agent Bus with Constitutional Compliance"
 readme = "README.md"
 requires-python = ">=3.11"
-license = "Apache-2.0"
+license = "AGPL-3.0-or-later"
 authors = [
     {name = "ACGS Team"}
 ]
 dependencies = [
+    "aiofiles>=24.1.0",
     "fastapi>=0.115.0",
     "redis>=5.0.0",
     "httpx>=0.27.0",
@@ -33,6 +34,14 @@ dependencies = [
     "orjson>=3.9.0",
     "python-multipart>=0.0.20",
 ]
+
+[project.urls]
+Homepage = "https://acgs.ai"
+Documentation = "https://github.com/acgs2_admin/acgs/tree/main/packages/enhanced_agent_bus"
+Repository = "https://github.com/acgs2_admin/acgs"
+Issues = "https://github.com/acgs2_admin/acgs/issues"
+Changelog = "https://github.com/acgs2_admin/acgs/releases"
+PyPI = "https://pypi.org/project/enhanced-agent-bus/"
 
 [project.optional-dependencies]
 dev = [
@@ -65,20 +74,15 @@ messaging = [
     "aiokafka>=0.10.0",
 ]
 
-[tool.setuptools]
-packages = [
-    "enhanced_agent_bus",
-    "enhanced_agent_bus.deliberation_layer",
-]
-
 [tool.setuptools.package-dir]
 enhanced_agent_bus = "."
 
 [tool.setuptools.package-data]
-enhanced_agent_bus = ["policies/*.rego"]
+enhanced_agent_bus = ["policies/*.rego", "py.typed"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"
+pythonpath = ["../.."]
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
@@ -92,6 +96,7 @@ addopts = [
 ]
 markers = [
     "asyncio: mark test as async",
+    "unit: marks tests as unit tests",
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests requiring external services",
     "constitutional: marks tests for constitutional validation",

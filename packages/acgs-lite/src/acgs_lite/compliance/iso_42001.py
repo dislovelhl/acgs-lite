@@ -7,7 +7,7 @@ Reference: ISO/IEC 42001:2023 — Information technology — Artificial
 intelligence — Management system
 Published: December 2023
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -180,7 +180,7 @@ _ISO_ITEMS: list[tuple[str, str, str, str | None, bool]] = [
 _ACGS_LITE_MAP: dict[str, str] = {
     "ISO 5.1": (
         "acgs-lite Constitution — AI governance policy defined as executable "
-        "code with constitutional hash integrity (cdd01ef066bc6cf2)"
+        "code with constitutional hash integrity (608508a9bd224290)"
     ),
     "ISO 5.2": (
         "acgs-lite Constitution — version-controlled governance policy with "

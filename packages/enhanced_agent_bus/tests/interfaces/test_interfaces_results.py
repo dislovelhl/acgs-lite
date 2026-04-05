@@ -3,9 +3,9 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 from enhanced_agent_bus import interfaces as ifaces
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.core_models import AgentMessage
 from enhanced_agent_bus.interfaces import (
     AgentRegistry,
@@ -317,7 +317,7 @@ class ConcreteConstitutionalVerifier:
         return ConcreteConstitutionalVerificationResult(is_valid=True)
 
 
-class ConcreteAgentRegistry:  # noqa: F811
+class ConcreteAgentRegistry:
     """Minimal concrete implementation satisfying AgentRegistry."""
 
     def __init__(self):
@@ -351,7 +351,7 @@ class ConcreteAgentRegistry:  # noqa: F811
         return True
 
 
-class ConcreteMessageRouter:  # noqa: F811
+class ConcreteMessageRouter:
     """Minimal concrete implementation satisfying MessageRouter."""
 
     async def route(self, message, registry):
@@ -364,7 +364,7 @@ class ConcreteMessageRouter:  # noqa: F811
         return agents
 
 
-class ConcreteValidationStrategy:  # noqa: F811
+class ConcreteValidationStrategy:
     """Minimal concrete implementation satisfying ValidationStrategy."""
 
     async def validate(self, message):
@@ -373,7 +373,7 @@ class ConcreteValidationStrategy:  # noqa: F811
         return (True, None)
 
 
-class ConcreteProcessingStrategy:  # noqa: F811
+class ConcreteProcessingStrategy:
     """Minimal concrete implementation satisfying ProcessingStrategy."""
 
     async def process(self, message, handlers):
@@ -386,7 +386,7 @@ class ConcreteProcessingStrategy:  # noqa: F811
         return "ConcreteProcessingStrategy"
 
 
-class ConcreteMessageHandler:  # noqa: F811
+class ConcreteMessageHandler:
     """Minimal concrete implementation satisfying MessageHandler."""
 
     async def handle(self, message):
@@ -396,7 +396,7 @@ class ConcreteMessageHandler:  # noqa: F811
         return True
 
 
-class ConcreteMetricsCollector:  # noqa: F811
+class ConcreteMetricsCollector:
     """Minimal concrete implementation satisfying MetricsCollector."""
 
     def __init__(self):
@@ -415,14 +415,14 @@ class ConcreteMetricsCollector:  # noqa: F811
         return dict(self._data)
 
 
-class ConcreteMessageProcessorProtocol:  # noqa: F811
+class ConcreteMessageProcessorProtocol:
     """Minimal concrete implementation satisfying MessageProcessorProtocol."""
 
     async def process(self, message):
         return ValidationResult(is_valid=True)
 
 
-class ConcreteMACIRegistry:  # noqa: F811
+class ConcreteMACIRegistry:
     """Minimal concrete implementation satisfying MACIRegistryProtocol."""
 
     def __init__(self):
@@ -442,14 +442,14 @@ class ConcreteMACIRegistry:  # noqa: F811
         return True
 
 
-class ConcreteMACIEnforcer:  # noqa: F811
+class ConcreteMACIEnforcer:
     """Minimal concrete implementation satisfying MACIEnforcerProtocol."""
 
     async def validate_action(self, agent_id, action, target_output_id=None):
         return {"allowed": True, "agent_id": agent_id, "action": action}
 
 
-class ConcreteTransport:  # noqa: F811
+class ConcreteTransport:
     """Minimal concrete implementation satisfying TransportProtocol."""
 
     def __init__(self):
@@ -469,7 +469,7 @@ class ConcreteTransport:  # noqa: F811
         self._subscriptions[topic] = handler
 
 
-class ConcreteOrchestrator:  # noqa: F811
+class ConcreteOrchestrator:
     """Minimal concrete implementation satisfying OrchestratorProtocol."""
 
     def __init__(self):
@@ -488,7 +488,7 @@ class ConcreteOrchestrator:  # noqa: F811
         }
 
 
-class ConcreteCircuitBreaker:  # noqa: F811
+class ConcreteCircuitBreaker:
     """Minimal concrete implementation satisfying CircuitBreakerProtocol."""
 
     def __init__(self):
@@ -512,7 +512,7 @@ class ConcreteCircuitBreaker:  # noqa: F811
         self._open = False
 
 
-class ConcretePolicyValidationResult:  # noqa: F811
+class ConcretePolicyValidationResult:
     """Minimal concrete implementation satisfying PolicyValidationResultProtocol."""
 
     def __init__(self, is_valid, errors=None):
@@ -528,21 +528,21 @@ class ConcretePolicyValidationResult:  # noqa: F811
         return self._errors
 
 
-class ConcretePolicyClient:  # noqa: F811
+class ConcretePolicyClient:
     """Minimal concrete implementation satisfying PolicyClientProtocol."""
 
     async def validate_message_signature(self, message):
         return ConcretePolicyValidationResult(is_valid=True)
 
 
-class ConcreteOPAClient:  # noqa: F811
+class ConcreteOPAClient:
     """Minimal concrete implementation satisfying OPAClientProtocol."""
 
     async def validate_constitutional(self, message):
         return ConcreteValidationResult(is_valid=True)
 
 
-class ConcreteValidationResult:  # noqa: F811
+class ConcreteValidationResult:
     """Minimal concrete implementation satisfying ValidationResultProtocol."""
 
     def __init__(self, is_valid, errors=None):
@@ -558,28 +558,28 @@ class ConcreteValidationResult:  # noqa: F811
         return self._errors
 
 
-class ConcreteRustProcessor:  # noqa: F811
+class ConcreteRustProcessor:
     """Minimal concrete implementation satisfying RustProcessorProtocol."""
 
     def validate(self, message):
         return True
 
 
-class ConcreteRustProcessorDict:  # noqa: F811
+class ConcreteRustProcessorDict:
     """Rust processor returning a dict."""
 
     def validate(self, message):
         return {"is_valid": True, "errors": []}
 
 
-class ConcretePQCValidator:  # noqa: F811
+class ConcretePQCValidator:
     """Minimal concrete implementation satisfying PQCValidatorProtocol."""
 
     def verify_governance_decision(self, decision, signature, public_key):
         return True
 
 
-class ConcreteConstitutionalVerificationResult:  # noqa: F811
+class ConcreteConstitutionalVerificationResult:
     """Minimal concrete implementation satisfying ConstitutionalVerificationResultProtocol."""
 
     def __init__(self, is_valid, failure_reason=None):
@@ -595,7 +595,7 @@ class ConcreteConstitutionalVerificationResult:  # noqa: F811
         return self._failure_reason
 
 
-class ConcreteConstitutionalVerifier:  # noqa: F811
+class ConcreteConstitutionalVerifier:
     """Minimal concrete implementation satisfying ConstitutionalVerifierProtocol."""
 
     async def verify_constitutional_compliance(self, action_data, context, session_id=None):

@@ -1,6 +1,6 @@
 """
 ACGS-2 Multi-Tenancy Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Data models for multi-tenant enterprise governance.
 """
@@ -13,16 +13,16 @@ from enum import Enum
 from pydantic import BaseModel, Field
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
 
-class TenantStatus(str, Enum):  # noqa: UP042
+class TenantStatus(str, Enum):
     """Tenant lifecycle status."""
 
     PENDING = "pending"
@@ -36,7 +36,7 @@ class TenantStatus(str, Enum):  # noqa: UP042
 class TenantQuota:
     """Resource quotas for a tenant.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     max_agents: int = 100
@@ -74,7 +74,7 @@ class TenantQuota:
 class TenantUsage:
     """Current resource usage for a tenant.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     agent_count: int = 0
@@ -109,7 +109,7 @@ class TenantUsage:
 class TenantConfig(BaseModel):
     """Tenant configuration settings.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     constitutional_hash: str = Field(
@@ -184,7 +184,7 @@ class TenantConfig(BaseModel):
 class Tenant(BaseModel):
     """Enterprise tenant model.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Represents an isolated tenant in the multi-tenant ACGS-2 system.
     Each tenant has its own data isolation via PostgreSQL RLS policies.

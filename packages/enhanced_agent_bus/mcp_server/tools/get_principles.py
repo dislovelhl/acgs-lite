@@ -3,7 +3,7 @@ Get Active Principles MCP Tool.
 
 Returns the current active constitutional principles from ACGS-2.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, ClassVar
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -77,7 +77,7 @@ class GetPrinciplesTool:
     governing ACGS-2 AI operations.
     """
 
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
     # Default constitutional principles
     DEFAULT_PRINCIPLES: ClassVar[list[ConstitutionalPrinciple]] = [

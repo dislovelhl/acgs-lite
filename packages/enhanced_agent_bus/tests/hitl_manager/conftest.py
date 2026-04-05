@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - HITL Manager Test Fixtures
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Shared fixtures for all HITL Manager tests.
 Mock classes are defined in hitl_test_helpers.py.

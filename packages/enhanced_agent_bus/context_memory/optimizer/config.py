@@ -1,6 +1,6 @@
 """
 ACGS-2 Context Optimizer - Configuration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Configuration dataclasses and enums for context window optimization.
 """
@@ -9,12 +9,12 @@ from dataclasses import dataclass
 from enum import Enum
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
 
-class OptimizationStrategy(str, Enum):  # noqa: UP042
+class OptimizationStrategy(str, Enum):
     """Strategy for context window optimization."""
 
     LATENCY_FIRST = "latency_first"  # Minimize latency
@@ -28,7 +28,7 @@ class OptimizationStrategy(str, Enum):  # noqa: UP042
 class OptimizerConfig:
     """Configuration for context optimizer.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Parallel processing

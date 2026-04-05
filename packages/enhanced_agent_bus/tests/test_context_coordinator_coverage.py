@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Tests for ContextCoordinator to boost coverage to ≥90%.
 
@@ -204,7 +204,7 @@ class TestInit:
 
     def test_constitutional_hash_class_attribute(self):
         mod = _import_coordinator()
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
+        from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
         assert mod.ContextCoordinator.constitutional_hash == CONSTITUTIONAL_HASH
 
@@ -585,7 +585,7 @@ class TestProcessWithMambaGuard:
 class TestGetContextStats:
     def test_stats_no_mamba(self, coordinator_no_mamba):
         coord, _mod = coordinator_no_mamba
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
+        from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
         with patch("psutil.virtual_memory") as mock_vm:
             mock_vm.return_value.percent = 55.0

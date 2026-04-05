@@ -1,7 +1,7 @@
 """
 OpenID Connect Provider for MCP Authentication.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 MACI Role: JUDICIAL
 
 Provides OIDC discovery and authentication:
@@ -20,11 +20,11 @@ from datetime import UTC, datetime, timedelta
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -237,7 +237,7 @@ class OIDCProvider:
     - UserInfo endpoint support
     - Session management
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, config: OIDCConfig):
@@ -354,7 +354,7 @@ class OIDCProvider:
         # Ensure openid scope
         scopes = scopes or self.config.default_scopes
         if "openid" not in scopes:
-            scopes = ["openid"] + scopes  # noqa: RUF005
+            scopes = ["openid"] + scopes
 
         # Get PKCE verifier if state provided
         code_verifier = None
@@ -634,7 +634,7 @@ class OIDCProvider:
             return None
 
         # Check cache
-        if self._jwks_cache:  # noqa: SIM102
+        if self._jwks_cache:
             if datetime.now(UTC) < self._jwks_cache.expires_at:
                 return self._jwks_cache.keys
 

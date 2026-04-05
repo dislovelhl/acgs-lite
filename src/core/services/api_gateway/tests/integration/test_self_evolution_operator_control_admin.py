@@ -4,15 +4,20 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Iterator
+from datetime import UTC, datetime
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
 
-from src.core.self_evolution.research.operator_control import (
-    ResearchRuntimeState,
-    create_research_operator_control_plane,
-)
+from enhanced_agent_bus.data_flywheel.models import DatasetSnapshot
+
+_operator_control = pytest.importorskip("src.core.self_evolution.research.operator_control")
+
+ResearchRuntimeState = _operator_control.ResearchRuntimeState
+create_research_operator_control_plane = _operator_control.create_research_operator_control_plane
 from src.core.services.api_gateway.main import app
+from src.core.services.api_gateway.routes.evolution_control import get_run_orchestrator
 from src.core.shared.security.auth import UserClaims, get_current_user
 
 pytestmark = [pytest.mark.integration]
@@ -38,10 +43,18 @@ def _cleanup_overrides() -> Iterator[None]:
 
 @pytest.fixture
 def client() -> Iterator[TestClient]:
-    with TestClient(app) as client:
-        client.app.state.research_operator_control_plane = create_research_operator_control_plane()
-        yield client
-        asyncio.run(client.app.state.research_operator_control_plane.aclose())
+    mock_saga = AsyncMock()
+    mock_saga.aclose = AsyncMock()
+    with patch(
+        "src.core.services.api_gateway.lifespan.create_saga_repository",
+        AsyncMock(return_value=mock_saga),
+    ):
+        with TestClient(app) as client:
+            client.app.state.research_operator_control_plane = (
+                create_research_operator_control_plane()
+            )
+            yield client
+            asyncio.run(client.app.state.research_operator_control_plane.aclose())
 
 
 class TestGatewayAdminOperatorControlMount:
@@ -51,6 +64,7 @@ class TestGatewayAdminOperatorControlMount:
         assert "/api/v1/admin/evolution/operator-control/pause" in paths
         assert "/api/v1/admin/evolution/operator-control/resume" in paths
         assert "/api/v1/admin/evolution/operator-control/stop" in paths
+        assert "/api/v1/admin/evolution/operator-control/dataset-build" in paths
 
     def test_admin_can_pause_and_resume_operator_control(self, client: TestClient) -> None:
         app.dependency_overrides[get_current_user] = lambda: _claims(roles=["admin"])
@@ -121,6 +135,35 @@ class TestGatewayAdminOperatorControlMount:
         assert data["mode"] == "stop_requested"
         assert data["requested_by"] == "ops-admin"
         assert data["reason"] == "incident containment"
+
+    def test_admin_can_start_dataset_build(self, client: TestClient) -> None:
+        app.dependency_overrides[get_current_user] = lambda: _claims(roles=["admin"])
+        mock_orchestrator = AsyncMock()
+        mock_orchestrator.run_dataset_build_step = AsyncMock(
+            return_value=DatasetSnapshot(
+                snapshot_id="snapshot-002",
+                tenant_id="tenant-admin",
+                workload_key="tenant-admin/enhanced_agent_bus/message_processor/policy/608508a9bd224290",
+                constitutional_hash="608508a9bd224290",
+                record_count=5,
+                redaction_status="redacted",
+                artifact_manifest_uri="file:///tmp/snapshot-002/manifest.json",
+                created_at=datetime(2026, 3, 30, 12, 0, tzinfo=UTC),
+            )
+        )
+        app.dependency_overrides[get_run_orchestrator] = lambda: mock_orchestrator
+
+        response = client.post(
+            "/api/v1/admin/evolution/operator-control/dataset-build",
+            json={"run_id": "run-123", "limit": 250, "reason": "live traffic replay"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["run_id"] == "run-123"
+        assert data["requested_by"] == "gateway-admin-user"
+        assert data["snapshot"]["snapshot_id"] == "snapshot-002"
+        mock_orchestrator.run_dataset_build_step.assert_awaited_once_with("run-123", limit=250)
 
     def test_non_admin_is_rejected(self, client: TestClient) -> None:
         app.dependency_overrides[get_current_user] = lambda: _claims(roles=["user"])

@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive test suite for context_memory/models.py
 Target: ≥95% coverage of all classes, methods, validators, and edge cases.
@@ -11,7 +11,6 @@ from datetime import UTC, datetime, timezone
 
 import pytest
 from pydantic import ValidationError
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 from context_memory.models import (
     ContextChunk,
@@ -28,6 +27,7 @@ from context_memory.models import (
     MemoryQuery,
     SemanticMemoryEntry,
 )
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Enums

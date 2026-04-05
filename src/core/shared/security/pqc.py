@@ -1,6 +1,6 @@
 """
 ACGS-2 Post-Quantum Cryptography Wrapper
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Low-level PQC wrapper using liboqs-python for quantum-resistant cryptography.
 
@@ -368,9 +368,7 @@ class PQCWrapper:
         """
         if find_spec("oqs") is None:
             logger.error("liboqs-python not installed. Install with: pip install liboqs-python")
-            raise PQCConfigurationError(
-                "liboqs-python not installed. Required for PQC operations."
-            )
+            raise PQCConfigurationError("liboqs-python not installed. Required for PQC operations.")
         logger.debug("liboqs-python is available")
 
     # ========================================================================

@@ -1,6 +1,6 @@
 """
 ACGS-2 DeepSeek Model Adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Adapter for DeepSeek models (DeepSeek-Coder, DeepSeek-Chat, etc.)
 """
@@ -8,7 +8,7 @@ Adapter for DeepSeek models (DeepSeek-Coder, DeepSeek-Chat, etc.)
 from collections.abc import AsyncIterator
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -38,7 +38,7 @@ class DeepSeekAdapter(ModelAdapter):
     - DeepSeek-Chat
     - DeepSeek-V2
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

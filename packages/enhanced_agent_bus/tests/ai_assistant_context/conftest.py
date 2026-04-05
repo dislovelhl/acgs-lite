@@ -1,6 +1,6 @@
 """
 Conftest for ai_assistant_context tests.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Skips mamba-dependent tests when torch is not available since the
 MambaHybridProcessor cannot be mocked without the real import.
@@ -13,7 +13,7 @@ import importlib.util
 import pytest
 
 _TORCH_AVAILABLE = False
-try:  # noqa: SIM105
+try:
     _TORCH_AVAILABLE = importlib.util.find_spec("torch") is not None
 except (ValueError, ModuleNotFoundError):
     pass

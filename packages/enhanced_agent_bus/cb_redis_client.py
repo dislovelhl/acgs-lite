@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Circuit Breaker Redis Client
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Redis Client with circuit breaker protection implementing FAIL-OPEN (BYPASS) strategy.
 When the circuit is open, cache operations are bypassed and the system continues
@@ -12,11 +12,11 @@ from datetime import UTC, datetime
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -48,7 +48,7 @@ class CircuitBreakerRedisClient:
     When the circuit is open, cache operations are bypassed and
     the system continues to function without caching.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

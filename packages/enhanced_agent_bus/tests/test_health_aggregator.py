@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Health Aggregator Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for health aggregation service.
 """
@@ -216,7 +216,6 @@ class TestHealthAggregatorConfig:
         assert config.critical_threshold == 0.6
 
 
-@pytest.mark.asyncio
 class TestHealthAggregator:
     """Test HealthAggregator class."""
 
@@ -547,7 +546,6 @@ class TestHealthAggregatorSingleton:
         assert agg1 is not agg2  # Different instances after reset
 
 
-@pytest.mark.asyncio
 class TestFireAndForgetPattern:
     """Test fire-and-forget async pattern for zero latency impact."""
 

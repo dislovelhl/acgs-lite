@@ -1,6 +1,6 @@
 """
 ACGS-2 Response Quality Enhancement Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides response quality validation and iterative refinement
 capabilities for LLM-generated responses, ensuring constitutional compliance
@@ -26,7 +26,7 @@ Usage:
 """
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -50,6 +50,8 @@ from .refiner import (
     CONSTITUTIONAL_HASH as REFINER_HASH,
 )
 from .refiner import (
+    AdapterConstitutionalCorrector,
+    AdapterLLMRefiner,
     ConstitutionalSelfCorrector,
     ConstitutionalViolationError,
     DefaultConstitutionalCorrector,
@@ -105,8 +107,10 @@ __all__ = [
     "ConstitutionalSelfCorrector",
     "ConstitutionalViolationError",
     "DefaultConstitutionalCorrector",
+    "AdapterConstitutionalCorrector",
     # Refiner - Default implementations
     "DefaultLLMRefiner",
+    "AdapterLLMRefiner",
     # Models - Type aliases
     "DimensionScores",
     # Validator - Classes

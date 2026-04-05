@@ -5,7 +5,7 @@ Layer 1 of OWASP guardrails: cleans, validates, and sanitizes incoming
 requests before they reach the agent engine. Includes HTML sanitization,
 injection detection, and PII detection.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import hashlib
@@ -16,11 +16,11 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -182,7 +182,7 @@ class InputSanitizer(GuardrailComponent):
                     layer=self.get_layer(),
                     violation_type="input_too_large",
                     severity=ViolationSeverity.HIGH,
-                    message=f"Input size {len(data)} exceeds maximum {self.config.max_input_length}",  # noqa: E501
+                    message=f"Input size {len(data)} exceeds maximum {self.config.max_input_length}",
                     trace_id=trace_id,
                 )
             )

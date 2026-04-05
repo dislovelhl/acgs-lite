@@ -1,6 +1,6 @@
 """
 ACGS-2 Deliberation Layer - Audit Signature Utilities
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 HMAC-SHA256 signature functions for audit record immutability verification.
 """
@@ -10,7 +10,7 @@ import hmac
 import json
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

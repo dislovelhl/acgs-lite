@@ -1,6 +1,6 @@
 """
 ACGS-2 CCPA (California Consumer Privacy Act) Handler
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements CCPA consumer rights handling including:
 - Right to Know (§1798.100, §1798.110, §1798.115)

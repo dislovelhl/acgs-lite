@@ -5,7 +5,7 @@ Central registry for magic numbers used across the governance pipeline.
 Consolidating these prevents silent divergence between modules that
 share the same logical threshold.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 # ---------------------------------------------------------------------------

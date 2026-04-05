@@ -1,6 +1,6 @@
 """
 ACGS-2 Shared Configuration - Redis HA
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Pydantic model supporting standalone, Sentinel, and cluster Redis topologies.
 No deployment changes — config-only; enables HA when Redis Sentinel or

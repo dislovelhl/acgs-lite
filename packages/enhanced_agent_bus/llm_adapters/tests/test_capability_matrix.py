@@ -1,13 +1,13 @@
 """
 Tests for LLM Provider Capability Matrix.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.llm_adapters.capability_matrix import (
     CapabilityDimension,
     CapabilityLevel,
@@ -560,7 +560,6 @@ class TestGlobalInstances:
         assert router is not None
         assert isinstance(router, CapabilityRouter)
 
-    @pytest.mark.asyncio
     async def test_initialize_capability_matrix(self):
         """Test initializing capability matrix."""
         await initialize_capability_matrix()
@@ -614,7 +613,7 @@ class TestProviderProfiles:
 
     def test_azure_profile(self, registry):
         """Test Azure OpenAI profile."""
-        azure = registry.get_profile("azure-gpt-5-2")
+        azure = registry.get_profile("azure-gpt-5-4")
         assert azure is not None
         assert azure.provider_type == "azure"
 

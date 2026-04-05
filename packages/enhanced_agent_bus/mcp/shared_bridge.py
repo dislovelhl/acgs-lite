@@ -1,6 +1,6 @@
 """
 MCP Bridge for Swarm Orchestration (Wave R)
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides a translation layer between the MCP tool registry (MCPClientPool)
 and the Adaptive Intent Graph.
@@ -16,8 +16,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.core.shared.orchestration.intent_graph import SwarmTask, TaskIntent
-
+from enhanced_agent_bus._compat.orchestration.intent_graph import SwarmTask, TaskIntent
 from enhanced_agent_bus.mcp.pool import MCPClientPool
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

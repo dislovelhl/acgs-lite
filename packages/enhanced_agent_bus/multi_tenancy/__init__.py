@@ -1,6 +1,6 @@
 """
 ACGS-2 Multi-Tenancy Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides enterprise-grade multi-tenant isolation using PostgreSQL Row-Level Security (RLS).
 This module implements Phase 10 Task 1: Multi-Tenant Database Foundation.
@@ -15,7 +15,7 @@ Features:
 import sys
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -26,7 +26,7 @@ if _module is not None:
     sys.modules.setdefault("enhanced_agent_bus.multi_tenancy", _module)
     sys.modules.setdefault("core.enhanced_agent_bus.multi_tenancy", _module)
 
-from .context import (  # noqa: E402
+from .context import (
     TenantContext,
     clear_tenant_context,
     get_current_tenant,
@@ -35,8 +35,8 @@ from .context import (  # noqa: E402
     set_current_tenant,
     tenant_context,
 )
-from .db_repository import DatabaseTenantRepository, TenantRepositoryDB  # noqa: E402
-from .manager import (  # noqa: E402
+from .db_repository import DatabaseTenantRepository, TenantRepositoryDB
+from .manager import (
     TenantEvent,
     TenantManager,
     TenantManagerError,
@@ -46,15 +46,15 @@ from .manager import (  # noqa: E402
     get_tenant_manager,
     set_tenant_manager,
 )
-from .middleware import TenantMiddleware, extract_tenant_from_request  # noqa: E402
-from .models import (  # noqa: E402
+from .middleware import TenantMiddleware, extract_tenant_from_request
+from .models import (
     Tenant,
     TenantConfig,
     TenantQuota,
     TenantStatus,
     TenantUsage,
 )
-from .orm_models import (  # noqa: E402
+from .orm_models import (
     EnterpriseIntegrationORM,
     MigrationJobORM,
     TenantAuditLogORM,
@@ -62,15 +62,15 @@ from .orm_models import (  # noqa: E402
     TenantRoleMappingORM,
     TenantStatusEnum,
 )
-from .repository import TenantAwareRepository, TenantRepository  # noqa: E402
-from .rls import (  # noqa: E402
+from .repository import TenantAwareRepository, TenantRepository
+from .rls import (
     RLSPolicy,
     RLSPolicyManager,
     create_tenant_rls_policies,
     disable_rls_for_table,
     enable_rls_for_table,
 )
-from .session_vars import (  # noqa: E402
+from .session_vars import (
     SESSION_VAR_IS_ADMIN,
     SESSION_VAR_TENANT_ID,
     admin_session,
@@ -82,7 +82,7 @@ from .session_vars import (  # noqa: E402
     system_tenant_session,
     tenant_session,
 )
-from .system_tenant import (  # noqa: E402
+from .system_tenant import (
     SYSTEM_TENANT_ID,
     SYSTEM_TENANT_NAME,
     SYSTEM_TENANT_SLUG,

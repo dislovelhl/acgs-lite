@@ -4,7 +4,7 @@ Batch Metrics Middleware for ACGS-2 Pipeline.
 Records batch-level metrics.
 Extracted from: batch_processor_infra/metrics.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -12,7 +12,7 @@ import time
 from typing import cast
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -30,11 +30,11 @@ _BATCH_METRICS_OPERATION_ERRORS = (
     ConnectionError,
 )
 
-from ...batch_models import BatchResponseItem  # noqa: E402
-from ...pipeline.context import PipelineContext  # noqa: E402
-from ...pipeline.middleware import BaseMiddleware, MiddlewareConfig  # noqa: E402
-from .context import BatchPipelineContext  # noqa: E402
-from .exceptions import BatchMetricsException  # noqa: E402
+from ...batch_models import BatchResponseItem
+from ...pipeline.context import PipelineContext
+from ...pipeline.middleware import BaseMiddleware, MiddlewareConfig
+from .context import BatchPipelineContext
+from .exceptions import BatchMetricsException
 
 
 class BatchMetricsMiddleware(BaseMiddleware):
@@ -53,7 +53,7 @@ class BatchMetricsMiddleware(BaseMiddleware):
         )
         context = await middleware.process(batch_context)
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

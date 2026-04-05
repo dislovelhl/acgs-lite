@@ -1,6 +1,6 @@
 """
 ACGS-2 Dependency Bridge
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Bridge module that integrates DependencyRegistry with the existing imports.py.
 This provides a migration path from scattered try/except patterns to the centralized
@@ -26,11 +26,10 @@ import sys
 from typing import TypeVar, cast
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
-from src.core.shared.utilities import DependencyRegistry, FeatureFlag
-
+from enhanced_agent_bus._compat.utilities import DependencyRegistry, FeatureFlag
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)

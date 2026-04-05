@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Any
 from urllib.parse import urlencode
 
-from src.core.shared.json_utils import dumps as json_dumps
+from enhanced_agent_bus._compat.json_utils import dumps as json_dumps
 
 from .base import CONSTITUTIONAL_HASH, ACLAdapter, AdapterConfig, AdapterResult
 
@@ -23,7 +23,9 @@ class OPARequest:
 
     def __post_init__(self) -> None:
         if self.trace_id is None:
-            self.trace_id = hashlib.sha256(json_dumps(self.input, sort_keys=True).encode()).hexdigest()[:16]
+            self.trace_id = hashlib.sha256(
+                json_dumps(self.input, sort_keys=True).encode()
+            ).hexdigest()[:16]
 
 
 @dataclass(slots=True)
@@ -185,9 +187,11 @@ class OPAAdapter(ACLAdapter[OPARequest, OPAResponse]):
                 result={"error": "timeout"},
                 trace_id=request.trace_id,
             )
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             if self.opa_config.fail_closed:
-                return OPAResponse(allow=False, result={"error": str(exc)}, trace_id=request.trace_id)
+                return OPAResponse(
+                    allow=False, result={"error": str(exc)}, trace_id=request.trace_id
+                )
             return self._simulate_opa_response(request)
 
     async def close(self) -> None:

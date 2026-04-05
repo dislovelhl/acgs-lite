@@ -3,7 +3,7 @@ Audit Trail MCP Resource.
 
 Provides read access to the governance audit trail.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import json
@@ -12,7 +12,7 @@ from datetime import UTC, datetime
 from enum import Enum
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -71,7 +71,7 @@ class AuditTrailResource:
     for compliance and accountability purposes.
     """
 
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
     URI = "acgs2://governance/audit-trail"
 

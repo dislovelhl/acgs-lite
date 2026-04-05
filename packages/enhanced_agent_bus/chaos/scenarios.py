@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Chaos Scenarios
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Predefined failure scenarios for chaos engineering experiments.
 Each scenario simulates a specific type of infrastructure failure
@@ -25,11 +25,11 @@ from enum import Enum
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -43,7 +43,7 @@ MAX_MEMORY_PERCENT = 80.0  # Don't exceed 80% memory pressure
 MAX_CPU_PERCENT = 90.0  # Don't exceed 90% CPU stress
 
 
-class ScenarioStatus(str, Enum):  # noqa: UP042
+class ScenarioStatus(str, Enum):
     """Status of a chaos scenario."""
 
     PENDING = "pending"
@@ -54,7 +54,7 @@ class ScenarioStatus(str, Enum):  # noqa: UP042
     CANCELLED = "cancelled"
 
 
-class PartitionType(str, Enum):  # noqa: UP042
+class PartitionType(str, Enum):
     """Types of network partitions."""
 
     FULL = "full"  # Complete isolation
@@ -63,7 +63,7 @@ class PartitionType(str, Enum):  # noqa: UP042
     SLOW = "slow"  # Extreme latency (not packet loss)
 
 
-class DependencyType(str, Enum):  # noqa: UP042
+class DependencyType(str, Enum):
     """Types of dependencies that can fail."""
 
     REDIS = "redis"
@@ -79,7 +79,7 @@ class ScenarioResult:
     """
     Result of executing a chaos scenario.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     scenario_name: str
@@ -113,7 +113,7 @@ class BaseScenario(ABC):
     """
     Abstract base class for chaos scenarios.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     All scenarios must:
     - Validate constitutional hash before execution
@@ -209,7 +209,7 @@ class NetworkPartitionScenario(BaseScenario):
     """
     Simulate network partition between services.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     This scenario simulates network issues by:
     - Tracking which services should be "partitioned"
@@ -343,7 +343,7 @@ class LatencyInjectionScenario(BaseScenario):
     """
     Inject latency into service calls.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -454,7 +454,7 @@ class MemoryPressureScenario(BaseScenario):
     """
     Simulate memory pressure.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     NOTE: This scenario simulates memory pressure by signaling to components
     that memory is constrained. It does NOT actually consume memory to avoid
@@ -566,7 +566,7 @@ class CPUStressScenario(BaseScenario):
     """
     Simulate CPU stress.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     NOTE: Similar to memory pressure, this signals CPU constraint without
     actually consuming CPU cycles.
@@ -665,7 +665,7 @@ class DependencyFailureScenario(BaseScenario):
     """
     Simulate dependency failures (Redis, OPA, Kafka down).
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     This scenario simulates external dependency failures by providing
     hooks that services can use to check dependency health.
@@ -820,7 +820,7 @@ class ScenarioExecutor:
     """
     Executes chaos scenarios with safety controls.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, constitutional_hash: str = CONSTITUTIONAL_HASH) -> None:

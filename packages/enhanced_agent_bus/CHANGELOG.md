@@ -1,6 +1,6 @@
 # Changelog
 
-<!-- Constitutional Hash: cdd01ef066bc6cf2 -->
+<!-- Constitutional Hash: 608508a9bd224290 -->
 
 All notable changes to the Enhanced Agent Bus are documented in this file.
 
@@ -115,7 +115,7 @@ All notable changes to the Enhanced Agent Bus are documented in this file.
 ### Initial Release
 
 - Core message bus implementation with Python/Rust backends
-- Constitutional validation with hash `cdd01ef066bc6cf2`
+- Constitutional validation with hash `608508a9bd224290`
 - OPA policy integration
 - Policy registry client
 - Deliberation layer for AI-powered review
@@ -127,4 +127,4 @@ All notable changes to the Enhanced Agent Bus are documented in this file.
 
 ---
 
-_Constitutional Hash: cdd01ef066bc6cf2_
+_Constitutional Hash: 608508a9bd224290_

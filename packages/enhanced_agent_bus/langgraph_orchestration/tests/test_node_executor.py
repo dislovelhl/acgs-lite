@@ -1,12 +1,10 @@
 """
 ACGS-2 LangGraph Orchestration - Node Executor Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
-
-import pytest
 
 from enhanced_agent_bus.models import (
     CONSTITUTIONAL_HASH,
@@ -86,7 +84,6 @@ class TestAsyncNodeExecutor:
         result = executor.get_function(node)
         assert result is my_func
 
-    @pytest.mark.asyncio
     async def test_execute_function_node(self):
         """Test executing a function node."""
         executor = AsyncNodeExecutor()
@@ -110,7 +107,6 @@ class TestAsyncNodeExecutor:
         assert result.output_state == {"result": 15}
         assert result.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_execute_async_function_node(self):
         """Test executing an async function node."""
         executor = AsyncNodeExecutor()
@@ -134,7 +130,6 @@ class TestAsyncNodeExecutor:
         assert result.status == NodeStatus.COMPLETED
         assert result.output_state == {"result": "async_done"}
 
-    @pytest.mark.asyncio
     async def test_execute_start_node(self):
         """Test executing a start node."""
         executor = AsyncNodeExecutor()
@@ -146,7 +141,6 @@ class TestAsyncNodeExecutor:
         assert result.status == NodeStatus.COMPLETED
         assert result.output_state == {"initial": "value"}
 
-    @pytest.mark.asyncio
     async def test_execute_end_node(self):
         """Test executing an end node."""
         executor = AsyncNodeExecutor()
@@ -158,7 +152,6 @@ class TestAsyncNodeExecutor:
         assert result.status == NodeStatus.COMPLETED
         assert result.output_state == {"final": "result"}
 
-    @pytest.mark.asyncio
     async def test_execute_checkpoint_node(self):
         """Test executing a checkpoint node."""
         executor = AsyncNodeExecutor()
@@ -171,7 +164,6 @@ class TestAsyncNodeExecutor:
         assert result.output_state["checkpoint_triggered"] is True
         assert result.output_state["node_id"] == "cp1"
 
-    @pytest.mark.asyncio
     async def test_execute_missing_function(self):
         """Test executing node with missing function."""
         executor = AsyncNodeExecutor()
@@ -188,7 +180,6 @@ class TestAsyncNodeExecutor:
         assert result.status == NodeStatus.FAILED
         assert "not found" in result.error.lower()
 
-    @pytest.mark.asyncio
     async def test_execute_with_timeout(self):
         """Test executing node that times out."""
         executor = AsyncNodeExecutor(default_timeout_ms=50)
@@ -213,7 +204,6 @@ class TestAsyncNodeExecutor:
 
         assert result.status == NodeStatus.FAILED
 
-    @pytest.mark.asyncio
     async def test_execute_with_retry_success(self):
         """Test executing node that succeeds after retry."""
         executor = AsyncNodeExecutor()
@@ -244,7 +234,6 @@ class TestAsyncNodeExecutor:
         assert result.retries_used == 1
         assert result.output_state == {"success": True}
 
-    @pytest.mark.asyncio
     async def test_execute_non_dict_output(self):
         """Test executing function that returns non-dict."""
         executor = AsyncNodeExecutor()
@@ -284,7 +273,6 @@ class TestParallelNodeExecutor:
         assert executor.max_concurrent == 5
         assert executor.base_executor is base
 
-    @pytest.mark.asyncio
     async def test_execute_single_node(self):
         """Test executing single node through parallel executor."""
         executor = ParallelNodeExecutor()
@@ -307,14 +295,12 @@ class TestParallelNodeExecutor:
         assert result.status == NodeStatus.COMPLETED
         assert result.output_state == {"value": 42}
 
-    @pytest.mark.asyncio
     async def test_execute_parallel_empty(self):
         """Test parallel execution with empty list."""
         executor = ParallelNodeExecutor()
         results = await executor.execute_parallel([], GraphState())
         assert results == []
 
-    @pytest.mark.asyncio
     async def test_execute_parallel_multiple(self):
         """Test parallel execution of multiple nodes."""
         executor = ParallelNodeExecutor()
@@ -344,7 +330,6 @@ class TestParallelNodeExecutor:
         assert len(results) == 3
         assert all(r.status == NodeStatus.COMPLETED for r in results)
 
-    @pytest.mark.asyncio
     async def test_execute_parallel_with_failure(self):
         """Test parallel execution handles failures."""
         executor = ParallelNodeExecutor()
@@ -381,7 +366,6 @@ class TestParallelNodeExecutor:
         assert results[0].status == NodeStatus.COMPLETED
         assert results[1].status == NodeStatus.FAILED
 
-    @pytest.mark.asyncio
     async def test_execute_with_dependencies(self):
         """Test execution with dependency ordering."""
         executor = ParallelNodeExecutor()
@@ -438,7 +422,6 @@ class TestConditionalNodeExecutor:
         executor.register_condition("test.route", route_condition)
         assert "test.route" in executor._condition_cache
 
-    @pytest.mark.asyncio
     async def test_evaluate_condition_with_function(self):
         """Test condition evaluation with registered function."""
         executor = ConditionalNodeExecutor()
@@ -463,7 +446,6 @@ class TestConditionalNodeExecutor:
         result = await executor.evaluate_condition(edge, state)
         assert result == "node3"
 
-    @pytest.mark.asyncio
     async def test_evaluate_condition_key_value(self):
         """Test condition evaluation with key=value expression."""
         executor = ConditionalNodeExecutor()
@@ -478,7 +460,6 @@ class TestConditionalNodeExecutor:
         result = await executor.evaluate_condition(edge, state)
         assert result == "node2"
 
-    @pytest.mark.asyncio
     async def test_evaluate_condition_boolean(self):
         """Test condition evaluation with boolean key."""
         executor = ConditionalNodeExecutor()
@@ -497,7 +478,6 @@ class TestConditionalNodeExecutor:
         result = await executor.evaluate_condition(edge, state)
         assert result == "node3"
 
-    @pytest.mark.asyncio
     async def test_evaluate_condition_default(self):
         """Test condition evaluation falls back to default."""
         executor = ConditionalNodeExecutor()
@@ -512,7 +492,6 @@ class TestConditionalNodeExecutor:
         result = await executor.evaluate_condition(edge, state)
         assert result == "node4"
 
-    @pytest.mark.asyncio
     async def test_route_with_matching_edge(self):
         """Test routing with matching conditional edge."""
         executor = ConditionalNodeExecutor()
@@ -535,7 +514,6 @@ class TestConditionalNodeExecutor:
         result = await executor.route(edges, "node1", state)
         assert result == "node_a"
 
-    @pytest.mark.asyncio
     async def test_route_no_matching_source(self):
         """Test routing when no edge matches source."""
         executor = ConditionalNodeExecutor()

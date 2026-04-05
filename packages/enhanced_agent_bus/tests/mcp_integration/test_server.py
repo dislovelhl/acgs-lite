@@ -1,6 +1,6 @@
 """
 MCP Server Tests.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import pytest
@@ -46,7 +46,6 @@ class TestMCPIntegrationServer:
         )
         return MCPIntegrationServer(config=config)
 
-    @pytest.mark.asyncio
     async def test_start_stop(self, server):
         """Test starting and stopping server."""
         await server.start()
@@ -55,7 +54,6 @@ class TestMCPIntegrationServer:
         await server.stop()
         assert server.state.value == "stopped"
 
-    @pytest.mark.asyncio
     async def test_handle_initialize(self, server):
         """Test handling initialize request."""
         await server.start()
@@ -78,7 +76,6 @@ class TestMCPIntegrationServer:
         assert "result" in response
         assert "serverInfo" in response["result"]
 
-    @pytest.mark.asyncio
     async def test_handle_tools_list(self, server):
         """Test handling tools/list request."""
         await server.start()
@@ -97,7 +94,6 @@ class TestMCPIntegrationServer:
         # Server has built-in tools
         assert len(response["result"]["tools"]) >= 3
 
-    @pytest.mark.asyncio
     async def test_handle_resources_list(self, server):
         """Test handling resources/list request."""
         await server.start()
@@ -116,7 +112,6 @@ class TestMCPIntegrationServer:
         # Server has built-in resources
         assert len(response["result"]["resources"]) >= 3
 
-    @pytest.mark.asyncio
     async def test_handle_tool_call(self, server):
         """Test handling tools/call request."""
         await server.start()
@@ -140,7 +135,6 @@ class TestMCPIntegrationServer:
         assert "result" in response
         assert "content" in response["result"]
 
-    @pytest.mark.asyncio
     async def test_handle_resource_read(self, server):
         """Test handling resources/read request."""
         await server.start()
@@ -159,7 +153,6 @@ class TestMCPIntegrationServer:
         assert response is not None
         assert "contents" in response["result"]
 
-    @pytest.mark.asyncio
     async def test_handle_ping(self, server):
         """Test handling ping request."""
         await server.start()
@@ -177,7 +170,6 @@ class TestMCPIntegrationServer:
         assert response["result"]["status"] == "ok"
         assert response["result"]["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_handle_unknown_method(self, server):
         """Test handling unknown method."""
         await server.start()
@@ -195,7 +187,6 @@ class TestMCPIntegrationServer:
         assert "error" in response
         assert response["error"]["code"] == -32601
 
-    @pytest.mark.asyncio
     async def test_handle_invalid_jsonrpc(self, server):
         """Test handling invalid JSON-RPC version."""
         await server.start()
@@ -213,7 +204,6 @@ class TestMCPIntegrationServer:
         assert "error" in response
         assert response["error"]["code"] == -32600
 
-    @pytest.mark.asyncio
     async def test_register_custom_tool(self, server):
         """Test registering a custom tool."""
         from ...mcp_integration.server import InternalTool
@@ -236,7 +226,6 @@ class TestMCPIntegrationServer:
         tools = server.get_tools()
         assert any(t["name"] == "custom_tool" for t in tools)
 
-    @pytest.mark.asyncio
     async def test_register_custom_resource(self, server):
         """Test registering a custom resource."""
         from ...mcp_integration.server import InternalResource
@@ -267,7 +256,6 @@ class TestMCPIntegrationServer:
         assert "tools_registered" in metrics
         assert metrics["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_governance_validate(self, server):
         """Test governance/validate method."""
         await server.start()
@@ -288,7 +276,6 @@ class TestMCPIntegrationServer:
         assert "result" in response
         assert "compliant" in response["result"]
 
-    @pytest.mark.asyncio
     async def test_constitutional_status(self, server):
         """Test constitutional/status method."""
         await server.start()

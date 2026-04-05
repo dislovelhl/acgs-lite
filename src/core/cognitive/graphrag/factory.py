@@ -11,7 +11,6 @@ import hashlib
 import math
 from dataclasses import dataclass, field
 
-
 # ---------------------------------------------------------------------------
 # VectorSearchResult
 # ---------------------------------------------------------------------------
@@ -135,5 +134,5 @@ def create_vector_store(backend: str = "memory") -> MemoryVectorStore:
 def _dot_product(a: list[float], b: list[float]) -> float:
     if len(a) != len(b):
         min_len = min(len(a), len(b))
-        return sum(x * y for x, y in zip(a[:min_len], b[:min_len]))
-    return sum(x * y for x, y in zip(a, b))
+        return sum(x * y for x, y in zip(a[:min_len], b[:min_len], strict=False))
+    return sum(x * y for x, y in zip(a, b, strict=False))

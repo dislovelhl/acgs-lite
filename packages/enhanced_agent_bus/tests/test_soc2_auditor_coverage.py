@@ -2,12 +2,10 @@
 Tests for src/core/enhanced_agent_bus/compliance_layer/soc2_auditor.py
 
 Coverage target: >= 85%
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
-import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.compliance_layer.models import (
     AvailabilityControl,
     ComplianceStatus,
@@ -366,35 +364,29 @@ class TestSOC2AuditorInit:
     def test_has_evidence_collector(self):
         assert isinstance(self.auditor.evidence_collector, SOC2EvidenceCollector)
 
-    @pytest.mark.asyncio
     async def test_initialize_sets_flag(self):
         result = await self.auditor.initialize()
         assert result is True
         assert self.auditor._initialized is True
 
-    @pytest.mark.asyncio
     async def test_initialize_idempotent(self):
         await self.auditor.initialize()
         # Second call should short-circuit
         result = await self.auditor.initialize()
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_initialize_populates_pi_controls(self):
         await self.auditor.initialize()
         assert len(self.auditor._pi_controls) == 3
 
-    @pytest.mark.asyncio
     async def test_initialize_populates_c_controls(self):
         await self.auditor.initialize()
         assert len(self.auditor._c_controls) == 3
 
-    @pytest.mark.asyncio
     async def test_initialize_populates_a_controls(self):
         await self.auditor.initialize()
         assert len(self.auditor._a_controls) == 3
 
-    @pytest.mark.asyncio
     async def test_initialize_populates_data_classification(self):
         await self.auditor.initialize()
         assert len(self.auditor._data_classification) == 4
@@ -456,38 +448,32 @@ class TestSOC2AuditorDefaultControls:
 
 
 class TestSOC2AuditorAudit:
-    @pytest.mark.asyncio
     async def test_audit_returns_assessment(self):
         auditor = SOC2Auditor()
         assessment = await auditor.audit()
         assert assessment is not None
 
-    @pytest.mark.asyncio
     async def test_audit_assessment_id_prefix(self):
         auditor = SOC2Auditor()
         assessment = await auditor.audit()
         assert assessment.assessment_id.startswith("soc2-")
 
-    @pytest.mark.asyncio
     async def test_audit_correct_system_name(self):
         auditor = SOC2Auditor()
         assessment = await auditor.audit(system_name="TestSystem")
         assert assessment.system_name == "TestSystem"
 
-    @pytest.mark.asyncio
     async def test_audit_default_system_name(self):
         auditor = SOC2Auditor()
         assessment = await auditor.audit()
         assert assessment.system_name == "ACGS-2"
 
-    @pytest.mark.asyncio
     async def test_audit_controls_assessed_count(self):
         auditor = SOC2Auditor()
         assessment = await auditor.audit()
         # 3 PI + 3 C + 3 A = 9
         assert assessment.controls_assessed == 9
 
-    @pytest.mark.asyncio
     async def test_audit_all_compliant_by_default(self):
         auditor = SOC2Auditor()
         assessment = await auditor.audit()
@@ -496,20 +482,17 @@ class TestSOC2AuditorAudit:
         assert assessment.controls_non_compliant == 0
         assert assessment.controls_compliant + assessment.controls_partial == 9
 
-    @pytest.mark.asyncio
     async def test_audit_compliance_score_above_90(self):
         auditor = SOC2Auditor()
         assessment = await auditor.audit()
         # With 8 compliant and 1 partial out of 9: (8 + 0.5) / 9 * 100 ≈ 94.44
         assert assessment.compliance_score > 90.0
 
-    @pytest.mark.asyncio
     async def test_audit_constitutional_hash(self):
         auditor = SOC2Auditor()
         assessment = await auditor.audit()
         assert assessment.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_audit_with_non_compliant_pi_control(self):
         auditor = SOC2Auditor()
         await auditor.initialize()
@@ -521,7 +504,6 @@ class TestSOC2AuditorAudit:
         assessment = await auditor.audit()
         assert assessment.controls_non_compliant >= 1
 
-    @pytest.mark.asyncio
     async def test_audit_with_partial_pi_control(self):
         auditor = SOC2Auditor()
         await auditor.initialize()
@@ -530,7 +512,6 @@ class TestSOC2AuditorAudit:
         assessment = await auditor.audit()
         assert assessment.controls_partial >= 1
 
-    @pytest.mark.asyncio
     async def test_audit_findings_added_when_non_compliant(self):
         auditor = SOC2Auditor()
         await auditor.initialize()
@@ -543,13 +524,11 @@ class TestSOC2AuditorAudit:
         assert len(assessment.findings) > 0
         assert "remediation" in assessment.findings[0]
 
-    @pytest.mark.asyncio
     async def test_audit_no_findings_when_all_compliant(self):
         auditor = SOC2Auditor()
         assessment = await auditor.audit()
         assert len(assessment.findings) == 0
 
-    @pytest.mark.asyncio
     async def test_audit_with_non_compliant_c_control(self):
         auditor = SOC2Auditor()
         await auditor.initialize()
@@ -561,7 +540,6 @@ class TestSOC2AuditorAudit:
         assessment = await auditor.audit()
         assert assessment.controls_non_compliant >= 1
 
-    @pytest.mark.asyncio
     async def test_audit_with_partial_c_control(self):
         auditor = SOC2Auditor()
         await auditor.initialize()
@@ -570,7 +548,6 @@ class TestSOC2AuditorAudit:
         assessment = await auditor.audit()
         assert assessment.controls_partial >= 1
 
-    @pytest.mark.asyncio
     async def test_audit_with_partial_a_control(self):
         auditor = SOC2Auditor()
         await auditor.initialize()
@@ -581,7 +558,6 @@ class TestSOC2AuditorAudit:
         assessment = await auditor.audit()
         assert assessment.controls_partial >= 1
 
-    @pytest.mark.asyncio
     async def test_audit_with_non_compliant_a_control(self):
         auditor = SOC2Auditor()
         await auditor.initialize()
@@ -595,7 +571,6 @@ class TestSOC2AuditorAudit:
         assessment = await auditor.audit()
         assert assessment.controls_non_compliant >= 1
 
-    @pytest.mark.asyncio
     async def test_audit_evidence_collected(self):
         auditor = SOC2Auditor()
         # Pre-populate some evidence
@@ -603,7 +578,6 @@ class TestSOC2AuditorAudit:
         assessment = await auditor.audit()
         assert len(assessment.evidence_collected) >= 1
 
-    @pytest.mark.asyncio
     async def test_audit_initializes_if_not_done(self):
         auditor = SOC2Auditor()
         assert auditor._initialized is False
@@ -883,7 +857,6 @@ class TestSingletonHelpers:
 
 
 class TestSOC2FullIntegration:
-    @pytest.mark.asyncio
     async def test_evidence_package_then_audit(self):
         auditor = SOC2Auditor()
         # initialize() loads default controls before generating the package
@@ -894,7 +867,6 @@ class TestSOC2FullIntegration:
         assessment = await auditor.audit()
         assert len(assessment.evidence_collected) > 0
 
-    @pytest.mark.asyncio
     async def test_audit_compliance_score_matches_compliant_fraction(self):
         auditor = SOC2Auditor()
         assessment = await auditor.audit()
@@ -905,7 +877,6 @@ class TestSOC2FullIntegration:
         )
         assert abs(assessment.compliance_score - round(expected, 2)) < 0.01
 
-    @pytest.mark.asyncio
     async def test_uptime_sla_after_audit(self):
         auditor = SOC2Auditor()
         await auditor.audit()

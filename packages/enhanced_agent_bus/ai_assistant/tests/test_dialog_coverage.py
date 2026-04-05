@@ -1,6 +1,6 @@
 """
 ACGS-2 AI Assistant - Dialog Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets uncovered branches/lines to boost dialog.py coverage to ≥90%.
 asyncio_mode = "auto" — no @pytest.mark.asyncio needed.
@@ -9,8 +9,8 @@ asyncio_mode = "auto" — no @pytest.mark.asyncio needed.
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.ai_assistant.context import (
     ConversationContext,
     ConversationState,
@@ -346,7 +346,7 @@ class TestHandleSlotFilling:
 
         nlu = make_nlu(intent_name="order_status", entities=[])
         action = await policy.select_action(ctx, nlu, list(ActionType))
-        # order_id is in context, so not missing → return original action (FILL_SLOT mapped from intent)  # noqa: E501
+        # order_id is in context, so not missing → return original action (FILL_SLOT mapped from intent)
         assert isinstance(action, DialogAction)
 
 

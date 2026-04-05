@@ -1,6 +1,6 @@
 """
 Security tests: Agent Bus routes must enforce JWT authentication.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 These tests verify that all Agent Bus API routes require a valid Bearer JWT.
 They FAIL before the fix (routes use get_tenant_id — header-only check)
@@ -16,12 +16,11 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.security.auth import UserClaims, get_current_user
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.security.auth import UserClaims, get_current_user
 from enhanced_agent_bus.api.routes import batch as batch_routes
 from enhanced_agent_bus.api.routes import messages as messages_routes
 from enhanced_agent_bus.api.routes import policies as policies_routes

@@ -2,7 +2,7 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 """
 ACGS-2 Auth Rate Limiting Standalone Test
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Standalone test to verify auth rate limiting configuration without full imports.
 """
@@ -65,7 +65,7 @@ def test_rate_limit_configuration():
 def test_constitutional_hash():
     """Verify constitutional hash is present."""
     assert CONSTITUTIONAL_HASH == CONSTITUTIONAL_HASH
-    logger.info("Constitutional hash verified: cdd01ef066bc6cf2")
+    logger.info("Constitutional hash verified: 608508a9bd224290")
 
 
 def test_redis_configuration():
@@ -74,19 +74,21 @@ def test_redis_configuration():
     rate_limit_config = RateLimitConfig(
         rules=rate_limit_rules,
         redis_url=os.getenv("REDIS_URL", "redis://localhost:6379"),
-        fallback_to_memory=True,
+        fallback_to_memory=is_development,
         enabled=True,
+        fail_open=is_development,
         exempt_paths=["/docs", "/openapi.json", "/redoc", "/favicon.ico"],
     )
     """
 
     assert "redis_url=" in redis_config_snippet
-    assert "fallback_to_memory=True" in redis_config_snippet
+    assert "fallback_to_memory=is_development" in redis_config_snippet
     assert "enabled=True" in redis_config_snippet
+    assert "fail_open=is_development" in redis_config_snippet
 
     logger.info("Redis configuration validation passed")
     logger.info("  Redis URL: from REDIS_URL env var")
-    logger.info("  Fallback to memory: enabled")
+    logger.info("  Fallback to memory: development-only")
     logger.info("  Rate limiting: enabled")
 
 
@@ -114,7 +116,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     logger.info("\n" + "=" * 70)
     logger.info("ACGS-2 Auth Rate Limiting Configuration Validation")
-    logger.info("Constitutional Hash: cdd01ef066bc6cf2")
+    logger.info("Constitutional Hash: 608508a9bd224290")
     logger.info("=" * 70 + "\n")
 
     test_constitutional_hash()

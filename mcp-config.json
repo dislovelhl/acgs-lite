@@ -1,0 +1,65 @@
+{
+  "mcpServers": {
+    "acgs-governance": {
+      "command": "python",
+      "args": ["-m", "acgs_lite.integrations.mcp_server"],
+      "env": {
+        "ACGS_CONSTITUTION": "default"
+      },
+      "description": "ACGS-2 Constitutional Governance — validate actions, check compliance, audit trail",
+      "tools": [
+        "validate_action",
+        "get_constitution",
+        "get_audit_log",
+        "check_compliance",
+        "governance_stats"
+      ]
+    },
+    "acgs-agent-bus": {
+      "command": "python",
+      "args": ["-m", "enhanced_agent_bus.mcp_server.cli"],
+      "env": {},
+      "description": "ACGS-2 Enhanced Agent Bus — governance workflows, MACI enforcement, precedent queries",
+      "tools": [
+        "validate_constitutional_compliance",
+        "get_active_principles",
+        "query_governance_precedents",
+        "submit_governance_request",
+        "get_governance_metrics"
+      ]
+    }
+  },
+  "x402": {
+    "description": "Pay-per-call governance APIs via x402 USDC micropayments on Base",
+    "base_url": "https://your-domain.com",
+    "network": "eip155:8453",
+    "facilitator": "https://facilitator.xpay.sh",
+    "endpoints": {
+      "GET /x402/check": {"price": "free", "description": "Quick pass/fail + risk level (funnel entry)"},
+      "POST /x402/validate": {"price": "$0.01", "description": "Full governance validation"},
+      "POST /x402/audit": {"price": "$0.05", "description": "Compliance audit with risk breakdown"},
+      "POST /x402/certify": {"price": "$0.50", "description": "Signed attestation proof"},
+      "POST /x402/batch": {"price": "$0.10", "description": "Bulk validation (up to 20 actions)"},
+      "POST /x402/scan": {"price": "$0.03", "description": "Prompt injection detection"},
+      "POST /x402/classify-risk": {"price": "$0.10", "description": "EU AI Act risk classification"},
+      "POST /x402/compliance": {"price": "$0.25", "description": "Multi-framework compliance (8 frameworks)"},
+      "POST /x402/simulate": {"price": "$0.15", "description": "Policy change simulation"},
+      "POST /x402/trust": {"price": "$0.02", "description": "Agent trust scoring"},
+      "POST /x402/anomaly": {"price": "$0.03", "description": "Governance anomaly detection"},
+      "POST /x402/explain": {"price": "$0.05", "description": "Decision explainability"},
+      "POST /x402/treasury": {"price": "$0.05", "description": "DAO treasury intelligence"},
+      "POST /x402/invariant-guard": {"price": "$0.10", "description": "Three-tier invariant enforcement"},
+      "POST /x402/circuit-breaker": {"price": "$0.10", "description": "Governance circuit breaker"},
+      "POST /x402/policy-lint": {"price": "$0.05", "description": "Policy quality & security scan"},
+      "POST /x402/eu-ai-log": {"price": "$0.10", "description": "EU AI Act Article 12 logging"},
+      "POST /x402/bundle/scout": {"price": "$0.05", "description": "Scout bundle: check + validate + scan"},
+      "POST /x402/bundle/shield": {"price": "$0.25", "description": "Shield bundle: 8-endpoint risk analysis"},
+      "POST /x402/bundle/fortress": {"price": "$1.00", "description": "Fortress bundle: 15-endpoint enterprise suite"},
+      "GET /x402/verify": {"price": "free", "description": "Verify attestation receipts"},
+      "GET /x402/pricing": {"price": "free", "description": "Endpoint discovery for agents"},
+      "GET /x402/bundles": {"price": "free", "description": "List available bundles with savings"},
+      "GET /x402/facilitator-health": {"price": "free", "description": "Facilitator pool health"},
+      "GET /x402/health": {"price": "free", "description": "Service health check"}
+    }
+  }
+}

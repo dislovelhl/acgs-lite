@@ -5,7 +5,7 @@ Provides enhanced MCP server capabilities for exposing ACGS-2 governance
 functionality to external AI systems with constitutional validation and
 MACI role-based access control.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -19,7 +19,7 @@ from enum import Enum
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -216,7 +216,7 @@ class MCPIntegrationServer:
     - Bidirectional communication support
     - Comprehensive audit logging
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH
@@ -542,7 +542,7 @@ class MCPIntegrationServer:
                         return self._error_response(
                             request_id,
                             -32001,
-                            f"Constitutional validation failed: {[i.message for i in validation.issues]}",  # noqa: E501
+                            f"Constitutional validation failed: {[i.message for i in validation.issues]}",
                         )
 
             # Execute handler
@@ -848,7 +848,7 @@ class MCPIntegrationServer:
                 )
 
         # Check data sensitivity
-        if context.get("data_sensitivity") in ["confidential", "restricted"]:  # noqa: SIM102
+        if context.get("data_sensitivity") in ["confidential", "restricted"]:
             if not context.get("consent_obtained"):
                 compliant = False
                 violations.append(

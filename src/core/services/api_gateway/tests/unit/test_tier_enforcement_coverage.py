@@ -1,5 +1,5 @@
 """Coverage gap tests for AutonomyTierEnforcementMiddleware.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets uncovered code paths identified by pytest-cov:
   - HITL submit exception handling (advisory + human-approved)
@@ -546,7 +546,6 @@ class TestHttpHitlSubmissionClient:
         assert client._url == "http://hitl:8002"
 
     @pytest.mark.unit
-    @pytest.mark.asyncio
     async def test_submit_posts_to_reviews_endpoint(self) -> None:
         """submit() POSTs to /api/v1/reviews with correct payload."""
         client_instance = HttpHitlSubmissionClient(url="http://fake-hitl:8002")
@@ -587,7 +586,6 @@ class TestHttpHitlSubmissionClient:
             assert payload["context"]["constitutional_hash"] == CONSTITUTIONAL_HASH
 
     @pytest.mark.unit
-    @pytest.mark.asyncio
     async def test_submit_raises_for_http_error(self) -> None:
         """submit() propagates httpx.HTTPStatusError on 4xx/5xx."""
         import httpx as httpx_lib

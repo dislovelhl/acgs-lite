@@ -1,90 +1,46 @@
-"""Tests for acgs-lite GitLab integration.
+"""Tests for acgs_lite.integrations.gitlab module.
 
-Tests use mocked external services (no real API calls).
-Constitutional Hash: cdd01ef066bc6cf2
+Exercises the real GitLabGovernanceBot, GitLabWebhookHandler,
+GitLabMACIEnforcer classes plus helper functions with mocked HTTP layer.
+No real network or database calls.
+
+Constitutional Hash: 608508a9bd224290
 """
 
-import hashlib
-import hmac
-import json
-from dataclasses import dataclass, field
+from __future__ import annotations
+
 from typing import Any
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from acgs_lite import (
-    AuditLog,
-    Constitution,
-    ConstitutionalViolationError,
-    GovernanceEngine,
-    MACIEnforcer,
-    MACIRole,
-    MACIViolationError,
-    Rule,
-    Severity,
-    ValidationResult,
+from acgs_lite import AuditLog, Constitution, Rule, Severity
+from acgs_lite.integrations.gitlab import (
+    GitLabGovernanceBot,
+    GitLabMACIEnforcer,
+    GitLabWebhookHandler,
+    GovernanceReport,
+    _compute_risk_score,
+    _parse_added_lines,
+    create_gitlab_ci_config,
+    format_governance_report,
 )
 
-# ─── Mock Objects ──────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------
+# Fixtures
+# ---------------------------------------------------------------------------
 
 
-@dataclass
-class MockGitLabMR:
-    """Simulates a GitLab merge request object."""
-
-    iid: int = 42
-    title: str = "feat: add new governance check"
-    description: str = "Implements governance validation for new endpoint."
-    source_branch: str = "feature/governance-check"
-    target_branch: str = "main"
-    author: str = "dev-user"
-    state: str = "opened"
-    diff_content: str = ""
-    commits: list[dict[str, str]] = field(default_factory=list)
-
-    def __post_init__(self) -> None:
-        if not self.commits:
-            self.commits = [
-                {
-                    "id": "abc123",
-                    "message": "feat(governance): add validation endpoint",
-                    "author_name": "dev-user",
-                },
-            ]
-
-
-@dataclass
-class MockGitLabAPIResponse:
-    """Simulates a GitLab API HTTP response."""
-
-    status_code: int = 200
-    body: dict[str, Any] = field(default_factory=dict)
-    headers: dict[str, str] = field(default_factory=dict)
-
-    def json(self) -> dict[str, Any]:
-        return self.body
-
-    def raise_for_status(self) -> None:
-        if self.status_code >= 400:
-            raise Exception(f"HTTP {self.status_code}")
-
-
-# ─── Helper Functions ─────────────────────────────────────────────────────
-
-
-def _make_governance_engine(
-    strict: bool = False,
-    constitution: Constitution | None = None,
-) -> GovernanceEngine:
-    """Create a GovernanceEngine for test scenarios."""
-    c = constitution or Constitution.from_rules(
+@pytest.fixture
+def constitution() -> Constitution:
+    """Constitution with rules that can produce violations on known keywords."""
+    return Constitution.from_rules(
         [
             Rule(
                 id="ACGS-001",
                 text="Agents must not bypass independent validation.",
                 severity=Severity.CRITICAL,
-                keywords=["self-validate", "bypass", "bypass validation", "auto-approve"],
+                keywords=["bypass", "self-validate"],
             ),
             Rule(
                 id="ACGS-004",
@@ -94,676 +50,1096 @@ def _make_governance_engine(
             ),
         ]
     )
-    return GovernanceEngine(c, audit_log=AuditLog(), strict=strict)
 
 
-def _make_webhook_payload(
-    event_type: str = "merge_request",
-    action: str = "open",
-    mr_iid: int = 42,
-    project_id: int = 100,
-    title: str = "feat: add governance",
-    description: str = "Safe merge request",
-    source_branch: str = "feature/governance",
-    author: str = "dev-user",
-) -> dict[str, Any]:
-    """Build a GitLab webhook payload for testing."""
-    if event_type == "merge_request":
-        return {
-            "object_kind": "merge_request",
-            "event_type": "merge_request",
-            "project": {"id": project_id, "path_with_namespace": "acgs/governance"},
-            "object_attributes": {
-                "iid": mr_iid,
-                "action": action,
-                "title": title,
-                "description": description,
-                "source_branch": source_branch,
-                "target_branch": "main",
-                "state": "opened",
-            },
-            "user": {"username": author},
-        }
-    elif event_type == "pipeline":
-        return {
-            "object_kind": "pipeline",
-            "event_type": "pipeline",
-            "project": {"id": project_id, "path_with_namespace": "acgs/governance"},
-            "object_attributes": {
-                "id": 999,
-                "status": "success",
-                "ref": source_branch,
-            },
-            "merge_request": {"iid": mr_iid},
-        }
-    return {"object_kind": event_type}
+@pytest.fixture
+def bot(constitution: Constitution) -> GitLabGovernanceBot:
+    """GitLabGovernanceBot with mocked HTTP so no real requests are made."""
+    return GitLabGovernanceBot(
+        token="glpat-test-token",
+        project_id=100,
+        constitution=constitution,
+        base_url="https://gitlab.example.com/api/v4",
+        timeout=5.0,
+        strict=False,
+    )
 
 
-def _compute_webhook_hmac(payload: dict[str, Any], secret: str) -> str:
-    """Compute GitLab webhook HMAC-SHA256 signature."""
-    body = json.dumps(payload, separators=(",", ":")).encode()
-    return hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
-
-
-def _format_governance_report_markdown(
-    result: ValidationResult,
-    mr_title: str = "",
-) -> str:
-    """Format a governance validation result as a GitLab Markdown comment."""
-    if result.valid:
-        status = "PASSED"
-        icon = "white_check_mark"
-    else:
-        status = "FAILED"
-        icon = "x"
-
-    lines = [
-        f"## :{icon}: Governance Check {status}",
-        "",
-        f"**Constitutional Hash:** `{result.constitutional_hash}`",
-        f"**Rules Checked:** {result.rules_checked}",
-        f"**Latency:** {result.latency_ms:.2f}ms",
-    ]
-
-    if mr_title:
-        lines.insert(1, f"**MR:** {mr_title}")
-        lines.insert(2, "")
-
-    if result.violations:
-        lines.append("")
-        lines.append("### Violations")
-        lines.append("")
-        lines.append("| Rule | Severity | Category | Detail |")
-        lines.append("|------|----------|----------|--------|")
-        for v in result.violations:
-            lines.append(
-                f"| `{v.rule_id}` | {v.severity.value} | {v.category} | {v.matched_content[:80]} |"
-            )
-
-    return "\n".join(lines)
-
-
-def _create_gitlab_ci_config(
-    strict: bool = True,
-    constitution_path: str = "constitution.yaml",
-) -> dict[str, Any]:
-    """Generate a GitLab CI job config for governance checks."""
+@pytest.fixture
+def clean_mr_data() -> dict[str, Any]:
+    """MR data dict simulating a clean merge request."""
     return {
-        "governance-check": {
-            "stage": "test",
-            "image": "python:3.11-slim",
-            "script": [
-                "pip install acgs-lite",
-                f"acgs-lite validate --constitution {constitution_path}"
-                + (" --strict" if strict else ""),
-            ],
-            "rules": [
-                {"if": "$CI_PIPELINE_SOURCE == 'merge_request_event'"},
-            ],
-            "allow_failure": not strict,
-        }
+        "iid": 42,
+        "title": "feat: add health check endpoint",
+        "description": "Adds /health for monitoring.",
+        "diff_refs": {
+            "base_sha": "aaa111",
+            "head_sha": "bbb222",
+        },
+        "author": {"username": "dev-user"},
     }
 
 
-# ─── GitLabGovernanceBot Tests ────────────────────────────────────────────
+@pytest.fixture
+def clean_changes() -> dict[str, Any]:
+    """Changes payload with harmless diff content."""
+    return {
+        "changes": [
+            {
+                "old_path": "src/app.py",
+                "new_path": "src/app.py",
+                "diff": (
+                    "@@ -1,3 +1,5 @@\n"
+                    "+def health():\n"
+                    "+    return 'ok'\n"
+                    " # existing\n"
+                ),
+            }
+        ]
+    }
+
+
+@pytest.fixture
+def violating_mr_data() -> dict[str, Any]:
+    """MR data dict whose title triggers a violation."""
+    return {
+        "iid": 99,
+        "title": "feat: self-validate bypass all checks",
+        "description": "Let agents self-approve their own outputs.",
+        "diff_refs": {
+            "base_sha": "aaa111",
+            "head_sha": "bbb222",
+        },
+        "author": {"username": "bad-actor"},
+    }
+
+
+@pytest.fixture
+def violating_changes() -> dict[str, Any]:
+    return {
+        "changes": [
+            {
+                "new_path": "src/evil.py",
+                "diff": (
+                    "@@ -0,0 +1,2 @@\n"
+                    "+bypass validation here\n"
+                    "+safe line\n"
+                ),
+            }
+        ]
+    }
+
+
+# ---------------------------------------------------------------------------
+# _parse_added_lines tests
+# ---------------------------------------------------------------------------
+
+
+class TestParseAddedLines:
+    """Tests for the unified-diff parser helper."""
+
+    def test_simple_addition(self) -> None:
+        diff = "@@ -0,0 +1,3 @@\n+line one\n+line two\n+line three\n"
+        result = _parse_added_lines(diff)
+        assert len(result) == 3
+        assert result[0] == (1, "line one")
+        assert result[1] == (2, "line two")
+        assert result[2] == (3, "line three")
+
+    def test_skips_blank_added_lines(self) -> None:
+        diff = "@@ -0,0 +1,3 @@\n+content\n+\n+more\n"
+        result = _parse_added_lines(diff)
+        # blank line (just whitespace after +) is skipped
+        assert len(result) == 2
+        assert result[0][1] == "content"
+        assert result[1][1] == "more"
+
+    def test_ignores_deleted_lines(self) -> None:
+        diff = "@@ -1,3 +1,2 @@\n-removed\n context\n+added\n"
+        result = _parse_added_lines(diff)
+        assert len(result) == 1
+        assert result[0][1] == "added"
+
+    def test_multiple_hunks(self) -> None:
+        diff = (
+            "@@ -1,2 +1,3 @@\n"
+            " ctx\n"
+            "+first add\n"
+            "@@ -10,2 +11,3 @@\n"
+            " ctx\n"
+            "+second add\n"
+        )
+        result = _parse_added_lines(diff)
+        assert len(result) == 2
+        assert result[0][1] == "first add"
+        assert result[1][1] == "second add"
+
+    def test_empty_diff(self) -> None:
+        assert _parse_added_lines("") == []
+
+    def test_no_hunk_header(self) -> None:
+        # Lines without a hunk header start at line 0
+        diff = "+orphan line\n"
+        result = _parse_added_lines(diff)
+        assert len(result) == 1
+        assert result[0] == (0, "orphan line")
+
+    def test_ignores_file_headers(self) -> None:
+        diff = "--- a/old.py\n+++ b/new.py\n@@ -0,0 +1,1 @@\n+real line\n"
+        result = _parse_added_lines(diff)
+        assert len(result) == 1
+        assert result[0][1] == "real line"
+
+    def test_context_lines_advance_counter(self) -> None:
+        diff = "@@ -1,4 +1,5 @@\n ctx1\n ctx2\n+added at 3\n ctx3\n"
+        result = _parse_added_lines(diff)
+        assert result[0] == (3, "added at 3")
+
+
+# ---------------------------------------------------------------------------
+# _compute_risk_score tests
+# ---------------------------------------------------------------------------
+
+
+class TestComputeRiskScore:
+    """Tests for the risk score computation helper."""
+
+    def test_no_issues_returns_zero(self) -> None:
+        assert _compute_risk_score([], []) == 0.0
+
+    def test_single_critical_violation(self) -> None:
+        score = _compute_risk_score([{"severity": "critical"}], [])
+        assert score == pytest.approx(1.0)
+
+    def test_single_low_warning(self) -> None:
+        score = _compute_risk_score([], [{"severity": "low"}])
+        # low weight 0.1 * 0.5 = 0.05, normalised by 1 item => 0.05
+        assert score == pytest.approx(0.05)
+
+    def test_capped_at_one(self) -> None:
+        violations = [{"severity": "critical"}] * 10
+        score = _compute_risk_score(violations, [])
+        assert score <= 1.0
+
+    def test_mixed_severities(self) -> None:
+        violations = [{"severity": "high"}, {"severity": "medium"}]
+        score = _compute_risk_score(violations, [])
+        assert 0.0 < score < 1.0
+
+    def test_unknown_severity_defaults(self) -> None:
+        score = _compute_risk_score([{"severity": "unknown"}], [])
+        # defaults to medium weight 0.3
+        assert score == pytest.approx(0.3)
+
+
+# ---------------------------------------------------------------------------
+# GovernanceReport tests
+# ---------------------------------------------------------------------------
+
+
+class TestGovernanceReport:
+    """Tests for the frozen GovernanceReport dataclass."""
+
+    def test_immutable(self) -> None:
+        report = GovernanceReport(mr_iid=1, title="t", passed=True, risk_score=0.0)
+        with pytest.raises(AttributeError):
+            report.passed = False  # type: ignore[misc]
+
+    def test_defaults(self) -> None:
+        report = GovernanceReport(mr_iid=1, title="t", passed=True, risk_score=0.0)
+        assert report.violations == []
+        assert report.warnings == []
+        assert report.commit_violations == []
+        assert report.rules_checked == 0
+        assert report.constitutional_hash == ""
+        assert report.latency_ms == 0.0
+
+
+# ---------------------------------------------------------------------------
+# format_governance_report tests
+# ---------------------------------------------------------------------------
+
+
+class TestFormatGovernanceReport:
+    """Tests for the Markdown report formatter."""
+
+    def test_passed_report(self) -> None:
+        report = GovernanceReport(
+            mr_iid=1,
+            title="Clean MR",
+            passed=True,
+            risk_score=0.0,
+            rules_checked=5,
+            constitutional_hash="abc123",
+        )
+        md = format_governance_report(report)
+        assert "PASSED" in md
+        assert "white_check_mark" in md
+        assert "abc123" in md
+        assert "Rules Checked" in md
+
+    def test_failed_report_with_violations(self) -> None:
+        report = GovernanceReport(
+            mr_iid=2,
+            title="Bad MR",
+            passed=False,
+            risk_score=0.8,
+            violations=[
+                {
+                    "rule_id": "ACGS-001",
+                    "rule_text": "No bypass",
+                    "severity": "critical",
+                    "source": "diff",
+                    "file": "src/x.py",
+                    "line": 10,
+                }
+            ],
+            rules_checked=3,
+        )
+        md = format_governance_report(report)
+        assert "FAILED" in md
+        assert ":x:" in md
+        assert "ACGS-001" in md
+        assert "src/x.py:10" in md
+        assert "### Violations" in md
+
+    def test_warnings_section(self) -> None:
+        report = GovernanceReport(
+            mr_iid=3,
+            title="Warn MR",
+            passed=True,
+            risk_score=0.1,
+            warnings=[{"rule_id": "W-001", "rule_text": "Minor issue", "severity": "low"}],
+        )
+        md = format_governance_report(report)
+        assert "### Warnings" in md
+        assert "W-001" in md
+
+    def test_commit_violations_section(self) -> None:
+        report = GovernanceReport(
+            mr_iid=4,
+            title="Commit MR",
+            passed=False,
+            risk_score=0.5,
+            commit_violations=[
+                {
+                    "sha": "abc123",
+                    "message": "bad commit",
+                    "violations": [{"rule_id": "R-1", "rule_text": "bad"}],
+                }
+            ],
+        )
+        md = format_governance_report(report)
+        assert "### Commit Message Violations" in md
+        assert "abc123" in md
+
+    def test_footer_present(self) -> None:
+        report = GovernanceReport(mr_iid=1, title="t", passed=True, risk_score=0.0)
+        md = format_governance_report(report)
+        assert "ACGS Governance Bot" in md
+
+
+# ---------------------------------------------------------------------------
+# create_gitlab_ci_config tests
+# ---------------------------------------------------------------------------
+
+
+class TestCreateGitLabCIConfig:
+    """Tests for the CI config generator."""
+
+    def test_generates_yaml_string(self) -> None:
+        config = create_gitlab_ci_config()
+        assert isinstance(config, str)
+        assert "governance:" in config
+        assert "stage: test" in config
+        assert "pip install acgs[gitlab]" in config
+
+    def test_includes_constitutional_hash(self) -> None:
+        c = Constitution.default()
+        config = create_gitlab_ci_config(c)
+        assert c.hash in config
+
+    def test_merge_request_event_rule(self) -> None:
+        config = create_gitlab_ci_config()
+        assert "merge_request_event" in config
+
+
+# ---------------------------------------------------------------------------
+# GitLabGovernanceBot tests
+# ---------------------------------------------------------------------------
 
 
 @pytest.mark.integration
 class TestGitLabGovernanceBot:
-    """Tests for the GitLab merge request governance bot."""
+    """Tests for GitLabGovernanceBot using mocked HTTP layer."""
 
-    @pytest.fixture
-    def engine(self) -> GovernanceEngine:
-        return _make_governance_engine(strict=False)
+    def test_init_stores_config(self, bot: GitLabGovernanceBot) -> None:
+        assert bot._project_id == 100
+        assert bot._base_url == "https://gitlab.example.com/api/v4"
+        assert bot._timeout == 5.0
 
-    @pytest.fixture
-    def strict_engine(self) -> GovernanceEngine:
-        return _make_governance_engine(strict=True)
+    def test_headers_include_token(self, bot: GitLabGovernanceBot) -> None:
+        headers = bot._headers()
+        assert headers["PRIVATE-TOKEN"] == "glpat-test-token"
+        assert headers["Content-Type"] == "application/json"
 
-    @pytest.fixture
-    def mock_api(self) -> MagicMock:
-        """Mock GitLab API client."""
-        api = MagicMock()
-        api.post.return_value = MockGitLabAPIResponse(status_code=200, body={"id": 1})
-        api.put.return_value = MockGitLabAPIResponse(status_code=200, body={"id": 1})
-        api.get.return_value = MockGitLabAPIResponse(
-            status_code=200,
-            body={
-                "changes": [
-                    {
-                        "old_path": "src/handler.py",
-                        "new_path": "src/handler.py",
-                        "diff": "@@ -1,3 +1,5 @@\n+def safe_handler():\n+    return 'ok'\n",
-                    }
-                ]
-            },
+    def test_project_url(self, bot: GitLabGovernanceBot) -> None:
+        url = bot._project_url("merge_requests/42")
+        assert url == "https://gitlab.example.com/api/v4/projects/100/merge_requests/42"
+
+    def test_base_url_trailing_slash_stripped(self, constitution: Constitution) -> None:
+        b = GitLabGovernanceBot(
+            token="t",
+            project_id=1,
+            constitution=constitution,
+            base_url="https://example.com/api/v4/",
         )
-        return api
+        assert b._base_url == "https://example.com/api/v4"
 
-    def test_validate_merge_request_clean(self, engine: GovernanceEngine) -> None:
-        """MR with clean content produces no violations."""
-        mr = MockGitLabMR(
-            title="feat: add health check endpoint",
-            description="Adds /health endpoint for monitoring.",
-        )
-        title_result = engine.validate(mr.title)
-        desc_result = engine.validate(mr.description)
+    def test_default_constitution_when_none(self) -> None:
+        b = GitLabGovernanceBot(token="t", project_id=1, constitution=None)
+        assert b.constitution is not None
+        assert len(b.constitution.rules) > 0
 
-        assert title_result.valid
-        assert desc_result.valid
-        assert len(title_result.violations) == 0
-        assert len(desc_result.violations) == 0
+    def test_httpx_import_guard(self) -> None:
+        with (
+            patch("acgs_lite.integrations.gitlab.HTTPX_AVAILABLE", False),
+            pytest.raises(ImportError, match="httpx is required"),
+        ):
+            GitLabGovernanceBot(token="t", project_id=1)
 
-    def test_validate_merge_request_with_violations(self, engine: GovernanceEngine) -> None:
-        """MR containing governance-violating content is flagged."""
-        mr = MockGitLabMR(
-            title="feat: self-validate bypass all checks",
-            description="This MR lets agents self-approve their own outputs.",
-        )
-        title_result = engine.validate(mr.title)
-        desc_result = engine.validate(mr.description)
+    @pytest.mark.asyncio
+    async def test_get_calls_httpx(self, bot: GitLabGovernanceBot) -> None:
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = {"id": 42}
+        mock_resp.raise_for_status = MagicMock()
 
-        assert not title_result.valid
-        assert len(title_result.violations) > 0
-        assert any(v.rule_id == "ACGS-001" for v in title_result.violations)
+        mock_client = AsyncMock()
+        mock_client.get.return_value = mock_resp
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
 
-        assert not desc_result.valid
-        assert any(v.rule_id == "ACGS-004" for v in desc_result.violations)
+        with patch("acgs_lite.integrations.gitlab.httpx.AsyncClient", return_value=mock_client):
+            result = await bot._get("merge_requests/42")
 
-    def test_post_governance_comment(self, engine: GovernanceEngine, mock_api: MagicMock) -> None:
-        """Governance result is formatted and posted as an MR comment."""
-        result = engine.validate("Deploy new feature safely")
-        report = _format_governance_report_markdown(result, mr_title="Deploy feature")
+        assert result == {"id": 42}
+        mock_client.get.assert_awaited_once()
 
-        # Simulate posting to GitLab MR notes API
-        mock_api.post(
-            "/api/v4/projects/100/merge_requests/42/notes",
-            json={"body": report},
-        )
+    @pytest.mark.asyncio
+    async def test_post_calls_httpx(self, bot: GitLabGovernanceBot) -> None:
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = {"id": 1}
+        mock_resp.raise_for_status = MagicMock()
 
-        mock_api.post.assert_called_once_with(
-            "/api/v4/projects/100/merge_requests/42/notes",
-            json={"body": report},
-        )
-        assert "Governance Check PASSED" in report
-        assert "white_check_mark" in report
+        mock_client = AsyncMock()
+        mock_client.post.return_value = mock_resp
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
 
-    def test_post_inline_violations(self, engine: GovernanceEngine, mock_api: MagicMock) -> None:
-        """Violations post inline diff comments on the offending lines."""
-        diff_content = "def handler():\n    bypass validation self-validate\n"
-        result = engine.validate(diff_content)
+        with patch("acgs_lite.integrations.gitlab.httpx.AsyncClient", return_value=mock_client):
+            result = await bot._post("merge_requests/42/notes", {"body": "hello"})
 
-        assert not result.valid
+        assert result == {"id": 1}
+        mock_client.post.assert_awaited_once()
 
-        # Simulate posting inline discussion
-        for v in result.violations:
-            mock_api.post(
-                "/api/v4/projects/100/merge_requests/42/discussions",
-                json={
-                    "body": f"**{v.rule_id}** ({v.severity.value}): {v.rule_text}",
-                    "position": {
-                        "position_type": "text",
-                        "new_path": "src/handler.py",
-                        "new_line": 2,
-                    },
-                },
-            )
-
-        assert mock_api.post.call_count == len(result.violations)
-
-    def test_approve_on_pass(self, engine: GovernanceEngine, mock_api: MagicMock) -> None:
-        """Clean MR is approved via the approvals API."""
-        result = engine.validate("Implement health check endpoint")
-        assert result.valid
-
-        # Simulate approval
-        mock_api.post(
-            "/api/v4/projects/100/merge_requests/42/approve",
-            json={},
-        )
-        mock_api.post.assert_called_once()
-        call_args = mock_api.post.call_args
-        assert "/approve" in call_args[0][0]
-
-    def test_block_on_critical_violation(
-        self, strict_engine: GovernanceEngine, mock_api: MagicMock
+    @pytest.mark.asyncio
+    async def test_validate_merge_request_clean(
+        self,
+        bot: GitLabGovernanceBot,
+        clean_mr_data: dict[str, Any],
+        clean_changes: dict[str, Any],
     ) -> None:
-        """Critical violation blocks the MR by posting a blocking comment."""
-        with pytest.raises(ConstitutionalViolationError) as exc_info:
-            strict_engine.validate("self-validate bypass all governance")
+        call_count = 0
 
-        assert exc_info.value.rule_id == "ACGS-001"
+        async def mock_get(path: str) -> Any:
+            nonlocal call_count
+            call_count += 1
+            if "changes" in path:
+                return clean_changes
+            return clean_mr_data
 
-        # Simulate posting a blocking note and unapproving
-        mock_api.post(
-            "/api/v4/projects/100/merge_requests/42/notes",
-            json={"body": f"BLOCKED: {exc_info.value!s}"},
+        bot._get = mock_get  # type: ignore[assignment]
+
+        report = await bot.validate_merge_request(42)
+
+        assert report.passed is True
+        assert report.mr_iid == 42
+        assert report.title == "feat: add health check endpoint"
+        assert len(report.violations) == 0
+        assert report.rules_checked > 0
+        assert report.constitutional_hash == bot.constitution.hash
+
+    @pytest.mark.asyncio
+    async def test_validate_merge_request_with_violations(
+        self,
+        bot: GitLabGovernanceBot,
+        violating_mr_data: dict[str, Any],
+        violating_changes: dict[str, Any],
+    ) -> None:
+        async def mock_get(path: str) -> Any:
+            if "changes" in path:
+                return violating_changes
+            return violating_mr_data
+
+        bot._get = mock_get  # type: ignore[assignment]
+
+        report = await bot.validate_merge_request(99)
+
+        assert report.passed is False
+        assert len(report.violations) > 0
+        assert report.risk_score > 0.0
+        # Check audit log was recorded
+        entries = bot.audit_log.query(entry_type="gitlab_mr_validation")
+        assert len(entries) >= 1
+
+    @pytest.mark.asyncio
+    async def test_post_governance_comment(self, bot: GitLabGovernanceBot) -> None:
+        post_called_with: dict[str, Any] = {}
+
+        async def mock_post(path: str, json_body: dict[str, Any]) -> Any:
+            post_called_with["path"] = path
+            post_called_with["body"] = json_body
+            return {"id": 1}
+
+        bot._post = mock_post  # type: ignore[assignment]
+
+        report = GovernanceReport(
+            mr_iid=42,
+            title="Test MR",
+            passed=True,
+            risk_score=0.0,
+            rules_checked=5,
         )
-        mock_api.post(
-            "/api/v4/projects/100/merge_requests/42/unapprove",
-        )
-        assert mock_api.post.call_count == 2
+        await bot.post_governance_comment(42, report)
 
-    def test_full_governance_pipeline(self, engine: GovernanceEngine, mock_api: MagicMock) -> None:
-        """End-to-end: validate MR title + description + diff, post report, decide."""
-        mr = MockGitLabMR(
-            title="feat: add logging to handlers",
-            description="Adds structured logging using get_logger.",
-            diff_content="def handler():\n    logger.info('request received')\n",
-        )
+        assert "merge_requests/42/notes" in post_called_with["path"]
+        assert "Governance Report" in post_called_with["body"]["body"]
 
-        # 1. Validate all MR content
-        results = engine.validate_batch([mr.title, mr.description, mr.diff_content])
-        all_valid = all(r.valid for r in results)
-        assert all_valid
+    @pytest.mark.asyncio
+    async def test_post_inline_violations(self, bot: GitLabGovernanceBot) -> None:
+        mr_data = {
+            "diff_refs": {"head_sha": "head123", "base_sha": "base456"},
+        }
 
-        # 2. Post governance comment
-        report = _format_governance_report_markdown(results[0], mr_title=mr.title)
-        mock_api.post(
-            "/api/v4/projects/100/merge_requests/42/notes",
-            json={"body": report},
-        )
+        async def mock_get(path: str) -> Any:
+            return mr_data
 
-        # 3. Approve since all clean
-        mock_api.post(
-            "/api/v4/projects/100/merge_requests/42/approve",
-            json={},
-        )
+        posted: list[dict[str, Any]] = []
 
-        assert mock_api.post.call_count == 2
-        stats = engine.stats
-        assert stats["total_validations"] >= 3
+        async def mock_post(path: str, json_body: dict[str, Any]) -> Any:
+            posted.append({"path": path, "body": json_body})
+            return {"id": len(posted)}
 
-    def test_validate_commit_messages(self, engine: GovernanceEngine) -> None:
-        """Commit messages are validated against constitutional rules."""
-        commits = [
-            {"message": "feat(api): add health endpoint", "author": "dev-user"},
-            {"message": "fix: remove self-validate bypass logic", "author": "dev-user"},
-            {"message": "chore: update dependencies", "author": "dev-user"},
+        bot._get = mock_get  # type: ignore[assignment]
+        bot._post = mock_post  # type: ignore[assignment]
+
+        violations = [
+            {
+                "rule_id": "ACGS-001",
+                "rule_text": "No bypass",
+                "severity": "critical",
+                "matched_content": "bypass",
+                "file": "src/x.py",
+                "line": 10,
+            },
+            {
+                "rule_id": "ACGS-002",
+                "rule_text": "Warn",
+                "severity": "high",
+                "matched_content": "warn",
+                "file": None,
+                "line": None,
+            },
         ]
-        results = engine.validate_batch([c["message"] for c in commits])
 
-        assert results[0].valid  # Clean feat commit
-        assert not results[1].valid  # Contains self-validate + bypass
-        assert results[2].valid  # Clean chore commit
+        results = await bot.post_inline_violations(42, violations)
 
-    def test_api_error_handling(self, engine: GovernanceEngine) -> None:
-        """Network failure during API call is handled gracefully."""
-        mock_api = MagicMock()
-        mock_api.post.side_effect = ConnectionError("GitLab API unreachable")
+        # Only the first violation has file+line, so only one discussion posted
+        assert len(results) == 1
+        assert "discussions" in posted[0]["path"]
+        assert posted[0]["body"]["position"]["head_sha"] == "head123"
+        assert posted[0]["body"]["position"]["new_line"] == 10
 
-        result = engine.validate("Safe deployment action")
-        assert result.valid
+    @pytest.mark.asyncio
+    async def test_post_inline_violations_exception_handling(
+        self, bot: GitLabGovernanceBot
+    ) -> None:
+        mr_data = {"diff_refs": {"head_sha": "h", "base_sha": "b"}}
 
-        # The governance decision itself succeeds; only the API post fails
-        with pytest.raises(ConnectionError, match="GitLab API unreachable"):
-            mock_api.post(
-                "/api/v4/projects/100/merge_requests/42/notes",
-                json={"body": "Governance report"},
-            )
+        async def mock_get(path: str) -> Any:
+            return mr_data
 
-    def test_rate_limit_handling(self, engine: GovernanceEngine) -> None:
-        """429 rate-limit response from GitLab API is detected."""
-        mock_api = MagicMock()
-        rate_limit_response = MockGitLabAPIResponse(
-            status_code=429,
-            body={"message": "429 Too Many Requests"},
-            headers={"Retry-After": "60"},
+        async def mock_post(path: str, json_body: dict[str, Any]) -> Any:
+            raise ConnectionError("network down")
+
+        bot._get = mock_get  # type: ignore[assignment]
+        bot._post = mock_post  # type: ignore[assignment]
+
+        violations = [
+            {
+                "rule_id": "R1",
+                "rule_text": "t",
+                "severity": "high",
+                "matched_content": "m",
+                "file": "a.py",
+                "line": 1,
+            }
+        ]
+        # Should not raise; failures are logged and skipped
+        results = await bot.post_inline_violations(42, violations)
+        assert results == []
+
+    @pytest.mark.asyncio
+    async def test_approve_or_block_approved(self, bot: GitLabGovernanceBot) -> None:
+        posted: list[dict[str, Any]] = []
+
+        async def mock_post(path: str, json_body: dict[str, Any]) -> Any:
+            posted.append({"path": path})
+            return {"id": 1}
+
+        bot._post = mock_post  # type: ignore[assignment]
+
+        report = GovernanceReport(mr_iid=42, title="t", passed=True, risk_score=0.0)
+        result = await bot.approve_or_block(42, report)
+
+        assert result["action"] == "approved"
+        assert "approve" in posted[0]["path"]
+
+    @pytest.mark.asyncio
+    async def test_approve_or_block_blocked(self, bot: GitLabGovernanceBot) -> None:
+        posted: list[dict[str, Any]] = []
+
+        async def mock_post(path: str, json_body: dict[str, Any]) -> Any:
+            posted.append({"path": path, "body": json_body})
+            return {"id": 1}
+
+        bot._post = mock_post  # type: ignore[assignment]
+
+        report = GovernanceReport(
+            mr_iid=42,
+            title="t",
+            passed=False,
+            risk_score=0.8,
+            violations=[{"severity": "critical"}],
         )
-        mock_api.post.return_value = rate_limit_response
+        result = await bot.approve_or_block(42, report)
 
-        result = engine.validate("Safe action for rate limit test")
-        assert result.valid
+        assert result["action"] == "blocked"
+        assert "notes" in posted[0]["path"]
+        assert "Merge Blocked" in posted[0]["body"]["body"]
 
-        response = mock_api.post(
-            "/api/v4/projects/100/merge_requests/42/notes",
-            json={"body": "report"},
-        )
-        assert response.status_code == 429
-        assert response.headers["Retry-After"] == "60"
+    @pytest.mark.asyncio
+    async def test_approve_or_block_approve_failure(self, bot: GitLabGovernanceBot) -> None:
+        async def mock_post(path: str, json_body: dict[str, Any]) -> Any:
+            raise ConnectionError("API down")
+
+        bot._post = mock_post  # type: ignore[assignment]
+
+        report = GovernanceReport(mr_iid=42, title="t", passed=True, risk_score=0.0)
+        result = await bot.approve_or_block(42, report)
+        assert result["action"] == "approve_failed"
+
+    @pytest.mark.asyncio
+    async def test_validate_commit_messages(self, bot: GitLabGovernanceBot) -> None:
+        commits = [
+            {"id": "aabbccdd11223344", "message": "feat: add endpoint"},
+            {"id": "eeff001122334455", "message": "bypass validation self-validate"},
+            {"id": "1122334455667788", "message": "chore: update deps"},
+        ]
+
+        async def mock_get(path: str) -> Any:
+            return commits
+
+        bot._get = mock_get  # type: ignore[assignment]
+
+        result = await bot.validate_commit_messages(42)
+
+        # Only the second commit should have violations
+        assert len(result) == 1
+        assert result[0]["sha"] == "eeff0011"
+        assert len(result[0]["violations"]) > 0
+
+    @pytest.mark.asyncio
+    async def test_run_governance_pipeline_clean(
+        self,
+        bot: GitLabGovernanceBot,
+        clean_mr_data: dict[str, Any],
+        clean_changes: dict[str, Any],
+    ) -> None:
+        async def mock_get(path: str) -> Any:
+            if "commits" in path:
+                return [{"id": "aabb112233445566", "message": "feat: clean commit"}]
+            if "changes" in path:
+                return clean_changes
+            return clean_mr_data
+
+        posted: list[str] = []
+
+        async def mock_post(path: str, json_body: dict[str, Any]) -> Any:
+            posted.append(path)
+            return {"id": 1}
+
+        bot._get = mock_get  # type: ignore[assignment]
+        bot._post = mock_post  # type: ignore[assignment]
+
+        report = await bot.run_governance_pipeline(42)
+
+        assert report.passed is True
+        assert report.mr_iid == 42
+        # Should have posted governance comment and approved
+        assert any("notes" in p for p in posted)
+        assert any("approve" in p for p in posted)
+
+    @pytest.mark.asyncio
+    async def test_run_governance_pipeline_with_violations(
+        self,
+        bot: GitLabGovernanceBot,
+        violating_mr_data: dict[str, Any],
+        violating_changes: dict[str, Any],
+    ) -> None:
+        async def mock_get(path: str) -> Any:
+            if "commits" in path:
+                return [{"id": "cc11223344556677", "message": "clean commit message"}]
+            if "changes" in path:
+                return violating_changes
+            return violating_mr_data
+
+        posted: list[str] = []
+
+        async def mock_post(path: str, json_body: dict[str, Any]) -> Any:
+            posted.append(path)
+            return {"id": 1}
+
+        bot._get = mock_get  # type: ignore[assignment]
+        bot._post = mock_post  # type: ignore[assignment]
+
+        report = await bot.run_governance_pipeline(99)
+
+        assert report.passed is False
+        assert len(report.violations) > 0
+        # Should have posted inline violations and a block note
+        assert any("discussions" in p for p in posted)
+        assert any("notes" in p for p in posted)
+
+    @pytest.mark.asyncio
+    async def test_run_governance_pipeline_with_commit_violations(
+        self,
+        bot: GitLabGovernanceBot,
+        clean_mr_data: dict[str, Any],
+        clean_changes: dict[str, Any],
+    ) -> None:
+        async def mock_get(path: str) -> Any:
+            if "commits" in path:
+                return [{"id": "dd11223344556677", "message": "bypass validation commit"}]
+            if "changes" in path:
+                return clean_changes
+            return clean_mr_data
+
+        posted: list[str] = []
+
+        async def mock_post(path: str, json_body: dict[str, Any]) -> Any:
+            posted.append(path)
+            return {"id": 1}
+
+        bot._get = mock_get  # type: ignore[assignment]
+        bot._post = mock_post  # type: ignore[assignment]
+
+        report = await bot.run_governance_pipeline(42)
+
+        # MR content is clean but commit message has violations
+        assert report.passed is False
+        assert len(report.commit_violations) > 0
+
+    def test_validate_text_restores_strict(self, bot: GitLabGovernanceBot) -> None:
+        bot.engine.strict = True
+        bot._validate_text("bypass validation", agent_id="test")
+        assert bot.engine.strict is True
+
+    def test_stats_property(self, bot: GitLabGovernanceBot) -> None:
+        stats = bot.stats
+        assert "project_id" in stats
+        assert stats["project_id"] == 100
+        assert "audit_chain_valid" in stats
 
 
-# ─── GitLabWebhookHandler Tests ──────────────────────────────────────────
+# ---------------------------------------------------------------------------
+# GitLabWebhookHandler tests
+# ---------------------------------------------------------------------------
 
 
 @pytest.mark.integration
 class TestGitLabWebhookHandler:
-    """Tests for GitLab webhook event processing."""
+    """Tests for the webhook handler with mocked bot and request objects."""
 
-    WEBHOOK_SECRET = "test-webhook-secret-token"
+    WEBHOOK_SECRET = "test-secret-token"
 
     @pytest.fixture
-    def engine(self) -> GovernanceEngine:
-        return _make_governance_engine(strict=False)
-
-    def test_webhook_mr_open_event(self, engine: GovernanceEngine) -> None:
-        """MR open webhook triggers governance validation."""
-        payload = _make_webhook_payload(
-            event_type="merge_request",
-            action="open",
-            title="feat: add new validation layer",
+    def handler(self, bot: GitLabGovernanceBot) -> GitLabWebhookHandler:
+        return GitLabWebhookHandler(
+            webhook_secret=self.WEBHOOK_SECRET,
+            bot=bot,
         )
 
-        assert payload["object_kind"] == "merge_request"
-        assert payload["object_attributes"]["action"] == "open"
+    def test_verify_signature_valid(self, handler: GitLabWebhookHandler) -> None:
+        assert handler.verify_signature(self.WEBHOOK_SECRET) is True
 
-        title = payload["object_attributes"]["title"]
-        result = engine.validate(title)
-        assert result.valid
+    def test_verify_signature_invalid(self, handler: GitLabWebhookHandler) -> None:
+        assert handler.verify_signature("wrong-secret") is False
 
-    def test_webhook_mr_update_event(self, engine: GovernanceEngine) -> None:
-        """MR update webhook re-triggers governance validation."""
-        payload = _make_webhook_payload(
-            event_type="merge_request",
-            action="update",
-            title="fix: remove bypass validation logic",
+    def test_verify_signature_empty(self, handler: GitLabWebhookHandler) -> None:
+        assert handler.verify_signature("") is False
+
+    @pytest.mark.asyncio
+    async def test_route_event_unsupported(self, handler: GitLabWebhookHandler) -> None:
+        result = await handler._route_event("Push Hook", {})
+        assert result["action"] == "ignored"
+        assert "unsupported" in result["reason"]
+
+    @pytest.mark.asyncio
+    async def test_route_event_merge_request(self, handler: GitLabWebhookHandler) -> None:
+        body = {
+            "object_attributes": {"action": "unsupported_action", "iid": 42},
+        }
+        result = await handler._route_event("Merge Request Hook", body)
+        assert result["status"] == "skipped"
+
+    @pytest.mark.asyncio
+    async def test_handle_merge_request_open(
+        self,
+        handler: GitLabWebhookHandler,
+        clean_mr_data: dict[str, Any],
+        clean_changes: dict[str, Any],
+    ) -> None:
+        async def mock_get(path: str) -> Any:
+            if "commits" in path:
+                return [{"id": "aa11223344556677", "message": "clean"}]
+            if "changes" in path:
+                return clean_changes
+            return clean_mr_data
+
+        async def mock_post(path: str, json_body: dict[str, Any]) -> Any:
+            return {"id": 1}
+
+        handler._bot._get = mock_get  # type: ignore[assignment]
+        handler._bot._post = mock_post  # type: ignore[assignment]
+
+        body = {"object_attributes": {"action": "open", "iid": 42}}
+        result = await handler._handle_merge_request(body)
+
+        assert result["event"] == "merge_request"
+        assert result["action"] == "open"
+        assert "governance_passed" in result
+
+    @pytest.mark.asyncio
+    async def test_handle_merge_request_approved(
+        self,
+        handler: GitLabWebhookHandler,
+        clean_mr_data: dict[str, Any],
+        clean_changes: dict[str, Any],
+    ) -> None:
+        async def mock_get(path: str) -> Any:
+            if "changes" in path:
+                return clean_changes
+            return clean_mr_data
+
+        handler._bot._get = mock_get  # type: ignore[assignment]
+
+        body = {"object_attributes": {"action": "approved", "iid": 42}}
+        result = await handler._handle_merge_request(body)
+
+        assert result["action"] == "approved"
+        assert "post_approval_valid" in result
+
+    @pytest.mark.asyncio
+    async def test_handle_merge_request_merge_noted(
+        self, handler: GitLabWebhookHandler
+    ) -> None:
+        body = {"object_attributes": {"action": "merge", "iid": 42}}
+        result = await handler._handle_merge_request(body)
+        assert result["status"] == "noted"
+
+    @pytest.mark.asyncio
+    async def test_handle_merge_request_missing_iid(
+        self, handler: GitLabWebhookHandler
+    ) -> None:
+        body = {"object_attributes": {"action": "open"}}
+        result = await handler._handle_merge_request(body)
+        assert result["status"] == "skipped"
+
+    @pytest.mark.asyncio
+    async def test_handle_pipeline_success(
+        self,
+        handler: GitLabWebhookHandler,
+        clean_mr_data: dict[str, Any],
+        clean_changes: dict[str, Any],
+    ) -> None:
+        async def mock_get(path: str) -> Any:
+            if "changes" in path:
+                return clean_changes
+            return clean_mr_data
+
+        handler._bot._get = mock_get  # type: ignore[assignment]
+
+        body = {
+            "object_attributes": {"status": "success"},
+            "merge_request": {"iid": 42},
+        }
+        result = await handler._handle_pipeline(body)
+
+        assert result["event"] == "pipeline"
+        assert result["status"] == "success"
+        assert "governance_passed" in result
+
+    @pytest.mark.asyncio
+    async def test_handle_pipeline_no_mr(self, handler: GitLabWebhookHandler) -> None:
+        body = {"object_attributes": {"status": "success"}}
+        result = await handler._handle_pipeline(body)
+        assert result["action"] == "skipped"
+
+    @pytest.mark.asyncio
+    async def test_handle_pipeline_unsupported_status(
+        self, handler: GitLabWebhookHandler
+    ) -> None:
+        body = {
+            "object_attributes": {"status": "running"},
+            "merge_request": {"iid": 42},
+        }
+        result = await handler._handle_pipeline(body)
+        assert result["action"] == "skipped"
+
+    @pytest.mark.asyncio
+    async def test_handle_pipeline_failed_noted(self, handler: GitLabWebhookHandler) -> None:
+        body = {
+            "object_attributes": {"status": "failed"},
+            "merge_request": {"iid": 42},
+        }
+        result = await handler._handle_pipeline(body)
+        assert result["action"] == "noted"
+
+    @pytest.mark.asyncio
+    async def test_handle_webhook_invalid_token(self, handler: GitLabWebhookHandler) -> None:
+        """Full handle() path with invalid token returns 401."""
+        mock_request = MagicMock()
+        mock_request.headers = {"X-Gitlab-Token": "wrong", "X-Gitlab-Event": "Merge Request Hook"}
+        mock_request.json = AsyncMock(return_value={})
+
+        # Need starlette JSONResponse
+        try:
+            import starlette  # noqa: F401
+
+            response = await handler.handle(mock_request)
+            assert response.status_code == 401
+        except ImportError:
+            pytest.skip("starlette not installed")
+
+    @pytest.mark.asyncio
+    async def test_handle_webhook_valid_token(
+        self,
+        handler: GitLabWebhookHandler,
+        clean_mr_data: dict[str, Any],
+        clean_changes: dict[str, Any],
+    ) -> None:
+        """Full handle() path with valid token processes event."""
+        try:
+            import starlette  # noqa: F401
+        except ImportError:
+            pytest.skip("starlette not installed")
+
+        async def mock_get(path: str) -> Any:
+            if "commits" in path:
+                return [{"id": "ff11223344556677", "message": "ok"}]
+            if "changes" in path:
+                return clean_changes
+            return clean_mr_data
+
+        async def mock_post(path: str, json_body: dict[str, Any]) -> Any:
+            return {"id": 1}
+
+        handler._bot._get = mock_get  # type: ignore[assignment]
+        handler._bot._post = mock_post  # type: ignore[assignment]
+
+        mock_request = MagicMock()
+        mock_request.headers = {
+            "X-Gitlab-Token": self.WEBHOOK_SECRET,
+            "X-Gitlab-Event": "Merge Request Hook",
+        }
+        mock_request.json = AsyncMock(
+            return_value={"object_attributes": {"action": "open", "iid": 42}}
         )
 
-        assert payload["object_attributes"]["action"] == "update"
+        response = await handler.handle(mock_request)
+        assert response.status_code == 200
 
-        title = payload["object_attributes"]["title"]
-        result = engine.validate(title)
-        # "bypass validation" is a violation trigger
-        assert not result.valid
-        assert any(v.rule_id == "ACGS-001" for v in result.violations)
+    @pytest.mark.asyncio
+    async def test_handle_webhook_processing_error(
+        self, handler: GitLabWebhookHandler
+    ) -> None:
+        """Exception during event routing returns 500."""
+        try:
+            import starlette  # noqa: F401
+        except ImportError:
+            pytest.skip("starlette not installed")
 
-    def test_webhook_pipeline_event(self, engine: GovernanceEngine) -> None:
-        """Pipeline webhook event is recognized and processed."""
-        payload = _make_webhook_payload(event_type="pipeline")
+        # Make _route_event raise, not request.json()
+        async def broken_route(event_type: str, body: dict[str, Any]) -> Any:
+            raise RuntimeError("processing exploded")
 
-        assert payload["object_kind"] == "pipeline"
-        assert payload["object_attributes"]["status"] == "success"
-        assert payload["merge_request"]["iid"] == 42
+        handler._route_event = broken_route  # type: ignore[assignment]
 
-        # Pipeline events are informational; no governance validation needed
-        # but the handler should recognize the event type
-        assert payload["event_type"] == "pipeline"
+        mock_request = MagicMock()
+        mock_request.headers = {
+            "X-Gitlab-Token": self.WEBHOOK_SECRET,
+            "X-Gitlab-Event": "Merge Request Hook",
+        }
+        mock_request.json = AsyncMock(
+            return_value={"object_attributes": {"action": "open", "iid": 1}}
+        )
 
-    def test_webhook_hmac_validation_valid(self) -> None:
-        """Valid HMAC signature is accepted."""
-        payload = _make_webhook_payload()
-        signature = _compute_webhook_hmac(payload, self.WEBHOOK_SECRET)
-
-        # Verify signature matches
-        body = json.dumps(payload, separators=(",", ":")).encode()
-        expected = hmac.new(self.WEBHOOK_SECRET.encode(), body, hashlib.sha256).hexdigest()
-        assert hmac.compare_digest(signature, expected)
-
-    def test_webhook_hmac_validation_invalid(self) -> None:
-        """Invalid HMAC signature is rejected."""
-        payload = _make_webhook_payload()
-        valid_signature = _compute_webhook_hmac(payload, self.WEBHOOK_SECRET)
-        bad_signature = _compute_webhook_hmac(payload, "wrong-secret")
-
-        assert not hmac.compare_digest(valid_signature, bad_signature)
-
-        # Tampered payload also fails
-        tampered_payload = {**payload, "extra_field": "injected"}
-        tampered_sig = _compute_webhook_hmac(tampered_payload, self.WEBHOOK_SECRET)
-        assert not hmac.compare_digest(valid_signature, tampered_sig)
-
-    def test_webhook_unknown_event_type(self, engine: GovernanceEngine) -> None:
-        """Unknown webhook event types are ignored gracefully."""
-        payload = _make_webhook_payload(event_type="unknown_event")
-
-        assert payload["object_kind"] == "unknown_event"
-
-        # Unknown events should not trigger validation
-        known_events = {"merge_request", "pipeline", "push", "note"}
-        assert payload["object_kind"] not in known_events
-
-        # Engine stats remain unchanged (no validation performed)
-        stats_before = engine.stats["total_validations"]
-        # Simulate handler skipping unknown events
-        if payload["object_kind"] not in known_events:
-            pass  # Handler skips
-        stats_after = engine.stats["total_validations"]
-        assert stats_before == stats_after
+        response = await handler.handle(mock_request)
+        assert response.status_code == 500
 
 
-# ─── GitLabMACIEnforcer Tests ────────────────────────────────────────────
+# ---------------------------------------------------------------------------
+# GitLabMACIEnforcer tests
+# ---------------------------------------------------------------------------
 
 
 @pytest.mark.integration
 class TestGitLabMACIEnforcer:
-    """Tests for MACI separation of powers in GitLab context."""
+    """Tests for MACI separation of powers enforcement."""
 
     @pytest.fixture
-    def enforcer(self) -> MACIEnforcer:
-        return MACIEnforcer(audit_log=AuditLog())
+    def maci_enforcer(self) -> GitLabMACIEnforcer:
+        return GitLabMACIEnforcer(audit_log=AuditLog())
 
-    def test_maci_different_author_approver(self, enforcer: MACIEnforcer) -> None:
-        """Different MR author and approver is allowed (separation of powers)."""
-        enforcer.assign_role("mr-author", MACIRole.PROPOSER)
-        enforcer.assign_role("mr-reviewer", MACIRole.VALIDATOR)
+    @pytest.mark.asyncio
+    async def test_check_mr_separation_valid(
+        self,
+        maci_enforcer: GitLabMACIEnforcer,
+        bot: GitLabGovernanceBot,
+    ) -> None:
+        async def mock_get(path: str) -> Any:
+            if "approvals" in path:
+                return {"approved_by": [{"user": {"username": "reviewer"}}]}
+            return {"author": {"username": "dev-user"}}
 
-        assert enforcer.check("mr-author", "propose")
-        assert enforcer.check("mr-reviewer", "validate")
-        assert enforcer.check_no_self_validation("mr-author", "mr-reviewer")
+        bot._get = mock_get  # type: ignore[assignment]
 
-    def test_maci_same_author_approver(self, enforcer: MACIEnforcer) -> None:
-        """Same agent as MR author and approver is blocked."""
-        enforcer.assign_role("dev-user", MACIRole.PROPOSER)
+        result = await maci_enforcer.check_mr_separation(bot, mr_iid=42)
 
-        # Proposer cannot validate (separation of powers)
-        with pytest.raises(MACIViolationError):
-            enforcer.check("dev-user", "validate")
+        assert result["separation_valid"] is True
+        assert result["author"] == "dev-user"
+        assert "reviewer" in result["approvers"]
+        assert len(result["violations"]) == 0
 
-        # Self-validation explicitly blocked
-        with pytest.raises(MACIViolationError):
-            enforcer.check_no_self_validation("dev-user", "dev-user")
+    @pytest.mark.asyncio
+    async def test_check_mr_separation_self_approval(
+        self,
+        maci_enforcer: GitLabMACIEnforcer,
+        bot: GitLabGovernanceBot,
+    ) -> None:
+        async def mock_get(path: str) -> Any:
+            if "approvals" in path:
+                return {"approved_by": [{"user": {"username": "dev-user"}}]}
+            return {"author": {"username": "dev-user"}}
 
-    def test_maci_role_mapping(self, enforcer: MACIEnforcer) -> None:
-        """GitLab project roles map to MACI roles correctly."""
-        # Simulate GitLab role → MACI role mapping
-        gitlab_role_map: dict[str, MACIRole] = {
-            "developer": MACIRole.PROPOSER,
-            "maintainer": MACIRole.VALIDATOR,
-            "owner": MACIRole.EXECUTOR,
-            "guest": MACIRole.OBSERVER,
-            "reporter": MACIRole.OBSERVER,
-        }
+        bot._get = mock_get  # type: ignore[assignment]
 
-        for gitlab_role, maci_role in gitlab_role_map.items():
-            agent_id = f"user-{gitlab_role}"
-            enforcer.assign_role(agent_id, maci_role)
-            assert enforcer.get_role(agent_id) == maci_role
+        result = await maci_enforcer.check_mr_separation(bot, mr_iid=42)
 
-        # Verify role constraints
-        assert enforcer.check("user-developer", "propose")
-        assert enforcer.check("user-maintainer", "validate")
-        assert enforcer.check("user-owner", "execute")
+        assert result["separation_valid"] is False
+        assert len(result["violations"]) == 1
+        assert result["violations"][0]["type"] == "self_approval"
+        assert "dev-user" in result["violations"][0]["message"]
 
-        # Cross-role violations
-        with pytest.raises(MACIViolationError):
-            enforcer.check("user-developer", "validate")
-        with pytest.raises(MACIViolationError):
-            enforcer.check("user-maintainer", "execute")
-        with pytest.raises(MACIViolationError):
-            enforcer.check("user-guest", "propose")
+    @pytest.mark.asyncio
+    async def test_check_mr_no_approvers(
+        self,
+        maci_enforcer: GitLabMACIEnforcer,
+        bot: GitLabGovernanceBot,
+    ) -> None:
+        async def mock_get(path: str) -> Any:
+            if "approvals" in path:
+                return {"approved_by": []}
+            return {"author": {"username": "dev-user"}}
 
-    def test_maci_violation_comment_posted(self, enforcer: MACIEnforcer) -> None:
-        """MACI violation is recorded in audit log and formatted for GitLab."""
-        enforcer.assign_role("dev-user", MACIRole.PROPOSER)
+        bot._get = mock_get  # type: ignore[assignment]
 
-        with pytest.raises(MACIViolationError) as exc_info:
-            enforcer.check("dev-user", "validate")
+        result = await maci_enforcer.check_mr_separation(bot, mr_iid=42)
 
-        error = exc_info.value
-        assert error.actor_role == "proposer"
-        assert error.attempted_action == "validate"
+        assert result["separation_valid"] is True
+        assert result["approvers"] == []
 
-        # Verify audit trail recorded the violation
-        denied_entries = enforcer.audit_log.query(valid=False)
-        assert len(denied_entries) >= 1
-        last_denied = denied_entries[-1]
-        assert last_denied.agent_id == "dev-user"
-        assert not last_denied.valid
+    @pytest.mark.asyncio
+    async def test_check_mr_empty_username_approver(
+        self,
+        maci_enforcer: GitLabMACIEnforcer,
+        bot: GitLabGovernanceBot,
+    ) -> None:
+        async def mock_get(path: str) -> Any:
+            if "approvals" in path:
+                return {"approved_by": [{"user": {"username": ""}}]}
+            return {"author": {"username": "dev-user"}}
 
-        # Format for GitLab comment
-        comment = (
-            f"**MACI Violation:** Agent `{error.actor_role}` attempted "
-            f"to `{error.attempted_action}`. "
-            f"Separation of powers requires an independent validator."
-        )
-        assert "MACI Violation" in comment
-        assert "proposer" in comment
-        assert "validate" in comment
+        bot._get = mock_get  # type: ignore[assignment]
 
+        result = await maci_enforcer.check_mr_separation(bot, mr_iid=42)
+        assert result["separation_valid"] is True
 
-# ─── Helper Function Tests ───────────────────────────────────────────────
+    @pytest.mark.asyncio
+    async def test_audit_log_recorded(
+        self,
+        maci_enforcer: GitLabMACIEnforcer,
+        bot: GitLabGovernanceBot,
+    ) -> None:
+        async def mock_get(path: str) -> Any:
+            if "approvals" in path:
+                return {"approved_by": []}
+            return {"author": {"username": "dev-user"}}
 
+        bot._get = mock_get  # type: ignore[assignment]
 
-@pytest.mark.integration
-class TestHelperFunctions:
-    """Tests for GitLab integration helper functions."""
+        await maci_enforcer.check_mr_separation(bot, mr_iid=42)
 
-    def test_format_governance_report_markdown(self) -> None:
-        """Clean validation produces a PASSED Markdown report."""
-        engine = _make_governance_engine(strict=False)
-        result = engine.validate("Deploy feature to staging environment")
+        entries = bot.audit_log.query(entry_type="maci_mr_check")
+        assert len(entries) >= 1
+        assert entries[-1].agent_id == "gitlab-maci-enforcer"
 
-        report = _format_governance_report_markdown(result)
-        assert "Governance Check PASSED" in report
-        assert "white_check_mark" in report
-        assert result.constitutional_hash in report
-        assert "Rules Checked" in report
-        assert "Latency" in report
+    @pytest.mark.asyncio
+    async def test_post_maci_violation(
+        self,
+        maci_enforcer: GitLabMACIEnforcer,
+        bot: GitLabGovernanceBot,
+    ) -> None:
+        posted: list[dict[str, Any]] = []
 
-    def test_format_governance_report_with_violations(self) -> None:
-        """Violation validation produces a FAILED report with violation table."""
-        engine = _make_governance_engine(strict=False)
-        result = engine.validate("self-validate bypass all governance checks")
+        async def mock_post(path: str, json_body: dict[str, Any]) -> Any:
+            posted.append({"path": path, "body": json_body})
+            return {"id": 1}
 
-        report = _format_governance_report_markdown(result, mr_title="Bad MR")
-        assert "Governance Check FAILED" in report
-        assert ":x:" in report
-        assert "Violations" in report
-        assert "ACGS-001" in report
-        assert "| Rule | Severity | Category | Detail |" in report
-        assert "Bad MR" in report
+        bot._post = mock_post  # type: ignore[assignment]
 
-    def test_create_gitlab_ci_config(self) -> None:
-        """CI config is generated with correct structure."""
-        config = _create_gitlab_ci_config(strict=True)
+        violations = [
+            {
+                "type": "self_approval",
+                "agent": "dev-user",
+                "message": "dev-user authored and approved MR !42",
+            }
+        ]
+        await maci_enforcer.post_maci_violation(bot, mr_iid=42, violations=violations)
 
-        assert "governance-check" in config
-        job = config["governance-check"]
-        assert job["stage"] == "test"
-        assert "pip install acgs-lite" in job["script"][0]
-        assert "--strict" in job["script"][1]
-        assert job["allow_failure"] is False
-        assert len(job["rules"]) == 1
-        assert "merge_request_event" in job["rules"][0]["if"]
+        assert len(posted) == 1
+        assert "notes" in posted[0]["path"]
+        body_text = posted[0]["body"]["body"]
+        assert "MACI Separation of Powers Violation" in body_text
+        assert "ACGS-004" in body_text
+        assert "self_approval" in body_text
 
-    def test_create_gitlab_ci_config_non_strict(self) -> None:
-        """Non-strict CI config allows failure."""
-        config = _create_gitlab_ci_config(strict=False, constitution_path="custom.yaml")
+    def test_role_map(self) -> None:
+        from acgs_lite.maci import MACIRole
 
-        job = config["governance-check"]
-        assert "--strict" not in job["script"][1]
-        assert "custom.yaml" in job["script"][1]
-        assert job["allow_failure"] is True
-
-
-# ─── Integration Pipeline Test ───────────────────────────────────────────
-
-
-@pytest.mark.integration
-class TestIntegrationPipeline:
-    """End-to-end test for the full MR governance flow."""
-
-    def test_mr_opened_to_governance_decision(self) -> None:
-        """Full flow: webhook received → validate → comment → approve/block."""
-        # 1. Receive webhook
-        payload = _make_webhook_payload(
-            event_type="merge_request",
-            action="open",
-            mr_iid=99,
-            title="feat(auth): add JWT refresh token rotation",
-            description="Implement automatic token refresh 5 minutes before expiry.",
-            author="dev-user",
-        )
-        assert payload["object_kind"] == "merge_request"
-
-        # 2. Validate HMAC signature
-        secret = "pipeline-test-secret"
-        signature = _compute_webhook_hmac(payload, secret)
-        body = json.dumps(payload, separators=(",", ":")).encode()
-        expected = hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
-        assert hmac.compare_digest(signature, expected)
-
-        # 3. Extract MR content and validate
-        engine = _make_governance_engine(strict=False)
-        attrs = payload["object_attributes"]
-        results = engine.validate_batch([attrs["title"], attrs["description"]])
-        all_valid = all(r.valid for r in results)
-        assert all_valid
-
-        # 4. MACI check: ensure author != approver
-        enforcer = MACIEnforcer(audit_log=AuditLog())
-        author = payload["user"]["username"]
-        bot_id = "governance-bot"
-        enforcer.assign_role(author, MACIRole.PROPOSER)
-        enforcer.assign_role(bot_id, MACIRole.VALIDATOR)
-        assert enforcer.check_no_self_validation(author, bot_id)
-        assert enforcer.check(bot_id, "validate")
-
-        # 5. Format report and simulate posting
-        report = _format_governance_report_markdown(results[0], mr_title=attrs["title"])
-        assert "PASSED" in report
-
-        # 6. Simulate approval via mock API
-        mock_api = MagicMock()
-        mock_api.post.return_value = MockGitLabAPIResponse(status_code=200, body={"id": 1})
-        mock_api.post(
-            f"/api/v4/projects/100/merge_requests/{attrs['iid']}/notes",
-            json={"body": report},
-        )
-        mock_api.post(
-            f"/api/v4/projects/100/merge_requests/{attrs['iid']}/approve",
-            json={},
-        )
-        assert mock_api.post.call_count == 2
-
-        # 7. Verify audit trail
-        stats = engine.stats
-        assert stats["total_validations"] >= 2
-
-    def test_mr_opened_with_violation_blocks(self) -> None:
-        """Full flow: webhook → validate → violation → block MR."""
-        payload = _make_webhook_payload(
-            event_type="merge_request",
-            action="open",
-            mr_iid=100,
-            title="feat: self-validate and auto-approve all agent outputs",
-            description="Let agents bypass validation for faster throughput.",
-        )
-
-        # Validate
-        engine = _make_governance_engine(strict=False)
-        attrs = payload["object_attributes"]
-        results = engine.validate_batch([attrs["title"], attrs["description"]])
-
-        # Both title and description should have violations
-        assert not results[0].valid
-        assert not results[1].valid
-        assert any(v.rule_id == "ACGS-001" for v in results[0].violations)
-
-        # Format blocking report
-        report = _format_governance_report_markdown(results[0], mr_title=attrs["title"])
-        assert "FAILED" in report
-        assert "Violations" in report
-
-        # Simulate blocking via mock API
-        mock_api = MagicMock()
-        mock_api.post.return_value = MockGitLabAPIResponse(status_code=200, body={"id": 1})
-        mock_api.post(
-            f"/api/v4/projects/100/merge_requests/{attrs['iid']}/notes",
-            json={"body": report},
-        )
-        # Unapprove to block
-        mock_api.post(
-            f"/api/v4/projects/100/merge_requests/{attrs['iid']}/unapprove",
-        )
-        assert mock_api.post.call_count == 2
+        enforcer = GitLabMACIEnforcer()
+        assert enforcer._ROLE_MAP["author"] == MACIRole.PROPOSER
+        assert enforcer._ROLE_MAP["reviewer"] == MACIRole.VALIDATOR
+        assert enforcer._ROLE_MAP["approver"] == MACIRole.VALIDATOR
+        assert enforcer._ROLE_MAP["merger"] == MACIRole.EXECUTOR

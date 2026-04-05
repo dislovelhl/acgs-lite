@@ -4,7 +4,7 @@ Presence Manager for Real-time Collaboration.
 Tracks active users per document, cursor positions, user activity status,
 and "user is editing" indicators.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -83,7 +83,7 @@ class PresenceManager:
         """Stop the presence manager."""
         if self._cleanup_task:
             self._cleanup_task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._cleanup_task
             except asyncio.CancelledError:
                 pass
@@ -467,7 +467,7 @@ class PresenceManager:
                                     "new_status": PresenceStatus.AWAY.value,
                                 },
                             )
-                    elif inactive_time > idle_timeout:  # noqa: SIM102
+                    elif inactive_time > idle_timeout:
                         # Mark as idle
                         if collaborator.status == PresenceStatus.ACTIVE:
                             collaborator.status = PresenceStatus.IDLE

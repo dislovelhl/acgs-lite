@@ -1,7 +1,7 @@
 """
 Canonical Enumeration Definitions for ACGS-2.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides the canonical source-of-truth for shared enumerations
 used across the ACGS-2 codebase. Domain-specific modules should import from
@@ -20,7 +20,7 @@ class RiskLevel(StrEnum):
     Standard 4-level classification used across session governance,
     policy evaluation, and constitutional compliance.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     LOW = "low"
@@ -35,7 +35,7 @@ class DecisionType(Enum):
     Used by MACI role separation for classifying governance actions
     across executive, legislative, and judicial branches.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     POLICY_CREATION = "policy_creation"

@@ -1,6 +1,6 @@
 """
 ACGS-2 LangGraph Orchestration - Supervisor-Worker Pattern
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Hierarchical agent orchestration implementing Supervisor-Worker topology:
 - Supervisor nodes for strategic planning and delegation
@@ -20,7 +20,7 @@ from enum import Enum
 from typing import cast
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -59,10 +59,10 @@ SUPERVISOR_WORKFLOW_ERRORS = (
 )
 
 
-class WorkerStatus(str, Enum):  # noqa: UP042
+class WorkerStatus(str, Enum):
     """Worker status in the pool.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     IDLE = "idle"
@@ -71,10 +71,10 @@ class WorkerStatus(str, Enum):  # noqa: UP042
     TERMINATED = "terminated"
 
 
-class TaskPriority(str, Enum):  # noqa: UP042
+class TaskPriority(str, Enum):
     """Task priority levels.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     LOW = "low"
@@ -87,7 +87,7 @@ class TaskPriority(str, Enum):  # noqa: UP042
 class WorkerTask:
     """Task to be executed by a worker.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
@@ -106,7 +106,7 @@ class WorkerTask:
 class WorkerTaskResult:
     """Result from worker task execution.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     task_id: str
@@ -126,7 +126,7 @@ class WorkerNode:
     Workers execute tasks assigned by the supervisor,
     reporting results back for aggregation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -283,7 +283,7 @@ class WorkerPool:
 
     Manages worker lifecycle, task assignment, and load balancing.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -433,7 +433,7 @@ class SupervisorNode:
     - Result aggregation and critique
     - Iterative refinement
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -671,7 +671,7 @@ class SupervisorWorkerOrchestrator:
     Manages the complete execution lifecycle including
     state persistence and constitutional compliance.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -803,7 +803,7 @@ def create_supervisor_worker(
     Returns:
         Configured orchestrator
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     # Create workers
     workers = [

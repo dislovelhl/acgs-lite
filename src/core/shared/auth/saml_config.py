@@ -1,6 +1,6 @@
 """
 ACGS-2 SAML 2.0 Configuration Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides configuration dataclasses for SAML 2.0 Service Provider (SP) setup
 with PySAML2. Supports multiple Identity Providers (IdPs) including Okta,
@@ -37,9 +37,9 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from src.core.shared.acgs_logging_config import get_logger
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.errors.exceptions import ACGSBaseError
+from src.core.shared.structured_logging import get_logger
 from src.core.shared.types import JSONValue
 
 logger = get_logger(__name__)

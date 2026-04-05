@@ -11,7 +11,7 @@ Tests the Ultimate Agentic Development System Meta-Orchestrator including:
 - Constitutional compliance
 - Workflow evolution
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -114,31 +114,26 @@ class TestTaskComplexityAnalysis:
     def orchestrator(self):
         return create_meta_orchestrator()
 
-    @pytest.mark.asyncio
     async def test_trivial_complexity(self, orchestrator):
         """Non-keyword queries should be TRIVIAL complexity."""
         complexity = await orchestrator.analyze_complexity("hello")
         assert complexity == TaskComplexity.TRIVIAL
 
-    @pytest.mark.asyncio
     async def test_simple_complexity(self, orchestrator):
         """Read/check/show tasks should be SIMPLE complexity."""
         complexity = await orchestrator.analyze_complexity("show me the files")
         assert complexity == TaskComplexity.SIMPLE
 
-    @pytest.mark.asyncio
     async def test_moderate_complexity(self, orchestrator):
         """Update/fix/refactor tasks should be MODERATE complexity."""
         complexity = await orchestrator.analyze_complexity("update the configuration settings")
         assert complexity == TaskComplexity.MODERATE
 
-    @pytest.mark.asyncio
     async def test_complex_complexity(self, orchestrator):
         """Implementation tasks should be COMPLEX complexity."""
         complexity = await orchestrator.analyze_complexity("implement user registration")
         assert complexity == TaskComplexity.COMPLEX
 
-    @pytest.mark.asyncio
     async def test_visionary_complexity(self, orchestrator):
         """Architecture tasks should be VISIONARY complexity."""
         complexity = await orchestrator.analyze_complexity(
@@ -159,31 +154,26 @@ class TestTaskTypeIdentification:
     def orchestrator(self):
         return create_meta_orchestrator()
 
-    @pytest.mark.asyncio
     async def test_code_generation_type(self, orchestrator):
         """Code generation tasks should be identified correctly."""
         task_type = await orchestrator.identify_task_type("write a function to parse JSON")
         assert task_type == TaskType.CODE_GENERATION
 
-    @pytest.mark.asyncio
     async def test_debugging_type(self, orchestrator):
         """Debug tasks should be identified correctly."""
         task_type = await orchestrator.identify_task_type("debug the error in login")
         assert task_type == TaskType.DEBUGGING
 
-    @pytest.mark.asyncio
     async def test_testing_type(self, orchestrator):
         """Test tasks should be identified correctly."""
         task_type = await orchestrator.identify_task_type("run pytest tests for auth module")
         assert task_type == TaskType.TESTING
 
-    @pytest.mark.asyncio
     async def test_security_audit_type(self, orchestrator):
         """Security tasks should be identified correctly."""
         task_type = await orchestrator.identify_task_type("scan for security vulnerabilities")
         assert task_type == TaskType.SECURITY_AUDIT
 
-    @pytest.mark.asyncio
     async def test_constitutional_validation_type(self, orchestrator):
         """Constitutional tasks should be identified correctly."""
         task_type = await orchestrator.identify_task_type("validate constitutional compliance")
@@ -202,7 +192,6 @@ class TestSwarmAgentManagement:
     def orchestrator(self):
         return create_meta_orchestrator()
 
-    @pytest.mark.asyncio
     async def test_spawn_agent(self, orchestrator):
         """Should spawn new agent when capacity available."""
         agent = await orchestrator.spawn_agent("python_expert", [AgentCapability.PYTHON_EXPERT])
@@ -211,7 +200,6 @@ class TestSwarmAgentManagement:
         assert AgentCapability.PYTHON_EXPERT in agent.capabilities
         assert agent.status == "idle"
 
-    @pytest.mark.asyncio
     async def test_spawn_agent_respects_max_limit(self, orchestrator):
         """Should not spawn beyond max_swarm_agents limit."""
         # Spawn up to limit
@@ -223,7 +211,6 @@ class TestSwarmAgentManagement:
         extra_agent = await orchestrator.spawn_agent("extra_agent", [AgentCapability.PYTHON_EXPERT])
         assert extra_agent is None
 
-    @pytest.mark.asyncio
     async def test_agent_can_handle_task(self):
         """Agent should correctly identify if it can handle a task type."""
         agent = SwarmAgent(
@@ -234,7 +221,6 @@ class TestSwarmAgentManagement:
         assert agent.can_handle(TaskType.SECURITY_AUDIT)
         assert not agent.can_handle(TaskType.CODE_GENERATION)
 
-    @pytest.mark.asyncio
     async def test_route_task_assigns_agents(self, orchestrator):
         """Route task should assign appropriate agents."""
         agents = await orchestrator.route_task(
@@ -256,7 +242,6 @@ class TestConstitutionalCompliance:
     def orchestrator(self):
         return create_meta_orchestrator()
 
-    @pytest.mark.asyncio
     async def test_valid_constitutional_hash(self, orchestrator):
         """Should accept valid constitutional hash."""
         action = {
@@ -266,7 +251,6 @@ class TestConstitutionalCompliance:
         result = await orchestrator.validate_constitutional_compliance(action)
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_invalid_constitutional_hash(self, orchestrator):
         """Should reject invalid constitutional hash."""
         action = {
@@ -276,7 +260,6 @@ class TestConstitutionalCompliance:
         result = await orchestrator.validate_constitutional_compliance(action)
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_action_without_hash_allowed(self, orchestrator):
         """Actions without hash should be allowed (hash added automatically)."""
         action = {"task": "test task"}
@@ -296,7 +279,6 @@ class TestTaskExecution:
     def orchestrator(self):
         return create_meta_orchestrator()
 
-    @pytest.mark.asyncio
     async def test_execute_task_success(self, orchestrator):
         """Should successfully execute a task."""
         result = await orchestrator.execute_task(
@@ -307,14 +289,12 @@ class TestTaskExecution:
         assert result.constitutional_compliant is True
         assert result.confidence_score > 0
 
-    @pytest.mark.asyncio
     async def test_execute_task_includes_constitutional_hash(self, orchestrator):
         """Task result should include constitutional hash."""
         result = await orchestrator.execute_task("test task")
         result_dict = getattr(result, "to_dict", lambda: result.__dict__)()
         assert result_dict["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_execute_task_updates_metrics(self, orchestrator):
         """Executing task should update metrics."""
         initial_count = orchestrator._metrics["tasks_processed"]
@@ -335,14 +315,12 @@ class TestSAFLANeuralMemory:
         config = OrchestratorConfig()
         return SAFLANeuralMemory(config)
 
-    @pytest.mark.asyncio
     async def test_store_and_retrieve(self, memory):
         """Should store and retrieve values."""
         await memory.store(MemoryTier.SEMANTIC, "test_key", {"data": "test_value"})
         result = await memory.retrieve(MemoryTier.SEMANTIC, "test_key")
         assert result == {"data": "test_value"}
 
-    @pytest.mark.asyncio
     async def test_memory_tiers(self, memory):
         """Should support all four memory tiers."""
         for tier in MemoryTier:
@@ -350,7 +328,6 @@ class TestSAFLANeuralMemory:
             result = await memory.retrieve(tier, f"key_{tier.value}")
             assert result == f"value_{tier.value}"
 
-    @pytest.mark.asyncio
     async def test_semantic_search(self, memory):
         """Should search semantic memory."""
         await memory.store(
@@ -359,7 +336,6 @@ class TestSAFLANeuralMemory:
         results = await memory.search_semantic("python")
         assert len(results) > 0
 
-    @pytest.mark.asyncio
     async def test_feedback_loop(self, memory):
         """Should record feedback loops."""
         await memory.add_feedback_loop(
@@ -370,7 +346,6 @@ class TestSAFLANeuralMemory:
         )
         assert len(memory._feedback_loops) == 1
 
-    @pytest.mark.asyncio
     async def test_memory_stats(self, memory):
         """Should return memory statistics."""
         await memory.store(MemoryTier.VECTOR, "k1", "v1")
@@ -393,7 +368,6 @@ class TestWorkflowEvolution:
     def orchestrator(self):
         return create_meta_orchestrator()
 
-    @pytest.mark.asyncio
     async def test_evolve_workflow_success(self, orchestrator):
         """Should evolve workflow with high confidence."""
         result = await orchestrator.evolve_workflow(
@@ -402,7 +376,6 @@ class TestWorkflowEvolution:
         assert result is True
         assert orchestrator._evolution_count_today == 1
 
-    @pytest.mark.asyncio
     async def test_evolve_workflow_low_confidence(self, orchestrator):
         """Should reject evolution with low confidence."""
         result = await orchestrator.evolve_workflow(
@@ -411,7 +384,6 @@ class TestWorkflowEvolution:
         assert result is False
         assert orchestrator._evolution_count_today == 0
 
-    @pytest.mark.asyncio
     async def test_evolve_workflow_daily_limit(self, orchestrator):
         """Should respect daily evolution limit."""
         # Max out daily evolutions
@@ -435,7 +407,6 @@ class TestResearchIntegration:
     def orchestrator(self):
         return create_meta_orchestrator()
 
-    @pytest.mark.asyncio
     async def test_research_topic(self, orchestrator):
         """Should research a topic."""
         result = await orchestrator.research_topic(
@@ -445,7 +416,6 @@ class TestResearchIntegration:
         assert "arxiv" in result["sources_queried"]
         assert result["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_research_stores_in_memory(self, orchestrator):
         """Research should store results in memory."""
         await orchestrator.research_topic("neural networks")
@@ -468,7 +438,6 @@ class TestSwarmDelegation:
     def orchestrator(self):
         return create_meta_orchestrator()
 
-    @pytest.mark.asyncio
     async def test_delegate_to_swarm(self, orchestrator):
         """Should delegate task to swarm."""
         result = await orchestrator.delegate_to_swarm("implement complex feature", parallel=True)
@@ -506,7 +475,6 @@ class TestStatusAndMetrics:
         assert "maci_available" in status["components"]
         assert "langgraph_available" in status["components"]
 
-    @pytest.mark.asyncio
     async def test_metrics_update(self, orchestrator):
         """Metrics should update with operations."""
         await orchestrator.execute_task("test task")
@@ -526,7 +494,6 @@ class TestShutdown:
     def orchestrator(self):
         return create_meta_orchestrator()
 
-    @pytest.mark.asyncio
     async def test_shutdown_releases_agents(self, orchestrator):
         """Shutdown should release all agents."""
         # Spawn some agents
@@ -551,7 +518,6 @@ class TestIntegration:
     def orchestrator(self):
         return create_meta_orchestrator()
 
-    @pytest.mark.asyncio
     async def test_full_workflow(self, orchestrator):
         """Test complete workflow: analyze, delegate, execute."""
         # Analyze complexity
@@ -575,7 +541,6 @@ class TestIntegration:
         status = orchestrator.get_status()
         assert status["tasks_processed"] >= 1
 
-    @pytest.mark.asyncio
     async def test_constitutional_hash_throughout(self, orchestrator):
         """Constitutional hash should be present throughout all operations."""
         # Execute task
@@ -631,7 +596,6 @@ class TestPerformance:
     def orchestrator(self):
         return create_meta_orchestrator()
 
-    @pytest.mark.asyncio
     async def test_latency_under_target(self, orchestrator):
         """Task execution should be under latency target."""
         import time
@@ -644,7 +608,6 @@ class TestPerformance:
         # Target is 5ms, but we're lenient in tests
         assert latency_ms < 100  # Allow 100ms in test environment
 
-    @pytest.mark.asyncio
     async def test_throughput(self, orchestrator):
         """Should handle multiple concurrent tasks."""
         tasks = [orchestrator.execute_task(f"task_{i}") for i in range(10)]

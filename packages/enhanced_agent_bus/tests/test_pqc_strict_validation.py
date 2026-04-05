@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - PQC Strict Validation Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for check_enforcement_for_create() and check_enforcement_for_update()
 enforcement gates in pqc_validators.py.
@@ -30,7 +30,7 @@ except ImportError:
     )
 
 try:
-    from src.core.shared.security.pqc import (
+    from enhanced_agent_bus._compat.security.pqc import (
         ClassicalKeyRejectedError,
         MigrationRequiredError,
         PQCKeyRequiredError,
@@ -57,7 +57,6 @@ def _config_mock(mode: str = "strict") -> AsyncMock:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_create_classical_key_strict_raises_classical_key_rejected():
     """Classical key under strict mode raises ClassicalKeyRejectedError."""
     config = _config_mock("strict")
@@ -69,7 +68,6 @@ async def test_create_classical_key_strict_raises_classical_key_rejected():
         )
 
 
-@pytest.mark.asyncio
 async def test_create_no_key_strict_raises_pqc_key_required():
     """No key provided under strict mode raises PQCKeyRequiredError."""
     config = _config_mock("strict")
@@ -81,7 +79,6 @@ async def test_create_no_key_strict_raises_pqc_key_required():
         )
 
 
-@pytest.mark.asyncio
 async def test_create_unsupported_pqc_algorithm_raises():
     """Unsupported PQC algorithm raises UnsupportedPQCAlgorithmError."""
     config = _config_mock("strict")
@@ -94,7 +91,6 @@ async def test_create_unsupported_pqc_algorithm_raises():
     assert exc_info.value.supported_algorithms
 
 
-@pytest.mark.asyncio
 async def test_create_valid_ml_dsa_65_strict_succeeds():
     """Valid ML-DSA-65 key under strict mode succeeds (no exception)."""
     config = _config_mock("strict")
@@ -107,7 +103,6 @@ async def test_create_valid_ml_dsa_65_strict_succeeds():
     config.get_mode.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_create_valid_ml_kem_768_strict_succeeds():
     """Valid ML-KEM-768 key under strict mode succeeds."""
     config = _config_mock("strict")
@@ -123,7 +118,6 @@ async def test_create_valid_ml_kem_768_strict_succeeds():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_create_classical_key_permissive_succeeds():
     """Classical key under permissive mode succeeds."""
     config = _config_mock("permissive")
@@ -134,7 +128,6 @@ async def test_create_classical_key_permissive_succeeds():
     )
 
 
-@pytest.mark.asyncio
 async def test_create_no_key_permissive_succeeds():
     """No key under permissive mode succeeds."""
     config = _config_mock("permissive")
@@ -150,7 +143,6 @@ async def test_create_no_key_permissive_succeeds():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_update_classical_key_strict_raises_migration_required():
     """Updating existing classical-key record under strict mode raises MigrationRequiredError."""
     config = _config_mock("strict")
@@ -161,7 +153,6 @@ async def test_update_classical_key_strict_raises_migration_required():
         )
 
 
-@pytest.mark.asyncio
 async def test_update_classical_key_strict_migration_context_bypasses():
     """migration_context=True bypasses strict gate for update operations."""
     config = _config_mock("strict")
@@ -172,7 +163,6 @@ async def test_update_classical_key_strict_migration_context_bypasses():
     )
 
 
-@pytest.mark.asyncio
 async def test_update_pqc_key_strict_succeeds():
     """Updating PQC-key record under strict mode succeeds."""
     config = _config_mock("strict")
@@ -187,7 +177,6 @@ async def test_update_pqc_key_strict_succeeds():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_read_path_no_enforcement_check():
     """Read/verify path does not call enforcement. This is a design-level test:
     the absence of check_enforcement_for_read() in the module API is the assertion."""

@@ -1,6 +1,6 @@
 """
 Cache Layer for Constitutional Storage
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Abstraction over Redis cache with tenant-aware key management.
 """
@@ -8,14 +8,14 @@ Abstraction over Redis cache with tenant-aware key management.
 from typing import Any, Protocol
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.json_utils import dumps as json_dumps
-from src.core.shared.json_utils import loads as json_loads
+from enhanced_agent_bus._compat.json_utils import dumps as json_dumps
+from enhanced_agent_bus._compat.json_utils import loads as json_loads
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -28,6 +28,7 @@ class _RedisClientProtocol(Protocol):
     async def get(self, key: str) -> Any: ...
     async def setex(self, key: str, ttl: int, value: Any) -> Any: ...
     async def delete(self, key: str) -> Any: ...
+
 
 logger = get_logger(__name__)
 _CACHE_OPERATION_ERRORS = (
@@ -52,7 +53,7 @@ class ConstitutionalCache:
     - TTL-based invalidation
     - JSON serialization for complex types
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -154,7 +155,9 @@ class ConstitutionalCache:
             cached_data = await self.redis_client.get(cache_key)
             if not cached_data:
                 return None
-            return cached_data.decode("utf-8") if isinstance(cached_data, bytes) else str(cached_data)
+            return (
+                cached_data.decode("utf-8") if isinstance(cached_data, bytes) else str(cached_data)
+            )
         except _CACHE_OPERATION_ERRORS as e:
             logger.warning(f"[{CONSTITUTIONAL_HASH}] Active version get error: {e}")
             return None

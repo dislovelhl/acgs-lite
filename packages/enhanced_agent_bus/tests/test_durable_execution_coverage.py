@@ -1,7 +1,7 @@
 """
 Comprehensive tests for durable_execution.py to achieve >=98% coverage.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -479,8 +479,8 @@ class TestCheckpointStore:
         assert store._db_path == ":memory:"
 
     def test_init_custom_db_path(self):
-        store = CheckpointStore("/tmp/test_checkpoints_cov.db")  # noqa: S108
-        assert store._db_path == "/tmp/test_checkpoints_cov.db"  # noqa: S108
+        store = CheckpointStore("/tmp/test_checkpoints_cov.db")
+        assert store._db_path == "/tmp/test_checkpoints_cov.db"
 
 
 # =============================================================================

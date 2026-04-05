@@ -4,7 +4,7 @@ ACGS-2 LangGraph-Style Orchestration
 Implements stateful cyclic graphs for complex multi-agent governance workflows
 with conditional branching and state persistence, inspired by LangGraph patterns.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from abc import ABC, abstractmethod
@@ -15,7 +15,7 @@ from enum import Enum
 from typing import TypeVar
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -25,7 +25,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 T = TypeVar("T")
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -94,7 +94,7 @@ class GlobalState:
     Global state object that flows through the workflow graph.
 
     This replaces message passing with persistent state mutations.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Core state
@@ -345,7 +345,7 @@ class WorkflowExecutor:
     Executes workflows using LangGraph-style orchestration.
 
     Manages state persistence, error handling, and execution flow.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, workflow: WorkflowDefinition):
@@ -506,7 +506,7 @@ def create_governance_workflow() -> WorkflowDefinition:
     workflow = WorkflowDefinition(
         workflow_id="governance_standard",
         name="Standard Governaflow",
-        description="Complete governance workflow with classification, validation, deliberation, and execution",  # noqa: E501
+        description="Complete governance workflow with classification, validation, deliberation, and execution",
     )
 
     # Create nodes
@@ -585,7 +585,7 @@ def create_governance_workflow() -> WorkflowDefinition:  # type: ignore[no-redef
     workflow = WorkflowDefinition(
         workflow_id="governance_standard",
         name="Standard Governance Workflow",
-        description="Complete governance workflow with classification, validation, deliberation, and execution",  # noqa: E501
+        description="Complete governance workflow with classification, validation, deliberation, and execution",
         entry_point="classifier",  # Set proper entry point
     )
 

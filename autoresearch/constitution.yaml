@@ -4,7 +4,7 @@ description: >
   Constitutional rules for the ACGS-2 autoresearch benchmark suite.
   These rules encode EU AI Act Articles 9-15 requirements.
 metadata:
-  constitutional_hash_family: cdd01ef066bc6cf2
+  constitutional_hash_family: 608508a9bd224290
   profile: autoresearch-benchmark
 rules:
   - id: SAFETY-001

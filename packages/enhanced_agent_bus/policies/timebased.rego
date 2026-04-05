@@ -7,17 +7,17 @@ default allow := false
 # Check business hours for non-admin roles
 allow if {
     input.context.role == "admin"
-    input.constitutional_hash == "cdd01ef066bc6cf2"
+    input.constitutional_hash == "608508a9bd224290"
 }
 
 allow if {
     is_business_hours
-    input.constitutional_hash == "cdd01ef066bc6cf2"
+    input.constitutional_hash == "608508a9bd224290"
 }
 
 allow if {
     input.context.after_hours_permission == true
-    input.constitutional_hash == "cdd01ef066bc6cf2"
+    input.constitutional_hash == "608508a9bd224290"
 }
 
 # Business hours check (9 AM - 6 PM, Mon-Fri)

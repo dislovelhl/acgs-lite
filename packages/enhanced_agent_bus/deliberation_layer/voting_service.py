@@ -1,6 +1,6 @@
 """
 ACGS-2 Deliberation Layer - Voting Service
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 Enables multi-agent consensus for high-impact decisions.
 """
 
@@ -11,10 +11,10 @@ from enum import Enum
 from typing import cast
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]
@@ -40,7 +40,7 @@ except ImportError:
     get_election_store = None  # type: ignore[misc, assignment]
 
 try:
-    from src.core.shared.config import settings
+    from enhanced_agent_bus._compat.config import settings
 except ImportError:
     # Fallback to local config or mock
     settings = None
@@ -184,7 +184,7 @@ class VotingService:
 
         Returns:
             Election ID string
-        """  # noqa: E501
+        """
         if timeout is None:
             if settings is None or not hasattr(settings, "voting"):
                 timeout = 300  # Default 5-minute timeout when settings unavailable
@@ -319,7 +319,7 @@ class VotingService:
             success = await self.kafka_bus.publish_vote_event(tenant_id, vote_event_dict)
             if not success:
                 logger.warning(
-                    f"Failed to publish vote event to Kafka for election {election_id}, continuing anyway"  # noqa: E501
+                    f"Failed to publish vote event to Kafka for election {election_id}, continuing anyway"
                 )
         except VOTE_EVENT_PUBLISH_ERRORS as e:
             logger.error(f"Error publishing vote event to Kafka: {e}")

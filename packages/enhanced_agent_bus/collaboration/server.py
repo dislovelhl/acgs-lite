@@ -7,7 +7,7 @@ Socket.io server for real-time collaboration with:
 - Rate limiting
 - Connection health monitoring
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -16,14 +16,14 @@ import time
 from collections.abc import Callable
 from typing import Protocol, cast
 
-from src.core.shared.security.cors_config import get_cors_config
-from src.core.shared.security.rate_limiter import SlidingWindowRateLimiter
+from enhanced_agent_bus._compat.security.cors_config import get_cors_config
+from enhanced_agent_bus._compat.security.rate_limiter import SlidingWindowRateLimiter
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]

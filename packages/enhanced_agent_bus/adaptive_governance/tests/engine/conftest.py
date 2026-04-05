@@ -1,12 +1,13 @@
 """
 Shared fixtures for Adaptive Governance Engine tests.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from unittest.mock import patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH as SHARED_CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH as SHARED_CONSTITUTIONAL_HASH
 
 CONST_HASH = SHARED_CONSTITUTIONAL_HASH
 
@@ -15,8 +16,7 @@ _IMPACT_MLFLOW = (
     "enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
 )
 _THRESH_MLFLOW = (
-    "enhanced_agent_bus.adaptive_governance.threshold_manager."
-    "AdaptiveThresholds._initialize_mlflow"
+    "enhanced_agent_bus.adaptive_governance.threshold_manager.AdaptiveThresholds._initialize_mlflow"
 )
 
 
@@ -61,28 +61,23 @@ def engine():
         patch(_IMPACT_MLFLOW),
         patch(_THRESH_MLFLOW),
         patch(
-            "enhanced_agent_bus.adaptive_governance.governance_engine."
-            "FEEDBACK_HANDLER_AVAILABLE",
+            "enhanced_agent_bus.adaptive_governance.governance_engine.FEEDBACK_HANDLER_AVAILABLE",
             False,
         ),
         patch(
-            "enhanced_agent_bus.adaptive_governance.governance_engine."
-            "DRIFT_MONITORING_AVAILABLE",
+            "enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE",
             False,
         ),
         patch(
-            "enhanced_agent_bus.adaptive_governance.governance_engine."
-            "ONLINE_LEARNING_AVAILABLE",
+            "enhanced_agent_bus.adaptive_governance.governance_engine.ONLINE_LEARNING_AVAILABLE",
             False,
         ),
         patch(
-            "enhanced_agent_bus.adaptive_governance.governance_engine."
-            "AB_TESTING_AVAILABLE",
+            "enhanced_agent_bus.adaptive_governance.governance_engine.AB_TESTING_AVAILABLE",
             False,
         ),
         patch(
-            "enhanced_agent_bus.adaptive_governance.governance_engine."
-            "ANOMALY_MONITORING_AVAILABLE",
+            "enhanced_agent_bus.adaptive_governance.governance_engine.ANOMALY_MONITORING_AVAILABLE",
             False,
         ),
     ):

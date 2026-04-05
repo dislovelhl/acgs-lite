@@ -5,10 +5,10 @@ import future.keywords.if
 import future.keywords.in
 
 # Constitutional AI Policy - Enforce hash integrity (Pillar 1)
-# ACGS-2 Standard: cdd01ef066bc6cf2 (baseline)
+# ACGS-2 Standard: 608508a9bd224290 (baseline)
 # OWASP API Sec Top 10: Broken Auth, NIST AI RMF 1.2 Integrity
 # Supports dynamic hash evolution and versioning
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # P99 eval <1ms: O(1) object lookups, early exit patterns
 
 default allow := false
@@ -41,7 +41,7 @@ is_valid_constitutional_hash if {
 
 is_valid_constitutional_hash if {
 	# Fallback: exact match with baseline hash (for backward compatibility)
-	input.constitutional_hash == "cdd01ef066bc6cf2"
+	input.constitutional_hash == "608508a9bd224290"
 	not data.constitutional.active_hash.hash  # Only if no active hash set
 }
 
@@ -70,7 +70,7 @@ violation contains msg if {
 # Expected hash for violation reporting
 expected_hash := data.constitutional.active_hash.hash if {
 	data.constitutional.active_hash.hash
-} else := "cdd01ef066bc6cf2"
+} else := "608508a9bd224290"
 
 # Audit event for constitutional policy evaluation
 audit_event := {
@@ -100,4 +100,4 @@ active_version := data.constitutional.active_hash.version if {
 # Helper: Get active constitutional hash
 active_hash := data.constitutional.active_hash.hash if {
 	data.constitutional.active_hash.hash
-} else := "cdd01ef066bc6cf2"
+} else := "608508a9bd224290"

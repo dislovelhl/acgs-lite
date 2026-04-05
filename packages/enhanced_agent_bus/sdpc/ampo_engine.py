@@ -16,4 +16,14 @@ class AMPOEngine:
             preamble = "You are a reasoning agent. Use step-by-step logic and verify dependencies."
         else:
             preamble = "You are a concise general assistant."
-        return f"{preamble}\n\nUSER TASK:\n{user_prompt}"
+        # Append dynamic mutations from evolution controller
+        mutations_block = ""
+        if self.evolution_controller is not None:
+            from enhanced_agent_bus.sdpc.evolution_controller import EvolutionController
+
+            if isinstance(self.evolution_controller, EvolutionController):
+                mutations = self.evolution_controller.get_mutations(intent)
+                if mutations:
+                    mutations_block = "\n" + "\n".join(mutations) + "\n"
+
+        return f"{preamble}{mutations_block}\n\nUSER TASK:\n{user_prompt}"

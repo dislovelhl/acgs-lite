@@ -1,6 +1,6 @@
 """
 Tests for ACGS-2 Row-Level Security Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Integration tests for RLS policy generation and management.
 Tests that require PostgreSQL are marked with @pytest.mark.postgres.
@@ -13,8 +13,8 @@ import pytest
 import pytest_asyncio
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from src.core.shared.database.session import Base
 
+from enhanced_agent_bus._compat.database.session import Base
 from enhanced_agent_bus.multi_tenancy.rls import (
     ACGS2_RLS_TABLES,
     ALLOWED_RLS_TABLES,
@@ -66,7 +66,7 @@ async def test_engine():
 
     await engine.dispose()
     # Clean up the temporary database file
-    try:  # noqa: SIM105
+    try:
         os.unlink(db_path)
     except OSError:
         pass

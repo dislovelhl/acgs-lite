@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - PQC Validators
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Post-quantum cryptographic validators for constitutional hash validation
 and MACI enforcement with hybrid signature support.
@@ -22,7 +22,7 @@ import hmac
 import time
 from typing import Any
 
-from src.core.shared.security.pqc import (
+from enhanced_agent_bus._compat.security.pqc import (
     APPROVED_CLASSICAL,
     APPROVED_PQC,
     CONSTITUTIONAL_HASH,
@@ -38,17 +38,16 @@ from src.core.shared.security.pqc import (
     UnsupportedPQCAlgorithmError,
     normalize_to_nist,
 )
-from src.core.shared.security.pqc_crypto import (
+from enhanced_agent_bus._compat.security.pqc_crypto import (
     HybridSignature,
     PQCConfig,
     PQCCryptoService,
     PQCMetadata,
     ValidationResult,
 )
-from src.core.shared.security.pqc_crypto import (
+from enhanced_agent_bus._compat.security.pqc_crypto import (
     verify_signature as pqc_verify_signature,
 )
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
@@ -191,7 +190,7 @@ async def validate_constitutional_hash_pqc(
 
     Args:
         data: Data to validate (must include signature and constitutional_hash)
-        expected_hash: Expected constitutional hash (default: cdd01ef066bc6cf2)
+        expected_hash: Expected constitutional hash (default: 608508a9bd224290)
         pqc_config: PQC configuration (None = disabled, classical-only mode)
 
     Returns:
@@ -262,7 +261,7 @@ async def validate_constitutional_hash_pqc(
 
         # Validate classical signature if present
         if isinstance(signature_data, dict) and "signature" in signature_data:
-            # Classical signature validation (simplified - actual verification would use cryptography)  # noqa: E501
+            # Classical signature validation (simplified - actual verification would use cryptography)
             classical_ms = (time.perf_counter() - classical_start) * 1000
             validation_duration = (time.perf_counter() - start_time) * 1000
 
@@ -420,7 +419,7 @@ async def validate_maci_record_pqc(
     agent_id = record.get("agent_id")
     target_output_id = record.get("target_output_id")
 
-    if agent_id and target_output_id:  # noqa: SIM102
+    if agent_id and target_output_id:
         # Check if agent is trying to validate its own output
         # This is a simplified check - actual implementation would query MACI registry
         if _is_self_validation(agent_id, target_output_id, record):
@@ -801,7 +800,7 @@ async def _extract_public_keys(data: dict, signature_data: dict) -> dict:
 
 
 async def _check_key_registry_status(key_id: str) -> str:
-    """Query Key Registry for key status. Returns 'active' on lookup failure (fail-open for backward compat)."""  # noqa: E501
+    """Query Key Registry for key status. Returns 'active' on lookup failure (fail-open for backward compat)."""
     try:
         import importlib
 

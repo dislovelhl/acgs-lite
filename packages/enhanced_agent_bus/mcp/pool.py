@@ -5,7 +5,7 @@ Manages multiple MCPClient instances, provides a unified tool catalogue
 across all connected MCP servers, routes tool calls to the correct server,
 and supports health checks with automatic reconnection on failure.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Quick start::
 
@@ -36,15 +36,15 @@ MACI role restrictions before forwarding the call to the server.
 permitted to call, using the same role-restriction mapping enforced by the
 individual clients.
 
-Constitutional Hash: cdd01ef066bc6cf2
-"""  # noqa: E501
+Constitutional Hash: 608508a9bd224290
+"""
 
 from __future__ import annotations
 
 import asyncio
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -54,6 +54,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 from .client import (
     MCPClient,
     _role_may_call_tool,  # internal — same package; call-permission predicate
+    _validate_maci_role,
 )
 from .types import MCPTool, MCPToolResult
 
@@ -115,7 +116,7 @@ class MCPClientPool:
     The pool is designed for single-event-loop, concurrent async usage; it is
     **not** safe to share across OS threads without external locking.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self) -> None:
@@ -271,8 +272,9 @@ class MCPClientPool:
         Args:
             maci_role: Optional MACI role of the caller.  When provided, tools
                 that the role is **not** permitted to invoke are excluded from
-                the result.  An empty string is treated the same as ``None``
-                (no filtering).
+                the result.  ``None`` preserves the internal unfiltered
+                catalogue path; an explicit empty or unknown role returns no
+                tools.
 
         Returns:
             A list of :class:`MCPTool` descriptors (possibly empty), ordered
@@ -281,15 +283,25 @@ class MCPClientPool:
         async with self._lock:
             tools: list[MCPTool] = list(self._tool_descriptors.values())
 
-        # Apply MACI role filter when a non-empty role is supplied
-        if maci_role:
-            tools = [t for t in tools if _role_may_call_tool(maci_role, t.name)[0]]
+        # Apply MACI role filter only when the caller explicitly supplies a role.
+        if maci_role is not None:
+            valid, role_or_reason = _validate_maci_role(maci_role)
+            if not valid:
+                logger.warning(
+                    "mcp_pool_list_tools_invalid_maci_role",
+                    maci_role=maci_role,
+                    reason=role_or_reason,
+                    constitutional_hash=CONSTITUTIONAL_HASH,
+                )
+                tools = []
+            else:
+                tools = [t for t in tools if _role_may_call_tool(role_or_reason, t.name)[0]]
 
         logger.debug(
             "mcp_pool_list_tools",
             total_indexed=len(self._tool_descriptors),
             returned_count=len(tools),
-            maci_role=maci_role or "none",
+            maci_role="none" if maci_role is None else maci_role,
             constitutional_hash=CONSTITUTIONAL_HASH,
         )
         return tools

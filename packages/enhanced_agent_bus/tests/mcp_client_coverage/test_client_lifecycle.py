@@ -1,5 +1,5 @@
 """Unit tests for MCP client lifecycle (connect, disconnect, retry).
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -9,8 +9,8 @@ from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.mcp_integration.client import (
     MCPClient,
     MCPClientConfig,
@@ -94,7 +94,6 @@ class TestMCPClientEventHandlers:
 
 
 class TestMCPClientConnect:
-    @pytest.mark.asyncio
     async def test_connect_success(self):
         client = _make_client()
         result = await client.connect()
@@ -102,57 +101,48 @@ class TestMCPClientConnect:
         assert client.is_connected
         assert client.state == MCPClientState.READY
 
-    @pytest.mark.asyncio
     async def test_connect_increments_connection_attempts(self):
         client = _make_client()
         await client.connect()
         assert client._connection_attempts == 1
 
-    @pytest.mark.asyncio
     async def test_connect_increments_successful_connections(self):
         client = _make_client()
         await client.connect()
         assert client._successful_connections == 1
 
-    @pytest.mark.asyncio
     async def test_connect_sets_connected_at(self):
         client = _make_client()
         await client.connect()
         assert client._connection.connected_at is not None
 
-    @pytest.mark.asyncio
     async def test_connect_discovers_tools(self):
         client = _make_client()
         await client.connect()
         assert len(client.get_tools()) > 0
 
-    @pytest.mark.asyncio
     async def test_connect_discovers_resources(self):
         client = _make_client()
         await client.connect()
         assert len(client.get_resources()) > 0
 
-    @pytest.mark.asyncio
     async def test_connect_no_tool_discovery(self):
         cfg = _make_config(enable_tool_discovery=False)
         client = _make_client(config=cfg)
         await client.connect()
         assert client.get_tools() == []
 
-    @pytest.mark.asyncio
     async def test_connect_no_resource_discovery(self):
         cfg = _make_config(enable_resource_discovery=False)
         client = _make_client(config=cfg)
         await client.connect()
         assert client.get_resources() == []
 
-    @pytest.mark.asyncio
     async def test_connect_with_session_id(self):
         client = _make_client()
         result = await client.connect(session_id="sess-001")
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_connect_fires_sync_handler(self):
         client = _make_client()
         handler = MagicMock()
@@ -161,7 +151,6 @@ class TestMCPClientConnect:
         handler.assert_called_once()
         assert isinstance(handler.call_args[0][0], MCPServerConnection)
 
-    @pytest.mark.asyncio
     async def test_connect_fires_async_handler(self):
         client = _make_client()
         async_handler = AsyncMock()
@@ -169,7 +158,6 @@ class TestMCPClientConnect:
         await client.connect()
         async_handler.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_connect_handler_error_does_not_raise(self):
         client = _make_client()
 
@@ -180,7 +168,6 @@ class TestMCPClientConnect:
         result = await client.connect()
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_connect_server_info_populated(self):
         client = _make_client()
         await client.connect()
@@ -189,7 +176,6 @@ class TestMCPClientConnect:
         assert info.name
         assert info.protocol_version == "2024-11-05"
 
-    @pytest.mark.asyncio
     async def test_get_connection_info_after_connect(self):
         client = _make_client()
         await client.connect()
@@ -197,7 +183,6 @@ class TestMCPClientConnect:
         assert info is not None
         assert info["state"] == "ready"
 
-    @pytest.mark.asyncio
     async def test_get_metrics_after_connect(self):
         client = _make_client()
         await client.connect()
@@ -208,7 +193,6 @@ class TestMCPClientConnect:
 
 
 class TestMCPClientConnectRetry:
-    @pytest.mark.asyncio
     async def test_retry_on_transient_failure(self):
         cfg = _make_config(retry_attempts=3, retry_delay_ms=1)
         mcp = MCPClient(config=cfg)
@@ -227,7 +211,6 @@ class TestMCPClientConnectRetry:
         assert result is True
         assert call_count == 2
 
-    @pytest.mark.asyncio
     async def test_all_retries_exhausted_raises(self):
         cfg = _make_config(retry_attempts=2, retry_delay_ms=1)
         client = MCPClient(config=cfg)
@@ -241,7 +224,6 @@ class TestMCPClientConnectRetry:
         assert client._total_errors == 1
         assert client._connection.state == MCPClientState.ERROR
 
-    @pytest.mark.asyncio
     async def test_single_attempt_no_retry_on_failure(self):
         cfg = _make_config(retry_attempts=1, retry_delay_ms=1)
         client = MCPClient(config=cfg)
@@ -255,12 +237,10 @@ class TestMCPClientConnectRetry:
 
 
 class TestMCPClientDisconnect:
-    @pytest.mark.asyncio
     async def test_disconnect_when_not_connected_noop(self):
         client = _make_client()
         await client.disconnect()
 
-    @pytest.mark.asyncio
     async def test_disconnect_after_connect(self):
         client = _make_client()
         await client.connect()
@@ -269,7 +249,6 @@ class TestMCPClientDisconnect:
         assert not client.is_connected
         assert client.state == MCPClientState.DISCONNECTED
 
-    @pytest.mark.asyncio
     async def test_disconnect_cancels_pending_requests(self):
         client = _make_client()
         await client.connect()
@@ -280,7 +259,6 @@ class TestMCPClientDisconnect:
         assert fut.cancelled()
         assert len(client._pending_requests) == 0
 
-    @pytest.mark.asyncio
     async def test_disconnect_fires_sync_handler(self):
         client = _make_client()
         await client.connect()
@@ -289,7 +267,6 @@ class TestMCPClientDisconnect:
         await client.disconnect()
         handler.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_disconnect_fires_async_handler(self):
         client = _make_client()
         await client.connect()
@@ -298,7 +275,6 @@ class TestMCPClientDisconnect:
         await client.disconnect()
         async_handler.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_disconnect_handler_error_does_not_raise(self):
         client = _make_client()
         await client.connect()
@@ -309,14 +285,12 @@ class TestMCPClientDisconnect:
         client.on_disconnect(bad_handler)
         await client.disconnect()
 
-    @pytest.mark.asyncio
     async def test_disconnect_with_session_id(self):
         client = _make_client()
         await client.connect()
         await client.disconnect(session_id="sess-xyz")
         assert client.state == MCPClientState.DISCONNECTED
 
-    @pytest.mark.asyncio
     async def test_pending_future_already_done_not_cancelled(self):
         client = _make_client()
         await client.connect()

@@ -1,12 +1,10 @@
 """
 Tests for module-level constants, configuration, and basic REPL types.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import logging
 from unittest.mock import patch
-
-import pytest
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -107,8 +105,7 @@ class TestREPLDisabledError:
         assert "disabled" in str(err)
 
     def test_is_acgs_base_error(self):
-        from src.core.shared.errors.exceptions import ACGSBaseError
-
+        from enhanced_agent_bus._compat.errors import ACGSBaseError
         from enhanced_agent_bus.rlm_repl import REPLDisabledError
 
         assert issubclass(REPLDisabledError, ACGSBaseError)
@@ -150,8 +147,7 @@ class TestREPLConfig:
         assert cfg.max_operations_per_hour == 500
 
     def test_constitutional_hash_default(self):
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
-
+        from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
         from enhanced_agent_bus.rlm_repl import REPLConfig
 
         cfg = REPLConfig()

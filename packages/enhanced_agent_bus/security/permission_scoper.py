@@ -1,4 +1,4 @@
-"""Constitutional Hash: cdd01ef066bc6cf2
+"""Constitutional Hash: 608508a9bd224290
 ACGS-2 Runtime Security - Permission Scoper
 Facilitates dynamic, task-specific token generation for autonomous agents.
 Enforces the principle of least privilege.
@@ -7,10 +7,10 @@ Enforces the principle of least privilege.
 import os
 from dataclasses import dataclass
 
-from src.core.shared.crypto import CryptoService
+from enhanced_agent_bus._compat.crypto import CryptoService
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

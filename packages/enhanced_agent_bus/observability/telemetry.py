@@ -1,6 +1,6 @@
 """
 ACGS-2 OpenTelemetry Core Configuration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides unified telemetry configuration for distributed tracing,
 metrics collection, and constitutional compliance tracking.
@@ -12,14 +12,15 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
 
 from enhanced_agent_bus.bus_types import JSONDict
-from enhanced_agent_bus.observability.structured_logging import get_logger
+
+from .structured_logging import get_logger
 
 try:
-    from src.core.shared.config import settings
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.config import settings
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     settings = None
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 logger = get_logger(__name__)
 _module = sys.modules.get(__name__)
@@ -39,7 +40,8 @@ try:
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor, SimpleSpanProcessor
-    from src.core.shared.otel_attributes import (
+
+    from enhanced_agent_bus._compat.otel_attributes import (
         get_resource_attributes,
     )
 
@@ -155,9 +157,8 @@ class _CrossModuleNoOpType(type):
         instance_cls = instance.__class__
         if type.__instancecheck__(cls, instance):
             return True
-        return (
-            instance_cls.__name__ == cls.__name__
-            and instance_cls.__module__.endswith(".observability.telemetry")
+        return instance_cls.__name__ == cls.__name__ and instance_cls.__module__.endswith(
+            ".observability.telemetry"
         )
 
 

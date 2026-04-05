@@ -1,6 +1,6 @@
 """
 OAuth2 State Manager Service
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Redis-backed OAuth2 state parameter management with enhanced security:
 - High-entropy state generation (256-bit)
@@ -48,6 +48,7 @@ import secrets
 from datetime import UTC, datetime, timedelta
 
 from src.core.shared.config import settings
+from src.core.shared.config.runtime_environment import resolve_runtime_environment
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.errors.exceptions import ACGSBaseError
 from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
@@ -57,6 +58,10 @@ logger = get_logger(__name__)
 _NON_PRODUCTION_ENVS = frozenset({"development", "dev", "test", "testing", "local", "ci"})
 
 
+def _runtime_environment() -> str:
+    return resolve_runtime_environment(getattr(settings, "env", None))
+
+
 def _parse_bool_env(value: str | None) -> bool:
     return (value or "").strip().lower() in {"true", "1", "yes", "on"}
 
@@ -64,7 +69,7 @@ def _parse_bool_env(value: str | None) -> bool:
 def _allow_degraded_mode_without_redis() -> bool:
     if _parse_bool_env(os.getenv("OAUTH_STATE_ALLOW_DEGRADED_MODE")):
         return True
-    return settings.env in _NON_PRODUCTION_ENVS
+    return _runtime_environment() in _NON_PRODUCTION_ENVS
 
 
 class OAuth2StateError(ACGSBaseError):
@@ -104,7 +109,7 @@ class OAuth2StateManager:
     - Constitutional hash validation
     - Graceful degradation without Redis
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # State TTL in seconds (5 minutes)
@@ -128,7 +133,7 @@ class OAuth2StateManager:
             if not _allow_degraded_mode_without_redis():
                 raise OSError(
                     "Redis is required for OAuth2StateManager in production-like environments. "
-                    f"Current environment: {settings.env!r}"
+                    f"Current environment: {_runtime_environment()!r}"
                 )
             logger.warning(
                 f"[{CONSTITUTIONAL_HASH}] OAuth2StateManager initialized without Redis - "

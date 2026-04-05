@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Chaos Testing Framework
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides controlled chaos injection for validating system resilience
 under failure conditions while maintaining constitutional compliance.
@@ -26,7 +26,7 @@ from functools import wraps
 from typing import NoReturn
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -39,11 +39,11 @@ MAX_DURATION_S = 300.0  # 5 minutes absolute max
 
 # Import centralized constitutional hash from shared module
 try:
-    from src.core.shared.circuit_breaker import get_circuit_breaker
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.circuit_breaker import get_circuit_breaker
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     # Fallback for standalone usage
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
     get_circuit_breaker = None
 
@@ -97,7 +97,7 @@ class ChaosScenario:
     """
     Defines a chaos testing scenario with safety controls.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     name: str
@@ -201,7 +201,7 @@ class ChaosEngine:
     """
     Central engine for injecting controlled chaos into the agent bus.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Features:
     - Constitutional hash validation
@@ -471,7 +471,7 @@ class ChaosEngine:
             scenario.active = False
 
             # Cleanup based on scenario type
-            if scenario.chaos_type == ChaosType.CIRCUIT_BREAKER:  # noqa: SIM102
+            if scenario.chaos_type == ChaosType.CIRCUIT_BREAKER:
                 if get_circuit_breaker:
                     try:
                         cb = get_circuit_breaker(scenario.target)

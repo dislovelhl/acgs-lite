@@ -1,6 +1,6 @@
 """
 ACGS-2 Governance Fixtures
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Fixtures for consensus checking, policy verification, and governance testing.
 """
@@ -13,11 +13,11 @@ from enum import Enum
 import pytest
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -172,7 +172,7 @@ class SpecConsensusChecker:
 
         # Calculate consensus based on type
         participating = approve_weight + reject_weight
-        if participating == 0:  # noqa: SIM108
+        if participating == 0:
             approval_ratio = 0.0
         else:
             approval_ratio = approve_weight / participating
@@ -396,7 +396,7 @@ class SpecPolicyVerifier:
             True if all strict policies pass
         """
         for result in self.verification_log:
-            if result.enforcement == PolicyEnforcement.STRICT and not result.passed:  # noqa: SIM102
+            if result.enforcement == PolicyEnforcement.STRICT and not result.passed:
                 if (
                     scope is None
                     or scope

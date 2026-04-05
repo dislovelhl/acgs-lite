@@ -1,7 +1,7 @@
 """
 Workflow Persistence Models
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 Version: 1.0.0
 
 Data models for durable workflow execution with full audit trail support.
@@ -13,13 +13,21 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from enhanced_agent_bus.data_flywheel.models import (
+    CandidateArtifact,
+    DatasetSnapshot,
+    DecisionEvent,
+    EvaluationRun,
+    EvidenceBundle,
+)
+
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
 
-class WorkflowStatus(str, Enum):  # noqa: UP042
+class WorkflowStatus(str, Enum):
     """Workflow instance status states."""
 
     PENDING = "pending"
@@ -31,7 +39,7 @@ class WorkflowStatus(str, Enum):  # noqa: UP042
     COMPENSATED = "compensated"
 
 
-class StepStatus(str, Enum):  # noqa: UP042
+class StepStatus(str, Enum):
     """Workflow step status states."""
 
     PENDING = "pending"
@@ -44,7 +52,7 @@ class StepStatus(str, Enum):  # noqa: UP042
     COMPENSATION_FAILED = "compensation_failed"
 
 
-class StepType(str, Enum):  # noqa: UP042
+class StepType(str, Enum):
     """Types of workflow steps."""
 
     ACTIVITY = "activity"
@@ -54,7 +62,7 @@ class StepType(str, Enum):  # noqa: UP042
     WAIT = "wait"
 
 
-class EventType(str, Enum):  # noqa: UP042
+class EventType(str, Enum):
     """Types of workflow events for replay."""
 
     WORKFLOW_STARTED = "workflow_started"
@@ -218,3 +226,21 @@ class CheckpointData(BaseModel):
     step_index: int
     state: dict
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+
+__all__ = [
+    "CandidateArtifact",
+    "CheckpointData",
+    "DatasetSnapshot",
+    "DecisionEvent",
+    "EvaluationRun",
+    "EventType",
+    "EvidenceBundle",
+    "StepStatus",
+    "StepType",
+    "WorkflowCompensation",
+    "WorkflowEvent",
+    "WorkflowInstance",
+    "WorkflowStatus",
+    "WorkflowStep",
+]

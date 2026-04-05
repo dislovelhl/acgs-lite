@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - SIEM Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Lightweight SIEM formatting, alerting, and buffering support.
 """
@@ -12,14 +12,15 @@ import hashlib
 import inspect
 import json
 from collections import defaultdict, deque
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import Enum, IntEnum
 from functools import wraps
-from typing import Any, Callable
+from typing import Any
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -145,7 +146,7 @@ class SIEMEventFormatter:
 
     def _format_syslog(self, event: SecurityEvent, correlation_id: str | None) -> str:
         structured = [
-            '[acgs2@12345',
+            "[acgs2@12345",
             f'event_type="{event.event_type.value}"',
             f'severity="{event.severity.value}"',
             f'constitutional_hash="{event.constitutional_hash}"',
@@ -187,7 +188,9 @@ class AlertManager:
     async def process_event(self, event: SecurityEvent) -> AlertLevel | None:
         threshold = self._find_threshold(event.event_type)
         if threshold is None and event.severity.value == "critical":
-            threshold = AlertThreshold(event.event_type, 1, 60, AlertLevel.CRITICAL, cooldown_seconds=0)
+            threshold = AlertThreshold(
+                event.event_type, 1, 60, AlertLevel.CRITICAL, cooldown_seconds=0
+            )
         if threshold is None:
             return None
 
@@ -281,17 +284,23 @@ class EventCorrelator:
         same_tenant = [
             item
             for item in self._events
-            if item.tenant_id and item.tenant_id == event.tenant_id and item.severity.value in {"high", "critical"}
+            if item.tenant_id
+            and item.tenant_id == event.tenant_id
+            and item.severity.value in {"high", "critical"}
         ]
         if event.tenant_id and len(same_tenant) >= 3:
             correlation_id = self._generate_correlation_id("tenant_attack", event.tenant_id)
             self._correlations[correlation_id] = same_tenant
             return correlation_id
 
-        matching_type = [item for item in self._events if item.event_type.value == event.event_type.value]
+        matching_type = [
+            item for item in self._events if item.event_type.value == event.event_type.value
+        ]
         unique_agents = {item.agent_id for item in matching_type if item.agent_id}
         if len(unique_agents) >= 3:
-            correlation_id = self._generate_correlation_id("distributed_attack", event.event_type.value)
+            correlation_id = self._generate_correlation_id(
+                "distributed_attack", event.event_type.value
+            )
             self._correlations[correlation_id] = matching_type
             return correlation_id
 
@@ -470,11 +479,11 @@ def security_audit(
 
 __all__ = [
     "DEFAULT_ALERT_THRESHOLDS",
+    "FAST_HASH_AVAILABLE",
     "AlertLevel",
     "AlertManager",
     "AlertThreshold",
     "EventCorrelator",
-    "FAST_HASH_AVAILABLE",
     "SIEMConfig",
     "SIEMEventFormatter",
     "SIEMFormat",

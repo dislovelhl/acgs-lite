@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus Rate Limiting
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides rate limiting functionality for the API,
 including batch-specific rate limiting based on batch size.
@@ -15,10 +15,10 @@ from datetime import UTC, datetime, timedelta
 from typing import Protocol
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONList,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONList = list  # type: ignore[misc,assignment]

@@ -13,7 +13,7 @@ Binding decisions from run-20260308-003 consensus:
   C-4: Always fail-closed, no strict_mode toggle
   C-6: INTERSECTION merge — tenants can only RESTRICT, never EXPAND
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -168,7 +168,7 @@ class ToolAllowlistPolicy(BaseModel):
     Tools not in the allowlist are denied by default (fail-closed).
     Tenant overrides can only RESTRICT via INTERSECTION merge.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     role_allowlists: dict[str, list[str]] = Field(

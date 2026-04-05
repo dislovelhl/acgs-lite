@@ -15,9 +15,8 @@ Public API functions and classes are re-exported from this module to maintain
 backward compatibility with the original single-file structure.
 """
 
-
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         MessagePayload,
         PolicyContext,
     )  # noqa: E402

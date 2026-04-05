@@ -1,6 +1,6 @@
 """
 ACGS-2 Data Package
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Contains reference baseline data for drift detection.
 
@@ -33,7 +33,7 @@ def get_baseline_path() -> Path:
         return BASELINE_CSV_PATH
     else:
         raise FileNotFoundError(
-            f"Baseline dataset not found. Expected at {BASELINE_PARQUET_PATH} or {BASELINE_CSV_PATH}"  # noqa: E501
+            f"Baseline dataset not found. Expected at {BASELINE_PARQUET_PATH} or {BASELINE_CSV_PATH}"
         )
 
 

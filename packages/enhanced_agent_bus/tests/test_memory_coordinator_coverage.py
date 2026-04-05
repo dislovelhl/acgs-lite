@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Coverage tests for MemoryCoordinator.
 
@@ -21,9 +21,7 @@ from __future__ import annotations
 import sys
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.coordinators.memory_coordinator import (
     _MEMORY_COORDINATOR_ERRORS,
     MemoryCoordinator,

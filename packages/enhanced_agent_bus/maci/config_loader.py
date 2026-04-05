@@ -4,17 +4,17 @@ MACI Configuration Loader.
 Supports loading MACI configuration from environment variables, JSON files,
 YAML files, or dictionaries with type-safe extraction.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import json
 import os
 from pathlib import Path
 
-from src.core.shared.type_guards import get_str, get_str_list, is_json_dict
+from enhanced_agent_bus._compat.type_guards import get_str, get_str_list, is_json_dict
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -81,7 +81,7 @@ class MACIConfigLoader:
         def_role: MACIRole | None = None
         def_role_str = data.get("default_role")
         if isinstance(def_role_str, str) and def_role_str:
-            try:  # noqa: SIM105
+            try:
                 def_role = MACIRole(def_role_str.upper())
             except ValueError:
                 pass  # Invalid role, keep as None
@@ -97,7 +97,7 @@ class MACIConfigLoader:
                 aid = get_str(a, "agent_id", "") or get_str(a, "id", "")
                 role_str = get_str(a, "role", "")
                 if aid and role_str:
-                    try:  # noqa: SIM105
+                    try:
                         agents.append(
                             MACIAgentRoleConfig(
                                 agent_id=aid,
@@ -181,7 +181,7 @@ class MACIConfigLoader:
                 caps = [
                     c.strip() for c in os.getenv(f"{k}_CAPABILITIES", "").split(",") if c.strip()
                 ]
-                try:  # noqa: SIM105
+                try:
                     agents.append(
                         MACIAgentRoleConfig(
                             agent_id=aid, role=MACIRole(v.upper()), capabilities=caps

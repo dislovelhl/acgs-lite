@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Session Context Management
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides session context storage with Redis backend for dynamic
 per-session governance configuration.
@@ -28,11 +28,11 @@ except ImportError:
 
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -79,7 +79,7 @@ class SessionContext(BaseModel):
     Stores session-level governance settings, metadata, and lifecycle
     information for dynamic per-session policy enforcement.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     session_id: str = Field(
@@ -303,7 +303,7 @@ class SessionContextStore:
                 return None
 
             # Check if expired (shouldn't happen with Redis TTL, but defensive)
-            if session_context.expires_at:  # noqa: SIM102
+            if session_context.expires_at:
                 if datetime.now(UTC) > session_context.expires_at:
                     logger.warning(f"Session {session_id} has expired")
                     await self.delete(session_id, tenant_id)
@@ -420,7 +420,7 @@ class SessionContextManager:
     performance optimization. Tracks metrics for cache hits/misses and
     ensures atomic operations for concurrent access.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

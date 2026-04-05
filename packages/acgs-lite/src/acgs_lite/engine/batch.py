@@ -3,18 +3,18 @@
 The engine evaluates actions against constitutional rules and produces
 structured validation results with full audit trails.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from acgs_lite.constitution import Severity
 
 if TYPE_CHECKING:
-    from .core import ValidationResult
+    from .models import ValidationResult
 
 
 @dataclass(frozen=True)
@@ -38,16 +38,16 @@ class BatchValidationResult:
         summary: Human-readable one-line summary of the batch result.
     """
 
-    results: tuple  # tuple[ValidationResult, ...] — frozen
+    results: tuple[ValidationResult, ...]  # frozen
     total: int
     allowed: int
     denied: int
     escalated: int
     compliance_rate: float
-    critical_rule_ids: tuple  # tuple[str, ...]
+    critical_rule_ids: tuple[str, ...]
     summary: str
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, object]:
         """Serialise batch result to a JSON-compatible dict."""
         return {
             "total": self.total,
@@ -71,13 +71,28 @@ class BatchValidationResult:
 
 
 class BatchValidationMixin:
+    """Mixin providing batch validation methods for GovernanceEngine."""
+
+    # Type stubs for attributes provided by GovernanceEngine (the concrete host class).
+    strict: bool
+    _const_hash: str
+
+    def validate(
+        self,
+        action: str,
+        *,
+        agent_id: str = "anonymous",
+        context: dict[str, Any] | None = None,
+    ) -> ValidationResult:
+        raise NotImplementedError  # pragma: no cover
+
     def validate_batch(
         self,
         actions: list[str],
         *,
         agent_id: str = "anonymous",
     ) -> list[ValidationResult]:
-        """Validate multiple actions. Does not raise in strict mode."""
+        """Validate multiple actions without raising in strict mode."""
         old_strict = self.strict
         self.strict = False
         try:
@@ -87,7 +102,7 @@ class BatchValidationMixin:
 
     def validate_batch_report(
         self,
-        actions: list[str | tuple[str, dict]],
+        actions: list[str | tuple[str, dict[str, Any]]],
         *,
         agent_id: str = "anonymous",
     ) -> BatchValidationResult:
@@ -119,9 +134,9 @@ class BatchValidationMixin:
         """
         from acgs_lite.errors import ConstitutionalViolationError
 
-        from .core import ValidationResult, Violation
+        from .models import ValidationResult, Violation
 
-        individual: list = []
+        individual: list[ValidationResult] = []
         for item in actions:
             if isinstance(item, tuple):
                 action, ctx = item[0], item[1]
@@ -138,7 +153,7 @@ class BatchValidationMixin:
                     else Severity.CRITICAL
                 )
                 _viol = Violation(
-                    rule_id=exc.rule_id,
+                    rule_id=exc.rule_id or "UNKNOWN",
                     rule_text=str(exc),
                     severity=_sev,
                     matched_content=action[:200],
@@ -158,7 +173,7 @@ class BatchValidationMixin:
         allowed = 0
         denied = 0
         escalated = 0
-        critical_ids: set = set()
+        critical_ids: set[str] = set()
 
         for r in individual:
             if not r.violations:

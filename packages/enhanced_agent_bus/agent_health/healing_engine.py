@@ -1,6 +1,6 @@
 """
 HealingEngine — constitutional tier-based healing orchestrator.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Governs all healing decisions for agent instances:
   - Validates CONSTITUTIONAL_HASH before any audit write (FR-009)
@@ -18,14 +18,14 @@ from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 from typing import Any
 
-from packages.enhanced_agent_bus.agent_health.actions import (
+from enhanced_agent_bus.agent_health.actions import (
     GracefulRestarter,
     HITLRequestor,
     QuarantineManager,
     SupervisorNotifier,
 )
-from packages.enhanced_agent_bus.agent_health.metrics import HEALING_ACTIONS_COUNTER
-from packages.enhanced_agent_bus.agent_health.models import (
+from enhanced_agent_bus.agent_health.metrics import HEALING_ACTIONS_COUNTER
+from enhanced_agent_bus.agent_health.models import (
     CONSTITUTIONAL_HASH,
     AgentHealthRecord,
     AgentHealthThresholds,
@@ -35,10 +35,10 @@ from packages.enhanced_agent_bus.agent_health.models import (
     HealingTrigger,
     OverrideMode,
 )
-from packages.enhanced_agent_bus.agent_health.store import AgentHealthStore
+from enhanced_agent_bus.agent_health.store import AgentHealthStore
 
 try:
-    from src.core.shared.types import AgentID
+    from enhanced_agent_bus._compat.types import AgentID
 except ImportError:
     AgentID = str  # type: ignore[misc,assignment]
 
@@ -53,7 +53,7 @@ BoundedApprovalAwaiter = Callable[[AgentID], Awaitable[bool]]
 
 def _validate_constitutional_hash() -> None:
     """Raise RuntimeError if the module-local CONSTITUTIONAL_HASH diverges from shared constants."""
-    from src.core.shared.constants import CONSTITUTIONAL_HASH as _CANONICAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH as _CANONICAL_HASH
 
     if CONSTITUTIONAL_HASH != _CANONICAL_HASH:
         raise RuntimeError(
@@ -68,7 +68,7 @@ class HealingEngine:
     All audit log writes happen BEFORE any action is dispatched (FR-009).
     Operator overrides bypass tier routing entirely.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -233,7 +233,7 @@ class HealingEngine:
         record: AgentHealthRecord,
         audit_event_id: str,
     ) -> HealingAction:
-        """Tier 2: notify supervisor; proceed with restart on approval; escalate to ADVISORY on timeout."""  # noqa: E501
+        """Tier 2: notify supervisor; proceed with restart on approval; escalate to ADVISORY on timeout."""
         # Write audit BEFORE sending the supervisor notification.
         await self._write_audit(
             agent_id=agent_id,
@@ -307,7 +307,7 @@ class HealingEngine:
     # ------------------------------------------------------------------
 
     async def _await_bounded_approval(self, agent_id: AgentID) -> bool:
-        """Await supervisor approval for a BOUNDED agent. Returns False on timeout or if no awaiter."""  # noqa: E501
+        """Await supervisor approval for a BOUNDED agent. Returns False on timeout or if no awaiter."""
         if self._bounded_approval_awaiter is None:
             return False
         try:
@@ -381,7 +381,7 @@ class HealingEngine:
         extra: dict[str, Any] | None = None,
     ) -> None:
         """Write a governance audit log entry via the injected audit_log_client."""
-        from src.core.shared.audit.logger import AuditEventType, AuditSeverity
+        from enhanced_agent_bus._compat.audit.logger import AuditEventType, AuditSeverity
 
         action_payload: dict[str, Any] = {
             "type": "HEALING_ACTION",

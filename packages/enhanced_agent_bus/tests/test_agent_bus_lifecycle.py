@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus Tests - Lifecycle
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive test coverage for lifecycle functionality in agent_bus.py.
 """
@@ -159,25 +159,21 @@ def sample_message_no_tenant(constitutional_hash):
 class TestLifecycle:
     """Test EnhancedAgentBus lifecycle management."""
 
-    @pytest.mark.asyncio
     async def test_initial_state_not_running(self, agent_bus):
         """Test that bus starts in non-running state."""
         assert agent_bus.is_running is False
 
-    @pytest.mark.asyncio
     async def test_start_sets_running_true(self, agent_bus):
         """Test that start() sets running state to True."""
         await agent_bus.start()
         assert agent_bus.is_running is True
         await agent_bus.stop()
 
-    @pytest.mark.asyncio
     async def test_stop_sets_running_false(self, started_agent_bus):
         """Test that stop() sets running state to False."""
         await started_agent_bus.stop()
         assert started_agent_bus.is_running is False
 
-    @pytest.mark.asyncio
     async def test_double_start_is_safe(self, agent_bus):
         """Test that calling start() twice is safe (idempotent)."""
         await agent_bus.start()
@@ -185,7 +181,6 @@ class TestLifecycle:
         assert agent_bus.is_running is True
         await agent_bus.stop()
 
-    @pytest.mark.asyncio
     async def test_double_stop_is_safe(self, started_agent_bus):
         """Test that calling stop() twice is safe (idempotent)."""
         await started_agent_bus.stop()

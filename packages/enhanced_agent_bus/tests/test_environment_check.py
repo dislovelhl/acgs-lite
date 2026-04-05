@@ -1,16 +1,15 @@
 """
 ACGS-2 Enhanced Agent Bus - Environment Check Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Validates that the test environment is correctly configured.
 """
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
-import pytest  # noqa: E402
+import pytest
 
 
 def test_module_imports():
@@ -84,7 +83,6 @@ def test_processor_imports():
     logger.info(f"✓ Strategy: {processor.processing_strategy.get_name()}")
 
 
-@pytest.mark.asyncio
 async def test_basic_message_flow():
     """Verify basic message processing works."""
     from enhanced_agent_bus.message_processor import MessageProcessor

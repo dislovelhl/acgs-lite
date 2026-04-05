@@ -1,6 +1,6 @@
 """
 HTTP Client for ACGS-2
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Standardized HTTP client with configured timeouts, retry integration, and circuit breaker support.
 Replaces scattered requests/aiohttp usage across the codebase.
@@ -28,7 +28,7 @@ class _AsyncCircuitBreaker:
     ``src.core.shared.errors.circuit_breaker.SimpleCircuitBreaker`` or the
     ``@circuit_breaker`` decorator instead.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -115,7 +115,7 @@ class HttpClient:
     - Connection pooling with limits
     - Request/response logging
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

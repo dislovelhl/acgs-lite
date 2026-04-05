@@ -30,7 +30,6 @@ def executor(repository):
     return DurableWorkflowExecutor(repository, max_retries=1, retry_delay=0.1)
 
 
-@pytest.mark.asyncio
 async def test_workflow_execution(executor, repository):
     @executor.workflow("test-workflow")
     async def my_workflow(ctx: WorkflowContext):
@@ -62,7 +61,6 @@ async def test_workflow_execution(executor, repository):
     assert len(events) > 0
 
 
-@pytest.mark.asyncio
 async def test_workflow_timeout(executor, repository):
     @executor.workflow("timeout-workflow")
     async def my_workflow(ctx: WorkflowContext):
@@ -85,7 +83,6 @@ async def test_workflow_timeout(executor, repository):
     assert "timed out after 0.1 seconds" in result_instance.error
 
 
-@pytest.mark.asyncio
 async def test_workflow_compensation(executor, repository):
     compensation_called = False
 
@@ -125,7 +122,6 @@ async def test_workflow_compensation(executor, repository):
     assert compensations[0].status == StepStatus.COMPENSATED
 
 
-@pytest.mark.asyncio
 async def test_workflow_cancellation(executor, repository):
     @executor.workflow("cancellation-workflow")
     async def my_workflow(ctx: WorkflowContext):
@@ -160,7 +156,6 @@ async def test_workflow_cancellation(executor, repository):
     assert result_instance.status == WorkflowStatus.CANCELLED
 
 
-@pytest.mark.asyncio
 async def test_idempotent_execution(executor, repository):
     execution_count = 0
 

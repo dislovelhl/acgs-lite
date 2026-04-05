@@ -1,6 +1,6 @@
 """
 ACGS-2 L1 In-Process Cache Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides thread-safe in-memory caching using cachetools.TTLCache for ultra-hot data
 with sub-millisecond latency (<0.1ms target).

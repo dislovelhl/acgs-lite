@@ -11,7 +11,7 @@ persons can effectively oversee them. Specifically, systems must:
 This module provides a lightweight Human-in-the-Loop (HITL) gateway that
 can be wired into any AI pipeline to enforce Article 14 oversight requirements.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Usage::
 
@@ -43,12 +43,13 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import Callable
+from contextlib import suppress
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
-CONSTITUTIONAL_HASH = "cdd01ef066bc6cf2"
+CONSTITUTIONAL_HASH = "608508a9bd224290"
 
 # Article 14 threshold: decisions with impact >= this require human oversight
 DEFAULT_OVERSIGHT_THRESHOLD = 0.8
@@ -82,7 +83,7 @@ class OversightDecision:
         submitted_at: ISO timestamp of submission.
         reviewed_at: ISO timestamp of human review (if completed).
         context: Arbitrary context metadata.
-    """  # noqa: RUF002
+    """
 
     decision_id: str
     system_id: str
@@ -99,6 +100,7 @@ class OversightDecision:
     context: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the oversight decision to a dictionary for audit export."""
         return {
             "decision_id": self.decision_id,
             "system_id": self.system_id,
@@ -195,11 +197,7 @@ class HumanOversightGateway:
         """
         impact_score = max(0.0, min(1.0, impact_score))
         requires_review = impact_score >= self.oversight_threshold
-
-        if requires_review:  # noqa: SIM108
-            outcome = OversightOutcome.PENDING
-        else:
-            outcome = OversightOutcome.AUTO_APPROVED
+        outcome = OversightOutcome.PENDING if requires_review else OversightOutcome.AUTO_APPROVED
 
         decision = OversightDecision(
             decision_id=str(uuid.uuid4())[:8],
@@ -213,12 +211,8 @@ class HumanOversightGateway:
         )
 
         self._decisions[decision.decision_id] = decision
-
-        if requires_review and self._on_review_required:
-            try:  # noqa: SIM105
-                self._on_review_required(decision)
-            except Exception:  # noqa: S110
-                pass  # Notification failure must never block the governance record
+        if requires_review:
+            self._notify(self._on_review_required, decision)
 
         return decision
 
@@ -254,12 +248,7 @@ class HumanOversightGateway:
             }
         )
         self._decisions[decision_id] = updated
-
-        if self._on_approved:
-            try:  # noqa: SIM105
-                self._on_approved(updated)
-            except Exception:  # noqa: S110
-                pass
+        self._notify(self._on_approved, updated)
 
         return updated
 
@@ -295,12 +284,7 @@ class HumanOversightGateway:
             }
         )
         self._decisions[decision_id] = updated
-
-        if self._on_rejected:
-            try:  # noqa: SIM105
-                self._on_rejected(updated)
-            except Exception:  # noqa: S110
-                pass
+        self._notify(self._on_rejected, updated)
 
         return updated
 
@@ -331,6 +315,17 @@ class HumanOversightGateway:
     def get_decision(self, decision_id: str) -> OversightDecision | None:
         """Retrieve a decision by ID."""
         return self._decisions.get(decision_id)
+
+    def _notify(
+        self,
+        callback: NotificationCallback | None,
+        decision: OversightDecision,
+    ) -> None:
+        """Fire an optional callback without letting notification failures block governance."""
+        if callback is None:
+            return
+        with suppress(Exception):
+            callback(decision)
 
     def pending_decisions(self) -> list[OversightDecision]:
         """Return all decisions awaiting human review."""

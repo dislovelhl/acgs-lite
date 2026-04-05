@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Tests for src/core/enhanced_agent_bus/llm_adapters/base.py
 Target: >=90% coverage
@@ -13,9 +13,9 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.resilience.retry import RetryConfig as SharedRetryConfig
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.resilience.retry import RetryConfig as SharedRetryConfig
 from enhanced_agent_bus.llm_adapters.base import (
     LEGACY_RATE_LIMIT_ERRORS,
     LEGACY_SERVER_ERRORS,
@@ -102,6 +102,9 @@ class ConcreteAdapter(BaseLLMAdapter):
 
     async def health_check(self) -> HealthCheckResult:
         return HealthCheckResult(status=AdapterStatus.HEALTHY, latency_ms=1.0)
+
+    def validate_constitutional_compliance(self, **kwargs: object) -> None:
+        pass  # No-op for test stub
 
     def _make_response(self, tag: str) -> LLMResponse:
         meta = CompletionMetadata(model=self.model, provider="test")
@@ -723,6 +726,9 @@ class TestGetProviderName:
             async def health_check(self):
                 return HealthCheckResult(status=AdapterStatus.HEALTHY)
 
+            def validate_constitutional_compliance(self, **kwargs: object) -> None:
+                pass  # No-op for test stub
+
         a = OpenAIAdapter(model="x")
         assert a.get_provider_name() == "openai"
 
@@ -748,6 +754,9 @@ class TestGetProviderName:
 
             async def health_check(self):
                 return HealthCheckResult(status=AdapterStatus.HEALTHY)
+
+            def validate_constitutional_compliance(self, **kwargs: object) -> None:
+                pass  # No-op for test stub
 
         a = GroqLLM(model="x")
         # No trailing "adapter" substring, name is the full lowercased class name

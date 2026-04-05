@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - OPA Policy Updater Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests to boost constitutional/opa_updater.py coverage from 72% to ≥95%.
 Covers all classes, methods, error paths, and edge cases.
@@ -14,11 +14,9 @@ import tempfile
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import httpx
-import pytest
 
 # Constitutional hash for tests
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.constitutional.opa_updater import (
     AIOFILES_AVAILABLE,
     OPAPolicyUpdater,
@@ -225,14 +223,14 @@ class TestOPAPolicyUpdaterInit:
             enable_cache_invalidation=False,
             enable_rollback=False,
             health_check_timeout=10.0,
-            policy_backup_dir="/tmp/backups",  # noqa: S108
+            policy_backup_dir="/tmp/backups",
         )
         assert updater.opa_url == "http://opa:9999"
         assert updater.enable_health_checks is False
         assert updater.enable_cache_invalidation is False
         assert updater.enable_rollback is False
         assert updater.health_check_timeout == 10.0
-        assert updater.policy_backup_dir == "/tmp/backups"  # noqa: S108
+        assert updater.policy_backup_dir == "/tmp/backups"
 
     def test_default_backup_dir_is_tempdir(self):
         updater = OPAPolicyUpdater()
@@ -287,9 +285,7 @@ class TestOPAPolicyUpdaterConnect:
         updater = OPAPolicyUpdater()
         with (
             patch("enhanced_agent_bus.constitutional.opa_updater.OPAClient", None),
-            patch(
-                "enhanced_agent_bus.constitutional.opa_updater.AuditClient", mock_audit_cls
-            ),
+            patch("enhanced_agent_bus.constitutional.opa_updater.AuditClient", mock_audit_cls),
         ):
             await updater.connect()
             mock_audit.start.assert_called_once()
@@ -303,9 +299,7 @@ class TestOPAPolicyUpdaterConnect:
         updater = OPAPolicyUpdater()
         with (
             patch("enhanced_agent_bus.constitutional.opa_updater.OPAClient", None),
-            patch(
-                "enhanced_agent_bus.constitutional.opa_updater.AuditClient", mock_audit_cls
-            ),
+            patch("enhanced_agent_bus.constitutional.opa_updater.AuditClient", mock_audit_cls),
         ):
             await updater.connect()
             assert updater._audit_client is None
@@ -503,9 +497,7 @@ class TestBackupCurrentPolicy:
         policy_data = {"result": {"id": "test_policy", "raw": SAMPLE_REGO}}
         mock_http.get.return_value = _make_http_response(200, policy_data)
 
-        with patch(
-            "enhanced_agent_bus.constitutional.opa_updater.AIOFILES_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.constitutional.opa_updater.AIOFILES_AVAILABLE", False):
             result = await updater._backup_current_policy("test_policy")
 
         assert result is not None
@@ -560,12 +552,8 @@ class TestBackupCurrentPolicy:
         mock_aiofiles_mod.open.return_value = _AsyncCM()
 
         with (
-            patch(
-                "enhanced_agent_bus.constitutional.opa_updater.AIOFILES_AVAILABLE", True
-            ),
-            patch(
-                "enhanced_agent_bus.constitutional.opa_updater.aiofiles", mock_aiofiles_mod
-            ),
+            patch("enhanced_agent_bus.constitutional.opa_updater.AIOFILES_AVAILABLE", True),
+            patch("enhanced_agent_bus.constitutional.opa_updater.aiofiles", mock_aiofiles_mod),
         ):
             result = await updater._backup_current_policy("test_policy")
 
@@ -872,9 +860,7 @@ class TestRollbackPolicy:
             mock_http.put.return_value = _make_http_response(200)
 
             result = self._base_result()
-            with patch(
-                "enhanced_agent_bus.constitutional.opa_updater.AIOFILES_AVAILABLE", False
-            ):
+            with patch("enhanced_agent_bus.constitutional.opa_updater.AIOFILES_AVAILABLE", False):
                 success = await updater._rollback_policy("test_policy", backup_id, result)
 
             assert success is True
@@ -1132,9 +1118,7 @@ class TestUpdatePolicy:
 
         mock_http.put.side_effect = put_side_effect
 
-        with patch(
-            "enhanced_agent_bus.constitutional.opa_updater.AIOFILES_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.constitutional.opa_updater.AIOFILES_AVAILABLE", False):
             req = _make_request()
             result = await updater.update_policy(req)
 
@@ -1186,9 +1170,7 @@ class TestUpdatePolicy:
 
         updater._upload_policy_to_opa = patched_upload
 
-        with patch(
-            "enhanced_agent_bus.constitutional.opa_updater.AIOFILES_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.constitutional.opa_updater.AIOFILES_AVAILABLE", False):
             req = _make_request()
             result = await updater.update_policy(req)
 
@@ -1264,9 +1246,7 @@ class TestUpdatePolicy:
         # Backup GET: return 200 so previous_version is set
         mock_http.get.return_value = _make_http_response(200, {"result": {"raw": SAMPLE_REGO}})
 
-        with patch(
-            "enhanced_agent_bus.constitutional.opa_updater.AIOFILES_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.constitutional.opa_updater.AIOFILES_AVAILABLE", False):
             req = _make_request()
             result = await updater.update_policy(req)
 

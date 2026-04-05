@@ -1,151 +1,71 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Compatibility note for tools that still read `CLAUDE.md`.
 
-## What This Is
-
-ACGS (Advanced Constitutional Governance System) — constitutional governance infrastructure for AI agents. Three domains:
-
-- **acgs-lite** (`packages/acgs-lite/`) — Standalone governance library. The public API: `Constitution.from_yaml()` + `GovernedAgent()`. Python + optional Rust/PyO3 backend (560ns P50 validation).
-- **enhanced-agent-bus** (`packages/enhanced_agent_bus/`) — Platform engine with 80+ subsystems: MACI enforcement, constitutional amendments, deliberation, MCP server, OPA integration, circuit breakers, saga persistence.
-- **Shared services** (`src/core/`) — API gateway (port 8080), shared types, auth, config, structured logging.
-
-Constitutional hash: `cdd01ef066bc6cf2` — embedded in all validation paths.
+`AGENTS.md` is the canonical repo guide. Start there first, then read the nearest scoped
+`AGENTS.md` for the package you are changing.
 
 ## Commands
 
 ```bash
-# Setup
-make setup                    # Install all deps + pre-commit hooks
-
-# Testing (--import-mode=importlib is REQUIRED for all pytest)
-make test                     # Full suite (~3,820 tests)
-make test-quick               # Skip slow tests (-m "not slow" -x)
-make test-lite                # acgs-lite only (286 tests)
-make test-bus                 # enhanced-agent-bus only (3,534 tests)
-make test-gw                  # API gateway only
-
-# Single test file
-python -m pytest packages/acgs-lite/tests/test_engine.py -v --import-mode=importlib
-
-# Single test
-python -m pytest packages/acgs-lite/tests/test_engine.py::test_name -v --import-mode=importlib
-
-# Code quality
-make lint                     # ruff check + mypy
-make format                   # ruff fix + ruff format
-
-# Benchmarks
-make bench                    # acgs-lite benchmark suite
-
-# Rust extension (optional, 100-1000x speedup)
-cd packages/acgs-lite/rust && maturin develop --release
+make test-quick
+make lint
+make format
+make codex-doctor
 ```
 
-## Codex CLI
+Use package-specific commands when possible:
+- `make test-lite`
+- `make test-bus`
+- `make test-gw`
+- `make health-overview`
 
-Use Codex for bounded, high-throughput implementation and validation tasks from project root:
+## Verification
 
-```bash
-# Interactive Codex session in this repo
-codex -C /home/martin/Documents/acgs-clean --sandbox workspace-write --ask-for-approval on-request
+- repository pytest runs must include `--import-mode=importlib`
+- run the narrowest meaningful verification first
+- expand to broader checks when shared, security-sensitive, or governance-critical paths change
+- all three gates must pass before work is complete: `make lint`, `make test-quick`, package tests
+- do not hand off code without reporting what you ran and what still remains unverified
 
-# Non-interactive execution for scoped tasks
-codex exec -C /home/martin/Documents/acgs-clean --sandbox workspace-write --full-auto \
-  "Fix failing imports in enhanced_agent_bus and run make test-quick"
+## Post-Codex Fixes
 
-# JSON output mode for automation/pipelines
-codex exec -C /home/martin/Documents/acgs-clean --json \
-  "Run make lint and summarize errors with file:line references"
-```
+When fixing code issues introduced by Codex/omx:
+- run the affected package test suite **before** starting fixes (baseline)
+- fix one regression at a time, re-run package tests after each fix
+- run `make test-quick` after all fixes to confirm no new regressions
+- never batch Codex regression fixes without test gates between them
 
-Preferred Codex defaults for this project:
-- `--sandbox workspace-write` (safe default with editable workspace)
-- `--ask-for-approval on-request` for interactive sessions
-- `--full-auto` only for scoped non-destructive tasks
-- `--model gpt-5.4` for governance/security-critical work
-- `--model gpt-5.3-codex` for mechanical refactors, test fixes, and codebase-wide edits
+## Refactoring
 
-Avoid for normal workflows:
-- `--dangerously-bypass-approvals-and-sandbox`
-- Running Codex from a directory other than repo root (`-C /home/martin/Documents/acgs-clean`)
+- Never batch-refactor (exception narrowing, type changes, import rewrites) across 20+ files without incremental verification
+- Work in batches of 5–10 files, run the affected package tests after each batch, commit passing states
+- If a batch causes >5 test failures, revert it and try a more conservative approach
+- Sub-agents may explore/analyze in parallel, but mutations flow through one sequential path with test gates
 
-### Claude Code ↔ Codex Delegation Pattern
+## Constraints
 
-Use MACI-style separation of duties: proposer and validator should be different agents.
+- use canonical enhanced-agent-bus namespaces
+- keep governance, auth, and policy behavior fail-closed
+- never self-validate agent output in violation of MACI role separation
+- do not rely on unchecked PM2 entries as operational truth
 
-- Claude Code owns architecture, constitutional/MACI invariants, security sign-off, and final merge.
-- Codex owns scoped implementation chunks with explicit acceptance criteria and commands.
-- Claude validates Codex output with targeted checks (`make lint`, `make test-quick`, package-level tests).
-- For governance-critical paths, run an independent reviewer pass (`codex review` or Claude review) before merge.
+## Skill routing
 
-Recommended handoff template from Claude to Codex:
+When the user's request matches an available skill, ALWAYS invoke it using the Skill
+tool as your FIRST action. Do NOT answer directly, do NOT use other tools first.
+The skill has specialized workflows that produce better results than ad-hoc answers.
 
-```text
-Scope: <one bounded change>
-Constraints: Python 3.11+, ruff line-length 100, no middleware/ singular imports
-Required checks: <exact commands, include --import-mode=importlib for pytest>
-Deliverable: unified diff + brief risk note
-```
-
-## Architecture
-
-### Package Relationships
-
-```
-pyproject.toml (root workspace, uv)
-├── packages/acgs-lite/          → import acgs_lite
-├── packages/enhanced_agent_bus/ → import enhanced_agent_bus
-└── src/core/
-    ├── services/api_gateway/    → FastAPI on port 8080
-    └── shared/                  → import src.core.shared
-```
-
-Never import as `src.core.enhanced_agent_bus.*` — use `enhanced_agent_bus.*` directly (Phase 3 extraction complete).
-
-### MACI Separation of Powers
-
-Agents NEVER validate their own output. Three roles enforced at middleware level:
-- **Proposer** — submits content
-- **Validator** — independent evaluation
-- **Executor** — acts on validated decisions
-
-Enforcement lives in `middlewares/batch/governance.py`, not in any `maci_metrics.py` (deleted).
-
-### Key Entry Points
-
-| Service | Entry Point | Port |
-|---------|------------|------|
-| Agent Bus | `enhanced_agent_bus.api.app:app` | 8000 |
-| API Gateway | `src/core/services/api_gateway/main.py` | 8080 |
-| PM2 config | `ecosystem.config.cjs` | 7 services |
-
-### Canonical Module Paths (enhanced-agent-bus)
-
-Use `middlewares/` (plural), `context_memory/`, `persistence/`. Deprecated singular paths have shims but should not be used in new code.
-
-### Extension Modules
-
-15 `_ext_*.py` modules provide optional features (cache warming, chaos, circuit breaker, MCP, PQC, etc.) via try/except fallback patterns.
-
-## Conventions
-
-- **Python 3.11+**, union syntax `X | Y`, explicit types everywhere
-- **Line length**: 100 (ruff)
-- **Async**: `async def` for all I/O operations
-- **Logging**: `structlog` only, never `print()` in production
-- **Validation**: Pydantic models at API boundaries
-- **Imports**: `from enhanced_agent_bus.models import Priority` (not `MessagePriority`, deprecated)
-- **mypy**: strict mode for `src/`, excluded for `enhanced_agent_bus` package
-
-## Test Markers
-
-`unit`, `integration`, `slow`, `constitutional`, `benchmark`, `governance`, `security`, `maci`, `chaos`, `pqc`, `e2e`, `compliance`
-
-## Environment
-
-Tests auto-set `ACGS2_SERVICE_SECRET` via root `conftest.py`. For running services, see `ecosystem.config.cjs` for required env vars (`CONSTITUTIONAL_HASH`, `MACI_STRICT_MODE`, `OPA_URL`, `REDIS_URL`).
-
-## Sub-Package Instructions
-
-See `packages/acgs-lite/CLAUDE.md` and `packages/enhanced_agent_bus/CLAUDE.md` for package-specific details.
+Key routing rules:
+- Product ideas, "is this worth building", brainstorming → invoke office-hours
+- Bugs, errors, "why is this broken", 500 errors → invoke investigate
+- Ship, deploy, push, create PR → invoke ship
+- QA, test the site, find bugs → invoke qa
+- Code review, check my diff → invoke review
+- Update docs after shipping → invoke document-release
+- Weekly retro → invoke retro
+- Design system, brand → invoke design-consultation
+- Visual audit, design polish → invoke design-review
+- Architecture review → invoke plan-eng-review
+- Save progress, checkpoint, resume → invoke checkpoint
+- Code quality, health check → invoke health

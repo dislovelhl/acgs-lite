@@ -4,18 +4,18 @@ Agent Engine Guardrail Component.
 Layer 2 of OWASP guardrails: core governance layer with constitutional
 validation and ML-based impact scoring.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import time
 from dataclasses import dataclass
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -124,7 +124,7 @@ class AgentEngine(GuardrailComponent):
                             layer=self.get_layer(),
                             violation_type="high_impact",
                             severity=ViolationSeverity.MEDIUM,
-                            message=f"High impact action requires deliberation (score: {impact_score})",  # noqa: E501
+                            message=f"High impact action requires deliberation (score: {impact_score})",
                             details={"impact_score": impact_score},
                             trace_id=trace_id,
                         )

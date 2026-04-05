@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive tests for src/core/enhanced_agent_bus/llm_adapters/config.py
 
@@ -10,8 +10,8 @@ from unittest.mock import patch
 
 import pytest
 from pydantic import SecretStr, ValidationError
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.llm_adapters.config import (
     AdapterConfig,
     AdapterType,
@@ -43,7 +43,7 @@ class TestAdapterType:
         assert AdapterType.CUSTOM.value == "custom"
 
     def test_enum_count(self):
-        assert len(AdapterType) == 8
+        assert len(AdapterType) == 9
 
     def test_enum_from_value(self):
         assert AdapterType("openai") is AdapterType.OPENAI
@@ -428,7 +428,7 @@ class TestOpenAIAdapterConfig:
         assert cfg.organization is None
         assert cfg.rate_limit.requests_per_minute == 60
         assert cfg.rate_limit.tokens_per_minute == 90000
-        assert cfg.model == "gpt-5.2"
+        assert cfg.model == "gpt-5.4"
 
     def test_from_environment_with_env_vars(self):
         env = {
@@ -452,7 +452,7 @@ class TestOpenAIAdapterConfig:
             for k in ["OPENAI_API_KEY", "OPENAI_API_BASE", "OPENAI_ORGANIZATION"]:
                 os.environ.pop(k, None)
             cfg = OpenAIAdapterConfig.from_environment()
-        assert cfg.model == "gpt-5.2"
+        assert cfg.model == "gpt-5.4"
 
     def test_from_environment_kwargs_override(self):
         with patch.dict(os.environ, {}, clear=False):

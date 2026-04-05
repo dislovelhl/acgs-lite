@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - HITL Manager Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for the HITLManager class.
 Tests cover:
@@ -8,8 +8,6 @@ Tests cover:
 - Error handling and edge cases
 - Integration with related components
 """
-
-import pytest
 
 from .hitl_test_helpers import (
     MockAuditLedger,
@@ -21,7 +19,6 @@ from .hitl_test_helpers import (
 class TestRequestApproval:
     """Tests for request_approval method."""
 
-    @pytest.mark.asyncio
     async def test_request_approval_valid_item(self, mock_queue: MockDeliberationQueue) -> None:
         """Test request_approval with a valid queue item."""
 
@@ -43,7 +40,6 @@ class TestRequestApproval:
         assert result is not None
         assert result.status == MockDeliberationStatus.UNDER_REVIEW
 
-    @pytest.mark.asyncio
     async def test_request_approval_missing_item(self, mock_queue: MockDeliberationQueue) -> None:
         """Test request_approval with a missing queue item."""
 
@@ -64,7 +60,6 @@ class TestRequestApproval:
 
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_request_approval_teams_channel(self, mock_queue: MockDeliberationQueue) -> None:
         """Test request_approval with Teams channel."""
 

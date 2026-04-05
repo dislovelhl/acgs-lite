@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Graph-based Workflows (LangGraph Pattern)
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements stateful cyclic graphs for multi-agent governance orchestration.
 Features conditional branching, state persistence, and human-in-the-loop interrupts.
@@ -12,7 +12,7 @@ from enum import Enum
 from typing import Generic, TypeVar
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -64,7 +64,7 @@ class StateGraph(Generic[TState]):
     """
     LangGraph-style state machine for multi-agent orchestration.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, state_schema: type):
@@ -181,7 +181,7 @@ class GovernanceGraph(StateGraph):
     """
     Specialized graph for multi-agent governance.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self):

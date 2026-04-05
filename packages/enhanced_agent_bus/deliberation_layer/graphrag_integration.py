@@ -1,6 +1,6 @@
 """
 GraphRAG Context Enricher for Deliberation Layer
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Enriches deliberation context with relevant policy documents retrieved from a
 GraphRAG knowledge base using vector similarity search.
@@ -23,7 +23,7 @@ from collections import OrderedDict
 from typing import TYPE_CHECKING
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -32,7 +32,8 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 if TYPE_CHECKING:
     from src.core.cognitive.graphrag.protocols import EmbeddingProvider, VectorStore
     from src.core.cognitive.graphrag.retrieval.retriever import GraphRAGRetriever
-    from src.core.shared.types import JSONDict
+
+    from enhanced_agent_bus._compat.types import JSONDict
 
 logger = get_logger(__name__)
 
@@ -266,7 +267,7 @@ class GraphRAGContextEnricher:
                 tenant_id=tenant_id,
             )
             return {}
-        except Exception:  # noqa: BLE001 — deliberation must not fail due to enricher errors
+        except Exception:
             logger.warning("GraphRAG enrichment failed; continuing without context")
             return {}
 
@@ -367,7 +368,7 @@ class GraphRAGContextEnricher:
         Returns empty dict on any error so the caller can fall back to raw path.
         """
         try:
-            from src.core.cognitive.graphrag.retrieval.models import (  # noqa: PLC0415
+            from src.core.cognitive.graphrag.retrieval.models import (
                 GraphNode,
                 TraversalResult,
             )
@@ -441,7 +442,7 @@ class GraphRAGContextEnricher:
                 "retrieval_path": "pipeline",
             }
 
-        except Exception:  # noqa: BLE001
+        except Exception:
             logger.debug("GraphRAG pipeline retrieval failed; falling back to raw path")
             return {}
 

@@ -2,7 +2,7 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 """
 ACGS-2 Auth Rate Limiting Integration Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for strict auth endpoint rate limiting to prevent brute force attacks.
 """
@@ -239,7 +239,6 @@ class TestRedisBackedRateLimiting:
     """Test Redis-backed rate limiting (requires Redis)."""
 
     @pytest.mark.skip(reason="Requires --redis flag and running Redis instance")
-    @pytest.mark.asyncio
     async def test_redis_backed_rate_limiting(self):
         """Test Redis-backed rate limiting for distributed scenarios."""
         from src.core.shared.security.rate_limiter import SlidingWindowRateLimiter

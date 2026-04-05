@@ -1,6 +1,6 @@
 """
 ACGS-2 Context & Memory - Long Term Memory Store
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Persistent memory management for multi-day autonomous governance.
 Implements episodic and semantic memory with consolidation.
@@ -21,17 +21,17 @@ from enum import Enum
 from pathlib import Path
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.json_utils import dumps as json_dumps
-from src.core.shared.json_utils import loads as json_loads
+from enhanced_agent_bus._compat.json_utils import dumps as json_dumps
+from enhanced_agent_bus._compat.json_utils import loads as json_loads
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONList,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONList = list  # type: ignore[misc,assignment]
@@ -56,7 +56,7 @@ _LTM_PERSISTENCE_ERRORS = (
 )
 
 
-class MemoryTier(str, Enum):  # noqa: UP042
+class MemoryTier(str, Enum):
     """Memory storage tiers."""
 
     WORKING = "working"  # Fast, volatile memory
@@ -65,7 +65,7 @@ class MemoryTier(str, Enum):  # noqa: UP042
     ARCHIVAL = "archival"  # Historical data
 
 
-class ConsolidationStrategy(str, Enum):  # noqa: UP042
+class ConsolidationStrategy(str, Enum):
     """Strategies for memory consolidation."""
 
     TIME_BASED = "time_based"  # Consolidate based on age
@@ -78,7 +78,7 @@ class ConsolidationStrategy(str, Enum):  # noqa: UP042
 class LongTermMemoryConfig:
     """Configuration for long-term memory store.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     db_path: str = ".acgs2_ltm.db"
@@ -102,7 +102,7 @@ class LongTermMemoryConfig:
 class MemorySearchResult:
     """Result of memory search operation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     entries: JSONList
@@ -119,7 +119,7 @@ class LongTermMemoryStore:
     Manages episodic and semantic memory with consolidation
     and constitutional compliance tracking.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

@@ -1,6 +1,6 @@
 """
 ACGS-2 SOC 2 Type II Auditor
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements SOC 2 Type II compliance for Layer 4.
 Provides Processing Integrity, Confidentiality controls,
@@ -12,11 +12,11 @@ import uuid
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -41,7 +41,7 @@ logger = get_logger(__name__)
 class SOC2ControlValidator:
     """Validates SOC 2 Trust Service Criteria controls.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self):
@@ -122,7 +122,7 @@ class SOC2ControlValidator:
 class SOC2EvidenceCollector:
     """Collects and manages audit evidence for SOC 2 compliance.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self):
@@ -181,7 +181,7 @@ class SOC2Auditor:
     - Data classification matrix
     - Audit evidence collection
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self):

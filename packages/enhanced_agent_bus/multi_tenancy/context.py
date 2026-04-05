@@ -1,6 +1,6 @@
 """
 ACGS-2 Tenant Context Management
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides request-scoped tenant identification using Python contextvars.
 Thread-safe and async-compatible for enterprise multi-tenant operations.
@@ -13,11 +13,11 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -32,7 +32,7 @@ _tenant_context: ContextVar["TenantContext" | None] = ContextVar("tenant_context
 class TenantContext:
     """Request-scoped tenant context.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     This class provides thread-safe, async-compatible tenant identification
     for all database operations. It uses Python's contextvars for automatic
@@ -207,7 +207,7 @@ def clear_tenant_context() -> None:
 class tenant_context:
     """Context manager for tenant scoping.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Usage:
         with tenant_context(tenant_id="acme-corp"):

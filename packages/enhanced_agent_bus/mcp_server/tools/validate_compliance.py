@@ -3,7 +3,7 @@ Validate Constitutional Compliance MCP Tool.
 
 This tool validates actions against ACGS-2 constitutional principles.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from ..adapters.agent_bus import AgentBusAdapter
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -63,7 +63,7 @@ class ValidateComplianceTool:
     constitutional validation of proposed actions.
     """
 
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
     # Core constitutional principles
     PRINCIPLES: ClassVar[dict[str, str]] = {
@@ -107,7 +107,7 @@ class ValidateComplianceTool:
                     },
                     "context": {
                         "type": "object",
-                        "description": "Context for the action including user info, data involved, etc.",  # noqa: E501
+                        "description": "Context for the action including user info, data involved, etc.",
                         "properties": {
                             "user_id": {"type": "string"},
                             "resource_type": {"type": "string"},
@@ -261,7 +261,7 @@ class ValidateComplianceTool:
                 confidence -= 0.1
 
         # Privacy checks
-        if context.get("data_sensitivity") in ["confidential", "restricted"]:  # noqa: SIM102
+        if context.get("data_sensitivity") in ["confidential", "restricted"]:
             if not context.get("consent_obtained"):
                 violations.append(
                     {
@@ -276,7 +276,7 @@ class ValidateComplianceTool:
 
         # Safety checks for high-risk actions
         high_risk_actions = ["delete", "modify", "execute", "deploy", "admin"]
-        if any(risk in action.lower() for risk in high_risk_actions):  # noqa: SIM102
+        if any(risk in action.lower() for risk in high_risk_actions):
             if not context.get("authorization_verified"):
                 violations.append(
                     {
@@ -343,7 +343,7 @@ class ValidateComplianceTool:
                         "description": f"Action may cause harm: detected '{pattern}'",
                     }
 
-        if principle == "autonomy":  # noqa: SIM102
+        if principle == "autonomy":
             if context.get("override_user_preference"):
                 return {
                     "principle": "autonomy",
@@ -351,7 +351,7 @@ class ValidateComplianceTool:
                     "description": "Action overrides explicit user preference",
                 }
 
-        if principle == "justice":  # noqa: SIM102
+        if principle == "justice":
             if context.get("discriminatory_criteria"):
                 return {
                     "principle": "justice",

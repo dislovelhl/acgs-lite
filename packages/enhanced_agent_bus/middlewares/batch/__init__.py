@@ -1,7 +1,7 @@
 """
 Batch Processing Middleware for ACGS-2 Pipeline.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides specialized middleware for batch request processing:
 - Validation: Batch structure and schema validation

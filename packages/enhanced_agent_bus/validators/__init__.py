@@ -52,7 +52,7 @@ if _legacy_validators is not None:
     validate_message_content = _legacy_validators.validate_message_content
     validate_payload_integrity = _legacy_validators.validate_payload_integrity
 else:
-    _legacy_constitutional_hash = "cdd01ef066bc6cf2"
+    _legacy_constitutional_hash = "608508a9bd224290"
     ValidationResult = Any
 
     def validate_constitutional_hash(*_args: Any, **_kwargs: Any) -> Any:

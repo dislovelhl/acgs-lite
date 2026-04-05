@@ -7,22 +7,34 @@ Implements Zamba-inspired architecture for O(n) context handling:
 - JRT context preparation for critical sections
 - 4M+ token effective context length
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
 
+import importlib.util
 from dataclasses import dataclass
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
+
+
+def _has_usable_torch() -> bool:
+    try:
+        return importlib.util.find_spec("torch") is not None
+    except (ImportError, ValueError):
+        return False
+
+
 try:
+    if not _has_usable_torch():
+        raise ImportError("torch is not installed")
     import torch
     import torch.nn as nn
     import torch.nn.functional as F
@@ -43,7 +55,7 @@ except ImportError:
     logger.warning("mamba_ssm or causal_conv1d not available - using optimized torch fallback")
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 

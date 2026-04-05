@@ -1,6 +1,6 @@
 """
 Kafka Event Streaming Integration Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Phase 10 Task 12: Kafka Event Streaming Integration
 
@@ -75,7 +75,6 @@ class TestKafkaProducerInitialization:
         assert config.retries == 3
         assert config.delivery_guarantee == DeliveryGuarantee.AT_LEAST_ONCE
 
-    @pytest.mark.asyncio
     async def test_connection_pool_initialization(self, kafka_config, producer_config):
         """Test connection pool creates producers."""
         pool = KafkaConnectionPool(kafka_config, producer_config, pool_size=3)
@@ -83,7 +82,6 @@ class TestKafkaProducerInitialization:
         assert pool.pool_size == 3
         assert pool.config == kafka_config
 
-    @pytest.mark.asyncio
     async def test_connection_pool_acquire_release(self, kafka_config, producer_config):
         """Test acquiring and releasing connections from pool."""
         pool = KafkaConnectionPool(kafka_config, producer_config, pool_size=2)
@@ -104,7 +102,6 @@ class TestKafkaProducerInitialization:
 
             await pool.stop()
 
-    @pytest.mark.asyncio
     async def test_producer_health_check(self, kafka_config, producer_config):
         """Test producer health check functionality."""
         pool = KafkaConnectionPool(kafka_config, producer_config, pool_size=1)
@@ -141,14 +138,12 @@ class TestGovernanceEventPublishing:
         config = KafkaConfig(bootstrap_servers="localhost:9092")
         return KafkaEventPublisher(config)
 
-    @pytest.mark.asyncio
     async def test_create_governance_event(self, governance_event):
         """Test creating a governance event."""
         assert governance_event.event_type == "POLICY_CREATED"
         assert governance_event.tenant_id == "tenant-001"
         assert governance_event.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_publish_event_success(self, event_publisher, governance_event):
         """Test publishing an event successfully."""
         with patch.object(event_publisher, "_send_to_kafka") as mock_send:
@@ -161,7 +156,6 @@ class TestGovernanceEventPublishing:
             assert result.success is True
             assert result.event_id == governance_event.event_id
 
-    @pytest.mark.asyncio
     async def test_publish_event_with_key(self, event_publisher, governance_event):
         """Test publishing with partition key."""
         with patch.object(event_publisher, "_send_to_kafka") as mock_send:
@@ -173,7 +167,6 @@ class TestGovernanceEventPublishing:
 
             assert result.success is True
 
-    @pytest.mark.asyncio
     async def test_publish_batch_events(self, event_publisher):
         """Test publishing multiple events in batch."""
         events = [
@@ -194,7 +187,6 @@ class TestGovernanceEventPublishing:
             assert len(results) == 5
             assert all(r.success for r in results)
 
-    @pytest.mark.asyncio
     async def test_publish_with_headers(self, event_publisher, governance_event):
         """Test publishing with custom headers."""
         headers = {"trace-id": "abc123", "correlation-id": "xyz789"}
@@ -236,7 +228,6 @@ class TestSchemaRegistryIntegration:
             },
         )
 
-    @pytest.mark.asyncio
     async def test_register_avro_schema(self, schema_registry, avro_schema):
         """Test registering an Avro schema."""
         with patch.object(schema_registry, "_register_schema") as mock_register:
@@ -248,7 +239,6 @@ class TestSchemaRegistryIntegration:
 
             assert schema_id == 1
 
-    @pytest.mark.asyncio
     async def test_get_schema_by_id(self, schema_registry):
         """Test retrieving schema by ID."""
         with patch.object(schema_registry, "_get_schema") as mock_get:
@@ -259,7 +249,6 @@ class TestSchemaRegistryIntegration:
             assert schema is not None
             assert schema["type"] == "record"
 
-    @pytest.mark.asyncio
     async def test_check_compatibility(self, schema_registry, avro_schema):
         """Test schema compatibility check."""
         with patch.object(schema_registry, "_check_compatibility") as mock_check:
@@ -327,7 +316,6 @@ class TestKafkaConsumer:
         kafka_config = KafkaConfig(bootstrap_servers="localhost:9092")
         return GovernanceEventConsumer(kafka_config, consumer_config)
 
-    @pytest.mark.asyncio
     async def test_subscribe_to_topics(self, event_consumer):
         """Test subscribing to topics."""
         with patch.object(event_consumer, "_subscribe") as mock_subscribe:
@@ -335,7 +323,6 @@ class TestKafkaConsumer:
 
             mock_subscribe.assert_called_once_with(["governance-events", "policy-events"])
 
-    @pytest.mark.asyncio
     async def test_consume_event(self, event_consumer):
         """Test consuming a single event."""
         mock_event = GovernanceEvent(
@@ -350,7 +337,6 @@ class TestKafkaConsumer:
             assert event is not None
             assert event.event_id == "evt-001"
 
-    @pytest.mark.asyncio
     async def test_consume_batch(self, event_consumer):
         """Test consuming batch of events."""
         mock_events = [
@@ -367,7 +353,6 @@ class TestKafkaConsumer:
 
             assert len(events) == 10
 
-    @pytest.mark.asyncio
     async def test_manual_commit(self, event_consumer):
         """Test manual offset commit."""
         with patch.object(event_consumer, "_commit") as mock_commit:
@@ -375,7 +360,6 @@ class TestKafkaConsumer:
 
             mock_commit.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_commit_specific_offsets(self, event_consumer):
         """Test committing specific offsets."""
         offsets = {"governance-events-0": 100, "governance-events-1": 50}
@@ -385,7 +369,6 @@ class TestKafkaConsumer:
 
             mock_commit.assert_called_once_with(offsets)
 
-    @pytest.mark.asyncio
     async def test_event_handler_callback(self, event_consumer):
         """Test event handler callback."""
         received_events = []
@@ -404,7 +387,6 @@ class TestKafkaConsumer:
 
             assert len(received_events) == 1
 
-    @pytest.mark.asyncio
     async def test_seek_to_beginning(self, event_consumer):
         """Test seeking to beginning of partition."""
         with patch.object(event_consumer, "_seek_to_beginning") as mock_seek:
@@ -412,7 +394,6 @@ class TestKafkaConsumer:
 
             mock_seek.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_get_lag(self, event_consumer):
         """Test getting consumer lag."""
         with patch.object(event_consumer, "_get_lag") as mock_lag:
@@ -437,18 +418,15 @@ class TestDeliveryGuarantees:
         )
         return GovernanceEventProducer(config, producer_config)
 
-    @pytest.mark.asyncio
     async def test_at_least_once_config(self, producer_with_guarantee):
         """Test at-least-once delivery configuration."""
         assert producer_with_guarantee.config.delivery_guarantee == DeliveryGuarantee.AT_LEAST_ONCE
         assert producer_with_guarantee.config.acks == "all"
 
-    @pytest.mark.asyncio
     async def test_idempotent_producer(self, producer_with_guarantee):
         """Test idempotent producer configuration."""
         assert producer_with_guarantee.config.enable_idempotence is True
 
-    @pytest.mark.asyncio
     async def test_retry_on_failure(self, producer_with_guarantee):
         """Test retry mechanism on transient failures."""
         event = GovernanceEvent(
@@ -470,7 +448,6 @@ class TestDeliveryGuarantees:
             assert result.success is True
             assert call_count == 3
 
-    @pytest.mark.asyncio
     async def test_delivery_callback(self, producer_with_guarantee):
         """Test delivery confirmation callback."""
         confirmed_events = []
@@ -511,7 +488,6 @@ class TestDeadLetterQueue:
             payload={"policy_id": "policy-123"},
         )
 
-    @pytest.mark.asyncio
     async def test_send_to_dlq(self, dlq, failed_event):
         """Test sending failed event to DLQ."""
         error = Exception("Processing failed")
@@ -523,7 +499,6 @@ class TestDeadLetterQueue:
 
             assert result is True
 
-    @pytest.mark.asyncio
     async def test_dlq_includes_error_metadata(self, dlq, failed_event):
         """Test DLQ message includes error metadata."""
         error = ValueError("Invalid payload")
@@ -541,7 +516,6 @@ class TestDeadLetterQueue:
             call_args = mock_send.call_args
             assert "error" in str(call_args) or call_args is not None
 
-    @pytest.mark.asyncio
     async def test_reprocess_from_dlq(self, dlq):
         """Test reprocessing events from DLQ."""
         dlq_events = [
@@ -567,7 +541,6 @@ class TestDeadLetterQueue:
 
             assert count == 3
 
-    @pytest.mark.asyncio
     async def test_dlq_max_retries_exceeded(self, dlq, failed_event):
         """Test handling when max retries exceeded."""
         with patch.object(dlq, "_send_to_permanent_failure") as mock_send:

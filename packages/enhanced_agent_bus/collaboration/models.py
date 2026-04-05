@@ -1,7 +1,7 @@
 """
 Data Models for Real-time Collaboration.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -14,16 +14,16 @@ from typing import Literal
 from pydantic import BaseModel, Field, field_validator
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]
 
 
-class PresenceStatus(str, Enum):  # noqa: UP042
+class PresenceStatus(str, Enum):
     """User presence status in a collaborative session."""
 
     ACTIVE = "active"
@@ -32,7 +32,7 @@ class PresenceStatus(str, Enum):  # noqa: UP042
     AWAY = "away"
 
 
-class UserPermissions(str, Enum):  # noqa: UP042
+class UserPermissions(str, Enum):
     """Permission levels for collaborative editing."""
 
     READ = "read"
@@ -95,7 +95,7 @@ class Collaborator(BaseModel):
         }
 
 
-class DocumentType(str, Enum):  # noqa: UP042
+class DocumentType(str, Enum):
     """Types of documents that support collaboration."""
 
     POLICY = "policy"
@@ -134,7 +134,7 @@ class CollaborationSession(BaseModel):
         self.last_activity = datetime.now(UTC)
 
 
-class EditOperationType(str, Enum):  # noqa: UP042
+class EditOperationType(str, Enum):
     """Types of edit operations."""
 
     INSERT = "insert"
@@ -217,7 +217,7 @@ class Comment(BaseModel):
         self.replies.append(reply)
 
 
-class ActivityEventType(str, Enum):  # noqa: UP042
+class ActivityEventType(str, Enum):
     """Types of activity events."""
 
     USER_JOINED = "user_joined"

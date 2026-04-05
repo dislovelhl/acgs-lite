@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Feature Flags (compatibility module)
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module is kept for backward compatibility with callers importing
 ``AgentBusFeatures`` from ``enhanced_agent_bus.features``.

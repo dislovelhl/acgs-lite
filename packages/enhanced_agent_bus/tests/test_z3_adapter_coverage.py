@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Z3 Adapter Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests to improve z3_adapter.py coverage from 33.7% to 80%+.
 Tests cover: Z3AdapterConfig, Z3Request, Z3Response, Z3Adapter, convenience functions.
@@ -248,7 +248,6 @@ class TestZ3AdapterInitialization:
 class TestZ3AdapterUnavailable:
     """Tests for Z3Adapter when Z3 is not available."""
 
-    @pytest.mark.asyncio
     async def test_execute_without_z3(self) -> None:
         """Test execution returns unknown when Z3 not available."""
         adapter = Z3Adapter()
@@ -261,7 +260,6 @@ class TestZ3AdapterUnavailable:
         assert response.statistics.get("reason") == "z3_not_available"
         assert response.trace_id == request.trace_id
 
-    @pytest.mark.asyncio
     async def test_fallback_response(self) -> None:
         """Test fallback response generation."""
         adapter = Z3Adapter()
@@ -282,7 +280,6 @@ class TestZ3AdapterUnavailable:
 class TestZ3AdapterExecution:
     """Tests for Z3Adapter execution with mocked Z3."""
 
-    @pytest.mark.asyncio
     async def test_execute_runs_in_executor(self) -> None:
         """Test that execution runs Z3 in thread pool executor."""
         adapter = Z3Adapter()
@@ -604,7 +601,6 @@ class TestZ3ExceptionHandling:
 class TestConvenienceFunctions:
     """Tests for check_satisfiability and prove_property functions."""
 
-    @pytest.mark.asyncio
     async def test_check_satisfiability_creates_adapter(self) -> None:
         """Test check_satisfiability creates new adapter if not provided."""
         with patch.object(Z3Adapter, "call", new_callable=AsyncMock) as mock_call:
@@ -616,7 +612,6 @@ class TestConvenienceFunctions:
             assert result == mock_result
             mock_call.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_check_satisfiability_uses_provided_adapter(self) -> None:
         """Test check_satisfiability uses provided adapter."""
         adapter = Z3Adapter(name="provided-adapter")
@@ -630,7 +625,6 @@ class TestConvenienceFunctions:
             assert result == mock_result
             mock_call.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_prove_property_creates_adapter(self) -> None:
         """Test prove_property creates new adapter if not provided."""
         with patch.object(Z3Adapter, "call", new_callable=AsyncMock) as mock_call:
@@ -642,7 +636,6 @@ class TestConvenienceFunctions:
             assert result == mock_result
             mock_call.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_prove_property_negates_formula(self) -> None:
         """Test prove_property creates negated formula."""
         adapter = Z3Adapter()
@@ -657,7 +650,6 @@ class TestConvenienceFunctions:
             call_args = mock_call.call_args[0][0]
             assert "(not (> x 0))" in call_args.formula
 
-    @pytest.mark.asyncio
     async def test_prove_property_with_context(self) -> None:
         """Test prove_property with context assertions."""
         adapter = Z3Adapter()
@@ -747,7 +739,6 @@ class TestEdgeCases:
         assert hasattr(config, "z3_timeout_ms")
         assert hasattr(config, "memory_limit_mb")
 
-    @pytest.mark.asyncio
     async def test_concurrent_requests(self) -> None:
         """Test handling concurrent requests."""
         adapter = Z3Adapter()

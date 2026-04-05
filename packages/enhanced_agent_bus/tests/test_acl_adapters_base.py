@@ -1,6 +1,6 @@
 """
 ACGS-2 ACL Adapter Base Classes Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for ACL adapter exceptions, configuration, circuit breaker,
 rate limiter, and abstract base class.
@@ -15,7 +15,8 @@ import asyncio
 import time
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 try:
     from acl_adapters.base import (
@@ -387,7 +388,6 @@ class TestSimpleCircuitBreaker:
 class TestTokenBucketRateLimiter:
     """Tests for TokenBucketRateLimiter."""
 
-    @pytest.mark.asyncio
     async def test_initial_burst(self):
         """Rate limiter allows burst of requests initially."""
         limiter = TokenBucketRateLimiter(rate_per_second=10.0, burst=5)
@@ -396,7 +396,6 @@ class TestTokenBucketRateLimiter:
         for _ in range(5):
             assert await limiter.acquire() is True
 
-    @pytest.mark.asyncio
     async def test_rate_limited_after_burst(self):
         """Rate limiter rejects after burst exhausted."""
         limiter = TokenBucketRateLimiter(rate_per_second=10.0, burst=3)
@@ -408,7 +407,6 @@ class TestTokenBucketRateLimiter:
         # Next request should be rejected
         assert await limiter.acquire() is False
 
-    @pytest.mark.asyncio
     async def test_tokens_refill(self):
         """Tokens refill over time."""
         limiter = TokenBucketRateLimiter(rate_per_second=100.0, burst=1)
@@ -460,7 +458,6 @@ class ConcreteAdapter(ACLAdapter[str, str]):
 class TestACLAdapter:
     """Tests for ACLAdapter abstract base class."""
 
-    @pytest.mark.asyncio
     async def test_successful_call(self):
         """Successful call returns result."""
         adapter = ConcreteAdapter("test")
@@ -472,7 +469,6 @@ class TestACLAdapter:
         assert result.from_cache is False
         assert result.from_fallback is False
 
-    @pytest.mark.asyncio
     async def test_caching(self):
         """Repeated calls use cache."""
         adapter = ConcreteAdapter("test")
@@ -487,7 +483,6 @@ class TestACLAdapter:
         assert result2.from_cache is True
         assert result2.data == result1.data
 
-    @pytest.mark.asyncio
     async def test_cache_disabled(self):
         """Caching can be disabled."""
         config = AdapterConfig(cache_enabled=False)
@@ -498,7 +493,6 @@ class TestACLAdapter:
 
         assert result2.from_cache is False
 
-    @pytest.mark.asyncio
     async def test_timeout_error(self):
         """Timeout errors are handled correctly."""
 
@@ -514,7 +508,6 @@ class TestACLAdapter:
         assert result.success is False
         assert isinstance(result.error, AdapterTimeoutError)
 
-    @pytest.mark.asyncio
     async def test_retry_on_failure(self):
         """Adapter retries on failure."""
         call_count = 0
@@ -535,7 +528,6 @@ class TestACLAdapter:
         assert result.retry_count == 2  # 0-indexed, so 2 means 3rd attempt
         assert call_count == 3
 
-    @pytest.mark.asyncio
     async def test_fallback_on_circuit_open(self):
         """Fallback is used when circuit is open."""
         adapter = ConcreteAdapter(
@@ -556,7 +548,6 @@ class TestACLAdapter:
         assert result.data == "fallback_value"
         assert result.from_fallback is True
 
-    @pytest.mark.asyncio
     async def test_circuit_open_no_fallback(self):
         """Circuit open without fallback returns error."""
         adapter = ConcreteAdapter(
@@ -578,7 +569,6 @@ class TestACLAdapter:
         assert result.success is False
         assert isinstance(result.error, AdapterCircuitOpenError)
 
-    @pytest.mark.asyncio
     async def test_invalid_response_handling(self):
         """Invalid responses trigger circuit breaker."""
         adapter = ConcreteAdapter(
@@ -592,7 +582,6 @@ class TestACLAdapter:
 
         assert adapter.circuit_breaker.state == AdapterState.OPEN
 
-    @pytest.mark.asyncio
     async def test_get_metrics(self):
         """get_metrics returns adapter statistics."""
         adapter = ConcreteAdapter("test")
@@ -609,7 +598,6 @@ class TestACLAdapter:
         assert metrics["cache_hits"] == 1
         assert metrics["circuit_state"] == "closed"
 
-    @pytest.mark.asyncio
     async def test_get_health(self):
         """get_health returns health status."""
         adapter = ConcreteAdapter("test")
@@ -622,7 +610,6 @@ class TestACLAdapter:
         assert health["state"] == "closed"
         assert "timestamp" in health
 
-    @pytest.mark.asyncio
     async def test_clear_cache(self):
         """clear_cache removes cached entries."""
         adapter = ConcreteAdapter("test")
@@ -633,7 +620,6 @@ class TestACLAdapter:
         result = await adapter.call("request1")
         assert result.from_cache is False
 
-    @pytest.mark.asyncio
     async def test_reset_circuit_breaker(self):
         """reset_circuit_breaker restores closed state."""
         adapter = ConcreteAdapter(

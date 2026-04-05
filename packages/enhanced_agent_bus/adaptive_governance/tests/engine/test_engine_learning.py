@@ -6,8 +6,8 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH as CONST_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH as CONST_HASH
 from enhanced_agent_bus.adaptive_governance.governance_engine import (
     AdaptiveGovernanceEngine,
 )
@@ -26,7 +26,9 @@ _MLFLOW_PATCH = "mlflow.set_tracking_uri"
 _IMPACT_MLFLOW = (
     "enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
 )
-_THRESH_MLFLOW = "enhanced_agent_bus.adaptive_governance.threshold_manager.AdaptiveThresholds._initialize_mlflow"  # noqa: E501
+_THRESH_MLFLOW = (
+    "enhanced_agent_bus.adaptive_governance.threshold_manager.AdaptiveThresholds._initialize_mlflow"  # noqa: E501
+)
 
 
 class TestUpdateRiverModel:

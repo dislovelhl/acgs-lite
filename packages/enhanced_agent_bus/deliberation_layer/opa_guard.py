@@ -1,6 +1,6 @@
 """
 ACGS-2 Deliberation Layer - OPA Policy Guard
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides OPA-based policy guard integration for the deliberation layer.
 Implements VERIFY-BEFORE-ACT pattern with multi-signature collection,
@@ -12,7 +12,7 @@ import uuid
 from datetime import UTC, datetime, timedelta, timezone
 from typing import TypeAlias, cast
 
-from src.core.shared.type_guards import (
+from enhanced_agent_bus._compat.type_guards import (
     get_bool,
     get_float,
     get_str,
@@ -21,15 +21,16 @@ from src.core.shared.type_guards import (
 )
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.shared.fail_closed import fail_closed
 
 try:
     from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage, MessageStatus
@@ -728,56 +729,51 @@ class OPAGuard:
         Returns:
             True if action is constitutionally compliant
         """
-        try:
-            # Check for constitutional hash in action - use type-safe getter
-            action_hash = get_str(action, "constitutional_hash", "")
-            if action_hash and action_hash != GUARD_CONSTITUTIONAL_HASH:
-                logger.warning(f"Constitutional hash mismatch: {action_hash}")
-                self._stats["constitutional_failures"] += 1
-                return False
+        return await self._check_constitutional_compliance_impl(action)
 
-            # Ensure opa_client is initialized before evaluation
-            if self.opa_client is None:
-                logger.error("OPA client not initialized for constitutional check")
-                self._stats["constitutional_failures"] += 1
-                return not self.fail_closed
+    @fail_closed(
+        lambda self, action, *, error: self._handle_constitutional_compliance_error(error),
+        exceptions=_OPA_GUARD_OPERATION_ERRORS,
+    )
+    async def _check_constitutional_compliance_impl(self, action: JSONDict) -> bool:
+        action_hash = get_str(action, "constitutional_hash", "")
+        if action_hash and action_hash != GUARD_CONSTITUTIONAL_HASH:
+            logger.warning(f"Constitutional hash mismatch: {action_hash}")
+            self._stats["constitutional_failures"] += 1
+            return False
 
-            # Evaluate constitutional policy
-            input_data: JSONDict = {
+        if self.opa_client is None:
+            logger.error("OPA client not initialized for constitutional check")
+            self._stats["constitutional_failures"] += 1
+            return not self.fail_closed
+
+        result = await self.opa_client.evaluate_policy(
+            {
                 "action": action,
                 "constitutional_hash": GUARD_CONSTITUTIONAL_HASH,
                 "timestamp": datetime.now(UTC).isoformat(),
-            }
+            },
+            policy_path="data.acgs.constitutional.validate",
+        )
 
-            result = await self.opa_client.evaluate_policy(
-                input_data, policy_path="data.acgs.constitutional.validate"
+        default_value = not self.fail_closed
+        if is_json_dict(result):
+            return cast(bool, get_bool(result, "allowed", default_value))
+        return default_value
+
+    def _handle_constitutional_compliance_error(self, error: BaseException) -> bool:
+        logger.error(f"Constitutional compliance check error: {error}")
+        self._stats["constitutional_failures"] += 1
+        if self.fail_closed:
+            logger.warning(
+                "Constitutional compliance check failed - denying action (fail_closed=True)"
             )
-
-            # SECURITY: Respect fail_closed setting when result is missing
-            # If fail_closed=True, missing "allowed" key means deny
-            # If fail_closed=False, missing "allowed" key means allow (legacy behavior)
-            default_value = not self.fail_closed
-
-            # type-safe extraction of allowed field
-            if is_json_dict(result):
-                return cast(bool, get_bool(result, "allowed", default_value))
-            return default_value
-
-        except _OPA_GUARD_OPERATION_ERRORS as e:
-            logger.error(f"Constitutional compliance check error: {e}")
-            self._stats["constitutional_failures"] += 1
-            # SECURITY: Respect fail_closed setting on exceptions
-            if self.fail_closed:
-                logger.warning(
-                    "Constitutional compliance check failed - denying action (fail_closed=True)"
-                )
-                return False
-            else:
-                logger.warning(
-                    "Constitutional compliance check failed - allowing action "
-                    "(fail_closed=False, availability mode)"
-                )
-                return True
+            return False
+        logger.warning(
+            "Constitutional compliance check failed - allowing action "
+            "(fail_closed=False, availability mode)"
+        )
+        return True
 
     async def evaluate(
         self, message_data: JSONDict, policy_path: str = "data.acgs.guard.verify"
@@ -795,63 +791,63 @@ class OPAGuard:
         Returns:
             dict with 'allow', 'reasons', and 'version' keys
         """
-        try:
-            # Ensure OPA client is available
-            if self.opa_client is None:
-                logger.error("OPA client not initialized for policy evaluation")
-                return {
-                    "allow": not self.fail_closed,
-                    "reasons": ["OPA client not initialized"],
-                    "version": "error",
-                }
+        return await self._evaluate_impl(message_data, policy_path)
 
-            # Build input for OPA evaluation
-            input_data: JSONDict = {
+    @fail_closed(
+        lambda self, message_data, policy_path="data.acgs.guard.verify", *, error: self._handle_evaluate_error(error),
+        exceptions=_OPA_GUARD_OPERATION_ERRORS,
+    )
+    async def _evaluate_impl(
+        self, message_data: JSONDict, policy_path: str = "data.acgs.guard.verify"
+    ) -> JSONDict:
+        if self.opa_client is None:
+            logger.error("OPA client not initialized for policy evaluation")
+            return {
+                "allow": not self.fail_closed,
+                "reasons": ["OPA client not initialized"],
+                "version": "error",
+            }
+
+        result = await self.opa_client.evaluate_policy(
+            {
                 "message": message_data,
                 "constitutional_hash": GUARD_CONSTITUTIONAL_HASH,
                 "timestamp": datetime.now(UTC).isoformat(),
-            }
+            },
+            policy_path,
+        )
 
-            result = await self.opa_client.evaluate_policy(input_data, policy_path)
-
-            # type-safe extraction with fallback chain
-            # SECURITY: Respect fail_closed when response is missing expected keys
-            default_allow = not self.fail_closed
-            allow_value: bool
-            if is_json_dict(result):
-                # Try 'allowed' first, then 'allow', default to fail_closed policy
-                allowed_raw = result.get("allowed")
-                if isinstance(allowed_raw, bool):
-                    allow_value = allowed_raw
-                else:
-                    allow_raw = result.get("allow")
-                    allow_value = allow_raw if isinstance(allow_raw, bool) else default_allow
-
-                reasons_raw = result.get("reasons")
-                reasons: list[str] = (
-                    cast(list[str], reasons_raw) if isinstance(reasons_raw, list) else []
-                )
-
-                version = get_str(result, "version", "1.0.0")
+        default_allow = not self.fail_closed
+        allow_value: bool
+        if is_json_dict(result):
+            allowed_raw = result.get("allowed")
+            if isinstance(allowed_raw, bool):
+                allow_value = allowed_raw
             else:
-                allow_value = default_allow
-                reasons = []
-                version = "1.0.0"
+                allow_raw = result.get("allow")
+                allow_value = allow_raw if isinstance(allow_raw, bool) else default_allow
 
-            return {
-                "allow": allow_value,
-                "reasons": reasons,
-                "version": version,
-            }
+            reasons_raw = result.get("reasons")
+            reasons: list[str] = cast(list[str], reasons_raw) if isinstance(reasons_raw, list) else []
+            version = get_str(result, "version", "1.0.0")
+        else:
+            allow_value = default_allow
+            reasons = []
+            version = "1.0.0"
 
-        except _OPA_GUARD_OPERATION_ERRORS as e:
-            logger.error(f"OPA evaluation error: {e}")
-            # Fallback: allow with warning when OPA unavailable
-            return {
-                "allow": not self.fail_closed,
-                "reasons": [f"OPA evaluation error: {e!s}"],
-                "version": "fallback",
-            }
+        return {
+            "allow": allow_value,
+            "reasons": reasons,
+            "version": version,
+        }
+
+    def _handle_evaluate_error(self, error: BaseException) -> JSONDict:
+        logger.error(f"OPA evaluation error: {error}")
+        return {
+            "allow": not self.fail_closed,
+            "reasons": [f"OPA evaluation error: {error!s}"],
+            "version": "fallback",
+        }
 
     def get_stats(self) -> JSONDict:
         """Get guard statistics."""
@@ -927,7 +923,7 @@ def reset_opa_guard() -> None:
 
     Used primarily for test isolation to prevent state leakage between tests.
     For graceful shutdown, use close_opa_guard() instead.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     global _opa_guard
     _opa_guard = None

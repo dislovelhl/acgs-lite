@@ -2,17 +2,47 @@ from __future__ import annotations
 
 import os
 import time
+from typing import Any
 
 from fastapi import FastAPI, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 
 from src.core.shared.security.cors_config import get_cors_config
 from src.core.shared.structured_logging import get_logger
 
 
-def create_acgs_app(service_name: str, **config: object) -> FastAPI:
+def _resolve_trusted_hosts(
+    config_value: object,
+    *,
+    environment: str,
+) -> list[str]:
+    """Normalize trusted host configuration for Starlette middleware."""
+    trusted_hosts: list[str]
+
+    if isinstance(config_value, str):
+        trusted_hosts = [host.strip() for host in config_value.split(",") if host.strip()]
+    elif isinstance(config_value, (list, tuple, set, frozenset)):
+        trusted_hosts = [str(host).strip() for host in config_value if str(host).strip()]
+    else:
+        trusted_hosts = []
+
+    if not trusted_hosts:
+        trusted_hosts = ["localhost", "127.0.0.1"]
+
+    if (
+        environment in {"development", "dev", "test", "testing", "ci"}
+        and "testserver" not in trusted_hosts
+    ):
+        trusted_hosts.append("testserver")
+
+    return trusted_hosts
+
+
+def create_acgs_app(service_name: str, **config: Any) -> FastAPI:
     environment = (
         str(
             config.get("environment")
@@ -26,7 +56,7 @@ def create_acgs_app(service_name: str, **config: object) -> FastAPI:
     is_development = environment in {"development", "dev", "test", "testing", "ci"}
     docs_enabled = bool(config.get("docs_enabled", is_development))
 
-    app_kwargs: dict[str, object] = {
+    app_kwargs: dict[str, Any] = {
         "title": config.get("title", f"ACGS-2 {service_name}"),
         "description": config.get("description", f"{service_name} service"),
         "version": config.get("version", "1.0.0"),
@@ -45,7 +75,7 @@ def create_acgs_app(service_name: str, **config: object) -> FastAPI:
     if config.get("enable_request_logging", True):
 
         @app.middleware("http")
-        async def request_logging_middleware(request: Request, call_next):
+        async def request_logging_middleware(request: Request, call_next: Any) -> Any:
             start_time = time.perf_counter()
             response = await call_next(request)
             duration_ms = round((time.perf_counter() - start_time) * 1000, 2)
@@ -60,6 +90,10 @@ def create_acgs_app(service_name: str, **config: object) -> FastAPI:
                 },
             )
             return response
+
+    trusted_hosts = _resolve_trusted_hosts(config.get("trusted_hosts"), environment=environment)
+    if config.get("enable_trusted_hosts", True):
+        app.add_middleware(TrustedHostMiddleware, allowed_hosts=trusted_hosts)
 
     if config.get("enable_cors", True):
         app.add_middleware(CORSMiddleware, **config.get("cors_config", get_cors_config()))
@@ -90,25 +124,16 @@ def create_acgs_app(service_name: str, **config: object) -> FastAPI:
         async def validation_exception_handler(
             request: Request, exc: RequestValidationError
         ) -> JSONResponse:
-            body = exc.body
-            if body is not None and not isinstance(body, (dict, list, str, int, float, bool)):
-                if hasattr(body, "items"):
-                    try:
-                        body = dict(body.items())
-                    except (AttributeError, TypeError, ValueError):
-                        body = str(body)
-                else:
-                    body = str(body)
-
+            encoded_errors = jsonable_encoder(exc.errors())
             logger.error(
                 "validation_error",
                 extra={
                     "service": service_name,
                     "path": request.url.path,
-                    "detail": exc.errors(),
+                    "detail": encoded_errors,
                 },
             )
-            return JSONResponse(status_code=422, content={"detail": exc.errors(), "body": body})
+            return JSONResponse(status_code=422, content={"detail": encoded_errors})
 
         @app.exception_handler(Exception)
         async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:

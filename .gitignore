@@ -1,53 +1,144 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-*.egg-info/
+# Build artifacts
+**/target/
 dist/
 build/
-*.egg
 
-# Virtual environments
-.venv/
-venv/
-ENV/
-.codex-home/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Testing
-.pytest_cache/
-.coverage
-.coverage.*
-htmlcov/
-coverage.xml
-coverage.json
-
-# Type checking
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+*.so
+.ruff_cache/
 .mypy_cache/
 
-# Linting
-.ruff_cache/
+# Coverage
+.coverage
+coverage.json
+htmlcov/
 
-# Rust
-packages/acgs-lite/rust/target/
+# Databases / local state
+*.db
+mlruns/
 
-# OS
-.DS_Store
-Thumbs.db
+# Codex CLI
+.codex/
+.codex-home/
+.codex-readiness-integration-test/
+.codex-readiness-unit-test/
+.codex_write_check
+
+# AI agent / coding-assistant dev stacks (local tooling, not project source)
+.gstack/
+.openclaw/
+.agents/
+!.agents/
+!.agents/archive/
+!.agents/archive/**
+!.agents/skills/
+!.agents/skills/**
+.claude/
+.mcp.json
+.playwright-cli/
+
+# Research / paper artefacts (local LaTeX workspace)
+src/research/docs/research/
+docs/papers/
+docs/generated/
+
+# Autoresearch experiment logs & scratch files
+autoresearch/run_perf_*.log
+autoresearch/candidate_scenarios/*
+!autoresearch/candidate_scenarios/
+!autoresearch/candidate_scenarios/*.json
+!autoresearch/candidate_scenarios/*.patch
+autoresearch/paper_extracts/
+autoresearch/raw_dataset_adapter.md
+autoresearch/build_paper_adapter_manifest.py
+autoresearch/render_candidate_promotion_patch.py
+autoresearch/review_candidate_promotion.py
+autoresearch/sourced_pack_review.md
+
+# Playwright / browser automation local cache
+packages/acgs-lite/.playwright-cli/
+packages/acgs-lite/output/
+
+# Identity / personality prompts (local agent configuration)
+HEARTBEAT.md
+IDENTITY.md
+SOUL.md
+TOOLS.md
+USER.md
+prompts/
+
+# Local dev docs
+claudedocs/enhanced-agent-bus-reorg-plan-20260321.md
+docs/brand-architecture.md
+
+# Demo harness
+demo/
+
+# One-off scripts
+scripts/generate_project_technical_breakthroughs_pdf.py
+scripts/package_health.py
+scripts/test_segment_timing.py
+
+# Package health manifest (generated)
+package-health.manifest.json
 
 # Environment
 .env
 .env.*
 !.env.example
+.venv/
+.uv-cache/
 
-# Node (PM2)
+# Node
 node_modules/
 
-# Benchmarks
-.benchmarks/
+# Wrangler (Cloudflare Workers local state)
+.wrangler/
+
+# IDE
+.vscode/
+.idea/
+
+# Claude Code worktrees (embedded git repos — not submodules)
+.claude/worktrees/
+.claude/settings.local.json
+
+# Demo harnesses (local only)
+constitutional-sentinel-demo/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Screenshots (local captures)
+screenshot*.png
+
+# Revenue logs (operational data)
+x402_revenue.jsonl
+
+# Legacy / stale copies
+src/acgs_lite/
+src/fix_imports.py
+src/split_engine.py
+.gstack/
+.python-version
+.github/workflows/docs-pdf.yml
+
+# Per-rule eval harness output
+eval_results/
+.omx/
+
+# Session memory / local output
+.remember/
+output/
+
+# SQLite WAL/SHM (transient)
+*.db-shm
+*.db-wal
+
+# TypeScript build info
+*.tsbuildinfo

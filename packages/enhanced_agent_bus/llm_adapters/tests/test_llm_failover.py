@@ -1,6 +1,6 @@
 """
 Tests for LLM Provider Failover System
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for:
 - LLM-specific circuit breaker configurations
@@ -231,7 +231,6 @@ class TestProviderHealthScorer:
 
         assert scorer._expected_latency["test-provider"] == 200.0
 
-    @pytest.mark.asyncio
     async def test_record_successful_request(self) -> None:
         """Test recording a successful request."""
         scorer = ProviderHealthScorer()
@@ -250,7 +249,6 @@ class TestProviderHealthScorer:
         assert health.metrics.error_rate == 0.0
         assert health.health_score > 0.8  # Should be healthy
 
-    @pytest.mark.asyncio
     async def test_record_failed_request(self) -> None:
         """Test recording a failed request."""
         scorer = ProviderHealthScorer()
@@ -268,7 +266,6 @@ class TestProviderHealthScorer:
         assert health.metrics.timeout_count == 1
         assert health.metrics.error_rate == 1.0
 
-    @pytest.mark.asyncio
     async def test_error_rate_calculation(self) -> None:
         """Test error rate is calculated correctly."""
         scorer = ProviderHealthScorer()
@@ -283,7 +280,6 @@ class TestProviderHealthScorer:
         assert health.metrics.total_requests == 4
         assert health.metrics.error_rate == 0.25
 
-    @pytest.mark.asyncio
     async def test_latency_percentiles(self) -> None:
         """Test latency percentile calculations."""
         scorer = ProviderHealthScorer()
@@ -299,7 +295,6 @@ class TestProviderHealthScorer:
         assert health.metrics.p50_latency_ms > 0
         assert health.metrics.p95_latency_ms > 0
 
-    @pytest.mark.asyncio
     async def test_quality_score_tracking(self) -> None:
         """Test quality score tracking."""
         scorer = ProviderHealthScorer()
@@ -311,7 +306,6 @@ class TestProviderHealthScorer:
 
         assert health.metrics.avg_quality_score == pytest.approx(0.85)
 
-    @pytest.mark.asyncio
     async def test_consecutive_failures_penalty(self) -> None:
         """Test consecutive failures reduce health score."""
         scorer = ProviderHealthScorer()
@@ -424,7 +418,6 @@ class TestProactiveFailoverManager:
             "provider-c",
         ]
 
-    @pytest.mark.asyncio
     async def test_check_failover_healthy_provider(
         self, failover_manager: ProactiveFailoverManager
     ) -> None:
@@ -443,7 +436,6 @@ class TestProactiveFailoverManager:
         assert provider == "provider-a"
         assert failover_occurred is False
 
-    @pytest.mark.asyncio
     async def test_check_failover_degraded_provider(
         self, failover_manager: ProactiveFailoverManager
     ) -> None:
@@ -566,7 +558,6 @@ class TestProviderWarmupManager:
 
         assert "test-provider" in warmup_manager._warmup_handlers
 
-    @pytest.mark.asyncio
     async def test_warmup_success(self, warmup_manager: ProviderWarmupManager) -> None:
         """Test successful warmup."""
         handler = AsyncMock(return_value=None)
@@ -579,7 +570,6 @@ class TestProviderWarmupManager:
         assert result.error is None
         handler.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_warmup_failure(self, warmup_manager: ProviderWarmupManager) -> None:
         """Test warmup failure."""
         handler = AsyncMock(side_effect=RuntimeError("Connection failed"))
@@ -590,7 +580,6 @@ class TestProviderWarmupManager:
         assert result.success is False
         assert "Connection failed" in result.error
 
-    @pytest.mark.asyncio
     async def test_warmup_no_handler(self, warmup_manager: ProviderWarmupManager) -> None:
         """Test warmup with no handler registered."""
         result = await warmup_manager.warmup("unknown-provider")
@@ -598,7 +587,6 @@ class TestProviderWarmupManager:
         assert result.success is False
         assert "No warmup handler" in result.error
 
-    @pytest.mark.asyncio
     async def test_warmup_if_needed(self, warmup_manager: ProviderWarmupManager) -> None:
         """Test conditional warmup based on interval."""
         handler = AsyncMock()
@@ -612,7 +600,6 @@ class TestProviderWarmupManager:
         result2 = await warmup_manager.warmup_if_needed("test-provider")
         assert result2 is None
 
-    @pytest.mark.asyncio
     async def test_warmup_before_failover(self, warmup_manager: ProviderWarmupManager) -> None:
         """Test warmup before failover."""
         handler = AsyncMock()
@@ -668,7 +655,6 @@ class TestRequestHedgingManager:
         assert hedging_manager._default_hedge_count == 2
         assert hedging_manager._hedge_delay_ms == 50
 
-    @pytest.mark.asyncio
     async def test_execute_hedged_first_wins(self, hedging_manager: RequestHedgingManager) -> None:
         """Test hedged execution where first provider wins."""
 
@@ -688,7 +674,6 @@ class TestRequestHedgingManager:
         assert winner == "fast-provider"
         assert result == "fast result"
 
-    @pytest.mark.asyncio
     async def test_execute_hedged_second_wins_on_failure(
         self, hedging_manager: RequestHedgingManager
     ) -> None:
@@ -709,7 +694,6 @@ class TestRequestHedgingManager:
         assert winner == "working-provider"
         assert result == "success result"
 
-    @pytest.mark.asyncio
     async def test_execute_hedged_all_fail(self, hedging_manager: RequestHedgingManager) -> None:
         """Test hedged execution when all providers fail."""
 
@@ -724,7 +708,6 @@ class TestRequestHedgingManager:
                 hedge_count=2,
             )
 
-    @pytest.mark.asyncio
     async def test_execute_hedged_no_providers(
         self, hedging_manager: RequestHedgingManager
     ) -> None:
@@ -744,7 +727,6 @@ class TestRequestHedgingManager:
         assert stats["total_hedged_requests"] == 0
         assert stats["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_get_hedging_stats_with_data(
         self, hedging_manager: RequestHedgingManager
     ) -> None:
@@ -785,7 +767,6 @@ class TestLLMFailoverOrchestrator:
         assert orchestrator.warmup_manager is not None
         assert orchestrator.hedging_manager is not None
 
-    @pytest.mark.asyncio
     async def test_get_llm_circuit_breaker(self, orchestrator: LLMFailoverOrchestrator) -> None:
         """Test getting LLM-specific circuit breaker."""
         cb = await orchestrator.get_llm_circuit_breaker("openai-gpt-4")
@@ -795,7 +776,6 @@ class TestLLMFailoverOrchestrator:
         # The circuit breaker key in registry would be "llm:openai-gpt-4"
         assert cb.config.name == "llm:openai"
 
-    @pytest.mark.asyncio
     async def test_record_request_result_success(
         self, orchestrator: LLMFailoverOrchestrator
     ) -> None:
@@ -809,7 +789,6 @@ class TestLLMFailoverOrchestrator:
         health = orchestrator.health_scorer.get_health_score("test-provider")
         assert health.metrics.successful_requests == 1
 
-    @pytest.mark.asyncio
     async def test_record_request_result_failure(
         self, orchestrator: LLMFailoverOrchestrator
     ) -> None:
@@ -824,7 +803,6 @@ class TestLLMFailoverOrchestrator:
         health = orchestrator.health_scorer.get_health_score("test-provider")
         assert health.metrics.failed_requests == 1
 
-    @pytest.mark.asyncio
     async def test_execute_with_failover_success(
         self, orchestrator: LLMFailoverOrchestrator
     ) -> None:
@@ -843,7 +821,6 @@ class TestLLMFailoverOrchestrator:
         assert provider == "provider-a"
         assert result == "result from provider-a"
 
-    @pytest.mark.asyncio
     async def test_execute_with_failover_on_error(
         self, orchestrator: LLMFailoverOrchestrator
     ) -> None:
@@ -871,7 +848,6 @@ class TestLLMFailoverOrchestrator:
         assert call_count["a"] == 1
         assert call_count["b"] == 1
 
-    @pytest.mark.asyncio
     async def test_execute_with_hedging(self) -> None:
         """Test executing with hedging for critical requests."""
         # Create registry and clear default profiles for isolated testing

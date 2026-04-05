@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Enumerations
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Centralized enumeration definitions for the agent bus.
 Split from models.py for improved maintainability.
@@ -37,7 +37,7 @@ class Priority(Enum):
     """Priority levels for messages.
 
     Higher value = Higher priority.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Note: NORMAL is an alias for MEDIUM for backward compatibility
     with code that used MessagePriority.NORMAL.
@@ -61,7 +61,7 @@ class ValidationStatus(Enum):
 
 # RiskLevel is canonically defined in src.core.shared.enums.
 # Re-exported here for backward compatibility.
-from src.core.shared.enums import RiskLevel  # noqa: E402
+from enhanced_agent_bus._compat.enums import RiskLevel
 
 
 class AutonomyTier(Enum):
@@ -70,7 +70,7 @@ class AutonomyTier(Enum):
     Defines the level of autonomy an agent has for executing actions.
     Higher tiers require less oversight; lower tiers require more.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     ADVISORY = "advisory"  # Can only query/observe, cannot execute commands
@@ -114,7 +114,7 @@ class TaskComplexity(Enum):
 class TaskType(Enum):
     """Task type classification for agent selection.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Original general categories
@@ -143,7 +143,7 @@ class TaskType(Enum):
 class AgentCapability(Enum):
     """Agent capabilities for routing and selection.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Core capabilities

@@ -1,6 +1,6 @@
 """
 ACGS-2 Cost Optimizer Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Data models for cost management, budgets, anomalies, and batch processing.
 """
@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta, timezone
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -32,7 +32,7 @@ class CostModel:
     """
     Cost model for an LLM provider.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     provider_id: str
@@ -117,7 +117,7 @@ class CostEstimate:
     """
     Cost estimate for a request.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     provider_id: str
@@ -155,7 +155,7 @@ class BudgetLimit:
     """
     Budget limit configuration.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     limit_id: str
@@ -196,7 +196,7 @@ class BudgetLimit:
         if self.monthly_limit and (self.monthly_usage + cost) > self.monthly_limit:
             return (
                 False,
-                f"Monthly limit exceeded: ${self.monthly_usage + cost:.4f} > ${self.monthly_limit:.4f}",  # noqa: E501
+                f"Monthly limit exceeded: ${self.monthly_usage + cost:.4f} > ${self.monthly_limit:.4f}",
             )
 
         return True, None
@@ -228,7 +228,7 @@ class CostAnomaly:
     """
     Detected cost anomaly.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     anomaly_id: str
@@ -254,7 +254,7 @@ class BatchRequest:
     """
     Request to be batched for cost optimization.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     request_id: str
@@ -274,7 +274,7 @@ class BatchResult:
     """
     Result of batch processing.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     batch_id: str

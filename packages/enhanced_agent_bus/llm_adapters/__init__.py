@@ -1,11 +1,11 @@
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
 """
 ACGS-2 Enhanced Agent Bus - LLM Adapters
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Model-agnostic integration framework for LLM providers.
 Provides standardized adapters for OpenAI, Anthropic, AWS Bedrock,
@@ -21,7 +21,7 @@ Key Features:
 - Fallback chain support
 """
 
-from .base import (  # noqa: E402
+from .base import (
     AdapterStatus,
     BaseLLMAdapter,
     CompletionMetadata,
@@ -35,7 +35,7 @@ from .base import (  # noqa: E402
 )
 
 # Phase 3 LLM Antifragility modules
-from .capability_matrix import (  # noqa: E402
+from .capability_matrix import (
     CapabilityDimension,
     CapabilityLevel,
     CapabilityRegistry,
@@ -44,7 +44,7 @@ from .capability_matrix import (  # noqa: E402
     ProviderCapabilityProfile,
     get_capability_registry,
 )
-from .config import (  # noqa: E402
+from .config import (
     AdapterConfig,
     AdapterType,
     AnthropicAdapterConfig,
@@ -59,8 +59,9 @@ from .config import (  # noqa: E402
     OpenAIAdapterConfig,
     OpenClawAdapterConfig,
     RateLimitConfig,
+    XAIAdapterConfig,
 )
-from .cost_optimizer import (  # noqa: E402
+from .cost_optimizer import (
     BatchOptimizer,
     BatchRequest,
     BatchResult,
@@ -75,7 +76,7 @@ from .cost_optimizer import (  # noqa: E402
     UrgencyLevel,
     get_cost_optimizer,
 )
-from .llm_failover import (  # noqa: E402
+from .llm_failover import (
     FailoverEvent,
     HealthMetrics,
     HedgedRequest,
@@ -91,7 +92,7 @@ from .llm_failover import (  # noqa: E402
     get_llm_failover_orchestrator,
     reset_llm_failover_orchestrator,
 )
-from .models import (  # noqa: E402
+from .models import (
     FunctionDefinition,
     FunctionParameters,
     LLMRequest,
@@ -103,7 +104,7 @@ from .models import (  # noqa: E402
     ToolDefinition,
     ToolType,
 )
-from .registry import (  # noqa: E402
+from .registry import (
     AdapterMetrics,
     CircuitBreaker,
     CircuitBreakerConfig,
@@ -142,6 +143,11 @@ try:
     from .openclaw_adapter import OpenClawAdapter
 except ImportError:
     OpenClawAdapter = None  # type: ignore[assignment]
+
+try:
+    from .xai_adapter import XAIAdapter
+except ImportError:
+    XAIAdapter = None  # type: ignore[assignment]
 
 # Version info
 __version__ = "1.0.0"
@@ -236,6 +242,8 @@ __all__ = [
     "ToolType",
     "UrgencyLevel",
     "WarmupResult",
+    "XAIAdapter",
+    "XAIAdapterConfig",
     "__constitutional_hash__",
     # Metadata
     "__version__",

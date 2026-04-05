@@ -10,16 +10,76 @@ from .config import (
     ModelSelectionStrategy,
     TrainingConfig,
 )
+from .dataset_builder import (
+    CrossTenantDatasetError,
+    DatasetSnapshotBuilder,
+    FeedbackEventSource,
+    FlywheelDatasetError,
+    InMemoryFeedbackEventSource,
+    MixedConstitutionalHashError,
+    RedisFeedbackEventSource,
+    UnredactedDatasetError,
+)
+from .ingest import build_decision_event, build_feedback_event
+from .models import (
+    CandidateArtifact as CanonicalCandidateArtifact,
+)
+from .models import (
+    DatasetSnapshot,
+    DecisionEvent,
+    EvaluationMode,
+    EvaluationRun,
+    EvidenceBundle,
+    FeedbackEvent,
+    WorkloadKey,
+)
+from .redaction import REDACTED_TOKEN, contains_unredacted_pii, redact_for_dataset_export
+from .run_orchestrator import (
+    FlywheelRunNotFoundError,
+    FlywheelRunOrchestrationError,
+    FlywheelRunOrchestrator,
+    FlywheelRunPausedError,
+    FlywheelRunTerminalStateError,
+)
+from .workload_registry import build_workload_key, normalize_workload_segment
 
 __all__ = [
     "DEFAULT_FLYWHEEL_CONFIG",
+    "CanonicalCandidateArtifact",
     "CandidateModel",
+    "CrossTenantDatasetError",
     "DataSplitConfig",
+    "DatasetSnapshotBuilder",
+    "DatasetSnapshot",
+    "DecisionEvent",
+    "EvaluationMode",
     "EvaluationConfig",
+    "EvaluationRun",
+    "EvidenceBundle",
     "ExperimentType",
+    "FeedbackEventSource",
+    "FeedbackEvent",
     "FlywheelConfig",
+    "FlywheelDatasetError",
     "FlywheelMode",
+    "FlywheelRunNotFoundError",
+    "FlywheelRunOrchestrationError",
+    "FlywheelRunOrchestrator",
+    "FlywheelRunPausedError",
+    "FlywheelRunTerminalStateError",
     "ICLConfig",
+    "InMemoryFeedbackEventSource",
+    "MixedConstitutionalHashError",
     "ModelSelectionStrategy",
+    "REDACTED_TOKEN",
+    "RedisFeedbackEventSource",
     "TrainingConfig",
+    "UnredactedDatasetError",
+    "WorkloadKey",
+    "build_decision_event",
+    "build_feedback_event",
+    "build_workload_key",
+    "contains_unredacted_pii",
+    "normalize_workload_segment",
+    "redact_for_dataset_export",
 ]

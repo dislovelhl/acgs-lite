@@ -1,6 +1,6 @@
 """
 ACGS-2 LangGraph Orchestration - Graph Orchestrator
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Main orchestration engine for graph-based workflow execution:
 - Cyclic state machine with configurable patterns
@@ -19,11 +19,11 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -95,7 +95,7 @@ ERROR_CHECKPOINT_ERRORS = (
 class GraphOrchestratorConfig:
     """Configuration for the graph orchestrator.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Execution settings
@@ -144,7 +144,7 @@ class GraphOrchestrator:
     - P99 latency < 5ms for state transitions
     - Support for 1000+ concurrent workflows
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -222,10 +222,10 @@ class GraphOrchestrator:
             )
 
         # Check for invalid cycles
-        # Note: Some cycles are valid in LangGraph (loops), but self-loops without conditions are not  # noqa: E501
+        # Note: Some cycles are valid in LangGraph (loops), but self-loops without conditions are not
         for node in self.graph.nodes:
             for edge in self.graph.edges:
-                if edge.source_node_id == node.id and edge.target_node_id == node.id:  # noqa: SIM102
+                if edge.source_node_id == node.id and edge.target_node_id == node.id:
                     if edge.edge_type not in (EdgeType.LOOP, EdgeType.CONDITIONAL):
                         raise CyclicDependencyError(
                             cycle_path=[node.id, node.id],
@@ -288,7 +288,7 @@ class GraphOrchestrator:
         Returns:
             Execution result with final state and metrics
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         start_time = time.perf_counter()
         workflow_id = workflow_id or str(uuid.uuid4())
@@ -763,7 +763,7 @@ def create_graph_orchestrator(
     Returns:
         Configured graph orchestrator
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     from .persistence import create_state_persistence
 

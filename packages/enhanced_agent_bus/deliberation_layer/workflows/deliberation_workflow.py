@@ -1,6 +1,6 @@
 """
 ACGS-2 Deliberation Workflow
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Temporal workflow for processing high-impact messages through the deliberation layer.
 Implements the dual-path routing pattern with automatic state preservation.
@@ -33,11 +33,11 @@ from importlib import import_module
 from typing import TypeAlias, cast
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONList  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONList
 except ImportError:
     JSONList = list  # type: ignore[misc,assignment]
 
@@ -181,6 +181,7 @@ class DefaultDeliberationActivities:
         self._opa_client = None
         self._impact_scorer = None
         self._audit_client = None
+        self._audit_timeout_s = 0.5
         if hash_validator is None:
             validators_module = import_module("enhanced_agent_bus.validators")
             hash_validator = validators_module.ConstitutionalHashValidator()
@@ -255,7 +256,7 @@ class DefaultDeliberationActivities:
 
         request_id = str(uuid.uuid4())
         logger.info(
-            f"Vote request {request_id} sent to {len(voting_agents)} agents for message {message_id}"  # noqa: E501
+            f"Vote request {request_id} sent to {len(voting_agents)} agents for message {message_id}"
         )
         return request_id
 
@@ -344,27 +345,63 @@ class DefaultDeliberationActivities:
 
         notification_id = str(uuid.uuid4())
         logger.info(
-            f"Human review notification {notification_id} sent via {notification_channel} for message {message_id}"  # noqa: E501
+            f"Human review notification {notification_id} sent via {notification_channel} for message {message_id}"
         )
         return notification_id
 
     async def record_audit_trail(self, message_id: str, workflow_result: JSONDict) -> str:
         """Record to audit trail."""
+        fallback_hash = self._build_fallback_audit_hash(workflow_result)
+        audit_client = self._audit_client
+        if audit_client is None:
+            audit_client = self._create_audit_client()
+            if audit_client is None:
+                logger.info("Audit client not configured; using fallback audit hash")
+                logger.info(f"Audit recorded (mock): {fallback_hash}")
+                return fallback_hash
+            self._audit_client = audit_client
+        try:
+            return cast(
+                str,
+                await asyncio.wait_for(
+                    audit_client.record(message_id, workflow_result),
+                    timeout=self._audit_timeout_s,
+                ),
+            )
+        except ImportError:
+            logger.info("Audit client unavailable; using fallback audit hash")
+            logger.info(f"Audit recorded (mock): {fallback_hash}")
+            return fallback_hash
+        except asyncio.CancelledError:
+            raise
+        except asyncio.TimeoutError:
+            logger.error(
+                "Audit client timed out; durable audit trail was not recorded",
+                timeout_s=self._audit_timeout_s,
+            )
+            raise
+        except Exception as exc:
+            logger.error(
+                "Audit client failed; durable audit trail was not recorded",
+                error=str(exc),
+            )
+            self._audit_client = None
+            raise
+
+    @staticmethod
+    def _create_audit_client() -> object | None:
         try:
             from ...audit_client import AuditClient
-
-            client = AuditClient()
-            return cast(str, await client.record(message_id, workflow_result))
         except ImportError:
-            # Fallback: log only
-            import hashlib
-            import json
+            return None
+        return AuditClient()
 
-            audit_hash = hashlib.sha256(
-                json.dumps(workflow_result, default=str).encode()
-            ).hexdigest()[:16]
-            logger.info(f"Audit recorded (mock): {audit_hash}")
-            return audit_hash
+    @staticmethod
+    def _build_fallback_audit_hash(workflow_result: JSONDict) -> str:
+        import hashlib
+        import json
+
+        return hashlib.sha256(json.dumps(workflow_result, default=str).encode()).hexdigest()[:16]
 
     async def deliver_message(self, message_id: str, to_agent: str, content: str) -> bool:
         """Deliver message to target agent."""

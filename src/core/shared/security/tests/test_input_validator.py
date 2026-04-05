@@ -1,7 +1,7 @@
 """
 Tests for ACGS-2 Input Validation Framework
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import pytest
@@ -66,10 +66,10 @@ class TestInputValidator:
 
     def test_validate_path(self):
         """Test path traversal protection."""
-        base_dir = "/tmp/safe"  # noqa: S108
+        base_dir = "/tmp/safe"
 
         # Safe path
-        InputValidator.validate_path("/tmp/safe/file.txt", base_dir)  # noqa: S108
+        InputValidator.validate_path("/tmp/safe/file.txt", base_dir)
 
         # Traversal attempt
         with pytest.raises(HTTPException) as exc:

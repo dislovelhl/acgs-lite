@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Circuit Breaker OPA Client
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 OPA Client with circuit breaker protection implementing FAIL-CLOSED strategy.
 When the circuit is open, all policy evaluations are DENIED.
@@ -16,15 +16,16 @@ from typing import Literal
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.shared.fail_closed import fail_closed
 
 # Import circuit breaker components
 from .circuit_breaker import (
@@ -64,7 +65,7 @@ class CircuitBreakerOPAClient:
     Implements FAIL-CLOSED strategy for constitutional governance.
     When the circuit is open, all policy evaluations are DENIED.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -195,12 +196,6 @@ class CircuitBreakerOPAClient:
         if not self._initialized:
             await self.initialize()
 
-        # Check cache first
-        cache_key = self._get_cache_key(policy_path, input_data)
-        cached = self._get_from_cache(cache_key)
-        if cached is not None:
-            return cached
-
         # Check if circuit breaker allows execution
         if not await self._circuit_breaker.can_execute():
             # FAIL-CLOSED: Deny all requests when circuit is open
@@ -220,34 +215,43 @@ class CircuitBreakerOPAClient:
                 },
             }
 
-        # Execute policy evaluation
-        try:
-            result = await self._evaluate_http(input_data, policy_path)
-            await self._circuit_breaker.record_success()
+        # Only consult cached policy decisions when the circuit is healthy enough
+        # to execute. An open breaker must deny all requests, including cached allows.
+        cache_key = self._get_cache_key(policy_path, input_data)
+        cached = self._get_from_cache(cache_key)
+        if cached is not None:
+            return cached
 
-            # Cache successful result
-            self._set_cache(cache_key, result)
+        return await self._evaluate_policy_with_fail_closed(input_data, policy_path, cache_key)
 
-            return result
+    @fail_closed(
+        lambda self, input_data, policy_path, cache_key, *, error: self._handle_evaluate_policy_error(error),
+        exceptions=OPA_OPERATION_ERRORS,
+    )
+    async def _evaluate_policy_with_fail_closed(
+        self, input_data: JSONDict, policy_path: str, cache_key: str
+    ) -> JSONDict:
+        result = await self._evaluate_http(input_data, policy_path)
+        await self._circuit_breaker.record_success()
+        self._set_cache(cache_key, result)
+        return result
 
-        except OPA_OPERATION_ERRORS as e:
-            error_type = type(e).__name__
-            await self._circuit_breaker.record_failure(e, error_type)
-            logger.error(
-                f"[{CONSTITUTIONAL_HASH}] OPA evaluation failed: {e} (error_type={error_type})"
-            )
-
-            # FAIL-CLOSED: Return denied on any error
-            return {
-                "result": False,
-                "allowed": False,
-                "reason": f"OPA evaluation failed: {e}",
-                "metadata": {
-                    "error_type": error_type,
-                    "security": "fail-closed",
-                    "constitutional_hash": CONSTITUTIONAL_HASH,
-                },
-            }
+    async def _handle_evaluate_policy_error(self, error: BaseException) -> JSONDict:
+        error_type = type(error).__name__
+        await self._circuit_breaker.record_failure(error, error_type)
+        logger.error(
+            f"[{CONSTITUTIONAL_HASH}] OPA evaluation failed: {error} (error_type={error_type})"
+        )
+        return {
+            "result": False,
+            "allowed": False,
+            "reason": f"OPA evaluation failed: {error}",
+            "metadata": {
+                "error_type": error_type,
+                "security": "fail-closed",
+                "constitutional_hash": CONSTITUTIONAL_HASH,
+            },
+        }
 
     async def _evaluate_http(self, input_data: JSONDict, policy_path: str) -> JSONDict:
         """Execute policy evaluation via HTTP."""
@@ -317,15 +321,22 @@ class CircuitBreakerOPAClient:
             health["circuit_state"] = self._circuit_breaker.state.value
             health["circuit_metrics"] = self._circuit_breaker.metrics.__dict__
 
-        try:
-            response = await self._http_client.get(f"{self.opa_url}/health", timeout=2.0)
-            response.raise_for_status()
-            health["healthy"] = True
-            health["opa_status"] = "healthy"
-        except OPA_OPERATION_ERRORS as e:
-            health["error"] = str(e)
-            health["opa_status"] = "unhealthy"
+        return await self._populate_health(health)
 
+    @fail_closed(
+        lambda self, health, *, error: self._handle_health_check_error(health, error),
+        exceptions=OPA_OPERATION_ERRORS,
+    )
+    async def _populate_health(self, health: JSONDict) -> JSONDict:
+        response = await self._http_client.get(f"{self.opa_url}/health", timeout=2.0)
+        response.raise_for_status()
+        health["healthy"] = True
+        health["opa_status"] = "healthy"
+        return health
+
+    def _handle_health_check_error(self, health: JSONDict, error: BaseException) -> JSONDict:
+        health["error"] = str(error)
+        health["opa_status"] = "unhealthy"
         return health
 
     def get_circuit_status(self) -> JSONDict:

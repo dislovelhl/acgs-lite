@@ -1,7 +1,7 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 ACGS-2 Deliberation Layer - Redis Deliberation Queue Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for RedisDeliberationQueue: constructor, connect, disconnect, enqueue,
 get, update_status, remove, get_pending_items, get_stream_info.
@@ -13,6 +13,7 @@ asyncio_mode = "auto" is set in pyproject.toml — no @pytest.mark.asyncio neede
 from __future__ import annotations
 
 import json
+import sys
 from unittest.mock import patch
 
 import pytest
@@ -21,6 +22,19 @@ from enhanced_agent_bus.deliberation_layer import redis_integration as ri
 from enhanced_agent_bus.deliberation_layer.redis_integration import (
     RedisDeliberationQueue,
 )
+
+
+def _target_module():
+    """Return the actual module dict backing RedisDeliberationQueue.connect.
+
+    Under --import-mode=importlib the ``ri`` alias imported above may be a
+    *different* module instance from the one whose globals are closed over by
+    ``RedisDeliberationQueue.connect``.  Patching ``ri.REDIS_AVAILABLE`` then
+    has no effect on the running code.  This helper resolves the canonical
+    module so that ``patch.object`` always targets the right dict.
+    """
+    return sys.modules[RedisDeliberationQueue.__module__]
+
 
 # ---------------------------------------------------------------------------
 # Mock infrastructure
@@ -169,8 +183,9 @@ class TestRedisDeliberationQueueConnect:
     async def test_connect_success(self):
         q = RedisDeliberationQueue()
         mock_client = MockRedisClient()
-        with patch.object(ri, "REDIS_AVAILABLE", True):
-            with patch.object(ri, "aioredis") as mock_aioredis:
+        mod = _target_module()
+        with patch.object(mod, "REDIS_AVAILABLE", True):
+            with patch.object(mod, "aioredis") as mock_aioredis:
                 mock_aioredis.from_url.return_value = mock_client
                 result = await q.connect()
         assert result is True
@@ -178,7 +193,8 @@ class TestRedisDeliberationQueueConnect:
 
     async def test_connect_redis_not_available(self):
         q = RedisDeliberationQueue()
-        with patch.object(ri, "REDIS_AVAILABLE", False):
+        mod = _target_module()
+        with patch.object(mod, "REDIS_AVAILABLE", False):
             result = await q.connect()
         assert result is False
         assert q.redis_client is None
@@ -191,8 +207,9 @@ class TestRedisDeliberationQueueConnect:
 
         mock_client = MockRedisClient()
         mock_client.ping = _fail  # type: ignore[method-assign]
-        with patch.object(ri, "REDIS_AVAILABLE", True):
-            with patch.object(ri, "aioredis") as mock_aioredis:
+        mod = _target_module()
+        with patch.object(mod, "REDIS_AVAILABLE", True):
+            with patch.object(mod, "aioredis") as mock_aioredis:
                 mock_aioredis.from_url.return_value = mock_client
                 result = await q.connect()
         assert result is False
@@ -206,8 +223,9 @@ class TestRedisDeliberationQueueConnect:
 
         mock_client = MockRedisClient()
         mock_client.ping = _fail  # type: ignore[method-assign]
-        with patch.object(ri, "REDIS_AVAILABLE", True):
-            with patch.object(ri, "aioredis") as mock_aioredis:
+        mod = _target_module()
+        with patch.object(mod, "REDIS_AVAILABLE", True):
+            with patch.object(mod, "aioredis") as mock_aioredis:
                 mock_aioredis.from_url.return_value = mock_client
                 result = await q.connect()
         assert result is False

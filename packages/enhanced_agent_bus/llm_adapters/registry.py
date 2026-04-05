@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - LLM Adapter Registry
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Registry system for discovering, registering, and managing LLM adapters
 with fallback chains, health checks, and circuit breaker pattern.
@@ -12,23 +12,26 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
 
-from src.core.shared import metrics as shared_metrics
+try:
+    from src.core.shared import metrics as shared_metrics
+except ImportError:
+    from enhanced_agent_bus._compat import metrics as shared_metrics
 
 # Import centralized constitutional hash from shared module
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.errors.exceptions import (
+from enhanced_agent_bus._compat.errors import (
     ResourceNotFoundError,
     ServiceUnavailableError,
 )
-from src.core.shared.errors.exceptions import (
+from enhanced_agent_bus._compat.errors import (
     ValidationError as ACGSValidationError,
 )
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -61,7 +64,7 @@ _REGISTRY_OPERATION_ERRORS = (
 class CircuitBreakerConfig:
     """Configuration for circuit breaker pattern.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     failure_threshold: int = 5
@@ -85,7 +88,7 @@ class CircuitBreakerConfig:
 class AdapterMetrics:
     """Metrics tracking for an adapter.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     adapter_id: str
@@ -205,7 +208,7 @@ class CircuitBreaker:
         This local implementation in the LLM adapter registry exists for
         historical reasons and is not maintained as the canonical version.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Implements the circuit breaker pattern to prevent cascading failures
     and allow adapters to recover from temporary issues.
@@ -328,7 +331,7 @@ class CircuitBreaker:
 class FallbackChain:
     """Configuration for adapter fallback chain.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     primary: str
@@ -337,7 +340,7 @@ class FallbackChain:
 
     def get_ordered_adapters(self) -> list[str]:
         """Get adapters in priority order."""
-        return [self.primary] + self.fallbacks  # noqa: RUF005
+        return [self.primary] + self.fallbacks
 
     def to_dict(self) -> JSONDict:
         """Convert to dictionary."""
@@ -351,7 +354,7 @@ class FallbackChain:
 class LLMAdapterRegistry:
     """Registry for managing LLM adapters with fallback chains.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Provides:
     - Dynamic adapter registration and discovery
@@ -533,7 +536,7 @@ class LLMAdapterRegistry:
         """
         async with self._lock:
             # Validate all adapters exist
-            all_adapters = [primary] + fallbacks  # noqa: RUF005
+            all_adapters = [primary] + fallbacks
             for adapter_id in all_adapters:
                 if adapter_id not in self._adapters:
                     raise ResourceNotFoundError(
@@ -766,7 +769,7 @@ class LLMAdapterRegistry:
 
         if self._health_check_task:
             self._health_check_task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._health_check_task
             except asyncio.CancelledError:
                 pass

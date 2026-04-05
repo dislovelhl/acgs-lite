@@ -1,6 +1,6 @@
 """
 Tests for Accuracy Validation in CCAI Representative Statements.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Accuracy validation tests to verify 95%+ accuracy requirement.
 Tests against ground truth datasets where statements with highest agreement
@@ -138,7 +138,6 @@ class TestAccuracyValidation:
             "false_negatives": false_negatives,
         }
 
-    @pytest.mark.asyncio
     async def test_small_cluster_accuracy(self):
         """Test accuracy on small clusters (3-5 statements)."""
         engine = PolisDeliberationEngine(
@@ -174,7 +173,6 @@ class TestAccuracyValidation:
             f"F1 Score {metrics['f1_score']:.2%} below 95% threshold"
         )
 
-    @pytest.mark.asyncio
     async def test_medium_cluster_accuracy(self):
         """Test accuracy on medium clusters (10-20 statements)."""
         engine = PolisDeliberationEngine(
@@ -210,7 +208,6 @@ class TestAccuracyValidation:
             f"F1 Score {metrics['f1_score']:.2%} below 95% threshold"
         )
 
-    @pytest.mark.asyncio
     async def test_large_cluster_accuracy(self):
         """Test accuracy on large clusters (50+ statements)."""
         engine = PolisDeliberationEngine(
@@ -246,7 +243,6 @@ class TestAccuracyValidation:
             f"F1 Score {metrics['f1_score']:.2%} below 95% threshold"
         )
 
-    @pytest.mark.asyncio
     async def test_varied_agreement_patterns_accuracy(self):
         """Test accuracy with varied agreement patterns (unanimous, split, mixed)."""
         engine = PolisDeliberationEngine(
@@ -354,7 +350,6 @@ class TestAccuracyValidation:
             f"F1 Score {metrics['f1_score']:.2%} below 95% threshold"
         )
 
-    @pytest.mark.asyncio
     async def test_aggregate_accuracy_across_scenarios(self):
         """Test aggregate accuracy across multiple scenarios to validate 95%+ overall accuracy."""
         scenarios = [
@@ -440,7 +435,6 @@ class TestAccuracyValidation:
         assert avg_recall >= 0.95, f"Aggregate recall {avg_recall:.2%} below 95% threshold"
         assert avg_f1 >= 0.95, f"Aggregate F1 score {avg_f1:.2%} below 95% threshold"
 
-    @pytest.mark.asyncio
     async def test_accuracy_with_diversity_filter(self):
         """Test that diversity filtering maintains high recall on high-agreement statements.
 

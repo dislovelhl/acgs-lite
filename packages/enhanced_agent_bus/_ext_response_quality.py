@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Response Quality Extension Exports
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Extension module for Phase 5: Response Quality Enhancement.
 Provides graceful-fallback import interface for response quality components,

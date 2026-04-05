@@ -1,6 +1,6 @@
 """
 ACGS-2 LangGraph Orchestration - Node Executors
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Node executors handle the execution of graph nodes:
 - Async execution with timeout handling
@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from typing import cast
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -67,7 +67,7 @@ class NodeExecutor(ABC):
     Node executors handle the actual execution of graph nodes,
     including timeout handling, retries, and error management.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -147,7 +147,7 @@ class AsyncNodeExecutor(NodeExecutor):
     Executes nodes asynchronously with configurable timeout
     and retry behavior.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -343,7 +343,7 @@ class ParallelNodeExecutor(NodeExecutor):
     Executes multiple nodes concurrently while respecting
     dependency constraints.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -474,7 +474,7 @@ class ConditionalNodeExecutor(NodeExecutor):
 
     Evaluates conditions to determine next node in the graph.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

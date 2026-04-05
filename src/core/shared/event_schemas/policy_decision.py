@@ -1,6 +1,6 @@
 """
 ACGS-2 Policy Decision Event Schemas
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Versioned schemas for policy evaluation decision events.
 Records the outcome of policy evaluations for audit and compliance.
@@ -67,7 +67,7 @@ class PolicyDecisionV1(EventSchemaBase):
     """
     Policy Decision Schema V1 - Records policy evaluation outcomes.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Captures the full context of a policy decision including:
     - The verdict (allow/deny/conditional)

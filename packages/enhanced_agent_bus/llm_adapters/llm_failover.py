@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - LLM Provider Failover System
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements enhanced failover capabilities for LLM providers with:
 - LLM-specific circuit breaker configurations
@@ -27,7 +27,7 @@ from datetime import UTC, datetime, timedelta
 from enum import Enum
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -68,7 +68,7 @@ _LLM_FAILOVER_OPERATION_ERRORS = (
 # =============================================================================
 
 
-class LLMProviderType(str, Enum):  # noqa: UP042
+class LLMProviderType(str, Enum):
     """LLM provider types for configuration."""
 
     OPENAI = "openai"
@@ -240,7 +240,7 @@ class ProviderHealthScore:
     """
     Health score for an LLM provider.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     provider_id: str
@@ -286,7 +286,7 @@ class ProviderHealthScorer:
     """
     Scores provider health based on multiple factors.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Health score components:
     - Latency (30%): Based on P95 latency vs expected
@@ -484,7 +484,7 @@ class ProactiveFailoverManager:
     """
     Manages proactive failover between LLM providers.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Features:
     - Monitors provider health scores
@@ -686,7 +686,7 @@ class ProviderWarmupManager:
     """
     Manages provider warmup to reduce cold-start latency.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Features:
     - Periodic warmup requests to keep connections alive
@@ -871,7 +871,7 @@ class RequestHedgingManager:
     """
     Implements request hedging for critical operations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Features:
     - Send same request to multiple providers
@@ -1079,7 +1079,7 @@ class RequestHedgingManager:
 # LLM Failover Orchestrator (re-exported from failover/ package)
 # =============================================================================
 
-from enhanced_agent_bus.llm_adapters.failover.orchestrator import (  # noqa: E402
+from enhanced_agent_bus.llm_adapters.failover.orchestrator import (
     LLMFailoverOrchestrator,
     get_llm_failover_orchestrator,
     reset_llm_failover_orchestrator,

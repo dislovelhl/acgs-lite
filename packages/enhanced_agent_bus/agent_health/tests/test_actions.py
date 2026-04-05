@@ -1,6 +1,6 @@
 """
 Unit tests for healing actions in actions.py.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 TDD RED: Tests for GracefulRestarter, QuarantineManager, HITLRequestor, and
 SupervisorNotifier. The latter three fail (RED) until actions.py provides them.
@@ -16,8 +16,6 @@ from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, call, patch
-
-import pytest
 
 from enhanced_agent_bus.agent_health.actions import (
     GracefulRestarter,
@@ -108,7 +106,6 @@ def _make_store(record: AgentHealthRecord | None = None) -> AsyncMock:
 class TestSetsRestartingStateBeforeDrain:
     """health_state → RESTARTING is written to the store before drain begins (AC1)."""
 
-    @pytest.mark.asyncio
     async def test_health_state_set_to_restarting_before_drain(self) -> None:
         store = _make_store()
         drain_started = asyncio.Event()
@@ -138,7 +135,6 @@ class TestSetsRestartingStateBeforeDrain:
             "RESTARTING must be written to the store before drain() is called"
         )
 
-    @pytest.mark.asyncio
     async def test_upsert_called_with_restarting_state(self) -> None:
         store = _make_store()
         bus = _FakeBus()
@@ -163,7 +159,6 @@ class TestSetsRestartingStateBeforeDrain:
 class TestDrainCompletesWithinTimeout:
     """Drain completes → no requeue called; lifecycle ends cleanly (AC2)."""
 
-    @pytest.mark.asyncio
     async def test_no_requeue_when_drain_succeeds(self) -> None:
         store = _make_store()
         bus = _FakeBus(in_flight=["msg-1", "msg-2"], drain_duration=0.0)
@@ -174,7 +169,6 @@ class TestDrainCompletesWithinTimeout:
             "requeue must NOT be called when drain completes within timeout"
         )
 
-    @pytest.mark.asyncio
     async def test_drain_called_with_correct_agent_id(self) -> None:
         store = _make_store()
         bus = _FakeBus(drain_duration=0.0)
@@ -183,7 +177,6 @@ class TestDrainCompletesWithinTimeout:
 
         assert AGENT_ID in bus.drain_called_for, "drain() must be called with the correct agent_id"
 
-    @pytest.mark.asyncio
     async def test_execute_returns_none_on_successful_drain(self) -> None:
         store = _make_store()
         bus = _FakeBus(drain_duration=0.0)
@@ -200,7 +193,6 @@ class TestDrainCompletesWithinTimeout:
 class TestDrainTimeoutRequeuesMessages:
     """On timeout: remaining in-flight messages are re-queued (AC3, FR-005)."""
 
-    @pytest.mark.asyncio
     async def test_requeue_called_for_each_remaining_message_on_timeout(self) -> None:
         store = _make_store()
         messages = ["msg-alpha", "msg-beta", "msg-gamma"]
@@ -219,7 +211,6 @@ class TestDrainTimeoutRequeuesMessages:
             assert msg in requeued_messages, f"Message {msg!r} must be re-queued on drain timeout"
         assert len(bus.requeue_calls) == len(messages)
 
-    @pytest.mark.asyncio
     async def test_uses_asyncio_wait_for_for_timeout(self) -> None:
         """GracefulRestarter must use asyncio.wait_for internally (AC3).
 
@@ -251,7 +242,6 @@ class TestDrainTimeoutRequeuesMessages:
 class TestRetryMarkerHeader:
     """Requeued messages carry the X-ACGS-Retry: true header (AC4)."""
 
-    @pytest.mark.asyncio
     async def test_requeued_messages_have_retry_header(self) -> None:
         store = _make_store()
         bus = _FakeBus(in_flight=["msg-1"], drain_duration=0.0)
@@ -265,7 +255,6 @@ class TestRetryMarkerHeader:
             "Requeued messages must carry X-ACGS-Retry: true header"
         )
 
-    @pytest.mark.asyncio
     async def test_retry_header_present_on_all_requeued_messages(self) -> None:
         store = _make_store()
         messages = ["m1", "m2", "m3"]
@@ -279,7 +268,6 @@ class TestRetryMarkerHeader:
                 f"Message {msg!r} must be requeued with X-ACGS-Retry: true"
             )
 
-    @pytest.mark.asyncio
     async def test_retry_header_value_is_string_true(self) -> None:
         """Header value must be the string 'true', not boolean True."""
         store = _make_store()
@@ -300,7 +288,6 @@ class TestRetryMarkerHeader:
 class TestLifecycleWithMockProcess:
     """GracefulRestarter completes without raising when backed by mocks (AC5)."""
 
-    @pytest.mark.asyncio
     async def test_no_exception_raised_with_mock_store_and_bus(self) -> None:
         store = _make_store()
         bus = _FakeBus(drain_duration=0.0)
@@ -308,7 +295,6 @@ class TestLifecycleWithMockProcess:
         # Must not raise
         await restarter.execute(agent_id=AGENT_ID, thresholds=_thresholds())
 
-    @pytest.mark.asyncio
     async def test_no_exception_on_timeout_path_with_mock(self) -> None:
         store = _make_store()
         bus = _FakeBus(in_flight=["msg"], drain_duration=0.0)
@@ -316,7 +302,6 @@ class TestLifecycleWithMockProcess:
         with patch(_WAIT_FOR_TARGET, side_effect=asyncio.TimeoutError):
             await restarter.execute(agent_id=AGENT_ID, thresholds=_thresholds())
 
-    @pytest.mark.asyncio
     async def test_restart_callback_invoked_after_drain(self) -> None:
         """If a restart_callback is provided, it must be called after drain/requeue."""
         store = _make_store()
@@ -331,7 +316,6 @@ class TestLifecycleWithMockProcess:
         await restarter.execute(agent_id=AGENT_ID, thresholds=_thresholds())
         assert callback_called, "restart_callback must be invoked after drain completes"
 
-    @pytest.mark.asyncio
     async def test_restart_callback_invoked_after_timeout_requeue(self) -> None:
         """restart_callback fires even on the timeout/requeue path."""
         store = _make_store()
@@ -347,7 +331,6 @@ class TestLifecycleWithMockProcess:
             await restarter.execute(agent_id=AGENT_ID, thresholds=_thresholds())
         assert callback_called
 
-    @pytest.mark.asyncio
     async def test_no_exception_when_no_restart_callback(self) -> None:
         """GracefulRestarter works fine without a restart_callback."""
         store = _make_store()
@@ -365,7 +348,6 @@ class TestLifecycleWithMockProcess:
 class TestNoBusConnectionRequired:
     """All tests use _FakeBus; no real Agent Bus connection is made (AC6)."""
 
-    @pytest.mark.asyncio
     async def test_uses_injected_bus_not_real_connection(self) -> None:
         """GracefulRestarter accepts bus via constructor injection (no singletons)."""
         store = _make_store()
@@ -439,7 +421,6 @@ class _FakeQuarantineBus:
 class TestQuarantineManagerSetsQuarantinedState:
     """QuarantineManager sets health_state=QUARANTINED in the store (AC1)."""
 
-    @pytest.mark.asyncio
     async def test_upsert_called_with_quarantined_state(self) -> None:
         store = _make_store()
         bus = _FakeQuarantineBus()
@@ -455,7 +436,6 @@ class TestQuarantineManagerSetsQuarantinedState:
             "upsert_health_record must be called with health_state=QUARANTINED"
         )
 
-    @pytest.mark.asyncio
     async def test_returns_none(self) -> None:
         store = _make_store()
         bus = _FakeQuarantineBus()
@@ -467,7 +447,6 @@ class TestQuarantineManagerSetsQuarantinedState:
 class TestQuarantineManagerSignalsBusReroute:
     """QuarantineManager signals the bus to re-route messages (AC2, FR-006)."""
 
-    @pytest.mark.asyncio
     async def test_reroute_agent_called_with_correct_agent_id(self) -> None:
         store = _make_store()
         bus = _FakeQuarantineBus()
@@ -478,7 +457,6 @@ class TestQuarantineManagerSignalsBusReroute:
             "reroute_agent() must be called with the correct agent_id"
         )
 
-    @pytest.mark.asyncio
     async def test_reroute_completes_within_500ms(self) -> None:
         """Entire execute() must complete within the 500ms FR-006 budget."""
         store = _make_store()
@@ -490,7 +468,6 @@ class TestQuarantineManagerSignalsBusReroute:
             timeout=0.5,
         )
 
-    @pytest.mark.asyncio
     async def test_quarantine_set_before_reroute(self) -> None:
         """health_state=QUARANTINED must be written to store before reroute is called."""
         store = _make_store()
@@ -527,7 +504,6 @@ class TestQuarantineManagerSignalsBusReroute:
 class TestHITLRequestorPostsToHITLService:
     """HITLRequestor sends HTTP POST to hitl_approvals service (AC4)."""
 
-    @pytest.mark.asyncio
     async def test_post_called_when_no_existing_review(self) -> None:
         action = _make_healing_action()
         no_existing = _make_httpx_response(200, {"items": []})
@@ -550,7 +526,6 @@ class TestHITLRequestorPostsToHITLService:
         mock_client.post.assert_called_once()
         assert result == "rev-new-001"
 
-    @pytest.mark.asyncio
     async def test_post_body_includes_agent_id_and_trigger(self) -> None:
         action = _make_healing_action()
         no_existing = _make_httpx_response(200, {"items": []})
@@ -581,7 +556,6 @@ class TestHITLRequestorPostsToHITLService:
 class TestHITLRequestorDeduplication:
     """HITLRequestor updates existing review rather than creating a duplicate (AC5)."""
 
-    @pytest.mark.asyncio
     async def test_updates_existing_review_instead_of_posting_new(self) -> None:
         action = _make_healing_action()
         existing = _make_httpx_response(200, {"items": [{"review_id": "rev-existing-001"}]})
@@ -606,7 +580,6 @@ class TestHITLRequestorDeduplication:
         mock_client.patch.assert_called_once()
         assert result == "rev-existing-001"
 
-    @pytest.mark.asyncio
     async def test_returns_existing_review_id_on_deduplication(self) -> None:
         action = _make_healing_action()
         existing = _make_httpx_response(200, {"items": [{"review_id": "rev-dedup-999"}]})
@@ -638,7 +611,6 @@ class TestHITLRequestorDeduplication:
 class TestSupervisorNotifierPostsToSupervisor:
     """SupervisorNotifier sends HTTP POST to supervisor endpoint (AC6)."""
 
-    @pytest.mark.asyncio
     async def test_post_called_with_supervisor_url(self) -> None:
         posted = _make_httpx_response(200, {"notification_id": "notif-001"})
 
@@ -657,7 +629,6 @@ class TestSupervisorNotifierPostsToSupervisor:
 
         mock_client.post.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_post_body_includes_agent_id_tier_and_trigger(self) -> None:
         posted = _make_httpx_response(200, {"notification_id": "notif-002"})
 
@@ -682,7 +653,6 @@ class TestSupervisorNotifierPostsToSupervisor:
             "POST body must include trigger"
         )
 
-    @pytest.mark.asyncio
     async def test_returns_none(self) -> None:
         posted = _make_httpx_response(200, {"notification_id": "notif-003"})
 
@@ -701,7 +671,6 @@ class TestSupervisorNotifierPostsToSupervisor:
 
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_reads_supervisor_url_from_env_when_not_provided(self) -> None:
         """SupervisorNotifier falls back to SUPERVISOR_URL env var."""
         posted = _make_httpx_response(200, {"notification_id": "notif-004"})

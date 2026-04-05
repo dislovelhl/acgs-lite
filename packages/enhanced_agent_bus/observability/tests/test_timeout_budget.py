@@ -1,14 +1,14 @@
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 """
 ACGS-2 Timeout Budget Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
-import asyncio  # noqa: E402
-import time  # noqa: E402
+import asyncio
+import time
 
-import pytest  # noqa: E402
+import pytest
 
 try:
     from ..timeout_budget import (
@@ -69,7 +69,7 @@ class TestLayerTimeoutError:
 
         data = error.to_dict()
 
-        assert data["error"] == "LayerTimeoutError"
+        assert data["error"] == "LAYER_TIMEOUT"
         assert data["layer_name"] == "layer3_policy"
         assert data["budget_ms"] == 10.0
         assert data["elapsed_ms"] == 15.0
@@ -226,7 +226,6 @@ class TestTimeoutBudgetManager:
         assert elapsed >= 10.0
         assert manager.total_remaining_ms == manager.total_budget_ms - elapsed
 
-    @pytest.mark.asyncio
     async def test_execute_with_budget_success(self):
         """execute_with_budget succeeds within budget."""
         manager = TimeoutBudgetManager()
@@ -242,7 +241,6 @@ class TestTimeoutBudgetManager:
 
         assert result == "success"
 
-    @pytest.mark.asyncio
     async def test_execute_with_budget_timeout(self):
         """execute_with_budget raises on timeout."""
         manager = TimeoutBudgetManager()
@@ -261,7 +259,6 @@ class TestTimeoutBudgetManager:
         assert exc_info.value.layer_name == "layer1_validation"
         assert exc_info.value.operation == "slow_test"
 
-    @pytest.mark.asyncio
     async def test_execute_with_budget_non_strict(self):
         """Non-strict layer raises asyncio.TimeoutError."""
         manager = TimeoutBudgetManager()
@@ -321,7 +318,6 @@ class TestTimeoutBudgetManager:
                 failing_sync,
             )
 
-    @pytest.mark.asyncio
     async def test_execute_async_exception_passthrough(self):
         """execute_with_budget passes through exceptions."""
         manager = TimeoutBudgetManager()

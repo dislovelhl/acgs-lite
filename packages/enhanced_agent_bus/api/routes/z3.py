@@ -1,6 +1,6 @@
 """
 ACGS-2 Z3 Formal Verification API Routes
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Exposes Z3 SMT verification metrics and recent verification results for the
 web-console Z3Dashboard.  A module-level verifier singleton accumulates metrics
@@ -30,11 +30,11 @@ from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, Field
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -219,7 +219,7 @@ class PolicyVerifyRequest(BaseModel):
     )
     policy_type: str = Field(
         default="general",
-        description="One of: access_control, resource_constraint, temporal_governance, constitutional, general",  # noqa: E501
+        description="One of: access_control, resource_constraint, temporal_governance, constitutional, general",
     )
     description: str = Field(default="", max_length=512, description="Human-readable description")
     rules: list[str] = Field(default_factory=list, description="Policy rule strings")

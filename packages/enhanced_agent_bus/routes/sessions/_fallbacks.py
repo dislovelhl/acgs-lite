@@ -1,6 +1,6 @@
 """
 ACGS-2 Session Governance - Fallback Imports
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides fallback implementations for when actual modules are unavailable.
 Used for standalone testing and development.
@@ -16,11 +16,11 @@ from fastapi import Header, HTTPException, status
 from pydantic import BaseModel
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -42,7 +42,7 @@ except (ImportError, ValueError):
         USING_FALLBACKS = True
 
         # Define minimal models for standalone testing
-        class RiskLevel(str, Enum):  # type: ignore[no-redef]  # noqa: UP042
+        class RiskLevel(str, Enum):  # type: ignore[no-redef]
             LOW = "low"
             MEDIUM = "medium"
             HIGH = "high"
@@ -96,7 +96,7 @@ except (ImportError, ValueError):
 
 # Try to import tenant context helper
 try:
-    from src.core.shared.security.tenant_context import get_tenant_id
+    from enhanced_agent_bus._compat.security.tenant_context import get_tenant_id
 
     USING_FALLBACK_TENANT = False
 except ImportError:

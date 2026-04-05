@@ -1,6 +1,6 @@
 """
 ACGS-2 MACI Verification Pipeline
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Multi-Agent Collaborative Intelligence (MACI) for constitutional verification.
 Bypasses Gödel limitations through role separation:
@@ -19,11 +19,11 @@ from enum import Enum
 from typing import Protocol
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -556,7 +556,7 @@ class JudicialAgent:
         )
 
         logger.info(
-            f"Judicial validation complete for {decision.decision_id}: valid={is_valid}, confidence={confidence_score:.2f}"  # noqa: E501
+            f"Judicial validation complete for {decision.decision_id}: valid={is_valid}, confidence={confidence_score:.2f}"
         )
         return validation_result
 
@@ -604,7 +604,7 @@ class JudicialAgent:
                 )
                 confidence = 0.4
 
-        elif rule_id == "audit_trail_required":  # noqa: SIM102
+        elif rule_id == "audit_trail_required":
             if not decision.context.get("auditable", True):
                 violations.append(
                     {
@@ -660,7 +660,7 @@ class JudicialAgent:
                         }
                     )
 
-            elif "technically feasible" in constraint:  # noqa: SIM102
+            elif "technically feasible" in constraint:
                 if not decision.context.get("technically_feasible", True):
                     violations.append(
                         {

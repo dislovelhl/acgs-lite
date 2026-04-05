@@ -1,14 +1,15 @@
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.config.governance_constants import IMPACT_SCORER_CONFIG
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 """
 Tests for ImpactScorer — targets ≥90% coverage.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
-import sys  # noqa: E402
-from unittest.mock import AsyncMock, MagicMock, patch  # noqa: E402
+import sys
+from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest  # noqa: E402
+import pytest
 
 # Force-import the module under test at collection time so coverage sees it.
 # Use patch to suppress MLflow I/O during import-time initialisation.
@@ -18,6 +19,28 @@ with patch(
 ):
     import enhanced_agent_bus.adaptive_governance.impact_scorer as _IMPACT_MODULE
 
+_IMPACT_MODULE_DEFAULTS = {
+    "SKLEARN_AVAILABLE": _IMPACT_MODULE.SKLEARN_AVAILABLE,
+    "RandomForestRegressor": _IMPACT_MODULE.RandomForestRegressor,
+    "NUMPY_AVAILABLE": _IMPACT_MODULE.NUMPY_AVAILABLE,
+    "np": _IMPACT_MODULE.np,
+    "MLFLOW_AVAILABLE": _IMPACT_MODULE.MLFLOW_AVAILABLE,
+    "mlflow": _IMPACT_MODULE.mlflow,
+    "TORCH_AVAILABLE": _IMPACT_MODULE.TORCH_AVAILABLE,
+    "torch": _IMPACT_MODULE.torch,
+    "sinkhorn_projection": _IMPACT_MODULE.sinkhorn_projection,
+}
+
+
+@pytest.fixture(autouse=True)
+def _restore_impact_module_state():
+    for name, value in _IMPACT_MODULE_DEFAULTS.items():
+        setattr(_IMPACT_MODULE, name, value)
+    yield
+    for name, value in _IMPACT_MODULE_DEFAULTS.items():
+        setattr(_IMPACT_MODULE, name, value)
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -25,10 +48,8 @@ with patch(
 
 def _make_scorer(constitutional_hash: str = CONSTITUTIONAL_HASH, **kwargs):
     """Return an ImpactScorer with MLflow initialisation suppressed."""
-    from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
-
-    with patch.object(ImpactScorer, "_initialize_mlflow", return_value=None):
-        scorer = ImpactScorer(constitutional_hash=constitutional_hash, **kwargs)
+    with patch.object(_IMPACT_MODULE.ImpactScorer, "_initialize_mlflow", return_value=None):
+        scorer = _IMPACT_MODULE.ImpactScorer(constitutional_hash=constitutional_hash, **kwargs)
     return scorer
 
 
@@ -83,18 +104,16 @@ class TestImpactScorerInit:
 
     def test_init_without_sklearn(self):
         """Without sklearn, impact_classifier is None."""
-        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
-
-        orig = _mod.SKLEARN_AVAILABLE
-        orig_cls = _mod.RandomForestRegressor
+        orig = _IMPACT_MODULE.SKLEARN_AVAILABLE
+        orig_cls = _IMPACT_MODULE.RandomForestRegressor
         try:
-            _mod.SKLEARN_AVAILABLE = False
-            _mod.RandomForestRegressor = None
+            _IMPACT_MODULE.SKLEARN_AVAILABLE = False
+            _IMPACT_MODULE.RandomForestRegressor = None
             scorer = _make_scorer()
             assert scorer.impact_classifier is None
         finally:
-            _mod.SKLEARN_AVAILABLE = orig
-            _mod.RandomForestRegressor = orig_cls
+            _IMPACT_MODULE.SKLEARN_AVAILABLE = orig
+            _IMPACT_MODULE.RandomForestRegressor = orig_cls
 
     def test_init_feature_weights_sum_to_one(self):
         scorer = _make_scorer()
@@ -107,38 +126,31 @@ class TestImpactScorerInit:
 
     def test_init_mlflow_not_initialized_in_pytest(self):
         """_initialize_mlflow should set _mlflow_initialized=False when pytest is in sys.modules."""
-        from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
-
         # pytest IS already in sys.modules here; call real _initialize_mlflow
-        scorer = ImpactScorer.__new__(ImpactScorer)
+        scorer = _IMPACT_MODULE.ImpactScorer.__new__(_IMPACT_MODULE.ImpactScorer)
         scorer.constitutional_hash = CONSTITUTIONAL_HASH
         scorer._mlflow_initialized = False
         scorer._mlflow_experiment_id = None
         scorer.model_version = None
         # Patch MLFLOW_AVAILABLE so we reach the pytest check
-        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
-
-        orig = _mod.MLFLOW_AVAILABLE
-        orig_mlflow = _mod.mlflow
+        orig = _IMPACT_MODULE.MLFLOW_AVAILABLE
+        orig_mlflow = _IMPACT_MODULE.mlflow
         try:
-            _mod.MLFLOW_AVAILABLE = True
-            _mod.mlflow = MagicMock()
+            _IMPACT_MODULE.MLFLOW_AVAILABLE = True
+            _IMPACT_MODULE.mlflow = MagicMock()
             scorer._initialize_mlflow()
             # Should return early without setting _mlflow_initialized=True
             assert scorer._mlflow_initialized is False
         finally:
-            _mod.MLFLOW_AVAILABLE = orig
-            _mod.mlflow = orig_mlflow
+            _IMPACT_MODULE.MLFLOW_AVAILABLE = orig
+            _IMPACT_MODULE.mlflow = orig_mlflow
 
     def test_init_mlflow_not_available(self):
         """When MLflow is not available _initialize_mlflow logs a warning and returns."""
-        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
-        from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
-
-        orig = _mod.MLFLOW_AVAILABLE
+        orig = _IMPACT_MODULE.MLFLOW_AVAILABLE
         try:
-            _mod.MLFLOW_AVAILABLE = False
-            scorer = ImpactScorer.__new__(ImpactScorer)
+            _IMPACT_MODULE.MLFLOW_AVAILABLE = False
+            scorer = _IMPACT_MODULE.ImpactScorer.__new__(_IMPACT_MODULE.ImpactScorer)
             scorer.constitutional_hash = "abc"
             scorer._mlflow_initialized = False
             scorer._mlflow_experiment_id = None
@@ -146,23 +158,20 @@ class TestImpactScorerInit:
             scorer._initialize_mlflow()
             assert scorer._mlflow_initialized is False
         finally:
-            _mod.MLFLOW_AVAILABLE = orig
+            _IMPACT_MODULE.MLFLOW_AVAILABLE = orig
 
     def test_init_mlflow_available_not_in_pytest(self):
         """When mlflow is available and we are NOT in pytest, _initialize_mlflow runs."""
-        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
-        from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
-
-        orig_avail = _mod.MLFLOW_AVAILABLE
-        orig_mlflow = _mod.mlflow
+        orig_avail = _IMPACT_MODULE.MLFLOW_AVAILABLE
+        orig_mlflow = _IMPACT_MODULE.mlflow
         try:
             mock_mlflow = MagicMock()
             mock_mlflow.get_experiment_by_name.return_value = None
             mock_mlflow.create_experiment.return_value = "exp-001"
-            _mod.MLFLOW_AVAILABLE = True
-            _mod.mlflow = mock_mlflow
+            _IMPACT_MODULE.MLFLOW_AVAILABLE = True
+            _IMPACT_MODULE.mlflow = mock_mlflow
 
-            scorer = ImpactScorer.__new__(ImpactScorer)
+            scorer = _IMPACT_MODULE.ImpactScorer.__new__(_IMPACT_MODULE.ImpactScorer)
             scorer.constitutional_hash = CONSTITUTIONAL_HASH
             scorer._mlflow_initialized = False
             scorer._mlflow_experiment_id = None
@@ -179,25 +188,22 @@ class TestImpactScorerInit:
             assert scorer._mlflow_initialized is True
             assert scorer._mlflow_experiment_id == "exp-001"
         finally:
-            _mod.MLFLOW_AVAILABLE = orig_avail
-            _mod.mlflow = orig_mlflow
+            _IMPACT_MODULE.MLFLOW_AVAILABLE = orig_avail
+            _IMPACT_MODULE.mlflow = orig_mlflow
 
     def test_init_mlflow_experiment_exists(self):
         """Branch: experiment already exists (get_experiment_by_name returns non-None)."""
-        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
-        from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
-
-        orig_avail = _mod.MLFLOW_AVAILABLE
-        orig_mlflow = _mod.mlflow
+        orig_avail = _IMPACT_MODULE.MLFLOW_AVAILABLE
+        orig_mlflow = _IMPACT_MODULE.mlflow
         try:
             mock_exp = MagicMock()
             mock_exp.experiment_id = "existing-001"
             mock_mlflow = MagicMock()
             mock_mlflow.get_experiment_by_name.return_value = mock_exp
-            _mod.MLFLOW_AVAILABLE = True
-            _mod.mlflow = mock_mlflow
+            _IMPACT_MODULE.MLFLOW_AVAILABLE = True
+            _IMPACT_MODULE.mlflow = mock_mlflow
 
-            scorer = ImpactScorer.__new__(ImpactScorer)
+            scorer = _IMPACT_MODULE.ImpactScorer.__new__(_IMPACT_MODULE.ImpactScorer)
             scorer.constitutional_hash = CONSTITUTIONAL_HASH
             scorer._mlflow_initialized = False
             scorer._mlflow_experiment_id = None
@@ -212,23 +218,20 @@ class TestImpactScorerInit:
 
             assert scorer._mlflow_experiment_id == "existing-001"
         finally:
-            _mod.MLFLOW_AVAILABLE = orig_avail
-            _mod.mlflow = orig_mlflow
+            _IMPACT_MODULE.MLFLOW_AVAILABLE = orig_avail
+            _IMPACT_MODULE.mlflow = orig_mlflow
 
     def test_init_mlflow_error_is_caught(self):
         """RuntimeError during mlflow init is caught and _mlflow_initialized stays False."""
-        import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
-        from enhanced_agent_bus.adaptive_governance.impact_scorer import ImpactScorer
-
-        orig_avail = _mod.MLFLOW_AVAILABLE
-        orig_mlflow = _mod.mlflow
+        orig_avail = _IMPACT_MODULE.MLFLOW_AVAILABLE
+        orig_mlflow = _IMPACT_MODULE.mlflow
         try:
             mock_mlflow = MagicMock()
             mock_mlflow.set_tracking_uri.side_effect = RuntimeError("conn refused")
-            _mod.MLFLOW_AVAILABLE = True
-            _mod.mlflow = mock_mlflow
+            _IMPACT_MODULE.MLFLOW_AVAILABLE = True
+            _IMPACT_MODULE.mlflow = mock_mlflow
 
-            scorer = ImpactScorer.__new__(ImpactScorer)
+            scorer = _IMPACT_MODULE.ImpactScorer.__new__(_IMPACT_MODULE.ImpactScorer)
             scorer.constitutional_hash = CONSTITUTIONAL_HASH
             scorer._mlflow_initialized = False
             scorer._mlflow_experiment_id = None
@@ -243,8 +246,8 @@ class TestImpactScorerInit:
 
             assert scorer._mlflow_initialized is False
         finally:
-            _mod.MLFLOW_AVAILABLE = orig_avail
-            _mod.mlflow = orig_mlflow
+            _IMPACT_MODULE.MLFLOW_AVAILABLE = orig_avail
+            _IMPACT_MODULE.mlflow = orig_mlflow
 
     def test_use_mhc_stability_false_when_torch_unavailable(self):
         import enhanced_agent_bus.adaptive_governance.impact_scorer as _mod
@@ -693,8 +696,7 @@ class TestUpdateModel:
             retrain_calls.append(True)
 
         scorer._retrain_model = mock_retrain
-        # min_training_samples = 50; add 49 samples
-        for _i in range(49):
+        for _i in range(IMPACT_SCORER_CONFIG.min_training_samples - 1):
             scorer.update_model(_make_features(), 0.5)
         assert len(retrain_calls) == 0
 
@@ -707,8 +709,8 @@ class TestUpdateModel:
 
         scorer._retrain_model = mock_retrain
         scorer._apply_mhc_stability = MagicMock()
-        # Add 50 samples — triggers retrain (50 >= 50 and 50 % 50 == 0)
-        for _i in range(50):
+        trigger_count = IMPACT_SCORER_CONFIG.retrain_frequency
+        for _i in range(trigger_count):
             scorer.update_model(_make_features(), 0.5)
         assert len(retrain_calls) == 1
         scorer._apply_mhc_stability.assert_called_once()
@@ -775,8 +777,7 @@ class TestRetrainModel:
         mock_clf = MagicMock()
         scorer.impact_classifier = mock_clf
 
-        # Add 50 samples directly
-        for _i in range(50):
+        for _i in range(IMPACT_SCORER_CONFIG.min_training_samples):
             scorer.training_samples.append((_make_features(temporal_patterns=[0.1]), 0.5))
 
         orig_np = _mod.np
@@ -804,7 +805,7 @@ class TestRetrainModel:
         mock_clf = MagicMock()
         scorer.impact_classifier = mock_clf
 
-        for _i in range(50):
+        for _i in range(IMPACT_SCORER_CONFIG.min_training_samples):
             scorer.training_samples.append((_make_features(temporal_patterns=[0.1]), 0.5))
 
         log_mock = MagicMock()
@@ -836,7 +837,7 @@ class TestRetrainModel:
         mock_clf.fit.side_effect = RuntimeError("fit failed")
         scorer.impact_classifier = mock_clf
 
-        for _i in range(50):
+        for _i in range(IMPACT_SCORER_CONFIG.min_training_samples):
             scorer.training_samples.append((_make_features(), 0.5))
 
         orig_np = _mod.np

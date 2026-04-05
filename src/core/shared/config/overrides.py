@@ -1,6 +1,6 @@
 """
 ACGS-2 Configuration Overrides
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides runtime configuration override mechanisms for testing
 and environment-specific configuration adjustments.

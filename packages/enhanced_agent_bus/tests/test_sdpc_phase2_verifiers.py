@@ -1,7 +1,7 @@
 """
 Tests for SDPC Phase 2 Verifiers
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import pytest
@@ -20,7 +20,6 @@ from enhanced_agent_bus.sdpc.graph_check import GraphCheckVerifier
 from enhanced_agent_bus.sdpc.pacar_verifier import PACARVerifier
 
 
-@pytest.mark.asyncio
 async def test_asc_verifier_skipped():
     verifier = ASCVerifier()
     result = await verifier.verify("Some content", IntentType.GENERAL)
@@ -28,7 +27,6 @@ async def test_asc_verifier_skipped():
     assert "skipped" in result["reason"]
 
 
-@pytest.mark.asyncio
 async def test_asc_verifier_factual():
     verifier = ASCVerifier()
     # Mock LLM Assistant
@@ -43,7 +41,6 @@ async def test_asc_verifier_factual():
     assert result["confidence"] == 0.9
 
 
-@pytest.mark.asyncio
 async def test_graph_check_verifier():
     verifier = GraphCheckVerifier(db_type="mock")
     # Content with known mock keywords
@@ -54,7 +51,6 @@ async def test_graph_check_verifier():
     assert any(r["status"] == "grounded" for r in result["results"])
 
 
-@pytest.mark.asyncio
 async def test_pacar_verifier():
     verifier = PACARVerifier()
     # Mock LLM Assistant
@@ -74,7 +70,6 @@ async def test_pacar_verifier():
     assert result["consensus_reached"] is True
 
 
-@pytest.mark.asyncio
 async def test_pacar_verify_with_context_new_session():
     """Test PACAR verifier creates new conversation state for new session_id"""
     verifier = PACARVerifier()
@@ -152,7 +147,6 @@ async def test_pacar_verify_with_context_new_session():
     assert conversation_data["messages"][0]["content"] == "Test content for new session"
 
 
-@pytest.mark.asyncio
 async def test_pacar_verify_with_context_existing_session():
     """Test PACAR verifier retrieves and appends to existing conversation state"""
     verifier = PACARVerifier()
@@ -263,7 +257,6 @@ async def test_pacar_verify_with_context_existing_session():
     assert conversation_data["messages"][2]["verification_result"]["confidence"] == 0.92
 
 
-@pytest.mark.asyncio
 async def test_pacar_context_window_pruning():
     """Test PACAR verifier enforces 50-message context window limit"""
     verifier = PACARVerifier()
@@ -368,7 +361,6 @@ async def test_pacar_context_window_pruning():
     assert conversation_data["messages"][-1]["verification_result"]["is_valid"] is True
 
 
-@pytest.mark.asyncio
 async def test_redis_unavailable_fallback():
     """Test PACAR verifier gracefully degrades when Redis is unavailable"""
     verifier = PACARVerifier()

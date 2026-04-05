@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Circuit Breaker Protected Clients
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides circuit breaker wrapped clients for external services:
 - OPA Client: fail-closed for governance (constitutional validation cannot be skipped)
@@ -28,7 +28,7 @@ New code should import directly from the specific modules.
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 

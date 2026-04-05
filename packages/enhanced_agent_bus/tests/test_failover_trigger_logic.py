@@ -1,15 +1,13 @@
 """
 Tests for ProactiveFailoverManager trigger logic.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.llm_adapters.failover.failover import (
     FailoverEvent,
     ProactiveFailoverManager,
@@ -44,7 +42,6 @@ def _mock_health_scorer(scores: dict[str, float]) -> ProviderHealthScorer:
     return scorer
 
 
-@pytest.mark.asyncio
 async def test_failover_triggers_when_health_below_threshold() -> None:
     """Health score below PROACTIVE_FAILOVER_THRESHOLD must trigger failover."""
     scorer = _mock_health_scorer({"primary": 0.3, "fallback": 0.95})
@@ -64,7 +61,6 @@ async def test_failover_triggers_when_health_below_threshold() -> None:
     assert event.constitutional_hash == CONSTITUTIONAL_HASH
 
 
-@pytest.mark.asyncio
 async def test_no_failover_when_health_above_threshold() -> None:
     """Health score above threshold must keep current provider and not trigger failover."""
     scorer = _mock_health_scorer({"primary": 0.95})
@@ -78,7 +74,6 @@ async def test_no_failover_when_health_above_threshold() -> None:
     assert len(manager._failover_history) == 0
 
 
-@pytest.mark.asyncio
 async def test_fallback_chain_sorted_by_descending_health() -> None:
     """build_fallback_chain must return providers ordered highest health first."""
     scorer = _mock_health_scorer({"p1": 0.8, "p2": 0.5, "p3": 0.95, "p4": 0.7})
@@ -96,7 +91,6 @@ async def test_fallback_chain_sorted_by_descending_health() -> None:
     )
 
 
-@pytest.mark.asyncio
 async def test_fallback_chain_excludes_primary_provider() -> None:
     """build_fallback_chain must not include the primary provider in the results."""
     scorer = _mock_health_scorer({"provider-X": 0.85, "provider-Y": 0.75})
@@ -112,7 +106,6 @@ async def test_fallback_chain_excludes_primary_provider() -> None:
     assert "provider-X" not in chain
 
 
-@pytest.mark.asyncio
 async def test_failover_event_has_constitutional_hash() -> None:
     """Every FailoverEvent recorded must carry the canonical constitutional hash."""
     scorer = _mock_health_scorer({"low-health": 0.1, "good": 0.9})

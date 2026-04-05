@@ -1,6 +1,6 @@
 """
 MCP Client Tests.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import pytest
@@ -53,7 +53,6 @@ class TestMCPClient:
         )
         return MCPClient(config=config, agent_id="test-agent")
 
-    @pytest.mark.asyncio
     async def test_connect(self, client):
         """Test connecting to server."""
         await client.connect()
@@ -61,7 +60,6 @@ class TestMCPClient:
         assert client.is_connected is True
         assert client.state.value == "ready"
 
-    @pytest.mark.asyncio
     async def test_disconnect(self, client):
         """Test disconnecting from server."""
         await client.connect()
@@ -69,7 +67,6 @@ class TestMCPClient:
 
         assert client.is_connected is False
 
-    @pytest.mark.asyncio
     async def test_call_tool(self, client):
         """Test calling a tool."""
         await client.connect()
@@ -82,7 +79,6 @@ class TestMCPClient:
         assert result is not None
         assert "content" in result
 
-    @pytest.mark.asyncio
     async def test_read_resource(self, client):
         """Test reading a resource."""
         await client.connect()
@@ -92,7 +88,6 @@ class TestMCPClient:
         assert result is not None
         assert "contents" in result
 
-    @pytest.mark.asyncio
     async def test_ping(self, client):
         """Test ping."""
         await client.connect()
@@ -102,7 +97,6 @@ class TestMCPClient:
         assert result["status"] == "ok"
         assert result["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_get_tools(self, client):
         """Test getting discovered tools."""
         await client.connect()
@@ -111,7 +105,6 @@ class TestMCPClient:
 
         assert isinstance(tools, list)
 
-    @pytest.mark.asyncio
     async def test_get_resources(self, client):
         """Test getting discovered resources."""
         await client.connect()
@@ -128,7 +121,6 @@ class TestMCPClient:
         assert "state" in metrics
         assert metrics["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_event_handlers(self, client):
         """Test event handlers."""
         connected = []
@@ -160,7 +152,6 @@ class TestMCPConnectionPool:
 
         return MCPConnectionPool()
 
-    @pytest.mark.asyncio
     async def test_add_server(self, pool):
         """Test adding a server to pool."""
         from ...mcp_integration.client import MCPClientConfig
@@ -175,7 +166,6 @@ class TestMCPConnectionPool:
         assert client is not None
         assert client.is_connected is True
 
-    @pytest.mark.asyncio
     async def test_remove_server(self, pool):
         """Test removing a server from pool."""
         from ...mcp_integration.client import MCPClientConfig
@@ -193,7 +183,6 @@ class TestMCPConnectionPool:
         assert success is True
         assert pool.get_client(server_id) is None
 
-    @pytest.mark.asyncio
     async def test_list_servers(self, pool):
         """Test listing servers in pool."""
         from ...mcp_integration.client import MCPClientConfig
@@ -209,7 +198,6 @@ class TestMCPConnectionPool:
 
         assert len(servers) == 3
 
-    @pytest.mark.asyncio
     async def test_disconnect_all(self, pool):
         """Test disconnecting all servers."""
         from ...mcp_integration.client import MCPClientConfig

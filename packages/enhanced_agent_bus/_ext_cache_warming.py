@@ -1,8 +1,8 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """Optional cache warming integration for FastAPI startup."""
 
 try:
-    from src.core.shared.cache_warming import (
+    from enhanced_agent_bus._compat.cache_warming import (
         CacheWarmer,
         WarmingConfig,
         WarmingProgress,

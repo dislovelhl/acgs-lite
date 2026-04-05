@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Batch Message Processor
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Refactored BatchMessageProcessor that delegates to the infra components.
 """
@@ -11,10 +11,10 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]
@@ -42,7 +42,7 @@ _batch_processor_instance = None
 def get_batch_processor() -> "BatchMessageProcessor":
     """
     Get the global batch processor singleton.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     global _batch_processor_instance
     if _batch_processor_instance is None:
@@ -60,7 +60,7 @@ def get_batch_processor() -> "BatchMessageProcessor":
 def reset_batch_processor() -> None:
     """
     Reset the global batch processor singleton.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     global _batch_processor_instance
     _batch_processor_instance = None
@@ -69,7 +69,7 @@ def reset_batch_processor() -> None:
 class BatchMessageProcessor:
     """
     Refactored BatchMessageProcessor using modular components.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, **kwargs: JSONValue) -> None:
@@ -120,7 +120,13 @@ class BatchMessageProcessor:
 
         # Store config for test compatibility
         self._max_concurrency: int = _max_concurrency
-        _item_timeout = kwargs.get("item_timeout_ms", 30000)
+        _item_timeout = kwargs.get("item_timeout_ms")
+        if not isinstance(_item_timeout, (int, float)):
+            legacy_item_timeout = kwargs.get("item_timeout")
+            if isinstance(legacy_item_timeout, (int, float)):
+                _item_timeout = float(legacy_item_timeout) * 1000.0
+            else:
+                _item_timeout = 30000
         self._item_timeout_ms: int = (
             int(_item_timeout) if isinstance(_item_timeout, (int, float)) else 30000
         )
@@ -147,6 +153,7 @@ class BatchMessageProcessor:
 
         self._orchestrator = BatchProcessorOrchestrator(
             max_concurrency=_max_concurrency,
+            item_timeout_ms=self._item_timeout_ms,
             max_retries=self._max_retries,
             retry_base_delay=self._retry_base_delay,
             retry_exponential_base=self._retry_exponential_base,
@@ -340,7 +347,7 @@ class BatchMessageProcessor:
     def get_recommended_batch_size(self) -> int:
         """Get the recommended batch size based on auto-tuning.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         if not self.auto_tune_batch_size:
             return self.max_batch_size
@@ -351,7 +358,7 @@ class BatchMessageProcessor:
     ) -> None:
         """Update batch size recommendation based on observed latency.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         if not self.auto_tune_batch_size or p99_latency_ms is None:
             return
@@ -384,7 +391,7 @@ class BatchMessageProcessor:
     def get_auto_tune_stats(self) -> JSONDict:
         """Get auto-tuning statistics.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         avg_latency = None
         if self._latency_history:

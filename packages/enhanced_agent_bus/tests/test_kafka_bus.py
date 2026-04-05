@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Kafka Event Bus Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for KafkaEventBus, Orchestrator, and Blackboard classes.
 """
@@ -124,7 +124,6 @@ class TestTopicNaming:
 class TestKafkaEventBusLifecycle:
     """Tests for KafkaEventBus start/stop lifecycle."""
 
-    @pytest.mark.asyncio
     async def test_start_without_kafka(self, kafka_bus: KafkaEventBus) -> None:
         """Test start when aiokafka is not available."""
         # Import the module to patch its constant
@@ -139,13 +138,11 @@ class TestKafkaEventBusLifecycle:
         finally:
             kb_module.KAFKA_AVAILABLE = original_value
 
-    @pytest.mark.asyncio
     async def test_stop_without_producer(self, kafka_bus: KafkaEventBus) -> None:
         """Test stop when producer is not initialized."""
         await kafka_bus.stop()
         assert kafka_bus._running is False
 
-    @pytest.mark.asyncio
     async def test_stop_with_mock_producer(self, kafka_bus: KafkaEventBus) -> None:
         """Test stop with a mock producer."""
         mock_producer = AsyncMock()
@@ -158,7 +155,6 @@ class TestKafkaEventBusLifecycle:
         mock_producer.flush.assert_called_once()
         mock_producer.stop.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_stop_with_consumers(self, kafka_bus: KafkaEventBus) -> None:
         """Test stop with active consumers."""
         mock_consumer1 = AsyncMock()
@@ -180,7 +176,6 @@ class TestKafkaEventBusLifecycle:
 class TestSendMessage:
     """Tests for send_message method."""
 
-    @pytest.mark.asyncio
     async def test_send_message_producer_not_started(
         self, kafka_bus: KafkaEventBus, valid_message: AgentMessage
     ) -> None:
@@ -191,7 +186,6 @@ class TestSendMessage:
         assert exc_info.value.reason == "Kafka producer not started"
         assert exc_info.value.message_id == valid_message.message_id
 
-    @pytest.mark.asyncio
     async def test_send_message_not_running(
         self, kafka_bus: KafkaEventBus, valid_message: AgentMessage
     ) -> None:
@@ -204,7 +198,6 @@ class TestSendMessage:
 
         assert exc_info.value.reason == "Kafka producer not started"
 
-    @pytest.mark.asyncio
     async def test_send_message_success(
         self, kafka_bus: KafkaEventBus, valid_message: AgentMessage
     ) -> None:
@@ -218,7 +211,6 @@ class TestSendMessage:
         assert result is True
         mock_producer.send_and_wait.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_send_message_with_partition_key(
         self, kafka_bus: KafkaEventBus, valid_message: AgentMessage
     ) -> None:
@@ -232,7 +224,6 @@ class TestSendMessage:
         call_kwargs = mock_producer.send_and_wait.call_args.kwargs
         assert call_kwargs["key"] == b"conv-456"
 
-    @pytest.mark.asyncio
     async def test_send_message_with_auto_generated_conversation_id(
         self, kafka_bus: KafkaEventBus
     ) -> None:
@@ -257,7 +248,6 @@ class TestSendMessage:
         assert call_kwargs["key"] is not None
         assert call_kwargs["key"] == message.conversation_id.encode("utf-8")
 
-    @pytest.mark.asyncio
     async def test_send_message_failure(
         self, kafka_bus: KafkaEventBus, valid_message: AgentMessage
     ) -> None:
@@ -280,7 +270,6 @@ class TestSendMessage:
 class TestSubscribe:
     """Tests for subscribe method."""
 
-    @pytest.mark.asyncio
     async def test_subscribe_without_kafka(self, kafka_bus: KafkaEventBus) -> None:
         """Test subscribe when aiokafka is not available."""
         handler = AsyncMock()
@@ -316,7 +305,6 @@ class TestOrchestrator:
         assert orchestrator.bus is kafka_bus
         assert orchestrator.tenant_id == "tenant-1"
 
-    @pytest.mark.asyncio
     async def test_dispatch_task(self, kafka_bus: KafkaEventBus) -> None:
         """Test dispatching a task to a worker."""
         mock_producer = AsyncMock()
@@ -332,7 +320,6 @@ class TestOrchestrator:
         call_kwargs = mock_producer.send_and_wait.call_args.kwargs
         assert "value" in call_kwargs
 
-    @pytest.mark.asyncio
     async def test_dispatch_task_with_worker_type(self, kafka_bus: KafkaEventBus) -> None:
         """Test that worker type is included in message."""
         mock_producer = AsyncMock()
@@ -377,7 +364,6 @@ class TestBlackboard:
         )
         assert blackboard.topic == "acgs.blackboard.org-xyz.coordination"
 
-    @pytest.mark.asyncio
     async def test_blackboard_update(self, kafka_bus: KafkaEventBus) -> None:
         """Test updating a value on the blackboard."""
         mock_producer = AsyncMock()
@@ -394,7 +380,6 @@ class TestBlackboard:
 
         mock_producer.send_and_wait.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_blackboard_update_content(self, kafka_bus: KafkaEventBus) -> None:
         """Test that update sends correct content."""
         mock_producer = AsyncMock()
@@ -414,7 +399,6 @@ class TestBlackboard:
         assert message_dict["content"]["key"] == "counter"
         assert message_dict["content"]["value"] == 42
 
-    @pytest.mark.asyncio
     async def test_blackboard_multiple_updates(self, kafka_bus: KafkaEventBus) -> None:
         """Test multiple updates to the blackboard."""
         mock_producer = AsyncMock()
@@ -455,7 +439,6 @@ class TestKafkaAvailableFlag:
 class TestKafkaEventBusIntegration:
     """Integration tests for KafkaEventBus components."""
 
-    @pytest.mark.asyncio
     async def test_orchestrator_blackboard_workflow(self, kafka_bus: KafkaEventBus) -> None:
         """Test workflow with orchestrator and blackboard."""
         mock_producer = AsyncMock()
@@ -482,7 +465,6 @@ class TestKafkaEventBusIntegration:
 
         assert mock_producer.send_and_wait.call_count == 3
 
-    @pytest.mark.asyncio
     async def test_multiple_tenants(self, kafka_bus: KafkaEventBus) -> None:
         """Test operations with multiple tenants."""
         mock_producer = AsyncMock()

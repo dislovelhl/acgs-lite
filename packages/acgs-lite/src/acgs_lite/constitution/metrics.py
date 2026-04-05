@@ -3,7 +3,7 @@
 A Constitution is a set of Rules that govern agent behavior.
 Rules can be loaded from YAML, dicts, or created programmatically.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -12,6 +12,7 @@ import time
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from operator import itemgetter
 from typing import Any
 
 
@@ -215,7 +216,7 @@ class GovernanceMetrics:
         return merged
 
     @classmethod
-    def from_snapshot(cls, snapshot: dict) -> GovernanceMetrics:
+    def from_snapshot(cls, snapshot: dict[str, Any]) -> GovernanceMetrics:
         """exp126: Reconstruct a GovernanceMetrics from a snapshot dict.
 
         Enables metrics aggregation across process boundaries by deserialising
@@ -1073,7 +1074,7 @@ class GovernanceCostModel:
                 }
                 for d in self._decision_counts
             ],
-            key=lambda x: x["cost"],
+            key=itemgetter("cost"),
             reverse=True,
         )
         by_rule = sorted(
@@ -1081,7 +1082,7 @@ class GovernanceCostModel:
                 {"rule_id": r, "cost": c, "count": self._rule_counts.get(r, 0)}
                 for r, c in self._rule_costs.items()
             ],
-            key=lambda x: x["cost"],
+            key=itemgetter("cost"),
             reverse=True,
         )
         by_agent = sorted(
@@ -1089,7 +1090,7 @@ class GovernanceCostModel:
                 {"agent_id": a, "cost": c, "count": self._agent_counts.get(a, 0)}
                 for a, c in self._agent_costs.items()
             ],
-            key=lambda x: x["cost"],
+            key=itemgetter("cost"),
             reverse=True,
         )
         return {
@@ -1113,7 +1114,7 @@ class GovernanceCostModel:
                 {"rule_id": r, "cost": c, "count": self._rule_counts.get(r, 0)}
                 for r, c in self._rule_costs.items()
             ],
-            key=lambda x: x["cost"],
+            key=itemgetter("cost"),
             reverse=True,
         )[:n]
 
@@ -1124,7 +1125,7 @@ class GovernanceCostModel:
                 {"agent_id": a, "cost": c, "count": self._agent_counts.get(a, 0)}
                 for a, c in self._agent_costs.items()
             ],
-            key=lambda x: x["cost"],
+            key=itemgetter("cost"),
             reverse=True,
         )[:n]
 

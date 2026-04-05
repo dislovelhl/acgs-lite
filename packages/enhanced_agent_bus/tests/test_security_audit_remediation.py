@@ -2,7 +2,7 @@
 Security Audit Remediation Regression Tests
 Focus: VULN-001 (Rust Validation Bypass) and VULN-002 (OPA Fail-Open)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import pytest
@@ -22,7 +22,6 @@ from ..validation_strategies import RustValidationStrategy
 
 
 class TestSecurityRemediation:
-    @pytest.mark.asyncio
     async def test_vuln_001_rust_validation_fail_closed_on_error(self):
         """
         VULN-001 Regression Test:
@@ -47,7 +46,6 @@ class TestSecurityRemediation:
         assert is_valid is False
         assert "Rust validation error" in error
 
-    @pytest.mark.asyncio
     async def test_vuln_001_rust_validation_fail_closed_missing_method(self):
         """
         VULN-001 Regression Test:
@@ -71,7 +69,6 @@ class TestSecurityRemediation:
         assert is_valid is False
         assert "fail closed" in error
 
-    @pytest.mark.asyncio
     async def test_vuln_002_opa_fail_closed_on_error(self):
         """
         VULN-002 Regression Test:

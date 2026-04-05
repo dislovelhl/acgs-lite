@@ -1,6 +1,6 @@
 """
 ACGS-2 Saga Coordinator - Compensable Transaction Management
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements SagaLLM transaction guarantees for constitutional governance:
 - Compensable operations with LIFO (Last-In-First-Out) rollback
@@ -31,11 +31,11 @@ from typing import TypeVar
 
 # Constitutional hash for immutable validation
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -275,7 +275,7 @@ class SagaCoordinator:
     - Automatic compensation on validation failure
     - Full audit trail for compliance
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

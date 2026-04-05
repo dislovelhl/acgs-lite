@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Policy Resolver
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 PolicyResolver for querying Policy Registry based on session context
 with Redis caching for sub-millisecond performance.
@@ -46,11 +46,11 @@ except ImportError:
     RedisTimeoutError = _RedisUnavailableError
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -132,7 +132,7 @@ class PolicyResolver:
     - Cache invalidation on policy changes
     - Constitutional hash validation
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -249,7 +249,7 @@ class PolicyResolver:
         Returns:
             PolicyResolutionResult with selected policy and metadata
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         # Normalize parameters
         normalized_params = self._normalize_resolution_parameters(
@@ -481,7 +481,7 @@ class PolicyResolver:
     ) -> PolicyResolutionResult:
         """Fallback mock policy result."""
         policy = {
-            "policy_id": f"policy-{tenant_id or 'global'}-{risk_level.value if hasattr(risk_level, 'value') else risk_level}",  # noqa: E501
+            "policy_id": f"policy-{tenant_id or 'global'}-{risk_level.value if hasattr(risk_level, 'value') else risk_level}",
             "name": f"Fallback Policy for {tenant_id or 'global'}",
             "tenant_id": tenant_id,
             "risk_level": risk_level.value if hasattr(risk_level, "value") else risk_level,

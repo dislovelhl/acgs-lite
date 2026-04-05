@@ -1,6 +1,6 @@
 """
 ACGS-2 AI Assistant - Dialog Management
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Dialog management with conversation flows, state machine,
 and policy-based action selection.
@@ -14,7 +14,7 @@ from typing import TypeAlias
 
 # Import centralized constitutional hash with fallback
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 

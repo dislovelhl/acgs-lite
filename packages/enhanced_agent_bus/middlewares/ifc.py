@@ -8,7 +8,7 @@ Policies enforced:
 1. No-write-down: SECRET data cannot flow to PUBLIC channels.
 2. No-read-up: UNTRUSTED data cannot flow to TRUSTED contexts.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from dataclasses import dataclass, field
@@ -85,7 +85,7 @@ class IFCMiddleware(BaseMiddleware):
 
             context.add_violation("ifc", violation.to_dict())
 
-            if not self.ifc_config.audit_only:  # noqa: SIM102
+            if not self.ifc_config.audit_only:
                 if self.config.fail_closed:
                     raise SecurityException(
                         message="Information Flow Control policy violation",

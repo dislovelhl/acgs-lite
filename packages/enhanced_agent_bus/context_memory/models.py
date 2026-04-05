@@ -1,6 +1,6 @@
 """
 ACGS-2 Context & Memory - Data Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Pydantic models and dataclasses for the Context & Memory layer.
 """
@@ -13,14 +13,14 @@ from typing import TypeAlias
 from pydantic import BaseModel, Field, field_validator
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
 from enhanced_agent_bus.bus_types import JSONDict, JSONValue
 
 
-class ContextType(str, Enum):  # noqa: UP042
+class ContextType(str, Enum):
     """Types of context in the system."""
 
     CONSTITUTIONAL = "constitutional"  # Core constitutional principles
@@ -42,7 +42,7 @@ class ContextPriority(int, Enum):
     BACKGROUND = 0  # Optional background context
 
 
-class MemoryOperationType(str, Enum):  # noqa: UP042
+class MemoryOperationType(str, Enum):
     """Types of memory operations for audit."""
 
     STORE = "store"
@@ -58,7 +58,7 @@ class MemoryOperationType(str, Enum):  # noqa: UP042
 class MambaConfig(BaseModel):
     """Configuration for Mamba-2 processor.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     d_model: int = Field(default=256, ge=64, le=4096, description="Model dimension")
@@ -99,7 +99,7 @@ class MambaConfig(BaseModel):
 class JRTConfig(BaseModel):
     """Configuration for Just-in-Time Retrieval.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     repetition_factor: int = Field(
@@ -129,7 +129,7 @@ class JRTConfig(BaseModel):
 class ContextChunk:
     """A chunk of context with metadata.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     content: str
@@ -156,7 +156,7 @@ class ContextChunk:
 class ContextWindow:
     """A context window containing multiple chunks.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     chunks: list[ContextChunk] = field(default_factory=list)
@@ -205,7 +205,7 @@ class ContextWindow:
 class ContextRetrievalResult:
     """Result of context retrieval operation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     window: ContextWindow
@@ -223,7 +223,7 @@ class ContextRetrievalResult:
 class EpisodicMemoryEntry:
     """Entry in episodic memory (interaction history).
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     entry_id: str
@@ -255,7 +255,7 @@ class EpisodicMemoryEntry:
 class SemanticMemoryEntry:
     """Entry in semantic memory (factual knowledge).
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     entry_id: str
@@ -284,7 +284,7 @@ class SemanticMemoryEntry:
 class MemoryQuery:
     """Query for memory retrieval.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     query_text: str
@@ -303,7 +303,7 @@ class MemoryQuery:
 class MemoryConsolidationResult:
     """Result of memory consolidation operation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     entries_processed: int
@@ -321,7 +321,7 @@ class MemoryConsolidationResult:
 class MemoryOperation:
     """Audit record for a memory operation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     operation_id: str

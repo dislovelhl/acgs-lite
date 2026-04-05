@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Constitutional Classifier Session Governance Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for session-specific policy integration in ConstitutionalClassifier.
 """
@@ -28,7 +28,7 @@ from enhanced_agent_bus.policy_resolver import PolicyResolutionResult, PolicyRes
 from enhanced_agent_bus.session_context import SessionContext
 
 # Mark all tests as governance tests (95% coverage required)
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
 
@@ -82,7 +82,6 @@ class MockPolicyResolver:
             )
 
 
-@pytest.mark.asyncio
 class TestConstitutionalClassifierSessionIntegration:
     """Test suite for session-specific policy integration"""
 

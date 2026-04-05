@@ -1,6 +1,6 @@
 """
 ChatOps Executor Agent
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Responsible for executing parsed ChatOps commands from the github_app service.
 Adheres strictly to the MACI Executor role, operating on validated inputs.
@@ -107,7 +107,7 @@ async def _dispatch_compliance_ingest(command_body: str, author: str) -> AgentMe
             message_type=MessageType.RESPONSE,
             content={
                 "status": "success",
-                "message": f"Successfully started ingestion for {filename}. Job ID: {result['job_id']}",  # noqa: E501
+                "message": f"Successfully started ingestion for {filename}. Job ID: {result['job_id']}",
                 "job_id": result["job_id"],
                 "author": author,
             },

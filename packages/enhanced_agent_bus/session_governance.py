@@ -1,13 +1,13 @@
 """
 Backward-compatibility shims for legacy session governance exceptions.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module was previously the home for session governance implementation.
 The implementation moved, but these exception symbols are kept for import
 compatibility with existing consumers.
 """
 
-from src.core.shared.errors.exceptions import ACGSBaseError
+from enhanced_agent_bus._compat.errors import ACGSBaseError
 
 
 class SessionGovernanceError(ACGSBaseError):

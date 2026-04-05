@@ -1,0 +1,32 @@
+@startuml
+title <size:24>Component View: ACGS Platform - API Gateway</size>\n<size:24>API Gateway internal components</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Component>
+
+System_Boundary("ACGSPlatform_boundary", "ACGS Platform", $tags="") {
+  Container_Boundary("ACGSPlatform.APIGateway_boundary", "API Gateway", $tags="") {
+    Component(ACGSPlatform.APIGateway.DataSubjectRouter, "Data Subject Router", $techn="FastAPI Router", $descr="GDPR/CCPA data subject rights endpoints.", $tags="", $link="")
+    Component(ACGSPlatform.APIGateway.RateLimiter, "Rate Limiter", $techn="Middleware", $descr="Redis-backed sliding window rate limiting.", $tags="", $link="")
+    Component(ACGSPlatform.APIGateway.ProxyRouter, "Proxy Router", $techn="FastAPI Router", $descr="Catch-all reverse proxy to Agent Bus.", $tags="", $link="")
+    Component(ACGSPlatform.APIGateway.SSORouter, "SSO Router", $techn="FastAPI Router", $descr="OIDC and SAML authentication flows.", $tags="", $link="")
+    Component(ACGSPlatform.APIGateway.ComplianceRouter, "Compliance Router", $techn="FastAPI Router", $descr="EU AI Act self-assessment and regulatory mapping.", $tags="", $link="")
+    Component(ACGSPlatform.APIGateway.DecisionsRouter, "Decisions Router", $techn="FastAPI Router", $descr="Governance decision explanation and audit trail.", $tags="", $link="")
+  }
+
+}
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

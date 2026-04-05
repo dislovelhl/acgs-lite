@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Exception Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for all custom exception types.
 """
@@ -13,7 +13,7 @@ import pytest
 # Add parent directory to path for local imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from enhanced_agent_bus.exceptions import (  # Agent; Bus Operations; Configuration; Constitutional; Deliberation; Message; Policy/OPA  # noqa: E501
+from enhanced_agent_bus.exceptions import (  # Agent; Bus Operations; Configuration; Constitutional; Deliberation; Message; Policy/OPA
     CONSTITUTIONAL_HASH,
     AgentAlreadyRegisteredError,
     AgentBusError,

@@ -1,6 +1,6 @@
 """
 Pytest Configuration for Verification Layer Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides common fixtures and configuration for Layer 2 verification tests.
 """
@@ -10,8 +10,8 @@ import asyncio
 import pytest
 
 # Constitutional hash for compliance validation
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.types import JSONDict
 
 
 @pytest.fixture

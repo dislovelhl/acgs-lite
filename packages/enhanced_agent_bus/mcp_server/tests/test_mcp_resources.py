@@ -3,14 +3,13 @@ MCP Resources Tests.
 
 Tests for all MCP governance resources.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import json
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 from ..resources.audit_trail import AuditEntry, AuditEventType, AuditTrailResource
 from ..resources.decisions import DecisionsResource
@@ -30,7 +29,6 @@ class TestPrinciplesResource:
         assert definition.name == "Constitutional Principles"
         assert definition.mimeType == "application/json"
 
-    @pytest.mark.asyncio
     async def test_read_all_principles(self):
         """Test reading all principles."""
         resource = PrinciplesResource()
@@ -43,7 +41,6 @@ class TestPrinciplesResource:
         assert "principles" in data
         assert len(data["principles"]) > 0
 
-    @pytest.mark.asyncio
     async def test_read_with_category_filter(self):
         """Test reading with category filter - resource returns all principles with filter params.
 
@@ -59,7 +56,6 @@ class TestPrinciplesResource:
         safety_principles = [p for p in data["principles"] if p["category"] == "safety"]
         assert len(safety_principles) > 0, "Should have at least one safety principle"
 
-    @pytest.mark.asyncio
     async def test_read_with_enforcement_filter(self):
         """Test reading with enforcement level filter - resource returns all principles.
 
@@ -75,7 +71,6 @@ class TestPrinciplesResource:
         strict_principles = [p for p in data["principles"] if p["enforcement_level"] == "strict"]
         assert len(strict_principles) > 0, "Should have at least one strict enforcement principle"
 
-    @pytest.mark.asyncio
     async def test_principles_have_required_fields(self):
         """Test that principles have all required fields."""
         resource = PrinciplesResource()
@@ -109,7 +104,6 @@ class TestMetricsResource:
         assert definition.uri == "acgs2://governance/metrics"
         assert definition.name == "Governance Metrics"
 
-    @pytest.mark.asyncio
     async def test_read_metrics(self):
         """Test reading governance metrics."""
         resource = MetricsResource()
@@ -122,7 +116,6 @@ class TestMetricsResource:
         # Metrics are returned at top level, not nested under "metrics"
         assert "performance" in data or "requests" in data or "compliance" in data
 
-    @pytest.mark.asyncio
     async def test_metrics_include_performance(self):
         """Test that metrics include performance data."""
         resource = MetricsResource()
@@ -135,7 +128,6 @@ class TestMetricsResource:
         assert "performance" in data
         assert "avg_latency_ms" in data["performance"]
 
-    @pytest.mark.asyncio
     async def test_read_with_time_range(self):
         """Test reading with time range parameter."""
         resource = MetricsResource()
@@ -159,7 +151,6 @@ class TestDecisionsResource:
         assert definition.uri == "acgs2://governance/decisions"
         assert definition.name == "Recent Decisions"
 
-    @pytest.mark.asyncio
     async def test_read_decisions(self):
         """Test reading recent decisions."""
         resource = DecisionsResource()
@@ -171,7 +162,6 @@ class TestDecisionsResource:
         assert data["constitutional_hash"] == CONSTITUTIONAL_HASH
         assert "decisions" in data
 
-    @pytest.mark.asyncio
     async def test_read_with_limit(self):
         """Test reading with limit parameter."""
         resource = DecisionsResource()
@@ -181,7 +171,6 @@ class TestDecisionsResource:
 
         assert len(data["decisions"]) <= 5
 
-    @pytest.mark.asyncio
     async def test_read_by_status(self):
         """Test reading by decision status."""
         resource = DecisionsResource()
@@ -192,7 +181,6 @@ class TestDecisionsResource:
         for decision in data["decisions"]:
             assert decision["status"] == "approved"
 
-    @pytest.mark.asyncio
     async def test_decisions_have_required_fields(self):
         """Test that decisions have required fields."""
         resource = DecisionsResource()
@@ -218,7 +206,6 @@ class TestAuditTrailResource:
         assert definition.uri == "acgs2://governance/audit-trail"
         assert definition.name == "Audit Trail"
 
-    @pytest.mark.asyncio
     async def test_read_audit_trail(self):
         """Test reading audit trail."""
         resource = AuditTrailResource()
@@ -230,7 +217,6 @@ class TestAuditTrailResource:
         assert data["constitutional_hash"] == CONSTITUTIONAL_HASH
         assert "entries" in data
 
-    @pytest.mark.asyncio
     async def test_read_with_event_type_filter(self):
         """Test reading with event type filter."""
         resource = AuditTrailResource()
@@ -250,7 +236,6 @@ class TestAuditTrailResource:
         for entry in data["entries"]:
             assert entry["event_type"] == "validation"
 
-    @pytest.mark.asyncio
     async def test_read_with_actor_filter(self):
         """Test reading with actor filter."""
         resource = AuditTrailResource()
@@ -384,16 +369,28 @@ class TestAuditEntry:
 class TestResourcesWithAdapters:
     """Tests for resources with external adapters."""
 
-    @pytest.mark.asyncio
     async def test_principles_with_policy_adapter(self):
-        """Test principles resource with get_principles_tool."""
+        """Test principles resource returns tool-provided JSON content unchanged."""
         mock_tool = MagicMock()
+        payload = {
+            "principles": [
+                {
+                    "id": "P001",
+                    "name": "safety",
+                    "category": "core",
+                    "enforcement_level": "strict",
+                    "description": "Test",
+                    "active": True,
+                }
+            ],
+            "constitutional_hash": CONSTITUTIONAL_HASH,
+        }
         mock_tool.execute = AsyncMock(
             return_value={
                 "content": [
                     {
                         "type": "text",
-                        "text": '{"principles": [{"id": "P001", "name": "safety", "category": "core", "enforcement_level": "strict", "description": "Test", "active": true}], "constitutional_hash": CONSTITUTIONAL_HASH}',  # noqa: E501
+                        "text": json.dumps(payload),
                     }
                 ]
             }
@@ -405,21 +402,19 @@ class TestResourcesWithAdapters:
         data = json.loads(content)
 
         assert "principles" in data
+        assert data["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_decisions_with_audit_adapter(self):
-        """Test decisions resource with submit_governance_tool."""
+        """Test decisions resource reads completed requests from the governance tool."""
         mock_tool = MagicMock()
-        mock_tool.execute = AsyncMock(
-            return_value={
-                "content": [
-                    {
-                        "type": "text",
-                        "text": '{"request": {"request_id": "REQ-001", "status": "approved"}, "constitutional_hash": CONSTITUTIONAL_HASH}',  # noqa: E501
-                    }
-                ]
-            }
-        )
+        mock_request = MagicMock()
+        mock_request.to_dict.return_value = {
+            "id": "REQ-001",
+            "status": "approved",
+            "action": "deploy_model",
+            "timestamp": "2024-12-30T12:00:00Z",
+        }
+        mock_tool._completed_requests = {"REQ-001": mock_request}
 
         resource = DecisionsResource(submit_governance_tool=mock_tool)
 
@@ -427,3 +422,4 @@ class TestResourcesWithAdapters:
         data = json.loads(content)
 
         assert "decisions" in data
+        assert data["decisions"][0]["id"] == "REQ-001"

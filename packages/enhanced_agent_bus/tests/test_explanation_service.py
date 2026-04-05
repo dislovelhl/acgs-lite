@@ -1,6 +1,6 @@
 """
 FR-12 Explanation API Unit Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for ExplanationService, CounterfactualEngine, and factor attribution.
 """
@@ -15,14 +15,14 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.event_schemas.decision_explanation import (
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.event_schemas.decision_explanation import (
     CounterfactualHint,
     ExplanationFactor,
     GovernanceDimension,
     PredictedOutcome,
 )
-
 from enhanced_agent_bus.explanation_service import (
     DEFAULT_GOVERNANCE_VECTOR,
     FACTOR_TO_GOVERNANCE_MAPPING,
@@ -228,7 +228,6 @@ class TestExplanationService:
         service = ExplanationService(enable_counterfactuals=False)
         assert service.enable_counterfactuals is False
 
-    @pytest.mark.asyncio
     async def test_generate_explanation_basic(self):
         """Test basic explanation generation."""
         message = {
@@ -251,7 +250,6 @@ class TestExplanationService:
         assert len(explanation.factors) > 0
         assert explanation.governance_vector is not None
 
-    @pytest.mark.asyncio
     async def test_generate_explanation_with_decision_id(self):
         """Test explanation generation with provided decision ID."""
         decision_id = str(uuid.uuid4())
@@ -265,7 +263,6 @@ class TestExplanationService:
 
         assert explanation.decision_id == decision_id
 
-    @pytest.mark.asyncio
     async def test_generate_explanation_with_tenant_id(self):
         """Test explanation generation with tenant ID."""
         explanation = await self.service.generate_explanation(
@@ -277,7 +274,6 @@ class TestExplanationService:
 
         assert explanation.tenant_id == "tenant-123"
 
-    @pytest.mark.asyncio
     async def test_generate_explanation_includes_counterfactuals(self):
         """Test that counterfactuals are generated when enabled."""
         explanation = await self.service.generate_explanation(
@@ -289,7 +285,6 @@ class TestExplanationService:
         assert explanation.counterfactuals_generated is True
         assert len(explanation.counterfactual_hints) > 0
 
-    @pytest.mark.asyncio
     async def test_generate_explanation_no_counterfactuals_when_disabled(self):
         """Test no counterfactuals when feature is disabled."""
         service = ExplanationService(enable_counterfactuals=False)
@@ -303,7 +298,6 @@ class TestExplanationService:
         assert explanation.counterfactuals_generated is False
         assert len(explanation.counterfactual_hints) == 0
 
-    @pytest.mark.asyncio
     async def test_generate_explanation_governance_vector_completeness(self):
         """Test governance vector has all 7 dimensions."""
         explanation = await self.service.generate_explanation(
@@ -327,7 +321,6 @@ class TestExplanationService:
             assert dim in governance_vector
             assert 0.0 <= governance_vector[dim] <= 1.0
 
-    @pytest.mark.asyncio
     async def test_generate_explanation_primary_factors(self):
         """Test primary factors are identified."""
         explanation = await self.service.generate_explanation(
@@ -342,7 +335,6 @@ class TestExplanationService:
         for pf in explanation.primary_factors:
             assert pf in factor_ids
 
-    @pytest.mark.asyncio
     async def test_generate_explanation_euaiact_compliance(self):
         """Test EU AI Act Article 13 compliance info is populated."""
         explanation = await self.service.generate_explanation(
@@ -358,7 +350,6 @@ class TestExplanationService:
         assert len(euaiact.transparency_measures) > 0
         assert euaiact.data_governance_info.get("constitutional_hash") == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_generate_explanation_summary_format(self):
         """Test summary generation for different verdicts."""
         for verdict in ["ALLOW", "DENY", "CONDITIONAL", "ESCALATE"]:
@@ -372,7 +363,6 @@ class TestExplanationService:
             assert "Decision:" in explanation.summary
             assert "Impact score" in explanation.summary
 
-    @pytest.mark.asyncio
     async def test_generate_explanation_detailed_reasoning(self):
         """Test detailed reasoning is generated."""
         explanation = await self.service.generate_explanation(
@@ -386,7 +376,6 @@ class TestExplanationService:
         assert "Factor Attribution:" in reasoning
         assert "7-Dimensional Governance Vector:" in reasoning
 
-    @pytest.mark.asyncio
     async def test_generate_explanation_with_context_rules(self):
         """Test matched/violated rules from context are included."""
         context = {
@@ -406,7 +395,6 @@ class TestExplanationService:
         assert explanation.violated_rules == ["rule-003"]
         assert explanation.applicable_policies == ["policy-A"]
 
-    @pytest.mark.asyncio
     async def test_generate_explanation_processing_time_tracked(self):
         """Test processing time is tracked."""
         explanation = await self.service.generate_explanation(
@@ -630,7 +618,6 @@ class TestExplanationServiceWithMockedStore:
         """Clean up after tests."""
         reset_explanation_service()
 
-    @pytest.mark.asyncio
     async def test_generate_explanation_stores_when_enabled(self):
         """Test explanation is stored when store_explanation=True."""
         await self.service.generate_explanation(
@@ -641,7 +628,6 @@ class TestExplanationServiceWithMockedStore:
 
         self.mock_store.store.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_generate_explanation_skips_store_when_disabled(self):
         """Test explanation is not stored when store_explanation=False."""
         await self.service.generate_explanation(
@@ -652,7 +638,6 @@ class TestExplanationServiceWithMockedStore:
 
         self.mock_store.store.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_get_explanation_calls_store(self):
         """Test get_explanation delegates to decision store."""
         await self.service.get_explanation("decision-123", "tenant-1")

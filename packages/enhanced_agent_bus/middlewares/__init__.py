@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Middlewares Package
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Consolidated middleware package. Contains:
 - session_extraction: Session context extraction from requests

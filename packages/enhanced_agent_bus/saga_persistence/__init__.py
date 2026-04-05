@@ -1,6 +1,6 @@
 """
 Saga Persistence Layer
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides persistent storage for saga state management, enabling recovery
 from system failures and audit trails for governance decisions.
@@ -61,14 +61,17 @@ Features:
 # -------------------------------------------------------------------------
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
 from .models import (
+    FLYWHEEL_RUN_SAGA_NAME,
     CompensationEntry,
     CompensationFunc,
     CompensationStrategy,
+    FlywheelRunRecord,
+    FlywheelRunStage,
     PersistedSagaState,
     PersistedStepSnapshot,
     SagaActionFunc,
@@ -165,6 +168,9 @@ __all__ = [
     "CompensationEntry",
     "CompensationFunc",
     "CompensationStrategy",
+    "FLYWHEEL_RUN_SAGA_NAME",
+    "FlywheelRunRecord",
+    "FlywheelRunStage",
     "InvalidStateTransitionError",
     "LockError",
     # Core Models

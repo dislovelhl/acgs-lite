@@ -1,6 +1,6 @@
 """
 ACGS-2 LLM Failover Package
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Enhanced failover capabilities for LLM providers with:
 - LLM-specific circuit breaker configurations

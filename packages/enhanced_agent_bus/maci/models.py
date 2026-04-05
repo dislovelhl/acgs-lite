@@ -5,17 +5,17 @@ Contains the core data types used across the MACI enforcement system:
 role and action enumerations, configuration dataclasses, validation results,
 and the role-permission matrix.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
 
-from src.core.shared.constants import MACIRole
+from enhanced_agent_bus._compat.constants import MACIRole
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -106,7 +106,7 @@ class MACIAgentRoleConfig:
     def __post_init__(self) -> None:
         """Normalize role string to MACIRole enum if needed."""
         if isinstance(self.role, str):
-            try:  # noqa: SIM105
+            try:
                 self.role = MACIRole.parse(self.role)
             except ValueError:
                 pass

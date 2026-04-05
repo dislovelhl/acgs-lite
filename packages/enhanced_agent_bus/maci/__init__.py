@@ -17,7 +17,7 @@ MACI Role Model:
 Golden Rule: Agents NEVER validate their own output. Self-validation is a critical
 security violation that enables Godel bypass attacks.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from ..maci_imports import (

@@ -1,6 +1,6 @@
 """
 Multi-Agent Optimization Toolkit
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This package provides comprehensive multi-agent performance optimization
 capabilities for ACGS-2, including:
@@ -15,7 +15,7 @@ Reference: SPEC_ACGS2_ENHANCED_v2.3 Section 16 (Performance Engineering)
 
 # Constitutional Hash - immutable reference
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 

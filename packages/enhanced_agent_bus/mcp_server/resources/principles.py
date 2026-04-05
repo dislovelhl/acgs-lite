@@ -3,14 +3,14 @@ Constitutional Principles MCP Resource.
 
 Provides read access to constitutional principles.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import json
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -30,7 +30,7 @@ class PrinciplesResource:
     that govern ACGS-2 operations.
     """
 
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
     URI = "acgs2://constitutional/principles"
 

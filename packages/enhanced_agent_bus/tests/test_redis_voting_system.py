@@ -1,7 +1,7 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 ACGS-2 Deliberation Layer - Redis Voting System Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for RedisVotingSystem: constructor, connect, disconnect, submit_vote,
 get_votes_pubsub_instance, get_votes, get_vote_count, check_consensus,
@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import sys
 from unittest.mock import patch
 
 import pytest
@@ -24,6 +25,19 @@ from enhanced_agent_bus.deliberation_layer import redis_integration as ri
 from enhanced_agent_bus.deliberation_layer.redis_integration import (
     RedisVotingSystem,
 )
+
+
+def _target_module():
+    """Return the actual module dict backing RedisVotingSystem.connect.
+
+    Under --import-mode=importlib the ``ri`` alias imported above may be a
+    *different* module instance from the one whose globals are closed over by
+    ``RedisVotingSystem.connect``.  Patching ``ri.REDIS_AVAILABLE`` then
+    has no effect on the running code.  This helper resolves the canonical
+    module so that ``patch.object`` always targets the right dict.
+    """
+    return sys.modules[RedisVotingSystem.__module__]
+
 
 # ---------------------------------------------------------------------------
 # Mock infrastructure
@@ -155,15 +169,17 @@ class TestRedisVotingSystemConnect:
     async def test_connect_success(self):
         v = RedisVotingSystem()
         mock_client = MockRedisClient()
-        with patch.object(ri, "REDIS_AVAILABLE", True):
-            with patch.object(ri, "aioredis") as mock_aioredis:
+        mod = _target_module()
+        with patch.object(mod, "REDIS_AVAILABLE", True):
+            with patch.object(mod, "aioredis") as mock_aioredis:
                 mock_aioredis.from_url.return_value = mock_client
                 result = await v.connect()
         assert result is True
 
     async def test_connect_redis_not_available(self):
         v = RedisVotingSystem()
-        with patch.object(ri, "REDIS_AVAILABLE", False):
+        mod = _target_module()
+        with patch.object(mod, "REDIS_AVAILABLE", False):
             result = await v.connect()
         assert result is False
         assert v.redis_client is None
@@ -176,8 +192,9 @@ class TestRedisVotingSystemConnect:
 
         mock_client = MockRedisClient()
         mock_client.ping = _fail  # type: ignore[method-assign]
-        with patch.object(ri, "REDIS_AVAILABLE", True):
-            with patch.object(ri, "aioredis") as mock_aioredis:
+        mod = _target_module()
+        with patch.object(mod, "REDIS_AVAILABLE", True):
+            with patch.object(mod, "aioredis") as mock_aioredis:
                 mock_aioredis.from_url.return_value = mock_client
                 result = await v.connect()
         assert result is False
@@ -191,8 +208,9 @@ class TestRedisVotingSystemConnect:
 
         mock_client = MockRedisClient()
         mock_client.ping = _fail  # type: ignore[method-assign]
-        with patch.object(ri, "REDIS_AVAILABLE", True):
-            with patch.object(ri, "aioredis") as mock_aioredis:
+        mod = _target_module()
+        with patch.object(mod, "REDIS_AVAILABLE", True):
+            with patch.object(mod, "aioredis") as mock_aioredis:
                 mock_aioredis.from_url.return_value = mock_client
                 result = await v.connect()
         assert result is False

@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive tests for src/core/enhanced_agent_bus/pipeline/legacy_wrapper.py.
 Targets >= 95% line coverage of legacy_wrapper.py (70 stmts).
@@ -97,15 +97,13 @@ _fake_verification_module.PQCVerifier = _FakePQCVerifier
 _fake_verification_module.SDPCVerifier = _FakeSDPCVerifier
 
 # Inject into sys.modules BEFORE legacy_wrapper is imported
-sys.modules.setdefault(
-    "enhanced_agent_bus.middlewares.verification", _fake_verification_module
-)
+sys.modules.setdefault("enhanced_agent_bus.middlewares.verification", _fake_verification_module)
 
 # Also inject missing AIGuardrailsConfig to prevent errors from the security middleware path
 _fake_security_module = sys.modules.get("enhanced_agent_bus.middlewares.security")
 
 # Patch the middlewares package to expose the fake middleware classes
-import enhanced_agent_bus.middlewares as _mw_pkg  # noqa: E402
+import enhanced_agent_bus.middlewares as _mw_pkg
 
 _mw_pkg.CacheMiddleware = _FakeCacheMiddleware  # type: ignore[attr-defined]
 _mw_pkg.MetricsMiddleware = _FakeMetricsMiddleware  # type: ignore[attr-defined]
@@ -114,7 +112,7 @@ _mw_pkg.VerificationMiddleware = _FakeVerificationMiddleware  # type: ignore[att
 
 # Also make sure SecurityMiddleware is available from the package
 from enhanced_agent_bus.middlewares.security import (
-    SecurityMiddleware as _RealSecurityMW,  # noqa: E402
+    SecurityMiddleware as _RealSecurityMW,
 )
 
 _mw_pkg.SecurityMiddleware = _RealSecurityMW  # type: ignore[attr-defined]
@@ -354,23 +352,17 @@ class TestMessageProcessorInit:
         mock_cls.assert_called_once()
 
     def test_use_dynamic_policy_off_when_policy_client_unavailable(self):
-        with patch(
-            "enhanced_agent_bus.pipeline.legacy_wrapper.POLICY_CLIENT_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.pipeline.legacy_wrapper.POLICY_CLIENT_AVAILABLE", False):
             proc = self._build(use_dynamic_policy=True, isolated_mode=False)
         assert proc._use_dynamic_policy is False
 
     def test_use_dynamic_policy_on_when_available_non_isolated(self):
-        with patch(
-            "enhanced_agent_bus.pipeline.legacy_wrapper.POLICY_CLIENT_AVAILABLE", True
-        ):
+        with patch("enhanced_agent_bus.pipeline.legacy_wrapper.POLICY_CLIENT_AVAILABLE", True):
             proc = self._build(use_dynamic_policy=True, isolated_mode=False)
         assert proc._use_dynamic_policy is True
 
     def test_use_dynamic_policy_off_in_isolated_mode_even_if_available(self):
-        with patch(
-            "enhanced_agent_bus.pipeline.legacy_wrapper.POLICY_CLIENT_AVAILABLE", True
-        ):
+        with patch("enhanced_agent_bus.pipeline.legacy_wrapper.POLICY_CLIENT_AVAILABLE", True):
             proc = self._build(use_dynamic_policy=True, isolated_mode=True)
         assert proc._use_dynamic_policy is False
 
@@ -522,9 +514,7 @@ class TestBuildPipelineConfig:
         assert ver_mws[0]._opa_verifier is None
 
     def test_non_isolated_opa_verifier_set_when_dynamic_policy_on(self):
-        with patch(
-            "enhanced_agent_bus.pipeline.legacy_wrapper.POLICY_CLIENT_AVAILABLE", True
-        ):
+        with patch("enhanced_agent_bus.pipeline.legacy_wrapper.POLICY_CLIENT_AVAILABLE", True):
             _, cfg = self._build_and_get_config(isolated_mode=False, use_dynamic_policy=True)
         ver_mws = [
             mw for mw in cfg.middlewares if mw.__class__.__name__ == "_FakeVerificationMiddleware"
@@ -898,9 +888,7 @@ class TestOpaClientProperty:
 
     def test_isolated_opa_client_never_calls_get_opa_client(self):
         proc = self._build(isolated_mode=True)
-        with patch(
-            "enhanced_agent_bus.pipeline.legacy_wrapper.get_opa_client"
-        ) as mock_getter:
+        with patch("enhanced_agent_bus.pipeline.legacy_wrapper.get_opa_client") as mock_getter:
             _ = proc.opa_client
         mock_getter.assert_not_called()
 

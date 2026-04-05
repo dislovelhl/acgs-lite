@@ -1,6 +1,6 @@
 """
 ACGS-2 Production-Ready Redis Rate Limiter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Distributed rate limiter using Redis with sliding window algorithm.
 Includes automatic fallback to in-memory limiting when Redis is unavailable.
@@ -225,7 +225,7 @@ class RedisRateLimiter:
         """Close Redis connection."""
         if self._redis is not None:
             try:
-                await self._redis.close()
+                await self._redis.aclose()
             except REDIS_CLOSE_ERRORS as e:
                 logger.debug(f"Error closing Redis connection: {e}")
             finally:

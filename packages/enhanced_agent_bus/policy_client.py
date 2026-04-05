@@ -1,4 +1,4 @@
-"""Constitutional Hash: cdd01ef066bc6cf2
+"""Constitutional Hash: 608508a9bd224290
 Policy Registry Client for dynamic constitutional validation
 """
 
@@ -8,7 +8,7 @@ from collections import OrderedDict
 import httpx
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -22,9 +22,9 @@ except (ImportError, ValueError):
     from validators import ValidationResult  # type: ignore[no-redef]
 
 try:
-    from src.core.shared.config import settings
+    from enhanced_agent_bus._compat.config import settings
 except ImportError:
-    from src.core.shared.config import settings  # type: ignore[no-redef]
+    from enhanced_agent_bus._compat.config import settings  # type: ignore[no-redef]
 
 logger = get_logger(__name__)
 # Default maximum cache size to prevent unbounded memory growth

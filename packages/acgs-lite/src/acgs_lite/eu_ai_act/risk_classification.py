@@ -9,7 +9,7 @@ Classifies AI systems into one of four risk tiers:
 
 High-risk deadline: August 2, 2026. Systems must comply before this date.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Usage::
 
@@ -151,10 +151,12 @@ class ClassificationResult:
 
     @property
     def is_prohibited(self) -> bool:
+        """True if the system is classified as an unacceptable (prohibited) practice."""
         return self.level == RiskLevel.UNACCEPTABLE
 
     @property
     def is_high_risk(self) -> bool:
+        """True if the system is classified as high-risk under Annex III."""
         return self.level == RiskLevel.HIGH_RISK
 
     @property
@@ -168,6 +170,7 @@ class ClassificationResult:
         return self.level == RiskLevel.HIGH_RISK
 
     def to_dict(self) -> dict[str, object]:
+        """Serialize the classification result to a dictionary."""
         return {
             "risk_level": self.level.value,
             "article_basis": self.article_basis,

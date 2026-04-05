@@ -1,6 +1,6 @@
 """
 ACGS-2 Circuit Breaker State Event Schemas
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Versioned schemas for circuit breaker state change events.
 Records state transitions for fault tolerance monitoring and analysis.
@@ -78,7 +78,7 @@ class CircuitBreakerStateV1(EventSchemaBase):
     """
     Circuit Breaker State Schema V1 - Records circuit breaker state changes.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Captures state transitions with:
     - Previous and current state

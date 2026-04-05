@@ -1,6 +1,6 @@
 """
 ACGS-2 LLM Failover - Request Hedging Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements request hedging for critical operations.
 """
@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -55,7 +55,7 @@ class RequestHedgingManager:
     """
     Implements request hedging for critical operations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Features:
     - Send same request to multiple providers
@@ -224,7 +224,7 @@ class RequestHedgingManager:
             )
         else:
             logger.debug(
-                f"[{CONSTITUTIONAL_HASH}] Hedged request {hedged.request_id} completed with no winner (all providers failed)"  # noqa: E501
+                f"[{CONSTITUTIONAL_HASH}] Hedged request {hedged.request_id} completed with no winner (all providers failed)"
             )
 
     def get_hedging_stats(self) -> JSONDict:

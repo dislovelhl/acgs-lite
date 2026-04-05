@@ -1,6 +1,6 @@
 """
 ACGS-2 Tenant-Aware Repository
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides tenant-aware database operations with automatic RLS context management.
 Implements the repository pattern for multi-tenant data access.
@@ -14,7 +14,7 @@ from uuid import uuid4
 from pydantic import BaseModel
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -34,7 +34,7 @@ T = TypeVar("T", bound=BaseModel)
 class TenantAwareRepository(ABC, Generic[T]):
     """Base class for tenant-aware repositories.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     This abstract class provides:
     - Automatic tenant context injection
@@ -221,7 +221,7 @@ class TenantAwareRepository(ABC, Generic[T]):
 class TenantRepository:
     """Repository for tenant management operations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     This repository handles tenant lifecycle operations:
     - Tenant creation and registration

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Batch Validation Cache
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 High-performance batch caching strategy for repeated validations.
 Implements Phase 4-Task 2 acceptance criteria:
@@ -22,14 +22,14 @@ from datetime import UTC, datetime
 from typing import Literal
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONList,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONList = list  # type: ignore[misc,assignment]
@@ -119,7 +119,7 @@ class BatchValidationCache:
     - Metrics collection for observability
     - Constitutional hash tracking for compliance
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -311,7 +311,7 @@ class RedisBatchCache:
     - Automatic TTL-based expiration
     - Constitutional hash tracking
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

@@ -1,6 +1,6 @@
 """
 JWT Token Revocation Service
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides JWT token revocation using Redis blacklist with graceful degradation.
 Follows session_manager.py pattern for blacklist implementation.
@@ -38,6 +38,7 @@ import os
 from datetime import UTC, datetime
 
 from src.core.shared.config import settings
+from src.core.shared.config.runtime_environment import resolve_runtime_environment
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 from src.core.shared.structured_logging import get_logger
@@ -47,7 +48,7 @@ logger = get_logger(__name__)
 
 
 def _runtime_environment() -> str:
-    return settings.env
+    return resolve_runtime_environment(getattr(settings, "env", None))
 
 
 def _parse_bool_env(value: str | None) -> bool | None:
@@ -69,7 +70,7 @@ class TokenRevocationService:
     unbounded blacklist growth. Follows MACI separation of powers - this service
     proposes revocations but does not validate its own operations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, redis_client: object | None = None):

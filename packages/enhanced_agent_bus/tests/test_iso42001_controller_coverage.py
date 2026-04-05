@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """Comprehensive tests for compliance_layer/iso42001_controller.py.
 
 Targets ≥95% coverage of all classes, methods, and code paths.
@@ -10,9 +10,7 @@ import hashlib
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 
-import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.compliance_layer.iso42001_controller import (
     AIManagementSystemController,
     AIMSAuditScheduler,

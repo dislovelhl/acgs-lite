@@ -1,6 +1,6 @@
 """
 Tests for ACGS-2 Session Variable Management
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Unit tests for PostgreSQL session variable management functions.
 Note: Some tests require PostgreSQL and will be skipped on SQLite.
@@ -13,9 +13,9 @@ import pytest
 import pytest_asyncio
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.database.session import Base
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.database.session import Base
 from enhanced_agent_bus.multi_tenancy.session_vars import (
     SESSION_VAR_IS_ADMIN,
     SESSION_VAR_TENANT_ID,
@@ -72,7 +72,7 @@ async def test_engine():
 
     await engine.dispose()
     # Clean up the temporary database file
-    try:  # noqa: SIM105
+    try:
         os.unlink(db_path)
     except OSError:
         pass
@@ -123,14 +123,12 @@ class TestSessionVarsSQLite:
     These tests verify the functions handle this gracefully.
     """
 
-    @pytest.mark.asyncio
     async def test_set_tenant_session_vars_sqlite_fails(self, db_session: AsyncSession):
         """Test that set_tenant_session_vars fails on SQLite."""
         # SQLite doesn't support SET LOCAL - expect any SQLAlchemy/DB error
         with pytest.raises((Exception,), match=r".+"):
             await set_tenant_session_vars(db_session, "test-tenant-id")
 
-    @pytest.mark.asyncio
     async def test_get_current_tenant_sqlite(self, db_session: AsyncSession):
         """Test that get_current_tenant_from_session returns None on SQLite."""
         # SQLite doesn't have current_setting function - expect any DB error
@@ -165,21 +163,18 @@ class TestSessionVarsUnitBehavior:
 class TestContextManagerStructure:
     """Tests for context manager structure (not database operations)."""
 
-    @pytest.mark.asyncio
     async def test_tenant_session_is_async_context_manager(self):
         """Test that tenant_session is an async context manager."""
         import inspect
 
         assert inspect.isasyncgenfunction(tenant_session.__wrapped__)
 
-    @pytest.mark.asyncio
     async def test_system_tenant_session_is_async_context_manager(self):
         """Test that system_tenant_session is an async context manager."""
         import inspect
 
         assert inspect.isasyncgenfunction(system_tenant_session.__wrapped__)
 
-    @pytest.mark.asyncio
     async def test_admin_session_is_async_context_manager(self):
         """Test that admin_session is an async context manager."""
         import inspect

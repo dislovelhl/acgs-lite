@@ -1,7 +1,7 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 ACGS-2 Deliberation Layer - Redis Integration Protocol & Singleton Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for global singleton functions (get/reset), module-level constants
 (VOTE_SUBSCRIPTION_ERRORS, VOTE_COLLECTION_ERRORS, REDIS_AVAILABLE, __all__),

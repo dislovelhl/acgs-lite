@@ -5,7 +5,7 @@ Provides core dataclasses for the MCP client layer:
 - MCPTool: describes a tool exposed by an MCP server
 - MCPToolResult: carries the outcome of a tool invocation
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -16,14 +16,14 @@ from enum import Enum
 from typing import Any
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
 from enhanced_agent_bus.bus_types import JSONDict
 
 
-class MCPToolStatus(str, Enum):  # noqa: UP042
+class MCPToolStatus(str, Enum):
     """Outcome status of a tool invocation."""
 
     SUCCESS = "success"

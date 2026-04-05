@@ -11,7 +11,7 @@ Key properties:
 - Fail-closed: unknown roles and unresolved guards default to block
 - Constitutional immutability: modify_constitutional_hash is hard-denied for ALL roles
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -304,7 +304,7 @@ class ToolPrivilegeEnforcer:
             msg = (
                 f"constitutional_immutability_violation: "
                 f"role={role.value} attempted tool={tool_name!r}; "
-                f"constitutional hash {CONSTITUTIONAL_HASH} is immutable"  # pragma: allowlist secret  # noqa: E501
+                f"constitutional hash {CONSTITUTIONAL_HASH} is immutable"  # pragma: allowlist secret
             )
             logger.error(
                 "tool_access_denied",
@@ -367,7 +367,7 @@ class ToolPrivilegeEnforcer:
                 )
 
         # 4. MCP allowlist check (tenant-aware INTERSECTION merge)
-        if mcp_allowlist is not None and tool_name not in policy.allowed_tools:  # noqa: SIM102
+        if mcp_allowlist is not None and tool_name not in policy.allowed_tools:
             # Tool is not a pipeline tool — check against MCP allowlist
             if tool_name in mcp_allowlist:
                 logger.info(
@@ -434,7 +434,7 @@ class ToolPrivilegeMiddleware(BaseMiddleware):
     If the message carries no `requested_tool`, the middleware is a no-op
     and passes control to the next middleware unchanged.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

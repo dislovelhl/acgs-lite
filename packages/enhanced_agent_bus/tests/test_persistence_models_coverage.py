@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive tests for persistence/models.py
 
@@ -19,9 +19,8 @@ _eab_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _eab_dir not in sys.path:
     sys.path.insert(0, _eab_dir)
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
-
-from enhanced_agent_bus.persistence.models import (  # noqa: E402
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.persistence.models import (
     CheckpointData,
     EventType,
     StepStatus,

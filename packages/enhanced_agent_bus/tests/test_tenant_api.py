@@ -1,12 +1,11 @@
 """
 Tests for ACGS-2 Tenant Management API
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for tenant CRUD operations, lifecycle management,
 quota enforcement, and hierarchical tenancy via the REST API.
 """
 
-import os
 import uuid
 from datetime import UTC, datetime, timezone
 from typing import Optional
@@ -19,15 +18,9 @@ from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
 
 # Constitutional hash for compliance verification
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.errors.exceptions import ACGSBaseError
-from src.core.shared.types import JSONDict
-
-# Configure test environment for authentication
-# set TENANT_ADMIN_KEY to match the test admin key used in fixtures
-os.environ.setdefault("TENANT_ADMIN_KEY", "test-admin-key")
-os.environ.setdefault("TENANT_AUTH_MODE", "strict")
-os.environ.setdefault("AGENT_RUNTIME_ENVIRONMENT", "development")
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.errors import ACGSBaseError
+from enhanced_agent_bus._compat.types import JSONDict
 
 # =============================================================================
 # Mock Models and Manager
@@ -350,6 +343,14 @@ class MockTenantManager:
 def mock_manager():
     """Create mock tenant manager."""
     return MockTenantManager()
+
+
+@pytest.fixture(autouse=True)
+def _tenant_api_environment(monkeypatch):
+    """Keep tenant API auth defaults test-local instead of process-global."""
+    monkeypatch.setenv("TENANT_ADMIN_KEY", "test-admin-key")
+    monkeypatch.setenv("TENANT_AUTH_MODE", "strict")
+    monkeypatch.setenv("AGENT_RUNTIME_ENVIRONMENT", "development")
 
 
 @pytest.fixture

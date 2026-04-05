@@ -1,6 +1,6 @@
 """
 Tests for Agent Behavioral Contract Pydantic models.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers:
 - Default construction and field values

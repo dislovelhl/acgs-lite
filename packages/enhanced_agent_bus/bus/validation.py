@@ -1,15 +1,16 @@
 """
 Message validation helpers for EnhancedAgentBus.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -41,7 +42,7 @@ class MessageValidator:
     """
     Validates messages for constitutional compliance and tenant isolation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -75,7 +76,7 @@ class MessageValidator:
             consider using atomic operations or locks if precise counts are
             required for billing/audit purposes.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         self._metrics["messages_failed"] += 1
         self._metrics["failed"] += 1
@@ -93,7 +94,7 @@ class MessageValidator:
             consider using atomic operations or locks if precise counts are
             required for billing/audit purposes.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         self._metrics["sent"] += 1
         self._metrics["messages_sent"] += 1
@@ -105,7 +106,7 @@ class MessageValidator:
         Validate message constitutional hash via governance component.
 
         Ensures the message's constitutional hash matches the expected system
-        hash (cdd01ef066bc6cf2). This is a critical security check that prevents
+        hash (608508a9bd224290). This is a critical security check that prevents
         unauthorized governance policy modifications or bypass attempts.
 
         Args:
@@ -122,13 +123,34 @@ class MessageValidator:
             - Records failure metrics if validation fails
             - Increments sent counter for tracking total attempts
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         valid = self._governance.validate_constitutional_hash(msg, result)
         if not valid:
             self.record_metrics_failure()
             self._metrics["sent"] += 1
         return valid
+
+    def validate_message_shape(self, msg: AgentMessage, result: ValidationResult) -> bool:
+        """Reject structurally invalid or expired messages before processing."""
+        if not getattr(msg, "from_agent", ""):
+            result.add_error("Message from_agent is required")
+        if not getattr(msg, "to_agent", ""):
+            result.add_error("Message to_agent is required")
+
+        content = getattr(msg, "content", None)
+        if not isinstance(content, dict) or not content:
+            result.add_error("Message content must be a non-empty dictionary")
+
+        expires_at = getattr(msg, "expires_at", None)
+        if expires_at is not None and expires_at <= datetime.now(UTC):
+            result.add_error("Message has expired")
+
+        if result.errors:
+            self.record_metrics_failure()
+            return False
+
+        return True
 
     def validate_and_normalize_tenant(self, msg: AgentMessage, result: ValidationResult) -> bool:
         """
@@ -161,7 +183,7 @@ class MessageValidator:
             Prevents cross-tenant data leakage by ensuring agents can only
             communicate within their tenant boundary.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         msg.tenant_id = normalize_tenant_id(msg.tenant_id)
         if msg.tenant_id is None:

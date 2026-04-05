@@ -1,27 +1,27 @@
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
 """
 ACGS-2 PSV-Verus Production Policy
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This policy uses the Propose-Solve-Verify loop to ensure that all
 governance decisions are formally proven against constitutional axioms.
 """
 
-import uuid  # noqa: E402
+import uuid
 
-from src.core.shared.policy.models import PolicySpecification, VerificationStatus  # noqa: E402
-from src.core.shared.policy.unified_generator import UnifiedVerifiedPolicyGenerator  # noqa: E402
+from enhanced_agent_bus._compat.policy.models import PolicySpecification, VerificationStatus
+from enhanced_agent_bus._compat.policy.unified_generator import UnifiedVerifiedPolicyGenerator
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
-from enhanced_agent_bus.observability.structured_logging import get_logger  # noqa: E402
+from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
 PSV_EVALUATION_ERRORS = (RuntimeError, ValueError, TypeError, KeyError, AttributeError)

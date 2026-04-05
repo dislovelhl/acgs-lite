@@ -4,7 +4,7 @@ Defines the ComplianceFramework protocol that every regulatory framework
 module must implement, along with shared data types (ChecklistItem,
 FrameworkAssessment) used across all frameworks.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Usage::
 
@@ -46,6 +46,7 @@ class ChecklistItem:
         blocking: If True, a non-compliant status blocks the compliance gate.
         legal_citation: Formal legal citation (statute, article, section).
         updated_at: ISO timestamp of last status update.
+
     """
 
     ref: str
@@ -58,21 +59,25 @@ class ChecklistItem:
     updated_at: str | None = None
 
     def mark_complete(self, evidence: str | None = None) -> None:
+        """Set status to COMPLIANT and record evidence."""
         self.status = ChecklistStatus.COMPLIANT
         self.evidence = evidence
         self.updated_at = datetime.now(UTC).isoformat()
 
     def mark_partial(self, evidence: str | None = None) -> None:
+        """Set status to PARTIAL and record evidence."""
         self.status = ChecklistStatus.PARTIAL
         self.evidence = evidence
         self.updated_at = datetime.now(UTC).isoformat()
 
     def mark_not_applicable(self, reason: str | None = None) -> None:
+        """Set status to NOT_APPLICABLE and record the reason."""
         self.status = ChecklistStatus.NOT_APPLICABLE
         self.evidence = reason
         self.updated_at = datetime.now(UTC).isoformat()
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize this checklist item to a plain dictionary."""
         return {
             "ref": self.ref,
             "requirement": self.requirement,
@@ -98,6 +103,7 @@ class FrameworkAssessment:
         acgs_lite_coverage: Fraction of items auto-satisfied by acgs-lite.
         recommendations: Actionable steps to close gaps.
         assessed_at: ISO timestamp of assessment.
+
     """
 
     framework_id: str
@@ -110,6 +116,7 @@ class FrameworkAssessment:
     assessed_at: str = ""
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize this assessment to a plain dictionary."""
         return {
             "framework_id": self.framework_id,
             "framework_name": self.framework_name,
@@ -135,6 +142,7 @@ class MultiFrameworkReport:
         acgs_lite_total_coverage: Average acgs-lite coverage across frameworks.
         recommendations: Prioritized list of actions to close gaps.
         assessed_at: ISO timestamp of the multi-framework assessment.
+
     """
 
     system_id: str
@@ -147,6 +155,7 @@ class MultiFrameworkReport:
     assessed_at: str = ""
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize this multi-framework report to a plain dictionary."""
         return {
             "system_id": self.system_id,
             "frameworks_assessed": list(self.frameworks_assessed),
@@ -188,6 +197,7 @@ class ComplianceFramework(Protocol):
 
         Returns:
             List of ChecklistItem instances.
+
         """
         ...
 
@@ -199,6 +209,7 @@ class ComplianceFramework(Protocol):
 
         Args:
             checklist: List of ChecklistItem instances to populate.
+
         """
         ...
 
@@ -214,5 +225,6 @@ class ComplianceFramework(Protocol):
 
         Returns:
             Frozen FrameworkAssessment dataclass.
+
         """
         ...

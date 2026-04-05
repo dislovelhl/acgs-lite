@@ -1,6 +1,6 @@
 """
 ACGS-2 AI Assistant - Retrieval System (RAG)
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Hybrid retrieval system combining:
 1. Exact/Prefix matches via PolicyIndex (High-performance)
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 
 try:
-    from src.core.shared.policy_index import PolicyMetadata, get_policy_index
+    from enhanced_agent_bus._compat.policy import PolicyMetadata, get_policy_index
 
     POLICY_INDEX_AVAILABLE = True
 except ImportError:
@@ -31,14 +31,14 @@ except ImportError:
     PolicyMetadata = object  # type: ignore[misc, assignment]
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]

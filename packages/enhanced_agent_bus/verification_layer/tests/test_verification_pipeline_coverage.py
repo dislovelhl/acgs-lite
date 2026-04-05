@@ -1,6 +1,6 @@
 """
 Comprehensive coverage tests for VerificationPipeline.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers:
 - PipelineStage enum completeness
@@ -34,8 +34,6 @@ Covers:
 import asyncio
 from datetime import UTC, datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
-
-import pytest
 
 from ..maci_verifier import MACIVerificationResult, VerificationStatus
 from ..saga_coordinator import CompensationStrategy, SagaState
@@ -421,7 +419,6 @@ class TestCreateVerificationPipelineFactory:
 
 
 class TestVerifyHappyPath:
-    @pytest.mark.asyncio
     async def test_all_stages_enabled_happy_path(self):
         pipeline = _make_pipeline()
         cfg = PipelineConfig(enable_saga=True, enable_state_transitions=True)
@@ -439,34 +436,29 @@ class TestVerifyHappyPath:
         assert result.total_duration_ms >= 0
         assert result.completed_at is not None
 
-    @pytest.mark.asyncio
     async def test_result_has_pipeline_id(self):
         pipeline = _make_pipeline()
         result = await pipeline.verify("action", {"k": "v"})
         assert result.pipeline_id is not None
         assert len(result.pipeline_id) > 0
 
-    @pytest.mark.asyncio
     async def test_result_confidence_in_range(self):
         pipeline = _make_pipeline()
         result = await pipeline.verify("action", {})
         assert 0.0 <= result.confidence <= 1.0
 
-    @pytest.mark.asyncio
     async def test_maci_result_populated(self):
         pipeline = _make_pipeline()
         result = await pipeline.verify("action", {})
         assert result.maci_result is not None
         assert result.maci_result.is_compliant is True
 
-    @pytest.mark.asyncio
     async def test_policy_result_populated_when_policy_text_given(self):
         cfg = PipelineConfig(enable_maci=False, enable_saga=False, enable_state_transitions=False)
         pipeline = _make_pipeline(config=cfg)
         result = await pipeline.verify("action", {}, policy_text="must encrypt data")
         assert result.policy_result is not None
 
-    @pytest.mark.asyncio
     async def test_saga_transaction_populated(self):
         cfg = PipelineConfig(
             enable_maci=False,
@@ -478,7 +470,6 @@ class TestVerifyHappyPath:
         result = await pipeline.verify("action", {}, saga_steps=saga_steps)
         assert result.saga_transaction is not None
 
-    @pytest.mark.asyncio
     async def test_transition_populated(self):
         cfg = PipelineConfig(
             enable_maci=False,
@@ -496,7 +487,6 @@ class TestVerifyHappyPath:
 
 
 class TestVerifySelectiveStages:
-    @pytest.mark.asyncio
     async def test_only_maci_stage_runs(self):
         cfg = PipelineConfig(
             enable_maci=True,
@@ -512,7 +502,6 @@ class TestVerifySelectiveStages:
         assert PipelineStage.SAGA_EXECUTION not in stages
         assert PipelineStage.STATE_TRANSITION not in stages
 
-    @pytest.mark.asyncio
     async def test_only_policy_stage_runs(self):
         cfg = PipelineConfig(
             enable_maci=False,
@@ -526,7 +515,6 @@ class TestVerifySelectiveStages:
         assert PipelineStage.POLICY_VERIFICATION in stages
         assert PipelineStage.MACI_VERIFICATION not in stages
 
-    @pytest.mark.asyncio
     async def test_only_saga_stage_runs(self):
         cfg = PipelineConfig(
             enable_maci=False,
@@ -541,7 +529,6 @@ class TestVerifySelectiveStages:
         assert PipelineStage.SAGA_EXECUTION in stages
         assert PipelineStage.MACI_VERIFICATION not in stages
 
-    @pytest.mark.asyncio
     async def test_only_transition_stage_runs(self):
         cfg = PipelineConfig(
             enable_maci=False,
@@ -555,7 +542,6 @@ class TestVerifySelectiveStages:
         assert PipelineStage.STATE_TRANSITION in stages
         assert PipelineStage.MACI_VERIFICATION not in stages
 
-    @pytest.mark.asyncio
     async def test_no_stages_enabled(self):
         """When all stages are disabled the result has zero stage_results."""
         cfg = PipelineConfig(
@@ -568,7 +554,6 @@ class TestVerifySelectiveStages:
         result = await pipeline.verify("a", {})
         assert result.stage_results == []
 
-    @pytest.mark.asyncio
     async def test_policy_stage_skipped_when_no_policy_text(self):
         """Policy stage needs policy_text to execute."""
         cfg = PipelineConfig(
@@ -582,7 +567,6 @@ class TestVerifySelectiveStages:
         stages = [s.stage for s in result.stage_results]
         assert PipelineStage.POLICY_VERIFICATION not in stages
 
-    @pytest.mark.asyncio
     async def test_saga_stage_skipped_when_no_steps(self):
         """Saga stage needs saga_steps to execute."""
         cfg = PipelineConfig(
@@ -603,7 +587,6 @@ class TestVerifySelectiveStages:
 
 
 class TestVerifyMACIBlocked:
-    @pytest.mark.asyncio
     async def test_maci_non_compliant_adds_violations(self):
         cfg = PipelineConfig(
             enable_maci=True,
@@ -615,7 +598,6 @@ class TestVerifyMACIBlocked:
         result = await pipeline.verify("blocked-action", {})
         assert len(result.violations) > 0
 
-    @pytest.mark.asyncio
     async def test_maci_non_compliant_with_fail_fast(self):
         cfg = PipelineConfig(
             enable_maci=True,
@@ -626,7 +608,6 @@ class TestVerifyMACIBlocked:
         result = await pipeline.verify("blocked", {}, policy_text="must X")
         assert result.status == PipelineStatus.FAILED
 
-    @pytest.mark.asyncio
     async def test_maci_non_compliant_includes_recommendations(self):
         cfg = PipelineConfig(
             enable_maci=True,
@@ -645,7 +626,6 @@ class TestVerifyMACIBlocked:
 
 
 class TestVerifyZ3Violation:
-    @pytest.mark.asyncio
     async def test_z3_unverified_adds_violations(self):
         cfg = PipelineConfig(
             enable_maci=False,
@@ -657,7 +637,6 @@ class TestVerifyZ3Violation:
         result = await pipeline.verify("action", {}, policy_text="constraint-fails")
         assert len(result.violations) > 0
 
-    @pytest.mark.asyncio
     async def test_z3_policy_stage_marked_failed(self):
         cfg = PipelineConfig(
             enable_maci=False,
@@ -674,7 +653,6 @@ class TestVerifyZ3Violation:
         assert policy_stage is not None
         assert policy_stage.success is False
 
-    @pytest.mark.asyncio
     async def test_z3_no_proof_object(self):
         """PolicyVerificationResult without a proof still works."""
         cfg = PipelineConfig(
@@ -696,7 +674,6 @@ class TestVerifyZ3Violation:
         assert policy_stage is not None
         assert policy_stage.success is True
 
-    @pytest.mark.asyncio
     async def test_z3_proof_without_heuristic_score(self):
         """Confidence path: proof present, is_verified=True, no heuristic_score."""
         cfg = PipelineConfig(
@@ -712,7 +689,6 @@ class TestVerifyZ3Violation:
         result = await pipeline.verify("action", {}, policy_text="data must be encrypted")
         assert result.confidence >= 0.0
 
-    @pytest.mark.asyncio
     async def test_z3_proof_not_verified_without_heuristic(self):
         """Confidence path: proof present, is_verified=False, no heuristic_score."""
         cfg = PipelineConfig(
@@ -735,7 +711,6 @@ class TestVerifyZ3Violation:
 
 
 class TestVerifySagaCompensation:
-    @pytest.mark.asyncio
     async def test_saga_failure_sets_compensated_status(self):
         cfg = PipelineConfig(
             enable_maci=False,
@@ -754,7 +729,6 @@ class TestVerifySagaCompensation:
         result = await pipeline.verify("action", {}, saga_steps=saga_steps)
         assert len(result.violations) > 0
 
-    @pytest.mark.asyncio
     async def test_saga_stage_result_compensated_status(self):
         cfg = PipelineConfig(
             enable_maci=False,
@@ -775,7 +749,6 @@ class TestVerifySagaCompensation:
         assert saga_stage is not None
         assert saga_stage.status == "compensated"
 
-    @pytest.mark.asyncio
     async def test_saga_fail_fast_stops_pipeline(self):
         cfg = PipelineConfig(
             enable_maci=False,
@@ -802,7 +775,6 @@ class TestVerifySagaCompensation:
 
 
 class TestVerifyTransitionRejected:
-    @pytest.mark.asyncio
     async def test_transition_failure_marks_stage_failed(self):
         cfg = PipelineConfig(
             enable_maci=False,
@@ -827,7 +799,6 @@ class TestVerifyTransitionRejected:
 
 
 class TestVerifyRequireAllStages:
-    @pytest.mark.asyncio
     async def test_require_all_stages_passes_when_all_succeed(self):
         cfg = PipelineConfig(
             enable_maci=True,
@@ -840,7 +811,6 @@ class TestVerifyRequireAllStages:
         result = await pipeline.verify("action", {})
         assert result.is_verified is True
 
-    @pytest.mark.asyncio
     async def test_require_all_stages_fails_when_one_fails(self):
         cfg = PipelineConfig(
             enable_maci=True,
@@ -853,7 +823,6 @@ class TestVerifyRequireAllStages:
         result = await pipeline.verify("action", {})
         assert result.is_verified is False
 
-    @pytest.mark.asyncio
     async def test_require_all_stages_false_passes_with_one_success(self):
         """Default: any stage passing is enough."""
         cfg = PipelineConfig(
@@ -874,7 +843,6 @@ class TestVerifyRequireAllStages:
 
 
 class TestVerifyErrorHandling:
-    @pytest.mark.asyncio
     async def test_maci_stage_runtime_error_sets_failed(self):
         cfg = PipelineConfig(
             enable_maci=True,
@@ -894,7 +862,6 @@ class TestVerifyErrorHandling:
         assert maci_stage.success is False
         assert maci_stage.status == "error"
 
-    @pytest.mark.asyncio
     async def test_policy_stage_runtime_error(self):
         cfg = PipelineConfig(
             enable_maci=False,
@@ -913,7 +880,6 @@ class TestVerifyErrorHandling:
         assert policy_stage.success is False
         assert policy_stage.status == "error"
 
-    @pytest.mark.asyncio
     async def test_saga_stage_runtime_error(self):
         cfg = PipelineConfig(
             enable_maci=False,
@@ -934,7 +900,6 @@ class TestVerifyErrorHandling:
         assert saga_stage.success is False
         assert saga_stage.status == "error"
 
-    @pytest.mark.asyncio
     async def test_transition_stage_runtime_error(self):
         cfg = PipelineConfig(
             enable_maci=False,
@@ -953,7 +918,6 @@ class TestVerifyErrorHandling:
         assert transition_stage.success is False
         assert transition_stage.status == "error"
 
-    @pytest.mark.asyncio
     async def test_pipeline_level_value_error_sets_failed(self):
         """A ValueError raised outside stage handlers is caught by the pipeline."""
         cfg = PipelineConfig(
@@ -975,7 +939,6 @@ class TestVerifyErrorHandling:
         assert result.status == PipelineStatus.FAILED
         assert any(v["type"] == "pipeline_error" for v in result.violations)
 
-    @pytest.mark.asyncio
     async def test_pipeline_level_timeout_sets_timeout_status(self):
         """asyncio.TimeoutError at pipeline level sets TIMEOUT status."""
         cfg = PipelineConfig(
@@ -1001,7 +964,6 @@ class TestVerifyErrorHandling:
 
 
 class TestVerifyStageLevelTimeouts:
-    @pytest.mark.asyncio
     async def test_maci_stage_timeout(self):
         cfg = PipelineConfig(
             enable_maci=True,
@@ -1025,7 +987,6 @@ class TestVerifyStageLevelTimeouts:
         assert maci_stage is not None
         assert maci_stage.status == "timeout"
 
-    @pytest.mark.asyncio
     async def test_policy_stage_timeout(self):
         cfg = PipelineConfig(
             enable_maci=False,
@@ -1049,7 +1010,6 @@ class TestVerifyStageLevelTimeouts:
         assert policy_stage is not None
         assert policy_stage.status == "timeout"
 
-    @pytest.mark.asyncio
     async def test_saga_stage_timeout(self):
         cfg = PipelineConfig(
             enable_maci=False,
@@ -1087,7 +1047,6 @@ class TestGetPipelineStats:
         stats = pipeline.get_pipeline_stats()
         assert stats == {"total_executions": 0}
 
-    @pytest.mark.asyncio
     async def test_single_execution_stats(self):
         pipeline = _make_pipeline()
         await pipeline.verify("a", {})
@@ -1100,7 +1059,6 @@ class TestGetPipelineStats:
         assert "constitutional_hash" in stats
         assert stats["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_multiple_executions_stats(self):
         pipeline = _make_pipeline()
         await pipeline.verify("a", {})
@@ -1111,7 +1069,6 @@ class TestGetPipelineStats:
         assert "status_distribution" in stats
         assert isinstance(stats["status_distribution"], dict)
 
-    @pytest.mark.asyncio
     async def test_verification_rate_calculation(self):
         cfg = PipelineConfig(
             enable_maci=True,
@@ -1132,7 +1089,6 @@ class TestGetPipelineStats:
 
 
 class TestQuickVerifyExtended:
-    @pytest.mark.asyncio
     async def test_quick_verify_returns_tuple(self):
         pipeline = _make_pipeline()
         is_verified, confidence, violations = await pipeline.quick_verify("action", {})
@@ -1140,14 +1096,12 @@ class TestQuickVerifyExtended:
         assert isinstance(confidence, float)
         assert isinstance(violations, list)
 
-    @pytest.mark.asyncio
     async def test_quick_verify_delegates_to_maci(self):
         pipeline = _make_pipeline(maci_result=_maci_result(compliant=True, confidence=0.95))
         is_verified, confidence, _violations = await pipeline.quick_verify("action", {})
         assert is_verified is True
         assert confidence == 0.95
 
-    @pytest.mark.asyncio
     async def test_quick_verify_non_compliant(self):
         pipeline = _make_pipeline(maci_result=_maci_result(compliant=False, confidence=0.2))
         is_verified, _confidence, violations = await pipeline.quick_verify("bad-action", {})
@@ -1176,7 +1130,6 @@ class TestGetConstitutionalHash:
 
 
 class TestAuditTrail:
-    @pytest.mark.asyncio
     async def test_audit_trail_contains_initialization(self):
         cfg = PipelineConfig(
             enable_maci=False,
@@ -1189,7 +1142,6 @@ class TestAuditTrail:
         init_entries = [e for e in result.audit_trail if e["stage"] == "initialization"]
         assert len(init_entries) >= 1
 
-    @pytest.mark.asyncio
     async def test_audit_trail_contains_finalization(self):
         cfg = PipelineConfig(
             enable_maci=False,
@@ -1202,7 +1154,6 @@ class TestAuditTrail:
         final_entries = [e for e in result.audit_trail if e["stage"] == "finalization"]
         assert len(final_entries) >= 1
 
-    @pytest.mark.asyncio
     async def test_audit_trail_maci_entries(self):
         cfg = PipelineConfig(
             enable_maci=True,
@@ -1215,7 +1166,6 @@ class TestAuditTrail:
         maci_entries = [e for e in result.audit_trail if e["stage"] == "maci_verification"]
         assert len(maci_entries) >= 2  # start + complete
 
-    @pytest.mark.asyncio
     async def test_audit_trail_policy_entries(self):
         cfg = PipelineConfig(
             enable_maci=False,
@@ -1228,7 +1178,6 @@ class TestAuditTrail:
         policy_entries = [e for e in result.audit_trail if e["stage"] == "policy_verification"]
         assert len(policy_entries) >= 2  # start + complete
 
-    @pytest.mark.asyncio
     async def test_audit_trail_saga_entries(self):
         cfg = PipelineConfig(
             enable_maci=False,
@@ -1242,7 +1191,6 @@ class TestAuditTrail:
         saga_entries = [e for e in result.audit_trail if e["stage"] == "saga_execution"]
         assert len(saga_entries) >= 2  # start + complete
 
-    @pytest.mark.asyncio
     async def test_audit_trail_transition_entries(self):
         cfg = PipelineConfig(
             enable_maci=False,
@@ -1255,7 +1203,6 @@ class TestAuditTrail:
         transition_entries = [e for e in result.audit_trail if e["stage"] == "state_transition"]
         assert len(transition_entries) >= 2  # start + complete
 
-    @pytest.mark.asyncio
     async def test_audit_trail_all_entries_have_hash(self):
         pipeline = _make_pipeline()
         result = await pipeline.verify("action", {})
@@ -1269,7 +1216,6 @@ class TestAuditTrail:
 
 
 class TestConcurrentVerification:
-    @pytest.mark.asyncio
     async def test_concurrent_verifications_produce_distinct_results(self):
         cfg = PipelineConfig(
             enable_maci=True,
@@ -1287,7 +1233,6 @@ class TestConcurrentVerification:
         pipeline_ids = [r.pipeline_id for r in results]
         assert len(pipeline_ids) == len(set(pipeline_ids))
 
-    @pytest.mark.asyncio
     async def test_concurrent_verifications_all_complete(self):
         cfg = PipelineConfig(
             enable_maci=True,
@@ -1315,7 +1260,6 @@ class TestConcurrentVerification:
 
 
 class TestRecommendationsGeneration:
-    @pytest.mark.asyncio
     async def test_recommendations_for_timeout_stage(self):
         cfg = PipelineConfig(
             enable_maci=True,
@@ -1335,7 +1279,6 @@ class TestRecommendationsGeneration:
         # Timeout stage recommendation should be present
         assert any("timeout" in r.lower() for r in result.recommendations)
 
-    @pytest.mark.asyncio
     async def test_recommendations_not_verified(self):
         cfg = PipelineConfig(
             enable_maci=True,
@@ -1354,7 +1297,6 @@ class TestRecommendationsGeneration:
 
 
 class TestComputeConfidenceEdgeCases:
-    @pytest.mark.asyncio
     async def test_confidence_no_results(self):
         """No stages run → confidence 0.0."""
         cfg = PipelineConfig(
@@ -1367,7 +1309,6 @@ class TestComputeConfidenceEdgeCases:
         result = await pipeline.verify("action", {})
         assert result.confidence == 0.0
 
-    @pytest.mark.asyncio
     async def test_confidence_with_maci_only(self):
         cfg = PipelineConfig(
             enable_maci=True,

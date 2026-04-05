@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Voting Service Helper Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Unit tests for extracted helper functions in VotingService.
 Tests each helper function independently with comprehensive edge cases.
@@ -14,12 +14,12 @@ import pytest
 # Governance and constitutional compliance test markers
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
-from enhanced_agent_bus.deliberation_layer.voting_service import (  # noqa: E402
+from enhanced_agent_bus.deliberation_layer.voting_service import (
     Vote,
     VotingService,
     VotingStrategy,
 )
-from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage  # noqa: E402
+from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage
 
 # =============================================================================
 # Test Data and Fixtures
@@ -81,7 +81,6 @@ def voting_service() -> VotingService:
 class TestValidateVoteEligibility:
     """Tests for _validate_vote_eligibility helper function."""
 
-    @pytest.mark.asyncio
     async def test_validate_vote_eligibility_success(
         self, voting_service: VotingService, sample_vote: Vote, sample_election_data: dict
     ) -> None:
@@ -96,7 +95,6 @@ class TestValidateVoteEligibility:
         assert result is not None
         assert result == sample_election_data
 
-    @pytest.mark.asyncio
     async def test_validate_vote_eligibility_election_not_found(
         self, voting_service: VotingService, sample_vote: Vote
     ) -> None:
@@ -104,7 +102,6 @@ class TestValidateVoteEligibility:
         result = await voting_service._validate_vote_eligibility("nonexistent", sample_vote)
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_validate_vote_eligibility_election_closed(
         self, voting_service: VotingService, sample_vote: Vote, sample_election_data: dict
     ) -> None:
@@ -116,7 +113,6 @@ class TestValidateVoteEligibility:
         result = await voting_service._validate_vote_eligibility(election_id, sample_vote)
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_validate_vote_eligibility_not_participant(
         self, voting_service: VotingService, sample_election_data: dict
     ) -> None:
@@ -128,7 +124,6 @@ class TestValidateVoteEligibility:
         result = await voting_service._validate_vote_eligibility(election_id, non_participant_vote)
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_validate_vote_eligibility_election_expired(
         self, voting_service: VotingService, sample_vote: Vote, sample_election_data: dict
     ) -> None:
@@ -594,7 +589,6 @@ class TestCheckSuperMajorityResolution:
 class TestHelpersIntegration:
     """Integration tests showing helpers working together."""
 
-    @pytest.mark.asyncio
     async def test_helpers_workflow(
         self, voting_service: VotingService, sample_election_data: dict
     ) -> None:

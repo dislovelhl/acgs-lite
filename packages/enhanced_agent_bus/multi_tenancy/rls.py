@@ -1,6 +1,6 @@
 """
 ACGS-2 Row-Level Security (RLS) Policy Management
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements PostgreSQL Row-Level Security for enterprise multi-tenant data isolation.
 Provides automatic tenant isolation for all database operations.
@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -305,7 +305,7 @@ def validate_role_name(role: str) -> str:
     return validate_sql_identifier(role, identifier_type="role name")
 
 
-class RLSPolicyType(str, Enum):  # noqa: UP042
+class RLSPolicyType(str, Enum):
     """Types of RLS policies."""
 
     SELECT = "select"
@@ -319,7 +319,7 @@ class RLSPolicyType(str, Enum):  # noqa: UP042
 class RLSPolicy:
     """Row-Level Security policy definition.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     All identifiers (name, table_name, roles) are validated to prevent SQL injection.
     """
@@ -380,7 +380,7 @@ CREATE POLICY {quoted_name} ON {quoted_table}
 class RLSPolicyManager:
     """Manages RLS policies for multi-tenant isolation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     This manager provides utilities for:
     - Creating tenant isolation policies
@@ -644,7 +644,7 @@ ENTERPRISE_RLS_TABLES = [
 def create_acgs2_rls_policies() -> RLSPolicyManager:
     """Create standard ACGS-2 RLS policies.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Returns:
         Configured RLSPolicyManager with all ACGS-2 policies.

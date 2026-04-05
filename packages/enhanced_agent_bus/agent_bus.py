@@ -4,7 +4,7 @@ Backward compatibility shim for agent_bus module.
 This module re-exports all symbols from the new modular structure
 to maintain backward compatibility with existing imports.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Migration:
     Old: from packages.enhanced_agent_bus.agent_bus import EnhancedAgentBus
@@ -41,7 +41,7 @@ POLICY_CLIENT_AVAILABLE: bool = _flags.get("POLICY_CLIENT_AVAILABLE", False)
 
 # Redis URL from shared config
 try:
-    from src.core.shared.redis_config import get_redis_url
+    from enhanced_agent_bus._compat.redis_config import get_redis_url
 
     DEFAULT_REDIS_URL: str = get_redis_url()
 except ImportError:

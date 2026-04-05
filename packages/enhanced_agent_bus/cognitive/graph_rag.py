@@ -12,7 +12,7 @@ This module re-exports the canonical types and keeps the sync-only
 implementations that depend on sync ``GraphStorage`` / ``EmbeddingProvider``
 protocols.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -26,13 +26,21 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Protocol
 
-_schema = importlib.import_module("src.core.cognitive.graphrag.schema")
-GraphRAGQuery = getattr(_schema, "GraphRAGQuery", None)
-GraphRAGResponse = getattr(_schema, "GraphRAGResponse", None)
-GraphNode = getattr(_schema, "GraphNode", None)
-GraphEdge = getattr(_schema, "GraphEdge", None)
-EdgeType = getattr(_schema, "EdgeType", None)
-NodeType = getattr(_schema, "NodeType", None)
+try:
+    _schema = importlib.import_module("src.core.cognitive.graphrag.schema")
+    GraphRAGQuery = getattr(_schema, "GraphRAGQuery", None)
+    GraphRAGResponse = getattr(_schema, "GraphRAGResponse", None)
+    GraphNode = getattr(_schema, "GraphNode", None)
+    GraphEdge = getattr(_schema, "GraphEdge", None)
+    EdgeType = getattr(_schema, "EdgeType", None)
+    NodeType = getattr(_schema, "NodeType", None)
+except (ImportError, ModuleNotFoundError):
+    GraphRAGQuery = None
+    GraphRAGResponse = None
+    GraphNode = None
+    GraphEdge = None
+    EdgeType = None
+    NodeType = None
 
 warnings.warn(
     "Import from src.core.cognitive.graphrag instead of "

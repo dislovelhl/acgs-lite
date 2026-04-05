@@ -1,13 +1,13 @@
 """
 Constitutional Hash Registry and Algorithm Agility Framework
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides versioned, algorithm-agile constitutional hash management for
 ACGS-2 governance operations. Supports migration between hash algorithms
 without breaking validation.
 
 Target format: {algorithm}:{version}:{hash}
-Example: sha256:v1:cdd01ef066bc6cf2
+Example: sha256:v1:608508a9bd224290
 """
 
 from __future__ import annotations

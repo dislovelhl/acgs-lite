@@ -1,6 +1,6 @@
 """
 Tests for FR-8: Threat Model Validation
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive threat model validation tests covering:
 - 8.1 Prompt injection mitigations (16 tests)
@@ -28,8 +28,8 @@ import pytest
 # =============================================================================
 # Constitutional Constants
 # =============================================================================
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.types import JSONDict
 
 PRD_HASH = "36d689a9a103b8cb"
 
@@ -148,7 +148,7 @@ class MockPromptInjectionDetector:
         sanitized = content
         if is_injection:
             for pattern_str in matched:
-                try:  # noqa: SIM105
+                try:
                     sanitized = re.sub(pattern_str, "[REDACTED]", sanitized, flags=re.IGNORECASE)
                 except (RuntimeError, ValueError, TypeError):
                     pass
@@ -187,7 +187,7 @@ class MockPIIDetector:
         content = str(data) if data else ""
 
         for name, (pattern, category, confidence) in self._compiled.items():
-            if pattern.search(content):  # noqa: SIM102
+            if pattern.search(content):
                 if confidence >= self.min_confidence:
                     detections.append(
                         MockPIIDetection(
@@ -721,14 +721,12 @@ class TestDataLeakageControls:
 class TestDoSRateLimiting:
     """Tests for DoS protection via rate limiting (FR-8.3)."""
 
-    @pytest.mark.asyncio
     async def test_rate_limiter_allows_under_limit(self, rate_limiter):
         """Test requests under limit are allowed."""
         for i in range(10):
             result = await rate_limiter.is_allowed(f"client_{i}")
             assert result.allowed is True
 
-    @pytest.mark.asyncio
     async def test_rate_limiter_blocks_over_limit(self, rate_limiter):
         """Test requests over limit are blocked."""
         rate_limiter.default_limit = 5
@@ -740,7 +738,6 @@ class TestDoSRateLimiting:
         # Should be blocked after exceeding limit
         assert rate_limiter.blocked_count > 0
 
-    @pytest.mark.asyncio
     async def test_rate_limiter_per_client_isolation(self, rate_limiter):
         """Test rate limits are per-client."""
         rate_limiter.default_limit = 5
@@ -753,7 +750,6 @@ class TestDoSRateLimiting:
         result = await rate_limiter.is_allowed("client_b")
         assert result.allowed is True
 
-    @pytest.mark.asyncio
     async def test_tenant_specific_quotas(self, rate_limiter):
         """Test tenant-specific rate limits."""
         rate_limiter.set_tenant_quota("premium", 1000)
@@ -766,7 +762,6 @@ class TestDoSRateLimiting:
         basic_metrics = rate_limiter.get_metrics()
         assert basic_metrics["blocked_requests"] > 0
 
-    @pytest.mark.asyncio
     async def test_rate_limit_remaining_tracking(self, rate_limiter):
         """Test remaining requests tracking."""
         rate_limiter.default_limit = 10
@@ -777,7 +772,6 @@ class TestDoSRateLimiting:
         result = await rate_limiter.is_allowed("tracking_test")
         assert result.remaining == 8
 
-    @pytest.mark.asyncio
     async def test_rate_limit_reset_time(self, rate_limiter):
         """Test reset time is provided."""
         result = await rate_limiter.is_allowed("reset_test")
@@ -786,7 +780,6 @@ class TestDoSRateLimiting:
         assert isinstance(result.reset_at, datetime)
         assert result.reset_at > datetime.now(UTC)
 
-    @pytest.mark.asyncio
     async def test_retry_after_on_block(self, rate_limiter):
         """Test retry-after header is provided when blocked."""
         rate_limiter.default_limit = 1
@@ -798,7 +791,6 @@ class TestDoSRateLimiting:
             assert result.retry_after is not None
             assert result.retry_after > 0
 
-    @pytest.mark.asyncio
     async def test_sliding_window_cleanup(self, rate_limiter):
         """Test old entries are cleaned from window."""
         rate_limiter.window_seconds = 1
@@ -815,7 +807,6 @@ class TestDoSRateLimiting:
         result = await rate_limiter.is_allowed("window_test")
         assert result.allowed is True
 
-    @pytest.mark.asyncio
     async def test_rate_limit_metrics(self, rate_limiter):
         """Test rate limit metrics collection."""
         for _ in range(10):
@@ -829,7 +820,6 @@ class TestDoSRateLimiting:
         assert "block_rate" in metrics
         assert metrics["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_concurrent_rate_limiting(self, rate_limiter):
         """Test rate limiting under concurrent load."""
         rate_limiter.default_limit = 10  # Lower limit so 100/5 = 20 requests per client exceeds it
@@ -847,7 +837,6 @@ class TestDoSRateLimiting:
         assert blocked > 0  # Some should be blocked (20 requests per client, limit 10)
         assert allowed + blocked == 100
 
-    @pytest.mark.asyncio
     async def test_scope_ip_rate_limiting(self, rate_limiter):
         """Test IP-scoped rate limiting."""
         result = await rate_limiter.is_allowed("192.168.1.1", scope="ip")
@@ -855,7 +844,6 @@ class TestDoSRateLimiting:
         assert result.scope == "ip"
         assert result.allowed is True
 
-    @pytest.mark.asyncio
     async def test_endpoint_rate_limiting(self, rate_limiter):
         """Test endpoint-specific rate limiting."""
         rate_limiter.default_limit = 10
@@ -1001,7 +989,6 @@ class TestFalseRateMonitoring:
 class TestThreatModelIntegration:
     """Integration tests for complete threat model validation."""
 
-    @pytest.mark.asyncio
     async def test_complete_threat_detection_pipeline(
         self,
         injection_detector,
@@ -1055,7 +1042,6 @@ class TestThreatModelIntegration:
         assert len(pii) >= 2  # Credit card and email
         assert classification.tier == "restricted"
 
-    @pytest.mark.asyncio
     async def test_rate_limited_attack_mitigation(self, rate_limiter, injection_detector):
         """Test rate limiting stops repeated attack attempts."""
         rate_limiter.default_limit = 3
@@ -1145,7 +1131,6 @@ class TestThreatModelPerformance:
         # Should complete in < 2ms per detection
         assert avg_ms < 2.0, f"Detection too slow: {avg_ms:.3f}ms avg"
 
-    @pytest.mark.asyncio
     async def test_rate_limiter_performance(self, rate_limiter):
         """Test rate limiter meets performance requirements."""
         import time

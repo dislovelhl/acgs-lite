@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - LocoOperator-4B Governance Client
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Async governance client wrapping HuggingFaceAdapter for LocoOperator-4B.
 
@@ -23,13 +23,13 @@ import time
 from dataclasses import dataclass, field
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -58,7 +58,7 @@ except ImportError:
 class GovernanceScoringResult:
     """Result from a LocoOperator governance action scoring request.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     MACI role is always 'proposer' -- never 'validator' or 'executor'.
     """
 
@@ -93,7 +93,7 @@ class GovernanceScoringResult:
 class PolicyEvaluationResult:
     """Result from a LocoOperator policy fragment evaluation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     MACI role is always 'proposer' -- evaluation is a recommendation, not a decision.
     """
 
@@ -127,7 +127,7 @@ class PolicyEvaluationResult:
 class HealthCheckResult:
     """Health status for the LocoOperator governance client.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     is_healthy: bool
@@ -139,7 +139,7 @@ class HealthCheckResult:
 # ---- Prompts -----------------------------------------------------------------------
 
 _SCORING_SYSTEM_PROMPT = """You are a MACI Proposer agent for the ACGS-2 governance platform.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Your role is to PROPOSE governance risk scores for actions. You are NEVER a validator.
 Respond with a JSON object containing:
@@ -148,7 +148,7 @@ Respond with a JSON object containing:
 Do not include any other text."""
 
 _POLICY_SYSTEM_PROMPT = """You are a MACI Proposer agent for the ACGS-2 governance platform.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Your role is to PROPOSE compliance assessments for policy fragments. You are NEVER a validator.
 Respond with a JSON object containing:
@@ -164,7 +164,7 @@ Do not include any other text."""
 class LocoOperatorGovernanceClient:
     """Async governance client wrapping HuggingFaceAdapter for LocoOperator-4B.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     MACI Role: PROPOSER ONLY. All outputs are tagged maci_role="proposer" and
     must be independently validated before any executor acts on them.

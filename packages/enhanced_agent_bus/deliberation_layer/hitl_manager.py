@@ -1,6 +1,6 @@
 """
 ACGS-2 HITL (Human-In-The-Loop) Manager
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Orchestrates human approval workflows for high-risk agent actions.
 Integrates with DeliberationLayer and AuditLedger.
@@ -13,7 +13,7 @@ from importlib import import_module
 from typing import TYPE_CHECKING, Protocol, cast
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -86,7 +86,7 @@ except ImportError:
                 class ValidationResult:  # type: ignore[no-redef]
                     """Fallback ValidationResult - mirrors validators.ValidationResult interface.
 
-                    Constitutional Hash: cdd01ef066bc6cf2
+                    Constitutional Hash: 608508a9bd224290
                     """
 
                     is_valid: bool = True

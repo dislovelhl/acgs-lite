@@ -17,7 +17,7 @@ Covers previously uncovered branches:
 - check_consensus() zero_total_weight branch
 - VoteEvent.from_dict() with timestamp field
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -315,9 +315,9 @@ class TestCollectorConnect:
         assert c._subscriber_task is not None
         # Cancel the subscriber task to avoid hanging
         c._subscriber_task.cancel()
-        try:  # noqa: SIM105
+        try:
             await c._subscriber_task
-        except (asyncio.CancelledError, Exception):  # noqa: S110
+        except (asyncio.CancelledError, Exception):
             pass
 
     async def test_connect_redis_connection_error_returns_false(self) -> None:

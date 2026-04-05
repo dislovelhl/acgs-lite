@@ -1,11 +1,11 @@
 """
 Shared fixtures for MCP Integration tests.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import pytest
 
 # Constitutional hash for all tests
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]

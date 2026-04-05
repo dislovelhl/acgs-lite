@@ -1,7 +1,7 @@
 """
 Bus metrics collection and reporting.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ class BusMetrics:
     """
     Metrics collection and reporting for EnhancedAgentBus.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

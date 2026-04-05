@@ -1,6 +1,6 @@
 """
 ACGS-2 LDAP Integration Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 LDAP integration for enterprise authentication with connection pooling,
 circuit breaker pattern, and MACI role mapping.
@@ -31,13 +31,13 @@ from pydantic import BaseModel, ConfigDict, Field
 
 # Constitutional Hash for ACGS-2
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.errors.exceptions import ACGSBaseError
+from enhanced_agent_bus._compat.errors import ACGSBaseError
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -207,7 +207,7 @@ class LDAPAuthenticationResult(BaseModel):
 # ============================================================================
 
 
-class CircuitBreakerState(str, Enum):  # noqa: UP042
+class CircuitBreakerState(str, Enum):
     """Circuit breaker states."""
 
     CLOSED = "closed"
@@ -236,7 +236,7 @@ class LDAPCircuitBreaker:
     def state(self) -> str:
         """Get current circuit breaker state."""
         with self._lock:
-            if self._state == CircuitBreakerState.OPEN:  # noqa: SIM102
+            if self._state == CircuitBreakerState.OPEN:
                 # Check if we should transition to half-open
                 if self._last_failure_time is not None:
                     elapsed = time.time() - self._last_failure_time
@@ -837,7 +837,7 @@ class LDAPIntegration:
             if group.lower() in [k.lower() for k in mapping.keys()]:
                 # Find matching key (case-insensitive)
                 for key, role in mapping.items():
-                    if key.lower() == group.lower():  # noqa: SIM102
+                    if key.lower() == group.lower():
                         if role not in maci_roles:
                             maci_roles.append(role)
 

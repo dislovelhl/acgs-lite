@@ -1,12 +1,12 @@
 """
 ACGS-2 Enhanced Agent Bus - High-Performance Governance Workflow
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Integrates SagaLLM transactions and MACI enforcement into a unified workflow.
 """
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -30,7 +30,7 @@ class HighPerformanceGovernanceWorkflow(WorkflowDefinition[JSONDict, JSONDict]):
     """
     Advanced governance workflow integrating breakthrough Phase 2 components.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, enforcer: MACIEnforcer | None = None):

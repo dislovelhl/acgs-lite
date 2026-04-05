@@ -11,7 +11,7 @@ throughout their lifecycle. Logs must be:
 This module provides a drop-in logging wrapper that satisfies Article 12
 requirements with zero infrastructure dependencies.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Usage::
 
@@ -42,7 +42,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, TypeVar
 
-CONSTITUTIONAL_HASH = "cdd01ef066bc6cf2"
+CONSTITUTIONAL_HASH = "608508a9bd224290"
 
 logger = logging.getLogger(__name__)
 
@@ -270,6 +270,7 @@ class Article12Logger:
 
     @property
     def record_count(self) -> int:
+        """Return the number of records in the audit log."""
         return len(self._records)
 
     def export_jsonl(self, path: str | Path, *, append: bool = True) -> None:

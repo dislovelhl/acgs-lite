@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Extended coverage tests for src/core/enhanced_agent_bus/mcp_server/server.py.
 
@@ -20,7 +20,8 @@ import logging
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 from ..config import MCPConfig, TransportType
 from ..protocol.types import MCPRequest
@@ -240,8 +241,8 @@ class TestAdapterLifecycle:
         await server.disconnect_adapters()
 
 
-# The module name as seen by importlib (without 'src.' prefix)
-_SERVER_MODULE = "core.enhanced_agent_bus.mcp_server.server"
+# Resolve the real import path from the imported server class to avoid stale module aliases.
+_SERVER_MODULE = MCPServer.__module__
 
 
 # ---------------------------------------------------------------------------
@@ -315,7 +316,7 @@ class TestStdioTransport:
             patch("asyncio.StreamWriter", return_value=mock_writer),
             patch(f"{_SERVER_MODULE}.asyncio.get_running_loop", return_value=mock_loop),
         ):
-            try:  # noqa: SIM105
+            try:
                 await server._run_stdio_transport()
             except asyncio.CancelledError:
                 pass
@@ -341,7 +342,7 @@ class TestStdioTransport:
             patch("asyncio.StreamWriter", return_value=mock_writer),
             patch(f"{_SERVER_MODULE}.asyncio.get_running_loop", return_value=mock_loop),
         ):
-            try:  # noqa: SIM105
+            try:
                 await server._run_stdio_transport()
             except asyncio.CancelledError:
                 pass
@@ -364,7 +365,7 @@ class TestStdioTransport:
             patch("asyncio.StreamWriter", return_value=mock_writer),
             patch(f"{_SERVER_MODULE}.asyncio.get_running_loop", return_value=mock_loop),
         ):
-            try:  # noqa: SIM105
+            try:
                 await server._run_stdio_transport()
             except asyncio.CancelledError:
                 pass
@@ -387,7 +388,7 @@ class TestStdioTransport:
             patch("asyncio.StreamWriter", return_value=mock_writer),
             patch(f"{_SERVER_MODULE}.asyncio.get_running_loop", return_value=mock_loop),
         ):
-            try:  # noqa: SIM105
+            try:
                 await server._run_stdio_transport()
             except asyncio.CancelledError:
                 pass
@@ -418,7 +419,7 @@ class TestStdioTransport:
                 side_effect=OSError("pipe broken"),
             ),
         ):
-            try:  # noqa: SIM105
+            try:
                 await server._run_stdio_transport()
             except asyncio.CancelledError:
                 pass
@@ -446,7 +447,7 @@ class TestStdioTransport:
             patch("asyncio.StreamWriter", return_value=mock_writer),
             patch(f"{_SERVER_MODULE}.asyncio.get_running_loop", return_value=mock_loop),
         ):
-            try:  # noqa: SIM105
+            try:
                 await server._run_stdio_transport()
             except asyncio.CancelledError:
                 pass
@@ -466,7 +467,7 @@ class TestStdioTransport:
             patch("asyncio.StreamWriter", return_value=mock_writer),
             patch(f"{_SERVER_MODULE}.asyncio.get_running_loop", return_value=mock_loop),
         ):
-            try:  # noqa: SIM105
+            try:
                 await server._run_stdio_transport()
             except asyncio.CancelledError:
                 pass  # expected
@@ -738,7 +739,7 @@ class TestMain:
             mock_server = AsyncMock()
             mock_factory.return_value = mock_server
 
-            with patch(f"{_SERVER_MODULE}.logging.basicConfig") as mock_logging:
+            with patch("logging.basicConfig") as mock_logging:
                 await main()
 
             mock_logging.assert_called_once()

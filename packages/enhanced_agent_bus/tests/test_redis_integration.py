@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Redis Integration Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests Redis integration components with mocking.
 """
@@ -19,7 +19,7 @@ if enhanced_agent_bus_dir not in sys.path:
     sys.path.insert(0, enhanced_agent_bus_dir)
 
 # Import using direct module loading
-import importlib.util  # noqa: E402
+import importlib.util
 
 
 def _load_module(name, path):
@@ -128,7 +128,6 @@ class TestRedisDeliberationQueue:
             content={"action": "test_action"},
         )
 
-    @pytest.mark.asyncio
     async def test_connect_success(self, mock_redis):
         """Test successful Redis connection."""
         # Load redis_integration module
@@ -147,7 +146,6 @@ class TestRedisDeliberationQueue:
 
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_connect_redis_unavailable(self):
         """Test connection when Redis is not available."""
         redis_int = _load_module(
@@ -162,7 +160,6 @@ class TestRedisDeliberationQueue:
 
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_enqueue_deliberation_item(self, mock_redis, test_message):
         """Test enqueueing a deliberation item."""
         redis_int = _load_module(
@@ -180,7 +177,6 @@ class TestRedisDeliberationQueue:
         assert result is True
         assert "test_item_123" in mock_redis._data.get(queue.queue_key, {})
 
-    @pytest.mark.asyncio
     async def test_enqueue_without_connection(self, test_message):
         """Test enqueueing fails without Redis connection."""
         redis_int = _load_module(
@@ -197,7 +193,6 @@ class TestRedisDeliberationQueue:
 
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_get_deliberation_item(self, mock_redis):
         """Test retrieving a deliberation item."""
         redis_int = _load_module(
@@ -217,7 +212,6 @@ class TestRedisDeliberationQueue:
         assert result is not None
         assert result["item_id"] == "test_123"
 
-    @pytest.mark.asyncio
     async def test_get_nonexistent_item(self, mock_redis):
         """Test retrieving nonexistent item returns None."""
         redis_int = _load_module(
@@ -232,7 +226,6 @@ class TestRedisDeliberationQueue:
 
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_update_deliberation_status(self, mock_redis):
         """Test updating deliberation status."""
         redis_int = _load_module(
@@ -257,7 +250,6 @@ class TestRedisDeliberationQueue:
         assert updated_item["status"] == "approved"
         assert updated_item["reviewer"] == "human_1"
 
-    @pytest.mark.asyncio
     async def test_remove_deliberation_item(self, mock_redis):
         """Test removing a deliberation item."""
         redis_int = _load_module(
@@ -276,7 +268,6 @@ class TestRedisDeliberationQueue:
         assert result is True
         assert await queue.get_deliberation_item("test_123") is None
 
-    @pytest.mark.asyncio
     async def test_get_pending_items(self, mock_redis):
         """Test getting pending items."""
         redis_int = _load_module(
@@ -301,7 +292,6 @@ class TestRedisDeliberationQueue:
         assert len(pending) == 2
         assert all(item["status"] == "pending" for item in pending)
 
-    @pytest.mark.asyncio
     async def test_get_stream_info(self, mock_redis):
         """Test getting stream info."""
         redis_int = _load_module(
@@ -328,7 +318,6 @@ class TestRedisVotingSystem:
         """Create mock Redis client."""
         return MockRedisClient()
 
-    @pytest.mark.asyncio
     async def test_submit_vote(self, mock_redis):
         """Test submitting a vote."""
         redis_int = _load_module(
@@ -352,7 +341,6 @@ class TestRedisVotingSystem:
         votes_key = f"{voting.votes_key_prefix}item_123"
         assert "agent_1" in mock_redis._data.get(votes_key, {})
 
-    @pytest.mark.asyncio
     async def test_submit_vote_without_connection(self):
         """Test vote submission fails without Redis."""
         redis_int = _load_module(
@@ -369,7 +357,6 @@ class TestRedisVotingSystem:
 
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_get_votes(self, mock_redis):
         """Test getting votes for an item."""
         redis_int = _load_module(
@@ -388,7 +375,6 @@ class TestRedisVotingSystem:
 
         assert len(votes) == 2
 
-    @pytest.mark.asyncio
     async def test_get_vote_count(self, mock_redis):
         """Test getting vote counts."""
         redis_int = _load_module(
@@ -410,7 +396,6 @@ class TestRedisVotingSystem:
         assert counts["reject"] == 1
         assert counts["total"] == 3
 
-    @pytest.mark.asyncio
     async def test_check_consensus_approved(self, mock_redis):
         """Test consensus check with approval."""
         redis_int = _load_module(
@@ -432,7 +417,6 @@ class TestRedisVotingSystem:
         assert result["consensus_reached"] is True
         assert result["decision"] == "approved"
 
-    @pytest.mark.asyncio
     async def test_check_consensus_rejected(self, mock_redis):
         """Test consensus check with rejection."""
         redis_int = _load_module(
@@ -454,7 +438,6 @@ class TestRedisVotingSystem:
         assert result["consensus_reached"] is True
         assert result["decision"] == "rejected"
 
-    @pytest.mark.asyncio
     async def test_check_consensus_insufficient_votes(self, mock_redis):
         """Test consensus check with insufficient votes."""
         redis_int = _load_module(
@@ -474,7 +457,6 @@ class TestRedisVotingSystem:
         assert result["consensus_reached"] is False
         assert result["reason"] == "insufficient_votes"
 
-    @pytest.mark.asyncio
     async def test_check_consensus_threshold_not_met(self, mock_redis):
         """Test consensus check when threshold is not met."""
         redis_int = _load_module(

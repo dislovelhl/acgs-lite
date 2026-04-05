@@ -1,6 +1,6 @@
 """
 ACGS-2 SAML 2.0 Handler Service
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides enterprise-grade SAML 2.0 Service Provider (SP) implementation using
 PySAML2. Supports multiple Identity Providers including Okta, Azure AD, and
@@ -43,6 +43,7 @@ Usage:
 """
 
 # Standard library
+import contextlib
 import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
@@ -64,9 +65,6 @@ except ImportError:
 if TYPE_CHECKING:
     from src.core.shared.models.sso_provider import SSOProvider
 
-# Local package imports
-import contextlib
-
 from .saml_config import (
     CONSTITUTIONAL_HASH,
     SAMLConfig,
@@ -82,6 +80,9 @@ from .saml_types import (
     SAMLReplayError,
     SAMLUserInfo,
     SAMLValidationError,
+)
+from .saml_types import (
+    SAMLAuthenticationError as _SAMLAuthenticationError,
 )
 
 # Optional PySAML2 imports (wrap in try/except)
@@ -125,6 +126,9 @@ _SAML_HANDLER_OPERATION_ERRORS = (
 )
 
 # Exceptions and SAMLUserInfo moved to saml_types.py
+
+# Backward-compatible re-export for callers importing exceptions from this module.
+SAMLAuthenticationError = _SAMLAuthenticationError
 
 
 class SAMLHandler:

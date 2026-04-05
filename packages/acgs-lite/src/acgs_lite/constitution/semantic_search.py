@@ -116,7 +116,7 @@ def _cosine_similarity(a: list[float], b: list[float]) -> float:
     mag_b = sum(x * x for x in b) ** 0.5
     if mag_a == 0.0 or mag_b == 0.0:
         return 0.0
-    return dot / (mag_a * mag_b)
+    return float(dot / (mag_a * mag_b))
 
 
 def _embedding_fingerprint(rules: list[Rule]) -> str:
@@ -130,7 +130,7 @@ def _embedding_fingerprint(rules: list[Rule]) -> str:
         has_emb = "1" if r.embedding else "0"
         parts.append(f"{r.id}:{has_emb}:{r.text[:100]}")
     payload = "\n".join(parts)
-    return hashlib.md5(payload.encode()).hexdigest()[:12]  # noqa: S324
+    return hashlib.md5(payload.encode()).hexdigest()[:12]
 
 
 class SemanticRuleSearch:

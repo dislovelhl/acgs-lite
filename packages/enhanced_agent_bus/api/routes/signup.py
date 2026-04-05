@@ -119,7 +119,7 @@ async def signup(request: Request, body: SignupRequest) -> SignupResponse:
         if _email_already_registered(email):
             raise HTTPException(
                 status_code=409,
-                detail="An account with this email already exists. Check your records for your API key.",  # noqa: E501
+                detail="An account with this email already exists. Check your records for your API key.",
             )
 
         api_key = _generate_api_key()

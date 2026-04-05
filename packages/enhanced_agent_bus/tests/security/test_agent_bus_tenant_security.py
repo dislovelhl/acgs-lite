@@ -1,4 +1,4 @@
-"""Agent Bus Tenant Security Integration Tests. Constitutional Hash: cdd01ef066bc6cf2"""
+"""Agent Bus Tenant Security Integration Tests. Constitutional Hash: 608508a9bd224290"""
 
 from dataclasses import dataclass, field
 from enum import Enum
@@ -6,7 +6,8 @@ from typing import Optional
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.types import JSONDict
+
+from enhanced_agent_bus._compat.types import JSONDict
 
 
 class RiskLevel(Enum):
@@ -105,7 +106,7 @@ class TestMessageProcessorTenantValidation:
         )
         msg = MockAgentMessage(tenant_id="tenant-A")
 
-        if session.governance_config.tenant_id != msg.tenant_id:  # noqa: SIM108
+        if session.governance_config.tenant_id != msg.tenant_id:
             loaded = None
         else:
             loaded = session
@@ -223,7 +224,6 @@ class TestDualReadMigration:
 
         return MockRedis()
 
-    @pytest.mark.asyncio
     async def test_dual_read_new_key_first(self, mock_redis):
         mock_redis._set_direct("acgs:session:tenant-A:sess-1", '{"session_id":"sess-1"}')
 
@@ -232,7 +232,6 @@ class TestDualReadMigration:
 
         assert data is not None
 
-    @pytest.mark.asyncio
     async def test_dual_read_fallback_to_legacy(self, mock_redis):
         mock_redis._set_direct(
             "acgs:session:sess-1", '{"session_id":"sess-1","tenant_id":"tenant-A"}', 1800
@@ -255,7 +254,6 @@ class TestDualReadMigration:
         new_data = await mock_redis.get(new_key)
         assert new_data == data
 
-    @pytest.mark.asyncio
     async def test_migration_rejects_cross_tenant_session(self, mock_redis):
         import json
 
@@ -273,7 +271,7 @@ class TestDualReadMigration:
         parsed = json.loads(data)
         session_tenant = parsed.get("governance_config", {}).get("tenant_id")
 
-        if session_tenant != requesting_tenant:  # noqa: SIM108
+        if session_tenant != requesting_tenant:
             should_migrate = False
         else:
             should_migrate = True

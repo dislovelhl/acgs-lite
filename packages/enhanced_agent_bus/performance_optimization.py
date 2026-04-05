@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Performance Optimization
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Phase 6 implementation providing:
 - AsyncPipelineOptimizer: Parallel task execution with semaphore-limited concurrency
@@ -28,11 +28,11 @@ from typing import (
 )
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -54,7 +54,7 @@ PERFORMANCE_OPTIMIZATION_AVAILABLE = True
 class PipelineStage:
     """Single stage in an async processing pipeline.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     name: str
@@ -68,7 +68,7 @@ class PipelineStage:
 class PipelineResult:
     """Result from a pipeline execution.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     stage_name: str
@@ -87,7 +87,7 @@ class AsyncPipelineOptimizer:
     their group.  Sequential stages run in order.  A shared semaphore
     caps overall in-flight coroutines to avoid resource exhaustion.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -144,7 +144,7 @@ class AsyncPipelineOptimizer:
                     success=False,
                     error=f"Timeout after {stage.timeout}s",
                 )
-            except Exception as exc:  # noqa: BLE001 - stage handlers are externally supplied callables
+            except Exception as exc:
                 duration_ms = (time.monotonic() - start) * 1000.0
                 self._stats["stage_failures"] = int(self._stats["stage_failures"]) + 1
                 logger.error(
@@ -229,7 +229,7 @@ class AsyncPipelineOptimizer:
 class PooledResource(Generic[T]):
     """Wrapper around a poolable resource.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     resource: T
@@ -262,7 +262,7 @@ class ResourcePool(Generic[T]):
     Provides acquire/release semantics and an async context manager
     for safe resource lifecycle management.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -400,7 +400,7 @@ class ResourcePool(Generic[T]):
 class CacheEntry:
     """An entry in the MemoryOptimizer LRU cache.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     key: str
@@ -425,7 +425,7 @@ class MemoryOptimizer:
     access the loader is invoked; subsequent accesses are served from
     cache until TTL expiry or memory pressure triggers eviction.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -570,7 +570,7 @@ class MemoryOptimizer:
 class BatchConfig:
     """Configuration for batch processing operations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     max_batch_size: int = 100
@@ -585,7 +585,7 @@ class BatchConfig:
 class BatchFlushResult:
     """Result from flushing a batch.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     topic: str
@@ -640,7 +640,7 @@ class LatencyReducer:
     after ``max_wait_seconds``, whichever comes first.  A semaphore
     limits concurrent flush coroutines to prevent overload.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -735,7 +735,7 @@ class LatencyReducer:
                     duration_ms=duration_ms,
                     success=True,
                 )
-            except Exception as exc:  # noqa: BLE001 - processor callback failures are isolated
+            except Exception as exc:
                 duration_ms = (time.monotonic() - start) * 1000.0
                 self._stats["flush_errors"] = int(self._stats["flush_errors"]) + 1
                 logger.error(
@@ -793,7 +793,7 @@ def create_async_pipeline(
     """
     Create a configured AsyncPipelineOptimizer.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     return AsyncPipelineOptimizer(
         max_concurrency=max_concurrency,
@@ -810,7 +810,7 @@ def create_resource_pool(
     """
     Create a configured ResourcePool.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     return ResourcePool(
         factory=factory,
@@ -827,7 +827,7 @@ def create_latency_reducer(
     """
     Create a configured LatencyReducer.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     return LatencyReducer(batch_config=batch_config, processor=processor)
 
@@ -840,7 +840,7 @@ def create_memory_optimizer(
     """
     Create a configured MemoryOptimizer.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     return MemoryOptimizer(
         max_entries=max_entries,

@@ -1,6 +1,6 @@
 """
 Tests for ACGS-2 Constitutional Refoundation System.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Validates the RefoundationEngine lifecycle including:
 - Human-only proposal creation
@@ -29,7 +29,7 @@ from enhanced_agent_bus.constitutional.refoundation import (
     SandboxExecutionResult,
 )
 
-_CONSTITUTIONAL_HASH = "cdd01ef066bc6cf2"
+_CONSTITUTIONAL_HASH = "608508a9bd224290"
 
 
 # ---------------------------------------------------------------------------

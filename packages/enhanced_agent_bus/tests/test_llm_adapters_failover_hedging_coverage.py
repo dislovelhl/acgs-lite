@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # Sprint 59 — llm_adapters/failover/hedging.py coverage
 """
 Comprehensive test suite for:
@@ -18,8 +18,8 @@ from datetime import UTC, datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.llm_adapters.failover.hedging import (
     HEDGED_EXECUTION_ERRORS,
     HedgedRequest,

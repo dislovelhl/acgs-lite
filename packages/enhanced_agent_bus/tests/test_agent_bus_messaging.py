@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus Tests - Messaging
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive test coverage for messaging functionality in agent_bus.py.
 """
@@ -16,6 +16,7 @@ try:
         get_agent_bus,
         reset_agent_bus,
     )
+    from enhanced_agent_bus.bus.messaging import MessageHandler
     from enhanced_agent_bus.exceptions import (
         BusNotStartedError,
         ConstitutionalHashMismatchError,
@@ -33,6 +34,7 @@ except ImportError:
 
     sys.path.insert(0, "/home/martin/ACGS")
     from enhanced_agent_bus.agent_bus import EnhancedAgentBus
+    from enhanced_agent_bus.bus.messaging import MessageHandler
     from enhanced_agent_bus.models import (
         CONSTITUTIONAL_HASH,
         AgentMessage,
@@ -165,7 +167,6 @@ def sample_message_no_tenant(constitutional_hash):
 class TestMessageSending:
     """Test message sending functionality."""
 
-    @pytest.mark.asyncio
     async def test_send_message_success(self, started_agent_bus, sample_message, mock_processor):
         """Test successful message sending."""
         mock_processor.process = AsyncMock(return_value=ValidationResult(is_valid=True))
@@ -173,7 +174,6 @@ class TestMessageSending:
         result = await started_agent_bus.send_message(sample_message)
         assert result.is_valid is True
 
-    @pytest.mark.asyncio
     async def test_send_message_validation_failure(
         self, started_agent_bus, sample_message, mock_processor
     ):
@@ -185,7 +185,6 @@ class TestMessageSending:
         result = await started_agent_bus.send_message(sample_message)
         assert result.is_valid is False
 
-    @pytest.mark.asyncio
     async def test_send_message_increments_metrics(
         self, started_agent_bus, sample_message, mock_processor, mock_router
     ):
@@ -202,7 +201,6 @@ class TestMessageSending:
         assert updated_metrics["messages_sent"] == initial_metrics["messages_sent"] + 1
         assert updated_metrics["sent"] == initial_metrics["sent"] + 1
 
-    @pytest.mark.asyncio
     async def test_send_message_failed_increments_failed_metrics(
         self, started_agent_bus, sample_message, mock_processor
     ):
@@ -217,6 +215,53 @@ class TestMessageSending:
         assert updated_metrics["messages_failed"] == initial_metrics["messages_failed"] + 1
 
 
+class TestMessageHandlerFallback:
+    async def test_fallback_denies_without_explicit_prevalidation(self, sample_message):
+        processor = MagicMock()
+        processor.process = AsyncMock(side_effect=RuntimeError("processor down"))
+        handler = MessageHandler(
+            processor=processor,
+            router_component=MagicMock(),
+            registry_manager=MagicMock(),
+            governance=MagicMock(),
+            validator=MagicMock(),
+            message_queue=MagicMock(),
+            deliberation_queue=None,
+            metering_manager=MagicMock(),
+            kafka_bus=None,
+            metrics={},
+            config={},
+        )
+
+        result = await handler.process_message_with_fallback(sample_message)
+
+        assert result.is_valid is False
+        assert result.decision == "DENY"
+
+    async def test_fallback_allows_when_explicitly_prevalidated(self, sample_message):
+        processor = MagicMock()
+        processor.process = AsyncMock(side_effect=RuntimeError("processor down"))
+        sample_message.metadata["prevalidated"] = True
+        handler = MessageHandler(
+            processor=processor,
+            router_component=MagicMock(),
+            registry_manager=MagicMock(),
+            governance=MagicMock(),
+            validator=MagicMock(),
+            message_queue=MagicMock(),
+            deliberation_queue=None,
+            metering_manager=MagicMock(),
+            kafka_bus=None,
+            metrics={},
+            config={},
+        )
+
+        result = await handler.process_message_with_fallback(sample_message)
+
+        assert result.is_valid is True
+        assert result.decision == "ALLOW"
+
+
 # =============================================================================
 # MULTI-TENANT ISOLATION TESTS (CRITICAL SECURITY)
 # =============================================================================
@@ -225,7 +270,6 @@ class TestMessageSending:
 class TestBroadcast:
     """Test broadcast functionality with tenant isolation."""
 
-    @pytest.mark.asyncio
     async def test_broadcast_to_same_tenant_only(
         self, started_agent_bus, constitutional_hash, mock_processor
     ):
@@ -255,7 +299,6 @@ class TestBroadcast:
         assert "agent-a2" in results
         assert "agent-b1" not in results
 
-    @pytest.mark.asyncio
     async def test_broadcast_no_tenant_isolation(
         self, started_agent_bus, constitutional_hash, mock_processor
     ):
@@ -290,13 +333,11 @@ class TestBroadcast:
 class TestMessageReceiving:
     """Test message receiving functionality."""
 
-    @pytest.mark.asyncio
     async def test_receive_message_timeout(self, started_agent_bus):
         """Test receiving message times out when queue is empty."""
         result = await started_agent_bus.receive_message(timeout=0.1)
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_receive_message_success(
         self, started_agent_bus, sample_message_no_tenant, mock_processor
     ):

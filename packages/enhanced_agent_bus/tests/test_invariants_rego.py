@@ -6,8 +6,6 @@ violation rules, and constitutional metadata.
 
 from pathlib import Path
 
-import pytest
-
 POLICY_PATH = Path(__file__).resolve().parents[1] / "policies" / "invariants.rego"
 
 
@@ -49,7 +47,7 @@ class TestInvariantsRego:
 
     def test_policy_has_constitutional_hash(self) -> None:
         content = POLICY_PATH.read_text()
-        assert "cdd01ef066bc6cf2" in content
+        assert "608508a9bd224290" in content
 
     def test_policy_has_allow_amendment_rule(self) -> None:
         content = POLICY_PATH.read_text()

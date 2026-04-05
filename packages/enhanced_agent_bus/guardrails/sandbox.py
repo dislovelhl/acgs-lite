@@ -4,14 +4,14 @@ Tool Runner Sandbox Guardrail Component.
 Layer 3 of OWASP guardrails: isolated execution environment for tool calls
 and external integrations using Docker or Firecracker.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import time
 from dataclasses import dataclass, field
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -79,13 +79,14 @@ class ToolRunnerSandbox(GuardrailComponent):
             return True
 
         try:
-            # Select provider type based on configuration
-            if self.config.use_firecracker:
-                provider_type = SandboxProviderType.FIRECRACKER
-            elif self.config.use_docker:
-                provider_type = SandboxProviderType.DOCKER
-            else:
-                provider_type = SandboxProviderType.MOCK
+            # Honor an explicit provider selection first. The legacy boolean
+            # flags only influence the default Docker path.
+            provider_type = self.config.provider_type
+            if provider_type == SandboxProviderType.DOCKER:
+                if self.config.use_firecracker:
+                    provider_type = SandboxProviderType.FIRECRACKER
+                elif not self.config.use_docker:
+                    provider_type = SandboxProviderType.MOCK
 
             # Create provider based on type
             if provider_type == SandboxProviderType.DOCKER:
@@ -141,7 +142,7 @@ class ToolRunnerSandbox(GuardrailComponent):
                     trace_id=trace_id,
                 )
 
-            # OPTIMIZATION: Only sandbox if specifically requested or if data appears to be an action  # noqa: E501
+            # OPTIMIZATION: Only sandbox if specifically requested or if data appears to be an action
             should_sandbox = context.get("should_sandbox", False)
             if not should_sandbox and isinstance(data, dict):
                 # Heuristic: check for keys indicating executable content
@@ -176,7 +177,7 @@ class ToolRunnerSandbox(GuardrailComponent):
                         layer=self.get_layer(),
                         violation_type="sandbox_execution_failed",
                         severity=ViolationSeverity.HIGH,
-                        message=f"Sandbox execution failed: {sandbox_result.get('error', 'Unknown error')}",  # noqa: E501
+                        message=f"Sandbox execution failed: {sandbox_result.get('error', 'Unknown error')}",
                         details=sandbox_result,
                         trace_id=trace_id,
                     )

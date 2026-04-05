@@ -1,6 +1,6 @@
 """
 ACGS-2 Deliberation Layer - Vote Event Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Pydantic models for Kafka vote events, audit records, and weighted voting.
 """
@@ -11,16 +11,16 @@ from enum import Enum
 from pydantic import BaseModel, ConfigDict, Field
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
 
-class VoteDecision(str, Enum):  # noqa: UP042
+class VoteDecision(str, Enum):
     """Vote decision types."""
 
     APPROVE = "APPROVE"
@@ -28,7 +28,7 @@ class VoteDecision(str, Enum):  # noqa: UP042
     ABSTAIN = "ABSTAIN"
 
 
-class VoteEventType(str, Enum):  # noqa: UP042
+class VoteEventType(str, Enum):
     """Types of vote events for audit trail."""
 
     ELECTION_CREATED = "election_created"

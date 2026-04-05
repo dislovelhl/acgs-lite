@@ -1,7 +1,7 @@
 """
 Durable Workflow Executor
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 Version: 1.0.0
 
 Provides durable workflow execution with:
@@ -30,7 +30,7 @@ except ImportError:
     _TELEMETRY_AVAILABLE = False
     tracer = None
 
-from src.core.shared.cache import workflow_cache
+from enhanced_agent_bus._compat.cache import workflow_cache
 
 from .metrics import (
     WORKFLOW_CANCELLED_TOTAL,
@@ -594,7 +594,7 @@ class DurableWorkflowExecutor:
                 current_instance = await self.repository.get_workflow(context.workflow_instance.id)
                 if current_instance and current_instance.status == WorkflowStatus.CANCELLED:
                     raise asyncio.CancelledError(
-                        f"Workflow {context.workflow_instance.workflow_id} was cancelled during step {step_name}"  # noqa: E501
+                        f"Workflow {context.workflow_instance.workflow_id} was cancelled during step {step_name}"
                     )
 
                 await self._complete_step(context, step, step_name, result, idempotency_key, span)

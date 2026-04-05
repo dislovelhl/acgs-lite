@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Deterministic Chaos Profiles
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Deterministic chaos testing profiles for controlled failure injection:
 - Governance-only chaos: Target constitutional validation paths
@@ -16,9 +16,8 @@ from enum import Enum
 from typing import ClassVar, Optional
 
 # Constitutional Hash - Required for all governance operations
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
-
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.types import JSONDict
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)

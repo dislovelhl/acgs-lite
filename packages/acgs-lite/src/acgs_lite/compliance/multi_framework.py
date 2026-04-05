@@ -4,7 +4,7 @@ Runs compliance assessment across all applicable regulatory frameworks
 and produces a unified MultiFrameworkReport with cross-framework gap
 analysis, overall scoring, and prioritized recommendations.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Usage::
 
@@ -20,26 +20,39 @@ Usage::
 
 from __future__ import annotations
 
+import dataclasses
 from collections import Counter
 from datetime import UTC, datetime
 from typing import Any
 
+from acgs_lite.compliance.australia_ai_ethics import AustraliaAIEthicsFramework
 from acgs_lite.compliance.base import (
+    ChecklistStatus,
     ComplianceFramework,
     FrameworkAssessment,
     MultiFrameworkReport,
 )
+from acgs_lite.compliance.brazil_lgpd import BrazilLGPDFramework
+from acgs_lite.compliance.canada_aida import CanadaAIDAFramework
+from acgs_lite.compliance.ccpa_cpra import CCPACPRAFramework
+from acgs_lite.compliance.china_ai import ChinaAIFramework
+from acgs_lite.compliance.dora import DORAFramework
+from acgs_lite.compliance.eu_ai_act import EUAIActFramework
 from acgs_lite.compliance.gdpr import GDPRFramework
 from acgs_lite.compliance.hipaa_ai import HIPAAAIFramework
+from acgs_lite.compliance.india_dpdp import IndiaDPDPFramework
 from acgs_lite.compliance.iso_42001 import ISO42001Framework
 from acgs_lite.compliance.nist_ai_rmf import NISTAIRMFFramework
 from acgs_lite.compliance.nyc_ll144 import NYCLL144Framework
 from acgs_lite.compliance.oecd_ai import OECDAIFramework
+from acgs_lite.compliance.singapore_maigf import SingaporeMAIGFFramework
 from acgs_lite.compliance.soc2_ai import SOC2AIFramework
+from acgs_lite.compliance.uk_ai_framework import UKAIFramework
 from acgs_lite.compliance.us_fair_lending import USFairLendingFramework
 
 # Registry of all available compliance frameworks
 _FRAMEWORK_REGISTRY: dict[str, type] = {
+    # Original 8
     "nist_ai_rmf": NISTAIRMFFramework,
     "iso_42001": ISO42001Framework,
     "gdpr": GDPRFramework,
@@ -48,14 +61,35 @@ _FRAMEWORK_REGISTRY: dict[str, type] = {
     "us_fair_lending": USFairLendingFramework,
     "nyc_ll144": NYCLL144Framework,
     "oecd_ai": OECDAIFramework,
+    # Round 2: +5
+    "eu_ai_act": EUAIActFramework,
+    "dora": DORAFramework,
+    "canada_aida": CanadaAIDAFramework,
+    "singapore_maigf": SingaporeMAIGFFramework,
+    "uk_ai_framework": UKAIFramework,
+    # Round 3: +5
+    "india_dpdp": IndiaDPDPFramework,
+    "australia_ai_ethics": AustraliaAIEthicsFramework,
+    "brazil_lgpd": BrazilLGPDFramework,
+    "china_ai": ChinaAIFramework,
+    "ccpa_cpra": CCPACPRAFramework,
 }
 
 # Jurisdiction -> frameworks that apply
 _JURISDICTION_MAP: dict[str, list[str]] = {
-    "united_states": ["nist_ai_rmf", "soc2_ai", "oecd_ai"],
-    "european_union": ["gdpr", "iso_42001", "oecd_ai"],
+    "united_states": ["nist_ai_rmf", "soc2_ai", "oecd_ai", "ccpa_cpra"],
+    "european_union": ["gdpr", "eu_ai_act", "iso_42001", "oecd_ai"],
     "international": ["iso_42001", "oecd_ai"],
     "new_york_city": ["nist_ai_rmf", "soc2_ai", "nyc_ll144", "oecd_ai"],
+    "canada": ["canada_aida", "nist_ai_rmf", "oecd_ai"],
+    "united_kingdom": ["uk_ai_framework", "iso_42001", "oecd_ai"],
+    "singapore": ["singapore_maigf", "iso_42001", "oecd_ai"],
+    "asean": ["singapore_maigf", "oecd_ai"],
+    "india": ["india_dpdp", "oecd_ai"],
+    "australia": ["australia_ai_ethics", "oecd_ai"],
+    "brazil": ["brazil_lgpd", "oecd_ai"],
+    "china": ["china_ai"],
+    "california": ["ccpa_cpra", "nist_ai_rmf"],
 }
 
 # Domain -> additional frameworks
@@ -65,11 +99,92 @@ _DOMAIN_MAP: dict[str, list[str]] = {
     "lending": ["us_fair_lending"],
     "credit": ["us_fair_lending"],
     "credit_scoring": ["us_fair_lending"],
-    "financial": ["us_fair_lending", "soc2_ai"],
-    "finance": ["us_fair_lending", "soc2_ai"],
+    "financial": ["us_fair_lending", "soc2_ai", "dora"],
+    "finance": ["us_fair_lending", "soc2_ai", "dora"],
+    "fintech": ["dora", "soc2_ai"],
+    "banking": ["dora", "us_fair_lending", "soc2_ai"],
+    "insurance": ["dora", "soc2_ai"],
     "employment": ["nyc_ll144"],
     "hiring": ["nyc_ll144"],
+    "general_purpose_ai": ["eu_ai_act"],
+    "gpai": ["eu_ai_act"],
 }
+
+# ---------------------------------------------------------------------------
+# Evidence integration
+# ---------------------------------------------------------------------------
+
+
+def _apply_evidence_to_assessment(
+    assessment: FrameworkAssessment,
+    bundle: Any,  # EvidenceBundle — imported lazily to avoid circular import
+) -> FrameworkAssessment:
+    """Upgrade PENDING checklist items to COMPLIANT when evidence exists.
+
+    Walks the evidence bundle for items whose ``article_refs`` match a PENDING
+    checklist item, then creates a new :class:`FrameworkAssessment` (via
+    ``dataclasses.replace``) with updated items, score, and gaps.
+
+    Args:
+        assessment: Frozen FrameworkAssessment from a normal ``fw.assess()`` call.
+        bundle: :class:`~acgs_lite.compliance.evidence.EvidenceBundle` with
+            collected runtime / filesystem / env-var evidence.
+
+    Returns:
+        A new ``FrameworkAssessment`` with evidence applied, or the original
+        unchanged if no matching evidence was found.
+    """
+    fw_id = assessment.framework_id
+    evidence_items = bundle.for_framework(fw_id)  # includes "*" wildcards
+    if not evidence_items:
+        return assessment
+
+    # Build ref → best evidence description (highest confidence wins)
+    ref_to_ev: dict[str, str] = {}
+    for ev in sorted(evidence_items, key=lambda e: e.confidence, reverse=True):
+        for ref in ev.article_refs:
+            if ref not in ref_to_ev:
+                ref_to_ev[ref] = ev.description
+
+    if not ref_to_ev:
+        return assessment
+
+    _compliant_statuses = {
+        ChecklistStatus.COMPLIANT.value,
+        ChecklistStatus.NOT_APPLICABLE.value,
+    }
+    _pending = ChecklistStatus.PENDING.value
+    _compliant = ChecklistStatus.COMPLIANT.value
+
+    updated: list[dict[str, Any]] = []
+    changed = False
+    for item_dict in assessment.items:
+        item = dict(item_dict)
+        if item.get("status") == _pending and item.get("ref") in ref_to_ev:
+            item["status"] = _compliant
+            item["evidence"] = ref_to_ev[item["ref"]]
+            changed = True
+        updated.append(item)
+
+    if not changed:
+        return assessment
+
+    total = len(updated)
+    compliant_count = sum(1 for i in updated if i.get("status") in _compliant_statuses)
+    new_score = round(compliant_count / total, 4) if total else 1.0
+    new_gaps = tuple(
+        f"{i['ref']}: {str(i.get('requirement', ''))[:120]}"
+        for i in updated
+        if i.get("status") not in _compliant_statuses and i.get("blocking", True)
+    )
+
+    return dataclasses.replace(
+        assessment,
+        compliance_score=new_score,
+        items=tuple(updated),
+        gaps=new_gaps,
+    )
+
 
 # Gap categories that appear across multiple frameworks
 _CROSS_FRAMEWORK_THEMES: dict[str, list[str]] = {
@@ -132,6 +247,7 @@ class MultiFrameworkAssessor:
     """
 
     def __init__(self, frameworks: list[str] | None = None) -> None:
+        """Initialize with an optional list of framework IDs to assess."""
         self._requested_frameworks = frameworks
         self._instances: dict[str, ComplianceFramework] = {}
 
@@ -182,6 +298,7 @@ class MultiFrameworkAssessor:
 
         Returns:
             Sorted list of applicable framework IDs.
+
         """
         desc = {"jurisdiction": jurisdiction, "domain": domain}
         return self._resolve_frameworks(desc)
@@ -195,18 +312,26 @@ class MultiFrameworkAssessor:
                 - jurisdiction: str (optional, for auto-selection)
                 - domain: str (optional, for auto-selection)
                 - purpose: str (optional)
+                - _evidence: :class:`~acgs_lite.compliance.evidence.EvidenceBundle`
+                  (optional) — collected runtime evidence; upgrades matching PENDING
+                  items to COMPLIANT automatically.
                 - Additional framework-specific keys.
 
         Returns:
             Frozen MultiFrameworkReport with per-framework and cross-framework results.
+
         """
         system_id = system_description.get("system_id", "unknown")
         fw_ids = self._resolve_frameworks(system_description)
+        evidence = system_description.get("_evidence")
 
         by_framework: dict[str, FrameworkAssessment] = {}
         for fid in fw_ids:
             fw = self._get_instance(fid)
-            by_framework[fid] = fw.assess(system_description)
+            assessment = fw.assess(system_description)
+            if evidence is not None:
+                assessment = _apply_evidence_to_assessment(assessment, evidence)
+            by_framework[fid] = assessment
 
         overall_score = _compute_overall_score(by_framework)
         acgs_total = _compute_acgs_coverage(by_framework)
@@ -230,6 +355,7 @@ class MultiFrameworkAssessor:
 
         Returns:
             Dict mapping framework_id to framework_name.
+
         """
         result: dict[str, str] = {}
         for fid, cls in sorted(_FRAMEWORK_REGISTRY.items()):

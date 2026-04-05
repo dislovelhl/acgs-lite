@@ -1,6 +1,6 @@
 """
 Tests for Constitutional Hash Validation.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import pytest
@@ -27,7 +27,6 @@ class TestConstitutionalHashValidation:
         service = IntegrationConfigService(constitutional_hash=CONSTITUTIONAL_HASH)
         assert service._constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_integration_dict_includes_hash(self, integration_service):
         """Test that serialized integration includes hash."""
         integration = await integration_service.create_integration(

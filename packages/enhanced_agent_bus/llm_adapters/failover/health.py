@@ -1,6 +1,6 @@
 """
 ACGS-2 LLM Failover - Health Scoring Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provider health scoring based on latency, errors, quality, and availability.
 """
@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -62,7 +62,7 @@ class ProviderHealthScore:
     """
     Health score for an LLM provider.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     provider_id: str
@@ -108,7 +108,7 @@ class ProviderHealthScorer:
     """
     Scores provider health based on multiple factors.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Health score components:
     - Latency (30%): Based on P95 latency vs expected

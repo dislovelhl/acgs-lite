@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - HITL Manager Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for the HITLManager class.
 Tests cover:
@@ -8,8 +8,6 @@ Tests cover:
 - Error handling and edge cases
 - Integration with related components
 """
-
-import pytest
 
 from .hitl_test_helpers import (
     MockAuditLedger,
@@ -21,7 +19,6 @@ from .hitl_test_helpers import (
 class TestProcessApproval:
     """Tests for process_approval method."""
 
-    @pytest.mark.asyncio
     async def test_process_approval_approve_decision(
         self, mock_queue: MockDeliberationQueue, mock_audit_ledger: MockAuditLedger
     ) -> None:
@@ -67,7 +64,6 @@ class TestProcessApproval:
         mock_queue.submit_human_decision.assert_called_once()
         mock_audit_ledger.add_validation_result.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_process_approval_reject_decision(
         self, mock_queue: MockDeliberationQueue, mock_audit_ledger: MockAuditLedger
     ) -> None:
@@ -113,7 +109,6 @@ class TestProcessApproval:
         call_kwargs = mock_queue.submit_human_decision.call_args.kwargs
         assert call_kwargs["decision"] == MockDeliberationStatus.REJECTED
 
-    @pytest.mark.asyncio
     async def test_process_approval_submission_failure(
         self, mock_queue: MockDeliberationQueue, mock_audit_ledger: MockAuditLedger
     ) -> None:

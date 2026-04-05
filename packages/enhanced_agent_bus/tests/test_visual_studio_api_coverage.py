@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Tests for src/core/enhanced_agent_bus/visual_studio/api.py
 Target: ≥90% coverage of the API module.
@@ -13,9 +13,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 from fastapi import FastAPI
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.security.auth import UserClaims, get_current_user
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.security.auth import UserClaims, get_current_user
 from enhanced_agent_bus.visual_studio.models import (
     ExportFormat,
     NodeType,

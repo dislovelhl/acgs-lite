@@ -1,7 +1,7 @@
 """
 ACGS-2 Enhanced Agent Bus API Exception Handlers
 Exception handlers and middleware for the Enhanced Agent Bus API
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module contains all exception handlers and error response utilities
 extracted from api.py for better code organization and maintainability.
@@ -18,14 +18,14 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse, Response
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 try:
-    from src.core.shared.acgs_logging import init_service_logging
+    from enhanced_agent_bus._compat.acgs_logging import init_service_logging
 
     logger = init_service_logging("enhanced-agent-bus", level="INFO", json_format=True)
 except ImportError:
@@ -91,7 +91,7 @@ def create_error_response(
     """Helper to create standardized error responses."""
     return {
         "status": "error",
-        "code": getattr(exc, "code", "INTERNAL_ERROR"),
+        "code": getattr(exc, "code", getattr(exc, "error_code", "INTERNAL_ERROR")),
         "message": str(exc),
         "details": getattr(exc, "details", {}),
         "request_id": request_id,

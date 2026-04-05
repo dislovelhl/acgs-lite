@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.core.shared.config import settings
+from src.core.shared.config.runtime_environment import resolve_runtime_environment
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.errors.exceptions import ConfigurationError
 from src.core.shared.security.key_loader import load_key_material
@@ -28,12 +29,15 @@ _JWT_SECRET_ENV_KEYS = ("JWT_SECRET", "JWT_SECRET_KEY")
 _JWT_PRIVATE_KEY_ENV_KEY = "JWT_PRIVATE_KEY"
 _JWT_PUBLIC_KEY_ENV_KEY = "JWT_PUBLIC_KEY"
 _JWT_ALGORITHM_ENV_KEY = "JWT_ALGORITHM"
-_ALLOWED_JWT_ALGORITHMS = frozenset(
-    {"RS256", "RS384", "RS512", "ES256", "ES384", "EdDSA", "HS256"}
-)
+_ALLOWED_JWT_ALGORITHMS = frozenset({"RS256", "RS384", "RS512", "ES256", "ES384", "EdDSA", "HS256"})
 _JWT_ALGORITHM_CANONICAL_MAP = {
     algorithm.lower(): algorithm for algorithm in _ALLOWED_JWT_ALGORITHMS
 }
+_NON_PRODUCTION_ENVS = frozenset({"development", "dev", "test", "testing", "local", "ci"})
+_RS256_KEYS_MISSING_MESSAGE = (
+    "RS256 requested but RSA verification keys are not configured. Set JWT_PUBLIC_KEY for "
+    "verification, JWT_PRIVATE_KEY for signing, or change JWT_ALGORITHM to HS256."
+)
 
 # Security schemes
 security = HTTPBearer(auto_error=False)
@@ -58,7 +62,7 @@ class TokenResponse(BaseModel):
     """Token response model."""
 
     access_token: str
-    token_type: str = "bearer"  # noqa: S105
+    token_type: str = "bearer"
 
 
 def _current_jwt_secret() -> str | None:
@@ -76,9 +80,7 @@ def _current_jwt_secret() -> str | None:
 def _current_jwt_private_key() -> str | None:
     configured = (os.getenv(_JWT_PRIVATE_KEY_ENV_KEY) or "").strip()
     if configured:
-        loaded = load_key_material(
-            configured, error_code="JWT_KEY_FILE_READ_FAILED"
-        )
+        loaded = load_key_material(configured, error_code="JWT_KEY_FILE_READ_FAILED")
         return loaded if loaded else None
 
     local_private_key = getattr(settings, "jwt_private_key", "")
@@ -91,9 +93,7 @@ def _current_jwt_private_key() -> str | None:
 def _current_jwt_public_key() -> str | None:
     configured = (os.getenv(_JWT_PUBLIC_KEY_ENV_KEY) or "").strip()
     if configured:
-        loaded = load_key_material(
-            configured, error_code="JWT_KEY_FILE_READ_FAILED"
-        )
+        loaded = load_key_material(configured, error_code="JWT_KEY_FILE_READ_FAILED")
         return loaded if loaded else None
 
     local_public_key = getattr(settings, "jwt_public_key", "")
@@ -143,17 +143,16 @@ def _resolve_jwt_material(for_signing: bool) -> tuple[str, str]:
     public_key = _current_jwt_public_key()
     if private_key and public_key:
         return (
-            (private_key, requested_algorithm)
-            if for_signing
-            else (public_key, requested_algorithm)
+            (private_key, requested_algorithm) if for_signing else (public_key, requested_algorithm)
         )
+
+    # Verification-only path: public key alone is sufficient when not signing
+    if not for_signing and public_key:
+        return public_key, requested_algorithm
 
     if requested_algorithm == "RS256":
         raise ConfigurationError(
-            message=(
-                "RS256 requested but RSA keys (JWT_PRIVATE_KEY, JWT_PUBLIC_KEY) are not "
-                "configured. Set keys or change JWT_ALGORITHM to HS256."
-            ),
+            message=_RS256_KEYS_MISSING_MESSAGE,
             error_code="JWT_RSA_KEYS_MISSING",
         )
 
@@ -169,6 +168,11 @@ def _resolve_jwt_material(for_signing: bool) -> tuple[str, str]:
 def has_jwt_secret() -> bool:
     """Return True when any supported JWT secret source is configured."""
     return _current_jwt_secret() is not None
+
+
+def has_jwt_verification_material() -> bool:
+    """Return True when any JWT verification material (secret or public key) is configured."""
+    return _current_jwt_secret() is not None or _current_jwt_public_key() is not None
 
 
 def create_access_token(
@@ -213,6 +217,44 @@ def create_access_token(
     encoded_jwt = jwt.encode(to_encode, key_material, algorithm=algorithm)
 
     return encoded_jwt
+
+
+def _is_production_environment() -> bool:
+    environment = resolve_runtime_environment(
+        getattr(settings, "env", None),
+        extra_env_vars=("ACGS2_ENV",),
+    )
+    return environment not in _NON_PRODUCTION_ENVS
+
+
+def _get_revocation_service():
+    try:
+        from src.core.shared.security import auth_dependency
+    except Exception:
+        return None
+
+    return getattr(auth_dependency, "_revocation_service", None)
+
+
+async def _check_revocation_or_fail_closed(jti: str | None) -> None:
+    if not jti:
+        return
+
+    service = _get_revocation_service()
+    if service is None:
+        if _is_production_environment():
+            raise HTTPException(status_code=503, detail="Token revocation backend unavailable")
+        return
+
+    try:
+        if await service.is_token_revoked(jti):
+            raise HTTPException(status_code=401, detail="Token has been revoked")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("Token revocation check failed: %s", exc)
+        if _is_production_environment():
+            raise HTTPException(status_code=503, detail="Token revocation backend unavailable") from exc
 
 
 def verify_token(token: str) -> UserClaims:
@@ -298,7 +340,9 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    return verify_token(credentials.credentials)
+    claims = verify_token(credentials.credentials)
+    await _check_revocation_or_fail_closed(claims.jti)
+    return claims
 
 
 async def get_current_user_optional(
@@ -440,6 +484,7 @@ __all__ = [
     "get_current_user",
     "get_current_user_optional",
     "has_jwt_secret",
+    "has_jwt_verification_material",
     "require_permission",
     "require_role",
     "require_tenant_access",

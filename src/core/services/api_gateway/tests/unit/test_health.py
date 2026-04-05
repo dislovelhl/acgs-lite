@@ -1,6 +1,6 @@
 """
 ACGS-2 API Gateway Health Endpoint Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for health module per SPEC_ACGS2_ENHANCED.md Section 3.3.
 """
@@ -10,7 +10,6 @@ import sys
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -176,7 +175,6 @@ class TestHealthChecker:
         assert checker.redis_url == "redis://localhost:6379"
         assert checker.opa_url == "http://opa:8181"
 
-    @pytest.mark.asyncio
     async def test_check_database_no_url(self):
         """Test database check when no URL configured."""
         checker = HealthChecker(database_url=None)
@@ -184,7 +182,6 @@ class TestHealthChecker:
         assert result.status == "up"
         assert "No database URL" in (result.error or "")
 
-    @pytest.mark.asyncio
     async def test_check_redis_no_url(self):
         """Test Redis check when no URL configured."""
         checker = HealthChecker(redis_url=None)
@@ -192,7 +189,6 @@ class TestHealthChecker:
         assert result.status == "up"
         assert "No Redis URL" in (result.error or "")
 
-    @pytest.mark.asyncio
     async def test_check_opa_connection_error(self):
         """Test OPA check with connection error."""
         checker = HealthChecker(opa_url="http://nonexistent:8181")
@@ -201,7 +197,6 @@ class TestHealthChecker:
         assert result.error is not None
         assert result.latency_ms >= 0
 
-    @pytest.mark.asyncio
     async def test_check_all_returns_dict(self):
         """Test check_all returns dictionary with all checks."""
         checker = HealthChecker()
@@ -213,7 +208,6 @@ class TestHealthChecker:
         for check in results.values():
             assert isinstance(check, DependencyCheck)
 
-    @pytest.mark.asyncio
     async def test_check_constitutional_hash_mismatch(self):
         """Readiness must fail if runtime hash differs from canonical hash."""
         checker = HealthChecker()
@@ -416,7 +410,6 @@ class TestHealthEndpointSpec:
 class TestHealthCheckerIntegration:
     """Integration tests for HealthChecker with mocked dependencies."""
 
-    @pytest.mark.asyncio
     async def test_check_opa_success(self):
         """Test successful OPA health check."""
         with patch("httpx.AsyncClient.get") as mock_get:

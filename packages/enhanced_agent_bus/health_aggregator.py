@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Health Aggregation Service
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Real-time health monitoring and aggregation across all circuit breakers.
 Designed to maintain P99 latency < 1.31ms by using fire-and-forget patterns.
@@ -16,14 +16,14 @@ from datetime import UTC, datetime
 from enum import Enum
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         SupportsCircuitBreaker,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     SupportsCircuitBreaker = object  # type: ignore[misc,assignment]
@@ -32,7 +32,8 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 
 try:
     import pybreaker
-    from src.core.shared.circuit_breaker import CircuitBreakerRegistry
+
+    from enhanced_agent_bus._compat.circuit_breaker import CircuitBreakerRegistry
 
     CIRCUIT_BREAKER_AVAILABLE = True
 except ImportError:
@@ -157,7 +158,7 @@ class HealthAggregator:
     Uses fire-and-forget pattern to ensure zero impact on P99 latency.
     Collects health snapshots and provides real-time health scoring.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -206,7 +207,7 @@ class HealthAggregator:
 
         if self._health_check_task:
             self._health_check_task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._health_check_task
             except asyncio.CancelledError:
                 pass

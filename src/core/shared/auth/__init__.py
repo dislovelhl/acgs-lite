@@ -1,6 +1,6 @@
 """
 ACGS-2 Authentication Handlers
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides authentication handlers for SSO integration,
 supporting both OpenID Connect (OIDC) and SAML 2.0 protocols.

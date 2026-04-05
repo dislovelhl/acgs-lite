@@ -1,19 +1,16 @@
 """
 Integration tests for SDPC Phase 3 Evolutionary Loop
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from unittest.mock import AsyncMock
-
-import pytest
 
 from enhanced_agent_bus.deliberation_layer.intent_classifier import IntentType
 from enhanced_agent_bus.message_processor import MessageProcessor
 from enhanced_agent_bus.models import AgentMessage, MessageType
 
 
-@pytest.mark.asyncio
 async def test_sdpc_phase3_evolution_loop():
     # Initialize processor with MACI disabled
     processor = MessageProcessor(
@@ -58,7 +55,6 @@ async def test_sdpc_phase3_evolution_loop():
     assert "factual precision agent" in compiled_prompt
 
 
-@pytest.mark.asyncio
 async def test_sdpc_phase3_reset_logic():
     processor = MessageProcessor(
         enable_maci=False

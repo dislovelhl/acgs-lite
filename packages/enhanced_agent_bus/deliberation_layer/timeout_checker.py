@@ -1,6 +1,6 @@
 """
 ACGS-2 Deliberation Layer - Timeout Checker
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Background task to check election expiration and trigger escalation events.
 """
@@ -21,9 +21,9 @@ except ImportError:
     VoteEventType = None  # type: ignore[misc, assignment]
 
 try:
-    from src.core.shared.config import settings
+    from enhanced_agent_bus._compat.config import settings
 except ImportError:
-    from src.core.shared.config import settings  # type: ignore[import-untyped]
+    from enhanced_agent_bus._compat.config import settings  # type: ignore[import-untyped]
 
 logger = get_logger(__name__)
 _TIMEOUT_CHECKER_ERRORS = (
@@ -74,7 +74,7 @@ class TimeoutChecker:
         self._running = False
         if self._task:
             self._task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._task
             except asyncio.CancelledError:
                 pass
@@ -131,7 +131,7 @@ class TimeoutChecker:
             logger.error(f"Error scanning elections: {e}")
 
     async def _handle_expired_election(self, election_id: str, election_data: dict) -> None:
-        """Handle an expired election: mark as EXPIRED, set result=DENY, publish escalation event."""  # noqa: E501
+        """Handle an expired election: mark as EXPIRED, set result=DENY, publish escalation event."""
         election_store = await get_election_store()
         if not election_store:
             return

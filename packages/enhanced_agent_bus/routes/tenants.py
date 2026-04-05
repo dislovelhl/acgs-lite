@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Tenant Management API
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides REST API endpoints for managing multi-tenant configurations,
 enabling tenant lifecycle management, quota enforcement, and hierarchical tenancy.
@@ -17,13 +17,13 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.security.error_sanitizer import safe_error_detail
+from enhanced_agent_bus._compat.security.error_sanitizer import safe_error_detail
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -76,9 +76,10 @@ except (ImportError, ValueError):
         from enum import Enum
 
         from pydantic import BaseModel
-        from src.core.shared.errors.exceptions import ACGSBaseError
 
-        class TenantStatus(str, Enum):  # type: ignore[no-redef]  # noqa: UP042
+        from enhanced_agent_bus._compat.errors import ACGSBaseError
+
+        class TenantStatus(str, Enum):  # type: ignore[no-redef]
             PENDING = "pending"
             ACTIVE = "active"
             SUSPENDED = "suspended"
@@ -204,8 +205,7 @@ JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "")
 JWT_ALGORITHM = os.environ.get("JWT_ALGORITHM", "RS256")
 if JWT_ALGORITHM not in _ALLOWED_JWT_ALGORITHMS:
     raise ValueError(
-        f"Unsupported JWT_ALGORITHM={JWT_ALGORITHM!r}. "
-        f"Allowed: {sorted(_ALLOWED_JWT_ALGORITHMS)}"
+        f"Unsupported JWT_ALGORITHM={JWT_ALGORITHM!r}. Allowed: {sorted(_ALLOWED_JWT_ALGORITHMS)}"
     )
 JWT_ISSUER = os.environ.get("JWT_ISSUER", "acgs2-agent-runtime")
 JWT_AUDIENCE = os.environ.get("JWT_AUDIENCE", "acgs2-services")
@@ -289,7 +289,7 @@ def _validate_jwt_token(token: str) -> dict | None:
         token_hash = payload.get("constitutional_hash")
         if token_hash and token_hash != CONSTITUTIONAL_HASH:
             logger.warning(
-                f"JWT constitutional hash mismatch: expected {CONSTITUTIONAL_HASH}, got {token_hash}"  # noqa: E501
+                f"JWT constitutional hash mismatch: expected {CONSTITUTIONAL_HASH}, got {token_hash}"
             )
             return None
 
@@ -736,7 +736,7 @@ Create a new tenant with the specified configuration.
 - Configurable resource quotas
 - Auto-activation option
 
-**Constitutional Hash:** cdd01ef066bc6cf2
+**Constitutional Hash:** 608508a9bd224290
     """,
 )
 async def create_tenant(

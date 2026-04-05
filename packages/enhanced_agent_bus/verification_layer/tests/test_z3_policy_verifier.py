@@ -1,6 +1,6 @@
 """
 Tests for Z3 Policy Verifier - VeriPlan SMT Solver Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests cover:
 - Policy constraint generation
@@ -65,7 +65,7 @@ class TestZ3PolicyVerifierCreation:
         verifier = create_z3_verifier()
         assert verifier is not None
         assert verifier.default_timeout_ms == 5000
-        assert verifier.enable_heuristic_fallback
+        assert not verifier.enable_heuristic_fallback
 
     def test_custom_timeout(self):
         """Test verifier with custom timeout."""
@@ -159,13 +159,11 @@ class TestConstraintGenerator:
     def generator(self):
         return ConstraintGenerator()
 
-    @pytest.mark.asyncio
     async def test_generate_from_empty_text(self, generator):
         """Test generating constraints from empty text."""
         constraints = await generator.generate_constraints("")
         assert constraints == []
 
-    @pytest.mark.asyncio
     async def test_generate_obligation_constraint(self, generator):
         """Test generating obligation constraint."""
         constraints = await generator.generate_constraints(
@@ -175,7 +173,6 @@ class TestConstraintGenerator:
         assert len(constraints) > 0
         assert any("Obligation" in c.name for c in constraints)
 
-    @pytest.mark.asyncio
     async def test_generate_prohibition_constraint(self, generator):
         """Test generating prohibition constraint."""
         constraints = await generator.generate_constraints(
@@ -185,7 +182,6 @@ class TestConstraintGenerator:
         assert len(constraints) > 0
         assert any("Prohibition" in c.name for c in constraints)
 
-    @pytest.mark.asyncio
     async def test_generate_permission_constraint(self, generator):
         """Test generating permission constraint."""
         constraints = await generator.generate_constraints(
@@ -195,7 +191,6 @@ class TestConstraintGenerator:
         assert len(constraints) > 0
         assert any("Permission" in c.name for c in constraints)
 
-    @pytest.mark.asyncio
     async def test_generate_comparison_constraint(self, generator):
         """Test generating comparison constraint."""
         constraints = await generator.generate_constraints(
@@ -205,7 +200,6 @@ class TestConstraintGenerator:
         assert len(constraints) > 0
         assert any("Comparison" in c.name for c in constraints)
 
-    @pytest.mark.asyncio
     async def test_generate_multiple_constraints(self, generator):
         """Test generating multiple constraints from complex text."""
         policy_text = """
@@ -226,14 +220,12 @@ class TestHeuristicVerifier:
     def verifier(self):
         return HeuristicVerifier()
 
-    @pytest.mark.asyncio
     async def test_verify_empty_constraints(self, verifier):
         """Test verifying empty constraint list."""
         score, violations = await verifier.verify([], {})
         assert score == 0.0
         assert violations == []
 
-    @pytest.mark.asyncio
     async def test_verify_single_constraint(self, verifier):
         """Test verifying single constraint."""
         constraint = PolicyConstraint(
@@ -246,7 +238,6 @@ class TestHeuristicVerifier:
         assert score > 0
         assert isinstance(violations, list)
 
-    @pytest.mark.asyncio
     async def test_verify_multiple_constraints(self, verifier):
         """Test verifying multiple constraints."""
         constraints = [
@@ -309,7 +300,7 @@ class TestPolicyVerificationRequest:
         assert request.policy_id == "policy-001"
         assert request.policy_text == "Users must authenticate."
         assert request.timeout_ms == 5000
-        assert request.use_heuristic_fallback
+        assert not request.use_heuristic_fallback
         assert request.constitutional_hash == CONSTITUTIONAL_HASH
 
     def test_request_with_constraints(self):
@@ -396,7 +387,6 @@ class TestZ3VerificationStatus:
 class TestZ3PolicyVerification:
     """Tests for Z3 policy verification."""
 
-    @pytest.mark.asyncio
     async def test_verify_simple_policy(self):
         """Test verifying a simple policy."""
         verifier = create_z3_verifier()
@@ -409,7 +399,6 @@ class TestZ3PolicyVerification:
         assert isinstance(result, PolicyVerificationResult)
         assert result.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_verify_policy_with_constraints(self):
         """Test verifying policy with pre-generated constraints."""
         verifier = create_z3_verifier()
@@ -432,7 +421,6 @@ class TestZ3PolicyVerification:
         assert result is not None
         assert result.total_constraints == 1
 
-    @pytest.mark.asyncio
     async def test_verify_empty_policy(self):
         """Test verifying empty policy."""
         verifier = create_z3_verifier()
@@ -442,7 +430,6 @@ class TestZ3PolicyVerification:
         assert result.is_verified
         assert len(result.warnings) > 0
 
-    @pytest.mark.asyncio
     async def test_heuristic_fallback_when_z3_unavailable(self):
         """Test heuristic fallback."""
         verifier = create_z3_verifier(enable_heuristic_fallback=True)
@@ -458,7 +445,6 @@ class TestZ3PolicyVerification:
             Z3VerificationStatus.UNKNOWN,
         )
 
-    @pytest.mark.asyncio
     async def test_verification_produces_proof(self):
         """Test that verification produces proof."""
         verifier = create_z3_verifier()
@@ -468,7 +454,6 @@ class TestZ3PolicyVerification:
         assert result.proof is not None
         assert isinstance(result.proof, VerificationProof)
 
-    @pytest.mark.asyncio
     async def test_verification_with_timeout(self):
         """Test verification with custom timeout."""
         verifier = create_z3_verifier(timeout_ms=100)
@@ -480,7 +465,6 @@ class TestZ3PolicyVerification:
 
         assert result is not None
 
-    @pytest.mark.asyncio
     async def test_verification_generates_recommendations(self):
         """Test that verification generates recommendations."""
         verifier = create_z3_verifier()
@@ -503,7 +487,6 @@ class TestVerificationStatistics:
 
         assert stats["total_verifications"] == 0
 
-    @pytest.mark.asyncio
     async def test_stats_after_verification(self):
         """Test statistics after verification."""
         verifier = create_z3_verifier()
@@ -528,7 +511,6 @@ class TestZ3Integration:
         assert Z3_AVAILABLE
 
     @pytest.mark.skipif(not Z3_AVAILABLE, reason="Z3 not installed")
-    @pytest.mark.asyncio
     async def test_z3_verification(self):
         """Test actual Z3 verification."""
         verifier = create_z3_verifier()
@@ -546,7 +528,6 @@ class TestZ3Integration:
 class TestComplexPolicies:
     """Tests for complex policy verification."""
 
-    @pytest.mark.asyncio
     async def test_multi_constraint_policy(self):
         """Test policy with multiple constraints."""
         verifier = create_z3_verifier()
@@ -564,7 +545,6 @@ class TestComplexPolicies:
         assert result.total_constraints >= 3
         assert result.proof is not None
 
-    @pytest.mark.asyncio
     async def test_conflicting_policy(self):
         """Test policy with potentially conflicting constraints."""
         verifier = create_z3_verifier()

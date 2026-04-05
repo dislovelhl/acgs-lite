@@ -1,6 +1,6 @@
 """
 ACGS-2 Deliberation Layer - Interfaces
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Protocol definitions for dependency injection in the deliberation layer.
 """
@@ -15,14 +15,14 @@ from typing import (
 )
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]
@@ -80,7 +80,7 @@ else:
 class ImpactScorerProtocol(Protocol):
     """Protocol for impact scoring implementations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def calculate_impact_score(self, content: JSONDict, context: JSONDict | None = None) -> float:
@@ -100,7 +100,7 @@ class ImpactScorerProtocol(Protocol):
 class AdaptiveRouterProtocol(Protocol):
     """Protocol for adaptive routing implementations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def route_message(
@@ -161,7 +161,7 @@ class AdaptiveRouterProtocol(Protocol):
 class DeliberationQueueProtocol(Protocol):
     """Protocol for deliberation queue implementations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def enqueue_for_deliberation(
@@ -250,7 +250,7 @@ class DeliberationQueueProtocol(Protocol):
 class LLMAssistantProtocol(Protocol):
     """Protocol for LLM assistant implementations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def analyze_deliberation_trends(self, history: list[JSONDict]) -> JSONDict:
@@ -269,7 +269,7 @@ class LLMAssistantProtocol(Protocol):
 class RedisQueueProtocol(Protocol):
     """Protocol for Redis queue implementations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def connect(self) -> bool:
@@ -308,7 +308,7 @@ class RedisQueueProtocol(Protocol):
 class RedisVotingProtocol(Protocol):
     """Protocol for Redis voting implementations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def connect(self) -> bool:
@@ -341,7 +341,7 @@ class RedisVotingProtocol(Protocol):
 class OPAGuardProtocol(Protocol):
     """Protocol for OPA Guard implementations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def initialize(self) -> None:

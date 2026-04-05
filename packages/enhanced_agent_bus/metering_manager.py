@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Metering Manager
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Manages metering and billing event recording for the agent bus.
 Follows the fire-and-forget pattern for zero-latency impact.
@@ -15,11 +15,11 @@ if TYPE_CHECKING:
 
 # Import centralized constitutional hash with fallback
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -168,7 +168,7 @@ class MeteringManager:
                     "constitutional_hash": self._constitutional_hash,
                 },
             )
-        except Exception as e:  # noqa: BLE001 - metering hooks are optional third-party callbacks
+        except Exception as e:
             # Never let metering errors affect the critical path
             logger.warning(f"Metering recording failed: {e}")
 
@@ -203,7 +203,7 @@ class MeteringManager:
                     "constitutional_hash": self._constitutional_hash,
                 },
             )
-        except Exception as e:  # noqa: BLE001 - metering hooks are optional third-party callbacks
+        except Exception as e:
             # Never let metering errors affect the critical path
             logger.warning(f"Metering recording failed: {e}")
 
@@ -238,7 +238,7 @@ class MeteringManager:
                     "constitutional_hash": self._constitutional_hash,
                 },
             )
-        except Exception as e:  # noqa: BLE001 - metering hooks are optional third-party callbacks
+        except Exception as e:
             # Never let metering errors affect the critical path
             logger.warning(f"Metering recording failed: {e}")
 

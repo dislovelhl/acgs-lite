@@ -1,4 +1,4 @@
-"""Constitutional Hash: cdd01ef066bc6cf2
+"""Constitutional Hash: 608508a9bd224290
 Tenant-related Pydantic models for the Enhanced Agent Bus API.
 """
 
@@ -8,11 +8,11 @@ from typing import TYPE_CHECKING
 from pydantic import BaseModel, Field, field_validator
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 def _to_dict_safe(obj: object) -> dict:
     """Convert object to dict safely using Pydantic V2 model_dump().
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     if obj is None:
         return {}

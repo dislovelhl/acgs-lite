@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus Middleware
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides middleware configuration for the API,
 including CORS, security headers, tenant context, and API versioning.
@@ -17,7 +17,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # Initialize logging
 try:
-    from src.core.shared.acgs_logging import (
+    from enhanced_agent_bus._compat.acgs_logging import (
         create_correlation_middleware,
         init_service_logging,
     )
@@ -32,12 +32,12 @@ except ImportError:
 
 # Security imports
 try:
-    from src.core.shared.security.cors_config import get_cors_config
-    from src.core.shared.security.security_headers import (
+    from enhanced_agent_bus._compat.security.cors_config import get_cors_config
+    from enhanced_agent_bus._compat.security.security_headers import (
         SecurityHeadersConfig,
         SecurityHeadersMiddleware,
     )
-    from src.core.shared.security.tenant_context import (
+    from enhanced_agent_bus._compat.security.tenant_context import (
         TenantContextConfig,
         TenantContextMiddleware,
     )
@@ -56,7 +56,7 @@ except ImportError:
 # API Versioning Middleware
 API_VERSIONING_AVAILABLE = False
 try:
-    from src.core.shared.api_versioning import (
+    from enhanced_agent_bus._compat.api_versioning import (
         APIVersioningMiddleware,
         VersioningConfig,
         get_api_version,
@@ -69,7 +69,7 @@ except ImportError:
     get_api_version = None  # type: ignore[misc, assignment]
 
 # Correlation ID middleware from api_exceptions
-from ..api_exceptions import (  # noqa: E402
+from ..api_exceptions import (
     correlation_id_middleware,
 )
 

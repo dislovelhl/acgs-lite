@@ -1,6 +1,6 @@
 """
 ACGS-2 LLM Failover - Provider Warmup Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Manages provider warmup to reduce cold-start latency.
 """
@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -58,7 +58,7 @@ class ProviderWarmupManager:
     """
     Manages provider warmup to reduce cold-start latency.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Features:
     - Periodic warmup requests to keep connections alive

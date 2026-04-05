@@ -1,7 +1,7 @@
 """
 Tests for Permission Controller.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -33,7 +33,6 @@ class TestPermissionController:
             tenant_id="tenant-1",
         )
 
-    @pytest.mark.asyncio
     async def test_check_permission_read(self, permission_controller):
         # Default permission is READ
         result = await permission_controller.check_permission(
@@ -41,13 +40,11 @@ class TestPermissionController:
         )
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_check_permission_write_denied(self, permission_controller):
         # Default permission is READ, so WRITE should fail
         with pytest.raises(PermissionDeniedError):
             await permission_controller.check_permission("user-1", "doc-123", UserPermissions.WRITE)
 
-    @pytest.mark.asyncio
     async def test_set_permission(self, permission_controller):
         await permission_controller.set_permission(
             "doc-123", "user-1", UserPermissions.WRITE, "admin"
@@ -59,7 +56,6 @@ class TestPermissionController:
         )
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_permission_hierarchy(self, permission_controller):
         # Admin should have all permissions
         await permission_controller.set_permission(
@@ -81,7 +77,6 @@ class TestPermissionController:
             "user-admin", "doc-123", UserPermissions.ADMIN
         )
 
-    @pytest.mark.asyncio
     async def test_can_edit_helper(self, permission_controller):
         assert await permission_controller.can_edit("user-1", "doc-123") is False
 
@@ -91,7 +86,6 @@ class TestPermissionController:
 
         assert await permission_controller.can_edit("user-1", "doc-123") is True
 
-    @pytest.mark.asyncio
     async def test_lock_document(self, permission_controller, sample_session):
         # Set admin permission
         await permission_controller.set_permission(
@@ -104,7 +98,6 @@ class TestPermissionController:
         assert sample_session.is_locked is True
         assert sample_session.locked_by == "admin-user"
 
-    @pytest.mark.asyncio
     async def test_lock_document_already_locked(self, permission_controller, sample_session):
         await permission_controller.set_permission(
             "doc-123", "admin-1", UserPermissions.ADMIN, "system"
@@ -120,7 +113,6 @@ class TestPermissionController:
         result = await permission_controller.lock_document("doc-123", "admin-2", sample_session)
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_unlock_document(self, permission_controller, sample_session):
         await permission_controller.set_permission(
             "doc-123", "admin-user", UserPermissions.ADMIN, "system"
@@ -136,7 +128,6 @@ class TestPermissionController:
         assert sample_session.is_locked is False
         assert sample_session.locked_by is None
 
-    @pytest.mark.asyncio
     async def test_edit_approval_workflow(self, permission_controller):
         # Request approval
         approval_id = await permission_controller.request_edit_approval("doc-123", "user-1")
@@ -158,7 +149,6 @@ class TestPermissionController:
         # Now approved
         assert await permission_controller.is_edit_approved("doc-123", "user-1") is True
 
-    @pytest.mark.asyncio
     async def test_validate_operation(self, permission_controller):
         # Without permission
         with pytest.raises(PermissionDeniedError):
@@ -177,7 +167,6 @@ class TestPermissionController:
         )
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_validate_operation_delete_requires_admin(self, permission_controller):
         # Grant write permission
         await permission_controller.set_permission(
@@ -201,7 +190,6 @@ class TestPermissionController:
         )
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_get_document_permissions(self, permission_controller):
         await permission_controller.set_permission(
             "doc-123", "user-1", UserPermissions.READ, "admin"
@@ -220,7 +208,6 @@ class TestPermissionController:
         assert perms["user-2"] == UserPermissions.WRITE
         assert perms["user-3"] == UserPermissions.ADMIN
 
-    @pytest.mark.asyncio
     async def test_remove_user_permissions(self, permission_controller):
         await permission_controller.set_permission(
             "doc-123", "user-1", UserPermissions.WRITE, "admin"

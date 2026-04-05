@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Dependency Injection Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for DI pattern implementation including interfaces, registries, and core integration.
 """
@@ -32,7 +32,6 @@ class TestInMemoryAgentRegistry:
         """Create a fresh registry for each test."""
         return InMemoryAgentRegistry()
 
-    @pytest.mark.asyncio
     async def test_register_agent(self, registry):
         """Test agent registration."""
         result = await registry.register(
@@ -41,14 +40,12 @@ class TestInMemoryAgentRegistry:
         assert result is True
         assert await registry.exists("agent-1")
 
-    @pytest.mark.asyncio
     async def test_register_duplicate_returns_false(self, registry):
         """Test duplicate registration returns False."""
         await registry.register("agent-1")
         result = await registry.register("agent-1")
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_unregister_agent(self, registry):
         """Test agent unregistration."""
         await registry.register("agent-1")
@@ -56,13 +53,11 @@ class TestInMemoryAgentRegistry:
         assert result is True
         assert not await registry.exists("agent-1")
 
-    @pytest.mark.asyncio
     async def test_unregister_nonexistent_returns_false(self, registry):
         """Test unregistering nonexistent agent returns False."""
         result = await registry.unregister("nonexistent")
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_get_agent(self, registry):
         """Test getting agent info."""
         await registry.register(
@@ -76,13 +71,11 @@ class TestInMemoryAgentRegistry:
         assert info["metadata"]["version"] == "1.0"
         assert info["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_get_nonexistent_returns_none(self, registry):
         """Test getting nonexistent agent returns None."""
         info = await registry.get("nonexistent")
         assert info is None
 
-    @pytest.mark.asyncio
     async def test_list_agents(self, registry):
         """Test listing all agents."""
         await registry.register("agent-1")
@@ -95,7 +88,6 @@ class TestInMemoryAgentRegistry:
         assert "agent-2" in agents
         assert "agent-3" in agents
 
-    @pytest.mark.asyncio
     async def test_update_metadata(self, registry):
         """Test updating agent metadata."""
         await registry.register("agent-1", metadata={"version": "1.0"})
@@ -106,13 +98,11 @@ class TestInMemoryAgentRegistry:
         assert info["metadata"]["version"] == "1.0"
         assert info["metadata"]["status"] == "active"
 
-    @pytest.mark.asyncio
     async def test_update_metadata_nonexistent_returns_false(self, registry):
         """Test updating nonexistent agent returns False."""
         result = await registry.update_metadata("nonexistent", {"key": "value"})
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_clear(self, registry):
         """Test clearing all agents."""
         await registry.register("agent-1")
@@ -145,7 +135,6 @@ class TestDirectMessageRouter:
         """Create a registry with some agents."""
         return InMemoryAgentRegistry()
 
-    @pytest.mark.asyncio
     async def test_route_to_existing_agent(self, router, registry):
         """Test routing to an existing agent."""
         # Register with tenant_id in metadata to match message's default tenant_id
@@ -156,7 +145,6 @@ class TestDirectMessageRouter:
 
         assert target == "target-agent"
 
-    @pytest.mark.asyncio
     async def test_route_to_nonexistent_agent(self, router, registry):
         """Test routing to a nonexistent agent returns None."""
         message = AgentMessage(to_agent="nonexistent")
@@ -164,7 +152,6 @@ class TestDirectMessageRouter:
 
         assert target is None
 
-    @pytest.mark.asyncio
     async def test_route_without_target(self, router, registry):
         """Test routing without target returns None."""
         message = AgentMessage(to_agent="")
@@ -172,7 +159,6 @@ class TestDirectMessageRouter:
 
         assert target is None
 
-    @pytest.mark.asyncio
     async def test_broadcast_excludes_sender(self, router, registry):
         """Test broadcast excludes the sender."""
         await registry.register("sender")
@@ -186,7 +172,6 @@ class TestDirectMessageRouter:
         assert "agent-1" in targets
         assert "agent-2" in targets
 
-    @pytest.mark.asyncio
     async def test_broadcast_with_exclude_list(self, router, registry):
         """Test broadcast with explicit exclude list."""
         await registry.register("agent-1")
@@ -219,7 +204,6 @@ class TestCapabilityBasedRouter:
         """Create a registry with agents having different capabilities."""
         return InMemoryAgentRegistry()
 
-    @pytest.mark.asyncio
     async def test_route_by_capability(self, router, registry):
         """Test routing based on required capabilities."""
         await registry.register("agent-1", capabilities={"search": True})
@@ -230,7 +214,6 @@ class TestCapabilityBasedRouter:
 
         assert target == "agent-1"
 
-    @pytest.mark.asyncio
     async def test_route_explicit_target_takes_precedence(self, router, registry):
         """Test that explicit target takes precedence over capabilities."""
         await registry.register("agent-1", capabilities={"search": True})
@@ -256,7 +239,6 @@ class TestStaticHashValidationStrategy:
         """Create a strict validator."""
         return StaticHashValidationStrategy(strict=True)
 
-    @pytest.mark.asyncio
     async def test_validate_valid_message(self, validator):
         """Test validating a valid message."""
         message = AgentMessage(content={"action": "test"})
@@ -265,7 +247,6 @@ class TestStaticHashValidationStrategy:
         assert is_valid is True
         assert error is None
 
-    @pytest.mark.asyncio
     async def test_validate_strict_mode_valid_hash(self, strict_validator):
         """Test strict validation with correct hash."""
         message = AgentMessage(content={"action": "test"}, constitutional_hash=CONSTITUTIONAL_HASH)
@@ -273,7 +254,6 @@ class TestStaticHashValidationStrategy:
 
         assert is_valid is True
 
-    @pytest.mark.asyncio
     async def test_validate_strict_mode_invalid_hash(self, strict_validator):
         """Test strict validation rejects invalid hash."""
         message = AgentMessage(content={"action": "test"})
@@ -293,7 +273,6 @@ class TestStaticHashValidationStrategy:
 class TestCompositeValidationStrategy:
     """Test CompositeValidationStrategy implementation."""
 
-    @pytest.mark.asyncio
     async def test_validate_all_pass(self):
         """Test composite validation with all strategies passing."""
         composite = CompositeValidationStrategy([StaticHashValidationStrategy()])
@@ -304,7 +283,6 @@ class TestCompositeValidationStrategy:
         assert is_valid is True
         assert error is None
 
-    @pytest.mark.asyncio
     async def test_add_strategy(self):
         """Test adding a strategy dynamically."""
         composite = CompositeValidationStrategy()
@@ -324,7 +302,6 @@ class TestCompositeValidationStrategy:
 class TestEnhancedAgentBusDI:
     """Test EnhancedAgentBus with dependency injection."""
 
-    @pytest.mark.asyncio
     async def test_default_dependencies(self):
         """Test bus initializes with default dependencies."""
         bus = EnhancedAgentBus()
@@ -334,7 +311,6 @@ class TestEnhancedAgentBusDI:
         # Bus now uses CompositeValidationStrategy with PQC support by default
         assert isinstance(bus.validator, CompositeValidationStrategy)
 
-    @pytest.mark.asyncio
     async def test_custom_registry_injection(self):
         """Test injecting a custom registry."""
         custom_registry = InMemoryAgentRegistry()
@@ -346,7 +322,6 @@ class TestEnhancedAgentBusDI:
         assert bus.registry is custom_registry
         assert await bus.registry.exists("pre-registered-agent")
 
-    @pytest.mark.asyncio
     async def test_custom_router_injection(self):
         """Test injecting a custom router."""
         custom_router = CapabilityBasedRouter()
@@ -354,7 +329,6 @@ class TestEnhancedAgentBusDI:
 
         assert bus.router is custom_router
 
-    @pytest.mark.asyncio
     async def test_custom_validator_injection(self):
         """Test injecting a custom validator."""
         custom_validator = StaticHashValidationStrategy(strict=True)
@@ -362,7 +336,6 @@ class TestEnhancedAgentBusDI:
 
         assert bus.validator is custom_validator
 
-    @pytest.mark.asyncio
     async def test_custom_processor_injection(self):
         """Test injecting a custom message processor."""
         custom_processor = MessageProcessor()
@@ -370,7 +343,6 @@ class TestEnhancedAgentBusDI:
 
         assert bus.processor is custom_processor
 
-    @pytest.mark.asyncio
     async def test_backward_compatibility(self):
         """Test that existing code without DI still works."""
         # Old-style initialization (backward compatible)
@@ -389,7 +361,6 @@ class TestEnhancedAgentBusDI:
 
         await bus.stop()
 
-    @pytest.mark.asyncio
     async def test_full_di_workflow(self):
         """Test complete workflow with injected dependencies."""
         # Create custom implementations

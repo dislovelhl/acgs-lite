@@ -1,6 +1,6 @@
 """
 ACGS-2 Session Governance - API Endpoints
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 FastAPI endpoint handlers for session governance operations.
 """
@@ -13,7 +13,7 @@ from datetime import UTC, datetime
 from fastapi import HTTPException, status
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -58,7 +58,7 @@ async def create_session(
         if request.tenant_id and request.tenant_id != tenant_id:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"tenant_id in body '{request.tenant_id}' must match X-Tenant-ID header '{tenant_id}'",  # noqa: E501
+                detail=f"tenant_id in body '{request.tenant_id}' must match X-Tenant-ID header '{tenant_id}'",
             )
         effective_tenant_id = tenant_id
         effective_user_id = request.user_id or x_user_id

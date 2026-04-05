@@ -1,19 +1,18 @@
 """
 Unit tests for Batch Processor Governance.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import pytest
 
 # Governance and constitutional compliance test markers
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
-
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.batch_processor_infra.governance import (
-    BatchGovernanceManager,  # noqa: E402
+    BatchGovernanceManager,
 )
-from enhanced_agent_bus.models import BatchRequest, BatchRequestItem  # noqa: E402
+from enhanced_agent_bus.models import BatchRequest, BatchRequestItem
 
 
 class TestBatchGovernanceManager:

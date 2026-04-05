@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Constitutional Invariant Guard
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Three focused components for invariant enforcement (per spec panel review):
 - InvariantClassifier: stateless path-based classification
@@ -186,7 +186,7 @@ class ProposalInvariantValidator:
 
     async def validate_proposal(
         self,
-        proposed_changes: dict,  # noqa: ARG002 — reserved for future predicate checks
+        proposed_changes: dict,
         affected_paths: list[str],
     ) -> ChangeClassification:
         """Validate a proposal against invariants.

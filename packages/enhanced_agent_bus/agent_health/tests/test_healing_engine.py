@@ -1,6 +1,6 @@
 """
 Unit tests for HealingEngine — constitutional tier-routing.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Marked @pytest.mark.constitutional for 95%+ coverage gate.
 
@@ -27,7 +27,8 @@ from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, call
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # RED: This import fails until healing_engine.py is created.
 from enhanced_agent_bus.agent_health.healing_engine import HealingEngine
@@ -167,7 +168,6 @@ def _make_engine(
 
 
 @pytest.mark.constitutional
-@pytest.mark.asyncio
 class TestAdvisoryTier:
     """ADVISORY: quarantine + HITL request; graceful restart never called."""
 
@@ -281,7 +281,7 @@ class TestAdvisoryTier:
         supervisor_notifier,
         thresholds,
     ) -> None:
-        """Spec edge case 2: engine calls HITLRequestor exactly once (requestor handles dedup internally)."""  # noqa: E501
+        """Spec edge case 2: engine calls HITLRequestor exactly once (requestor handles dedup internally)."""
         engine = _make_engine(
             store,
             audit_log_client,
@@ -374,7 +374,6 @@ class TestAdvisoryTier:
 
 
 @pytest.mark.constitutional
-@pytest.mark.asyncio
 class TestBoundedTier:
     """BOUNDED: supervisor notify → wait for approval; escalate to ADVISORY on SLA timeout."""
 
@@ -558,7 +557,6 @@ class TestBoundedTier:
 
 
 @pytest.mark.constitutional
-@pytest.mark.asyncio
 class TestHumanApprovedTier:
     """HUMAN_APPROVED: autonomously calls GracefulRestarter; no HITL or supervisor."""
 
@@ -639,7 +637,6 @@ class TestHumanApprovedTier:
 
 
 @pytest.mark.constitutional
-@pytest.mark.asyncio
 class TestOverrides:
     """Operator overrides bypass tier routing."""
 
@@ -818,7 +815,6 @@ class TestOverrides:
 
 
 @pytest.mark.constitutional
-@pytest.mark.asyncio
 class TestConstitutionalHashValidation:
     async def test_handle_validates_constitutional_hash(
         self,
@@ -830,7 +826,7 @@ class TestConstitutionalHashValidation:
         supervisor_notifier,
         thresholds,
     ) -> None:
-        """HealingEngine must validate CONSTITUTIONAL_HASH == 'cdd01ef066bc6cf2'."""
+        """HealingEngine must validate CONSTITUTIONAL_HASH == '608508a9bd224290'."""
         engine = _make_engine(
             store,
             audit_log_client,

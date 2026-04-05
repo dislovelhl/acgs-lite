@@ -1,7 +1,7 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """ACGS-2 PQC-Only Mode Enforcement Middleware
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Starlette BaseHTTPMiddleware that rejects requests referencing classical
 algorithm identifiers (Ed25519, X25519) when PQC_ONLY_MODE is active.

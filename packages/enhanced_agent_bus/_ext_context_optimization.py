@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Context Optimization Extension Exports
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Extension module for Phase 4: Context Window Optimization.
 Provides clean import interface for context optimization components.

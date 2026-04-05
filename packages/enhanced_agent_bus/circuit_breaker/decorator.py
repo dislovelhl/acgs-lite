@@ -1,7 +1,7 @@
 """
 ACGS-2 Circuit Breaker Decorator
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides the with_service_circuit_breaker decorator for wrapping
 async functions with circuit breaker protection.
@@ -13,7 +13,7 @@ from functools import wraps
 from typing import TypeVar
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 

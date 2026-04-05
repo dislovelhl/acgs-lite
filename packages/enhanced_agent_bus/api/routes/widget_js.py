@@ -1,6 +1,6 @@
 """
 ACGS-2 Embeddable Widget JS Endpoint
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 GET /v1/widget.js — returns a self-contained JavaScript snippet
 that renders a floating governance compliance badge.

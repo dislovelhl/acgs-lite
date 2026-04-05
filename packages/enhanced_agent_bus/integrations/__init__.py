@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus Integrations Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides integration clients for connecting the Enhanced Agent Bus
 to external services. These clients handle the communication, error handling,
@@ -35,7 +35,7 @@ import os
 
 # Constitutional hash for governance validation
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = os.environ.get("CONSTITUTIONAL_HASH", CONSTITUTIONAL_HASH)
 

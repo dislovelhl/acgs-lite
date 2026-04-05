@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Deliberation Layer Feedback Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for Deliberation Layer Feedback Loop integration.
 """
@@ -8,7 +8,7 @@ Tests for Deliberation Layer Feedback Loop integration.
 import os
 import sys
 from datetime import UTC, datetime, timezone
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 
@@ -43,12 +43,12 @@ except ImportError:
 
 
 class TestDeliberationFeedback:
-    @pytest.mark.asyncio
     async def test_feedback_loop_integration(self):
         """Test that resolving a deliberation item triggers router feedback."""
         # Mock dependencies
         mock_queue = AsyncMock()
-        mock_router = AsyncMock()
+        mock_router = MagicMock()
+        mock_router.update_performance_feedback = AsyncMock()
         mock_scorer = Mock()
 
         # Setup DeliberationLayer with mocks

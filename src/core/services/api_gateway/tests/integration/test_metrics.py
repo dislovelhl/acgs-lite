@@ -4,10 +4,8 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 """
 Integration tests for metrics and monitoring.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
-
-from unittest.mock import MagicMock, patch
 
 
 class TestMetricsIntegration:
@@ -49,24 +47,12 @@ class TestMetricsIntegration:
         # Should contain service info metrics
         assert "acgs2_service" in content or "acgs2_service_info" in content
 
-    @patch("main.httpx.AsyncClient")
-    def test_request_metrics_collected_for_proxy_calls(self, mock_httpx_client, client):
-        """Test that request metrics are collected for proxy calls."""
-        # Setup mock
-        mock_instance = MagicMock()
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {"result": "success"}
-        mock_response.headers = {"content-type": "application/json"}
-        mock_response.text = '{"result": "success"}'
-        mock_instance.request.return_value = mock_response
-        mock_instance.__aenter__.return_value = mock_instance
-        mock_instance.__aexit__.return_value = None
-        mock_httpx_client.return_value = mock_instance
+    def test_proxy_requests_are_tracked_even_when_auth_blocks_backend(self, client, mock_httpx):
+        """Proxy-path requests should still be counted by HTTP metrics middleware."""
+        response = client.get("/api/v1/agents")
 
-        # Make request
-        response = client.get("/api/v1/test")
-        assert response.status_code == 200
+        assert response.status_code == 401
+        assert mock_httpx.request.await_count == 0
 
         # Check that metrics were attempted to be collected
         # (We can't easily test the actual metric values without a full metrics registry)
@@ -95,60 +81,64 @@ class TestMetricsIntegration:
 class TestStructuredLoggingIntegration:
     """Test structured logging integration."""
 
-    def test_correlation_id_in_logs(self, client, correlation_id):
-        """Test that correlation IDs are properly handled."""
-        headers = {"x-correlation-id": correlation_id}
-
-        # Make request with correlation ID
-        response = client.get("/health", headers=headers)
-        assert response.status_code == 200
-
-        # Check that correlation ID is returned
-        assert response.headers.get("x-correlation-id") == correlation_id
-
-    def test_request_logging_structure(self, client, sample_feedback):
-        """Test that request logging follows structured format."""
-        # This is hard to test directly without log capture,
-        # but we can verify the logging imports are working
-        from src.core.shared.acgs_logging import get_logger
-
-        logger = get_logger("test")
-        assert logger is not None
-
-        # Verify logging functions exist
+    def test_correlation_id_helpers_round_trip(self, correlation_id):
+        """Correlation ID helpers should preserve request-scoped context."""
         from src.core.shared.acgs_logging import (
-            log_error,
-            log_request_end,
-            log_request_start,
+            clear_correlation_id,
+            get_correlation_id,
+            set_correlation_id,
         )
 
-        assert callable(log_request_start)
-        assert callable(log_request_end)
-        assert callable(log_error)
+        set_correlation_id(correlation_id)
+        assert get_correlation_id() == correlation_id
+        clear_correlation_id()
+        assert get_correlation_id() is None
 
-    def test_business_event_logging(self, client, sample_feedback):
-        """Test business event logging structure."""
-        from src.core.shared.acgs_logging import get_logger, log_business_event
+    def test_request_logging_structure(self):
+        """Test that structured logging exports remain available."""
+        from src.core.shared.acgs_logging import (
+            StructuredLogger,
+            create_correlation_middleware,
+            get_logger,
+            init_service_logging,
+        )
 
         logger = get_logger("test")
+        structured_logger = init_service_logging("metrics-test", level="INFO", json_format=True)
 
-        # Should not raise exceptions
-        log_business_event(
-            logger,
-            event_type="feedback",
-            entity_type="submission",
-            entity_id="test-123",
-            action="created",
+        assert logger is not None
+        assert isinstance(structured_logger, StructuredLogger)
+        assert callable(create_correlation_middleware())
+
+    def test_business_event_logging(self):
+        """Agent workflow event helpers should produce structured payloads."""
+        from src.core.shared.acgs_logging import (
+            AgentWorkflowEventType,
+            create_agent_workflow_event,
+            event_to_dict,
         )
+
+        event = create_agent_workflow_event(
+            event_type=AgentWorkflowEventType.AUTONOMOUS_ACTION,
+            tenant_id="tenant-test",
+            source="api-gateway",
+            reason="integration-test",
+            metadata={"event": "feedback"},
+        )
+        payload = event_to_dict(event)
+
+        assert payload["tenant_id"] == "tenant-test"
+        assert payload["source"] == "api-gateway"
+        assert payload["metadata"]["event"] == "feedback"
 
 
 class TestErrorHandlingMetrics:
     """Test error handling and metrics collection."""
 
-    def test_404_error_metrics(self, client):
-        """Test that 404 errors are properly tracked."""
+    def test_unmatched_proxy_path_requires_auth(self, client):
+        """Unmatched root paths fall through to the authenticated proxy catch-all."""
         response = client.get("/nonexistent-endpoint")
-        assert response.status_code == 404
+        assert response.status_code == 401
 
         # Check metrics are still accessible
         metrics_response = client.get("/metrics")
@@ -158,7 +148,9 @@ class TestErrorHandlingMetrics:
         """Test handling of malformed JSON requests."""
         # Send invalid JSON
         response = client.post(
-            "/feedback", data="invalid json {", headers={"content-type": "application/json"}
+            "/api/v1/gateway/feedback",
+            content="invalid json {",
+            headers={"content-type": "application/json"},
         )
         assert response.status_code == 422  # Validation error
 
@@ -166,18 +158,12 @@ class TestErrorHandlingMetrics:
         metrics_response = client.get("/metrics")
         assert metrics_response.status_code == 200
 
-    @patch("main.httpx.AsyncClient")
-    def test_proxy_timeout_error_handling(self, mock_httpx_client, client):
-        """Test handling of proxy timeouts."""
-        from httpx import TimeoutException
+    def test_proxy_auth_failures_leave_metrics_endpoint_available(self, client, mock_httpx):
+        """Auth failures on proxy paths should not break the metrics endpoint."""
+        response = client.get("/api/v1/agents")
+        assert response.status_code == 401
+        assert mock_httpx.request.await_count == 0
 
-        # Mock timeout
-        mock_httpx_client.side_effect = TimeoutException("Request timeout")
-
-        response = client.get("/api/v1/test")
-        assert response.status_code == 502
-
-        # Metrics should still work
         metrics_response = client.get("/metrics")
         assert metrics_response.status_code == 200
 
@@ -187,12 +173,15 @@ class TestSecurityIntegration:
 
     def test_cors_headers(self, client):
         """Test CORS headers are properly set."""
-        response = client.options("/health")
-        # CORS should be configured
-        assert "access-control-allow-origin" in response.headers or response.status_code in [
-            200,
-            404,
-        ]
+        response = client.options(
+            "/health",
+            headers={
+                "origin": "http://localhost:3000",
+                "access-control-request-method": "GET",
+            },
+        )
+        assert response.status_code == 200
+        assert response.headers.get("access-control-allow-origin") == "http://localhost:3000"
 
     def test_security_headers(self, client):
         """Test security headers are present."""

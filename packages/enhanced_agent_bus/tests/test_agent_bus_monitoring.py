@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus Tests - Monitoring
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive test coverage for monitoring functionality in agent_bus.py.
 """
@@ -160,7 +160,6 @@ def sample_message_no_tenant(constitutional_hash):
 class TestMetrics:
     """Test metrics collection functionality."""
 
-    @pytest.mark.asyncio
     async def test_get_metrics_includes_required_fields(self, agent_bus, constitutional_hash):
         """Test that metrics include all required fields."""
         metrics = agent_bus.get_metrics()
@@ -174,14 +173,12 @@ class TestMetrics:
         assert "constitutional_hash" in metrics
         assert metrics["constitutional_hash"] == constitutional_hash
 
-    @pytest.mark.asyncio
     async def test_get_metrics_async_includes_circuit_breaker(self, started_agent_bus):
         """Test that async metrics include circuit breaker health."""
         metrics = await started_agent_bus.get_metrics_async()
 
         assert "circuit_breaker_health" in metrics
 
-    @pytest.mark.asyncio
     async def test_metrics_track_registered_agents(self, agent_bus):
         """Test that metrics correctly track registered agents count."""
         initial_metrics = agent_bus.get_metrics()

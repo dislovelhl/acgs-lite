@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Circuit Breaker Kafka Producer
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Kafka Producer with circuit breaker protection implementing QUEUE_FOR_RETRY strategy.
 When the circuit is open, messages are buffered for later retry.
@@ -15,11 +15,11 @@ from datetime import UTC, datetime
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -63,7 +63,7 @@ class CircuitBreakerKafkaProducer:
     Implements QUEUE_FOR_RETRY strategy for guaranteed delivery.
     When the circuit is open, messages are buffered for later retry.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -149,7 +149,7 @@ class CircuitBreakerKafkaProducer:
 
         if self._retry_task:
             self._retry_task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._retry_task
             except asyncio.CancelledError:
                 pass

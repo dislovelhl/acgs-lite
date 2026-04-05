@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """Comprehensive coverage tests for api/routes/public_v1.py.
 
 Targets ≥95% line coverage of
@@ -379,7 +379,7 @@ class TestV1Health:
         assert resp.json()["version"] == _mod.PUBLIC_API_VERSION
 
     def test_constitutional_hash_field(self):
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
+        from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
         resp = self._client.get("/v1/health")
         assert resp.json()["constitutional_hash"] == CONSTITUTIONAL_HASH
@@ -469,7 +469,7 @@ class TestV1ValidateSuccess:
         assert _mod.HASH_VALIDATION_FAILURE in resp.json()["violations"]
 
     def test_response_constitutional_hash_present(self):
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
+        from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
         mock_result = MagicMock()
         mock_result.valid = True
@@ -492,7 +492,7 @@ class TestV1ValidateSuccess:
         assert resp.json()["request_id"] == "myagent:deploy"
 
     def test_validate_called_with_constitutional_hash(self):
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
+        from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
         mock_result = MagicMock()
         mock_result.valid = True
@@ -741,7 +741,7 @@ class TestV1ValidateRealHash:
         assert data["violations"] == []
 
     def test_real_hash_in_response(self):
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
+        from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
         resp = self._client.post("/v1/validate", json={"agent_id": "r", "action": "s"})
         assert resp.json()["constitutional_hash"] == CONSTITUTIONAL_HASH

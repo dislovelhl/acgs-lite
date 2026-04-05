@@ -468,10 +468,10 @@ class PolicyVersionMigrator:
                 return True
             if rule:
                 if not hasattr(rule, "_metadata"):
-                    rule._metadata = {}  # type: ignore[union-attr]
-                rule._metadata["deprecated"] = True  # type: ignore[union-attr]
+                    rule._metadata = {}
+                rule._metadata["deprecated"] = True
                 if step.target_rule_id:
-                    rule._metadata["replaced_by"] = step.target_rule_id  # type: ignore[union-attr]
+                    rule._metadata["replaced_by"] = step.target_rule_id
                 return True
             return False
 

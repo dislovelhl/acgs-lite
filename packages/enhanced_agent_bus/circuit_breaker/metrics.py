@@ -1,28 +1,27 @@
 """
 ACGS-2 Circuit Breaker Prometheus Metrics
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module defines Prometheus metrics for circuit breaker observability,
 with no-op fallbacks when prometheus_client is not available.
 """
 
-from src.core.shared.metrics.noop import (
+from enhanced_agent_bus._compat.metrics.noop import (
     PROMETHEUS_AVAILABLE,
     Counter,
     Gauge,
     _safe_create_metric,
 )
-from src.core.shared.metrics.noop import (
+from enhanced_agent_bus._compat.metrics.noop import (
     NoOpCounter as _NoOpCounter,
 )
-from src.core.shared.metrics.noop import (
+from enhanced_agent_bus._compat.metrics.noop import (
     NoOpGauge as _NoOpGauge,
 )
-from src.core.shared.metrics.noop import (
+from enhanced_agent_bus._compat.metrics.noop import (
     NoOpHistogram as _NoOpHistogram,
 )
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)

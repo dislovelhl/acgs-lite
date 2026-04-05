@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """Agent, workflow, message, and event type aliases for ACGS-2."""
 
 from typing import TypedDict

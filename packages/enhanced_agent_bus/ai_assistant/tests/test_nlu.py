@@ -1,6 +1,6 @@
 """
 ACGS-2 AI Assistant - NLU Engine Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import os
@@ -13,8 +13,7 @@ sys.path.insert(
 )
 
 # Import centralized constitutional hash with fallback
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.ai_assistant.nlu import (
     BasicSentimentAnalyzer,
     Entity,
@@ -103,7 +102,6 @@ class TestRuleBasedIntentClassifier:
         classifier = RuleBasedIntentClassifier()
         assert classifier is not None
 
-    @pytest.mark.asyncio
     async def test_classify_greeting(self):
         """Test classifying greeting intent."""
         classifier = RuleBasedIntentClassifier()
@@ -116,7 +114,6 @@ class TestRuleBasedIntentClassifier:
         intent_names = [i.name for i in intents]
         assert "greeting" in intent_names or any("greet" in n.lower() for n in intent_names)
 
-    @pytest.mark.asyncio
     async def test_classify_order_status(self):
         """Test classifying order status intent."""
         classifier = RuleBasedIntentClassifier()
@@ -129,7 +126,6 @@ class TestRuleBasedIntentClassifier:
         intent_names = [i.name for i in intents]
         assert "order_status" in intent_names or any("order" in n.lower() for n in intent_names)
 
-    @pytest.mark.asyncio
     async def test_classify_help(self):
         """Test classifying help intent."""
         classifier = RuleBasedIntentClassifier()
@@ -139,7 +135,6 @@ class TestRuleBasedIntentClassifier:
         assert len(intents) > 0
         assert isinstance(intents[0], Intent)
 
-    @pytest.mark.asyncio
     async def test_classify_unknown(self):
         """Test classifying unknown text."""
         classifier = RuleBasedIntentClassifier()
@@ -149,7 +144,6 @@ class TestRuleBasedIntentClassifier:
         # Should return something, possibly with low confidence
         assert isinstance(intents, list)
 
-    @pytest.mark.asyncio
     async def test_classify_with_context(self):
         """Test classification with context."""
         classifier = RuleBasedIntentClassifier()
@@ -170,7 +164,6 @@ class TestPatternEntityExtractor:
         extractor = PatternEntityExtractor()
         assert extractor is not None
 
-    @pytest.mark.asyncio
     async def test_extract_email(self):
         """Test extracting email entities."""
         extractor = PatternEntityExtractor()
@@ -184,7 +177,6 @@ class TestPatternEntityExtractor:
         assert len(email_entities) > 0
         assert email_entities[0].value == "john@example.com"
 
-    @pytest.mark.asyncio
     async def test_extract_phone(self):
         """Test extracting phone number entities."""
         extractor = PatternEntityExtractor()
@@ -196,7 +188,6 @@ class TestPatternEntityExtractor:
         phone_entities = [e for e in entities if "phone" in e.type.lower()]
         assert len(phone_entities) > 0
 
-    @pytest.mark.asyncio
     async def test_extract_order_id(self):
         """Test extracting order ID entities."""
         extractor = PatternEntityExtractor()
@@ -210,7 +201,6 @@ class TestPatternEntityExtractor:
         ]
         assert len(order_entities) > 0
 
-    @pytest.mark.asyncio
     async def test_extract_date(self):
         """Test extracting date entities."""
         extractor = PatternEntityExtractor()
@@ -222,7 +212,6 @@ class TestPatternEntityExtractor:
         date_entities = [e for e in entities if "date" in e.type.lower() or e.type == "number"]
         assert len(date_entities) >= 0  # May or may not extract depending on patterns
 
-    @pytest.mark.asyncio
     async def test_extract_multiple_entities(self):
         """Test extracting multiple entities."""
         extractor = PatternEntityExtractor()
@@ -232,7 +221,6 @@ class TestPatternEntityExtractor:
         assert isinstance(entities, list)
         assert len(entities) >= 1
 
-    @pytest.mark.asyncio
     async def test_extract_no_entities(self):
         """Test extracting from text with no entities."""
         extractor = PatternEntityExtractor()
@@ -250,7 +238,6 @@ class TestBasicSentimentAnalyzer:
         analyzer = BasicSentimentAnalyzer()
         assert analyzer is not None
 
-    @pytest.mark.asyncio
     async def test_analyze_positive(self):
         """Test analyzing positive sentiment."""
         analyzer = BasicSentimentAnalyzer()
@@ -260,7 +247,6 @@ class TestBasicSentimentAnalyzer:
 
         assert sentiment == "positive"
 
-    @pytest.mark.asyncio
     async def test_analyze_negative(self):
         """Test analyzing negative sentiment."""
         analyzer = BasicSentimentAnalyzer()
@@ -270,7 +256,6 @@ class TestBasicSentimentAnalyzer:
 
         assert sentiment == "negative"
 
-    @pytest.mark.asyncio
     async def test_analyze_neutral(self):
         """Test analyzing neutral sentiment."""
         analyzer = BasicSentimentAnalyzer()
@@ -288,7 +273,6 @@ class TestNLUEngine:
         engine = NLUEngine()
         assert engine is not None
 
-    @pytest.mark.asyncio
     async def test_process_greeting(self):
         """Test processing a greeting message."""
         engine = NLUEngine()
@@ -298,7 +282,6 @@ class TestNLUEngine:
         assert isinstance(result, NLUResult)
         assert result.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_process_with_entities(self):
         """Test processing message with entities."""
         engine = NLUEngine()
@@ -309,7 +292,6 @@ class TestNLUEngine:
         # entities can be list or dict
         assert result.entities is not None
 
-    @pytest.mark.asyncio
     async def test_process_with_context(self):
         """Test processing with context."""
         engine = NLUEngine()
@@ -321,7 +303,6 @@ class TestNLUEngine:
 
         assert isinstance(result, NLUResult)
 
-    @pytest.mark.asyncio
     async def test_process_order_inquiry(self):
         """Test processing an order inquiry."""
         engine = NLUEngine()
@@ -332,7 +313,6 @@ class TestNLUEngine:
         # Should have a primary intent
         assert result.primary_intent is not None
 
-    @pytest.mark.asyncio
     async def test_confidence_score(self):
         """Test that confidence score is set."""
         engine = NLUEngine()
@@ -341,7 +321,6 @@ class TestNLUEngine:
 
         assert 0.0 <= result.confidence <= 1.0
 
-    @pytest.mark.asyncio
     async def test_sentiment_included(self):
         """Test that sentiment is included."""
         engine = NLUEngine()
@@ -352,7 +331,6 @@ class TestNLUEngine:
         # Sentiment is an enum
         assert isinstance(result.sentiment, Sentiment)
 
-    @pytest.mark.asyncio
     async def test_empty_text(self):
         """Test processing empty text."""
         engine = NLUEngine()
@@ -363,7 +341,6 @@ class TestNLUEngine:
         # Should handle gracefully
         assert result.confidence <= 0.5
 
-    @pytest.mark.asyncio
     async def test_whitespace_text(self):
         """Test processing whitespace-only text."""
         engine = NLUEngine()
@@ -376,7 +353,6 @@ class TestNLUEngine:
 class TestNLUEngineCustomComponents:
     """Tests for NLUEngine with custom components."""
 
-    @pytest.mark.asyncio
     async def test_custom_intent_classifier(self):
         """Test using a custom intent classifier."""
 
@@ -390,7 +366,6 @@ class TestNLUEngineCustomComponents:
         assert result.primary_intent is not None
         assert result.primary_intent.name == "custom_intent"
 
-    @pytest.mark.asyncio
     async def test_custom_entity_extractor(self):
         """Test using a custom entity extractor."""
 
@@ -408,7 +383,6 @@ class TestNLUEngineCustomComponents:
         else:
             assert "custom_entity" in result.entities
 
-    @pytest.mark.asyncio
     async def test_custom_sentiment_analyzer(self):
         """Test using a custom sentiment analyzer."""
 

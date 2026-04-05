@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from src.core.shared.errors.exceptions import MACIEnforcementError
+from enhanced_agent_bus._compat.errors import MACIEnforcementError
 
 
 class RoleMatrixValidator:

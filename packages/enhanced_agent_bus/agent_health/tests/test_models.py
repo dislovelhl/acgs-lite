@@ -1,6 +1,6 @@
 """
 Unit tests for agent_health Pydantic models and enums.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests are written RED-first (before models.py exists) per TDD workflow.
 """
@@ -12,8 +12,8 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 from pydantic import ValidationError
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.agent_health.models import (
     AgentHealthRecord,
     AgentHealthThresholds,

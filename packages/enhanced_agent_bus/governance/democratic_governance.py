@@ -1,6 +1,6 @@
 """
 ACGS-2 CCAI Democratic Constitutional Governance Framework
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module implements the Democratic Constitutional Governance framework:
 - Democratic input through structured deliberation
@@ -9,8 +9,10 @@ This module implements the Democratic Constitutional Governance framework:
 - Constitutional amendment workflow
 - Manifold stability constraints (mHC integration)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
+
+from __future__ import annotations
 
 import asyncio
 import statistics
@@ -31,7 +33,7 @@ except ImportError:
     torch = None  # type: ignore[assignment]
     TORCH_AVAILABLE = False
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -139,7 +141,7 @@ class DemocraticConstitutionalGovernance:
             ... )
             >>> logger.info(f"Registered: {expert.name} ({expert.stakeholder_id})")
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         stakeholder = Stakeholder(
             stakeholder_id=str(uuid.uuid4()),
@@ -196,7 +198,7 @@ class DemocraticConstitutionalGovernance:
             ... )
             >>> result = await governance.run_deliberation(proposal, stakeholders)
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         proposal = ConstitutionalProposal(
             proposal_id=str(uuid.uuid4()),
@@ -315,7 +317,7 @@ class DemocraticConstitutionalGovernance:
             - quality_distribution: Distribution of quality scores
             - constitutional_hash: Validation hash
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         if not clusters:
             logger.warning("No clusters provided for representative metrics calculation")
@@ -424,7 +426,7 @@ class DemocraticConstitutionalGovernance:
             Production implementation would use real-time statement collection
             through web UI or API, not simulated generation.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         statements = []
 
@@ -470,7 +472,7 @@ class DemocraticConstitutionalGovernance:
             This is for simulation only. Real implementation would use actual
             stakeholder input through interactive deliberation interface.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         group_statements = {
             StakeholderGroup.TECHNICAL_EXPERTS: [
@@ -536,7 +538,7 @@ class DemocraticConstitutionalGovernance:
             Production implementation would use real-time vote collection
             through web UI or API with actual stakeholder decisions.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         for statement in statements:
             voters = stakeholders[: min(10, len(stakeholders))]
@@ -588,7 +590,7 @@ class DemocraticConstitutionalGovernance:
             Stability projection is fail-safe: errors result in original scores
             being returned with warning logged.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         if not ManifoldHC or not scores or not TORCH_AVAILABLE:
             return scores
@@ -659,7 +661,7 @@ class DemocraticConstitutionalGovernance:
             - High-consensus cluster: cluster.consensus_score >= 0.6
             - Rejected statement: statement.consensus_potential < 0.3
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         consensus_ratio, cluster_trust = self._extract_consensus_metrics(
             clusters, cross_group_analysis
@@ -828,7 +830,7 @@ class DemocraticConstitutionalGovernance:
             - Low-risk configuration changes
             - Decisions that need quick approval + ex-post democratic validation
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         start_time = datetime.now(UTC)
 
@@ -890,7 +892,7 @@ class DemocraticConstitutionalGovernance:
             This method should be wrapped in asyncio.create_task() to run
             in background. Errors are logged but don't affect fast decision.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         proposal = await self.propose_constitutional_change(
             title=f"Decision Review: {decision.get('description', 'Unknown')}",
@@ -928,7 +930,7 @@ class DemocraticConstitutionalGovernance:
               * cross_group_consensus: Cross-group validation
               * constitutional_amendments: Amendment workflow
               * performance_legitimacy_balance: Fast/slow hybrid path
-            - constitutional_hash: Validation hash (cdd01ef066bc6cf2)
+            - constitutional_hash: Validation hash (608508a9bd224290)
 
         Example:
             >>> status = await governance.get_governance_status()
@@ -936,7 +938,7 @@ class DemocraticConstitutionalGovernance:
             >>> logger.info(f"Stakeholders: {status['registered_stakeholders']}")
             >>> logger.info(f"Capabilities: {list(status['capabilities'].keys())}")
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         return {
             "framework": "CCAI Democratic Constitutional Governance",
@@ -1024,7 +1026,7 @@ async def deliberate_on_proposal(
     Raises:
         ValueError: If no stakeholders could be created (empty stakeholder_groups list)
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     governance = get_ccai_governance()
 

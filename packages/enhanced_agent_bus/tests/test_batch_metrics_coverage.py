@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive tests for src/core/enhanced_agent_bus/observability/batch_metrics.py.
 
@@ -13,7 +13,8 @@ Covers:
 from unittest.mock import MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -270,7 +271,7 @@ class TestRecordBatchRequest:
         inst["batch_cache_misses_total"].add.assert_not_called()
 
     def test_attributes_contain_constitutional_hash(self):
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
+        from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
         bm, inst = _make_bm_with_instruments()
         bm.record_batch_request(tenant_id="acme", batch_size=1, success=True, duration_seconds=0.01)
@@ -438,7 +439,7 @@ class TestRecordConstitutionalValidation:
         assert violation_attrs["actual_hash"] == "missing"
 
     def test_validation_attrs_include_expected_hash(self):
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
+        from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
         bm, inst = _make_bm_with_instruments()
         bm.record_constitutional_validation(tenant_id="t6", valid=True, hash_used="x")

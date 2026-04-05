@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Additional coverage tests for prometheus_metrics.py — targeting ≥90% coverage.
 
@@ -36,7 +36,7 @@ def _fresh_module():
 # Import the module once for the majority of tests
 # ---------------------------------------------------------------------------
 
-import enhanced_agent_bus.observability.prometheus_metrics as pm  # noqa: E402
+import enhanced_agent_bus.observability.prometheus_metrics as pm
 
 # ---------------------------------------------------------------------------
 # _get_constitutional_validations_counter — already-initialised path

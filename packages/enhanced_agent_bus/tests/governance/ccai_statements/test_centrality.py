@@ -1,6 +1,6 @@
 """
 Tests for Statement Centrality Calculation.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import pytest
@@ -19,7 +19,6 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 class TestStatementCentralityCalculation:
     """Test suite for calculate_statement_centrality() method."""
 
-    @pytest.mark.asyncio
     async def test_centrality_with_unanimous_agreement(self, engine, sample_cluster):
         """Test centrality calculation with unanimous agreement (all votes = 1)."""
         statement_id = "stmt-unanimous"
@@ -42,7 +41,6 @@ class TestStatementCentralityCalculation:
         assert centrality == 1.0, f"Expected 1.0, got {centrality}"
         assert 0.0 <= centrality <= 1.0, "Centrality not in [0, 1] range"
 
-    @pytest.mark.asyncio
     async def test_centrality_with_unanimous_disagreement(self, engine, sample_cluster):
         """Test centrality calculation with unanimous disagreement (all votes = -1)."""
         statement_id = "stmt-disagree"
@@ -65,7 +63,6 @@ class TestStatementCentralityCalculation:
         assert centrality == 0.3, f"Expected 0.3, got {centrality}"
         assert 0.0 <= centrality <= 1.0, "Centrality not in [0, 1] range"
 
-    @pytest.mark.asyncio
     async def test_centrality_with_split_votes(self, engine, sample_cluster):
         """Test centrality calculation with split votes (mixed agree/disagree)."""
         statement_id = "stmt-split"
@@ -89,7 +86,6 @@ class TestStatementCentralityCalculation:
         assert abs(centrality - expected) < 0.001, f"Expected {expected:.3f}, got {centrality}"
         assert 0.0 <= centrality <= 1.0, "Centrality not in [0, 1] range"
 
-    @pytest.mark.asyncio
     async def test_centrality_with_partial_participation(self, engine, sample_cluster):
         """Test centrality calculation with partial participation (not all voted)."""
         statement_id = "stmt-partial"
@@ -112,7 +108,6 @@ class TestStatementCentralityCalculation:
         assert abs(centrality - expected) < 0.001, f"Expected {expected:.3f}, got {centrality}"
         assert 0.0 <= centrality <= 1.0, "Centrality not in [0, 1] range"
 
-    @pytest.mark.asyncio
     async def test_centrality_with_no_votes(self, engine, sample_cluster):
         """Test centrality calculation when no cluster members voted."""
         statement_id = "stmt-no-votes"
@@ -131,7 +126,6 @@ class TestStatementCentralityCalculation:
         assert centrality == 0.0, f"Expected 0.0, got {centrality}"
         assert 0.0 <= centrality <= 1.0, "Centrality not in [0, 1] range"
 
-    @pytest.mark.asyncio
     async def test_centrality_with_single_stakeholder(self, engine):
         """Test centrality calculation with a single stakeholder cluster."""
         single_cluster = OpinionCluster(
@@ -161,7 +155,6 @@ class TestStatementCentralityCalculation:
         assert centrality == 1.0, f"Expected 1.0, got {centrality}"
         assert 0.0 <= centrality <= 1.0, "Centrality not in [0, 1] range"
 
-    @pytest.mark.asyncio
     async def test_centrality_with_empty_cluster(self, engine, empty_cluster):
         """Test centrality calculation with an empty cluster."""
         statement_id = "stmt-empty-cluster"
@@ -180,7 +173,6 @@ class TestStatementCentralityCalculation:
         assert centrality == 0.0, f"Expected 0.0, got {centrality}"
         assert 0.0 <= centrality <= 1.0, "Centrality not in [0, 1] range"
 
-    @pytest.mark.asyncio
     async def test_centrality_with_nonexistent_statement(self, engine, sample_cluster):
         """Test centrality calculation with a statement ID that doesn't exist."""
         centrality = await engine.calculate_statement_centrality(
@@ -189,7 +181,6 @@ class TestStatementCentralityCalculation:
 
         assert centrality == 0.0, f"Expected 0.0, got {centrality}"
 
-    @pytest.mark.asyncio
     async def test_centrality_with_votes_outside_cluster(self, engine, sample_cluster):
         """Test that votes from non-cluster members are ignored."""
         statement_id = "stmt-mixed-voters"
@@ -213,7 +204,6 @@ class TestStatementCentralityCalculation:
 
         assert centrality == 1.0, f"Expected 1.0, got {centrality}"
 
-    @pytest.mark.asyncio
     async def test_centrality_with_neutral_votes(self, engine, sample_cluster):
         """Test centrality calculation with neutral votes (value = 0)."""
         statement_id = "stmt-neutral"
@@ -237,7 +227,6 @@ class TestStatementCentralityCalculation:
         assert abs(centrality - expected) < 0.001, f"Expected {expected:.3f}, got {centrality}"
         assert 0.0 <= centrality <= 1.0, "Centrality not in [0, 1] range"
 
-    @pytest.mark.asyncio
     async def test_centrality_score_normalization(self, engine, sample_cluster):
         """Test that centrality scores are always normalized to [0, 1] range."""
         test_cases = [
@@ -290,7 +279,6 @@ class TestStatementCentralityCalculation:
                 f"Test case {i}: Centrality {centrality} not in [0, 1] range"
             )
 
-    @pytest.mark.asyncio
     async def test_centrality_with_multiple_stakeholder_groups(self, engine):
         """Test centrality with diverse stakeholder groups in cluster."""
         diverse_cluster = OpinionCluster(

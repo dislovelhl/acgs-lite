@@ -1,6 +1,6 @@
 """
 ACGS-2 Feedback Handler - Kafka Publisher Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Kafka publisher for streaming feedback events to downstream systems.
 """
@@ -15,7 +15,7 @@ from datetime import datetime
 from enum import Enum
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -97,7 +97,7 @@ class FeedbackKafkaPublisher:
                 await self._producer.start()
                 self._running = True
                 logger.info(
-                    f"FeedbackKafkaPublisher started: servers={self._sanitize_bootstrap(self.bootstrap_servers)}, "  # noqa: E501
+                    f"FeedbackKafkaPublisher started: servers={self._sanitize_bootstrap(self.bootstrap_servers)}, "
                     f"topic={self.topic}"
                 )
                 return True

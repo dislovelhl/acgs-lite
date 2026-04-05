@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Tests for src/core/enhanced_agent_bus/maci_imports.py
 Covers all import paths, fallback stubs, availability flags, and all branches.
@@ -12,7 +12,8 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 
 @pytest.fixture(autouse=True)

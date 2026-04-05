@@ -1,6 +1,6 @@
 """
 Comprehensive tests for ImpactScorer module.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Coverage targets:
 - ScoringConfig dataclass
@@ -520,7 +520,6 @@ class TestTextExtraction:
 class TestGetEmbeddings:
     """Tests for embedding generation."""
 
-    @pytest.mark.asyncio
     async def test_fallback_embeddings_when_no_model(self):
         """Test that fallback embeddings are returned when model unavailable."""
         with patch(

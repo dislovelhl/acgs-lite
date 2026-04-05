@@ -1,6 +1,6 @@
 """
 ACGS-2 ML Governance Client
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides integration with the Adaptive Learning Engine for reporting governance
 decision outcomes. Enables real-time model training through outcome feedback.
@@ -16,7 +16,7 @@ from enum import Enum
 import httpx
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -42,7 +42,7 @@ except (ImportError, ValueError):
 
 # Import constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = os.environ.get("CONSTITUTIONAL_HASH", CONSTITUTIONAL_HASH)
 
@@ -52,10 +52,10 @@ logger = get_logger(__name__)
 # =============================================================================
 
 
-from ..circuit_breaker.enums import CircuitState  # noqa: E402
+from ..circuit_breaker.enums import CircuitState
 
 
-class OutcomeReportStatus(str, Enum):  # noqa: UP042
+class OutcomeReportStatus(str, Enum):
     """Status of outcome report submission."""
 
     SUCCESS = "success"
@@ -412,7 +412,7 @@ class MLGovernanceClient:
         self._failure_count += 1
         self._last_failure_time = datetime.now(UTC).timestamp()
 
-        if self._failure_count >= self.config.circuit_breaker_threshold:  # noqa: SIM102
+        if self._failure_count >= self.config.circuit_breaker_threshold:
             if self._circuit_state != CircuitState.OPEN:
                 logger.warning(
                     f"Circuit breaker: opening circuit after {self._failure_count} failures"
@@ -829,10 +829,9 @@ class MLGovernanceClient:
 
     def _sanitize_error(self, error: Exception | None) -> str:
         """Strip sensitive metadata from error messages."""
-        from src.core.shared.security.error_sanitizer import sanitize_error
+        from enhanced_agent_bus._compat.security.error_sanitizer import sanitize_error
 
         return sanitize_error(error)  # type: ignore[no-any-return]
-
 
         # =============================================================================
         # Global Client Instance
@@ -866,7 +865,6 @@ async def close_ml_governance_client() -> None:
     if _ml_governance_client:
         await _ml_governance_client.close()
         _ml_governance_client = None
-
 
         # =============================================================================
         # Convenience Function
@@ -914,20 +912,20 @@ __all__ = [
     # Enums
     "CircuitState",
     # Client
-        "MLGovernanceClient",
-        "MLGovernanceConfig",
-        "MLGovernanceConnectionError",
-        # Exceptions
-        "MLGovernanceError",
-        "MLGovernanceTimeoutError",
-        # Data types
-        "OutcomeReport",
-        "OutcomeReportStatus",
-        "OutcomeResult",
-        "close_ml_governance_client",
-        # Global instance functions
-        "get_ml_governance_client",
-        "initialize_ml_governance_client",
-        # Convenience function
-        "report_outcome",
-        ]
+    "MLGovernanceClient",
+    "MLGovernanceConfig",
+    "MLGovernanceConnectionError",
+    # Exceptions
+    "MLGovernanceError",
+    "MLGovernanceTimeoutError",
+    # Data types
+    "OutcomeReport",
+    "OutcomeReportStatus",
+    "OutcomeResult",
+    "close_ml_governance_client",
+    # Global instance functions
+    "get_ml_governance_client",
+    "initialize_ml_governance_client",
+    # Convenience function
+    "report_outcome",
+]

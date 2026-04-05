@@ -1,5 +1,5 @@
 """ACGS-2 Public API v1 — governance validation endpoints.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import time
@@ -10,13 +10,13 @@ from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.constitutional_hash import validate_constitutional_hash
+from enhanced_agent_bus._compat.constitutional_hash import validate_constitutional_hash
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

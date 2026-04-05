@@ -4,7 +4,7 @@ Document Sync Engine with Operational Transform.
 Handles conflict resolution for concurrent edits using Operational Transform (OT)
 algorithms. Ensures consistency across all clients while maintaining low latency.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -14,10 +14,10 @@ import json
 from copy import deepcopy
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]

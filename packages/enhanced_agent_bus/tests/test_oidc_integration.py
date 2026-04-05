@@ -1,6 +1,6 @@
 """
 OAuth/OIDC Integration Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Phase 10 Task 5: OAuth/OIDC Integration
 - Task 5.1: Write unit tests for OAuth authorization URL generation with PKCE
@@ -35,7 +35,7 @@ from enterprise_sso.protocols import (
 # Test constants
 TEST_ISSUER = "https://idp.example.com"
 TEST_CLIENT_ID = "test-client-id"
-TEST_CLIENT_SECRET = "test-client-secret"  # noqa: S105
+TEST_CLIENT_SECRET = "test-client-secret"
 TEST_REDIRECT_URI = "https://acgs2.example.com/auth/callback"
 
 # Provider-specific constants
@@ -75,7 +75,7 @@ def okta_handler():
     return OIDCHandler(
         issuer=OKTA_ISSUER,
         client_id="okta-client-id",
-        client_secret="okta-client-secret",  # noqa: S106
+        client_secret="okta-client-secret",
         scopes=["openid", "profile", "email", "groups"],
     )
 
@@ -86,7 +86,7 @@ def auth0_handler():
     return OIDCHandler(
         issuer=AUTH0_ISSUER,
         client_id="auth0-client-id",
-        client_secret="auth0-client-secret",  # noqa: S106
+        client_secret="auth0-client-secret",
         scopes=["openid", "profile", "email"],
     )
 
@@ -97,7 +97,7 @@ def azure_ad_handler():
     return OIDCHandler(
         issuer=AZURE_AD_ISSUER,
         client_id="azure-client-id",
-        client_secret="azure-client-secret",  # noqa: S106
+        client_secret="azure-client-secret",
         scopes=["openid", "profile", "email", "offline_access"],
     )
 
@@ -149,7 +149,7 @@ def generate_valid_jwt(
 class TestOAuthAuthorizationWithPKCE:
     """Test OAuth authorization URL generation with PKCE.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def test_create_authorization_request_basic(self, oidc_handler):
@@ -320,10 +320,9 @@ class TestOAuthAuthorizationWithPKCE:
 class TestOAuthTokenExchange:
     """Test OAuth token exchange functionality.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
-    @pytest.mark.asyncio
     async def test_validate_response_success(self, oidc_handler):
         """Test successful token exchange and response validation."""
         # Create authorization request first
@@ -355,7 +354,6 @@ class TestOAuthTokenExchange:
             assert result.user_id == "user-123"
             assert result.email == "user@example.com"
 
-    @pytest.mark.asyncio
     async def test_validate_response_missing_code(self, oidc_handler):
         """Test validation failure when code is missing."""
         result = await oidc_handler.validate_response(response_data={"state": "some-state"})
@@ -363,7 +361,6 @@ class TestOAuthTokenExchange:
         assert result.success is False
         assert result.error_code == "MISSING_CODE"
 
-    @pytest.mark.asyncio
     async def test_validate_response_state_mismatch(self, oidc_handler):
         """Test validation failure on state mismatch."""
         result = await oidc_handler.validate_response(
@@ -374,7 +371,6 @@ class TestOAuthTokenExchange:
         assert result.success is False
         assert result.error_code == "STATE_MISMATCH"
 
-    @pytest.mark.asyncio
     async def test_validate_response_error_from_provider(self, oidc_handler):
         """Test handling of error response from OAuth provider."""
         result = await oidc_handler.validate_response(
@@ -388,7 +384,6 @@ class TestOAuthTokenExchange:
         assert result.error_code == "access_denied"
         assert "denied" in result.error
 
-    @pytest.mark.asyncio
     async def test_validate_response_expired_request(self, oidc_handler):
         """Test validation failure for expired authorization request."""
         # Create request
@@ -408,7 +403,6 @@ class TestOAuthTokenExchange:
         assert result.success is False
         assert result.error_code == "REQUEST_EXPIRED"
 
-    @pytest.mark.asyncio
     async def test_token_exchange_includes_pkce(self, oidc_handler):
         """Test token exchange includes PKCE code_verifier."""
         auth_request = oidc_handler.create_authorization_request(redirect_uri=TEST_REDIRECT_URI)
@@ -429,7 +423,6 @@ class TestOAuthTokenExchange:
             call_args = mock_exchange.call_args
             assert call_args.kwargs.get("code_verifier") == auth_request.code_verifier
 
-    @pytest.mark.asyncio
     async def test_token_exchange_with_refresh_token(self, oidc_handler):
         """Test token exchange returns refresh token when available."""
         auth_request = oidc_handler.create_authorization_request(redirect_uri=TEST_REDIRECT_URI)
@@ -466,7 +459,7 @@ class TestOAuthTokenExchange:
 class TestJWTValidation:
     """Test JWT ID token validation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def test_parse_valid_jwt(self, oidc_handler):
@@ -561,10 +554,9 @@ class TestJWTValidation:
 class TestTokenRefreshFlow:
     """Test OAuth token refresh functionality.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
-    @pytest.mark.asyncio
     async def test_token_response_includes_refresh_token(self, oidc_handler):
         """Test token exchange can return refresh token."""
         auth_request = oidc_handler.create_authorization_request(redirect_uri=TEST_REDIRECT_URI)
@@ -616,10 +608,9 @@ class TestTokenRefreshFlow:
 class TestOIDCUserInfoRetrieval:
     """Test OIDC userinfo endpoint retrieval.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
-    @pytest.mark.asyncio
     async def test_userinfo_endpoint_derivation(self):
         """Test userinfo endpoint is derived from issuer."""
         handler = OIDCHandler(
@@ -629,7 +620,6 @@ class TestOIDCUserInfoRetrieval:
 
         assert handler.userinfo_endpoint == "https://auth.example.com/userinfo"
 
-    @pytest.mark.asyncio
     async def test_custom_userinfo_endpoint(self):
         """Test custom userinfo endpoint override."""
         handler = OIDCHandler(
@@ -640,7 +630,6 @@ class TestOIDCUserInfoRetrieval:
 
         assert handler.userinfo_endpoint == "https://custom.example.com/oauth2/userinfo"
 
-    @pytest.mark.asyncio
     async def test_get_userinfo_success(self, oidc_handler):
         """Test successful userinfo retrieval."""
         mock_userinfo = {
@@ -677,7 +666,6 @@ class TestOIDCUserInfoRetrieval:
                 assert result.success is True
                 assert result.user_id == "user-456"
 
-    @pytest.mark.asyncio
     async def test_fallback_to_userinfo_when_no_id_token(self, oidc_handler):
         """Test fallback to userinfo endpoint when no ID token."""
         auth_request = oidc_handler.create_authorization_request(redirect_uri=TEST_REDIRECT_URI)
@@ -722,7 +710,7 @@ class TestOIDCUserInfoRetrieval:
 class TestMultiProviderSupport:
     """Test OIDC support for multiple providers.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def test_okta_handler_configuration(self, okta_handler):
@@ -767,7 +755,6 @@ class TestMultiProviderSupport:
         params = parse_qs(parsed.query)
         assert "offline_access" in params["scope"][0]
 
-    @pytest.mark.asyncio
     async def test_okta_jwt_validation(self, okta_handler):
         """Test Okta JWT validation."""
         id_token = generate_valid_jwt(
@@ -782,7 +769,6 @@ class TestMultiProviderSupport:
         assert "Everyone" in result.groups
         assert "Developers" in result.groups
 
-    @pytest.mark.asyncio
     async def test_auth0_jwt_validation(self, auth0_handler):
         """Test Auth0 JWT validation."""
         id_token = generate_valid_jwt(
@@ -795,7 +781,6 @@ class TestMultiProviderSupport:
         assert result.success is True
         assert result.user_id is not None
 
-    @pytest.mark.asyncio
     async def test_azure_ad_jwt_validation(self, azure_ad_handler):
         """Test Azure AD JWT validation."""
         id_token = generate_valid_jwt(
@@ -814,7 +799,7 @@ class TestMultiProviderSupport:
             issuer="https://dev-12345.okta.com",
             client_id="test-client",
             authorization_endpoint="https://dev-12345.okta.com/oauth2/v1/authorize",
-            token_endpoint="https://dev-12345.okta.com/oauth2/v1/token",  # noqa: S106
+            token_endpoint="https://dev-12345.okta.com/oauth2/v1/token",
             userinfo_endpoint="https://dev-12345.okta.com/oauth2/v1/userinfo",
         )
 
@@ -831,7 +816,7 @@ class TestMultiProviderSupport:
 class TestOIDCProtocolHandlerFactory:
     """Test ProtocolHandlerFactory for OIDC.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def test_create_oidc_handler(self):
@@ -877,7 +862,7 @@ class TestOIDCProtocolHandlerFactory:
 class TestOIDCConstitutionalHashValidation:
     """Test constitutional hash validation for OIDC.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def test_valid_constitutional_hash(self):
@@ -917,7 +902,7 @@ class TestOIDCConstitutionalHashValidation:
 class TestOIDCEdgeCases:
     """Test OIDC edge cases and error handling.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def test_handler_with_trailing_slash_issuer(self):
@@ -942,7 +927,6 @@ class TestOIDCEdgeCases:
         assert handler.use_pkce is True  # Default
         assert "openid" in handler.scopes
 
-    @pytest.mark.asyncio
     async def test_validate_response_no_tokens(self, oidc_handler):
         """Test validation failure when no tokens received."""
         auth_request = oidc_handler.create_authorization_request(redirect_uri=TEST_REDIRECT_URI)
@@ -961,7 +945,6 @@ class TestOIDCEdgeCases:
             assert result.success is False
             assert result.error_code == "NO_TOKEN"
 
-    @pytest.mark.asyncio
     async def test_validate_response_token_exchange_error(self, oidc_handler):
         """Test handling of token exchange error."""
         auth_request = oidc_handler.create_authorization_request(redirect_uri=TEST_REDIRECT_URI)

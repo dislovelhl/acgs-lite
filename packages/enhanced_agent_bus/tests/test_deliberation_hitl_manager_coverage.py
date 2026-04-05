@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive coverage tests for deliberation_layer/hitl_manager.py.
 
@@ -27,10 +27,9 @@ pytestmark = [pytest.mark.unit]
 # Core imports
 # ---------------------------------------------------------------------------
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
-
-from enhanced_agent_bus.core_models import AgentMessage, MessageType  # noqa: E402
-from enhanced_agent_bus.deliberation_layer.deliberation_queue import (  # noqa: E402
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.core_models import AgentMessage, MessageType
+from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
     DeliberationQueue,
     DeliberationStatus,
     DeliberationTask,
@@ -66,20 +65,20 @@ async def _enqueue_task(queue: DeliberationQueue, msg: AgentMessage | None = Non
 # Import the module under test
 # ---------------------------------------------------------------------------
 
-import logging  # noqa: E402
+import logging
 
-from enhanced_agent_bus.deliberation_layer import hitl_manager as _hitl_mod  # noqa: E402
-from enhanced_agent_bus.deliberation_layer.hitl_manager import (  # noqa: E402
+from enhanced_agent_bus.deliberation_layer import hitl_manager as _hitl_mod
+from enhanced_agent_bus.deliberation_layer.hitl_manager import (
     CONSTITUTIONAL_HASH as HITL_CONSTITUTIONAL_HASH,
 )
-from enhanced_agent_bus.deliberation_layer.hitl_manager import (  # noqa: E402
+from enhanced_agent_bus.deliberation_layer.hitl_manager import (
     AuditLedger,
     HITLManager,
     ValidationResult,
     _load_constitutional_hash,
     _load_deliberation_queue_types,
 )
-from enhanced_agent_bus.observability.structured_logging import get_logger  # noqa: E402
+from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # ===========================================================================
 # 1. Module-level loader: _load_deliberation_queue_types

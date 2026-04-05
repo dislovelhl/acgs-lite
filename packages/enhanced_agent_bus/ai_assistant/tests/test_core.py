@@ -1,6 +1,6 @@
 """
 ACGS-2 AI Assistant - Core Orchestrator Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import os
@@ -13,8 +13,7 @@ sys.path.insert(
 )
 
 # Import centralized constitutional hash with fallback
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.ai_assistant.core import (
     AIAssistant,
     AssistantConfig,
@@ -132,7 +131,6 @@ class TestAIAssistant:
 
         assert assistant.config.name == "Custom"
 
-    @pytest.mark.asyncio
     async def test_initialize(self):
         """Test assistant initialization."""
         assistant = AIAssistant(config=AssistantConfig(enable_governance=False))
@@ -143,7 +141,6 @@ class TestAIAssistant:
         assert assistant.state == AssistantState.READY
         assert assistant.is_ready is True
 
-    @pytest.mark.asyncio
     async def test_shutdown(self):
         """Test assistant shutdown."""
         assistant = AIAssistant(config=AssistantConfig(enable_governance=False))
@@ -153,7 +150,6 @@ class TestAIAssistant:
 
         assert assistant.state == AssistantState.SHUTDOWN
 
-    @pytest.mark.asyncio
     async def test_process_message_not_ready(self):
         """Test processing when not ready."""
         assistant = AIAssistant()
@@ -165,7 +161,6 @@ class TestAIAssistant:
 
         assert result.success is False
 
-    @pytest.mark.asyncio
     async def test_process_message_success(self):
         """Test successful message processing."""
         assistant = AIAssistant(config=AssistantConfig(enable_governance=False))
@@ -182,7 +177,6 @@ class TestAIAssistant:
         assert result.processing_time_ms >= 0
         assert result.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_process_message_returns_intent(self):
         """Test that processing returns intent."""
         assistant = AIAssistant(config=AssistantConfig(enable_governance=False))
@@ -197,7 +191,6 @@ class TestAIAssistant:
         # Intent should be detected
         assert result.intent is not None or result.confidence >= 0
 
-    @pytest.mark.asyncio
     async def test_process_message_with_session(self):
         """Test processing with session ID."""
         assistant = AIAssistant(config=AssistantConfig(enable_governance=False))
@@ -216,7 +209,6 @@ class TestAIAssistant:
 class TestAIAssistantSessionManagement:
     """Tests for session management in AIAssistant."""
 
-    @pytest.mark.asyncio
     async def test_get_session(self):
         """Test getting an active session."""
         assistant = AIAssistant(config=AssistantConfig(enable_governance=False))
@@ -233,7 +225,6 @@ class TestAIAssistantSessionManagement:
         assert session is not None
         assert session.user_id == "user123"
 
-    @pytest.mark.asyncio
     async def test_get_user_sessions(self):
         """Test getting sessions for a user."""
         assistant = AIAssistant(config=AssistantConfig(enable_governance=False))
@@ -247,7 +238,6 @@ class TestAIAssistantSessionManagement:
 
         assert len(sessions) == 2
 
-    @pytest.mark.asyncio
     async def test_end_session(self):
         """Test ending a session."""
         assistant = AIAssistant(config=AssistantConfig(enable_governance=False))
@@ -264,7 +254,6 @@ class TestAIAssistantSessionManagement:
         assert result is True
         assert assistant.get_session("session456") is None
 
-    @pytest.mark.asyncio
     async def test_end_nonexistent_session(self):
         """Test ending a session that doesn't exist."""
         assistant = AIAssistant(config=AssistantConfig(enable_governance=False))
@@ -278,7 +267,6 @@ class TestAIAssistantSessionManagement:
 class TestAIAssistantConversationFlow:
     """Tests for conversation flow in AIAssistant."""
 
-    @pytest.mark.asyncio
     async def test_multi_turn_conversation(self):
         """Test multi-turn conversation."""
         assistant = AIAssistant(config=AssistantConfig(enable_governance=False))
@@ -312,7 +300,6 @@ class TestAIAssistantConversationFlow:
         session = assistant.get_session("session456")
         assert len(session.messages) >= 6  # 3 user + 3 assistant
 
-    @pytest.mark.asyncio
     async def test_context_preserved_across_turns(self):
         """Test that context is preserved across turns."""
         assistant = AIAssistant(config=AssistantConfig(enable_governance=False))
@@ -333,7 +320,6 @@ class TestAIAssistantConversationFlow:
 class TestAIAssistantMetrics:
     """Tests for metrics in AIAssistant."""
 
-    @pytest.mark.asyncio
     async def test_get_metrics(self):
         """Test getting assistant metrics."""
         assistant = AIAssistant(config=AssistantConfig(enable_governance=False))
@@ -349,7 +335,6 @@ class TestAIAssistantMetrics:
         assert metrics["total_messages_processed"] == 1
         assert metrics["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_get_health(self):
         """Test getting health status."""
         assistant = AIAssistant(config=AssistantConfig(enable_governance=False))
@@ -364,7 +349,6 @@ class TestAIAssistantMetrics:
 class TestAIAssistantListeners:
     """Tests for event listeners in AIAssistant."""
 
-    @pytest.mark.asyncio
     async def test_add_listener(self):
         """Test adding a listener."""
 
@@ -392,7 +376,6 @@ class TestAIAssistantListeners:
         assert len(listener.messages_received) == 1
         assert len(listener.responses_generated) == 1
 
-    @pytest.mark.asyncio
     async def test_remove_listener(self):
         """Test removing a listener."""
 
@@ -423,7 +406,6 @@ class TestAIAssistantListeners:
 class TestCreateAssistantFactory:
     """Tests for create_assistant factory function."""
 
-    @pytest.mark.asyncio
     async def test_create_assistant_default(self):
         """Test creating assistant with defaults."""
         assistant = await create_assistant()
@@ -434,7 +416,6 @@ class TestCreateAssistantFactory:
 
         await assistant.shutdown()
 
-    @pytest.mark.asyncio
     async def test_create_assistant_custom_name(self):
         """Test creating assistant with custom name."""
         assistant = await create_assistant(name="Custom Bot")
@@ -443,7 +424,6 @@ class TestCreateAssistantFactory:
 
         await assistant.shutdown()
 
-    @pytest.mark.asyncio
     async def test_create_assistant_no_governance(self):
         """Test creating assistant without governance."""
         assistant = await create_assistant(enable_governance=False)
@@ -456,7 +436,6 @@ class TestCreateAssistantFactory:
 class TestAIAssistantErrorHandling:
     """Tests for error handling in AIAssistant."""
 
-    @pytest.mark.asyncio
     async def test_empty_message(self):
         """Test handling empty message."""
         assistant = AIAssistant(config=AssistantConfig(enable_governance=False))
@@ -470,7 +449,6 @@ class TestAIAssistantErrorHandling:
         # Should handle gracefully
         assert isinstance(result, ProcessingResult)
 
-    @pytest.mark.asyncio
     async def test_whitespace_message(self):
         """Test handling whitespace-only message."""
         assistant = AIAssistant(config=AssistantConfig(enable_governance=False))
@@ -488,7 +466,6 @@ class TestAIAssistantErrorHandling:
 class TestAIAssistantCustomComponents:
     """Tests for AIAssistant with custom components."""
 
-    @pytest.mark.asyncio
     async def test_custom_nlu_engine(self):
         """Test using custom NLU engine."""
 
@@ -509,7 +486,6 @@ class TestAIAssistantCustomComponents:
 
         assert result.intent == "custom"
 
-    @pytest.mark.asyncio
     async def test_custom_dialog_manager(self):
         """Test using custom dialog manager."""
         from enhanced_agent_bus.ai_assistant.dialog import ActionType, DialogAction

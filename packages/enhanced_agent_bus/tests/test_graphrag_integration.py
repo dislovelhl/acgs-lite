@@ -1,6 +1,6 @@
 """
 Tests for GraphRAGContextEnricher — deliberation layer policy retrieval.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -114,7 +114,7 @@ class TestGraphRAGContextEnricherInit:
 
     def test_constitutional_hash_set(self):
         enricher = _make_enricher()
-        assert enricher.constitutional_hash == "cdd01ef066bc6cf2"  # pragma: allowlist secret
+        assert enricher.constitutional_hash == "608508a9bd224290"  # pragma: allowlist secret
 
     def test_clear_cache_resets_size(self):
         enricher = _make_enricher()
@@ -124,13 +124,11 @@ class TestGraphRAGContextEnricherInit:
 
 
 class TestSeedPolicy:
-    @pytest.mark.asyncio
     async def test_seed_increments_count(self):
         enricher = _make_enricher()
         await enricher.seed_policy("Rate limits apply.", "pol-1", "t1")
         assert enricher.seeded_policy_count == 1
 
-    @pytest.mark.asyncio
     async def test_seed_multiple_same_id_stays_one(self):
         enricher = _make_enricher()
         await enricher.seed_policy("v1", "pol-1", "t1")
@@ -138,7 +136,6 @@ class TestSeedPolicy:
         # _seeded_ids is a set so count stays 1
         assert enricher.seeded_policy_count == 1
 
-    @pytest.mark.asyncio
     async def test_seed_multiple_different_ids(self):
         enricher = _make_enricher()
         await enricher.seed_policy("p1", "pol-1", "t1")
@@ -147,25 +144,21 @@ class TestSeedPolicy:
 
 
 class TestEnrich:
-    @pytest.mark.asyncio
     async def test_empty_query_returns_empty(self):
         enricher = _make_enricher()
         result = await enricher.enrich("", "t1")
         assert result == {}
 
-    @pytest.mark.asyncio
     async def test_whitespace_query_returns_empty(self):
         enricher = _make_enricher()
         result = await enricher.enrich("   ", "t1")
         assert result == {}
 
-    @pytest.mark.asyncio
     async def test_unseeded_store_returns_empty(self):
         enricher = _make_enricher()
         result = await enricher.enrich("some action", "t1")
         assert result == {}
 
-    @pytest.mark.asyncio
     async def test_seeded_policy_retrieved_for_matching_tenant(self):
         enricher = _make_enricher()
         await enricher.seed_policy(
@@ -178,21 +171,18 @@ class TestEnrich:
         assert len(result["retrieved_policies"]) >= 1
         assert result["retrieved_policies"][0]["policy_id"] == "pol-rate"
 
-    @pytest.mark.asyncio
     async def test_policy_not_returned_for_different_tenant(self):
         enricher = _make_enricher()
         await enricher.seed_policy("Confidential policy.", "pol-x", "tenant-a")
         result = await enricher.enrich("confidential", "tenant-b")
         assert result == {} or result.get("retrieved_policies", []) == []
 
-    @pytest.mark.asyncio
     async def test_result_contains_constitutional_hash(self):
         enricher = _make_enricher()
         await enricher.seed_policy("Policy text.", "pol-1", "t1")
         result = await enricher.enrich("policy", "t1")
-        assert result.get("constitutional_hash") == "cdd01ef066bc6cf2"  # pragma: allowlist secret
+        assert result.get("constitutional_hash") == "608508a9bd224290"  # pragma: allowlist secret
 
-    @pytest.mark.asyncio
     async def test_result_contains_retrieval_time_ms(self):
         enricher = _make_enricher()
         await enricher.seed_policy("Policy text.", "pol-1", "t1")
@@ -200,7 +190,6 @@ class TestEnrich:
         assert "retrieval_time_ms" in result
         assert isinstance(result["retrieval_time_ms"], float)
 
-    @pytest.mark.asyncio
     async def test_cached_result_on_second_call(self):
         enricher = _make_enricher()
         await enricher.seed_policy("Policy text.", "pol-1", "t1")
@@ -208,7 +197,6 @@ class TestEnrich:
         result2 = await enricher.enrich("policy", "t1")
         assert result2.get("cache_hit") is True
 
-    @pytest.mark.asyncio
     async def test_cache_size_increments_on_new_query(self):
         enricher = _make_enricher()
         await enricher.seed_policy("Policy text.", "pol-1", "t1")
@@ -216,7 +204,6 @@ class TestEnrich:
         await enricher.enrich("policy", "t1")
         assert enricher.cache_size == 1
 
-    @pytest.mark.asyncio
     async def test_snippet_truncated_to_max_chars(self):
         max_chars = 50
         enricher = _make_enricher(max_context_chars=max_chars)
@@ -227,7 +214,6 @@ class TestEnrich:
             snippet = result["retrieved_policies"][0]["snippet"]
             assert len(snippet) <= max_chars
 
-    @pytest.mark.asyncio
     async def test_timeout_returns_empty(self):
         enricher = _make_enricher(timeout_seconds=0.001)
 
@@ -239,7 +225,6 @@ class TestEnrich:
             result = await enricher.enrich("something", "t1")
         assert result == {}
 
-    @pytest.mark.asyncio
     async def test_backend_error_returns_empty(self):
         enricher = _make_enricher()
 
@@ -250,7 +235,6 @@ class TestEnrich:
             result = await enricher.enrich("something", "t1")
         assert result == {}
 
-    @pytest.mark.asyncio
     async def test_custom_timeout_overrides_default(self):
         enricher = _make_enricher(timeout_seconds=10)  # generous default
         call_timeout = None
@@ -267,7 +251,6 @@ class TestEnrich:
 
         assert call_timeout == pytest.approx(0.123)
 
-    @pytest.mark.asyncio
     async def test_top_k_limits_results(self):
         enricher = _make_enricher(top_k=2)
         for i in range(5):
@@ -283,20 +266,17 @@ class TestEnrich:
 
 
 class TestSeedPoliciesBatch:
-    @pytest.mark.asyncio
     async def test_batch_seeds_all_policies(self):
         enricher = _make_enricher()
         items = [(f"Policy text {i}", f"pol-{i}", "t1") for i in range(5)]
         await enricher.seed_policies_batch(items)
         assert enricher.seeded_policy_count == 5
 
-    @pytest.mark.asyncio
     async def test_batch_empty_is_noop(self):
         enricher = _make_enricher()
         await enricher.seed_policies_batch([])
         assert enricher.seeded_policy_count == 0
 
-    @pytest.mark.asyncio
     async def test_batch_seeded_policies_are_retrievable(self):
         enricher = _make_enricher()
         items = [("Rate limits must be enforced.", "pol-rate", "tenant-b")]
@@ -305,7 +285,6 @@ class TestSeedPoliciesBatch:
         assert "retrieved_policies" in result
         assert len(result["retrieved_policies"]) >= 1
 
-    @pytest.mark.asyncio
     async def test_batch_respects_tenant_isolation(self):
         enricher = _make_enricher()
         items = [
@@ -318,7 +297,6 @@ class TestSeedPoliciesBatch:
             for p in result["retrieved_policies"]:
                 assert p["policy_id"] == "pol-a"
 
-    @pytest.mark.asyncio
     async def test_batch_overwrites_existing_policy_id(self):
         enricher = _make_enricher()
         await enricher.seed_policies_batch([("v1 text", "pol-x", "t1")])
@@ -332,7 +310,6 @@ class TestSeedPoliciesBatch:
 
 
 class TestPipelinePath:
-    @pytest.mark.asyncio
     async def test_pipeline_path_invoked_when_retriever_set(self):
         """When a retriever is injected, enrich() calls _retrieve_via_pipeline."""
         enricher = _make_enricher()
@@ -348,12 +325,12 @@ class TestPipelinePath:
                         "policy_id": "pol-pipe",
                         "score": 0.9,
                         "snippet": "Policy text",
-                        "constitutional_hash": "cdd01ef066bc6cf2",
+                        "constitutional_hash": "608508a9bd224290",
                     }  # pragma: allowlist secret
                 ],
                 "assembled_context": "Policy text for pipeline.",
                 "retrieval_time_ms": 1.0,
-                "constitutional_hash": "cdd01ef066bc6cf2",  # pragma: allowlist secret
+                "constitutional_hash": "608508a9bd224290",  # pragma: allowlist secret
                 "retrieval_path": "pipeline",
             }
 
@@ -364,7 +341,6 @@ class TestPipelinePath:
         assert pipeline_called, "Pipeline path was not invoked"
         assert result.get("retrieval_path") == "pipeline"
 
-    @pytest.mark.asyncio
     async def test_pipeline_failure_falls_back_to_raw(self):
         """If _retrieve_via_pipeline raises, raw path result is returned."""
         enricher = _make_enricher()
@@ -381,7 +357,6 @@ class TestPipelinePath:
         assert "retrieved_policies" in result
         assert result.get("retrieval_path") is None  # raw path has no retrieval_path key
 
-    @pytest.mark.asyncio
     async def test_no_retriever_uses_raw_path(self):
         """Without a retriever, raw path is always used."""
         enricher = _make_enricher()
@@ -411,7 +386,6 @@ class TestDeliberationLayerIntegration:
         layer = DeliberationLayer()
         assert layer._graphrag_enricher is None
 
-    @pytest.mark.asyncio
     async def test_enricher_called_during_process_message(self):
         from enhanced_agent_bus.deliberation_layer.integration import DeliberationLayer
         from enhanced_agent_bus.models import AgentMessage, MessageType, Priority
@@ -446,7 +420,6 @@ class TestDeliberationLayerIntegration:
         call_kwargs = enrich_mock.call_args
         assert "tenant-test" in str(call_kwargs)
 
-    @pytest.mark.asyncio
     async def test_process_message_succeeds_without_enricher(self):
         from enhanced_agent_bus.deliberation_layer.integration import DeliberationLayer
         from enhanced_agent_bus.models import AgentMessage, MessageType, Priority

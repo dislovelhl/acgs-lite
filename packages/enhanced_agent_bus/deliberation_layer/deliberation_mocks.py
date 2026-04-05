@@ -1,7 +1,7 @@
 """
 ACGS-2 Deliberation Layer - Mock Components
 Mock implementations for testing and fallback scenarios.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides fallback implementations when actual dependencies are unavailable,
 allowing the deliberation layer to function in isolated testing or degraded mode.
@@ -14,7 +14,7 @@ from enum import Enum
 from typing import cast
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -93,7 +93,7 @@ class MockComponent:
 
     Provides sensible default behavior for all expected methods,
     allowing tests to run without real implementations.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, *_args, **_kwargs):

@@ -1,6 +1,6 @@
 """
 Tests for Sensitive Data Encryption and Vault Integration.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Task 7.2: POST /tenants/{tenant_id}/integrations with encryption
 Task 7.3: HashiCorp Vault integration for encryption key storage
@@ -8,8 +8,6 @@ Task 7.3: HashiCorp Vault integration for encryption key storage
 
 import base64
 from unittest.mock import AsyncMock
-
-import pytest
 
 from .conftest import (
     CONSTITUTIONAL_HASH,
@@ -21,7 +19,6 @@ from .conftest import (
 class TestSensitiveDataEncryption:
     """Tests for encryption of sensitive configuration data."""
 
-    @pytest.mark.asyncio
     async def test_password_field_encrypted(self, integration_service):
         """Test that password fields are encrypted."""
         integration = await integration_service.create_integration(
@@ -33,9 +30,8 @@ class TestSensitiveDataEncryption:
 
         assert "bind_password" in integration.encrypted_fields
         # The stored value should be encrypted (base64)
-        assert integration.config["bind_password"] != "secret123"  # noqa: S105
+        assert integration.config["bind_password"] != "secret123"
 
-    @pytest.mark.asyncio
     async def test_secret_field_encrypted(self, integration_service):
         """Test that secret fields are encrypted."""
         integration = await integration_service.create_integration(
@@ -47,7 +43,6 @@ class TestSensitiveDataEncryption:
 
         assert "client_secret" in integration.encrypted_fields
 
-    @pytest.mark.asyncio
     async def test_api_key_field_encrypted(self, integration_service):
         """Test that api_key fields are encrypted."""
         integration = await integration_service.create_integration(
@@ -59,7 +54,6 @@ class TestSensitiveDataEncryption:
 
         assert "api_key" in integration.encrypted_fields
 
-    @pytest.mark.asyncio
     async def test_certificate_field_encrypted(self, integration_service):
         """Test that certificate fields are encrypted."""
         integration = await integration_service.create_integration(
@@ -71,7 +65,6 @@ class TestSensitiveDataEncryption:
 
         assert "private_key" in integration.encrypted_fields
 
-    @pytest.mark.asyncio
     async def test_non_sensitive_fields_not_encrypted(self, integration_service):
         """Test that non-sensitive fields are not encrypted."""
         integration = await integration_service.create_integration(
@@ -88,7 +81,6 @@ class TestSensitiveDataEncryption:
         assert "base_dn" not in integration.encrypted_fields
         assert integration.config["server_url"] == "ldap://example.com"
 
-    @pytest.mark.asyncio
     async def test_encryption_service_roundtrip(self, encryption_service):
         """Test that encryption/decryption roundtrip works."""
         original = "super-secret-password"
@@ -98,7 +90,6 @@ class TestSensitiveDataEncryption:
 
         assert decrypted == original
 
-    @pytest.mark.asyncio
     async def test_update_encrypts_new_sensitive_fields(self, integration_service):
         """Test that updates encrypt new sensitive fields."""
         integration = await integration_service.create_integration(
@@ -120,7 +111,6 @@ class TestSensitiveDataEncryption:
 class TestVaultIntegration:
     """Tests for HashiCorp Vault integration."""
 
-    @pytest.mark.asyncio
     async def test_vault_encrypt_called(self):
         """Test that Vault transit engine is used when available."""
         mock_vault = AsyncMock()
@@ -134,7 +124,6 @@ class TestVaultIntegration:
         mock_vault.secrets.transit.encrypt_data.assert_called_once()
         assert result["ciphertext"] == "vault:v1:encrypted-data"
 
-    @pytest.mark.asyncio
     async def test_vault_decrypt_called(self):
         """Test that Vault transit engine is used for decryption."""
         mock_vault = AsyncMock()
@@ -148,7 +137,6 @@ class TestVaultIntegration:
         mock_vault.secrets.transit.decrypt_data.assert_called_once()
         assert result == "secret-data"
 
-    @pytest.mark.asyncio
     async def test_vault_custom_key_id(self):
         """Test using custom key ID with Vault."""
         mock_vault = AsyncMock()

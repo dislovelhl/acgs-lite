@@ -6,12 +6,13 @@ from unittest.mock import MagicMock
 
 import pytest
 from fastapi import HTTPException
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.errors.exceptions import ValidationError
-from src.core.shared.security.auth import UserClaims
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.errors import ValidationError
+from enhanced_agent_bus._compat.security.auth import UserClaims
 from enhanced_agent_bus.policy_copilot.api import (
     FeedbackRequest,
+    ValidateRequest,
     explain_policy,
     generate_policy,
     get_template,
@@ -68,14 +69,15 @@ def _result(
     )
 
 
-@pytest.mark.asyncio
 async def test_health_check_success() -> None:
-    result = await health_check()
+    nlp = MagicMock()
+    gen = MagicMock()
+    val = MagicMock()
+    result = await health_check(nlp=nlp, generator=gen, validator=val)
     assert result.status == "healthy"
     assert result.constitutional_hash == CONSTITUTIONAL_HASH
 
 
-@pytest.mark.asyncio
 async def test_generate_policy_success() -> None:
     nlp = MagicMock()
     nlp.extract_entities.return_value = [PolicyEntity(type=PolicyEntityType.ROLE, value="admin")]
@@ -91,7 +93,6 @@ async def test_generate_policy_success() -> None:
     assert resp.constitutional_hash == CONSTITUTIONAL_HASH
 
 
-@pytest.mark.asyncio
 async def test_generate_policy_low_confidence_adds_suggestion() -> None:
     nlp = MagicMock()
     nlp.extract_entities.return_value = []
@@ -106,7 +107,6 @@ async def test_generate_policy_low_confidence_adds_suggestion() -> None:
     assert any("confidence" in s.lower() for s in resp.suggestions)
 
 
-@pytest.mark.asyncio
 async def test_generate_policy_default_allow_adds_risk() -> None:
     nlp = MagicMock()
     nlp.extract_entities.return_value = []
@@ -121,7 +121,6 @@ async def test_generate_policy_default_allow_adds_risk() -> None:
     assert any("default allow" in r.lower() for r in resp.risks)
 
 
-@pytest.mark.asyncio
 async def test_generate_policy_cross_tenant_forbidden() -> None:
     nlp = MagicMock()
     nlp.extract_entities.return_value = []
@@ -137,7 +136,6 @@ async def test_generate_policy_cross_tenant_forbidden() -> None:
     assert exc.value.status_code == 403
 
 
-@pytest.mark.asyncio
 async def test_generate_policy_validation_error_maps_400() -> None:
     nlp = MagicMock()
     nlp.extract_entities.side_effect = ValidationError("bad input")
@@ -151,7 +149,6 @@ async def test_generate_policy_validation_error_maps_400() -> None:
     assert exc.value.status_code == 400
 
 
-@pytest.mark.asyncio
 async def test_explain_policy_success() -> None:
     gen = MagicMock()
     gen.explain.return_value = {
@@ -166,7 +163,6 @@ async def test_explain_policy_success() -> None:
     assert len(resp.risks) == 1
 
 
-@pytest.mark.asyncio
 async def test_improve_policy_success() -> None:
     gen = MagicMock()
     gen.improve.return_value = ("package x", ["change-1"])
@@ -177,16 +173,14 @@ async def test_improve_policy_success() -> None:
     assert resp.changes_made == ["change-1"]
 
 
-@pytest.mark.asyncio
 async def test_validate_policy_success() -> None:
     validator = MagicMock()
     validator.validate_syntax.return_value = ValidationResult(valid=True, syntax_check=True)
 
-    resp = await validate_policy("package x", validator=validator)
+    resp = await validate_policy(ValidateRequest(policy="package x"), validator=validator)
     assert resp.valid is True
 
 
-@pytest.mark.asyncio
 async def test_test_policy_success() -> None:
     validator = MagicMock()
     validator.test_policy.return_value = CopilotTestResult(allowed=True)
@@ -196,7 +190,6 @@ async def test_test_policy_success() -> None:
     assert resp.allowed is True
 
 
-@pytest.mark.asyncio
 async def test_get_templates_success() -> None:
     gen = MagicMock()
     gen.get_templates.return_value = [
@@ -216,7 +209,6 @@ async def test_get_templates_success() -> None:
     assert resp.total == 1
 
 
-@pytest.mark.asyncio
 async def test_get_template_not_found_raises_404() -> None:
     gen = MagicMock()
     gen.TEMPLATES = {}
@@ -226,7 +218,6 @@ async def test_get_template_not_found_raises_404() -> None:
     assert exc.value.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_submit_feedback_success() -> None:
     req = FeedbackRequest(policy_id="p1", feedback="thumbs_up", comment="ok")
     resp = await submit_feedback(req)

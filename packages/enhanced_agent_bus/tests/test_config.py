@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Configuration Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for BusConfiguration dataclass with builder pattern.
 """
@@ -61,6 +61,13 @@ class TestBusConfigurationDefaults:
         assert config.session_context_ttl == 3600  # 1 hour
         assert config.require_independent_validator is False
         assert config.independent_validator_threshold == 0.8
+
+    def test_default_governance_core_settings(self):
+        """Test governance core settings default to legacy shell mode."""
+        config = BusConfiguration()
+        assert config.governance_core_mode == "legacy"
+        assert config.governance_swarm_peer_validation_enabled is True
+        assert config.governance_swarm_use_manifold is False
 
     def test_default_optional_dependencies(self):
         """Test default optional dependencies are None."""
@@ -124,6 +131,17 @@ class TestBusConfigurationCustomValues:
         assert config.session_policy_cache_ttl == 600
         assert config.session_context_ttl == 7200
 
+    def test_custom_governance_core_settings(self):
+        """Test custom governance core routing settings."""
+        config = BusConfiguration(
+            governance_core_mode="shadow",
+            governance_swarm_peer_validation_enabled=False,
+            governance_swarm_use_manifold=True,
+        )
+        assert config.governance_core_mode == "shadow"
+        assert config.governance_swarm_peer_validation_enabled is False
+        assert config.governance_swarm_use_manifold is True
+
 
 class TestBusConfigurationPostInit:
     """Tests for BusConfiguration __post_init__ validation."""
@@ -138,6 +156,11 @@ class TestBusConfigurationPostInit:
         custom_hash = "custom123456789"
         config = BusConfiguration(constitutional_hash=custom_hash)
         assert config.constitutional_hash == custom_hash
+
+    def test_invalid_governance_core_mode_rejected(self):
+        """Test invalid governance core mode raises a validation error."""
+        with pytest.raises(ValueError, match="governance_core_mode"):
+            BusConfiguration(governance_core_mode="invalid")
 
 
 class TestBusConfigurationFromEnvironment:
@@ -174,6 +197,9 @@ class TestBusConfigurationFromEnvironment:
         "SESSION_CONTEXT_TTL",
         "REQUIRE_INDEPENDENT_VALIDATOR",
         "INDEPENDENT_VALIDATOR_THRESHOLD",
+        "GOVERNANCE_CORE_MODE",
+        "GOVERNANCE_SWARM_PEER_VALIDATION_ENABLED",
+        "GOVERNANCE_SWARM_USE_MANIFOLD",
         "MAX_QUEUE_SIZE",
         "MAX_MESSAGE_SIZE_BYTES",
         "QUEUE_FULL_BEHAVIOR",
@@ -288,6 +314,25 @@ class TestBusConfigurationFromEnvironment:
             config = BusConfiguration.from_environment()
             assert config.independent_validator_threshold == 0.93
 
+    def test_from_environment_governance_core_settings(self):
+        """Test governance core settings from environment."""
+        env_vars = {
+            "GOVERNANCE_CORE_MODE": "shadow",
+            "GOVERNANCE_SWARM_PEER_VALIDATION_ENABLED": "false",
+            "GOVERNANCE_SWARM_USE_MANIFOLD": "true",
+        }
+        with patch.dict(os.environ, env_vars, clear=False):
+            config = BusConfiguration.from_environment()
+            assert config.governance_core_mode == "shadow"
+            assert config.governance_swarm_peer_validation_enabled is False
+            assert config.governance_swarm_use_manifold is True
+
+    def test_from_environment_invalid_governance_core_mode_falls_back_to_legacy(self):
+        """Test invalid governance core mode falls back to legacy."""
+        with patch.dict(os.environ, {"GOVERNANCE_CORE_MODE": "unsupported"}, clear=False):
+            config = BusConfiguration.from_environment()
+            assert config.governance_core_mode == "legacy"
+
 
 class TestBusConfigurationForTesting:
     """Tests for BusConfiguration.for_testing factory method."""
@@ -315,6 +360,13 @@ class TestBusConfigurationForTesting:
         assert config.enable_session_governance is False
         assert config.require_independent_validator is False
 
+    def test_for_testing_governance_core_defaults(self):
+        """Test for_testing keeps governance shell in legacy mode."""
+        config = BusConfiguration.for_testing()
+        assert config.governance_core_mode == "legacy"
+        assert config.governance_swarm_peer_validation_enabled is True
+        assert config.governance_swarm_use_manifold is False
+
 
 class TestBusConfigurationForProduction:
     """Tests for BusConfiguration.for_production factory method."""
@@ -341,6 +393,13 @@ class TestBusConfigurationForProduction:
         config = BusConfiguration.for_production()
         assert config.enable_session_governance is True
         assert config.require_independent_validator is True
+
+    def test_for_production_governance_core_defaults(self):
+        """Test for_production still defaults to legacy shell routing."""
+        config = BusConfiguration.for_production()
+        assert config.governance_core_mode == "legacy"
+        assert config.governance_swarm_peer_validation_enabled is True
+        assert config.governance_swarm_use_manifold is False
 
 
 class TestBusConfigurationBuilderMethods:

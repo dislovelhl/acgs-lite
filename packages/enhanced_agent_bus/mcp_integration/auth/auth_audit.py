@@ -1,7 +1,7 @@
 """
 Auth Audit Logger for MCP Authentication.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 MACI Role: AUDITOR
 
 Provides comprehensive authentication audit logging:
@@ -22,11 +22,11 @@ from pathlib import Path
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -46,16 +46,16 @@ _AUTH_AUDIT_OPERATION_ERRORS = (
 )
 
 
-class AuthAuditEventType(str, Enum):  # noqa: UP042
+class AuthAuditEventType(str, Enum):
     """Type of authentication audit event."""
 
     # Token events
-    TOKEN_ACQUIRED = "token_acquired"  # noqa: S105
-    TOKEN_REFRESHED = "token_refreshed"  # noqa: S105
-    TOKEN_REVOKED = "token_revoked"  # noqa: S105
-    TOKEN_EXPIRED = "token_expired"  # noqa: S105
-    TOKEN_VALIDATION_SUCCESS = "token_validation_success"  # noqa: S105
-    TOKEN_VALIDATION_FAILED = "token_validation_failed"  # noqa: S105
+    TOKEN_ACQUIRED = "token_acquired"
+    TOKEN_REFRESHED = "token_refreshed"
+    TOKEN_REVOKED = "token_revoked"
+    TOKEN_EXPIRED = "token_expired"
+    TOKEN_VALIDATION_SUCCESS = "token_validation_success"
+    TOKEN_VALIDATION_FAILED = "token_validation_failed"
 
     # Credential events
     CREDENTIAL_CREATED = "credential_created"
@@ -88,7 +88,7 @@ class AuthAuditEventType(str, Enum):  # noqa: UP042
     SYSTEM_STOP = "system_stop"
 
 
-class AuditSeverity(str, Enum):  # noqa: UP042
+class AuditSeverity(str, Enum):
     """Severity level of audit event."""
 
     INFO = "info"
@@ -225,7 +225,7 @@ class AuthAuditLogger:
     - Alert triggering
     - Compliance reporting
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, config: AuditLoggerConfig | None = None):
@@ -535,6 +535,27 @@ class AuthAuditLogger:
         since = since or datetime.now(UTC) - timedelta(hours=24)
         until = until or datetime.now(UTC)
 
+        async with self._lock:
+            entries = list(self._entries)
+
+        return self._build_stats(entries, since, until)
+
+    def get_stats_snapshot(
+        self,
+        since: datetime | None = None,
+        until: datetime | None = None,
+    ) -> AuthAuditStats:
+        """Return a synchronous in-memory stats snapshot for diagnostics."""
+        since = since or datetime.now(UTC) - timedelta(hours=24)
+        until = until or datetime.now(UTC)
+        return self._build_stats(list(self._entries), since, until)
+
+    def _build_stats(
+        self,
+        entries: list[AuthAuditEntry],
+        since: datetime,
+        until: datetime,
+    ) -> AuthAuditStats:
         events_by_type: dict[str, int] = defaultdict(int)
         events_by_severity: dict[str, int] = defaultdict(int)
         agents: set[str] = set()
@@ -543,24 +564,23 @@ class AuthAuditLogger:
         failures = 0
         total = 0
 
-        async with self._lock:
-            for entry in self._entries:
-                if entry.timestamp < since or entry.timestamp > until:
-                    continue
+        for entry in entries:
+            if entry.timestamp < since or entry.timestamp > until:
+                continue
 
-                total += 1
-                events_by_type[entry.event_type.value] += 1
-                events_by_severity[entry.severity.value] += 1
+            total += 1
+            events_by_type[entry.event_type.value] += 1
+            events_by_severity[entry.severity.value] += 1
 
-                if entry.success:
-                    successes += 1
-                else:
-                    failures += 1
+            if entry.success:
+                successes += 1
+            else:
+                failures += 1
 
-                if entry.agent_id:
-                    agents.add(entry.agent_id)
-                if entry.tool_name:
-                    tools.add(entry.tool_name)
+            if entry.agent_id:
+                agents.add(entry.agent_id)
+            if entry.tool_name:
+                tools.add(entry.tool_name)
 
         return AuthAuditStats(
             total_events=total,

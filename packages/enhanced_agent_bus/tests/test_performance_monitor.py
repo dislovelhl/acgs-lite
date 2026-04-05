@@ -1,6 +1,6 @@
 """
 ACGS-2 Performance Monitor Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for performance monitoring module with timing decorators.
 Coverage target: >= 85%
@@ -247,7 +247,6 @@ class TestPerformanceMonitor:
         """Create a fresh monitor instance."""
         return PerformanceMonitor()
 
-    @pytest.mark.asyncio
     async def test_timed_async_decorator(self, monitor):
         """@timed decorator works with async functions."""
 
@@ -282,7 +281,6 @@ class TestPerformanceMonitor:
         metrics = monitor.get_metrics()
         assert metrics["summary"]["total_operations"] >= 1
 
-    @pytest.mark.asyncio
     async def test_timed_with_exception(self, monitor):
         """@timed decorator captures exceptions as failures."""
 
@@ -317,7 +315,6 @@ class TestPerformanceMonitor:
         assert "metrics" in metrics
         assert metrics["metrics"]["count"] >= 1
 
-    @pytest.mark.asyncio
     async def test_get_metrics_all(self, monitor):
         """Get all metrics returns correct structure."""
         # Add some records
@@ -336,7 +333,6 @@ class TestPerformanceMonitor:
         assert "constitutional_hash" in metrics
         assert metrics["summary"]["total_operations"] == 5
 
-    @pytest.mark.asyncio
     async def test_get_metrics_single_operation(self, monitor):
         """Get metrics for specific operation."""
         record = TimingRecord(
@@ -357,7 +353,6 @@ class TestPerformanceMonitor:
         metrics = monitor.get_metrics("non_existent")
         assert "error" in metrics
 
-    @pytest.mark.asyncio
     async def test_clear_metrics_single(self, monitor):
         """Clear metrics for single operation."""
         record = TimingRecord(
@@ -373,7 +368,6 @@ class TestPerformanceMonitor:
         monitor.clear_metrics("to_clear")
         assert monitor.get_operation_names() == []
 
-    @pytest.mark.asyncio
     async def test_clear_metrics_all(self, monitor):
         """Clear all metrics."""
         for i in range(3):
@@ -460,7 +454,6 @@ class TestGlobalFunctions:
 class TestConcurrency:
     """Tests for concurrent access."""
 
-    @pytest.mark.asyncio
     async def test_concurrent_record_addition(self):
         """Multiple concurrent recordings work correctly."""
         monitor = PerformanceMonitor()
@@ -516,7 +509,6 @@ class TestEdgeCases:
         assert metrics.p95_ms == 50.0
         assert metrics.p99_ms == 50.0
 
-    @pytest.mark.asyncio
     async def test_record_with_metadata(self):
         """Records can include metadata."""
         monitor = PerformanceMonitor()

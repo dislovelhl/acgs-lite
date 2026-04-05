@@ -2,7 +2,7 @@
 ACGS-2 Enhanced Agent Bus Tests - Validation
 Focused tests for validation strategies, JWT identity, and core messaging validation.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import uuid
@@ -163,7 +163,6 @@ class TestJWTAgentValidation:
             enable_maci=False, use_dynamic_policy=False
         )  # test-only: MACI off — testing security validation independently
 
-    @pytest.mark.asyncio
     async def test_validate_agent_identity_no_token(self, bus_for_jwt):
         """Test validation when no auth token is provided."""
         result = await bus_for_jwt._validate_agent_identity(
@@ -171,14 +170,13 @@ class TestJWTAgentValidation:
         )
         assert result == (None, None)
 
-    @pytest.mark.asyncio
     async def test_validate_agent_identity_token_without_crypto_available(self, bus_for_jwt):
         """Test validation when token provided but crypto/config not available."""
         result = await bus_for_jwt._validate_agent_identity(
             agent_id="test-agent",
             tenant_id=None,
             capabilities=[],
-            auth_token="some.jwt.token",  # noqa: S106
+            auth_token="some.jwt.token",
         )
         assert result == (None, None) or result == (False, None)
 
@@ -186,7 +184,6 @@ class TestJWTAgentValidation:
 class TestFailedMessagePaths:
     """Test message failure paths for coverage."""
 
-    @pytest.mark.asyncio
     async def test_send_message_with_invalid_hash(self):
         """Test sending message with invalid constitutional hash."""
         bus = EnhancedAgentBus(
@@ -211,7 +208,6 @@ class TestFailedMessagePaths:
 class TestEdgeCases:
     """Test edge cases and boundary conditions."""
 
-    @pytest.mark.asyncio
     async def test_register_duplicate_agent(self, agent_bus):
         """Test registering same agent ID twice."""
         await agent_bus.register_agent("duplicate", "worker", [], None)
@@ -219,7 +215,6 @@ class TestEdgeCases:
         info = agent_bus.get_agent_info("duplicate")
         assert info["agent_type"] == "supervisor"
 
-    @pytest.mark.asyncio
     async def test_unicode_tenant_id_rejected(self, agent_bus, constitutional_hash, mock_processor):
         """Test that unicode tenant IDs are rejected for security."""
         mock_processor.process = AsyncMock(return_value=ValidationResult(is_valid=True))
@@ -243,7 +238,6 @@ class TestEdgeCases:
 class TestRouteAndDeliverPaths:
     """Test _route_and_deliver code paths for coverage."""
 
-    @pytest.mark.asyncio
     async def test_route_and_deliver_to_internal_queue(self):
         """Test message delivery to internal queue when Kafka is disabled."""
         bus = EnhancedAgentBus(
@@ -267,7 +261,6 @@ class TestRouteAndDeliverPaths:
 class TestProcessorDelegation:
     """Test processor delegation and integration."""
 
-    @pytest.mark.asyncio
     async def test_processor_metrics_included(self):
         """Test processor metrics are included in bus metrics."""
         bus = EnhancedAgentBus(
@@ -276,7 +269,6 @@ class TestProcessorDelegation:
         metrics = bus.get_metrics()
         assert "processor_metrics" in metrics
 
-    @pytest.mark.asyncio
     async def test_processor_property_access(self):
         """Test accessing processor property."""
         bus = EnhancedAgentBus(

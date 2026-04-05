@@ -1,9 +1,9 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive tests for src/core/enhanced_agent_bus/governance/models.py
 Target: ≥95% line coverage of governance/models.py (76 stmts)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import os
@@ -16,8 +16,6 @@ if os.environ.get("TEST_WITH_RUST", "0") != "1":
 
 from dataclasses import fields
 from datetime import UTC, datetime, timezone
-
-import pytest
 
 from enhanced_agent_bus.governance.models import (
     CONSTITUTIONAL_HASH,

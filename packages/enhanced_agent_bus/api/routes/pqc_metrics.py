@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - PQC Adoption Metrics Route
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 GET /api/v1/metrics/pqc-adoption — returns rolling PQC adoption rate
 metrics for 1h, 24h, and 7d windows.

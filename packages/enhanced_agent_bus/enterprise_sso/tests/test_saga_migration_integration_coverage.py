@@ -1,6 +1,6 @@
 """
 Coverage tests for saga_migration_integration.py
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Achieves ≥90% coverage of SagaMigrationService and supporting classes
 by mocking Redis-backed SagaStore so tests run without infrastructure.
@@ -21,7 +21,7 @@ pytestmark = [pytest.mark.constitutional]
 # Import helpers — use fully-qualified src paths to avoid enterprise_sso
 # __init__.py triggering relative imports that break outside the package.
 # ---------------------------------------------------------------------------
-from enhanced_agent_bus.enterprise_sso.migration_job_api import (  # noqa: E402
+from enhanced_agent_bus.enterprise_sso.migration_job_api import (
     MigrationJob,
     MigrationJobConfig,
     MigrationJobManager,
@@ -29,7 +29,7 @@ from enhanced_agent_bus.enterprise_sso.migration_job_api import (  # noqa: E402
     MigrationJobStatus,
     MigrationJobType,
 )
-from enhanced_agent_bus.enterprise_sso.saga_migration_integration import (  # noqa: E402
+from enhanced_agent_bus.enterprise_sso.saga_migration_integration import (
     CONSTITUTIONAL_HASH,
     CheckpointStore,
     MigrationCheckpoint,
@@ -38,10 +38,10 @@ from enhanced_agent_bus.enterprise_sso.saga_migration_integration import (  # no
     SagaMigrationResult,
     SagaMigrationService,
 )
-from enhanced_agent_bus.enterprise_sso.saga_orchestration import (  # noqa: E402
+from enhanced_agent_bus.enterprise_sso.saga_orchestration import (
     CONSTITUTIONAL_HASH as SAGA_CONSTITUTIONAL_HASH,
 )
-from enhanced_agent_bus.enterprise_sso.saga_orchestration import (  # noqa: E402
+from enhanced_agent_bus.enterprise_sso.saga_orchestration import (
     Saga,
     SagaContext,
     SagaExecutionResult,

@@ -1,6 +1,6 @@
 """
 Prometheus metric definitions for agent health monitoring.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Module-level gauge/counter singletons are registered once at import time.
 No side effects beyond registering with the default Prometheus registry.

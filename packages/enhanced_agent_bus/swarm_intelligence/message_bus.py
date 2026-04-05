@@ -3,7 +3,7 @@ Swarm Intelligence - Message Bus
 
 Inter-agent communication bus with advanced messaging features.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -14,7 +14,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -181,7 +181,7 @@ class MessageBus:
                 self._messages["__broadcast__"].append(envelope)
 
         logger.debug(
-            f"Broadcast {message_type} message from {sender_id} to {len(recipients) if recipients else 'all'} agents"  # noqa: E501
+            f"Broadcast {message_type} message from {sender_id} to {len(recipients) if recipients else 'all'} agents"
         )
         return message.id
 
@@ -274,7 +274,7 @@ class MessageBus:
                 self._messages[subscriber_id].append(envelope)
 
         logger.debug(
-            f"Published message to topic '{topic}' ({len(all_subscribers)} subscribers, priority={priority})"  # noqa: E501
+            f"Published message to topic '{topic}' ({len(all_subscribers)} subscribers, priority={priority})"
         )
         return len(all_subscribers)
 

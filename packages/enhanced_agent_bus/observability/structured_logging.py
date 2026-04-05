@@ -1,6 +1,6 @@
 """
 ACGS-2 Structured Logging Configuration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements the required logging from SPEC_ACGS2_ENHANCED.md Section 6.2.
 Per Expert Panel Review (Kelsey Hightower - Cloud Native Expert).
@@ -27,11 +27,11 @@ from re import Pattern
 from typing import IO
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -44,7 +44,7 @@ span_id_var: ContextVar[str | None] = ContextVar("span_id", default=None)
 # =============================================================================
 
 
-class LogLevel(str, Enum):  # noqa: UP042
+class LogLevel(str, Enum):
     """Log levels per spec."""
 
     DEBUG = "DEBUG"
@@ -378,7 +378,7 @@ class StructuredLogger:
             event_type="constitutional_validation",
             level=logging.INFO,
             fields=fields,
-            message=f"Constitutional validation for {agent_id}: {result} (confidence={confidence:.2f}, latency={latency_ms:.2f}ms)",  # noqa: E501
+            message=f"Constitutional validation for {agent_id}: {result} (confidence={confidence:.2f}, latency={latency_ms:.2f}ms)",
         )
 
     def log_policy_evaluation(
@@ -435,7 +435,7 @@ class StructuredLogger:
             event_type="security_violation",
             level=logging.ERROR,
             fields=fields,
-            message=f"SECURITY VIOLATION [{violation_type}] from {source}: {details.get('summary', 'See details')}",  # noqa: E501
+            message=f"SECURITY VIOLATION [{violation_type}] from {source}: {details.get('summary', 'See details')}",
         )
 
     # -------------------------------------------------------------------------
@@ -606,9 +606,9 @@ def clear_trace_context() -> None:
 
 # Re-export canonical get_logger so EAB modules import from within the package.
 try:
-    from src.core.shared.structured_logging import get_logger  # noqa: E402
+    from enhanced_agent_bus._compat.structured_logging import get_logger
 except ImportError:
-    import logging  # noqa: E402
+    import logging
 
     def get_logger(name: str) -> logging.Logger:
         return logging.getLogger(name)

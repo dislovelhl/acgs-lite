@@ -1,6 +1,6 @@
 """
 ACGS-2 Centralized Error Sanitizer
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides a single, comprehensive error-sanitization function that replaces
 fragile per-module regex scrubbing.  All infrastructure clients (Kafka, OPA,
@@ -9,6 +9,9 @@ maintaining their own `_sanitize_error` method.
 """
 
 import re
+
+from src.core.shared.config import settings
+from src.core.shared.config.runtime_environment import resolve_runtime_environment
 
 # Compiled once at module level for performance on hot paths.
 _PATTERNS: list[tuple[re.Pattern[str], str]] = [
@@ -53,13 +56,12 @@ def sanitize_error(error: Exception | str | None) -> str:
     return msg
 
 
-from src.core.shared.config import settings
-
 _PRODUCTION_ENVIRONMENTS = frozenset({"production", "prod", "staging"})
 
 
 def _is_production() -> bool:
-    return settings.env in _PRODUCTION_ENVIRONMENTS
+    environment = resolve_runtime_environment(getattr(settings, "env", None))
+    return environment in _PRODUCTION_ENVIRONMENTS
 
 
 def safe_error_detail(error: Exception | str | None, operation: str = "operation") -> str:

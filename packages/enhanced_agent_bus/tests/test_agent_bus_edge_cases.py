@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus Tests - Edge Cases
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive test coverage for agent_bus.py - edge cases and error handling.
 """
@@ -165,7 +165,6 @@ def sample_message_no_tenant(constitutional_hash):
 class TestDegradedMode:
     """Test degraded mode fallback behavior."""
 
-    @pytest.mark.asyncio
     async def test_fallback_to_static_validation_on_processor_failure(
         self, started_agent_bus, sample_message_no_tenant, mock_processor
     ):
@@ -178,7 +177,6 @@ class TestDegradedMode:
         assert result.metadata.get("governance_mode") == "DEGRADED"
         assert "fallback_reason" in result.metadata
 
-    @pytest.mark.asyncio
     async def test_degraded_mode_still_validates_hash(
         self, started_agent_bus, constitutional_hash, mock_processor
     ):
@@ -194,13 +192,13 @@ class TestDegradedMode:
             content={"action": "test"},
             priority=Priority.MEDIUM,
             constitutional_hash=constitutional_hash,
+            metadata={"prevalidated": True},
             tenant_id=None,
         )
 
         result = await started_agent_bus.send_message(message_valid)
         assert result.is_valid is True
 
-    @pytest.mark.asyncio
     async def test_degraded_mode_rejects_invalid_hash(self, started_agent_bus, mock_processor):
         """Test that degraded mode rejects invalid constitutional hash."""
         mock_processor.process = AsyncMock(side_effect=Exception("Processor failure"))
@@ -229,22 +227,18 @@ class TestDegradedMode:
 class TestDIComponents:
     """Test dependency injection and component access."""
 
-    @pytest.mark.asyncio
     async def test_processor_property(self, agent_bus, mock_processor):
         """Test processor property returns injected processor."""
         assert agent_bus.processor is mock_processor
 
-    @pytest.mark.asyncio
     async def test_registry_property(self, agent_bus, mock_registry):
         """Test registry property returns injected registry."""
         assert agent_bus.registry is mock_registry
 
-    @pytest.mark.asyncio
     async def test_router_property(self, agent_bus, mock_router):
         """Test router property returns injected router."""
         assert agent_bus.router is mock_router
 
-    @pytest.mark.asyncio
     async def test_validator_property(self, agent_bus, mock_validator):
         """Test validator property returns injected validator."""
         assert agent_bus.validator is mock_validator

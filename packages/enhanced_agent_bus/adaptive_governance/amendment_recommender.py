@@ -1,6 +1,6 @@
 """
 ACGS-2 Amendment Recommender
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Bridges adaptive governance learning signals to constitutional amendment proposals.
 Converts DTMC risk signals and threshold drift into structured amendment candidates

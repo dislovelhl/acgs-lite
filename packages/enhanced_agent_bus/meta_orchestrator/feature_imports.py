@@ -5,15 +5,14 @@ Meta-Orchestrator Feature Imports Module
 Conditional imports for optional features with graceful fallbacks.
 This module handles all the optional dependency loading.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
 
 from collections.abc import Callable
 
-from src.core.shared.feature_flags import FEATURES
-
+from enhanced_agent_bus._compat.feature_flags import FEATURES
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
@@ -169,7 +168,7 @@ CACHE_WARMING_AVAILABLE = False
 
 if FEATURES.cache_warming_enabled:
     try:
-        from src.core.shared.cache_warming import CacheWarmer
+        from enhanced_agent_bus._compat.cache_warming import CacheWarmer
 
         CACHE_WARMING_AVAILABLE = True
     except ImportError:

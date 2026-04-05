@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Chaos Scenarios Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for chaos/scenarios.py covering:
 - All 5 scenario classes: NetworkPartitionScenario, LatencyInjectionScenario,
@@ -21,8 +21,8 @@ from datetime import UTC, datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.chaos.scenarios import (
     MAX_CPU_PERCENT,
     MAX_DURATION_S,
@@ -330,7 +330,6 @@ class TestNetworkPartitionScenario:
         result = s.is_partitioned("svc", "other")
         assert isinstance(result, bool)
 
-    @pytest.mark.asyncio
     async def test_execute_completes_and_returns_result(self):
         s = NetworkPartitionScenario(target_service="svc", duration_s=0.05)
         with patch("asyncio.sleep", new=make_fast_sleep(0.001)):
@@ -341,7 +340,6 @@ class TestNetworkPartitionScenario:
         assert result.duration_s >= 0
         assert not s._partitioned  # partition deactivated in finally
 
-    @pytest.mark.asyncio
     async def test_execute_cancelled_mid_run(self):
         s = NetworkPartitionScenario(target_service="svc", duration_s=10.0)
 
@@ -354,7 +352,6 @@ class TestNetworkPartitionScenario:
         assert result.status == ScenarioStatus.CANCELLED
         assert "Scenario cancelled before completion" in result.events
 
-    @pytest.mark.asyncio
     async def test_execute_sets_result_on_scenario(self):
         s = NetworkPartitionScenario(target_service="svc", duration_s=0.05)
         with patch("asyncio.sleep", new=make_fast_sleep(0.001)):
@@ -362,14 +359,12 @@ class TestNetworkPartitionScenario:
         assert s.result is not None
         assert s.result.status == ScenarioStatus.COMPLETED
 
-    @pytest.mark.asyncio
     async def test_rollback_deactivates_partition(self):
         s = NetworkPartitionScenario(target_service="svc")
         s._partitioned = True
         await s.rollback()
         assert not s._partitioned
 
-    @pytest.mark.asyncio
     async def test_execute_with_affected_services(self):
         s = NetworkPartitionScenario(
             target_service="svc",
@@ -445,7 +440,6 @@ class TestLatencyInjectionScenario:
             lat = s.get_latency()
             assert lat >= 0
 
-    @pytest.mark.asyncio
     async def test_execute_completes(self):
         s = LatencyInjectionScenario(target_service="svc", duration_s=0.05)
         with patch("asyncio.sleep", new=make_fast_sleep(0.001)):
@@ -453,7 +447,6 @@ class TestLatencyInjectionScenario:
         assert result.status == ScenarioStatus.COMPLETED
         assert not s._active
 
-    @pytest.mark.asyncio
     async def test_execute_cancelled(self):
         s = LatencyInjectionScenario(target_service="svc", duration_s=10.0)
 
@@ -465,7 +458,6 @@ class TestLatencyInjectionScenario:
             _, result = await asyncio.gather(cancel_soon(), s.execute())
         assert result.status == ScenarioStatus.CANCELLED
 
-    @pytest.mark.asyncio
     async def test_execute_active_during_run(self):
         activation_states = []
 
@@ -477,14 +469,12 @@ class TestLatencyInjectionScenario:
         with patch("asyncio.sleep", new=make_fast_sleep(0.001)):
             await asyncio.gather(check_active(s), s.execute())
 
-    @pytest.mark.asyncio
     async def test_rollback_deactivates(self):
         s = LatencyInjectionScenario(target_service="svc")
         s._active = True
         await s.rollback()
         assert not s._active
 
-    @pytest.mark.asyncio
     async def test_execute_returns_result_with_events(self):
         s = LatencyInjectionScenario(target_service="svc", duration_s=0.05)
         with patch("asyncio.sleep", new=make_fast_sleep(0.001)):
@@ -550,7 +540,6 @@ class TestMemoryPressureScenario:
         s._current_pressure = 80.0
         assert s.is_memory_constrained()
 
-    @pytest.mark.asyncio
     async def test_execute_completes(self):
         s = MemoryPressureScenario(target_percent=50.0, duration_s=0.3, ramp_up_s=0.1)
         with patch("asyncio.sleep", new=make_fast_sleep(0.001)):
@@ -559,7 +548,6 @@ class TestMemoryPressureScenario:
         assert not s._active
         assert s._current_pressure == 0.0
 
-    @pytest.mark.asyncio
     async def test_execute_metrics_include_peak_pressure(self):
         # ramp_up_s=1.0 gives steps=10, avoiding ZeroDivisionError when steps=0
         s = MemoryPressureScenario(target_percent=60.0, duration_s=2.0, ramp_up_s=1.0)
@@ -567,7 +555,6 @@ class TestMemoryPressureScenario:
             result = await s.execute()
         assert result.metrics.get("peak_pressure_percent") == 60.0
 
-    @pytest.mark.asyncio
     async def test_execute_cancelled(self):
         s = MemoryPressureScenario(target_percent=50.0, duration_s=10.0, ramp_up_s=0.1)
 
@@ -579,14 +566,12 @@ class TestMemoryPressureScenario:
             _, result = await asyncio.gather(cancel_soon(), s.execute())
         assert result.status == ScenarioStatus.CANCELLED
 
-    @pytest.mark.asyncio
     async def test_execute_no_ramp_up(self):
         s = MemoryPressureScenario(target_percent=50.0, duration_s=0.1, ramp_up_s=0.0)
         with patch("asyncio.sleep", new=make_fast_sleep(0.001)):
             result = await s.execute()
         assert result.status == ScenarioStatus.COMPLETED
 
-    @pytest.mark.asyncio
     async def test_rollback_resets_state(self):
         s = MemoryPressureScenario()
         s._active = True
@@ -649,7 +634,6 @@ class TestCPUStressScenario:
         s._current_load = 90.0
         assert s.is_cpu_constrained()
 
-    @pytest.mark.asyncio
     async def test_execute_completes(self):
         s = CPUStressScenario(target_percent=70.0, duration_s=0.05)
         with patch("asyncio.sleep", new=make_fast_sleep(0.001)):
@@ -658,14 +642,12 @@ class TestCPUStressScenario:
         assert not s._active
         assert s._current_load == 0.0
 
-    @pytest.mark.asyncio
     async def test_execute_metrics_include_peak_load(self):
         s = CPUStressScenario(target_percent=75.0, duration_s=0.05)
         with patch("asyncio.sleep", new=make_fast_sleep(0.001)):
             result = await s.execute()
         assert result.metrics.get("peak_load_percent") == 75.0
 
-    @pytest.mark.asyncio
     async def test_execute_cancelled(self):
         s = CPUStressScenario(target_percent=80.0, duration_s=10.0)
 
@@ -677,7 +659,6 @@ class TestCPUStressScenario:
             _, result = await asyncio.gather(cancel_soon(), s.execute())
         assert result.status == ScenarioStatus.CANCELLED
 
-    @pytest.mark.asyncio
     async def test_rollback_resets_state(self):
         s = CPUStressScenario()
         s._active = True
@@ -686,7 +667,6 @@ class TestCPUStressScenario:
         assert s._current_load == 0.0
         assert not s._active
 
-    @pytest.mark.asyncio
     async def test_execute_multiple_cores(self):
         s = CPUStressScenario(target_percent=80.0, duration_s=0.05, cores_affected=4)
         with patch("asyncio.sleep", new=make_fast_sleep(0.001)):
@@ -771,7 +751,6 @@ class TestDependencyFailureScenario:
         assert isinstance(err, ConnectionError)
         assert "custom_svc" in str(err)
 
-    @pytest.mark.asyncio
     async def test_execute_completes(self):
         s = DependencyFailureScenario(dependency=DependencyType.REDIS, duration_s=0.05)
         with patch("asyncio.sleep", new=make_fast_sleep(0.001)):
@@ -779,7 +758,6 @@ class TestDependencyFailureScenario:
         assert result.status == ScenarioStatus.COMPLETED
         assert not s._active
 
-    @pytest.mark.asyncio
     async def test_execute_cancelled(self):
         s = DependencyFailureScenario(dependency=DependencyType.KAFKA, duration_s=10.0)
 
@@ -791,7 +769,6 @@ class TestDependencyFailureScenario:
             _, result = await asyncio.gather(cancel_soon(), s.execute())
         assert result.status == ScenarioStatus.CANCELLED
 
-    @pytest.mark.asyncio
     async def test_execute_metrics_track_calls_and_failures(self):
         s = DependencyFailureScenario(
             dependency=DependencyType.REDIS,
@@ -810,14 +787,12 @@ class TestDependencyFailureScenario:
         assert "failed_calls" in result.metrics
         assert "failure_rate" in result.metrics
 
-    @pytest.mark.asyncio
     async def test_execute_failure_rate_zero_when_no_calls(self):
         s = DependencyFailureScenario(dependency=DependencyType.DATABASE, duration_s=0.05)
         with patch("asyncio.sleep", new=make_fast_sleep(0.001)):
             result = await s.execute()
         assert result.metrics["failure_rate"] == 0.0
 
-    @pytest.mark.asyncio
     async def test_rollback_deactivates(self):
         s = DependencyFailureScenario(dependency=DependencyType.REDIS)
         s._active = True
@@ -831,7 +806,6 @@ class TestDependencyFailureScenario:
                 constitutional_hash="bad",
             )
 
-    @pytest.mark.asyncio
     async def test_execute_result_events_contain_dependency(self):
         s = DependencyFailureScenario(
             dependency=DependencyType.OPA,
@@ -859,7 +833,6 @@ class TestScenarioExecutor:
         with pytest.raises(ConstitutionalHashMismatchError):
             ScenarioExecutor(constitutional_hash="bad-hash")
 
-    @pytest.mark.asyncio
     async def test_execute_completes_scenario(self):
         executor = ScenarioExecutor()
         s = NetworkPartitionScenario(target_service="svc", duration_s=0.05)
@@ -868,7 +841,6 @@ class TestScenarioExecutor:
         assert result.status == ScenarioStatus.COMPLETED
         assert len(executor.get_results()) == 1
 
-    @pytest.mark.asyncio
     async def test_execute_removes_from_active_on_completion(self):
         executor = ScenarioExecutor()
         s = NetworkPartitionScenario(target_service="svc", duration_s=0.05)
@@ -876,7 +848,6 @@ class TestScenarioExecutor:
             await executor.execute(s)
         assert len(executor.get_active_scenarios()) == 0
 
-    @pytest.mark.asyncio
     async def test_execute_duplicate_name_raises(self):
         executor = ScenarioExecutor()
         s1 = NetworkPartitionScenario(target_service="svc", duration_s=10.0)
@@ -893,7 +864,6 @@ class TestScenarioExecutor:
         s1.cancel()
         await task
 
-    @pytest.mark.asyncio
     async def test_rollback_all_active_scenarios(self):
         executor = ScenarioExecutor()
         s1 = NetworkPartitionScenario(target_service="svc1", duration_s=10.0)
@@ -913,7 +883,6 @@ class TestScenarioExecutor:
         assert not s1._partitioned
         assert not s2._active
 
-    @pytest.mark.asyncio
     async def test_rollback_all_continues_on_error(self):
         executor = ScenarioExecutor()
         bad_scenario = MagicMock()
@@ -957,7 +926,6 @@ class TestScenarioExecutor:
         results.append(MagicMock())
         assert len(executor.get_results()) == 1
 
-    @pytest.mark.asyncio
     async def test_execute_accumulates_results(self):
         executor = ScenarioExecutor()
         for service in ["svc1", "svc2", "svc3"]:
@@ -973,7 +941,6 @@ class TestScenarioExecutor:
 
 
 class TestCancelBeforeExecute:
-    @pytest.mark.asyncio
     async def test_network_partition_pre_cancelled(self):
         s = NetworkPartitionScenario(target_service="svc", duration_s=5.0)
         s.cancel()  # Cancel before execute
@@ -983,7 +950,6 @@ class TestCancelBeforeExecute:
         # Since _cancelled is set, the while loop exits immediately
         assert result.status == ScenarioStatus.CANCELLED
 
-    @pytest.mark.asyncio
     async def test_latency_pre_cancelled(self):
         s = LatencyInjectionScenario(target_service="svc", duration_s=5.0)
         s.cancel()
@@ -991,7 +957,6 @@ class TestCancelBeforeExecute:
             result = await s.execute()
         assert result.status == ScenarioStatus.CANCELLED
 
-    @pytest.mark.asyncio
     async def test_memory_pressure_pre_cancelled(self):
         s = MemoryPressureScenario(target_percent=50.0, duration_s=5.0, ramp_up_s=0.1)
         s.cancel()
@@ -999,7 +964,6 @@ class TestCancelBeforeExecute:
             result = await s.execute()
         assert result.status == ScenarioStatus.CANCELLED
 
-    @pytest.mark.asyncio
     async def test_cpu_stress_pre_cancelled(self):
         s = CPUStressScenario(target_percent=80.0, duration_s=5.0)
         s.cancel()
@@ -1007,7 +971,6 @@ class TestCancelBeforeExecute:
             result = await s.execute()
         assert result.status == ScenarioStatus.CANCELLED
 
-    @pytest.mark.asyncio
     async def test_dependency_failure_pre_cancelled(self):
         s = DependencyFailureScenario(dependency=DependencyType.REDIS, duration_s=5.0)
         s.cancel()
@@ -1068,21 +1031,18 @@ class TestThreadSafety:
 
 
 class TestConstitutionalHashInResults:
-    @pytest.mark.asyncio
     async def test_network_partition_result_has_hash(self):
         s = NetworkPartitionScenario(target_service="svc", duration_s=0.05)
         with patch("asyncio.sleep", new=make_fast_sleep(0.001)):
             result = await s.execute()
         assert result.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_latency_result_has_hash(self):
         s = LatencyInjectionScenario(target_service="svc", duration_s=0.05)
         with patch("asyncio.sleep", new=make_fast_sleep(0.001)):
             result = await s.execute()
         assert result.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_memory_result_has_hash(self):
         # ramp_up_s=1.0 gives steps=10, avoiding ZeroDivisionError
         s = MemoryPressureScenario(duration_s=2.0, ramp_up_s=1.0)
@@ -1090,14 +1050,12 @@ class TestConstitutionalHashInResults:
             result = await s.execute()
         assert result.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_cpu_result_has_hash(self):
         s = CPUStressScenario(duration_s=0.05)
         with patch("asyncio.sleep", new=make_fast_sleep(0.001)):
             result = await s.execute()
         assert result.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_dependency_failure_result_has_hash(self):
         s = DependencyFailureScenario(dependency=DependencyType.REDIS, duration_s=0.05)
         with patch("asyncio.sleep", new=make_fast_sleep(0.001)):

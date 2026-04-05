@@ -1,7 +1,7 @@
 """
 Tests for Presence Manager.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -30,7 +30,6 @@ class TestPresenceManager:
         )
         return PresenceManager(config)
 
-    @pytest.mark.asyncio
     async def test_join_session(self, presence_manager):
         session, collaborator = await presence_manager.join_session(
             document_id="doc-123",
@@ -46,7 +45,6 @@ class TestPresenceManager:
         assert collaborator.tenant_id == "tenant-1"
         assert collaborator.color is not None
 
-    @pytest.mark.asyncio
     async def test_join_session_max_users(self, presence_manager):
         presence_manager.config.max_users_per_document = 2
 
@@ -70,7 +68,6 @@ class TestPresenceManager:
                 tenant_id="tenant-1",
             )
 
-    @pytest.mark.asyncio
     async def test_tenant_isolation(self, presence_manager):
         await presence_manager.join_session(
             document_id="doc-tenant",
@@ -90,7 +87,6 @@ class TestPresenceManager:
                 tenant_id="tenant-2",
             )
 
-    @pytest.mark.asyncio
     async def test_leave_session(self, presence_manager):
         session, collaborator = await presence_manager.join_session(
             document_id="doc-123",
@@ -109,7 +105,6 @@ class TestPresenceManager:
         session = await presence_manager.get_session("doc-123")
         assert session is None
 
-    @pytest.mark.asyncio
     async def test_update_cursor(self, presence_manager):
         _, collaborator = await presence_manager.join_session(
             document_id="doc-123",
@@ -130,7 +125,6 @@ class TestPresenceManager:
         assert updated.cursor.y == 200
         assert updated.cursor.line == 5
 
-    @pytest.mark.asyncio
     async def test_update_status(self, presence_manager):
         _, collaborator = await presence_manager.join_session(
             document_id="doc-123",
@@ -149,7 +143,6 @@ class TestPresenceManager:
         updated = await presence_manager.get_collaborator("doc-123", collaborator.client_id)
         assert updated.status == PresenceStatus.TYPING
 
-    @pytest.mark.asyncio
     async def test_set_typing(self, presence_manager):
         _, collaborator = await presence_manager.join_session(
             document_id="doc-123",
@@ -169,7 +162,6 @@ class TestPresenceManager:
         updated = await presence_manager.get_collaborator("doc-123", collaborator.client_id)
         assert updated.status == PresenceStatus.ACTIVE
 
-    @pytest.mark.asyncio
     async def test_get_active_users(self, presence_manager):
         # Add active user
         _, _active_user = await presence_manager.join_session(
@@ -194,7 +186,6 @@ class TestPresenceManager:
         assert len(active_users) == 1
         assert active_users[0].user_id == "user-1"
 
-    @pytest.mark.asyncio
     async def test_get_user_sessions(self, presence_manager):
         _, _collaborator = await presence_manager.join_session(
             document_id="doc-1",
@@ -217,7 +208,6 @@ class TestPresenceManager:
         assert "doc-1" in sessions
         assert "doc-2" in sessions
 
-    @pytest.mark.asyncio
     async def test_color_assignment(self, presence_manager):
         colors = set()
 
@@ -234,7 +224,6 @@ class TestPresenceManager:
         # Should have different colors
         assert len(colors) == 5
 
-    @pytest.mark.asyncio
     async def test_callback_registration(self, presence_manager):
         events = []
 
@@ -268,7 +257,6 @@ class TestPresenceManagerCleanup:
         )
         return PresenceManager(config)
 
-    @pytest.mark.asyncio
     async def test_idle_user_marked_idle(self):
         config = CollaborationConfig(
             idle_timeout_seconds=0,  # Immediate
@@ -293,7 +281,6 @@ class TestPresenceManagerCleanup:
         updated = await manager.get_collaborator("doc-123", collaborator.client_id)
         assert updated.status == PresenceStatus.IDLE
 
-    @pytest.mark.asyncio
     async def test_away_user_marked_away(self):
         config = CollaborationConfig(
             idle_timeout_seconds=1,
@@ -318,7 +305,6 @@ class TestPresenceManagerCleanup:
         updated = await manager.get_collaborator("doc-123", collaborator.client_id)
         assert updated.status == PresenceStatus.AWAY
 
-    @pytest.mark.asyncio
     async def test_session_stats(self, presence_manager):
         await presence_manager.join_session(
             document_id="doc-stats",
@@ -345,7 +331,6 @@ class TestPresenceManagerCleanup:
         assert stats["status_counts"]["active"] == 1
         assert stats["status_counts"]["typing"] == 1
 
-    @pytest.mark.asyncio
     async def test_is_user_active(self, presence_manager):
         _, collaborator = await presence_manager.join_session(
             document_id="doc-123",

@@ -1,7 +1,7 @@
 """
 Enhanced Agent Bus - High-performance agent communication with constitutional validation.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 from ..bus_types import JSONDict
 
 try:
-    from src.core.shared.types import AgentInfo
+    from enhanced_agent_bus._compat.types import AgentInfo
 except ImportError:
     AgentInfo = dict[str, object]  # type: ignore[misc, assignment]
 
@@ -41,7 +41,7 @@ POLICY_CLIENT_AVAILABLE: bool = _flags.get("POLICY_CLIENT_AVAILABLE", False)
 
 # Direct canonical imports with fallbacks
 try:
-    from src.core.shared.redis_config import get_redis_url
+    from enhanced_agent_bus._compat.redis_config import get_redis_url
 except ImportError:
 
     def get_redis_url() -> str:
@@ -51,14 +51,14 @@ except ImportError:
 DEFAULT_REDIS_URL: str = get_redis_url()
 
 try:
-    from src.core.shared.circuit_breaker import (
+    from enhanced_agent_bus._compat.circuit_breaker import (
         initialize_core_circuit_breakers,
     )
 except ImportError:
     initialize_core_circuit_breakers = None  # type: ignore[assignment]
 
 try:
-    from src.core.shared.metrics import set_service_info
+    from enhanced_agent_bus._compat.metrics import set_service_info
 except ImportError:
     set_service_info = None  # type: ignore[assignment]
 
@@ -84,35 +84,35 @@ MACIEnforcer = get_maci_enforcer()  # type: ignore[assignment]
 MACIRoleRegistry = get_maci_role_registry()  # type: ignore[assignment]
 
 del _flags  # Clean up namespace
-from enhanced_agent_bus.models import (  # noqa: E402
+from enhanced_agent_bus.models import (
     CONSTITUTIONAL_HASH,
     AgentMessage,
     BatchRequest,
     BatchResponse,
 )
-from enhanced_agent_bus.validators import ValidationResult  # noqa: E402
+from enhanced_agent_bus.validators import ValidationResult
 
-from ..interfaces import (  # noqa: E402
+from ..interfaces import (
     AgentRegistry,
     ProcessingStrategy,
     ValidationStrategy,
 )
-from ..message_processor import MessageProcessor  # noqa: E402
-from ..metering_manager import create_metering_manager  # noqa: E402
-from ..registry import (  # noqa: E402
+from ..message_processor import MessageProcessor
+from ..metering_manager import create_metering_manager
+from ..registry import (
     CompositeValidationStrategy,
 )
-from ..security_helpers import normalize_tenant_id, validate_tenant_consistency  # noqa: E402
-from ..utils import get_iso_timestamp  # noqa: E402
-from .batch import BatchProcessor  # noqa: E402
-from .governance import GovernanceIntegration  # noqa: E402
-from .messaging import MessageHandler  # noqa: E402
-from .metrics import BusMetrics  # noqa: E402
-from .validation import MessageValidator  # noqa: E402
+from ..security_helpers import normalize_tenant_id, validate_tenant_consistency
+from ..utils import get_iso_timestamp
+from .batch import BatchProcessor
+from .governance import GovernanceIntegration
+from .messaging import MessageHandler
+from .metrics import BusMetrics
+from .validation import MessageValidator
 
 # Rate Limiting imports
 try:
-    from src.core.shared.security.rate_limiter import (
+    from enhanced_agent_bus._compat.security.rate_limiter import (
         RateLimitScope,
         SlidingWindowRateLimiter,
         TenantRateLimitProvider,
@@ -160,7 +160,7 @@ except ImportError:
     provide_governance_feedback = None  # type: ignore[misc, assignment]
 
 
-from enhanced_agent_bus.observability.structured_logging import get_logger  # noqa: E402
+from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -188,7 +188,7 @@ class EnhancedAgentBus:
         enable_metering: Enable usage metering (default: True)
         tenant_id: Default tenant ID for messages
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -240,6 +240,7 @@ class EnhancedAgentBus:
         )
         self._kafka_bus: object | None = None
         self._kafka_consumer_task: asyncio.Task[None] | None = None
+        self._background_tasks: set[asyncio.Task[object]] = set()
 
         # Initialize new modular components with Dependency Injection support
         self._registry_manager = registry_manager or RegistryManager(
@@ -274,6 +275,8 @@ class EnhancedAgentBus:
 
         # Backward compatibility properties (legacy agents dict)
         self._running = False
+        self._idempotency_lock = asyncio.Lock()
+        self._inflight_idempotency: dict[str, asyncio.Task[ValidationResult]] = {}
 
         # Legacy queue for receive_message
         self._message_queue: asyncio.Queue[object] = asyncio.Queue()
@@ -396,7 +399,7 @@ class EnhancedAgentBus:
         """Return the constitutional hash for governance validation.
 
         Returns:
-            str: The cryptographic constitutional hash (cdd01ef066bc6cf2).
+            str: The cryptographic constitutional hash (608508a9bd224290).
         """
         return self._constitutional_hash  # type: ignore[no-any-return]
 
@@ -451,18 +454,31 @@ class EnhancedAgentBus:
         await self._metering_manager.stop()
         await self._governance.shutdown()
         await self._router_component.shutdown()
+        processor_shutdown = getattr(self._processor, "shutdown", None)
+        if callable(processor_shutdown):
+            shutdown_result = processor_shutdown()
+            if asyncio.iscoroutine(shutdown_result):
+                await shutdown_result
 
         if self._kafka_consumer_task:
             self._kafka_consumer_task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._kafka_consumer_task
             except asyncio.CancelledError:
                 pass
 
+        background_tasks = tuple(self._background_tasks)
+        for task in background_tasks:
+            if not task.done():
+                task.cancel()
+        if background_tasks:
+            await asyncio.gather(*background_tasks, return_exceptions=True)
+        self._background_tasks.clear()
+
         if self._redis_client_for_limiter:
-            try:  # noqa: SIM105
+            try:
                 await self._redis_client_for_limiter.aclose()
-            except Exception:  # noqa: S110
+            except Exception:
                 pass
 
     async def register_agent(
@@ -619,32 +635,40 @@ class EnhancedAgentBus:
         )
         return False
 
-    # --- Main Message Sending ---
+    def _resolve_idempotency_key(self, msg: AgentMessage) -> str | None:
+        """Resolve an idempotency key from supported message surfaces."""
+        explicit_key = getattr(msg, "idempotency_key", None)
+        if isinstance(explicit_key, str) and explicit_key:
+            return explicit_key
 
-    async def send_message(self, msg: AgentMessage) -> ValidationResult:
-        """
-        Send a message through the agent bus with constitutional validation.
+        headers = getattr(msg, "headers", None)
+        if isinstance(headers, dict):
+            header_key = headers.get("idempotency_key") or headers.get("Idempotency-Key")
+            if isinstance(header_key, str) and header_key:
+                return header_key
 
-        This method performs:
-        1. Bus state verification
-        2. Constitutional hash validation
-        3. Tenant ID normalization and validation
-        4. Message processing with graceful degradation
-        5. Routing and delivery
+        metadata = getattr(msg, "metadata", None)
+        if isinstance(metadata, dict):
+            metadata_key = metadata.get("idempotency_key")
+            if isinstance(metadata_key, str) and metadata_key:
+                return metadata_key
 
-        Args:
-            msg: The AgentMessage to send.
+        return None
 
-        Returns:
-            ValidationResult indicating success/failure with any errors.
-        """
+    async def _send_message_once(self, msg: AgentMessage) -> ValidationResult:
+        """Execute a single send_message flow without idempotency wrapping."""
         result = ValidationResult()
 
-        # Step 1: Check bus running state (allow test bypass)
-        if not self._running and (
-            self._config.get("allow_unstarted") or self._is_test_mode_message(msg)
-        ):
-            self._metrics["sent"] += 1
+        if not self._running:
+            if self._config.get("allow_unstarted") or self._is_test_mode_message(msg):
+                self._metrics["sent"] += 1
+            else:
+                result.add_error("Agent bus is not started")
+                self._record_metrics_failure()
+                return result
+
+        if not self._message_validator.validate_message_shape(msg, result):
+            return result
 
         # Step 2: Validate constitutional hash
         if not self._validate_constitutional_hash_for_message(msg, result):
@@ -669,7 +693,7 @@ class EnhancedAgentBus:
                 # Inject context into message metadata for OPA and audit trail
                 msg.metadata["dynamic_context"] = dynamic_ctx.to_opa_input()
                 msg.metadata["dynamic_context_hash"] = dynamic_ctx.context_hash
-            except Exception as _dcs_exc:  # noqa: BLE001
+            except Exception as _dcs_exc:
                 # DCS failure must never block message delivery
                 logger.warning(
                     f"[{CONSTITUTIONAL_HASH}] DCS context assembly skipped: {_dcs_exc}",
@@ -706,6 +730,8 @@ class EnhancedAgentBus:
                     self._governance_integration.provide_feedback, msg, delivery_success
                 )
             )
+            self._background_tasks.add(_fb_task)
+            _fb_task.add_done_callback(self._background_tasks.discard)
             _fb_task.add_done_callback(
                 lambda t: (
                     t.exception()
@@ -714,6 +740,46 @@ class EnhancedAgentBus:
             )
 
         return result
+
+    # --- Main Message Sending ---
+
+    async def send_message(self, msg: AgentMessage) -> ValidationResult:
+        """
+        Send a message through the agent bus with constitutional validation.
+
+        This method performs:
+        1. Bus state verification
+        2. Constitutional hash validation
+        3. Tenant ID normalization and validation
+        4. Message processing with graceful degradation
+        5. Routing and delivery
+
+        Args:
+            msg: The AgentMessage to send.
+
+        Returns:
+            ValidationResult indicating success/failure with any errors.
+        """
+        idempotency_key = self._resolve_idempotency_key(msg)
+        if not idempotency_key:
+            return await self._send_message_once(msg)
+
+        async with self._idempotency_lock:
+            existing_task = self._inflight_idempotency.get(idempotency_key)
+            if existing_task is None:
+                existing_task = asyncio.create_task(self._send_message_once(msg))
+                self._inflight_idempotency[idempotency_key] = existing_task
+                created_task = True
+            else:
+                created_task = False
+
+        try:
+            return await existing_task
+        finally:
+            if created_task:
+                async with self._idempotency_lock:
+                    if self._inflight_idempotency.get(idempotency_key) is existing_task:
+                        self._inflight_idempotency.pop(idempotency_key, None)
 
     async def broadcast_message(self, msg: AgentMessage) -> dict[str, ValidationResult]:
         """Broadcast message to all agents in same tenant."""

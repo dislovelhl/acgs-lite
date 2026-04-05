@@ -1,6 +1,6 @@
 """
 ACGS-2 Deliberation Layer - Deliberation Queue
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 Persistent queue for high-impact messages awaiting approval.
 """
 
@@ -44,10 +44,10 @@ except (ImportError, ValueError):
 from enum import Enum
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]
@@ -311,7 +311,7 @@ class DeliberationQueue:
         finally:
             # Clean up task reference
             if current_task and current_task in self.processing_tasks:
-                try:  # noqa: SIM105
+                try:
                     self.processing_tasks.remove(current_task)
                 except ValueError:
                     pass  # Already removed
@@ -348,7 +348,7 @@ class DeliberationQueue:
         async with self._lock:
             if task_id in self.tasks:
                 if isinstance(status, str):
-                    try:  # noqa: SIM105
+                    try:
                         status = DeliberationStatus(status.lower())
                     except ValueError:
                         # Fallback for manual string statuses
@@ -506,7 +506,7 @@ class DeliberationQueue:
                 return
             self._run_async_io(self._write_persistence_file(path, json.dumps(storage)))
             logger.info(
-                f"Successfully persisted {len(storage)} deliberation tasks to {self.persistence_path}"  # noqa: E501
+                f"Successfully persisted {len(storage)} deliberation tasks to {self.persistence_path}"
             )
         except DELIBERATION_PERSISTENCE_ERRORS as e:
             logger.error(f"Failed to persist deliberation tasks to {self.persistence_path}: {e}")
@@ -574,7 +574,7 @@ def reset_deliberation_queue() -> None:
 
     Used primarily for test isolation to prevent state leakage between tests.
     Properly cleans up any pending async tasks to avoid 'Task was destroyed but pending' warnings.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     global _deliberation_queue
     if _deliberation_queue is not None:
@@ -615,7 +615,7 @@ def cleanup_all_deliberation_queues() -> None:
     This function should be called at test teardown to properly stop all
     queue instances, not just the singleton. Essential for tests that create
     multiple queue instances directly.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     global _all_queue_instances
     for queue in _all_queue_instances:

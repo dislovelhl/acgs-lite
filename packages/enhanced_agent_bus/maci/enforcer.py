@@ -5,7 +5,7 @@ Enforces separation of powers (Trias Politica) for AI governance,
 preventing Godel bypass attacks through role-based access control.
 Supports session-scoped agent registration and validation.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -13,7 +13,7 @@ from collections import deque
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -47,7 +47,7 @@ class MACIEnforcer:
     preventing Godel bypass attacks through role-based access control.
     Supports session-scoped agent registration and validation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -119,6 +119,29 @@ class MACIEnforcer:
                 )
                 self._validation_log.append(result)
                 raise MACIRoleNotAssignedError(agent_id, action.value)
+            # Non-strict mode: unregistered agents are restricted to OBSERVER level (QUERY only).
+            # Never grant write/execute actions to unknown agents — that would bypass MACI entirely.
+            logger.warning(
+                "Unregistered agent attempted action in non-strict mode; "
+                "restricting to OBSERVER-level (QUERY only)",
+                agent_id=agent_id,
+                action=action.value,
+                session_id=session_id,
+            )
+            if action != MACIAction.QUERY:
+                result = MACIValidationResult(
+                    is_valid=False,
+                    violation_type="unregistered_agent_non_query",
+                    session_id=session_id,
+                    details={"agent_id": agent_id, "action": action.value},
+                )
+                self._validation_log.append(result)
+                raise MACIRoleViolationError(  # type: ignore[call-arg]
+                    agent_id,
+                    "unregistered",
+                    action.value,
+                    allowed_roles=[],
+                )
             return MACIValidationResult(is_valid=True, session_id=session_id)
 
         if not rec.can_perform(action):
@@ -236,7 +259,10 @@ class MACIEnforcer:
         session_id: str | None,
     ) -> None:
         """Validate self-validation and cross-role constraints for output ownership."""
-        producer_id = await self.registry.get_output_producer(target_output_id)
+        producer_id = await self.registry.get_output_producer(
+            target_output_id,
+            session_id=session_id,
+        )
         if producer_id == agent_id or target_output_id in rec.outputs:
             result = MACIValidationResult(
                 is_valid=False,
@@ -382,7 +408,7 @@ class MACIEnforcer:
 
         Note:
             This validation is ALWAYS enforced regardless of session policies.
-            Constitutional hash: cdd01ef066bc6cf2
+            Constitutional hash: 608508a9bd224290
         """
         # CRITICAL: MACI enforcement cannot be bypassed by session policies
         # All session policies must operate within MACI constraints

@@ -1,6 +1,6 @@
 """
 ACGS-2 Capacity Metrics Data Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Contains all data models for capacity metrics including:
 - CapacityStatus enum for scaling decisions
@@ -21,16 +21,16 @@ from datetime import UTC, datetime, timezone
 from enum import Enum
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
 
-class CapacityStatus(str, Enum):  # noqa: UP042
+class CapacityStatus(str, Enum):
     """Capacity status indicators for scaling decisions."""
 
     HEALTHY = "healthy"

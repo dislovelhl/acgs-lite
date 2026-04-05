@@ -1,8 +1,9 @@
 """
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
+import copy
 import hashlib
 import random
 import time
@@ -11,10 +12,10 @@ from contextlib import AbstractContextManager, nullcontext
 from typing import Literal, cast
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONValue = object  # type: ignore[misc,assignment]
@@ -24,11 +25,21 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 # Local imports
 from .config import BusConfiguration
 from .dependency_bridge import get_dependency, get_feature_flags, is_feature_available
+from .gate_coordinator import GateCoordinator
 from .governance_constants import (
     DEFAULT_CB_FAIL_MAX,
     DEFAULT_CB_RESET_TIMEOUT,
     DEFAULT_LRU_CACHE_SIZE,
     IMPACT_DELIBERATION_THRESHOLD,
+)
+from .governance_coordinator import GovernanceCoordinator
+from .governance_core import (
+    GovernanceDecision,
+    GovernanceInput,
+    GovernanceReceipt,
+    LegacyGovernanceCore,
+    SwarmGovernanceCore,
+    normalize_governance_core_mode,
 )
 
 # Feature flags
@@ -42,7 +53,7 @@ MCP_ENABLED: bool = _flags.get("MCP_ENABLED", False)
 
 # Direct canonical imports with fallbacks
 try:
-    from src.core.shared.circuit_breaker import (
+    from enhanced_agent_bus._compat.circuit_breaker import (
         CircuitBreakerConfig,
         get_circuit_breaker,
     )
@@ -117,26 +128,18 @@ except ImportError:
     MCPConfig = None  # type: ignore[assignment, misc]
     MCPToolResult = None  # type: ignore[assignment, misc]
 
-from .interfaces import ProcessingStrategy  # noqa: E402
-from .memory_profiler import ProfilingLevel, get_memory_profiler  # noqa: E402
-from .message_processor_components import (  # noqa: E402
-    apply_latency_metadata,
-    apply_session_governance_metrics,
-    build_dlq_entry,
-    calculate_session_resolution_rate,
+from .interfaces import ProcessingStrategy
+from .memory_profiler import ProfilingLevel, get_memory_profiler
+from .message_processor_components import (
     compute_message_cache_key,
     enforce_autonomy_tier_rules,
     enrich_metrics_with_opa_stats,
     enrich_metrics_with_workflow_telemetry,
-    extract_pqc_failure_result,
     extract_rejection_reason,
     extract_session_id_for_pacar,
-    merge_verification_metadata,
-    prepare_message_content_string,
-    run_message_validation_gates,
     schedule_background_task,
 )
-from .models import (  # noqa: E402
+from .models import (
     CONSTITUTIONAL_HASH,
     AgentMessage,
     AutonomyTier,
@@ -145,17 +148,24 @@ from .models import (  # noqa: E402
     Priority,
     get_enum_value,
 )
-from .performance_monitor import timed  # noqa: E402
-from .runtime_security import get_runtime_security_scanner  # noqa: E402
-from .security_scanner import (  # noqa: E402
+from .performance_monitor import timed
+from .processing_context import MessageProcessingContext
+from .result_finalizer import ResultFinalizer
+from .runtime_security import get_runtime_security_scanner
+from .security_scanner import (
     PROMPT_INJECTION_PATTERNS,
     MessageSecurityScanner,
 )
-from .session_context import SessionContext, SessionContextManager  # noqa: E402
-from .session_context_resolver import SessionContextResolver  # noqa: E402
-from .utils import LRUCache  # noqa: E402
-from .validators import ValidationResult  # noqa: E402
-from .verification_orchestrator import VerificationOrchestrator  # noqa: E402
+from .session_context import SessionContext, SessionContextManager
+from .session_context_resolver import SessionContextResolver
+from .session_coordinator import SessionCoordinator
+from .utils import LRUCache
+from .validators import ValidationResult
+from .verification_coordinator import VerificationCoordinator
+from .verification_orchestrator import (
+    VerificationOrchestrator,
+    VerificationRuntimeDependencies,
+)
 
 logger = get_logger(__name__)
 DEFAULT_CACHE_HASH_MODE = "sha256"
@@ -169,7 +179,7 @@ except ImportError:
     FAST_HASH_AVAILABLE = False
 
 try:
-    from src.core.shared.agent_workflow_metrics import (
+    from enhanced_agent_bus._compat.agent_workflow_metrics import (
         get_agent_workflow_metrics_collector,
     )
 
@@ -243,21 +253,35 @@ class MessageProcessor:
             else None
         )
         self.constitutional_hash = CONSTITUTIONAL_HASH
+        self._governance_core_mode = normalize_governance_core_mode(
+            kwargs.get(
+                "governance_core_mode",
+                getattr(self.config, "governance_core_mode", "legacy"),
+            )
+        )
+        self._governance_peer_validation_enabled = bool(
+            kwargs.get(
+                "governance_swarm_peer_validation_enabled",
+                getattr(self.config, "governance_swarm_peer_validation_enabled", True),
+            )
+        )
+        self._governance_manifold_enabled = bool(
+            kwargs.get(
+                "governance_swarm_use_manifold",
+                getattr(self.config, "governance_swarm_use_manifold", False),
+            )
+        )
+        self._legacy_governance_core = LegacyGovernanceCore(
+            expected_constitutional_hash=self.constitutional_hash
+        )
+        self._swarm_governance_core = kwargs.get("governance_core") or SwarmGovernanceCore(
+            expected_constitutional_hash=self.constitutional_hash,
+            enable_peer_validation=self._governance_peer_validation_enabled,
+            use_manifold=self._governance_manifold_enabled,
+        )
         self._audit_client = kwargs.get("audit_client")
-        self._opa_client = None
-        if not self._isolated_mode:
-            try:
-                self._opa_client = get_opa_client()
-            except Exception:
-                if _OPAClient is not None:
-                    try:
-                        self._opa_client = _OPAClient()
-                    except Exception:
-                        logger.debug(
-                            "OPA client unavailable during message processor initialization"
-                        )
-                else:
-                    logger.debug("OPA client unavailable during message processor initialization")
+        self._workflow_repository = kwargs.get("workflow_repository")
+        self._opa_client = self._initialize_opa_client()
         self._constitutional_verifier = kwargs.get("constitutional_verifier")
         # OPTIMIZATION: Increased cache size from 1000 to 10000 for enterprise scale
         # At 6,471 RPS, 1000 entries caused high cache churn (~seconds to evict)
@@ -280,13 +304,7 @@ class MessageProcessor:
         self._pqc_service = kwargs.get("pqc_service")
         self._pqc_config = None
 
-        if self._enable_pqc and not self._pqc_service:
-            self._pqc_service = build_pqc_service(self.config)
-            if not self._pqc_service:
-                self._enable_pqc = False
-
-        if self._pqc_service:
-            self._pqc_config = getattr(self._pqc_service, "config", None)
+        self._configure_pqc(build_pqc_service)
 
         self._processing_strategy = (
             kwargs.get("processing_strategy") or self._auto_select_strategy()
@@ -300,21 +318,16 @@ class MessageProcessor:
             )
 
         # Session governance integration (Phase 3)
-        self._enable_session_governance = (
+        requested_session_governance = (
             self.config.enable_session_governance and not self._isolated_mode
         )
-        self._session_context_manager: SessionContextManager | None = None
-        if self._enable_session_governance:
-            try:
-                # Initialize session context manager with config TTL
-                self._session_context_manager = SessionContextManager(
-                    cache_size=1000,
-                    cache_ttl=self.config.session_policy_cache_ttl,
-                )
-                logger.info("Session governance enabled for message processor")
-            except (AttributeError, OSError, RuntimeError, TypeError, ValueError) as e:
-                logger.warning(f"Failed to initialize session context manager: {e}")
-                self._enable_session_governance = False
+        (
+            self._enable_session_governance,
+            self._session_context_manager,
+        ) = SessionCoordinator.initialize_runtime(
+            self.config,
+            enable_session_governance=requested_session_governance,
+        )
 
         # Session resolution metrics (GIL-protected, no lock needed for simple increments)
         self._session_resolved_count = 0
@@ -337,27 +350,54 @@ class MessageProcessor:
         self._agent_workflow_metrics = (
             get_agent_workflow_metrics_collector() if AGENT_WORKFLOW_METRICS_AVAILABLE else None
         )
-        self._session_resolver = kwargs.get("session_resolver") or SessionContextResolver(
-            config=self.config,
-            manager=self._session_context_manager,
+        self._session_resolver = kwargs.get("session_resolver") or SessionCoordinator.build_session_resolver(
+            self.config,
+            self._session_context_manager,
+        )
+        self._session_coordinator = kwargs.get("session_coordinator") or SessionCoordinator(
+            enable_session_governance=self._enable_session_governance,
+            session_context_manager=self._session_context_manager,
+            session_resolver=self._session_resolver,
+            session_resolved_count=self._session_resolved_count,
+            session_not_found_count=self._session_not_found_count,
+            session_error_count=self._session_error_count,
         )
         self._security_scanner = kwargs.get("security_scanner") or MessageSecurityScanner()
-        self._verification_orchestrator = kwargs.get("verification_orchestrator")
-        if self._verification_orchestrator is None:
-            self._verification_orchestrator = VerificationOrchestrator(
-                config=self.config,
-                enable_pqc=self._enable_pqc,
-            )
-        self._verification_orchestrator.intent_classifier = self.intent_classifier
-        self._verification_orchestrator.asc_verifier = self.asc_verifier
-        self._verification_orchestrator.graph_check = self.graph_check
-        self._verification_orchestrator.pacar_verifier = self.pacar_verifier
-        self._verification_orchestrator.evolution_controller = self.evolution_controller
-        self._verification_orchestrator.ampo_engine = self.ampo_engine
-        self._verification_orchestrator._IntentType = self._IntentType
-        self._verification_orchestrator._enable_pqc = self._enable_pqc
-        self._verification_orchestrator._pqc_service = self._pqc_service
-        self._verification_orchestrator._pqc_config = self._pqc_config
+        self._gate_coordinator = kwargs.get("gate_coordinator") or GateCoordinator(
+            require_independent_validator=self._require_independent_validator,
+            independent_validator_threshold=self._independent_validator_threshold,
+            security_scanner=self._security_scanner,
+            record_agent_workflow_event=self._record_agent_workflow_event,
+            increment_failed_count=self._increment_failed_count,
+            advisory_blocked_types=_ADVISORY_BLOCKED_TYPES,
+        )
+        self._verification_orchestrator = self._build_verification_orchestrator(
+            kwargs.get("verification_orchestrator")
+        )
+        self._governance_coordinator = kwargs.get("governance_coordinator") or GovernanceCoordinator(
+            governance_core_mode=self._governance_core_mode,
+            constitutional_hash=self.constitutional_hash,
+            require_independent_validator=self._require_independent_validator,
+            requires_independent_validation=self._gate_coordinator.requires_independent_validation,
+            legacy_governance_core=self._legacy_governance_core,
+            swarm_governance_core=self._swarm_governance_core,
+            increment_failed_count=self._increment_failed_count,
+        )
+        self._result_finalizer = kwargs.get("result_finalizer") or ResultFinalizer()
+        self._verification_coordinator = kwargs.get(
+            "verification_coordinator"
+        ) or VerificationCoordinator(
+            verification_orchestrator=self._verification_orchestrator,
+            processing_strategy=self._processing_strategy,
+            handlers=self._handlers,
+            attach_governance_metadata=lambda context, result: self._governance_coordinator.attach_governance_metadata(
+                context=context,
+                result=result,
+            ),
+            increment_failed_count=self._increment_failed_count,
+            handle_successful_processing=self._handle_successful_processing,
+            handle_failed_processing=self._handle_failed_processing,
+        )
 
         # MCP integration — initialised lazily via initialize_mcp(); None until then
         self._mcp_pool: MCPClientPool | None = None  # type: ignore[type-arg]
@@ -366,6 +406,88 @@ class MessageProcessor:
                 "cache_hash_mode=fast requested but acgs2_perf.fast_hash unavailable; "
                 "falling back to sha256"
             )
+
+    def _initialize_opa_client(self) -> object | None:
+        if self._isolated_mode:
+            return None
+        try:
+            return get_opa_client()
+        except Exception:
+            if _OPAClient is not None:
+                try:
+                    return _OPAClient()
+                except Exception:
+                    logger.debug("OPA client unavailable during message processor initialization")
+                    return None
+            logger.debug("OPA client unavailable during message processor initialization")
+            return None
+
+    def _configure_pqc(
+        self,
+        build_pqc_service_func: Callable[[BusConfiguration], object | None],
+    ) -> None:
+        if self._enable_pqc and not self._pqc_service:
+            self._pqc_service = build_pqc_service_func(self.config)
+            if not self._pqc_service:
+                self._enable_pqc = False
+
+        if self._pqc_service:
+            self._pqc_config = getattr(self._pqc_service, "config", None)
+
+    def _build_verification_orchestrator(
+        self,
+        orchestrator: object | None,
+    ) -> VerificationOrchestrator:
+        verification_orchestrator = orchestrator
+        if verification_orchestrator is None:
+            verification_orchestrator = VerificationOrchestrator(
+                config=self.config,
+                enable_pqc=self._enable_pqc,
+            )
+        runtime_dependencies = self._build_verification_runtime_dependencies()
+        configure_runtime_dependencies = getattr(
+            type(verification_orchestrator),
+            "configure_runtime_dependencies",
+            None,
+        )
+        if callable(configure_runtime_dependencies):
+            configure_runtime_dependencies(verification_orchestrator, runtime_dependencies)
+        else:
+            self._apply_verification_runtime_dependencies_legacy(
+                verification_orchestrator,
+                runtime_dependencies,
+            )
+        return verification_orchestrator  # type: ignore[return-value]
+
+    def _build_verification_runtime_dependencies(self) -> VerificationRuntimeDependencies:
+        return VerificationRuntimeDependencies(
+            intent_classifier=self.intent_classifier,
+            asc_verifier=self.asc_verifier,
+            graph_check=self.graph_check,
+            pacar_verifier=self.pacar_verifier,
+            evolution_controller=self.evolution_controller,
+            ampo_engine=self.ampo_engine,
+            intent_type=self._IntentType,
+            enable_pqc=self._enable_pqc,
+            pqc_service=self._pqc_service,
+            pqc_config=self._pqc_config,
+        )
+
+    @staticmethod
+    def _apply_verification_runtime_dependencies_legacy(
+        verification_orchestrator: object,
+        runtime_dependencies: VerificationRuntimeDependencies,
+    ) -> None:
+        verification_orchestrator.intent_classifier = runtime_dependencies.intent_classifier
+        verification_orchestrator.asc_verifier = runtime_dependencies.asc_verifier
+        verification_orchestrator.graph_check = runtime_dependencies.graph_check
+        verification_orchestrator.pacar_verifier = runtime_dependencies.pacar_verifier
+        verification_orchestrator.evolution_controller = runtime_dependencies.evolution_controller
+        verification_orchestrator.ampo_engine = runtime_dependencies.ampo_engine
+        verification_orchestrator._IntentType = runtime_dependencies.intent_type
+        verification_orchestrator._enable_pqc = runtime_dependencies.enable_pqc
+        verification_orchestrator._pqc_service = runtime_dependencies.pqc_service
+        verification_orchestrator._pqc_config = runtime_dependencies.pqc_config
 
     def _record_agent_workflow_event(
         self,
@@ -404,192 +526,140 @@ class MessageProcessor:
         py_proc = PythonProcessingStrategy(StaticHashValidationStrategy(strict=True))
         if self._isolated_mode:
             return py_proc
+        base = self._build_base_processing_strategy(
+            default_strategy=py_proc,
+            composite_strategy_cls=CompositeProcessingStrategy,
+            rust_strategy_cls=RustProcessingStrategy,
+            opa_strategy_cls=OPAProcessingStrategy,
+            python_strategy_cls=PythonProcessingStrategy,
+            static_hash_validation_cls=StaticHashValidationStrategy,
+        )
+        return self._wrap_processing_strategy_with_maci(
+            base_strategy=base,
+            maci_strategy_cls=MACIProcessingStrategy,
+        )
+
+    def _build_base_processing_strategy(
+        self,
+        *,
+        default_strategy: ProcessingStrategy,
+        composite_strategy_cls: type,
+        rust_strategy_cls: type,
+        opa_strategy_cls: type,
+        python_strategy_cls: type,
+        static_hash_validation_cls: type,
+    ) -> ProcessingStrategy:
         strategies: list[ProcessingStrategy] = []
         if self._rust_processor and self._use_rust:
-            strategies.append(RustProcessingStrategy(self._rust_processor, rust_bus))
+            strategies.append(rust_strategy_cls(self._rust_processor, rust_bus))
         if self._use_dynamic_policy and self._opa_client:
-            strategies.append(OPAProcessingStrategy(self._opa_client))
-
-        # Add Constitutional Verifier if available
+            strategies.append(opa_strategy_cls(self._opa_client))
         if self._constitutional_verifier:
             strategies.append(
-                PythonProcessingStrategy(
-                    StaticHashValidationStrategy(
+                python_strategy_cls(
+                    static_hash_validation_cls(
                         strict=True
                     )  # ConstitutionalValidationStrategy not available as ValidStrategy
                 )
             )
+        strategies.append(default_strategy)
+        return composite_strategy_cls(strategies) if len(strategies) > 1 else strategies[0]
 
-        strategies.append(py_proc)
-        base = CompositeProcessingStrategy(strategies) if len(strategies) > 1 else strategies[0]
-        if self._enable_maci:
-            return MACIProcessingStrategy(
-                base, self._maci_registry, self._maci_enforcer, self._maci_strict_mode
-            )
-        return base
+    def _wrap_processing_strategy_with_maci(
+        self,
+        *,
+        base_strategy: ProcessingStrategy,
+        maci_strategy_cls: type,
+    ) -> ProcessingStrategy:
+        if not self._enable_maci:
+            return base_strategy
+        return maci_strategy_cls(
+            base_strategy,
+            self._maci_registry,
+            self._maci_enforcer,
+            self._maci_strict_mode,
+        )
+
+    # ------------------------------------------------------------------
+    # Transitional facade wrappers
+    # ------------------------------------------------------------------
+    # These private helpers are kept as compatibility shims for existing tests and
+    # downstream monkeypatching. New orchestration should delegate to the extracted
+    # coordinator/finalizer components directly.
+
+    def _sync_coordinator_runtime(self) -> None:
+        self._session_coordinator.sync_runtime(
+            enable_session_governance=self._enable_session_governance,
+            session_context_manager=self._session_context_manager,
+            session_resolver=self._session_resolver,
+            session_resolved_count=self._session_resolved_count,
+            session_not_found_count=self._session_not_found_count,
+            session_error_count=self._session_error_count,
+        )
+        self._gate_coordinator.sync_runtime(
+            require_independent_validator=self._require_independent_validator,
+            independent_validator_threshold=self._independent_validator_threshold,
+            security_scanner=self._security_scanner,
+            record_agent_workflow_event=self._record_agent_workflow_event,
+        )
+        self._governance_coordinator.sync_runtime(
+            constitutional_hash=self.constitutional_hash,
+            require_independent_validator=self._require_independent_validator,
+            requires_independent_validation=self._gate_coordinator.requires_independent_validation,
+        )
+        self._verification_coordinator.sync_runtime(
+            verification_orchestrator=self._verification_orchestrator,
+            processing_strategy=self._processing_strategy,
+            handlers=self._handlers,
+            attach_governance_metadata=lambda context, result: self._governance_coordinator.attach_governance_metadata(
+                context=context,
+                result=result,
+            ),
+            handle_successful_processing=self._handle_successful_processing,
+            handle_failed_processing=self._handle_failed_processing,
+        )
+
+    def _sync_runtime_state_from_coordinators(self) -> None:
+        (
+            self._enable_session_governance,
+            self._session_context_manager,
+            self._session_resolver,
+            self._session_resolved_count,
+            self._session_not_found_count,
+            self._session_error_count,
+        ) = self._session_coordinator.export_runtime_state()
 
     @timed("extract_session_context")
     async def _extract_session_context(self, msg: AgentMessage) -> SessionContext | None:
-        """
-        Extract and validate session context from message.
-
-        Implements acceptance criteria for subtask 3.2:
-        1. Extract session_id from message metadata
-        2. Load session context from SessionContextManager
-        3. Graceful fallback when session not found
-        4. Metrics tracking for session resolution
-
-        Args:
-            msg: The agent message to extract session context from
-
-        Returns:
-            SessionContext if found and valid, None otherwise
-        """
-        if not self._enable_session_governance:
-            return None
-
-        session_context = await self._session_resolver.resolve(msg)
-
-        resolver_metrics = self._session_resolver.get_metrics()
-        self._session_resolved_count = int(resolver_metrics.get("resolved_count", 0))
-        self._session_not_found_count = int(resolver_metrics.get("not_found_count", 0))
-        self._session_error_count = int(resolver_metrics.get("error_count", 0))
-
-        return session_context  # type: ignore[no-any-return]
+        """Transitional wrapper around SessionCoordinator.extract_session_context."""
+        self._sync_coordinator_runtime()
+        session_context = await self._session_coordinator.extract_session_context(msg)
+        self._sync_runtime_state_from_coordinators()
+        return session_context
 
     @timed("security_scan")
     async def _perform_security_scan(self, msg: AgentMessage) -> ValidationResult | None:
-        """
-        Perform runtime security scanning on the message.
-
-        Args:
-            msg: The agent message to scan.
-
-        Returns:
-            ValidationResult if security scan blocked the message, None otherwise.
-        """
-        security_res = await self._security_scanner.scan(msg)
-        if security_res:
-            self._failed_count += 1
-            return security_res  # type: ignore[no-any-return]
-        return None
+        """Transitional wrapper around GateCoordinator.perform_security_scan."""
+        self._sync_coordinator_runtime()
+        return await self._gate_coordinator.perform_security_scan(msg)
 
     def _requires_independent_validation(self, msg: AgentMessage) -> bool:
-        """Determine whether the message must include independent validation evidence."""
-        impact_score = getattr(msg, "impact_score", 0.0)
-        if impact_score is None:
-            impact_score = 0.0
-        if impact_score >= self._independent_validator_threshold:
-            return True
-        return msg.message_type in {
-            MessageType.CONSTITUTIONAL_VALIDATION,
-            MessageType.GOVERNANCE_REQUEST,
-        }
+        """Transitional wrapper around GateCoordinator.requires_independent_validation."""
+        self._sync_coordinator_runtime()
+        return self._gate_coordinator.requires_independent_validation(msg)
 
     def _enforce_independent_validator_gate(self, msg: AgentMessage) -> ValidationResult | None:
-        """Enforce independent-validator metadata for high-risk messages."""
-        if not self._require_independent_validator:
-            return None
-        if not self._requires_independent_validation(msg):
-            return None
-        self._record_agent_workflow_event(
-            event_type="intervention",
-            msg=msg,
-            reason="independent_validator_required",
-        )
-
-        metadata = msg.metadata if isinstance(msg.metadata, dict) else {}
-        validator_id = metadata.get("validated_by_agent") or metadata.get(
-            "independent_validator_id"
-        )
-        validation_stage = metadata.get("validation_stage")
-
-        if not isinstance(validator_id, str) or not validator_id.strip():
-            self._record_agent_workflow_event(
-                event_type="gate_failure",
-                msg=msg,
-                reason="independent_validator_missing",
-            )
-            return ValidationResult(
-                is_valid=False,
-                errors=["Independent validator metadata is required for this message"],
-                metadata={"rejection_reason": "independent_validator_missing"},
-            )
-
-        if validator_id == msg.from_agent:
-            self._record_agent_workflow_event(
-                event_type="gate_failure",
-                msg=msg,
-                reason="independent_validator_self_validation",
-            )
-            return ValidationResult(
-                is_valid=False,
-                errors=["Independent validator must not be the originating agent"],
-                metadata={"rejection_reason": "independent_validator_self_validation"},
-            )
-
-        if validation_stage is not None and validation_stage != "independent":
-            self._record_agent_workflow_event(
-                event_type="gate_failure",
-                msg=msg,
-                reason="independent_validator_invalid_stage",
-            )
-            return ValidationResult(
-                is_valid=False,
-                errors=[
-                    "validation_stage must be 'independent' when validator evidence is present"
-                ],
-                metadata={"rejection_reason": "independent_validator_invalid_stage"},
-            )
-        return None
+        """Transitional wrapper around GateCoordinator.enforce_independent_validator_gate."""
+        self._sync_coordinator_runtime()
+        return self._gate_coordinator.enforce_independent_validator_gate(msg)
 
     def _enforce_autonomy_tier(self, msg: AgentMessage) -> ValidationResult | None:
-        """Enforce autonomy tier restrictions on messages (ACGS-AI-007).
-
-        Rules:
-        - ADVISORY: Can only send non-command messages (queries, events, etc.)
-        - BOUNDED: Default tier — allowed for all message types (other policies still apply)
-        - HUMAN_APPROVED: Requires validated_by_agent metadata evidence
-        - UNRESTRICTED: Allowed for all (requires explicit grant)
-        - None (unset): No autonomy tier restrictions applied
-
-        Returns:
-            ValidationResult rejection if tier rules are violated, None otherwise.
-        """
+        """Transitional facade wrapper for autonomy-tier enforcement."""
         return enforce_autonomy_tier_rules(msg=msg, advisory_blocked_types=_ADVISORY_BLOCKED_TYPES)
 
     def _extract_message_session_id(self, msg: AgentMessage) -> str | None:
-        """
-        Extract session_id from message for multi-turn PACAR context tracking.
-
-        Priority: session_id field > headers > content > payload.
-
-        Args:
-            msg: The agent message to extract session_id from.
-
-        Returns:
-            Session ID string if found, None otherwise.
-        """
+        """Transitional facade wrapper for PACAR session-id extraction."""
         return extract_session_id_for_pacar(msg)  # type: ignore[no-any-return]
-
-    @timed("sdpc_verification")
-    async def _perform_sdpc_verification(
-        self, msg: AgentMessage, content_str: str
-    ) -> tuple[JSONDict, JSONDict]:
-        """Perform SDPC verification via the VerificationOrchestrator component."""
-        return await self._verification_orchestrator._perform_sdpc(msg, content_str)  # type: ignore[no-any-return]
-
-    @timed("pqc_validation")
-    async def _perform_pqc_validation(
-        self, msg: AgentMessage, sdpc_metadata: JSONDict
-    ) -> ValidationResult | None:
-        """Perform PQC validation via the VerificationOrchestrator component."""
-        pqc_result, pqc_metadata = await self._verification_orchestrator.verify_pqc(msg)
-        if pqc_metadata:
-            sdpc_metadata.update(pqc_metadata)
-        if pqc_result:
-            self._failed_count += 1
-        return pqc_result  # type: ignore[no-any-return]
 
     @timed("message_process")
     async def process(self, msg: AgentMessage, max_retries: int = 3) -> ValidationResult:
@@ -637,12 +707,12 @@ class MessageProcessor:
 
         Pipeline stages:
         1. Memory profiling context setup
-        2. Session context extraction and attachment
-        3. Security scanning (early return if blocked)
+        2. SessionCoordinator resolves and attaches session context
+        3. GateCoordinator runs pre-processing gates and governance gating
         4. Cache check (early return if cached)
-        5. Parallel SDPC and PQC verification
+        5. VerificationCoordinator performs SDPC/PQC orchestration
         6. Strategy-based processing
-        7. Result caching and metrics
+        7. ResultFinalizer handles caching, audit, DLQ, and metering sinks
 
         Args:
             msg: The agent message to process.
@@ -650,25 +720,48 @@ class MessageProcessor:
         Returns:
             ValidationResult with validation status and metadata.
         """
-        start = time.perf_counter()
+        context = MessageProcessingContext(message=msg, start_time=time.perf_counter())
 
         async with self._setup_memory_profiling_context(msg):
-            # Phase 1: Extract and attach session context for governance
-            await self._attach_session_context(msg)
+            # Phase 1: SessionCoordinator attaches explicit session state to the context/message.
+            # Mainline processing now calls the coordinator directly; the facade wrapper remains
+            # only for backward-compatible helper/coverage callers.
+            self._sync_coordinator_runtime()
+            await self._session_coordinator.attach_session_context(context)
+            self._sync_runtime_state_from_coordinators()
 
-            # Phase 2: Run validation gates (early returns)
-            gate_result = await self._run_validation_gates(msg)
+            # Phase 2: GateCoordinator executes fail-closed gates before deeper processing.
+            self._sync_coordinator_runtime()
+            gate_result = await self._gate_coordinator.run(context, self._governance_coordinator.run)
             if gate_result:
+                self._governance_coordinator.attach_governance_metadata(
+                    context=context,
+                    result=gate_result,
+                )
+                await self._handle_failed_processing(
+                    msg,
+                    gate_result,
+                    increment_failed_count=False,
+                    failure_stage="gate",
+                )
                 return gate_result
 
         # Phase 3: Check validation cache
-        cache_key = self._compute_cache_key(msg)
-        cached = self._validation_cache.get(cache_key)
+        context.cache_key = self._compute_cache_key(msg)
+        cached = self._validation_cache.get(context.cache_key)
         if cached:
-            return cached  # type: ignore[no-any-return]
+            cached_result = self._clone_validation_result(cached)
+            context.cached_result = cached_result
+            self._governance_coordinator.attach_governance_metadata(
+                context=context,
+                result=cached_result,
+            )
+            return cached_result  # type: ignore[no-any-return]
 
-        # Phase 4-6: Verification and processing
-        return await self._execute_verification_and_processing(msg, cache_key, start)
+        # Phase 4-6: Verification and processing. Mainline processing now calls the
+        # coordinator directly; the facade wrapper remains only for compatibility callers.
+        self._sync_coordinator_runtime()
+        return await self._verification_coordinator.execute(context)
 
     def _setup_memory_profiling_context(self, msg: AgentMessage) -> AbstractContextManager[None]:
         """set up memory profiling context for message processing."""
@@ -680,119 +773,190 @@ class MessageProcessor:
             else nullcontext()
         )
 
-    async def _attach_session_context(self, msg: AgentMessage) -> None:
-        """Extract and attach session context to message."""
-        session_context = await self._extract_session_context(msg)
-        if session_context:
-            if hasattr(msg, "session_context"):
-                msg.session_context = session_context  # type: ignore[assignment]
-            if hasattr(msg, "session_id") and not msg.session_id:
-                msg.session_id = session_context.session_id
-            logger.debug(
-                f"Attached session context to message {msg.message_id}: "
-                f"session_id={session_context.session_id}"
-            )
+    async def _attach_session_context(
+        self,
+        context: MessageProcessingContext | AgentMessage,
+    ) -> None:
+        """Compatibility wrapper around SessionCoordinator.attach_session_context.
+
+        The main processing pipeline now calls `SessionCoordinator` directly. This method remains
+        only for legacy helper/coverage tests and any downstream callers still using the old facade
+        surface.
+
+        Accepts both the explicit MessageProcessingContext and the legacy AgentMessage shape used
+        by older helper/coverage tests.
+        """
+        self._sync_coordinator_runtime()
+        await self._session_coordinator.attach_session_context(context)
+        self._sync_runtime_state_from_coordinators()
 
     def _increment_failed_count(self) -> None:
         self._failed_count += 1
 
-    async def _run_validation_gates(self, msg: AgentMessage) -> ValidationResult | None:
-        return await run_message_validation_gates(
-            msg=msg,
-            autonomy_gate=self._enforce_autonomy_tier,
-            security_scan=self._perform_security_scan,
-            independent_validator_gate=self._enforce_independent_validator_gate,
-            prompt_injection_gate=self._detect_prompt_injection,
-            increment_failure=self._increment_failed_count,
+    @staticmethod
+    def _clone_validation_result(result: ValidationResult) -> ValidationResult:
+        return ValidationResult(
+            is_valid=result.is_valid,
+            errors=list(result.errors),
+            warnings=list(result.warnings),
+            metadata=copy.deepcopy(result.metadata),
+            decision=result.decision,
+            status=result.status,
+            constitutional_hash=result.constitutional_hash,
+            pqc_metadata=copy.deepcopy(result.pqc_metadata),
         )
 
     def _compute_cache_key(self, msg: AgentMessage) -> str:
         """Compute SHA-256 cache key with security dimensions for tenant isolation."""
-        return compute_message_cache_key(
+        base_key = compute_message_cache_key(
             msg,
             cache_hash_mode=self._cache_hash_mode,
             fast_hash_available=FAST_HASH_AVAILABLE,
             fast_hash_func=fast_hash if FAST_HASH_AVAILABLE else None,
         )
-
-    async def _execute_verification_and_processing(
-        self, msg: AgentMessage, cache_key: str, start_time: float
-    ) -> ValidationResult:
-        """Execute verification orchestration and strategy processing."""
-        # Run verification orchestration
-        content_str = prepare_message_content_string(msg)
-        verification_result = await self._verification_orchestrator.verify(msg, content_str)
-
-        # Merge verification metadata
-        sdpc_metadata = merge_verification_metadata(
-            verification_result.sdpc_metadata,
-            verification_result.pqc_metadata,
+        return (
+            f"{base_key}:{self._governance_core_mode}:"
+            f"{int(self._governance_peer_validation_enabled)}:"
+            f"{int(self._governance_manifold_enabled)}"
         )
-
-        # Check for PQC verification failure
-        pqc_failure_result = extract_pqc_failure_result(verification_result)
-        if pqc_failure_result:
-            self._failed_count += 1
-            return pqc_failure_result  # type: ignore[no-any-return]
-
-        # Strategy-based processing
-        res = await self._processing_strategy.process(msg, self._handlers)
-        res.metadata.update(sdpc_metadata)
-
-        # Calculate latency and handle results
-        latency_ms = (time.perf_counter() - start_time) * 1000
-        apply_latency_metadata(res, latency_ms)
-
-        if res.is_valid:
-            await self._handle_successful_processing(msg, res, cache_key, latency_ms)
-        else:
-            await self._handle_failed_processing(msg, res)
-
-        return res  # type: ignore[no-any-return]
 
     async def _handle_successful_processing(
         self, msg: AgentMessage, result: ValidationResult, cache_key: str, latency_ms: float
     ) -> None:
         """Handle successful message processing with caching and metrics."""
-        self._validation_cache.set(cache_key, result)
-        self._processed_count += 1
+        self._sync_coordinator_runtime()
 
-        if not self._requires_independent_validation(msg):
-            self._record_agent_workflow_event(
-                event_type="autonomous_action",
-                msg=msg,
-                reason="no_independent_validation_required",
+        async def emit_governance_audit_event(
+            audit_msg: AgentMessage,
+            audit_result: ValidationResult,
+        ) -> None:
+            await self._result_finalizer.emit_governance_audit_event(
+                msg=audit_msg,
+                result=audit_result,
+                audit_client=self._audit_client,
+                extract_rejection_reason=self._extract_rejection_reason,
+                governance_core_mode=self._governance_core_mode,
             )
 
-        if self._metering_hooks:
-            schedule_background_task(
-                self._async_metering_callback(msg, latency_ms), self._background_tasks
+        def schedule_governance_audit_event(
+            audit_msg: AgentMessage,
+            audit_result: ValidationResult,
+        ) -> None:
+            self._result_finalizer.schedule_governance_audit_event(
+                msg=audit_msg,
+                result=audit_result,
+                audit_client=self._audit_client,
+                schedule_background_task_fn=schedule_background_task,
+                background_tasks=self._background_tasks,
+                emit_governance_audit_event=emit_governance_audit_event,
             )
 
-    async def _handle_failed_processing(self, msg: AgentMessage, result: ValidationResult) -> None:
-        """Handle failed message processing with DLQ and metrics."""
-        self._failed_count += 1
-        rejection_reason = self._extract_rejection_reason(result)
+        async def persist_flywheel_decision_event(
+            persist_msg: AgentMessage,
+            persist_result: ValidationResult,
+        ) -> None:
+            await self._result_finalizer.persist_flywheel_decision_event(
+                msg=persist_msg,
+                result=persist_result,
+                workflow_repository=getattr(self, "_workflow_repository", None),
+            )
 
-        self._record_agent_workflow_event(
-            event_type="gate_failure",
+        await self._result_finalizer.handle_successful_processing(
             msg=msg,
-            reason=rejection_reason,
+            result=result,
+            cache_key=cache_key,
+            latency_ms=latency_ms,
+            validation_cache=self._validation_cache,
+            clone_validation_result=self._clone_validation_result,
+            processed_counter_increment=self._increment_processed_count,
+            schedule_governance_audit_event=schedule_governance_audit_event,
+            persist_flywheel_decision_event=persist_flywheel_decision_event,
+            requires_independent_validation=self._gate_coordinator.requires_independent_validation,
+            record_agent_workflow_event=self._record_agent_workflow_event,
+            metering_hooks=self._metering_hooks,
+            async_metering_callback=self._async_metering_callback,
+            schedule_background_task_fn=schedule_background_task,
+            background_tasks=self._background_tasks,
         )
 
-        if msg.priority == Priority.CRITICAL:
-            self._record_agent_workflow_event(
-                event_type="rollback_trigger",
-                msg=msg,
-                reason="critical_message_rejected",
+    async def _handle_failed_processing(
+        self,
+        msg: AgentMessage,
+        result: ValidationResult,
+        *,
+        increment_failed_count: bool = True,
+        failure_stage: str = "strategy",
+    ) -> None:
+        """Handle failed message processing with consistent audit, persistence, and DLQ sinks."""
+        self._sync_coordinator_runtime()
+
+        async def emit_governance_audit_event(
+            audit_msg: AgentMessage,
+            audit_result: ValidationResult,
+        ) -> None:
+            await self._result_finalizer.emit_governance_audit_event(
+                msg=audit_msg,
+                result=audit_result,
+                audit_client=self._audit_client,
+                extract_rejection_reason=self._extract_rejection_reason,
+                governance_core_mode=self._governance_core_mode,
             )
 
-        schedule_background_task(self._send_to_dlq(msg, result), self._background_tasks)
+        def schedule_governance_audit_event(
+            audit_msg: AgentMessage,
+            audit_result: ValidationResult,
+        ) -> None:
+            self._result_finalizer.schedule_governance_audit_event(
+                msg=audit_msg,
+                result=audit_result,
+                audit_client=self._audit_client,
+                schedule_background_task_fn=schedule_background_task,
+                background_tasks=self._background_tasks,
+                emit_governance_audit_event=emit_governance_audit_event,
+            )
+
+        async def persist_flywheel_decision_event(
+            persist_msg: AgentMessage,
+            persist_result: ValidationResult,
+        ) -> None:
+            await self._result_finalizer.persist_flywheel_decision_event(
+                msg=persist_msg,
+                result=persist_result,
+                workflow_repository=getattr(self, "_workflow_repository", None),
+            )
+
+        async def send_to_dlq(dlq_msg: AgentMessage, dlq_result: ValidationResult) -> None:
+            try:
+                await self._result_finalizer.send_to_dlq(
+                    msg=dlq_msg,
+                    result=dlq_result,
+                    get_dlq_redis=self._get_dlq_redis,
+                )
+            except (ImportError, OSError, RuntimeError, TypeError, ValueError):
+                self._dlq_redis = None
+
+        await self._result_finalizer.handle_failed_processing(
+            msg=msg,
+            result=result,
+            increment_failed_count=increment_failed_count,
+            failed_counter_increment=self._increment_failed_count,
+            failure_stage=failure_stage,
+            extract_rejection_reason=self._extract_rejection_reason,
+            schedule_governance_audit_event=schedule_governance_audit_event,
+            persist_flywheel_decision_event=persist_flywheel_decision_event,
+            record_agent_workflow_event=self._record_agent_workflow_event,
+            send_to_dlq=send_to_dlq,
+            schedule_background_task_fn=schedule_background_task,
+            background_tasks=self._background_tasks,
+        )
 
     @staticmethod
     def _extract_rejection_reason(result: ValidationResult) -> str:
         """Extract rejection reason from validation result metadata."""
         return extract_rejection_reason(result)
+
+    def _increment_processed_count(self) -> None:
+        self._processed_count += 1
 
     async def _async_metering_callback(self, msg: AgentMessage, lat: float) -> None:
         """Asynchronous wrapper for metering callback to prevent latency spikes."""
@@ -814,20 +978,18 @@ class MessageProcessor:
         return self._dlq_redis
 
     async def _send_to_dlq(self, msg: AgentMessage, result: ValidationResult) -> None:
-        """Send failed message to dead letter queue via cached Redis client."""
+        """Transitional wrapper around ResultFinalizer.send_to_dlq."""
         try:
-            import json
-
-            client = await self._get_dlq_redis()
-            dlq_entry = build_dlq_entry(msg, result, time.time())
-            await client.lpush("acgs:dlq:messages", json.dumps(dlq_entry))
-            await client.ltrim("acgs:dlq:messages", 0, 9999)
-            logger.info("dlq_message_stored", message_id=msg.message_id)
-        except (ImportError, OSError, RuntimeError, TypeError, ValueError) as e:
-            logger.warning(f"DLQ write failed (non-fatal): {e}")
+            await self._result_finalizer.send_to_dlq(
+                msg=msg,
+                result=result,
+                get_dlq_redis=self._get_dlq_redis,
+            )
+        except (ImportError, OSError, RuntimeError, TypeError, ValueError):
             self._dlq_redis = None
 
     def _detect_prompt_injection(self, msg: AgentMessage) -> ValidationResult | None:
+        """Transitional facade wrapper for prompt-injection detection."""
         return self._security_scanner.detect_prompt_injection(msg)  # type: ignore[no-any-return]
 
     @property
@@ -907,17 +1069,33 @@ class MessageProcessor:
             Dictionary containing processed count, failed count, success rate,
             strategy information, and feature flags.
         """
+        metrics = self._build_base_metrics()
+        self._apply_metrics_enrichment(metrics)
+        return metrics
+
+    async def shutdown(self) -> None:
+        """Cancel and drain processor-owned background tasks."""
+        tasks = tuple(self._background_tasks)
+        for task in tasks:
+            if not task.done():
+                task.cancel()
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
+        self._background_tasks.clear()
+
+        dlq_redis = getattr(self, "_dlq_redis", None)
+        if dlq_redis is not None:
+            try:
+                await dlq_redis.aclose()
+            except Exception:
+                logger.debug("message_processor_dlq_redis_close_failed", exc_info=True)
+            finally:
+                self._dlq_redis = None
+
+    def _build_base_metrics(self) -> JSONDict:
         total = self._processed_count + self._failed_count
         success_rate = self._processed_count / max(1, total) if total > 0 else 0.0
-
-        # Calculate session resolution metrics
-        session_resolution_rate = calculate_session_resolution_rate(
-            self._session_resolved_count,
-            self._session_not_found_count,
-            self._session_error_count,
-        )
-
-        metrics = {
+        return {
             "processed_count": self._processed_count,
             "failed_count": self._failed_count,
             "success_rate": success_rate,
@@ -934,25 +1112,23 @@ class MessageProcessor:
                 self._pqc_config.verification_mode if self._pqc_config else None
             ),
             "pqc_migration_phase": self._pqc_config.migration_phase if self._pqc_config else None,
+            "governance_core_mode": self._governance_core_mode,
+            "governance_swarm_available": self._governance_coordinator.is_swarm_available(),
+            "governance_swarm_peer_validation_enabled": self._governance_peer_validation_enabled,
+            "governance_swarm_use_manifold": self._governance_manifold_enabled,
+            "governance_shadow_matches": self._governance_coordinator.shadow_matches,
+            "governance_shadow_mismatches": self._governance_coordinator.shadow_mismatches,
+            "governance_shadow_errors": self._governance_coordinator.shadow_errors,
         }
 
-        # Add session governance metrics
-        apply_session_governance_metrics(
-            metrics,
-            enabled=self._enable_session_governance,
-            resolved_count=self._session_resolved_count,
-            not_found_count=self._session_not_found_count,
-            error_count=self._session_error_count,
-            resolution_rate=session_resolution_rate,
-        )
-
+    def _apply_metrics_enrichment(self, metrics: JSONDict) -> None:
+        self._sync_coordinator_runtime()
+        self._session_coordinator.apply_metrics(metrics)
+        self._sync_runtime_state_from_coordinators()
         enrich_metrics_with_opa_stats(metrics, self._opa_client)
-
         collector = getattr(self, "_agent_workflow_metrics", None)
         if collector is not None and not enrich_metrics_with_workflow_telemetry(metrics, collector):
             logger.debug("Unable to enrich metrics with workflow telemetry", exc_info=True)
-
-        return metrics
 
     def _set_strategy(self, strategy: ProcessingStrategy) -> None:
         self._processing_strategy = strategy

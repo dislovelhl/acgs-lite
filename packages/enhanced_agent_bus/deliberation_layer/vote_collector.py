@@ -1,6 +1,6 @@
 """
 ACGS-2 Event-Driven Vote Collector
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides high-performance event-driven vote collection using Redis pub/sub
 for multi-stakeholder deliberation workflows.
@@ -38,7 +38,7 @@ except ImportError:
     NUMPY_AVAILABLE = False
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -355,7 +355,7 @@ class EventDrivenVoteCollector:
 
         if self._subscriber_task:
             self._subscriber_task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._subscriber_task
             except asyncio.CancelledError:
                 pass

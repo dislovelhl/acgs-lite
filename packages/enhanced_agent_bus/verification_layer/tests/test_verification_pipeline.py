@@ -1,6 +1,6 @@
 """
 Tests for Verification Pipeline - Integrated Layer 2 Verification
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests cover:
 - Pipeline configuration
@@ -13,8 +13,6 @@ Tests cover:
 import asyncio
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
-
-import pytest
 
 from ..constitutional_transition import StateTransitionManager, TransitionState
 from ..maci_verifier import MACIVerificationResult, MACIVerifier, VerificationStatus
@@ -222,7 +220,6 @@ class TestPipelineResult:
 class TestPipelineExecution:
     """Tests for pipeline execution."""
 
-    @pytest.mark.asyncio
     async def test_simple_verification(self):
         """Test simple verification with MACI only."""
         config = PipelineConfig(
@@ -242,7 +239,6 @@ class TestPipelineExecution:
         assert result.status in (PipelineStatus.COMPLETED, PipelineStatus.FAILED)
         assert result.total_duration_ms > 0
 
-    @pytest.mark.asyncio
     async def test_full_pipeline(self):
         """Test full pipeline with all stages."""
         config = PipelineConfig(
@@ -263,7 +259,6 @@ class TestPipelineExecution:
         assert len(result.stage_results) > 0
         assert result.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_pipeline_produces_maci_result(self):
         """Test that pipeline produces MACI result."""
         config = PipelineConfig(
@@ -281,7 +276,6 @@ class TestPipelineExecution:
 
         assert result.maci_result is not None
 
-    @pytest.mark.asyncio
     async def test_pipeline_produces_policy_result(self):
         """Test that pipeline produces policy result when enabled."""
         config = PipelineConfig(
@@ -300,7 +294,6 @@ class TestPipelineExecution:
 
         assert result.policy_result is not None
 
-    @pytest.mark.asyncio
     async def test_pipeline_produces_transition(self):
         """Test that pipeline produces transition when enabled."""
         config = PipelineConfig(
@@ -318,7 +311,6 @@ class TestPipelineExecution:
 
         assert result.transition is not None
 
-    @pytest.mark.asyncio
     async def test_pipeline_audit_trail(self):
         """Test that pipeline produces audit trail."""
         pipeline = create_verification_pipeline()
@@ -336,7 +328,6 @@ class TestPipelineExecution:
 class TestFailFastMode:
     """Tests for fail-fast mode."""
 
-    @pytest.mark.asyncio
     async def test_fail_fast_stops_on_failure(self):
         """Test that fail-fast mode stops on first failure."""
         config = PipelineConfig(
@@ -371,7 +362,6 @@ class TestFailFastMode:
 class TestSagaExecution:
     """Tests for saga execution in pipeline."""
 
-    @pytest.mark.asyncio
     async def test_pipeline_with_saga_steps(self):
         """Test pipeline with saga steps."""
         config = PipelineConfig(
@@ -408,7 +398,6 @@ class TestSagaExecution:
 class TestQuickVerify:
     """Tests for quick verification."""
 
-    @pytest.mark.asyncio
     async def test_quick_verify(self):
         """Test quick verification shortcut."""
         pipeline = create_verification_pipeline()
@@ -433,7 +422,6 @@ class TestPipelineStatistics:
 
         assert stats["total_executions"] == 0
 
-    @pytest.mark.asyncio
     async def test_stats_after_execution(self):
         """Test statistics after execution."""
         pipeline = create_verification_pipeline()
@@ -452,7 +440,6 @@ class TestPipelineStatistics:
 class TestPipelineErrors:
     """Tests for error handling."""
 
-    @pytest.mark.asyncio
     async def test_handles_exception(self):
         """Test pipeline handles exceptions gracefully."""
         config = PipelineConfig(
@@ -481,7 +468,6 @@ class TestPipelineErrors:
 class TestPipelineConfiguration:
     """Tests for various pipeline configurations."""
 
-    @pytest.mark.asyncio
     async def test_maci_only_pipeline(self):
         """Test MACI-only pipeline."""
         config = PipelineConfig(
@@ -500,7 +486,6 @@ class TestPipelineConfiguration:
         ]
         assert len(maci_stages) == 1
 
-    @pytest.mark.asyncio
     async def test_policy_only_pipeline(self):
         """Test policy-only pipeline."""
         config = PipelineConfig(
@@ -522,7 +507,6 @@ class TestPipelineConfiguration:
         ]
         assert len(policy_stages) == 1
 
-    @pytest.mark.asyncio
     async def test_parallel_verification_config(self):
         """Test parallel verification configuration."""
         config = PipelineConfig(
@@ -531,7 +515,6 @@ class TestPipelineConfiguration:
 
         assert config.parallel_verification
 
-    @pytest.mark.asyncio
     async def test_require_all_stages_config(self):
         """Test require_all_stages configuration."""
         config = PipelineConfig(
@@ -546,7 +529,6 @@ class TestPipelineConfiguration:
 class TestRecommendations:
     """Tests for recommendation generation."""
 
-    @pytest.mark.asyncio
     async def test_generates_recommendations(self):
         """Test that pipeline generates recommendations."""
         pipeline = create_verification_pipeline()
@@ -558,7 +540,6 @@ class TestRecommendations:
 
         assert isinstance(result.recommendations, list)
 
-    @pytest.mark.asyncio
     async def test_recommendations_for_violations(self):
         """Test recommendations for violations."""
         config = PipelineConfig(
@@ -586,7 +567,6 @@ class TestRecommendations:
 class TestProofGeneration:
     """Tests for proof generation."""
 
-    @pytest.mark.asyncio
     async def test_collects_proofs(self):
         """Test that pipeline collects proofs."""
         config = PipelineConfig(
@@ -609,7 +589,6 @@ class TestProofGeneration:
 class TestConfidenceCalculation:
     """Tests for confidence calculation."""
 
-    @pytest.mark.asyncio
     async def test_computes_confidence(self):
         """Test that pipeline computes confidence."""
         pipeline = create_verification_pipeline()
@@ -625,7 +604,6 @@ class TestConfidenceCalculation:
 class TestStageTimeouts:
     """Tests for stage timeout handling."""
 
-    @pytest.mark.asyncio
     async def test_stage_timeout_recorded(self):
         """Test that stage timeouts are properly recorded."""
         config = PipelineConfig(

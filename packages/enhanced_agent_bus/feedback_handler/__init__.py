@@ -1,6 +1,6 @@
 """
 ACGS-2 Feedback Handler Package
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Modular feedback collection and storage for governance decision quality.
 Supports feedback persistence to PostgreSQL and event publishing to Kafka.

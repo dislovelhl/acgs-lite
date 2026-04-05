@@ -1,3 +1,8 @@
+# ACGS - Constitutional AI Governance
+# Copyright (C) 2024-2026 ACGS Contributors
+# Licensed under AGPL-3.0-or-later. See LICENSE for details.
+# Commercial license: https://acgs.ai
+
 """MACI — Separation of Powers for AI Agents.
 
 Enforces that Proposers, Validators, and Executors cannot cross boundaries.
@@ -5,7 +10,7 @@ An agent that proposes an action cannot also validate it. An agent that
 validates cannot execute. This prevents any single agent from having
 unchecked power.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -28,10 +33,12 @@ class MACIRole(str, Enum):
 
 
 # Actions each role is allowed to perform
+_UNIVERSAL_READ_ACTIONS: set[str] = {"read", "query"}
+
 _ROLE_PERMISSIONS: dict[MACIRole, set[str]] = {
-    MACIRole.PROPOSER: {"propose", "draft", "suggest", "amend"},
-    MACIRole.VALIDATOR: {"validate", "review", "audit", "verify"},
-    MACIRole.EXECUTOR: {"execute", "deploy", "apply", "run"},
+    MACIRole.PROPOSER: {"propose", "draft", "suggest", "amend"} | _UNIVERSAL_READ_ACTIONS,
+    MACIRole.VALIDATOR: {"validate", "review", "audit", "verify"} | _UNIVERSAL_READ_ACTIONS,
+    MACIRole.EXECUTOR: {"execute", "deploy", "apply", "run"} | _UNIVERSAL_READ_ACTIONS,
     MACIRole.OBSERVER: {"read", "query", "export", "observe"},
 }
 
@@ -42,6 +49,12 @@ _ROLE_DENIALS: dict[MACIRole, set[str]] = {
     MACIRole.EXECUTOR: {"validate", "propose", "approve"},
     MACIRole.OBSERVER: {"propose", "validate", "execute", "deploy", "approve"},
 }
+
+
+def _is_action_permitted(action: str, *, allowed: set[str], denied: set[str]) -> bool:
+    """Return True only for canonical, explicitly allowed action verbs."""
+    action_lower = action.lower().strip()
+    return action_lower not in denied and action_lower in allowed
 
 
 class ActionRiskTier(str, Enum):
@@ -233,9 +246,10 @@ class MACIEnforcer:
             role = MACIRole.OBSERVER
 
         action_lower = action.lower()
+        allowed = _ROLE_PERMISSIONS.get(role, set())
         denied = _ROLE_DENIALS.get(role, set())
 
-        if action_lower in denied:
+        if not _is_action_permitted(action, allowed=allowed, denied=denied):
             self.audit_log.record(
                 AuditEntry(
                     id=f"maci-deny-{agent_id}",
@@ -244,12 +258,16 @@ class MACIEnforcer:
                     action=action,
                     valid=False,
                     violations=["MACI"],
-                    metadata={"role": role.value, "denied_action": action_lower},
+                    metadata={
+                        "role": role.value,
+                        "denied_action": action_lower,
+                        "allowed_actions": sorted(allowed),
+                    },
                 )
             )
             raise MACIViolationError(
                 f"MACI violation: {role.value} cannot {action_lower}. "
-                f"Role {role.value} is denied: {', '.join(sorted(denied))}",
+                f"Role {role.value} may only: {', '.join(sorted(allowed))}",
                 actor_role=role.value,
                 attempted_action=action_lower,
             )
@@ -500,17 +518,17 @@ class DomainRoleRegistry:
             }
 
         # Role-action check (uses _ROLE_DENIALS)
-        action_lower = action.lower()
-        denials = _ROLE_DENIALS.get(scoped.role, set())
-        for denied in denials:
-            if denied in action_lower:
-                return {
-                    **base,
-                    "allowed": False,
-                    "reason": (
-                        f"role violation: {scoped.role.value!r} is forbidden from {denied!r}"
-                    ),
-                }
+        allowed = _ROLE_PERMISSIONS.get(scoped.role, set())
+        denied = _ROLE_DENIALS.get(scoped.role, set())
+        if not _is_action_permitted(action, allowed=allowed, denied=denied):
+            return {
+                **base,
+                "allowed": False,
+                "reason": (
+                    f"role violation: {scoped.role.value!r} may only perform "
+                    f"{sorted(allowed)!r}"
+                ),
+            }
 
         return {**base, "allowed": True, "reason": "role and domain check passed"}
 
@@ -652,13 +670,8 @@ class DerivedRole:
         Returns:
             True if the action is permitted.
         """
-        action_lower = action.lower()
-        # Explicit denial check first
-        for denied in self._denials:
-            if denied in action_lower:
-                return False
-        # Permission check
-        return any(perm in action_lower for perm in self._permissions)
+        action_lower = action.lower().strip()
+        return action_lower not in self._denials and action_lower in self._permissions
 
     def check(self, action: str) -> dict[str, Any]:
         """Check *action* and return a structured verdict with source attribution.
@@ -674,22 +687,20 @@ class DerivedRole:
                 - ``base_roles``: list of base role names
                 - ``source``: ``"denied:<source>"`` or ``"inherited:<role>"`` or ``"not_found"``
         """
-        action_lower = action.lower()
+        action_lower = action.lower().strip()
         # Denial check with source attribution
-        for denied in self._denials:
-            if denied in action_lower:
-                # Attribute to deny_override or base role
-                source = "denied:override" if denied in self.deny_override else "denied:base"
-                return {
-                    "action": action,
-                    "allowed": False,
-                    "derived_role": self.name,
-                    "base_roles": [r.value for r in self.base_roles],
-                    "source": source,
-                }
+        if action_lower in self._denials:
+            source = "denied:override" if action_lower in self.deny_override else "denied:base"
+            return {
+                "action": action,
+                "allowed": False,
+                "derived_role": self.name,
+                "base_roles": [r.value for r in self.base_roles],
+                "source": source,
+            }
         # Permission check with source attribution
         for role in self.base_roles:
-            if any(perm in action_lower for perm in _ROLE_PERMISSIONS.get(role, set())):
+            if action_lower in _ROLE_PERMISSIONS.get(role, set()):
                 return {
                     "action": action,
                     "allowed": True,

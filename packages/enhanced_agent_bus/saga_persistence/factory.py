@@ -1,6 +1,6 @@
 """
 Saga Repository Factory
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Factory for creating saga state repositories based on configuration.
 Supports Redis and PostgreSQL backends with automatic fallback.
@@ -22,10 +22,10 @@ import os
 from enum import Enum
 
 try:
-    from src.core.shared.constants import (
+    from enhanced_agent_bus._compat.constants import (
         CONSTITUTIONAL_HASH,
         DEFAULT_REDIS_URL,
-    )  # noqa: E402
+    )
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
     DEFAULT_REDIS_URL = "redis://localhost:6379"
@@ -45,7 +45,7 @@ SAGA_BACKEND_OPERATION_ERRORS = (
 )
 
 
-class SagaBackend(str, Enum):  # noqa: UP042
+class SagaBackend(str, Enum):
     """Supported saga persistence backends."""
 
     REDIS = "redis"
@@ -74,7 +74,7 @@ async def create_saga_repository(
     """
     Create a saga state repository based on configuration.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Args:
         backend: The backend to use. If None, uses SAGA_BACKEND env var

@@ -1,6 +1,6 @@
 """
 PostgreSQL Saga Repository Schema Definitions
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Contains database schema SQL and configuration constants for the
 PostgreSQL saga state repository.
@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS saga_locks (
 
 -- Index for lock expiration cleanup
 CREATE INDEX IF NOT EXISTS idx_saga_locks_expires_at ON saga_locks(expires_at);
-"""  # noqa: E501
+"""
 
 
 __all__ = [

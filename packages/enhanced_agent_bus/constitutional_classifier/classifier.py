@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Constitutional Classifier Core
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Main classifier implementation integrating pattern detection, scoring,
 and MACI framework for comprehensive jailbreak prevention.
@@ -17,11 +17,11 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 from typing_extensions import TypedDict
@@ -40,21 +40,21 @@ class _JailbreakTestResults(TypedDict):
     constitutional_hash: str
 
 
-from .detector import (  # noqa: E402
+from .detector import (
     DetectionDecision,
     DetectionMode,
     DetectionResult,
     ThreatDetector,
     get_threat_detector,
 )
-from .patterns import (  # noqa: E402
+from .patterns import (
     PatternMatchResult,
     ThreatCategory,
     ThreatPatternRegistry,
     ThreatSeverity,
     get_threat_pattern_registry,
 )
-from .scoring import (  # noqa: E402
+from .scoring import (
     ComplianceScore,
     ComplianceScoringEngine,
     get_scoring_engine,
@@ -82,7 +82,7 @@ _CLASSIFIER_OPERATION_ERRORS = (
 class ClassificationResult:
     """Comprehensive result of constitutional classification.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Core classification
@@ -148,7 +148,7 @@ class ClassificationResult:
 class ClassifierConfig:
     """Configuration for the constitutional classifier.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Core settings
@@ -185,7 +185,7 @@ class ConstitutionalClassifierV2:
     - Session-specific policy support
     - Real-time and streaming detection modes
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -475,7 +475,7 @@ class ConstitutionalClassifierV2:
             rules = policy_result.policy.get("rules", {})
             if isinstance(rules, dict):
                 policy_threshold = rules.get("constitutional_threshold")
-                if policy_threshold is not None:  # noqa: SIM102
+                if policy_threshold is not None:
                     if (
                         isinstance(policy_threshold, (int, float))
                         and 0.0 <= policy_threshold <= 1.0
@@ -563,7 +563,7 @@ class ConstitutionalClassifierV2:
         """Build context for threat detection."""
         detection_context = dict(context) if context else {}
 
-        if session_context:  # noqa: SIM102
+        if session_context:
             if hasattr(session_context, "governance_config") and session_context.governance_config:
                 gc = session_context.governance_config
                 detection_context["tenant_id"] = gc.tenant_id

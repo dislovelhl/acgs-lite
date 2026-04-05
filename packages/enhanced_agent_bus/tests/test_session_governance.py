@@ -1,6 +1,6 @@
 """
 Unit tests for Session Governance (Spec 003)
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for:
 - RiskLevel enum
@@ -22,7 +22,7 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from enhanced_agent_bus.models import (  # noqa: E402
+from enhanced_agent_bus.models import (
     CONSTITUTIONAL_HASH,
     RiskLevel,
     SessionContext,

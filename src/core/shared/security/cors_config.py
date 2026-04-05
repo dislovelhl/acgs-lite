@@ -1,6 +1,6 @@
 """
 ACGS-2 Secure CORS Configuration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Centralized CORS configuration that enforces security best practices:
 - Explicit origin allowlists (no wildcards in production)

@@ -1,7 +1,7 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 ACGS-2 Validators Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests to achieve ≥95% coverage of validators.py (58 statements).
 """
@@ -14,8 +14,8 @@ import pytest
 # Governance and constitutional compliance test markers
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
-from enhanced_agent_bus.models import MessageStatus  # noqa: E402
-from enhanced_agent_bus.validators import (  # noqa: E402
+from enhanced_agent_bus.models import MessageStatus
+from enhanced_agent_bus.validators import (
     CONSTITUTIONAL_HASH,
     ValidationResult,
     validate_constitutional_hash,
@@ -362,7 +362,7 @@ class TestValidateConstitutionalHashExtra:
     def test_unicode_encode_error_treated_as_mismatch(self):
         """When hmac.compare_digest raises UnicodeEncodeError, result is invalid."""
         with patch(
-            "enhanced_agent_bus.validators.hmac.compare_digest",
+            "hmac.compare_digest",
             side_effect=UnicodeEncodeError("utf-8", "", 0, 1, "bad char"),
         ):
             result = validate_constitutional_hash(CONSTITUTIONAL_HASH)

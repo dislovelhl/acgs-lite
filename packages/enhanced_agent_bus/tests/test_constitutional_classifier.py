@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Constitutional Classifier Test Suite
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for the constitutional classifier module.
 Target: 95%+ test coverage with validation of jailbreak prevention.
@@ -43,7 +43,7 @@ from enhanced_agent_bus.constitutional_classifier import (
 # Import test subjects
 
 # Mark all tests as governance tests (95% coverage required)
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
 
@@ -397,7 +397,6 @@ class TestThreatDetector:
         assert config.max_latency_ms == 5.0
         assert config.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_detector_quick_mode(self):
         """Test detector quick mode performance."""
         detector = ThreatDetector()
@@ -412,7 +411,6 @@ class TestThreatDetector:
         assert result.mode == DetectionMode.QUICK
         assert result.latency_ms < 5.0  # Should be fast
 
-    @pytest.mark.asyncio
     async def test_detector_standard_mode(self):
         """Test detector standard mode."""
         detector = ThreatDetector()
@@ -427,7 +425,6 @@ class TestThreatDetector:
         assert result.compliance_score is not None
         assert result.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_detector_blocks_jailbreak(self):
         """Test detector blocks jailbreak attempts."""
         detector = ThreatDetector()
@@ -445,7 +442,6 @@ class TestThreatDetector:
             assert result.decision == DetectionDecision.BLOCK, f"Failed to block: {jailbreak}"
             assert result.threat_detected is True
 
-    @pytest.mark.asyncio
     async def test_detector_allows_safe_content(self):
         """Test detector allows safe content."""
         detector = ThreatDetector()
@@ -461,7 +457,6 @@ class TestThreatDetector:
             result = await detector.detect(content)
             assert result.decision == DetectionDecision.ALLOW, f"Blocked safe content: {content}"
 
-    @pytest.mark.asyncio
     async def test_detector_caching(self):
         """Test detector caching functionality."""
         detector = ThreatDetector()
@@ -486,7 +481,6 @@ class TestThreatDetector:
         # Note: result2.latency_ms may show a small value due to cache lookup overhead
         assert actual_cached_time < first_latency or actual_cached_time < 0.5
 
-    @pytest.mark.asyncio
     async def test_detector_metrics(self):
         """Test detector metrics collection."""
         detector = ThreatDetector()
@@ -501,7 +495,6 @@ class TestThreatDetector:
         assert metrics["blocked_count"] == 1  # jailbreak
         assert metrics["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_detector_escalation(self):
         """Test detector escalation for sensitive categories."""
         config = DetectorConfig(escalate_categories={ThreatCategory.PRIVILEGE_ESCALATION})
@@ -512,7 +505,6 @@ class TestThreatDetector:
         # Should be escalated, not just blocked
         assert result.decision in (DetectionDecision.ESCALATE, DetectionDecision.BLOCK)
 
-    @pytest.mark.asyncio
     async def test_detector_callback_registration(self):
         """Test detector callback registration and triggering."""
         detector = ThreatDetector()
@@ -555,7 +547,6 @@ class TestDetectionResult:
 class TestConstitutionalClassifierV2:
     """Tests for the main constitutional classifier."""
 
-    @pytest.mark.asyncio
     async def test_classifier_initialization(self):
         """Test classifier initialization."""
         classifier = ConstitutionalClassifierV2()
@@ -564,7 +555,6 @@ class TestConstitutionalClassifierV2:
         assert classifier.config.threshold == 0.85
         assert classifier.config.strict_mode is True
 
-    @pytest.mark.asyncio
     async def test_classifier_with_config(self):
         """Test classifier with custom configuration."""
         config = ClassifierConfig(
@@ -578,7 +568,6 @@ class TestConstitutionalClassifierV2:
         assert classifier.config.strict_mode is False
         assert classifier.config.default_mode == DetectionMode.QUICK
 
-    @pytest.mark.asyncio
     async def test_classifier_classify_safe_content(self):
         """Test classifier classifies safe content as compliant."""
         classifier = ConstitutionalClassifierV2()
@@ -589,7 +578,6 @@ class TestConstitutionalClassifierV2:
         assert result.decision == DetectionDecision.ALLOW
         assert result.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_classifier_classify_jailbreak(self):
         """Test classifier blocks jailbreak attempts."""
         classifier = ConstitutionalClassifierV2()
@@ -600,7 +588,6 @@ class TestConstitutionalClassifierV2:
         assert result.decision == DetectionDecision.BLOCK
         assert len(result.threat_categories) > 0
 
-    @pytest.mark.asyncio
     async def test_classifier_quick_check(self):
         """Test classifier quick check method."""
         classifier = ConstitutionalClassifierV2()
@@ -615,7 +602,6 @@ class TestConstitutionalClassifierV2:
         assert is_compliant is False
         assert reason is not None
 
-    @pytest.mark.asyncio
     async def test_classifier_batch_classification(self):
         """Test classifier batch classification."""
         classifier = ConstitutionalClassifierV2()
@@ -637,7 +623,6 @@ class TestConstitutionalClassifierV2:
         assert results[2].compliant is True
         assert results[3].compliant is False  # bypass safety
 
-    @pytest.mark.asyncio
     async def test_classifier_metrics(self):
         """Test classifier metrics collection."""
         classifier = ConstitutionalClassifierV2()
@@ -652,7 +637,6 @@ class TestConstitutionalClassifierV2:
         assert metrics["blocked_count"] == 1
         assert metrics["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_classifier_audit_trail(self):
         """Test classifier audit trail."""
         config = ClassifierConfig(enable_audit_trail=True)
@@ -665,7 +649,6 @@ class TestConstitutionalClassifierV2:
 
         assert len(trail) == 2
 
-    @pytest.mark.asyncio
     async def test_classifier_audit_trail_filter(self):
         """Test classifier audit trail filtering."""
         config = ClassifierConfig(enable_audit_trail=True)
@@ -682,7 +665,6 @@ class TestConstitutionalClassifierV2:
         blocked_trail = classifier.get_audit_trail(compliant_only=False)
         assert len(blocked_trail) == 1
 
-    @pytest.mark.asyncio
     async def test_classifier_latency_target(self):
         """Test classifier meets latency target of <5ms."""
         classifier = ConstitutionalClassifierV2()
@@ -701,7 +683,6 @@ class TestConstitutionalClassifierV2:
         # P99 should also be under 5ms
         assert p99_latency < 5.0, f"P99 latency {p99_latency}ms exceeds 5ms target"
 
-    @pytest.mark.asyncio
     async def test_classifier_jailbreak_patterns(self):
         """Test classifier against known jailbreak patterns."""
         classifier = ConstitutionalClassifierV2()
@@ -751,7 +732,6 @@ class TestClassificationResult:
 class TestConvenienceFunctions:
     """Tests for module convenience functions."""
 
-    @pytest.mark.asyncio
     async def test_classify_action(self):
         """Test classify_action convenience function."""
         result = await classify_action("Test content")
@@ -791,7 +771,6 @@ class TestConvenienceFunctions:
 class TestJailbreakPrevention:
     """Integration tests for jailbreak prevention."""
 
-    @pytest.mark.asyncio
     async def test_95_percent_jailbreak_prevention(self):
         """Test 95% jailbreak prevention target."""
         classifier = ConstitutionalClassifierV2()
@@ -855,7 +834,6 @@ class TestJailbreakPrevention:
             f"below 95% target ({blocked_count}/{len(jailbreak_attempts)} blocked)"
         )
 
-    @pytest.mark.asyncio
     async def test_low_false_positive_rate(self):
         """Test low false positive rate for safe content."""
         classifier = ConstitutionalClassifierV2()
@@ -901,7 +879,6 @@ class TestJailbreakPrevention:
 class TestPerformance:
     """Performance tests for the constitutional classifier."""
 
-    @pytest.mark.asyncio
     async def test_throughput(self):
         """Test classifier throughput."""
         classifier = ConstitutionalClassifierV2()
@@ -919,7 +896,6 @@ class TestPerformance:
         # Should handle at least 200 requests per second
         assert throughput > 200, f"Throughput {throughput:.1f} RPS below 200 RPS target"
 
-    @pytest.mark.asyncio
     async def test_batch_performance(self):
         """Test batch classification performance."""
         classifier = ConstitutionalClassifierV2()

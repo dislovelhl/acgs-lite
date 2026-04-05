@@ -3,7 +3,7 @@ Tests for ACGS-2 Shared Expression Evaluation Utilities
 
 Tests the security of safe_eval_expr() and PII redaction functions.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import pytest

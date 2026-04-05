@@ -15,9 +15,9 @@ from enum import Enum
 from io import StringIO
 from typing import Any
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.errors.exceptions import ACGSBaseError
-from src.core.shared.security.execution_time_limit import (
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.errors import ACGSBaseError
+from enhanced_agent_bus._compat.security.execution_time_limit import (
     ExecutionTimeout,
     python_execution_time_limit,
 )
@@ -280,7 +280,9 @@ class RLMREPLEnvironment:
             return {"success": False, "error": rate_limit_error}
 
         started = time.perf_counter()
-        timeout_seconds = min(self.config.max_execution_time_seconds, HARD_EXECUTION_TIMEOUT_SECONDS)
+        timeout_seconds = min(
+            self.config.max_execution_time_seconds, HARD_EXECUTION_TIMEOUT_SECONDS
+        )
         operation_id = f"op_{self._operation_count}"
         try:
             result = await asyncio.wait_for(
@@ -314,7 +316,9 @@ class RLMREPLEnvironment:
             raise ValueError("; ".join(issues))
 
         buffer = StringIO()
-        timeout_seconds = min(self.config.max_execution_time_seconds, HARD_EXECUTION_TIMEOUT_SECONDS)
+        timeout_seconds = min(
+            self.config.max_execution_time_seconds, HARD_EXECUTION_TIMEOUT_SECONDS
+        )
         try:
             with python_execution_time_limit(timeout_seconds), redirect_stdout(buffer):
                 try:
@@ -326,7 +330,7 @@ class RLMREPLEnvironment:
                         return self._namespace["_"]
                     output = buffer.getvalue()
                     return output[: self.config.max_output_length]
-                return eval(compiled_eval, self._namespace, self._namespace)
+                return eval(compiled_eval, self._namespace, self._namespace)  # noqa: S307 — sandboxed REPL with ExecutionTimeout guard and isolated namespace
         except ExecutionTimeout as exc:
             raise RuntimeError("Execution exceeded allowed time") from exc
 
@@ -352,7 +356,9 @@ class RLMREPLEnvironment:
         self._namespace.pop(name, None)
         return True
 
-    def _search_context(self, pattern: str, context_name: str | None = None) -> list[dict[str, str | None]]:
+    def _search_context(
+        self, pattern: str, context_name: str | None = None
+    ) -> list[dict[str, str | None]]:
         names = [context_name] if context_name in self._contexts else list(self._contexts)
         results: list[dict[str, str | None]] = []
         for name in names:

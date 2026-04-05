@@ -1,6 +1,6 @@
 """
 AgentHealthMonitor -- background asyncio.Task for agent health monitoring.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Runs as an isolated asyncio.Task separate from the message-processing loop
 so that monitoring continues even when the processing loop is blocked (NFR-004).
@@ -24,8 +24,7 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 
-from src.core.shared.types import AgentID
-
+from enhanced_agent_bus._compat.types import AgentID
 from enhanced_agent_bus.agent_health.metrics import emit_health_metrics
 from enhanced_agent_bus.agent_health.models import (
     AgentHealthRecord,
@@ -110,7 +109,7 @@ class AgentHealthMonitor:
         """Cancel and await the background monitoring task."""
         if self._task is not None and not self._task.done():
             self._task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._task
             except asyncio.CancelledError:
                 pass

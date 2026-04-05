@@ -1,7 +1,7 @@
 """
 Registry Manager Component.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 MACI Role: CONTROLLER (agent registration management)
 """
 
@@ -9,7 +9,7 @@ import asyncio
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -20,7 +20,7 @@ from ..registry import InMemoryAgentRegistry, RedisAgentRegistry
 from ..security_helpers import normalize_tenant_id
 
 try:
-    from src.core.shared.types import AgentInfo
+    from enhanced_agent_bus._compat.types import AgentInfo
 except ImportError:
     AgentInfo = JSONDict  # type: ignore[misc, assignment]
 
@@ -48,7 +48,7 @@ class RegistryManager:
 
         # Local cache of agent info
         self._agents: dict[str, AgentInfo] = {}
-        # Index for O(1) tenant-based lookups (Constitutional Hash: cdd01ef066bc6cf2)
+        # Index for O(1) tenant-based lookups (Constitutional Hash: 608508a9bd224290)
         self._agents_by_tenant: dict[str, set[str]] = {}
 
         # Initialize backend registry
@@ -275,7 +275,7 @@ class RegistryManager:
     def get_agents_by_tenant(self, tenant_id: str | None) -> list[str]:
         """Get all agents for a specific tenant using O(1) index lookup.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
 
         Args:
             tenant_id: Tenant ID to filter by. If None or "none", returns all agents.

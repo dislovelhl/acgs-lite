@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive coverage tests for deliberation_layer/vote_collector.py.
 Target: bring coverage to >=98%.
@@ -283,7 +283,7 @@ class TestStabilizeWeights:
             m.RUST_AVAILABLE, m.sinkhorn_projection, m.TORCH_AVAILABLE = saved
 
     def test_rust_true_numpy_false_raises_import_error(self) -> None:
-        """Line 169: NUMPY=False inside RUST block raises ImportError (not caught by except clause)."""  # noqa: E501
+        """Line 169: NUMPY=False inside RUST block raises ImportError (not caught by except clause)."""
         m = self._get_vc_module()
         sess = _session(agent_weights={"a1": 2.0})
         saved = (m.RUST_AVAILABLE, m.NUMPY_AVAILABLE, m.sinkhorn_projection, m.TORCH_AVAILABLE)
@@ -292,7 +292,7 @@ class TestStabilizeWeights:
             m.NUMPY_AVAILABLE = False
             m.sinkhorn_projection = None
             m.TORCH_AVAILABLE = False
-            # ImportError is raised on line 169; the except only catches (ValueError, TypeError, RuntimeError)  # noqa: E501
+            # ImportError is raised on line 169; the except only catches (ValueError, TypeError, RuntimeError)
             # so it propagates out of _stabilize_weights
             with pytest.raises(ImportError, match="numpy is required"):
                 sess._stabilize_weights()
@@ -480,9 +480,7 @@ class TestStabilizeWeights:
 class TestCollectorConnect:
     async def test_connect_redis_unavailable(self) -> None:
         c = _collector()
-        with patch(
-            "enhanced_agent_bus.deliberation_layer.vote_collector.REDIS_AVAILABLE", False
-        ):
+        with patch("enhanced_agent_bus.deliberation_layer.vote_collector.REDIS_AVAILABLE", False):
             assert await c.connect() is False
 
     async def test_connect_redis_success(self) -> None:
@@ -508,9 +506,9 @@ class TestCollectorConnect:
         assert result is True
         assert c._running is True
         c._subscriber_task.cancel()
-        try:  # noqa: SIM105
+        try:
             await c._subscriber_task
-        except (asyncio.CancelledError, Exception):  # noqa: S110
+        except (asyncio.CancelledError, Exception):
             pass
 
     async def test_connect_connection_error(self) -> None:

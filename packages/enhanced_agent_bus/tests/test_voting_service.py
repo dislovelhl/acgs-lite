@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Voting Service Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for the deliberation layer voting service.
 """
@@ -12,13 +12,13 @@ import pytest
 # Governance and constitutional compliance test markers
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
-from enhanced_agent_bus.deliberation_layer.voting_service import (  # noqa: E402
+from enhanced_agent_bus.deliberation_layer.voting_service import (
     Election,
     Vote,
     VotingService,
     VotingStrategy,
 )
-from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage  # noqa: E402
+from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage
 
 # =============================================================================
 # Fixtures
@@ -195,7 +195,6 @@ class TestVotingService:
         service = VotingService(default_strategy=VotingStrategy.UNANIMOUS)
         assert service.default_strategy == VotingStrategy.UNANIMOUS
 
-    @pytest.mark.asyncio
     async def test_create_election(
         self, voting_service: VotingService, valid_message: AgentMessage
     ) -> None:
@@ -212,7 +211,6 @@ class TestVotingService:
         assert set(election.participants) == set(participants)
         assert election.status == "OPEN"
 
-    @pytest.mark.asyncio
     async def test_cast_vote_success(
         self, voting_service: VotingService, valid_message: AgentMessage
     ) -> None:
@@ -227,7 +225,6 @@ class TestVotingService:
         election = voting_service.elections[election_id]
         assert "agent-1" in election.votes
 
-    @pytest.mark.asyncio
     async def test_cast_vote_non_participant(
         self, voting_service: VotingService, valid_message: AgentMessage
     ) -> None:
@@ -240,7 +237,6 @@ class TestVotingService:
 
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_cast_vote_invalid_election(self, voting_service: VotingService) -> None:
         """Test voting on non-existent election fails."""
         vote = Vote(agent_id="agent-1", decision="APPROVE")
@@ -248,7 +244,6 @@ class TestVotingService:
 
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_get_result_non_existent_election(self, voting_service: VotingService) -> None:
         """Test getting result of non-existent election."""
         result = await voting_service.get_result("non-existent-id")
@@ -263,7 +258,6 @@ class TestVotingService:
 class TestQuorumStrategy:
     """Tests for quorum voting strategy."""
 
-    @pytest.mark.asyncio
     async def test_quorum_approve_early_resolution(
         self, quorum_voting_service: VotingService, valid_message: AgentMessage
     ) -> None:
@@ -282,7 +276,6 @@ class TestQuorumStrategy:
         election = quorum_voting_service.elections[election_id]
         assert election.status == "CLOSED"
 
-    @pytest.mark.asyncio
     async def test_quorum_deny_early_resolution(
         self, quorum_voting_service: VotingService, valid_message: AgentMessage
     ) -> None:
@@ -310,7 +303,6 @@ class TestQuorumStrategy:
 class TestUnanimousStrategy:
     """Tests for unanimous voting strategy."""
 
-    @pytest.mark.asyncio
     async def test_unanimous_approve_all_agree(
         self, unanimous_voting_service: VotingService, valid_message: AgentMessage
     ) -> None:
@@ -332,7 +324,6 @@ class TestUnanimousStrategy:
         election = unanimous_voting_service.elections[election_id]
         assert election.status == "CLOSED"
 
-    @pytest.mark.asyncio
     async def test_unanimous_deny_single_denial(
         self, unanimous_voting_service: VotingService, valid_message: AgentMessage
     ) -> None:
@@ -364,7 +355,6 @@ class TestUnanimousStrategy:
 class TestSuperMajorityStrategy:
     """Tests for super majority (2/3) voting strategy."""
 
-    @pytest.mark.asyncio
     async def test_super_majority_approve(
         self, super_majority_voting_service: VotingService, valid_message: AgentMessage
     ) -> None:
@@ -385,7 +375,6 @@ class TestSuperMajorityStrategy:
         election = super_majority_voting_service.elections[election_id]
         assert election.status == "CLOSED"
 
-    @pytest.mark.asyncio
     async def test_super_majority_deny(
         self, super_majority_voting_service: VotingService, valid_message: AgentMessage
     ) -> None:
@@ -415,7 +404,6 @@ class TestSuperMajorityStrategy:
 class TestElectionResults:
     """Tests for election result retrieval."""
 
-    @pytest.mark.asyncio
     async def test_get_result_open_election(
         self, voting_service: VotingService, valid_message: AgentMessage
     ) -> None:
@@ -434,7 +422,6 @@ class TestElectionResults:
         # Should be None since election is still open
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_get_result_closed_election_approve(
         self, quorum_voting_service: VotingService, valid_message: AgentMessage
     ) -> None:
@@ -462,7 +449,6 @@ class TestElectionResults:
 class TestVotingServiceIntegration:
     """Integration tests for voting service."""
 
-    @pytest.mark.asyncio
     async def test_full_voting_workflow(
         self, voting_service: VotingService, valid_message: AgentMessage
     ) -> None:
@@ -489,7 +475,6 @@ class TestVotingServiceIntegration:
         result = await voting_service.get_result(election_id)
         assert result == "APPROVE"
 
-    @pytest.mark.asyncio
     async def test_multiple_concurrent_elections(
         self, voting_service: VotingService, valid_message: AgentMessage
     ) -> None:

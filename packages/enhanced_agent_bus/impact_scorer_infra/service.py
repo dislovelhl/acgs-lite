@@ -1,7 +1,7 @@
 """
 Impact Scoring Service for ACGS-2.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides configurable impact scoring with support for:
 - Basic semantic scoring (keyword-based)
@@ -15,7 +15,7 @@ from dataclasses import dataclass
 import numpy as np
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -30,7 +30,7 @@ logger = get_logger(__name__)
 # Constitutional hash for governance validation
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -57,7 +57,7 @@ class ImpactScoringService:
     - MiniCPM Semantic: Advanced 7-dimensional governance scoring
     - Statistical: Statistical pattern analysis
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, config: ImpactScoringConfig | None = None):
@@ -189,7 +189,7 @@ class ImpactScoringService:
 
         This method provides compatibility with code expecting calculate_impact_score API.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         if context is None:
             context = {}

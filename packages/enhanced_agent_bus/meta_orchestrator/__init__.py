@@ -15,7 +15,7 @@ This package provides:
 
 All exports maintain backward compatibility with the original meta_orchestrator.py module.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from .config import CONSTITUTIONAL_HASH, OrchestratorConfig

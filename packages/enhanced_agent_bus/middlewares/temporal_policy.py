@@ -10,7 +10,7 @@ On OPA deny or error: pipeline short-circuits with is_valid=False (fail-closed).
 On OPA allow: action label is appended to ctx.action_history and processing
 continues.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 NIST 800-53 AC-3, AU-9
 """
 
@@ -20,7 +20,7 @@ import time
 from dataclasses import dataclass
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -62,7 +62,7 @@ class GovernanceRule:
         ttl_seconds: Time-to-live in seconds. None = no expiry.
         policy_path: OPA policy path for evaluation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     rule_id: str
@@ -102,7 +102,7 @@ class TemporalPolicyMiddleware(BaseMiddleware):
         ctx.action_history          — appends action label on allow
         ctx.early_result            — set to is_valid=False on deny
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, config: MiddlewareConfig | None = None) -> None:
@@ -127,7 +127,7 @@ class TemporalPolicyMiddleware(BaseMiddleware):
             ValidationResult with is_valid=True (PERMIT) or
             is_valid=False (DENY) if the rule has expired.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         if now is None:
             now = time.time()
@@ -187,7 +187,7 @@ class TemporalPolicyMiddleware(BaseMiddleware):
             )
         except (OSError, TimeoutError, RuntimeError, ValueError) as exc:
             logger.error(
-                "TemporalPolicyMiddleware: OPA call failed for action=%r — blocking (fail-closed): %s",  # noqa: E501
+                "TemporalPolicyMiddleware: OPA call failed for action=%r — blocking (fail-closed): %s",
                 action,
                 exc,
             )

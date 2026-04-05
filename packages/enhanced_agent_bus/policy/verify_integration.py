@@ -1,6 +1,6 @@
 """
 Shadow Mode Verification for Unified PSV-Verus Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 NOTE: This is a standalone verification script, not a library module.
 """
@@ -8,8 +8,7 @@ NOTE: This is a standalone verification script, not a library module.
 import asyncio
 import logging
 
-from src.core.shared.policy.models import VerificationStatus
-
+from enhanced_agent_bus._compat.policy.models import VerificationStatus
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # Configure logging

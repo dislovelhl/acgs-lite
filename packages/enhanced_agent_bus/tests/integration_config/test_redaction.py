@@ -1,11 +1,9 @@
 """
 Tests for Credential Redaction in API Responses.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Task 7.4: GET /tenants/{tenant_id}/integrations with credential redaction
 """
-
-import pytest
 
 from .conftest import (
     CONSTITUTIONAL_HASH,
@@ -16,7 +14,6 @@ from .conftest import (
 class TestCredentialRedaction:
     """Tests for credential redaction in API responses."""
 
-    @pytest.mark.asyncio
     async def test_to_dict_redacts_sensitive_fields(self, integration_service):
         """Test that to_dict redacts sensitive fields."""
         integration = await integration_service.create_integration(
@@ -32,9 +29,8 @@ class TestCredentialRedaction:
         data = integration.to_dict(redact_sensitive=True)
 
         assert data["config"]["server_url"] == "ldap://example.com"
-        assert data["config"]["bind_password"] == "********"  # noqa: S105
+        assert data["config"]["bind_password"] == "********"
 
-    @pytest.mark.asyncio
     async def test_to_dict_without_redaction(self, integration_service):
         """Test that to_dict can return encrypted values."""
         integration = await integration_service.create_integration(
@@ -47,10 +43,9 @@ class TestCredentialRedaction:
         data = integration.to_dict(redact_sensitive=False)
 
         # Should contain encrypted ciphertext, not redacted
-        assert data["config"]["bind_password"] != "********"  # noqa: S105
-        assert data["config"]["bind_password"] != "secret"  # noqa: S105
+        assert data["config"]["bind_password"] != "********"
+        assert data["config"]["bind_password"] != "secret"
 
-    @pytest.mark.asyncio
     async def test_multiple_sensitive_fields_redacted(self, integration_service):
         """Test that all sensitive fields are redacted."""
         integration = await integration_service.create_integration(
@@ -67,10 +62,9 @@ class TestCredentialRedaction:
         data = integration.to_dict(redact_sensitive=True)
 
         assert data["config"]["client_id"] == "client-123"
-        assert data["config"]["client_secret"] == "********"  # noqa: S105
+        assert data["config"]["client_secret"] == "********"
         assert data["config"]["api_key"] == "********"
 
-    @pytest.mark.asyncio
     async def test_redacted_response_includes_metadata(self, integration_service):
         """Test that redacted response includes all metadata."""
         integration = await integration_service.create_integration(

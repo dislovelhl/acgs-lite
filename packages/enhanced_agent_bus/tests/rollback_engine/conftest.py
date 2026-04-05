@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive test coverage for constitutional/rollback_engine.py.
 
@@ -18,8 +18,7 @@ from datetime import datetime, timezone
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 
 # ── Stub: redis.asyncio ──────────────────────────────────────────────────────
@@ -45,20 +44,20 @@ sys.modules.setdefault("redis", _redis_mod)
 sys.modules.setdefault("redis.asyncio", _redis_asyncio_mod)
 
 # ── Stub: httpx ──────────────────────────────────────────────────────────────
-import httpx  # noqa: E402
+import httpx
 
-from enhanced_agent_bus.constitutional.amendment_model import (  # noqa: E402
+from enhanced_agent_bus.constitutional.amendment_model import (
     AmendmentProposal,
     AmendmentStatus,
 )
-from enhanced_agent_bus.constitutional.degradation_detector import (  # noqa: E402
+from enhanced_agent_bus.constitutional.degradation_detector import (
     DegradationReport,
     DegradationSeverity,
     MetricDegradationAnalysis,
     SignificanceLevel,
     TimeWindow,
 )
-from enhanced_agent_bus.constitutional.rollback_engine import (  # noqa: E402
+from enhanced_agent_bus.constitutional.rollback_engine import (
     RollbackEngineError,
     RollbackReason,
     RollbackSagaActivities,
@@ -66,7 +65,7 @@ from enhanced_agent_bus.constitutional.rollback_engine import (  # noqa: E402
     create_rollback_saga,
     rollback_amendment,
 )
-from enhanced_agent_bus.observability.structured_logging import get_logger  # noqa: E402
+from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # ── Import the module under test ─────────────────────────────────────────────
 

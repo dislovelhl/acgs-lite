@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Context & Memory (Layer 1)
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Mamba-2 Hybrid Processor for O(n) context handling with 4M+ token support.
 Implements Phase 2.1 Layer 1 from ROADMAP_2025.md.
@@ -21,7 +21,7 @@ Performance Requirements:
 __version__ = "1.0.0"
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 

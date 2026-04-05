@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Azure OpenAI LLM Adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Azure OpenAI adapter supporting enterprise features including managed identity,
 private endpoints, deployment-based model selection, and content filtering.
@@ -16,7 +16,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 
 JSONDict = dict[str, object]
 
-from .base import (  # noqa: E402
+from .base import (
     CONSTITUTIONAL_HASH,
     AdapterStatus,
     BaseLLMAdapter,
@@ -27,8 +27,8 @@ from .base import (  # noqa: E402
     RetryConfig,
     StreamingMode,
 )
-from .config import AzureOpenAIAdapterConfig  # noqa: E402
-from .models import MessageConverter, ResponseConverter  # noqa: E402
+from .config import AzureOpenAIAdapterConfig
+from .models import MessageConverter, ResponseConverter
 
 # Logger
 logger = get_logger(__name__)
@@ -65,7 +65,7 @@ _AZURE_OPENAI_ADAPTER_OPERATION_ERRORS = (
 class AzureOpenAIAdapter(BaseLLMAdapter):
     """Azure OpenAI LLM adapter with enterprise features.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Supports:
     - GPT-4 (all variants via Azure deployments)
@@ -86,6 +86,8 @@ class AzureOpenAIAdapter(BaseLLMAdapter):
 
     # Model pricing per 1M tokens (USD) - same as OpenAI
     MODEL_PRICING: ClassVar[dict] = {
+        "gpt-5.4": {"prompt": 2.00, "completion": 16.00},
+        "gpt-5.3": {"prompt": 1.75, "completion": 14.00},
         "gpt-5.2": {"prompt": 1.75, "completion": 14.00},
         "gpt-5.1": {"prompt": 1.25, "completion": 10.00},
         "gpt-5": {"prompt": 1.25, "completion": 10.00},
@@ -126,7 +128,7 @@ class AzureOpenAIAdapter(BaseLLMAdapter):
             if deployment_name is None:
                 raise ValueError("deployment_name is required when config is not provided")
             if model is None:
-                model = "gpt-5.2"
+                model = "gpt-5.4"
             config = AzureOpenAIAdapterConfig.from_environment(
                 deployment_name=deployment_name,
                 model=model,
@@ -148,6 +150,18 @@ class AzureOpenAIAdapter(BaseLLMAdapter):
         self._async_client: _AzureOpenAIClientProtocol | None = None
         self._tiktoken_encoder: _EncoderProtocol | None = None
         self._credential: object | None = None
+
+    def validate_constitutional_compliance(self, **kwargs: object) -> None:
+        """Validate constitutional compliance for Azure OpenAI adapter."""
+        if not self.constitutional_hash:
+            raise ValueError("Constitutional hash is required for Azure OpenAI adapter compliance.")
+        if self.constitutional_hash != CONSTITUTIONAL_HASH:
+            logger.warning(
+                "Azure OpenAI adapter using non-standard constitutional hash: %s",
+                self.constitutional_hash,
+            )
+        if not self.model:
+            raise ValueError("Azure OpenAI adapter constitutional compliance requires a model.")
 
     def _get_credential(self) -> object | None:
         """Get Azure credential for managed identity authentication.
@@ -215,7 +229,7 @@ class AzureOpenAIAdapter(BaseLLMAdapter):
                 if not self.api_key:
                     raise ValueError(
                         "Azure OpenAI API key is required when not using managed identity. "
-                        "Set AZURE_OPENAI_API_KEY environment variable or provide api_key parameter."  # noqa: E501
+                        "Set AZURE_OPENAI_API_KEY environment variable or provide api_key parameter."
                     )
                 client_kwargs["api_key"] = self.api_key
 
@@ -268,7 +282,7 @@ class AzureOpenAIAdapter(BaseLLMAdapter):
                 if not self.api_key:
                     raise ValueError(
                         "Azure OpenAI API key is required when not using managed identity. "
-                        "Set AZURE_OPENAI_API_KEY environment variable or provide api_key parameter."  # noqa: E501
+                        "Set AZURE_OPENAI_API_KEY environment variable or provide api_key parameter."
                     )
                 client_kwargs["api_key"] = self.api_key
 
@@ -722,7 +736,7 @@ class AzureOpenAIAdapter(BaseLLMAdapter):
         # Default to GPT-5.2 pricing if model not found
         if pricing is None:
             logger.warning(f"Pricing not found for model {self.model}, using GPT-5.2 pricing")
-            pricing = self.MODEL_PRICING["gpt-5.2"]
+            pricing = self.MODEL_PRICING["gpt-5.4"]
 
         # Calculate costs (pricing is per 1K tokens)
         prompt_cost = (prompt_tokens / 1000.0) * pricing["prompt"]

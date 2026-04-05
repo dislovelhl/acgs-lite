@@ -1,6 +1,6 @@
 """
 Test coverage for AdaptiveGovernanceEngine.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets ≥90% coverage of
 src/core/enhanced_agent_bus/adaptive_governance/governance_engine.py
@@ -13,7 +13,8 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH as SHARED_CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH as SHARED_CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Shared patch targets — always suppress heavy I/O during import / init
@@ -24,8 +25,7 @@ _IMPACT_MLFLOW = (
     "enhanced_agent_bus.adaptive_governance.impact_scorer.ImpactScorer._initialize_mlflow"
 )
 _THRESH_MLFLOW = (
-    "enhanced_agent_bus.adaptive_governance.threshold_manager."
-    "AdaptiveThresholds._initialize_mlflow"
+    "enhanced_agent_bus.adaptive_governance.threshold_manager.AdaptiveThresholds._initialize_mlflow"
 )
 
 
@@ -77,28 +77,23 @@ def engine():
         patch(_IMPACT_MLFLOW),
         patch(_THRESH_MLFLOW),
         patch(
-            "enhanced_agent_bus.adaptive_governance.governance_engine."
-            "FEEDBACK_HANDLER_AVAILABLE",
+            "enhanced_agent_bus.adaptive_governance.governance_engine.FEEDBACK_HANDLER_AVAILABLE",
             False,
         ),
         patch(
-            "enhanced_agent_bus.adaptive_governance.governance_engine."
-            "DRIFT_MONITORING_AVAILABLE",
+            "enhanced_agent_bus.adaptive_governance.governance_engine.DRIFT_MONITORING_AVAILABLE",
             False,
         ),
         patch(
-            "enhanced_agent_bus.adaptive_governance.governance_engine."
-            "ONLINE_LEARNING_AVAILABLE",
+            "enhanced_agent_bus.adaptive_governance.governance_engine.ONLINE_LEARNING_AVAILABLE",
             False,
         ),
         patch(
-            "enhanced_agent_bus.adaptive_governance.governance_engine."
-            "AB_TESTING_AVAILABLE",
+            "enhanced_agent_bus.adaptive_governance.governance_engine.AB_TESTING_AVAILABLE",
             False,
         ),
         patch(
-            "enhanced_agent_bus.adaptive_governance.governance_engine."
-            "ANOMALY_MONITORING_AVAILABLE",
+            "enhanced_agent_bus.adaptive_governance.governance_engine.ANOMALY_MONITORING_AVAILABLE",
             False,
         ),
     ):
@@ -153,8 +148,7 @@ class TestAdditionalBranchCoverage:
                 True,
             ),
             patch(
-                "enhanced_agent_bus.adaptive_governance.governance_engine."
-                "get_drift_detector",
+                "enhanced_agent_bus.adaptive_governance.governance_engine.get_drift_detector",
                 side_effect=RuntimeError("drift init fail"),
             ),
             patch(
@@ -163,8 +157,7 @@ class TestAdditionalBranchCoverage:
                 False,
             ),
             patch(
-                "enhanced_agent_bus.adaptive_governance.governance_engine."
-                "AB_TESTING_AVAILABLE",
+                "enhanced_agent_bus.adaptive_governance.governance_engine.AB_TESTING_AVAILABLE",
                 False,
             ),
             patch(
@@ -214,8 +207,7 @@ class TestAdditionalBranchCoverage:
                 MagicMock(),
             ),
             patch(
-                "enhanced_agent_bus.adaptive_governance.governance_engine."
-                "AB_TESTING_AVAILABLE",
+                "enhanced_agent_bus.adaptive_governance.governance_engine.AB_TESTING_AVAILABLE",
                 False,
             ),
             patch(
@@ -255,18 +247,15 @@ class TestAdditionalBranchCoverage:
                 False,
             ),
             patch(
-                "enhanced_agent_bus.adaptive_governance.governance_engine."
-                "AB_TESTING_AVAILABLE",
+                "enhanced_agent_bus.adaptive_governance.governance_engine.AB_TESTING_AVAILABLE",
                 True,
             ),
             patch(
-                "enhanced_agent_bus.adaptive_governance.governance_engine."
-                "get_ab_test_router",
+                "enhanced_agent_bus.adaptive_governance.governance_engine.get_ab_test_router",
                 return_value=mock_router,
             ),
             patch(
-                "enhanced_agent_bus.adaptive_governance.governance_engine."
-                "ShadowPolicyExecutor",
+                "enhanced_agent_bus.adaptive_governance.governance_engine.ShadowPolicyExecutor",
                 return_value=mock_shadow,
             ),
             patch(
@@ -349,7 +338,7 @@ class TestAdditionalBranchCoverage:
     def test_dtmc_blending_with_empty_prefix(self, engine, sample_message, sample_context):
         """Branch: DTMC blend branch but prefix is None (empty history)."""
         # This is an async test — but we call the internal sync parts
-        # The branch 431->443 means: enable_dtmc+fitted+weight>0, _get_trajectory_prefix returns None  # noqa: E501
+        # The branch 431->443 means: enable_dtmc+fitted+weight>0, _get_trajectory_prefix returns None
         pass  # Covered by test_dtmc_blending_when_fitted with no history
 
     async def test_ab_test_routing_candidate_cohort(self, engine, sample_message, sample_context):

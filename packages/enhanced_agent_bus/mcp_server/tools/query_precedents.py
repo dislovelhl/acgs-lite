@@ -3,7 +3,7 @@ Query Governance Precedents MCP Tool.
 
 Queries historical governance decisions for precedent analysis.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from ..adapters.audit_client import AuditClientAdapter
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -80,7 +80,7 @@ class QueryPrecedentsTool:
     decision making and consistency enforcement.
     """
 
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
     def __init__(self, audit_client_adapter: AuditClientAdapter | None = None):
         """
@@ -146,7 +146,7 @@ class QueryPrecedentsTool:
                 context_summary="Processing sensitive health data for analytics",
                 outcome=DecisionOutcome.DENIED,
                 principles_applied=["P007", "P002"],  # privacy, non-maleficence
-                reasoning="Denied due to insufficient anonymization and potential re-identification risk",  # noqa: E501
+                reasoning="Denied due to insufficient anonymization and potential re-identification risk",
                 timestamp="2024-12-20T16:00:00Z",
                 confidence_score=0.94,
                 appeal_count=1,
@@ -171,7 +171,7 @@ class QueryPrecedentsTool:
                 properties={
                     "action_type": {
                         "type": "string",
-                        "description": "Filter by action type (e.g., 'data_access', 'automated_decision')",  # noqa: E501
+                        "description": "Filter by action type (e.g., 'data_access', 'automated_decision')",
                     },
                     "outcome": {
                         "type": "string",
@@ -185,13 +185,11 @@ class QueryPrecedentsTool:
                     },
                     "start_date": {
                         "type": "string",
-                        "format": "date-time",
-                        "description": "Start of date range (ISO 8601)",
+                        "description": "Start of date range (ISO 8601 date-time, e.g. 2024-12-01T00:00:00Z)",
                     },
                     "end_date": {
                         "type": "string",
-                        "format": "date-time",
-                        "description": "End of date range (ISO 8601)",
+                        "description": "End of date range (ISO 8601 date-time, e.g. 2024-12-31T23:59:59Z)",
                     },
                     "min_confidence": {
                         "type": "number",

@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """Extended coverage tests for api/api_key_auth.py.
 
 Targets ≥90% coverage of src/core/enhanced_agent_bus/api/api_key_auth.py,

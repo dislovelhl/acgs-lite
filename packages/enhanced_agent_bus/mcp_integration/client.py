@@ -5,7 +5,7 @@ Provides MCP client capabilities for connecting to external MCP servers,
 enabling tool discovery, resource access, and bidirectional communication
 with constitutional governance.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -19,11 +19,10 @@ from enum import Enum
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.errors.exceptions import ACGSBaseError
-
+from enhanced_agent_bus._compat.errors import ACGSBaseError
 from enhanced_agent_bus.bus_types import JSONDict
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -205,7 +204,7 @@ class MCPClient:
     Provides bidirectional communication with external MCP servers,
     enabling tool discovery, resource access, and governance integration.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH
@@ -814,7 +813,7 @@ class MCPConnectionPool:
 
     Supports connecting to 16,000+ MCP servers with constitutional governance.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH

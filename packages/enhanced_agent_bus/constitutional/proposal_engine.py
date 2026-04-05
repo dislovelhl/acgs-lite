@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Amendment Proposal Engine
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Service to create, validate, and submit constitutional amendment proposals
 with impact analysis, MACI enforcement, and automatic audit logging.
@@ -13,16 +13,16 @@ from pydantic import BaseModel, Field
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.errors.exceptions import ACGSBaseError
+from enhanced_agent_bus._compat.errors import ACGSBaseError
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONList,
-    )  # noqa: E402
+    )
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
     JSONList = list  # type: ignore[misc,assignment]
@@ -150,7 +150,7 @@ class ProposalValidationError(ACGSBaseError):
 class ProposalRequest(BaseModel):
     """Request to create a constitutional amendment proposal.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     proposed_changes: JSONDict = Field(
@@ -174,7 +174,7 @@ class ProposalRequest(BaseModel):
 class ProposalResponse(BaseModel):
     """Response from proposal creation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     proposal: AmendmentProposal = Field(..., description="Created proposal")
@@ -192,7 +192,7 @@ class AmendmentProposalEngine:
     - MACI enforcement (only LEGISLATIVE role can propose)
     - Automatic audit logging
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -231,7 +231,11 @@ class AmendmentProposalEngine:
                 audit_config = AuditClientConfig()
                 self.audit_client = AuditClient(config=audit_config)
             except _PROPOSAL_ENGINE_OPERATION_ERRORS as e:
-                logger.warning("audit_client_init_failed", constitutional_hash=CONSTITUTIONAL_HASH, error=str(e))
+                logger.warning(
+                    "audit_client_init_failed",
+                    constitutional_hash=CONSTITUTIONAL_HASH,
+                    error=str(e),
+                )
                 self.enable_audit = False
 
         logger.info(
@@ -309,7 +313,11 @@ class AmendmentProposalEngine:
                     f"MACI violation: Agent {request.proposer_agent_id} not authorized "
                     f"to propose amendments. Required role: LEGISLATIVE"
                 )
-                logger.error("maci_validation_failed", constitutional_hash=CONSTITUTIONAL_HASH, error=error_msg)
+                logger.error(
+                    "maci_validation_failed",
+                    constitutional_hash=CONSTITUTIONAL_HASH,
+                    error=error_msg,
+                )
 
                 # Log MACI violation to audit
                 if self.enable_audit and self.audit_client:
@@ -458,7 +466,9 @@ class AmendmentProposalEngine:
         Raises:
             ValueError: If proposal not found or already submitted
         """
-        logger.info("submitting_proposal", constitutional_hash=CONSTITUTIONAL_HASH, proposal_id=proposal_id)
+        logger.info(
+            "submitting_proposal", constitutional_hash=CONSTITUTIONAL_HASH, proposal_id=proposal_id
+        )
 
         # Get proposal
         proposal = await self.storage.get_amendment(proposal_id)
@@ -488,7 +498,9 @@ class AmendmentProposalEngine:
                 },
             )
 
-        logger.info("proposal_submitted", constitutional_hash=CONSTITUTIONAL_HASH, proposal_id=proposal_id)
+        logger.info(
+            "proposal_submitted", constitutional_hash=CONSTITUTIONAL_HASH, proposal_id=proposal_id
+        )
 
         return proposal  # type: ignore[no-any-return]
 
@@ -507,7 +519,9 @@ class AmendmentProposalEngine:
         Returns:
             dict with validation results
         """
-        logger.info("validating_proposal", constitutional_hash=CONSTITUTIONAL_HASH, proposal_id=proposal_id)
+        logger.info(
+            "validating_proposal", constitutional_hash=CONSTITUTIONAL_HASH, proposal_id=proposal_id
+        )
 
         # Get proposal
         proposal = await self.storage.get_amendment(proposal_id)
@@ -542,7 +556,9 @@ class AmendmentProposalEngine:
         Returns:
             dict with proposal and optional diff, or None if not found
         """
-        logger.info("retrieving_proposal", constitutional_hash=CONSTITUTIONAL_HASH, proposal_id=proposal_id)
+        logger.info(
+            "retrieving_proposal", constitutional_hash=CONSTITUTIONAL_HASH, proposal_id=proposal_id
+        )
 
         # Get proposal
         proposal = await self.storage.get_amendment(proposal_id)
@@ -702,7 +718,9 @@ class AmendmentProposalEngine:
             )
 
         except _PROPOSAL_ENGINE_OPERATION_ERRORS as e:
-            logger.error("impact_scoring_failed", constitutional_hash=CONSTITUTIONAL_HASH, error=str(e))
+            logger.error(
+                "impact_scoring_failed", constitutional_hash=CONSTITUTIONAL_HASH, error=str(e)
+            )
             # Fallback to conservative estimate
             return ImpactAnalysis(
                 score=0.8,  # Conservative - assume high impact
@@ -729,7 +747,9 @@ class AmendmentProposalEngine:
             )
             return diff
         except _PROPOSAL_ENGINE_OPERATION_ERRORS as e:
-            logger.error("diff_preview_failed", constitutional_hash=CONSTITUTIONAL_HASH, error=str(e))
+            logger.error(
+                "diff_preview_failed", constitutional_hash=CONSTITUTIONAL_HASH, error=str(e)
+            )
             return None
 
     def _merge_changes(self, base_content: JSONDict, proposed_changes: JSONDict) -> JSONDict:
@@ -789,4 +809,6 @@ class AmendmentProposalEngine:
                 details=details,
             )
         except _PROPOSAL_ENGINE_OPERATION_ERRORS as e:
-            logger.warning("audit_event_log_failed", constitutional_hash=CONSTITUTIONAL_HASH, error=str(e))
+            logger.warning(
+                "audit_event_log_failed", constitutional_hash=CONSTITUTIONAL_HASH, error=str(e)
+            )

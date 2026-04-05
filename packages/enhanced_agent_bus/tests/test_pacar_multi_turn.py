@@ -1,6 +1,6 @@
 """
 Tests for PACAR multi-turn support.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import pytest
@@ -35,7 +35,6 @@ def bus_config():
     return BusConfiguration(redis_url="redis://localhost:6379/0")
 
 
-@pytest.mark.asyncio
 async def test_pacar_manager_add_message(bus_config):
     manager = PACARManager(config=bus_config)
 
@@ -56,7 +55,6 @@ async def test_pacar_manager_add_message(bus_config):
         mock_redis.setex.assert_called_once()
 
 
-@pytest.mark.asyncio
 async def test_pacar_verifier_multi_turn(bus_config):
     # Mock components
     mock_assistant = AsyncMock()
@@ -97,7 +95,6 @@ async def test_pacar_verifier_multi_turn(bus_config):
         )
 
 
-@pytest.mark.asyncio
 async def test_pacar_manager_redis_failure_fallback(bus_config):
     manager = PACARManager(config=bus_config)
 

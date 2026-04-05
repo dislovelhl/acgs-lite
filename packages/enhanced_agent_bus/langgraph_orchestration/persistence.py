@@ -1,6 +1,6 @@
 """
 ACGS-2 LangGraph Orchestration - State Persistence
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 State persistence for graph orchestration:
 - In-memory persistence for testing
@@ -14,7 +14,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -35,7 +35,7 @@ logger = get_logger(__name__)
 class StatePersistence(ABC):
     """Abstract base class for state persistence.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     @abstractmethod
@@ -158,7 +158,7 @@ class StatePersistence(ABC):
 class InMemoryStatePersistence(StatePersistence):
     """In-memory state persistence for testing and development.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, constitutional_hash: str = CONSTITUTIONAL_HASH):
@@ -265,7 +265,7 @@ class InMemoryStatePersistence(StatePersistence):
 class RedisStatePersistence(StatePersistence):
     """Redis-based state persistence for production.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -473,7 +473,7 @@ class RedisStatePersistence(StatePersistence):
             if isinstance(cp_id, bytes):
                 cp_id = cp_id.decode()
             checkpoint = await self.load_checkpoint(cp_id)
-            if checkpoint:  # noqa: SIM102
+            if checkpoint:
                 if run_id is None or checkpoint.run_id == run_id:
                     checkpoints.append(checkpoint)
 
@@ -579,7 +579,7 @@ def create_state_persistence(
     Returns:
         Configured state persistence
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     constitutional_hash = kwargs.pop("constitutional_hash", CONSTITUTIONAL_HASH)
 

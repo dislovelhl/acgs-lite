@@ -1,6 +1,6 @@
 """
 ACGS-2 AI Assistant - Context Management Coverage Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets uncovered lines to boost coverage from 44% to ≥90%.
 """
@@ -8,9 +8,7 @@ Targets uncovered lines to boost coverage from 44% to ≥90%.
 from datetime import UTC, datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.ai_assistant.context import (
     MAMBA_AVAILABLE,
     ContextManager,
@@ -530,8 +528,6 @@ class TestProcessLongContext:
         ctx = ConversationContext(user_id="u1", session_id="s1")
         ctx.add_message(Message(role=MessageRole.USER, content="hello world"))
 
-        import torch
-
         mock_tensor = MagicMock()
         mock_tensor.norm.return_value = MagicMock()
         mock_tensor.norm.return_value.item.return_value = 1.5
@@ -539,8 +535,6 @@ class TestProcessLongContext:
         mock_mamba_mgr = MagicMock()
         mock_mamba_mgr.is_loaded = True
         mock_mamba_mgr.process_context.return_value = mock_tensor
-
-        mock_torch_randn = MagicMock(return_value=MagicMock())
 
         import enhanced_agent_bus.ai_assistant.context as ctx_module
 

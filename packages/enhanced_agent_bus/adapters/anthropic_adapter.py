@@ -1,6 +1,6 @@
 """
 ACGS-2 Anthropic Model Adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Adapter for Anthropic Claude models (Claude 3, Claude 2, etc.)
 """
@@ -8,7 +8,7 @@ Adapter for Anthropic Claude models (Claude 3, Claude 2, etc.)
 from collections.abc import AsyncIterator
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -36,7 +36,7 @@ class AnthropicAdapter(ModelAdapter):
     - Tool use
     - Streaming responses
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

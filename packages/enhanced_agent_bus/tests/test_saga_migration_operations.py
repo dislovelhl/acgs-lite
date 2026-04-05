@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Tests for saga_migration_integration operations: start_migration (success & failure),
 get_migration_status, cancel_migration, and get_metrics.
@@ -11,8 +11,6 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
-
-import pytest
 
 from enterprise_sso.migration_job_api import (
     MigrationJobConfig,

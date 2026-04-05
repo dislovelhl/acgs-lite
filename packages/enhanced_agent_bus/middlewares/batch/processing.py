@@ -4,7 +4,7 @@ Batch Processing Middleware for ACGS-2 Pipeline.
 Core batch item processing with error aggregation.
 Extracted from: batch_processor_infra/workers.py + orchestrator.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -52,7 +52,7 @@ class BatchProcessingMiddleware(BaseMiddleware):
         )
         context = await middleware.process(batch_context)
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

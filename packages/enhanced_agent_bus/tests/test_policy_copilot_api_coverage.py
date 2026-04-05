@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive test coverage for policy_copilot/api.py.
 
@@ -14,10 +14,10 @@ from unittest.mock import MagicMock, patch
 import httpx
 import pytest
 from fastapi import FastAPI
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.errors.exceptions import ValidationError
-from src.core.shared.security.auth import UserClaims, get_current_user
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.errors import ValidationError
+from enhanced_agent_bus._compat.security.auth import UserClaims, get_current_user
 from enhanced_agent_bus.policy_copilot.api import (
     FeedbackRequest,
     FeedbackResponse,

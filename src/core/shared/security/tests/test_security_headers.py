@@ -1,6 +1,6 @@
 """
 Tests for Security Headers Middleware
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests verify:
 - SecurityHeadersConfig dataclass (defaults, custom config, environment-based configs)
@@ -87,8 +87,11 @@ class TestSecurityHeadersConfigFromEnv:
         """Test from_env with production environment (production defaults)."""
         from src.core.shared.config import settings
 
-        # _detect_environment() reads settings.env, not env vars directly.
         monkeypatch.setattr(settings, "env", "production")
+        # Clear env vars that would override settings.env (e.g. conftest sets ENVIRONMENT=test)
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.delenv("ACGS2_ENV", raising=False)
         for key in ["SECURITY_HSTS_ENABLED", "SECURITY_HSTS_MAX_AGE", "SECURITY_FRAME_OPTIONS"]:
             monkeypatch.delenv(key, raising=False)
 
@@ -102,6 +105,10 @@ class TestSecurityHeadersConfigFromEnv:
         from src.core.shared.config import settings
 
         monkeypatch.setattr(settings, "env", "development")
+        # Clear env vars that override settings.env (e.g. EAB conftest sets ENVIRONMENT=test)
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.delenv("ACGS2_ENV", raising=False)
         monkeypatch.delenv("SECURITY_HSTS_ENABLED", raising=False)
         monkeypatch.delenv("SECURITY_HSTS_MAX_AGE", raising=False)
 
@@ -115,6 +122,10 @@ class TestSecurityHeadersConfigFromEnv:
         from src.core.shared.config import settings
 
         monkeypatch.setattr(settings, "env", "staging")
+        # Clear env vars that override settings.env (e.g. EAB conftest sets ENVIRONMENT=test)
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.delenv("ACGS2_ENV", raising=False)
         monkeypatch.delenv("SECURITY_HSTS_ENABLED", raising=False)
         monkeypatch.delenv("SECURITY_HSTS_MAX_AGE", raising=False)
 
@@ -128,6 +139,10 @@ class TestSecurityHeadersConfigFromEnv:
         from src.core.shared.config import settings
 
         monkeypatch.setattr(settings, "env", "development")
+        # Clear env vars that override settings.env (e.g. EAB conftest sets ENVIRONMENT=test)
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.delenv("ACGS2_ENV", raising=False)
         monkeypatch.setenv("SECURITY_HSTS_ENABLED", "true")
 
         config = SecurityHeadersConfig.from_env()
@@ -138,6 +153,10 @@ class TestSecurityHeadersConfigFromEnv:
         from src.core.shared.config import settings
 
         monkeypatch.setattr(settings, "env", "production")
+        # Clear env vars that would override settings.env (e.g. conftest sets ENVIRONMENT=test)
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.delenv("ACGS2_ENV", raising=False)
         monkeypatch.setenv("SECURITY_HSTS_ENABLED", "false")
 
         config = SecurityHeadersConfig.from_env()
@@ -148,6 +167,10 @@ class TestSecurityHeadersConfigFromEnv:
         from src.core.shared.config import settings
 
         monkeypatch.setattr(settings, "env", "production")
+        # Clear env vars that would override settings.env (e.g. conftest sets ENVIRONMENT=test)
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.delenv("ACGS2_ENV", raising=False)
         monkeypatch.setenv("SECURITY_HSTS_MAX_AGE", "7200")
 
         config = SecurityHeadersConfig.from_env()
@@ -161,24 +184,34 @@ class TestSecurityHeadersConfigFromEnv:
         assert config.frame_options == "SAMEORIGIN"
 
     def test_from_env_case_insensitive_environment(self, monkeypatch):
-        """Test from_env reflects settings.env (canonical source)."""
+        """Test from_env reflects settings.env when no explicit env vars override it."""
         from src.core.shared.config import settings
 
         monkeypatch.setattr(settings, "env", "production")
+        # Clear env vars that would override settings.env (e.g. conftest sets ENVIRONMENT=test)
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.delenv("ACGS2_ENV", raising=False)
         config = SecurityHeadersConfig.from_env()
         assert config.environment == "production"
 
         monkeypatch.setattr(settings, "env", "development")
+        # Clear env vars that override settings.env (e.g. EAB conftest sets ENVIRONMENT=test)
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.delenv("ACGS2_ENV", raising=False)
         config = SecurityHeadersConfig.from_env()
         assert config.environment == "development"
 
     def test_from_env_settings_env_is_canonical_source(self, monkeypatch):
-        """Test that settings.env is the canonical environment source."""
+        """Test that settings.env is used when no explicit runtime env vars are set."""
         from src.core.shared.config import settings
 
-        # settings.env is pre-computed at import time; env vars like APP_ENV and
-        # AGENT_RUNTIME_ENVIRONMENT do not override it after initialization.
         monkeypatch.setattr(settings, "env", "development")
+        # Clear env vars that override settings.env (e.g. EAB conftest sets ENVIRONMENT=test)
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.delenv("ACGS2_ENV", raising=False)
         config = SecurityHeadersConfig.from_env()
         assert config.environment == "development"
 
@@ -186,9 +219,28 @@ class TestSecurityHeadersConfigFromEnv:
         from src.core.shared.config import settings
 
         monkeypatch.setattr(settings, "env", "staging")
+        # Clear env vars that override settings.env (e.g. EAB conftest sets ENVIRONMENT=test)
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.delenv("ACGS2_ENV", raising=False)
 
         config = SecurityHeadersConfig.from_env()
         assert config.environment == "staging"
+
+    def test_from_env_prefers_environment_over_defaulted_settings_env(self, monkeypatch):
+        from src.core.shared.config import settings
+
+        monkeypatch.setattr(settings, "env", "development")
+        # Clear env vars that override settings.env (e.g. EAB conftest sets ENVIRONMENT=test)
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.delenv("ACGS2_ENV", raising=False)
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.setenv("ENVIRONMENT", "production")
+
+        config = SecurityHeadersConfig.from_env()
+        assert config.environment == "production"
+        assert config.enable_hsts is True
 
 
 # ============================================================================

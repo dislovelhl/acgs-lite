@@ -1,0 +1,14 @@
+.git
+.github
+.claude
+.codex-home
+.agents
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.mypy_cache
+.ruff_cache
+htmlcov
+node_modules
+*.egg-info

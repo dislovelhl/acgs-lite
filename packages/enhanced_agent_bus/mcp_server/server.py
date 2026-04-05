@@ -4,16 +4,17 @@ MCP Server for ACGS-2 Constitutional Governance.
 Main server implementation providing constitutional AI governance
 through the Model Context Protocol.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
+import inspect
 import json
 import sys
 from dataclasses import dataclass, field
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -64,7 +65,7 @@ class MCPServer:
     the Model Context Protocol.
     """
 
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
     PROTOCOL_VERSION = "2024-11-05"
 
@@ -280,10 +281,15 @@ class MCPServer:
         while self._running and not self._shutdown_event.is_set():
             try:
                 # Read line from stdin
-                line = await asyncio.wait_for(
-                    reader.readline(),
-                    timeout=1.0,
-                )
+                read_operation = reader.readline()
+                try:
+                    line = await asyncio.wait_for(
+                        read_operation,
+                        timeout=1.0,
+                    )
+                finally:
+                    if inspect.iscoroutine(read_operation) and read_operation.cr_frame is not None:
+                        read_operation.close()
 
                 if not line:
                     continue

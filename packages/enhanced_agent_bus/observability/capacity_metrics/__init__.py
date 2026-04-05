@@ -1,6 +1,6 @@
 """
 ACGS-2 Capacity Metrics Package
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides capacity planning metrics collection for the Enhanced Agent Bus,
 including real-time throughput, latency percentiles, queue depths, and
@@ -28,7 +28,7 @@ Expert Reference: Michael Nygard (Release It!)
 from __future__ import annotations
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -111,6 +111,8 @@ from .trackers import (
     SlidingWindowCounter,
 )
 
+CapacityValidationResult = ValidationResult
+
 __all__ = [
     "ADAPTIVE_THRESHOLD_BUCKETS",
     "BATCH_OVERHEAD_BUCKETS",
@@ -126,6 +128,7 @@ __all__ = [
     "CapacitySnapshot",
     # Data models
     "CapacityStatus",
+    "CapacityValidationResult",
     "Counter",
     # Main metrics class
     "EnhancedAgentBusCapacityMetrics",

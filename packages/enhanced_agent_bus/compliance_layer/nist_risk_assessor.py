@@ -1,6 +1,6 @@
 """
 ACGS-2 NIST AI RMF Risk Assessor
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements NIST AI Risk Management Framework alignment for Layer 4.
 Provides risk context identification, threat modeling, and risk register management.
@@ -11,11 +11,11 @@ import uuid
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -40,7 +40,7 @@ class NISTMAPFunction:
     """NIST AI RMF MAP function implementation.
 
     Manages AI system context and risk mapping.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self):
@@ -82,7 +82,7 @@ class NISTGovernFunction:
     """NIST AI RMF GOVERN function implementation.
 
     Manages governance policies and accountability structures.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self):
@@ -121,7 +121,7 @@ class NISTRiskAssessor:
     - MAP function alignment
     - Risk register with mitigation tracking
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self):

@@ -1,6 +1,6 @@
 """
 Tests for ACGS-2 Runtime Security Scanner
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive test suite covering:
 - SecurityEvent and SecurityScanResult dataclasses
@@ -260,7 +260,6 @@ class TestRuntimeSecurityConfig:
 class TestRuntimeSecurityScannerBasic:
     """Basic scanner functionality tests."""
 
-    @pytest.mark.asyncio
     async def test_scan_clean_content(self, scanner):
         """Test scanning clean content."""
         result = await scanner.scan(
@@ -271,7 +270,6 @@ class TestRuntimeSecurityScannerBasic:
         assert result.blocked is False
         assert len(result.checks_performed) > 0
 
-    @pytest.mark.asyncio
     async def test_scan_with_constitutional_hash(self, scanner):
         """Test scanning with valid constitutional hash."""
         result = await scanner.scan(
@@ -280,7 +278,6 @@ class TestRuntimeSecurityScannerBasic:
         )
         assert result.is_secure is True
 
-    @pytest.mark.asyncio
     async def test_scan_with_invalid_constitutional_hash(self, scanner):
         """Test scanning with invalid constitutional hash."""
         result = await scanner.scan(
@@ -290,27 +287,23 @@ class TestRuntimeSecurityScannerBasic:
         assert result.blocked is True
         assert "constitutional" in result.block_reason.lower()
 
-    @pytest.mark.asyncio
     async def test_scan_none_content(self, scanner):
         """Test scanning None content."""
         result = await scanner.scan(content=None)
         assert result is not None
         assert result.is_secure is True
 
-    @pytest.mark.asyncio
     async def test_scan_empty_content(self, scanner):
         """Test scanning empty content."""
         result = await scanner.scan(content="")
         assert result is not None
         assert result.is_secure is True
 
-    @pytest.mark.asyncio
     async def test_scan_includes_duration(self, scanner):
         """Test that scan includes duration."""
         result = await scanner.scan(content="test")
         assert result.scan_duration_ms >= 0
 
-    @pytest.mark.asyncio
     async def test_scan_tracks_checks_performed(self, scanner):
         """Test that scan tracks which checks were performed."""
         result = await scanner.scan(content="test", tenant_id="test-tenant")
@@ -326,7 +319,6 @@ class TestRuntimeSecurityScannerBasic:
 class TestRuntimeSecurityScannerPatterns:
     """Tests for suspicious pattern detection."""
 
-    @pytest.mark.asyncio
     async def test_scan_suspicious_patterns(self, scanner, extract_events_by_type):
         """Test detection of suspicious patterns."""
         suspicious_content = "<script>alert('xss')</script>"
@@ -335,7 +327,6 @@ class TestRuntimeSecurityScannerPatterns:
         pattern_events = extract_events_by_type(result, SecurityEventType.SUSPICIOUS_PATTERN)
         assert len(pattern_events) > 0
 
-    @pytest.mark.asyncio
     async def test_scan_sql_injection_pattern(self, scanner, extract_events_by_type):
         """Test detection of SQL injection patterns."""
         sql_content = "SELECT * FROM users WHERE id = 1; DROP TABLE users;"
@@ -344,7 +335,6 @@ class TestRuntimeSecurityScannerPatterns:
         pattern_events = extract_events_by_type(result, SecurityEventType.SUSPICIOUS_PATTERN)
         assert len(pattern_events) > 0
 
-    @pytest.mark.asyncio
     async def test_scan_path_traversal_pattern(self, scanner, extract_events_by_type):
         """Test detection of path traversal patterns."""
         path_traversal = "../../../etc/passwd"
@@ -362,7 +352,6 @@ class TestRuntimeSecurityScannerPatterns:
 class TestRuntimeSecurityScannerInput:
     """Tests for input validation and sanitization."""
 
-    @pytest.mark.asyncio
     async def test_scan_long_input(self, extract_events_by_type):
         """Test detection of overly long input."""
         config = RuntimeSecurityConfig(max_input_length=100)
@@ -374,7 +363,6 @@ class TestRuntimeSecurityScannerInput:
         input_events = extract_events_by_type(result, SecurityEventType.INVALID_INPUT)
         assert len(input_events) > 0
 
-    @pytest.mark.asyncio
     async def test_scan_deeply_nested_dict(self, extract_events_by_type):
         """Test detection of deeply nested dictionaries."""
         config = RuntimeSecurityConfig(max_nested_depth=5)
@@ -401,7 +389,6 @@ class TestRuntimeSecurityScannerInput:
 class TestRuntimeSecurityScannerRateLimiting:
     """Tests for rate limiting functionality."""
 
-    @pytest.mark.asyncio
     async def test_rate_limiting(self, scanner_with_custom_config, extract_events_by_type):
         """Test rate limiting detection."""
         scanner = scanner_with_custom_config
@@ -438,7 +425,6 @@ class TestRuntimeSecurityScannerMetrics:
         assert "constitutional_hash" in metrics
         assert metrics["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_metrics_update_after_scan(self, scanner):
         """Test that metrics update after scanning."""
         initial_metrics = scanner.get_metrics()
@@ -449,7 +435,6 @@ class TestRuntimeSecurityScannerMetrics:
         updated_metrics = scanner.get_metrics()
         assert updated_metrics["total_scans"] == initial_scans + 1
 
-    @pytest.mark.asyncio
     async def test_get_recent_events(self, scanner):
         """Test retrieving recent events."""
         # Trigger some events
@@ -458,7 +443,6 @@ class TestRuntimeSecurityScannerMetrics:
         events = scanner.get_recent_events(limit=10)
         assert isinstance(events, list)
 
-    @pytest.mark.asyncio
     async def test_get_recent_events_with_filter(self, scanner):
         """Test filtering recent events."""
         # Trigger suspicious pattern
@@ -491,7 +475,6 @@ class TestGlobalScanner:
         scanner2 = get_runtime_security_scanner()
         assert scanner1 is scanner2
 
-    @pytest.mark.asyncio
     async def test_scan_content_convenience_function(self):
         """Test the scan_content convenience function."""
         result = await scan_content(
@@ -543,7 +526,6 @@ class TestConstitutionalCompliance:
 class TestRuntimeSecurityScannerEdgeCases:
     """Tests for edge cases and error handling in the scanner."""
 
-    @pytest.mark.asyncio
     async def test_fail_closed_blocks_on_scan_error(self):
         """Test that fail_closed=True blocks requests when scan errors occur."""
         config = RuntimeSecurityConfig(
@@ -569,7 +551,6 @@ class TestRuntimeSecurityScannerEdgeCases:
         finally:
             scanner._check_constitutional_compliance = original_method
 
-    @pytest.mark.asyncio
     async def test_fail_open_allows_on_scan_error(self):
         """Test that fail_closed=False allows requests when scan errors occur."""
         config = RuntimeSecurityConfig(
@@ -585,7 +566,6 @@ class TestRuntimeSecurityScannerEdgeCases:
         # The result may have warnings but shouldn't block on internal errors
         assert result is not None
 
-    @pytest.mark.asyncio
     async def test_scan_with_dict_content(self):
         """Test scanning dictionary content."""
         # Use scanner without guardrails/classifier to avoid false positives on test data
@@ -602,14 +582,12 @@ class TestRuntimeSecurityScannerEdgeCases:
         assert result is not None
         assert result.is_secure is True
 
-    @pytest.mark.asyncio
     async def test_scan_with_list_content(self, scanner):
         """Test scanning list content."""
         list_content = ["item1", "item2", {"nested": "dict"}]
         result = await scanner.scan(content=list_content)
         assert result is not None
 
-    @pytest.mark.asyncio
     async def test_scan_with_numeric_content(self):
         """Test scanning numeric content."""
         # Use scanner without guardrails to avoid PII false positives on numbers
@@ -619,7 +597,6 @@ class TestRuntimeSecurityScannerEdgeCases:
         assert result is not None
         assert result.is_secure is True
 
-    @pytest.mark.asyncio
     async def test_scan_with_all_context_fields(self, scanner):
         """Test scanning with complete context."""
         result = await scanner.scan(
@@ -646,7 +623,6 @@ class TestRuntimeSecurityScannerEdgeCases:
 class TestEventBufferManagement:
     """Tests for event buffer trimming and expiration."""
 
-    @pytest.mark.asyncio
     async def test_event_buffer_respects_max_retained(self):
         """Test event buffer respects max_events_retained config."""
         config = RuntimeSecurityConfig(
@@ -663,7 +639,6 @@ class TestEventBufferManagement:
         events = scanner.get_recent_events(limit=100)
         assert len(events) <= config.max_events_retained
 
-    @pytest.mark.asyncio
     async def test_event_buffer_expiration(self):
         """Test that expired events are removed from buffer."""
         config = RuntimeSecurityConfig(
@@ -691,7 +666,6 @@ class TestEventBufferManagement:
         suspicious_events = [e for e in events_after if "<script>" in str(e.metadata)]
         assert len(suspicious_events) == 0 or len(events_after) <= initial_count
 
-    @pytest.mark.asyncio
     async def test_get_recent_events_with_severity_filter(self, scanner):
         """Test filtering recent events by severity."""
         # Create events with different severities
@@ -717,7 +691,6 @@ class TestEventBufferManagement:
         for event in critical_events:
             assert event.severity == SecuritySeverity.CRITICAL
 
-    @pytest.mark.asyncio
     async def test_get_recent_events_with_both_filters(self, scanner):
         """Test filtering events by both type and severity."""
         # Trigger constitutional hash mismatch (CRITICAL)
@@ -742,7 +715,6 @@ class TestEventBufferManagement:
 class TestConstitutionalClassifierIntegration:
     """Tests for constitutional classifier integration with mocking."""
 
-    @pytest.mark.asyncio
     async def test_constitutional_classifier_warning_when_unavailable(self):
         """Test scanner adds warning when constitutional classifier is unavailable."""
         config = RuntimeSecurityConfig(
@@ -759,7 +731,6 @@ class TestConstitutionalClassifierIntegration:
             # Either classifier worked or warning was added
             pass
 
-    @pytest.mark.asyncio
     async def test_scan_disabled_constitutional_classifier(self):
         """Test scanning with constitutional classifier disabled."""
         config = RuntimeSecurityConfig(
@@ -780,7 +751,6 @@ class TestConstitutionalClassifierIntegration:
 class TestRuntimeGuardrailsIntegration:
     """Tests for runtime guardrails integration."""
 
-    @pytest.mark.asyncio
     async def test_runtime_guardrails_warning_when_unavailable(self):
         """Test scanner handles missing runtime guardrails gracefully."""
         config = RuntimeSecurityConfig(
@@ -796,7 +766,6 @@ class TestRuntimeGuardrailsIntegration:
             # Either guardrails worked or warning was added
             pass
 
-    @pytest.mark.asyncio
     async def test_scan_disabled_runtime_guardrails(self):
         """Test scanning with runtime guardrails disabled."""
         config = RuntimeSecurityConfig(
@@ -817,7 +786,6 @@ class TestRuntimeGuardrailsIntegration:
 class TestAnomalyDetection:
     """Tests for anomaly detection functionality."""
 
-    @pytest.mark.asyncio
     async def test_anomaly_detection_threshold(self, extract_events_by_type):
         # Use fixed time for anomaly detection
         mock_now = datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC)
@@ -852,7 +820,6 @@ class TestAnomalyDetection:
             anomaly_events = extract_events_by_type(result, SecurityEventType.ANOMALY_DETECTED)
             assert len(anomaly_events) > 0, "Anomaly detection should have triggered"
 
-    @pytest.mark.asyncio
     async def test_anomaly_detection_disabled(self):
         """Test scanning with anomaly detection disabled."""
         config = RuntimeSecurityConfig(
@@ -873,7 +840,6 @@ class TestAnomalyDetection:
 class TestConcurrentOperations:
     """Tests for concurrent scanner operations."""
 
-    @pytest.mark.asyncio
     async def test_concurrent_scans(self, scanner):
         """Test scanner handles concurrent scans correctly."""
         import asyncio
@@ -888,7 +854,6 @@ class TestConcurrentOperations:
             assert result is not None
             assert isinstance(result, SecurityScanResult)
 
-    @pytest.mark.asyncio
     async def test_concurrent_scans_with_rate_limiting(self):
         """Test rate limiting works correctly under concurrent load."""
         config = RuntimeSecurityConfig(
@@ -906,9 +871,7 @@ class TestConcurrentOperations:
 
         # Use an infinite side effect to avoid StopIteration
         time_gen = itertools.count(start_time, 0.01)
-        with patch(
-            "enhanced_agent_bus.runtime_security.time.monotonic", side_effect=time_gen
-        ):
+        with patch("enhanced_agent_bus.runtime_security.time.monotonic", side_effect=time_gen):
             # Run many concurrent scans
             tasks = [
                 scanner.scan(content=f"test_{i}", tenant_id="concurrent-tenant") for i in range(20)
@@ -942,33 +905,28 @@ class TestConcurrentOperations:
 class TestInputValidationEdgeCases:
     """Tests for edge cases in input validation."""
 
-    @pytest.mark.asyncio
     async def test_unicode_content(self, scanner):
         """Test scanning content with unicode characters."""
         unicode_content = "Hello 世界 🌍 Привет مرحبا"
         result = await scanner.scan(content=unicode_content)
         assert result.is_secure is True
 
-    @pytest.mark.asyncio
     async def test_newlines_and_special_chars(self, scanner):
         """Test scanning content with newlines and special characters."""
         content = "Line 1\nLine 2\r\nLine 3\tTabbed"
         result = await scanner.scan(content=content)
         assert result is not None
 
-    @pytest.mark.asyncio
     async def test_empty_dict(self, scanner):
         """Test scanning empty dictionary."""
         result = await scanner.scan(content={})
         assert result.is_secure is True
 
-    @pytest.mark.asyncio
     async def test_bool_content(self, scanner):
         """Test scanning boolean content."""
         result = await scanner.scan(content=True)
         assert result.is_secure is True
 
-    @pytest.mark.asyncio
     async def test_very_deeply_nested_but_within_limit(self):
         """Test scanning nested dict within allowed depth."""
         config = RuntimeSecurityConfig(max_nested_depth=10)

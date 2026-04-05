@@ -1,6 +1,6 @@
 """
 ACGS-2 LDAP Integration Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for LDAP integration with multi-tenancy and MACI frameworks.
 
@@ -19,7 +19,7 @@ from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 import pytest
 
 # Constitutional Hash for ACGS-2
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # ============================================================================
 # Task 3.1: Tests for LDAP Connection Management
@@ -41,7 +41,7 @@ class TestLDAPConnectionConfiguration:
             server_uri="ldaps://ldap.example.com:636",
             base_dn="dc=example,dc=com",
             bind_dn="cn=admin,dc=example,dc=com",
-            bind_password="admin-password",  # noqa: S106
+            bind_password="admin-password",
         )
         assert config.server_uri == "ldaps://ldap.example.com:636"
         assert config.base_dn == "dc=example,dc=com"
@@ -126,7 +126,7 @@ class TestLDAPConnection:
             server_uri="ldaps://ldap.example.com:636",
             base_dn="dc=example,dc=com",
             bind_dn="cn=admin,dc=example,dc=com",
-            bind_password="admin-password",  # noqa: S106
+            bind_password="admin-password",
             pool_size=5,
         )
 
@@ -275,7 +275,7 @@ class TestLDAPConnectionPool:
             server_uri="ldaps://ldap.example.com:636",
             base_dn="dc=example,dc=com",
             bind_dn="cn=admin,dc=example,dc=com",
-            bind_password="admin-password",  # noqa: S106
+            bind_password="admin-password",
             pool_size=5,
             pool_timeout=30.0,
         )
@@ -412,7 +412,7 @@ class TestLDAPUserAuthentication:
             server_uri="ldaps://ldap.example.com:636",
             base_dn="dc=example,dc=com",
             bind_dn="cn=admin,dc=example,dc=com",
-            bind_password="admin-password",  # noqa: S106
+            bind_password="admin-password",
             user_search_base="ou=users,dc=example,dc=com",
             user_search_filter="(uid={username})",
             group_search_base="ou=groups,dc=example,dc=com",
@@ -568,7 +568,7 @@ class TestLDAPGroupMembership:
             server_uri="ldaps://ldap.example.com:636",
             base_dn="dc=example,dc=com",
             bind_dn="cn=admin,dc=example,dc=com",
-            bind_password="admin-password",  # noqa: S106
+            bind_password="admin-password",
             user_search_base="ou=users,dc=example,dc=com",
             group_search_base="ou=groups,dc=example,dc=com",
             group_search_filter="(member={user_dn})",
@@ -720,7 +720,7 @@ class TestLDAPGroupSearch:
             server_uri="ldaps://ldap.example.com:636",
             base_dn="dc=example,dc=com",
             bind_dn="cn=admin,dc=example,dc=com",
-            bind_password="admin-password",  # noqa: S106
+            bind_password="admin-password",
             group_search_base="ou=groups,dc=example,dc=com",
         )
         return LDAPIntegration(config)
@@ -964,7 +964,7 @@ class TestLDAPHealthCheck:
             server_uri="ldaps://ldap.example.com:636",
             base_dn="dc=example,dc=com",
             bind_dn="cn=admin,dc=example,dc=com",
-            bind_password="admin-password",  # noqa: S106
+            bind_password="admin-password",
         )
         return LDAPIntegration(config)
 
@@ -1078,7 +1078,7 @@ class TestLDAPEndToEndAuthentication:
             server_uri="ldaps://ldap.example.com:636",
             base_dn="dc=example,dc=com",
             bind_dn="cn=admin,dc=example,dc=com",
-            bind_password="admin-password",  # noqa: S106
+            bind_password="admin-password",
             user_search_base="ou=users,dc=example,dc=com",
             user_search_filter="(uid={username})",
             group_search_base="ou=groups,dc=example,dc=com",
@@ -1107,7 +1107,7 @@ class TestLDAPEndToEndAuthentication:
             server_uri="ldaps://ldap.example.com:636",
             base_dn="dc=example,dc=com",
             bind_dn="cn=admin,dc=example,dc=com",
-            bind_password="admin-password",  # noqa: S106
+            bind_password="admin-password",
             group_to_maci_role_mapping={
                 "developers": "IMPLEMENTER",
                 "admins": "EXECUTIVE",
@@ -1138,7 +1138,7 @@ class TestLDAPEndToEndAuthentication:
             server_uri="ldaps://ldap.example.com:636",
             base_dn="dc=example,dc=com",
             bind_dn="cn=admin,dc=example,dc=com",
-            bind_password="admin-password",  # noqa: S106
+            bind_password="admin-password",
             tenant_id="acme-corp",
         )
         integration = LDAPIntegration(config)
@@ -1189,7 +1189,7 @@ class TestLDAPTenantIntegration:
             server_uri="ldaps://ldap.acme.com:636",
             base_dn="dc=acme,dc=com",
             bind_dn="cn=svc-acgs,dc=acme,dc=com",
-            bind_password="service-password",  # noqa: S106
+            bind_password="service-password",
         )
 
         assert config.tenant_id == "acme-corp"

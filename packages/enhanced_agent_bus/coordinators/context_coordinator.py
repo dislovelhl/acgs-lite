@@ -4,7 +4,7 @@ ContextCoordinator - Mamba-2 hybrid context processing coordinator.
 Manages large-context processing via Mamba-2 with graceful fallback.
 Part of the MetaOrchestrator decomposition effort.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -16,11 +16,11 @@ from typing import TYPE_CHECKING, Literal, Protocol, runtime_checkable
 import psutil
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -123,7 +123,7 @@ class ContextCoordinator:
             enable_caching: Whether to enable context caching
             memory_threshold: Threshold ratio (0.0 to 1.0) above which Mamba processing gracefully degrades.
             cache_hash_mode: Cache key hash mode ("sha256" default, "fast" optional)
-        """  # noqa: E501
+        """
         self._context_size = context_size
         self._enable_caching = enable_caching
         self._memory_threshold = memory_threshold
@@ -187,7 +187,7 @@ class ContextCoordinator:
         memory_usage = psutil.virtual_memory().percent
         if memory_usage > (self._memory_threshold * 100):
             logger.warning(
-                f"Memory pressure high ({memory_usage}% > {self._memory_threshold * 100}% threshold). "  # noqa: E501
+                f"Memory pressure high ({memory_usage}% > {self._memory_threshold * 100}% threshold). "
                 "Degrading gracefully to fallback context processing."
             )
             self._degradations += 1
@@ -272,7 +272,7 @@ class ContextCoordinator:
             # Preserve beginning and end, truncate middle
             keep_start = self._context_size // 4
             keep_end = self._context_size // 4
-            truncated = words[:keep_start] + ["..."] + words[-keep_end:]  # noqa: RUF005
+            truncated = words[:keep_start] + ["..."] + words[-keep_end:]
             full_context = " ".join(truncated)
 
         # Detect critical keywords

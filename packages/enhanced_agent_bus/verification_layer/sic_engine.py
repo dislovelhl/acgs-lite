@@ -1,6 +1,6 @@
 """
 ACGS-2 Semantic Integrity Constraint (SIC) Engine
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module implements the 2026 PVLDB declarative abstraction for LLMs:
 Semantic Integrity Constraints (SICs). It treats AI outputs like database
@@ -15,7 +15,7 @@ from enum import Enum
 from pydantic import BaseModel, Field
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

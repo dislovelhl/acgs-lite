@@ -1,6 +1,6 @@
 """
 ACGS-2 Deliberation Layer - Vote Event Consumer
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Kafka consumer for processing vote events with exactly-once semantics.
 Consumes vote events from Kafka, deduplicates, and updates Redis elections.
@@ -11,7 +11,7 @@ import json
 from datetime import UTC, datetime, timezone
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -40,9 +40,9 @@ except ImportError:
     VoteDecision = None  # type: ignore[misc, assignment]
 
 try:
-    from src.core.shared.config import settings
+    from enhanced_agent_bus._compat.config import settings
 except ImportError:
-    from src.core.shared.config import settings  # type: ignore[import-untyped]
+    from enhanced_agent_bus._compat.config import settings  # type: ignore[import-untyped]
 
 logger = get_logger(__name__)
 _VOTE_CONSUMER_OPERATION_ERRORS = (
@@ -79,7 +79,7 @@ class VoteEventConsumer:
             tenant_id: Tenant identifier for topic isolation
             bootstrap_servers: Kafka bootstrap servers (defaults to settings.kafka.bootstrap_servers)
             voting_service: VotingService instance (creates new one if not provided)
-        """  # noqa: E501
+        """
         self.tenant_id = tenant_id.replace(".", "_") if tenant_id else "default"
         self.bootstrap_servers = bootstrap_servers or settings.kafka.get(
             "bootstrap_servers", "localhost:9092"

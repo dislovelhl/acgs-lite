@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Deliberation Queue Module Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for the actual deliberation_queue.py module with comprehensive coverage.
 """
@@ -141,7 +141,6 @@ class TestDeliberationQueueClass:
         assert queue.consensus_threshold == 0.75
         assert queue.default_timeout == 60
 
-    @pytest.mark.asyncio
     async def test_enqueue_for_deliberation(self, queue, test_message):
         """Test enqueueing a message for deliberation."""
         item_id = await queue.enqueue_for_deliberation(
@@ -161,7 +160,6 @@ class TestDeliberationQueueClass:
         assert item.status == DeliberationStatus.PENDING
         assert item.timeout_seconds == 10
 
-    @pytest.mark.asyncio
     async def test_enqueue_with_multi_agent_vote(self, queue, test_message):
         """Test enqueuing with multi-agent vote requirement."""
         item_id = await queue.enqueue_for_deliberation(
@@ -174,7 +172,6 @@ class TestDeliberationQueueClass:
         item = queue.queue[item_id]
         assert item.required_votes == 5  # Multi-agent vote requires 5 votes
 
-    @pytest.mark.asyncio
     async def test_enqueue_without_multi_agent_vote(self, queue, test_message):
         """Test enqueuing without multi-agent vote requirement."""
         item_id = await queue.enqueue_for_deliberation(
@@ -187,7 +184,6 @@ class TestDeliberationQueueClass:
         item = queue.queue[item_id]
         assert item.required_votes == 0
 
-    @pytest.mark.asyncio
     async def test_enqueue_creates_processing_task(self, queue, test_message):
         """Test that enqueueing creates a processing task."""
         item_id = await queue.enqueue_for_deliberation(message=test_message, timeout_seconds=1)
@@ -198,7 +194,6 @@ class TestDeliberationQueueClass:
         # Task should be created (may have completed by now due to short timeout)
         assert item_id in queue.queue
 
-    @pytest.mark.asyncio
     async def test_queue_status(self, queue, test_message):
         """Test getting queue status."""
         await queue.enqueue_for_deliberation(test_message, timeout_seconds=60)
@@ -210,7 +205,6 @@ class TestDeliberationQueueClass:
         assert status["stats"]["total_queued"] == 1
         assert status["processing_count"] >= 0
 
-    @pytest.mark.asyncio
     async def test_item_details(self, queue, test_message):
         """Test getting detailed item information."""
         item_id = await queue.enqueue_for_deliberation(test_message, timeout_seconds=60)
@@ -357,7 +351,6 @@ class TestVotingSystem:
             content={"action": "high_risk_operation"},
         )
 
-    @pytest.mark.asyncio
     async def test_submit_agent_vote(self, queue, test_message):
         """Test submitting an agent vote."""
         item_id = await queue.enqueue_for_deliberation(
@@ -377,7 +370,6 @@ class TestVotingSystem:
         assert len(item.current_votes) == 1
         assert item.current_votes[0].vote == VoteType.APPROVE
 
-    @pytest.mark.asyncio
     async def test_multiple_agent_votes(self, queue, test_message):
         """Test multiple agents voting."""
         item_id = await queue.enqueue_for_deliberation(test_message, timeout_seconds=60)
@@ -390,7 +382,6 @@ class TestVotingSystem:
         item = queue.queue[item_id]
         assert len(item.current_votes) == 3
 
-    @pytest.mark.asyncio
     async def test_vote_update(self, queue, test_message):
         """Test updating an existing vote."""
         item_id = await queue.enqueue_for_deliberation(test_message, timeout_seconds=60)
@@ -417,7 +408,6 @@ class TestVotingSystem:
         assert len(agent1_votes) == 1
         assert agent1_votes[0].vote == VoteType.REJECT
 
-    @pytest.mark.asyncio
     async def test_vote_for_nonexistent_item(self, queue):
         """Test voting on nonexistent item returns False."""
         result = await queue.submit_agent_vote(
@@ -494,7 +484,6 @@ class TestHumanDecision:
             content={"action": "high_risk_operation"},
         )
 
-    @pytest.mark.asyncio
     async def test_submit_human_decision_approved(self, queue, test_message):
         """Test submitting human approval decision."""
         item_id = await queue.enqueue_for_deliberation(test_message, timeout_seconds=60)
@@ -516,7 +505,6 @@ class TestHumanDecision:
         assert item.human_reasoning == "Approved after manual review"
         assert item.status == DeliberationStatus.APPROVED
 
-    @pytest.mark.asyncio
     async def test_submit_human_decision_rejected(self, queue, test_message):
         """Test submitting human rejection decision."""
         item_id = await queue.enqueue_for_deliberation(test_message, timeout_seconds=60)
@@ -533,7 +521,6 @@ class TestHumanDecision:
         item = queue.queue[item_id]
         assert item.status == DeliberationStatus.REJECTED
 
-    @pytest.mark.asyncio
     async def test_submit_human_decision_wrong_status(self, queue, test_message):
         """Test human decision fails if item not under review."""
         item_id = await queue.enqueue_for_deliberation(test_message, timeout_seconds=60)
@@ -548,7 +535,6 @@ class TestHumanDecision:
 
         assert not result
 
-    @pytest.mark.asyncio
     async def test_submit_human_decision_nonexistent_item(self, queue):
         """Test human decision for nonexistent item."""
         result = await queue.submit_human_decision(
@@ -623,7 +609,6 @@ class TestStatisticsTracking:
             content={"action": "high_risk_operation"},
         )
 
-    @pytest.mark.asyncio
     async def test_total_queued_increments(self, queue, test_message):
         """Test total_queued counter increments."""
         assert queue.stats["total_queued"] == 0

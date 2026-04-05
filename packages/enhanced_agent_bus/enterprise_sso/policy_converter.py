@@ -1,6 +1,6 @@
 """
 Legacy Policy Conversion Tools.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Phase 10 Task 8: Legacy Policy Conversion Tools
 
@@ -22,7 +22,7 @@ from enum import Enum
 from typing import ClassVar
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -31,7 +31,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 logger = get_logger(__name__)
 # Constitutional Hash for all operations
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -115,7 +115,7 @@ class ConversionReport:
 class OPAValidator:
     """OPA validator for compilation testing.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     In production, this would use OPA's compilation API.
     For testing, we do basic syntax validation.
@@ -158,7 +158,7 @@ class OPAValidator:
 class PolicyConverter:
     """Converts legacy policies to Rego format.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Supports:
     - JSON policy format

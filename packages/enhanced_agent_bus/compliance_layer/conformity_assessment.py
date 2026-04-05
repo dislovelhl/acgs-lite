@@ -1,6 +1,6 @@
 """
 ACGS-2 EU AI Act Conformity Assessment
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Automated conformity assessment for EU AI Act compliance with
 evidence collection, Z3 formal verification integration, and
@@ -15,13 +15,13 @@ from typing import ClassVar
 from uuid import UUID, uuid4
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.json_utils import dumps as json_dumps
+from enhanced_agent_bus._compat.json_utils import dumps as json_dumps
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -30,7 +30,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 logger = get_logger(__name__)
 
 
-class AssessmentStatus(str, Enum):  # noqa: UP042
+class AssessmentStatus(str, Enum):
     """Conformity assessment status."""
 
     PENDING = "pending"
@@ -40,7 +40,7 @@ class AssessmentStatus(str, Enum):  # noqa: UP042
     REQUIRES_REMEDIATION = "requires_remediation"
 
 
-class EvidenceType(str, Enum):  # noqa: UP042
+class EvidenceType(str, Enum):
     """Types of compliance evidence."""
 
     AUDIT_LOG = "audit_log"
@@ -94,7 +94,7 @@ class ConformityAssessment:
     Implements Annex IV technical documentation requirements and
     integrates with Z3 formal verification for policy proofs.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH
@@ -207,7 +207,7 @@ class ConformityAssessment:
                 self.evidence_bank.append(evidence)
 
         logger.info(
-            f"[{self.CONSTITUTIONAL_HASH}] Collected {len(collected)} evidence items from audit logs"  # noqa: E501
+            f"[{self.CONSTITUTIONAL_HASH}] Collected {len(collected)} evidence items from audit logs"
         )
         return collected
 
@@ -371,7 +371,7 @@ class ConformityAssessment:
             "",
             "## Executive Summary",
             "",
-            f"This conformity assessment evaluates {len(self.requirements)} EU AI Act requirements.",  # noqa: E501
+            f"This conformity assessment evaluates {len(self.requirements)} EU AI Act requirements.",
             f"Total evidence items collected: {len(self.evidence_bank)}",
             "",
             "## Requirement Assessment Results",
@@ -485,7 +485,7 @@ class ConformityAssessment:
 class ContinuousComplianceMonitor:
     """Continuous compliance monitoring for real-time assessment.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH

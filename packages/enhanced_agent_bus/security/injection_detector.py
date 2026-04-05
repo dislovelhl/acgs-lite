@@ -1,6 +1,6 @@
 """
 ACGS-2 Prompt Injection Detection Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Dedicated module for detecting and neutralizing prompt injection attacks.
 Consolidates detection logic from multiple sources into a unified interface.
@@ -11,10 +11,10 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import ClassVar, Protocol, runtime_checkable
 
-from src.core.shared.type_guards import is_json_dict, is_str
+from enhanced_agent_bus._compat.type_guards import is_json_dict, is_str
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -357,7 +357,7 @@ class PromptInjectionDetector:
 
         if is_injection:
             logger.warning(
-                f"Prompt injection detected: type={primary_type.value if primary_type else 'unknown'}, "  # noqa: E501
+                f"Prompt injection detected: type={primary_type.value if primary_type else 'unknown'}, "
                 f"severity={max_severity.value if max_severity else 'unknown'}, "
                 f"confidence={confidence_score:.2f}, patterns={len(matched_patterns)}"
             )

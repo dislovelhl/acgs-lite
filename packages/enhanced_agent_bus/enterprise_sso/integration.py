@@ -1,6 +1,6 @@
 """
 Enterprise SSO Integration Service
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Integrates Enterprise SSO with Multi-Tenancy and MACI frameworks.
 Provides unified authentication flow for the Enhanced Agent Bus.
@@ -15,11 +15,10 @@ from datetime import UTC, datetime, timezone
 from uuid import uuid4
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.errors.exceptions import ACGSBaseError
-
+from enhanced_agent_bus._compat.errors import ACGSBaseError
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
@@ -69,11 +68,11 @@ except ImportError:
 
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
-from .tenant_sso_config import (  # noqa: E402
+from .tenant_sso_config import (
     TenantIdPConfig,
     TenantSSOConfig,
     TenantSSOConfigManager,
@@ -105,7 +104,7 @@ class SSOIntegrationError(ACGSBaseError):
 class SSOUser:
     """Authenticated SSO user information.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     external_id: str
@@ -134,7 +133,7 @@ class SSOUser:
 class SSOSession:
     """SSO session with tenant and MACI integration.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     session_id: str
@@ -178,7 +177,7 @@ class SSOSession:
 class SSOAuthenticationResult:
     """Result of SSO authentication.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     success: bool
@@ -209,7 +208,7 @@ class SSOAuthenticationResult:
 class EnterpriseSSOService:
     """Enterprise SSO integration service.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Provides unified SSO authentication with:
     - Multi-tenant support

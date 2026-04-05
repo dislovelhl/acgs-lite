@@ -1,7 +1,7 @@
 """
 Auth Injector for MCP Tool Requests.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 MACI Role: JUDICIAL
 
 Main entry point for MCP authentication injection:
@@ -18,11 +18,11 @@ from enum import Enum
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -50,19 +50,19 @@ AUTH_INJECTOR_OPERATION_ERRORS = (
 )
 
 
-class AuthMethod(str, Enum):  # noqa: UP042
+class AuthMethod(str, Enum):
     """Authentication method."""
 
     NONE = "none"
     API_KEY = "api_key"
     OAUTH2 = "oauth2"
     OIDC = "oidc"
-    BEARER_TOKEN = "bearer_token"  # noqa: S105
+    BEARER_TOKEN = "bearer_token"
     BASIC_AUTH = "basic_auth"
     CUSTOM = "custom"
 
 
-class InjectionStatus(str, Enum):  # noqa: UP042
+class InjectionStatus(str, Enum):
     """Status of credential injection."""
 
     SUCCESS = "success"
@@ -203,7 +203,7 @@ class AuthInjector:
     - Credential management and injection
     - Audit logging
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, config: AuthInjectorConfig | None = None):
@@ -745,7 +745,9 @@ class AuthInjector:
             "configured_tools": list(self._tool_auth_configs.keys()),
             "credential_stats": self._credential_manager.get_stats(),
             "token_refresh_stats": self._token_refresher.get_stats(),
-            "audit_stats": self._audit_logger.get_stats() if self._audit_logger else None,
+            "audit_stats": (
+                self._audit_logger.get_stats_snapshot().to_dict() if self._audit_logger else None
+            ),
             "constitutional_hash": CONSTITUTIONAL_HASH,
         }
 

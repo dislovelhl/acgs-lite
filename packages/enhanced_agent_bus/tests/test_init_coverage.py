@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive tests for src/core/enhanced_agent_bus/__init__.py
 Target: ≥95% line coverage on the __init__ module (71 stmts)
@@ -10,7 +10,8 @@ import warnings
 from typing import ClassVar
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Helper: import the package under test (already cached in sys.modules)

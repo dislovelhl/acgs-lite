@@ -1,7 +1,7 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Extended coverage tests for Constitutional Amendment Activation Saga.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets uncovered code paths in:
   - activate_amendment() hasattr / isinstance branching (lines 814-820, 832-837)
@@ -17,8 +17,8 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.constitutional import activation_saga as _saga_module
 
 # Import the module under test and helpers
@@ -171,7 +171,7 @@ class TestActivationSagaErrorAttributes:
         assert "something went wrong" in str(err)
 
     def test_is_subclass_of_acgs_base(self):
-        from src.core.shared.errors.exceptions import ACGSBaseError
+        from enhanced_agent_bus._compat.errors import ACGSBaseError
 
         assert issubclass(ActivationSagaError, ACGSBaseError)
 

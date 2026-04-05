@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - MACI Integration Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for MACI role separation enforcement integration with EnhancedAgentBus
 and MessageProcessor.
@@ -13,7 +13,7 @@ from enhanced_agent_bus.message_processor import MessageProcessor
 from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage, MessageType
 
 # Skip if MACI not available, but mark as governance tests when run
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 pytestmark = [
     pytest.mark.skipif(not MACI_AVAILABLE, reason="MACI module not available"),
     pytest.mark.governance,
@@ -54,7 +54,6 @@ class TestEnhancedAgentBusMACIIntegration:
         assert bus.maci_enabled
         assert bus._maci_strict_mode is False
 
-    @pytest.mark.asyncio
     async def test_register_agent_with_maci_role(self):
         """Test registering an agent with a MACI role."""
         bus = EnhancedAgentBus(enable_maci=True)
@@ -74,7 +73,6 @@ class TestEnhancedAgentBusMACIIntegration:
         assert maci_record is not None
         assert maci_record.role == MACIRole.EXECUTIVE
 
-    @pytest.mark.asyncio
     async def test_register_agent_without_maci_role(self):
         """Test registering an agent without a MACI role when MACI enabled."""
         bus = EnhancedAgentBus(enable_maci=True)
@@ -92,7 +90,6 @@ class TestEnhancedAgentBusMACIIntegration:
         maci_record = await bus.maci_registry.get_agent("generic-agent")
         assert maci_record is None
 
-    @pytest.mark.asyncio
     async def test_register_all_maci_roles(self):
         """Test registering agents with all MACI roles."""
         bus = EnhancedAgentBus(enable_maci=True)
@@ -207,7 +204,6 @@ class TestMACIProcessingStrategyIntegration:
         assert maci.registry is registry
         assert maci.enforcer is enforcer
 
-    @pytest.mark.asyncio
     async def test_maci_strategy_validates_messages(self):
         """Test that MACI strategy validates messages."""
         from enhanced_agent_bus.maci_enforcement import MACIEnforcer, MACIRoleRegistry
@@ -244,7 +240,6 @@ class TestMACIProcessingStrategyIntegration:
 class TestMACIEndToEndIntegration:
     """End-to-end tests for MACI integration."""
 
-    @pytest.mark.asyncio
     async def test_full_maci_workflow(self):
         """Test complete MACI workflow with bus and processor."""
         bus = EnhancedAgentBus(enable_maci=True, maci_strict_mode=False)
@@ -278,7 +273,6 @@ class TestMACIEndToEndIntegration:
         # Verify processor has MACI enabled
         assert bus.processor._enable_maci is True
 
-    @pytest.mark.asyncio
     async def test_maci_role_separation_enforced(self):
         """Test that role separation is enforced in message processing."""
 
@@ -327,7 +321,6 @@ class TestMACIConstitutionalCompliance:
         bus = EnhancedAgentBus(enable_maci=True)
         assert bus.maci_enforcer.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_agent_record_has_constitutional_hash(self):
         """Test that MACI agent records have constitutional hash."""
         bus = EnhancedAgentBus(enable_maci=True)

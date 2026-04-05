@@ -1,6 +1,6 @@
 """
 Integration tests for admin autonomy-tier CRUD API.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 All database and Redis dependencies are mocked; no real infrastructure required.
 Tests validate RBAC enforcement, tenant isolation, and full CRUD lifecycle.

@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """Optional Cognitive Orchestration Module (Phase 11).
 
 When unavailable, all exported names are stubbed to ``None`` or ``object``
@@ -14,7 +14,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
 
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """Optional Cognitive Orchestration Module (Phase 11).
 
 When unavailable, all exported names are stubbed to ``None`` or ``object``

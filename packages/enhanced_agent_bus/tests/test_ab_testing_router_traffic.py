@@ -1,6 +1,6 @@
 """
 A/B Testing Framework - Traffic Split Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Part of the A/B testing framework test suite.
 Extracted from monolithic test_ab_testing.py for better maintainability.
@@ -22,7 +22,7 @@ enhanced_agent_bus_dir = os.path.dirname(
 if enhanced_agent_bus_dir not in sys.path:
     sys.path.insert(0, enhanced_agent_bus_dir)
 
-from ab_testing import (  # noqa: E402
+from ab_testing import (
     AB_TEST_CONFIDENCE_LEVEL,
     AB_TEST_MIN_IMPROVEMENT,
     AB_TEST_MIN_SAMPLES,

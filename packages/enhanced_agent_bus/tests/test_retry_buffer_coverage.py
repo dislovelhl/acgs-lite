@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive tests for src/core/enhanced_agent_bus/retry_buffer.py
 Target: ≥95% line coverage (76 stmts).
@@ -11,14 +11,15 @@ from collections import deque
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # Block Rust extension before any imports
 _test_with_rust = os.environ.get("TEST_WITH_RUST", "0") == "1"
 if not _test_with_rust:
     sys.modules["enhanced_agent_bus_rust"] = None  # type: ignore[assignment]
 
-from enhanced_agent_bus.retry_buffer import (  # noqa: E402
+from enhanced_agent_bus.retry_buffer import (
     RETRY_DELIVERY_ERRORS,
     BufferedMessage,
     RetryBuffer,
@@ -636,9 +637,9 @@ class TestNonRetryableErrors:
         producer = AsyncMock(side_effect=Exception("boom"))
 
         with patch("asyncio.sleep", new=AsyncMock()):
-            try:  # noqa: SIM105
+            try:
                 await buf.process(producer)
-            except Exception:  # noqa: S110
+            except Exception:
                 pass
 
         assert buf._processing is False

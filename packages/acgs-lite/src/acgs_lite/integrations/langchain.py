@@ -11,7 +11,7 @@ Usage::
     governed_llm = GovernanceRunnable.wrap(llm)
     result = governed_llm.invoke("Hello!")
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -69,7 +69,7 @@ class GovernanceRunnable:
     ) -> None:
         if not LANGCHAIN_AVAILABLE:
             raise ImportError(
-                "langchain-core is required. Install with: pip install acgs-lite[langchain]"
+                "langchain-core is required. Install with: pip install acgs[langchain]"
             )
 
         self._runnable = runnable
@@ -79,6 +79,7 @@ class GovernanceRunnable:
             self.constitution,
             audit_log=self.audit_log,
             strict=strict,
+            audit_mode="full",
         )
         self.agent_id = agent_id
 
@@ -182,6 +183,7 @@ class GovernanceRunnable:
 
     @property
     def stats(self) -> dict[str, Any]:
+        """Return governance statistics for this runnable."""
         return {
             **self.engine.stats,
             "agent_id": self.agent_id,

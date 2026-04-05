@@ -1,6 +1,6 @@
 """
 ACGS-2 Compliance Layer - Layer 4: Compliance & Transparency
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements institutional-grade regulatory alignment for:
 - NIST AI RMF (Risk Management Framework)
@@ -13,7 +13,7 @@ Phase 2.1 Layer 4 Requirements from docs/ROADMAP_2025.md
 __version__ = "1.0.0"
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 

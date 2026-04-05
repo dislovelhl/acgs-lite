@@ -1,6 +1,6 @@
 """
 ACGS-2 Prometheus Metrics Configuration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements the required metrics from SPEC_ACGS2_ENHANCED.md Section 6.1.
 Per Expert Panel Review (Kelsey Hightower - Cloud Native Expert).
@@ -20,10 +20,10 @@ from datetime import UTC, datetime, timezone
 from enum import Enum
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.metrics.noop import (
+from enhanced_agent_bus._compat.metrics.noop import (
     CONTENT_TYPE_LATEST,
     PROMETHEUS_AVAILABLE,
     REGISTRY,
@@ -34,16 +34,16 @@ from src.core.shared.metrics.noop import (
     _safe_create_metric,
     generate_latest,
 )
-from src.core.shared.metrics.noop import (
+from enhanced_agent_bus._compat.metrics.noop import (
     NoOpCounter as _NoOpCounter,
 )
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
-from enhanced_agent_bus.observability.structured_logging import get_logger
+from .structured_logging import get_logger
 
 logger = get_logger(__name__)
 PROMETHEUS_SYSTEM_INFO_ERRORS = (
@@ -193,7 +193,7 @@ acgs_system_info = _safe_create_metric(
 # =============================================================================
 
 
-class ValidationResult(str, Enum):  # noqa: UP042
+class ValidationResult(str, Enum):
     """Validation result types for metric labels."""
 
     SUCCESS = "success"
@@ -203,7 +203,7 @@ class ValidationResult(str, Enum):  # noqa: UP042
     TIMEOUT = "timeout"
 
 
-class CacheTier(str, Enum):  # noqa: UP042
+class CacheTier(str, Enum):
     """Cache tier types for metric labels."""
 
     L1 = "l1"
@@ -211,7 +211,7 @@ class CacheTier(str, Enum):  # noqa: UP042
     L3 = "l3"
 
 
-class CacheOperation(str, Enum):  # noqa: UP042
+class CacheOperation(str, Enum):
     """Cache operation types for metric labels."""
 
     GET = "get"
@@ -220,7 +220,7 @@ class CacheOperation(str, Enum):  # noqa: UP042
     EXPIRE = "expire"
 
 
-class PolicyDecision(str, Enum):  # noqa: UP042
+class PolicyDecision(str, Enum):
     """Policy decision types for metric labels."""
 
     ALLOW = "allow"
@@ -233,7 +233,7 @@ class MetricsCollector:
     """
     Centralized metrics collector for ACGS-2.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Provides methods to record metrics following the spec in Section 6.1.
     """

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Coverage Boost Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targeted tests to boost coverage for high-risk modules:
 - message_processor.py: 71%→78%
@@ -30,7 +30,7 @@ pytestmark = pytest.mark.skipif(
 )
 
 # Constitutional Hash - Required for all governance operations
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # =============================================================================
 # Message Processor Coverage Tests
@@ -40,7 +40,6 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
 class TestMessageProcessorLogDecision:
     """Tests for _log_decision method coverage."""
 
-    @pytest.mark.asyncio
     async def test_log_decision_with_span(self) -> None:
         """Test _log_decision with OpenTelemetry span."""
         from enhanced_agent_bus.message_processor import MessageProcessor
@@ -77,7 +76,6 @@ class TestMessageProcessorLogDecision:
         # Verify span attributes were set
         mock_span.set_attribute.assert_called()
 
-    @pytest.mark.asyncio
     async def test_log_decision_without_span(self) -> None:
         """Test _log_decision without OpenTelemetry span."""
         from enhanced_agent_bus.message_processor import MessageProcessor
@@ -191,7 +189,6 @@ class TestMessageProcessorLogDecision:
 class TestMessageProcessorTracing:
     """Tests for OpenTelemetry tracing coverage."""
 
-    @pytest.mark.asyncio
     async def test_process_with_otel_mocked(self) -> None:
         """Test process with mocked OpenTelemetry."""
         from enhanced_agent_bus.message_processor import MessageProcessor
@@ -214,7 +211,6 @@ class TestMessageProcessorTracing:
         # Should return a validation result
         assert hasattr(result, "is_valid")
 
-    @pytest.mark.asyncio
     async def test_do_process_directly(self) -> None:
         """Test _do_process internal method."""
         from enhanced_agent_bus.message_processor import MessageProcessor
@@ -244,7 +240,6 @@ class TestMessageProcessorTracing:
 class TestOPAClientEmbedded:
     """Tests for embedded OPA evaluation coverage."""
 
-    @pytest.mark.asyncio
     async def test_evaluate_embedded_not_initialized(self) -> None:
         """Test embedded evaluation when not initialized."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -258,7 +253,6 @@ class TestOPAClientEmbedded:
             await client._evaluate_embedded({}, "test/policy")
         assert "OPANotInitializedError" in type(exc_info.value).__name__
 
-    @pytest.mark.asyncio
     async def test_evaluate_embedded_bool_result(self) -> None:
         """Test embedded evaluation returning bool."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -275,7 +269,6 @@ class TestOPAClientEmbedded:
         assert result["allowed"] is True
         assert result["metadata"]["mode"] == "embedded"
 
-    @pytest.mark.asyncio
     async def test_evaluate_embedded_dict_result(self) -> None:
         """Test embedded evaluation returning dict."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -296,7 +289,6 @@ class TestOPAClientEmbedded:
         assert result["metadata"]["mode"] == "embedded"
         assert result["metadata"]["extra"] == "info"
 
-    @pytest.mark.asyncio
     async def test_evaluate_embedded_unexpected_result_type(self) -> None:
         """Test embedded evaluation with unexpected result type."""
         from enhanced_agent_bus.opa_client import OPAClient
@@ -314,7 +306,6 @@ class TestOPAClientEmbedded:
         assert result["allowed"] is False
         assert "Unexpected result type" in result["reason"]
 
-    @pytest.mark.asyncio
     async def test_evaluate_embedded_exception(self) -> None:
         """Test embedded evaluation with exception."""
         from enhanced_agent_bus.exceptions import PolicyEvaluationError
@@ -335,7 +326,6 @@ class TestOPAClientEmbedded:
 class TestOPAClientFallback:
     """Tests for OPA client fallback behavior."""
 
-    @pytest.mark.asyncio
     async def test_evaluate_fallback(self) -> None:
         """Test fallback policy evaluation always fails closed."""
         from enhanced_agent_bus.opa_client import OPAClient

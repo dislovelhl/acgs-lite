@@ -1,6 +1,6 @@
 """
 ACGS-2 Constitutional Transition - State Transitions with Proofs
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements state transition management for constitutional governance:
 - Cryptographic proofs for state transitions
@@ -31,11 +31,11 @@ from enum import Enum
 
 # Constitutional hash for immutable validation
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -49,6 +49,7 @@ TRANSITION_EXECUTION_ERRORS = (
     KeyError,
     AttributeError,
     asyncio.TimeoutError,
+    Exception,
 )
 TRANSITION_ROLLBACK_ERRORS = (
     RuntimeError,
@@ -265,7 +266,7 @@ class StateTransitionManager:
     - Checkpoint creation for recovery
     - Rollback capability with proof verification
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, require_proof_verification: bool = True):
@@ -488,7 +489,7 @@ class StateTransitionManager:
         reason: str | None = None,
     ) -> tuple[bool, TransitionProof | None]:
         """Approve a validated transition."""
-        if transition.current_state != TransitionState.VALIDATED:  # noqa: SIM102
+        if transition.current_state != TransitionState.VALIDATED:
             # Move to pending approval first if validated
             if transition.current_state == TransitionState.VALIDATED:
                 await self.transition_to(
@@ -663,7 +664,7 @@ class StateTransitionManager:
                 errors.append(f"Proof {i} hash verification failed")
 
             # Verify chain continuity
-            if i > 0:  # noqa: SIM102
+            if i > 0:
                 if proof.previous_proof_hash != transition.proofs[i - 1].proof_hash:
                     errors.append(f"Proof {i} chain continuity broken")
 

@@ -11,7 +11,7 @@ can understand and effectively use the system. Providers must supply:
 This module provides helpers for generating Article 13 compliant system cards
 and validating that required disclosure fields are present.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Usage::
 

@@ -403,7 +403,8 @@ class GovernancePolicyFuzzer:
             for rule in constitution.rules:
                 rid = getattr(rule, "id", None) or getattr(rule, "rule_id", str(rule))
                 kws = list(getattr(rule, "keywords", []) or [])
-                rule_keywords[rid] = kws
+                if isinstance(rid, str):
+                    rule_keywords[rid] = kws
         except Exception:
             pass  # Constitution may not support .rules iteration — fall back to blind fuzzing
 

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - OPA Batch Operations
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 High-performance batch OPA policy evaluation optimization.
 Implements Phase 4-Task 3 acceptance criteria:
@@ -34,14 +34,14 @@ class _OPABatchMetrics(TypedDict):
     created_at: str
 
 
-import httpx  # noqa: E402
+import httpx
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -85,7 +85,7 @@ class OPABatchClient:
     - Metrics collection for observability
     - Fail-closed error handling for security
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -506,7 +506,7 @@ async def reset_batch_client() -> None:
 
     async with _batch_client_lock:
         if _batch_client is not None:
-            try:  # noqa: SIM105
+            try:
                 await _batch_client.close()
             except (RuntimeError, ConnectionError, OSError):
                 pass  # Ignore close errors during cleanup

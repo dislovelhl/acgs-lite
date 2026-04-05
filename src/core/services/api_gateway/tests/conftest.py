@@ -6,7 +6,7 @@ os.environ["ENABLE_RATE_LIMITING"] = "false"
 os.environ["SAML_ENABLED"] = "false"
 """
 Test configuration and fixtures for API Gateway service.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from unittest.mock import AsyncMock, MagicMock
@@ -34,6 +34,28 @@ def client(app):
     return TestClient(app, base_url="https://testserver")
 
 
+@pytest.fixture(autouse=True)
+def _bypass_feedback_rate_limit(monkeypatch):
+    """Bypass the per-route feedback rate limiter for all unit tests."""
+    from src.core.shared.security.rate_limiter import RateLimitResult
+
+    always_allowed = RateLimitResult(
+        allowed=True,
+        limit=1000,
+        remaining=999,
+        retry_after=0,
+        reset_at=0,
+    )
+
+    async def _always_allow(**kwargs):
+        return always_allowed
+
+    monkeypatch.setattr(
+        "src.core.services.api_gateway.routes.feedback.rate_limiter.is_allowed",
+        _always_allow,
+    )
+
+
 @pytest.fixture
 def sample_feedback():
     """Sample feedback data for testing."""
@@ -47,24 +69,6 @@ def sample_feedback():
         "url": "http://test.com/page",
         "metadata": {"browser": "chrome", "version": "91.0"},
     }
-
-
-@pytest.fixture
-def mock_feedback_dir(tmp_path):
-    """Mock feedback directory for testing."""
-    feedback_dir = tmp_path / "feedback"
-    feedback_dir.mkdir()
-
-    # Override the global FEEDBACK_DIR
-    from src.core.services.api_gateway import main as gateway_main
-
-    original_dir = gateway_main.FEEDBACK_DIR
-    gateway_main.FEEDBACK_DIR = feedback_dir
-
-    yield feedback_dir
-
-    # Restore original
-    gateway_main.FEEDBACK_DIR = original_dir
 
 
 @pytest.fixture
@@ -82,10 +86,10 @@ def mock_httpx():
         mock_client.__aenter__.return_value = mock_client
         mock_client.__aexit__.return_value = None
 
-        # Mock the httpx.AsyncClient import
+        # Mock the proxy client
         m.setattr(
-            "src.core.services.api_gateway.main.httpx.AsyncClient",
-            MagicMock(return_value=mock_client),
+            "src.core.services.api_gateway.routes.proxy.get_proxy_client",
+            AsyncMock(return_value=mock_client),
         )
 
         yield mock_client

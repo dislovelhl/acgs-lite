@@ -1,6 +1,6 @@
 """
 ACGS-2 Session Governance SDK
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 A Python client SDK for the Enhanced Agent Bus Session Governance API.
 Provides a clean interface for managing session governance configurations
@@ -41,10 +41,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 
-from src.core.shared.errors.exceptions import ACGSBaseError
+from enhanced_agent_bus._compat.errors import ACGSBaseError
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -68,12 +68,12 @@ SESSION_SDK_HEALTHCHECK_ERRORS = (
 
 # Constitutional hash for compliance validation
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
 
-class RiskLevel(str, Enum):  # noqa: UP042
+class RiskLevel(str, Enum):
     """Risk level classification for session governance."""
 
     LOW = "low"
@@ -82,7 +82,7 @@ class RiskLevel(str, Enum):  # noqa: UP042
     CRITICAL = "critical"
 
 
-class AutomationLevel(str, Enum):  # noqa: UP042
+class AutomationLevel(str, Enum):
     """Maximum automation level for session governance."""
 
     FULL = "full"
@@ -290,7 +290,7 @@ class SessionGovernanceClient:
     """
     Client SDK for Session Governance API.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Provides a clean interface for managing session governance configurations
     with full multi-tenant support and constitutional compliance.

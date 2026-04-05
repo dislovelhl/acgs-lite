@@ -1,6 +1,6 @@
 """
 MACI Role Mapping Service for Enterprise SSO Integration.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides role mapping from IdP sources (LDAP groups, SAML attributes,
 OAuth scopes) to MACI roles with priority-based conflict resolution and caching.
@@ -22,7 +22,7 @@ from datetime import UTC, datetime, timezone
 from enum import Enum
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -36,7 +36,7 @@ except ImportError:
 logger = get_logger(__name__)
 # Constitutional Hash for all MACI operations
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -54,7 +54,7 @@ class RoleMappingSource(Enum):
 class RoleMapping:
     """A mapping from an identity source to a MACI role.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     id: str
@@ -132,7 +132,7 @@ class RoleMapping:
 class RoleMappingResult:
     """Result of role mapping resolution.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     roles: list[MACIRole]
@@ -157,7 +157,7 @@ class RoleMappingResult:
 class RoleMappingCache:
     """In-memory cache for role mapping results with TTL.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, ttl_seconds: int = 300):  # Default 5 minute TTL
@@ -277,7 +277,7 @@ class RoleMappingCache:
 class RoleMappingService:
     """Service for managing and resolving MACI role mappings.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Provides:
     - CRUD operations for role mappings
@@ -489,7 +489,7 @@ class RoleMappingService:
     ) -> bool:
         """Check if a mapping matches the resolution criteria."""
         # Filter by tenant
-        if tenant_id is not None and mapping.tenant_id != tenant_id:  # noqa: SIM102
+        if tenant_id is not None and mapping.tenant_id != tenant_id:
             if mapping.tenant_id is not None:  # Skip non-global mappings
                 return False
 

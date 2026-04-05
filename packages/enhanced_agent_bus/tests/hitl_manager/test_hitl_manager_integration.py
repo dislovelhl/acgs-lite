@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - HITL Manager Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for the HITLManager class.
 Tests cover:
@@ -8,8 +8,6 @@ Tests cover:
 - Error handling and edge cases
 - Integration with related components
 """
-
-import pytest
 
 from .hitl_test_helpers import (
     MockAuditLedger,
@@ -21,7 +19,6 @@ from .hitl_test_helpers import (
 class TestHITLManagerIntegration:
     """Integration tests for HITLManager."""
 
-    @pytest.mark.asyncio
     async def test_full_approval_workflow(
         self, mock_queue: MockDeliberationQueue, mock_audit_ledger: MockAuditLedger
     ) -> None:
@@ -72,7 +69,6 @@ class TestHITLManagerIntegration:
         )
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_full_rejection_workflow(
         self, mock_queue: MockDeliberationQueue, mock_audit_ledger: MockAuditLedger
     ) -> None:

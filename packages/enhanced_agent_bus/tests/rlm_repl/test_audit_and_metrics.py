@@ -1,11 +1,9 @@
 """
 Tests for REPL audit trail, operation records, and metrics.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from datetime import UTC, datetime, timezone
-
-import pytest
 
 from enhanced_agent_bus.tests.rlm_repl.conftest import _make_repl
 
@@ -110,7 +108,7 @@ class TestReset:
 
 class TestConstitutionalHashInAudit:
     def test_audit_record_has_correct_hash(self):
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
+        from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
         repl = _make_repl()
         repl._record_operation("op_0", "code", "result", 1.0, True)

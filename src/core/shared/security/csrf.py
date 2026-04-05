@@ -1,6 +1,6 @@
 """
 ACGS-2 Shared Security - CSRF Protection Middleware
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides double-submit cookie CSRF protection for cookie-based sessions.
 Automatically skips enforcement for Bearer-token (JWT API) requests.
@@ -28,6 +28,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
 from src.core.shared.config import settings
+from src.core.shared.config.runtime_environment import resolve_runtime_environment
 from src.core.shared.structured_logging import get_logger
 
 logger = get_logger(__name__)
@@ -35,8 +36,12 @@ _SAFE_METHODS = frozenset({"GET", "HEAD", "OPTIONS", "TRACE"})
 _NON_PRODUCTION_ENVS = frozenset({"development", "dev", "test", "testing", "local", "ci"})
 
 
+def _runtime_environment() -> str:
+    return resolve_runtime_environment(getattr(settings, "env", None))
+
+
 def _is_production_like_environment() -> bool:
-    return settings.env not in _NON_PRODUCTION_ENVS
+    return _runtime_environment() not in _NON_PRODUCTION_ENVS
 
 
 def _parse_bool_env(value: str | None) -> bool:
@@ -57,6 +62,8 @@ class CSRFConfig:
         token_length: Byte-length of generated tokens (hex-encoded).
         secret: HMAC key for token signing.  Auto-generated when empty.
         exempt_paths: Path prefixes that skip CSRF checks.
+        session_cookie_name: Optional session cookie name. When set, CSRF is
+            only enforced for requests that actually carry that session cookie.
     """
 
     enabled: bool = True
@@ -70,6 +77,7 @@ class CSRFConfig:
     exempt_paths: tuple[str, ...] = field(
         default_factory=lambda: ("/health", "/readiness", "/metrics")
     )
+    session_cookie_name: str | None = None
 
     def get_secret(self) -> str:
         """Return the HMAC secret, falling back to env var or random.
@@ -91,7 +99,7 @@ class CSRFConfig:
         if _is_production_like_environment():
             raise OSError(
                 "CSRF_SECRET environment variable is required in production-like environments. "
-                f"Current environment: {settings.env!r}"
+                f"Current environment: {_runtime_environment()!r}"
             )
         if not (
             _parse_bool_env(os.getenv("CSRF_ALLOW_EPHEMERAL_SECRET"))
@@ -162,6 +170,11 @@ class CSRFMiddleware(BaseHTTPMiddleware):
         for exempt in self.config.exempt_paths:
             if path.startswith(exempt):
                 return await call_next(request)
+
+        # Only enforce CSRF when the request is actually using a browser session.
+        session_cookie_name = self.config.session_cookie_name
+        if session_cookie_name and session_cookie_name not in request.cookies:
+            return await call_next(request)
 
         # Validate double-submit
         cookie_token = request.cookies.get(self.config.cookie_name)

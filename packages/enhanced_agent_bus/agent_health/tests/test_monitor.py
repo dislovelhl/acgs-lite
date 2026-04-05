@@ -1,6 +1,6 @@
 """
 Unit tests for AgentHealthMonitor — TDD RED/GREEN.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests use FakeAsyncRedis (no real Redis) and an injectable _sleep parameter
 on AgentHealthMonitor to avoid patching asyncio.sleep globally (which would
@@ -87,7 +87,6 @@ def store(fake_redis: fake_aioredis.FakeRedis) -> AgentHealthStore:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_metric_emission_fires_at_configured_interval(
     store: AgentHealthStore,
 ) -> None:
@@ -111,7 +110,7 @@ async def test_metric_emission_fires_at_configured_interval(
             _sleep=fake_sleep,
         )
         task = mon.start()
-        try:  # noqa: SIM105
+        try:
             await task
         except asyncio.CancelledError:
             pass
@@ -120,7 +119,6 @@ async def test_metric_emission_fires_at_configured_interval(
     assert emitted[0].agent_id == AGENT_ID
 
 
-@pytest.mark.asyncio
 async def test_consecutive_failure_count_resets_to_zero(
     store: AgentHealthStore,
 ) -> None:
@@ -158,7 +156,7 @@ async def test_consecutive_failure_count_resets_to_zero(
             _sleep=fake_sleep,
         )
         task = mon.start()
-        try:  # noqa: SIM105
+        try:
             await task
         except asyncio.CancelledError:
             pass
@@ -167,7 +165,6 @@ async def test_consecutive_failure_count_resets_to_zero(
     assert reset_records, "At least one emitted record must show failure count = 0 after reset"
 
 
-@pytest.mark.asyncio
 async def test_recovery_event_recorded_in_store(
     store: AgentHealthStore,
 ) -> None:
@@ -198,7 +195,7 @@ async def test_recovery_event_recorded_in_store(
             _sleep=fake_sleep,
         )
         task = mon.start()
-        try:  # noqa: SIM105
+        try:
             await task
         except asyncio.CancelledError:
             pass
@@ -213,7 +210,6 @@ async def test_recovery_event_recorded_in_store(
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_monitor_continues_when_processing_loop_blocked(
     store: AgentHealthStore,
 ) -> None:
@@ -241,7 +237,7 @@ async def test_monitor_continues_when_processing_loop_blocked(
         # Start the monitor task — no "processing loop" is started; monitor
         # must emit metrics regardless (NFR-004: isolated asyncio.Task)
         task = mon.start()
-        try:  # noqa: SIM105
+        try:
             await task
         except asyncio.CancelledError:
             pass
@@ -254,7 +250,6 @@ async def test_monitor_continues_when_processing_loop_blocked(
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_metric_emission_overhead_under_one_ms(
     store: AgentHealthStore,
 ) -> None:
@@ -281,7 +276,6 @@ async def test_metric_emission_overhead_under_one_ms(
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_heartbeat_loss_sets_degraded_in_store(
     store: AgentHealthStore,
 ) -> None:
@@ -305,9 +299,9 @@ async def test_heartbeat_loss_sets_degraded_in_store(
             _sleep=crashing_sleep,
         )
         task = mon.start()
-        try:  # noqa: SIM105
+        try:
             await asyncio.wait_for(task, timeout=5.0)
-        except (TimeoutError, asyncio.CancelledError, Exception):  # noqa: S110
+        except (TimeoutError, asyncio.CancelledError, Exception):
             pass
 
     final = await store.get_health_record(AGENT_ID)
@@ -322,7 +316,6 @@ async def test_heartbeat_loss_sets_degraded_in_store(
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_monitor_stop_cancels_task(store: AgentHealthStore) -> None:
     """stop() cancels the background task cleanly."""
     blocked = asyncio.Event()
@@ -348,7 +341,6 @@ async def test_monitor_stop_cancels_task(store: AgentHealthStore) -> None:
     assert task.done(), "Task must be done after stop()"
 
 
-@pytest.mark.asyncio
 async def test_monitor_updates_memory_usage_from_provider(
     store: AgentHealthStore,
 ) -> None:
@@ -369,7 +361,7 @@ async def test_monitor_updates_memory_usage_from_provider(
             _sleep=fake_sleep,
         )
         task = mon.start()
-        try:  # noqa: SIM105
+        try:
             await task
         except asyncio.CancelledError:
             pass
@@ -380,7 +372,6 @@ async def test_monitor_updates_memory_usage_from_provider(
     )
 
 
-@pytest.mark.asyncio
 async def test_monitor_loop_survives_exceptions(
     store: AgentHealthStore,
 ) -> None:
@@ -419,7 +410,7 @@ async def test_monitor_loop_survives_exceptions(
             _sleep=fake_sleep,
         )
         task = mon.start()
-        try:  # noqa: SIM105
+        try:
             await task
         except asyncio.CancelledError:
             pass

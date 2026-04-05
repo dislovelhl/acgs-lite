@@ -1,6 +1,6 @@
 """
 ACGS-2 Decision Explanation Event Schema
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements FR-12 Decision Explanation API requirements from v2.3 specification.
 Provides structured factor attribution, 7-dimensional governance vector,
@@ -186,7 +186,7 @@ class DecisionExplanationV1(EventSchemaBase):
     - Counterfactual "what-if" analysis hints
     - EU AI Act Article 13 transparency compliance
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     SCHEMA_NAME: ClassVar[str] = "DecisionExplanation"

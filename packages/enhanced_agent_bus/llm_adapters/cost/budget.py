@@ -1,6 +1,6 @@
 """
 ACGS-2 Budget Management
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Manages budget limits for tenants and operations with cost tracking.
 """
@@ -10,7 +10,7 @@ from __future__ import annotations
 import asyncio
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 from typing_extensions import TypedDict
@@ -31,7 +31,7 @@ class BudgetManager:
     """
     Manages budget limits for tenants and operations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self) -> None:
@@ -73,7 +73,7 @@ class BudgetManager:
         limits = []
         for limit_id in limit_ids:
             limit = self._limits.get(limit_id)
-            if limit:  # noqa: SIM102
+            if limit:
                 # Check operation type filter
                 if limit.operation_type is None or limit.operation_type == operation_type:
                     limits.append(limit)

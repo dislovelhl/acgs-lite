@@ -1,5 +1,5 @@
 """Unit tests for MCP client operations (call_tool, read_resource, ping).
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -8,8 +8,8 @@ from datetime import UTC, datetime
 from unittest.mock import MagicMock
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.mcp_integration.client import (
     MCPConnectionError,
     MCPServerConnection,
@@ -21,13 +21,11 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
 
 class TestMCPClientCallTool:
-    @pytest.mark.asyncio
     async def test_call_tool_not_connected_raises(self):
         client = _make_client()
         with pytest.raises(MCPConnectionError, match="Not connected"):
             await client.call_tool("my_tool", {"arg": "val"})
 
-    @pytest.mark.asyncio
     async def test_call_tool_success(self):
         client = _make_client()
         await client.connect()
@@ -35,7 +33,6 @@ class TestMCPClientCallTool:
         assert "content" in result
         assert result["isError"] is False
 
-    @pytest.mark.asyncio
     async def test_call_tool_updates_last_activity(self):
         client = _make_client()
         await client.connect()
@@ -44,7 +41,6 @@ class TestMCPClientCallTool:
         assert client._connection.last_activity is not None
         assert client._connection.last_activity >= before
 
-    @pytest.mark.asyncio
     async def test_call_tool_with_session_id(self):
         client = _make_client()
         await client.connect()
@@ -53,20 +49,17 @@ class TestMCPClientCallTool:
 
 
 class TestMCPClientReadResource:
-    @pytest.mark.asyncio
     async def test_read_resource_not_connected_raises(self):
         client = _make_client()
         with pytest.raises(MCPConnectionError, match="Not connected"):
             await client.read_resource("example://resource")
 
-    @pytest.mark.asyncio
     async def test_read_resource_success(self):
         client = _make_client()
         await client.connect()
         result = await client.read_resource("example://resource")
         assert "contents" in result
 
-    @pytest.mark.asyncio
     async def test_read_resource_updates_last_activity(self):
         client = _make_client()
         await client.connect()
@@ -74,7 +67,6 @@ class TestMCPClientReadResource:
         await client.read_resource("example://resource")
         assert client._connection.last_activity >= before
 
-    @pytest.mark.asyncio
     async def test_read_resource_with_session_id(self):
         client = _make_client()
         await client.connect()
@@ -83,13 +75,11 @@ class TestMCPClientReadResource:
 
 
 class TestMCPClientPing:
-    @pytest.mark.asyncio
     async def test_ping_not_connected_raises(self):
         client = _make_client()
         with pytest.raises(MCPConnectionError, match="Not connected"):
             await client.ping()
 
-    @pytest.mark.asyncio
     async def test_ping_success(self):
         client = _make_client()
         await client.connect()
@@ -100,7 +90,6 @@ class TestMCPClientPing:
 
 
 class TestMCPClientSendRequest:
-    @pytest.mark.asyncio
     async def test_send_request_increments_total_requests(self):
         client = _make_client()
         await client.connect()
@@ -108,7 +97,6 @@ class TestMCPClientSendRequest:
         await client.ping()
         assert client._total_requests > initial
 
-    @pytest.mark.asyncio
     async def test_send_request_increments_connection_request_count(self):
         client = _make_client()
         await client.connect()
@@ -116,14 +104,12 @@ class TestMCPClientSendRequest:
         await client.ping()
         assert client._connection.request_count > prev
 
-    @pytest.mark.asyncio
     async def test_send_request_unknown_method_returns_error(self):
         client = _make_client()
         await client.connect()
         with pytest.raises(MCPConnectionError, match="Method not found"):
             await client._send_request("unknown/method", {})
 
-    @pytest.mark.asyncio
     async def test_send_request_error_increments_error_count(self):
         client = _make_client()
         await client.connect()
@@ -131,7 +117,6 @@ class TestMCPClientSendRequest:
             await client._send_request("bad/method", {})
         assert client._total_requests > 0
 
-    @pytest.mark.asyncio
     async def test_send_request_timeout_increments_errors(self):
         client = _make_client()
         await client.connect()
@@ -147,14 +132,12 @@ class TestMCPClientSendRequest:
         assert client._total_errors == initial_errors + 1
         assert client._connection.error_count == initial_conn_errors + 1
 
-    @pytest.mark.asyncio
     async def test_send_request_cleans_up_pending_on_success(self):
         client = _make_client()
         await client.connect()
         await client.ping()
         assert len(client._pending_requests) == 0
 
-    @pytest.mark.asyncio
     async def test_send_request_cleans_up_pending_on_error(self):
         client = _make_client()
         await client.connect()
@@ -162,7 +145,6 @@ class TestMCPClientSendRequest:
             await client._send_request("unknown/method", {})
         assert len(client._pending_requests) == 0
 
-    @pytest.mark.asyncio
     async def test_simulate_request_initialize(self):
         client = _make_client()
         client._connection = MCPServerConnection(server_id="x", config=client.config)
@@ -170,7 +152,6 @@ class TestMCPClientSendRequest:
         resp = await client._simulate_request(req)
         assert resp["result"]["protocolVersion"] == "2024-11-05"
 
-    @pytest.mark.asyncio
     async def test_simulate_request_tools_list(self):
         client = _make_client()
         client._connection = MCPServerConnection(server_id="x", config=client.config)
@@ -178,7 +159,6 @@ class TestMCPClientSendRequest:
         resp = await client._simulate_request(req)
         assert len(resp["result"]["tools"]) >= 1
 
-    @pytest.mark.asyncio
     async def test_simulate_request_resources_list(self):
         client = _make_client()
         client._connection = MCPServerConnection(server_id="x", config=client.config)
@@ -186,7 +166,6 @@ class TestMCPClientSendRequest:
         resp = await client._simulate_request(req)
         assert len(resp["result"]["resources"]) >= 1
 
-    @pytest.mark.asyncio
     async def test_simulate_request_tools_call(self):
         client = _make_client()
         client._connection = MCPServerConnection(server_id="x", config=client.config)
@@ -199,7 +178,6 @@ class TestMCPClientSendRequest:
         resp = await client._simulate_request(req)
         assert resp["result"]["isError"] is False
 
-    @pytest.mark.asyncio
     async def test_simulate_request_resources_read(self):
         client = _make_client()
         client._connection = MCPServerConnection(server_id="x", config=client.config)
@@ -212,7 +190,6 @@ class TestMCPClientSendRequest:
         resp = await client._simulate_request(req)
         assert resp["result"]["contents"][0]["uri"] == "test://uri"
 
-    @pytest.mark.asyncio
     async def test_simulate_request_ping(self):
         client = _make_client()
         client._connection = MCPServerConnection(server_id="x", config=client.config)
@@ -220,7 +197,6 @@ class TestMCPClientSendRequest:
         resp = await client._simulate_request(req)
         assert resp["result"]["status"] == "ok"
 
-    @pytest.mark.asyncio
     async def test_simulate_request_unknown_method(self):
         client = _make_client()
         client._connection = MCPServerConnection(server_id="x", config=client.config)
@@ -229,7 +205,6 @@ class TestMCPClientSendRequest:
         assert "error" in resp
         assert resp["error"]["code"] == -32601
 
-    @pytest.mark.asyncio
     async def test_send_request_no_connection_still_tracks_requests(self):
         client = _make_client()
 
@@ -243,12 +218,10 @@ class TestMCPClientSendRequest:
 
 
 class TestMCPClientSendNotification:
-    @pytest.mark.asyncio
     async def test_send_notification_does_not_raise(self):
         client = _make_client()
         await client._send_notification("initialized", {})
 
-    @pytest.mark.asyncio
     async def test_send_notification_arbitrary_method(self):
         client = _make_client()
         await client._send_notification("custom/notification", {"key": "val"})

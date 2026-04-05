@@ -2,7 +2,7 @@
 """
 Transaction Coordinator Metrics Module
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive metrics collection for TransactionCoordinator with:
 - Transaction count tracking (total, success, failure)
@@ -27,10 +27,10 @@ from typing import Protocol, cast
 
 # Constitutional compliance
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         CONSTITUTIONAL_HASH,
         JSONDict,
-    )  # noqa: E402
+    )
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"  # type: ignore[misc,assignment]
     JSONDict = dict  # type: ignore[misc,assignment]
@@ -282,7 +282,7 @@ def _get_or_create_metric(
         return metric
 
     except ValueError as e:
-        if "Duplicated timeseries" in str(e) or "already registered" in str(e):  # noqa: SIM102
+        if "Duplicated timeseries" in str(e) or "already registered" in str(e):
             # Try to retrieve from registry
             if REGISTRY is not None:
                 try:
@@ -313,7 +313,7 @@ def reset_metrics_cache() -> None:
 # =============================================================================
 
 
-class TransactionStatus(str, Enum):  # noqa: UP042
+class TransactionStatus(str, Enum):
     """Transaction status for metric labels."""
 
     SUCCESS = "success"
@@ -322,21 +322,21 @@ class TransactionStatus(str, Enum):  # noqa: UP042
     COMPENSATED = "compensated"
 
 
-class CompensationStatus(str, Enum):  # noqa: UP042
+class CompensationStatus(str, Enum):
     """Compensation status for metric labels."""
 
     SUCCESS = "success"
     FAILURE = "failure"
 
 
-class CheckpointOperation(str, Enum):  # noqa: UP042
+class CheckpointOperation(str, Enum):
     """Checkpoint operation type for metric labels."""
 
     SAVE = "save"
     RESTORE = "restore"
 
 
-class HealthStatus(str, Enum):  # noqa: UP042
+class HealthStatus(str, Enum):
     """Health status for the coordinator."""
 
     HEALTHY = "healthy"
@@ -412,7 +412,7 @@ class TransactionMetrics:
     - Concurrent transaction gauge
     - Consistency ratio
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Internal state for tracking when Prometheus is not available
@@ -993,12 +993,12 @@ class TransactionMetrics:
 # =============================================================================
 
 # Re-export for backward compatibility
-from .transaction_coordinator_alerts import (  # noqa: E402
+from .transaction_coordinator_alerts import (
     ALERT_RULES,
     AlertRule,
     generate_alert_rules_yaml,
 )
-from .transaction_coordinator_health import (  # noqa: E402
+from .transaction_coordinator_health import (
     DashboardQueries,
     HealthChecker,
     HealthCheckResult,
@@ -1015,7 +1015,7 @@ def get_transaction_metrics() -> TransactionMetrics:
     Returns:
         TransactionMetrics singleton instance
     """
-    from src.core.shared.di_container import DIContainer
+    from enhanced_agent_bus._compat.di_container import DIContainer
 
     try:
         result: TransactionMetrics = DIContainer.get(TransactionMetrics)  # type: ignore[no-any-return]
@@ -1028,13 +1028,14 @@ def get_transaction_metrics() -> TransactionMetrics:
 
 def reset_transaction_metrics() -> None:
     """Reset the global metrics instance. Useful for testing."""
-    from src.core.shared.di_container import DIContainer
+    from enhanced_agent_bus._compat.di_container import DIContainer
 
     DIContainer.register(TransactionMetrics, TransactionMetrics())
     reset_metrics_cache()
 
-
     # Export public API
+
+
 __all__ = [
     "ALERT_RULES",
     "CHECKPOINT_LATENCY_BUCKETS",

@@ -1,7 +1,7 @@
 """
 ACGS-2 Circuit Breaker FastAPI Router
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides FastAPI endpoints for circuit breaker health monitoring.
 """
@@ -9,7 +9,7 @@ This module provides FastAPI endpoints for circuit breaker health monitoring.
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 

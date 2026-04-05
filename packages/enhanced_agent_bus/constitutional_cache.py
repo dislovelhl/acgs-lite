@@ -4,7 +4,7 @@ Constitutional Cache Implementation
 Provides Redis-based caching for MACI governance operations with
 constitutional hash validation and automatic invalidation strategies.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -16,10 +16,10 @@ from datetime import datetime, timedelta
 import redis.asyncio as redis
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         CONSTITUTIONAL_HASH,
         JSONDict,
-    )  # noqa: E402
+    )
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"  # type: ignore[misc,assignment]
     JSONDict = dict  # type: ignore[misc,assignment]
@@ -29,7 +29,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 logger = get_logger(__name__)
 # =============================================================================
 # Cache Configuration Constants
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # =============================================================================
 
 DEFAULT_CACHE_TTL_SECONDS = 3600  # 1 hour - default TTL for cached entries
@@ -61,7 +61,7 @@ class ConstitutionalCache:
     - Cache hit/miss metrics
     - Automatic serialization
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

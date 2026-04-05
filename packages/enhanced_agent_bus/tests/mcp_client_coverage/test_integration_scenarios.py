@@ -1,5 +1,5 @@
 """Integration-style scenarios for MCP client and pool.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -19,7 +19,6 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
 
 class TestMCPClientIntegration:
-    @pytest.mark.asyncio
     async def test_full_lifecycle(self):
         client = _make_client()
         connect_events = []
@@ -42,7 +41,6 @@ class TestMCPClientIntegration:
         assert not client.is_connected
         assert len(disconnect_events) == 1
 
-    @pytest.mark.asyncio
     async def test_pool_full_lifecycle(self):
         pool = MCPConnectionPool()
         cfg1 = _make_config(server_url="http://alpha.example.com/mcp", server_name="alpha")
@@ -58,7 +56,6 @@ class TestMCPClientIntegration:
         await pool.disconnect_all()
         assert pool.get_metrics()["connected_servers"] == 0
 
-    @pytest.mark.asyncio
     async def test_multiple_requests_sequential(self):
         client = _make_client()
         await client.connect()
@@ -67,7 +64,6 @@ class TestMCPClientIntegration:
             await client.ping()
         assert client._total_requests >= n
 
-    @pytest.mark.asyncio
     async def test_connect_all_multiple_parallel(self):
         pool = MCPConnectionPool()
         configs = [
@@ -82,7 +78,6 @@ class TestMCPClientIntegration:
         assert len(results) == 5
         assert all(v for v in results.values())
 
-    @pytest.mark.asyncio
     async def test_remove_all_servers(self):
         pool = MCPConnectionPool()
         cfgs = [_make_config(server_url=f"http://r{i}.example.com/mcp") for i in range(3)]

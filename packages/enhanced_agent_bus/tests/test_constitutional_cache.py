@@ -1,10 +1,10 @@
 """
 Constitutional Cache Tests — CE-3
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests verify:
-- All cached data embeds constitutional hash cdd01ef066bc6cf2
+- All cached data embeds constitutional hash 608508a9bd224290
 - Retrieval with mismatched hash returns None
 - Tag-based invalidation clears related entries
 - PolicyCache auto-invalidates on policy update
@@ -18,8 +18,8 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.types import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.types import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.constitutional_cache import (
     VALIDATION_CACHE_TTL_SECONDS,
     ConstitutionalCache,
@@ -73,7 +73,6 @@ def validation_cache(mock_redis):
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_set_embeds_constitutional_hash(cache, mock_redis):
     """set() stores entry with CONSTITUTIONAL_HASH embedded."""
     await cache.set("policy", "pol-1", {"rule": "allow"})
@@ -84,7 +83,6 @@ async def test_set_embeds_constitutional_hash(cache, mock_redis):
     assert entry_dict["constitutional_hash"] == CONSTITUTIONAL_HASH
 
 
-@pytest.mark.asyncio
 async def test_get_local_hit_validates_hash(cache):
     """get() rejects local cache entry with wrong constitutional hash."""
     from enhanced_agent_bus.constitutional_cache import CacheEntry
@@ -92,7 +90,7 @@ async def test_get_local_hit_validates_hash(cache):
     key = cache._generate_key("policy", "pol-bad")
     bad_entry = CacheEntry(
         value={"data": "secret"},
-        constitutional_hash="wrong-hash-placeholder",  # intentionally invalid hash for rejection test  # noqa: E501
+        constitutional_hash="wrong-hash-placeholder",  # intentionally invalid hash for rejection test
         created_at=datetime.now(),
         ttl=3600,
         tags=[],
@@ -103,7 +101,6 @@ async def test_get_local_hit_validates_hash(cache):
     assert result is None
 
 
-@pytest.mark.asyncio
 async def test_get_redis_hit_validates_hash(cache, mock_redis):
     """get() from Redis returns None when hash mismatches."""
     stale = {
@@ -120,7 +117,6 @@ async def test_get_redis_hit_validates_hash(cache, mock_redis):
     assert result is None
 
 
-@pytest.mark.asyncio
 async def test_get_local_hit_valid_hash(cache):
     """get() returns value from local cache when hash is correct."""
     from enhanced_agent_bus.constitutional_cache import CacheEntry
@@ -144,7 +140,6 @@ async def test_get_local_hit_valid_hash(cache):
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_invalidate_by_tag_clears_local_entries(cache):
     """invalidate_by_tag() removes matching local cache entries."""
     from enhanced_agent_bus.constitutional_cache import CacheEntry
@@ -164,7 +159,6 @@ async def test_invalidate_by_tag_clears_local_entries(cache):
     assert key not in cache._local_cache
 
 
-@pytest.mark.asyncio
 async def test_invalidate_by_tag_uses_redis_set_index(cache, mock_redis):
     """invalidate_by_tag() uses Redis SET index when populated."""
     mock_redis.smembers.return_value = {b"acgs:cache:policy:pol-1:abc12345"}
@@ -179,7 +173,6 @@ async def test_invalidate_by_tag_uses_redis_set_index(cache, mock_redis):
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_policy_cache_cache_and_get(policy_cache, mock_redis):
     """PolicyCache.cache_policy() stores; get_policy() retrieves."""
     await policy_cache.cache_policy("pol-1", "rego rule allow { true }")
@@ -199,7 +192,6 @@ async def test_policy_cache_cache_and_get(policy_cache, mock_redis):
     assert "content" in result
 
 
-@pytest.mark.asyncio
 async def test_policy_cache_invalidate_removes_entry(policy_cache, mock_redis):
     """invalidate_policy() calls delete on the correct key."""
     from enhanced_agent_bus.constitutional_cache import CacheEntry
@@ -219,7 +211,6 @@ async def test_policy_cache_invalidate_removes_entry(policy_cache, mock_redis):
     assert key not in policy_cache._local_cache
 
 
-@pytest.mark.asyncio
 async def test_policy_cache_invalidate_all(policy_cache, mock_redis):
     """invalidate_all_policies() invalidates by 'policy' tag."""
     mock_redis.smembers.return_value = {b"acgs:cache:policy:pol-1:aabb1122"}
@@ -232,7 +223,6 @@ async def test_policy_cache_invalidate_all(policy_cache, mock_redis):
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_validation_cache_uses_300s_ttl(validation_cache, mock_redis):
     """cache_validation() defaults to VALIDATION_CACHE_TTL_SECONDS (300)."""
     await validation_cache.cache_validation("key-1", {"valid": True})
@@ -242,7 +232,6 @@ async def test_validation_cache_uses_300s_ttl(validation_cache, mock_redis):
     assert ttl == VALIDATION_CACHE_TTL_SECONDS
 
 
-@pytest.mark.asyncio
 async def test_validation_cache_custom_ttl(validation_cache, mock_redis):
     """cache_validation() accepts explicit ttl override."""
     await validation_cache.cache_validation("key-2", {"valid": True}, ttl=60)
@@ -255,7 +244,6 @@ async def test_validation_cache_custom_ttl(validation_cache, mock_redis):
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_local_cache_max_entries_evicts_oldest(mock_redis):
     """Local cache evicts oldest entry when max_entries exceeded."""
     small_cache = ConstitutionalCache(redis_client=mock_redis, default_ttl=3600, max_entries=3)

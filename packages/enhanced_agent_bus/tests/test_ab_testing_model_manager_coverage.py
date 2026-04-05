@@ -1,6 +1,6 @@
 """
 Tests for ab_testing_infra/model_manager.py
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import logging

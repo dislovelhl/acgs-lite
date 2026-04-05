@@ -1,13 +1,11 @@
 """
 Unit tests for Batch Processor Worker Pool.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
 from unittest.mock import AsyncMock, MagicMock
-
-import pytest
 
 from enhanced_agent_bus.batch_processor_infra.workers import WorkerPool
 from enhanced_agent_bus.models import (
@@ -20,7 +18,6 @@ from enhanced_agent_bus.validators import ValidationResult
 
 
 class TestWorkerPool:
-    @pytest.mark.asyncio
     async def test_process_item_success(self):
         pool = WorkerPool(max_concurrency=2)
         item = BatchRequestItem(
@@ -37,7 +34,6 @@ class TestWorkerPool:
         assert result.status == BatchItemStatus.SUCCESS.value
         assert result.processing_time_ms > 0
 
-    @pytest.mark.asyncio
     async def test_process_item_retry_success(self):
         pool = WorkerPool(max_concurrency=2)
         item = BatchRequestItem(
@@ -58,7 +54,6 @@ class TestWorkerPool:
         assert result.valid
         assert call_count == 2
 
-    @pytest.mark.asyncio
     async def test_circuit_breaker_trip(self):
         pool = WorkerPool(max_concurrency=1)
         # Lower max failures for test
@@ -82,7 +77,6 @@ class TestWorkerPool:
         result = await pool.process_item(item, mock_fail)
         assert "Circuit breaker tripped" in result.error_message
 
-    @pytest.mark.asyncio
     async def test_concurrency_limit(self):
         pool = WorkerPool(max_concurrency=1)
         item = BatchRequestItem(

@@ -491,10 +491,16 @@ class PolicyLinter:
 
     @staticmethod
     def _rule_to_dict(rule: Any) -> dict[str, Any]:
+        sev = getattr(rule, "severity", "")
+        # Handle enum severity (e.g. Severity.CRITICAL → "critical")
+        if hasattr(sev, "name"):
+            sev = sev.name
+        elif hasattr(sev, "value"):
+            sev = sev.value
         return {
             "id": getattr(rule, "id", getattr(rule, "rule_id", None)),
             "description": getattr(rule, "description", ""),
-            "severity": getattr(rule, "severity", ""),
+            "severity": sev,
             "category": getattr(rule, "category", ""),
             "workflow_action": getattr(rule, "workflow_action", ""),
             "keywords": list(getattr(rule, "keywords", []) or []),

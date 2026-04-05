@@ -1,6 +1,6 @@
 """
 Comprehensive tests for Constitutional Saga workflow module.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Coverage targets:
 - SagaStatus and StepStatus enums
@@ -60,7 +60,6 @@ class TestFileSagaPersistenceProvider:
             context={"data": "test"},
         )
 
-    @pytest.mark.asyncio
     async def test_save_state(self, provider, sample_state, temp_dir):
         """Test saving saga state."""
         await provider.save_state(sample_state)
@@ -68,7 +67,6 @@ class TestFileSagaPersistenceProvider:
         file_path = Path(temp_dir) / f"{sample_state.saga_id}.json"
         assert file_path.exists()
 
-    @pytest.mark.asyncio
     async def test_load_state(self, provider, sample_state, temp_dir):
         """Test loading saga state."""
         await provider.save_state(sample_state)
@@ -78,13 +76,11 @@ class TestFileSagaPersistenceProvider:
         assert loaded.saga_id == sample_state.saga_id
         assert loaded.status == sample_state.status
 
-    @pytest.mark.asyncio
     async def test_load_state_nonexistent(self, provider):
         """Test loading nonexistent state returns None."""
         loaded = await provider.load_state("nonexistent-saga")
         assert loaded is None
 
-    @pytest.mark.asyncio
     async def test_delete_state(self, provider, sample_state, temp_dir):
         """Test deleting saga state."""
         await provider.save_state(sample_state)
@@ -93,7 +89,6 @@ class TestFileSagaPersistenceProvider:
         file_path = Path(temp_dir) / f"{sample_state.saga_id}.json"
         assert not file_path.exists()
 
-    @pytest.mark.asyncio
     async def test_delete_state_nonexistent(self, provider):
         """Test deleting nonexistent state doesn't error."""
         await provider.delete_state("nonexistent")  # Should not raise

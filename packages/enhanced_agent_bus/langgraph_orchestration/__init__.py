@@ -1,6 +1,6 @@
 """
 ACGS-2 LangGraph-Style Orchestration Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Graph-based workflow execution engine implementing:
 - Cyclic state machine patterns (Actor Model)
@@ -14,7 +14,7 @@ Reference: docs/ROADMAP_2025.md Phase 3.1 CEOS Architecture
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 

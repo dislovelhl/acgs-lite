@@ -3,7 +3,8 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
@@ -76,7 +77,6 @@ def oidc_provider():
     return provider
 
 
-@pytest.mark.asyncio
 async def test_validate_id_token_accepts_valid_signed_token(oidc_provider, monkeypatch):
     private_key = _generate_rsa_private_key()
     id_token, jwk = _build_signed_id_token(
@@ -94,7 +94,7 @@ async def test_validate_id_token_accepts_valid_signed_token(oidc_provider, monke
 
     claims, errors = await oidc_provider._validate_id_token(
         id_token=id_token,
-        access_token="access-token",  # noqa: S106
+        access_token="access-token",
         expected_nonce="nonce-123",
     )
 
@@ -103,7 +103,6 @@ async def test_validate_id_token_accepts_valid_signed_token(oidc_provider, monke
     assert claims["iss"] == oidc_provider._metadata.issuer
 
 
-@pytest.mark.asyncio
 async def test_validate_id_token_rejects_invalid_signature(oidc_provider, monkeypatch):
     trusted_key = _generate_rsa_private_key()
     attacker_key = _generate_rsa_private_key()
@@ -130,7 +129,7 @@ async def test_validate_id_token_rejects_invalid_signature(oidc_provider, monkey
 
     claims, errors = await oidc_provider._validate_id_token(
         id_token=id_token,
-        access_token="access-token",  # noqa: S106
+        access_token="access-token",
         expected_nonce="nonce-123",
     )
 
@@ -139,7 +138,6 @@ async def test_validate_id_token_rejects_invalid_signature(oidc_provider, monkey
     assert any("Validation error" in error for error in errors)
 
 
-@pytest.mark.asyncio
 async def test_validate_id_token_fails_closed_when_jwks_unavailable(oidc_provider, monkeypatch):
     private_key = _generate_rsa_private_key()
     id_token, _ = _build_signed_id_token(
@@ -157,7 +155,7 @@ async def test_validate_id_token_fails_closed_when_jwks_unavailable(oidc_provide
 
     claims, errors = await oidc_provider._validate_id_token(
         id_token=id_token,
-        access_token="access-token",  # noqa: S106
+        access_token="access-token",
         expected_nonce="nonce-123",
     )
 

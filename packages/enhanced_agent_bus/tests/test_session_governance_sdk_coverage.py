@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive test suite for enterprise_sso/session_governance_sdk.py
 Target: >=90% coverage
@@ -17,8 +17,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.enterprise_sso.session_governance_sdk import (
     ConcurrencyCheckResult,
     ConcurrencyPolicy,
@@ -218,8 +218,8 @@ class TestConcurrencyCheckResult:
 
 class TestSessionToken:
     def test_default_values(self):
-        token = SessionToken(access_token="tok123")  # noqa: S106
-        assert token.token_type == "Bearer"  # noqa: S105
+        token = SessionToken(access_token="tok123")
+        assert token.token_type == "Bearer"
         assert token.expires_in == 3600
         assert token.refresh_token is None
         assert token.scope is None
@@ -729,7 +729,7 @@ class TestSessionTokenManager:
         manager = SessionTokenManager(private_key=TEST_PRIVATE_KEY)
         token = await manager.generate_access_token("sid1", "t1", "u1", ["admin", "viewer"])
         assert token.access_token != ""
-        assert token.token_type == "Bearer"  # noqa: S105
+        assert token.token_type == "Bearer"
         assert token.expires_in == 60 * 60
         assert token.constitutional_hash == CONSTITUTIONAL_HASH
 

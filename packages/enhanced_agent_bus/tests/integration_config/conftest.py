@@ -1,6 +1,6 @@
 """
 Shared fixtures and models for Integration Config API tests.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Phase 10 Task 7: Enterprise Integration Configuration API
 """
@@ -15,8 +15,8 @@ from typing import Any, ClassVar, Optional
 import pytest
 
 # Constitutional Hash for all operations
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.types import JSONDict
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.types import JSONDict
 
 # ============================================================================
 # Integration Types and Models
@@ -49,7 +49,7 @@ class IntegrationStatus(Enum):
 class IntegrationConfig:
     """Configuration for an enterprise integration.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     id: str
@@ -99,7 +99,7 @@ class IntegrationConfig:
 class EncryptionService:
     """Service for encrypting/decrypting sensitive configuration data.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, vault_client: Any | None = None):
@@ -166,7 +166,7 @@ class EncryptionService:
 class IntegrationHealthChecker:
     """Health checker for enterprise integrations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     async def check_ldap(self, config: JSONDict) -> JSONDict:
@@ -218,7 +218,7 @@ class IntegrationHealthChecker:
 class AuditService:
     """Audit logging service for integration operations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self):
@@ -263,7 +263,7 @@ class AuditService:
 class IntegrationConfigService:
     """Service for managing enterprise integration configurations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Provides:
     - CRUD operations for integrations

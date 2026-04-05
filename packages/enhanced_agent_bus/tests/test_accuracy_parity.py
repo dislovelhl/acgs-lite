@@ -1,6 +1,6 @@
 """
 Accuracy parity tests for ONNX vs keyword-based impact scoring.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module validates that the ONNX-based scoring path produces results
 that are consistent with the keyword-based baseline, ensuring:
@@ -24,7 +24,8 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
-from src.core.shared.types import JSONDict
+
+from enhanced_agent_bus._compat.types import JSONDict
 
 # Import the module under test
 from enhanced_agent_bus.deliberation_layer.impact_scorer import (

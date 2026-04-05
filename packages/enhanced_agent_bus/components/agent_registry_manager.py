@@ -1,4 +1,4 @@
-"""Constitutional Hash: cdd01ef066bc6cf2
+"""Constitutional Hash: 608508a9bd224290
 Agent Registry Manager Component
 
 Handles agent registration, discovery, and management operations.
@@ -7,7 +7,7 @@ and providing methods to query and manage agent information.
 """
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -81,7 +81,7 @@ class AgentRegistryManager:
                 "capabilities": capabilities or [],
                 "metadata": metadata or {},
                 "tenant_id": tenant_id,
-                "registered_at": "2024-01-01T00:00:00Z",  # Would use datetime.now(timezone.utc) in real implementation  # noqa: E501
+                "registered_at": "2024-01-01T00:00:00Z",  # Would use datetime.now(timezone.utc) in real implementation
                 "status": "active",
             }
 

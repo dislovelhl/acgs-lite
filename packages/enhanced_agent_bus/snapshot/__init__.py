@@ -1,6 +1,6 @@
 """
 ACGS-2 Snapshot Governance Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Bridges ACGS-2 constitutional governance to Ethereum DAO governance via Snapshot.
 - Sync proposals from Snapshot spaces

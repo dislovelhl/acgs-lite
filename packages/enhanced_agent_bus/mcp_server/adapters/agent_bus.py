@@ -3,12 +3,11 @@ EnhancedAgentBus Adapter for MCP Integration.
 
 Bridges MCP tools/resources with the Enhanced Agent Bus.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
-
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -35,7 +34,7 @@ class AgentBusAdapter:
     the agent bus governance system.
     """
 
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
     def __init__(
         self,
@@ -142,22 +141,13 @@ class AgentBusAdapter:
 
         except _AGENT_BUS_ADAPTER_ERRORS as e:
             logger.error(f"Agent bus validation error: {e}")
-
             if strict_mode:
-                # Fail closed
-                return {
-                    "compliant": False,
-                    "confidence": 0.0,
-                    "violations": [
-                        {
-                            "principle": "system",
-                            "severity": "high",
-                            "description": f"Validation system error: {e}",
-                        }
-                    ],
-                    "recommendations": ["Retry validation when system recovers"],
-                    "fail_closed": True,
-                }
+                return self._build_fail_closed_validation_result(str(e))
+            raise
+        except Exception as e:
+            logger.exception(f"Unexpected agent bus validation error: {e}")
+            if strict_mode:
+                return self._build_fail_closed_validation_result(str(e))
             raise
 
     async def _validate_standalone(
@@ -171,7 +161,7 @@ class AgentBusAdapter:
         confidence = 1.0
 
         # Basic validation rules
-        if context.get("data_sensitivity") in ["confidential", "restricted"]:  # noqa: SIM102
+        if context.get("data_sensitivity") in ["confidential", "restricted"]:
             if not context.get("consent_obtained"):
                 violations.append(
                     {
@@ -183,7 +173,7 @@ class AgentBusAdapter:
                 confidence -= 0.3
 
         high_risk_patterns = ["delete", "drop", "admin", "root", "exec"]
-        if any(p in action.lower() for p in high_risk_patterns):  # noqa: SIM102
+        if any(p in action.lower() for p in high_risk_patterns):
             if not context.get("authorization_verified"):
                 violations.append(
                     {
@@ -295,6 +285,30 @@ class AgentBusAdapter:
                 "validation_result": None,
                 "conditions": [],
             }
+        except Exception as e:
+            logger.exception(f"Unexpected governance request error: {e}")
+            return {
+                "status": "error",
+                "error": str(e),
+                "validation_result": None,
+                "conditions": [],
+            }
+
+    def _build_fail_closed_validation_result(self, error_message: str) -> JSONDict:
+        """Return the canonical fail-closed response for validation errors."""
+        return {
+            "compliant": False,
+            "confidence": 0.0,
+            "violations": [
+                {
+                    "principle": "system",
+                    "severity": "high",
+                    "description": f"Validation system error: {error_message}",
+                }
+            ],
+            "recommendations": ["Retry validation when system recovers"],
+            "fail_closed": True,
+        }
 
     def get_metrics(self) -> JSONDict:
         """Get adapter metrics."""

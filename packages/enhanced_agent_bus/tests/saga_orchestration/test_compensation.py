@@ -1,6 +1,6 @@
 """
 Tests for Saga Compensation.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import pytest
@@ -21,7 +21,6 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 class TestSagaCompensation:
     """Tests for saga compensation logic."""
 
-    @pytest.mark.asyncio
     async def test_compensation_in_reverse_order(self, orchestrator: SagaOrchestrator):
         """Test that compensation happens in reverse order."""
         compensation_order: list[str] = []
@@ -84,7 +83,6 @@ class TestSagaCompensation:
         # Compensation should be in reverse order
         assert compensation_order == ["step2", "step1"]
 
-    @pytest.mark.asyncio
     async def test_compensation_with_skip_strategy(self, orchestrator: SagaOrchestrator):
         """Test compensation with SKIP strategy for failed compensations."""
 
@@ -132,7 +130,6 @@ class TestSagaCompensation:
         # With SKIP strategy, saga should be marked as compensated
         assert result.status == SagaStatus.COMPENSATED
 
-    @pytest.mark.asyncio
     async def test_partial_compensation(self, orchestrator: SagaOrchestrator):
         """Test partial compensation when some compensations fail."""
 

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Contract Validator & Registry
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides:
 - ContractValidationResult — outcome of validating a message against a contract
@@ -100,14 +100,14 @@ class ContractValidator:
         impact_score: float | None = message_metadata.get("impact_score")  # type: ignore[assignment]
 
         # --- Permission checks -----------------------------------------
-        if action and contract.permissions.allowed_actions:  # noqa: SIM102
+        if action and contract.permissions.allowed_actions:
             if action not in contract.permissions.allowed_actions:
                 violations.append(
                     f"Action '{action}' not in allowed_actions: "
                     f"{contract.permissions.allowed_actions}"
                 )
 
-        if impact_score is not None:  # noqa: SIM102
+        if impact_score is not None:
             if impact_score > contract.permissions.max_impact_score:
                 violations.append(
                     f"Impact score {impact_score} exceeds max "

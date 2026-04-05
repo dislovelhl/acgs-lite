@@ -1,15 +1,13 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # Sprint 55 — batch_processor_infra/orchestrator.py coverage
 """
 Comprehensive tests for BatchProcessorOrchestrator achieving >=95% coverage.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
-
-import pytest
 
 from enhanced_agent_bus.batch_processor_infra.orchestrator import (
     BatchProcessorOrchestrator,

@@ -1,14 +1,14 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 [build-system]
 requires = ["setuptools>=80.9.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "acgs"
-version = "3.0.0"
-description = "Advanced Constitutional Governance System — AI governance at 560ns"
+version = "3.0.1"
+description = "Partial-open-source ACGS package line for governance runtime, shared components, and platform tooling"
 requires-python = ">=3.11"
-license = "Apache-2.0"
+license = "AGPL-3.0-or-later"
 dependencies = [
     "fastapi>=0.127.0",
     "httpx>=0.27.0",
@@ -30,8 +30,6 @@ dependencies = [
     "PyYAML>=6.0.0",
     "psutil>=5.9.0",
     "jsonschema>=4.0.0",
-    "pyyaml>=6.0",
-    "click>=8.0",
 ]
 
 [project.optional-dependencies]
@@ -73,12 +71,17 @@ managed = true
 package = true
 
 [tool.uv.workspace]
-members = ["packages/enhanced_agent_bus", "packages/acgs-lite"]
+members = ["packages/enhanced_agent_bus", "packages/acgs-lite", "packages/acgs-deliberation"]
+
+[tool.uv.sources]
+enhanced-agent-bus = { workspace = true }
+acgs-lite = { workspace = true }
+acgs-deliberation = { workspace = true }
 
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-exclude = [".codex-home", "examples", "node_modules", "__pycache__"]
+exclude = [".claude", ".codex", ".codex-home", ".codex-readiness-integration-test", "demo", "examples", "node_modules", "__pycache__", "tools"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "BLE", "S", "RUF", "C90"]
@@ -91,18 +94,25 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["S105", "S106", "S108", "BLE001", "S311", "F811", "B017", "S110"]
+"tests/**/*.py" = ["S105", "S106", "S108", "BLE001", "S311", "F811", "B017", "S110", "B905"]
+"**/tests/**/*.py" = ["S105", "S106", "S108", "BLE001", "S311", "F811", "B017", "S110", "B905"]
 "packages/enhanced_agent_bus/**/*.py" = ["BLE001", "S311"]
 "packages/acgs-lite/**/*.py" = ["BLE001", "S311"]
-"src/**/*.py" = ["BLE001"]
+"packages/acgs-core/**/*.py" = ["BLE001", "S102"]
+"packages/clinicalguard/**/*.py" = ["BLE001", "S104", "S108", "S110"]
+"packages/constitutional_swarm/**/*.py" = ["S105"]
+"src/**/*.py" = ["BLE001", "S105", "S106", "S108", "RUF001", "RUF002", "RUF003"]
+"src/acgs_lite/**/*.py" = ["BLE001", "S311", "F401", "RUF012"]
 "autoresearch/**/*.py" = ["BLE001", "S311", "T201"]
 "**/__init__.py" = ["F401"]
+"**/examples/**/*.py" = ["E402", "S105", "S106", "BLE001"]
+"packages/acgs-lite/examples/*.py" = ["E402", "S105", "S106", "BLE001"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 15
 
 [tool.ruff.lint.isort]
-known-first-party = ["src", "packages", "acgs_lite", "enhanced_agent_bus"]
+known-first-party = ["src", "packages", "acgs_lite", "enhanced_agent_bus", "acgs_deliberation", "clinicalguard"]
 
 [tool.mypy]
 python_version = "3.11"
@@ -113,7 +123,15 @@ exclude = ["build", "dist", ".codex-home", ".venv", "tests"]
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "--import-mode=importlib"
-testpaths = ["tests", "packages/enhanced_agent_bus/tests", "packages/acgs-lite/tests"]
+pythonpath = ["."]
+testpaths = [
+    "tests",
+    "packages/enhanced_agent_bus",
+    "packages/acgs-lite/tests",
+    "packages/acgs-deliberation/tests",
+    "src/core/shared",
+    "src/core/services/api_gateway/tests",
+]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
@@ -129,14 +147,18 @@ markers = [
     "maci: marks MACI enforcement tests",
     "chaos: marks chaos engineering tests",
     "pqc: marks post-quantum cryptography tests",
+    "pqc_deprecation: marks PQC deprecation and migration tests",
+    "compliance: marks compliance validation tests",
+    "e2e: marks end-to-end tests",
+    "postgres: marks tests requiring PostgreSQL-specific behavior",
 ]
 
 [tool.coverage.run]
-source = ["src", "packages/enhanced_agent_bus", "packages/acgs-lite/src"]
-omit = ["tests/*", "**/tests/*", "**/__init__.py"]
+source = ["src", "packages/enhanced_agent_bus", "packages/acgs-lite/src", "packages/acgs-deliberation/src"]
+omit = ["tests/*", "**/tests/*", "**/__init__.py", "src/acgs_lite/*"]
 
 [tool.coverage.report]
-fail_under = 30
+fail_under = 70
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",

@@ -1,6 +1,6 @@
 """Tests for URL and File Validation Security Module.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for SEC-003 (SSRF Protection) and SEC-006 (File Upload Validation).
 """
@@ -27,7 +27,7 @@ from src.core.shared.security.url_file_validator import (
 
 
 class TestConstitutionalHash:
-    # Constitutional Hash: cdd01ef066bc6cf2
+    # Constitutional Hash: 608508a9bd224290
     """Test constitutional hash compliance."""
 
     def test_constitutional_hash_value(self) -> None:
@@ -476,6 +476,303 @@ class TestSecurityScenarios:
         # Allowlisted internal services should work
         result = validator.validate_url("http://opa:8181/v1/data", is_production=False)
         assert "opa" in result
+
+
+class TestURLValidatorExtended:
+    """Extended tests for URL validator covering edge cases."""
+
+    @pytest.fixture(autouse=True)
+    def reset_validator(self) -> None:
+        reset_url_validator()
+        yield
+        reset_url_validator()
+
+    def test_url_too_long(self) -> None:
+        validator = URLValidator()
+        long_url = "https://example.com/" + "a" * 3000
+        with pytest.raises(HTTPException):
+            validator.validate_url(long_url, is_production=False)
+
+    def test_missing_hostname(self) -> None:
+        validator = URLValidator()
+        with pytest.raises(HTTPException):
+            validator.validate_url("http://", is_production=False)
+
+    def test_https_required_in_production(self) -> None:
+        config = SSRFProtectionConfig(allowed_domains={"example.com"})
+        validator = URLValidator(config)
+        with pytest.raises(HTTPException):
+            validator.validate_url("http://example.com/api", is_production=True)
+
+    def test_https_not_required_for_internal_services(self) -> None:
+        validator = URLValidator()
+        result = validator.validate_url("http://opa:8181/v1/data", is_production=True)
+        assert "opa" in result
+
+    def test_reserved_ip_blocked(self) -> None:
+        validator = URLValidator()
+        with pytest.raises(HTTPException):
+            validator.validate_url("http://240.0.0.1/api", is_production=False)
+
+    def test_multicast_ip_blocked(self) -> None:
+        validator = URLValidator()
+        with pytest.raises(HTTPException):
+            validator.validate_url("http://224.0.0.1/api", is_production=False)
+
+    def test_domain_pattern_match(self) -> None:
+        config = SSRFProtectionConfig(
+            allowed_domain_patterns=[r".*\.trusted\.org$"],
+        )
+        validator = URLValidator(config)
+        result = validator.validate_url("https://api.trusted.org/data", is_production=False)
+        assert "trusted.org" in result
+
+    def test_domain_not_in_allowlist(self) -> None:
+        config = SSRFProtectionConfig(allowed_domains=set())
+        validator = URLValidator(config)
+        with pytest.raises(HTTPException):
+            validator.validate_url("https://evil.com/steal", is_production=False)
+
+    def test_subdomain_suffix_match(self) -> None:
+        config = SSRFProtectionConfig(allowed_domains={"example.com"})
+        validator = URLValidator(config)
+        result = validator.validate_url("https://sub.example.com/api", is_production=False)
+        assert "sub.example.com" in result
+
+    def test_add_allowed_domain(self) -> None:
+        validator = URLValidator()
+        validator.add_allowed_domain("Custom.COM")
+        assert "custom.com" in validator.config.allowed_domains
+
+    def test_add_allowed_pattern(self) -> None:
+        validator = URLValidator()
+        validator.add_allowed_pattern(r".*\.test\.io$")
+        assert len(validator._compiled_patterns) >= 1
+
+    def test_get_url_validator_custom_config(self) -> None:
+        config = SSRFProtectionConfig(allowed_domains={"custom.io"})
+        v = get_url_validator(config)
+        assert "custom.io" in v.config.allowed_domains
+
+    def test_azure_metadata_blocked(self) -> None:
+        validator = URLValidator()
+        with pytest.raises(HTTPException):
+            validator.validate_url("http://metadata.azure.com/api", is_production=False)
+
+    def test_alibaba_metadata_blocked(self) -> None:
+        validator = URLValidator()
+        with pytest.raises(HTTPException):
+            validator.validate_url("http://100.100.100.200/api", is_production=False)
+
+
+class TestFileValidatorExtended:
+    """Extended tests for file validator covering edge cases."""
+
+    @pytest.fixture(autouse=True)
+    def reset_validator(self) -> None:
+        reset_file_validator()
+        yield
+        reset_file_validator()
+
+    def test_valid_gzip(self) -> None:
+        gz_data = b"\x1f\x8b" + b"\x00" * 100
+        config = FileValidationConfig(allowed_types={FileType.TAR_GZ})
+        validator = FileValidator(config)
+        result = validator.validate_content(gz_data, filename="archive.tar.gz")
+        assert result == FileType.TAR_GZ
+
+    def test_valid_gif87a(self) -> None:
+        gif_data = b"GIF87a" + b"\x00" * 100
+        config = FileValidationConfig(allowed_types={FileType.GIF})
+        validator = FileValidator(config)
+        result = validator.validate_content(gif_data, filename="image.gif")
+        assert result == FileType.GIF
+
+    def test_valid_gif89a(self) -> None:
+        gif_data = b"GIF89a" + b"\x00" * 100
+        config = FileValidationConfig(allowed_types={FileType.GIF})
+        validator = FileValidator(config)
+        result = validator.validate_content(gif_data, filename="image.gif")
+        assert result == FileType.GIF
+
+    def test_text_file_detection(self) -> None:
+        text_data = b"Hello, this is plain text content.\nLine 2.\n"
+        validator = FileValidator()
+        result = validator.validate_content(text_data, filename="readme.txt")
+        assert result == FileType.TEXT
+
+    def test_rego_file(self) -> None:
+        rego_data = b"package authz\n\ndefault allow = false\n"
+        validator = FileValidator()
+        result = validator.validate_content(rego_data, filename="policy.rego")
+        assert result == FileType.TEXT
+
+    def test_unknown_type_not_text(self) -> None:
+        # Invalid UTF-8 (bare continuation bytes) + control chars < 32
+        # that are not tab/lf/cr, so both UTF-8 decode and ASCII heuristic fail
+        binary_data = b"\x80\x01\x02\x03\x04\x05\x06\x07" * 200
+        config = FileValidationConfig(verify_magic_bytes=True)
+        validator = FileValidator(config)
+        with pytest.raises(HTTPException):
+            validator.validate_content(binary_data, filename="unknown.bin")
+
+    def test_extension_mismatch_blocks(self) -> None:
+        png_data = b"\x89PNG\r\n\x1a\n" + b"\x00" * 100
+        config = FileValidationConfig(
+            allowed_types={FileType.PNG, FileType.JPEG},
+            verify_extension_match=True,
+        )
+        validator = FileValidator(config)
+        with pytest.raises(HTTPException):
+            validator.validate_content(png_data, filename="image.jpg")
+
+    def test_no_filename_skips_extension_check(self) -> None:
+        pdf_data = b"%PDF-1.4" + b"\x00" * 100
+        validator = FileValidator()
+        result = validator.validate_content(pdf_data, filename="")
+        assert result == FileType.PDF
+
+    def test_unknown_extension_allowed(self) -> None:
+        pdf_data = b"%PDF-1.4" + b"\x00" * 100
+        config = FileValidationConfig(allowed_types={FileType.PDF})
+        validator = FileValidator(config)
+        result = validator.validate_content(pdf_data, filename="document.xyz")
+        assert result == FileType.PDF
+
+    def test_jsp_blocked(self) -> None:
+        jsp_data = b"<% out.println('hello'); %>"
+        validator = FileValidator()
+        with pytest.raises(HTTPException):
+            validator.validate_content(jsp_data, filename="page.txt")
+
+    def test_javascript_in_file_blocked(self) -> None:
+        js_data = b"<script>alert('xss')</script>"
+        validator = FileValidator()
+        with pytest.raises(HTTPException):
+            validator.validate_content(js_data, filename="data.txt")
+
+    def test_macho_universal_blocked(self) -> None:
+        macho_data = b"\xca\xfe\xba\xbe" + b"\x00" * 100
+        validator = FileValidator()
+        with pytest.raises(HTTPException):
+            validator.validate_content(macho_data, filename="binary")
+
+    def test_macho_32bit_blocked(self) -> None:
+        macho_data = b"\xfe\xed\xfa\xce" + b"\x00" * 100
+        validator = FileValidator()
+        with pytest.raises(HTTPException):
+            validator.validate_content(macho_data, filename="binary")
+
+    def test_macho_64bit_blocked(self) -> None:
+        macho_data = b"\xfe\xed\xfa\xcf" + b"\x00" * 100
+        validator = FileValidator()
+        with pytest.raises(HTTPException):
+            validator.validate_content(macho_data, filename="binary")
+
+    async def test_validate_upload_success(self) -> None:
+        from unittest.mock import AsyncMock, MagicMock
+
+        file = MagicMock()
+        file.read = AsyncMock(return_value=b'{"key": "value"}')
+        file.seek = AsyncMock()
+        file.filename = "data.json"
+
+        validator = FileValidator()
+        content, ftype = await validator.validate_upload(file)
+        assert ftype == FileType.JSON
+        assert content == b'{"key": "value"}'
+        file.seek.assert_awaited_once_with(0)
+
+    async def test_validate_upload_too_large(self) -> None:
+        from unittest.mock import AsyncMock, MagicMock
+
+        file = MagicMock()
+        file.read = AsyncMock(return_value=b"\x00" * 200)
+        file.seek = AsyncMock()
+        file.filename = "big.bin"
+
+        config = FileValidationConfig(max_file_size=100)
+        validator = FileValidator(config)
+        with pytest.raises(HTTPException):
+            await validator.validate_upload(file)
+
+    async def test_validate_upload_empty(self) -> None:
+        from unittest.mock import AsyncMock, MagicMock
+
+        file = MagicMock()
+        file.read = AsyncMock(return_value=b"")
+        file.seek = AsyncMock()
+        file.filename = "empty.txt"
+
+        validator = FileValidator()
+        with pytest.raises(HTTPException):
+            await validator.validate_upload(file)
+
+    def test_get_file_validator_custom_config(self) -> None:
+        config = FileValidationConfig(max_file_size=1024)
+        v = get_file_validator(config)
+        assert v.config.max_file_size == 1024
+
+    def test_zip_empty_signature(self) -> None:
+        zip_data = b"PK\x05\x06" + b"\x00" * 100
+        config = FileValidationConfig(allowed_types={FileType.ZIP})
+        validator = FileValidator(config)
+        result = validator.validate_content(zip_data, filename="archive.zip")
+        assert result == FileType.ZIP
+
+    def test_zip_spanned_signature(self) -> None:
+        zip_data = b"PK\x07\x08" + b"\x00" * 100
+        config = FileValidationConfig(allowed_types={FileType.ZIP})
+        validator = FileValidator(config)
+        result = validator.validate_content(zip_data, filename="archive.zip")
+        assert result == FileType.ZIP
+
+    def test_json_array_detection(self) -> None:
+        json_data = b"[1, 2, 3]"
+        validator = FileValidator()
+        result = validator.validate_content(json_data, filename="list.json")
+        assert result == FileType.JSON
+
+
+class TestConvenienceFunctionsExtended:
+    """Extended convenience function tests."""
+
+    @pytest.fixture(autouse=True)
+    def reset_validators(self) -> None:
+        reset_url_validator()
+        reset_file_validator()
+        yield
+        reset_url_validator()
+        reset_file_validator()
+
+    async def test_validate_upload_convenience(self) -> None:
+        from unittest.mock import AsyncMock, MagicMock
+
+        from src.core.shared.security.url_file_validator import validate_upload
+
+        file = MagicMock()
+        file.read = AsyncMock(return_value=b'{"test": true}')
+        file.seek = AsyncMock()
+        file.filename = "test.json"
+
+        _content, ftype = await validate_upload(file)
+        assert ftype == FileType.JSON
+
+    def test_validate_url_non_production(self) -> None:
+        result = validate_url("http://opa:8181/v1/data", is_production=False)
+        assert "opa" in result
+
+
+class TestURLValidationError:
+    def test_url_validation_error_attrs(self) -> None:
+        err = URLValidationError("bad url", url="http://evil.com", reason="blocked")
+        assert err.url == "http://evil.com"
+        assert err.reason == "blocked"
+
+    def test_file_validation_error_attrs(self) -> None:
+        err = FileValidationError("bad file", filename="evil.exe", reason="executable")
+        assert err.filename == "evil.exe"
+        assert err.reason == "executable"
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 """
 Tests for MACI Pipeline module (maci_pipeline.py).
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Covers:
 - AgentRole, GovernancePhase enums
@@ -11,8 +11,8 @@ Covers:
 """
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.verification.maci_pipeline import (
     AgentResponse,
     AgentRole,
@@ -222,7 +222,6 @@ class TestBaseMACIAgent:
         )
         assert agent.validate_constitutional_hash(d) is False
 
-    @pytest.mark.asyncio
     async def test_respond_to_decision_valid_hash(self):
         agent = self._ConcreteAgent(AgentRole.EXECUTIVE, "test-agent")
         d = self._make_decision()
@@ -230,7 +229,6 @@ class TestBaseMACIAgent:
         assert response.agent_role == AgentRole.EXECUTIVE
         assert response.confidence == 0.7
 
-    @pytest.mark.asyncio
     async def test_respond_to_decision_invalid_hash(self):
         agent = self._ConcreteAgent(AgentRole.EXECUTIVE, "test-agent")
         d = GovernanceDecision(
@@ -243,7 +241,6 @@ class TestBaseMACIAgent:
         assert response.confidence == 0.0
         assert "Invalid constitutional hash" in response.reasoning
 
-    @pytest.mark.asyncio
     async def test_decision_history_appended(self):
         agent = self._ConcreteAgent(AgentRole.EXECUTIVE, "test-agent")
         d = self._make_decision()
@@ -262,7 +259,6 @@ class TestExecutiveAgent:
     def test_role(self, agent):
         assert agent.role == AgentRole.EXECUTIVE
 
-    @pytest.mark.asyncio
     async def test_propose_decision(self, agent):
         d = await agent.propose_decision(
             action="deploy_service", context={}, proposed_by="operator-1"
@@ -271,14 +267,12 @@ class TestExecutiveAgent:
         assert d.proposed_by == "operator-1"
         assert d.id.startswith("exec-")
 
-    @pytest.mark.asyncio
     async def test_base_confidence(self, agent):
         d = self._make_decision()
         resp = await agent.respond_to_decision(d)
         # Base confidence is 0.8, no context modifiers applied
         assert 0.1 <= resp.confidence <= 0.95
 
-    @pytest.mark.asyncio
     async def test_critical_impact_reduces_confidence(self, agent):
         d_base = self._make_decision()
         d_critical = self._make_decision({"impact_assessment": {"severity": "critical"}})
@@ -286,7 +280,6 @@ class TestExecutiveAgent:
         resp_critical = await agent.respond_to_decision(d_critical)
         assert resp_critical.confidence < resp_base.confidence
 
-    @pytest.mark.asyncio
     async def test_emergency_flag_increases_confidence(self, agent):
         d_base = self._make_decision()
         d_emergency = self._make_decision({"emergency": True})
@@ -294,7 +287,6 @@ class TestExecutiveAgent:
         resp_emergency = await agent.respond_to_decision(d_emergency)
         assert resp_emergency.confidence > resp_base.confidence
 
-    @pytest.mark.asyncio
     async def test_many_resources_reduces_confidence(self, agent):
         d_base = self._make_decision()
         d_complex = self._make_decision({"resources_required": [f"r{i}" for i in range(10)]})
@@ -302,14 +294,12 @@ class TestExecutiveAgent:
         resp_complex = await agent.respond_to_decision(d_complex)
         assert resp_complex.confidence < resp_base.confidence
 
-    @pytest.mark.asyncio
     async def test_confidence_clamped(self, agent):
         # Stack all modifiers that increase confidence
         d = self._make_decision({"emergency": True})
         resp = await agent.respond_to_decision(d)
         assert resp.confidence <= 0.95
 
-    @pytest.mark.asyncio
     async def test_violations_empty_from_executive(self, agent):
         d = self._make_decision()
         resp = await agent.respond_to_decision(d)
@@ -328,14 +318,12 @@ class TestLegislativeAgent:
     def test_role(self, agent):
         assert agent.role == AgentRole.LEGISLATIVE
 
-    @pytest.mark.asyncio
     async def test_analyzes_decision(self, agent):
         d = self._make_decision()
         resp = await agent.respond_to_decision(d)
         assert resp.agent_role == AgentRole.LEGISLATIVE
         assert 0.0 <= resp.confidence <= 1.0
 
-    @pytest.mark.asyncio
     async def test_loads_principles_and_uses_them(self, agent):
         principle = ConstitutionalPrinciple(
             id="pol-1", text="enforce transparency policy", category="governance", priority=1
@@ -346,13 +334,11 @@ class TestLegislativeAgent:
         # Should pick up at least one relevant principle
         assert "Legislative analysis identified" in resp.reasoning
 
-    @pytest.mark.asyncio
     async def test_large_stakeholder_list_adds_evidence(self, agent):
         d = self._make_decision(context={"stakeholders": [f"s{i}" for i in range(12)]})
         resp = await agent.respond_to_decision(d)
         assert any("stakeholder" in e.lower() for e in resp.evidence)
 
-    @pytest.mark.asyncio
     async def test_low_exec_confidence_adds_evidence(self, agent):
         d = self._make_decision()
         exec_resp = AgentResponse(
@@ -395,19 +381,16 @@ class TestJudicialAgent:
     def test_role(self, agent):
         assert agent.role == AgentRole.JUDICIAL
 
-    @pytest.mark.asyncio
     async def test_no_context_returns_low_confidence(self, agent):
         d = self._make_decision()
         resp = await agent.respond_to_decision(d, context_responses=None)
         assert resp.confidence == 0.1
 
-    @pytest.mark.asyncio
     async def test_no_context_returns_incomplete_review(self, agent):
         d = self._make_decision()
         resp = await agent.respond_to_decision(d, context_responses=None)
         assert "Insufficient context" in resp.reasoning
 
-    @pytest.mark.asyncio
     async def test_low_executive_confidence_adds_violation(self, agent):
         d = self._make_decision()
         exec_resp = self._make_exec_resp(confidence=0.3)
@@ -415,7 +398,6 @@ class TestJudicialAgent:
         # The code stores "Executive confidence: X.XX" in evidence
         assert any("Executive confidence" in e for e in resp.evidence)
 
-    @pytest.mark.asyncio
     async def test_high_legislative_confidence_boosts_score(self, agent):
         d = self._make_decision()
         exec_resp = self._make_exec_resp(confidence=0.8)
@@ -424,7 +406,6 @@ class TestJudicialAgent:
         resp_without = await agent.respond_to_decision(d, context_responses=[exec_resp])
         assert resp_with.confidence >= resp_without.confidence
 
-    @pytest.mark.asyncio
     async def test_emergency_override_without_justification_adds_violation(self, agent):
         d = self._make_decision(context={"emergency_override": True})
         exec_resp = self._make_exec_resp()
@@ -435,7 +416,6 @@ class TestJudicialAgent:
         assert any("Emergency override" in str(e) for e in resp.evidence)
         assert "NON-COMPLIANT" in resp.reasoning or "justification" in resp.reasoning
 
-    @pytest.mark.asyncio
     async def test_emergency_override_with_justification(self, agent):
         d = self._make_decision(
             context={
@@ -489,7 +469,6 @@ class TestMACIVerificationPipeline:
         stats = pipeline.get_pipeline_stats()
         assert stats == {"total_decisions": 0}
 
-    @pytest.mark.asyncio
     async def test_verify_governance_decision(self, pipeline):
         d = GovernanceDecision(id="d1", action="update_policy", context={})
         result = await pipeline.verify_governance_decision(d)
@@ -499,13 +478,11 @@ class TestMACIVerificationPipeline:
         assert isinstance(result.legislative_response, AgentResponse)
         assert isinstance(result.judicial_response, AgentResponse)
 
-    @pytest.mark.asyncio
     async def test_verify_appends_to_history(self, pipeline):
         d = GovernanceDecision(id="d1", action="update_policy", context={})
         await pipeline.verify_governance_decision(d)
         assert len(pipeline.verification_history) == 1
 
-    @pytest.mark.asyncio
     async def test_pipeline_stats_after_decisions(self, pipeline):
         d1 = GovernanceDecision(id="d1", action="action1", context={})
         d2 = GovernanceDecision(id="d2", action="action2", context={})
@@ -517,7 +494,6 @@ class TestMACIVerificationPipeline:
         assert "average_confidence" in stats
         assert "total_violations" in stats
 
-    @pytest.mark.asyncio
     async def test_propose_and_verify_decision(self, pipeline):
         decision, verification = await pipeline.propose_and_verify_decision(
             action="grant_access",
@@ -528,7 +504,6 @@ class TestMACIVerificationPipeline:
         assert isinstance(verification, VerificationResult)
         assert decision.id == verification.decision_id
 
-    @pytest.mark.asyncio
     async def test_non_compliant_judicial_adds_violation(self, pipeline):
         """NON-COMPLIANT in judicial reasoning triggers violation in result."""
         d = GovernanceDecision(id="d1", action="block_all", context={})
@@ -536,7 +511,6 @@ class TestMACIVerificationPipeline:
         # Whether compliant or not, result should have proper structure
         assert isinstance(result.is_compliant, bool)
 
-    @pytest.mark.asyncio
     async def test_low_executive_confidence_adds_recommendation(self, pipeline):
         """When executive confidence < 0.5, a recommendation should be added."""
         d = GovernanceDecision(
@@ -558,7 +532,6 @@ class TestMACIVerificationPipeline:
 
 
 class TestCreateMACIPipelineWithConstitution:
-    @pytest.mark.asyncio
     async def test_creates_pipeline_with_principles(self):
         raw_principles = [
             {"id": "p1", "text": "Do no harm", "category": "safety", "priority": 1},
@@ -568,13 +541,11 @@ class TestCreateMACIPipelineWithConstitution:
         assert isinstance(pipeline, MACIVerificationPipeline)
         assert len(pipeline.constitutional_principles) == 2
 
-    @pytest.mark.asyncio
     async def test_empty_principles(self):
         pipeline = await create_maci_pipeline_with_constitution([])
         assert isinstance(pipeline, MACIVerificationPipeline)
         assert len(pipeline.constitutional_principles) == 0
 
-    @pytest.mark.asyncio
     async def test_pipeline_functional_after_creation(self):
         raw_principles = [
             {"id": "p1", "text": "Ensure accountability", "category": "governance", "priority": 1},

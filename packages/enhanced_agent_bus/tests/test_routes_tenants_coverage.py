@@ -1,6 +1,6 @@
 """
 Comprehensive pytest test suite for routes/tenants.py
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Targets ≥90% coverage of the tenant management API routes, including:
 - All route handlers (CRUD, lifecycle, quota, hierarchy, children)
@@ -20,7 +20,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Module under test — import via absolute path (importlib mode compatible)
@@ -227,14 +228,22 @@ class TestTenantRouteHelpers:
         _check_tenant_scope("tenant-001", "tenant-001")
 
     def test_check_tenant_scope_denies_cross_tenant_access(self):
+        # Use UUID-format IDs so _is_uuid returns True and scope check is enforced
         with pytest.raises(HTTPException) as exc_info:
-            _check_tenant_scope("tenant-001", "tenant-002")
+            _check_tenant_scope(
+                "00000000-0000-0000-0000-000000000001",
+                "00000000-0000-0000-0000-000000000002",
+            )
 
         assert exc_info.value.status_code == 403
 
     def test_check_tenant_scope_denies_substring_admin_without_flag(self):
+        # Use UUID-format admin so _is_uuid returns True and scope check is enforced
         with pytest.raises(HTTPException) as exc_info:
-            _check_tenant_scope("controller-ops", "tenant-002")
+            _check_tenant_scope(
+                "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+                "00000000-0000-0000-0000-000000000002",
+            )
 
         assert exc_info.value.status_code == 403
 
@@ -244,7 +253,6 @@ class TestTenantRouteHelpers:
     def test_check_tenant_scope_allows_system_admin_account(self):
         _check_tenant_scope("system-admin", "tenant-002")
 
-    @pytest.mark.asyncio
     async def test_get_tenant_or_404_returns_tenant(self):
         manager = MagicMock()
         tenant = _make_tenant()
@@ -254,7 +262,6 @@ class TestTenantRouteHelpers:
 
         assert result is tenant
 
-    @pytest.mark.asyncio
     async def test_get_tenant_or_404_raises(self):
         manager = MagicMock()
         manager.get_tenant = AsyncMock(return_value=None)
@@ -520,7 +527,7 @@ class TestValidateJwtToken:
                     # Python raises ImportError when module is None in sys.modules
                     result = _validate_jwt_token("token")
                     # Either None (handled) or raises — both are acceptable paths
-        except Exception:  # noqa: S110
+        except Exception:
             pass
         finally:
             if original is not None:

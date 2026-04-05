@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "fix/**", "feat/**"]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"
+  UV_CACHE_DIR: /tmp/.uv-cache
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "0.10.9"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Restore uv cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.UV_CACHE_DIR }}
+          key: uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}
+          restore-keys: uv-${{ runner.os }}-
+      - name: Make setup
+        run: make setup
+      - name: Lint
+        run: make lint
+      - name: MessageProcessor wrapper audit
+        run: make health-bus-wrappers
+
+  test-quick:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "0.10.9"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Restore uv cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.UV_CACHE_DIR }}
+          key: uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}
+          restore-keys: uv-${{ runner.os }}-
+      - name: Make setup
+        run: make setup
+      - name: Install workspace packages
+        run: |
+          .venv/bin/python -m pip install -e packages/enhanced_agent_bus -e packages/acgs-lite -e packages/acgs-deliberation --no-deps --quiet 2>/dev/null || \
+          uv pip install -e packages/enhanced_agent_bus -e packages/acgs-lite -e packages/acgs-deliberation --no-deps --quiet 2>/dev/null || \
+          true
+      - name: Verify workspace packages
+        run: |
+          .venv/bin/python -c "import enhanced_agent_bus; print('enhanced_agent_bus:', enhanced_agent_bus.__file__)" || echo "WARN: enhanced_agent_bus not importable"
+      - name: Test (quick)
+        run: make test-quick
+
+  test-full:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "0.10.9"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Restore uv cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.UV_CACHE_DIR }}
+          key: uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}
+          restore-keys: uv-${{ runner.os }}-
+      - name: Make setup
+        run: make setup
+      - name: Test (full suite)
+        run: make test

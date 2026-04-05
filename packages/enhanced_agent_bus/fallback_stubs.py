@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Fallback Stubs
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Centralized fallback stub definitions for optional dependencies.
 These stubs allow api.py and other modules to run standalone or in
@@ -27,13 +27,13 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, ClassVar
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.errors.exceptions import ACGSBaseError
+from enhanced_agent_bus._compat.errors import ACGSBaseError
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -266,7 +266,7 @@ class StubTenantContextMiddleware:
                 status_code=400,
                 content={
                     "error": "Security validation required",
-                    "message": "Tenant context middleware fallback reached. Production deployment must use shared security package.",  # noqa: E501
+                    "message": "Tenant context middleware fallback reached. Production deployment must use shared security package.",
                     "code": "SECURITY_FALLBACK_REJECTED",
                 },
             )
@@ -350,7 +350,7 @@ class StubAgentError(StubAgentBusError):
 # =============================================================================
 
 
-from pydantic import BaseModel, Field  # noqa: E402
+from pydantic import BaseModel, Field
 
 
 class StubBatchRequestItem(BaseModel):

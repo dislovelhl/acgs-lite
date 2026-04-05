@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Utilities
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import re
@@ -12,7 +12,7 @@ from typing import Generic, TypeVar
 import cachetools
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

@@ -1,9 +1,9 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive tests for optimization_toolkit/agents.py
 targeting ≥95% line coverage.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -491,7 +491,7 @@ class TestApplicationPerformanceAgentProfile:
         mock_monitor.get_metrics.return_value = {"operations": {}}
 
         with patch(
-            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()
@@ -513,7 +513,7 @@ class TestApplicationPerformanceAgentProfile:
         mock_monitor.get_metrics.return_value = {"operations": {}}
 
         with patch(
-            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()
@@ -540,7 +540,7 @@ class TestApplicationPerformanceAgentProfile:
         }
 
         with patch(
-            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()
@@ -573,7 +573,7 @@ class TestApplicationPerformanceAgentProfile:
         }
 
         with patch(
-            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()
@@ -600,7 +600,7 @@ class TestApplicationPerformanceAgentProfile:
         }
 
         with patch(
-            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()
@@ -627,7 +627,7 @@ class TestApplicationPerformanceAgentProfile:
         }
 
         with patch(
-            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()
@@ -653,7 +653,7 @@ class TestApplicationPerformanceAgentProfile:
         }
 
         with patch(
-            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()
@@ -675,7 +675,7 @@ class TestApplicationPerformanceAgentProfile:
         }
 
         with patch(
-            "enhanced_agent_bus.performance_monitor.get_performance_monitor",
+            "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
             return_value=mock_monitor,
         ):
             agent = ApplicationPerformanceAgent()
@@ -1103,7 +1103,7 @@ class TestPerformanceAgentAlias:
 
 class TestModuleLevelImports:
     def test_constitutional_hash_imported_from_shared(self):
-        from src.core.shared.constants import CONSTITUTIONAL_HASH as shared_hash
+        from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH as shared_hash
 
         assert CONSTITUTIONAL_HASH == shared_hash
 
@@ -1143,7 +1143,7 @@ class TestConcurrentProfiling:
 
         with (
             patch(
-                "enhanced_agent_bus.performance_monitor.get_performance_monitor",
+                "packages.enhanced_agent_bus.performance_monitor.get_performance_monitor",
                 return_value=mock_monitor,
             ),
             patch(

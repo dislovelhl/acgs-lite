@@ -4,14 +4,14 @@ Batch Governance Middleware for ACGS-2 Pipeline.
 MACI and governance validation for batches.
 Extracted from: batch_processor_infra/governance.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import time
 from typing import cast
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -55,7 +55,7 @@ class BatchGovernanceMiddleware(BaseMiddleware):
         )
         context = await middleware.process(batch_context)
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Impact thresholds for governance decisions
@@ -76,7 +76,7 @@ class BatchGovernanceMiddleware(BaseMiddleware):
             config: Middleware configuration (timeout, fail_closed, etc.)
             maci_registry: Optional MACI role registry for validation (deprecated, use maci_enforcer)
             maci_enforcer: Optional MACI enforcer for validation
-        """  # noqa: E501
+        """
         super().__init__(config)
         self._maci_registry = maci_registry
         # Initialize enforcer with provided registry or create new one
@@ -985,11 +985,11 @@ class BatchGovernanceMiddleware(BaseMiddleware):
         Returns:
             True if all items are compliant, False otherwise
         """
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
+        from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
         for item in items:
             # Check per-item constitutional hash if present
-            if item.constitutional_hash:  # noqa: SIM102
+            if item.constitutional_hash:
                 if item.constitutional_hash != CONSTITUTIONAL_HASH:
                     return False
 

@@ -1,6 +1,6 @@
 """
 Tests for Migration Saga Builder.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import pytest
@@ -44,7 +44,6 @@ class TestMigrationSagaBuilder:
         assert "migrate_data" in step_names
         assert "validate_migration" in step_names
 
-    @pytest.mark.asyncio
     async def test_execute_policy_migration_saga(self, orchestrator: SagaOrchestrator):
         """Test executing policy migration saga."""
         builder = MigrationSagaBuilder(orchestrator)
@@ -67,7 +66,6 @@ class TestMigrationSagaBuilder:
         assert result.status == SagaStatus.COMPLETED
         assert len(result.completed_steps) == 5
 
-    @pytest.mark.asyncio
     async def test_execute_database_migration_saga(self, orchestrator: SagaOrchestrator):
         """Test executing database migration saga."""
         builder = MigrationSagaBuilder(orchestrator)

@@ -3,7 +3,7 @@ ACGS-2 Enhanced Agent Bus - Service-Specific Circuit Breaker Configuration
 
 Task T002: Circuit Breaker Configuration
 Expert Reference: Michael Nygard (Release It!)
-Hash: cdd01ef066bc6cf2
+Hash: 608508a9bd224290
 
 This module implements the circuit breaker pattern for external service calls
 with configurable thresholds, state tracking, and observability integration.
@@ -56,7 +56,7 @@ Usage:
 # Import centralized constitutional hash
 # Models
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 

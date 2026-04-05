@@ -1,6 +1,6 @@
 """
 Multi-Agent Performance Profiling Agents
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Reference: SPEC_ACGS2_ENHANCED_v2.3 Section 16 (Performance Engineering)
 """
@@ -13,11 +13,11 @@ from enum import Enum
 
 # Constitutional Hash - immutable reference
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -112,7 +112,7 @@ class DatabasePerformanceAgent(PerformanceProfiler):
     async def profile(self) -> PerformanceProfile:
         """Profile database performance using real SQLAlchemy engine stats."""
         try:
-            from src.core.shared.database.session import engine
+            from enhanced_agent_bus._compat.database.session import engine
 
             pool = engine.pool
             pool_stats = {
@@ -236,12 +236,12 @@ class CachePerformanceAgent(PerformanceProfiler):
 
     async def profile(self) -> PerformanceProfile:
         """Profile cache performance using real TieredCacheManager stats."""
-        from src.core.shared.cache.manager import TieredCacheManager
+        from enhanced_agent_bus._compat.cache.manager import TieredCacheManager
 
         # Try to get stats from a default/known cache manager
         try:
             # Note: In a real system, we'd probably have a registry of cache managers
-            # Here we'll try to instantiate/access a common one or use the TieredCacheManager directly  # noqa: E501
+            # Here we'll try to instantiate/access a common one or use the TieredCacheManager directly
             manager = TieredCacheManager(name="bus_validation")
             stats = manager.get_stats()
 
@@ -250,7 +250,7 @@ class CachePerformanceAgent(PerformanceProfiler):
 
             profile = PerformanceProfile(
                 domain=OptimizationDomain.CACHE,
-                latency_p50_ms=0.1,  # Still somewhat simulated as it's hard to get from manager easily  # noqa: E501
+                latency_p50_ms=0.1,  # Still somewhat simulated as it's hard to get from manager easily
                 latency_p95_ms=0.3,
                 latency_p99_ms=0.8,
                 throughput_rps=50000.0,

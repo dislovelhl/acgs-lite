@@ -1,6 +1,6 @@
 """
 ACGS-2 CCAI Democratic Framework - Polis Deliberation Engine
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module implements the Polis-style deliberation engine for democratic input:
 - Statement submission and voting
@@ -38,7 +38,7 @@ Representative Statements Identification Algorithm:
 
     Accuracy Target: 95%+ on test clusters (validated via precision/recall metrics)
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import re
@@ -50,7 +50,7 @@ from typing import cast
 import numpy as np
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -130,7 +130,7 @@ class PolisDeliberationEngine:
         Returns:
             Created DeliberationStatement with unique ID and initialized vote tracking
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         statement = DeliberationStatement(
             statement_id=str(uuid.uuid4()),
@@ -177,7 +177,7 @@ class PolisDeliberationEngine:
             >>> success = await engine.vote_on_statement(statement.statement_id, user, 1)
             >>> logger.info(f"Vote recorded: {success}")
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         if statement_id not in self.statements:
             return False
@@ -215,7 +215,7 @@ class PolisDeliberationEngine:
             Skip votes (vote=0) are excluded from agreement/disagreement calculations
             but count toward total participation.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         if statement_id not in self.voting_matrix:
             return
@@ -259,7 +259,7 @@ class PolisDeliberationEngine:
                        + 0.4 * agreement_rate
                        + 0.3 * consensus_strength
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         if statement_id not in self.statements:
             logger.warning(f"Statement {statement_id} not found, centrality=0.0")
@@ -325,7 +325,7 @@ class PolisDeliberationEngine:
             3. Sort by centrality score descending
             4. Return top N statement IDs
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         if not cluster.member_stakeholders:
             logger.warning(f"Cluster {cluster.cluster_id} has no members, no representatives")
@@ -387,7 +387,7 @@ class PolisDeliberationEngine:
             2. Calculate Jaccard similarity: |A intersection B| / |A union B|
             3. Return similarity score
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
         if statement_id_1 not in self.statements:
             logger.warning(f"Statement {statement_id_1} not found, similarity=0.0")
@@ -462,8 +462,8 @@ class PolisDeliberationEngine:
             - If diversity_threshold <= 0.0, only selects first statement (strictest diversity)
             - If no diverse candidates found, returns fewer than top_n statements
 
-        Constitutional Hash: cdd01ef066bc6cf2
-        """  # noqa: E501
+        Constitutional Hash: 608508a9bd224290
+        """
         if not cluster.member_stakeholders:
             logger.warning(f"Cluster {cluster.cluster_id} has no members, no representatives")
             return []
@@ -596,7 +596,7 @@ class PolisDeliberationEngine:
             else:
                 logger.debug(
                     f"Rejected similar candidate: {stmt_id[:8]} "
-                    f"(centrality={centrality:.3f}, max_similarity={max_similarity:.3f} >= {diversity_threshold})"  # noqa: E501
+                    f"(centrality={centrality:.3f}, max_similarity={max_similarity:.3f} >= {diversity_threshold})"
                 )
 
         return diverse_representatives
@@ -1040,7 +1040,7 @@ class PolisDeliberationEngine:
             Cross-group consensus uses minimum rather than mean to ensure
             no single group is excluded from the consensus.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
 
         for cluster in clusters:

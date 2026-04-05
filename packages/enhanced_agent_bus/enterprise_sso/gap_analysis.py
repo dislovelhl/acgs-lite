@@ -1,6 +1,6 @@
 """
 Constitutional Gap Analysis Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Phase 10 Task 10: Constitutional Gap Analysis
 
@@ -18,7 +18,7 @@ from enum import Enum
 from typing import ClassVar, cast
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -221,7 +221,7 @@ class ConstitutionalPolicyScanner:
                     description="Policy does not include constitutional hash validation",
                 )
             )
-        elif self.constitutional_hash not in policy_content:  # noqa: SIM102
+        elif self.constitutional_hash not in policy_content:
             # Has a hash reference but might be wrong
             if "cdd01ef" not in policy_content:  # Partial match check
                 gaps.append(
@@ -409,7 +409,7 @@ def validate_constitutional_compliance(action: dict) -> bool:
             "type": RemediationType.MODIFY_CODE,
             "effort": "low",
             "snippet": """# Replace incorrect hash with valid constitutional hash
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # Valid ACGS-2 hash""",
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH  # Valid ACGS-2 hash""",
         },
         GapCategory.SELF_VALIDATION: {
             "title": "Implement Separation of Powers",

@@ -1,7 +1,7 @@
 """
 Verification test for VULN-003 remediation.
 Ensures that the Deliberation Layer fails closed instead of using mocks.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import subprocess
@@ -74,7 +74,7 @@ except HTTPException as exc:
     else:
         env.pop("PYTEST_CURRENT_TEST", None)
 
-    return subprocess.run(  # noqa: S603
+    return subprocess.run(
         [sys.executable, "-c", test_code],
         capture_output=True,
         text=True,
@@ -144,7 +144,7 @@ except (RuntimeError, ValueError, TypeError, AssertionError) as e:
         os.path.dirname(test_dir)
     )  # Go up from tests/ to enhanced_agent_bus/ to src/core/
 
-    result = subprocess.run(  # noqa: S603
+    result = subprocess.run(
         [sys.executable, "-c", test_code],
         capture_output=True,
         text=True,

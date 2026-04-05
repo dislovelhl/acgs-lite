@@ -1,18 +1,15 @@
 """
 Integration tests for SDPC Phase 2 Verification Layer
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from unittest.mock import AsyncMock
-
-import pytest
 
 from enhanced_agent_bus.message_processor import MessageProcessor
 from enhanced_agent_bus.models import AgentMessage, MessageType
 
 
-@pytest.mark.asyncio
 async def test_sdpc_phase2_integration_factual():
     # Initialize processor with MACI disabled for testing SDPC logic
     processor = MessageProcessor(
@@ -45,7 +42,6 @@ async def test_sdpc_phase2_integration_factual():
     assert "sdpc_graph_results" in result.metadata
 
 
-@pytest.mark.asyncio
 async def test_sdpc_phase2_integration_high_impact():
     # Initialize processor with MACI disabled
     processor = MessageProcessor(

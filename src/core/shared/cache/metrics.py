@@ -1,6 +1,6 @@
 """
 ACGS-2 Cache Metrics Module with Per-Tier Instrumentation
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides Prometheus metrics for tiered cache instrumentation (L1/L2/L3).
 All cache metrics include tier labels for accurate per-tier tracking.

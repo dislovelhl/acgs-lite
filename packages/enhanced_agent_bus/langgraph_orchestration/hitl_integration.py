@@ -1,6 +1,6 @@
 """
 ACGS-2 LangGraph Orchestration - HITL Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Human-in-the-loop (HITL) integration for workflow interrupts:
 - Configurable interrupt points
@@ -17,11 +17,11 @@ from datetime import UTC, datetime
 from enum import Enum
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -37,10 +37,10 @@ from .models import (
 logger = get_logger(__name__)
 
 
-class HITLAction(str, Enum):  # noqa: UP042
+class HITLAction(str, Enum):
     """Actions that can be taken in response to HITL interrupt.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     CONTINUE = "continue"  # Continue execution with current state
@@ -55,7 +55,7 @@ class HITLAction(str, Enum):  # noqa: UP042
 class HITLConfig:
     """Configuration for HITL interrupt handling.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     enabled: bool = True
@@ -81,7 +81,7 @@ class HITLConfig:
 class HITLRequest:
     """Request for human-in-the-loop interaction.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
@@ -143,7 +143,7 @@ class HITLRequest:
 class HITLResponse:
     """Response to a HITL request.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     request_id: str
@@ -176,7 +176,7 @@ class InMemoryHITLHandler:
 
     Stores requests and allows programmatic responses.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, auto_response: HITLAction | None = None):
@@ -256,7 +256,7 @@ class HITLInterruptHandler:
 
     Manages HITL requests, timeouts, escalations, and audit logging.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -556,7 +556,7 @@ def create_hitl_handler(
     Returns:
         Configured HITL interrupt handler
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     if auto_response and not handler:
         handler = InMemoryHITLHandler(auto_response=auto_response)

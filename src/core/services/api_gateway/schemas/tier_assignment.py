@@ -1,6 +1,6 @@
 """
 Pydantic v2 schemas for agent tier assignment API endpoints.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -8,7 +8,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from src.core.services.api_gateway.models.tier_assignment import AutonomyTier
 
@@ -18,12 +18,35 @@ class AgentTierAssignmentCreate(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-    agent_id: str = Field(..., description="Unique identifier of the AI agent")
+    agent_id: str = Field(
+        ...,
+        min_length=1,
+        max_length=128,
+        description="Unique identifier of the AI agent",
+    )
     tier: AutonomyTier = Field(..., description="Autonomy tier to assign")
     action_boundaries: list[str] | None = Field(
         default=None,
         description="Permitted action type patterns for BOUNDED tier (fnmatch glob patterns)",
     )
+
+    @field_validator("agent_id")
+    @classmethod
+    def validate_agent_id(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("agent_id must not be blank")
+        return normalized
+
+    @field_validator("action_boundaries")
+    @classmethod
+    def validate_action_boundaries(cls, value: list[str] | None) -> list[str] | None:
+        if value is None:
+            return None
+        normalized = [boundary.strip() for boundary in value]
+        if any(not boundary for boundary in normalized):
+            raise ValueError("action_boundaries must not contain blank entries")
+        return normalized
 
 
 class AgentTierAssignmentUpdate(BaseModel):
@@ -36,6 +59,16 @@ class AgentTierAssignmentUpdate(BaseModel):
         default=None,
         description="Updated action type patterns for BOUNDED tier",
     )
+
+    @field_validator("action_boundaries")
+    @classmethod
+    def validate_action_boundaries(cls, value: list[str] | None) -> list[str] | None:
+        if value is None:
+            return None
+        normalized = [boundary.strip() for boundary in value]
+        if any(not boundary for boundary in normalized):
+            raise ValueError("action_boundaries must not contain blank entries")
+        return normalized
 
 
 class AgentTierAssignmentResponse(BaseModel):
@@ -84,6 +117,6 @@ class TierEnforcementDecisionSchema(BaseModel):
     )
     constitutional_hash: str = Field(
         ...,
-        description="Constitutional hash at time of decision (must equal cdd01ef066bc6cf2)",
+        description="Constitutional hash at time of decision (must equal 608508a9bd224290)",
     )
     timestamp: datetime = Field(..., description="Decision evaluation time (UTC)")

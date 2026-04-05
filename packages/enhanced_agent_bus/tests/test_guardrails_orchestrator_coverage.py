@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive tests for guardrails/orchestrator.py.
 
@@ -15,8 +15,6 @@ Covers:
 import asyncio
 from dataclasses import dataclass
 from unittest.mock import AsyncMock, MagicMock, patch
-
-import pytest
 
 from enhanced_agent_bus.guardrails.enums import (
     GuardrailLayer,

@@ -7,7 +7,7 @@ This module validates:
 - Coverage threshold requirements
 - Workflow configuration validation
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import os
@@ -28,7 +28,7 @@ except ImportError as _cicd_import_error:
     )
 
 # Constitutional hash for ACGS-2 compliance
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 
 class TestConstitutionalHashValidation:

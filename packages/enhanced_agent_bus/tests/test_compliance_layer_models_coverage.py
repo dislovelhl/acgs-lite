@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive test suite for compliance_layer/models.py.
 
@@ -11,7 +11,6 @@ from __future__ import annotations
 from datetime import UTC, datetime, timezone
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 from compliance_layer.models import (
     AuditEvidenceItem,
@@ -38,6 +37,7 @@ from compliance_layer.models import (
     ThreatModel,
     TransparencyRequirement,
 )
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Enum tests

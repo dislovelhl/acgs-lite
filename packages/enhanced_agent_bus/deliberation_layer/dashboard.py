@@ -1,4 +1,4 @@
-"""Constitutional Hash: cdd01ef066bc6cf2
+"""Constitutional Hash: 608508a9bd224290
 ACGS-2 Deliberation Layer - Human Approval Dashboard
 Streamlit-based UI for human-in-the-loop approval of high-risk decisions.
 """
@@ -9,7 +9,7 @@ import pandas as pd
 import streamlit as st
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -286,7 +286,7 @@ def show_settings(adaptive_router):
         help="Messages with impact score above this threshold go to deliberation",
     )
 
-    if new_threshold != current_threshold:  # noqa: SIM102
+    if new_threshold != current_threshold:
         if st.button("Update Threshold"):
             adaptive_router.set_impact_threshold(new_threshold)
             st.success(f"Threshold updated to {new_threshold:.3f}")

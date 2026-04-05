@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive tests for src/core/enhanced_agent_bus/adapters/base.py
 Targets ≥95% line coverage of base.py.
@@ -100,7 +100,7 @@ class TestModelProvider:
         assert "custom" in values
 
     def test_provider_count(self):
-        assert len(ModelProvider) == 8
+        assert len(ModelProvider) == 9
 
     def test_provider_values_are_strings(self):
         for p in ModelProvider:

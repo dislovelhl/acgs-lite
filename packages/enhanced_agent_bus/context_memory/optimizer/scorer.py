@@ -1,6 +1,6 @@
 """
 ACGS-2 Context Optimizer - Vectorized Scorer
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Vectorized relevance scoring using numpy for batch operations.
 """
@@ -8,12 +8,12 @@ Vectorized relevance scoring using numpy for batch operations.
 import time
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict: type = JSONDict  # type: ignore[no-redef]
 
@@ -37,7 +37,7 @@ class VectorizedScorer:
     Provides batch scoring with SIMD-friendly operations for
     improved performance on large context windows.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

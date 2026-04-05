@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Communication Bus
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 High-performance, multi-tenant agent communication infrastructure for ACGS-2
 constitutional governance platform.
@@ -9,7 +9,7 @@ constitutional governance platform.
 import sys
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -35,10 +35,10 @@ class Init:
 
 
 # fmt: off
-from .agent_bus import EnhancedAgentBus  # noqa: E402
-from .config import BusConfiguration  # noqa: E402
-from .dependency_bridge import get_feature_flags as _get_feature_flags  # noqa: E402
-from .exceptions import (  # noqa: E402
+from .agent_bus import EnhancedAgentBus
+from .config import BusConfiguration
+from .dependency_bridge import get_feature_flags as _get_feature_flags
+from .exceptions import (
     AgentAlreadyRegisteredError,
     AgentBusError,
     AgentCapabilityError,
@@ -67,17 +67,17 @@ from .exceptions import (  # noqa: E402
     ReviewConsensusError,
     SignatureCollectionError,
 )
-from .interfaces import (  # noqa: E402
+from .interfaces import (
     AgentRegistry,
     MessageHandler,
     MessageRouter,
     MetricsCollector,
     ValidationStrategy,
 )
-from .message_processor import MessageProcessor  # noqa: E402
-from .metering_manager import MeteringManager, create_metering_manager  # noqa: E402
-from .models import CONSTITUTIONAL_HASH as MODEL_HASH  # noqa: E402
-from .models import (  # noqa: E402
+from .message_processor import MessageProcessor
+from .metering_manager import MeteringManager, create_metering_manager
+from .models import CONSTITUTIONAL_HASH as MODEL_HASH
+from .models import (
     AgentMessage,
     MessageStatus,
     MessageType,
@@ -87,9 +87,9 @@ from .models import (  # noqa: E402
     SessionGovernanceConfig,
     ValidationStatus,
 )
-from .models import PQCMetadata as ModelPQCMetadata  # noqa: E402
-from .policy_resolver import PolicyResolutionResult, PolicyResolver  # noqa: E402
-from .registry import (  # noqa: E402
+from .models import PQCMetadata as ModelPQCMetadata
+from .policy_resolver import PolicyResolutionResult, PolicyResolver
+from .registry import (
     CapabilityBasedRouter,
     CompositeValidationStrategy,
     DirectMessageRouter,
@@ -99,7 +99,7 @@ from .registry import (  # noqa: E402
     RustValidationStrategy,
     StaticHashValidationStrategy,
 )
-from .runtime_security import (  # noqa: E402
+from .runtime_security import (
     RuntimeSecurityConfig,
     RuntimeSecurityScanner,
     SecurityEvent,
@@ -109,12 +109,12 @@ from .runtime_security import (  # noqa: E402
     get_runtime_security_scanner,
     scan_content,
 )
-from .session_context import (  # noqa: E402
+from .session_context import (
     SessionContext,
     SessionContextManager,
     SessionContextStore,
 )
-from .siem_integration import (  # noqa: E402
+from .siem_integration import (
     AlertLevel,
     AlertManager,
     AlertThreshold,
@@ -129,7 +129,7 @@ from .siem_integration import (  # noqa: E402
     log_security_event,
     security_audit,
 )
-from .validators import ValidationResult  # noqa: E402
+from .validators import ValidationResult
 
 _feature_flags = _get_feature_flags()
 CIRCUIT_BREAKER_ENABLED: bool = _feature_flags.get("CIRCUIT_BREAKER_ENABLED", False)
@@ -139,40 +139,40 @@ METRICS_ENABLED: bool = _feature_flags.get("METRICS_ENABLED", False)
 USE_RUST: bool = _feature_flags.get("USE_RUST", False)
 del _feature_flags
 
-from ._ext_cache_warming import *  # noqa: E402, F403
-from ._ext_cache_warming import _EXT_ALL as _CW_ALL  # noqa: E402
-from ._ext_chaos import *  # noqa: E402, F403
-from ._ext_chaos import _EXT_ALL as _CHAOS_ALL  # noqa: E402
-from ._ext_circuit_breaker import *  # noqa: E402, F403
-from ._ext_circuit_breaker import _EXT_ALL as _CB_ALL  # noqa: E402
-from ._ext_circuit_breaker_clients import *  # noqa: E402, F403
-from ._ext_circuit_breaker_clients import _EXT_ALL as _CBC_ALL  # noqa: E402
-from ._ext_cognitive import *  # noqa: E402, F403
-from ._ext_cognitive import _EXT_ALL as _COG_ALL  # noqa: E402
-from ._ext_context_memory import *  # noqa: E402, F403
-from ._ext_context_memory import _EXT_ALL as _CM_ALL  # noqa: E402
+from ._ext_cache_warming import *
+from ._ext_cache_warming import _EXT_ALL as _CW_ALL
+from ._ext_chaos import *
+from ._ext_chaos import _EXT_ALL as _CHAOS_ALL
+from ._ext_circuit_breaker import *
+from ._ext_circuit_breaker import _EXT_ALL as _CB_ALL
+from ._ext_circuit_breaker_clients import *
+from ._ext_circuit_breaker_clients import _EXT_ALL as _CBC_ALL
+from ._ext_cognitive import *
+from ._ext_cognitive import _EXT_ALL as _COG_ALL
+from ._ext_context_memory import *
+from ._ext_context_memory import _EXT_ALL as _CM_ALL
 
 # Phase 4: Context Window Optimization
-from ._ext_context_optimization import *  # noqa: E402, F403
-from ._ext_context_optimization import _EXT_ALL as _CTX_ALL  # noqa: E402
-from ._ext_decision_store import *  # noqa: E402, F403
-from ._ext_decision_store import _EXT_ALL as _DS_ALL  # noqa: E402
-from ._ext_explanation_service import *  # noqa: E402, F403
-from ._ext_explanation_service import _EXT_ALL as _ES_ALL  # noqa: E402
-from ._ext_langgraph import *  # noqa: E402, F403
-from ._ext_langgraph import _EXT_ALL as _LG_ALL  # noqa: E402
-from ._ext_mcp import *  # noqa: E402, F403
-from ._ext_mcp import _EXT_ALL as _MCP_ALL  # noqa: E402
+from ._ext_context_optimization import *
+from ._ext_context_optimization import _EXT_ALL as _CTX_ALL
+from ._ext_decision_store import *
+from ._ext_decision_store import _EXT_ALL as _DS_ALL
+from ._ext_explanation_service import *
+from ._ext_explanation_service import _EXT_ALL as _ES_ALL
+from ._ext_langgraph import *
+from ._ext_langgraph import _EXT_ALL as _LG_ALL
+from ._ext_mcp import *
+from ._ext_mcp import _EXT_ALL as _MCP_ALL
 
 # Phase 6: Performance Optimization
-from ._ext_performance import *  # noqa: E402, F403
-from ._ext_performance import _EXT_ALL as _PERF_ALL  # noqa: E402
-from ._ext_persistence import *  # noqa: E402, F403
-from ._ext_persistence import _EXT_ALL as _PER_ALL  # noqa: E402
-from ._ext_pqc import *  # noqa: E402, F403
-from ._ext_pqc import _EXT_ALL as _PQC_ALL  # noqa: E402
-from ._ext_response_quality import *  # noqa: E402, F403
-from ._ext_response_quality import _EXT_ALL as _RQ_ALL  # noqa: E402
+from ._ext_performance import *
+from ._ext_performance import _EXT_ALL as _PERF_ALL
+from ._ext_persistence import *
+from ._ext_persistence import _EXT_ALL as _PER_ALL
+from ._ext_pqc import *
+from ._ext_pqc import _EXT_ALL as _PQC_ALL
+from ._ext_response_quality import *
+from ._ext_response_quality import _EXT_ALL as _RQ_ALL
 
 __all__ = [
     "CONSTITUTIONAL_HASH", "BusConfiguration", "MeteringManager", "create_metering_manager",
@@ -185,15 +185,15 @@ __all__ = [
     "DirectMessageRouter", "CapabilityBasedRouter", "StaticHashValidationStrategy",
     "DynamicPolicyValidationStrategy", "RustValidationStrategy", "CompositeValidationStrategy",
     "RedisAgentRegistry", "AgentBusError", "ConstitutionalError", "ConstitutionalHashMismatchError",
-    "ConstitutionalValidationError", "MessageError", "MessageValidationError", "MessageDeliveryError",  # noqa: E501
+    "ConstitutionalValidationError", "MessageError", "MessageValidationError", "MessageDeliveryError",
     "MessageTimeoutError", "MessageRoutingError", "AgentError", "AgentNotRegisteredError",
     "AgentAlreadyRegisteredError", "AgentCapabilityError", "PolicyError", "PolicyEvaluationError",
     "PolicyNotFoundError", "OPAConnectionError", "OPANotInitializedError", "DeliberationError",
-    "DeliberationTimeoutError", "SignatureCollectionError", "ReviewConsensusError", "BusOperationError",  # noqa: E501
+    "DeliberationTimeoutError", "SignatureCollectionError", "ReviewConsensusError", "BusOperationError",
     "BusNotStartedError", "BusAlreadyStartedError", "HandlerExecutionError", "ConfigurationError",
     "RuntimeSecurityConfig", "RuntimeSecurityScanner", "SecurityEvent", "SecurityEventType",
     "SecurityScanResult", "SecuritySeverity", "get_runtime_security_scanner", "scan_content",
-    "SIEMFormat", "SIEMConfig", "SIEMEventFormatter", "SIEMIntegration", "AlertLevel", "AlertThreshold",  # noqa: E501
+    "SIEMFormat", "SIEMConfig", "SIEMEventFormatter", "SIEMIntegration", "AlertLevel", "AlertThreshold",
     "AlertManager", "EventCorrelator", "initialize_siem", "close_siem", "get_siem_integration",
     "log_security_event", "security_audit",
     "MODEL_HASH", "ModelPQCMetadata",

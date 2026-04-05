@@ -1,6 +1,6 @@
 """
 Tests for Cost-Aware LLM Provider Selection
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for:
 - Cost models and estimation
@@ -407,7 +407,6 @@ class TestBudgetManager:
         assert len(inference_limits) == 1
         assert inference_limits[0].operation_type == "inference"
 
-    @pytest.mark.asyncio
     async def test_check_budget(self) -> None:
         """Test budget checking."""
         manager = BudgetManager()
@@ -429,7 +428,6 @@ class TestBudgetManager:
         assert allowed is False
         assert "Daily limit exceeded" in message
 
-    @pytest.mark.asyncio
     async def test_record_cost(self) -> None:
         """Test cost recording."""
         manager = BudgetManager()
@@ -500,7 +498,6 @@ class TestCostAnomalyDetector:
         assert detector._window_size == 50
         assert detector._spike_threshold == 2.0
 
-    @pytest.mark.asyncio
     async def test_record_cost_no_anomaly(self) -> None:
         """Test recording costs without anomaly."""
         detector = CostAnomalyDetector(window_size=20)
@@ -512,7 +509,6 @@ class TestCostAnomalyDetector:
             if i > 10:
                 assert anomaly is None or anomaly.severity == "low"
 
-    @pytest.mark.asyncio
     async def test_detect_spike(self) -> None:
         """Test detecting cost spike."""
         detector = CostAnomalyDetector(window_size=20, spike_threshold=2.0)
@@ -559,7 +555,6 @@ class TestCostAnomalyDetector:
 
         assert len(detector._callbacks) == 1
 
-    @pytest.mark.asyncio
     async def test_get_recent_anomalies(self) -> None:
         """Test getting recent anomalies with filters."""
         detector = CostAnomalyDetector(window_size=15, spike_threshold=1.5)
@@ -593,7 +588,6 @@ class TestBatchOptimizer:
         assert optimizer._min_batch_size == 3
         assert optimizer._max_batch_size == 10
 
-    @pytest.mark.asyncio
     async def test_add_request_not_batched(self) -> None:
         """Test adding high urgency request (not batched)."""
         optimizer = BatchOptimizer()
@@ -613,7 +607,6 @@ class TestBatchOptimizer:
         # High urgency should not be batched
         assert batch_id is None
 
-    @pytest.mark.asyncio
     async def test_add_request_batched(self) -> None:
         """Test adding low urgency requests for batching."""
         optimizer = BatchOptimizer(min_batch_size=3, max_batch_size=5)
@@ -636,7 +629,6 @@ class TestBatchOptimizer:
                 # Max batch size reached, should execute
                 assert batch_id is not None
 
-    @pytest.mark.asyncio
     async def test_flush_batches(self) -> None:
         """Test flushing pending batches."""
         optimizer = BatchOptimizer(min_batch_size=2, max_batch_size=10)
@@ -743,7 +735,6 @@ class TestCostOptimizer:
         # Cached should be cheaper or equal
         assert estimate_with_cache.estimated_cost <= estimate_no_cache.estimated_cost
 
-    @pytest.mark.asyncio
     async def test_select_optimal_provider(self) -> None:
         """Test optimal provider selection."""
         optimizer = CostOptimizer()
@@ -774,7 +765,6 @@ class TestCostOptimizer:
         assert profile is not None
         assert estimate is not None
 
-    @pytest.mark.asyncio
     async def test_select_provider_with_max_cost(self) -> None:
         """Test provider selection with max cost constraint."""
         optimizer = CostOptimizer()
@@ -802,7 +792,6 @@ class TestCostOptimizer:
         if profile is not None:
             assert estimate.estimated_cost <= 0.0001
 
-    @pytest.mark.asyncio
     async def test_record_actual_cost(self) -> None:
         """Test recording actual cost."""
         optimizer = CostOptimizer()
@@ -899,7 +888,6 @@ class TestGlobalInstances:
 class TestCostOptimizerIntegration:
     """Integration tests for cost optimizer."""
 
-    @pytest.mark.asyncio
     async def test_budget_manager_isolation(self) -> None:
         """Test BudgetManager works in isolation within this test module."""
         manager = BudgetManager()
@@ -924,7 +912,6 @@ class TestCostOptimizerIntegration:
         assert limits[0].daily_usage == 5.0, f"Expected 5.0, got {limits[0].daily_usage}"
         assert limits[0] is limit, "Should be the same object"
 
-    @pytest.mark.asyncio
     async def test_full_workflow(self) -> None:
         """Test full cost optimization workflow."""
         # Create a fresh optimizer to avoid test interference
@@ -1000,7 +987,6 @@ class TestCostOptimizerIntegration:
         analytics = optimizer.get_cost_analytics(tenant_id)
         assert analytics["usage"]["total_daily_usage"] > 0, "Analytics shows 0 usage"
 
-    @pytest.mark.asyncio
     async def test_budget_enforcement(self) -> None:
         """Test budget enforcement prevents over-spending."""
         optimizer = CostOptimizer()

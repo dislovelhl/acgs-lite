@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Interfaces Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for Protocol interface definitions.
 """
@@ -8,7 +8,8 @@ Tests for Protocol interface definitions.
 from typing import Any, Optional
 
 import pytest
-from src.core.shared.types import JSONDict
+
+from enhanced_agent_bus._compat.types import JSONDict
 
 try:
     from interfaces import (

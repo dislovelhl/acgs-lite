@@ -1,6 +1,6 @@
 """
 ACGS-2 Decision Store - Redis-backed Decision Explanation Storage
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Implements FR-12 Decision Explanation API storage requirements:
 - Redis-backed storage with 24-hour TTL
@@ -43,16 +43,16 @@ class _DecisionStoreMetrics(TypedDict, total=False):
 
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
 try:
-    from src.core.shared.event_schemas.decision_explanation import (
+    from enhanced_agent_bus._compat.event_schemas.decision_explanation import (
         DecisionExplanationV1,
         create_decision_explanation,
     )
@@ -60,7 +60,7 @@ except ImportError:
     DecisionExplanationV1 = None  # type: ignore[misc, assignment]
     create_decision_explanation = None  # type: ignore[misc, assignment]
 
-from .redis_pool import (  # noqa: E402
+from .redis_pool import (
     REDIS_AVAILABLE,
     RedisConnectionPool,
     get_shared_pool,
@@ -90,7 +90,7 @@ class DecisionStore:
     - Message Index: {index_prefix}:msg:{tenant_id}:{message_id}
     - Time Index: {index_prefix}:time:{tenant_id}:{timestamp}
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 MCPTransport Protocol definition for ACGS-2.
 
@@ -6,13 +6,12 @@ Defines the structural Protocol that all MCP transport implementations must
 satisfy, enabling duck-typed interoperability across HTTP, stdio, SSE, and
 WebSocket transports without coupling to a concrete base class.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from typing import Protocol, runtime_checkable
 
-from src.core.shared.errors.exceptions import ACGSBaseError
-
+from enhanced_agent_bus._compat.errors import ACGSBaseError
 from enhanced_agent_bus.bus_types import JSONDict
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -77,7 +76,7 @@ class MCPTransport(Protocol):
         await transport.connect()
         result = await transport.send({"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}})
         await transport.disconnect()
-    """  # noqa: E501
+    """
 
     async def connect(self) -> None:
         """

@@ -1,6 +1,6 @@
 """
 ACGS-2 Feedback Handler - Handler Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Core feedback handler implementation for storing and querying feedback events.
 """
@@ -14,7 +14,7 @@ from datetime import UTC, datetime
 from typing import Protocol
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -111,7 +111,7 @@ class FeedbackHandler:
 
         if not POSTGRES_ML_PASSWORD:
             logger.warning(
-                "POSTGRES_ML_PASSWORD is not configured; using in-memory storage for feedback handler"  # noqa: E501
+                "POSTGRES_ML_PASSWORD is not configured; using in-memory storage for feedback handler"
             )
             return None
 

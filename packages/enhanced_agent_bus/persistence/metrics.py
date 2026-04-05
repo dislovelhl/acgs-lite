@@ -1,10 +1,10 @@
 """
 Workflow execution metrics.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
-from src.core.shared.metrics import _get_or_create_counter, _get_or_create_histogram
+from enhanced_agent_bus._compat.metrics import _get_or_create_counter, _get_or_create_histogram
 
 # Workflow metrics
 WORKFLOW_STARTED_TOTAL = _get_or_create_counter(

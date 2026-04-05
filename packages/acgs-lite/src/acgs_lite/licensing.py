@@ -1,6 +1,11 @@
+# ACGS - Constitutional AI Governance
+# Copyright (C) 2024-2026 ACGS Contributors
+# Licensed under AGPL-3.0-or-later. See LICENSE for details.
+# Commercial license: https://acgs.ai
+
 """License management for acgs-lite.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 License key format: ACGS-{TIER}-{expiry8}-{nonce4a}-{nonce4b}-{tier4}-{hmac32}
 Example:           ACGS-PRO-67f2b400-a9c2-3d18-0001-4a8f2c9e1b3d7e5f6a0b1c2d3e4f5a6b
@@ -29,7 +34,7 @@ from pathlib import Path
 _LICENSE_FILE = Path.home() / ".acgs-lite" / "license"
 
 # Default dev secret — safe to be public; override with ACGS_LICENSE_SECRET for production
-_DEFAULT_DEV_SECRET = "acgs-lite-dev-2026"  # noqa: S105
+_DEFAULT_DEV_SECRET = "acgs-lite-dev-2026"
 
 
 class Tier(IntEnum):

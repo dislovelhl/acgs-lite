@@ -1,6 +1,6 @@
 """
 Schema Evolution Manager
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Manages schema evolution across source and target data warehouses.
 Detects schema differences and applies changes.
@@ -9,7 +9,7 @@ Detects schema differences and applies changes.
 from typing import TYPE_CHECKING
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 

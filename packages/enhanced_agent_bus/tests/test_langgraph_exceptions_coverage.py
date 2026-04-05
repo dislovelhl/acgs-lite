@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive coverage tests for langgraph_orchestration/exceptions.py.
 
@@ -21,10 +21,10 @@ if _PKG not in sys.modules:
     _stub.__package__ = _PKG
     sys.modules[_PKG] = _stub
 
-import pytest  # noqa: E402
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+import pytest
 
-from enhanced_agent_bus.langgraph_orchestration.exceptions import (  # noqa: E402
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.langgraph_orchestration.exceptions import (
     CheckpointError,
     ConstitutionalViolationError,
     CyclicDependencyError,
@@ -588,9 +588,7 @@ class TestDunderAll:
     def test_all_classes_exported(self):
         import importlib
 
-        exc_mod = importlib.import_module(
-            "enhanced_agent_bus.langgraph_orchestration.exceptions"
-        )
+        exc_mod = importlib.import_module("enhanced_agent_bus.langgraph_orchestration.exceptions")
 
         expected = {
             "OrchestrationError",

@@ -1,6 +1,6 @@
 """
 PostgreSQL Saga Repository Locking and Maintenance Operations
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Contains distributed locking and maintenance operations (cleanup,
 statistics, health checks) for the PostgreSQL saga state repository.
@@ -15,11 +15,11 @@ from datetime import UTC, datetime, timedelta
 import asyncpg
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -47,7 +47,7 @@ class PostgresLockManager:
 
     Handles distributed locking, cleanup, statistics, and health checks.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Type hints for mixin - these are provided by the main repository class

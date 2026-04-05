@@ -1,4 +1,4 @@
-"""Constitutional Hash: cdd01ef066bc6cf2
+"""Constitutional Hash: 608508a9bd224290
 
 Mamba-2 Hybrid Processor for ACGS-2 Constitutional AI Governance
 Implements breakthrough architecture for O(n) context handling with 4M+ token support.
@@ -6,8 +6,10 @@ Implements breakthrough architecture for O(n) context handling with 4M+ token su
 
 from __future__ import annotations
 
+import importlib.util
+
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -16,7 +18,17 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 logger = get_logger(__name__)
 MODEL_QUANTIZATION_ERRORS = (RuntimeError, ValueError, TypeError, OSError)
 
+
+def _has_real_torch() -> bool:
+    try:
+        return importlib.util.find_spec("torch") is not None
+    except (ImportError, ValueError):
+        return False
+
+
 try:
+    if not _has_real_torch():
+        raise ImportError("torch is not installed")
     import torch
     import torch.nn as nn
     import torch.nn.functional as F
@@ -30,7 +42,7 @@ except (ImportError, OSError, RuntimeError, Exception):
 
 # Constitutional Hash for immutable validation
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -148,7 +160,7 @@ if TORCH_AVAILABLE:
         - 1 shared attention layer for precise constitutional reasoning
         - JRT context preparation for critical sections
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         """
 
         def __init__(

@@ -1,7 +1,7 @@
 """
 Task Coordinator - Handles task execution flow.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Part of MetaOrchestrator decomposition - extracts task execution responsibilities
 into a focused coordinator.
@@ -15,11 +15,11 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -115,7 +115,7 @@ class TaskCoordinatorProtocol(Protocol):
 class TaskCoordinator:
     """
     Coordinates task execution flow.
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     constitutional_hash: str = CONSTITUTIONAL_HASH
@@ -293,7 +293,7 @@ class TaskCoordinator:
 
     def _validate_constitutional_compliance(self, action: JSONDict) -> bool:
         """Validate action against constitutional principles."""
-        if "constitutional_hash" in action:  # noqa: SIM102
+        if "constitutional_hash" in action:
             if action["constitutional_hash"] != self.constitutional_hash:
                 logger.error("Constitutional hash mismatch!")
                 return False

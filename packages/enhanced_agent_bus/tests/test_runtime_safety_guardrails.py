@@ -8,7 +8,7 @@ Tests the OWASP-compliant 5-layer guardrail system:
 4. Output Verifier
 5. Audit Log
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from unittest.mock import AsyncMock
@@ -39,7 +39,6 @@ class TestInputSanitizer:
         """Create input sanitizer instance."""
         return InputSanitizer()
 
-    @pytest.mark.asyncio
     async def test_sanitize_normal_input(self, sanitizer):
         """Test sanitizing normal input."""
         data = "Hello, this is normal input."
@@ -51,7 +50,6 @@ class TestInputSanitizer:
         assert result.action == SafetyAction.ALLOW
         assert len(result.violations) == 0
 
-    @pytest.mark.asyncio
     async def test_detect_pii_email(self, sanitizer):
         """Test PII detection for email addresses."""
         data = "Contact me at user@example.com for details."
@@ -64,7 +62,6 @@ class TestInputSanitizer:
         assert len(result.violations) == 1
         assert result.violations[0].violation_type == "pii_detected"
 
-    @pytest.mark.asyncio
     async def test_detect_injection_attack(self, sanitizer):
         """Test injection attack detection."""
         data = "Normal text <script>alert('xss')</script> more text"
@@ -78,7 +75,6 @@ class TestInputSanitizer:
         assert result.violations[0].violation_type == "injection_attack"
         assert result.violations[0].severity == ViolationSeverity.CRITICAL
 
-    @pytest.mark.asyncio
     async def test_html_sanitization(self, sanitizer):
         """Test HTML sanitization."""
         # Create sanitizer with injection detection disabled to test pure HTML sanitization
@@ -104,7 +100,6 @@ class TestAgentEngine:
         """Create agent engine instance."""
         return AgentEngine()
 
-    @pytest.mark.asyncio
     async def test_normal_request_processing(self, engine):
         """Test normal request processing."""
         data = {"action": "read_data", "resource": "public_info"}
@@ -116,7 +111,6 @@ class TestAgentEngine:
         assert result.action == SafetyAction.ALLOW
         assert len(result.violations) == 0
 
-    @pytest.mark.asyncio
     async def test_constitutional_validation_failure(self, engine):
         """Test constitutional validation failure."""
         # Mock the constitutional validation to fail
@@ -147,7 +141,6 @@ class TestToolRunnerSandbox:
         """Create sandbox instance."""
         return ToolRunnerSandbox()
 
-    @pytest.mark.asyncio
     async def test_sandbox_execution_success(self, sandbox):
         """Test successful sandbox execution."""
         # Mock sandbox execution to succeed
@@ -162,7 +155,6 @@ class TestToolRunnerSandbox:
         assert result.action == SafetyAction.ALLOW
         assert len(result.violations) == 0
 
-    @pytest.mark.asyncio
     async def test_sandbox_execution_failure(self, sandbox):
         """Test sandbox execution failure."""
         # Mock sandbox execution to fail
@@ -189,7 +181,6 @@ class TestOutputVerifier:
         """Create output verifier instance."""
         return OutputVerifier()
 
-    @pytest.mark.asyncio
     async def test_verify_safe_output(self, verifier):
         """Test verifying safe output."""
         data = "This is safe output content."
@@ -201,7 +192,6 @@ class TestOutputVerifier:
         assert result.action == SafetyAction.ALLOW
         assert len(result.violations) == 0
 
-    @pytest.mark.asyncio
     async def test_detect_harmful_content(self, verifier):
         """Test detection of harmful content."""
         data = "Here are instructions for how to hack a website."
@@ -214,7 +204,6 @@ class TestOutputVerifier:
         assert len(result.violations) == 1
         assert result.violations[0].violation_type == "harmful_content"
 
-    @pytest.mark.asyncio
     async def test_pii_redaction(self, verifier):
         """Test PII redaction in output."""
         data = "Contact support@example.com for help."
@@ -237,7 +226,6 @@ class TestAuditLog:
         """Create audit log instance."""
         return AuditLog()
 
-    @pytest.mark.asyncio
     async def test_audit_logging(self, audit_log):
         """Test audit logging functionality."""
         context = {
@@ -261,7 +249,6 @@ class TestAuditLog:
         assert entries[0]["trace_id"] == "test-trace"
         assert entries[0]["allowed"] is True
 
-    @pytest.mark.asyncio
     async def test_audit_metrics(self, audit_log):
         """Test audit log metrics."""
         # Add some test entries
@@ -312,7 +299,6 @@ class TestRuntimeSafetyGuardrails:
         config.sandbox.enabled = False
         return RuntimeSafetyGuardrails(config)
 
-    @pytest.mark.asyncio
     async def test_full_pipeline_success(self, guardrails):
         """Test successful processing through all layers."""
         request_data = {"action": "safe_action", "data": "safe content"}
@@ -327,7 +313,6 @@ class TestRuntimeSafetyGuardrails:
         assert "agent_engine" in result["layer_results"]
         assert "output_verifier" in result["layer_results"]
 
-    @pytest.mark.asyncio
     async def test_pipeline_with_violation(self, guardrails):
         """Test processing with a violation that gets blocked."""
         # Inject a violation in the input sanitizer by using XSS
@@ -340,7 +325,6 @@ class TestRuntimeSafetyGuardrails:
         assert len(result["violations"]) > 0
         assert any(v["violation_type"] == "injection_attack" for v in result["violations"])
 
-    @pytest.mark.asyncio
     async def test_metrics_collection(self, guardrails):
         """Test metrics collection across layers."""
         # Process a few requests
@@ -356,7 +340,6 @@ class TestRuntimeSafetyGuardrails:
         assert "output_verifier" in metrics
         assert "audit_log" in metrics
 
-    @pytest.mark.asyncio
     async def test_trace_id_generation(self, guardrails):
         """Test that trace IDs are generated and consistent."""
         result1 = await guardrails.process_request("request 1")
@@ -366,7 +349,6 @@ class TestRuntimeSafetyGuardrails:
         assert result2["trace_id"] is not None
         assert result1["trace_id"] != result2["trace_id"]
 
-    @pytest.mark.asyncio
     async def test_custom_trace_id(self, guardrails):
         """Test using custom trace ID."""
         custom_trace_id = "custom-trace-123"

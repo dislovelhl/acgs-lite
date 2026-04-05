@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Tests for src/core/enhanced_agent_bus/constitutional/storage_infra/cache.py
 
@@ -8,8 +8,6 @@ to reach ≥90% line coverage on CacheManager.
 
 import json
 from unittest.mock import AsyncMock, MagicMock, patch
-
-import pytest
 
 from enhanced_agent_bus.constitutional.storage_infra.cache import (
     REDIS_AVAILABLE,

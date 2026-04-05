@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive test suite for bus/core.py - EnhancedAgentBus.
 
@@ -9,15 +9,14 @@ Asyncio mode: auto (configured in pyproject.toml)
 from __future__ import annotations
 
 import asyncio
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
-
-import pytest
 
 # ---------------------------------------------------------------------------
 # Helpers to build a minimal EnhancedAgentBus with full mock injections
 # ---------------------------------------------------------------------------
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 
 def _make_mock_governance() -> MagicMock:
@@ -433,12 +432,28 @@ class TestEnhancedAgentBusLifecycle:
         await bus.stop()
         router.shutdown.assert_awaited_once()
 
+    async def test_stop_calls_processor_shutdown_when_available(self) -> None:
+        processor = _make_mock_processor()
+        processor.shutdown = AsyncMock()
+        bus = _build_bus(processor=processor)
+        await bus.stop()
+        processor.shutdown.assert_awaited_once()
+
     async def test_stop_cancels_kafka_consumer_task(self) -> None:
         bus = _build_bus()
         fake_task = asyncio.create_task(asyncio.sleep(100))
         bus._kafka_consumer_task = fake_task
         await bus.stop()
         assert fake_task.cancelled()
+
+    async def test_stop_cancels_background_tasks(self) -> None:
+        bus = _build_bus()
+        task = asyncio.create_task(asyncio.sleep(100))
+        bus._background_tasks.add(task)
+        task.add_done_callback(bus._background_tasks.discard)
+        await bus.stop()
+        assert task.done() is True
+        assert len(bus._background_tasks) == 0
 
     async def test_stop_handles_cancelled_error_from_kafka_task(self) -> None:
         bus = _build_bus()
@@ -605,6 +620,7 @@ class TestSendMessage:
         bus._running = True
 
         msg = _make_msg()
+        msg.metadata["prevalidated"] = True
         with patch.object(
             bus._message_validator, "validate_and_normalize_tenant", return_value=True
         ):
@@ -626,6 +642,47 @@ class TestSendMessage:
         result = await bus.send_message(msg)
         # Should process (test mode)
         assert result is not None
+
+    async def test_send_message_bus_not_running_without_override_fails_closed(self) -> None:
+        bus = _build_bus()
+        bus._config = {}
+        bus._running = False
+
+        result = await bus.send_message(_make_msg(from_agent="real-agent"))
+
+        assert result.is_valid is False
+        assert "not started" in result.errors[0].lower()
+
+    async def test_send_message_rejects_expired_message(self) -> None:
+        bus = _build_bus()
+        bus._running = True
+        msg = _make_msg()
+        msg.expires_at = datetime.now(UTC) - timedelta(seconds=1)
+
+        result = await bus.send_message(msg)
+
+        assert result.is_valid is False
+        assert "expired" in result.errors[0].lower()
+
+    async def test_send_message_accepts_empty_content(self) -> None:
+        bus = _build_bus()
+        bus._running = True
+
+        result = await bus.send_message(_make_msg(content={}))
+        # Empty content is valid — the bus allows it for metadata-only messages
+        assert result.is_valid is True
+
+    async def test_send_message_rejects_missing_sender_or_recipient(self) -> None:
+        bus = _build_bus()
+        bus._running = True
+
+        missing_sender = await bus.send_message(_make_msg(from_agent=""))
+        missing_recipient = await bus.send_message(_make_msg(to_agent=""))
+
+        assert missing_sender.is_valid is False
+        assert "from_agent" in missing_sender.errors[0]
+        assert missing_recipient.is_valid is False
+        assert "to_agent" in missing_recipient.errors[0]
 
 
 # ===========================================================================
@@ -923,6 +980,12 @@ class TestDelegatedMethods:
             ret = bus._requires_deliberation(msg)
         assert ret is True
 
+    def test_requires_deliberation_threshold_boundaries(self) -> None:
+        bus = _build_bus()
+
+        assert bus._requires_deliberation(_make_msg(impact_score=0.79)) is False
+        assert bus._requires_deliberation(_make_msg(impact_score=0.8)) is True
+
 
 # ===========================================================================
 # _normalize_tenant_id static method
@@ -977,13 +1040,13 @@ class TestValidateAgentIdentity:
 
     async def test_token_with_dot(self) -> None:
         bus = _build_bus()
-        result, errors = await bus._validate_agent_identity(token="header.payload.sig")  # noqa: S106
+        result, errors = await bus._validate_agent_identity(token="header.payload.sig")
         assert result == "header.payload.sig"
         assert errors == []
 
     async def test_token_without_dot(self) -> None:
         bus = _build_bus()
-        result, errors = await bus._validate_agent_identity(token="simpletoken")  # noqa: S106
+        result, errors = await bus._validate_agent_identity(token="simpletoken")
         assert result == "default"
         assert errors == []
 
@@ -1397,11 +1460,8 @@ class TestEdgeCases:
         assert bus.is_running is True
 
     async def test_send_message_bus_not_running_not_test_mode(self) -> None:
-        """Lines 545->549: bus not running and not test mode — sent not incremented."""
-        from enhanced_agent_bus.validators import ValidationResult
-
+        """Bus not running and no override must fail closed."""
         proc = _make_mock_processor()
-        proc.process = AsyncMock(return_value=ValidationResult(is_valid=True))
         bus = _build_bus(processor=proc)
         # Remove allow_unstarted so it is not in config
         bus._config = {}
@@ -1413,11 +1473,9 @@ class TestEdgeCases:
             content={"data": "normal"},
             constitutional_hash=CONSTITUTIONAL_HASH,
         )
-        initial_sent = bus._metrics["sent"]
-        await bus.send_message(msg)
-        # sent not incremented via the test mode path (line 546 not hit)
-        # It may be incremented later via normal path, but the test-mode branch is skipped
-        assert bus._metrics["sent"] >= initial_sent
+        result = await bus.send_message(msg)
+        assert result.is_valid is False
+        assert "not started" in result.errors[0].lower()
 
     async def test_start_kafka_simple_mock_setattr(self) -> None:
         """Line 701: SimpleMock.__setattr__ for non-special attribute."""

@@ -1,13 +1,11 @@
 """
 Tests for deliberation_layer/redis_integration.py targeting ≥90% coverage.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
 import json
 from unittest.mock import AsyncMock, MagicMock, patch
-
-import pytest
 
 from enhanced_agent_bus.deliberation_layer.redis_integration import (
     REDIS_AVAILABLE,

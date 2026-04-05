@@ -3,7 +3,7 @@ Swarm Intelligence - Consensus Mechanism
 
 Byzantine fault-tolerant consensus for distributed decision-making.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from collections import OrderedDict
@@ -11,7 +11,7 @@ from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -85,7 +85,7 @@ class ConsensusMechanism:
         )
         self._proposals[proposal.id] = proposal
         logger.info(
-            f"Created proposal {proposal.id[:8]}... (type={consensus_type.value}, timeout={timeout_seconds}s)"  # noqa: E501
+            f"Created proposal {proposal.id[:8]}... (type={consensus_type.value}, timeout={timeout_seconds}s)"
         )
         return proposal
 
@@ -118,7 +118,7 @@ class ConsensusMechanism:
                     self._faulty_voters[voter_id].append(proposal_id)
                     self._trim_faulty_voters()
                     logger.warning(
-                        f"Byzantine fault detected: voter {voter_id} changed vote on proposal {proposal_id[:8]}..."  # noqa: E501
+                        f"Byzantine fault detected: voter {voter_id} changed vote on proposal {proposal_id[:8]}..."
                     )
                 return False
 
@@ -169,7 +169,7 @@ class ConsensusMechanism:
             self._completed_proposals[proposal_id] = current_time
             self._trim_completed_proposals()
             logger.info(
-                f"Consensus reached (APPROVED) on proposal {proposal_id[:8]}... ({approvals}/{total_voters} votes)"  # noqa: E501
+                f"Consensus reached (APPROVED) on proposal {proposal_id[:8]}... ({approvals}/{total_voters} votes)"
             )
             return (True, True)
 
@@ -180,7 +180,7 @@ class ConsensusMechanism:
             self._completed_proposals[proposal_id] = current_time
             self._trim_completed_proposals()
             logger.info(
-                f"Consensus reached (REJECTED) on proposal {proposal_id[:8]}... ({rejections} rejections)"  # noqa: E501
+                f"Consensus reached (REJECTED) on proposal {proposal_id[:8]}... ({rejections} rejections)"
             )
             return (True, False)
 
@@ -191,7 +191,7 @@ class ConsensusMechanism:
             self._completed_proposals[proposal_id] = current_time
             self._trim_completed_proposals()
             logger.warning(
-                f"Consensus timeout on proposal {proposal_id[:8]}... ({votes_cast}/{total_voters} votes cast)"  # noqa: E501
+                f"Consensus timeout on proposal {proposal_id[:8]}... ({votes_cast}/{total_voters} votes cast)"
             )
             return (True, False)
 

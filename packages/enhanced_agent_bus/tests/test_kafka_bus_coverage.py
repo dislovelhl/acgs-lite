@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 ACGS-2 Kafka Bus Coverage Tests
 
@@ -147,7 +147,7 @@ class TestCreateSslContext:
         mock_ctx.load_cert_chain.assert_called_once_with(
             certfile="/cert.pem",
             keyfile="/key.pem",
-            password="secret",  # noqa: S106
+            password="secret",
         )
         assert result is mock_ctx
 

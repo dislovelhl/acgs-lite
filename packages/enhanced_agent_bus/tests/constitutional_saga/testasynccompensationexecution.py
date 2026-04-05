@@ -1,6 +1,6 @@
 """
 Comprehensive tests for Constitutional Saga workflow module.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Coverage targets:
 - SagaStatus and StepStatus enums
@@ -38,7 +38,6 @@ from enhanced_agent_bus.deliberation_layer.workflows.constitutional_saga import 
 class TestAsyncCompensationExecution:
     """Tests for async compensation execution."""
 
-    @pytest.mark.asyncio
     async def test_compensation_execution(self):
         """Test compensation can be executed."""
         execution_tracker = {"called": False}
@@ -56,7 +55,6 @@ class TestAsyncCompensationExecution:
         assert result is True
         assert execution_tracker["called"] is True
 
-    @pytest.mark.asyncio
     async def test_step_execution(self):
         """Test step can be executed."""
 

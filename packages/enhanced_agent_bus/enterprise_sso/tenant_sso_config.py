@@ -1,6 +1,6 @@
 """
 Tenant SSO Configuration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Per-tenant SSO configuration management for multi-tenant enterprise deployments.
 Each tenant can configure their own identity providers and role mappings.
@@ -12,18 +12,18 @@ from enum import Enum
 from uuid import uuid4
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.errors.exceptions import (
+from enhanced_agent_bus._compat.errors import (
     ConstitutionalViolationError,
 )
-from src.core.shared.errors.exceptions import (
+from enhanced_agent_bus._compat.errors import (
     ValidationError as ACGSValidationError,
 )
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -32,7 +32,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 logger = get_logger(__name__)
 
 
-class IdPProviderType(str, Enum):  # noqa: UP042
+class IdPProviderType(str, Enum):
     """Supported Identity Provider types."""
 
     OKTA = "okta"
@@ -46,7 +46,7 @@ class IdPProviderType(str, Enum):  # noqa: UP042
     CUSTOM_OIDC = "custom_oidc"
 
 
-class SSOProtocolType(str, Enum):  # noqa: UP042
+class SSOProtocolType(str, Enum):
     """SSO protocol types."""
 
     SAML_2_0 = "saml"
@@ -57,7 +57,7 @@ class SSOProtocolType(str, Enum):  # noqa: UP042
 class SAMLConfig:
     """SAML 2.0 specific configuration.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     entity_id: str
@@ -116,7 +116,7 @@ class SAMLConfig:
 class OIDCConfig:
     """OIDC/OAuth 2.0 specific configuration.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     issuer: str
@@ -130,7 +130,7 @@ class OIDCConfig:
     scopes: list[str] = field(default_factory=lambda: ["openid", "profile", "email"])
     response_type: str = "code"
     use_pkce: bool = True
-    token_endpoint_auth_method: str = "client_secret_post"  # noqa: S105
+    token_endpoint_auth_method: str = "client_secret_post"
 
     def to_dict(self) -> JSONDict:
         """Serialize to dictionary (excludes secrets)."""
@@ -171,7 +171,7 @@ class OIDCConfig:
 class RoleMappingRule:
     """Rule for mapping IdP group to MACI role.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     idp_group: str
@@ -216,7 +216,7 @@ class RoleMappingRule:
 class AttributeMapping:
     """Mapping of IdP attributes to user profile fields.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     email: str = "email"
@@ -282,7 +282,7 @@ class AttributeMapping:
 class TenantIdPConfig:
     """Identity Provider configuration for a specific tenant.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     idp_id: str
@@ -410,7 +410,7 @@ class TenantIdPConfig:
 class TenantSSOConfig:
     """SSO configuration for a tenant.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     tenant_id: str
@@ -466,7 +466,7 @@ class TenantSSOConfig:
 class TenantSSOConfigManager:
     """Manager for tenant SSO configurations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Provides CRUD operations for tenant SSO configurations with
     in-memory storage (suitable for extension to database storage).
@@ -778,7 +778,7 @@ def create_google_workspace_idp_config(
             client_id=client_id,
             client_secret=client_secret,
             authorization_endpoint="https://accounts.google.com/o/oauth2/v2/auth",
-            token_endpoint="https://oauth2.googleapis.com/token",  # noqa: S106
+            token_endpoint="https://oauth2.googleapis.com/token",
             userinfo_endpoint="https://openidconnect.googleapis.com/v1/userinfo",
             jwks_uri="https://www.googleapis.com/oauth2/v3/certs",
             scopes=["openid", "profile", "email"],

@@ -6,7 +6,7 @@ os.environ["ENABLE_RATE_LIMITING"] = "false"
 os.environ["SAML_ENABLED"] = "false"
 """
 ACGS-2 API Gateway SAML Flow Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for SAML 2.0 authentication flow with Okta mock.
 Tests cover: login redirect, ACS callback handling, assertion validation,
@@ -274,7 +274,6 @@ class TestSAMLProviderConfig:
 class TestSAMLLoginFlow:
     """Tests for SAML login initiation."""
 
-    @pytest.mark.asyncio
     async def test_saml_login_redirect(self, client, mock_saml_handler_dependency):
         """Test that /saml/login redirects to Okta SSO endpoint."""
         # Mock initiate_login to return a proper redirect URL
@@ -298,7 +297,6 @@ class TestSAMLLoginFlow:
             assert location is not None
             assert MOCK_OKTA_SSO_URL in location
 
-    @pytest.mark.asyncio
     async def test_saml_login_stores_request_id(self, client, mock_saml_handler_dependency):
         """Test that login stores request ID in session for replay prevention."""
         mock_request_id = "_saml_" + secrets.token_hex(16)
@@ -348,7 +346,6 @@ class TestSAMLLoginFlow:
 
         assert response.status_code == 422  # FastAPI validation error
 
-    @pytest.mark.asyncio
     async def test_saml_login_with_relay_state(self, client, mock_saml_handler_dependency):
         """Test that login passes relay state to IdP."""
         mock_request_id = "_saml_" + secrets.token_hex(16)
@@ -373,7 +370,6 @@ class TestSAMLLoginFlow:
             call_kwargs = mock_initiate.call_args
             assert call_kwargs.kwargs.get("relay_state") == relay_state
 
-    @pytest.mark.asyncio
     async def test_saml_login_with_force_authn(self, client, mock_saml_handler_dependency):
         """Test that login can force re-authentication."""
         mock_request_id = "_saml_" + secrets.token_hex(16)
@@ -424,7 +420,6 @@ class TestSAMLACSFlow:
             "handler": mock_saml_handler_dependency,
         }
 
-    @pytest.mark.asyncio
     async def test_saml_acs_success(self, client, setup_login_state):
         """Test successful SAML ACS callback with valid response."""
         cookies = setup_login_state["cookies"]
@@ -449,6 +444,8 @@ class TestSAMLACSFlow:
             mock_acs.return_value = mock_user_info
 
             saml_response = create_mock_saml_response()
+            for cookie in cookies.jar:
+                client.cookies.set(cookie.name, cookie.value)
 
             response = client.post(
                 "/api/v1/sso/saml/acs",
@@ -456,7 +453,6 @@ class TestSAMLACSFlow:
                     "SAMLResponse": saml_response,
                     "RelayState": "",
                 },
-                cookies=cookies,
             )
 
             assert response.status_code == 200
@@ -466,7 +462,6 @@ class TestSAMLACSFlow:
             assert data["name"] == "Test User"
             assert "Engineering" in data["groups"]
 
-    @pytest.mark.asyncio
     async def test_saml_acs_replay_attack_returns_401(self, client, mock_saml_handler_dependency):
         """Test that ACS with replay attack returns 401."""
         with patch.object(
@@ -489,7 +484,6 @@ class TestSAMLACSFlow:
             data = response.json()
             assert "authentication failed" in data.get("detail", "").lower()
 
-    @pytest.mark.asyncio
     async def test_saml_acs_validation_error_returns_401(
         self, client, mock_saml_handler_dependency
     ):
@@ -514,7 +508,6 @@ class TestSAMLACSFlow:
             data = response.json()
             assert "authentication failed" in data.get("detail", "").lower()
 
-    @pytest.mark.asyncio
     async def test_saml_acs_authentication_error_returns_401(
         self, client, mock_saml_handler_dependency
     ):
@@ -642,7 +635,6 @@ class TestSAMLProvidersList:
 class TestSAMLMetadata:
     """Tests for SAML SP metadata generation."""
 
-    @pytest.mark.asyncio
     async def test_metadata_returns_xml(self, client, mock_saml_handler_dependency):
         """Test that metadata endpoint returns XML content."""
         # Mock generate_metadata
@@ -666,7 +658,6 @@ class TestSAMLMetadata:
             assert "application/xml" in response.headers.get("content-type", "")
             assert "EntityDescriptor" in response.text
 
-    @pytest.mark.asyncio
     async def test_metadata_includes_entity_id(self, client, mock_saml_handler_dependency):
         """Test that metadata includes entity ID."""
         mock_metadata_xml = (
@@ -700,7 +691,6 @@ class TestSAMLLogout:
         data = response.json()
         assert data["success"] is True
 
-    @pytest.mark.asyncio
     async def test_logout_returns_idp_logout_url(self, client, mock_saml_handler_dependency):
         """Test that logout returns IdP logout URL when available."""
         idp_logout_url = f"{MOCK_OKTA_SLO_URL}?SAMLRequest=mock"
@@ -739,7 +729,6 @@ class TestSAMLLogout:
 class TestSAMLSLSFlow:
     """Tests for SAML Single Logout Service (SLS) flow."""
 
-    @pytest.mark.asyncio
     async def test_sls_handles_logout_response(self, client, mock_saml_handler_dependency):
         """Test that SLS handles logout response from IdP."""
         with patch.object(

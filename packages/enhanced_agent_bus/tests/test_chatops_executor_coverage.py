@@ -1,13 +1,11 @@
 """
 Tests for agents/chatops_executor.py
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import sys
 from typing import Optional
 from unittest.mock import AsyncMock, MagicMock, patch
-
-import pytest
 
 from enhanced_agent_bus.core_models import AgentMessage, MessageType
 

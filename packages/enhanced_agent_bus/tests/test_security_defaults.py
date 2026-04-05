@@ -1,6 +1,6 @@
 """
 Security Defaults Regression Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 CRITICAL: These tests prevent regression on security-critical defaults.
 All security-sensitive components MUST default to fail-closed behavior.
@@ -187,7 +187,6 @@ class TestRustValidationStrategySecurityDefaults:
 
         assert strategy._fail_closed is False
 
-    @pytest.mark.asyncio
     async def test_rust_validation_no_processor_fails_closed(self):
         """RustValidationStrategy with no processor MUST fail closed."""
         strategy = RustValidationStrategy(rust_processor=None)
@@ -205,7 +204,6 @@ class TestRustValidationStrategySecurityDefaults:
         assert is_valid is False, "Missing processor must fail validation"
         assert "not available" in error.lower(), "Error must indicate processor unavailable"
 
-    @pytest.mark.asyncio
     async def test_rust_validation_no_method_fails_closed(self):
         """RustValidationStrategy with processor lacking validate method MUST fail closed."""
         mock_processor = MagicMock(spec=[])  # No methods

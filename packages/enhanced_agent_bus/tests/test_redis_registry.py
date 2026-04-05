@@ -1,7 +1,7 @@
 """
 Module.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import json
@@ -43,7 +43,6 @@ async def registry(mock_redis, mock_pool):
             await reg.close()
 
 
-@pytest.mark.asyncio
 class TestRedisAgentRegistry:
     __test__ = False
 
@@ -139,7 +138,6 @@ class TestRedisAgentRegistry:
         mock_redis.delete.assert_called_with("acgs2:registry:agents")
 
 
-@pytest.mark.asyncio
 class TestEnhancedAgentBusRedisIntegration:
     async def test_bus_initializes_redis_registry(self):
         """Test that EnhancedAgentBus creates RedisAgentRegistry when configured."""

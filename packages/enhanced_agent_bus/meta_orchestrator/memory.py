@@ -7,7 +7,7 @@ Implements four-tier memory architecture for persistent, cross-session learning.
 
 Target: 172K+ ops/sec, 60% compression, 95%+ recall
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING
 from uuid import uuid4
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

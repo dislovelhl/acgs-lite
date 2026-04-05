@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - HITL Manager Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for the HITLManager class.
 Tests cover:
@@ -10,8 +10,6 @@ Tests cover:
 """
 
 from datetime import UTC, datetime
-
-import pytest
 
 
 class TestAuditRecords:

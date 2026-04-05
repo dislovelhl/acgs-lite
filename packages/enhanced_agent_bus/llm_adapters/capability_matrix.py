@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - LLM Provider Capability Matrix
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Defines capability dimensions for LLM providers and implements capability-based
 routing for multi-provider antifragility. Supports dynamic capability discovery,
@@ -27,11 +27,11 @@ from pydantic import BaseModel, Field
 
 # Import centralized constitutional hash from shared module
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -52,11 +52,11 @@ DISCOVERY_HOOK_ERRORS = (
 # =============================================================================
 
 
-class CapabilityDimension(str, Enum):  # noqa: UP042
+class CapabilityDimension(str, Enum):
     """
     Capability dimensions for LLM providers.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Each dimension represents a specific capability that may vary across providers.
     """
@@ -101,7 +101,7 @@ class CapabilityDimension(str, Enum):  # noqa: UP042
     CACHED_INPUT_COST_PER_1K = "cached_input_cost_per_1k"
 
 
-class LatencyClass(str, Enum):  # noqa: UP042
+class LatencyClass(str, Enum):
     """Latency classification for providers."""
 
     ULTRA_LOW = "ultra_low"  # <100ms
@@ -111,7 +111,7 @@ class LatencyClass(str, Enum):  # noqa: UP042
     VARIABLE = "variable"  # Depends on load
 
 
-class CapabilityLevel(str, Enum):  # noqa: UP042
+class CapabilityLevel(str, Enum):
     """Level of support for a capability."""
 
     NONE = "none"
@@ -131,7 +131,7 @@ class CapabilityValue:
     """
     Value for a specific capability.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     dimension: CapabilityDimension
@@ -197,7 +197,7 @@ class CapabilityRequirement:
     """
     Requirement specification for a capability.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     dimension: CapabilityDimension
@@ -228,7 +228,7 @@ class ProviderCapabilityProfile(BaseModel):
     """
     Complete capability profile for an LLM provider/model.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     provider_id: str = Field(..., description="Unique provider identifier")
@@ -393,7 +393,7 @@ class CapabilityRegistry:
     """
     Registry for managing provider capability profiles.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Provides:
     - Provider registration and discovery
@@ -584,9 +584,9 @@ class CapabilityRegistry:
             ),
             # Azure OpenAI
             ProviderCapabilityProfile(
-                provider_id="azure-gpt-5-2",
-                model_id="gpt-5.2",
-                display_name="GPT-5.2 (Azure)",
+                provider_id="azure-gpt-5-4",
+                model_id="gpt-5.4",
+                display_name="GPT-5.4 (Azure)",
                 provider_type="azure",
                 context_length=400000,
                 max_output_tokens=16384,
@@ -599,8 +599,49 @@ class CapabilityRegistry:
                 latency_class=LatencyClass.LOW,
                 rate_limit_rpm=1000,
                 rate_limit_tpm=450000,
-                input_cost_per_1k=0.00175,
-                output_cost_per_1k=0.014,
+                input_cost_per_1k=0.002,
+                output_cost_per_1k=0.016,
+            ),
+            # xAI (Grok)
+            ProviderCapabilityProfile(
+                provider_id="xai-grok-4-1-fast",
+                model_id="grok-4-1-fast",
+                display_name="Grok 4.1 Fast",
+                provider_type="xai",
+                context_length=2000000,
+                max_output_tokens=32768,
+                supports_streaming=True,
+                function_calling=CapabilityLevel.FULL,
+                parallel_function_calls=True,
+                structured_output=CapabilityLevel.FULL,
+                vision=True,
+                json_mode=True,
+                latency_class=LatencyClass.ULTRA_LOW,
+                rate_limit_rpm=607,
+                rate_limit_tpm=4000000,
+                input_cost_per_1k=0.0002,
+                output_cost_per_1k=0.0005,
+                cached_input_cost_per_1k=0.00005,
+            ),
+            ProviderCapabilityProfile(
+                provider_id="xai-grok-4-20",
+                model_id="grok-4.20",
+                display_name="Grok 4.20",
+                provider_type="xai",
+                context_length=2000000,
+                max_output_tokens=32768,
+                supports_streaming=True,
+                function_calling=CapabilityLevel.FULL,
+                parallel_function_calls=True,
+                structured_output=CapabilityLevel.FULL,
+                vision=True,
+                json_mode=True,
+                latency_class=LatencyClass.LOW,
+                rate_limit_rpm=607,
+                rate_limit_tpm=4000000,
+                input_cost_per_1k=0.002,
+                output_cost_per_1k=0.006,
+                cached_input_cost_per_1k=0.0002,
             ),
             # Moonshot AI (Kimi)
             ProviderCapabilityProfile(
@@ -793,7 +834,7 @@ class CapabilityRouter:
     """
     Routes requests to providers based on capability requirements.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Provides:
     - Capability-based provider selection

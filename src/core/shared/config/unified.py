@@ -1,6 +1,6 @@
 """ACGS-2 Unified Configuration System — backward-compatibility shim.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module re-exports all configuration classes from their domain-specific
 modules so that existing ``from src.core.shared.config.unified import ...``

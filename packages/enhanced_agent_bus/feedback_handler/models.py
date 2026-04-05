@@ -1,6 +1,6 @@
 """
 ACGS-2 Feedback Handler - Models Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Pydantic models and dataclasses for feedback events.
 """
@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

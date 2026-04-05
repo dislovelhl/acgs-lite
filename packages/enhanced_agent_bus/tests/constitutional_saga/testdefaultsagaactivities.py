@@ -1,6 +1,6 @@
 """
 Comprehensive tests for Constitutional Saga workflow module.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Coverage targets:
 - SagaStatus and StepStatus enums
@@ -41,7 +41,6 @@ class TestDefaultSagaActivities:
         """Create default activities instance."""
         return DefaultSagaActivities()
 
-    @pytest.mark.asyncio
     async def test_reserve_capacity(self, activities):
         """Test capacity reservation."""
         result = await activities.reserve_capacity(
@@ -53,13 +52,11 @@ class TestDefaultSagaActivities:
         assert result["amount"] == 5
         assert "timestamp" in result
 
-    @pytest.mark.asyncio
     async def test_release_capacity(self, activities):
         """Test capacity release."""
         result = await activities.release_capacity(saga_id="test-saga", reservation_id="res-123")
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_validate_constitutional_compliance_valid(self, activities):
         """Test valid constitutional compliance."""
         result = await activities.validate_constitutional_compliance(
@@ -71,7 +68,6 @@ class TestDefaultSagaActivities:
         assert result["is_valid"] is True
         assert result["errors"] == []
 
-    @pytest.mark.asyncio
     async def test_validate_constitutional_compliance_invalid(self, activities):
         """Test invalid constitutional compliance."""
         result = await activities.validate_constitutional_compliance(
@@ -83,7 +79,6 @@ class TestDefaultSagaActivities:
         assert result["is_valid"] is False
         assert len(result["errors"]) > 0
 
-    @pytest.mark.asyncio
     async def test_log_validation_failure(self, activities):
         """Test logging validation failure."""
         result = await activities.log_validation_failure(
@@ -91,7 +86,6 @@ class TestDefaultSagaActivities:
         )
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_apply_policy_decision(self, activities):
         """Test applying policy decision."""
         result = await activities.apply_policy_decision(
@@ -104,13 +98,11 @@ class TestDefaultSagaActivities:
         assert result["policy_path"] == "/policies/governance"
         assert result["applied"] is True
 
-    @pytest.mark.asyncio
     async def test_revert_policy_decision(self, activities):
         """Test reverting policy decision."""
         result = await activities.revert_policy_decision(saga_id="test-saga", decision_id="dec-123")
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_record_audit_entry(self, activities):
         """Test recording audit entry."""
         audit_id = await activities.record_audit_entry(
@@ -122,7 +114,6 @@ class TestDefaultSagaActivities:
         assert audit_id is not None
         assert len(audit_id) > 0
 
-    @pytest.mark.asyncio
     async def test_mark_audit_failed(self, activities):
         """Test marking audit as failed."""
         result = await activities.mark_audit_failed(
@@ -130,7 +121,6 @@ class TestDefaultSagaActivities:
         )
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_deliver_to_target(self, activities):
         """Test delivery to target."""
         result = await activities.deliver_to_target(
@@ -141,7 +131,6 @@ class TestDefaultSagaActivities:
         assert result["target_id"] == "agent-456"
         assert result["delivered"] is True
 
-    @pytest.mark.asyncio
     async def test_recall_from_target(self, activities):
         """Test recalling delivery from target."""
         result = await activities.recall_from_target(
@@ -149,7 +138,6 @@ class TestDefaultSagaActivities:
         )
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_audit_llm_reasoning_safe(self, activities):
         """Test auditing safe LLM reasoning."""
         result = await activities.audit_llm_reasoning(
@@ -161,7 +149,6 @@ class TestDefaultSagaActivities:
         assert "audit_id" in result
         assert result["is_safe"] is True
 
-    @pytest.mark.asyncio
     async def test_audit_llm_reasoning_unsafe(self, activities):
         """Test auditing unsafe LLM reasoning (injection attempt)."""
         result = await activities.audit_llm_reasoning(

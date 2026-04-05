@@ -4,7 +4,7 @@ Batch Validation Middleware for ACGS-2 Pipeline.
 Validates BatchRequest structure and item schema.
 Extracted from: batch_processor.py + batch_processor_infra/orchestrator.py
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import time
@@ -37,7 +37,7 @@ class BatchValidationMiddleware(BaseMiddleware):
         )
         context = await middleware.process(batch_context)
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -175,7 +175,7 @@ class BatchValidationMiddleware(BaseMiddleware):
 
         # Validate constitutional hash if present
         if request.constitutional_hash:
-            from src.core.shared.constants import CONSTITUTIONAL_HASH
+            from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
             if request.constitutional_hash != CONSTITUTIONAL_HASH:
                 errors.append(f"Invalid constitutional hash: {request.constitutional_hash}")
@@ -218,7 +218,7 @@ class BatchValidationMiddleware(BaseMiddleware):
 
     def _validate_priority_field(self, item: BatchRequestItem, errors: list[str]) -> None:
         """Validate priority field range and type."""
-        if item.priority is not None:  # noqa: SIM102
+        if item.priority is not None:
             if not isinstance(item.priority, int) or item.priority < 0 or item.priority > 3:
                 errors.append(f"priority must be 0-3, got {item.priority}")
 
@@ -245,7 +245,7 @@ class BatchValidationMiddleware(BaseMiddleware):
     ) -> None:
         """Validate per-item constitutional hash compliance."""
         if item.constitutional_hash:
-            from src.core.shared.constants import CONSTITUTIONAL_HASH
+            from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
             if item.constitutional_hash != CONSTITUTIONAL_HASH:
                 errors.append(f"Invalid item constitutional hash: {item.constitutional_hash}")

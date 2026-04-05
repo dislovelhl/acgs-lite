@@ -4,7 +4,7 @@
 # the composition statically.
 """
 ACGS-2 OPA Client — Core
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides the core OPAClient class with initialization, evaluation,
 constitutional validation, authorization, bundle management, and
@@ -18,36 +18,32 @@ import os
 import re
 import ssl
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 
 import aiofiles
 import httpx
-from httpx import (
-    ConnectError as HTTPConnectError,
-)
-from httpx import (
-    ConnectTimeout as HTTPConnectTimeout,
-)
-from httpx import (
-    HTTPStatusError,
-)
-from httpx import (
-    TimeoutException as HTTPTimeoutException,
-)
+from httpx import ConnectError as HTTPConnectError
+from httpx import ConnectTimeout as HTTPConnectTimeout
+from httpx import HTTPStatusError
+from httpx import TimeoutException as HTTPTimeoutException
 
 try:
-    from src.core.shared.errors.exceptions import ConfigurationError  # noqa: E402
+    from enhanced_agent_bus._compat.errors import ConfigurationError
 except ImportError:
+
     class ConfigurationError(Exception):  # type: ignore[no-redef]
         def __init__(self, message: str = "", error_code: str = "") -> None:
             super().__init__(message)
             self.error_code = error_code
-from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+
+
+from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -90,8 +86,7 @@ except (ImportError, ValueError):
             )
         except ImportError:
             # Fallback for sharing with shared package
-            from src.core.shared.config import settings  # type: ignore[import-untyped]
-
+            from enhanced_agent_bus._compat.config import settings  # type: ignore[import-untyped]
             from exceptions import OPANotInitializedError  # type: ignore[import-untyped]
             from models import CONSTITUTIONAL_HASH  # type: ignore[import-untyped]
             from validators import ValidationResult  # type: ignore[import-untyped]
@@ -208,6 +203,7 @@ class OPAClientCore:
         self._http_client: httpx.AsyncClient | None = None
         self._redis_client: object | None = None
         self._embedded_opa: object | None = None
+        self._embedded_executor: ThreadPoolExecutor | None = None
         self._memory_cache: dict[str, JSONDict] = {}
         self._memory_cache_timestamps: dict[str, float] = {}
         self._memory_cache_maxsize: int = 10000  # Prevent OOM
@@ -331,10 +327,15 @@ class OPAClientCore:
         try:
             opa_cls = _get_embedded_opa_class()
             self._embedded_opa = opa_cls()
+            self._embedded_executor = ThreadPoolExecutor(
+                max_workers=1,
+                thread_name_prefix="opa-embedded",
+            )
             logger.info("Embedded OPA initialized successfully")
         except (RuntimeError, OSError) as e:
             logger.error("Failed to initialize embedded OPA: %s", e)
             self.mode = "http"
+            self._shutdown_embedded_executor()
             await self._ensure_http_client()
 
     async def close(self) -> None:
@@ -360,8 +361,25 @@ class OPAClientCore:
             self._redis_client = None
 
         self._embedded_opa = None
+        self._shutdown_embedded_executor()
         self._memory_cache.clear()
         self._memory_cache_timestamps.clear()
+
+    def _get_embedded_executor(self) -> ThreadPoolExecutor:
+        """Return a dedicated executor for embedded OPA evaluations."""
+        if getattr(self, "_embedded_executor", None) is None:
+            self._embedded_executor = ThreadPoolExecutor(
+                max_workers=1,
+                thread_name_prefix="opa-embedded",
+            )
+        return self._embedded_executor
+
+    def _shutdown_embedded_executor(self) -> None:
+        """Tear down the dedicated embedded OPA executor."""
+        if getattr(self, "_embedded_executor", None) is None:
+            return
+        self._embedded_executor.shutdown(wait=False, cancel_futures=True)
+        self._embedded_executor = None
 
     async def _dispatch_evaluation(self, input_data: JSONDict, policy_path: str) -> JSONDict:
         """Route evaluation to the appropriate backend based on *self.mode*.
@@ -484,7 +502,7 @@ class OPAClientCore:
 
     def _sanitize_error(self, error: Exception) -> str:
         """Strip sensitive metadata from error messages (VULN-008)."""
-        from src.core.shared.security import sanitize_error
+        from enhanced_agent_bus._compat.security import sanitize_error
 
         return sanitize_error(error)
 
@@ -589,8 +607,12 @@ class OPAClientCore:
 
         try:
             loop = asyncio.get_running_loop()
+            executor = self._get_embedded_executor()
             opa_result = await loop.run_in_executor(
-                None, self._embedded_opa.evaluate, policy_path, input_data
+                executor,
+                self._embedded_opa.evaluate,
+                policy_path,
+                input_data,
             )
 
             return self._format_evaluation_result(opa_result, "embedded", policy_path)
@@ -675,9 +697,7 @@ class OPAClientCore:
 
             support_candidates: list[JSONDict] = []
             if self._is_temporal_multi_path_enabled():
-                support_candidates = self._build_temporal_support_set_candidates(
-                    action_history
-                )
+                support_candidates = self._build_temporal_support_set_candidates(action_history)
 
             if not support_candidates:
                 return await _evaluate_enriched(enriched)
@@ -707,14 +727,10 @@ class OPAClientCore:
 
             allowed_paths = [path for path in paths if path.get("allowed")]
             minimal_support_sets = self._minimal_support_sets(allowed_paths)
-            diversity = self._compute_diversity_metrics(
-                paths, allowed_paths, minimal_support_sets
-            )
+            diversity = self._compute_diversity_metrics(paths, allowed_paths, minimal_support_sets)
             self._multipath_evaluation_count += 1
             self._multipath_last_path_count = len(paths)
-            self._multipath_last_diversity_ratio = float(
-                diversity.get("path_diversity_ratio", 0.0)
-            )
+            self._multipath_last_diversity_ratio = float(diversity.get("path_diversity_ratio", 0.0))
             self._multipath_last_support_family_count = int(
                 diversity.get("support_family_count", 0)
             )
@@ -820,9 +836,7 @@ class OPAClientCore:
                 if support_candidates:
                     input_data["support_set_candidates"] = support_candidates
 
-            result = await self.evaluate_policy(
-                input_data, policy_path="data.acgs.rbac.allow"
-            )
+            result = await self.evaluate_policy(input_data, policy_path="data.acgs.rbac.allow")
 
             return result["allowed"]
 
@@ -965,7 +979,7 @@ class OPAClientCore:
 class OPAClient(OPAClientCore, OPAClientCacheMixin, OPAClientHealthMixin):
     """Fully-composed OPA client with caching and health monitoring.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Combines:
     - OPAClientCore: evaluation, authorization, bundle management

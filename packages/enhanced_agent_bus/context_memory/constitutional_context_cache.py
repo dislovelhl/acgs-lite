@@ -1,6 +1,6 @@
 """
 ACGS-2 Context & Memory - Constitutional Context Cache
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Fast caching layer for constitutional context with sub-5ms P99 latency.
 Ensures constitutional principles are always readily available.
@@ -22,12 +22,11 @@ from enum import Enum
 from typing import Generic, TypeVar
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.json_utils import dumps as json_dumps
-from src.core.shared.json_utils import loads as json_loads
-
+from enhanced_agent_bus._compat.json_utils import dumps as json_dumps
+from enhanced_agent_bus._compat.json_utils import loads as json_loads
 from enhanced_agent_bus.bus_types import JSONDict
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -46,7 +45,7 @@ L2_CACHE_OPERATION_ERRORS = (
 )
 
 
-class CacheTier(str, Enum):  # noqa: UP042
+class CacheTier(str, Enum):
     """Cache storage tiers."""
 
     L1_MEMORY = "l1_memory"  # In-process memory
@@ -58,7 +57,7 @@ class CacheTier(str, Enum):  # noqa: UP042
 class CacheConfig:
     """Configuration for constitutional context cache.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     l1_max_entries: int = 1000
@@ -82,7 +81,7 @@ class CacheConfig:
 class CacheEntry(Generic[T]):
     """A cached entry with metadata.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     key: str
@@ -111,7 +110,7 @@ class CacheEntry(Generic[T]):
 class CacheStats:
     """Statistics for cache operations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     total_requests: int = 0
@@ -152,7 +151,7 @@ class ConstitutionalContextCache:
 
     Provides multi-tier caching with constitutional compliance validation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

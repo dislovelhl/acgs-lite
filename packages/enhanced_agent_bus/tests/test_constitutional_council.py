@@ -19,14 +19,13 @@ def _proposal_payload(request: SimpleNamespace) -> str:
 
     changes_canonical = json.dumps(request.proposed_changes, sort_keys=True, separators=(",", ":"))
     payload_digest = sha256(changes_canonical.encode()).hexdigest()
-    return f"{request.proposer_agent_id}:{payload_digest}:{request.justification}:{CONSTITUTIONAL_HASH}"  # noqa: E501
+    return f"{request.proposer_agent_id}:{payload_digest}:{request.justification}:{CONSTITUTIONAL_HASH}"
 
 
 def _sign_payload(private_key: ed25519.Ed25519PrivateKey, payload: str) -> str:
     return private_key.sign(payload.encode()).hex()
 
 
-@pytest.mark.asyncio
 async def test_submit_proposal_rejects_invalid_proposer_signature(monkeypatch):
     voting_service = AsyncMock()
     proposal_engine = AsyncMock()
@@ -46,7 +45,6 @@ async def test_submit_proposal_rejects_invalid_proposer_signature(monkeypatch):
         await service.submit_proposal(request, proposer_signature="deadbeef")
 
 
-@pytest.mark.asyncio
 async def test_submit_proposal_accepts_valid_proposer_signature(monkeypatch):
     private_key = ed25519.Ed25519PrivateKey.generate()
     public_key = (

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - HITL Manager Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for the HITLManager class.
 Tests cover:
@@ -29,7 +29,6 @@ class TestHITLManagerWithCustomAuditLedger:
 
         return TrackingAuditLedger()
 
-    @pytest.mark.asyncio
     async def test_custom_audit_ledger_receives_results(self, custom_audit_ledger):
         """Test that custom audit ledger receives validation results."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
@@ -63,7 +62,6 @@ class TestHITLManagerWithCustomAuditLedger:
 
         await queue.stop()
 
-    @pytest.mark.asyncio
     async def test_audit_records_constitutional_hash(self, custom_audit_ledger):
         """Test that audit records include constitutional hash."""
         from enhanced_agent_bus.deliberation_layer.deliberation_queue import (

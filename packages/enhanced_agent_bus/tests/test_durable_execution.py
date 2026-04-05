@@ -1,7 +1,7 @@
 """
 Tests for Durable Execution Engine.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import asyncio
@@ -220,14 +220,12 @@ class TestExecutionCheckpoint:
 class TestCheckpointStore:
     """Test checkpoint store."""
 
-    @pytest.mark.asyncio
     async def test_initialize(self):
         store = CheckpointStore()
         await store.initialize()
         assert store._initialized
         await store.close()
 
-    @pytest.mark.asyncio
     async def test_save_and_get_checkpoint(self):
         store = CheckpointStore()
         await store.initialize()
@@ -248,7 +246,6 @@ class TestCheckpointStore:
         assert retrieved.id == "cp-1"
         await store.close()
 
-    @pytest.mark.asyncio
     async def test_get_latest_checkpoint(self):
         store = CheckpointStore()
         await store.initialize()
@@ -271,7 +268,6 @@ class TestCheckpointStore:
         assert latest.step_index == 2
         await store.close()
 
-    @pytest.mark.asyncio
     async def test_get_all_checkpoints(self):
         store = CheckpointStore()
         await store.initialize()
@@ -291,7 +287,6 @@ class TestCheckpointStore:
         assert len(checkpoints) == 5
         await store.close()
 
-    @pytest.mark.asyncio
     async def test_delete_checkpoints(self):
         store = CheckpointStore()
         await store.initialize()
@@ -314,7 +309,6 @@ class TestCheckpointStore:
         assert len(checkpoints) == 0
         await store.close()
 
-    @pytest.mark.asyncio
     async def test_checkpoint_not_found(self):
         store = CheckpointStore()
         await store.initialize()
@@ -435,14 +429,12 @@ class TestDurableWorkflow:
 class TestDurableExecutor:
     """Test durable executor."""
 
-    @pytest.mark.asyncio
     async def test_basic_initialization(self):
         executor = DurableExecutor()
         await executor.initialize()
         assert executor._initialized
         await executor.close()
 
-    @pytest.mark.asyncio
     async def test_execute_simple_workflow(self):
         executor = DurableExecutor()
         await executor.initialize()
@@ -469,7 +461,6 @@ class TestDurableExecutor:
 
         await executor.close()
 
-    @pytest.mark.asyncio
     async def test_execute_with_initial_context(self):
         executor = DurableExecutor()
         await executor.initialize()
@@ -488,7 +479,6 @@ class TestDurableExecutor:
 
         await executor.close()
 
-    @pytest.mark.asyncio
     async def test_execute_with_failure(self):
         executor = DurableExecutor()
         await executor.initialize()
@@ -508,7 +498,6 @@ class TestDurableExecutor:
 
         await executor.close()
 
-    @pytest.mark.asyncio
     async def test_step_retry(self):
         executor = DurableExecutor()
         await executor.initialize()
@@ -532,7 +521,6 @@ class TestDurableExecutor:
 
         await executor.close()
 
-    @pytest.mark.asyncio
     async def test_skip_on_failure(self):
         executor = DurableExecutor()
         await executor.initialize()
@@ -556,7 +544,6 @@ class TestDurableExecutor:
 
         await executor.close()
 
-    @pytest.mark.asyncio
     async def test_checkpointing(self):
         store = CheckpointStore()
         executor = DurableExecutor(
@@ -582,7 +569,6 @@ class TestDurableExecutor:
 
         await executor.close()
 
-    @pytest.mark.asyncio
     async def test_resume_from_checkpoint(self):
         store = CheckpointStore()
         executor = DurableExecutor(checkpoint_store=store)
@@ -631,7 +617,6 @@ class TestDurableExecutor:
 
         await executor.close()
 
-    @pytest.mark.asyncio
     async def test_get_stats(self):
         executor = DurableExecutor()
         await executor.initialize()
@@ -652,7 +637,6 @@ class TestDurableExecutor:
 
         await executor.close()
 
-    @pytest.mark.asyncio
     async def test_workflow_status(self):
         executor = DurableExecutor()
         await executor.initialize()
@@ -673,7 +657,6 @@ class TestDurableExecutor:
 
         await executor.close()
 
-    @pytest.mark.asyncio
     async def test_cancel_workflow(self):
         executor = DurableExecutor()
         await executor.initialize()
@@ -690,7 +673,6 @@ class TestDurableExecutor:
 
         await executor.close()
 
-    @pytest.mark.asyncio
     async def test_sync_step_function(self):
         executor = DurableExecutor()
         await executor.initialize()
@@ -749,7 +731,6 @@ class TestCreateDurableExecutor:
 class TestDurableExecutionIntegration:
     """Integration tests for durable execution."""
 
-    @pytest.mark.asyncio
     async def test_multi_step_data_flow(self):
         """Test data flows correctly between steps."""
         executor = DurableExecutor()
@@ -788,7 +769,6 @@ class TestDurableExecutionIntegration:
 
         await executor.close()
 
-    @pytest.mark.asyncio
     async def test_workflow_with_timeout(self):
         """Test step timeout handling."""
         executor = DurableExecutor()
@@ -809,7 +789,6 @@ class TestDurableExecutionIntegration:
 
         await executor.close()
 
-    @pytest.mark.asyncio
     async def test_metrics_accuracy(self):
         """Test metrics are accurately tracked."""
         executor = DurableExecutor()
@@ -843,7 +822,6 @@ class TestDurableExecutionIntegration:
 
         await executor.close()
 
-    @pytest.mark.asyncio
     async def test_constitutional_hash_in_checkpoints(self):
         """Verify constitutional hash is stored in all checkpoints."""
         store = CheckpointStore()

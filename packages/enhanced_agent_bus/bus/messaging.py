@@ -1,7 +1,7 @@
 """
 Message sending, receiving, and routing for EnhancedAgentBus.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -37,7 +37,7 @@ class MessageHandler:
     """
     Handles message sending, receiving, and routing operations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -112,7 +112,7 @@ class MessageHandler:
             - Normal path: Depends on processor complexity
             - Degraded path: Near-instant return with minimal overhead
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
 
         Note:
             This graceful degradation ensures system availability while
@@ -122,6 +122,22 @@ class MessageHandler:
             return await self._processor.process(msg)
         except Exception as e:
             logger.warning(f"Processor fallback activated: {e}")
+            metadata = msg.metadata if isinstance(getattr(msg, "metadata", None), dict) else {}
+            has_explicit_prevalidation = bool(
+                metadata.get("prevalidated")
+                or metadata.get("prevalidated_result")
+                or metadata.get("validated_by_agent")
+                or metadata.get("independent_validator_id")
+            )
+            if not has_explicit_prevalidation:
+                return ValidationResult(
+                    is_valid=False,
+                    errors=["Processor fallback denied: message lacks explicit prevalidation"],
+                    metadata={"governance_mode": "DEGRADED", "fallback_reason": str(e)},
+                    decision="DENY",
+                    status=MessageStatus.FAILED,
+                    constitutional_hash=CONSTITUTIONAL_HASH,
+                )
             return ValidationResult(
                 is_valid=True,
                 metadata={"governance_mode": "DEGRADED", "fallback_reason": str(e)},
@@ -160,7 +176,7 @@ class MessageHandler:
     ) -> dict[str, ValidationResult]:
         """Broadcast message to all agents in same tenant.
 
-        Constitutional Hash: cdd01ef066bc6cf2
+        Constitutional Hash: 608508a9bd224290
         Performance: Uses O(1) tenant index lookup instead of O(n) iteration.
         """
         msg.tenant_id = normalize_tenant_id(msg.tenant_id)
@@ -222,4 +238,4 @@ class MessageHandler:
 
     def requires_deliberation(self, msg: AgentMessage) -> bool:
         """Check if message requires deliberation based on impact score."""
-        return (getattr(msg, "impact_score", 0) or 0) > 0.7
+        return (getattr(msg, "impact_score", 0) or 0) >= 0.8

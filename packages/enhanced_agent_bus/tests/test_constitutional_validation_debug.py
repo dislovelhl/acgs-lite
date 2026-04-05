@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Constitutional Validation Tests (Debug Version)
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This is a debug version of test_constitutional_validation.py with detailed output.
 """
@@ -20,7 +20,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
 # Mark all tests as governance tests (95% coverage required)
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 
 
@@ -76,7 +76,6 @@ class TestMessageProcessorDebug:
         logger.info(f"  - Status: {msg.status}")
         return msg
 
-    @pytest.mark.asyncio
     async def test_process_valid_message_debug(self, processor, valid_message):
         """Test processing a valid message with debug output."""
         logger.debug("\n[DEBUG] Processing valid message...")
@@ -98,7 +97,6 @@ class TestMessageProcessorDebug:
 
         logger.debug("\n[DEBUG] ✓ Test passed")
 
-    @pytest.mark.asyncio
     async def test_process_invalid_hash_message_debug(self, processor, invalid_hash_message):
         """Test processing message with invalid constitutional hash."""
         logger.debug("\n[DEBUG] Processing invalid hash message...")
@@ -112,7 +110,7 @@ class TestMessageProcessorDebug:
         if result.errors:
             logger.error(f"  - First error: {result.errors[0]}")
             logger.info(
-                f"  - Contains 'Constitutional hash mismatch': {'Constitutional hash mismatch' in result.errors[0]}"  # noqa: E501
+                f"  - Contains 'Constitutional hash mismatch': {'Constitutional hash mismatch' in result.errors[0]}"
             )
 
         # Original assertions with detailed error messages
@@ -124,7 +122,6 @@ class TestMessageProcessorDebug:
 
         logger.debug("\n[DEBUG] ✓ Test passed")
 
-    @pytest.mark.asyncio
     async def test_handler_registration_debug(self, processor, valid_message):
         """Test handler registration and execution."""
         logger.debug("\n[DEBUG] Testing handler registration...")

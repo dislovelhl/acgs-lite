@@ -3,7 +3,7 @@
 # Cannot statically verify mixin composition without Protocol-based injection.
 """
 ACGS-2 OPA Client — Health & Multi-Path Mixin
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides multi-path policy evaluation, health check, and
 support-set candidate generation methods for OPAClient.
@@ -26,7 +26,7 @@ from httpx import (
 )
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

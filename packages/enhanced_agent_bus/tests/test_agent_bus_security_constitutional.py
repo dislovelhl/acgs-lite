@@ -2,7 +2,7 @@
 ACGS-2 Enhanced Agent Bus Tests - Constitutional & Infrastructure
 Focused tests for constitutional hash, MACI, Policy Client, Kafka, and bus infrastructure.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import uuid
@@ -103,13 +103,11 @@ async def agent_bus(mock_processor, mock_registry, mock_router, mock_validator):
 class TestConstitutionalHash:
     """Test constitutional hash enforcement."""
 
-    @pytest.mark.asyncio
     async def test_bus_has_constitutional_hash(self, agent_bus, constitutional_hash):
         """Test that bus maintains constitutional hash."""
         assert hasattr(agent_bus, "constitutional_hash")
         assert agent_bus.constitutional_hash == constitutional_hash
 
-    @pytest.mark.asyncio
     async def test_registered_agents_have_constitutional_hash(self, agent_bus, constitutional_hash):
         """Test that registered agents include constitutional hash."""
         await agent_bus.register_agent("test-agent", "worker", [], None)
@@ -134,7 +132,6 @@ class TestMACIProperties:
 class TestMACIRegistrationPaths:
     """Test MACI registration paths for coverage."""
 
-    @pytest.mark.asyncio
     async def test_register_with_maci_role_success(self):
         """Test successful MACI role registration."""
         bus = EnhancedAgentBus(enable_maci=True, maci_strict_mode=False)
@@ -153,7 +150,6 @@ class TestMACIRegistrationPaths:
 class TestKafkaRouting:
     """Test Kafka routing paths for coverage."""
 
-    @pytest.mark.asyncio
     async def test_route_and_deliver_via_kafka_success(self):
         """Test successful message delivery via Kafka."""
         bus = EnhancedAgentBus(
@@ -177,7 +173,6 @@ class TestKafkaRouting:
 class TestAsyncMetrics:
     """Test async metrics with policy client for coverage."""
 
-    @pytest.mark.asyncio
     async def test_get_metrics_async_with_healthy_policy(self):
         """Test get_metrics_async includes policy registry status."""
         bus = EnhancedAgentBus(enable_maci=False)  # test-only: MACI off — testing in isolation
@@ -217,7 +212,6 @@ class TestRegistryInitialization:
 class TestUnregisterAgent:
     """Test agent unregistration paths."""
 
-    @pytest.mark.asyncio
     async def test_unregister_existing_agent(self):
         """Test unregistering an existing agent."""
         bus = EnhancedAgentBus(enable_maci=False)  # test-only: MACI off — testing in isolation
@@ -230,7 +224,6 @@ class TestUnregisterAgent:
 class TestBusStopAndCleanup:
     """Test bus stop and cleanup paths."""
 
-    @pytest.mark.asyncio
     async def test_stop_clears_agents(self):
         """Test stop clears registered agents."""
         bus = EnhancedAgentBus(enable_maci=False)  # test-only: MACI off — testing in isolation

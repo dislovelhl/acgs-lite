@@ -1,6 +1,6 @@
 """
 Regression Tests for CCAI Backward Compatibility with mHC Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests ensure that representative statements implementation doesn't break:
 - Existing CCAI functionality
@@ -22,9 +22,8 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 # Add project root to sys.path
 sys.path.append("/home/martin/ACGS")
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
-
-from enhanced_agent_bus.governance.ccai_framework import (  # noqa: E402
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus.governance.ccai_framework import (
     ConstitutionalProposal,
     DeliberationResult,
     DeliberationStatement,
@@ -40,7 +39,6 @@ from enhanced_agent_bus.governance.ccai_framework import (  # noqa: E402
     reason="Dynamic dim resizing (stability_layer.dim == n_clusters) not yet implemented",
     strict=False,
 )
-@pytest.mark.asyncio
 async def test_ccai_mhc_integration():
     # 1. Test Dynamic Dimension Resizing
     # DemocraticConstitutionalGovernance creates its own PolisDeliberationEngine internally
@@ -93,7 +91,6 @@ async def test_ccai_mhc_integration():
     return True
 
 
-@pytest.mark.asyncio
 async def test_backward_compatibility_deliberation_result():
     """
     Test that DeliberationResult structure is unchanged (only additions).
@@ -155,7 +152,6 @@ async def test_backward_compatibility_deliberation_result():
     assert result_dict["constitutional_hash"] == CONSTITUTIONAL_HASH
 
 
-@pytest.mark.asyncio
 async def test_backward_compatibility_representative_statements():
     """
     Test that OpinionCluster.representative_statements is populated correctly.
@@ -202,7 +198,6 @@ async def test_backward_compatibility_representative_statements():
         assert rep_metrics["constitutional_hash"] == CONSTITUTIONAL_HASH
 
 
-@pytest.mark.asyncio
 async def test_backward_compatibility_opinion_cluster_to_dict():
     """
     Test that OpinionCluster.to_dict() includes new metadata without breaking.
@@ -275,7 +270,6 @@ async def test_backward_compatibility_opinion_cluster_to_dict():
     reason="Dynamic dim resizing (stability_layer.dim == n_clusters) not yet implemented",
     strict=False,
 )
-@pytest.mark.asyncio
 async def test_backward_compatibility_mhc_with_representatives():
     """
     Test that mHC stability integration still works with representative statements.
@@ -321,7 +315,6 @@ async def test_backward_compatibility_mhc_with_representatives():
         assert rep_metrics["constitutional_hash"] == CONSTITUTIONAL_HASH
 
 
-@pytest.mark.asyncio
 async def test_backward_compatibility_public_api():
     """
     Test that public API methods are unchanged.

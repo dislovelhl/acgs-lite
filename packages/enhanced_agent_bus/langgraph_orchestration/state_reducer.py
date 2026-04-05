@@ -1,6 +1,6 @@
 """
 ACGS-2 LangGraph Orchestration - State Reducers
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 State reducers implement the core LangGraph pattern:
     All nodes are pure functions: (CurrentState) -> NewState
@@ -14,11 +14,11 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -54,7 +54,7 @@ class BaseStateReducer(ABC):
     State reducers implement the Memory Object Protocol for
     strictly typed JSON state mutations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(self, constitutional_hash: str = CONSTITUTIONAL_HASH):
@@ -161,7 +161,7 @@ class ImmutableStateReducer(BaseStateReducer):
     This reducer replaces the entire state with node output,
     preserving only metadata and version tracking.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def reduce(
@@ -177,7 +177,7 @@ class ImmutableStateReducer(BaseStateReducer):
             last_updated=datetime.now(UTC),
             last_node_id=node_id,
             constitutional_hash=self.constitutional_hash,
-            mutation_history=current_state.mutation_history  # noqa: RUF005
+            mutation_history=current_state.mutation_history
             + [
                 {
                     "operation": "replace",
@@ -196,7 +196,7 @@ class MergeStateReducer(BaseStateReducer):
     This is the default reducer, performing shallow merge of
     node output keys into current state.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -270,7 +270,7 @@ class OverwriteStateReducer(BaseStateReducer):
     Allows fine-grained control over which keys are updated,
     preserved, or removed.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -340,7 +340,7 @@ class AccumulatorStateReducer(BaseStateReducer):
     Useful for collecting results from multiple nodes
     without overwriting previous outputs.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -405,7 +405,7 @@ class CustomStateReducer(BaseStateReducer):
     Allows injection of custom state reduction logic
     while maintaining constitutional compliance.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -469,7 +469,7 @@ def create_state_reducer(
     Returns:
         Configured state reducer
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     constitutional_hash = kwargs.pop("constitutional_hash", CONSTITUTIONAL_HASH)
 

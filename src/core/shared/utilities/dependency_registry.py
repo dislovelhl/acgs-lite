@@ -1,6 +1,6 @@
 """
 ACGS-2 Dependency Registry
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Centralized registry for optional dependencies and feature flags.
 Replaces scattered try/except import patterns across 611+ locations.
@@ -249,7 +249,7 @@ class DependencyRegistry:
             feature: Feature flag to require
 
         Raises:
-            RuntimeError: If feature is not available
+            ServiceUnavailableError: If feature is not available
 
         Example:
             DependencyRegistry.require(FeatureFlag.REDIS)

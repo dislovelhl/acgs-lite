@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive tests for swarm_intelligence/models.py targeting ≥95% coverage.
 
@@ -15,9 +15,7 @@ Tests cover:
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import patch
 
-import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.swarm_intelligence.enums import (
     AgentState,
     ConsensusType,

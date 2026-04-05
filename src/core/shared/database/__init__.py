@@ -1,6 +1,6 @@
 """
 ACGS-2 Shared Database Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides SQLAlchemy async database session management for SSO and other services.
 

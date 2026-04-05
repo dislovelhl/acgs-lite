@@ -1,6 +1,6 @@
 """
 ACGS-2 Compliance Layer Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive test suite for Layer 4: Compliance & Transparency
 Testing NIST AI RMF, SOC 2, and EU AI Act compliance components.
@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 import pytest
 
 # Constitutional hash for validation
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # ============================================================================
 # Models Tests
@@ -185,7 +185,6 @@ class TestNISTRiskAssessor:
         assert assessor.map_function is not None
         assert assessor.govern_function is not None
 
-    @pytest.mark.asyncio
     async def test_assessor_initialize(self, assessor):
         """Test async initialization."""
         result = await assessor.initialize()
@@ -214,7 +213,6 @@ class TestNISTRiskAssessor:
         assert policy["policy_id"] == "POL-001"
         assert policy["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_risk_assessment(self, assessor):
         """Test full risk assessment."""
         assessment = await assessor.assess_risk(system_name="ACGS-2")
@@ -270,7 +268,6 @@ class TestSOC2Auditor:
         assert auditor.control_validator is not None
         assert auditor.evidence_collector is not None
 
-    @pytest.mark.asyncio
     async def test_auditor_initialize(self, auditor):
         """Test async initialization."""
         result = await auditor.initialize()
@@ -278,7 +275,6 @@ class TestSOC2Auditor:
         assert len(auditor.get_pi_controls()) > 0
         assert len(auditor.get_c_controls()) > 0
 
-    @pytest.mark.asyncio
     async def test_soc2_audit(self, auditor):
         """Test SOC 2 audit."""
         assessment = await auditor.audit(system_name="ACGS-2")
@@ -345,7 +341,6 @@ class TestSOC2Auditor:
         assert evidence.control_id == "PI1.1"
         assert evidence.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_data_classification_matrix(self, auditor):
         """Test data classification matrix."""
         await auditor.initialize()
@@ -354,7 +349,6 @@ class TestSOC2Auditor:
         assert len(matrix) > 0
         assert any(e.data_type == "User PII" for e in matrix)
 
-    @pytest.mark.asyncio
     async def test_availability_controls_initialized(self, auditor):
         """Test that Availability controls (A1.x) are initialized."""
         await auditor.initialize()
@@ -417,7 +411,6 @@ class TestSOC2Auditor:
         assert result is False
         assert control.implementation_status == ComplianceStatus.PARTIAL
 
-    @pytest.mark.asyncio
     async def test_validate_uptime_sla(self, auditor):
         """Test 99.9% uptime SLA validation."""
         await auditor.initialize()
@@ -430,7 +423,6 @@ class TestSOC2Auditor:
         assert report["constitutional_hash"] == CONSTITUTIONAL_HASH
         assert len(report["control_details"]) >= 3
 
-    @pytest.mark.asyncio
     async def test_generate_evidence_package(self, auditor):
         """Test 60-day audit evidence package generation."""
         await auditor.initialize()
@@ -449,7 +441,6 @@ class TestSOC2Auditor:
         completeness = package.calculate_completeness()
         assert completeness > 0
 
-    @pytest.mark.asyncio
     async def test_audit_includes_availability_controls(self, auditor):
         """Test that SOC 2 audit includes Availability controls."""
         assessment = await auditor.audit(system_name="ACGS-2")
@@ -458,7 +449,6 @@ class TestSOC2Auditor:
         assert assessment.controls_assessed >= 9
         assert assessment.compliance_score >= 90.0
 
-    @pytest.mark.asyncio
     async def test_evidence_package_period(self, auditor):
         """Test evidence package covers correct period."""
         from datetime import timedelta
@@ -495,14 +485,12 @@ class TestEUAIActCompliance:
         assert compliance.article13 is not None
         assert compliance.article14 is not None
 
-    @pytest.mark.asyncio
     async def test_compliance_initialize(self, compliance):
         """Test async initialization."""
         result = await compliance.initialize()
         assert result is True
         assert len(compliance.get_documentation()) > 0
 
-    @pytest.mark.asyncio
     async def test_euaiact_assessment(self, compliance):
         """Test EU AI Act assessment."""
         assessment = await compliance.assess(system_name="ACGS-2")
@@ -578,7 +566,6 @@ class TestDecisionExplainer:
         assert explainer.constitutional_hash == CONSTITUTIONAL_HASH
         assert explainer.enable_counterfactuals is True
 
-    @pytest.mark.asyncio
     async def test_generate_explanation(self, explainer):
         """Test explanation generation."""
         result = await explainer.explain(
@@ -591,7 +578,6 @@ class TestDecisionExplainer:
         assert len(result.factors) > 0
         assert result.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_explanation_with_context(self, explainer):
         """Test explanation with custom context."""
         from enhanced_agent_bus.compliance_layer.decision_explainer import (
@@ -613,7 +599,6 @@ class TestDecisionExplainer:
         assert result.decision_id == "dec-test"
         assert result.human_oversight_level == "human_in_the_loop"
 
-    @pytest.mark.asyncio
     async def test_counterfactual_generation(self, explainer):
         """Test counterfactual analysis."""
         result = await explainer.explain(
@@ -627,7 +612,6 @@ class TestDecisionExplainer:
         assert "original_value" in hint
         assert "modified_value" in hint
 
-    @pytest.mark.asyncio
     async def test_governance_vector(self, explainer):
         """Test governance vector generation."""
         result = await explainer.explain(
@@ -639,7 +623,6 @@ class TestDecisionExplainer:
         assert "safety" in result.governance_vector
         assert "transparency" in result.governance_vector
 
-    @pytest.mark.asyncio
     async def test_factor_attribution(self, explainer):
         """Test factor attribution."""
         result = await explainer.explain(
@@ -677,13 +660,11 @@ class TestComplianceReporter:
         """Test ComplianceReporter initialization."""
         assert reporter.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_reporter_initialize(self, reporter):
         """Test async initialization."""
         result = await reporter.initialize()
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_unified_report_generation(self, reporter):
         """Test unified compliance report generation."""
         report = await reporter.generate_unified_report(system_name="ACGS-2")
@@ -694,7 +675,6 @@ class TestComplianceReporter:
         assert report.euaiact_assessment is not None
         assert report.metrics is not None
 
-    @pytest.mark.asyncio
     async def test_compliance_metrics(self, reporter):
         """Test compliance metrics calculation."""
         report = await reporter.generate_unified_report(system_name="ACGS-2")
@@ -705,7 +685,6 @@ class TestComplianceReporter:
         assert report.metrics.soc2_score >= 0
         assert report.metrics.euaiact_score >= 0
 
-    @pytest.mark.asyncio
     async def test_dashboard_generation(self, reporter):
         """Test dashboard data generation."""
         dashboard = await reporter.generate_dashboard(system_name="ACGS-2")
@@ -715,7 +694,6 @@ class TestComplianceReporter:
         assert len(dashboard.recent_assessments) > 0
         assert len(dashboard.recommendations) > 0
 
-    @pytest.mark.asyncio
     async def test_executive_summary(self, reporter):
         """Test executive summary generation."""
         report = await reporter.generate_unified_report(system_name="ACGS-2")
@@ -733,7 +711,6 @@ class TestComplianceReporter:
 class TestComplianceLayerIntegration:
     """Integration tests for compliance layer."""
 
-    @pytest.mark.asyncio
     async def test_full_compliance_assessment(self):
         """Test full compliance assessment across all frameworks."""
         from enhanced_agent_bus.compliance_layer import (
@@ -760,7 +737,6 @@ class TestComplianceLayerIntegration:
         assert report.soc2_assessment.constitutional_hash == CONSTITUTIONAL_HASH
         assert report.euaiact_assessment.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_constitutional_hash_enforcement(self):
         """Test constitutional hash is enforced across all components."""
         from enhanced_agent_bus.compliance_layer import (
@@ -792,7 +768,6 @@ class TestComplianceLayerIntegration:
         assert euaiact.constitutional_hash == CONSTITUTIONAL_HASH
         assert explainer.constitutional_hash == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_explanation_with_compliance(self):
         """Test decision explanation integrates with compliance."""
         from enhanced_agent_bus.compliance_layer.decision_explainer import (
@@ -876,7 +851,6 @@ class TestConstitutionalCompliance:
 # ============================================================================
 
 
-@pytest.mark.asyncio
 class TestPerformance:
     """Performance tests for compliance layer."""
 

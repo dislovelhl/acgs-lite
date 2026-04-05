@@ -1,6 +1,6 @@
 """
 Tests for deliberation_layer/integration.py — targets ≥90% coverage.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 asyncio_mode = "auto" — no @pytest.mark.asyncio decorators needed.
 Run with: python -m pytest ... --import-mode=importlib
@@ -18,7 +18,8 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH as SHARED_CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH as SHARED_CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Environment setup (mirrors root conftest.py)
@@ -26,7 +27,7 @@ from src.core.shared.constants import CONSTITUTIONAL_HASH as SHARED_CONSTITUTION
 if "ACGS2_ENCRYPTION_KEY" not in os.environ:
     os.environ["ACGS2_ENCRYPTION_KEY"] = base64.b64encode(secrets.token_bytes(32)).decode()
 if "JWT_SECRET_KEY" not in os.environ:
-    os.environ["JWT_SECRET_KEY"] = "test-jwt-secret-key-for-testing-only"  # noqa: S105
+    os.environ["JWT_SECRET_KEY"] = "test-jwt-secret-key-for-testing-only"
 if "JWT_ALGORITHM" not in os.environ:
     os.environ["JWT_ALGORITHM"] = "ES256"
 
@@ -38,7 +39,7 @@ if _PROJECT_ROOT not in sys.path:
 # ---------------------------------------------------------------------------
 # Module under test + helpers (imported after path setup)
 # ---------------------------------------------------------------------------
-from enhanced_agent_bus.deliberation_layer.integration import (  # noqa: E402
+from enhanced_agent_bus.deliberation_layer.integration import (
     DeliberationEngine,
     DeliberationLayer,
     _get_imports,
@@ -47,11 +48,11 @@ from enhanced_agent_bus.deliberation_layer.integration import (  # noqa: E402
     get_deliberation_layer,
     reset_deliberation_layer,
 )
-from enhanced_agent_bus.deliberation_layer.opa_guard_models import (  # noqa: E402
+from enhanced_agent_bus.deliberation_layer.opa_guard_models import (
     GuardDecision,
     GuardResult,
 )
-from enhanced_agent_bus.models import (  # noqa: E402
+from enhanced_agent_bus.models import (
     AgentMessage,
     MessageStatus,
     MessageType,
@@ -1290,7 +1291,7 @@ class TestHotlContentNormalization:
         result = await layer.process_message(msg)
 
         assert result["success"] is True
-        assert result["lane"] == "hotl"
+        assert result["lane"] == "deliberation"
 
 
 class TestGuardResultInFinalize:

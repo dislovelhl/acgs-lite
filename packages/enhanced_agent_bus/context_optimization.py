@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Context Window Optimization
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Phase 4 implementation providing:
 - SpecDeltaCompressor: 60-80% payload reduction via delta compression
@@ -31,11 +31,11 @@ from typing import (
 )
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -62,7 +62,7 @@ CONTEXT_OPTIMIZATION_AVAILABLE = True
 # =============================================================================
 
 
-class CompressionStrategy(str, Enum):  # noqa: UP042
+class CompressionStrategy(str, Enum):
     """Compression strategy for spec delta encoding."""
 
     FULL = "full"  # Send complete spec
@@ -74,7 +74,7 @@ class CompressionStrategy(str, Enum):  # noqa: UP042
 class CompressionResult:
     """Result of spec compression operation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     strategy: CompressionStrategy
@@ -95,7 +95,7 @@ class CompressionResult:
 class SpecBaseline:
     """Baseline spec for delta computation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     spec_id: str
@@ -113,7 +113,7 @@ class SpecDeltaCompressor:
     Achieves 60-80% reduction in inter-agent communication payload
     by maintaining baseline specs and computing deltas.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -353,7 +353,7 @@ class SpecDeltaCompressor:
 class GovernanceDecision:
     """Cached governance decision.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     allowed: bool
@@ -374,7 +374,7 @@ class GovernanceDecision:
 class ValidationContext:
     """Context for governance validation.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     action: str
@@ -401,7 +401,7 @@ class CachedGovernanceValidator:
     Achieves 90%+ cache hit rate for repeated governance queries
     by caching OPA decisions with configurable TTL.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -574,7 +574,7 @@ class CachedGovernanceValidator:
 # =============================================================================
 
 
-class TopicPriority(str, Enum):  # noqa: UP042
+class TopicPriority(str, Enum):
     """Priority levels for bus topics."""
 
     LOW = "low"
@@ -587,7 +587,7 @@ class TopicPriority(str, Enum):  # noqa: UP042
 class TopicConfig:
     """Configuration for a bus topic.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     name: str
@@ -602,7 +602,7 @@ class TopicConfig:
 class PartitionedMessage:
     """Message with partition routing.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     topic: str
@@ -693,7 +693,7 @@ class OptimizedAgentBus:
     Uses topic partitioning to reduce contention and enable
     parallel processing across agents.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Default topic configurations
@@ -857,7 +857,7 @@ def create_spec_compressor(
     """
     Create a configured SpecDeltaCompressor.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     return SpecDeltaCompressor(
         max_baselines=max_baselines,
@@ -874,7 +874,7 @@ def create_cached_validator(
     """
     Create a configured CachedGovernanceValidator.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     return CachedGovernanceValidator(
         upstream_validator=upstream_validator,
@@ -890,7 +890,7 @@ def create_optimized_bus(
     """
     Create a configured OptimizedAgentBus.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
     return OptimizedAgentBus(topic_configs=topic_configs)
 

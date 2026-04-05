@@ -1,7 +1,7 @@
 """
 Tests for Model-First Tool Documentation System.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from ..tool_documentation import (

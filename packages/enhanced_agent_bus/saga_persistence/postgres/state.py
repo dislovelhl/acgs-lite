@@ -1,6 +1,6 @@
 """
 PostgreSQL Saga Repository State Management
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Contains state transition, checkpoint, and compensation log operations
 for the PostgreSQL saga state repository.
@@ -13,11 +13,11 @@ from datetime import UTC, datetime
 import asyncpg
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -43,7 +43,7 @@ class PostgresStateManager:
 
     Handles state transitions, checkpoints, and compensation log operations.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Type hints for mixin - these are provided by the main repository class
@@ -132,7 +132,7 @@ class PostgresStateManager:
                 if timestamp_field:
                     if failure_reason and new_state == SagaState.FAILED:
                         await conn.execute(
-                            f"UPDATE saga_states SET state = $2, version = version + 1, {timestamp_field} = $4, failure_reason = $5 {duration_update} WHERE saga_id = $1 AND version = $3",  # nosec B608  # noqa: E501, S608
+                            f"UPDATE saga_states SET state = $2, version = version + 1, {timestamp_field} = $4, failure_reason = $5 {duration_update} WHERE saga_id = $1 AND version = $3",  # nosec B608
                             uuid.UUID(saga_id),
                             new_state.value,
                             version,
@@ -141,7 +141,7 @@ class PostgresStateManager:
                         )
                     else:
                         await conn.execute(
-                            f"UPDATE saga_states SET state = $2, version = version + 1, {timestamp_field} = $4 {duration_update} WHERE saga_id = $1 AND version = $3",  # nosec B608  # noqa: E501, S608
+                            f"UPDATE saga_states SET state = $2, version = version + 1, {timestamp_field} = $4 {duration_update} WHERE saga_id = $1 AND version = $3",  # nosec B608
                             uuid.UUID(saga_id),
                             new_state.value,
                             version,

@@ -1,0 +1,32 @@
+============================================================
+ACGS-2 Autoresearch Benchmark
+============================================================
+Constitution: 18 rules
+Scenarios: 809
+Running benchmark...
+
+---
+compliance_rate:       1.000000
+p50_latency_ms:       0.001190
+p95_latency_ms:       0.001970
+p99_latency_ms:       0.006410
+mean_latency_ms:       0.001265
+throughput_rps: 1135086.660298
+false_positive_rate:       0.000000
+false_negative_rate:       0.000000
+composite_score:       0.999808
+spec_to_artifact_score:       1.000000
+rocs: 4241922.509654
+rocs_governance_value:    4340.000000
+rocs_compute_seconds:       0.001023
+scenarios_tested:            809
+correct:            809
+errors:              0
+rules_checked:             18
+---
+
+Governance Efficiency (solveeverything.org metrics)
+  Cost:     1.26 us/decision (1.023 ms total)
+  Value:    4340 severity-weighted correct decisions
+  RoCS:     4,241,923 value/CPU-sec
+  Accuracy: 1.0000 (first-attempt, no overrides)

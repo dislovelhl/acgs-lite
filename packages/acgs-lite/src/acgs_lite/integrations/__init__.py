@@ -13,8 +13,7 @@ Usage::
         messages=[{"role": "user", "content": "Hello!"}],
     )
 
-Constitutional Hash: cdd01ef066bc6cf2
-"""
+Constitutional Hash: 608508a9bd224290\n\nPublic integration clients use `audit_mode="full"` so exported stats and audit APIs reflect the durable `AuditLog`.\n"""
 
 from __future__ import annotations
 
@@ -106,7 +105,7 @@ class GovernedChatCompletions:
         try:
             from openai import AsyncOpenAI  # noqa: F401
         except ImportError as e:
-            raise ImportError("openai package required: pip install acgs-lite[openai]") from e
+            raise ImportError("openai package required: pip install acgs[openai]") from e
 
         # Note: caller should pass an async client
         response = await self._client.chat.completions.create(**kwargs)
@@ -165,16 +164,17 @@ class GovernedOpenAI:
     ) -> None:
         if not OPENAI_AVAILABLE:
             raise ImportError(
-                "The 'openai' package is required. Install with: pip install acgs-lite[openai]"
+                "The 'openai' package is required. Install with: pip install acgs[openai]"
             )
 
-        self._client = OpenAI(api_key=api_key, **openai_kwargs)  # type: ignore[operator]
+        self._client = OpenAI(api_key=api_key, **openai_kwargs)
         self.constitution = constitution or Constitution.default()
         self.audit_log = AuditLog()
         self.engine = GovernanceEngine(
             self.constitution,
             audit_log=self.audit_log,
             strict=strict,
+            audit_mode="full",
         )
         self.agent_id = agent_id
 

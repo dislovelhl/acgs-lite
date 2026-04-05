@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Validators
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Validation utilities for message and agent compliance.
 """
@@ -18,7 +18,7 @@ from datetime import UTC, datetime, timezone
 from typing import TYPE_CHECKING
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -27,10 +27,10 @@ if TYPE_CHECKING:
 
 # Import centralized constitutional hash from shared module
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     # Fallback for standalone usage
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 
 @dataclass
@@ -42,7 +42,7 @@ class ValidationResult:
         errors (list[str]): A list of error messages if validation failed.
         warnings (list[str]): A list of warning messages.
         metadata (JSONDict): Additional metadata associated with the validation.
-        constitutional_hash (str): The constitutional hash `cdd01ef066bc6cf2`.
+        constitutional_hash (str): The constitutional hash `608508a9bd224290`.
         pqc_metadata (PQCMetadata | None): Post-quantum cryptography metadata including
             algorithm details and verification status. None if PQC is not enabled.
     """

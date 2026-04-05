@@ -8,7 +8,7 @@ from enum import Enum
 from typing import Any, Generic, TypeVar
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -119,7 +119,9 @@ class AdapterResult(Generic[ResponseT]):
         if self.error is not None:
             payload["error"] = str(self.error)
             payload["error_details"] = (
-                self.error.to_dict() if hasattr(self.error, "to_dict") else {"error": type(self.error).__name__}
+                self.error.to_dict()
+                if hasattr(self.error, "to_dict")
+                else {"error": type(self.error).__name__}
             )
         else:
             payload.pop("data", None)
@@ -303,14 +305,13 @@ class ACLAdapter(ABC, Generic[RequestT, ResponseT]):
                 )
             except asyncio.TimeoutError:
                 last_error = AdapterTimeoutError(self.name, self.config.timeout_ms)
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:
                 last_error = exc
             self.circuit_breaker.record_failure()
             if attempt < self.config.max_retries:
                 delay_ms = min(
                     self.config.retry_max_delay_ms,
-                    self.config.retry_base_delay_ms
-                    * (self.config.retry_exponential_base ** attempt),
+                    self.config.retry_base_delay_ms * (self.config.retry_exponential_base**attempt),
                 )
                 await asyncio.sleep(delay_ms / 1000)
 
@@ -378,13 +379,13 @@ class ACLAdapter(ABC, Generic[RequestT, ResponseT]):
 
 
 __all__ = [
+    "CONSTITUTIONAL_HASH",
     "ACLAdapter",
     "AdapterCircuitOpenError",
     "AdapterConfig",
     "AdapterResult",
     "AdapterState",
     "AdapterTimeoutError",
-    "CONSTITUTIONAL_HASH",
     "RateLimitExceededError",
     "SimpleCircuitBreaker",
     "TokenBucketRateLimiter",

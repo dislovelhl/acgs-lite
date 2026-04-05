@@ -1,7 +1,7 @@
 """
 ACGS-2 Enhanced Agent Bus API Models
 Pydantic models and Enums for the Enhanced Agent Bus API
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module contains all Pydantic models and Enums extracted from api.py
 for better code organization and maintainability.
@@ -16,7 +16,7 @@ from enum import Enum
 from pydantic import BaseModel, Field, field_validator
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -25,7 +25,7 @@ except ImportError:
 # =============================================================================
 
 
-class MessageTypeEnum(str, Enum):  # noqa: UP042
+class MessageTypeEnum(str, Enum):
     """Supported message types in the agent bus (12 types per spec)."""
 
     COMMAND = "command"
@@ -51,7 +51,7 @@ class MessageTypeEnum(str, Enum):  # noqa: UP042
     CONSTITUTIONAL_UPDATE = "constitutional_update"
 
 
-class PriorityEnum(str, Enum):  # noqa: UP042
+class PriorityEnum(str, Enum):
     """Message priority levels."""
 
     LOW = "low"
@@ -61,7 +61,7 @@ class PriorityEnum(str, Enum):  # noqa: UP042
     CRITICAL = "critical"
 
 
-class MessageStatusEnum(str, Enum):  # noqa: UP042
+class MessageStatusEnum(str, Enum):
     """Message processing status."""
 
     PENDING = "pending"

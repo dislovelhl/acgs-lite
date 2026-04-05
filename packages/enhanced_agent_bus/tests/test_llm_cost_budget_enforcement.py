@@ -1,6 +1,6 @@
 """
 Tests for LLM cost budget enforcement.
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -121,7 +121,6 @@ def test_budget_limit_blocks_when_monthly_limit_exceeded() -> None:
 # =============================================================================
 
 
-@pytest.mark.asyncio
 async def test_budget_manager_per_tenant_isolation() -> None:
     """Usage recorded for tenant-A must not affect tenant-B's budget check."""
     manager = BudgetManager()
@@ -153,7 +152,6 @@ async def test_budget_manager_per_tenant_isolation() -> None:
     assert allowed_b is True
 
 
-@pytest.mark.asyncio
 async def test_budget_manager_allows_within_limit() -> None:
     """Requests well within budget must pass."""
     manager = BudgetManager()

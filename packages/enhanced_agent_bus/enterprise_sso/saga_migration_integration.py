@@ -1,6 +1,6 @@
 """
 ACGS-2 Saga-Integrated Migration Service
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Integrates Saga Orchestration with Migration Job Management for
 enterprise-grade migration workflows with automatic rollback.
@@ -21,7 +21,7 @@ from datetime import UTC, datetime, timezone
 from enum import Enum
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -48,7 +48,7 @@ from .saga_orchestration import (
 logger = get_logger(__name__)
 
 
-class MigrationPhase(str, Enum):  # noqa: UP042
+class MigrationPhase(str, Enum):
     """Phases of a saga-managed migration."""
 
     VALIDATION = "validation"

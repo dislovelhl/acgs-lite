@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus — OPAL Policy Client
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides OPALPolicyClient: wraps the existing OPA client with live policy updates
 delivered via the OPAL (Open Policy Administration Layer) websocket channel.
@@ -34,11 +34,11 @@ import httpx
 from pydantic import BaseModel, Field
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -77,7 +77,7 @@ OPAL_DEFAULT_PROPAGATION_TIMEOUT = 60
 # ---------------------------------------------------------------------------
 
 
-class OPALConnectionState(str, Enum):  # noqa: UP042
+class OPALConnectionState(str, Enum):
     """Websocket connection lifecycle states."""
 
     DISCONNECTED = "disconnected"
@@ -237,12 +237,12 @@ class OPALPolicyClient:
             self._ws_task = None
 
         if self._opa_client:
-            with contextlib.suppress(Exception):  # noqa: BLE001
+            with contextlib.suppress(Exception):
                 await self._opa_client.close()
             self._opa_client = None
 
         if self._audit_client:
-            with contextlib.suppress(Exception):  # noqa: BLE001
+            with contextlib.suppress(Exception):
                 await self._audit_client.stop()
             self._audit_client = None
 

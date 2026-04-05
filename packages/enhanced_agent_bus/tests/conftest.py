@@ -163,9 +163,7 @@ if _deliberation_layer is not None:
     import importlib as _il
 
     try:
-        _impact_scorer = _il.import_module(
-            "enhanced_agent_bus.deliberation_layer.impact_scorer"
-        )
+        _impact_scorer = _il.import_module("enhanced_agent_bus.deliberation_layer.impact_scorer")
         sys.modules["enhanced_agent_bus.deliberation_layer.impact_scorer"] = _impact_scorer
         sys.modules["core.enhanced_agent_bus.deliberation_layer.impact_scorer"] = _impact_scorer
     except ImportError:
@@ -317,11 +315,21 @@ def _disable_redis_rate_limiting(monkeypatch):
 
         def _patched_init(self, *args, **kwargs):
             kwargs.setdefault("enable_rate_limiting", False)
+            kwargs.setdefault("allow_unstarted", True)
             _original_init(self, *args, **kwargs)
 
         monkeypatch.setattr(EnhancedAgentBus, "__init__", _patched_init)
-    except (ImportError, AttributeError):
-        pass
+
+        # Also patch the re-exported reference in agent_bus module
+        try:
+            import enhanced_agent_bus.agent_bus as _ab_mod
+
+            monkeypatch.setattr(_ab_mod, "EnhancedAgentBus", EnhancedAgentBus)
+        except (ImportError, AttributeError):
+            pass
+    except (ImportError, AttributeError) as exc:
+        import warnings
+        warnings.warn(f"Failed to patch EnhancedAgentBus: {exc}", stacklevel=2)
 
 
 @pytest.fixture(autouse=True)
@@ -342,6 +350,14 @@ def reset_global_state():
         pass
 
     yield  # Run the test
+
+    # Restore cached _ENVIRONMENT to the real OS value to prevent test pollution
+    try:
+        import enhanced_agent_bus.api.routes.messages as _msg_mod
+
+        _msg_mod._ENVIRONMENT = os.environ.get("ENVIRONMENT", "").lower()
+    except (ImportError, AttributeError):
+        pass
 
     _reset_singletons()
 

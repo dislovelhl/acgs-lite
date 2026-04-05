@@ -3,7 +3,7 @@ package acgs.audit
 # Audit Policy - Loggable decisions (ACGS-2 Compliance)
 # NIST 800-53 AU-2, OWASP Logging
 # Generates audit events for all decisions
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 
 default allow := false  # Audit before allow from other policies
 
@@ -20,7 +20,7 @@ audit_event := {
 decision := "allowed" if allow else "denied"
 
 allow {
-	input.constitutional_hash == "cdd01ef066bc6cf2"
+	input.constitutional_hash == "608508a9bd224290"
 	input.tenant_id != null
 	# Delegate to other policies via input.allow
 	input.allow == true

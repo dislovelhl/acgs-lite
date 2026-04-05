@@ -13,7 +13,7 @@ OWASP-compliant layered security architecture for runtime protection:
 4. Output Verifier → Post-execution content validation
 5. Audit Log → Immutable compliance trail
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 # Re-export everything from the guardrails package for backward compatibility

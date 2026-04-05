@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Extended Models Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Extended tests for models to improve coverage.
 """
@@ -388,6 +388,24 @@ class TestModuleExports:
             "AGENT_MESSAGE_SCHEMA_V1_1",
             "AGENT_MESSAGE_SCHEMA_V1_2",
             "create_default_registry",
+            # Graph execution models
+            "GraphDefinition",
+            "GraphNode",
+            "GraphEdge",
+            "GraphConfig",
+            "GraphState",
+            "NodeType",
+            "NodeStatus",
+            "NodeResult",
+            "ConditionalEdge",
+            "ExecutionContext",
+            "ExecutionResult",
+            "ExecutionStatus",
+            "Checkpoint",
+            "CheckpointStatus",
+            "InterruptType",
+            "InterruptRequest",
+            "InterruptResponse",
             # Utility functions
             "get_enum_value",
         ]

@@ -8,7 +8,7 @@ Run:
 
 No external services required — all compliance infrastructure runs in-process.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from __future__ import annotations
@@ -98,7 +98,7 @@ def article12_demo() -> Article12Logger:
     print(f"Article 12 compliant: {summary['compliant']}")
 
     # Export append-only JSONL
-    log.export_jsonl("/tmp/cv_screener_audit.jsonl")  # noqa: S108
+    log.export_jsonl("/tmp/cv_screener_audit.jsonl")
     print("Exported: /tmp/cv_screener_audit.jsonl")
 
     return log  # type: ignore[no-any-return]
@@ -253,7 +253,7 @@ def compliance_checklist_demo() -> None:
         icon = (
             "✅"
             if item.status.value == "compliant"
-            else ("➖" if item.status.value == "not_applicable" else "⏳")  # noqa: RUF001
+            else ("➖" if item.status.value == "not_applicable" else "⏳")
         )
         print(f"  {icon} {item.article_ref:<15} {item.status.value}")
 
@@ -282,7 +282,7 @@ def main() -> None:
     print("  ✅ Risk classification per Article 6 + Annex III")
     print("  ✅ Conformity assessment checklist")
     print()
-    print("pip install acgs-lite   # Get started in 5 minutes")
+    print("pip install acgs   # Get started in 5 minutes")
 
 
 if __name__ == "__main__":

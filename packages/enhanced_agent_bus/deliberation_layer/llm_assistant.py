@@ -1,5 +1,5 @@
 """
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import time
@@ -126,7 +126,7 @@ except ImportError:
 class LLMAssistant:
     """LLM-powered assistant for deliberation decision support."""
 
-    def __init__(self, api_key: str | None = None, model_name: str = "gpt-5.2"):
+    def __init__(self, api_key: str | None = None, model_name: str = "gpt-5.4"):
         self.model_name = model_name
         self.llm = None
         if LANGCHAIN_AVAILABLE:
@@ -229,7 +229,7 @@ class LLMAssistant:
 
         Identify risk_level, recommended_decision, and suggested mitigations.
         Return JSON with: risk_level, requires_human_review, recommended_decision, confidence, reasoning, impact_areas, mitigations, constitutional_hash
-        """  # noqa: E501
+        """
         res = await self._invoke_llm(
             template,
             from_agent=message.from_agent,
@@ -271,7 +271,7 @@ class LLMAssistant:
         CONSTITUTIONAL CONSTRAINT: Hash {constitutional_hash} must be validated
 
         Return JSON with: process_summary, consensus_analysis, final_recommendation, reasoning, concerns, follow_up_actions, constitutional_hash
-        """  # noqa: E501
+        """
         res = await self._invoke_llm(
             template,
             message_type=str(
@@ -306,9 +306,9 @@ class LLMAssistant:
 
         rec = "Maintain current threshold"
         if rate > 0.8:
-            rec = "Systematic high approval observed. Consider lowering deliberation threshold for efficiency."  # noqa: E501
+            rec = "Systematic high approval observed. Consider lowering deliberation threshold for efficiency."
         elif rate < 0.4:
-            rec = "High rejection rate observed. Consider raising deliberation threshold or updating policies."  # noqa: E501
+            rec = "High rejection rate observed. Consider raising deliberation threshold or updating policies."
 
         return {
             "patterns": [f"Approval rate: {rate:.1%}"],

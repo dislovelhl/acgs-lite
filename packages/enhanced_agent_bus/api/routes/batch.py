@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus Batch Processing Routes
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 This module provides batch processing endpoints for governance validation.
 """
@@ -17,7 +17,8 @@ from fastapi import (
     Request,
     status,
 )
-from src.core.shared.security.auth import UserClaims, get_current_user
+
+from enhanced_agent_bus._compat.security.auth import UserClaims, get_current_user
 
 from ...api_exceptions import correlation_id_var
 from ...api_models import (
@@ -77,7 +78,7 @@ def _validate_batch_request_safety(batch_request: BatchRequest, tenant_id: str) 
     if size_error := validate_item_sizes(batch_request):
         logger.warning("Batch size validation failed: %s", size_error)
         raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
             detail="Request payload too large",
         )
 
@@ -159,7 +160,7 @@ async def batch_validate(
 
     **Features:**
     - Parallel validation using asyncio.gather
-    - Constitutional hash validation (cdd01ef066bc6cf2)
+    - Constitutional hash validation (608508a9bd224290)
     - MACI role enforcement with separation of powers
     - Per-item error isolation for partial failure handling
     - Request deduplication within batch

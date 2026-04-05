@@ -1,6 +1,17 @@
-"""Tests for Z3 SMT Solver Integration."""
+"""Tests for Z3 Adapter module.
+
+Covers Z3Constraint, Z3VerificationResult, ConstitutionalPolicy,
+Z3SolverAdapter, LLMAssistedZ3Adapter, ConstitutionalZ3Verifier,
+and convenience functions.
+"""
+
+from datetime import UTC, datetime
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+
+# Z3 may not be available, skip entire module if not
+z3 = pytest.importorskip("z3", reason="z3-solver not installed")
 
 from enhanced_agent_bus.verification.z3_adapter import (
     CONSTITUTIONAL_HASH,
@@ -13,203 +24,83 @@ from enhanced_agent_bus.verification.z3_adapter import (
     verify_policy_formally,
 )
 
-
-class TestZ3SolverAdapter:
-    # Constitutional Hash: cdd01ef066bc6cf2
-    """Test Z3 solver adapter."""
-
-    def test_initialization(self):
-        """Test adapter initialization."""
-        try:
-            adapter = Z3SolverAdapter(timeout_ms=1000)
-            assert adapter.timeout_ms == 1000
-            assert adapter.solver is not None
-        except ImportError:
-            pytest.skip("Z3 not available")
-
-    def test_constraint_management(self):
-        """Test constraint addition and management."""
-        try:
-            import z3
-
-            adapter = Z3SolverAdapter()
-
-            # Add a simple constraint
-            x = z3.Bool("test_var")
-            constraint = Z3Constraint(
-                name="test_constraint",
-                expression="(declare-const test_var Bool)",
-                natural_language="Test constraint",
-                confidence=0.8,
-            )
-
-            adapter.add_constraint("test", x, constraint)
-
-            assert "test" in adapter.named_constraints
-            assert len(adapter.constraint_history) == 1
-        except ImportError:
-            pytest.skip("Z3 not available")
-
-    def test_sat_check_simple(self):
-        """Test satisfiability checking."""
-        try:
-            import z3
-
-            adapter = Z3SolverAdapter()
-
-            # Add satisfiable constraint
-            x = z3.Bool("x")
-            adapter.solver.add(x)  # x must be true
-
-            result = adapter.check_sat()
-            assert result.is_sat
-            assert result.model is not None
-            assert result.solve_time_ms >= 0
-        except ImportError:
-            pytest.skip("Z3 not available")
+# ---------------------------------------------------------------------------
+# Z3Constraint dataclass
+# ---------------------------------------------------------------------------
 
 
-class TestLLMAssistedZ3Adapter:
-    """Test LLM-assisted Z3 adapter."""
-
-    @pytest.fixture
-    def adapter(self):
-        """Create adapter instance."""
-        try:
-            return LLMAssistedZ3Adapter()
-        except ImportError:
-            pytest.skip("Z3 not available")
-
-    def test_initialization(self, adapter):
-        """Test adapter initialization."""
-        assert adapter.max_refinements == 3
-        assert adapter.z3_solver is not None
-
-    @pytest.mark.asyncio
-    async def test_natural_language_to_constraints(self, adapter):
-        """Test constraint generation from natural language."""
-        policy = "Users must be authenticated before accessing sensitive data."
-
-        constraints = await adapter.natural_language_to_constraints(policy)
-
-        assert isinstance(constraints, list)
-        if constraints:  # May be empty if pattern matching fails
-            assert all(isinstance(c, Z3Constraint) for c in constraints)
-            assert all(c.natural_language is not None for c in constraints)
-
-    def test_policy_element_extraction(self, adapter):
-        """Test policy element extraction."""
-        policy = "Users must authenticate. Data can be encrypted. Access cannot be anonymous."
-
-        elements = adapter._extract_policy_elements(policy)
-
-        assert len(elements) >= 2  # Should find multiple elements
-        assert all("type" in elem for elem in elements)
-        assert all("text" in elem for elem in elements)
-
-    @pytest.mark.asyncio
-    async def test_constraint_verification(self, adapter):
-        """Test constraint verification."""
-        # Create simple constraints
-        constraints = [
-            Z3Constraint(
-                name="test1",
-                expression="(declare-const x Bool)\n(assert x)",
-                natural_language="x must be true",
-                confidence=0.8,
-            )
-        ]
-
-        result = await adapter.verify_policy_constraints(constraints)
-
-        assert isinstance(result, Z3VerificationResult)
-        assert result.solve_time_ms >= 0
-
-
-class TestConstitutionalZ3Verifier:
-    """Test constitutional Z3 verifier."""
-
-    @pytest.fixture
-    def verifier(self):
-        """Create verifier instance."""
-        try:
-            return ConstitutionalZ3Verifier()
-        except ImportError:
-            pytest.skip("Z3 not available")
-
-    def test_initialization(self, verifier):
-        """Test verifier initialization."""
-        assert verifier.llm_adapter is not None
-        assert verifier.verified_policies == {}
-
-    @pytest.mark.asyncio
-    async def test_policy_verification(self, verifier):
-        """Test policy verification."""
-        policy_text = "All user data must be encrypted at rest."
-        policy_id = "test-policy-001"
-
-        policy = await verifier.verify_constitutional_policy(policy_id, policy_text)
-
-        assert isinstance(policy, ConstitutionalPolicy)
-        assert policy.id == policy_id
-        assert policy.natural_language == policy_text
-        assert policy.constitutional_hash == CONSTITUTIONAL_HASH
-        assert policy.created_at is not None
-        assert policy.verification_result is not None
-
-    @pytest.mark.asyncio
-    async def test_policy_compliance_check(self, verifier):
-        """Test policy compliance checking."""
-        # First verify a policy
-        policy_id = "compliance-test"
-        policy_text = "Access requires authentication."
-
-        policy = await verifier.verify_constitutional_policy(policy_id, policy_text)
-        assert policy.id in verifier.verified_policies
-
-        # Check compliance
-        decision_context = {"authenticated": True, "user": "test"}
-        is_compliant = await verifier.verify_policy_compliance(policy_id, decision_context)
-
-        # Should return the verification status (simplified)
-        assert isinstance(is_compliant, bool)
-
-    def test_constitutional_hash(self, verifier):
-        """Test constitutional hash retrieval."""
-        assert verifier.get_constitutional_hash() == CONSTITUTIONAL_HASH
-
-    def test_verification_stats(self, verifier):
-        """Test verification statistics."""
-        stats = verifier.get_verification_stats()
-        assert "total_policies" in stats
-        assert "verified_policies" in stats
-        assert "verification_rate" in stats
-        assert "constitutional_hash" in stats
-        assert stats["constitutional_hash"] == CONSTITUTIONAL_HASH
-
-
-class TestDataStructures:
-    """Test data structures."""
-
-    def test_z3_constraint_creation(self):
-        """Test Z3 constraint creation."""
-        constraint = Z3Constraint(
-            name="test_constraint",
-            expression="(declare-const x Bool)",
+class TestZ3Constraint:
+    def test_defaults(self):
+        c = Z3Constraint(
+            name="c1",
+            expression="(assert x)",
             natural_language="x must be true",
-            confidence=0.85,
-            generated_by="test",
+            confidence=0.9,
         )
+        assert c.generated_by == "llm"
+        assert c.timestamp is not None
 
-        assert constraint.name == "test_constraint"
-        assert constraint.expression == "(declare-const x Bool)"
-        assert constraint.natural_language == "x must be true"
-        assert constraint.confidence == 0.85
-        assert constraint.generated_by == "test"
-        assert constraint.timestamp is not None
+    def test_custom_timestamp(self):
+        ts = datetime(2025, 1, 1, tzinfo=UTC)
+        c = Z3Constraint(
+            name="c1",
+            expression="expr",
+            natural_language="text",
+            confidence=0.8,
+            timestamp=ts,
+        )
+        assert c.timestamp == ts
 
-    def test_constitutional_policy_creation(self):
-        """Test constitutional policy creation."""
+
+# ---------------------------------------------------------------------------
+# Z3VerificationResult dataclass
+# ---------------------------------------------------------------------------
+
+
+class TestZ3VerificationResult:
+    def test_defaults(self):
+        r = Z3VerificationResult(is_sat=True)
+        assert r.constraints_used == []
+        assert r.solver_stats == {}
+        assert r.alternative_paths == []
+        assert r.solve_time_ms == 0.0
+
+    def test_custom(self):
+        r = Z3VerificationResult(
+            is_sat=False,
+            unsat_core=["c1", "c2"],
+            solve_time_ms=5.0,
+        )
+        assert r.unsat_core == ["c1", "c2"]
+
+    def test_verification_result_with_model(self):
+        result = Z3VerificationResult(
+            is_sat=True, model={"x": True, "y": 42}, solve_time_ms=150.5, solver_stats={"decls": 2}
+        )
+        assert result.is_sat
+        assert result.model == {"x": True, "y": 42}
+        assert result.solve_time_ms == 150.5
+        assert result.solver_stats == {"decls": 2}
+
+
+# ---------------------------------------------------------------------------
+# ConstitutionalPolicy dataclass
+# ---------------------------------------------------------------------------
+
+
+class TestConstitutionalPolicy:
+    def test_defaults(self):
+        p = ConstitutionalPolicy(
+            id="p1",
+            natural_language="Test policy",
+            z3_constraints=[],
+        )
+        assert p.is_verified is False
+        assert p.created_at is not None
+        assert p.verified_at is None
+        assert p.constitutional_hash == CONSTITUTIONAL_HASH
+
+    def test_with_constraints(self):
         constraints = [
             Z3Constraint(
                 name="constraint1",
@@ -218,121 +109,476 @@ class TestDataStructures:
                 confidence=0.8,
             )
         ]
-
         policy = ConstitutionalPolicy(
             id="test-policy",
             natural_language="Test policy text",
             z3_constraints=constraints,
             is_verified=True,
         )
-
-        assert policy.id == "test-policy"
-        assert policy.natural_language == "Test policy text"
         assert len(policy.z3_constraints) == 1
         assert policy.is_verified
-        assert policy.constitutional_hash == CONSTITUTIONAL_HASH
-        assert policy.created_at is not None
 
-    def test_verification_result_creation(self):
-        """Test verification result creation."""
-        result = Z3VerificationResult(
-            is_sat=True, model={"x": True, "y": 42}, solve_time_ms=150.5, solver_stats={"decls": 2}
+
+# ---------------------------------------------------------------------------
+# Z3SolverAdapter
+# ---------------------------------------------------------------------------
+
+
+class TestZ3SolverAdapter:
+    def test_init(self):
+        adapter = Z3SolverAdapter(timeout_ms=3000)
+        assert adapter.timeout_ms == 3000
+
+    def test_reset_solver(self):
+        adapter = Z3SolverAdapter()
+        x = z3.Bool("x")
+        meta = Z3Constraint(name="c1", expression="x", natural_language="x is true", confidence=1.0)
+        adapter.add_constraint("c1", x, meta)
+        assert "c1" in adapter.named_constraints
+        adapter.reset_solver()
+        assert len(adapter.named_constraints) == 0
+
+    def test_add_constraint(self):
+        adapter = Z3SolverAdapter()
+        x = z3.Bool("x")
+        meta = Z3Constraint(name="c1", expression="x", natural_language="x", confidence=1.0)
+        adapter.add_constraint("c1", x, meta)
+        assert "c1" in adapter.named_constraints
+        assert len(adapter.constraint_history) == 1
+
+    def test_get_constraint_names(self):
+        adapter = Z3SolverAdapter()
+        x = z3.Bool("x")
+        meta = Z3Constraint(name="c1", expression="x", natural_language="x", confidence=1.0)
+        adapter.add_constraint("c1", x, meta)
+        assert adapter.get_constraint_names() == ["c1"]
+
+    def test_check_sat_satisfiable(self):
+        adapter = Z3SolverAdapter()
+        x = z3.Bool("x")
+        meta = Z3Constraint(name="c1", expression="x", natural_language="x", confidence=1.0)
+        adapter.add_constraint("c1", x, meta)
+        result = adapter.check_sat()
+        assert result.is_sat is True
+        assert result.model is not None
+        assert result.solve_time_ms >= 0
+
+    def test_check_sat_unsatisfiable(self):
+        adapter = Z3SolverAdapter()
+        x = z3.Bool("x")
+        meta1 = Z3Constraint(name="c1", expression="x", natural_language="x", confidence=1.0)
+        meta2 = Z3Constraint(
+            name="c2", expression="not x", natural_language="not x", confidence=1.0
         )
+        adapter.add_constraint("c1", x, meta1)
+        adapter.add_constraint("c2", z3.Not(x), meta2)
+        result = adapter.check_sat()
+        assert result.is_sat is False
 
-        assert result.is_sat
-        assert result.model == {"x": True, "y": 42}
-        assert result.solve_time_ms == 150.5
-        assert result.solver_stats == {"decls": 2}
-
-
-class TestIntegration:
-    """Integration tests."""
+    def test_check_sat_find_multiple(self):
+        adapter = Z3SolverAdapter()
+        x = z3.Bool("x")
+        y = z3.Bool("y")
+        meta = Z3Constraint(name="c1", expression="or", natural_language="x or y", confidence=1.0)
+        adapter.add_constraint("c1", z3.Or(x, y), meta)
+        result = adapter.check_sat(find_multiple=True, max_paths=3)
+        assert result.is_sat is True
+        assert len(result.alternative_paths) >= 1
 
     @pytest.mark.asyncio
-    async def test_full_verification_workflow(self):
-        """Test complete verification workflow."""
-        try:
-            import z3 as _z3
-        except ImportError:
-            pytest.skip("Z3 not available")
+    async def test_async_check_sat(self):
+        adapter = Z3SolverAdapter()
+        x = z3.Bool("x")
+        meta = Z3Constraint(name="c1", expression="x", natural_language="x", confidence=1.0)
+        adapter.add_constraint("c1", x, meta)
+        result = await adapter.async_check_sat()
+        assert result.is_sat is True
 
-        # Create verifier
-        verifier = ConstitutionalZ3Verifier()
-
-        # Define a simple policy (avoid complex multi-constraint policies
-        # that trigger Z3Exception on symbolic boolean cast)
-        policy_text = "Access logs must be maintained."
-
-        # Verify policy
-        policy = await verifier.verify_constitutional_policy("integration-test-policy", policy_text)
-
-        # Check results
-        assert policy.id == "integration-test-policy"
-        assert policy.natural_language == policy_text
-        assert len(policy.z3_constraints) >= 0  # May be 0 if no patterns match
-        assert policy.verification_result is not None
-        assert policy.constitutional_hash == CONSTITUTIONAL_HASH
-
-        # Test compliance checking
-        is_compliant = await verifier.verify_policy_compliance(
-            policy.id, {"user_authenticated": True, "data_encrypted": True}
+    def test_model_to_dict_bool(self):
+        adapter = Z3SolverAdapter()
+        x = z3.Bool("x")
+        adapter.add_constraint(
+            "c1",
+            x,
+            Z3Constraint(name="c1", expression="x", natural_language="x", confidence=1.0),
         )
+        result = adapter.check_sat()
+        assert "x" in result.model
 
-        assert isinstance(is_compliant, bool)
-
-        # Check stats
-        stats = verifier.get_verification_stats()
-        assert stats["total_policies"] >= 1
-        assert stats["constitutional_hash"] == CONSTITUTIONAL_HASH
-
-    @pytest.mark.asyncio
-    async def test_convenience_function(self):
-        """Test convenience verification function."""
-        try:
-            import z3 as _z3
-        except ImportError:
-            pytest.skip("Z3 not available")
-
-        policy_text = "Data must be validated before processing."
-
-        policy = await verify_policy_formally(policy_text)
-
-        assert isinstance(policy, ConstitutionalPolicy)
-        assert policy.natural_language == policy_text
-        assert policy.verification_result is not None
-
-
-class TestErrorHandling:
-    """Test error handling."""
+    def test_model_to_dict_int(self):
+        adapter = Z3SolverAdapter()
+        x = z3.Int("x")
+        adapter.add_constraint(
+            "c1",
+            x == 42,
+            Z3Constraint(name="c1", expression="x==42", natural_language="x is 42", confidence=1.0),
+        )
+        result = adapter.check_sat()
+        assert result.model["x"] == 42
 
     def test_z3_unavailable(self):
         """Test behavior when Z3 is not available."""
-        # Patch via the class's own module globals to avoid dual-import aliasing
         z3_globals = Z3SolverAdapter.__init__.__globals__
         original_available = z3_globals["Z3_AVAILABLE"]
         z3_globals["Z3_AVAILABLE"] = False
-
         try:
             with pytest.raises(ImportError, match="Z3 solver not available"):
                 Z3SolverAdapter()
         finally:
             z3_globals["Z3_AVAILABLE"] = original_available
 
+
+# ---------------------------------------------------------------------------
+# LLMAssistedZ3Adapter
+# ---------------------------------------------------------------------------
+
+
+class TestLLMAssistedZ3Adapter:
+    def test_init(self):
+        adapter = LLMAssistedZ3Adapter(max_refinements=5)
+        assert adapter.max_refinements == 5
+
+    def test_extract_policy_elements_obligation(self):
+        adapter = LLMAssistedZ3Adapter()
+        elements = adapter._extract_policy_elements("Users must be authenticated.")
+        assert len(elements) == 1
+        assert elements[0]["type"] == "obligation"
+
+    def test_extract_policy_elements_permission(self):
+        adapter = LLMAssistedZ3Adapter()
+        elements = adapter._extract_policy_elements("Users may access public data.")
+        assert len(elements) == 1
+        assert elements[0]["type"] == "permission"
+
+    def test_extract_policy_elements_prohibition(self):
+        adapter = LLMAssistedZ3Adapter()
+        elements = adapter._extract_policy_elements(
+            "Users are forbidden from accessing admin data."
+        )
+        assert len(elements) == 1
+        assert elements[0]["type"] == "prohibition"
+
+    def test_extract_policy_elements_empty(self):
+        adapter = LLMAssistedZ3Adapter()
+        elements = adapter._extract_policy_elements("Nothing important here.")
+        assert len(elements) == 0
+
+    def test_extract_policy_elements_multiple(self):
+        adapter = LLMAssistedZ3Adapter()
+        elements = adapter._extract_policy_elements(
+            "Users must log in. Users may view dashboards. Users cannot delete others."
+        )
+        assert len(elements) == 3
+
     @pytest.mark.asyncio
-    async def test_malformed_policy_handling(self):
-        """Test handling of malformed policies."""
-        try:
-            verifier = ConstitutionalZ3Verifier()
+    async def test_generate_single_constraint_obligation(self):
+        adapter = LLMAssistedZ3Adapter()
+        element = {"type": "obligation", "text": "Users must be authenticated", "priority": "high"}
+        result = await adapter._generate_single_constraint(element)
+        assert result is not None
+        assert result.generated_by == "pattern_matching"
+        assert result.confidence == 0.8
 
-            # Empty policy
-            policy = await verifier.verify_constitutional_policy("empty-policy", "")
+    @pytest.mark.asyncio
+    async def test_generate_single_constraint_prohibition(self):
+        adapter = LLMAssistedZ3Adapter()
+        element = {"type": "prohibition", "text": "Users cannot access admin", "priority": "high"}
+        result = await adapter._generate_single_constraint(element)
+        assert result is not None
+        assert "not" in result.expression
 
-            assert policy.id == "empty-policy"
-            assert policy.natural_language == ""
-            # Should still create policy object even with empty input
+    @pytest.mark.asyncio
+    async def test_generate_single_constraint_permission_returns_none(self):
+        adapter = LLMAssistedZ3Adapter()
+        element = {"type": "permission", "text": "Users may view data", "priority": "medium"}
+        result = await adapter._generate_single_constraint(element)
+        assert result is None
 
-        except ImportError:
-            pytest.skip("Z3 not available")
+    @pytest.mark.asyncio
+    async def test_natural_language_to_constraints(self):
+        adapter = LLMAssistedZ3Adapter()
+        constraints = await adapter.natural_language_to_constraints(
+            "All users must be authenticated."
+        )
+        assert len(constraints) >= 1
+
+    @pytest.mark.asyncio
+    async def test_natural_language_to_constraints_empty(self):
+        adapter = LLMAssistedZ3Adapter()
+        constraints = await adapter.natural_language_to_constraints("Nothing interesting here")
+        assert len(constraints) == 0
+
+    @pytest.mark.asyncio
+    async def test_verify_policy_constraints_sat(self):
+        adapter = LLMAssistedZ3Adapter()
+        constraint = Z3Constraint(
+            name="c1",
+            expression="(declare-const x Bool)\n(assert x)",
+            natural_language="x must be true",
+            confidence=0.9,
+        )
+        result = await adapter.verify_policy_constraints([constraint])
+        assert result.is_sat is True
+
+    @pytest.mark.asyncio
+    async def test_verify_policy_constraints_unsat(self):
+        adapter = LLMAssistedZ3Adapter()
+        c1 = Z3Constraint(
+            name="c1",
+            expression="(declare-const x Bool)\n(assert x)",
+            natural_language="x must be true",
+            confidence=0.9,
+        )
+        c2 = Z3Constraint(
+            name="c2",
+            expression="(declare-const x Bool)\n(assert (not x))",
+            natural_language="x must be false",
+            confidence=0.9,
+        )
+        result = await adapter.verify_policy_constraints([c1, c2])
+        assert result.is_sat is False
+
+    @pytest.mark.asyncio
+    async def test_verify_policy_constraints_invalid_expression(self):
+        adapter = LLMAssistedZ3Adapter()
+        constraint = Z3Constraint(
+            name="c1",
+            expression="totally invalid",
+            natural_language="garbage",
+            confidence=0.1,
+        )
+        result = await adapter.verify_policy_constraints([constraint])
+        assert isinstance(result, Z3VerificationResult)
+
+    # --- _parse_z3_expression ---
+
+    def test_parse_z3_expression_simple_bool(self):
+        adapter = LLMAssistedZ3Adapter()
+        expr = adapter._parse_z3_expression("(declare-const x Bool)\n(assert x)")
+        assert expr is not None
+
+    def test_parse_z3_expression_and(self):
+        adapter = LLMAssistedZ3Adapter()
+        expr = adapter._parse_z3_expression(
+            "(declare-const x Bool)\n(declare-const y Bool)\n(assert (and x y))"
+        )
+        assert expr is not None
+
+    def test_parse_z3_expression_or(self):
+        adapter = LLMAssistedZ3Adapter()
+        expr = adapter._parse_z3_expression(
+            "(declare-const x Bool)\n(declare-const y Bool)\n(assert (or x y))"
+        )
+        assert expr is not None
+
+    def test_parse_z3_expression_not(self):
+        adapter = LLMAssistedZ3Adapter()
+        expr = adapter._parse_z3_expression("(declare-const x Bool)\n(assert (not x))")
+        assert expr is not None
+
+    def test_parse_z3_expression_true_false(self):
+        adapter = LLMAssistedZ3Adapter()
+        expr = adapter._parse_z3_expression("(assert true)")
+        assert expr is not None
+
+    def test_parse_z3_expression_invalid_returns_none(self):
+        adapter = LLMAssistedZ3Adapter()
+        expr = adapter._parse_z3_expression("garbage input")
+        assert expr is None
+
+    def test_parse_z3_expression_no_assertions(self):
+        adapter = LLMAssistedZ3Adapter()
+        expr = adapter._parse_z3_expression("(declare-const x Bool)")
+        assert expr is None
+
+    def test_parse_z3_expression_int(self):
+        adapter = LLMAssistedZ3Adapter()
+        expr = adapter._parse_z3_expression("(declare-const x Int)")
+        assert expr is None  # No assertion
+
+    # --- helper methods ---
+
+    def test_is_balanced(self):
+        adapter = LLMAssistedZ3Adapter()
+        assert adapter._is_balanced("(a (b) c)") is True
+        assert adapter._is_balanced("(a (b c)") is False
+        assert adapter._is_balanced("") is True
+
+    def test_split_by_op(self):
+        adapter = LLMAssistedZ3Adapter()
+        parts = adapter._split_by_op("a and b", " and ")
+        assert parts == ["a", "b"]
+
+    def test_split_by_op_nested(self):
+        adapter = LLMAssistedZ3Adapter()
+        parts = adapter._split_by_op("(a and b) or c", " or ")
+        assert len(parts) == 2
+        assert parts[0] == "(a and b)"
+        assert parts[1] == "c"
+
+    def test_split_balanced(self):
+        adapter = LLMAssistedZ3Adapter()
+        parts = adapter._split_balanced("and x (or a b)")
+        assert parts == ["and", "x", "(or a b)"]
+
+    # --- refine_constraints ---
+
+    @pytest.mark.asyncio
+    async def test_refine_constraints_already_sat(self):
+        adapter = LLMAssistedZ3Adapter()
+        constraints = [
+            Z3Constraint(
+                name="c1",
+                expression="(declare-const x Bool)\n(assert x)",
+                natural_language="x",
+                confidence=0.9,
+            )
+        ]
+        sat_result = Z3VerificationResult(is_sat=True)
+        refined = await adapter.refine_constraints(constraints, sat_result)
+        assert refined is constraints
+
+    @pytest.mark.asyncio
+    async def test_refine_constraints_with_unsat_core(self):
+        adapter = LLMAssistedZ3Adapter()
+        constraints = [
+            Z3Constraint(
+                name="c1",
+                expression="(declare-const x Bool)\n(assert x)",
+                natural_language="x must be true",
+                confidence=0.9,
+            ),
+        ]
+        unsat_result = Z3VerificationResult(
+            is_sat=False,
+            unsat_core=["c1"],
+        )
+        refined = await adapter.refine_constraints(constraints, unsat_result, max_iterations=1)
+        assert refined[0].confidence < 0.9
+
+    @pytest.mark.asyncio
+    async def test_refine_constraints_no_unsat_core(self):
+        adapter = LLMAssistedZ3Adapter()
+        constraints = [
+            Z3Constraint(
+                name="c1",
+                expression="(declare-const x Bool)\n(assert x)",
+                natural_language="x",
+                confidence=0.9,
+            ),
+        ]
+        unsat_result = Z3VerificationResult(is_sat=False, unsat_core=[])
+        refined = await adapter.refine_constraints(constraints, unsat_result, max_iterations=3)
+        # No refinement possible without unsat core, confidence unchanged
+        assert refined[0].confidence == 0.9
+
+
+# ---------------------------------------------------------------------------
+# ConstitutionalZ3Verifier
+# ---------------------------------------------------------------------------
+
+
+class TestConstitutionalZ3Verifier:
+    @pytest.mark.asyncio
+    async def test_verify_constitutional_policy_sat(self):
+        verifier = ConstitutionalZ3Verifier()
+        policy = await verifier.verify_constitutional_policy(
+            "p1", "All agents must be authenticated."
+        )
+        assert policy.id == "p1"
+        assert policy.is_verified is True
+        assert policy.verification_result is not None
+        assert "p1" in verifier.verified_policies
+
+    @pytest.mark.asyncio
+    async def test_verify_policy_compliance_verified(self):
+        verifier = ConstitutionalZ3Verifier()
+        await verifier.verify_constitutional_policy("p1", "All agents must be authenticated.")
+        result = await verifier.verify_policy_compliance("p1", {"action": "test"})
+        assert result is True
+
+    @pytest.mark.asyncio
+    async def test_verify_policy_compliance_not_found(self):
+        verifier = ConstitutionalZ3Verifier()
+        result = await verifier.verify_policy_compliance("nonexistent", {})
+        assert result is False
+
+    @pytest.mark.asyncio
+    async def test_verify_policy_compliance_not_verified(self):
+        verifier = ConstitutionalZ3Verifier()
+        verifier.verified_policies["p1"] = ConstitutionalPolicy(
+            id="p1",
+            natural_language="test",
+            z3_constraints=[],
+            is_verified=False,
+        )
+        result = await verifier.verify_policy_compliance("p1", {})
+        assert result is False
+
+    def test_get_constitutional_hash(self):
+        verifier = ConstitutionalZ3Verifier()
+        assert verifier.get_constitutional_hash() == CONSTITUTIONAL_HASH
+
+    def test_get_verification_stats_empty(self):
+        verifier = ConstitutionalZ3Verifier()
+        stats = verifier.get_verification_stats()
+        assert stats["total_policies"] == 0
+        assert stats["verification_rate"] == 0.0
+
+    @pytest.mark.asyncio
+    async def test_get_verification_stats_with_policies(self):
+        verifier = ConstitutionalZ3Verifier()
+        await verifier.verify_constitutional_policy("p1", "Agents must be authenticated.")
+        stats = verifier.get_verification_stats()
+        assert stats["total_policies"] == 1
+        assert stats["verified_policies"] == 1
+        assert stats["verification_rate"] == 1.0
+
+    @pytest.mark.asyncio
+    async def test_empty_policy(self):
+        verifier = ConstitutionalZ3Verifier()
+        policy = await verifier.verify_constitutional_policy("empty-policy", "")
+        assert policy.id == "empty-policy"
+        assert policy.natural_language == ""
+
+    @pytest.mark.asyncio
+    async def test_verify_with_find_multiple(self):
+        verifier = ConstitutionalZ3Verifier()
+        policy = await verifier.verify_constitutional_policy(
+            "p1", "Agents must be authenticated.", find_multiple=True
+        )
+        assert policy.verification_result is not None
+
+
+# ---------------------------------------------------------------------------
+# Convenience function
+# ---------------------------------------------------------------------------
+
+
+class TestVerifyPolicyFormally:
+    @pytest.mark.asyncio
+    async def test_with_explicit_id(self):
+        policy = await verify_policy_formally("Users must log in.", policy_id="test_1")
+        assert policy.id == "test_1"
+
+    @pytest.mark.asyncio
+    async def test_with_auto_id(self):
+        policy = await verify_policy_formally("Users must log in.")
+        assert policy.id.startswith("policy_")
+
+    @pytest.mark.asyncio
+    async def test_complex_or_and_policy(self):
+        """Test LogicGraph P2: complex logic with OR/AND."""
+        adapter = LLMAssistedZ3Adapter()
+        constraint = await adapter._generate_single_constraint(
+            {
+                "type": "obligation",
+                "text": "Access is allowed if user is admin or user is hr",
+                "priority": "high",
+            }
+        )
+        assert constraint is not None
+        assert constraint.generated_by == "logicgraph_generator"
 
 
 if __name__ == "__main__":

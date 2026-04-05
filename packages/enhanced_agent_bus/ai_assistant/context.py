@@ -1,10 +1,12 @@
 """
 ACGS-2 AI Assistant - Context Management
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Sophisticated context management with constitutional validation,
 entity tracking, and conversation state management.
 """
+
+from __future__ import annotations
 
 import hashlib
 import json
@@ -25,7 +27,7 @@ MAMBA_CONTEXT_PROCESSING_ERRORS = (
     OSError,
 )
 
-from enhanced_agent_bus.bus_types import JSONDict, JSONValue  # noqa: E402
+from enhanced_agent_bus.bus_types import JSONDict, JSONValue
 
 # Optional torch import for Mamba processing
 try:
@@ -51,7 +53,7 @@ except (ImportError, AttributeError):
 
 # Import centralized constitutional hash with fallback
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 

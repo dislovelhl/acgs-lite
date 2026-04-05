@@ -1,0 +1,61 @@
+# Constitutional Hash: 608508a9bd224290
+# ACGS Cloud Build + Cloud Run Deployment
+#
+# Required substitutions (set in Cloud Build trigger or --substitutions):
+#   _REGION:           GCP region (default: us-central1)
+#   _SERVICE_NAME:     Cloud Run service name (default: acgs-governance)
+#
+# Required secrets (set in Cloud Run env or Secret Manager):
+#   GITLAB_TOKEN:      GitLab API personal access token
+#   GITLAB_PROJECT_ID: GitLab project numeric ID
+#   CONSTITUTION_PATH: Path to constitution YAML (optional, uses default template)
+
+substitutions:
+  _REGION: us-central1
+  _SERVICE_NAME: acgs-governance
+
+steps:
+  # Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
+      - '.'
+
+  # Push to Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}'
+      - '--image=gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA'
+      - '--region=${_REGION}'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--port=8080'
+      - '--memory=512Mi'
+      - '--cpu=1'
+      - '--min-instances=0'
+      - '--max-instances=10'
+      - '--set-env-vars=GITLAB_TOKEN=${_GITLAB_TOKEN},GITLAB_PROJECT_ID=${_GITLAB_PROJECT_ID},CONSTITUTION_PATH=${_CONSTITUTION_PATH}'
+
+images:
+  - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
+
+timeout: '600s'

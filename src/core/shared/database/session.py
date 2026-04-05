@@ -1,6 +1,6 @@
 """
 ACGS-2 Database Session Configuration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides SQLAlchemy async engine and session factory for database operations.
 Supports PostgreSQL (production) and SQLite (development) backends.

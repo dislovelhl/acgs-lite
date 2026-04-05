@@ -3,7 +3,7 @@
 # Defines Prometheus alerting rules for constitutional compliance,
 # performance thresholds, and MACI violations.
 #
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 
 groups:
   - name: maci_governance_alerts
@@ -77,7 +77,7 @@ groups:
       # Info: Compliance Hash Mismatch
       - alert: MACIHashMismatch
         expr: |
-          maci_constitutional_info{hash!="cdd01ef066bc6cf2"}
+          maci_constitutional_info{hash!="608508a9bd224290"}
         for: 0s
         labels:
           severity: info

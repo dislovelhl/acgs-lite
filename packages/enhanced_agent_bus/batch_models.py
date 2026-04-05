@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Batch Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Batch processing models for governance validation.
 Split from models.py for improved maintainability.
@@ -13,11 +13,11 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 # Import constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -33,7 +33,7 @@ class BatchRequestItem(BaseModel):
     Each item has its own request ID for tracking and can be
     independently validated and reported.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     request_id: str = Field(
@@ -67,7 +67,7 @@ class BatchRequest(BaseModel):
     maintaining constitutional compliance and tenant isolation.
 
     Maximum batch size: 1000 items
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     batch_id: str = Field(
@@ -162,7 +162,7 @@ class BatchResponseItem(BaseModel):
     Contains the validation result and any errors for an individual
     request within a batch.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     request_id: str = Field(..., description="Original request ID from BatchRequestItem")
@@ -330,7 +330,7 @@ class BatchResponse(BaseModel):
     error reporting and performance metrics. Supports partial failures
     where some items succeed and others fail.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     batch_id: str = Field(..., description="Batch ID from original request")

@@ -1,7 +1,7 @@
 """
 Tests for Security Event Logging Stream.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests cover:
 - SecurityEventLogger initialization and lifecycle
@@ -337,7 +337,6 @@ class TestAuthorizationDenialEvent:
         assert event.denial_reason == "insufficient_permissions"
 
 
-@pytest.mark.asyncio
 class TestSecurityEventLogger:
     """Test SecurityEventLogger class."""
 
@@ -603,7 +602,6 @@ class TestSecurityEventLogger:
         await logger.stop()
 
 
-@pytest.mark.asyncio
 class TestGlobalSecurityEventLogger:
     """Test global SecurityEventLogger singleton functions."""
 

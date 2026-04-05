@@ -1,6 +1,6 @@
 """
 ACGS-2 Deliberation Layer - OPA Guard Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Data models and enums for the OPA Policy Guard.
 Separates data structures from business logic for better maintainability.
@@ -20,16 +20,14 @@ from enhanced_agent_bus.bus_types import JSONDict, JSONValue
 _module = sys.modules.get(__name__)
 if _module is not None:
     sys.modules.setdefault("enhanced_agent_bus.deliberation_layer.opa_guard_models", _module)
-    sys.modules.setdefault(
-        "enhanced_agent_bus.deliberation_layer.opa_guard_models", _module
-    )
+    sys.modules.setdefault("enhanced_agent_bus.deliberation_layer.opa_guard_models", _module)
     sys.modules.setdefault("core.enhanced_agent_bus.deliberation_layer.opa_guard_models", _module)
 
 # Import centralized constitutional hash from shared module
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 # Alias for backward compatibility
 GUARD_CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH
 
@@ -349,7 +347,7 @@ class ReviewResult:
             return
 
         # Need at least half of required critics
-        if self.required_critics:  # noqa: SIM102
+        if self.required_critics:
             if total_reviews < len(self.required_critics) // 2 + 1:
                 return
 

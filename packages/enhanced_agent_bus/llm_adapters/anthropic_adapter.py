@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Anthropic LLM Adapter
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Anthropic adapter supporting Claude 3 models (Opus, Sonnet, Haiku) with
 constitutional AI features, streaming, and tool use capabilities.
@@ -11,7 +11,7 @@ from collections.abc import AsyncIterator, Iterator
 from typing import ClassVar
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -48,7 +48,7 @@ _ANTHROPIC_ADAPTER_OPERATION_ERRORS = (
 class AnthropicAdapter(BaseLLMAdapter):
     """Anthropic LLM adapter for Claude models.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Supports:
     - Claude 3 Opus (most capable)
@@ -121,6 +121,28 @@ class AnthropicAdapter(BaseLLMAdapter):
         self.config = config
         self._client: object | None = None
         self._async_client: object | None = None
+
+    def validate_constitutional_compliance(self, **kwargs: object) -> None:
+        """Validate constitutional compliance for Anthropic adapter.
+
+        Checks that:
+        - The constitutional hash is correctly set
+        - The adapter config has a valid model and API key source
+
+        Raises:
+            ValueError: If constitutional compliance requirements are not met.
+        """
+        if not self.constitutional_hash:
+            raise ValueError("Constitutional hash is required for Anthropic adapter compliance.")
+        if self.constitutional_hash != CONSTITUTIONAL_HASH:
+            logger.warning(
+                "Anthropic adapter using non-standard constitutional hash: %s",
+                self.constitutional_hash,
+            )
+        if not self.config.model:
+            raise ValueError(
+                "Anthropic adapter constitutional compliance requires a model to be configured."
+            )
 
     def _get_client(self) -> object:
         """Get or create synchronous Anthropic client.

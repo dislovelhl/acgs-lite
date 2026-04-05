@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 # Sprint 58 — llm_adapters/failover/health.py coverage
 """
 Comprehensive test suite for:
@@ -19,8 +19,8 @@ from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.llm_adapters.failover.health import (
     HealthMetrics,
     ProviderHealthScore,

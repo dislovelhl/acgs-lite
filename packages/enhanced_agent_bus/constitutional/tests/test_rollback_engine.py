@@ -1,6 +1,6 @@
 """
 Tests for Constitutional Rollback Engine
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for saga workflow for rolling back constitutional amendments
 when governance degradation is detected.
@@ -10,7 +10,8 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 from ..amendment_model import AmendmentProposal, AmendmentStatus
 from ..degradation_detector import (
@@ -165,7 +166,6 @@ class TestRollbackSagaActivities:
             status=ConstitutionalStatus.APPROVED,
         )
 
-    @pytest.mark.asyncio
     async def test_detect_degradation_success(
         self,
         activities,
@@ -196,7 +196,6 @@ class TestRollbackSagaActivities:
         assert result["confidence_score"] == 0.85
         assert result["has_degradation"] is True
 
-    @pytest.mark.asyncio
     async def test_detect_degradation_no_baseline(
         self,
         activities,
@@ -225,7 +224,6 @@ class TestRollbackSagaActivities:
         assert "detection_id" in result
         mock_metrics_collector.collect_snapshot.assert_called()
 
-    @pytest.mark.asyncio
     async def test_prepare_rollback_success(
         self, activities, mock_storage, mock_current_version, mock_target_version
     ):
@@ -248,7 +246,6 @@ class TestRollbackSagaActivities:
         assert result["target_version_id"] == "v-1.0.0"
         assert result["target_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_prepare_rollback_version_not_found(self, activities, mock_storage):
         """Test rollback preparation fails when version not found."""
         mock_storage.get_version.return_value = None
@@ -261,7 +258,6 @@ class TestRollbackSagaActivities:
         with pytest.raises(RollbackEngineError, match="not found"):
             await activities.prepare_rollback(input_data)
 
-    @pytest.mark.asyncio
     async def test_prepare_rollback_no_predecessor(self, activities, mock_storage):
         """Test rollback fails when no predecessor version."""
         version_without_predecessor = ConstitutionalVersion(
@@ -282,7 +278,6 @@ class TestRollbackSagaActivities:
         with pytest.raises(RollbackEngineError, match="no predecessor"):
             await activities.prepare_rollback(input_data)
 
-    @pytest.mark.asyncio
     async def test_notify_hitl_critical_severity(self, activities):
         """Test HITL notification for critical severity."""
         mock_hitl = AsyncMock()
@@ -305,7 +300,6 @@ class TestRollbackSagaActivities:
         assert "notification_id" in result
         assert result["severity"] == "critical"
 
-    @pytest.mark.asyncio
     async def test_notify_hitl_low_severity_no_notification(self, activities):
         """Test no HITL notification for low severity."""
         input_data = {
@@ -320,7 +314,6 @@ class TestRollbackSagaActivities:
 
         assert result["notifications_sent"] == []
 
-    @pytest.mark.asyncio
     async def test_update_opa_to_previous_success(self, activities):
         """Test successful OPA policy rollback."""
         activities._http_client = AsyncMock()
@@ -342,7 +335,6 @@ class TestRollbackSagaActivities:
         assert result["previous_hash"] == CONSTITUTIONAL_HASH
         assert result["previous_version"] == "1.0.0"
 
-    @pytest.mark.asyncio
     async def test_restore_previous_version_success(
         self, activities, mock_storage, mock_target_version
     ):
@@ -378,7 +370,6 @@ class TestRollbackSagaActivities:
         mock_storage.activate_version.assert_called_with("v-1.0.0")
         mock_storage.save_amendment.assert_called()
 
-    @pytest.mark.asyncio
     async def test_invalidate_cache_success(self, activities):
         """Test successful cache invalidation."""
         activities._redis_client = AsyncMock()
@@ -391,7 +382,6 @@ class TestRollbackSagaActivities:
         assert result["cache_invalidated"] is True
         activities._redis_client.delete.assert_called_with("constitutional:active_version")
 
-    @pytest.mark.asyncio
     async def test_invalidate_cache_no_redis(self, activities):
         """Test cache invalidation without Redis."""
         activities._redis_client = None
@@ -402,7 +392,6 @@ class TestRollbackSagaActivities:
 
         assert result["cache_invalidated"] is False
 
-    @pytest.mark.asyncio
     async def test_audit_rollback_success(self, activities):
         """Test successful rollback audit logging."""
         activities._audit_client = AsyncMock()
@@ -439,7 +428,6 @@ class TestRollbackSagaActivities:
         assert result["constitutional_hash"] == CONSTITUTIONAL_HASH
         assert result["severity"] == "high"
 
-    @pytest.mark.asyncio
     async def test_compensation_methods(self, activities, mock_storage):
         """Test all compensation methods return True."""
         input_data = {"saga_id": "rollback-saga-001", "context": {}}
@@ -448,7 +436,6 @@ class TestRollbackSagaActivities:
         assert await activities.cancel_preparation(input_data) is True
         assert await activities.cancel_hitl_notification(input_data) is True
 
-    @pytest.mark.asyncio
     async def test_revert_opa_to_current(self, activities):
         """Test OPA revert compensation."""
         activities._http_client = AsyncMock()
@@ -465,7 +452,6 @@ class TestRollbackSagaActivities:
 
         assert result is True
 
-    @pytest.mark.asyncio
     async def test_revert_version_restoration(self, activities, mock_storage):
         """Test version restoration revert."""
         input_data = {
@@ -543,7 +529,6 @@ class TestRollbackSagaFactory:
 class TestRollbackIntegration:
     """Integration-style tests for rollback flow."""
 
-    @pytest.mark.asyncio
     async def test_full_rollback_detection_flow(self):
         """Test complete rollback detection flow."""
         mock_storage = AsyncMock(spec=ConstitutionalStorageService)

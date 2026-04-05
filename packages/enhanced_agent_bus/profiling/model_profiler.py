@@ -1,6 +1,6 @@
 """
 ACGS-2 Model Profiler - GPU Acceleration Evaluation
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Model profiling for determining GPU acceleration ROI.
 
@@ -29,7 +29,7 @@ from enum import Enum
 from typing import TypeVar
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

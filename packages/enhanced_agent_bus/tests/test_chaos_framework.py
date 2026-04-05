@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Chaos Framework Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for the chaos testing framework including:
 - Latency injection and measurement
@@ -14,7 +14,8 @@ import asyncio
 import time
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # Import chaos testing framework
 try:
@@ -127,7 +128,7 @@ class TestChaosScenario:
             )
 
         # Error message shows sanitized hash prefix for security
-        assert "cdd01ef0..." in str(exc_info.value)
+        assert "608508a9..." in str(exc_info.value)
         # Full hash still available via property for internal use
         assert exc_info.value.expected_hash == CONSTITUTIONAL_HASH
 
@@ -260,7 +261,6 @@ class TestChaosEngine:
         assert "constitutional_hash" in metrics
         assert metrics["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_inject_latency(self, engine):
         """Test latency injection."""
         scenario = await engine.inject_latency(
@@ -277,7 +277,6 @@ class TestChaosEngine:
         assert len(active_scenarios) == 1
         assert active_scenarios[0].name == scenario.name
 
-    @pytest.mark.asyncio
     async def test_inject_errors(self, engine):
         """Test error injection."""
         scenario = await engine.inject_errors(
@@ -292,7 +291,6 @@ class TestChaosEngine:
         assert scenario.error_rate == 0.5
         assert scenario.error_type is RuntimeError
 
-    @pytest.mark.asyncio
     async def test_force_circuit_open(self, engine):
         """Test forcing circuit breaker open."""
         scenario = await engine.force_circuit_open(
@@ -304,7 +302,6 @@ class TestChaosEngine:
         assert scenario.chaos_type == ChaosType.CIRCUIT_BREAKER
         assert scenario.target == "test_breaker"
 
-    @pytest.mark.asyncio
     async def test_simulate_resource_exhaustion(self, engine):
         """Test resource exhaustion simulation."""
         scenario = await engine.simulate_resource_exhaustion(
@@ -318,7 +315,6 @@ class TestChaosEngine:
         assert scenario.resource_type == ResourceType.MEMORY
         assert scenario.resource_level == 0.8
 
-    @pytest.mark.asyncio
     async def test_automatic_cleanup(self, engine):
         """Test automatic cleanup after scenario duration."""
         # Short duration for fast test
@@ -338,7 +334,6 @@ class TestChaosEngine:
         # Scenario should be cleaned up
         assert len(engine.get_active_scenarios()) == 0
 
-    @pytest.mark.asyncio
     async def test_manual_deactivation(self, engine):
         """Test manual scenario deactivation."""
         scenario = await engine.inject_latency(
@@ -355,7 +350,6 @@ class TestChaosEngine:
 
         assert len(engine.get_active_scenarios()) == 0
 
-    @pytest.mark.asyncio
     async def test_emergency_stop_prevents_activation(self, engine):
         """Test emergency stop prevents new scenario activation."""
         engine.emergency_stop()
@@ -369,7 +363,6 @@ class TestChaosEngine:
 
         assert "emergency stop is active" in str(exc_info.value)
 
-    @pytest.mark.asyncio
     async def test_chaos_context_manager(self, engine):
         """Test chaos context manager for automatic cleanup."""
         scenario = ChaosScenario(
@@ -405,7 +398,6 @@ class TestLatencyInjection:
         yield engine
         engine.reset()
 
-    @pytest.mark.asyncio
     async def test_latency_injection_accuracy(self, engine):
         """Test latency injection adds correct delay."""
         delay_ms = 100
@@ -434,7 +426,6 @@ class TestLatencyInjection:
 
         await engine.deactivate_scenario(scenario.name)
 
-    @pytest.mark.asyncio
     async def test_latency_not_injected_outside_blast_radius(self, engine):
         """Test latency is not injected for targets outside blast radius."""
         scenario = await engine.inject_latency(
@@ -449,7 +440,6 @@ class TestLatencyInjection:
 
         await engine.deactivate_scenario(scenario.name)
 
-    @pytest.mark.asyncio
     async def test_latency_metrics_tracking(self, engine):
         """Test latency injection updates metrics."""
         scenario = await engine.inject_latency(
@@ -482,7 +472,6 @@ class TestErrorInjection:
         yield engine
         engine.reset()
 
-    @pytest.mark.asyncio
     async def test_error_injection_rate(self, engine):
         """Test error injection rate accuracy."""
         error_rate = 0.5
@@ -510,7 +499,6 @@ class TestErrorInjection:
 
         await engine.deactivate_scenario(scenario.name)
 
-    @pytest.mark.asyncio
     async def test_error_type_injection(self, engine):
         """Test correct error type is injected."""
         scenario = await engine.inject_errors(
@@ -525,7 +513,6 @@ class TestErrorInjection:
 
         await engine.deactivate_scenario(scenario.name)
 
-    @pytest.mark.asyncio
     async def test_error_not_injected_outside_blast_radius(self, engine):
         """Test errors not injected outside blast radius."""
         scenario = await engine.inject_errors(
@@ -544,7 +531,6 @@ class TestErrorInjection:
 
         await engine.deactivate_scenario(scenario.name)
 
-    @pytest.mark.asyncio
     async def test_error_metrics_tracking(self, engine):
         """Test error injection updates metrics."""
         scenario = await engine.inject_errors(
@@ -578,7 +564,6 @@ class TestConstitutionalCompliance:
         yield engine
         engine.reset()
 
-    @pytest.mark.asyncio
     async def test_constitutional_hash_in_scenario(self, engine):
         """Test all scenarios include constitutional hash."""
         scenario = await engine.inject_latency(
@@ -594,13 +579,11 @@ class TestConstitutionalCompliance:
 
         await engine.deactivate_scenario(scenario.name)
 
-    @pytest.mark.asyncio
     async def test_constitutional_hash_in_metrics(self, engine):
         """Test metrics include constitutional hash."""
         metrics = engine.get_metrics()
         assert metrics["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_chaos_maintains_constitutional_compliance(self, engine):
         """Test chaos injection maintains constitutional compliance."""
         # Inject various chaos types
@@ -625,7 +608,6 @@ class TestConstitutionalCompliance:
 class TestChaosTestDecorator:
     """Test the @chaos_test decorator."""
 
-    @pytest.mark.asyncio
     @chaos_test(scenario_type="latency", target="test_target", delay_ms=50, duration_s=1.0)
     async def test_decorator_latency(self):
         """Test decorator creates latency chaos scenario."""
@@ -639,7 +621,6 @@ class TestChaosTestDecorator:
         delay = engine.should_inject_latency("test_target")
         assert delay > 0
 
-    @pytest.mark.asyncio
     @chaos_test(scenario_type="errors", target="test_target", error_rate=1.0, duration_s=1.0)
     async def test_decorator_errors(self):
         """Test decorator creates error chaos scenario."""
@@ -665,7 +646,6 @@ class TestSafetyControls:
         yield engine
         engine.reset()
 
-    @pytest.mark.asyncio
     async def test_max_duration_limit(self, engine):
         """Test max duration is enforced."""
         scenario = ChaosScenario(
@@ -677,7 +657,6 @@ class TestSafetyControls:
 
         assert scenario.duration_s <= scenario.max_duration_s
 
-    @pytest.mark.asyncio
     async def test_emergency_stop_clears_all_scenarios(self, engine):
         """Test emergency stop clears all active scenarios."""
         # Create multiple scenarios
@@ -692,7 +671,6 @@ class TestSafetyControls:
         assert len(engine.get_active_scenarios()) == 0
         assert engine.is_stopped()
 
-    @pytest.mark.asyncio
     async def test_blast_radius_enforcement(self, engine):
         """Test blast radius limits chaos injection."""
         blast_radius = {"service1", "service2"}

@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - Chaos Experiments
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Defines chaos experiment lifecycle and execution framework.
 Experiments combine scenarios with steady state validation to
@@ -28,11 +28,11 @@ from typing import TypeVar
 
 # Import centralized constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -66,7 +66,7 @@ CHAOS_EXPERIMENT_ERRORS = (
 F = TypeVar("F", bound=Callable[..., object])
 
 
-class ExperimentPhase(str, Enum):  # noqa: UP042
+class ExperimentPhase(str, Enum):
     """Phases of a chaos experiment."""
 
     INITIALIZED = "initialized"
@@ -80,7 +80,7 @@ class ExperimentPhase(str, Enum):  # noqa: UP042
     ABORTED = "aborted"
 
 
-class ExperimentStatus(str, Enum):  # noqa: UP042
+class ExperimentStatus(str, Enum):
     """Status of a chaos experiment."""
 
     PENDING = "pending"
@@ -96,7 +96,7 @@ class ExperimentResult:
     """
     Result of a chaos experiment.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     experiment_name: str
@@ -148,7 +148,7 @@ class ChaosExperiment:
     """
     A chaos engineering experiment with full lifecycle management.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
 
     Lifecycle:
     1. Validate baseline steady state
@@ -457,7 +457,7 @@ class ChaosExperiment:
         logger.error(f"[{self.constitutional_hash}] Experiment '{self.name}' error: {error}")
 
         # Attempt rollback on error
-        try:  # noqa: SIM105
+        try:
             await self.scenario.rollback()
         except (RuntimeError, ValueError, TypeError, OSError):
             pass

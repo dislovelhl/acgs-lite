@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive tests for src/core/enhanced_agent_bus/feedback_handler/models.py
 
@@ -295,9 +295,7 @@ class TestFeedbackEventCorrectionValidator:
         assert ev.correction_data == {"new_decision": "block"}
 
     def test_correction_without_correction_data_logs_warning(self, caplog):
-        with caplog.at_level(
-            logging.WARNING, logger="enhanced_agent_bus.feedback_handler.models"
-        ):
+        with caplog.at_level(logging.WARNING, logger="enhanced_agent_bus.feedback_handler.models"):
             ev = make_event(
                 feedback_type=FeedbackType.CORRECTION,
                 correction_data=None,
@@ -308,24 +306,18 @@ class TestFeedbackEventCorrectionValidator:
         assert any("correction" in record.message.lower() for record in caplog.records)
 
     def test_positive_no_correction_data_no_warning(self, caplog):
-        with caplog.at_level(
-            logging.WARNING, logger="enhanced_agent_bus.feedback_handler.models"
-        ):
+        with caplog.at_level(logging.WARNING, logger="enhanced_agent_bus.feedback_handler.models"):
             make_event(feedback_type=FeedbackType.POSITIVE)
         # No warning should be emitted for non-correction types
         assert not any("correction_data" in record.message.lower() for record in caplog.records)
 
     def test_negative_no_correction_data_no_warning(self, caplog):
-        with caplog.at_level(
-            logging.WARNING, logger="enhanced_agent_bus.feedback_handler.models"
-        ):
+        with caplog.at_level(logging.WARNING, logger="enhanced_agent_bus.feedback_handler.models"):
             make_event(feedback_type=FeedbackType.NEGATIVE)
         assert not any("correction_data" in record.message.lower() for record in caplog.records)
 
     def test_neutral_no_correction_data_no_warning(self, caplog):
-        with caplog.at_level(
-            logging.WARNING, logger="enhanced_agent_bus.feedback_handler.models"
-        ):
+        with caplog.at_level(logging.WARNING, logger="enhanced_agent_bus.feedback_handler.models"):
             make_event(feedback_type=FeedbackType.NEUTRAL)
         assert not any("correction_data" in record.message.lower() for record in caplog.records)
 

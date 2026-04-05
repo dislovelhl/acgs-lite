@@ -1,6 +1,6 @@
 """
 ACGS-2 Anomaly Monitoring Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Integrates the AnomalyDetector with the Agent Bus to provide real-time
 monitoring of governance metrics and automatic incident triggering.
@@ -31,7 +31,7 @@ except ImportError:
         DetectedAnomaly = None
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -86,7 +86,7 @@ class AnomalyMonitor:
         self._is_running = False
         if self._monitoring_task:
             self._monitoring_task.cancel()
-            try:  # noqa: SIM105
+            try:
                 await self._monitoring_task
             except asyncio.CancelledError:
                 pass

@@ -1,6 +1,6 @@
 """
 ACGS-2 Blockchain Integration Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Comprehensive tests for:
 - BlockchainAnchorManager multi-backend support
@@ -11,7 +11,8 @@ Comprehensive tests for:
 import time
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # Test imports - handle both package and standalone modes
 try:
@@ -158,7 +159,6 @@ class TestAuditClient:
         assert stats["batches_sent"] == 0
         assert stats["circuit_rejections"] == 0
 
-    @pytest.mark.asyncio
     async def test_start_stop(self):
         """Client can start and stop."""
         client = AuditClient()
@@ -168,7 +168,6 @@ class TestAuditClient:
         await client.stop()
         assert client._running is False
 
-    @pytest.mark.asyncio
     async def test_get_stats(self):
         """get_stats returns expected structure."""
         client = AuditClient()
@@ -178,7 +177,6 @@ class TestAuditClient:
         assert "running" in stats
         assert stats["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_health_check_disconnected(self):
         """health_check handles disconnected state."""
         # Use an invalid port to ensure connection failure
@@ -341,7 +339,6 @@ class TestBlockchainAnchorManager:
         assert stats["running"] is False
         assert stats["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_start_stop(self):
         """Manager can start and stop."""
         manager = BlockchainAnchorManager()
@@ -351,7 +348,6 @@ class TestBlockchainAnchorManager:
         await manager.stop()
         assert manager._running is False
 
-    @pytest.mark.asyncio
     async def test_anchor_root_not_running(self):
         """anchor_root returns False when not running."""
         manager = BlockchainAnchorManager()
@@ -361,7 +357,6 @@ class TestBlockchainAnchorManager:
         )
         assert result is False
 
-    @pytest.mark.asyncio
     async def test_anchor_root_queued(self):
         """anchor_root queues request when running."""
         manager = BlockchainAnchorManager()
@@ -378,7 +373,6 @@ class TestBlockchainAnchorManager:
         finally:
             await manager.stop()
 
-    @pytest.mark.asyncio
     async def test_health_check(self):
         """health_check returns expected structure."""
         manager = BlockchainAnchorManager()
@@ -456,7 +450,6 @@ class TestAuditLedger:
         assert ledger._anchor_stats["failed"] == 0
         assert ledger._anchor_stats["pending"] == 0
 
-    @pytest.mark.asyncio
     async def test_get_ledger_stats(self):
         """get_ledger_stats returns expected structure."""
         ledger = AuditLedger()
@@ -469,7 +462,6 @@ class TestAuditLedger:
         assert "manager_type" in stats["anchoring"]
         assert "enabled_backends" in stats["anchoring"]
 
-    @pytest.mark.asyncio
     async def test_get_anchor_health_no_manager(self):
         """get_anchor_health works without manager."""
         config = AuditLedgerConfig(enable_blockchain_anchoring=False)
@@ -649,7 +641,6 @@ class TestEdgeCases:
     """Tests for edge cases and error handling."""
 
     @pytest.mark.skipif(not AUDIT_CLIENT_AVAILABLE, reason="AuditClient not available")
-    @pytest.mark.asyncio
     async def test_audit_client_close_not_started(self):
         """AuditClient can be closed without being started."""
         client = AuditClient()
@@ -658,14 +649,12 @@ class TestEdgeCases:
     @pytest.mark.skipif(
         not ANCHOR_MANAGER_AVAILABLE, reason="BlockchainAnchorManager not available"
     )
-    @pytest.mark.asyncio
     async def test_anchor_manager_stop_not_started(self):
         """AnchorManager can be stopped without being started."""
         manager = BlockchainAnchorManager()
         await manager.stop()  # Should not raise
 
     @pytest.mark.skipif(not AUDIT_LEDGER_AVAILABLE, reason="AuditLedger not available")
-    @pytest.mark.asyncio
     async def test_ledger_stop_not_started(self):
         """AuditLedger can be stopped without being started."""
         ledger = AuditLedger()

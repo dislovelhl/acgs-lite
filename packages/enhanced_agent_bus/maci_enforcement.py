@@ -17,14 +17,14 @@ MACI Role Model:
 Golden Rule: Agents NEVER validate their own output. Self-validation is a critical
 security violation that enables Godel bypass attacks.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 NOTE: This file is a backward-compatibility shim. All implementation has been
 moved to the `enhanced_agent_bus.maci` subpackage. Import from there for new code.
 """
 
 # Backward compatibility — re-export everything from the new maci/ subpackage
-from .maci import (  # noqa: F401
+from .maci import (
     CONSTITUTIONAL_HASH,
     ROLE_HIERARCHY,
     ROLE_PERMISSIONS,
@@ -51,7 +51,7 @@ from .maci import (  # noqa: F401
     create_maci_enforcement_middleware,
     validate_maci_role_matrix,
 )
-from .maci_imports import (  # noqa: F401
+from .maci_imports import (
     GLOBAL_SETTINGS_AVAILABLE,
     MACI_CORE_AVAILABLE,
     ensure_maci_models_loaded,
@@ -76,7 +76,7 @@ from .maci_imports import (
 from .maci_imports import (
     MACISelfValidationError as _MACISelfValidationError,
 )
-from .observability.structured_logging import get_logger  # noqa: F401
+from .observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
 MAX_MACI_VALIDATION_HISTORY = 1_000

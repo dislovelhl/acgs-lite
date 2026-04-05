@@ -1,7 +1,7 @@
 """
 Tests for audit_log.py with blockchain logging functionality.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 import json
@@ -11,8 +11,8 @@ from datetime import UTC, datetime, timezone
 from pathlib import Path
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.guardrails.audit_log import (
     AuditLog,
     AuditLogConfig,
@@ -82,11 +82,11 @@ class TestBlockchainLedger:
         assert genesis["constitutional_hash"] == CONSTITUTIONAL_HASH
         assert len(genesis["hash"]) == 64
 
-    def test_add_entry_creates_new_block(self, blockchain_ledger, sample_audit_entry):
+    async def test_add_entry_creates_new_block(self, blockchain_ledger, sample_audit_entry):
         """Adding entry should create new block with proper linkage."""
         genesis = blockchain_ledger.get_latest_block()
 
-        block = blockchain_ledger.add_entry(sample_audit_entry)
+        block = await blockchain_ledger.add_entry(sample_audit_entry)
 
         assert block["index"] == 1
         assert block["data"] == sample_audit_entry
@@ -95,17 +95,17 @@ class TestBlockchainLedger:
         assert len(block["hash"]) == 64
         assert len(blockchain_ledger.blocks) == 2
 
-    def test_chain_integrity_verification(self, blockchain_ledger, sample_audit_entry):
+    async def test_chain_integrity_verification(self, blockchain_ledger, sample_audit_entry):
         """Chain should maintain cryptographic integrity."""
-        blockchain_ledger.add_entry(sample_audit_entry)
-        blockchain_ledger.add_entry({"test": "entry2"})
+        await blockchain_ledger.add_entry(sample_audit_entry)
+        await blockchain_ledger.add_entry({"test": "entry2"})
 
         assert blockchain_ledger._verify_chain_integrity() is True
 
-    def test_chain_integrity_failure_detection(self, blockchain_ledger, sample_audit_entry):
+    async def test_chain_integrity_failure_detection(self, blockchain_ledger, sample_audit_entry):
         """Chain should detect tampering."""
-        blockchain_ledger.add_entry(sample_audit_entry)
-        blockchain_ledger.add_entry({"test": "entry2"})
+        await blockchain_ledger.add_entry(sample_audit_entry)
+        await blockchain_ledger.add_entry({"test": "entry2"})
 
         block_1 = blockchain_ledger.blocks[1]
         original_hash = block_1["hash"]
@@ -114,18 +114,18 @@ class TestBlockchainLedger:
 
         assert blockchain_ledger._verify_chain_integrity() is False
 
-    def test_persistence_to_disk(self, blockchain_ledger, sample_audit_entry):
+    async def test_persistence_to_disk(self, blockchain_ledger, sample_audit_entry):
         """Blocks should be persisted to disk."""
-        blockchain_ledger.add_entry(sample_audit_entry)
+        await blockchain_ledger.add_entry(sample_audit_entry)
 
         ledger2 = BlockchainLedger(storage_path=blockchain_ledger.storage_path)
 
         assert len(ledger2.blocks) == 2
         assert ledger2.blocks[1]["data"] == sample_audit_entry
 
-    def test_get_block_by_index(self, blockchain_ledger, sample_audit_entry):
+    async def test_get_block_by_index(self, blockchain_ledger, sample_audit_entry):
         """Should retrieve block by index."""
-        blockchain_ledger.add_entry(sample_audit_entry)
+        await blockchain_ledger.add_entry(sample_audit_entry)
 
         block = blockchain_ledger.get_block_by_index(1)
 
@@ -137,9 +137,9 @@ class TestBlockchainLedger:
         block = blockchain_ledger.get_block_by_index(999)
         assert block is None
 
-    def test_verify_entry_by_hash(self, blockchain_ledger, sample_audit_entry):
+    async def test_verify_entry_by_hash(self, blockchain_ledger, sample_audit_entry):
         """Should verify entry existence by hash."""
-        block = blockchain_ledger.add_entry(sample_audit_entry)
+        block = await blockchain_ledger.add_entry(sample_audit_entry)
 
         assert blockchain_ledger.verify_entry(block["hash"]) is True
         assert blockchain_ledger.verify_entry("nonexistent_hash") is False
@@ -164,7 +164,6 @@ class TestBlockchainLedger:
 class TestAuditLogWithBlockchain:
     """Test suite for AuditLog with blockchain integration."""
 
-    @pytest.mark.asyncio
     async def test_process_creates_blockchain_entry(self, audit_log):
         """Processing audit entry should create blockchain block."""
         context = {
@@ -185,7 +184,6 @@ class TestAuditLogWithBlockchain:
         assert len(blockchain_entries) == 2
         assert blockchain_entries[1]["data"]["trace_id"] == "test-123"
 
-    @pytest.mark.asyncio
     async def test_multiple_entries_chain_correctly(self, audit_log):
         """Multiple entries should form valid chain."""
         for i in range(3):
@@ -208,7 +206,6 @@ class TestAuditLogWithBlockchain:
             prev = blockchain_entries[i - 1]
             assert curr["previous_hash"] == prev["hash"]
 
-    @pytest.mark.asyncio
     async def test_blockchain_integrity_verification(self, audit_log):
         """Blockchain should maintain integrity across operations."""
         context = {
@@ -224,7 +221,6 @@ class TestAuditLogWithBlockchain:
 
         assert audit_log.verify_blockchain_integrity() is True
 
-    @pytest.mark.asyncio
     async def test_get_blockchain_stats(self, audit_log):
         """Should return accurate blockchain statistics."""
         context = {
@@ -276,7 +272,6 @@ class TestAuditLogWithBlockchain:
 class TestAuditLogBlockchainEdgeCases:
     """Test edge cases and error handling."""
 
-    @pytest.mark.asyncio
     async def test_process_without_blockchain_does_not_fail(self):
         """Processing should work without blockchain enabled."""
         config = AuditLogConfig(enabled=True, log_to_blockchain=False)
@@ -297,7 +292,6 @@ class TestAuditLogBlockchainEdgeCases:
         assert result.allowed is True
         assert len(audit_log.get_entries()) == 1
 
-    @pytest.mark.asyncio
     async def test_audit_entry_still_logged_without_blockchain(self):
         """Regular audit logging should work without blockchain."""
         config = AuditLogConfig(enabled=True, log_to_blockchain=False)
@@ -350,15 +344,14 @@ class TestBlockchainConstitutionalCompliance:
         genesis = blockchain_ledger.blocks[0]
         assert genesis["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    def test_all_blocks_include_constitutional_hash(self, blockchain_ledger):
+    async def test_all_blocks_include_constitutional_hash(self, blockchain_ledger):
         """All blocks must include constitutional hash."""
-        blockchain_ledger.add_entry({"test": "entry1"})
-        blockchain_ledger.add_entry({"test": "entry2"})
+        await blockchain_ledger.add_entry({"test": "entry1"})
+        await blockchain_ledger.add_entry({"test": "entry2"})
 
         for block in blockchain_ledger.blocks:
             assert block["constitutional_hash"] == CONSTITUTIONAL_HASH
 
-    @pytest.mark.asyncio
     async def test_audit_entries_include_constitutional_hash(self, audit_log):
         """Audit entries must include constitutional hash."""
         context = {

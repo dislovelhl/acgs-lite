@@ -1,4 +1,4 @@
-# Constitutional Hash: cdd01ef066bc6cf2
+# Constitutional Hash: 608508a9bd224290
 """
 Comprehensive tests for saga_persistence/repository.py
 
@@ -16,8 +16,8 @@ Covers:
 from datetime import UTC, timezone
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.saga_persistence.models import SagaState
 from enhanced_agent_bus.saga_persistence.repository import (
     InvalidStateTransitionError,
@@ -657,7 +657,7 @@ class TestRepositoryError:
 
     def test_is_acgs_base_error(self):
         """RepositoryError inherits from ACGSBaseError."""
-        from src.core.shared.errors.exceptions import ACGSBaseError
+        from enhanced_agent_bus._compat.errors import ACGSBaseError
 
         err = RepositoryError("msg")
         assert isinstance(err, ACGSBaseError)
@@ -1140,13 +1140,13 @@ class TestExceptionHierarchy:
 
     def test_repository_error_inherits_from_acgs_base(self):
         """RepositoryError inherits from ACGSBaseError."""
-        from src.core.shared.errors.exceptions import ACGSBaseError
+        from enhanced_agent_bus._compat.errors import ACGSBaseError
 
         assert issubclass(RepositoryError, ACGSBaseError)
 
     def test_all_errors_inherit_from_acgs_base(self):
         """All errors indirectly inherit from ACGSBaseError."""
-        from src.core.shared.errors.exceptions import ACGSBaseError
+        from enhanced_agent_bus._compat.errors import ACGSBaseError
 
         for cls in [
             SagaNotFoundError,

@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.api.routes.health import router
 
 
@@ -18,7 +17,6 @@ def _build_app(agent_bus_ready: bool = True) -> FastAPI:
     return app
 
 
-@pytest.mark.asyncio
 async def test_liveness_probe_exposes_constitutional_hash() -> None:
     async with AsyncClient(
         transport=ASGITransport(app=_build_app()),
@@ -31,7 +29,6 @@ async def test_liveness_probe_exposes_constitutional_hash() -> None:
     assert payload["constitutional_hash"] == CONSTITUTIONAL_HASH
 
 
-@pytest.mark.asyncio
 async def test_readiness_probe_fails_on_constitutional_hash_mismatch(monkeypatch) -> None:
     monkeypatch.setenv("CONSTITUTIONAL_HASH", "deadbeefdeadbeef")
     async with AsyncClient(
@@ -45,7 +42,6 @@ async def test_readiness_probe_fails_on_constitutional_hash_mismatch(monkeypatch
     assert payload["checks"]["constitutional_hash_runtime"] == "down"
 
 
-@pytest.mark.asyncio
 async def test_readiness_probe_fails_when_agent_bus_missing() -> None:
     async with AsyncClient(
         transport=ASGITransport(app=_build_app(agent_bus_ready=False)),
@@ -58,7 +54,6 @@ async def test_readiness_probe_fails_when_agent_bus_missing() -> None:
     assert payload["checks"]["agent_bus"] == "down"
 
 
-@pytest.mark.asyncio
 async def test_readiness_probe_fails_on_probe_header_mismatch() -> None:
     async with AsyncClient(
         transport=ASGITransport(app=_build_app(agent_bus_ready=True)),

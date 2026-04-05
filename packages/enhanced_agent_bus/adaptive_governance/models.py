@@ -1,6 +1,6 @@
 """
 ACGS-2 Adaptive Governance Data Models
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Defines core data structures for adaptive governance including enums,
 dataclasses for governance metrics, impact features, and decisions.
@@ -12,6 +12,8 @@ This module contains:
 - ImpactFeatures: Feature extraction for ML impact scoring
 - GovernanceDecision: Decision output from governance evaluation
 """
+
+from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone

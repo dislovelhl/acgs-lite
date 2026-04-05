@@ -1,6 +1,6 @@
 """
 ACGS-2 Context & Memory - Hybrid Context Manager
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Manages the hybrid Mamba-2 SSM + Attention architecture for optimal
 context processing. Combines O(n) SSM processing with attention for
@@ -20,7 +20,7 @@ from datetime import UTC, datetime
 from enum import Enum
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -40,7 +40,7 @@ if TORCH_AVAILABLE:
     import torch.nn.functional as F
 
 
-class ProcessingMode(str, Enum):  # noqa: UP042
+class ProcessingMode(str, Enum):
     """Processing mode for context."""
 
     SSM_ONLY = "ssm_only"  # Pure Mamba-2 SSM processing
@@ -53,7 +53,7 @@ class ProcessingMode(str, Enum):  # noqa: UP042
 class HybridContextConfig:
     """Configuration for hybrid context manager.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     # Mamba-2 SSM settings
@@ -93,7 +93,7 @@ class HybridContextConfig:
 class HybridProcessingResult:
     """Result of hybrid context processing.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     output_embeddings: object
@@ -115,7 +115,7 @@ class SharedAttentionProcessor:
 
     Processes constitutional and high-priority content with full attention.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(
@@ -256,7 +256,7 @@ class HybridContextManager:
     Automatically routes content to the appropriate processing mode
     based on content type, length, and constitutional requirements.
 
-    Constitutional Hash: cdd01ef066bc6cf2
+    Constitutional Hash: 608508a9bd224290
     """
 
     def __init__(

@@ -1,7 +1,7 @@
 """
 Lightweight authentication dependency for FastAPI endpoints.
 
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides a reusable FastAPI dependency that validates Bearer tokens or API keys.
 Supports environment-controlled bypass for development and testing.
@@ -21,7 +21,8 @@ from fastapi import HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from src.core.shared.config import settings
-from src.core.shared.security.auth import has_jwt_secret, verify_token
+from src.core.shared.config.runtime_environment import resolve_runtime_environment
+from src.core.shared.security.auth import has_jwt_verification_material, verify_token
 from src.core.shared.structured_logging import get_logger
 from src.core.shared.types import JSONDict
 
@@ -94,7 +95,11 @@ async def shutdown_revocation_service() -> None:
 
 
 def _is_production_environment() -> bool:
-    return settings.env not in _NON_PRODUCTION_ENVS
+    environment = resolve_runtime_environment(
+        getattr(settings, "env", None),
+        extra_env_vars=("ACGS2_ENV",),
+    )
+    return environment not in _NON_PRODUCTION_ENVS
 
 
 def _auth_disabled_requested() -> bool:
@@ -109,7 +114,11 @@ async def _check_revocation(jti: str | None) -> None:
     - The token has no JTI claim (handled gracefully; tokens issued by auth.py
       always include JTI so this only applies to third-party tokens).
     """
-    if _revocation_service is None or not jti:
+    if not jti:
+        return
+    if _revocation_service is None:
+        if _is_production_environment():
+            raise HTTPException(status_code=503, detail="Token revocation backend unavailable")
         return
     try:
         if await _revocation_service.is_token_revoked(jti):
@@ -118,9 +127,11 @@ async def _check_revocation(jti: str | None) -> None:
     except HTTPException:
         raise
     except Exception as e:
-        # Revocation check failure must never block legitimate requests —
-        # is_token_revoked already handles Redis errors with fail-open logic.
-        logger.error("Revocation check error (non-blocking): %s", e)
+        logger.error("Revocation check error: %s", e)
+        if _is_production_environment():
+            raise HTTPException(
+                status_code=503, detail="Token revocation backend unavailable"
+            ) from e
 
 
 async def require_auth(
@@ -156,8 +167,8 @@ async def require_auth(
             detail="Authentication required",
         )
 
-    if not has_jwt_secret():
-        raise HTTPException(status_code=500, detail="JWT secret not configured")
+    if not has_jwt_verification_material():
+        raise HTTPException(status_code=500, detail="JWT verification material not configured")
 
     payload = verify_token(credentials.credentials).model_dump()
 
@@ -194,7 +205,7 @@ def require_auth_optional(
         return None
 
     try:
-        if not has_jwt_secret():
+        if not has_jwt_verification_material():
             return None
 
         return verify_token(credentials.credentials).model_dump()

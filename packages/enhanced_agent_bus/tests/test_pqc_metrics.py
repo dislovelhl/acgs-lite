@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - PQC Adoption Metrics Tests
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Tests for GET /api/v1/metrics/pqc-adoption endpoint.
 """
@@ -73,7 +73,6 @@ def test_adoption_rate_all_classical():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_read_window_counters_returns_counts():
     """Reads pqc and classical counters from Redis for a window."""
     redis = _redis_with_counters(pqc=42, classical=8)
@@ -82,7 +81,6 @@ async def test_read_window_counters_returns_counts():
     assert classical_count == 8
 
 
-@pytest.mark.asyncio
 async def test_read_window_counters_missing_keys_default_zero():
     """Missing Redis keys default to 0."""
     redis = _redis_with_counters(pqc=0, classical=0)
@@ -91,7 +89,6 @@ async def test_read_window_counters_missing_keys_default_zero():
     assert classical_count == 0
 
 
-@pytest.mark.asyncio
 async def test_read_window_counters_redis_failure_returns_zero():
     """Redis failure returns (0, 0) gracefully."""
     redis = AsyncMock()

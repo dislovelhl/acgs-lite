@@ -1,6 +1,6 @@
 """
 ACGS-2 Enhanced Agent Bus - MACI Exceptions
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 """
 
 from .base import MACIError
@@ -8,6 +8,8 @@ from .base import MACIError
 
 class MACIRoleViolationError(MACIError):
     """Raised when an agent attempts an action outside its role."""
+
+    error_code = "MACI_ROLE_VIOLATION"
 
     def __init__(
         self,
@@ -37,6 +39,8 @@ class MACIRoleViolationError(MACIError):
 class MACISelfValidationError(MACIError):
     """Raised when an agent attempts to validate its own output (Gödel bypass)."""
 
+    error_code = "MACI_SELF_VALIDATION"
+
     def __init__(
         self,
         agent_id: str,
@@ -62,6 +66,8 @@ class MACISelfValidationError(MACIError):
 
 class MACICrossRoleValidationError(MACIError):
     """Raised when cross-role validation constraints are violated."""
+
+    error_code = "MACI_CROSS_ROLE_VALIDATION"
 
     def __init__(
         self,
@@ -92,6 +98,8 @@ class MACICrossRoleValidationError(MACIError):
 class MACIRoleNotAssignedError(MACIError):
     """Raised when an agent has no MACI role assigned."""
 
+    error_code = "MACI_ROLE_NOT_ASSIGNED"
+
     def __init__(self, agent_id: str, operation: str) -> None:
         self.agent_id = agent_id
         self.operation = operation
@@ -106,6 +114,8 @@ class MACIRoleNotAssignedError(MACIError):
 
 class MACIActionDeniedError(MACIError):
     """Raised when a MACI action is denied."""
+
+    error_code = "MACI_ACTION_DENIED"
 
 
 __all__ = [

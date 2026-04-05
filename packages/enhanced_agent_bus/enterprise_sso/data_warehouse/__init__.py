@@ -1,6 +1,6 @@
 """
 Data Warehouse Integration
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Phase 10 Task 14: Data Warehouse Integration
 
@@ -17,7 +17,7 @@ This package exposes all public APIs for backward compatibility.
 
 # Constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
