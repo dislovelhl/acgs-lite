@@ -174,7 +174,7 @@ class TestGitLabPipeline:
         assert "stage: test" in yaml_str
         assert c.hash in yaml_str
         assert "merge_request_event" in yaml_str
-        assert "pip install acgs[gitlab]" in yaml_str
+        assert "pip install acgs-lite[gitlab]" in yaml_str
 
     def test_cap_gl_06_risk_score_bounded(self) -> None:
         from acgs_lite.integrations.gitlab import _compute_risk_score

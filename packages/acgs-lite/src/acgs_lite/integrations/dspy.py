@@ -71,7 +71,7 @@ class GovernedDSPyModule(GovernedBase):
         if not DSPY_AVAILABLE:
             raise ImportError(
                 "dspy is required. "
-                "Install with: pip install acgs[dspy]"
+                "Install with: pip install acgs-lite[dspy]"
             )
 
         self._module = module
@@ -220,7 +220,7 @@ class GovernedPredict(GovernedBase):
         if not DSPY_AVAILABLE:
             raise ImportError(
                 "dspy is required. "
-                "Install with: pip install acgs[dspy]"
+                "Install with: pip install acgs-lite[dspy]"
             )
 
         self._predict = predict

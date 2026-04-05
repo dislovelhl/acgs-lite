@@ -53,7 +53,7 @@ def create_mcp_server(
         MCP Server instance.
     """
     if not MCP_AVAILABLE:
-        raise ImportError("mcp package is required. Install with: pip install acgs[mcp]")
+        raise ImportError("mcp package is required. Install with: pip install acgs-lite[mcp]")
 
     constitution = constitution if constitution is not None else Constitution.default()
     audit_log = AuditLog()
@@ -258,7 +258,7 @@ def run_mcp_server(
         python -m acgs_lite.integrations.mcp_server
     """
     if not MCP_AVAILABLE:
-        raise ImportError("mcp package is required. Install with: pip install acgs[mcp]")
+        raise ImportError("mcp package is required. Install with: pip install acgs-lite[mcp]")
 
     from mcp.server.stdio import stdio_server
 

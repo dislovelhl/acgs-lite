@@ -27,7 +27,7 @@ Usage:
     python gitlab_mr_governance.py --mr-iid 42 --dry-run
 
 Requirements:
-    pip install acgs[gitlab]
+    pip install acgs-lite[gitlab]
 """
 
 from __future__ import annotations

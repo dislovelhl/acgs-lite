@@ -10,7 +10,7 @@ Endpoints:
     GET  /governance/summary - Active ruleset governance posture
 
 Setup:
-    pip install acgs[gitlab] uvicorn starlette
+    pip install acgs-lite[gitlab] uvicorn starlette
 
 Usage:
     # Minimal (uses default constitution and env vars for secrets):
@@ -187,7 +187,7 @@ def create_app(config: ServerConfig) -> Any:
         from acgs_lite.constitution import Constitution
         from acgs_lite.integrations.gitlab import GitLabGovernanceBot, GitLabWebhookHandler
     except ImportError:
-        logger.error("acgs[gitlab] is required: pip install acgs[gitlab]")
+        logger.error("acgs[gitlab] is required: pip install acgs-lite[gitlab]")
         sys.exit(1)
 
     # --- Validate required config ---

@@ -69,7 +69,7 @@ class GovernanceRunnable:
     ) -> None:
         if not LANGCHAIN_AVAILABLE:
             raise ImportError(
-                "langchain-core is required. Install with: pip install acgs[langchain]"
+                "langchain-core is required. Install with: pip install acgs-lite[langchain]"
             )
 
         self._runnable = runnable

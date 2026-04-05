@@ -120,7 +120,7 @@ class GovernedHaystackPipeline(GovernedBase):
         if not HAYSTACK_AVAILABLE:
             raise ImportError(
                 "haystack-ai is required. "
-                "Install with: pip install acgs[haystack]"
+                "Install with: pip install acgs-lite[haystack]"
             )
 
         self._pipeline = pipeline
@@ -229,7 +229,7 @@ class GovernedComponent(GovernedBase):
         if not HAYSTACK_AVAILABLE:
             raise ImportError(
                 "haystack-ai is required. "
-                "Install with: pip install acgs[haystack]"
+                "Install with: pip install acgs-lite[haystack]"
             )
 
         self._component = component

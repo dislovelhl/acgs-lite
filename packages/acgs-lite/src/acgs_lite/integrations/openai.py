@@ -108,7 +108,7 @@ class GovernedChatCompletions:
         try:
             from openai import AsyncOpenAI  # noqa: F401
         except ImportError as e:
-            raise ImportError("openai package required: pip install acgs[openai]") from e
+            raise ImportError("openai package required: pip install acgs-lite[openai]") from e
 
         # Note: caller should pass an async client
         response = await self._client.chat.completions.create(**kwargs)
@@ -167,7 +167,7 @@ class GovernedOpenAI:
     ) -> None:
         if not OPENAI_AVAILABLE:
             raise ImportError(
-                "The 'openai' package is required. Install with: pip install acgs[openai]"
+                "The 'openai' package is required. Install with: pip install acgs-lite[openai]"
             )
 
         self._client = OpenAI(api_key=api_key, **openai_kwargs)

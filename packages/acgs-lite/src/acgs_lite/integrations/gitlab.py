@@ -98,7 +98,7 @@ class GitLabGovernanceBot:
     ) -> None:
         if not HTTPX_AVAILABLE:
             raise ImportError(
-                "httpx is required for GitLab integration. Install with: pip install acgs[gitlab]"
+                "httpx is required for GitLab integration. Install with: pip install acgs-lite[gitlab]"
             )
 
         self._token = token
@@ -844,7 +844,7 @@ def create_gitlab_ci_config(constitution: Constitution | None = None) -> str:
         "  variables:\n"
         '    CONSTITUTIONAL_HASH: "' + const_hash + '"\n'
         "  before_script:\n"
-        "    - pip install acgs[gitlab]\n"
+        "    - pip install acgs-lite[gitlab]\n"
         "  script:\n"
         '    - python -c "\n'
         "      import asyncio\n"

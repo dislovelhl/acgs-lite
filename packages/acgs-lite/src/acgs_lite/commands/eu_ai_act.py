@@ -105,7 +105,7 @@ def handler(args: argparse.Namespace) -> int:
         print()
     except ImportError as e:
         print(f"  ⚠  {e}")
-        print("  Install fpdf2 for PDF: pip install acgs[pdf]")
+        print("  Install fpdf2 for PDF: pip install acgs-lite[pdf]")
         print()
 
     return 0

@@ -352,7 +352,7 @@ class TestCreateGitLabCIConfig:
         assert isinstance(config, str)
         assert "governance:" in config
         assert "stage: test" in config
-        assert "pip install acgs[gitlab]" in config
+        assert "pip install acgs-lite[gitlab]" in config
 
     def test_includes_constitutional_hash(self) -> None:
         c = Constitution.default()
